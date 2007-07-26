@@ -1,676 +1,595 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932132AbXGZIBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932908AbXGZICv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932132AbXGZIBt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 04:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbXGZIBl
+	id S932908AbXGZICv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 04:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXGZICg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 04:01:41 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:35763 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755423AbXGZIBi (ORCPT
+	Thu, 26 Jul 2007 04:02:36 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:11377 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756757AbXGZICb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 04:01:38 -0400
-Message-Id: <1185436893.18946.1202118935@webmail.messagingengine.com>
-X-Sasl-Enc: NE5DMeYdf0JG4bM6yCrvf6eZ7316RRwYVv14rUUFdrV0 1185436893
-From: "Robert Mueller" <robm@fastmail.fm>
-To: linux-kernel@vger.kernel.org, reiserfs-devel@vger.kernel.org
-Cc: "Bron Gondwana" <brong@fastmail.fm>, "Oleg Drokin" <green@linuxhacker.ru>,
-       "Chris Mason" <mason@suse.com>
-Content-Disposition: inline
+	Thu, 26 Jul 2007 04:02:31 -0400
+X-IronPort-AV: i="4.16,583,1175486400"; 
+   d="scan'208"; a="35707413:sNHT38065832"
+Subject: [GIT PULL try#3] Blackfin update
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Perches <joe@perches.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="ISO-8859-1"
-MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-Subject: Memory leaking behaviour in 2.6.20.11, reiserfs related?
-Reply-To: robm@fastmail.fm
-Date: Thu, 26 Jul 2007 18:01:33 +1000
+Organization: Analog Devices, Inc.
+Date: Thu, 26 Jul 2007 16:09:36 +0800
+Message-Id: <1185437376.23987.34.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+X-OriginalArrivalTime: 26 Jul 2007 08:02:25.0766 (UTC) FILETIME=[4DCDE060:01C7CF5B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi Linus,
 
-We've been seeing some kernel memory leak behaviour in 2.6.20.11. After 
-running for just over a week, one of our machines was showing almost all 
-it's memory being used, even though we'd exited all the main services on
-the machine. The machine is a newish IBM x3550 with a Xeon 5130 processor
-and 12G of RAM. We're using a x86 kernel with PAE rather than x86_64, but 
-haven't had a problem like this on other machines, though they are 8G and 
-Prescott based. It's being used for cyrus IMAP serving and has about 35 
-reiserfs volumes mounted on it. The result after a week is that memory looks 
-like this. 
+Please pull from 'from-svn' branch of
 
-[root@imap10 ~]$ free
-             total       used       free     shared    buffers     cached
-Mem:      12466708   11690804     775904          0     560060     714292
--/+ buffers/cache:   10416452    2050256
-Swap:      2048276      49952    1998324
+master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git from-svn
 
-But a complete process list only shows.
+to receive the following updates:
 
-[root@imap10 ~]$ ps auxw
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-root         1  0.0  0.0   1948   640 ?        Ss   Jul17   0:01 init [2]
-root         2  0.0  0.0      0     0 ?        S    Jul17   0:03 [migration/0]
-root         3  0.0  0.0      0     0 ?        SN   Jul17   0:00 [ksoftirqd/0]
-root         4  0.0  0.0      0     0 ?        S    Jul17   0:00 [watchdog/0]
-root         5  0.0  0.0      0     0 ?        S    Jul17   0:01 [migration/1]
-root         6  0.0  0.0      0     0 ?        SN   Jul17   0:00 [ksoftirqd/1]
-root         7  0.0  0.0      0     0 ?        S    Jul17   0:00 [watchdog/1]
-root         8  0.0  0.0      0     0 ?        S<   Jul17   0:00 [events/0]
-root         9  0.0  0.0      0     0 ?        S<   Jul17   0:00 [events/1]
-root        10  0.0  0.0      0     0 ?        S<   Jul17   0:00 [khelper]
-root        11  0.0  0.0      0     0 ?        S<   Jul17   0:00 [kthread]
-root       117  0.0  0.0      0     0 ?        S<   Jul17   0:00 [kblockd/0]
-root       118  0.0  0.0      0     0 ?        S<   Jul17   0:00 [kblockd/1]
-root       119  0.0  0.0      0     0 ?        S<   Jul17   0:00 [kacpid]
-root       228  0.0  0.0      0     0 ?        S<   Jul17   0:00 [ata/0]
-root       229  0.0  0.0      0     0 ?        S<   Jul17   0:00 [ata/1]
-root       230  0.0  0.0      0     0 ?        S<   Jul17   0:00 [ata_aux]
-root       231  0.0  0.0      0     0 ?        S<   Jul17   0:00 [kseriod]
-root       261  0.0  0.0      0     0 ?        S<   Jul17   6:26 [kswapd0]
-root       262  0.0  0.0      0     0 ?        S<   Jul17   0:00 [aio/0]
-root       263  0.0  0.0      0     0 ?        S<   Jul17   0:00 [aio/1]
-root       913  0.0  0.0      0     0 ?        S<   Jul17   0:00 [scsi_eh_0]
-root       914  0.0  0.0      0     0 ?        S<   Jul17   0:00 [aacraid]
-root       937  0.0  0.0      0     0 ?        S<   Jul17   0:00 [scsi_eh_1]
-root      1035  0.0  0.0      0     0 ?        S<   Jul17   0:00 [scsi_eh_2]
-root      1131  0.0  0.0      0     0 ?        S<   Jul17   0:00 [kpsmoused]
-root      1134  0.0  0.0      0     0 ?        S    Jul17   0:00 [kirqd]
-root      2326  0.0  0.0      0     0 ?        S<   Jul17   0:00 [ksuspend_usbd]
-root      2329  0.0  0.0      0     0 ?        S<   Jul17   0:00 [khubd]
-root      2686  0.0  0.0      0     0 ?        S<   Jul17   0:03 [kjournald]
-root      2864  0.0  0.0   2180   612 ?        S<s  Jul17   0:00 udevd --daemon
-root      4573  0.0  0.0      0     0 ?        S<   Jul17   0:54 [reiserfs/0]
-root      4574  0.0  0.0      0     0 ?        S<   Jul17   0:46 [reiserfs/1]
-daemon    5023  0.0  0.0   1684   364 ?        Ss   Jul17   0:00 /sbin/portmap
-root      5140  0.0  0.0   1628   628 ?        Ss   Jul17   4:49 /sbin/syslogd
-root      5146  0.0  0.0   1580   396 ?        Ss   Jul17   0:00 /sbin/klogd -x
-111       5168  0.0  0.0   2248   816 ?        Ss   Jul17   0:00 /usr/bin/dbus-daemon --system
-112       5176  0.0  0.0  10432  8868 ?        Ss   Jul17   0:00 /usr/sbin/hald
-root      5177  0.0  0.0   2888  1036 ?        S    Jul17   0:00 hald-runner
-112       5183  0.0  0.0   2020   844 ?        S    Jul17   0:00 hald-addon-acpi: listening on acpi kernel interface /proc/acpi/event
-root      5215  0.0  0.0   1812   624 ?        S    Jul17   0:00 hald-addon-storage: polling /dev/sda
-root      5221  0.0  0.0   1812   620 ?        S    Jul17   0:08 hald-addon-storage: polling /dev/hda
-root      5229  0.0  0.0   1572   384 ?        Ss   Jul17   0:00 /usr/sbin/irqbalance
-root      5244  0.0  0.0   4928  1112 ?        Ss   Jul17   0:00 /usr/sbin/sshd
-statd     5280  0.0  0.0   1760   728 ?        Ss   Jul17   0:00 /sbin/rpc.statd
-ntp       5293  0.0  0.0   4028  1220 ?        Ss   Jul17   0:00 /usr/sbin/ntpd -p /var/run/ntpd.pid -u 110:109 -g
-root      5362  0.0  0.0   6692  4948 ?        Ss   Jul17   0:02 /usr/sbin/munin-node
-root      5402  0.0  0.0   1576   496 tty1     Ss+  Jul17   0:00 /sbin/getty 38400 tty1
-root      5404  0.0  0.0   1576   496 tty2     Ss+  Jul17   0:00 /sbin/getty 38400 tty2
-root      5405  0.0  0.0   1576   496 tty3     Ss+  Jul17   0:00 /sbin/getty 38400 tty3
-root      5406  0.0  0.0   1572   492 tty4     Ss+  Jul17   0:00 /sbin/getty 38400 tty4
-root      5408  0.0  0.0   1576   496 tty5     Ss+  Jul17   0:00 /sbin/getty 38400 tty5
-root      5410  0.0  0.0   1572   492 tty6     Ss+  Jul17   0:00 /sbin/getty 38400 tty6
-root      5411  0.0  0.0   2640  1272 ?        Ss   Jul17   0:00 /bin/sh /command/svscanboot
-root      5436  0.0  0.0   1596   356 ?        S    Jul17   0:00 svscan /service
-root      5438  0.0  0.0   1420   248 ?        S    Jul17   0:00 readproctitle service errors: .....................................................................
-root      5449  0.0  0.0   1432   300 ?        S    Jul17   0:00 supervise dnscache
-root      5450  0.0  0.0   1432   304 ?        S    Jul17   0:00 supervise log
-dnslog    5456  0.0  0.0   1576   368 ?        S    Jul17   0:07 multilog t ./main
-root      6189  0.0  0.0   1432   304 ?        S    Jul17   0:00 supervise backupcyrusd
-root      6223  0.0  0.0   1428   300 ?        S    Jul17   0:00 supervise popschedule
-root      6243  0.0  0.0   1428   300 ?        S    Jul17   0:00 supervise postfixpolicyproxy
-root      6252  0.0  0.0   1432   304 ?        S    Jul17   0:00 supervise rated
-root      6288  0.0  0.0   1428   300 ?        S    Jul17   0:00 supervise vfsd
-root      6323  0.0  0.0   1428   300 ?        S    Jul17   0:00 supervise vfsproxy
-root      6407  0.0  0.0   1428   300 ?        S    Jul17   0:00 supervise notifyd
-root     13463  0.0  0.0   2224   896 pts/3    R+   02:40   0:00 ps auxw
-root     26582  0.0  0.0   7484  2148 ?        Ss   02:31   0:00 sshd: root@pts/0
-root     26586  0.0  0.0   2840  1688 pts/0    Ss+  02:31   0:00 -bash
-root     29155  0.0  0.0      0     0 ?        S    Jul25   0:18 [pdflush]
-root     29700  0.0  0.0   7640  2164 ?        Ss   02:32   0:00 sshd: root@pts/1
-root     29704  0.0  0.0   2840  1692 pts/1    Ss+  02:32   0:00 -bash
-root     30012  0.0  0.0   7488  2152 ?        Ss   02:32   0:00 sshd: root@pts/3
-root     30016  0.0  0.0   2836  1656 pts/3    Ss   02:32   0:00 -bash
-root     30402  0.1  0.0      0     0 ?        S    Jul25   1:15 [pdflush]
+ arch/blackfin/Makefile                           |    4 ++
+ arch/blackfin/kernel/dma-mapping.c               |    3 +-
+ arch/blackfin/kernel/setup.c                     |    5 +--
+ arch/blackfin/kernel/traps.c                     |    2 +-
+ arch/blackfin/kernel/vmlinux.lds.S               |   16 +++++---
+ arch/blackfin/mach-bf561/head.S                  |   10 ++--
+ arch/blackfin/mach-common/cacheinit.S            |    3 +
+ arch/blackfin/mach-common/ints-priority-dc.c     |   39 ++++++++++--------
+ arch/blackfin/mach-common/ints-priority-sc.c     |   48 +++++++++++++---------
+ drivers/i2c/busses/Kconfig                       |    4 +-
+ drivers/input/serio/Kconfig                      |    2 +-
+ drivers/net/bfin_mac.c                           |    6 ++-
+ drivers/rtc/rtc-bfin.c                           |    2 +-
+ include/asm-blackfin/bfin-global.h               |    1 +
+ include/asm-blackfin/mach-bf548/cdefBF54x_base.h |   33 +++++++++++++++
+ include/asm-blackfin/mach-bf548/irq.h            |    1 +
+ include/asm-blackfin/mach-bf561/cdefBF561.h      |    6 +++
+ include/asm-blackfin/mach-bf561/defBF561.h       |    4 ++
+ include/asm-blackfin/thread_info.h               |   12 +++---
+ 19 files changed, 136 insertions(+), 65 deletions(-)
 
-This is pretty much a vanilla kernel, with just one patch to work around
-a deadlock problem in the reiserfs_file_write code that I think isn't
-fixed.
+Bernd Schmidt (3):
+      Blackfin arch: Load P0 before storing through it
+      Blackfin arch: fix bug which unaligns the init thread's stack and causes the current macro to fail.
+      Blackfin arch: Initialize the exception vectors early in the boot process
 
-http://lists.linuxcoding.com/kernel/2006-q1/msg32508.html
+Bryan Wu (2):
+      Blackfin arch: fix a compiling warning about dma-mapping
+      Blackfin arch: add BF54x I2C/TWI TWI0 driver support
 
-The patch basically bypasses all the code to use do_sync_write. We haven't
-noticed it as a performance issue. I haven't tested if the deadlock
-problem has been fixed since 2.6.16, but with this patch there definitely
-isn't a problem, so we haven't been particularly keen to find out.
+Michael Hennerich (3):
+      Blackfin arch: add error message when IRQ no available
+      Blackfin Ethernet MAC driver: fix bug Report returned -ENOMEM upwards (in case L1/uncached memory alloc fails)
+      Input Serio: Blackfin doesnt support I8042 - make sure it doesnt get selected
 
---- linux-2.6.19.2/fs/reiserfs/file.c   2006-11-29 16:57:37.000000000 -0500
-+++ linux-2.6.19.2-syncwrite/fs/reiserfs/file.c 2007-02-02 01:01:36.000000000 -0500
-@@ -1358,6 +1358,8 @@
-        if (file->f_flags & O_DIRECT)
-                return do_sync_write(file, buf, count, ppos);
+Mike Frysinger (5):
+      Blackfin arch: setup aliases for some core Core A MMRs
+      Blackfin arch: use bfin_read_SWRST() now that BF561 provides it
+      Blackfin arch: add selections for BF544 and BF542
+      Blackfin arch: switch to using proper defines this time THREAD_SIZE and PAGE_SIZE instead of just PAGE_SIZE everywhere
+      Blackfin On-Chip RTC driver update for supporting BF54x
 
-+       return do_sync_write(file, buf, count, ppos);
+Sonic Zhang (1):
+      Blackfin arch: fix KGDB bug, dont forget last parameter.
+
+diff --git a/arch/blackfin/Makefile b/arch/blackfin/Makefile
+index 1b75672..2084166 100644
+--- a/arch/blackfin/Makefile
++++ b/arch/blackfin/Makefile
+@@ -24,6 +24,8 @@ machine-$(CONFIG_BF533) := bf533
+ machine-$(CONFIG_BF534) := bf537
+ machine-$(CONFIG_BF536) := bf537
+ machine-$(CONFIG_BF537) := bf537
++machine-$(CONFIG_BF542) := bf548
++machine-$(CONFIG_BF544) := bf548
+ machine-$(CONFIG_BF548) := bf548
+ machine-$(CONFIG_BF549) := bf548
+ machine-$(CONFIG_BF561) := bf561
+@@ -36,6 +38,8 @@ cpu-$(CONFIG_BF533) := bf533
+ cpu-$(CONFIG_BF534) := bf534
+ cpu-$(CONFIG_BF536) := bf536
+ cpu-$(CONFIG_BF537) := bf537
++cpu-$(CONFIG_BF542) := bf542
++cpu-$(CONFIG_BF544) := bf544
+ cpu-$(CONFIG_BF548) := bf548
+ cpu-$(CONFIG_BF549) := bf549
+ cpu-$(CONFIG_BF561) := bf561
+diff --git a/arch/blackfin/kernel/dma-mapping.c b/arch/blackfin/kernel/dma-mapping.c
+index ea48d5b..94d7b11 100644
+--- a/arch/blackfin/kernel/dma-mapping.c
++++ b/arch/blackfin/kernel/dma-mapping.c
+@@ -160,7 +160,8 @@ dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 	BUG_ON(direction == DMA_NONE);
+ 
+ 	for (i = 0; i < nents; i++, sg++) {
+-		sg->dma_address = page_address(sg->page) + sg->offset;
++		sg->dma_address = (dma_addr_t)(page_address(sg->page) +
++					sg->offset);
+ 
+ 		invalidate_dcache_range(sg_dma_address(sg),
+ 					sg_dma_address(sg) +
+diff --git a/arch/blackfin/kernel/setup.c b/arch/blackfin/kernel/setup.c
+index f59dcee..88f221b 100644
+--- a/arch/blackfin/kernel/setup.c
++++ b/arch/blackfin/kernel/setup.c
+@@ -402,11 +402,7 @@ void __init setup_arch(char **cmdline_p)
+ 	if (l1_length > L1_DATA_A_LENGTH)
+ 		panic("L1 data memory overflow\n");
+ 
+-#ifdef BF561_FAMILY
+-	_bfin_swrst = bfin_read_SICA_SWRST();
+-#else
+ 	_bfin_swrst = bfin_read_SWRST();
+-#endif
+ 
+ 	/* Copy atomic sequences to their fixed location, and sanity check that
+ 	   these locations are the ones that we advertise to userspace.  */
+@@ -429,6 +425,7 @@ void __init setup_arch(char **cmdline_p)
+ 	BUG_ON((char *)&atomic_xor32 - (char *)&fixed_code_start
+ 	       != ATOMIC_XOR32 - FIXED_CODE_START);
+ 
++	init_exception_vectors();
+ 	bf53x_cache_init();
+ }
+ 
+diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
+index 3909f5b..8766bd6 100644
+--- a/arch/blackfin/kernel/traps.c
++++ b/arch/blackfin/kernel/traps.c
+@@ -140,7 +140,7 @@ asmlinkage void trap_c(struct pt_regs *fp)
+ #ifdef CONFIG_KGDB
+ # define CHK_DEBUGGER_TRAP() \
+ 	do { \
+-		CHK_DEBUGGER(trapnr, sig, info.si_code, fp); \
++		CHK_DEBUGGER(trapnr, sig, info.si_code, fp, ); \
+ 	} while (0)
+ # define CHK_DEBUGGER_TRAP_MAYBE() \
+ 	do { \
+diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
+index d06f860..fb53780 100644
+--- a/arch/blackfin/kernel/vmlinux.lds.S
++++ b/arch/blackfin/kernel/vmlinux.lds.S
+@@ -32,6 +32,7 @@
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/mem_map.h>
+ #include <asm/page.h>
++#include <asm/thread_info.h>
+ 
+ OUTPUT_FORMAT("elf32-bfin")
+ ENTRY(__start)
+@@ -64,8 +65,12 @@ SECTIONS
+ 
+ 	.data :
+ 	{
+-		. = ALIGN(PAGE_SIZE);
++		/* make sure the init_task is aligned to the
++		 * kernel thread size so we can locate the kernel
++		 * stack properly and quickly.
++		 */
+ 		__sdata = .;
++		. = ALIGN(THREAD_SIZE);
+ 		*(.data.init_task)
+ 		DATA_DATA
+ 		CONSTRUCTORS
+@@ -73,14 +78,14 @@ SECTIONS
+ 		. = ALIGN(32);
+ 		*(.data.cacheline_aligned)
+ 
+-		. = ALIGN(PAGE_SIZE);
++		. = ALIGN(THREAD_SIZE);
+ 		__edata = .;
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	___init_begin = .;
+ 	.init :
+ 	{
++		. = ALIGN(PAGE_SIZE);
+ 		__sinittext = .;
+ 		*(.init.text)
+ 		__einittext = .;
+@@ -153,10 +158,9 @@ SECTIONS
+ 		__ebss_b_l1 = .;
+ 	}
+ 
+-	. = LOADADDR(.data_b_l1) + SIZEOF(.data_b_l1);
+-	___init_end = ALIGN(PAGE_SIZE);
++	___init_end = LOADADDR(.data_b_l1) + SIZEOF(.data_b_l1);
+ 
+-	.bss ___init_end :
++	.bss LOADADDR(.data_b_l1) + SIZEOF(.data_b_l1) :
+ 	{
+ 		. = ALIGN(4);
+ 		___bss_start = .;
+diff --git a/arch/blackfin/mach-bf561/head.S b/arch/blackfin/mach-bf561/head.S
+index 2f08bcb..38650a6 100644
+--- a/arch/blackfin/mach-bf561/head.S
++++ b/arch/blackfin/mach-bf561/head.S
+@@ -440,15 +440,15 @@ ENTRY(_bfin_reset)
+ 	SSYNC;
+ 
+ 	/* make sure SYSCR is set to use BMODE */
+-	P0.h = hi(SICA_SYSCR);
+-	P0.l = lo(SICA_SYSCR);
+-	R0.l = 0x20;
++	P0.h = hi(SYSCR);
++	P0.l = lo(SYSCR);
++	R0.l = 0x20;		/* on BF561, disable core b */
+ 	W[P0] = R0.l;
+ 	SSYNC;
+ 
+ 	/* issue a system soft reset */
+-	P1.h = hi(SICA_SWRST);
+-	P1.l = lo(SICA_SWRST);
++	P1.h = hi(SWRST);
++	P1.l = lo(SWRST);
+ 	R1.l = 0x0007;
+ 	W[P1] = R1;
+ 	SSYNC;
+diff --git a/arch/blackfin/mach-common/cacheinit.S b/arch/blackfin/mach-common/cacheinit.S
+index 9d47562..5be6b97 100644
+--- a/arch/blackfin/mach-common/cacheinit.S
++++ b/arch/blackfin/mach-common/cacheinit.S
+@@ -60,6 +60,9 @@ ENDPROC(_bfin_write_IMEM_CONTROL)
+ 
+ #if defined(CONFIG_BLKFIN_DCACHE)
+ ENTRY(_bfin_write_DMEM_CONTROL)
++	P0.l = (DMEM_CONTROL & 0xFFFF);
++	P0.h = (DMEM_CONTROL >> 16);
 +
-        if (unlikely((ssize_t) count < 0))
-                return -EINVAL;
-
-One other thing that is probably relevant, is that we saw some of these
-error messages in the dmesg log.
-
-BUG: at fs/reiserfs/inode.c:2868 reiserfs_releasepage()
- [<c0199ecb>] reiserfs_releasepage+0xa3/0xa8
- [<c0199e28>] reiserfs_releasepage+0x0/0xa8
- [<c013c8e9>] try_to_release_page+0x2c/0x40
- [<c0141386>] pagevec_strip+0x52/0x54
- [<c0141fa0>] shrink_active_list+0x2c0/0x3d1
- [<c0142b33>] shrink_zone+0xd8/0xf5
- [<c014307c>] kswapd+0x322/0x423
- [<c012b4e4>] autoremove_wake_function+0x0/0x37
- [<c0142d5a>] kswapd+0x0/0x423
- [<c012b362>] kthread+0xae/0xd3
- [<c012b2b4>] kthread+0x0/0xd3
- [<c010383b>] kernel_thread_helper+0x7/0x1c
- =======================
-
-[root@imap10 proc]$ dmesg | grep fs/reiserfs/inode.c | wc -l
-38
-
-All of them show basically the same trace as above.
-
-There's a dump of the kernel config available here:
-http://robm.fastmail.fm/kernel/2007-07-26/config.txt
-
-Here's a dump of just about everything from /proc that I thought might be useful
-
-[root@imap10 ~]$ cat /proc/meminfo
-MemTotal:     12466708 kB
-MemFree:        739752 kB
-Buffers:        560436 kB
-Cached:         754096 kB
-SwapCached:       4540 kB
-Active:        9878988 kB
-Inactive:      1594924 kB
-HighTotal:    11663148 kB
-HighFree:       725192 kB
-LowTotal:       803560 kB
-LowFree:         14560 kB
-SwapTotal:     2048276 kB
-SwapFree:      1998324 kB
-Dirty:          130036 kB
-Writeback:           0 kB
-AnonPages:       12828 kB
-Mapped:           4396 kB
-Slab:           223012 kB
-SReclaimable:   192724 kB
-SUnreclaim:      30288 kB
-PageTables:        636 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   8281628 kB
-Committed_AS:    79208 kB
-VmallocTotal:   118776 kB
-VmallocUsed:     24536 kB
-VmallocChunk:    93532 kB
-
-[root@imap10 ~]$ cat /proc/slabinfo
-slabinfo - version: 2.1
-# name            <active_objs> <num_objs> <objsize> <objperslab> <pagesperslab> : tunables <limit> <batchcount> <sharedfactor> : slabdata <active_slabs> <num_slabs> <sharedavail>
-ip_fib_alias           8    113     32  113    1 : tunables  120   60    8 : slabdata      1      1      0
-ip_fib_hash            8    113     32  113    1 : tunables  120   60    8 : slabdata      1      1      0
-jbd_4k                 0      0   4096    1    1 : tunables   24   12    8 : slabdata      0      0      0
-uhci_urb_priv          0      0     28  127    1 : tunables  120   60    8 : slabdata      0      0      0
-rpc_buffers            8      8   2048    2    1 : tunables   24   12    8 : slabdata      4      4      0
-rpc_tasks              8     20    192   20    1 : tunables  120   60    8 : slabdata      1      1      0
-rpc_inode_cache        0      0    448    9    1 : tunables   54   27    8 : slabdata      0      0      0
-UNIX                  20     36    448    9    1 : tunables   54   27    8 : slabdata      4      4      0
-ip_conntrack_expect      0      0     96   40    1 : tunables  120   60    8 : slabdata      0      0      0
-ip_conntrack          65    684    212   18    1 : tunables  120   60    8 : slabdata     38     38      0
-xt_hashlimit           0      0     64   59    1 : tunables  120   60    8 : slabdata      0      0      0
-flow_cache             0      0    128   30    1 : tunables  120   60    8 : slabdata      0      0      0
-aic94xx_ascb           0      0    128   30    1 : tunables  120   60    8 : slabdata      0      0      0
-aic94xx_dma_token      0      0     16  203    1 : tunables  120   60    8 : slabdata      0      0      0
-scsi_cmd_cache        45     96    320   12    1 : tunables   54   27    8 : slabdata      8      8      6
-sas_task               0      0    320   12    1 : tunables   54   27    8 : slabdata      0      0      0
-cfq_ioc_pool           0      0     92   42    1 : tunables  120   60    8 : slabdata      0      0      0
-cfq_pool               0      0     96   40    1 : tunables  120   60    8 : slabdata      0      0      0
-mqueue_inode_cache      1      7    576    7    1 : tunables   54   27    8 : slabdata      1      1      0
-udf_inode_cache        0      0    400   10    1 : tunables   54   27    8 : slabdata      0      0      0
-nfs_write_data        36     36    448    9    1 : tunables   54   27    8 : slabdata      4      4      0
-nfs_read_data         32     36    448    9    1 : tunables   54   27    8 : slabdata      4      4      0
-nfs_inode_cache        0      0    604    6    1 : tunables   54   27    8 : slabdata      0      0      0
-nfs_page               0      0     64   59    1 : tunables  120   60    8 : slabdata      0      0      0
-isofs_inode_cache      0      0    372   10    1 : tunables   54   27    8 : slabdata      0      0      0
-ext2_inode_cache       0      0    472    8    1 : tunables   54   27    8 : slabdata      0      0      0
-ext2_xattr             0      0     48   78    1 : tunables  120   60    8 : slabdata      0      0      0
-journal_handle         3    169     20  169    1 : tunables  120   60    8 : slabdata      1      1      0
-journal_head         323    720     52   72    1 : tunables  120   60    8 : slabdata      9     10    228
-revoke_table           2    254     12  254    1 : tunables  120   60    8 : slabdata      1      1      0
-revoke_record          0    203     16  203    1 : tunables  120   60    8 : slabdata      0      1      0
-ext3_inode_cache    1127   1296    500    8    1 : tunables   54   27    8 : slabdata    162    162      0
-ext3_xattr             0      0     48   78    1 : tunables  120   60    8 : slabdata      0      0      0
-reiser_inode_cache  21496  40833    428    9    1 : tunables   54   27    8 : slabdata   4537   4537      0
-dnotify_cache          1    169     20  169    1 : tunables  120   60    8 : slabdata      1      1      0
-eventpoll_pwq          0      0     36  101    1 : tunables  120   60    8 : slabdata      0      0      0
-eventpoll_epi          0      0    128   30    1 : tunables  120   60    8 : slabdata      0      0      0
-inotify_event_cache      0      0     28  127    1 : tunables  120   60    8 : slabdata      0      0      0
-inotify_watch_cache      1     92     40   92    1 : tunables  120   60    8 : slabdata      1      1      0
-kioctx                 0      0    192   20    1 : tunables  120   60    8 : slabdata      0      0      0
-kiocb                  0      0    192   20    1 : tunables  120   60    8 : slabdata      0      0      0
-fasync_cache           0      0     16  203    1 : tunables  120   60    8 : slabdata      0      0      0
-shmem_inode_cache   1587   1701    440    9    1 : tunables   54   27    8 : slabdata    189    189      0
-posix_timers_cache      0      0     88   44    1 : tunables  120   60    8 : slabdata      0      0      0
-uid_cache              5     59     64   59    1 : tunables  120   60    8 : slabdata      1      1      0
-ip_mrt_cache           0      0    128   30    1 : tunables  120   60    8 : slabdata      0      0      0
-UDP-Lite               0      0    512    7    1 : tunables   54   27    8 : slabdata      0      0      0
-tcp_bind_bucket       11    203     16  203    1 : tunables  120   60    8 : slabdata      1      1      0
-inet_peer_cache        0      0     64   59    1 : tunables  120   60    8 : slabdata      0      0      0
-secpath_cache          0      0     32  113    1 : tunables  120   60    8 : slabdata      0      0      0
-xfrm_dst_cache         0      0    320   12    1 : tunables   54   27    8 : slabdata      0      0      0
-ip_dst_cache          33     90    256   15    1 : tunables  120   60    8 : slabdata      6      6      0
-arp_cache              7     80    192   20    1 : tunables  120   60    8 : slabdata      4      4      0
-RAW                    3      7    512    7    1 : tunables   54   27    8 : slabdata      1      1      0
-UDP                    3      7    512    7    1 : tunables   54   27    8 : slabdata      1      1      0
-tw_sock_TCP            8     30    128   30    1 : tunables  120   60    8 : slabdata      1      1      0
-request_sock_TCP       0      0     64   59    1 : tunables  120   60    8 : slabdata      0      0      0
-TCP                    6     28   1152    7    2 : tunables   24   12    8 : slabdata      4      4      0
-sgpool-128            32     33   2560    3    2 : tunables   24   12    8 : slabdata     11     11      0
-sgpool-64             34     42   1280    3    1 : tunables   24   12    8 : slabdata     13     14      1
-sgpool-32             32     36    640    6    1 : tunables   54   27    8 : slabdata      6      6      0
-sgpool-16             33     36    320   12    1 : tunables   54   27    8 : slabdata      3      3      0
-sgpool-8              38     80    192   20    1 : tunables  120   60    8 : slabdata      4      4      0
-scsi_io_context        0      0    104   37    1 : tunables  120   60    8 : slabdata      0      0      0
-blkdev_ioc             6    127     28  127    1 : tunables  120   60    8 : slabdata      1      1      0
-blkdev_queue          18     20    952    4    1 : tunables   54   27    8 : slabdata      5      5      0
-blkdev_requests      153    294    184   21    1 : tunables  120   60    8 : slabdata     14     14      0
-biovec-256             7      8   3072    2    2 : tunables   24   12    8 : slabdata      4      4      0
-biovec-128             7     10   1536    5    2 : tunables   24   12    8 : slabdata      2      2      0
-biovec-64              8     15    768    5    1 : tunables   54   27    8 : slabdata      3      3      0
-biovec-16              8     20    192   20    1 : tunables  120   60    8 : slabdata      1      1      0
-biovec-4               9     59     64   59    1 : tunables  120   60    8 : slabdata      1      1      0
-biovec-1             305   1015     16  203    1 : tunables  120   60    8 : slabdata      5      5    228
-bio                  544    780    128   30    1 : tunables  120   60    8 : slabdata     24     26    228
-sock_inode_cache      40     80    384   10    1 : tunables   54   27    8 : slabdata      8      8      0
-skbuff_fclone_cache      2     24    320   12    1 : tunables   54   27    8 : slabdata      2      2      0
-skbuff_head_cache    338   1100    192   20    1 : tunables  120   60    8 : slabdata     55     55      0
-file_lock_cache       15     80     96   40    1 : tunables  120   60    8 : slabdata      2      2      0
-Acpi-Operand         873   1012     40   92    1 : tunables  120   60    8 : slabdata     11     11      0
-Acpi-ParseExt          0      0     44   84    1 : tunables  120   60    8 : slabdata      0      0      0
-Acpi-Parse             0      0     28  127    1 : tunables  120   60    8 : slabdata      0      0      0
-Acpi-State             0      0     44   84    1 : tunables  120   60    8 : slabdata      0      0      0
-Acpi-Namespace       275    338     20  169    1 : tunables  120   60    8 : slabdata      2      2      0
-proc_inode_cache     410   1133    360   11    1 : tunables   54   27    8 : slabdata    103    103      0
-sigqueue               2     27    144   27    1 : tunables  120   60    8 : slabdata      1      1      0
-radix_tree_node    31584  49751    288   13    1 : tunables   54   27    8 : slabdata   3827   3827      0
-bdev_cache            47     63    512    7    1 : tunables   54   27    8 : slabdata      9      9      0
-sysfs_dir_cache     7146   7224     44   84    1 : tunables  120   60    8 : slabdata     86     86      0
-mnt_cache             55     60    128   30    1 : tunables  120   60    8 : slabdata      2      2      0
-inode_cache         1976   2145    344   11    1 : tunables   54   27    8 : slabdata    195    195      0
-dentry_cache       21496  52925    132   29    1 : tunables  120   60    8 : slabdata   1825   1825      0
-filp                 578   3460    192   20    1 : tunables  120   60    8 : slabdata    173    173      7
-names_cache           13     18   4096    1    1 : tunables   24   12    8 : slabdata     13     18      0
-idr_layer_cache      123    145    136   29    1 : tunables  120   60    8 : slabdata      5      5      0
-buffer_head       2744886 2769914     56   67    1 : tunables  120   60    8 : slabdata  41342  41342      0
-mm_struct             57    135    448    9    1 : tunables   54   27    8 : slabdata     15     15      0
-vm_area_struct       962   7832     88   44    1 : tunables  120   60    8 : slabdata    178    178      0
-fs_cache              57    354     64   59    1 : tunables  120   60    8 : slabdata      6      6      0
-files_cache           57    190    384   10    1 : tunables   54   27    8 : slabdata     19     19      0
-signal_cache          91    210    384   10    1 : tunables   54   27    8 : slabdata     21     21      0
-sighand_cache         85    111   1344    3    1 : tunables   24   12    8 : slabdata     37     37      0
-task_struct           87    135   1312    3    1 : tunables   24   12    8 : slabdata     45     45      0
-anon_vma             568  11430     12  254    1 : tunables  120   60    8 : slabdata     45     45      0
-pgd                   43    678     32  113    1 : tunables  120   60    8 : slabdata      6      6      0
-pmd                  136    140   4096    1    1 : tunables   24   12    8 : slabdata    136    140      0
-pid                   91    808     36  101    1 : tunables  120   60    8 : slabdata      8      8      0
-size-131072(DMA)       0      0 131072    1   32 : tunables    8    4    0 : slabdata      0      0      0
-size-131072            0      0 131072    1   32 : tunables    8    4    0 : slabdata      0      0      0
-size-65536(DMA)        0      0  65536    1   16 : tunables    8    4    0 : slabdata      0      0      0
-size-65536             5      5  65536    1   16 : tunables    8    4    0 : slabdata      5      5      0
-size-32768(DMA)        0      0  32768    1    8 : tunables    8    4    0 : slabdata      0      0      0
-size-32768             0      0  32768    1    8 : tunables    8    4    0 : slabdata      0      0      0
-size-16384(DMA)        0      0  16384    1    4 : tunables    8    4    0 : slabdata      0      0      0
-size-16384             2      2  16384    1    4 : tunables    8    4    0 : slabdata      2      2      0
-size-8192(DMA)         0      0   8192    1    2 : tunables    8    4    0 : slabdata      0      0      0
-size-8192             82     82   8192    1    2 : tunables    8    4    0 : slabdata     82     82      0
-size-4096(DMA)         0      0   4096    1    1 : tunables   24   12    8 : slabdata      0      0      0
-size-4096            861    861   4096    1    1 : tunables   24   12    8 : slabdata    861    861      0
-size-2048(DMA)         0      0   2048    2    1 : tunables   24   12    8 : slabdata      0      0      0
-size-2048            385    490   2048    2    1 : tunables   24   12    8 : slabdata    245    245      0
-size-1024(DMA)         0      0   1024    4    1 : tunables   54   27    8 : slabdata      0      0      0
-size-1024            231    252   1024    4    1 : tunables   54   27    8 : slabdata     63     63      0
-size-512(DMA)          0      0    512    8    1 : tunables   54   27    8 : slabdata      0      0      0
-size-512             974   1072    512    8    1 : tunables   54   27    8 : slabdata    134    134      0
-size-256(DMA)          0      0    256   15    1 : tunables  120   60    8 : slabdata      0      0      0
-size-256             312    390    256   15    1 : tunables  120   60    8 : slabdata     26     26      0
-size-128(DMA)          0      0    128   30    1 : tunables  120   60    8 : slabdata      0      0      0
-size-128            9025  19890    128   30    1 : tunables  120   60    8 : slabdata    663    663      0
-size-64(DMA)           0      0     64   59    1 : tunables  120   60    8 : slabdata      0      0      0
-size-32(DMA)           0      0     32  113    1 : tunables  120   60    8 : slabdata      0      0      0
-size-64             2326   3776     64   59    1 : tunables  120   60    8 : slabdata     64     64      0
-size-32             6302  10509     32  113    1 : tunables  120   60    8 : slabdata     93     93      0
-kmem_cache           132    150    128   30    1 : tunables  120   60    8 : slabdata      5      5      0
-
-[root@imap10 proc]$ cat cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Xeon(R) CPU            5130  @ 2.00GHz
-stepping        : 6
-cpu MHz         : 2000.233
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips        : 4002.50
-clflush size    : 64
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Xeon(R) CPU            5130  @ 2.00GHz
-stepping        : 6
-cpu MHz         : 2000.233
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 1
-cpu cores       : 2
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe nx lm constant_tsc pni monitor ds_cpl vmx tm2 ssse3 cx16 xtpr dca lahf_lm
-bogomips        : 4000.20
-clflush size    : 64
-
-
-[root@imap10 proc]$ cat buddyinfo
-Node 0, zone      DMA     56      7      4      1      0      1      1      0      1      1      0
-Node 0, zone   Normal   1336    256     49     10      1      1      0      0      0      1      0
-Node 0, zone  HighMem  99524  12603   1252    537    330    190    109     48     25      9     11
-
-
-[root@imap10 proc]$ cat modules
-i2c_i801 10124 0 - Live 0xf8836000
-i2c_core 19584 1 i2c_i801, Live 0xf8863000
-ehci_hcd 27276 0 - Live 0xf885b000
-uhci_hcd 21136 0 - Live 0xf8854000
-usbcore 108680 3 ehci_hcd,uhci_hcd, Live 0xf88d1000
-
-[root@imap10 proc]$ cat zoneinfo
-Node 0, zone      DMA
-  pages free     958
-        min      17
-        low      21
-        high     25
-        active   61
-        inactive 273
-        scanned  0 (a: 15 i: 11)
-        spanned  4096
-        present  4064
-    nr_anon_pages 0
-    nr_mapped    1
-    nr_file_pages 334
-    nr_slab_reclaimable 1086
-    nr_slab_unreclaimable 87
-    nr_page_table_pages 0
-    nr_dirty     31
-    nr_writeback 0
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 602820
-        protection: (0, 873, 13192)
-  pagesets
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         0
-Node 0, zone   Normal
-  pages free     2696
-        min      936
-        low      1170
-        high     1404
-        active   94885
-        inactive 44918
-        scanned  0 (a: 0 i: 0)
-        spanned  225280
-        present  223520
-    nr_anon_pages 0
-    nr_mapped    0
-    nr_file_pages 139803
-    nr_slab_reclaimable 47095
-    nr_slab_unreclaimable 7339
-    nr_page_table_pages 0
-    nr_dirty     14349
-    nr_writeback 0
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 13211869
-        protection: (0, 0, 98552)
-  pagesets
-    cpu: 0 pcp: 0
-              count: 144
-              high:  186
-              batch: 31
-    cpu: 0 pcp: 1
-              count: 47
-              high:  62
-              batch: 15
-  vm stats threshold: 16
-    cpu: 1 pcp: 0
-              count: 150
-              high:  186
-              batch: 31
-    cpu: 1 pcp: 1
-              count: 60
-              high:  62
-              batch: 15
-  vm stats threshold: 16
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         4096
-Node 0, zone  HighMem
-  pages free     180803
-        min      128
-        low      3432
-        high     6737
-        active   2380717
-        inactive 348144
-        scanned  0 (a: 0 i: 0)
-        spanned  3178496
-        present  3153664
-    nr_anon_pages 3210
-    nr_mapped    1080
-    nr_file_pages 190150
-    nr_slab_reclaimable 0
-    nr_slab_unreclaimable 0
-    nr_page_table_pages 151
-    nr_dirty     6
-    nr_writeback 0
-    nr_unstable  0
-    nr_bounce    0
-    nr_vmscan_write 107132
-        protection: (0, 0, 0)
-  pagesets
-    cpu: 0 pcp: 0
-              count: 114
-              high:  186
-              batch: 31
-    cpu: 0 pcp: 1
-              count: 6
-              high:  62
-              batch: 15
-  vm stats threshold: 32
-    cpu: 1 pcp: 0
-              count: 113
-              high:  186
-              batch: 31
-    cpu: 1 pcp: 1
-              count: 3
-              high:  62
-              batch: 15
-  vm stats threshold: 32
-  all_unreclaimable: 0
-  prev_priority:     12
-  start_pfn:         229376
-
-
-[root@imap10 proc]$ cat vmstat
-nr_anon_pages 3210
-nr_mapped 1081
-nr_file_pages 330287
-nr_slab_reclaimable 48181
-nr_slab_unreclaimable 7424
-nr_page_table_pages 151
-nr_dirty 14386
-nr_writeback 0
-nr_unstable 0
-nr_bounce 0
-nr_vmscan_write 13921821
-pgpgin 917158683
-pgpgout 290273636
-pswpin 1761
-pswpout 52912
-pgalloc_dma 5981840
-pgalloc_normal 349519350
-pgalloc_high 1144800149
-pgfree 1500486435
-pgactivate 326397897
-pgdeactivate 185125484
-pgfault 2978836583
-pgmajfault 19685544
-pgrefill_dma 3247880
-pgrefill_normal 148534853
-pgrefill_high 34856904
-pgsteal_dma 2619431
-pgsteal_normal 164677731
-pgsteal_high 7200844
-pgscan_kswapd_dma 4957748
-pgscan_kswapd_normal 196582656
-pgscan_kswapd_high 7473632
-pgscan_direct_dma 14745
-pgscan_direct_normal 644320
-pgscan_direct_high 0
-pginodesteal 39523
-slabs_scanned 172962176
-kswapd_steal 174009805
-kswapd_inodesteal 296683999
-pageoutrun 3316600
-allocstall 7437
-pgrotated 1675389
-
-I tried doing a block_dump and a swapoff to see if it made any difference as well:
-
-[root@imap10 vm]$ free
-             total       used       free     shared    buffers     cached
-Mem:      12466708   11728876     737832          0     560548     756064
--/+ buffers/cache:   10412264    2054444
-Swap:      2048276      49952    1998324
-
-[root@imap10 vm]$ echo 1 > block_dump
-[root@imap10 vm]$ free
-             total       used       free     shared    buffers     cached
-Mem:      12466708   11728876     737832          0     560548     756064
--/+ buffers/cache:   10412264    2054444
-Swap:      2048276      49952    1998324
-
-[root@imap10 vm]$ swapoff -a
-[root@imap10 vm]$ free
-             total       used       free     shared    buffers     cached
-Mem:      12466708   11774016     692692          0     560572     806912
--/+ buffers/cache:   10406532    2060176
-Swap:            0          0          0
-
-After reboot
-
-[root@imap10 ~]$ free
-             total       used       free     shared    buffers     cached
-Mem:      12466708     180848   12285860          0       8464      16648
--/+ buffers/cache:     155736   12310972
-Swap:      2048276          0    2048276
-
-[root@imap10 ~]$ ps auxw
-USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
-root         1  0.3  0.0   1944   636 ?        Ss   02:51   0:01 init [2]
-root         2  0.0  0.0      0     0 ?        S    02:51   0:00 [migration/0]
-root         3  0.0  0.0      0     0 ?        SN   02:51   0:00 [ksoftirqd/0]
-root         4  0.0  0.0      0     0 ?        S    02:51   0:00 [watchdog/0]
-root         5  0.0  0.0      0     0 ?        S    02:51   0:00 [migration/1]
-root         6  0.0  0.0      0     0 ?        SN   02:51   0:00 [ksoftirqd/1]
-root         7  0.0  0.0      0     0 ?        S    02:51   0:00 [watchdog/1]
-root         8  0.0  0.0      0     0 ?        S<   02:51   0:00 [events/0]
-root         9  0.0  0.0      0     0 ?        S<   02:51   0:00 [events/1]
-root        10  0.0  0.0      0     0 ?        S<   02:51   0:00 [khelper]
-root        11  0.0  0.0      0     0 ?        S<   02:51   0:00 [kthread]
-root       117  0.0  0.0      0     0 ?        S<   02:51   0:00 [kblockd/0]
-root       118  0.0  0.0      0     0 ?        S<   02:51   0:00 [kblockd/1]
-root       119  0.0  0.0      0     0 ?        S<   02:51   0:00 [kacpid]
-root       228  0.0  0.0      0     0 ?        S<   02:51   0:00 [ata/0]
-root       229  0.0  0.0      0     0 ?        S<   02:51   0:00 [ata/1]
-root       230  0.0  0.0      0     0 ?        S<   02:51   0:00 [ata_aux]
-root       231  0.0  0.0      0     0 ?        S<   02:51   0:00 [kseriod]
-root       259  0.0  0.0      0     0 ?        S    02:51   0:00 [pdflush]
-root       260  0.0  0.0      0     0 ?        S    02:51   0:00 [pdflush]
-root       261  0.0  0.0      0     0 ?        S<   02:51   0:00 [kswapd0]
-root       262  0.0  0.0      0     0 ?        S<   02:51   0:00 [aio/0]
-root       263  0.0  0.0      0     0 ?        S<   02:51   0:00 [aio/1]
-root       913  0.0  0.0      0     0 ?        S<   02:52   0:00 [scsi_eh_0]
-root       914  0.0  0.0      0     0 ?        S<   02:52   0:00 [aacraid]
-root       937  0.0  0.0      0     0 ?        S<   02:52   0:00 [scsi_eh_1]
-root      1035  0.0  0.0      0     0 ?        S<   02:52   0:00 [scsi_eh_2]
-root      1147  0.0  0.0      0     0 ?        S<   02:52   0:00 [kpsmoused]
-root      1150  0.0  0.0      0     0 ?        S    02:52   0:00 [kirqd]
-root      2377  0.0  0.0      0     0 ?        S<   02:52   0:00 [ksuspend_usbd]
-root      2378  0.0  0.0      0     0 ?        S<   02:52   0:00 [khubd]
-root      2828  0.0  0.0      0     0 ?        S<   02:52   0:00 [kjournald]
-root      3006  0.0  0.0   2184   620 ?        S<s  02:52   0:00 udevd --daemon
-root      5385  0.0  0.0      0     0 ?        S<   02:55   0:00 [reiserfs/0]
-root      5386  0.0  0.0      0     0 ?        S<   02:55   0:00 [reiserfs/1]
-daemon    5644  0.0  0.0   1684   364 ?        Ss   02:55   0:00 /sbin/portmap
-root      5762  0.0  0.0   1628   612 ?        Ss   02:55   0:00 /sbin/syslogd
-root      5768  0.0  0.0   1576   380 ?        Ss   02:55   0:00 /sbin/klogd -x
-111       5790  0.0  0.0   2252   812 ?        Ss   02:55   0:00 /usr/bin/dbus-daemon --system
-112       5798  1.7  0.0  10596  8988 ?        Ss   02:56   0:00 /usr/sbin/hald
-root      5799  0.0  0.0   2892  1036 ?        S    02:56   0:00 hald-runner
-112       5805  0.0  0.0   2016   840 ?        S    02:56   0:00 hald-addon-acpi: listening on acpi kernel interface /proc/acpi/event
-root      5853  0.0  0.0   1808   624 ?        S    02:56   0:00 hald-addon-storage: polling /dev/sda
-root      5859  0.0  0.0   1808   620 ?        S    02:56   0:00 hald-addon-storage: polling /dev/hda
-root      5867  0.0  0.0   1572   384 ?        Ss   02:56   0:00 /usr/sbin/irqbalance
-root      5882  0.0  0.0   4928  1112 ?        Ss   02:56   0:00 /usr/sbin/sshd
-statd     5918  0.0  0.0   1756   724 ?        Ss   02:56   0:00 /sbin/rpc.statd
-ntp       5931  0.0  0.0   4024  1204 ?        Ss   02:56   0:00 /usr/sbin/ntpd -p /var/run/ntpd.pid -u 110:109 -g
-root      6000  0.0  0.0   6696  4956 ?        Ss   02:56   0:00 /usr/sbin/munin-node
-root      6043  0.0  0.0   1576   496 tty1     Ss+  02:56   0:00 /sbin/getty 38400 tty1
-root      6045  0.0  0.0   1576   492 tty2     Ss+  02:56   0:00 /sbin/getty 38400 tty2
-root      6046  0.0  0.0   1576   496 tty3     Ss+  02:56   0:00 /sbin/getty 38400 tty3
-root      6048  0.0  0.0   1576   496 tty4     Ss+  02:56   0:00 /sbin/getty 38400 tty4
-root      6049  0.0  0.0   1576   496 tty5     Ss+  02:56   0:00 /sbin/getty 38400 tty5
-root      6051  0.0  0.0   1576   496 tty6     Ss+  02:56   0:00 /sbin/getty 38400 tty6
-root      6052  0.0  0.0   2644  1276 ?        Ss   02:56   0:00 /bin/sh /command/svscanboot
-root      6079  0.0  0.0   1596   352 ?        S    02:56   0:00 svscan /service
-root      6080  0.0  0.0   1424   248 ?        S    02:56   0:00 readproctitle service errors: .....................................................................
-root      6088  0.0  0.0   1428   296 ?        S    02:56   0:00 supervise dnscache
-root      6089  0.0  0.0   1428   296 ?        S    02:56   0:00 supervise log
-dnscache  6091  0.3  0.7  99552 98248 ?        S    02:56   0:00 /usr/bin/dnscache
-dnslog    6092  0.0  0.0   1440   292 ?        S    02:56   0:00 multilog t ./main
-root      6351  0.0  0.0   7488  2152 ?        Ss   02:56   0:00 sshd: root@pts/0
-root      6355  0.0  0.0   2828  1640 pts/0    Ss+  02:56   0:00 -bash
-root      6363  0.0  0.0   7488  2148 ?        Ss   02:56   0:00 sshd: root@pts/1
-root      6367  0.0  0.0   2832  1644 pts/1    Ss   02:56   0:00 -bash
-root      6383  0.0  0.0   2220   892 pts/1    R+   02:56   0:00 ps auxw
-
-Any help appreciated.
-
-Rob
-
-----------
-robm@fastmail.fm
-Sign up at http://fastmail.fm for fast, ad free, IMAP accessible email
-
+ 	CLI R1;
+ 	SSYNC;		/* SSYNC required before writing to DMEM_CONTROL. */
+ 	.align 8;
+diff --git a/arch/blackfin/mach-common/ints-priority-dc.c b/arch/blackfin/mach-common/ints-priority-dc.c
+index 6b9fd03..660f881 100644
+--- a/arch/blackfin/mach-common/ints-priority-dc.c
++++ b/arch/blackfin/mach-common/ints-priority-dc.c
+@@ -358,26 +358,10 @@ static void bf561_demux_gpio_irq(unsigned int inta_irq,
+ 
+ #endif				/* CONFIG_IRQCHIP_DEMUX_GPIO */
+ 
+-/*
+- * This function should be called during kernel startup to initialize
+- * the BFin IRQ handling routines.
+- */
+-int __init init_arch_irq(void)
++void __init init_exception_vectors(void)
+ {
+-	int irq;
+-	unsigned long ilat = 0;
+-	/*  Disable all the peripheral intrs  - page 4-29 HW Ref manual */
+-	bfin_write_SICA_IMASK0(SIC_UNMASK_ALL);
+-	bfin_write_SICA_IMASK1(SIC_UNMASK_ALL);
+ 	SSYNC();
+ 
+-	bfin_write_SICA_IWR0(IWR_ENABLE_ALL);
+-	bfin_write_SICA_IWR1(IWR_ENABLE_ALL);
+-
+-	local_irq_disable();
+-
+-	init_exception_buff();
+-
+ #ifndef CONFIG_KGDB
+ 	bfin_write_EVT0(evt_emulation);
+ #endif
+@@ -395,6 +379,27 @@ int __init init_arch_irq(void)
+ 	bfin_write_EVT14(evt14_softirq);
+ 	bfin_write_EVT15(evt_system_call);
+ 	CSYNC();
++}
++
++/*
++ * This function should be called during kernel startup to initialize
++ * the BFin IRQ handling routines.
++ */
++int __init init_arch_irq(void)
++{
++	int irq;
++	unsigned long ilat = 0;
++	/*  Disable all the peripheral intrs  - page 4-29 HW Ref manual */
++	bfin_write_SICA_IMASK0(SIC_UNMASK_ALL);
++	bfin_write_SICA_IMASK1(SIC_UNMASK_ALL);
++	SSYNC();
++
++	bfin_write_SICA_IWR0(IWR_ENABLE_ALL);
++	bfin_write_SICA_IWR1(IWR_ENABLE_ALL);
++
++	local_irq_disable();
++
++	init_exception_buff();
+ 
+ 	for (irq = 0; irq <= SYS_IRQS; irq++) {
+ 		if (irq <= IRQ_CORETMR)
+diff --git a/arch/blackfin/mach-common/ints-priority-sc.c b/arch/blackfin/mach-common/ints-priority-sc.c
+index 28a878c..4708023 100644
+--- a/arch/blackfin/mach-common/ints-priority-sc.c
++++ b/arch/blackfin/mach-common/ints-priority-sc.c
+@@ -579,8 +579,12 @@ static unsigned int bfin_gpio_irq_startup(unsigned int irq)
+ 	u16 gpionr = irq - IRQ_PA0;
+ 	u8 pint_val = irq2pint_lut[irq - SYS_IRQS];
+ 
+-	if (pint_val == IRQ_NOT_AVAIL)
++	if (pint_val == IRQ_NOT_AVAIL) {
++		printk(KERN_ERR
++		"GPIO IRQ %d :Not in PINT Assign table "
++		"Reconfigure Interrupt to Port Assignemt\n", irq);
+ 		return -ENODEV;
++	}
+ 
+ 	if (!(gpio_enabled[gpio_bank(gpionr)] & gpio_bit(gpionr))) {
+ 		ret = gpio_request(gpionr, NULL);
+@@ -713,6 +717,29 @@ static void bfin_demux_gpio_irq(unsigned int intb_irq,
+ }
+ #endif				/* CONFIG_IRQCHIP_DEMUX_GPIO */
+ 
++void __init init_exception_vectors(void)
++{
++	SSYNC();
++
++#ifndef CONFIG_KGDB
++	bfin_write_EVT0(evt_emulation);
++#endif
++	bfin_write_EVT2(evt_evt2);
++	bfin_write_EVT3(trap);
++	bfin_write_EVT5(evt_ivhw);
++	bfin_write_EVT6(evt_timer);
++	bfin_write_EVT7(evt_evt7);
++	bfin_write_EVT8(evt_evt8);
++	bfin_write_EVT9(evt_evt9);
++	bfin_write_EVT10(evt_evt10);
++	bfin_write_EVT11(evt_evt11);
++	bfin_write_EVT12(evt_evt12);
++	bfin_write_EVT13(evt_evt13);
++	bfin_write_EVT14(evt14_softirq);
++	bfin_write_EVT15(evt_system_call);
++	CSYNC();
++}
++
+ /*
+  * This function should be called during kernel startup to initialize
+  * the BFin IRQ handling routines.
+@@ -733,29 +760,10 @@ int __init init_arch_irq(void)
+ 	bfin_write_SIC_IMASK(SIC_UNMASK_ALL);
+ 	bfin_write_SIC_IWR(IWR_ENABLE_ALL);
+ #endif
+-
+ 	SSYNC();
+ 
+ 	local_irq_disable();
+ 
+-#ifndef CONFIG_KGDB
+-	bfin_write_EVT0(evt_emulation);
+-#endif
+-	bfin_write_EVT2(evt_evt2);
+-	bfin_write_EVT3(trap);
+-	bfin_write_EVT5(evt_ivhw);
+-	bfin_write_EVT6(evt_timer);
+-	bfin_write_EVT7(evt_evt7);
+-	bfin_write_EVT8(evt_evt8);
+-	bfin_write_EVT9(evt_evt9);
+-	bfin_write_EVT10(evt_evt10);
+-	bfin_write_EVT11(evt_evt11);
+-	bfin_write_EVT12(evt_evt12);
+-	bfin_write_EVT13(evt_evt13);
+-	bfin_write_EVT14(evt14_softirq);
+-	bfin_write_EVT15(evt_system_call);
+-	CSYNC();
+-
+ #if defined(CONFIG_IRQCHIP_DEMUX_GPIO) && defined(CONFIG_BF54x)
+ #ifdef CONFIG_PINTx_REASSIGN
+ 	pint[0]->assign = CONFIG_PINT0_ASSIGN;
+diff --git a/drivers/i2c/busses/Kconfig b/drivers/i2c/busses/Kconfig
+index da16478..1842f52 100644
+--- a/drivers/i2c/busses/Kconfig
++++ b/drivers/i2c/busses/Kconfig
+@@ -92,9 +92,9 @@ config I2C_AU1550
+ 
+ config I2C_BLACKFIN_TWI
+ 	tristate "Blackfin TWI I2C support"
+-	depends on BF534 || BF536 || BF537
++	depends on BF534 || BF536 || BF537 || BF54x
+ 	help
+-	  This is the TWI I2C device driver for Blackfin 534/536/537.
++	  This is the TWI I2C device driver for Blackfin 534/536/537/54x.
+ 	  This driver can also be built as a module.  If so, the module
+ 	  will be called i2c-bfin-twi.
+ 
+diff --git a/drivers/input/serio/Kconfig b/drivers/input/serio/Kconfig
+index adef447..5ce632c 100644
+--- a/drivers/input/serio/Kconfig
++++ b/drivers/input/serio/Kconfig
+@@ -21,7 +21,7 @@ if SERIO
+ config SERIO_I8042
+ 	tristate "i8042 PC Keyboard controller" if EMBEDDED || !X86
+ 	default y
+-	depends on !PARISC && (!ARM || ARCH_SHARK || FOOTBRIDGE_HOST) && !M68K
++	depends on !PARISC && (!ARM || ARCH_SHARK || FOOTBRIDGE_HOST) && !M68K && !BFIN
+ 	---help---
+ 	  i8042 is the chip over which the standard AT keyboard and PS/2
+ 	  mouse are connected to the computer. If you use these devices,
+diff --git a/drivers/net/bfin_mac.c b/drivers/net/bfin_mac.c
+index 9a08d65..2bb97d4 100644
+--- a/drivers/net/bfin_mac.c
++++ b/drivers/net/bfin_mac.c
+@@ -798,6 +798,7 @@ static void bf537mac_shutdown(struct net_device *dev)
+  */
+ static int bf537mac_open(struct net_device *dev)
+ {
++	int retval;
+ 	pr_debug("%s: %s\n", dev->name, __FUNCTION__);
+ 
+ 	/*
+@@ -811,7 +812,10 @@ static int bf537mac_open(struct net_device *dev)
+ 	}
+ 
+ 	/* initial rx and tx list */
+-	desc_list_init();
++	retval = desc_list_init();
++
++	if (retval)
++		return retval;
+ 
+ 	bf537mac_setphy(dev);
+ 	setup_system_regs(dev);
+diff --git a/drivers/rtc/rtc-bfin.c b/drivers/rtc/rtc-bfin.c
+index 260ead9..1aa709d 100644
+--- a/drivers/rtc/rtc-bfin.c
++++ b/drivers/rtc/rtc-bfin.c
+@@ -1,6 +1,6 @@
+ /*
+  * Blackfin On-Chip Real Time Clock Driver
+- *  Supports BF531/BF532/BF533/BF534/BF536/BF537
++ *  Supports BF53[123]/BF53[467]/BF54[2489]
+  *
+  * Copyright 2004-2007 Analog Devices Inc.
+  *
+diff --git a/include/asm-blackfin/bfin-global.h b/include/asm-blackfin/bfin-global.h
+index c4d6cbb..a970781 100644
+--- a/include/asm-blackfin/bfin-global.h
++++ b/include/asm-blackfin/bfin-global.h
+@@ -61,6 +61,7 @@ extern void bfin_dcache_init(void);
+ extern int read_iloc(void);
+ extern int bfin_console_init(void);
+ extern asmlinkage void lower_to_irq14(void);
++extern void init_exception_vectors(void);
+ extern void init_dma(void);
+ extern void program_IAR(void);
+ extern void evt14_softirq(void);
+diff --git a/include/asm-blackfin/mach-bf548/cdefBF54x_base.h b/include/asm-blackfin/mach-bf548/cdefBF54x_base.h
+index 98d35a9..cdf29e7 100644
+--- a/include/asm-blackfin/mach-bf548/cdefBF54x_base.h
++++ b/include/asm-blackfin/mach-bf548/cdefBF54x_base.h
+@@ -242,6 +242,39 @@ static __inline__ void bfin_write_VR_CTL(unsigned int val)
+ #define bfin_read_TWI0_RCV_DATA16()		bfin_read16(TWI0_RCV_DATA16)
+ #define bfin_write_TWI0_RCV_DATA16(val)		bfin_write16(TWI0_RCV_DATA16, val)
+ 
++#define bfin_read_TWI_CLKDIV()			bfin_read16(TWI0_CLKDIV)
++#define bfin_write_TWI_CLKDIV(val)		bfin_write16(TWI0_CLKDIV, val)
++#define bfin_read_TWI_CONTROL()			bfin_read16(TWI0_CONTROL)
++#define bfin_write_TWI_CONTROL(val)		bfin_write16(TWI0_CONTROL, val)
++#define bfin_read_TWI_SLAVE_CTRL()		bfin_read16(TWI0_SLAVE_CTRL)
++#define bfin_write_TWI_SLAVE_CTRL(val)		bfin_write16(TWI0_SLAVE_CTRL, val)
++#define bfin_read_TWI_SLAVE_STAT()		bfin_read16(TWI0_SLAVE_STAT)
++#define bfin_write_TWI_SLAVE_STAT(val)		bfin_write16(TWI0_SLAVE_STAT, val)
++#define bfin_read_TWI_SLAVE_ADDR()		bfin_read16(TWI0_SLAVE_ADDR)
++#define bfin_write_TWI_SLAVE_ADDR(val)		bfin_write16(TWI0_SLAVE_ADDR, val)
++#define bfin_read_TWI_MASTER_CTL()		bfin_read16(TWI0_MASTER_CTRL)
++#define bfin_write_TWI_MASTER_CTL(val)		bfin_write16(TWI0_MASTER_CTRL, val)
++#define bfin_read_TWI_MASTER_STAT()		bfin_read16(TWI0_MASTER_STAT)
++#define bfin_write_TWI_MASTER_STAT(val)		bfin_write16(TWI0_MASTER_STAT, val)
++#define bfin_read_TWI_MASTER_ADDR()		bfin_read16(TWI0_MASTER_ADDR)
++#define bfin_write_TWI_MASTER_ADDR(val)		bfin_write16(TWI0_MASTER_ADDR, val)
++#define bfin_read_TWI_INT_STAT()		bfin_read16(TWI0_INT_STAT)
++#define bfin_write_TWI_INT_STAT(val)		bfin_write16(TWI0_INT_STAT, val)
++#define bfin_read_TWI_INT_MASK()		bfin_read16(TWI0_INT_MASK)
++#define bfin_write_TWI_INT_MASK(val)		bfin_write16(TWI0_INT_MASK, val)
++#define bfin_read_TWI_FIFO_CTL()		bfin_read16(TWI0_FIFO_CTRL)
++#define bfin_write_TWI_FIFO_CTL(val)		bfin_write16(TWI0_FIFO_CTRL, val)
++#define bfin_read_TWI_FIFO_STAT()		bfin_read16(TWI0_FIFO_STAT)
++#define bfin_write_TWI_FIFO_STAT(val)		bfin_write16(TWI0_FIFO_STAT, val)
++#define bfin_read_TWI_XMT_DATA8()		bfin_read16(TWI0_XMT_DATA8)
++#define bfin_write_TWI_XMT_DATA8(val)		bfin_write16(TWI0_XMT_DATA8, val)
++#define bfin_read_TWI_XMT_DATA16()		bfin_read16(TWI0_XMT_DATA16)
++#define bfin_write_TWI_XMT_DATA16(val)		bfin_write16(TWI0_XMT_DATA16, val)
++#define bfin_read_TWI_RCV_DATA8()		bfin_read16(TWI0_RCV_DATA8)
++#define bfin_write_TWI_RCV_DATA8(val)		bfin_write16(TWI0_RCV_DATA8, val)
++#define bfin_read_TWI_RCV_DATA16()		bfin_read16(TWI0_RCV_DATA16)
++#define bfin_write_TWI_RCV_DATA16(val)		bfin_write16(TWI0_RCV_DATA16, val)
++
+ /* SPORT0 is not defined in the shared file because it is not available on the ADSP-BF542 and ADSP-BF544 bfin_read_()rocessors */
+ 
+ /* SPORT1 Registers */
+diff --git a/include/asm-blackfin/mach-bf548/irq.h b/include/asm-blackfin/mach-bf548/irq.h
+index 0b3325b..e548d3c 100644
+--- a/include/asm-blackfin/mach-bf548/irq.h
++++ b/include/asm-blackfin/mach-bf548/irq.h
+@@ -112,6 +112,7 @@ Events         (highest priority)  EMU         0
+ #define IRQ_ATAPI_TX	BFIN_IRQ(44)	/* ATAPI TX (DMA11) Interrupt */
+ #define IRQ_TWI0	BFIN_IRQ(45)	/* TWI0 Interrupt */
+ #define IRQ_TWI1	BFIN_IRQ(46)	/* TWI1 Interrupt */
++#define IRQ_TWI		IRQ_TWI0	/* TWI Interrupt */
+ #define IRQ_CAN0_RX	BFIN_IRQ(47)	/* CAN0 Receive Interrupt */
+ #define IRQ_CAN0_TX	BFIN_IRQ(48)	/* CAN0 Transmit Interrupt */
+ #define IRQ_MDMAS2	BFIN_IRQ(49)	/* MDMA Stream 2 Interrupt */
+diff --git a/include/asm-blackfin/mach-bf561/cdefBF561.h b/include/asm-blackfin/mach-bf561/cdefBF561.h
+index 1a8ec9e..6e87ab2 100644
+--- a/include/asm-blackfin/mach-bf561/cdefBF561.h
++++ b/include/asm-blackfin/mach-bf561/cdefBF561.h
+@@ -81,6 +81,12 @@ static __inline__ void bfin_write_VR_CTL(unsigned int val)
+ #define bfin_write_PLL_LOCKCNT(val)          bfin_write16(PLL_LOCKCNT,val)
+ #define bfin_read_CHIPID()                   bfin_read32(CHIPID)
+ 
++/* For MMR's that are reserved on Core B, set up defines to better integrate with other ports */
++#define bfin_read_SWRST()                    bfin_read_SICA_SWRST()
++#define bfin_write_SWRST()                   bfin_write_SICA_SWRST()
++#define bfin_read_SYSCR()                    bfin_read_SICA_SYSCR()
++#define bfin_write_SYSCR()                   bfin_write_SICA_SYSCR()
++
+ /* System Reset and Interrupt Controller registers for core A (0xFFC0 0100-0xFFC0 01FF) */
+ #define bfin_read_SICA_SWRST()               bfin_read16(SICA_SWRST)
+ #define bfin_write_SICA_SWRST(val)           bfin_write16(SICA_SWRST,val)
+diff --git a/include/asm-blackfin/mach-bf561/defBF561.h b/include/asm-blackfin/mach-bf561/defBF561.h
+index 89150ec..0f2dc6e 100644
+--- a/include/asm-blackfin/mach-bf561/defBF561.h
++++ b/include/asm-blackfin/mach-bf561/defBF561.h
+@@ -52,6 +52,10 @@
+ #define PLL_LOCKCNT            0xFFC00010	/* PLL Lock Count register (16-bit) */
+ #define CHIPID                 0xFFC00014       /* Chip ID Register */
+ 
++/* For MMR's that are reserved on Core B, set up defines to better integrate with other ports */
++#define SWRST                   SICA_SWRST
++#define SYSCR                   SICA_SYSCR
++
+ /* System Reset and Interrupt Controller registers for core A (0xFFC0 0100-0xFFC0 01FF) */
+ #define SICA_SWRST              0xFFC00100	/* Software Reset register */
+ #define SICA_SYSCR              0xFFC00104	/* System Reset Configuration register */
+diff --git a/include/asm-blackfin/thread_info.h b/include/asm-blackfin/thread_info.h
+index fa8f08c..34d3c2e 100644
+--- a/include/asm-blackfin/thread_info.h
++++ b/include/asm-blackfin/thread_info.h
+@@ -39,6 +39,11 @@
+  */
+ #define ALIGN_PAGE_MASK         0xffffe000
+ 
++/*
++ * Size of kernel stack for each process. This must be a power of 2...
++ */
++#define THREAD_SIZE		8192	/* 2 pages */
++
+ #ifndef __ASSEMBLY__
+ 
+ typedef unsigned long mm_segment_t;
+@@ -76,11 +81,6 @@ struct thread_info {
+ #define init_thread_info	(init_thread_union.thread_info)
+ #define init_stack		(init_thread_union.stack)
+ 
+-/*
+- * Size of kernel stack for each process. This must be a power of 2...
+- */
+-#define THREAD_SIZE		8192	/* 2 pages */
+-
+ /* How to get the thread information struct from C */
+ 
+ static inline struct thread_info *current_thread_info(void)
+@@ -94,7 +94,7 @@ static inline struct thread_info *current_thread_info(void)
+ 	struct thread_info *ti;
+       __asm__("%0 = sp;": "=&d"(ti):
+ 	);
+-	return (struct thread_info *)((long)ti & ~8191UL);
++	return (struct thread_info *)((long)ti & ~((long)THREAD_SIZE-1));
+ }
+ 
+ /* thread information allocation */
