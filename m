@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934102AbXGZXGN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936142AbXGZXGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934102AbXGZXGN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:06:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXGZXGD
+	id S936142AbXGZXGk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbXGZXG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:06:03 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:58613 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751389AbXGZXGB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:06:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=ho2tRkjndQ9PxCVx+cNO3nqvuaPNvNFjhe8XL3SQcWS76J4nTf9Bf8O/ZY334II+/zjKJQcmLYcnpTP855blZDWBEdzI9DdDtfhEr1S7ZM9v7bwJirwqgecHMMHAjD0Z;
-Message-ID: <46A928D2.6030702@simon.arlott.org.uk>
-Date: Fri, 27 Jul 2007 00:05:54 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 26 Jul 2007 19:06:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60155 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934512AbXGZXG0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:06:26 -0400
+Date: Thu, 26 Jul 2007 16:04:42 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+cc: matthew@wil.cx, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: IRQF_DISABLED problem
+In-Reply-To: <20070726.152352.70218024.davem@davemloft.net>
+Message-ID: <alpine.LFD.0.999.0707261557150.3442@woody.linux-foundation.org>
+References: <20070726201355.GP19275@parisc-linux.org>
+ <20070726.152352.70218024.davem@davemloft.net>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: bjorn.helgaas@hp.com
-Subject: Fwd: PNP: Lindent all source files
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does anyone ever review what Lindent does? There's a fix up patch after this 
-but it missed this at the very top of the patch and the labels.
 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9dd78466c956ac4b4f38e12032dc4249ccf57ad1
-> Commit:     9dd78466c956ac4b4f38e12032dc4249ccf57ad1
-> Parent:     8ec3cf7d29aef773eee5bc6cd9b0fa4d3fb42480
-> Author:     Bjorn Helgaas <bjorn.helgaas@hp.com>
-> AuthorDate: Thu Jul 26 10:41:20 2007 -0700
-> Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> CommitDate: Thu Jul 26 11:35:20 2007 -0700
+
+On Thu, 26 Jul 2007, David Miller wrote:
+> > 
+> > Another possibility is to force it if *any* of the handlers want
+> > IRQF_DISABLED.  This seems to work:
 > 
->     PNP: Lindent all source files
->     
-> diff --git a/drivers/pnp/card.c b/drivers/pnp/card.c
-> index dd6384b..a379a38 100644
-> --- a/drivers/pnp/card.c
-> +++ b/drivers/pnp/card.c
-> @@ -13,26 +13,28 @@
-> -					if (compare_pnp_id(dev->id, drv_id->devs[i].id)) {
-> +					if (compare_pnp_id
-> +					    (dev->id, drv_id->devs[i].id)) {
+> Yes, this is consistent with how we handle sharing, we should
+> enforce that all the flags on the chain are compatible.
 
-Leaving only the function name on a seperate line? How is that better?
+No. It's no better than the current situation.
 
+There are really a few choices:
 
-> @@ -320,7 +330,7 @@ found:
->  
->  	return dev;
->  
-> -err_out:
-> +      err_out:
->  	dev->dev.driver = NULL;
->  	dev->card_link = NULL;
->  	return NULL;
+ (a) Keep it like we always have.  What's the downside, really? It's what 
+     we've got, it's what is tested.
 
-Six spaces before a label that originally had no indentation?
+ (b) Enforce that flags match. This may sound logical, but it will 
+     actually *break* existing setups, because tons of drivers set 
+     IRQF_DISABLED for no good reason (probably all totally historical)
 
+ (c) "one IRQF_DISABLED means that everything runs disabled". This is 
+     quite possibly buggy. There have been SCSI drivers with timeout 
+     behaviour where they actually wait for timers to happen while in 
+     their irq handlers. Bad form, and I *hope* we've fixed them all, but 
+     I distinctly remember it being important that the timer had higher 
+     priority than some SCSI drivers on some architecture.
 
-The spaces it uses on lines after if (which happens all over the place) 
-appear to go against CodingStyle's:
-"Outside of comments, documentation and except in Kconfig, spaces are never
-used for indentation, and the above example is deliberately broken."
+ (d) "one !IRFQ_DISABLED means that everything runs with irq's on". I 
+     don't think it's any better than the other behaviour.
 
--- 
-Simon Arlott
+ (e) Just ignore IRQF_DISABLED entirely when mixed with IRQF_SHARED, 
+     because they're all pretty much guaranteed to be legacy and buggy and 
+     pointless.
+
+ (f) Disable and re-enable interrupts per handler.
+
+Quite frankly, my preference would be (a) followed by (e) or (f), and 
+(b)-(d) are in my opinion the worst of the lot with no upsides at all (and 
+(b) in particular is pretty much _guaranteed_ to break existing setups).
+
+			Linus
