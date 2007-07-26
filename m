@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934597AbXGZRAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbXGZRFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934597AbXGZRAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763958AbXGZQ7w
+	id S1764271AbXGZRFZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbXGZRFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:59:52 -0400
-Received: from smtp103.plus.mail.re1.yahoo.com ([69.147.102.66]:39587 "HELO
-	smtp103.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756960AbXGZQ7v (ORCPT
+	Thu, 26 Jul 2007 13:05:15 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42331 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760980AbXGZRFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:59:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
-  b=SediLcaJqpwpMC2Mt4xvGu5PsRo2yf9dkeEOXWIv5CBZc7pAAQth09S2vRFXwJvqRgSO3ottT5u5gVfvtg8F5aRW3JIy8vWSGfS0dn29o6rZKaa9k3mphp0gy3gfn24ZDAmS05BiLPe1mLTFn9vwdNZSqVlqCZnJ/lB4G1J9htI=  ;
-X-YMail-OSG: 2SwNPmAVM1naJxf2oOxEp18XiMRBzAkyBJkJA4uOFj_9ZY_RrNlq9jMiy1q_U7V7QhWqHxU0wg--
-Date: Thu, 26 Jul 2007 18:59:06 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Xudong Guan <xudong.guan@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1: no setup signature found...
-Message-ID: <20070726165906.GB4570@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <20070726163618.GA13789@xguan-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070726163618.GA13789@xguan-laptop>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Thu, 26 Jul 2007 13:05:13 -0400
+Date: Thu, 26 Jul 2007 18:11:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dave Jones <davej@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dave Young <hidave.darkstar@gmail.com>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@codemonkey.org.uk>, cpufreq@www.linux.org.uk
+Subject: Re: [PATCH]gx-suspmod.c use boot_cpu_data instead of
+ current_cpu_data
+Message-ID: <20070726181153.17f83e21@the-village.bc.nu>
+In-Reply-To: <20070726164654.GC32159@redhat.com>
+References: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
+	<20070724234045.2cec5525.akpm@linux-foundation.org>
+	<a8e1da0707252120l5e9e441bm53e2ba25bc9c20f0@mail.gmail.com>
+	<20070725212638.79bc3945.akpm@linux-foundation.org>
+	<20070726164654.GC32159@redhat.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 05:36:18PM +0100, Xudong Guan wrote:
-> On 18:30(+0200) Thu 26 Jul, Borislav Petkov wrote:
-> > grub version:
-> > Version: 0.97-29
-> 
-> On my real machine with grub 0.97, there is no problem loading the
-> same kernel.
+O> a non-identical CPU system with a geode + something else doesn't exist
+> and is very unlikely to happen.
 
-Do you mean the kernel with the 4fd06960f120e02e9abc802a09f9511c400042a5 commit
-on top?
-
--- 
-Regards/Gruﬂ,
-    Boris.
+As the Geode isn't used SMP (and afaik isnt SMP capable) that would be a
+reasonable assumption
