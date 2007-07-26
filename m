@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765188AbXGZH1C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932394AbXGZHQ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765188AbXGZH1C (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 03:27:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757972AbXGZH0v
+	id S932394AbXGZHQ1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 03:16:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762497AbXGZHQR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 03:26:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55289 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756064AbXGZH0v (ORCPT
+	Thu, 26 Jul 2007 03:16:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:9417 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763053AbXGZHQP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 03:26:51 -0400
-Date: Thu, 26 Jul 2007 00:25:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-Cc: "Len Brown" <lenb@kernel.org>, "Cedric Le Goater" <clg@fr.ibm.com>,
-       linux-kernel@vger.kernel.org, "Shaohua Li" <shaohua.li@intel.com>,
-       linux-mm@kvack.org
-Subject: Re: 2.6.23-rc1-mm1
-Message-Id: <20070726002543.de303fd7.akpm@linux-foundation.org>
-In-Reply-To: <64bb37e0707251452u6bca43b6i2618bf6e54972dbc@mail.gmail.com>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
-	<46A7411C.80202@fr.ibm.com>
-	<200707251323.04594.lenb@kernel.org>
-	<20070725115804.5b8efe83.akpm@linux-foundation.org>
-	<64bb37e0707251213t6edcb0a5sabcf4a923c19bde7@mail.gmail.com>
-	<64bb37e0707251322w38d19814pacea61d8cf69be63@mail.gmail.com>
-	<20070725133655.849574b5.akpm@linux-foundation.org>
-	<64bb37e0707251452u6bca43b6i2618bf6e54972dbc@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jul 2007 03:16:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=E8ixbWrXQ7M5WrHuWoCOSqabja5Cb5pPc6IW+7MVuGaledQSgS0rQxZRUMpTzYd0yilWr8oXyaZWxl8N9sOi0VlZXZBnsnsk31pVWo9h00LhfaWUg06apR91UcBWvz56AfnUaeyuvEmECr9JlieqKrfKFeDf6bHD8aJt3Cjq3SA=
+Message-ID: <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
+Date: Thu, 26 Jul 2007 09:16:10 +0200
+From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jarek Poplawski" <jarkao2@o2.pl>,
+       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+In-Reply-To: <1185322771.4175.102.camel@chaos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
+	 <20070629150759.GC2771@ff.dom.local>
+	 <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
+	 <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu>
+	 <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
+	 <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 23:52:47 +0200 "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
+2007/7/25, Thomas Gleixner <tglx@linutronix.de>:
+> (...)
 
-> On 7/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > On Wed, 25 Jul 2007 22:22:41 +0200
-> > "Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
-> > > [    0.000000] early_node_map[4] active PFN ranges
-> > > [    0.000000]     0:        0 ->      159
-> > > [    0.000000]     0:      256 ->   524288
-> > > [    0.000000]     1:   524288 ->   917488
-> > > [    0.000000]     1:  1048576 ->  1179648
-> > > PANIC: early exception rip ffffffff807caac5 error 2 cr2 ffffe20003000010
-> > > [    0.000000]
-> > > [    0.000000] Call Trace:
-> > >
-> > > ... but no Call Trace follows.
-> > >
-> > > (gdb) list *0xffffffff807caac5
-> > > 0xffffffff807caac5 is in memmap_init_zone (include/linux/list.h:32).
-> > > 27      #define LIST_HEAD(name) \
-> > > 28              struct list_head name = LIST_HEAD_INIT(name)
-> > > 29
-> > > 30      static inline void INIT_LIST_HEAD(struct list_head *list)
-> > > 31      {
-> > > 32              list->next = list;
-> > > 33              list->prev = list;
-> > > 34      }
-> > > 35
-> > > 36      /*
-> > >
-> > > Torsten
-> >
-> > Quite a few people have been playing in that area.  Can you please send the
-> > .config?
-> 
-> #
-> # Automatically generated make config: don't edit
-> # Linux kernel version: 2.6.23-rc1-mm1
-> # Wed Jul 25 21:18:15 2007
+I've tested Jarek's patch, 2 Ingo's patches (2nd and 3rd) and Thomas'
+patch (one patch at time of course) - all of them fixed the problem,
+but the last one flooded my logs with "Skip resend for irq 17". All
+tests were done on 2.6.21.3.
 
-It boots OK on my test box, bummer.  Please test -mm2 and if it also fails,
-it'd be great if you could run through
-http://www.zip.com.au/~akpm/linux/patches/stuff/bisecting-mm-trees.txt - it
-doesn't take very long.
+I wanted to test them all on 2.6.22.1, but I didn't have enough time.
+I've verified only that 2.6.22.1 has the same problem. I can test it
+later, but I can report results back at beginning of next week.
 
-Thanks.
+Regards,
+Marcin Slusarz
