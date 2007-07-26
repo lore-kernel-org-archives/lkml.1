@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753345AbXGYX7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbXGZAEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753345AbXGYX7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 19:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbXGYX65
+	id S1753195AbXGZAEq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 20:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbXGZAEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 19:58:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57180 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750805AbXGYX64 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 19:58:56 -0400
-Date: Wed, 25 Jul 2007 16:58:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: masouds@google.com (Masoud Asgharifard Sharbiani)
-Cc: Andi Kleen <ak@suse.de>, Kirill Korotaev <dev@openvz.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i386-show-unhandled-signals-v3
-Message-Id: <20070725165805.1bcd5a02.akpm@linux-foundation.org>
-In-Reply-To: <20070725234005.GA11292@google.com>
-References: <20070718154759.GA26425@google.com>
-	<46A76210.5020903@openvz.org>
-	<200707251657.44217.ak@suse.de>
-	<20070725140455.cbbc0dde.akpm@linux-foundation.org>
-	<4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com>
-	<20070725162528.7d485ff8.akpm@linux-foundation.org>
-	<20070725234005.GA11292@google.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Jul 2007 20:04:38 -0400
+Received: from mx1.suse.de ([195.135.220.2]:41927 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750805AbXGZAEh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 20:04:37 -0400
+Date: Wed, 25 Jul 2007 17:07:05 -0700
+From: Greg KH <gregkh@suse.de>
+To: Gabriel C <nix.or.die@googlemail.com>, Dave Hansen <haveblue@us.ibm.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.23-rc1-mm1
+Message-ID: <20070726000705.GB21056@suse.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com> <20070725185328.GA28199@uranus.ravnborg.org> <46A7A1EF.8060307@zytor.com> <46A7B983.90407@googlemail.com> <46A7BB12.7060504@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A7BB12.7060504@googlemail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 16:40:06 -0700
-masouds@google.com (Masoud Asgharifard Sharbiani) wrote:
-
-> > Look: if there's a way in which an unprivileged user can trigger a printk
-> > we fix it, end of story.  I don't know why this even slightly
-> > controversial.
+On Wed, Jul 25, 2007 at 11:05:22PM +0200, Gabriel C wrote:
+> Gabriel C wrote:
+> > H. Peter Anvin wrote:
+> >> Sam Ravnborg wrote:
+> >>> On Wed, Jul 25, 2007 at 08:48:50PM +0200, Michal Piotrowski wrote:
+> >>>> On 25/07/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >>>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
+> >>>>>
+> >>>>>
+> >>>> Andi, this might be interesting for you
+> >>>>
+> >>>> make allmodconfig
+> >>>> make
+> >>>> [...]
+> >>>> WARNING: Absolute relocations present
+> >>>> Offset     Info     Type     Sym.Value Sym.Name
+> >>>> c02041b3 00705601   R_386_32 c0308aa8  _sdata
+> >>> Who did spit out this warning. Can you please provide make V=1
+> >>> where we see the lines preceeding the warning.
+> >>>
+> >>> And config please.
+> >>>
+> >> config: "make allmodconfig"
+> >>
+> >> System.map would be more interesting, especially what is at 0xc02041b3.
 > > 
+> > I get here :
+> > 
+> > WARNING: Absolute relocations present
+> > Offset     Info     Type     Sym.Value Sym.Name
+> > c0202e73 00703601   R_386_32 c03071bc  _sdata
+> > 
+> > $ grep c03071bc System.map
+> > c03071bc R __tracedata_end
+> > c03071bc A _sdata
 > 
-> Fair enough. Here it is:
+> 
+> Guessing is this patch ?
+> 
+> gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch:           __tracedata_end = .;
+> gregkh-driver-warn-when-statically-allocated-kobjects-are-used.patch:+  _sdata = .;                     /* End of text section */
 
-My favourite words.
+This patch is a horrible hack to try to see if kobjects are static and
+not dynamically created.
 
-> ---------------
-> Hello,
-> This patch makes the i386 behave the same way that x86_64 does when a
-> segfault happens. A line gets printed to the kernel log so that tools
-> that need to check for failures can behave more uniformly between
-> different kernels. Like x86_64, it can be disabled by setting
-> debug.show_unhandled_signals sysctl variable to 0 (or by doing
-> echo 0 > /proc/sys/debug/show_unhandled_signals)
+Dave, any ideas what is happening here?
 
-Do we really need the ratelimiting?  If the admin turns this on then he's
-presumably prepared for the consequences.
+thanks,
 
-I guess "yes", as people (even distros) are likely to turn this on and
-forget about it.
-
-The patch is larger than I expected, ho hum.
+greg k-h
