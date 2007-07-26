@@ -1,134 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbXGZE1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754397AbXGZE6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761239AbXGZE1c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 00:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbXGZE1H
+	id S1754397AbXGZE6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 00:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbXGZE6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 00:27:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59032 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751374AbXGZE04 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 00:26:56 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: david@lang.hm
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-Date: Thu, 26 Jul 2007 00:26:08 -0400
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200707251238.50218.lenb@kernel.org> <200707251851.22777.lenb@kernel.org> <Pine.LNX.4.64.0707251917320.21378@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707251917320.21378@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 26 Jul 2007 00:58:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49501 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751267AbXGZE6X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 00:58:23 -0400
+Date: Wed, 25 Jul 2007 21:57:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Cc: "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Eric St-Laurent" <ericstl34@sympatico.ca>,
+       "Rene Herman" <rene.herman@gmail.com>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
+       "Ingo Molnar" <mingo@elte.hu>, "Paul Jackson" <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+Message-Id: <20070725215717.df1d2eea.akpm@linux-foundation.org>
+In-Reply-To: <2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	<46A57068.3070701@yahoo.com.au>
+	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	<46A58B49.3050508@yahoo.com.au>
+	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	<46A6CC56.6040307@yahoo.com.au>
+	<46A6D7D2.4050708@gmail.com>
+	<1185341449.7105.53.camel@perkele>
+	<46A6E1A1.4010508@yahoo.com.au>
+	<2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707260026.08183.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 July 2007 22:20, david@lang.hm wrote:
-> On Wed, 25 Jul 2007, Len Brown wrote:
-> 
-> > On Wednesday 25 July 2007 14:48, Linus Torvalds wrote:
-> >
-> >> ... ACPI now seems to select CPU hotplug. Why?
-> >
-> > ACPI=y SMP=y systems require SUSPEND_SMP=y for system sleep support,
-> > and that requires HOTPLUG_CPU=y.
-> >
-> > Note that ACPI=y SMP=n systems do not need it,
-> > and thus will not select HOTPLUG_CPU=y
-> >
-> >> That is just *broken*. Sure, if you select STR or hibernation, we need CPU
-> >> hotplug, but just for picking ACPI? Why?
-> >
-> > My assumption is that if somebody selects CONFIG_ACPI,
-> > that 99% of the time, they intend that to include support for
-> > the ACPI hooks for system sleep states.
-> >
-> > Conversely, supporting the 1% of people who don't want it
-> > isn't worth messing with the 99% who do, nor is
-> > the burden of yet another config option to maintain and
-> > #ifdefs in the code.
-> 
-> so you are saying that you know better then we do what we need?
+On Wed, 25 Jul 2007 09:09:01 -0700
+"Ray Lee" <ray-lk@madrabbit.org> wrote:
 
-Feel free to share what you know about the benefits vs. the costs
-of maintaining CONFIG_ACPI_SLEEP as a build option.
+> No, there's a third case which I find the most annoying. I have
+> multiple working sets, the sum of which won't fit into RAM. When I
+> finish one, the kernel had time to preemptively swap back in the
+> other, and yet it didn't. So, I sit around, twiddling my thumbs,
+> waiting for my music player to come back to life, or thunderbird,
+> or...
 
-> some people configure ACPI only becouse their system won't work properly 
-> without it. they have no intention of ever doing a STR or hibernate.
+Yes, I'm thinking that's a good problem statement and it isn't something
+which the kernel even vaguely attempts to address, apart from normal
+demand paging.
 
-I agree.
+We could perhaps improve things with larger and smarter fault readaround,
+perhaps guided by refault-rate measurement.  But that's still demand-paged
+rather than being proactive/predictive/whatever.
 
-Further, I expect that 100% - (some people %) = 99%
+None of this is swap-specific though: exactly the same problem would need
+to be solved for mmapped files and even plain old pagecache.
 
-If you feel that your system has been degraded
-because it now includes what used to be excluded under
-CONFIG_ACPI_SLEEP=n, please let me know how.
+In fact I'd restate the problem as "system is in steady state A, then there
+is a workload shift causing transition to state B, then the system goes
+idle.  We now wish to reinstate state A in anticipation of a resumption of
+the original workload".
 
-> > On UP, they'd get ACPI system sleep support 100% of the time
-> > by default, but on SMP this option had become problematic.
-> >
-> > We used to have this:
-> >
-> > if ACPI
-> > ...
-> > config ACPI_SLEEP
-> >        bool "Sleep States"
-> >        depends on X86 && (!SMP || SUSPEND_SMP)
-> >        depends on PM
-> >        default y
-> >
-> > So the poster-child failure was i386/defconfig itself...
-> > It couldn't support suspend to RAM because it didn't include
-> > CONFIG_ACPI_SLEEP.  Not trivial for a user to select it
-> > when it doesn't even appear on the menu.  It doesn't appear
-> > because CONFIG_SUSPEND_SMP isn't enabled, but that doesn't
-> > appear either -- because CONFIG_HOTPLUG_CPU isn't selected.
-> 
-> so have something like
-> 
-> config ACPI_SLEEP
->          select HOTPLUG_CPU if X86 && SMP
->          select SUSPEND_SMP if X86 && SMP
-> 
-> instead of makeing it dependant on ACPI.
+swap-prefetch solves a part of that.
 
-If more config options where better, then this
-would indeed be an improvement over 2.6.22.
-But more config options isn't better -- except for "some people":-)
+A complete solution for anon and file-backed memory could be implemented
+(ta-da) in userspace using the kernel inspection tools in -mm's maps2-*
+patches.  We would need to add a means by which userspace can repopulate
+swapcache, but that doesn't sound too hard (especially when you haven't
+thought about it).
 
-thanks.
--Len
+And userspace can right now work out which pages from which files are in
+pagecache so this application can handle pagecache, swap and file-backed
+memory.  (file-backed memory might not even need special treatment, given
+that it's pagecache anyway).
 
-> > Most users don't want that.
-> >
-> > So today we have this:
-> >
-> > menuconfig ACPI
-> > 	...
-> >        select HOTPLUG_CPU if X86 && SMP
-> >        select SUSPEND_SMP if X86 && SMP
-> >
-> > Which I think leads to fewer surprises, and less complicated code.
-> > (even though using select itself is fraught with peril:-)
-> >
-> > thanks,
-> > -Len
-> >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> >
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+
+And userspace can do a much better implementation of this
+how-to-handle-large-load-shifts problem, because it is really quite
+complex.  The system needs to be monitored to determine what is the "usual"
+state (ie: the thing we wish to reestablish when the transient workload
+subsides).  The system then needs to be monitored to determine when the
+exceptional workload has started, and when it has subsided, and userspace
+then needs to decide when to start reestablishing the old working set, at
+what rate, when to abort doing that, etc.
+
+All this would end up needing runtime configurability and tweakability and
+customisability.  All standard fare for userspace stuff - much easier than
+patching the kernel.
+
+
+So.  We can
+
+a) provide a way for userspace to reload pagecache and
+
+b) merge maps2 (once it's finished) (pokes mpm)
+
+and we're done?
