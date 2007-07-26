@@ -1,44 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934784AbXGZStf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935783AbXGZStz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934784AbXGZStf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759344AbXGZStZ
+	id S935783AbXGZStz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762498AbXGZSt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:49:25 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45431 "EHLO
+	Thu, 26 Jul 2007 14:49:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39997 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758156AbXGZStY (ORCPT
+	by vger.kernel.org with ESMTP id S1758602AbXGZStZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:49:24 -0400
-Date: Thu, 26 Jul 2007 11:48:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
-Subject: Re: [PATCH] core_pattern: Add ability for core_pattern to parse
- arguments when pattern is a pipe
-Message-Id: <20070726114832.faf14bb0.akpm@linux-foundation.org>
-In-Reply-To: <20070726173923.GA5701@hmsreliant.homelinux.net>
-References: <20070726173923.GA5701@hmsreliant.homelinux.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 14:49:25 -0400
+Date: Thu, 26 Jul 2007 11:49:17 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Nelson, Shannon" <shannon.nelson@intel.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] I/OAT: Add support for DCA - Direct Cache Access
+In-Reply-To: <BAE9DCEF64577A439B3A37F36F9B691C02C1F61B@orsmsx418.amr.corp.intel.com>
+Message-ID: <alpine.LFD.0.999.0707261148140.3442@woody.linux-foundation.org>
+References: <BAE9DCEF64577A439B3A37F36F9B691C02C1F61B@orsmsx418.amr.corp.in
+ tel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 13:40:19 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
 
-> 	Currently, core dumps can be redirected to a pipe by placing the
-> following string template in /proc/sys/kernel/core_pattern:
-> |<path/to/application>
-> This patch extends this ability, allowing the core_pattern to contain arguments
-> to be passed as an argv array to the userspace helper application.  It also add
-> a format specifier, %c, which allows the RLIM_CORE value of the crashing
-> application to be passed on the command line, since RLIMIT_CORE is reduced to
-> zero when execing the userspace helper
 
-This all seems to be getting a bit nutty.  Who needs this feature
-and what will they do with it, etc?
+On Thu, 26 Jul 2007, Nelson, Shannon wrote:
+> 
+> In order to include support for DCA (Direct Cache Access) from IOAT,
+> please pull from my git tree at
+> 	git://lost.foo-projects.org/~sln/linux-2.6 dma-upstream
 
-You have a few open-coded kstrdup()s in there, btw.  And an open-coded
-free_argv_array() on the error path.  And a lot of checkpatch warnings.
+No. It's after the merge window, and I'm not interested for 2.6.23. 
+
+Why cannot people learn? If it didn't get into -rc1, it's not in. It 
+really is that simple. I shouldn't have to shout at people. 
+
+		Linus
