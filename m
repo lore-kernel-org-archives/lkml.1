@@ -1,64 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763319AbXGZGCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763665AbXGZGF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763319AbXGZGCw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 02:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbXGZGCo
+	id S1763665AbXGZGF7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 02:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755476AbXGZGFv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 02:02:44 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:49423 "EHLO mx1.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753966AbXGZGCo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 02:02:44 -0400
-Message-ID: <46A8391D.9000100@gmail.com>
-Date: Thu, 26 Jul 2007 14:03:09 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>
-Subject: Re: [LINUX POETRY] Boring limeriks (was: [PATCH 1/7] lguest: documentation
- pt I: Preparation)
-References: <200707241720.30271.a1426z@gawab.com>	<46A60B91.8000405@garzik.org> <20070724154806.484d5149@the-village.bc.nu> <46A83858.1010908@gmail.com>
-In-Reply-To: <46A83858.1010908@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 26 Jul 2007 02:05:51 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:8712 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755638AbXGZGFu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 02:05:50 -0400
+X-IronPort-AV: i="4.16,582,1175486400"; 
+   d="scan'208"; a="35702573:sNHT28447601"
+Subject: Re: [GIT PULL try#2] Blackfin update
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Joe Perches <joe@perches.com>, michael.hennerich@analog.com,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: bryan.wu@analog.com
+In-Reply-To: <1185382018.1050.152.camel@localhost>
+References: <1185377216.12354.12.camel@roc-laptop>
+	 <1185382018.1050.152.camel@localhost>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Thu, 26 Jul 2007 14:10:46 +0800
+Message-Id: <1185430246.23987.4.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+X-OriginalArrivalTime: 26 Jul 2007 06:05:49.0398 (UTC) FILETIME=[03A4D760:01C7CF4B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlo Florendo wrote:
-> Alan Cox wrote:
->> On Tue, 24 Jul 2007 10:24:17 -0400
->> Jeff Garzik <jeff@garzik.org> wrote:
->>
->>> I thought limericks were supposed to be dirty... :)
->>
->> If I post limericks that are dirty
->> Someone is bound to get shirty
->> They'll rant and they'll rage
->> for page after page
->> Instead of coding new drivers to help me
->>
-> THE STAIR AND THE FAIR
+Hi Joe, please reply to all of this email, because some developers need
+to consider your review.
 
-> Please tell me, you'd say
-> My darling, I pray
-> That's one for the guess
-> for (he) who knows best
-       ^^^^
-       him
+Hi Michael, how do you think of Joe's idea as below.
 
+Thanks, 
+Best Regards,
+- Bryan Wu
 
-
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, Diliman 1101, Quezon City
-Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
+On Wed, 2007-07-25 at 09:46 -0700, Joe Perches wrote:
+> On Wed, 2007-07-25 at 23:26 +0800, Bryan Wu wrote:
+> > diff --git a/arch/blackfin/kernel/bfin_gpio.c
+> > b/arch/blackfin/kernel/bfin_gpio.c
+> > index bafcfa5..979cf79 100644
+> > --- a/arch/blackfin/kernel/bfin_gpio.c
+> > +++ b/arch/blackfin/kernel/bfin_gpio.c
+> > @@ -143,22 +148,100 @@ inline int check_gpio(unsigned short gpio)
+> 
+> []
+> 
+> > +#ifdef BF537_FAMILY
+> > +
+> > +#define PMUX_LUT_RES		0
+> > +#define PMUX_LUT_OFFSET		1
+> > +#define PMUX_LUT_ENTRIES	41
+> > +#define PMUX_LUT_SIZE		2
+> > +
+> > +static unsigned short port_mux_lut[PMUX_LUT_ENTRIES][PMUX_LUT_SIZE] = {
+> > +	{P_PPI0_D13, 11}, {P_PPI0_D14, 11}, {P_PPI0_D15, 11},
+> > +	{P_SPORT1_TFS, 11}, {P_SPORT1_TSCLK, 11}, {P_SPORT1_DTPRI, 11},
+> > +	{P_PPI0_D10, 10}, {P_PPI0_D11, 10}, {P_PPI0_D12, 10},
+> > +	{P_SPORT1_RSCLK, 10}, {P_SPORT1_RFS, 10}, {P_SPORT1_DRPRI, 10},
+> > +	{P_PPI0_D8, 9}, {P_PPI0_D9, 9}, {P_SPORT1_DRSEC, 9},
+> > +	{P_SPORT1_DTSEC, 9}, {P_TMR2, 8}, {P_PPI0_FS3, 8}, {P_TMR3, 7},
+> > +	{P_SPI0_SSEL4, 7}, {P_TMR4, 6}, {P_SPI0_SSEL5, 6}, {P_TMR5, 5},
+> > +	{P_SPI0_SSEL6, 5}, {P_UART1_RX, 4}, {P_UART1_TX, 4}, {P_TMR6, 4},
+> > +	{P_TMR7, 4}, {P_UART0_RX, 3}, {P_UART0_TX, 3}, {P_DMAR0, 3},
+> > +	{P_DMAR1, 3}, {P_SPORT0_DTSEC, 1}, {P_SPORT0_DRSEC, 1},
+> > +	{P_CAN0_RX, 1}, {P_CAN0_TX, 1}, {P_SPI0_SSEL7, 1},
+> > +	{P_SPORT0_TFS, 0}, {P_SPORT0_DTPRI, 0}, {P_SPI0_SSEL2, 0},
+> > +	{P_SPI0_SSEL3, 0}
+> > +};
+> 
+> Wouldn't this be better as a struct?
+> 
+> struct PMUX_LUT {
+> 	unsigned short res;
+> 	unsigned short offset;
+> }
+> 
+> struct PMUX_LUT port_mux_lut = {
+> 	{.res = P_PPI0_D13, .offset = 11},
+> 	{.res = P_PPi0_D14, .offset = 11},
+> etc?
+> 	};
+> 
+> > +
+> > +static void portmux_setup(unsigned short per, unsigned short
+> > function)
+> > +{
+> > +	u16 y, muxreg, offset;
+> 
+> Shouldn't y be int?
+> 
+> > @@ -179,22 +262,15 @@ static void default_gpio(unsigned short gpio)
+> >  
+> >  static int __init bfin_gpio_init(void)
+> >  {
+> > -	int i;
+> > -
+> > -	printk(KERN_INFO "Blackfin GPIO Controller\n");
+> >  
+> > -	for (i = 0; i < MAX_BLACKFIN_GPIOS; i += GPIO_BANKSIZE)
+> > -		reserved_map[gpio_bank(i)] = 0;
+> > +	str_ident = kzalloc(RESOURCE_LABEL_SIZE * 256, GFP_KERNEL);
+> 
+> 256?
+> 
+> perhaps better to use kcalloc(RESOURCE_LABEL_SIZE, 256, GFP_KERNEL)
+> and reference str_ident as an array of char* instead of the
+> multiplies in set_label, get_label and cmp_label?
+> 
+> > +	if (!str_ident)
+> > +		return -ENOMEM;
+> 
+> cheers,  Joe
