@@ -1,64 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935152AbXGZRuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935294AbXGZRve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935152AbXGZRuB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762832AbXGZRtx
+	id S935294AbXGZRve (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbXGZRvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:49:53 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:48247 "EHLO atlrel9.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761169AbXGZRtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:49:52 -0400
-Subject: Re: [PATCH] ia64: fix build failure on fs/quota.c
-From: Doug Chapman <doug.chapman@hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ia64@vger.kernel.org, vtaras@openvz.org
-In-Reply-To: <1184865329.3825.25.camel@dchapman.boston.redhat.com>
-References: <1184865329.3825.25.camel@dchapman.boston.redhat.com>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 13:48:56 -0400
-Message-Id: <1185472136.20910.15.camel@dchapman.boston.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 13:51:25 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47715 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763369AbXGZRvY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 13:51:24 -0400
+Date: Thu, 26 Jul 2007 10:51:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bug] SLUB & freeing locks [was: Re: 2.6.23-rc1: known regressions
+ with patches]
+In-Reply-To: <1185448275.8197.79.camel@twins>
+Message-ID: <Pine.LNX.4.64.0707261048220.2374@schroedinger.engr.sgi.com>
+References: <46A47940.7030801@googlemail.com>  <20070726091048.GA7366@elte.hu>
+ <1185441963.8197.67.camel@twins>  <1185442353.8197.71.camel@twins> 
+ <84144f020707260408t1426a1bcs698afd74b344bbb8@mail.gmail.com>
+ <1185448275.8197.79.camel@twins>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-19 at 13:15 -0400, Doug Chapman wrote:
-> Fix ia64 build failure on fs/qutoa.c.  A recent patch used the
-> type compat_u64 which on ia64 is only available if CONFIG_COMPAT
-> is defined.
-> 
-> 
-> From: Tony Luck <tony.luck@intel.com>
-> Signed-off-by: Doug Chapman <doug.chapman@hp.com>
-> 
-> --
-> 
-> --- a/fs/quota.c
-> +++ b/fs/quota.c
-> @@ -387,7 +387,7 @@ asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t
->         return ret;
->  }
->  
-> -#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
-> +#if defined(CONFIG_X86_64) || (defined(CONFIG_IA64) && defined(CONFIG_COMPAT))
->  /*
->   * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
->   * and is necessary due to alignment problems.
-> 
-> 
+Note that debug_check... adds more code to the slab_free hotpath which 
+will have a significant performance impact if lockdep is enabled.
 
-I see that this patch has not been pulled in yet.  I am wondering if I
-confused things by sending it to both linux-kernel and linux-ia64 lists
-and each expected the other to pull it in?  Sorry if that breaks the
-process, I am somewhat new to submitting patches.
-
-Can we see about getting this in?  It will break the build used by
-fedora/RHEL for certain and I expect other distro's as well.
-
-thanks,
-
-- Doug
-
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
