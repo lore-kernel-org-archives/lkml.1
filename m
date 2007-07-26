@@ -1,99 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbXGZDoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752740AbXGZEB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762315AbXGZDoI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbXGZDn4
+	id S1752740AbXGZEB5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 00:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750728AbXGZEBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:43:56 -0400
-Received: from smtpout.mac.com ([17.250.248.173]:55422 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756875AbXGZDnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:43:55 -0400
-In-Reply-To: <Pine.LNX.4.64.0707251900410.21378@asgard.lang.hm>
-References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com> <a781481a0707230640h17e6d83l5c2359e41f3ec7b7@mail.gmail.com> <20070723211947.GD6477@mail.linbit.com> <a781481a0707241611v3c35f6bdsb7af97d382b9298f@mail.gmail.com> <20070725094638.GA2444@mail.linbit.com> <a781481a0707250512v29d41b1bh25bcd358e7381d38@mail.gmail.com> <Pine.LNX.4.64.0707251900410.21378@asgard.lang.hm>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B3CFC70C-ADBC-406A-A2C8-908530FED007@mac.com>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
-       LKML Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+	Thu, 26 Jul 2007 00:01:48 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:50046 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750726AbXGZEBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 00:01:48 -0400
+Message-ID: <46A81C39.4050009@gmail.com>
+Date: Thu, 26 Jul 2007 05:59:53 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: Robert Deaton <false.hopes@gmail.com>
+CC: linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>,
+       linux-mm@kvack.org
+Subject: updatedb
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com> <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
+In-Reply-To: <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrlinuxman@mac.com>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Date: Wed, 25 Jul 2007 23:43:38 -0400
-To: david@lang.hm
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jul 25, 2007, at 22:03:37, david@lang.hm wrote:
-> On Wed, 25 Jul 2007, Satyam Sharma wrote:
->> On 7/25/07, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
->>> On Wed, Jul 25, 2007 at 04:41:53AM +0530, Satyam Sharma wrote:
->>>> [...]
->>>> But where does the "send" come into the picture over here -- a  
->>>> send won't block forever, so I don't foresee any issues  
->>>> whatsoever w.r.t.  kthreads conversion for that. [ BTW I hope  
->>>> you're *not* using any signals-based interface for your kernel  
->>>> thread _at all_. Kthreads disallow (ignore) all signals by  
->>>> default, as they should, and you really shouldn't need to write  
->>>> any logic to handle or >  do-certain-things-on-seeing a signal  
->>>> in a well designed kernel thread. ] and the sending latency is  
->>>> crucial to performance, while the recv will not timeout for the  
->>>> next few seconds.  Again, I don't see what sending latency has  
->>>> to do with a kernel_thread to kthread conversion. Or with  
->>>> signals, for that matter. Anyway, as Kyle Moffett mentioned  
->>>> elsewhere, you could probably look at other examples (say  
->>>> cifs_demultiplexer_thread() in fs/cifs/connect.c).
->>>
->>> the basic problem, and what we use signals for, is:  it is  
->>> waiting in recv, waiting for the peer to say something.  but I  
->>> want it to stop recv, and go send something "right now".
->>
->> That's ... weird. Most (all?) communication between any two  
->> parties would follow a protocol where someone recv's stuff, does  
->> something with it, and sends it back ... what would you send  
->> "right now" if you didn't receive anything?
->
-> becouse even though you didn't receive anything you now have  
-> something important to send.
->
-> remember that both sides can be sitting in receive mode. this puts  
-> them both in a position to respond to the other if the other has  
-> something to say.
+On 07/25/2007 07:15 PM, Robert Deaton wrote:
 
-Why not just have 2 threads, one for "sending" and one for  
-"receiving".  When your receiving thread gets data it takes  
-appropriate locks and processes it, then releases the locks and goes  
-back to waiting for packets.  Your sending thread would take  
-appropriate locks, generate data to send, release locks, and transmit  
-packets.  You don't have to interrupt the receive thread to send  
-packets, so where's the latency problem, exactly?
+> On 7/25/07, Rene Herman <rene.herman@gmail.com> wrote:
 
-If I were writing that in userspace I would have:
+>> And there we go again -- off into blabber-land. Why does swap-prefetch 
+>> help updatedb? Or doesn't it? And if it doesn't, why should anyone 
+>> trust anything else someone who said it does says?
 
-(A) The pool of IO-generating threads (IE: What would ordinarily be  
-userspace)
-(B) One or a small number of data-reception threads.
-(C) One or a small number of data-transmission threads.
+> I don't think anyone has ever argued that swap-prefetch directly helps 
+> the performance of updatedb in any way
 
-When you get packets to process in your network-reception thread(s),  
-you queue appropriate disk IOs and any appropriate responses with  
-your transmission thread(s).  You can basically just sit in a loop on  
-tcp_recvmsg=>demultiplex=>do-stuff.  When your IO-generators actually  
-make stuff to send you queue such data for disk IO, then packetize it  
-and hand it off to your data-transmission threads.
+People have argued (claimed, rather) that swap-prefetch helps their system 
+after updatedb has run -- you are doing so now.
 
-If you made all your sockets and inter-thread pipes nonblocking then  
-in userspace you would just epoll_wait() on the sockets and pipes and  
-be easily able to react to any IO from anywhere.
+> however, I do recall people mentioning that updatedb, being a ram
+> intensive task, will often cause things to be swapped out while it runs
+> on say a nightly cronjob.
 
-In kernel space there are similar nonblocking interfaces, although it  
-would probably be easier just to use a couple threads.
+Problem spot no. 1.
 
-Cheers,
-Kyle Moffett
+RAM intensive? If I run updatedb here, it never grows itself beyond 2M. Yes, 
+two. I'm certainly willing to accept that me and my systems are possibly not 
+the reference but assuming I'm _very_ special hasn't done much for me either 
+in the past.
+
+The thing updatedb does do, or at least has the potential to do, is fill 
+memory with cached inodes/dentries but Linux does not swap to make room for 
+caches. So why will updatedb "often cause things to be swapped out"?
+
+[ snip ]
+
+> Swap prefetch, on the other hand, would have kicked in shortly after
+> updatedb finished, leaving the applications in swap for a speedy
+> recovery when the person comes back to their computer.
+
+Problem spot no. 2.
+
+If updatedb filled all of RAM with inodes/dentries, that RAM is now used 
+(ie, not free) and swap-prefetch wouldn't have anywhere to prefetch into so 
+would _not_ have kicked in.
+
+So what's happening? If you sit down with a copy op "top" in one terminal 
+and updatedb in another, what does it show?
+
+Rene.
 
