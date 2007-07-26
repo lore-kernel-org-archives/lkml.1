@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933447AbXGZOfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763596AbXGZOiN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933447AbXGZOfj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 10:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753808AbXGZOfc
+	id S1763596AbXGZOiN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 10:38:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756014AbXGZOh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 10:35:32 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:49307 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759204AbXGZOfb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 10:35:31 -0400
-Date: Thu, 26 Jul 2007 09:36:19 -0500 (CDT)
-Message-Id: <20070726.093619.31113410.yoshfuji@linux-ipv6.org>
-To: rjw@sisk.pl
-Cc: pavel@ucw.cz, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
-       yoshfuji@linux-ipv6.org
-Subject: Re: [2.6.23-rc1 REGRESSION] ThinkPad T42 poweroff failure by "PM:
- Introduce pm_power_off_prepare"
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <200707261629.55741.rjw@sisk.pl>
-References: <200707261412.33839.rjw@sisk.pl>
-	<20070726.080624.94043434.yoshfuji@linux-ipv6.org>
-	<200707261629.55741.rjw@sisk.pl>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 10:37:58 -0400
+Received: from styx.suse.cz ([82.119.242.94]:38627 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754333AbXGZOh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 10:37:57 -0400
+Date: Thu, 26 Jul 2007 16:38:04 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] fix return value of i8042_aux_test_irq
+Message-ID: <20070726143804.GB31507@suse.cz>
+References: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp> <d120d5000707260654l74d61359v4f17790ab06ac0a3@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d120d5000707260654l74d61359v4f17790ab06ac0a3@mail.gmail.com>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <200707261629.55741.rjw@sisk.pl> (at Thu, 26 Jul 2007 16:29:55 +0200), "Rafael J. Wysocki" <rjw@sisk.pl> says:
+On Thu, Jul 26, 2007 at 09:54:50AM -0400, Dmitry Torokhov wrote:
+> Hi,
+> 
+> On 7/26/07, Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp> wrote:
+> >I made an interesting finding while testing the two patches below.
+> >
+> >http://lkml.org/lkml/2007/7/19/685
+> >http://lkml.org/lkml/2007/7/19/687
+> >
+> >These patches modify the traditional CONFIG_DEBUG_KERNEL in such a way
+> >that the request_irq prints a warning if after calling the handler it
+> >returned IRQ_HANDLED .
+> >
+> >The code looks like this:
+> >
+> >int request_irq(unsigned int irq, irq_handler_t handler,
+> >               unsigned long irqflags, const char *devname, void
+> >*dev_id)
+> >.....
+> >       if (irqflags & IRQF_DISABLED) {
+> >               unsigned long flags;
+> >
+> >               local_irq_save(flags);
+> >               retval = handler(irq, dev_id);
+> >               local_irq_restore(flags);
+> >       } else
+> >               retval = handler(irq, dev_id);
+> >       if (retval == IRQ_HANDLED) {
+> >               printk(KERN_WARNING
+> >                      "%s (IRQ %d) handled a spurious interrupt\n",
+> >                      devname, irq);
+> >       }
+> >.....
+> >
+> >I discovered that i8042_aux_test_irq handles the "fake" interrupt,
+> >which, in principle, is not correct because it obviously isn't a real
+> >interrupt and it could have been a spurious interrupt as well.
+> >
+> >The problem is that the interrupt handler unconditionally returns IRQ
+> >handled, which does not seem correct. Anyway I am not very familiar with
+> >this code so I may be missing the whole point. I would appreciate your
+> >comments on this.
+> >
+> 
+> The handler does handle the interrupt - both status and data registers
+> are read so from the keyboard controller point of view the interrupt
+> has been handled even if we happen to discard the data. As far as I
+> know IRQ12 is never shared by BIOS... Vojtech, do you remember why we
+> request IRQ12 with IRQF_SHARED?
+ 
+I believe it was needed on PPC.
 
-> > Yes, it definitely does.  Thank you.
-> 
-> OK, so here it goes again with a changelog:
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Generally, sysdev_shutdown() should be called after the ACPI preparation for
-> powering the system off.  To make it happen, we can separate sysdev_shutdown()
-> from device_shutdown() and call it directly wherever necessary.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-
---yoshfuji
+-- 
+Vojtech Pavlik
+Director SuSE Labs
