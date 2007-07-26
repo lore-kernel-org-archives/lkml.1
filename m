@@ -1,163 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936272AbXGZSGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936157AbXGZSHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936272AbXGZSGk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934674AbXGZSGa
+	id S936157AbXGZSHS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934576AbXGZSGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:06:30 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:53336
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936119AbXGZSG3 (ORCPT
+	Thu, 26 Jul 2007 14:06:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46429 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1765458AbXGZSGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:06:29 -0400
-Subject: [PATCH] synclink_gt fix transmit DMA stall
-From: Paul Fulghum <paulkf@microgate.com>
-To: "akpm@osdl.org" <akpm@osdl.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 12:06:18 -0500
-Message-Id: <1185469578.3875.5.camel@x2.microgate.com>
+	Thu, 26 Jul 2007 14:06:52 -0400
+Date: Thu, 26 Jul 2007 11:05:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+Message-Id: <20070726110549.da3a7a0d.akpm@linux-foundation.org>
+In-Reply-To: <1185454019.6449.12.camel@Homer.simpson.net>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	<46A57068.3070701@yahoo.com.au>
+	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	<46A58B49.3050508@yahoo.com.au>
+	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	<46A6CC56.6040307@yahoo.com.au>
+	<p73abtkrz37.fsf@bingen.suse.de>
+	<46A85D95.509@kingswood-consulting.co.uk>
+	<20070726092025.GA9157@elte.hu>
+	<20070726023401.f6a2fbdf.akpm@linux-foundation.org>
+	<20070726094024.GA15583@elte.hu>
+	<20070726030902.02f5eab0.akpm@linux-foundation.org>
+	<1185454019.6449.12.camel@Homer.simpson.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix transmit DMA stall when write() called in window after
-previous transmit DMA completes but before previous serial
-transmission completes.
+On Thu, 26 Jul 2007 14:46:58 +0200 Mike Galbraith <efault@gmx.de> wrote:
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
+> On Thu, 2007-07-26 at 03:09 -0700, Andrew Morton wrote:
+> 
+> > Setting it to zero will maximise the preservation of the vfs caches.  You
+> > wanted 10000 there.
+> > 
+> > <bets that nobody will test this>
+> 
+> drops caches prior to both updatedb runs.
 
---- a/drivers/char/synclink_gt.c	2007-07-08 18:32:17.000000000 -0500
-+++ b/drivers/char/synclink_gt.c	2007-07-26 10:39:56.000000000 -0500
-@@ -1,5 +1,5 @@
- /*
-- * $Id: synclink_gt.c,v 4.36 2006/08/28 20:47:14 paulkf Exp $
-+ * $Id: synclink_gt.c,v 4.50 2007/07/25 19:29:25 paulkf Exp $
-  *
-  * Device driver for Microgate SyncLink GT serial adapters.
-  *
-@@ -93,7 +93,7 @@
-  * module identification
-  */
- static char *driver_name     = "SyncLink GT";
--static char *driver_version  = "$Revision: 4.36 $";
-+static char *driver_version  = "$Revision: 4.50 $";
- static char *tty_driver_name = "synclink_gt";
- static char *tty_dev_prefix  = "ttySLG";
- MODULE_LICENSE("GPL");
-@@ -479,6 +479,7 @@ static void tx_set_idle(struct slgt_info
- static unsigned int free_tbuf_count(struct slgt_info *info);
- static void reset_tbufs(struct slgt_info *info);
- static void tdma_reset(struct slgt_info *info);
-+static void tdma_start(struct slgt_info *info);
- static void tx_load(struct slgt_info *info, const char *buf, unsigned int count);
- 
- static void get_signals(struct slgt_info *info);
-@@ -912,6 +913,8 @@ start:
- 		spin_lock_irqsave(&info->lock,flags);
- 		if (!info->tx_active)
- 		 	tx_start(info);
-+		else
-+			tdma_start(info);
- 		spin_unlock_irqrestore(&info->lock,flags);
-  	}
- 
-@@ -3880,44 +3883,58 @@ static void tx_start(struct slgt_info *i
- 			slgt_irq_on(info, IRQ_TXUNDER + IRQ_TXIDLE);
- 			/* clear tx idle and underrun status bits */
- 			wr_reg16(info, SSR, (unsigned short)(IRQ_TXIDLE + IRQ_TXUNDER));
--
--			if (!(rd_reg32(info, TDCSR) & BIT0)) {
--				/* tx DMA stopped, restart tx DMA */
--				tdma_reset(info);
--				/* set 1st descriptor address */
--				wr_reg32(info, TDDAR, info->tbufs[info->tbuf_start].pdesc);
--				switch(info->params.mode) {
--				case MGSL_MODE_RAW:
--				case MGSL_MODE_MONOSYNC:
--				case MGSL_MODE_BISYNC:
--					wr_reg32(info, TDCSR, BIT2 + BIT0); /* IRQ + DMA enable */
--					break;
--				default:
--					wr_reg32(info, TDCSR, BIT0); /* DMA enable */
--				}
--			}
--
- 			if (info->params.mode == MGSL_MODE_HDLC)
- 				mod_timer(&info->tx_timer, jiffies +
- 						msecs_to_jiffies(5000));
- 		} else {
--			tdma_reset(info);
--			/* set 1st descriptor address */
--			wr_reg32(info, TDDAR, info->tbufs[info->tbuf_start].pdesc);
--
- 			slgt_irq_off(info, IRQ_TXDATA);
- 			slgt_irq_on(info, IRQ_TXIDLE);
- 			/* clear tx idle status bit */
- 			wr_reg16(info, SSR, IRQ_TXIDLE);
--
--			/* enable tx DMA */
--			wr_reg32(info, TDCSR, BIT0);
- 		}
--
-+		tdma_start(info);
- 		info->tx_active = 1;
- 	}
- }
- 
-+/*
-+ * start transmit DMA if inactive and there are unsent buffers
-+ */
-+static void tdma_start(struct slgt_info *info)
-+{
-+	unsigned int i;
-+
-+	if (rd_reg32(info, TDCSR) & BIT0)
-+		return;
-+
-+	/* transmit DMA inactive, check for unsent buffers */
-+	i = info->tbuf_start;
-+	while (!desc_count(info->tbufs[i])) {
-+		if (++i == info->tbuf_count)
-+			i = 0;
-+		if (i == info->tbuf_current)
-+			return;
-+	}
-+	info->tbuf_start = i;
-+
-+	/* there are unsent buffers, start transmit DMA */
-+
-+	/* reset needed if previous error condition */
-+	tdma_reset(info);
-+
-+	/* set 1st descriptor address */
-+	wr_reg32(info, TDDAR, info->tbufs[info->tbuf_start].pdesc);
-+	switch(info->params.mode) {
-+	case MGSL_MODE_RAW:
-+	case MGSL_MODE_MONOSYNC:
-+	case MGSL_MODE_BISYNC:
-+		wr_reg32(info, TDCSR, BIT2 + BIT0); /* IRQ + DMA enable */
-+		break;
-+	default:
-+		wr_reg32(info, TDCSR, BIT0); /* DMA enable */
-+	}
-+}
-+
- static void tx_stop(struct slgt_info *info)
- {
- 	unsigned short val;
-@@ -4651,8 +4668,8 @@ static unsigned int free_tbuf_count(stru
- 			i=0;
- 	} while (i != info->tbuf_current);
- 
--	/* last buffer with zero count may be in use, assume it is */
--	if (count)
-+	/* if tx DMA active, last zero count buffer is in use */
-+	if (count && (rd_reg32(info, TDCSR) & BIT0))
- 		--count;
- 
- 	return count;
+I think that was the wrong thing to do.  That will leave gobs of free
+memory for updatedb to populate with dentries and inodes.
 
+Instead, fill all of memory up with pagecache, then do the updatedb.  See
+how much pagecache is left behind and see how large the vfs caches end up.
+
+> root@Homer: df -i
+> Filesystem            Inodes   IUsed   IFree IUse% Mounted on
+> /dev/hdc3            12500992 1043544 11457448    9% /
+> udev                  129162    1567  127595    2% /dev
+> /dev/hdc1              26104      87   26017    1% /boot
+> /dev/hda1             108144   90676   17468   84% /windows/C
+> /dev/hda5              11136    3389    7747   31% /windows/D
+> /dev/hda6                  0       0       0    -  /windows/E
+> 
+> vfs_cache_pressure=10000, updatedb freshly completed:
+> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+>  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+>  1  0     48  76348 420356 104748    0    0     0     0 1137  912  3  1 97  0
+> 
+> ext3_inode_cache  315153 316274    524    7    1 : tunables   54   27    8 : slabdata  45182  45182      0
+> dentry_cache      224829 281358    136   29    1 : tunables  120   60    8 : slabdata   9702   9702      0
+> buffer_head       156624 159728     56   67    1 : tunables  120   60    8 : slabdata   2384   2384      0
+> 
+> vfs_cache_pressure=100 (stock), updatedb freshly completed:
+> 
+> procs -----------memory---------- ---swap-- -----io---- -system-- ----cpu----
+>  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa
+> 1  0    148  83824 270088 116340    0    0     0     0 1095  330  2  1 97  0
+>  
+> ext3_inode_cache  467257 502495    524    7    1 : tunables   54   27    8 : slabdata  71785  71785      0
+> dentry_cache      292695 408958    136   29    1 : tunables  120   60    8 : slabdata  14102  14102      0
+> buffer_head       118329 184384     56   67    1 : tunables  120   60    8 : slabdata   2752   2752      1
+> 
+> Note:  updatedb doesn't bother my box, not running enough leaky apps I
+> guess.
+> 
+
+So you ended up with a couple hundred MB of pagecache preserved.
+
+Capturing before-and-after /proc/meminfo would be nice - it's a useful
+summary.
 
