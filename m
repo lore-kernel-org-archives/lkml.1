@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761707AbXGZDek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762027AbXGZDfl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761707AbXGZDek (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757509AbXGZDed
+	id S1762027AbXGZDfl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 23:35:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757458AbXGZDfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:34:33 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:40811 "EHLO atlrel8.hp.com"
+	Wed, 25 Jul 2007 23:35:34 -0400
+Received: from ozlabs.org ([203.10.76.45]:55274 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757030AbXGZDeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:34:31 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Wed, 25 Jul 2007 21:33:20 -0600
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       =?utf-8?q?S=C3=A9bastien_Dugu=C3=A9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <86802c440707251737p3be3ae69qe3f91282bec8984a@mail.gmail.com> <1185416466.31345.1.camel@sli10-conroe.sh.intel.com>
-In-Reply-To: <1185416466.31345.1.camel@sli10-conroe.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1756875AbXGZDfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 23:35:33 -0400
+Subject: Re: [PATCH 1/7] lguest: documentation pt I: Preparation
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Rob Landley <rob@landley.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Randy.Dunlap" <rdunlap@xenotime.net>
+In-Reply-To: <200707251822.54745.rob@landley.net>
+References: <1184980678.6344.1.camel@localhost.localdomain>
+	 <20070723171238.1a832b31.akpm@linux-foundation.org>
+	 <1185238908.1803.63.camel@localhost.localdomain>
+	 <200707251822.54745.rob@landley.net>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 13:35:22 +1000
+Message-Id: <1185420922.27447.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707252133.20266.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 July 2007 08:21:06 pm Shaohua Li wrote:
-> On Wed, 2007-07-25 at 17:37 -0700, Yinghai Lu wrote:
-> > On 7/25/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > > Yinghai, you mentioned the same issue on boxes with multiple root
-> > > bridges.  Any chance you could try this out there as well?
-> > >
-> > it doesn't solve pci_root_bus reverse problem.
-> > 
-> > is that too late for PNP0A03?
-> > 
-> > I wonder if we need to modify acpi_device_register to sort them.
-> The pci root driver is an acpi driver not a pnp driver, so Bjorn's patch
-> will not work.
+On Wed, 2007-07-25 at 18:22 -0400, Rob Landley wrote:
+> On Monday 23 July 2007 9:01:48 pm Rusty Russell wrote:
+> > > IOW, I'd be interested in hearing Rob and Randy's opinions on it all,
+> > > please.
+> >
+> > So they can see what we're talking about, here's an example of the
+> > output:
+> >
+> > 	http://lguest.ozlabs.org/lguest-journey.c.bz2
+> 
+> Er, so you read the readme, and then you type "make Preparation!" (which I 
+> wouldn't have guessed from the comment at the end of the readme), and it 
+> spits this to stdout.
 
-Right, I forgot that the PCI root driver is an ACPI driver.
+Hi Rob!
 
-This is a longer-term idea, but the way I'd like to solve this is
-by converting ACPI drivers into PNP drivers.  Then the PNPACPI sort
-would work for all of them.  PNP would provide a hook to retrieve
-the ACPI handle corresponding to a PNP device.
+	I'm going to ask an odd thing.  I *don't* think this should be part of
+the generally-available kernel documentation.  I'm sure you can see
+several reasons for this, but I'll spell them out for posterity.
 
-> Maybe the ACPI core (ACPICA) should do the sort? 
+	People reading the lguest *code* documentation should feel a sense of
+achievement.  It starts with a slight puzzle, works its way through deep
+details of code, and emerges with the reader feeling confident enough to
+start hacking on it.
 
-I thought about that, but I didn't see a nice way to do it.  The
-current namespace interfaces like acpi_get_devices() are walk-
-oriented -- they call a callback function for every node that
-meets some criteria.  Sorting requires some sort of buffer so
-you can look at all the matching nodes before returning any of
-them.
+Thanks for your understanding!
+Rusty.
 
-Bjorn
+
