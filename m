@@ -1,46 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763083AbXGZPAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763710AbXGZPCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763083AbXGZPAU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbXGZPAI
+	id S1763710AbXGZPCj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXGZPCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:00:08 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:54164 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756303AbXGZPAG (ORCPT
+	Thu, 26 Jul 2007 11:02:31 -0400
+Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:53885 "EHLO
+	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755719AbXGZPCa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:00:06 -0400
-Date: Thu, 26 Jul 2007 15:59:52 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
-       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Message-ID: <20070726145952.GK27237@ftp.linux.org.uk>
-References: <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de> <46A85D95.509@kingswood-consulting.co.uk> <20070726092025.GA9157@elte.hu> <20070726023401.f6a2fbdf.akpm@linux-foundation.org> <20070726094024.GA15583@elte.hu> <20070726102025.GJ27237@ftp.linux.org.uk> <20070726122330.GA21750@one.firstfloor.org>
+	Thu, 26 Jul 2007 11:02:30 -0400
+Date: Thu, 26 Jul 2007 11:02:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Ankita Garg <ankita@in.ibm.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux@bohmer.net, LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Question] Hooks for scheduler tracing (CFS)
+Message-ID: <20070726150226.GB1299@Krystal>
+References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com> <1184615557.2698.3.camel@laptopd505.fenrus.org> <20070726072858.GC13061@in.ibm.com> <20070726133138.GA30559@Krystal> <y0mps2f1asz.fsf@ton.toronto.redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070726122330.GA21750@one.firstfloor.org>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <y0mps2f1asz.fsf@ton.toronto.redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:55:24 up 9 days,  9:29,  3 users,  load average: 0.01, 0.26, 0.32
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 02:23:30PM +0200, Andi Kleen wrote:
-> That would just save reading the directories. Not sure
-> it helps that much. Much better would be actually if it didn't stat the 
-> individual files (and force their dentries/inodes in). I bet it does that to 
-> find out if they are directories or not. But in a modern system it could just 
-> check the type in the dirent on file systems that support 
-> that and not do a stat. Then you would get much less dentries/inodes.
- 
-FWIW, find(1) does *not* stat non-directories (and neither would this
-approach).  So it's just dentries for directories and you can't realistically
-skip those.  OK, you could - if you had banned cross-directory rename
-for directories and propagated "dirty since last look" towards root (note
-that it would be a boolean, not a timestamp).  Then we could skip unchanged
-subtrees completely...
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> writes:
+> 
+> > [...]
+> > The problem is also in _stp_print_flush, not *only* in relay code:
+> > void _stp_print_flush (void)
+> > ...
+> >                 spin_lock(&_stp_print_lock);
+> >                 ...
+> >                 spin_unlock(&_stp_print_lock);
+> > 
+> > Those will turn into mutexes with -rt.
+> 
+> Indeed, plus systemtap-generated locking code uses rwlocks,
+> local_irq_save/restore or preempt_disable, in various places.  Could
+> someone point to a place that spells out what would be more
+> appropriate way of ensuring atomicity while being compatible with -rt?
+> 
+> - FChE
+
+AFAIK, for your needs either:
+- Use atomic ops
+- Use per-cpu data with preempt disabling/irq disabling
+- Use the original "real" spin locks/rwlocks (raw_*).
+- Don't play with timers or wakeups, since this kernel code uses the
+  "standard" spin locks (sleepable in -rt).
+
+You just don't want to sleep in the tracing code.
+
+Make sure that the sub-buffer switch code respects that too: it is the
+most tricky and yet less executed part of the tracing code, so it's easy
+for bugs to slip there and yet be undetected for a while.
+
+Since you will likely disable preemption, make sure your tracing code
+executes in a deterministic time.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
