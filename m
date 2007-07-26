@@ -1,109 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934298AbXGZRsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935152AbXGZRuB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934298AbXGZRsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764410AbXGZRsl
+	id S935152AbXGZRuB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:50:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762832AbXGZRtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:48:41 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:49454 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764034AbXGZRsj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:48:39 -0400
-Date: Thu, 26 Jul 2007 10:53:18 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: 2.6.23-rc1-mm1 -- mostly fails to build
-In-reply-to: <20070725225658.00e18aaa.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       Steve Fox <drfickle@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <46A8DF8E.8070601@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
- <46A77C28.1050807@shadowen.org> <20070725224143.GA668@shadowen.org>
- <20070725225658.00e18aaa.akpm@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Thu, 26 Jul 2007 13:49:53 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:48247 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761169AbXGZRtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 13:49:52 -0400
+Subject: Re: [PATCH] ia64: fix build failure on fs/quota.c
+From: Doug Chapman <doug.chapman@hp.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, vtaras@openvz.org
+In-Reply-To: <1184865329.3825.25.camel@dchapman.boston.redhat.com>
+References: <1184865329.3825.25.camel@dchapman.boston.redhat.com>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 13:48:56 -0400
+Message-Id: <1185472136.20910.15.camel@dchapman.boston.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 25 Jul 2007 23:41:46 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+On Thu, 2007-07-19 at 13:15 -0400, Doug Chapman wrote:
+> Fix ia64 build failure on fs/qutoa.c.  A recent patch used the
+> type compat_u64 which on ia64 is only available if CONFIG_COMPAT
+> is defined.
 > 
->> On Wed, Jul 25, 2007 at 05:36:56PM +0100, Andy Whitcroft wrote:
->>
->>> Will investigate the NUMA-Q explosion and report on that separatly.
->> Ok, I've been looking at the NUMA-Q boot panic below:
->>
->> BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
->>  printing eip:
->> c111689f
->> *pdpt = 0000000001387001
->> *pde = 0000000000000000
->> Oops: 0000 [#1]
->> SMP
->> Modules linked in:
->> CPU:    0
->> EIP:    0060:[<c111689f>]    Not tainted VLI
->> EFLAGS: 00010286   (2.6.23-rc1-mm1-gc8131905-dirty #251)
->> EIP is at pci_create_bus+0x11b/0x277
->> eax: 00000000   ebx: c9352e00   ecx: c9073e94   edx: c9325400
->> esi: c9325400   edi: c932559c   ebp: 00000002   esp: c9073e90
->> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
->> Process swapper (pid: 1, ti=c9072000 task=c9070030 task.ti=c9072000)
->> Stack: c12adc4f c9325400 00000000 00000002 00000000 00000000 00000000 c934c800
->>        000000d6 00000000 c1116a09 00000000 c9073ed5 c11b178a 00000000 c934c940
->>        00000000 02fffff4 c12bd8ac c934c800 c12bd8b4 c9325000 c1119825 c934c800
->> Call Trace:
->>  [<c1116a09>] pci_scan_bus_parented+0xe/0x21
->>  [<c11b178a>] pci_fixup_i450nx+0xa7/0x101
->>  [<c1119825>] pci_do_fixups+0x2d/0x38
->>  [<c111665c>] pci_device_add+0x48/0x77
->>  [<c11166a5>] pci_scan_single_device+0x1a/0x1f
->>  [<c11166bf>] pci_scan_slot+0x15/0x47
->>  [<c111670a>] pci_scan_child_bus+0x19/0x7c
->>  [<c1116a14>] pci_scan_bus_parented+0x19/0x21
->>  [<c11b259d>] pcibios_scan_root+0x75/0x7e
->>  [<c1369ee3>] pci_numa_init+0x2c/0xe4
->>  [<c1354b87>] kernel_init+0x0/0xa1
->>  [<c1354a15>] do_initcalls+0x73/0x1a3
->>  [<c109032c>] proc_register+0xa0/0xa7
->>  [<c10905cd>] create_proc_entry+0x73/0x86
->>  [<c103a5c9>] register_irq_proc+0x75/0x92
->>  [<c1354b87>] kernel_init+0x0/0xa1
->>  [<c1354be6>] kernel_init+0x5f/0xa1
->>  [<c10031c3>] kernel_thread_helper+0x7/0x10
->>  =======================
->> Code: ff 8b 83 84 00 00 00 c7 04 24 4f dc 2a c1 89 44 24 04 e8 f8 42 f0 ff 83 7c 24 14 00 75 15 8b 93 84 00 00 00 85 d2 74 0b 8b 43 44 <8b> 00 89 82 50 01 00 00 c7 44 24 04 9a 04 00 00 8d bb 88 00 00
->> EIP: [<c111689f>] pci_create_bus+0x11b/0x277 SS:ESP 0068:c9073e90
->> Kernel panic - not syncing: Attempted to kill init!
->>
->> This seems to have been caused by the introduction of the following
->> code fragment into pci_create_bus:
->>
->>         if (!parent)
->>                 set_dev_node(b->bridge, pcibus_to_node(b));
->>
->> This has come as part of the -mm patch below:
->>
->>     try-parent-numa_node-at-first-before-using-default-v2.patch
->>
->> This patch does not seem to be wrong in and of itself.  It does
->> expose the fact that we are building busses with NULL sysdata.
->> This has come up at least three times now.  Below is the patch
->> proposed the last couple of times.  It is needed to allow any machine
->> with i450nx quirk, plus for NUMA-Q systems.
 > 
-> All this could have happened due to my hamfisted repairing of yet another
-> reject storm, too.
+> From: Tony Luck <tony.luck@intel.com>
+> Signed-off-by: Doug Chapman <doug.chapman@hp.com>
 > 
->> Andrew please could you add this to -mm again.
->>
+> --
 > 
-> ok..
+> --- a/fs/quota.c
+> +++ b/fs/quota.c
+> @@ -387,7 +387,7 @@ asmlinkage long sys_quotactl(unsigned int cmd, const char __user *special, qid_t
+>         return ret;
+>  }
+>  
+> -#if defined(CONFIG_X86_64) || defined(CONFIG_IA64)
+> +#if defined(CONFIG_X86_64) || (defined(CONFIG_IA64) && defined(CONFIG_COMPAT))
+>  /*
+>   * This code works only for 32 bit quota tools over 64 bit OS (x86_64, ia64)
+>   * and is necessary due to alignment problems.
+> 
+> 
 
-Can we add .node and .iommu to pci_bus?
+I see that this patch has not been pulled in yet.  I am wondering if I
+confused things by sending it to both linux-kernel and linux-ia64 lists
+and each expected the other to pull it in?  Sorry if that breaks the
+process, I am somewhat new to submitting patches.
 
-YH
+Can we see about getting this in?  It will break the build used by
+fedora/RHEL for certain and I expect other distro's as well.
+
+thanks,
+
+- Doug
+
+
