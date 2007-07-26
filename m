@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936661AbXGZWeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935375AbXGZWk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936661AbXGZWeH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 18:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757143AbXGZWdz
+	id S935375AbXGZWk5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763710AbXGZWkq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 18:33:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:60344 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755523AbXGZWdz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 18:33:55 -0400
-From: Dirk Schoebel <dirk@liji-und-dirk.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Date: Fri, 27 Jul 2007 00:33:35 +0200
-User-Agent: KMail/1.9.7
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rene Herman <rene.herman@gmail.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070726111326.873f7b0a.akpm@linux-foundation.org> <200707270004.46211.dirk@liji-und-dirk.de>
-In-Reply-To: <200707270004.46211.dirk@liji-und-dirk.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1403807.n4uH34JPFY";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707270033.41055.dirk@liji-und-dirk.de>
-X-Provags-ID: V01U2FsdGVkX1+lZEaPSQO5eILyQeAMP43JtXdAdsgdVUXP3Fe
- GHdASUC0G7IQB5XWPNd5MJB04AoOvJ+/7MhWx7IsYbzhTvu4dE
- zOgvzZPi0CmoV75PyEfaA==
+	Thu, 26 Jul 2007 18:40:46 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2526 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753826AbXGZWkp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 18:40:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,584,1175497200"; 
+   d="scan'208";a="110395045"
+Date: Thu, 26 Jul 2007 15:34:56 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch] sched: introduce SD_BALANCE_FORK for ht/mc/smp domains
+Message-ID: <20070726223455.GK3318@linux-os.sc.intel.com>
+References: <20070726183225.GJ3318@linux-os.sc.intel.com> <20070726221830.GA4113@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070726221830.GA4113@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1403807.n4uH34JPFY
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, Jul 27, 2007 at 12:18:30AM +0200, Ingo Molnar wrote:
+> 
+> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+> 
+> > Introduce SD_BALANCE_FORK for HT/MC/SMP domains.
+> > 
+> > For HT/MC, as caches are shared, SD_BALANCE_FORK is the right thing to 
+> > do. Given that NUMA domain already has this flag and the scheduler 
+> > currently doesn't have the concept of running threads belonging to a 
+> > process as close as possible(i.e., forking may keep close, but 
+> > periodic balance later will likely take them far away), introduce 
+> > SD_BALANCE_FORK for SMP domain too.
+> > 
+> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 
+> i'm not opposed to this fundamentally, but it would be nice to better 
+> map the effects of this change: do you have any particular workload 
+> under which you've tested this and under which you've seen it makes a 
+> difference? I'd expect this to improve fork-intense half-idle workloads 
+> perhaps - things like a make -j3 on a 4-core CPU.
 
-=2E..sorry for the reply to myself.
+They might be doing more exec's and probably covered by exec balance.
 
-As Gentoo user i'm happy about the freedom of choice in almost every aspect=
- of=20
-the system.
-But with the kernel this freedom is taken away and i'm left with largely=20
-choices other people did. Sure, i can get the sources and patch and change=
-=20
-the kernel myself in every aspect but thats more the possibility given by t=
-he=20
-freedom of the open source of the kernel.
-I think the kernel should be more open for new ideas, and as long as the=20
-maintainer follows the kernel development things can be left in, if the=20
-maintainer can't follow anymore they are taken out quite fast again. (This=
-=20
-statement mostly counts for parts of the kernel where a choice is possible =
-or=20
-the coding overhead of making such choice possible is quite low.)
-A problem of Linux is there are 100s of patches and patchsets out there but=
- if=20
-you want to have more than one (since they offer advantages or functionalit=
-y=20
-in different places) you are mostly left alone, start to integrate all=20
-patches by hand and solve so many rejects.
+There was a small pthread test case which was calculating the time to create
+all the threads and how much time each thread took to start running. It
+appeared as if the threads ran sequentially one after another on a DP system
+with four cores leading to this SD_BALANCE_FORK observation.
 
-=2E.still a happy CK user, but sad that Con left the scene.
-
-Dirk.
-
---nextPart1403807.n4uH34JPFY
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQBGqSFF6YYnt7muP7IRAhKYAJ4+Ddz90PWa8er9oIBfnXMNtiC74QCgoVV4
-QCwRObQ67uRaHoL2PXYa3qs=
-=VWbr
------END PGP SIGNATURE-----
-
---nextPart1403807.n4uH34JPFY--
+thanks,
+suresh
