@@ -1,49 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936350AbXGZSmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934784AbXGZStf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936350AbXGZSmn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935741AbXGZSmI
+	id S934784AbXGZStf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759344AbXGZStZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:42:08 -0400
-Received: from poy.chewa.net ([194.242.114.73]:3976 "EHLO poy.chewa.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935174AbXGZSmH convert rfc822-to-8bit (ORCPT
+	Thu, 26 Jul 2007 14:49:25 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:45431 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758156AbXGZStY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:42:07 -0400
-X-Greylist: delayed 2111 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 14:42:06 EDT
-From: =?utf-8?q?R=C3=A9mi_Denis-Courmont?= <rdenis@simphalempin.com>
-Organization: Remlab.net
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [PATCH] IPv6: ipv6_addr_type() doesn't know about RFC4193 addresses
-Date: Thu, 26 Jul 2007 21:06:48 +0300
-User-Agent: KMail/1.9.6
-Cc: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>,
-       netdev@vger.kernel.org, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
-       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
-References: <18087.57717.495366.413571@zeus.sw.starentnetworks.com> <46A8D837.1030400@simon.arlott.org.uk>
-In-Reply-To: <46A8D837.1030400@simon.arlott.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707262106.49131.rdenis@simphalempin.com>
+	Thu, 26 Jul 2007 14:49:24 -0400
+Date: Thu, 26 Jul 2007 11:48:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org, wwoods@redhat.com
+Subject: Re: [PATCH] core_pattern: Add ability for core_pattern to parse
+ arguments when pattern is a pipe
+Message-Id: <20070726114832.faf14bb0.akpm@linux-foundation.org>
+In-Reply-To: <20070726173923.GA5701@hmsreliant.homelinux.net>
+References: <20070726173923.GA5701@hmsreliant.homelinux.net>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 July 2007 20:21:59 Simon Arlott wrote:
-> On 26/07/07 00:49, Dave Johnson wrote:
-> > ipv6_addr_type() doesn't check for 'Unique Local IPv6 Unicast
-> > Addresses' (RFC4193) and returns IPV6_ADDR_RESERVED for that range.
-> >
-> > +	if ((st & htonl(0xFE000000)) == htonl(0xFC000000))
-> > +		return (IPV6_ADDR_UNICAST |
-> > +			IPV6_ADDR_SCOPE_TYPE(IPV6_ADDR_SCOPE_GLOBAL));			/* RFC 4193 */
->
-> But ULA's scope isn't global, shouldn't it be IPV6_ADDR_SCOPE_ORGLOCAL ?
+On Thu, 26 Jul 2007 13:40:19 -0400 Neil Horman <nhorman@tuxdriver.com> wrote:
 
-Yes it is - global.
+> 	Currently, core dumps can be redirected to a pipe by placing the
+> following string template in /proc/sys/kernel/core_pattern:
+> |<path/to/application>
+> This patch extends this ability, allowing the core_pattern to contain arguments
+> to be passed as an argv array to the userspace helper application.  It also add
+> a format specifier, %c, which allows the RLIM_CORE value of the crashing
+> application to be passed on the command line, since RLIMIT_CORE is reduced to
+> zero when execing the userspace helper
 
--- 
-Rémi Denis-Courmont
+This all seems to be getting a bit nutty.  Who needs this feature
+and what will they do with it, etc?
+
+You have a few open-coded kstrdup()s in there, btw.  And an open-coded
+free_argv_array() on the error path.  And a lot of checkpatch warnings.
