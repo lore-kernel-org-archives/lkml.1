@@ -1,112 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbXGZCW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759644AbXGZCY2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758833AbXGZCW1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 22:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755540AbXGZCWR
+	id S1759644AbXGZCY2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 22:24:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbXGZCYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 22:22:17 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:50904
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754925AbXGZCWQ (ORCPT
+	Wed, 25 Jul 2007 22:24:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:38494 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755540AbXGZCYU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 22:22:16 -0400
-Date: Wed, 25 Jul 2007 19:20:28 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Len Brown <lenb@kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-In-Reply-To: <200707251851.22777.lenb@kernel.org>
-Message-ID: <Pine.LNX.4.64.0707251917320.21378@asgard.lang.hm>
-References: <200707251238.50218.lenb@kernel.org>
- <alpine.LFD.0.999.0707251147130.3607@woody.linux-foundation.org>
- <200707251851.22777.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 25 Jul 2007 22:24:20 -0400
+Date: Wed, 25 Jul 2007 19:23:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Dave Young" <hidave.darkstar@gmail.com>
+Cc: "Greg KH" <gregkh@suse.de>, "Gabriel C" <nix.or.die@googlemail.com>,
+       "Dave Hansen" <haveblue@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Sam Ravnborg" <sam@ravnborg.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, "Andi Kleen" <ak@suse.de>
+Subject: Re: 2.6.23-rc1-mm1
+Message-Id: <20070725192304.45b8d336.akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0707251855u5a0a3458rfc11ac6cf649cd68@mail.gmail.com>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+	<6bffcb0e0707251148m219d1c9fqb557d3e5364f679b@mail.gmail.com>
+	<20070725185328.GA28199@uranus.ravnborg.org>
+	<46A7A1EF.8060307@zytor.com>
+	<46A7B983.90407@googlemail.com>
+	<46A7BB12.7060504@googlemail.com>
+	<20070726000705.GB21056@suse.de>
+	<20070725172845.8dec8ec5.akpm@linux-foundation.org>
+	<a8e1da0707251855u5a0a3458rfc11ac6cf649cd68@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Len Brown wrote:
+On Thu, 26 Jul 2007 01:55:03 +0000 "Dave Young" <hidave.darkstar@gmail.com> wrote:
 
-> On Wednesday 25 July 2007 14:48, Linus Torvalds wrote:
->
->> ... ACPI now seems to select CPU hotplug. Why?
->
-> ACPI=y SMP=y systems require SUSPEND_SMP=y for system sleep support,
-> and that requires HOTPLUG_CPU=y.
->
-> Note that ACPI=y SMP=n systems do not need it,
-> and thus will not select HOTPLUG_CPU=y
->
->> That is just *broken*. Sure, if you select STR or hibernation, we need CPU
->> hotplug, but just for picking ACPI? Why?
->
-> My assumption is that if somebody selects CONFIG_ACPI,
-> that 99% of the time, they intend that to include support for
-> the ACPI hooks for system sleep states.
->
-> Conversely, supporting the 1% of people who don't want it
-> isn't worth messing with the 99% who do, nor is
-> the burden of yet another config option to maintain and
-> #ifdefs in the code.
+> Hi,
+> drivers/built-in.o(.text+0xc649): In function `acpi_pci_choose_state':
+> : undefined reference to `acpi_pm_device_sleep_state'
+> drivers/built-in.o(.text+0x3fe08): In function `pnpacpi_suspend':
+> : undefined reference to `acpi_pm_device_sleep_state'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> The pci-acpi.c depends on CONFIG_ACPI_SLEEP
 
-so you are saying that you know better then we do what we need?
+There's a hopeful-fix for this in 
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/hot-fixes/
 
-some people configure ACPI only becouse their system won't work properly 
-without it. they have no intention of ever doing a STR or hibernate.
-
-David Lang
-
-> On UP, they'd get ACPI system sleep support 100% of the time
-> by default, but on SMP this option had become problematic.
->
-> We used to have this:
->
-> if ACPI
-> ...
-> config ACPI_SLEEP
->        bool "Sleep States"
->        depends on X86 && (!SMP || SUSPEND_SMP)
->        depends on PM
->        default y
->
-> So the poster-child failure was i386/defconfig itself...
-> It couldn't support suspend to RAM because it didn't include
-> CONFIG_ACPI_SLEEP.  Not trivial for a user to select it
-> when it doesn't even appear on the menu.  It doesn't appear
-> because CONFIG_SUSPEND_SMP isn't enabled, but that doesn't
-> appear either -- because CONFIG_HOTPLUG_CPU isn't selected.
-
-so have something like
-
-config ACPI_SLEEP
-         select HOTPLUG_CPU if X86 && SMP
-         select SUSPEND_SMP if X86 && SMP
-
-instead of makeing it dependant on ACPI.
-
-David Lang
-
-> Most users don't want that.
->
-> So today we have this:
->
-> menuconfig ACPI
-> 	...
->        select HOTPLUG_CPU if X86 && SMP
->        select SUSPEND_SMP if X86 && SMP
->
-> Which I think leads to fewer surprises, and less complicated code.
-> (even though using select itself is fraught with peril:-)
->
-> thanks,
-> -Len
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+(will be readable in a few minutes - I had to chmod it)
