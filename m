@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765188AbXGZG4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765733AbXGZG7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765188AbXGZG4I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 02:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbXGZGzy
+	id S1765733AbXGZG7I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 02:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759530AbXGZG65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 02:55:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57154 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754395AbXGZGzx (ORCPT
+	Thu, 26 Jul 2007 02:58:57 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:51327 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759251AbXGZG64 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 02:55:53 -0400
-Date: Wed, 25 Jul 2007 23:55:01 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-cc: david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-In-Reply-To: <200707260026.08183.lenb@kernel.org>
-Message-ID: <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707251851.22777.lenb@kernel.org>
- <Pine.LNX.4.64.0707251917320.21378@asgard.lang.hm>
- <200707260026.08183.lenb@kernel.org>
+	Thu, 26 Jul 2007 02:58:56 -0400
+Message-ID: <46A845BB.9080503@gmail.com>
+Date: Thu, 26 Jul 2007 08:56:59 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Bongani Hlope <bhlope@mweb.co.za>
+CC: Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
+Subject: Re: updatedb
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com> <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com> <46A81C39.4050009@gmail.com> <200707260839.51407.bhlope@mweb.co.za>
+In-Reply-To: <200707260839.51407.bhlope@mweb.co.za>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/26/2007 08:39 AM, Bongani Hlope wrote:
 
+> On Thursday 26 July 2007 05:59:53 Rene Herman wrote:
 
-On Thu, 26 Jul 2007, Len Brown wrote:
-> 
-> Feel free to share what you know about the benefits vs. the costs
-> of maintaining CONFIG_ACPI_SLEEP as a build option.
+>> So what's happening? If you sit down with a copy op "top" in one terminal
+>> and updatedb in another, what does it show?
 
-Why don't you just make CONFIG_ACPI_SLEEP dependent on SOFTWARE_SUSPEND 
-and STR?
+> Just tested that, there's a steady increase in the useage of buff
 
-> If you feel that your system has been degraded
-> because it now includes what used to be excluded under
-> CONFIG_ACPI_SLEEP=n, please let me know how.
+Great. Now concentrate on the "swpd" column, as it's the only thing relevant 
+here. The fact that an updatedb run fills/replaces caches is completely and 
+utterly unsurprising and not something swap-prefetch helps with. The only 
+thing it does is bring back stuff from _swap_.
 
-I feel that I get asked to include a feature that 
- (a) I have no interest in on that machine
- (b) I didn't need to include before.
+Rene.
 
-What was the advantage? And what was it that caused something like this to 
-be a post-rc1 thing. That makes me really unhappy. This is a *regression*.
-
-		Linus
