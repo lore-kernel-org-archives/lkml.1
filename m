@@ -1,38 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763079AbXGZJqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbXGZJsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763079AbXGZJqj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 05:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753513AbXGZJqb
+	id S932321AbXGZJsL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 05:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbXGZJr7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 05:46:31 -0400
-Received: from ns2.suse.de ([195.135.220.15]:53680 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbXGZJqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 05:46:30 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: i386-show-unhandled-signals-v3
-Date: Thu, 26 Jul 2007 11:46:23 +0200
-User-Agent: KMail/1.9.6
-Cc: "Masoud Sharbiani" <masouds@google.com>,
-       "Kirill Korotaev" <dev@openvz.org>, linux-kernel@vger.kernel.org
-References: <20070718154759.GA26425@google.com> <4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com> <20070725162528.7d485ff8.akpm@linux-foundation.org>
-In-Reply-To: <20070725162528.7d485ff8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 26 Jul 2007 05:47:59 -0400
+Received: from www.osadl.org ([213.239.205.134]:39381 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754145AbXGZJr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 05:47:58 -0400
+Subject: [PATCH] x86_64: cleanup tsc.c merge artifact
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 11:47:51 +0200
+Message-Id: <1185443271.3227.28.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707261146.23886.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+tsc_unstable is declared twice.
 
-> Look: if there's a way in which an unprivileged user can trigger a printk
-> we fix it, end of story. 
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
-I'm firmly against disabling it on x86-64 by default. The printks are extremly
-useful and have found many bugs in the past.
+---
+ arch/x86_64/kernel/tsc.c |    2 --
+ 1 file changed, 2 deletions(-)
 
--Andi
+Index: linux-2.6.23-rc1/arch/x86_64/kernel/tsc.c
+===================================================================
+--- linux-2.6.23-rc1.orig/arch/x86_64/kernel/tsc.c	2007-07-26 09:45:51.000000000 +0200
++++ linux-2.6.23-rc1/arch/x86_64/kernel/tsc.c	2007-07-26 09:45:53.000000000 +0200
+@@ -118,8 +118,6 @@ core_initcall(cpufreq_tsc);
+ 
+ #endif
+ 
+-static int tsc_unstable = 0;
+-
+ /*
+  * Make an educated guess if the TSC is trustworthy and synchronized
+  * over all CPUs.
+
+
