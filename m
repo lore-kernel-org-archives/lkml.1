@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764910AbXGZKwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763189AbXGZLCg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764910AbXGZKwk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 06:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXGZKwd
+	id S1763189AbXGZLCg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 07:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbXGZLC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 06:52:33 -0400
-Received: from tama55.ecl.ntt.co.jp ([129.60.39.103]:33072 "EHLO
-	tama55.ecl.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754439AbXGZKwc (ORCPT
+	Thu, 26 Jul 2007 07:02:29 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:60676 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755945AbXGZLC3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 06:52:32 -0400
-To: bzolnier@gmail.com
-Cc: lethal@linux-sh.org, fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bsg: Fix build for CONFIG_BLOCK=n
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <200707251304.56505.bzolnier@gmail.com>
-References: <20070725072354.GA18706@linux-sh.org>
-	<200707251304.56505.bzolnier@gmail.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20070726195148F.fujita.tomonori@lab.ntt.co.jp>
-Date: Thu, 26 Jul 2007 19:51:48 +0900
-X-Dispatcher: imput version 20040704(IM147)
+	Thu, 26 Jul 2007 07:02:29 -0400
+Message-ID: <46A87EC7.6070002@gmail.com>
+Date: Thu, 26 Jul 2007 13:00:23 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: =?ISO-8859-15?Q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Rene Herman <rene.herman@gmail.com>, Bongani Hlope <bhlope@mweb.co.za>,
+       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
+Subject: Re: updatedb
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com> <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com> <46A81C39.4050009@gmail.com> <200707260839.51407.bhlope@mweb.co.za> <46A845BB.9080503@gmail.com> <20070726095829.GA26987@atjola.homenet>
+In-Reply-To: <20070726095829.GA26987@atjola.homenet>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 8bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH] bsg: Fix build for CONFIG_BLOCK=n
-Date: Wed, 25 Jul 2007 13:04:56 +0200
+On 07/26/2007 11:58 AM, Björn Steinbrink wrote:
 
-> 
-> Hi,
-> 
-> On Wednesday 25 July 2007, Paul Mundt wrote:
-> > BLK_DEV_BSG was added outside of the if BLOCK check, which allows it to
-> > be enabled when CONFIG_BLOCK=n. This leads to many screenlengths of
-> > errors, starting with a parse error on the request_queue_t definition.
-> > Obviously this wasn't intended for CONFIG_BLOCK=n usage, so just move the
-> > option back in to the block.
-> > 
-> > Caught with a randconfig on sh.
-> 
-> also pointed out in my bsg review from a week ago ;)
-> 
-> http://lkml.org/lkml/2007/7/17/487
+> Will now go and see what happens if I play with swappiness.
 
-Oops, sorry.
+I in fact managed to overlook _all_ of swappiness (*) and was quite frankly 
+under the impression that Linux would simply never swap anything out to make 
+room for cache. Which is basic enough a misunderstanding that I'll go sulk 
+in a corner now.
 
+Rene.
 
-> > Signed-off-by: Paul Mundt <lethal@linux-sh.org>
-> 
-> Thanks for fixing this up.
+(*)
 
-Thanks!
+$ grep -ri swappiness Documentation
+$
+
+Sigh...
