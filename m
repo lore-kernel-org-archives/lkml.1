@@ -1,113 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765726AbXGZXkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764003AbXGZXkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765726AbXGZXkA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758103AbXGZXjx
+	id S1764003AbXGZXkX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932317AbXGZXkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:39:53 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:39675 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758073AbXGZXjw (ORCPT
+	Thu, 26 Jul 2007 19:40:05 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:57338 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764543AbXGZXkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:39:52 -0400
-Date: Thu, 26 Jul 2007 16:44:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, tony.luck@intel.com,
-       jejb <james.bottomley@steeleye.com>
-Subject: [PATCH] various doc/kernel-parameters fixes
-Message-Id: <20070726164429.f41358d7.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jul 2007 19:40:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=globejDxcczAwhYp+DOfiIqOci9OUPR7nwzVhWeHZpyG0gV/BuC602GC6qK5LEF+LvIyZJiueX5tCdY5+F1hn6lsfVU/lJzQUh5L/RKMNJzdOuXTNWnVLMnRMk6aOYDtjmDNVIQCswkvmbnHgSVGCKK4RpXoMu4uuw/QJfvjzJA=
+Message-ID: <9a8748490707261640k5e3e751br8a9699cff75e4a6a@mail.gmail.com>
+Date: Fri, 27 Jul 2007 01:40:01 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Simon Arlott" <simon@fire.lp0.eu>
+Subject: Re: PNP: Lindent all source files
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       bjorn.helgaas@hp.com
+In-Reply-To: <46A928D2.6030702@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <46A928D2.6030702@simon.arlott.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 27/07/07, Simon Arlott <simon@fire.lp0.eu> wrote:
+> Does anyone ever review what Lindent does? There's a fix up patch after this
+> but it missed this at the very top of the patch and the labels.
+>
+Lindent is by no means perfect and if you use it you should always
+review the changes it makes by hand.
+Feel free to fix it up/improve it.
 
-- tell what APIC (by request), MTD, & PARIDE mean
-- correct some source file names
-- remove IA64 "llsc*=" (seems to have been removed from source tree)
-- removel SCSI "53c7xx=" (driver already removed)
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/kernel-parameters.txt |   21 ++++++++-------------
- 1 file changed, 8 insertions(+), 13 deletions(-)
-
---- linux-2623-rc1g2.orig/Documentation/kernel-parameters.txt
-+++ linux-2623-rc1g2/Documentation/kernel-parameters.txt
-@@ -57,14 +57,14 @@ parameter is applicable:
- 	MDA	MDA console support is enabled.
- 	MOUSE	Appropriate mouse support is enabled.
- 	MSI	Message Signaled Interrupts (PCI).
--	MTD	MTD support is enabled.
-+	MTD	MTD (Memory Technology Device) support is enabled.
- 	NET	Appropriate network support is enabled.
- 	NUMA	NUMA support is enabled.
- 	GENERIC_TIME The generic timeofday code is enabled.
- 	NFS	Appropriate NFS support is enabled.
- 	OSS	OSS sound support is enabled.
--	PV_OPS	A paravirtualized kernel
--	PARIDE	The ParIDE subsystem is enabled.
-+	PV_OPS	A paravirtualized kernel is enabled.
-+	PARIDE	The ParIDE (parallel port IDE) subsystem is enabled.
- 	PARISC	The PA-RISC architecture is enabled.
- 	PCI	PCI bus support is enabled.
- 	PCMCIA	The PCMCIA subsystem is enabled.
-@@ -122,10 +122,6 @@ and is between 256 and 4096 characters. 
- ./include/asm/setup.h as COMMAND_LINE_SIZE.
- 
- 
--	53c7xx=		[HW,SCSI] Amiga SCSI controllers
--			See header of drivers/scsi/53c7xx.c.
--			See also Documentation/scsi/ncr53c7xx.txt.
--
- 	acpi=		[HW,ACPI,X86-64,i386]
- 			Advanced Configuration and Power Interface
- 			Format: { force | off | ht | strict | noirq }
-@@ -279,7 +275,8 @@ and is between 256 and 4096 characters. 
- 			not play well with APC CPU idle - disable it if you have
- 			APC and your system crashes randomly.
- 
--	apic=		[APIC,i386] Change the output verbosity whilst booting
-+	apic=		[APIC,i386] Advanced Programmable Interrupt Controller
-+			Change the output verbosity whilst booting
- 			Format: { quiet (default) | verbose | debug }
- 			Change the amount of debugging information output
- 			when initialising the APIC and IO-APIC components.
-@@ -768,7 +765,8 @@ and is between 256 and 4096 characters. 
- 			See Documentation/nfsroot.txt.
- 
- 	ip2=		[HW] Set IO/IRQ pairs for up to 4 IntelliPort boards
--			See comment before ip2_setup() in drivers/char/ip2.c.
-+			See comment before ip2_setup() in
-+			drivers/char/ip2/ip2base.c.
- 
- 	ips=		[HW,SCSI] Adaptec / IBM ServeRAID controller
- 			See header of drivers/scsi/ips.c.
-@@ -864,9 +862,6 @@ and is between 256 and 4096 characters. 
- 			if PNPBIOS or ACPI should describe them.  This
- 			is for working around firmware defects.
- 
--	llsc*=		[IA64] See function print_params() in
--			arch/ia64/sn/kernel/llsc4.c.
--
- 	load_ramdisk=	[RAM] List of ramdisks to load from floppy
- 			See Documentation/ramdisk.txt.
- 
-@@ -1039,7 +1034,7 @@ and is between 256 and 4096 characters. 
- 			<name>,<region-number>[,<base>,<size>,<buswidth>,<altbuswidth>]
- 
- 	mtdparts=	[MTD]
--			See drivers/mtd/cmdline.c.
-+			See drivers/mtd/cmdlinepart.c.
- 
- 	mtouchusb.raw_coordinates=
- 			[HW] Make the MicroTouch USB driver use raw coordinates
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
