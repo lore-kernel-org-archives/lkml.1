@@ -1,113 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765497AbXGZGwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765188AbXGZG4I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765497AbXGZGwv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 02:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbXGZGwn
+	id S1765188AbXGZG4I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 02:56:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbXGZGzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 02:52:43 -0400
-Received: from hu-out-0506.google.com ([72.14.214.230]:50427 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754395AbXGZGwm (ORCPT
+	Thu, 26 Jul 2007 02:55:54 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57154 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754395AbXGZGzx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 02:52:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=KJfoiD933jPplzzFnv1Kt4izxweyMmglzGyGUtmhSp2nGZ/iNbxMNVbY593O8Wdj7U5qjHh6fbrxuIwNruCuhksYTbMfRJW76hAe9SP9p0DPcVgdmZVxMUBHdqlHFTjRr4TU4RQAntlKs4BpFS+YgY8nb2mOP0aoXWrJR8BBU18=
-Date: Thu, 26 Jul 2007 14:53:53 +0000
-From: Dave Young <hidave.darkstar@gmail.com>
-To: gregkh@suse.de
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] sysfs - cleanup semaphore.h
-Message-ID: <20070726145353.GA7971@darkstar.te-china.tietoenator.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Thu, 26 Jul 2007 02:55:53 -0400
+Date: Wed, 25 Jul 2007 23:55:01 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+cc: david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+In-Reply-To: <200707260026.08183.lenb@kernel.org>
+Message-ID: <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org> <200707251851.22777.lenb@kernel.org>
+ <Pine.LNX.4.64.0707251917320.21378@asgard.lang.hm>
+ <200707260026.08183.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup semaphore.h
 
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com> 
 
----
-fs/sysfs/bin.c     |    2 +-
-fs/sysfs/dir.c     |    2 +-
-fs/sysfs/group.c   |    1 -
-fs/sysfs/inode.c   |    1 -
-fs/sysfs/mount.c   |    1 -
-fs/sysfs/symlink.c |    2 +-
-6 files changed, 3 insertions(+), 6 deletions(-)
+On Thu, 26 Jul 2007, Len Brown wrote:
+> 
+> Feel free to share what you know about the benefits vs. the costs
+> of maintaining CONFIG_ACPI_SLEEP as a build option.
 
-diff -upr linux/fs/sysfs/bin.c linux.new/fs/sysfs/bin.c
---- linux/fs/sysfs/bin.c	2007-07-26 14:31:57.000000000 +0000
-+++ linux.new/fs/sysfs/bin.c	2007-07-26 14:35:22.000000000 +0000
-@@ -14,9 +14,9 @@
- #include <linux/kobject.h>
- #include <linux/module.h>
- #include <linux/slab.h>
-+#include <linux/mutex.h>
- 
- #include <asm/uaccess.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-diff -upr linux/fs/sysfs/dir.c linux.new/fs/sysfs/dir.c
---- linux/fs/sysfs/dir.c	2007-07-26 14:31:57.000000000 +0000
-+++ linux.new/fs/sysfs/dir.c	2007-07-26 14:35:47.000000000 +0000
-@@ -11,7 +11,7 @@
- #include <linux/namei.h>
- #include <linux/idr.h>
- #include <linux/completion.h>
--#include <asm/semaphore.h>
-+#include <linux/mutex.h>
- #include "sysfs.h"
- 
- DEFINE_MUTEX(sysfs_mutex);
-diff -upr linux/fs/sysfs/group.c linux.new/fs/sysfs/group.c
---- linux/fs/sysfs/group.c	2007-07-26 14:31:57.000000000 +0000
-+++ linux.new/fs/sysfs/group.c	2007-07-26 14:36:17.000000000 +0000
-@@ -14,7 +14,6 @@
- #include <linux/namei.h>
- #include <linux/err.h>
- #include <linux/fs.h>
--#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- 
-diff -upr linux/fs/sysfs/inode.c linux.new/fs/sysfs/inode.c
---- linux/fs/sysfs/inode.c	2007-07-26 14:31:57.000000000 +0000
-+++ linux.new/fs/sysfs/inode.c	2007-07-26 14:36:38.000000000 +0000
-@@ -14,7 +14,6 @@
- #include <linux/capability.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
--#include <asm/semaphore.h>
- #include "sysfs.h"
- 
- extern struct super_block * sysfs_sb;
-diff -upr linux/fs/sysfs/mount.c linux.new/fs/sysfs/mount.c
---- linux/fs/sysfs/mount.c	2007-07-26 14:31:57.000000000 +0000
-+++ linux.new/fs/sysfs/mount.c	2007-07-26 14:36:45.000000000 +0000
-@@ -8,7 +8,6 @@
- #include <linux/mount.h>
- #include <linux/pagemap.h>
- #include <linux/init.h>
--#include <asm/semaphore.h>
- 
- #include "sysfs.h"
- 
-diff -upr linux/fs/sysfs/symlink.c linux.new/fs/sysfs/symlink.c
---- linux/fs/sysfs/symlink.c	2007-07-26 14:31:57.000000000 +0000
-+++ linux.new/fs/sysfs/symlink.c	2007-07-26 14:37:12.000000000 +0000
-@@ -7,7 +7,7 @@
- #include <linux/module.h>
- #include <linux/kobject.h>
- #include <linux/namei.h>
--#include <asm/semaphore.h>
-+#include <linux/mutex.h>
- 
- #include "sysfs.h"
- 
+Why don't you just make CONFIG_ACPI_SLEEP dependent on SOFTWARE_SUSPEND 
+and STR?
+
+> If you feel that your system has been degraded
+> because it now includes what used to be excluded under
+> CONFIG_ACPI_SLEEP=n, please let me know how.
+
+I feel that I get asked to include a feature that 
+ (a) I have no interest in on that machine
+ (b) I didn't need to include before.
+
+What was the advantage? And what was it that caused something like this to 
+be a post-rc1 thing. That makes me really unhappy. This is a *regression*.
+
+		Linus
