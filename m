@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbXGZPve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764910AbXGZPyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764360AbXGZPve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXGZPv1
+	id S1764910AbXGZPyq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755840AbXGZPyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:51:27 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:51572 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755840AbXGZPv1 (ORCPT
+	Thu, 26 Jul 2007 11:54:39 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60696 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755832AbXGZPyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:51:27 -0400
-Message-ID: <2061.172.50.1.13.1185465085.squirrel@172.19.0.2>
-In-Reply-To: <d120d5000707260654l74d61359v4f17790ab06ac0a3@mail.gmail.com>
-References: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp>
-    <d120d5000707260654l74d61359v4f17790ab06ac0a3@mail.gmail.com>
-Date: Fri, 27 Jul 2007 00:51:25 +0900 (JST)
-Subject: Re: [PATCH] fix return value of i8042_aux_test_irq
-From: fernando@oss.ntt.co.jp
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, vojtech@suse.cz,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-User-Agent: SquirrelMail/1.4.8-2.el4
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+	Thu, 26 Jul 2007 11:54:38 -0400
+Date: Thu, 26 Jul 2007 21:24:45 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Takenori Nagano <t-nagano@ah.jp.nec.com>, kexec@lists.infradead.org,
+       linux-kernel@vger.kernel.org, k-miyoshi@cb.jp.nec.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Bernhard Walle <bwalle@suse.de>
+Subject: Re: [patch] add kdump_after_notifier
+Message-ID: <20070726155444.GC15969@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <469F55D0.4050203@ah.jp.nec.com> <20070726140702.GA8949@suse.de> <20070726153240.GA15969@in.ibm.com> <20070726153440.GA19095@suse.de> <20070726154415.GB15969@in.ibm.com> <20070726154718.GA25561@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+In-Reply-To: <20070726154718.GA25561@suse.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, July 26, 2007 10:54 pm, Dmitry Torokhov wrote:
-> Hi,
->
-> On 7/26/07, Fernando Luis V�zquez Cao <fernando@oss.ntt.co.jp> wrote:
->> I made an interesting finding while testing the two patches below.
->>
->> http://lkml.org/lkml/2007/7/19/685
->> http://lkml.org/lkml/2007/7/19/687
->>
->> These patches modify the traditional CONFIG_DEBUG_KERNEL in such a way
->> that the request_irq prints a warning if after calling the handler it
->> returned IRQ_HANDLED .
->>
->> The code looks like this:
->>
->> int request_irq(unsigned int irq, irq_handler_t handler,
->>                unsigned long irqflags, const char *devname, void
->> *dev_id)
->> .....
->>        if (irqflags & IRQF_DISABLED) {
->>                unsigned long flags;
->>
->>                local_irq_save(flags);
->>                retval = handler(irq, dev_id);
->>                local_irq_restore(flags);
->>        } else
->>                retval = handler(irq, dev_id);
->>        if (retval == IRQ_HANDLED) {
->>                printk(KERN_WARNING
->>                       "%s (IRQ %d) handled a spurious interrupt\n",
->>                       devname, irq);
->>        }
->> .....
->>
->> I discovered that i8042_aux_test_irq handles the "fake" interrupt,
->> which, in principle, is not correct because it obviously isn't a real
->> interrupt and it could have been a spurious interrupt as well.
->>
->> The problem is that the interrupt handler unconditionally returns IRQ
->> handled, which does not seem correct. Anyway I am not very familiar with
->> this code so I may be missing the whole point. I would appreciate your
->> comments on this.
->>
->
-> The handler does handle the interrupt - both status and data registers
-> are read so from the keyboard controller point of view the interrupt
-> has been handled even if we happen to discard the data. As far as I
-> know IRQ12 is never shared by BIOS... Vojtech, do you remember why we
-> request IRQ12 with IRQF_SHARED?
-i8042_interrupt returns IRQ_NONE when there is no data to read, which is
-considerate towards other devices that may sharing the interrupt line.
-Would it make sense to do something similar for i8042_aux_test_irq?
+On Thu, Jul 26, 2007 at 05:47:18PM +0200, Bernhard Walle wrote:
+> * Vivek Goyal <vgoyal@in.ibm.com> [2007-07-26 17:44]:
+> > > 
+> > > Of course, but that's why the patch doesn't change this by default but
+> > > gives the user the choice.
+> > > 
+> > 
+> > What value will distro set it to by default?
+> 
+> 0.
+> 
+> > Can we be more specific in terms of functionality and code that exactly
+> > what we are trying to do after panic?
+> 
+> Well, KDB, but now everybody answers with “not mainline -- doesn't
+> count”.
+> 
 
- - Fernando
+That's true. Its not mainline. We had similar discussion in the past
+also. I think we should allow only audited code to be run after panic().
+Leaving it open to modules or unaudited code makes this solution
+something like LKCD where whole lot of code used to run after the crash,
+hence was unreliable.
 
+If KDB goes mainline, then I think it is not a bad idea to call debugger
+first (if it is enabled) and then one can trigger crash dump from inside
+the debugger.
+
+Thanks
+Vivek
