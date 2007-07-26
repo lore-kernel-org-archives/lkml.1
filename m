@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935811AbXGZSFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936206AbXGZSFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935811AbXGZSFb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934475AbXGZSEy
+	id S936206AbXGZSFx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936015AbXGZSFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:04:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:54345 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934091AbXGZSEw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:04:52 -0400
-Subject: Re: [bug] SLUB & freeing locks [was: Re: 2.6.23-rc1: known
-	regressions with patches]
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1185441963.8197.67.camel@twins>
-References: <46A47940.7030801@googlemail.com>
-	 <20070726091048.GA7366@elte.hu>  <1185441963.8197.67.camel@twins>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 20:04:37 +0200
-Message-Id: <1185473077.15205.7.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 26 Jul 2007 14:05:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52412 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934793AbXGZSFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 14:05:16 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Gabriel C <nix.or.die@googlemail.com>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+Date: Thu, 26 Jul 2007 14:05:09 -0400
+User-Agent: KMail/1.9.5
+Cc: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200707251238.50218.lenb@kernel.org> <200707260026.08183.lenb@kernel.org> <46A8727F.3030005@googlemail.com>
+In-Reply-To: <46A8727F.3030005@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707261405.09278.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 11:26 +0200, Peter Zijlstra wrote:
+On Thursday 26 July 2007 06:07, Gabriel C wrote:
 
-> ---
->  mm/slub.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+> > If you feel that your system has been degraded
+> > because it now includes what used to be excluded under
+> > CONFIG_ACPI_SLEEP=n, please let me know how.
 > 
-> Index: linux-2.6/mm/slub.c
-> ===================================================================
-> --- linux-2.6.orig/mm/slub.c
-> +++ linux-2.6/mm/slub.c
-> @@ -1131,6 +1131,7 @@ static void __free_slab(struct kmem_cach
->  		slab_pad_check(s, page);
->  		for_each_object(p, s, page_address(page))
->  			check_object(s, page, p, 0);
-> +		ClearSlabDebug(page);
->  	}
->  
->  	mod_zone_page_state(page_zone(page),
-> @@ -1169,7 +1170,6 @@ static void discard_slab(struct kmem_cac
->  
->  	atomic_long_dec(&n->nr_slabs);
->  	reset_page_mapcount(page);
-> -	ClearSlabDebug(page);
->  	__ClearPageSlab(page);
->  	free_slab(s, page);
->  }
+> Even if I want to SUSPEND* to <something> I can't on my Dell Precision 530 boxes , 
+> SCSI is broken with suspend therefore all these boxes have the whole SUSPEND* off, 
+> all I need is ACPI.
+
+Linux is already way behind the competition on both STR and STD.
+Disabling it because it doesn't work will makes this situation
+worse, not better.
+
+> So why you think I want to have this all enabled by default now ? 
+> Just to bloat the kernel with something doesn't even work for me ?
+
+Can you be specific about how much additional "bloat" your system
+must endure with CONFIG_ACPI_SLEEP=y
+
+> >> config ACPI_SLEEP
+> >>          select HOTPLUG_CPU if X86 && SMP
+> >>          select SUSPEND_SMP if X86 && SMP
+> >>
+> >> instead of makeing it dependant on ACPI.
+> > 
+> > If more config options where better, then this
+> > would indeed be an improvement over 2.6.22.
+> > But more config options isn't better -- except for "some people":-)
 > 
+> But in this case some config / new config is better.
+> 
+> I do not need ACPI to SUSPEND but to make the box work properly.
 
-Christoph, how about this bit, it looks to me like we clear SlabDebug()
-before we hit the last check in __free_slab().
+You also don't need a lot of other code in your kernel.
 
+At some point the complexity of supporting more configuration options
+out-weights the benefits of having them.  I have a pretty good idea
+of the cost of maintaining the code.  So my question to you is
+is what, exactly, is the benefit of having 2.6.22 CONFIG_ACPI_SLEEP=y
+that is now lost in 2.6.23-git?
+
+> Ohh and isn't better to make 'ACPI_PROCESSOR  select SUSPEND_SMP and HOTPLUG_CPU if X86 && SMP' ?
+>
+> ...
+> 
+> config ACPI_PROCESSOR
+>         tristate "Processor"
+>         default y
+>         help
+>           This driver installs ACPI as the idle handler for Linux, and uses
+>           ACPI C2 and C3 processor states to save power, on systems that
+>           support it.  It is required by several flavors of cpufreq
+>           Performance-state drivers.
+> 
+> ...
+> 
+> Is more logical for me to do it here but I may be wrong.
+
+ACPI_PROCESSOR supports C-states and P-states and is not directly
+related to support for system sleep states.  If your system is recent,
+then it is likely that you want to enable this (and cpufreq) to save power --
+even if you are not interested in system-wide sleep states.
+
+-Len
