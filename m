@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936377AbXGZUAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933905AbXGZUBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936377AbXGZUAm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933646AbXGZT7q
+	id S933905AbXGZUBG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936130AbXGZT7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:59:46 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:63144 "EHLO
+	Thu, 26 Jul 2007 15:59:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:63978 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935842AbXGZT7o (ORCPT
+	with ESMTP id S933397AbXGZT7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:59:44 -0400
+	Thu, 26 Jul 2007 15:59:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=OcZL35OY9jZ1e5ucbMU9EYbixl0jf4M2bEnotEykbLBXNqC8k0ExpR8302xOsS5zTq7JZNGnMf0je0yatHTH2hSsInYxZnct3W2fg7j/dRnbAMhNh1eT9nij5W3XlpPxfUd7r56uBE8/tGUlstEKMfnBvLSfJYusxWuqb9IWaIk=
+        b=eV6grHR4FvhO2CN07q2oAAFlq2+fPcRBI392hSAPZ7d4JSbTsRm51HIJrKcyVeB99UIlFHNRa2LKNm40KWJGWzpBrOyUdTt54OAX1wXLOUlb+xPMIdEY82cC+ykI6ro5Jw4GrlThLNZHR1ENckBN1oyy2kt1Y2jwh8Y7SPgzlyI=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH 1/2] [IDE] Platform IDE driver (was: MMIO IDE driver)
-Date: Thu, 26 Jul 2007 21:28:00 +0200
+Date: Thu, 26 Jul 2007 21:28:18 +0200
 User-Agent: KMail/1.9.6
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-In-Reply-To: <20070725165318.5331.23795.stgit@localhost.localdomain>
+Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725184312.44ca7a8c@the-village.bc.nu>
+In-Reply-To: <20070725184312.44ca7a8c@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707262128.00777.bzolnier@gmail.com>
+Message-Id: <200707262128.18720.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Wednesday 25 July 2007, Vitaly Bordug wrote:
+On Wednesday 25 July 2007, Alan Cox wrote:
+> > pata_platform and ide_platform are carrying same driver names,
+> > to easily switch between these drivers, without need to touch
+> > platform code.
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
 > 
-> This is now very similar to pata_platform.c, they both use
-> same platform data structure and same resources.
-> 
-> To achieve that, byte_lanes_swapping platform data variable
-> and platform specified iops removed from that driver. It's fine,
-> since those were never used anyway.
-> 
-> pata_platform and ide_platform are carrying same driver names,
-> to easily switch between these drivers, without need to touch
-> platform code.
+> Acked-by: Alan Cox <alan@redhat.com>
 
-Looks really good, thanks for working on this.
-
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
-
-applied but it would be also nice to fix minor issues found by Sergei
-(please just send a new version of the patch and I will replace this
-version with the newer one in my tree)
-
-patch #2/2 also looks fine and when issues raised by Sergei gets
-addressed it will be merged
-
-Thanks,
-Bart
+added
