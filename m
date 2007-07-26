@@ -1,66 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbXGZBdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757928AbXGZBfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757361AbXGZBdA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 21:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbXGZBcv
+	id S1757928AbXGZBfJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 21:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbXGZBe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 21:32:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:6641 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753318AbXGZBcu (ORCPT
+	Wed, 25 Jul 2007 21:34:58 -0400
+Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:49832 "EHLO
+	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753264AbXGZBe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 21:32:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=QNMW8cQZKHKiiCMf5povOgxImc1KjWBIh+4RvcYs7TrdXYOsOM4fW3SSFAhrXAC40ujaP9LX0/gCRItamQfVFdF5vpryOMVjdRUn4vs/Yt0/h0SrIn5cM1q1xWQpzHoMahembc0+Lw+0XbJYQYz3wOfzKOyTN6ma8ziSoOrnUjg=
-Message-ID: <2c0942db0707251832i542249d5ve0006b3db0374678@mail.gmail.com>
-Date: Wed, 25 Jul 2007 18:32:48 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Matthew Hawkins" <darthmdh@gmail.com>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Cc: linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
-       linux-mm@kvack.org
-In-Reply-To: <b21f8390707251815o767590acrf6a6c4d7290a26a8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
-	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
-	 <46A6DFFD.9030202@gmail.com>
-	 <2c0942db0707250902v58e23d52v434bde82ba28f119@mail.gmail.com>
-	 <b21f8390707251815o767590acrf6a6c4d7290a26a8@mail.gmail.com>
-X-Google-Sender-Auth: 715e0721894d8215
+	Wed, 25 Jul 2007 21:34:58 -0400
+Subject: Re: [PATCH RFC] e1000: clear ICR before requesting an IRQ line
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: e1000-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com,
+       jeffrey.t.kirsher@intel.com
+In-Reply-To: <46A76BEC.1040309@intel.com>
+References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20070718154659.c8b5ffea.akpm@linux-foundation.org>
+	 <1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1185355137.15252.82.camel@sebastian.kern.oss.ntt.co.jp>
+	 <46A76BEC.1040309@intel.com>
+Content-Type: text/plain; charset=utf-8
+Organization: NTT Open Source Software Center
+Date: Thu, 26 Jul 2007 10:34:54 +0900
+Message-Id: <1185413694.31024.26.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/25/07, Matthew Hawkins <darthmdh@gmail.com> wrote:
-> On 7/26/07, Ray Lee <ray-lk@madrabbit.org> wrote:
-> > I'd just like updatedb to amortize its work better. If we had some way
-> > to track all filesystem events, updatedb could keep a live and
-> > accurate index on the filesystem. And this isn't just updatedb that
-> > wants that, beagle and tracker et al also want to know filesystem
-> > events so that they can index the documents themselves as well as the
-> > metadata. And if they do it live, that spreads the cost out, including
-> > the VM pressure.
->
-> We already have this, its called inotify (and if I'm not mistaken,
-> beagle already uses it).
+On Wed, 2007-07-25 at 08:27 -0700, Kok, Auke wrote:
+> Fernando Luis Vázquez Cao wrote:
+> > I made an interesting finding while testing the two patches below.
+> > 
+> > http://lkml.org/lkml/2007/7/19/685
+> > http://lkml.org/lkml/2007/7/19/687
+> > 
+> > These patches modify the traditional CONFIG_DEBUG_KERNEL in such a way
+> > that the request_irq prints a warning if after calling the handler it
+> > returned IRQ_HANDLED .
+> > 
+> > The code looks like this:
+> > 
+> > int request_irq(unsigned int irq, irq_handler_t handler,
+> >                 unsigned long irqflags, const char *devname, void *dev_id)
+> > .....
+> >         if (irqflags & IRQF_DISABLED) {
+> >                 unsigned long flags;
+> > 
+> >                 local_irq_save(flags);
+> >                 retval = handler(irq, dev_id);
+> >                 local_irq_restore(flags);
+> >         } else
+> >                 retval = handler(irq, dev_id);
+> >         if (retval == IRQ_HANDLED) {
+> >                 printk(KERN_WARNING
+> >                        "%s (IRQ %d) handled a spurious interrupt\n",
+> >                        devname, irq);
+> >         }
+> > .....
+> > 
+> > I discovered that the e1000 driver handles the "fake" interrupt, which,
+> > in principle, is not correct because it obviously isn't a real interrupt
+> > and it could have been an interrupt coming from another device that is
+> > sharing the IRQ line.
+> > 
+> > The problem is that the interrupt handler assumes that if ICR!=0 it was
+> > its device who generated the interrupt and, consequently, it should be
+> > handled. But, unfortunately, that is not always the case. If the network
+> > link is active when we open the device (e1000_open) the ICR will have
+> > the E1000_ICR_LSC bit set (by the way, is this the expected behavior?).
+> 
+> yes. is it really a problem though?
+It seems we may end up handling spurious interrupts or interrupts coming
+from another devices.
 
-Yeah, I know about inotify, but it doesn't scale.
+> > This means that _any_ interrupt coming in after allocating our interrupt
+> > (e1000_request_irq) will be handled, no matter where it came from.
+> 
+> we actually generate this LSC interrupt ourselves in the driver, to make sure 
+> that we cascade into the watchdog which then enables or disables the link code 
+> based on the link status change. This allows us to _not_ do any link checking in 
+> _open and makes things a bit more simple.
+I am not referring to the LSC interrupt the driver itself generates in
+e1000_open just before returning. The ICR is masked (ICR==0) after
+executing the driver probe (e1000_probe), but when we enter e1000_open
+the E1000_ICR_LSC bit will already be set, before the function even
+starts executing. I also observed that when the link is active the line
 
-ray@phoenix:~$ find ~ -type d | wc -l
-17933
-ray@phoenix:~$
+  /* fire a link status change interrupt to start the watchdog */
+  E1000_WRITE_REG(&adapter->hw, ICS, E1000_ICS_LSC);
 
-That's not fun with inotify, and that's just my home directory. The
-vast majority of those are quiet the vast majority of the time, which
-is the crux of the problem, and why inotify isn't a great fit for
-on-demand virus scanners or indexers.
+is redundant because the E1000_ICS_LSC bit is already set. In fact, the
+irq handler gets invoked twice in a row with the interrupt cause being a
+link status change.
 
-Ray
+> > The solution I came up with is clearing the ICR before calling
+> > request_irq. I have to admit that I am not familiar enough with this
+> > driver, so it is quite likely that this is not the right fix. I would
+> > appreciate your comments on this.
+> 
+> Clearing the ICR before requesting an irq might not work - at the same time the 
+> device could generate another LSC irq...
+Is it not possible to prevent the device from generating interrupts until we call request_irq?
+
+Thank you for your feedback!
+
+  - Fernando
+
+> Of course, we probably should just schedule some delayed work to run our 
+> watchdog in e1000_open, but I haven't checked if that actually works.
+> 
+> 
+> Auke
+> 
+> > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> > ---
+> > 
+> > diff -urNp linux-2.6.22-orig/drivers/net/e1000/e1000_main.c linux-2.6.22-pendirq/drivers/net/e1000/e1000_main.c
+> > --- linux-2.6.22-orig/drivers/net/e1000/e1000_main.c	2007-07-19 18:18:53.000000000 +0900
+> > +++ linux-2.6.22-pendirq/drivers/net/e1000/e1000_main.c	2007-07-25 17:22:54.000000000 +0900
+> > @@ -1378,6 +1378,17 @@ e1000_alloc_queues(struct e1000_adapter 
+> >  }
+> >  
+> >  /**
+> > + * e1000_clear_interrupts
+> > + * @adapter: address of board private structure
+> > + *
+> > + * Mask interrupts
+> > + **/
+> > +static void
+> > +e1000_clear_interrupts(struct e1000_adapter *adapter) {
+> > +	E1000_READ_REG(&adapter->hw, ICR);
+> > +}
+> > +
+> > +/**
+> >   * e1000_open - Called when a network interface is made active
+> >   * @netdev: network interface device structure
+> >   *
+> > @@ -1431,6 +1442,9 @@ e1000_open(struct net_device *netdev)
+> >  	 * so we have to setup our clean_rx handler before we do so.  */
+> >  	e1000_configure(adapter);
+> >  
+> > +	/* Discard any possible pending interrupts. */
+> > +	e1000_clear_interrupts(adapter);
+> > +
+> >  	err = e1000_request_irq(adapter);
+> >  	if (err)
+> >  		goto err_req_irq;
+
