@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936186AbXGZWFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936276AbXGZWH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936186AbXGZWFX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 18:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765977AbXGZWFH
+	id S936276AbXGZWH7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934278AbXGZWHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 18:05:07 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:65129 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933825AbXGZWFF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 18:05:05 -0400
-From: Dirk Schoebel <dirk@liji-und-dirk.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Date: Fri, 27 Jul 2007 00:04:38 +0200
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Michael Chang" <thenewme91@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Rene Herman <rene.herman@gmail.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <b14e81f00707260719w63d8ab38jbf2a17a38bd07c1d@mail.gmail.com> <20070726111326.873f7b0a.akpm@linux-foundation.org>
-In-Reply-To: <20070726111326.873f7b0a.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2470270.ABJPYyX5vq";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Thu, 26 Jul 2007 18:07:52 -0400
+Received: from atlrel9.hp.com ([156.153.255.214]:60559 "EHLO atlrel9.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933340AbXGZWHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 18:07:52 -0400
+Subject: Re: Q: PCI-X @ 266MHz on HP rx6600 (Qlogic 4Gb FC HBA)
+From: Andrew Patterson <andrew.patterson@hp.com>
+To: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Vasquez <andrew.vasquez@qlogic.com>
+In-Reply-To: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+References: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 16:03:38 -0600
+Message-Id: <1185487419.7134.485.camel@bluto.andrew>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707270004.46211.dirk@liji-und-dirk.de>
-X-Provags-ID: V01U2FsdGVkX181fecueMJq6bAGCE1bJvDb5nI9d8HCUVnAnew
- /euKnRP9EHs3zUNr3ymjfJS9xDFIkqipD98eFg+FpwYeMJYAtx
- 6f+NK+Lrw9XIQqsZ/9y6A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2470270.ABJPYyX5vq
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Thu, 2007-07-26 at 15:36 +0200, Ulrich Windl wrote:
+> Hi,
+> 
+> I have a question: The Qlogic ISP2422 chip is said to handle PCI-X 266MHz. So does 
+> the HP Itanium2 server rx6600. Basically that was the reason to select that 
+> server. The FC-HBA is in a 266 MHz capable slot. However when booting SLES10 SP1 
+> for IA64, the logs say:
+> 
+> <6>QLogic Fibre Channel HBA Driver
+> <6>GSI 49 (level, low) -> CPU 3 (0x0300) vector 51
+> <6>ACPI: PCI Interrupt 0000:0f:01.0[A] -> GSI 49 (level, low) -> IRQ 51
+> <6>qla2xxx 0000:0f:01.0: Found an ISP2422, irq 51, iobase 0xc0000000b0040000
+> [...]
+> <6>qla2xxx 0000:0f:01.0: LOOP UP detected (4 Gbps).
+> <6>qla2xxx 0000:0f:01.0: Topology - (F_Port), Host Loop address 0x0
+> <6>scsi0 : qla2xxx
+> <6>qla2xxx 0000:0f:01.0:
+> <4> QLogic Fibre Channel HBA Driver: 8.01.07-k3
+> <4>  QLogic HP AB378-60001 -
+> <4>  ISP2422: PCI-X Mode 2 (133 MH4.00.26 [IP]  @ 0000:0f:01.0 hdma+, host#=0, 
+> fw=4.00.26 [IP]
+> <5>  Vendor: HP        Model: HSV200            Rev: 6100
+> <5>  Type:   RAID                               ANSI SCSI revision: 02
+> <5> 0:0:0:0: Attached scsi generic sg0 type 12
+> 
+> Now does Linux support the speed of 266 MHz, and is it just displayed incorrectly, 
+> or doesn't Linux support the speed of 266MHz yet?
 
-I don't really understand the reasons for all those discussions.
-As long as you have a maintainer, why don't you just put swap prefetch into=
-=20
-the kernel, marked experimental, default deactivated so anyone who just=20
-make[s] oldconfig (or defaultconfig) won't get it. If anyone finds a good=20
-solution for all those cache 'poisoning' problems and problems concerning=20
-swapin on workload changes and such swap prefetch can easily taken out agai=
-n=20
-and no one has to complain and continuing maintaining it.
-Actually the same goes for plugshed (having it might have kept Con as a=20
-valuable developer).
-I am actually waiting for more than 2 years that reiser4 will make it into =
-the=20
-kernel (sure, marked experimental or even highly experimental) so the=20
-patch-journey for every new kernel comes to an end. And most things in-kern=
-el=20
-will surely be tested more intense so bugs will come up much faster.=20
-(Constantly running MM kernels is not really an option since many things in=
-=20
-there can't be deactivated if they don't work as expected since lots of=20
-patches also concern 'vital' parts of the kernel.)
+This is a bug in the driver.  The lookup table only goes to 133 MHz.
 
-=2E..just 2cents from a happy CK user for it made it possible to watch a mo=
-vie=20
-while compiling the system - which was impossible with mainline kernel, eve=
-n=20
-on dual core 2.2 GHz AMD64 with 4G RAM !
+static char *pci_bus_modes[] = {
+                "33", "66", "100", "133",
 
-Dirk.
+The same problem exists in the scsi_misc tree.
 
---nextPart2470270.ABJPYyX5vq
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+> "lspci -v" says:
+> 0f:01.0 Fibre Channel: QLogic Corp. ISP2422-based 4Gb Fibre Channel to PCI-X HBA 
+> (rev 02)
+>         Subsystem: Hewlett-Packard Company Unknown device 12d6
+>         Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 51
+>         I/O ports at 6000 [size=256]
+>         Memory at b0040000 (64-bit, non-prefetchable) [size=4K]
+>         Expansion ROM at b0000000 [disabled] [size=256K]
+>         Capabilities: [44] Power Management version 2
+>         Capabilities: [4c] PCI-X non-bridge device
+>         Capabilities: [64] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 
+> Enable-
+>         Capabilities: [74] Vital Product Data
+> 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
+lspci only tells you capabilities, not the speed that the card is
+running at.  I think you have to query the PCI bridge chipset to get
+this information.  I have run a proprietary tool on this configuration
+that does this and confirmed that the card is indeed running at 266 MHz.
 
-iD8DBQBGqRp+6YYnt7muP7IRArLyAJ91sIZPuxe6co3Swp7LjaCKGsoy5QCg6Hpy
-76zfIgZ9L7Iw7avW/ko6GeE=
-=CUXM
------END PGP SIGNATURE-----
+> Please CC: any replies to my address as I'm not subscribed to the kernel list.
+> 
+> Regards,
+> Ulrich Windl
 
---nextPart2470270.ABJPYyX5vq--
+Andrew
+
+-- 
+Andrew Patterson
+Hewlett-Packard Company
+
