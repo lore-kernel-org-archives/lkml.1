@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbXGZFJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762017AbXGZFZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761384AbXGZFJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 01:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751526AbXGZFJQ
+	id S1762017AbXGZFZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 01:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751319AbXGZFZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 01:09:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41069 "EHLO
+	Thu, 26 Jul 2007 01:25:18 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44040 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751495AbXGZFJP (ORCPT
+	by vger.kernel.org with ESMTP id S1751163AbXGZFZR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 01:09:15 -0400
-Date: Wed, 25 Jul 2007 22:08:26 -0700
+	Thu, 26 Jul 2007 01:25:17 -0400
+Date: Wed, 25 Jul 2007 22:25:00 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] Char: moxa, fix and optimise empty timer
-Message-Id: <20070725220826.3fdb7677.akpm@linux-foundation.org>
-In-Reply-To: <31400312111566521886@wsc.cz>
-References: <31400312111566521886@wsc.cz>
+To: dougthompson@xmission.com
+Cc: greg@kroah.com, ralf@linux-mips.org, egor@pasemi.com,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] include asm-mips add missing edac h file
+Message-Id: <20070725222500.e537531d.akpm@linux-foundation.org>
+In-Reply-To: <46a7b8a5.iyNdV9o+A3Vzog2D%dougthompson@xmission.com>
+References: <46a7b8a5.iyNdV9o+A3Vzog2D%dougthompson@xmission.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,50 +26,50 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 23:43:29 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
+On Wed, 25 Jul 2007 14:55:01 -0600 dougthompson@xmission.com wrote:
 
-> moxa, fix and optimise empty timer
-> 
-> don't wait and delete empty timer in empty timer function. Also fire next
-> empty timer at rounded jiffies to save power.
-> 
+> --- /dev/null
+> +++ linux-2.6.23-rc1/include/asm-mips/edac.h
+> @@ -0,0 +1,35 @@
+> +#ifndef ASM_EDAC_H
+> +#define ASM_EDAC_H
+> +
+> +/* ECC atomic, DMA, SMP and interrupt safe scrub function */
+> +
+> +static __inline__ void atomic_scrub(void *va, u32 size)
 
-What is actually being "fixed" here?
+Please don't use __inline__ or __inline.  Good old "inline" will do.
 
-> 
-> ---
-> commit da52793b6347e8b6b048526ce2422e29b20bb335
-> tree ad0bee78e45beef89dc740f81e0606d782296542
-> parent 3a69b463dcad1ff142f46e8fb74e7dc5a092eb60
-> author Jiri Slaby <jirislaby@gmail.com> Wed, 25 Jul 2007 23:42:49 +0200
-> committer Jiri Slaby <jirislaby@gmail.com> Wed, 25 Jul 2007 23:42:49 +0200
-> 
->  drivers/char/moxa.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-> index ed76f0a..5000b3b 100644
-> --- a/drivers/char/moxa.c
-> +++ b/drivers/char/moxa.c
-> @@ -1040,14 +1040,14 @@ static void check_xmit_empty(unsigned long data)
->  	struct moxa_port *ch;
->  
->  	ch = (struct moxa_port *) data;
-> -	del_timer_sync(&moxa_ports[ch->port].emptyTimer);
->  	if (ch->tty && (ch->statusflags & EMPTYWAIT)) {
->  		if (MoxaPortTxQueue(ch->port) == 0) {
->  			ch->statusflags &= ~EMPTYWAIT;
->  			tty_wakeup(ch->tty);
->  			return;
->  		}
-> -		mod_timer(&moxa_ports[ch->port].emptyTimer, jiffies + HZ);
-> +		mod_timer(&moxa_ports[ch->port].emptyTimer,
-> +				round_jiffies(jiffies + HZ));
->  	} else
->  		ch->statusflags &= ~EMPTYWAIT;
->  }
+<cc's the checkpatch maintainer>
 
-A call to check_xmit_empty() used to guarantee that the timer was no longer
-running (if the first `if' succeeds and the second does not), but that is
-no longer the case.  You're sure this is correct?
+<edits the diff>
 
+> +{
+> +	unsigned long *virt_addr = va;
+> +	unsigned long temp;
+> +	u32 i;
+> +
+> +	for (i = 0; i < size / sizeof(unsigned long); i++, virt_addr++) {
+> +
+> +		/*
+> +		 * Very carefully read and write to memory atomically
+> +		 * so we are interrupt, DMA and SMP safe.
+> +		 *
+> +		 * Intel: asm("lock; addl $0, %0"::"m"(*virt_addr));
+> +		 */
+> +
+> +		__asm__ __volatile__ (
+> +		"       .set    mips3                                   \n"
+> +		"1:     ll      %0, %1          # atomic_add            \n"
+> +		"       ll      %0, %1          # atomic_add            \n"
+> +		"       addu    %0, $0                                  \n"
+> +		"       sc      %0, %1                                  \n"
+> +		"       beqz    %0, 1b                                  \n"
+> +		"       .set    mips0                                   \n"
+> +		: "=&r" (temp), "=m" (*virt_addr)
+> +		: "m" (*virt_addr));
+> +
+> +	}
+> +}
+
+hm, I'd have thought that we could us plain old atomic_add() for this.
