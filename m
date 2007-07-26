@@ -1,124 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765974AbXGZHFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbXGZHIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765974AbXGZHFe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 03:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760328AbXGZHF0
+	id S932447AbXGZHIc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 03:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761662AbXGZHIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 03:05:26 -0400
-Received: from mx.fr.bfs.de ([194.95.226.137]:57527 "EHLO mail.fr.bfs.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758115AbXGZHFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 03:05:24 -0400
-Message-ID: <46A847AD.5000803@bfs.de>
-Date: Thu, 26 Jul 2007 09:05:17 +0200
-From: walter harms <wharms@bfs.de>
-Reply-To: wharms@bfs.de
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 26 Jul 2007 03:08:24 -0400
+Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:14098 "EHLO
+	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762669AbXGZHIX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 03:08:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAPTkp0bEHh/E/2dsb2JhbAA
+From: Bongani Hlope <bhlope@mweb.co.za>
+To: Rene Herman <rene.herman@gmail.com>
+Subject: Re: updatedb
+Date: Thu, 26 Jul 2007 09:08:02 +0200
+User-Agent: KMail/1.9.7
+Cc: Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com> <200707260839.51407.bhlope@mweb.co.za> <46A845BB.9080503@gmail.com>
+In-Reply-To: <46A845BB.9080503@gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: crash with 2.6.22.1 crash:ll_rw_blk.c blk_remove_plug()
-References: <469DD37C.8050200@bfs.de> <20070718103342.GI11657@kernel.dk> <469DF233.5080902@bfs.de> <20070718110724.GN11657@kernel.dk> <469E072E.7080400@bfs.de> <20070718123142.GV11657@kernel.dk> <46A38B1E.3090605@bfs.de> <a781481a0707221020m3c3a397fifa9076aefc63148a@mail.gmail.com> <20070722221717.GV11657@kernel.dk> <a781481a0707241722y5ef33a72qe61d5f4299cff273@mail.gmail.com> <20070725111836.GR3287@kernel.dk>
-In-Reply-To: <20070725111836.GR3287@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707260908.02781.bhlope@mweb.co.za>
+X-Original-Subject: Re: updatedb
+X-Scan-Signature: 38083ec5f3d1ed275db7b5d0a2c67615
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 26 July 2007 08:56:59 Rene Herman wrote:
+> On 07/26/2007 08:39 AM, Bongani Hlope wrote:
+> > On Thursday 26 July 2007 05:59:53 Rene Herman wrote:
+> >> So what's happening? If you sit down with a copy op "top" in one
+> >> terminal and updatedb in another, what does it show?
+> >
+> > Just tested that, there's a steady increase in the useage of buff
+>
+> Great. Now concentrate on the "swpd" column, as it's the only thing
+> relevant here. The fact that an updatedb run fills/replaces caches is
+> completely and utterly unsurprising and not something swap-prefetch helps
+> with. The only thing it does is bring back stuff from _swap_.
+>
 
+;)
 
-Jens Axboe wrote:
-> On Wed, Jul 25 2007, Satyam Sharma wrote:
->> On 7/23/07, Jens Axboe <jens.axboe@oracle.com> wrote:
->>> On Sun, Jul 22 2007, Satyam Sharma wrote:
->>>> Hi Walter,
->>>>
->>>> Thanks for reporting this.
->>>>
->>>> On 7/22/07, walter harms <wharms@bfs.de> wrote:
->>>>> hello all,
->>>>> on my asus notebook tm620 there is a crash with 2.6.22 and 2.6.21
->>>> Did this happen when you were resuming from a suspend-to-ram/disk?
->>>> [ I ask because I see swsusp in the trace below, linux-pm added to Cc: ]
->>>>
->>>>> ....
->>>>> Using IPI Shortcut mode
->>>>> WARNING: at block/ll_rw_blk.c:1575 blk_remove_plug()
->>>>>  [<c01ac87e>] blk_remove_plug+0x36/0x5a
->>>>>  [<c01ac8b6>] __generic_unplug_device+0x14/0x1f
->>>>>  [<c01ad587>] __make_request+0x39b/0x49c
->>>>>  [<c01abc8c>] generic_make_request+0x228/0x255
->>>>>  [<c01adb54>] submit_bio+0xa5/0xac
->>>>>  [<c013e233>] mempool_alloc+0x37/0xae
->>>>>  [<c01314dc>] submit+0xc2/0x11d
->>>>>  [<c0131585>] bio_read_page+0x24/0x27
->>>>>  [<c013188b>] swsusp_check+0x4f/0xaf
->>>>>  [<c012f6c2>] software_resume+0x5f/0x108
->>>>>  [<c037867e>] kernel_init+0xb0/0x212
->>>>>  [<c0103a16>] ret_from_fork+0x6/0x1c
->>>>>  [<c03785ce>] kernel_init+0x0/0x212
->>>>>  [<c03785ce>] kernel_init+0x0/0x212
->>>>>  [<c010465b>] kernel_thread_helper+0x7/0x10
->>>>>  =======================
->>>> Surprising, that's a WARN_ON(!irqs_disabled()) but IRQs are disabled
->>>> alright on that codepath. OTOH, __make_request() is heavily goto-driven,
->>>> uses the non-save/restore variants of spin_lock_irq, and does not even
->>>> balance locks / unlocks for some error paths ... gaah.
->>> __make_request() must be called from process context, hence
->>> spin_lock_irq() is perfectly already and the fastest way to go. And of
->>> course the locking is balanced! So please save your 'gaah's for code
->>> you actually took the time to try and understand.
->> You're right, I didn't really look at that code for long (it even 
->> explicitly
->> comments about what's going with the locking in there!) sorry about
->> that.
->>
->> [ Off-topic: BTW does every call to __make_request() end up in
->> blk_remove_plug()? Since you're explicitly making the assumption
->> that it *must* be called from process context (and hence the use of
->> the non-save/restore variants), you could consider putting a
->> WARN_ON(irqs_disabled()) over there, and perhaps a WARN_ON
->> (!spin_is_locked(queue_lock)) in blk_remove_plug() instead, and
->> other such similar functions that currently have the !irqs_disabled
->> check. This way you'd effectively cover _both_ the assertions,
->> and in appropriate places -- just a suggestion. ]
-> 
-> No, blk_remove_plug() will only be called for sync bios, or where we
-> have to wait for request allocation (which will unplug the device).
-> 
-> __generic_make_request() already does a might_sleep() check, so it
-> should catch this already.
-> 
->>> But it does look like unbalanced irq disable/enable calls. I'd guess in
->>> the suspend/resume path. Obviously something more esoteric, since this
->>> is the first such report for 2.6.22, so like some not-very-used driver
->>> for instance.
->> Now that I do look at the codepath, it does seem surprising irqs were
->> not disabled there. There are a bunch of calls to _other_ functions
->> between the spin_lock_irq and the blk_remove_plug via
->> __generic_unplug_device that would also have complained about
->> !irqs_disabled.
->>
->> Walter, does this happen reproducibly?
-> 
-> As I previously wrote, it's like some of the device power up or resume
-> routines that botch the irq enable/disable stuff. It'd be interesting to
-> start stripping down the config until the warning goes away - or enable
-> CONFIG_PM_DEBUG which may help as well.
-> 
-
-hi all,
-i have recompiled the kernel with CONFIG_PM_DEBUG but that resulted in nothing
-more that a magic number after the backtrace, does anyone care ?
-
-I played with hda=c,h,s to overcome the detection problem but no success here
-beside some "TSC instability". i did not try this with a working kernel, it is only
-to give you all information i have.
-
-re,
- wh
-
-
-
+I have 2Gb of RAM and I never ever touched swap on all my work loads. I was 
+just showing the behavior of updatedb on my desktop. I have never even looked 
+at the swap-prefetch patch (for obvious reasons). I think people should also 
+look at their /proc/sys/vm/overcommit_ratio
