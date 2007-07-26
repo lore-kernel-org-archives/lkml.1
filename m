@@ -1,81 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764061AbXGZXj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765726AbXGZXkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764061AbXGZXj0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbXGZXjU
+	id S1765726AbXGZXkA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758103AbXGZXjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:39:20 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52923 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757064AbXGZXjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:39:19 -0400
-Message-ID: <46A930A0.1030701@garzik.org>
-Date: Thu, 26 Jul 2007 19:39:12 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: david@lang.hm
-CC: Dirk Schoebel <dirk@liji-und-dirk.de>, ck@vds.kolivas.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rene Herman <rene.herman@gmail.com>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <20070726111326.873f7b0a.akpm@linux-foundation.org> <200707270004.46211.dirk@liji-und-dirk.de> <200707270033.41055.dirk@liji-und-dirk.de> <46A92DF4.6000301@garzik.org> <Pine.LNX.4.64.0707261627220.4183@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707261627220.4183@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 26 Jul 2007 19:39:53 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:39675 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758073AbXGZXjw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:39:52 -0400
+Date: Thu, 26 Jul 2007 16:44:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, tony.luck@intel.com,
+       jejb <james.bottomley@steeleye.com>
+Subject: [PATCH] various doc/kernel-parameters fixes
+Message-Id: <20070726164429.f41358d7.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Thu, 26 Jul 2007, Jeff Garzik wrote:
-> 
->> Dirk Schoebel wrote:
->>>  as long as the maintainer follows the kernel development things can be
->>>  left in, if the maintainer can't follow anymore they are taken out 
->>> quite
->>>  fast again. (This statement mostly counts for parts of the kernel 
->>> where a
->>>  choice is possible or the coding overhead of making such choice 
->>> possible
->>>  is quite low.)
->>
->>
->> This is just not good engineering.
->>
->> It is axiomatic that it is easy to add code, but difficult to remove 
->> code. It takes -years- to remove code that no one uses.  Long after 
->> the maintainer disappears, the users (and bug reports!) remain.
-> 
-> I'll point out that the code that's so hard to remove is the code that 
-> exposes an API to userspace.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-True.
+- tell what APIC (by request), MTD, & PARIDE mean
+- correct some source file names
+- remove IA64 "llsc*=" (seems to have been removed from source tree)
+- removel SCSI "53c7xx=" (driver already removed)
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ Documentation/kernel-parameters.txt |   21 ++++++++-------------
+ 1 file changed, 8 insertions(+), 13 deletions(-)
 
-> code that's an internal implementation (like a couple of the things 
-> being discussed) gets removed much faster.
-
-Not true.  It is highly unlikely that code will get removed if it has 
-active users, even if the maintainer has disappeared.
-
-The only things that get removed rapidly are those things mathematically 
-guaranteed to be dead code.
-
-_Behavior changes_, driver removals, feature removals happen more 
-frequently than userspace ABI changes -- true -- but the rate of removal 
-is still very, very slow.
-
-It is axiomatic that we are automatically burdened with new code for at 
-least 10 years :)  That's what you have to assume, when accepting anything.
-
-	Jeff
-
-
-
+--- linux-2623-rc1g2.orig/Documentation/kernel-parameters.txt
++++ linux-2623-rc1g2/Documentation/kernel-parameters.txt
+@@ -57,14 +57,14 @@ parameter is applicable:
+ 	MDA	MDA console support is enabled.
+ 	MOUSE	Appropriate mouse support is enabled.
+ 	MSI	Message Signaled Interrupts (PCI).
+-	MTD	MTD support is enabled.
++	MTD	MTD (Memory Technology Device) support is enabled.
+ 	NET	Appropriate network support is enabled.
+ 	NUMA	NUMA support is enabled.
+ 	GENERIC_TIME The generic timeofday code is enabled.
+ 	NFS	Appropriate NFS support is enabled.
+ 	OSS	OSS sound support is enabled.
+-	PV_OPS	A paravirtualized kernel
+-	PARIDE	The ParIDE subsystem is enabled.
++	PV_OPS	A paravirtualized kernel is enabled.
++	PARIDE	The ParIDE (parallel port IDE) subsystem is enabled.
+ 	PARISC	The PA-RISC architecture is enabled.
+ 	PCI	PCI bus support is enabled.
+ 	PCMCIA	The PCMCIA subsystem is enabled.
+@@ -122,10 +122,6 @@ and is between 256 and 4096 characters. 
+ ./include/asm/setup.h as COMMAND_LINE_SIZE.
+ 
+ 
+-	53c7xx=		[HW,SCSI] Amiga SCSI controllers
+-			See header of drivers/scsi/53c7xx.c.
+-			See also Documentation/scsi/ncr53c7xx.txt.
+-
+ 	acpi=		[HW,ACPI,X86-64,i386]
+ 			Advanced Configuration and Power Interface
+ 			Format: { force | off | ht | strict | noirq }
+@@ -279,7 +275,8 @@ and is between 256 and 4096 characters. 
+ 			not play well with APC CPU idle - disable it if you have
+ 			APC and your system crashes randomly.
+ 
+-	apic=		[APIC,i386] Change the output verbosity whilst booting
++	apic=		[APIC,i386] Advanced Programmable Interrupt Controller
++			Change the output verbosity whilst booting
+ 			Format: { quiet (default) | verbose | debug }
+ 			Change the amount of debugging information output
+ 			when initialising the APIC and IO-APIC components.
+@@ -768,7 +765,8 @@ and is between 256 and 4096 characters. 
+ 			See Documentation/nfsroot.txt.
+ 
+ 	ip2=		[HW] Set IO/IRQ pairs for up to 4 IntelliPort boards
+-			See comment before ip2_setup() in drivers/char/ip2.c.
++			See comment before ip2_setup() in
++			drivers/char/ip2/ip2base.c.
+ 
+ 	ips=		[HW,SCSI] Adaptec / IBM ServeRAID controller
+ 			See header of drivers/scsi/ips.c.
+@@ -864,9 +862,6 @@ and is between 256 and 4096 characters. 
+ 			if PNPBIOS or ACPI should describe them.  This
+ 			is for working around firmware defects.
+ 
+-	llsc*=		[IA64] See function print_params() in
+-			arch/ia64/sn/kernel/llsc4.c.
+-
+ 	load_ramdisk=	[RAM] List of ramdisks to load from floppy
+ 			See Documentation/ramdisk.txt.
+ 
+@@ -1039,7 +1034,7 @@ and is between 256 and 4096 characters. 
+ 			<name>,<region-number>[,<base>,<size>,<buswidth>,<altbuswidth>]
+ 
+ 	mtdparts=	[MTD]
+-			See drivers/mtd/cmdline.c.
++			See drivers/mtd/cmdlinepart.c.
+ 
+ 	mtouchusb.raw_coordinates=
+ 			[HW] Make the MicroTouch USB driver use raw coordinates
