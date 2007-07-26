@@ -1,58 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXGZSOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934204AbXGZSQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964792AbXGZSOH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXGZSNx
+	id S934204AbXGZSQp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932611AbXGZSQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:13:53 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50827 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932669AbXGZSNw (ORCPT
+	Thu, 26 Jul 2007 14:16:36 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:60847 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932567AbXGZSQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:13:52 -0400
-Date: Thu, 26 Jul 2007 11:13:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Michael Chang" <thenewme91@gmail.com>
-Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Eric St-Laurent" <ericstl34@sympatico.ca>,
-       linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
-       linux-mm@kvack.org, "Paul Jackson" <pj@sgi.com>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: [ck] Re: -mm merge plans for 2.6.23
-Message-Id: <20070726111326.873f7b0a.akpm@linux-foundation.org>
-In-Reply-To: <b14e81f00707260719w63d8ab38jbf2a17a38bd07c1d@mail.gmail.com>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	<46A58B49.3050508@yahoo.com.au>
-	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	<46A6CC56.6040307@yahoo.com.au>
-	<46A6D7D2.4050708@gmail.com>
-	<1185341449.7105.53.camel@perkele>
-	<46A6E1A1.4010508@yahoo.com.au>
-	<2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
-	<20070725215717.df1d2eea.akpm@linux-foundation.org>
-	<b14e81f00707260719w63d8ab38jbf2a17a38bd07c1d@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 14:16:35 -0400
+Date: Thu, 26 Jul 2007 11:16:34 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Adam Litke <agl@us.ibm.com>,
+       David Gibson <david@gibson.dropbear.id.au>,
+       Ken Chen <kenchen@google.com>, Bill Irwin <wli@holomorphy.com>
+Subject: Re: [PATCH] Check for compound pages in set_page_dirty()
+In-Reply-To: <Pine.LNX.4.64.0707261855290.13876@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0707261110500.2970@schroedinger.engr.sgi.com>
+References: <20070718141533.GA11657@kernel.dk>
+ <Pine.LNX.4.64.0707181619200.23261@blonde.wat.veritas.com>
+ <20070718182456.GE11657@kernel.dk> <20070718184006.GF11657@kernel.dk>
+ <Pine.LNX.4.64.0707182052220.18926@blonde.wat.veritas.com>
+ <20070719062934.GT11657@kernel.dk> <Pine.LNX.4.64.0707191720300.10512@blonde.wat.veritas.com>
+ <20070723135416.44edc896@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0707261834200.592@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0707261042390.2335@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0707261855290.13876@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 10:19:06 -0400 "Michael Chang" <thenewme91@gmail.com> wrote:
+On Thu, 26 Jul 2007, Hugh Dickins wrote:
 
-> > All this would end up needing runtime configurability and tweakability and
-> > customisability.  All standard fare for userspace stuff - much easier than
-> > patching the kernel.
+> > We would need to redirect all of the page state determinations and changes 
+> > to the head page anyways. So the memory.c code would have to deal with two 
+> > struct page pointers: One to the head where the state is kept and one to 
+> > the tail page that contains the actual chunk of data we are interested in. 
+> > The tail page pointer is only used for address determinations.
+> > 
+> > VM functions that manipulate the state of a page (like set_page_dirty) 
+> > could rely on only getting page heads.
 > 
-> Maybe I'm missing something here, but if the problem is resource
-> allocation when switching from state A to state B, and from B to C,
-> etc.; wouldn't it be a bad thing if state B happened to be (in the
-> future) this state-shifting userspace daemon of which you speak? (Or
-> is that likely to be impossible/unlikely for some other reason which
-> alludes me at the moment?)
+> Maybe.  Sounds ugly.  "would": so your patches remain just an RFC?
 
-Well.  I was assuming that the daemon wouldn't be a great memory pig. 
-I suspect it would do practically zero IO and would use little memory.
-It could even be mlocked, but I doubt if that would be needed.
+The large blocksize patch currently does not support mmap. I just have 
+some patches here that implement some of that using the approach that I 
+described.
+
+And without mmap support we never have to use references to tail pages 
+anyways. 
+
+We could avoid references to tail pages if we would not allow the mapping 
+of 4k subsections of larger pages but instead require that a compound page 
+always be mapped in its entirety. That would keep the necessary changes to 
+memory.c minimal but would cause trouble for applications that expect to 
+be able to map 4k chunks.
+
+If we want to support transparent use of 2M pages then we need to do this 
+anyways but at that point we can still have a single large "pte" (well 
+really a pmd that we treat as a pte).
+
+If we f.e. require an order 3 page to be mapped in one go then we would 
+have to install 8 ptes at once. If we allow mapping of 4k sections that we 
+can have mm/memory.c deal with one pte at a time.
+
+
+
+
