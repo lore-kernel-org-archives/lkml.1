@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936341AbXGZSIJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935845AbXGZSKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936341AbXGZSIJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:08:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765458AbXGZSHu
+	id S935845AbXGZSKi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764807AbXGZSKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:07:50 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:45768 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932123AbXGZSHt (ORCPT
+	Thu, 26 Jul 2007 14:10:31 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49041 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762918AbXGZSKa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:07:49 -0400
-Date: Thu, 26 Jul 2007 20:07:21 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.23-rc1: BUG_ON in kmap_atomic_prot()
-Message-ID: <20070726180721.GN3572@stusta.de>
-References: <20070723204045.GD5755@martell.zuzino.mipt.ru> <20070723210153.GA5753@martell.zuzino.mipt.ru> <20070723141137.171e4ac1.akpm@linux-foundation.org> <alpine.LFD.0.999.0707231415511.3607@woody.linux-foundation.org> <20070724175951.GC6019@stusta.de> <alpine.LFD.0.999.0707241113180.3607@woody.linux-foundation.org> <20070724112843.0cc104c2.akpm@linux-foundation.org> <alpine.LFD.0.999.0707241207290.3607@woody.linux-foundation.org> <20070724194046.GD6019@stusta.de> <alpine.LFD.0.999.0707241246130.3607@woody.linux-foundation.org>
+	Thu, 26 Jul 2007 14:10:30 -0400
+Date: Thu, 26 Jul 2007 11:10:29 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [bug] SLUB & freeing locks [was: Re: 2.6.23-rc1: known regressions
+ with patches]
+In-Reply-To: <1185473077.15205.7.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0707261108070.2374@schroedinger.engr.sgi.com>
+References: <46A47940.7030801@googlemail.com>  <20070726091048.GA7366@elte.hu>
+  <1185441963.8197.67.camel@twins> <1185473077.15205.7.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707241246130.3607@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 24, 2007 at 12:48:13PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Tue, 24 Jul 2007, Adrian Bunk wrote:
+On Thu, 26 Jul 2007, Peter Zijlstra wrote:
+
+> > Index: linux-2.6/mm/slub.c
+> > ===================================================================
+> > --- linux-2.6.orig/mm/slub.c
+> > +++ linux-2.6/mm/slub.c
+> > @@ -1131,6 +1131,7 @@ static void __free_slab(struct kmem_cach
+> >  		slab_pad_check(s, page);
+> >  		for_each_object(p, s, page_address(page))
+> >  			check_object(s, page, p, 0);
+> > +		ClearSlabDebug(page);
+> >  	}
+> >  
+> >  	mod_zone_page_state(page_zone(page),
+> > @@ -1169,7 +1170,6 @@ static void discard_slab(struct kmem_cac
+> >  
+> >  	atomic_long_dec(&n->nr_slabs);
+> >  	reset_page_mapcount(page);
+> > -	ClearSlabDebug(page);
+> >  	__ClearPageSlab(page);
+> >  	free_slab(s, page);
+> >  }
 > > 
-> > > But do we 
-> > > care so much that it's worth inlining something like buffered_rmqueue()? 
-> > >...
-> > 
-> > Where is the problem with having buffered_rmqueue() inlined?
 > 
-> In this case, it was a pain to just even try to find the call chain, or 
-> read the asm.
+> Christoph, how about this bit, it looks to me like we clear SlabDebug()
+> before we hit the last check in __free_slab().
 
-Optimization versus debugging is a common issue...
+Looks right. Have you tried to run a kernel with this change and 
+"slub_debug"?
 
-As I said, it might make sense to disable this optimization depending on 
-some debugging option.
-
-> I would encourage lots of kernel hackers to read the assembler code gcc 
-> generates. I suspect people being aware of code generation issues (and 
-> writing their code with that in mind) is a *much* bigger performance 
-> impact than gcc inlining random functions.
-> 
-> So maybe I'm old-fashioned and crazy, but "readability of the asm result" 
-> actually is a worthwhile goal. Not because we care directly, but because 
-> I'd like to encourage people to do it, due to the *indirect* benefits.
-
-This would lead to people trying to optimize code for one gcc version - 
-and the code might stay this way for 10 years.
-
-People should write readable C code. This also has the best chances of 
-resulting in good performance with the next gcc version on the next 
-generation hardware.
-
-> 		Linus
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
