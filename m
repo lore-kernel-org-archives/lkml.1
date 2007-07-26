@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932447AbXGZHIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXGZHNC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932447AbXGZHIc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 03:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761662AbXGZHIY
+	id S932095AbXGZHNC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 03:13:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757250AbXGZHMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 03:08:24 -0400
-Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:14098 "EHLO
-	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762669AbXGZHIX (ORCPT
+	Thu, 26 Jul 2007 03:12:52 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45183
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1759799AbXGZHMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 03:08:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAPTkp0bEHh/E/2dsb2JhbAA
-From: Bongani Hlope <bhlope@mweb.co.za>
-To: Rene Herman <rene.herman@gmail.com>
-Subject: Re: updatedb
-Date: Thu, 26 Jul 2007 09:08:02 +0200
-User-Agent: KMail/1.9.7
-Cc: Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com> <200707260839.51407.bhlope@mweb.co.za> <46A845BB.9080503@gmail.com>
-In-Reply-To: <46A845BB.9080503@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Thu, 26 Jul 2007 03:12:51 -0400
+Date: Thu, 26 Jul 2007 00:12:50 -0700 (PDT)
+Message-Id: <20070726.001250.18310187.davem@davemloft.net>
+To: marcel@holtmann.org
+Cc: bunk@stusta.de, ville.tervo@nokia.com, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: net/bluetooth/rfcomm/tty.c: use-after-free
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1185176832.7111.32.camel@violet>
+References: <20070723012543.GW26212@stusta.de>
+	<1185176832.7111.32.camel@violet>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707260908.02781.bhlope@mweb.co.za>
-X-Original-Subject: Re: updatedb
-X-Scan-Signature: 38083ec5f3d1ed275db7b5d0a2c67615
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 July 2007 08:56:59 Rene Herman wrote:
-> On 07/26/2007 08:39 AM, Bongani Hlope wrote:
-> > On Thursday 26 July 2007 05:59:53 Rene Herman wrote:
-> >> So what's happening? If you sit down with a copy op "top" in one
-> >> terminal and updatedb in another, what does it show?
-> >
-> > Just tested that, there's a steady increase in the useage of buff
->
-> Great. Now concentrate on the "swpd" column, as it's the only thing
-> relevant here. The fact that an updatedb run fills/replaces caches is
-> completely and utterly unsurprising and not something swap-prefetch helps
-> with. The only thing it does is bring back stuff from _swap_.
->
+From: Marcel Holtmann <marcel@holtmann.org>
+Date: Mon, 23 Jul 2007 09:47:12 +0200
 
-;)
+> Hi Adrian,
+> 
+> > Commit 8de0a15483b357d0f0b821330ec84d1660cadc4e added the following 
+> > use-after-free in net/bluetooth/rfcomm/tty.c:
+ ...
+> > Spotted by the Coverity checker.
+> 
+> really good catch. I fully overlooked that one. The attached patch
+> should fix it.
+> 
+> Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 
-I have 2Gb of RAM and I never ever touched swap on all my work loads. I was 
-just showing the behavior of updatedb on my desktop. I have never even looked 
-at the swap-prefetch patch (for obvious reasons). I think people should also 
-look at their /proc/sys/vm/overcommit_ratio
+Applied, thanks everyone.
