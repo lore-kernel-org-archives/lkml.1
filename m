@@ -1,106 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXGZIFP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933355AbXGZIFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbXGZIFP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 04:05:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765492AbXGZIEc
+	id S933355AbXGZIFw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 04:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbXGZIEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 04:04:32 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:50629 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760212AbXGZIE3 (ORCPT
+	Thu, 26 Jul 2007 04:04:53 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:49563 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933159AbXGZIEv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 04:04:29 -0400
-Subject: [PATCH] fix return value of i8042_aux_test_irq
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: linux-kernel@vger.kernel.org
-Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, vojtech@suse.cz,
-       akpm@linux-foundation.org
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Thu, 26 Jul 2007 17:04:25 +0900
-Message-Id: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Thu, 26 Jul 2007 04:04:51 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Tino Keitel <tino.keitel@gmx.de>
+Subject: Re: 2.6.23-rc1: USB hard disk broken
+Date: Thu, 26 Jul 2007 10:06:40 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20070725072343.GA3483@dose.home.local> <200707251024.37112.oliver@neukum.org> <20070725181312.GA5612@dose.home.local>
+In-Reply-To: <20070725181312.GA5612@dose.home.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707261006.41368.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I made an interesting finding while testing the two patches below.
+Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
+> On Wed, Jul 25, 2007 at 10:24:36 +0200, Oliver Neukum wrote:
+> > Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
+> > > Hi,
+> > > 
+> > > I just tried 2.6.23-rc1 and shortly after the boot my external USB hard
+> > > disk went mad.
+> 
+> [...]
+> 
+> > Please recompile with CONFIG_USB_DEBUG set.
+> > 
+> > 	Regards
+> > 		Oliver
+> 
+> I tried, but it didn't happen again.
 
-http://lkml.org/lkml/2007/7/19/685
-http://lkml.org/lkml/2007/7/19/687
+Did you try with the old kernel again? This bug may be related to timing.
 
-These patches modify the traditional CONFIG_DEBUG_KERNEL in such a way
-that the request_irq prints a warning if after calling the handler it
-returned IRQ_HANDLED .
-
-The code looks like this:
-
-int request_irq(unsigned int irq, irq_handler_t handler,
-                unsigned long irqflags, const char *devname, void
-*dev_id)
-.....
-        if (irqflags & IRQF_DISABLED) {
-                unsigned long flags;
-
-                local_irq_save(flags);
-                retval = handler(irq, dev_id);
-                local_irq_restore(flags);
-        } else
-                retval = handler(irq, dev_id);
-        if (retval == IRQ_HANDLED) {
-                printk(KERN_WARNING
-                       "%s (IRQ %d) handled a spurious interrupt\n",
-                       devname, irq);
-        }
-.....
-
-I discovered that i8042_aux_test_irq handles the "fake" interrupt,
-which, in principle, is not correct because it obviously isn't a real
-interrupt and it could have been a spurious interrupt as well.
-
-The problem is that the interrupt handler unconditionally returns IRQ
-handled, which does not seem correct. Anyway I am not very familiar with
-this code so I may be missing the whole point. I would appreciate your
-comments on this.
-
-Thank you in advance.
-
-Fernando
-
---
-
-Do not return IRQ_HANDLED when we haven't handle the interrupt.
-
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
-
-diff -urNp linux-2.6.23-rc1-mm1-orig/drivers/input/serio/i8042.c linux-2.6.23-rc1-mm1/drivers/input/serio/i8042.c
---- linux-2.6.23-rc1-mm1-orig/drivers/input/serio/i8042.c	2007-07-26 16:10:11.000000000 +0900
-+++ linux-2.6.23-rc1-mm1/drivers/input/serio/i8042.c	2007-07-26 16:05:19.000000000 +0900
-@@ -516,6 +516,7 @@ static irqreturn_t __devinit i8042_aux_t
- {
- 	unsigned long flags;
- 	unsigned char str, data;
-+	int ret;
- 
- 	spin_lock_irqsave(&i8042_lock, flags);
- 	str = i8042_read_status();
-@@ -524,10 +525,13 @@ static irqreturn_t __devinit i8042_aux_t
- 		if (i8042_irq_being_tested &&
- 		    data == 0xa5 && (str & I8042_STR_AUXDATA))
- 			complete(&i8042_aux_irq_delivered);
-+		ret = 1;
- 	}
-+	else
-+		ret = 0;
- 	spin_unlock_irqrestore(&i8042_lock, flags);
- 
--	return IRQ_HANDLED;
-+	return IRQ_RETVAL(ret);
- }
- 
- /*
-
-
+	Regards
+		Oliver
