@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762444AbXGZOuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762644AbXGZO4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762444AbXGZOuK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 10:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbXGZOt7
+	id S1762644AbXGZO4n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 10:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbXGZO4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 10:49:59 -0400
-Received: from serv1.oss.ntt.co.jp ([222.151.198.98]:51260 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752892AbXGZOt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 10:49:58 -0400
-Message-ID: <1446.172.50.1.13.1185461396.squirrel@172.19.0.2>
-In-Reply-To: <20070726151042.0ae34e0e@the-village.bc.nu>
-References: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp>
-    <d120d5000707260654l74d61359v4f17790ab06ac0a3@mail.gmail.com>
-    <20070726151042.0ae34e0e@the-village.bc.nu>
-Date: Thu, 26 Jul 2007 23:49:56 +0900 (JST)
-Subject: Re: [PATCH] fix return value of i8042_aux_test_irq
-From: fernando@oss.ntt.co.jp
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
-       Fernando Luis =?iso-8859-1?Q?V=C3=A1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, vojtech@suse.cz,
-       akpm@linux-foundation.org
-User-Agent: SquirrelMail/1.4.8-2.el4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Thu, 26 Jul 2007 10:56:35 -0400
+Received: from mba.ocn.ne.jp ([122.1.175.29]:56892 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753798AbXGZO4f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 10:56:35 -0400
+Date: Thu, 26 Jul 2007 23:57:35 +0900 (JST)
+Message-Id: <20070726.235735.25909273.anemo@mba.ocn.ne.jp>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, ralf@linux-mips.org
+Subject: [PATCH] serial_txx9: Fix printk format mismatch
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, July 26, 2007 11:10 pm, Alan Cox wrote:
->> The handler does handle the interrupt - both status and data registers
->> are read so from the keyboard controller point of view the interrupt
->> has been handled even if we happen to discard the data. As far as I
->> know IRQ12 is never shared by BIOS... Vojtech, do you remember why we
->> request IRQ12 with IRQF_SHARED?
->
-> A small number of boxes do share IRQ12 and it was switched to shared for
-> them.
-If that is the case interrupt handlers should be able to determine whether
-a certain interrupt comes from their respective devices, and return
-IRQ_HANDLED or IRQ_NONE accordingly. Returning IRQ_HANDLED unconditionally
-when IRQF_SHARED is set seems strange. Is this behavior intended?
+Since the commit 4f640efb3170dbcf99a37a3cc99060647b95428c, "%lx" is
+not suitable for p->mapbase (resource_size_t) in 32-bit.  This patch
+fixes a compiler warning caused by the mismatch.
 
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+diff --git a/drivers/serial/serial_txx9.c b/drivers/serial/serial_txx9.c
+index 7480dc8..be2ba06 100644
+--- a/drivers/serial/serial_txx9.c
++++ b/drivers/serial/serial_txx9.c
+@@ -1047,8 +1047,9 @@ static int __devinit serial_txx9_probe(struct platform_device *dev)
+ 		ret = serial_txx9_register_port(&port);
+ 		if (ret < 0) {
+ 			dev_err(&dev->dev, "unable to register port at index %d "
+-				"(IO%x MEM%lx IRQ%d): %d\n", i,
+-				p->iobase, p->mapbase, p->irq, ret);
++				"(IO%x MEM%llx IRQ%d): %d\n", i,
++				p->iobase, (unsigned long long)p->mapbase,
++				p->irq, ret);
+ 		}
+ 	}
+ 	return 0;
