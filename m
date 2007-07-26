@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936246AbXGZSRk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964871AbXGZSSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936246AbXGZSRk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:17:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936161AbXGZSQy
+	id S964871AbXGZSSc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933542AbXGZSSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:16:54 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55316 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S936116AbXGZSQv (ORCPT
+	Thu, 26 Jul 2007 14:18:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43361 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933454AbXGZSSH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:16:51 -0400
-Date: Thu, 26 Jul 2007 11:16:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: david@lang.hm
-cc: Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-In-Reply-To: <Pine.LNX.4.64.0707261056010.4183@asgard.lang.hm>
-Message-ID: <alpine.LFD.0.999.0707261113360.3442@woody.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707260026.08183.lenb@kernel.org>
- <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org>
- <200707261345.29902.lenb@kernel.org>
- <Pine.LNX.4.64.0707261056010.4183@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 26 Jul 2007 14:18:07 -0400
+Subject: Re: [bug] SLUB & freeing locks [was: Re: 2.6.23-rc1: known
+	regressions with patches]
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0707261108070.2374@schroedinger.engr.sgi.com>
+References: <46A47940.7030801@googlemail.com>
+	 <20070726091048.GA7366@elte.hu> <1185441963.8197.67.camel@twins>
+	 <1185473077.15205.7.camel@lappy>
+	 <Pine.LNX.4.64.0707261108070.2374@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 20:17:52 +0200
+Message-Id: <1185473872.15205.10.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Jul 2007, david@lang.hm wrote:
+On Thu, 2007-07-26 at 11:10 -0700, Christoph Lameter wrote:
+> On Thu, 26 Jul 2007, Peter Zijlstra wrote:
 > 
-> how about the fact that Linus found the problem becouse his system didn't work
-> right?
+> > > Index: linux-2.6/mm/slub.c
+> > > ===================================================================
+> > > --- linux-2.6.orig/mm/slub.c
+> > > +++ linux-2.6/mm/slub.c
+> > > @@ -1131,6 +1131,7 @@ static void __free_slab(struct kmem_cach
+> > >  		slab_pad_check(s, page);
+> > >  		for_each_object(p, s, page_address(page))
+> > >  			check_object(s, page, p, 0);
+> > > +		ClearSlabDebug(page);
+> > >  	}
+> > >  
+> > >  	mod_zone_page_state(page_zone(page),
+> > > @@ -1169,7 +1170,6 @@ static void discard_slab(struct kmem_cac
+> > >  
+> > >  	atomic_long_dec(&n->nr_slabs);
+> > >  	reset_page_mapcount(page);
+> > > -	ClearSlabDebug(page);
+> > >  	__ClearPageSlab(page);
+> > >  	free_slab(s, page);
+> > >  }
+> > > 
+> > 
+> > Christoph, how about this bit, it looks to me like we clear SlabDebug()
+> > before we hit the last check in __free_slab().
+> 
+> Looks right. Have you tried to run a kernel with this change and 
+> "slub_debug"?
+> 
+> Acked-by: Christoph Lameter <clameter@sgi.com>
 
-No, it works, it just forces me to use a configuration that I'm not 
-personally interested in on that particular machine.
+Not something this clean, only my WIP slub-rt. I'll run this and do a
+proper post of this fix.
 
-I tend to like using minimal kernels. I don't use modules on most of my 
-machines, and I actually look over my config. Maybe I'm odd. But I think 
-it's a good thing to let people decide what they want (and what they do 
-_not_ want) in their kernels.
-
-I think forcing people to use CPU_HOTPLUG is a mistake. There's a reason 
-that existed as a config option. The ACPI changes basically mean that the 
-whole CPU_HOTPLUG config option is totally pointless, because everybody is 
-forced to have it.
-
-		Linus
