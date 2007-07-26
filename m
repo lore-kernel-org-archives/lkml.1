@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933300AbXGZILJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933170AbXGZILf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933300AbXGZILJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 04:11:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765809AbXGZIKi
+	id S933170AbXGZILf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 04:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760355AbXGZIKw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 04:10:38 -0400
-Received: from www.osadl.org ([213.239.205.134]:56405 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764235AbXGZIKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 04:10:34 -0400
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Marcin =?UTF-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070726081326.GA3197@ff.dom.local>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
-	 <20070629150759.GC2771@ff.dom.local>
-	 <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
-	 <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu>
-	 <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
-	 <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos>
-	 <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
-	 <20070726081326.GA3197@ff.dom.local>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 10:10:31 +0200
-Message-Id: <1185437431.3227.21.camel@chaos>
+	Thu, 26 Jul 2007 04:10:52 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:43885 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932428AbXGZIKl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 04:10:41 -0400
+Date: Thu, 26 Jul 2007 10:08:03 +0200
+From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
+       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
+       mjg59@srcf.ucam.org, castet.matthieu@free.fr, shaohua.li@intel.com,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to
+ platform devices - broke my serial console
+Message-ID: <20070726100803.31aeacc5@frecb000686.frec.bull.fr>
+In-Reply-To: <200707251641.23406.bjorn.helgaas@hp.com>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
+	<200707250716.44609.bjorn.helgaas@hp.com>
+	<20070725153253.4d7e7e37@frecb000686.frec.bull.fr>
+	<200707251641.23406.bjorn.helgaas@hp.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/07/2007 10:15:20,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 26/07/2007 10:15:21,
+	Serialize complete at 26/07/2007 10:15:21
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 10:13 +0200, Jarek Poplawski wrote:
-> > I wanted to test them all on 2.6.22.1, but I didn't have enough time.
-> > I've verified only that 2.6.22.1 has the same problem. I can test it
-> > later, but I can report results back at beginning of next week.
+
+On Wed, 25 Jul 2007 16:41:23 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> On Wednesday 25 July 2007 07:32:53 am Sébastien Dugué wrote:
+> > On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > 
+> > > The _DDN is a "DOS device name", and the _UID is a "logical device ID
+> > > that does not change across reboots."  Both are optional, and PNPACPI
+> > > ignores them.  But maybe we could change PNPACPI to sort by them if
+> > > they are present.  I'll think about this a bit.
+> > 
+> >   That would be nice, but I wish you good luck with all those
+> > crappy BIOSes out there.
 > 
+> Yeah, it's an ugly world we live in.  Would you be able to try the
+> attached patch just for testing?  It should sort devices with the
+> same _HID by their _UID.  It doesn't have any effect on my systems,
+> because my devices are already ordered by _UID by default.  But I
+> think it should switch your COM1/COM2 ports back to the order you
+> expect.
 > 
-> So, everything is clear - any changes are good!
-> Except the signed-off ones... 
-> 
-> Thanks Marcin,
-> Jarek P.
-> 
-> PS: Now, it seems to me Thomas could be the nearest. BTW, could somebody
-> give me some tip, how these re-triggered interrupts are skipped on dev's
-> reset before enable_irq?
 
-I think the correct solution is really not to resend level type
-interrupts. If the interrupt line is still active, then the interrupt
-comes up by itself. I'm cooking a patch for that.
+  Works well, thanks Bjorn.
 
-The other question is: 
-
-Is the driver confused by the resent irq or is the chip-set unhappy
-about the resend ?
-
-We could figure the latter out by activating the software based resend
-method.
-
-	tglx
-
-
+  Sébastien.
