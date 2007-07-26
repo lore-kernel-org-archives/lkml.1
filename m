@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935372AbXGZVgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936082AbXGZVgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935372AbXGZVgK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 17:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764507AbXGZVf5
+	id S936082AbXGZVgt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 17:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765626AbXGZVgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 17:35:57 -0400
-Received: from gate.crashing.org ([63.228.1.57]:46735 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763834AbXGZVf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 17:35:56 -0400
-Subject: Re: [patch] mm: reduce pagetable-freeing latencies
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0707261758280.370@blonde.wat.veritas.com>
-References: <20070724083855.GA858@elte.hu>
-	 <20070724015441.8604d85d.akpm@linux-foundation.org>
-	 <1185270045.5439.249.camel@localhost.localdomain>
-	 <p73abtmt2y7.fsf@bingen.suse.de>
-	 <1185312559.5439.276.camel@localhost.localdomain>
-	 <1185345850.8197.64.camel@twins> <20070725094605.GA9045@one.firstfloor.org>
-	 <1185358093.5439.325.camel@localhost.localdomain>
-	 <20070725102608.GB9045@one.firstfloor.org>
-	 <1185360414.5439.335.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0707261758280.370@blonde.wat.veritas.com>
+	Thu, 26 Jul 2007 17:36:40 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:41460 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764507AbXGZVgj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 17:36:39 -0400
+Subject: [PATCH] CodingStyle: proscribe do-while without braces.
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-sparse@vger.kernel.org
 Content-Type: text/plain
-Date: Fri, 27 Jul 2007 07:35:15 +1000
-Message-Id: <1185485715.5495.127.camel@localhost.localdomain>
+Date: Thu, 26 Jul 2007 14:37:02 -0700
+Message-Id: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 18:11 +0100, Hugh Dickins wrote:
-> That will often be the case for anonymous pages, but not for pagecache
-> pages.  I had wondered whether to make exit_mmap unmap the stack first
-> (rather than text first as usually happens), but seems rather a hack.
+Sparse warns about do-while loops without braces; Linus's rationale from the
+Sparse Git changelog:
+> Add warning message for naked do-while
+>
+> Does it necessarily make sense? Dunno, but it does tend to be bad
+> practice, or at least result in code that can be hard to mentally parse.
+>
+> Maybe that mental parsing is just me.	 Or maybe it should be warned
+> about. You decide.
 
-Yup and defeated by HIGHMEM ,so I'm back to per-cpu page lists for now
-and we'll see how to move to the next step once I've ironed out other
-issues such as sparc64/ia64 related bits.
+Signed-off-by: Josh Triplett <josh@kernel.org>
+---
+ Documentation/CodingStyle |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-Ben.
+diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+index 7f1730f..f12e4b8 100644
+--- a/Documentation/CodingStyle
++++ b/Documentation/CodingStyle
+@@ -175,6 +175,13 @@ if (condition) {
+ 	otherwise();
+ }
+ 
++This also does not apply to a do-while loop; always use braces with a do-while,
++even if it contains a single statement:
++
++do {
++	this();
++} while(condition);
++
+ 		3.1:  Spaces
+ 
+ Linux kernel style for use of spaces depends (mostly) on
+-- 
+1.5.2.1
 
 
