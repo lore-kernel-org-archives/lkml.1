@@ -1,62 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764360AbXGZJct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbXGZJeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764360AbXGZJct (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 05:32:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbXGZJcl
+	id S932067AbXGZJeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 05:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbXGZJeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 05:32:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33456 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbXGZJcl (ORCPT
+	Thu, 26 Jul 2007 05:34:11 -0400
+Received: from bay0-omc2-s30.bay0.hotmail.com ([65.54.246.166]:61576 "EHLO
+	bay0-omc2-s30.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752504AbXGZJeK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 05:32:41 -0400
-Subject: Re: [bug] SLUB & freeing locks [was: Re: 2.6.23-rc1: known
-	regressions with patches]
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <1185441963.8197.67.camel@twins>
-References: <46A47940.7030801@googlemail.com>
-	 <20070726091048.GA7366@elte.hu>  <1185441963.8197.67.camel@twins>
-Content-Type: text/plain
-Date: Thu, 26 Jul 2007 11:32:33 +0200
-Message-Id: <1185442353.8197.71.camel@twins>
+	Thu, 26 Jul 2007 05:34:10 -0400
+Message-ID: <BAY103-F99C4B0C514003C858F76DB2F20@phx.gbl>
+X-Originating-IP: [85.36.106.214]
+X-Originating-Email: [pupilla@hotmail.com]
+In-Reply-To: <200707251132.55765.jbarnes@virtuousgeek.org>
+From: "Marco Berizzi" <pupilla@hotmail.com>
+To: jbarnes@virtuousgeek.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [drm:i810_wait_ring] *ERROR* space: 65476 wanted 65528
+Date: Thu, 26 Jul 2007 11:34:05 +0200
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; format=flowed
+X-OriginalArrivalTime: 26 Jul 2007 09:34:09.0491 (UTC) FILETIME=[1E47AA30:01C7CF68]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 11:26 +0200, Peter Zijlstra wrote:
-> On Thu, 2007-07-26 at 11:10 +0200, Ingo Molnar wrote:
-> > there's a new regression:
-> > 
-> > SLUB does not seem to call debug_check_no_locks_freed() - hence on SLUB 
-> > we will not notice certain types of freeing races. (such as freeing an 
-> > object still locked and used on another CPU.) SLAB does this corretly.
+Jesse Barnes wrote:
 
-Oh, nm, it doesn't call debug_check_no_locks_freed() at all.
+>Looks like a DRM driver problem.  Can you file a bug for this at
+>freedesktop.org if there's not one already?
 
-This should do I guess.
+thanks for the reply. Here is:
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- mm/slub.c |    1 +
- 1 file changed, 1 insertion(+)
+https://bugs.freedesktop.org/show_bug.cgi?id=11726
 
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c
-+++ linux-2.6/mm/slub.c
-@@ -1656,6 +1656,7 @@ static void __always_inline slab_free(st
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
-+	debug_check_no_locks_freed(object, s->size);
- 	if (likely(page == s->cpu_slab[smp_processor_id()] &&
- 						!SlabDebug(page))) {
- 		object[page->offset] = page->lockless_freelist;
-
+_________________________________________________________________
+Express yourself instantly with MSN Messenger! Download today it's FREE! 
+http://messenger.msn.click-url.com/go/onm00200471ave/direct/01/
 
