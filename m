@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932105AbXGZQfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934583AbXGZQfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932105AbXGZQfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764114AbXGZQdw
+	id S934583AbXGZQfv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934345AbXGZQeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:33:52 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:35223 "EHLO
+	Thu, 26 Jul 2007 12:34:03 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35279 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933981AbXGZQdu (ORCPT
+	with ESMTP id S934178AbXGZQeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:33:50 -0400
+	Thu, 26 Jul 2007 12:34:00 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] lockd and nfsd endianness annotation fixes
-Cc: linux-kernel@vger.kernel.org, neilb@suse.de
-Message-Id: <E1IE6Hd-0005Dl-Hu@ZenIV.linux.org.uk>
+Subject: [PATCH] initramfs: missing __init
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1IE6Hn-0005F3-Il@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Thu, 26 Jul 2007 17:33:49 +0100
+Date: Thu, 26 Jul 2007 17:33:59 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/lockd/svclock.c |    6 +++---
- fs/nfsd/nfs4xdr.c  |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ init/initramfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/lockd/svclock.c b/fs/lockd/svclock.c
-index b3efa45..a21e4bc 100644
---- a/fs/lockd/svclock.c
-+++ b/fs/lockd/svclock.c
-@@ -335,10 +335,10 @@ static void nlmsvc_freegrantargs(struct nlm_rqst *call)
- /*
-  * Deferred lock request handling for non-blocking lock
-  */
--static u32
-+static __be32
- nlmsvc_defer_lock_rqst(struct svc_rqst *rqstp, struct nlm_block *block)
+diff --git a/init/initramfs.c b/init/initramfs.c
+index 00eff7a..1db02a0 100644
+--- a/init/initramfs.c
++++ b/init/initramfs.c
+@@ -133,7 +133,7 @@ static __initdata loff_t this_header, next_header;
+ 
+ static __initdata int dry_run;
+ 
+-static inline void eat(unsigned n)
++static inline void __init eat(unsigned n)
  {
--	u32 status = nlm_lck_denied_nolocks;
-+	__be32 status = nlm_lck_denied_nolocks;
- 
- 	block->b_flags |= B_QUEUED;
- 
-@@ -352,7 +352,7 @@ nlmsvc_defer_lock_rqst(struct svc_rqst *rqstp, struct nlm_block *block)
- 			status = nlm_drop_reply;
- 	}
- 	dprintk("lockd: nlmsvc_defer_lock_rqst block %p flags %d status %d\n",
--		block, block->b_flags, status);
-+		block, block->b_flags, ntohl(status));
- 
- 	return status;
- }
-diff --git a/fs/nfsd/nfs4xdr.c b/fs/nfsd/nfs4xdr.c
-index b3d55c6..8ef0964 100644
---- a/fs/nfsd/nfs4xdr.c
-+++ b/fs/nfsd/nfs4xdr.c
-@@ -2450,7 +2450,7 @@ nfsd4_encode_rename(struct nfsd4_compoundres *resp, __be32 nfserr, struct nfsd4_
- }
- 
- static void
--nfsd4_encode_secinfo(struct nfsd4_compoundres *resp, int nfserr,
-+nfsd4_encode_secinfo(struct nfsd4_compoundres *resp, __be32 nfserr,
- 		     struct nfsd4_secinfo *secinfo)
- {
- 	int i = 0;
+ 	victim += n;
+ 	this_header += n;
 -- 
 1.5.3.GIT
+
 
