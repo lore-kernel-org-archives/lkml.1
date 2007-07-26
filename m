@@ -1,49 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932912AbXGZPTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933884AbXGZPTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932912AbXGZPTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbXGZPTN
+	id S933884AbXGZPTs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762732AbXGZPTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:19:13 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59271 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757519AbXGZPTM (ORCPT
+	Thu, 26 Jul 2007 11:19:38 -0400
+Received: from web50103.mail.re2.yahoo.com ([206.190.38.31]:35222 "HELO
+	web50103.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760520AbXGZPTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:19:12 -0400
-Message-ID: <46A8BB6C.6050903@zytor.com>
-Date: Thu, 26 Jul 2007 08:19:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 26 Jul 2007 11:19:35 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=o9mr4bnZ4hf5KZrxiF8kd3DWyTmXI1OUlutxX3vCSbXkDBc0dgfB3+vydyUnFVMnmyYbB8tiKC4PMXpEHJKeB2TwndsbxnqrcNF0fbNKB8bubOK+0NPbTmhB6zZoC0vTyfY6LYl+muAiwYpyzBvzxHhAONkaGbX2AwWMWSyyUfc=;
+X-YMail-OSG: gzLA9cgVM1mn9i_.ksPyqLgBfS3SsbGghBQIDjE65Hie30MRUnj3_bPBVUEhqMMunPn_xioQ.R0HnFmiugOUc2Il9awHfthd6stBqsoIEJfKCuaGSbRbFz5lNNuNRKpvOxAzeDN9c3M-
+Date: Thu, 26 Jul 2007 08:19:33 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Reply-To: dougthompson@xmission.com
+Subject: Re: [PATCH 3/4] include asm-mips add missing edac h file
+To: Andrew Morton <akpm@linux-foundation.org>, dougthompson@xmission.com
+Cc: greg@kroah.com, ralf@linux-mips.org, egor@pasemi.com,
+       alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <20070725222500.e537531d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Xudong Guan <xudong.guan@gmail.com>
-CC: Borislav Petkov <bbpetkov@yahoo.de>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1: no setup signature found...
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop>
-In-Reply-To: <20070726150854.GA7034@xguan-laptop>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <975861.36218.qm@web50103.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xudong Guan wrote:
-> On 13:26(+0200) Tue 24 Jul, Borislav Petkov wrote:
->>    2.6.23-rc1 won't boot on my Asus M6N laptop and the last thing it shows after loading
->> grub is "No setup signature found...," which, imho, comes from
->> arch/i386/boot/header.S. I tried printing out the value of setup_sig like so
+
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 25 Jul 2007 14:55:01 -0600 dougthompson@xmission.com wrote:
 > 
-> I hitted the same error message with v2.6.23-rc1-171-ge4903fb.
-> No problem with v2.6.21-3770-g01e73be.
-> Seems there has been some cleanup of the i386/boot code.
-> Anyone can give a quick clue, or should I do a bisect?
+> > --- /dev/null
+> > +++ linux-2.6.23-rc1/include/asm-mips/edac.h
+> > @@ -0,0 +1,35 @@
+> > +#ifndef ASM_EDAC_H
+> > +#define ASM_EDAC_H
+> > +
+> > +/* ECC atomic, DMA, SMP and interrupt safe scrub function */
+> > +
+> > +static __inline__ void atomic_scrub(void *va, u32 size)
+> 
+> Please don't use __inline__ or __inline.  Good old "inline" will do.
 
-The bisect will almost guaranteed show a change at the change to the new
-setup code.  The message means that the setup code wasn't loaded
-correctly into memory; the big question is *why*.
+ok, thanks.
 
-What distro/version of grub are you running?  I'm wondering if there are
-some old version of grub out there which did the "load four sectors"
-way-anciently-obsolete crap; the other possibility that comes to mind is
-setting up the stack in an invalid manner.
+I have to admit, since I don't know MIPS assembly, the guys at Sicortex.com developed
+this function.
 
-	-hpa
+> 
+> <cc's the checkpatch maintainer>
+> 
+> <edits the diff>
+
+thanks
+
+> 
+> > +{
+> > +	unsigned long *virt_addr = va;
+> > +	unsigned long temp;
+> > +	u32 i;
+> > +
+> > +	for (i = 0; i < size / sizeof(unsigned long); i++, virt_addr++) {
+> > +
+> > +		/*
+> > +		 * Very carefully read and write to memory atomically
+> > +		 * so we are interrupt, DMA and SMP safe.
+> > +		 *
+> > +		 * Intel: asm("lock; addl $0, %0"::"m"(*virt_addr));
+> > +		 */
+> > +
+> > +		__asm__ __volatile__ (
+> > +		"       .set    mips3                                   \n"
+> > +		"1:     ll      %0, %1          # atomic_add            \n"
+> > +		"       ll      %0, %1          # atomic_add            \n"
+> > +		"       addu    %0, $0                                  \n"
+> > +		"       sc      %0, %1                                  \n"
+> > +		"       beqz    %0, 1b                                  \n"
+> > +		"       .set    mips0                                   \n"
+> > +		: "=&r" (temp), "=m" (*virt_addr)
+> > +		: "m" (*virt_addr));
+> > +
+> > +	}
+> > +}
+> 
+> hm, I'd have thought that we could us plain old atomic_add() for this.
+
+This code is used as a primitive to perform software memory scrubbing.
+
+We (many people as I remember) had a discussion a couple of years ago on lkml on this, 
+so this is where this implementation pattern came from.
+
+It might be that your thought just could be correct now after some more research.
+
+doug t
+
