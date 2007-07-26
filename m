@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932704AbXGZXme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762656AbXGZXub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932704AbXGZXme (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758037AbXGZXm2
+	id S1762656AbXGZXub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752133AbXGZXuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:42:28 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:60828 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757980AbXGZXm1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:42:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d6a0WFB7V+/CPgLB1KFT/wYA8f0alraOmVO6XcLhLLf1zDc1DYRz7PJZNXTCipLZGglj9z82LshZJJ/dzyEijZhD3icQTNkOcFzI/EU1zYHle6L5SHNZbU60GvXeC8SHVGl4fbQ485fErNHPn6rPszBKR18kWTK2GhvPhKqCIS8=
-Message-ID: <9a8748490707261642sadcc316la3dcd0ef7201dd68@mail.gmail.com>
-Date: Fri, 27 Jul 2007 01:42:26 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] various doc/kernel-parameters fixes
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       tony.luck@intel.com, jejb <james.bottomley@steeleye.com>
-In-Reply-To: <20070726164429.f41358d7.randy.dunlap@oracle.com>
+	Thu, 26 Jul 2007 19:50:21 -0400
+Received: from mail.tmr.com ([64.65.253.246]:49340 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751636AbXGZXuU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:50:20 -0400
+Message-ID: <46A933A1.7050601@tmr.com>
+Date: Thu, 26 Jul 2007 19:52:01 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
+To: Kyle Rose <krose@akamai.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+References: <46A8BAD4.8020004@akamai.com>
+In-Reply-To: <46A8BAD4.8020004@akamai.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070726164429.f41358d7.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/07/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
->
-> - tell what APIC (by request), MTD, & PARIDE mean
-> - correct some source file names
-> - remove IA64 "llsc*=" (seems to have been removed from source tree)
-> - removel SCSI "53c7xx=" (driver already removed)
->
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Kyle Rose wrote:
+> From http://www.krose.org/~krose/computing.html:
+> 
+> Since the sky2 driver continues to suck ass (which is a technical
+> description for "it hangs all the time under load, at least on my
+> hardware" :-) ), I've fixed the sk98lin driver to compile for
+> linux-2.6.23-rc1. Those who continue to have problems with sky2 can
+> still use 2.6.23-rc1, simply by doing the following:
+> 
+Bless you, extends my update capability for another version. ;-)
 
-I read through your changes and they look good to me.
+However, Ingo posted a patch for the thread "network dies after random 
+time" which probably didn't make it into rc1. In all fairness applying 
+that might fix the problem, it's possible if unlikely that the new 
+driver tickles a bug the stable sk98lin driver didn't.
 
-Acked-by: Jesper Juhl <jesper.juhl@gmail.com>
+Does skge work for your hardware? Based on a sample size of one (four to 
+go) everything worked for me except NFS, jumbo packets work with tcp, 
+not with udp. I don't have everything nailed down enough for a proper 
+bug report, it's just something to note. In truth there's little to 
+choose between tcp and udp for machines in the same room, I could live 
+with skge.
 
+haven't tried shy2, there was a build failure on my last server build, 
+won't look at it until Monday.
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
