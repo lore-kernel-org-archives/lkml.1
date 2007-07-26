@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXGZNFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933802AbXGZNGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933605AbXGZNFs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 09:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbXGZNFi
+	id S933802AbXGZNGZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 09:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761280AbXGZNGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 09:05:38 -0400
-Received: from yue.linux-ipv6.org ([203.178.140.15]:49297 "EHLO
-	yue.st-paulia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754028AbXGZNFh (ORCPT
+	Thu, 26 Jul 2007 09:06:11 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:50032 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758894AbXGZNGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 09:05:37 -0400
-Date: Thu, 26 Jul 2007 08:06:24 -0500 (CDT)
-Message-Id: <20070726.080624.94043434.yoshfuji@linux-ipv6.org>
-To: rjw@sisk.pl
-Cc: pavel@ucw.cz, akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, yoshfuji@linux-ipv6.org
-Subject: Re: [2.6.23-rc1 REGRESSION] ThinkPad T42 poweroff failure by "PM:
- Introduce pm_power_off_prepare"
-From: YOSHIFUJI Hideaki / =?iso-2022-jp?B?GyRCNUhGIzFRTEAbKEI=?= 
-	<yoshfuji@linux-ipv6.org>
-In-Reply-To: <200707261412.33839.rjw@sisk.pl>
-References: <200707251446.56809.rjw@sisk.pl>
-	<20070725.102840.72654660.yoshfuji@linux-ipv6.org>
-	<200707261412.33839.rjw@sisk.pl>
-Organization: USAGI/WIDE Project
-X-URL: http://www.yoshifuji.org/%7Ehideaki/
-X-Fingerprint: 9022 65EB 1ECF 3AD1 0BDF  80D8 4807 F894 E062 0EEA
-X-PGP-Key-URL: http://www.yoshifuji.org/%7Ehideaki/hideaki@yoshifuji.org.asc
-X-Face: "5$Al-.M>NJ%a'@hhZdQm:."qn~PA^gq4o*>iCFToq*bAi#4FRtx}enhuQKz7fNqQz\BYU]
- $~O_5m-9'}MIs`XGwIEscw;e5b>n"B_?j/AkL~i/MEa<!5P`&C$@oP>ZBLP
-X-Mailer: Mew version 3.3 on Emacs 20.7 / Mule 4.1 (AOI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 09:06:09 -0400
+Date: Thu, 26 Jul 2007 07:06:07 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Meelis Roos <mroos@linux.ee>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "Darrick J. Wong" <djwong@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Remove libsas PCI dependencies
+Message-ID: <20070726130607.GB19275@parisc-linux.org>
+References: <Pine.SOC.4.64.0707261129220.17385@math.ut.ee> <46A867AB.7050007@garzik.org> <1185454007.3501.34.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185454007.3501.34.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, Jul 26, 2007 at 08:46:47AM -0400, James Bottomley wrote:
+> On Thu, 2007-07-26 at 05:21 -0400, Jeff Garzik wrote:
+> > libsas should -not- require PCI, even though aic94xx does.
+> 
+> Realistically, even for parisc, I can't see anyone producing a non-PCI
+> SAS device (even though I'd like one).
 
-In article <200707261412.33839.rjw@sisk.pl> (at Thu, 26 Jul 2007 14:12:33 +0200), "Rafael J. Wysocki" <rjw@sisk.pl> says:
+While SBUS, GSC, VME, ISA, EISA, MCA, VL, PCMCIA, TurboChannel and Zorro
+all seem pretty unlikely, I could see someone producing a RapidIO device.
 
-> On Wednesday, 25 July 2007 17:28, YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> > Hello.
-> > 
-> > In article <200707251446.56809.rjw@sisk.pl> (at Wed, 25 Jul 2007 14:46:55 +0200), "Rafael J. Wysocki" <rjw@sisk.pl> says:
-> > 
-> > > On Wednesday, 25 July 2007 00:19, YOSHIFUJI Hideaki / 吉藤英明 wrote:
-> > :
-> > > > Linux 2.6.23-rc1 fails to power off my ThinkPad T42.
-> > > > Git-bisect told me that the following commit is to blame,
-> > > > and by reverting that commit, it works appropriately.
-> > > 
-> > > (1) Can you please apply the appended patch and see if the message gets
-> > >     printed when you try to power off the system?
-> > 
-> > Yup, I got it.  Last lines are:
-:
-> Can you please check if the appended patch helps?
-
-Yes, it definitely does.  Thank you.
-
-Regards,
-
---yoshfuji
+-- 
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
