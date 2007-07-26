@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764378AbXGZPYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXGZP0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764378AbXGZPYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 11:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbXGZPYl
+	id S932779AbXGZP0a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 11:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758806AbXGZP0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 11:24:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56403 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755324AbXGZPYk (ORCPT
+	Thu, 26 Jul 2007 11:26:21 -0400
+Received: from hu-out-0506.google.com ([72.14.214.233]:52158 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756892AbXGZP0V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 11:24:40 -0400
-Message-ID: <46A8BC94.3040808@zytor.com>
-Date: Thu, 26 Jul 2007 08:24:04 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 26 Jul 2007 11:26:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=JuaMAX6xOXYfDIb0bwicuayxL9YJnzwxygM1shL4Lk6pH0o/+/92yR/ZnsnMNg2HFNUFSyvRGSePERxw6CgyavVvDGWEdZdkVcm7iVv1Xu7ABoDWPRkjGQCLg8tqrB7c8z2ogWdFBHaZUvsXXYwd5Quok9UUqJEy9YwAe4b63P0=
+Date: Thu, 26 Jul 2007 16:26:04 +0100
+From: Xudong Guan <xudong.guan@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <bbpetkov@yahoo.de>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1: no setup signature found...
+Message-ID: <20070726152604.GA25792@xguan-laptop>
+References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Etienne Lorrain <etienne_lorrain@yahoo.fr>,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: [GIT PULL] Bug- and documentation fixes for the x86 setup code
-References: <200707181858.l6IIwA27032630@tazenda.hos.anvin.org> <20070726104246.GD10208@ucw.cz>
-In-Reply-To: <20070726104246.GD10208@ucw.cz>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A8BB6C.6050903@zytor.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> Hi!
-> 
->> H. Peter Anvin (5):
->>       [x86 setup] MAINTAINERS: document x86 setup code git tree
->>       [x86 setup] build/tools.c: fix comment
->>       [x86 setup] Fix assembly constraints
->>       [x86 setup] VGA: Clear the Protect bit before setting the vertical height
->>       [x86 setup] Save/restore DS around invocations of INT 10h
-> 
-> Are there / were there known problems with running new setup code on
-> AMD Geode and similar strange cpus? I tried to get wyse thin client to
-> work, and it worked ok in 2.6.22, but something broke early in boot
-> (doublefault?) with newer versions.
-> 
+On 08:19(-0700) Thu 26 Jul, H. Peter Anvin wrote:
+> What distro/version of grub are you running?  I'm wondering if there are
+> some old version of grub out there which did the "load four sectors"
+> way-anciently-obsolete crap; the other possibility that comes to mind is
+> setting up the stack in an invalid manner
 
-Note also that with the new setup code you can put printf() in the setup
-code; so sprinking the code with printfs and figuring out *where* it's
-failing is probably step 1.
+My grub screen shows "GRUB  version 0.91". I am playing with a qemu
+image with this version of grub came from an old Damn Small Linux distribution.
 
-	-hpa
+Xudong
