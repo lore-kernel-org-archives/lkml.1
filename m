@@ -1,71 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbXGZVyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934992AbXGZWAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934316AbXGZVyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 17:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758679AbXGZVyd
+	id S934992AbXGZWAg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932234AbXGZWA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 17:54:33 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:45320 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751474AbXGZVyc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 17:54:32 -0400
-Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
-From: Josh Triplett <josht@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-sparse@vger.kernel.org
-In-Reply-To: <20070726144406.63c07909.akpm@linux-foundation.org>
-References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
-	 <20070726144406.63c07909.akpm@linux-foundation.org>
+	Thu, 26 Jul 2007 18:00:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:39879 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751305AbXGZWA1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 18:00:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,584,1175497200"; 
+   d="scan'208";a="255281786"
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>
+In-Reply-To: <20070726213154.GA26569@elte.hu>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>
+	 <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu>
+	 <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>
+	 <20070725192442.GC4463@elte.hu>
+	 <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>
+	 <20070726213154.GA26569@elte.hu>
 Content-Type: text/plain
-Date: Thu, 26 Jul 2007 14:54:55 -0700
-Message-Id: <1185486895.4459.3.camel@josh-work.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
 Content-Transfer-Encoding: 7bit
+Date: Thu, 26 Jul 2007 15:00:25 -0700
+Message-Id: <1185487225.3122.11.camel@tongli.jf.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
+X-OriginalArrivalTime: 26 Jul 2007 22:00:26.0366 (UTC) FILETIME=[5F6091E0:01C7CFD0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 14:44 -0700, Andrew Morton wrote:
-> On Thu, 26 Jul 2007 14:37:02 -0700 Josh Triplett <josht@linux.vnet.ibm.com> wrote:
+On Thu, 2007-07-26 at 23:31 +0200, Ingo Molnar wrote:
+> * Tong Li <tong.n.li@intel.com> wrote:
 > 
-> > Sparse warns about do-while loops without braces; Linus's rationale from the
-> > Sparse Git changelog:
-> > > Add warning message for naked do-while
-> > >
-> > > Does it necessarily make sense? Dunno, but it does tend to be bad
-> > > practice, or at least result in code that can be hard to mentally parse.
-> > >
-> > > Maybe that mental parsing is just me.	 Or maybe it should be warned
-> > > about. You decide.
+> > > you need to measure it over longer periods of time. Its not worth 
+> > > balancing for such a thing in any high-frequency manner. (we'd trash 
+> > > the cache constantly migrating tasks back and forth.)
 > > 
-> > Signed-off-by: Josh Triplett <josh@kernel.org>
-> > ---
-> >  Documentation/CodingStyle |    7 +++++++
-> >  1 files changed, 7 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-> > index 7f1730f..f12e4b8 100644
-> > --- a/Documentation/CodingStyle
-> > +++ b/Documentation/CodingStyle
-> > @@ -175,6 +175,13 @@ if (condition) {
-> >  	otherwise();
-> >  }
-> >  
-> > +This also does not apply to a do-while loop; always use braces with a do-while,
-> > +even if it contains a single statement:
-> > +
-> > +do {
-> > +	this();
-> > +} while(condition);
-> > +
+> > I have some data below, but before that, I'd like to say, at the same 
+> > load balancing rate, my proposed approach would allow us to have 
+> > fairness on the order of seconds. I'm less concerned about trashing 
+> > the cache. The important thing is to have a knob that allow users to 
+> > trade off fairness and performance based on their needs. [...]
 > 
-> err, your example has broken coding style.
+> such a knob already exists to a certain degree, but i havent tested its 
+> full effects on SMP fairness yet. If you pull my scheduler tree:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+> 
+> and if you enable CONFIG_SCHED_DEBUG, then all the sched-domain 
+> parameters become runtime tunable under /proc/sys/cpu*.
+> 
+> Could you try to increase the cross-CPU rebalancing frequency and see 
+> how it impacts the precision of your measurement? Tune 'min_interval' 
+> and 'max_interval' down to increase the frequency of rebalancing.
+> 
+> 	Ingo
 
-Oops; thanks for catching that. :)
+Yes, I'll do it when I find time. If anyone is willing to do the
+testing, please let me know and I can post my benchmark. On the other
+hand, I don't think tuning the existing knobs will help solve the
+problem. The root of the problem is that the current load balancing
+doesn't take into account how much time each task has been running and
+how much it's entitled. This is why I'm proposing a new approach for
+solving it. The new approach, as I said, will be much more fair/accurate
+than the current one even without tuning those balancing intervals
+(i.e., it's able to provide good fairness even if balancing is less
+frequent).
 
-- Josh Triplett
-
-
+  tong
