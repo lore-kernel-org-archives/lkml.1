@@ -1,88 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934670AbXGZQgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934665AbXGZQg6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934670AbXGZQgh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934368AbXGZQeR
+	id S934665AbXGZQg6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:36:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933981AbXGZQeX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:34:17 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:54676 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934363AbXGZQeO (ORCPT
+	Thu, 26 Jul 2007 12:34:23 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35384 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934383AbXGZQeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:34:14 -0400
-Date: Thu, 26 Jul 2007 22:02:50 +0530
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Arjan van de Ven <arjan@infradead.org>, linux@bohmer.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Question] Hooks for scheduler tracing (CFS)
-Message-ID: <20070726163250.GB8644@in.ibm.com>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
-References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com> <1184615557.2698.3.camel@laptopd505.fenrus.org> <20070726072858.GC13061@in.ibm.com> <20070726133138.GA30559@Krystal> <y0mps2f1asz.fsf@ton.toronto.redhat.com> <20070726150226.GB1299@Krystal> <20070726162231.GB30643@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726162231.GB30643@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: ankita@in.ibm.com (Ankita Garg)
+	Thu, 26 Jul 2007 12:34:20 -0400
+To: torvalds@linux-foundation.org
+Subject: [PATCH] deal with alpha section warnings
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <E1IE6I7-0005Gz-LL@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Thu, 26 Jul 2007 17:34:19 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 12:22:31PM -0400, Frank Ch. Eigler wrote:
-> Hi -
-> 
-> On Thu, Jul 26, 2007 at 11:02:26AM -0400, Mathieu Desnoyers wrote:
-> > [...]
-> > > > The problem is also in _stp_print_flush, not *only* in relay code:
-> > > > void _stp_print_flush (void)
-> > > > ...
-> > > >                 spin_lock(&_stp_print_lock);
-> > > >                 spin_unlock(&_stp_print_lock);
-> > > > 
-> > > > Those will turn into mutexes with -rt.
-> > > 
-> > > Indeed,
-> 
-> (Though actually that bug was fixed some time ago.)
-> 
-> 
-> > > plus systemtap-generated locking code uses rwlocks,
-> > > local_irq_save/restore or preempt_disable, in various places.  Could
-> > > someone point to a place that spells out what would be more
-> > > appropriate way of ensuring atomicity while being compatible with -rt?
-> > 
-> > AFAIK, for your needs either:
-> > [...]
-> > - Use per-cpu data with preempt disabling/irq disabling
-> 
-> As in local_irq_save / preempt_disable?  Yes, already done.
-> 
-> > - Use the original "real" spin locks/rwlocks (raw_*).
-> > [...]
-> 
-> It was unclear from the OLS paper whether the spin_lock_irq* family of
-> functions also had to be moved to the raw forms.
 
-By making the locks of the raw_* type, spin_lock_irq* functions would
-then automatically disable hardware interrupts.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ arch/alpha/kernel/head.S        |    1 +
+ arch/alpha/kernel/pci.c         |   10 +++++-----
+ arch/alpha/kernel/pci_iommu.c   |    4 ++--
+ arch/alpha/kernel/smp.c         |    6 +++---
+ arch/alpha/kernel/vmlinux.lds.S |    1 +
+ 5 files changed, 12 insertions(+), 10 deletions(-)
 
-> 
-> > You just don't want to sleep in the tracing code. [...]  Since you
-> > will likely disable preemption, make sure your tracing code executes
-> > in a deterministic time.
-> 
-> Definitely, that has always been the case.
-> 
-> > Make sure that the sub-buffer switch code respects that too [...]
-> 
-> We will review that part of the related code.
-> 
-> - FChE
-
+diff --git a/arch/alpha/kernel/head.S b/arch/alpha/kernel/head.S
+index e27d23c..7ac1f13 100644
+--- a/arch/alpha/kernel/head.S
++++ b/arch/alpha/kernel/head.S
+@@ -10,6 +10,7 @@
+ #include <asm/system.h>
+ #include <asm/asm-offsets.h>
+ 
++.section .text.head, "ax"
+ .globl swapper_pg_dir
+ .globl _stext
+ swapper_pg_dir=SWAPPER_PGD
+diff --git a/arch/alpha/kernel/pci.c b/arch/alpha/kernel/pci.c
+index ab642a4..9dc1cee 100644
+--- a/arch/alpha/kernel/pci.c
++++ b/arch/alpha/kernel/pci.c
+@@ -195,7 +195,7 @@ pcibios_init(void)
+ 
+ subsys_initcall(pcibios_init);
+ 
+-char * __init
++char * __devinit
+ pcibios_setup(char *str)
+ {
+ 	return str;
+@@ -204,7 +204,7 @@ pcibios_setup(char *str)
+ #ifdef ALPHA_RESTORE_SRM_SETUP
+ static struct pdev_srm_saved_conf *srm_saved_configs;
+ 
+-void __init
++void __devinit
+ pdev_save_srm_config(struct pci_dev *dev)
+ {
+ 	struct pdev_srm_saved_conf *tmp;
+@@ -247,14 +247,14 @@ pci_restore_srm_config(void)
+ }
+ #endif
+ 
+-void __init
++void __devinit
+ pcibios_fixup_resource(struct resource *res, struct resource *root)
+ {
+ 	res->start += root->start;
+ 	res->end += root->start;
+ }
+ 
+-void __init
++void __devinit
+ pcibios_fixup_device_resources(struct pci_dev *dev, struct pci_bus *bus)
+ {
+ 	/* Update device resources.  */
+@@ -273,7 +273,7 @@ pcibios_fixup_device_resources(struct pci_dev *dev, struct pci_bus *bus)
+ 	}
+ }
+ 
+-void __init
++void __devinit
+ pcibios_fixup_bus(struct pci_bus *bus)
+ {
+ 	/* Propagate hose info into the subordinate devices.  */
+diff --git a/arch/alpha/kernel/pci_iommu.c b/arch/alpha/kernel/pci_iommu.c
+index 6b07f89..e1c4707 100644
+--- a/arch/alpha/kernel/pci_iommu.c
++++ b/arch/alpha/kernel/pci_iommu.c
+@@ -58,7 +58,7 @@ size_for_memory(unsigned long max)
+ 	return max;
+ }
+ 
+-struct pci_iommu_arena *
++struct pci_iommu_arena * __init
+ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
+ 		     unsigned long window_size, unsigned long align)
+ {
+@@ -117,7 +117,7 @@ iommu_arena_new_node(int nid, struct pci_controller *hose, dma_addr_t base,
+ 	return arena;
+ }
+ 
+-struct pci_iommu_arena *
++struct pci_iommu_arena * __init
+ iommu_arena_new(struct pci_controller *hose, dma_addr_t base,
+ 		unsigned long window_size, unsigned long align)
+ {
+diff --git a/arch/alpha/kernel/smp.c b/arch/alpha/kernel/smp.c
+index b287314..0804b6a 100644
+--- a/arch/alpha/kernel/smp.c
++++ b/arch/alpha/kernel/smp.c
+@@ -358,7 +358,7 @@ secondary_cpu_start(int cpuid, struct task_struct *idle)
+ /*
+  * Bring one cpu online.
+  */
+-static int __devinit
++static int __cpuinit
+ smp_boot_one_cpu(int cpuid)
+ {
+ 	struct task_struct *idle;
+@@ -487,7 +487,7 @@ smp_prepare_boot_cpu(void)
+ {
+ }
+ 
+-int __devinit
++int __cpuinit
+ __cpu_up(unsigned int cpu)
+ {
+ 	smp_boot_one_cpu(cpu);
+@@ -541,7 +541,7 @@ smp_percpu_timer_interrupt(struct pt_regs *regs)
+ 	set_irq_regs(old_regs);
+ }
+ 
+-int __init
++int
+ setup_profiling_timer(unsigned int multiplier)
+ {
+ 	return -EINVAL;
+diff --git a/arch/alpha/kernel/vmlinux.lds.S b/arch/alpha/kernel/vmlinux.lds.S
+index fe13daa..7af07d3 100644
+--- a/arch/alpha/kernel/vmlinux.lds.S
++++ b/arch/alpha/kernel/vmlinux.lds.S
+@@ -15,6 +15,7 @@ SECTIONS
+ 
+   _text = .;					/* Text and read-only data */
+   .text : { 
++	*(.text.head)
+ 	TEXT_TEXT
+ 	SCHED_TEXT
+ 	LOCK_TEXT
 -- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+1.5.3.GIT
+
+
