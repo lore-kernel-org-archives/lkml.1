@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbXGZXu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764583AbXGZXw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758735AbXGZXu6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbXGZXut
+	id S1764583AbXGZXw0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:52:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbXGZXwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:50:49 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44430 "EHLO gate.crashing.org"
+	Thu, 26 Jul 2007 19:52:20 -0400
+Received: from mga01.intel.com ([192.55.52.88]:58163 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755579AbXGZXus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:50:48 -0400
-Subject: [PATCH/RFC] remove frv usage of flush_tlb_pgtables()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: dhowells@redhat.com
-Cc: linux-mm <linux-mm@kvack.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 09:50:38 +1000
-Message-Id: <1185493838.5495.144.camel@localhost.localdomain>
+	id S1754628AbXGZXwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:52:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,585,1175497200"; 
+   d="scan'208";a="273239150"
+Date: Thu, 26 Jul 2007 16:46:30 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       venkatesh.pallipadi@intel.com
+Subject: [PATCH] Fix uninitialized local variable "covered" in i386 acpi-cpufreq driver
+Message-ID: <20070726234630.GA29288@linux-os.sc.intel.com>
+References: <1181754124.6148.37.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1181754124.6148.37.camel@localhost>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-frv is the last user in the tree of that dubious hook, and it's my
-understanding that it's not even needed. It's only called by memory.c
-free_pgd_range() which is always called within an mmu_gather, and
-tlb_flush() on frv will do a flush_tlb_mm(), which from my reading
-of the code, seems to do what flush_tlb_ptables() does, which is
-to clear the cached PGE.
+The local variable "covered" is used without initialization in i386 acpi-cpufreq
+driver. The initial value of covered should be 0. The bug will cause memory leak
+when hit. The following patch fixes this bug.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+
 ---
 
-Hi David ! I want to get rid of flush_tlb_pgtables() as part of my
-work on the mmu_gather and frv seems to be the only one to still use it.
-I don't think it needs it though, can you double check ?
+ arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-Thanks !
-Ben.
-
-Index: linux-work/include/asm-frv/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-frv/tlbflush.h	2007-07-27 09:40:38.000000000 +1000
-+++ linux-work/include/asm-frv/tlbflush.h	2007-07-27 09:43:17.000000000 +1000
-@@ -57,8 +57,7 @@ do {								\
- #define __flush_tlb_global()			flush_tlb_all()
- #define flush_tlb()				flush_tlb_all()
- #define flush_tlb_kernel_range(start, end)	flush_tlb_all()
--#define flush_tlb_pgtables(mm,start,end) \
--	asm volatile("movgs %0,scr0 ! movgs %0,scr1" :: "r"(ULONG_MAX) : "memory");
-+#define flush_tlb_pgtables(mm,start,end)	do { } while(0)
+diff --git a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+index 6f846be..bfb4959 100644
+--- a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
++++ b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
+@@ -511,7 +511,7 @@ acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
+ static int acpi_cpufreq_early_init(void)
+ {
+ 	struct acpi_processor_performance *data;
+-	cpumask_t covered;
++	cpumask_t covered=0;
+ 	unsigned int i, j;
  
- #else
- 
-
-
+ 	dprintk("acpi_cpufreq_early_init\n");
