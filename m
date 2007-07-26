@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761071AbXGZKix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762498AbXGZKph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761071AbXGZKix (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 06:38:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbXGZKip
+	id S1762498AbXGZKph (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 06:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXGZKp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 06:38:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34795 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756276AbXGZKio (ORCPT
+	Thu, 26 Jul 2007 06:45:27 -0400
+Received: from ua-85-227-1-9.cust.bredbandsbolaget.se ([85.227.1.9]:57261 "EHLO
+	omoikane.mc.pp.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756116AbXGZKp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 06:38:44 -0400
-Date: Thu, 26 Jul 2007 03:38:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-Message-Id: <20070726033809.c1691bb0.akpm@linux-foundation.org>
-In-Reply-To: <20070726102730.GA31894@elte.hu>
-References: <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	<46A58B49.3050508@yahoo.com.au>
-	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	<46A6CC56.6040307@yahoo.com.au>
-	<p73abtkrz37.fsf@bingen.suse.de>
-	<46A85D95.509@kingswood-consulting.co.uk>
-	<20070726092025.GA9157@elte.hu>
-	<20070726023401.f6a2fbdf.akpm@linux-foundation.org>
-	<20070726094024.GA15583@elte.hu>
-	<20070726030902.02f5eab0.akpm@linux-foundation.org>
-	<20070726102730.GA31894@elte.hu>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 06:45:26 -0400
+X-Greylist: delayed 2091 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 06:45:26 EDT
+To: "Peter Bortas" <bortas@gmail.com>
+Cc: "Adrian McMenamin" <adrianmcmenamin@gmail.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lethal@users.sourceforge.net
+Subject: Re: [PATCH] Fix DMA on Dreamcast
+References: <92a12cdb0707191230g216feaf2ied3e95bacf4dd572@mail.gmail.com>
+	<20070720120408.1f190269.akpm@linux-foundation.org>
+	<92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
+	<7e5f60720707210424w48f9dc10hff044d702f7bd1d3@mail.gmail.com>
+	<92a12cdb0707210506t5cf58cc4gc5b70f335545dc3f@mail.gmail.com>
+	<7e5f60720707210713o4ff0825eu463abee77dc1f04c@mail.gmail.com>
+From: Marcus Comstedt <marcus@mc.pp.se>
+Date: Thu, 26 Jul 2007 12:10:30 +0200
+In-Reply-To: <7e5f60720707210713o4ff0825eu463abee77dc1f04c@mail.gmail.com> (Peter Bortas's message of "Sat, 21 Jul 2007 16:13:19 +0200")
+Message-ID: <yf9y7h3a31l.fsf@mc.pp.se>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 12:27:30 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > > > ( we _do_ want to baloon the dentry cache otherwise - for things like 
-> > > > >   "find" - having a fast VFS is important. But known-use-once things 
-> > > > >   like the daily updatedb job can clearly be annotated properly. )
-> > > > 
-> > > > Mutter.  /proc/sys/vm/vfs_cache_pressure has been there for what, 
-> > > > three years?  Are any distros raising it during the updatedb run yet?
-> > > 
-> > > but ... that's system-wide, and the 'dont baloon the dcache' is only a 
-> > > property of updatedb.
-> > 
-> > Sure, but it's practical, isn't it?  Who runs (and cares about) 
-> > vfs-intensive workloads during their wee-small-hours updatedb run?
-> 
-> there's another side-effect: it likely results in the zapping of 
-> thousands of dentries that were cached nicely before. So we might 
-> exchange 'all my apps are swapped out' experience with 'all file access 
-> is slow'. The latter is _probably_ still an improvement over the 
-> balooning, but i'm not sure.
+"Peter Bortas" <bortas@gmail.com> writes:
 
-Yup.  Nobody has begun to think about preserving dcache/icache across load
-shifts yet, afaik.  Hard.
+> On 7/21/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
+>> On 21/07/07, Peter Bortas <bortas@gmail.com> wrote:
+>>
+>> >
+>> > Sidenote: Does Linux handle the Dreamcast DMA errata?
+>> >
+>>
+>> You need to explain what you mean (at least to me!).
+>>
+>> If you mean will it degrade gracefully - not without this patch if set
+>> to the (correct) defconfig. With iffy settings it will.
+>
+> If I remember correctly (and that's a big if since I last looked at it
+> in 2001) some revisions of the Dreamcast hardware would sporadically
+> lock up if you scheduled a new DMA request to quickly after a previous
+> one, even if you checked the ready bit. It's worked around by a delay
+> of X microseconds as recommended by Sega engineers. I don't remember
+> the value of X, nor where exactly in the flow this workaround should
+> be applied.
+>
+> Adding Marcus in case he has a better memory than me.
 
-> What we _really_ want is an updatedb that 
-> does not disturb the dcache.
 
-Well.  Hopefully this time next year you can prep a 16MB container and toss
-your updatedb inside that.  Maybe set its peak disk bandwidth utilisation
-too.  However that won't work ;) because I don't think anyone is looking
-at containerisation of vfs cache memory yet.  Perhaps full-on openvz has it,
-dunno.
+I don't remeber any such delay.  Are you sure you're not thinking
+about the G2 bus problem (where accesses need to be programatically
+serialized, whether they are PIO or DMA)?
 
-But updatedb is a special case, because it is so vfs-intensive.  For lots
-of other workloads (those which use heaps of pagecache), resource
-management via containerisation will work nicely.
+
+  // Marcus
+
+
