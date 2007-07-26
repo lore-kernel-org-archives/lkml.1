@@ -1,114 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760074AbXGZDKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbXGZDQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760074AbXGZDKm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXGZDKe
+	id S1760703AbXGZDQj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 23:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756462AbXGZDQb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:10:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45323 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756073AbXGZDKd (ORCPT
+	Wed, 25 Jul 2007 23:16:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:26527 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755772AbXGZDQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:10:33 -0400
-Date: Wed, 25 Jul 2007 20:10:16 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       "mel@csn.ul.ie" <mel@csn.ul.ie>
-Subject: Re: [PATCH] config_zone_movable [1/2] clean up zone config by
- renumbering
-Message-Id: <20070725201016.7a8b6ec9.akpm@linux-foundation.org>
-In-Reply-To: <20070726115020.1ff4513b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070726115020.1ff4513b.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 25 Jul 2007 23:16:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K8dgs9yozOk633nsHeWzO2dW/acggWBapDWVxNbSr1wIhCLf9nG+c6TdMIi/jOBqm3zy201S7v11ygFhX6PTlhVgMTjz2TdkR1rt9nFZaNPzWcZhD8wJtzoxG11FA4FerRFjpYCVopDzEibMVk5UI+4I14QmJYcyx+aXCjzLbNU=
+Message-ID: <b21f8390707252016o7f24ca8eg99e6895c7ab5cc53@mail.gmail.com>
+Date: Thu, 26 Jul 2007 13:16:29 +1000
+From: "Matthew Hawkins" <darthmdh@gmail.com>
+To: "Ray Lee" <ray-lk@madrabbit.org>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+Cc: linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
+       linux-mm@kvack.org
+In-Reply-To: <2c0942db0707251832i542249d5ve0006b3db0374678@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	 <46A58B49.3050508@yahoo.com.au>
+	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	 <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>
+	 <Pine.LNX.4.64.0707242211210.2229@asgard.lang.hm>
+	 <46A6DFFD.9030202@gmail.com>
+	 <2c0942db0707250902v58e23d52v434bde82ba28f119@mail.gmail.com>
+	 <b21f8390707251815o767590acrf6a6c4d7290a26a8@mail.gmail.com>
+	 <2c0942db0707251832i542249d5ve0006b3db0374678@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 11:50:20 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On 7/26/07, Ray Lee <ray-lk@madrabbit.org> wrote:
+> Yeah, I know about inotify, but it doesn't scale.
 
-> I refreshed config_zone_movable patch set against 2.6.23-rc1.
-> Reflected comments on previous version.
-> Tested on ia64/NUMA system and my small i386 desktop.
-> 
-> Andrew, I like this patch but know that there are many types of memory layout. 
-> Could you test this set in -mm ?
-> I'll refresh this against rc1-mm1 if necessary.
+Yeah, the nonrecursive behaviour is a bugger.  Also I found it helped
+to queue operations in userspace and execute periodically rather than
+trying to execute on every single notification.  Worked well for
+indexing, for virus scanning though you'd want to do some risk
+analysis.
 
-Right now I want to concentrate on getting the present -mm queue vaguely
-stabilised, so I'd prefer to not be adding features or nontrivial cleanups
-for a few days at the minimum.
+It'd be nice to have a filesystem that handled that sort of thing
+internally *cough*winfs*cough*.  That was my hope for reiserfs a very
+long time ago with its pluggable fs modules feature.
 
-This process would be greatly aided by developers testing it out and
-sending fixes (or at least, reports) for anything they encounter.
-
-
-> -Kame
-> 
-> ==
-> zone_ifdef_cleanup_by_renumbering.patch
-> 
-> Now, this patch defines zone_idx for not-configured-zones.
-> like 
-> 	enum_zone_type {
-> 		(ZONE_DMA configured)
-> 		(ZONE_DMA32 configured)
-> 		ZONE_NORMAL
-> 		(ZONE_HIGHMEM configured)
-> 		ZONE_MOVABLE
-> 		MAX_NR_ZONES,
-> 		(ZONE_DMA not-configured)
-> 		(ZONE_DMA32 not-configured)
-> 		(ZONE_HIGHMEM not-configured)
-> 	};
-> 
-> By this, we can determine zone is configured or not by
-> 
-> 	zone_idx < MAX_NR_ZONES.
-> 
-> We can avoid #ifdef for CONFIG_ZONE_xxx to some extent.
-> 
-> This patch also replaces CONFIG_ZONE_DMA_FLAG by is_configured_zone(ZONE_DMA).
-> 
-> Changelog: v1 -> v2
-> 	- rebased to 2.6.23-rc1
-> 	- Removed MAX_POSSIBLE_ZONES
-> 	- Added comments
-
-Is this patch a bugfix?
-
-box:/home/akpm> grep ifdef ~/x
-zone_ifdef_cleanup_by_renumbering.patch
-We can avoid #ifdef for CONFIG_ZONE_xxx to some extent.
-+ * You can use this functio for avoiding #ifdef.
-+ * #ifdef OCNFIG_ZONE_DMA
--#ifdef CONFIG_HIGHMEM
--#ifdef CONFIG_HIGHMEM
--#ifdef CONFIG_ZONE_DMA32
--#ifdef CONFIG_ZONE_DMA
--#ifdef CONFIG_ZONE_DMA
--#ifdef CONFIG_ZONE_DMA32
--#ifdef CONFIG_HIGHMEM
--#ifdef CONFIG_ZONE_DMA
--#ifdef CONFIG_ZONE_DMA32
--#ifdef CONFIG_HIGHMEM
--#ifdef CONFIG_ZONE_DMA
--#ifdef CONFIG_ZONE_DMA32
--#ifdef CONFIG_HIGHMEM
--#ifdef CONFIG_HIGHMEM
--#ifdef CONFIG_HIGHMEM
-
-ooh, me like.
-
->  /*
-> + * Test zone type is configured or not.
-> + * You can use this functio for avoiding #ifdef.
-> + *
-> + * #ifdef OCNFIG_ZONE_DMA
-
-typo there.
-
-
+-- 
+Matt
