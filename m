@@ -1,74 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765741AbXGZOK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbXGZOSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765741AbXGZOK2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 10:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761334AbXGZOKL
+	id S932937AbXGZOSO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 10:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757033AbXGZOSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 10:10:11 -0400
-Received: from rrzd5.rz.uni-regensburg.de ([194.94.155.50]:20249 "EHLO
-	rrzd5.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761056AbXGZOKJ (ORCPT
+	Thu, 26 Jul 2007 10:18:04 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:52363 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756219AbXGZOSB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 10:10:09 -0400
-X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 10:10:09 EDT
-From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
-Organization: Universitaet Regensburg, Klinikum
-To: linux-kernel@vger.kernel.org
-Date: Thu, 26 Jul 2007 15:36:20 +0200
+	Thu, 26 Jul 2007 10:18:01 -0400
+Date: Thu, 26 Jul 2007 15:17:57 +0100
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, ak@suse.de,
+       Christoph Lameter <clameter@sgi.com>, apw@shadowen.org,
+       kamezawa.hiroyu@jp.fujitsu.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: bind_zonelist() - are we definitely sizing this correctly?
+Message-ID: <20070726141756.GB18825@skynet.ie>
 MIME-Version: 1.0
-Subject: Q: PCI-X @ 266MHz on HP rx6600 (Qlogic 4Gb FC HBA)
-Message-ID: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-X-mailer: Pegasus Mail for Windows (4.31)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Content-Conformance: HerringScan-0.25/Sophos-P=4.16.0+V=4.16+U=2.07.165+R=02 April 2007+T=237288@20070726.133542Z
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+I was looking closer at bind_zonelist() and it has the following snippet
 
-I have a question: The Qlogic ISP2422 chip is said to handle PCI-X 266MHz. So does 
-the HP Itanium2 server rx6600. Basically that was the reason to select that 
-server. The FC-HBA is in a 266 MHz capable slot. However when booting SLES10 SP1 
-for IA64, the logs say:
+        struct zonelist *zl;
+        int num, max, nd;
+        enum zone_type k;
 
-<6>QLogic Fibre Channel HBA Driver
-<6>GSI 49 (level, low) -> CPU 3 (0x0300) vector 51
-<6>ACPI: PCI Interrupt 0000:0f:01.0[A] -> GSI 49 (level, low) -> IRQ 51
-<6>qla2xxx 0000:0f:01.0: Found an ISP2422, irq 51, iobase 0xc0000000b0040000
-[...]
-<6>qla2xxx 0000:0f:01.0: LOOP UP detected (4 Gbps).
-<6>qla2xxx 0000:0f:01.0: Topology - (F_Port), Host Loop address 0x0
-<6>scsi0 : qla2xxx
-<6>qla2xxx 0000:0f:01.0:
-<4> QLogic Fibre Channel HBA Driver: 8.01.07-k3
-<4>  QLogic HP AB378-60001 -
-<4>  ISP2422: PCI-X Mode 2 (133 MH4.00.26 [IP]  @ 0000:0f:01.0 hdma+, host#=0, 
-fw=4.00.26 [IP]
-<5>  Vendor: HP        Model: HSV200            Rev: 6100
-<5>  Type:   RAID                               ANSI SCSI revision: 02
-<5> 0:0:0:0: Attached scsi generic sg0 type 12
+        max = 1 + MAX_NR_ZONES * nodes_weight(*nodes);
+        max++;                  /* space for zlcache_ptr (see mmzone.h) */
+        zl = kmalloc(sizeof(struct zone *) * max, GFP_KERNEL);
+        if (!zl)
+                return ERR_PTR(-ENOMEM);
 
-Now does Linux support the speed of 266 MHz, and is it just displayed incorrectly, 
-or doesn't Linux support the speed of 266MHz yet?
+That set off alarm bells because we are allocating based on the size of a
+zone, not the size of the zonelist.
 
-"lspci -v" says:
-0f:01.0 Fibre Channel: QLogic Corp. ISP2422-based 4Gb Fibre Channel to PCI-X HBA 
-(rev 02)
-        Subsystem: Hewlett-Packard Company Unknown device 12d6
-        Flags: bus master, 66MHz, medium devsel, latency 128, IRQ 51
-        I/O ports at 6000 [size=256]
-        Memory at b0040000 (64-bit, non-prefetchable) [size=4K]
-        Expansion ROM at b0000000 [disabled] [size=256K]
-        Capabilities: [44] Power Management version 2
-        Capabilities: [4c] PCI-X non-bridge device
-        Capabilities: [64] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 
-Enable-
-        Capabilities: [74] Vital Product Data
+This is the definition of struct zonelist
 
-Please CC: any replies to my address as I'm not subscribed to the kernel list.
+struct zonelist {
+        struct zonelist_cache *zlcache_ptr;                  // NULL or &zlcache
+        struct zone *zones[MAX_ZONES_PER_ZONELIST + 1];      // NULL delimited
+#ifdef CONFIG_NUMA
+        struct zonelist_cache zlcache;                       // optional ...
+#endif
+};
 
-Regards,
-Ulrich Windl
+Important thing to note here is that zlcache is after *zones and it is
+not a pointer. zlcache in turn is defined as
 
+struct zonelist_cache {
+        unsigned short z_to_n[MAX_ZONES_PER_ZONELIST];          /* zone->nid */
+        DECLARE_BITMAP(fullzones, MAX_ZONES_PER_ZONELIST);      /* zone full? */
+        unsigned long last_full_zap;            /* when last zap'd (jiffies) */
+};
+
+This is on NUMA only and it's a big structure.
+
+The intention of bind_zonelist() appears to be that we only allocate enough
+memory to hold all the zones in the active nodes. This was fine in 2.6.19
+but now with zlcache after *zones[], I think we are in danger of allocating
+too little memory and any reading of zlcache may be reading randomness when
+MPOL_BIND is in use because it will be using the full offset within the
+structure whether the memory is allocated or not.
+
+At the risk of sounding stupid, what obvious thing am I missing that makes
+this work?
+
+If I'm right and this is broken and we still want to allocate as little memory
+as possible, zlcache has to move before zones and the call to kmalloc needs
+to take the size of zlcache into account.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
