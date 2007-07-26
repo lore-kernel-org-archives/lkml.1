@@ -1,131 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760698AbXGZCgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760945AbXGZCif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760698AbXGZCgv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 22:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbXGZCgl
+	id S1760945AbXGZCif (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 22:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756258AbXGZCi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 22:36:41 -0400
-Received: from mx2.suse.de ([195.135.220.15]:37297 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755645AbXGZCgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 22:36:40 -0400
-Date: Thu, 26 Jul 2007 04:36:39 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH RFC] extent mapped page cache
-Message-ID: <20070726023639.GD20727@wotan.suse.de>
-References: <20070710210326.GA29963@think.oraclecorp.com> <20070724160032.7a7097db@think.oraclecorp.com> <1185307985.6586.50.camel@localhost> <1185312343.5535.5.camel@lappy> <20070724192509.5bc9b3fe@think.oraclecorp.com> <20070725023217.GA32076@wotan.suse.de> <20070725081853.4b325e7f@think.oraclecorp.com> <20070726013728.GB20727@wotan.suse.de> <20070725221007.0edcc2dc@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070725221007.0edcc2dc@think.oraclecorp.com>
-User-Agent: Mutt/1.5.9i
+	Wed, 25 Jul 2007 22:38:28 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:48780 "EHLO mx1.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755957AbXGZCi1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 22:38:27 -0400
+Message-ID: <46A80937.1040608@gmail.com>
+Date: Thu, 26 Jul 2007 10:38:48 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: "Ravinandan Arakali (rarakali)" <rarakali@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Question about core file generation
+References: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B80E8@xmb-sjc-214.amer.cisco.com>
+In-Reply-To: <FA6FB5FA4DA6BF4386D129273B2E3EC3024B80E8@xmb-sjc-214.amer.cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 10:10:07PM -0400, Chris Mason wrote:
-> On Thu, 26 Jul 2007 03:37:28 +0200
-> Nick Piggin <npiggin@suse.de> wrote:
-> 
-> >  
-> > > One advantage to the state tree is that it separates the state from
-> > > the memory being described, allowing a simple kmap style interface
-> > > that covers subpages, highmem and superpages.
-> > 
-> > I suppose so, although we should have added those interfaces long
-> > ago ;) The variants in fsblock are pretty good, and you could always
-> > do an arbitrary extent (rather than block) based API using the
-> > pagecache tree if it would be helpful.
-> 
-> Yes, you could use fsblock for the state bits and make a separate API
-> to map the actual pages.
-> 
-> >  
-> > 
-> > > It also more naturally matches the way we want to do IO, making for
-> > > easy clustering.
-> > 
-> > Well the pagecache tree is used to reasonable effect for that now.
-> > OK the code isn't beautiful ;). Granted, this might be an area where
-> > the seperate state tree ends up being better. We'll see.
-> > 
-> 
-> One thing it gains us is finding the start of the cluster.  Even if
-> called by kswapd, the state tree allows writepage to find the start of
-> the cluster and send down a big bio (provided I implement trylock to
-> avoid various deadlocks).
+Ravinandan Arakali (rarakali) wrote:
+> Hi,
+> When a process dumps core, the do_coredump() initiates the core
+> file generation. Is this operation synchronous(does the kernel
+> wait for core to be completely written to disk) ?
 
-That's very true, we could potentially also do that with the block extent
-tree that I want to try with fsblock.
+The operations whereby
 
-I'm looking at "cleaning up" some of these aops APIs so hopefully most of
-the deadlock problems go away. Should be useful to both our efforts. Will
-post patches hopefully when I get time to finish the draft this weekend.
+(1) a process is in the process of exiting while;
+(2) the kernel is doing a coredump
 
+is asynchronous with respect to each other, since the process could have 
+received an abort signal while the the kernel initiated the core dump.
 
-> > > O_DIRECT becomes a special case of readpages and writepages....the
-> > > memory used for IO just comes from userland instead of the page
-> > > cache.
-> > 
-> > Could be, although you'll probably also need to teach the mm about
-> > the state tree and/or still manipulate the pagecache tree to prevent
-> > concurrency?
-> 
-> Well, it isn't coded yet, but I should be able to do it from the FS
-> specific ops.
+> Basically, if I have the parent process waiting for exit of
+> child which dumped core, can the parent access the core immediately
+> on receipt of "child exit" message ? Is it possible that the
+> core is still in the process of being written ? If so, what's
+> the event the parent needs to wait for to be assured of a complete
+> core.
 
-Probably, if you invalidate all the pagecache in the range beforehand
-you should be able to do it (and I guess you want to do the invalidate
-anyway). Although, below deadlock issues might still bite somehwere...
+When a child exits, check if the core dump file is still opened by a handle 
+(HINT: lsof).
 
+AFAICS from the kernel code, the core dump data or file routine is mutexed 
+to ensure that there is only one process handling the core dump file.
 
-> > But isn't the main aim of O_DIRECT to do as little locking and
-> > synchronisation with the pagecache as possible? I thought this is
-> > why your race fixing patches got put on the back burner (although
-> > they did look fairly nice from a correctness POV).
-> 
-> I put the placeholder patches on hold because handling a corner case
-> where userland did O_DIRECT from a mmap'd region of the same file (Linus
-> pointed it out to me).  Basically my patches had to work in 64k chunks
-> to avoid a deadlock in get_user_pages.  With the state tree, I can
-> allow the page to be faulted in but still properly deal with it.
+You could check if there are still open file handles on the dump.  If there 
+are none, it means that the dump had been completed.
 
-Oh right, I didn't think of that one. Would you still have similar
-issues with the external state tree? I mean, the filesystem doesn't
-really know why the fault is taken. O_DIRECT read from a file into
-mmapped memory of the same block in the file is almost hopeless I
-think.
+HTH.
 
+Best Regards,
 
-> > Well I'm kind of handwaving when it comes to O_DIRECT ;) It does look
-> > like this might be another advantage of the state tree (although you
-> > aren't allowed to slow down buffered IO to achieve the locking ;)).
-> 
-> ;) The O_DIRECT benefit is a fringe thing.  I've long wanted to help
-> clean up that code, but the real point of the patch is to make general
-> usage faster and less complex.  If I can't get there, the O_DIRECT
-> stuff doesn't matter.
+Carlo
 
-Sure, although unifying code is always a plus so I like that you've
-got that in mind.
+-- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, Diliman 1101, Quezon City
+Philippines
+http://www.astra.ph
 
-
-> > > The ability to put in additional tracking info like the process that
-> > > first dirtied a range is also significant.  So, I think it is worth
-> > > trying.
-> > 
-> > Definitely, and I'm glad you are. You haven't converted me yet, but
-> > I look forward to finding the best ideas from our two approaches when
-> > the patches are further along (ext2 port of fsblock coming along, so
-> > we'll be able to have races soon :P).
-> 
-> I'm sure we can find some river in Cambridge, winner gets to throw
-> Axboe in.
-
-Very noble of you to donate your colleage to such a worthy cause.
-
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
