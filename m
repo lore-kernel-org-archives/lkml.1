@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932163AbXGZQW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932292AbXGZQYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932163AbXGZQW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760733AbXGZQWT
+	id S932292AbXGZQYX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759715AbXGZQYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:22:19 -0400
-Received: from homer.mvista.com ([63.81.120.155]:35454 "EHLO
-	imap.sh.mvista.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758432AbXGZQWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:22:18 -0400
-Message-ID: <46A8CAB2.5050706@ru.mvista.com>
-Date: Thu, 26 Jul 2007 20:24:18 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
- for CF	interface
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain>	<46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>	<20070725180145.GA29689@ld0162-tx32.am.freescale.net>	<46A7941F.2050300@ru.mvista.com> <46A798D8.7020906@freescale.com> <46A7A4EC.2020503@ru.mvista.com>
-In-Reply-To: <46A7A4EC.2020503@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 12:24:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34775 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758496AbXGZQYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 12:24:13 -0400
+Date: Thu, 26 Jul 2007 12:22:31 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ankita Garg <ankita@in.ibm.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux@bohmer.net, LKML <linux-kernel@vger.kernel.org>,
+       RT-Users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Question] Hooks for scheduler tracing (CFS)
+Message-ID: <20070726162231.GB30643@redhat.com>
+References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com> <1184615557.2698.3.camel@laptopd505.fenrus.org> <20070726072858.GC13061@in.ibm.com> <20070726133138.GA30559@Krystal> <y0mps2f1asz.fsf@ton.toronto.redhat.com> <20070726150226.GB1299@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070726150226.GB1299@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+Hi -
 
->>>>>   Also, what mmio-ide in the compat properly means in the context 
->>>>>of ide_platform which is able to handle both port and memory mapped 
->>>>>IDE.
+On Thu, Jul 26, 2007 at 11:02:26AM -0400, Mathieu Desnoyers wrote:
+> [...]
+> > > The problem is also in _stp_print_flush, not *only* in relay code:
+> > > void _stp_print_flush (void)
+> > > ...
+> > >                 spin_lock(&_stp_print_lock);
+> > >                 spin_unlock(&_stp_print_lock);
+> > > 
+> > > Those will turn into mutexes with -rt.
+> > 
+> > Indeed,
 
->>>>I/O-space is only valid in the context of PCI, ISA, or similar buses, 
->>>>and
->>>>the bus-specific reg format indicates whether it's mmio-space or
->>>>io-space.
+(Though actually that bug was fixed some time ago.)
 
->>>   You could save time on lecturing me (and use it to look on the 
->>>driver ;-).
 
->>Sorry, I misread the question as being a mismatch between the 
->>capabilities of the device binding and the driver, not about the 
->>specific compatible name.
+> > plus systemtap-generated locking code uses rwlocks,
+> > local_irq_save/restore or preempt_disable, in various places.  Could
+> > someone point to a place that spells out what would be more
+> > appropriate way of ensuring atomicity while being compatible with -rt?
+> 
+> AFAIK, for your needs either:
+> [...]
+> - Use per-cpu data with preempt disabling/irq disabling
 
->     That too. :-)
+As in local_irq_save / preempt_disable?  Yes, already done.
 
->>Something like "generic-ide" would probably be better.
+> - Use the original "real" spin locks/rwlocks (raw_*).
+> [...]
 
->     I strongly disagree with "generic" part. The generic IDE could only be 
-> said of 1:1 I/O mapped IDE ports, not about this fancy mapping.
+It was unclear from the OLS paper whether the spin_lock_irq* family of
+functions also had to be moved to the raw forms.
 
-    BTW, there's already something called drivers/ide/ide-generic.c... :-)
+> You just don't want to sleep in the tracing code. [...]  Since you
+> will likely disable preemption, make sure your tracing code executes
+> in a deterministic time.
 
-MBR, Sergei
+Definitely, that has always been the case.
 
+> Make sure that the sub-buffer switch code respects that too [...]
+
+We will review that part of the related code.
+
+- FChE
