@@ -1,55 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764583AbXGZXw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbXGZXxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764583AbXGZXw0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 19:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755485AbXGZXwU
+	id S932195AbXGZXxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 19:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbXGZXxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 19:52:20 -0400
-Received: from mga01.intel.com ([192.55.52.88]:58163 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754628AbXGZXwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 19:52:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,585,1175497200"; 
-   d="scan'208";a="273239150"
-Date: Thu, 26 Jul 2007 16:46:30 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       venkatesh.pallipadi@intel.com
-Subject: [PATCH] Fix uninitialized local variable "covered" in i386 acpi-cpufreq driver
-Message-ID: <20070726234630.GA29288@linux-os.sc.intel.com>
-References: <1181754124.6148.37.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1181754124.6148.37.camel@localhost>
-User-Agent: Mutt/1.4.1i
+	Thu, 26 Jul 2007 19:53:08 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:42292 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755485AbXGZXxH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 19:53:07 -0400
+From: Suleiman Souhlal <ssouhlal@FreeBSD.org>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, Suleiman Souhlal <ssouhlal@FreeBSD.org>,
+       Suleiman Souhlal <suleiman@google.com>
+Subject: [PATCH] Don't needlessly dirty mlocked pages when initially faulting them in.
+Date: Thu, 26 Jul 2007 16:52:44 -0700
+Message-Id: <11854939641916-git-send-email-ssouhlal@FreeBSD.org>
+X-Mailer: git-send-email 1.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The local variable "covered" is used without initialization in i386 acpi-cpufreq
-driver. The initial value of covered should be 0. The bug will cause memory leak
-when hit. The following patch fixes this bug.
+make_pages_present() is dirtying mlocked pages if the VMA is writable, even
+though it shouldn't, by telling get_user_pages() to simulate a write fault.
 
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+A simple way to test this is to mlock a multi-GB file, and then sync.
+The sync will take a long time.
 
+As far as I can see, it should be safe to just not simulate a write fault.
+
+Signed-off-by: Suleiman Souhlal <suleiman@google.com>
 ---
+ mm/memory.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
 
- arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-index 6f846be..bfb4959 100644
---- a/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-+++ b/arch/i386/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -511,7 +511,7 @@ acpi_cpufreq_guess_freq(struct acpi_cpufreq_data *data, unsigned int cpu)
- static int acpi_cpufreq_early_init(void)
- {
- 	struct acpi_processor_performance *data;
--	cpumask_t covered;
-+	cpumask_t covered=0;
- 	unsigned int i, j;
+diff --git a/mm/memory.c b/mm/memory.c
+index f64cbf9..f43c9e8 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2664,18 +2664,17 @@ #endif /* __PAGETABLE_PMD_FOLDED */
  
- 	dprintk("acpi_cpufreq_early_init\n");
+ int make_pages_present(unsigned long addr, unsigned long end)
+ {
+-	int ret, len, write;
++	int ret, len;
+ 	struct vm_area_struct * vma;
+ 
+ 	vma = find_vma(current->mm, addr);
+ 	if (!vma)
+ 		return -1;
+-	write = (vma->vm_flags & VM_WRITE) != 0;
+ 	BUG_ON(addr >= end);
+ 	BUG_ON(end > vma->vm_end);
+ 	len = (end+PAGE_SIZE-1)/PAGE_SIZE-addr/PAGE_SIZE;
+ 	ret = get_user_pages(current, current->mm, addr,
+-			len, write, 0, NULL, NULL);
++			len, 0, 0, NULL, NULL);
+ 	if (ret < 0)
+ 		return ret;
+ 	return ret == len ? 0 : -1;
+-- 
+1.4.2
+
