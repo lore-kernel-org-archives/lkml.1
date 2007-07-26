@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934770AbXGZQjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935232AbXGZQjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934770AbXGZQjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 12:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934205AbXGZQfJ
+	id S935232AbXGZQjn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 12:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934385AbXGZQfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 12:35:09 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53269 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934316AbXGZQfH (ORCPT
+	Thu, 26 Jul 2007 12:35:13 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:35658 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934449AbXGZQfL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 12:35:07 -0400
-Date: Thu, 26 Jul 2007 17:41:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Lee Howard <faxguy@howardsilvan.com>
-Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
-	<ukleinek@informatik.uni-freiburg.de>,
-       linux-serial@vger.kernel.org, tytso@mit.edu, rmk@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-Message-ID: <20070726174150.4ffcabd4@the-village.bc.nu>
-In-Reply-To: <46A8CB96.1010501@howardsilvan.com>
-References: <46A7FE6A.4030309@howardsilvan.com>
-	<20070726123420.GA14163@informatik.uni-freiburg.de>
-	<46A8CB96.1010501@howardsilvan.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 12:35:11 -0400
+To: torvalds@linux-foundation.org
+Subject: [PATCH] misannotation in pppol2tp
+Cc: linux-kernel@vger.kernel.org, jchapman@katalix.com, davem@daveloft.net
+Message-Id: <E1IE6Iv-0005Lj-N2@ZenIV.linux.org.uk>
+From: Al Viro <viro@ftp.linux.org.uk>
+Date: Thu, 26 Jul 2007 17:35:09 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The manufacturer is using a scope to look for RTS and they're not seeing 
-> it, either.  I just use my eyes to look at the LED, but I can see the 
-> CTS, DTR, DCD, RD, and TD lights blink, flicker, or dim... (and TD, RD, 
-> and CTS tend to go on and off rather quickly).
 
-And you have
+Address of auto variable is not a userland pointer.  A good thing, too,
+since if pppol2tp_tunnel_getsockopt() would _really_ get a userland pointer
+as argument, it would be an instant roothole...
 
-1.	The port set up correctly for flow control options in the
-kernel ?
-2.	Verified that the board vendor remembered to wire it ?
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ drivers/net/pppol2tp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/pppol2tp.c b/drivers/net/pppol2tp.c
+index f871760..266e8b3 100644
+--- a/drivers/net/pppol2tp.c
++++ b/drivers/net/pppol2tp.c
+@@ -2054,7 +2054,7 @@ end:
+  */
+ static int pppol2tp_tunnel_getsockopt(struct sock *sk,
+ 				      struct pppol2tp_tunnel *tunnel,
+-				      int optname, int __user *val)
++				      int optname, int *val)
+ {
+ 	int err = 0;
+ 
+@@ -2077,7 +2077,7 @@ static int pppol2tp_tunnel_getsockopt(struct sock *sk,
+  */
+ static int pppol2tp_session_getsockopt(struct sock *sk,
+ 				       struct pppol2tp_session *session,
+-				       int optname, int __user *val)
++				       int optname, int *val)
+ {
+ 	int err = 0;
+ 
+-- 
+1.5.3.GIT
+
+
