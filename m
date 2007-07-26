@@ -1,68 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759944AbXGZHfs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757839AbXGZHfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759944AbXGZHfs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 03:35:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbXGZHfk
+	id S1757839AbXGZHfB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 03:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbXGZHex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 03:35:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57043 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753826AbXGZHfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 03:35:38 -0400
-Date: Thu, 26 Jul 2007 09:35:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ankita Garg <ankita@in.ibm.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux@bohmer.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       RT-Users <linux-rt-users@vger.kernel.org>, mathieu.desnoyers@polymtl.ca
-Subject: Re: [Question] Hooks for scheduler tracing (CFS)
-Message-ID: <20070726073520.GA12206@elte.hu>
-References: <3efb10970707161246se06ab22i32872cfe6fa4f2f6@mail.gmail.com> <1184615557.2698.3.camel@laptopd505.fenrus.org> <20070726072858.GC13061@in.ibm.com>
+	Thu, 26 Jul 2007 03:34:53 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:39161 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753826AbXGZHew (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 03:34:52 -0400
+Date: Thu, 26 Jul 2007 09:34:51 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: Albert Cahalan <acahalan@gmail.com>, linux-kernel@vger.kernel.org,
+       holt@sgi.com, oleg@tv-sign.ru, roland@redhat.com
+Subject: Re: [RFC, PATCH 1/3] introduce SYS_CLONE_MASK
+In-Reply-To: <m1646c8c33.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0707260920151.3382@fbirervta.pbzchgretzou.qr>
+References: <787b0d920705282023v22316e6bk709dc8d3aa3213d7@mail.gmail.com>
+ <m1646c8c33.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726072858.GC13061@in.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Ankita Garg <ankita@in.ibm.com> wrote:
-
-> The probe point did get triggered, and soon after that I had the 
-> following in dmesg, leading to system hang...
-> 
-> BUG: scheduling while atomic: softirq-rcu/3/0x00000004/52, CPU#3
-> 
-> Call Trace:
->  <#DB>  [<ffffffff81033555>] __schedule_bug+0x4b/0x4f
->  [<ffffffff8128b414>] __sched_text_start+0xcc/0xaaa
->  [<ffffffff8100b574>] dump_trace+0x248/0x25d
->  [<ffffffff81068334>] print_traces+0x9/0xb
->  [<ffffffff8100b5e5>] show_trace+0x5c/0x64
->  [<ffffffff8128c1c2>] schedule+0xe4/0x104
->  [<ffffffff8128d10c>] rt_spin_lock_slowlock+0xfc/0x19e
->  [<ffffffff8128d9de>] __rt_spin_lock+0x1f/0x21
->  [<ffffffff8128d9e9>] rt_spin_lock+0x9/0xb
->  [<ffffffff88387dcc>]
-> :stap_c1a10b1292b5f87a563f56d89ddfc765_606:_stp_print_flush+0x5f/0xdf
->  [<ffffffff88389e41>]
-> :stap_c1a10b1292b5f87a563f56d89ddfc765_606:probe_1493+0x1f6/0x257
->  [<ffffffff8838bdc3>]
-
-I'd suggest to not put a probe into a preempt-off section - put it to 
-the beginning and to the end of schedule() to capture context-switches. 
-_stp_print_flush() is in the systemtap-generated module, right? Maybe 
-the problem is resolved by changing that spinlock to use raw_spinlock_t 
-/ DEFINE_RAW_SPIN_LOCK.
+Hi,
 
 
-	Ingo
+sorry for the really delayed mail..
+
+On May 28 2007 22:53, Eric W. Biederman wrote:
+>> Jan Engelhardt writes:
+>>> On Apr 10 2007 17:47, Jan Engelhardt wrote:
+>>>
+>>> Done that and the result is that `ps afwx` now looks like:
+>>>
+>>>   PID TTY      STAT   TIME COMMAND
+>>>  2722 ?        S      0:00 [lockd]
+>> ...
+>>>     3 ?        S<     0:00 [events/0]
+>>>     2 ?        SN     0:00 [ksoftirqd/0]
+>>>     1 ?        Ss     0:02 init [3]
+>>>   537 ?        S<s    0:02  \_ /sbin/udevd --daemon
+>>>  1600 ?        Ss     0:00  \_ /usr/bin/dbus-daemon --system
+>>>  1692 ?        Ss     0:00  \_ /sbin/acpid
+>>>  1923 ?        Ss     0:00  \_ /sbin/resmgrd
+>> ...
+>>> -    if(self_pid==1 && ADOPTED(processes[i]) && forest_type!='u')
+>>> +    if(ADOPTED(processes[i]) && forest_type!='u')
+>>
+>> That's not compatible because init's children are now in the
+>> logical place. Since the days of procps-1.x.x or earlier,
+>> such processes have been listed at top level.
+>>
+>> BTW, what does "ps -ejH" do for you, with and without the patch?
+
+2.6.22, without kernel patch, ps -ejH (shortened):
+
+  PID  PGID   SID TTY          TIME CMD
+    2     0     0 ?        00:00:00 kthreadd
+    3     0     0 ?        00:00:00   migration/0
+    1     1     1 ?        00:00:00 init
+  821   821   821 ?        00:00:00   udevd
+ 2228  2228  2228 ?        00:00:00   klogd
+
+and `ps afx`:
+
+  PID TTY      STAT   TIME COMMAND
+    2 ?        S<     0:00 [kthreadd]
+    3 ?        S<     0:00  \_ [migration/0]
+    1 ?        Ss     0:00 init [5]  
+  821 ?        S<s    0:00 /sbin/udevd --daemon
+
+With procps patch: it's all thrown up again, possibly due to some
+kernel patch that made it into 2.6.22.
+
+(ps -ejH)
+  PID  PGID   SID TTY          TIME CMD
+    2     0     0 ?        00:00:00 kthreadd
+    3     0     0 ?        00:00:00   migration/0
+    4     0     0 ?        00:00:00   ksoftirqd/0
+    1     1     1 ?        00:00:00 init
+  821   821   821 ?        00:00:00   udevd
+ 2228  2228  2228 ?        00:00:00   klogd
+
+
+(ps afx)
+  PID TTY      STAT   TIME COMMAND
+    2 ?        S<     0:00 [kthreadd]
+    3 ?        S<     0:00 [migration/0]
+    4 ?        SN     0:00 [ksoftirqd/0]
+    1 ?        Ss     0:00 init [5]  
+  821 ?        S<s    0:00 /sbin/udevd --daemon
+ 2228 ?        Ss     0:00 /sbin/klogd -c 5 -2 -x
+
+
+(procps 3.2.7, the one used back when this thread was alive :^))
+
+>ps -ejH displays everything.
+
+So does `ps afx` for me ;-)
+
+>For 2.6.22 we will only have kthreadd
+>as a sibling of init with ppid == 0.  Depending on what happens
+>in the evolution of how we start kernel thread we may be able
+>to remove kthreadd and have all kthreads with a ppid of 0, but only
+>time will tell.
+>
+
+	Jan
+-- 
