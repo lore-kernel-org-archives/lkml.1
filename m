@@ -1,95 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762735AbXGZDiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbXGZDoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762735AbXGZDiZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Jul 2007 23:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756960AbXGZDiP
+	id S1762315AbXGZDoI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Jul 2007 23:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756970AbXGZDn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Jul 2007 23:38:15 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:2719 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757971AbXGZDiO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Jul 2007 23:38:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=KPcGZS5p15S2DY5sTvtqPWvRE0Gm20Q6zmgz8BkxnuGsN5jMz4rbbh1/S99asUM9s/IBf4gwZgxSeuhNWlbQUTWK9vVz+QBzjTL8+ZANuX3DX/AUS2+oNHru3e6ifYBRC9XwIKpVkyQ1ILRxHQmFbquP/6ZjBP8opkB7UbNqxXM=
-Message-ID: <8dd980de0707252038n5cd2a785j67622ccb93051288@mail.gmail.com>
-Date: Thu, 26 Jul 2007 11:38:13 +0800
-From: "Kevin Hao" <haokexin@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH]MTD:Fix ctrl-alt-del cann't reboot for intel flash bug
-Cc: dwmw2@infradead.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Jul 2007 23:43:56 -0400
+Received: from smtpout.mac.com ([17.250.248.173]:55422 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756875AbXGZDnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Jul 2007 23:43:55 -0400
+In-Reply-To: <Pine.LNX.4.64.0707251900410.21378@asgard.lang.hm>
+References: <20070721203819.GA10706@mail.linbit.com> <20070722213202.1f5d1cab.mrlinuxman@mac.com> <20070723133202.GB23495@mail.linbit.com> <a781481a0707230640h17e6d83l5c2359e41f3ec7b7@mail.gmail.com> <20070723211947.GD6477@mail.linbit.com> <a781481a0707241611v3c35f6bdsb7af97d382b9298f@mail.gmail.com> <20070725094638.GA2444@mail.linbit.com> <a781481a0707250512v29d41b1bh25bcd358e7381d38@mail.gmail.com> <Pine.LNX.4.64.0707251900410.21378@asgard.lang.hm>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B3CFC70C-ADBC-406A-A2C8-908530FED007@mac.com>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+       LKML Kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+From: Kyle Moffett <mrlinuxman@mac.com>
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+Date: Wed, 25 Jul 2007 23:43:38 -0400
+To: david@lang.hm
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
+On Jul 25, 2007, at 22:03:37, david@lang.hm wrote:
+> On Wed, 25 Jul 2007, Satyam Sharma wrote:
+>> On 7/25/07, Lars Ellenberg <lars.ellenberg@linbit.com> wrote:
+>>> On Wed, Jul 25, 2007 at 04:41:53AM +0530, Satyam Sharma wrote:
+>>>> [...]
+>>>> But where does the "send" come into the picture over here -- a  
+>>>> send won't block forever, so I don't foresee any issues  
+>>>> whatsoever w.r.t.  kthreads conversion for that. [ BTW I hope  
+>>>> you're *not* using any signals-based interface for your kernel  
+>>>> thread _at all_. Kthreads disallow (ignore) all signals by  
+>>>> default, as they should, and you really shouldn't need to write  
+>>>> any logic to handle or >  do-certain-things-on-seeing a signal  
+>>>> in a well designed kernel thread. ] and the sending latency is  
+>>>> crucial to performance, while the recv will not timeout for the  
+>>>> next few seconds.  Again, I don't see what sending latency has  
+>>>> to do with a kernel_thread to kthread conversion. Or with  
+>>>> signals, for that matter. Anyway, as Kyle Moffett mentioned  
+>>>> elsewhere, you could probably look at other examples (say  
+>>>> cifs_demultiplexer_thread() in fs/cifs/connect.c).
+>>>
+>>> the basic problem, and what we use signals for, is:  it is  
+>>> waiting in recv, waiting for the peer to say something.  but I  
+>>> want it to stop recv, and go send something "right now".
+>>
+>> That's ... weird. Most (all?) communication between any two  
+>> parties would follow a protocol where someone recv's stuff, does  
+>> something with it, and sends it back ... what would you send  
+>> "right now" if you didn't receive anything?
+>
+> becouse even though you didn't receive anything you now have  
+> something important to send.
+>
+> remember that both sides can be sitting in receive mode. this puts  
+> them both in a position to respond to the other if the other has  
+> something to say.
 
-  When we press ctrl-alt-del,kernel_restart_prepare will revoke
-cfi_intelext_reboot which
-will set flash to read array mode,but later when device_shutdown is
-invoked which may
-put current work queue to sleep and other process may be sheduled to
-running and programming flash in not FL_READY mode again.So we cann't
-boot up if this flash is used
-for bootloader.This patch is against current Linus git tree.
-   Sorry,my english is a little rusty.:-)
-   Appreciated for any comment.
+Why not just have 2 threads, one for "sending" and one for  
+"receiving".  When your receiving thread gets data it takes  
+appropriate locks and processes it, then releases the locks and goes  
+back to waiting for packets.  Your sending thread would take  
+appropriate locks, generate data to send, release locks, and transmit  
+packets.  You don't have to interrupt the receive thread to send  
+packets, so where's the latency problem, exactly?
 
-diff --git a/drivers/mtd/chips/cfi_cmdset_0001.c
-b/drivers/mtd/chips/cfi_cmdset_0001.c
-index 2f19fa7..a1009df 100644
---- a/drivers/mtd/chips/cfi_cmdset_0001.c
-+++ b/drivers/mtd/chips/cfi_cmdset_0001.c
-@@ -653,7 +653,7 @@ static int get_chip(struct map_info *map, struct
-flchip *chip, unsigned long adr
-  resettime:
-        timeo = jiffies + HZ;
-  retry:
--       if (chip->priv && (mode == FL_WRITING || mode == FL_ERASING ||
-mode == FL_OTP_WRITE)) {
-+       if (chip->priv && (mode == FL_WRITING || mode == FL_ERASING ||
-mode == FL_OTP_WRITE || mode == FL_SHUTDOWN)) {
-                /*
-                 * OK. We have possibility for contension on the write/erase
-                 * operations which are global to the real chip and not per
-@@ -798,6 +798,9 @@ static int get_chip(struct map_info *map, struct
-flchip *chip, unsigned long adr
-                if (mode == FL_READY && chip->oldstate == FL_READY)
-                        return 0;
+If I were writing that in userspace I would have:
 
-+       case FL_SHUTDOWN:
-+               /* The machine is rebooting now,so no one can get chip
-anymore */
-+               return -EIO;
-        default:
-        sleep:
-                set_current_state(TASK_UNINTERRUPTIBLE);
-@@ -2402,10 +2405,10 @@ static int cfi_intelext_reset(struct mtd_info *mtd)
-                   and switch to array mode so any bootloader in
-                   flash is accessible for soft reboot. */
-                spin_lock(chip->mutex);
--               ret = get_chip(map, chip, chip->start, FL_SYNCING);
-+               ret = get_chip(map, chip, chip->start, FL_SHUTDOWN);
-                if (!ret) {
-                        map_write(map, CMD(0xff), chip->start);
--                       chip->state = FL_READY;
-+                       chip->state = FL_SHUTDOWN;
-                }
-                spin_unlock(chip->mutex);
-        }
-diff --git a/include/linux/mtd/flashchip.h b/include/linux/mtd/flashchip.h
-index a293a3b..39e7d2a 100644
---- a/include/linux/mtd/flashchip.h
-+++ b/include/linux/mtd/flashchip.h
-@@ -40,6 +40,7 @@ typedef enum {
-        FL_POINT,
-        FL_XIP_WHILE_ERASING,
-        FL_XIP_WHILE_WRITING,
-+       FL_SHUTDOWN,
-        FL_UNKNOWN
- } flstate_t;
+(A) The pool of IO-generating threads (IE: What would ordinarily be  
+userspace)
+(B) One or a small number of data-reception threads.
+(C) One or a small number of data-transmission threads.
+
+When you get packets to process in your network-reception thread(s),  
+you queue appropriate disk IOs and any appropriate responses with  
+your transmission thread(s).  You can basically just sit in a loop on  
+tcp_recvmsg=>demultiplex=>do-stuff.  When your IO-generators actually  
+make stuff to send you queue such data for disk IO, then packetize it  
+and hand it off to your data-transmission threads.
+
+If you made all your sockets and inter-thread pipes nonblocking then  
+in userspace you would just epoll_wait() on the sockets and pipes and  
+be easily able to react to any IO from anywhere.
+
+In kernel space there are similar nonblocking interfaces, although it  
+would probably be easier just to use a couple threads.
+
+Cheers,
+Kyle Moffett
+
