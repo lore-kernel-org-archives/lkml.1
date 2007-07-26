@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758540AbXGZEQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbXGZEU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758540AbXGZEQc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 00:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbXGZEQM
+	id S1757133AbXGZEU0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 00:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750953AbXGZEUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 00:16:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44103 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751852AbXGZEQK (ORCPT
+	Thu, 26 Jul 2007 00:20:17 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:56547 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750921AbXGZEUQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 00:16:10 -0400
-Date: Wed, 25 Jul 2007 21:15:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: masouds@google.com (Masoud Asgharifard Sharbiani)
-Cc: Andi Kleen <ak@suse.de>, Kirill Korotaev <dev@openvz.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: i386-show-unhandled-signals-v3
-Message-Id: <20070725211528.03262aa3.akpm@linux-foundation.org>
-In-Reply-To: <20070725234005.GA11292@google.com>
-References: <20070718154759.GA26425@google.com>
-	<46A76210.5020903@openvz.org>
-	<200707251657.44217.ak@suse.de>
-	<20070725140455.cbbc0dde.akpm@linux-foundation.org>
-	<4517d1380707251407v178068baxcc76a86f8337cc27@mail.gmail.com>
-	<20070725162528.7d485ff8.akpm@linux-foundation.org>
-	<20070725234005.GA11292@google.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jul 2007 00:20:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=D/f1+x74xXjNpbr/sd3Tf2OGNyOU+laHSuMQ0itS8+pCf7NZay+dPq9HOQm9uQWfoloHgFkdOTH2VBavbXAPCq1r/zNCgZFNqt6JumMEQlGGtrhkt0NY+UBJNWtovBNwwNqCvKNy+wWMs1Vg9wCDoRt6HhiafzbBD3A6OojBxqo=
+Message-ID: <a8e1da0707252120l5e9e441bm53e2ba25bc9c20f0@mail.gmail.com>
+Date: Thu, 26 Jul 2007 04:20:10 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH]gx-suspmod.c use boot_cpu_data instead of current_cpu_data
+Cc: linux-kernel@vger.kernel.org, "Dave Jones" <davej@codemonkey.org.uk>,
+       cpufreq@www.linux.org.uk
+In-Reply-To: <20070724234045.2cec5525.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070725141905.GA4567@darkstar.te-china.tietoenator.com>
+	 <20070724234045.2cec5525.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007 16:40:06 -0700 masouds@google.com (Masoud Asgharifard Sharbiani) wrote:
-
-> This patch makes the i386 behave the same way that x86_64 does when a
-> segfault happens. A line gets printed to the kernel log so that tools
-> that need to check for failures can behave more uniformly between
-> different kernels. Like x86_64, it can be disabled by setting
-> debug.show_unhandled_signals sysctl variable to 0 (or by doing
-> echo 0 > /proc/sys/debug/show_unhandled_signals)
-
-Is that still correct?  Methinks /proc/sys/debug/exception-trace.
-
-<Looks sadly at Documentation/filesystems/proc.txt>
-
-<Argh, your patch was reversed. Applied with patch -R.>
-
-> Also, all of the lines being printed are now using printk_ratelimit()
-> to deny the ability of DoS from a local user with a program like the
-> following:
-> main()
-> {
->        while (1)
->                if (!fork()) *(int *)0 = 0;
-> }
-
-yup.
+>On 7/25/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 25 Jul 2007 14:19:05 +0000 Dave Young <hidave.darkstar@gmail.com> wrote:
+>
+> > Hi,
+> > in preemptible kernel will report BUG: using smp_processor_id() in preemptible, so use boot_cpu_data instead of current_cpu_data.
+> >
+> > Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> >
+> > ---
+> > arch/i386/kernel/cpu/cpufreq/gx-suspmod.c |    4 ++--
+> > 1 file changed, 2 insertions(+), 2 deletions(-)
+> >
+> > diff -pur linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
+> > --- linux/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c   2007-07-25 14:11:06.000000000 +0000
+> > +++ linux.new/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c       2007-07-25 13:57:29.000000000 +0000
+> > @@ -181,8 +181,8 @@ static __init struct pci_dev *gx_detect_
+> >       struct pci_dev *gx_pci = NULL;
+> >
+> >       /* check if CPU is a MediaGX or a Geode. */
+> > -     if ((current_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
+> > -         (current_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
+> > +     if ((boot_cpu_data.x86_vendor != X86_VENDOR_NSC) &&
+> > +         (boot_cpu_data.x86_vendor != X86_VENDOR_CYRIX)) {
+> >               dprintk("error: no MediaGX/Geode processor found!\n");
+> >               return NULL;
+> >       }
+>
+> um, I suspect it really wants to get at the current CPU.  But putting a
+> preempt_disable() around just that code is meaningless: the current CPU
+> could change immediately before or after the code block. It needs deeper
+> fixing, methinks.
+The only target is to get the cpu vendor, so boot_cpu_data is enough,
+the drivers/mtd/nand/cs553x_nand.c has the same usage.
