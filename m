@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933355AbXGZIFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932714AbXGZIKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933355AbXGZIFw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 04:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760212AbXGZIEx
+	id S932714AbXGZIKm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 04:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbXGZIKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 04:04:53 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:49563 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933159AbXGZIEv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 04:04:51 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Tino Keitel <tino.keitel@gmx.de>
-Subject: Re: 2.6.23-rc1: USB hard disk broken
-Date: Thu, 26 Jul 2007 10:06:40 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070725072343.GA3483@dose.home.local> <200707251024.37112.oliver@neukum.org> <20070725181312.GA5612@dose.home.local>
-In-Reply-To: <20070725181312.GA5612@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 04:10:23 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:50675 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757979AbXGZIKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 04:10:20 -0400
+Date: Thu, 26 Jul 2007 10:19:34 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070726081934.GB3197@ff.dom.local>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707261006.41368.oliver@neukum.org>
+In-Reply-To: <20070726081326.GA3197@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
-> On Wed, Jul 25, 2007 at 10:24:36 +0200, Oliver Neukum wrote:
-> > Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
-> > > Hi,
-> > > 
-> > > I just tried 2.6.23-rc1 and shortly after the boot my external USB hard
-> > > disk went mad.
-> 
-> [...]
-> 
-> > Please recompile with CONFIG_USB_DEBUG set.
-> > 
-> > 	Regards
-> > 		Oliver
-> 
-> I tried, but it didn't happen again.
+On Thu, Jul 26, 2007 at 10:13:26AM +0200, Jarek Poplawski wrote:
+...
+> So, everything is clear - any changes are good!
+> Except the signed-off ones... 
 
-Did you try with the old kernel again? This bug may be related to timing.
+Oops! Marcin's patch was both signed-off and good.
+So, there is probably something more...
 
-	Regards
-		Oliver
+Sorry Marcin,
+Jarek P.
