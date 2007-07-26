@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932337AbXGZIjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932889AbXGZImU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932337AbXGZIjW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 04:39:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbXGZIjA
+	id S932889AbXGZImU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 04:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757238AbXGZImJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 04:39:00 -0400
-Received: from main.gmane.org ([80.91.229.2]:34096 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754749AbXGZIi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 04:38:59 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Frank Kingswood <frank@kingswood-consulting.co.uk>
-Subject: Re: -mm merge plans for 2.6.23
-Date: Thu, 26 Jul 2007 09:38:45 +0100
-Message-ID: <46A85D95.509@kingswood-consulting.co.uk>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	<200707102015.44004.kernel@kolivas.org>	<9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	<46A57068.3070701@yahoo.com.au>	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	<46A58B49.3050508@yahoo.com.au>	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>	<46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: mail.artimi.com
-User-Agent: IceDove 1.5.0.12 (X11/20070607)
-In-Reply-To: <p73abtkrz37.fsf@bingen.suse.de>
-Cc: ck@vds.kolivas.org, linux-mm@kvack.org
+	Thu, 26 Jul 2007 04:42:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:29083 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756781AbXGZImH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 04:42:07 -0400
+Date: Thu, 26 Jul 2007 11:42:11 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       Mike Christie <michaelc@cs.wisc.edu>, Roland Dreier <rdreier@cisco.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       general@lists.openfabrics.org
+Subject: [PATCH trivial v2] add includes to scsi_transport_iscsi.h
+Message-ID: <20070726084211.GB22557@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <20070725110907.GF3826@mellanox.co.il>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070725110907.GF3826@mellanox.co.il>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> One simple way to fix this would be to implement a fadvise() flag
-> that puts the dentry/inode on a "soon to be expired" list if there
-> are no other references. Then if a dentry allocation needs more
-> memory try to reuse dentries from that list (or better queue) first. Any other
-> access will remove the dentry from the list. 
-> 
-> Disadvantage would be that the userland would need to be patched,
-> but I guess it's better than adding very dubious heuristics to the
-> kernel.
+scsi/scsi_transport_iscsi.h uses struct mutex and struct list_head,
+so while linux/mutex.h and linux/list.h seem to be pulled in indirectly
+by one of the headers it includes, the right thing
+is to include linux/mutex.h and linus/list.h directly.
 
-Are you going to change every single large memory application in the 
-world? As I wrote before, it is *not* about updatedb, but about all 
-applications that use a lot of memory, and then terminate.
+Signed-off-by: Michael S. Tsirkin <mst@dev.mellanox.co.il>
 
-Frank
+---
 
+Changelog:
+
+Mike Christie pointed out that linux/list.h is missing too.
+
+diff --git a/include/scsi/scsi_transport_iscsi.h b/include/scsi/scsi_transport_iscsi.h
+index 706c0cd..7ff6199 100644
+--- a/include/scsi/scsi_transport_iscsi.h
++++ b/include/scsi/scsi_transport_iscsi.h
+@@ -24,6 +24,8 @@
+ #define SCSI_TRANSPORT_ISCSI_H
+ 
+ #include <linux/device.h>
++#include <linux/list.h>
++#include <linux/mutex.h>
+ #include <scsi/iscsi_if.h>
+ 
+ struct scsi_transport_template;
+
+-- 
+MST
