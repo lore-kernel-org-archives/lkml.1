@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936559AbXGZU6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936846AbXGZU7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936559AbXGZU6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 16:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765395AbXGZU6P
+	id S936846AbXGZU7H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 16:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933772AbXGZU64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 16:58:15 -0400
-Received: from tartu.cyber.ee ([193.40.6.68]:2948 "EHLO tartu.cyber.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764494AbXGZU6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 16:58:14 -0400
-From: Meelis Roos <mroos@linux.ee>
-To: linux-kernel@vger.kernel.org, rjw@sisk.pl (Rafael J. Wysocki)
-Subject: Re: [2.6.23-rc1 REGRESSION] ThinkPad T42 poweroff failure by
-"PM: Introduce pm_power_off_prepare"
-In-Reply-To: <200707261629.55741.rjw@sisk.pl>
-User-Agent: tin/1.9.2-20070201 ("Dalaruan") (UNIX) (Linux/2.6.23-rc1-ge4903fb5 (i686))
-Message-Id: <20070726205753.9351313FEB@rhn.tartu-labor>
-Date: Thu, 26 Jul 2007 23:57:53 +0300 (EEST)
+	Thu, 26 Jul 2007 16:58:56 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59674 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762416AbXGZU6z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 16:58:55 -0400
+Date: Thu, 26 Jul 2007 15:58:47 -0500
+From: Robin Holt <holt@sgi.com>
+To: Andi Kleen <ak@suse.de>, Jiri Bohac <jbohac@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Vojtech Pavlik <vojtech@suse.cz>, ssouhlal@freebsd.org,
+       arjan@infradead.org, tglx@linutronix.de, johnstul@us.ibm.com,
+       zippel@linux-m68k.org, andrea@suse.de
+Subject: Re: [patch 1/9] Fix HPET init race
+Message-ID: <20070726205847.GA23109@lnx-holt.americas.sgi.com>
+References: <20070201095952.589234000@jet.suse.cz> <20070206164459.GA7271@dwarf.suse.cz> <20070206161256.43fd11de.akpm@linux-foundation.org> <200702101331.02131.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200702101331.02131.ak@suse.de>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK, so here it goes again with a changelog:
->
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> Generally, sysdev_shutdown() should be called after the ACPI preparation for
-> powering the system off.  To make it happen, we can separate sysdev_shutdown()
-> from device_shutdown() and call it directly wherever necessary.
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+I have had four seperate system lockups attributable to this exact problem
+in two days of testing.  Instead of trying to handle all the weird end
+cases and wrap, how about changing it to look for exactly what we appear
+to want.
 
-It also fixes the same problem on Thinkpad X20 - thanks!
+The following patch removes a couple races in setup_APIC_timer.  One occurs
+when the HPET advances the COUNTER past the T0_CMP value between the time
+the T0_CMP was originally read and when COUNTER is read.  This results in
+a delay waiting for the counter to wrap.  The other results from the counter
+wrapping.
 
---
-Meelis Roos <mroos@linux.ee>
+This change takes a snapshot of T0_CMP at the beginning of the loop and
+simply loops until T0_CMP has changed (a tick has happened).
+
+Signed-off-by: Robin Holt <holt@sgi.com>
+
+
+Index: apic_fixes/arch/x86_64/kernel/apic.c
+===================================================================
+--- apic_fixes.orig/arch/x86_64/kernel/apic.c	2007-07-26 15:45:17.000000000 -0500
++++ apic_fixes/arch/x86_64/kernel/apic.c	2007-07-26 15:46:15.000000000 -0500
+@@ -791,10 +791,8 @@ static void setup_APIC_timer(unsigned in
+ 
+ 	/* wait for irq slice */
+ 	if (hpet_address && hpet_use_timer) {
+-		int trigger = hpet_readl(HPET_T0_CMP);
+-		while (hpet_readl(HPET_COUNTER) >= trigger)
+-			/* do nothing */ ;
+-		while (hpet_readl(HPET_COUNTER) <  trigger)
++		u32 trigger = hpet_readl(HPET_T0_CMP);
++		while (hpet_readl(HPET_T0_CMP) == trigger)
+ 			/* do nothing */ ;
+ 	} else {
+ 		int c1, c2;
