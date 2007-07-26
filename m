@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935276AbXGZSMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964792AbXGZSOH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935276AbXGZSMV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 14:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761173AbXGZSMN
+	id S964792AbXGZSOH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 14:14:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXGZSNx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 14:12:13 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49883 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760643AbXGZSML (ORCPT
+	Thu, 26 Jul 2007 14:13:53 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:50827 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932669AbXGZSNw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 14:12:11 -0400
-Message-ID: <46A8E3F9.5070809@zytor.com>
-Date: Thu, 26 Jul 2007 11:12:09 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: bbpetkov@yahoo.de
-CC: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1: no setup signature found...
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic>
-In-Reply-To: <20070726163053.GA4570@gollum.tnic>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 26 Jul 2007 14:13:52 -0400
+Date: Thu, 26 Jul 2007 11:13:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Michael Chang" <thenewme91@gmail.com>
+Cc: "Ray Lee" <ray-lk@madrabbit.org>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Eric St-Laurent" <ericstl34@sympatico.ca>,
+       linux-kernel@vger.kernel.org, "ck list" <ck@vds.kolivas.org>,
+       linux-mm@kvack.org, "Paul Jackson" <pj@sgi.com>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+Message-Id: <20070726111326.873f7b0a.akpm@linux-foundation.org>
+In-Reply-To: <b14e81f00707260719w63d8ab38jbf2a17a38bd07c1d@mail.gmail.com>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	<46A58B49.3050508@yahoo.com.au>
+	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	<46A6CC56.6040307@yahoo.com.au>
+	<46A6D7D2.4050708@gmail.com>
+	<1185341449.7105.53.camel@perkele>
+	<46A6E1A1.4010508@yahoo.com.au>
+	<2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com>
+	<20070725215717.df1d2eea.akpm@linux-foundation.org>
+	<b14e81f00707260719w63d8ab38jbf2a17a38bd07c1d@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
+On Thu, 26 Jul 2007 10:19:06 -0400 "Michael Chang" <thenewme91@gmail.com> wrote:
+
+> > All this would end up needing runtime configurability and tweakability and
+> > customisability.  All standard fare for userspace stuff - much easier than
+> > patching the kernel.
 > 
->> What distro/version of grub are you running?  
-> Debian unstable
->> I'm wondering if there are
->> some old version of grub out there which did the "load four sectors"
->> way-anciently-obsolete crap; the other possibility that comes to mind is
->> setting up the stack in an invalid manner.
-> grub version:
-> 
-> [boris@gollum:18:17:27:->  apt-cache show grub
-> Package: grub
-> Priority: optional
-> Section: admin
-> Installed-Size: 708
-> Maintainer: Grub Maintainers <pkg-grub-devel@lists.alioth.debian.org>
-> Architecture: i386
-> Version: 0.97-29
-> Depends: libc6 (>= 2.5-5), libncurses5 (>= 5.4-5)
-> Suggests: grub-doc, mdadm
-> Filename: pool/main/g/grub/grub_0.97-29_i386.deb
-> Size: 366884
-> MD5sum: 2da7a5942db06eaba046dff4615bcce9
-> SHA1: 7f4da793da209d011ce94fceebaebe0e5f08790f
-> SHA256: 2596782c08f1f7365e9935f687fef74c67d8702503188f22448db9f0ac98e18e
-> Description: GRand Unified Bootloader
-> ...
+> Maybe I'm missing something here, but if the problem is resource
+> allocation when switching from state A to state B, and from B to C,
+> etc.; wouldn't it be a bad thing if state B happened to be (in the
+> future) this state-shifting userspace daemon of which you speak? (Or
+> is that likely to be impossible/unlikely for some other reason which
+> alludes me at the moment?)
 
-This concerns me deeply.  This is a current version of Grub which
-shouldn't have any silly 8K limitations.  Yet it appears to have a
-similar pathology over the ancient version Xudong just described.
-
-The absolute best would be if we could replicate this in simulation
-(Bochs or Qemu); this would make it very simple to debug.  Would you be
-willing to try to do that?
-
-	-hpa
-
+Well.  I was assuming that the daemon wouldn't be a great memory pig. 
+I suspect it would do practically zero IO and would use little memory.
+It could even be mlocked, but I doubt if that would be needed.
