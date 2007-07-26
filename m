@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935358AbXGZWD4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbXGZWEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935358AbXGZWD4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 18:03:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932917AbXGZWDt
+	id S933697AbXGZWEZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 18:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935638AbXGZWEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 18:03:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:45636 "EHLO mail.goop.org"
+	Thu, 26 Jul 2007 18:04:05 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:53719 "EHLO atlrel8.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765653AbXGZWDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 18:03:48 -0400
-Message-ID: <46A919EB.9060102@goop.org>
-Date: Thu, 26 Jul 2007 15:02:19 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, wwoods@redhat.com
-Subject: Re: [PATCH] core_pattern: Add ability for core_pattern to parse arguments
- when pattern is a pipe
-References: <20070726173923.GA5701@hmsreliant.homelinux.net>
-In-Reply-To: <20070726173923.GA5701@hmsreliant.homelinux.net>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	id S932917AbXGZWED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 18:04:03 -0400
+Subject: RE: [PATCH] ia64: fix build failure on fs/quota.c
+From: Doug Chapman <doug.chapman@hp.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       vtaras@openvz.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A0205DE5E@scsmsx411.amr.corp.intel.com>
+References: <617E1C2C70743745A92448908E030B2A0205DE5E@scsmsx411.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Thu, 26 Jul 2007 17:58:45 -0400
+Message-Id: <1185487125.20910.30.camel@dchapman.boston.redhat.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-35.el4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> +static void free_argv_array(char **argv)
-> +{
-> +	int i;
-> +	if (argv != NULL) {
-> +		for (i = 0; argv[i] != NULL; i++)
-> +			kfree(argv[i]);
-> +		kfree(argv);
-> +	}
-> +
-> +}
->   
+On Thu, 2007-07-26 at 14:24 -0700, Luck, Tony wrote:
+> This issue wandered off onto a long thread "build fix for x86_64" which
+> died out without a final patch.  Here's the summary:
+> 
 
-I've helpfully already provided free_argv() in lib/argv_split.c.
+Ahh, thanks, I had not seen that thread.
 
-> +
-> +/*
-> + * format_corename_argv will inspect the corename string, 	
-> + * and for every option found after the binary name
-> + * it will remove the option from the string, and place it
-> + * in the argv array, that can then be passed to the 
-> + * usermodehelper if core_pattern is a pipe
-> + * Assumes that corename is declared on the stack of the caller
-> + */
-> +static char **format_corename_argv(char *corename)
-> +{
->   
 
-And it looks like this could be adapted to use argv_split() with a bit
-of additional processing.
+> > +#if defined(CONFIG_X86_64) || (defined(CONFIG_IA64) && defined(CONFIG_COMPAT))
+> 
+> It was pointed out that x86-64 also has a CONFIG_COMPAT, so the "right"
+> #ifdef mess would be:
+> 
+> #if defined(CONFIG_COMPAT) && (defined(CONFIG_IA64) || defined(CONFIG_X86_64))
+> 
+> But this was thought too ugly.  Andi Kleen proposed making a new CONFIG
+> variable for this situation: CONFIG_COMPAT_FOR_U64_ALIGMNENT which could
+> be set in ia64 and x86-64 Kconfig files with:
+> 
+> config COMPAT_FOR_U64_ALIGMNENT
+> 	def_bool COMPAT
+> 
+> So the C-code would simply have:
+> 
+> #if defined(COMPAT_COMPAT_FOR_U64_ALIGMNENT)
+> 
+> (IIRC the syntax correctly).  Peter Anvin had some worries about future
+> issues ... but I think he agreed that this was Ok.
+> 
+> Anyone still have any objections to this?
 
-    J
+No objections here.  I just tried this patch and it does fix my ia64
+build issue.  I agree it is a bit cleaner than the long #ifdef.
+
+thanks,
+
+- Doug
+
+
