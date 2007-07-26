@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbXGZRMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765220AbXGZRPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933187AbXGZRMc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 13:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762547AbXGZRMY
+	id S1765220AbXGZRPP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 13:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756109AbXGZRPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 13:12:24 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60809 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761481AbXGZRMX (ORCPT
+	Thu, 26 Jul 2007 13:15:01 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:40527 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752473AbXGZRPA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 13:12:23 -0400
-Date: Thu, 26 Jul 2007 18:11:32 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] mm: reduce pagetable-freeing latencies
-In-Reply-To: <1185360414.5439.335.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0707261758280.370@blonde.wat.veritas.com>
-References: <20070724083855.GA858@elte.hu>  <20070724015441.8604d85d.akpm@linux-foundation.org>
-  <1185270045.5439.249.camel@localhost.localdomain>  <p73abtmt2y7.fsf@bingen.suse.de>
-  <1185312559.5439.276.camel@localhost.localdomain>  <1185345850.8197.64.camel@twins>
- <20070725094605.GA9045@one.firstfloor.org>  <1185358093.5439.325.camel@localhost.localdomain>
-  <20070725102608.GB9045@one.firstfloor.org> <1185360414.5439.335.camel@localhost.localdomain>
+	Thu, 26 Jul 2007 13:15:00 -0400
+Date: Thu, 26 Jul 2007 12:14:47 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: menage@google.com, akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru,
+       serue@us.ibm.com, vatsa@in.ibm.com, ebiederm@xmission.com,
+       haveblue@us.ibm.com, svaidy@linux.vnet.ibm.com, balbir@in.ibm.com,
+       pj@sgi.com, cpw@sgi.com, ckrm-tech@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       mbligh@google.com, rohitseth@google.com, devel@openvz.org,
+       Herbert Poetzl <herbert@13thfloor.at>,
+       Cedric Le Goater <clg@fr.ibm.com>
+Subject: Announce: containers mini-summit at LCE
+Message-ID: <20070726171447.GA2677@sergelap.austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBiZW5oQGtlcm5lbC5jcmFzaGluZy5vcmcAcGV0ZXJ6QGluZnJhZGVhZC5vcmcAYW5kaUBmaXJzdGZsb29yLm9yZwBtaW5nb0BlbHRlLmh1AA==
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Benjamin Herrenschmidt wrote:
-> 
-> In fact, i discussed with peter and I think the best is to only have one
-> entry in the stack mmu_gather structure.
+Hi,
 
-Four or eight would be much nicer than one, but you're right there's
-a stackdepth worry: good spotting of those unmap_mapping_range cases,
-I'd certainly been thinking we were fairly near the top of the stack
-in unmap_vmas, which is not so (or not obviously so) in those cases.
+Details are still fuzzy, but to give a reasonable amount of heads-up,
+I'd like to announce a containers mini-summit to be held at or near LCE
+(http://www.linuxconf.eu/2007/).  Contingent on the kernel-summit
+agenda, we're hoping to hold it on either sep 3 or 4.  A final decision
+on the date will be made soon.
 
-> If we fail to allocate a page
-> to batch entries, we flush that one and steal it :-) Then we have a page
-> to gather more.
+Since all "containers" work will be discussed (please see the roadmap
+I've been sending around), we will probably have a few half-hour
+sessions.  Maybe one for virtual server, one for task
+containers/resource management, and one for checkpoint/restart.  An
+agenda - probably tightly coupled to the roadmap - will be sent out in
+time.
 
-That will often be the case for anonymous pages, but not for pagecache
-pages.  I had wondered whether to make exit_mmap unmap the stack first
-(rather than text first as usually happens), but seems rather a hack.
+We would really like to see as many people as possible attend - in
+person if possible, but if need be over the phone (see below).  Eric,
+Herbert, Paul, Pavel, Kirill - well I don't want to list names, I
+already do that in the roadmap :)
 
-Hugh
+== Phone line ==
+
+For those who cannot attend in person, we are hoping to provide a
+conference phone line.
+
+thanks,
+-serge
