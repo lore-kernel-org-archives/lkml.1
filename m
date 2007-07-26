@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935793AbXGZTJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934697AbXGZTOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935793AbXGZTJU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 15:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762342AbXGZTJI
+	id S934697AbXGZTOZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 15:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761239AbXGZTOQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 15:09:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37822 "EHLO ogre.sisk.pl"
+	Thu, 26 Jul 2007 15:14:16 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37898 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761445AbXGZTJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 15:09:07 -0400
+	id S1761013AbXGZTOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 15:14:15 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1)
-Date: Thu, 26 Jul 2007 21:17:25 +0200
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [2.6.23-rc1 REGRESSION] CPU hotplug totally broken on HPC nx6325 (x86_64)
+Date: Thu, 26 Jul 2007 21:22:49 +0200
 User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-References: <200707251238.50218.lenb@kernel.org> <alpine.LFD.0.999.0707252353150.3442@woody.linux-foundation.org> <200707261345.29902.lenb@kernel.org>
-In-Reply-To: <200707261345.29902.lenb@kernel.org>
+Cc: Andi Kleen <ak@suse.de>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+References: <200707261440.50649.rjw@sisk.pl> <alpine.LFD.0.999.0707260924150.3442@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707260924150.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707262117.26353.rjw@sisk.pl>
+Message-Id: <200707262122.50517.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 26 July 2007 19:45, Len Brown wrote:
-> On Thursday 26 July 2007 02:55, Linus Torvalds wrote:
-> > 
-> > On Thu, 26 Jul 2007, Len Brown wrote:
-> > > 
-> > > Feel free to share what you know about the benefits vs. the costs
-> > > of maintaining CONFIG_ACPI_SLEEP as a build option.
-> > 
-> > Why don't you just make CONFIG_ACPI_SLEEP dependent on SOFTWARE_SUSPEND 
-> > and STR?
+On Thursday, 26 July 2007 18:43, Linus Torvalds wrote:
 > 
-> CONFIG_STR doesn't exist.
+> On Thu, 26 Jul 2007, Rafael J. Wysocki wrote:
+> >
+> > On my Turion64-based HPC nx6325 with the 2.6.23-rc1 x86_64 kernel doing
+> > 
+> > # echo 0 > /sys/devices/system/cpu/cpu1/online
+> > 
+> > causes the system to crash in a spectacular fashion (call traces going
+> > continuously on the console, no reaction to anything except for the power
+> > button).  For this reason, suspend and hibernation don't work as well.
+> 
+> Yeah, I really shouldn't have applied that patch. I didn't notice that it 
+> not only cleaned up the direct memcpy's, it also re-introduced the damn 
+> broken code that we fixed once already.
+> 
+> Dammit, that read-only debug support IS NOT WORTH THIS CRAP.
+> 
+> I absolutely *detest* it when "debugging features" end up being the thing 
+> that causes crashes. I think it shows a total lack of taste and 
+> understanding, and I'm totally tired of it. This has happened too many 
+> times.
+> 
+> Andi: please don't send this patch *ever* again. If a patch that is 
+> supposed to help debugging just causes problems, that patch should be 
+> thrown away FOREVER.
+> 
+> Andrew - on that same note: please throw away the dwarf traceback crap 
+> from your tree that Andi is still apparently pushing. Exact same issue. 
+> 
+> Debugging "helper" code that has historically only caused problems. We 
+> could equally well just enable frame pointers for debugging and add the 
+> trivial code to follow that instead, and it would work (the way it has 
+> worked on x86 basically forever).
+> 
+> Rafael, does reverting just this part (and leaving the "text_poke()" 
+> cleanups) work for you?
 
-Hmm, perhaps we should introduce a CONFIG_SUSPEND and change
-CONFIG_SOFTWARE_SUSPEND into CONFIG_HIBERNATION, both depending on
-CONFIG_PM?
-
-There's quite some code needed only for suspend compiled in when CONFIG_PM is
-set ...
+Yes, it does, with the appended fix on top. :-)
 
 Greetings,
 Rafael
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+---
+ arch/i386/kernel/alternative.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.23-rc1/arch/i386/kernel/alternative.c
+===================================================================
+--- linux-2.6.23-rc1.orig/arch/i386/kernel/alternative.c
++++ linux-2.6.23-rc1/arch/i386/kernel/alternative.c
+@@ -432,7 +432,7 @@ void __init alternative_instructions(voi
+  */
+ void __kprobes text_poke(void *oaddr, unsigned char *opcode, int len)
+ {
+-	memcpy(addr, opcode, len);
++	memcpy(oaddr, opcode, len);
+ 	sync_core();
+ 	/* Not strictly needed, but can speed CPU recovery up. Ignore cross cacheline
+ 	   case. */
