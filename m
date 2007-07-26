@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934489AbXGZVcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935372AbXGZVgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934489AbXGZVcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 17:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763253AbXGZVcI
+	id S935372AbXGZVgK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 17:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764507AbXGZVf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 17:32:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46810 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Jul 2007 17:35:57 -0400
+Received: from gate.crashing.org ([63.228.1.57]:46735 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759833AbXGZVcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 17:32:06 -0400
-Date: Thu, 26 Jul 2007 23:31:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tong Li <tong.n.li@intel.com>
-Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-Message-ID: <20070726213154.GA26569@elte.hu>
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu> <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com> <20070725192442.GC4463@elte.hu> <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1763834AbXGZVf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 17:35:56 -0400
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0707261758280.370@blonde.wat.veritas.com>
+References: <20070724083855.GA858@elte.hu>
+	 <20070724015441.8604d85d.akpm@linux-foundation.org>
+	 <1185270045.5439.249.camel@localhost.localdomain>
+	 <p73abtmt2y7.fsf@bingen.suse.de>
+	 <1185312559.5439.276.camel@localhost.localdomain>
+	 <1185345850.8197.64.camel@twins> <20070725094605.GA9045@one.firstfloor.org>
+	 <1185358093.5439.325.camel@localhost.localdomain>
+	 <20070725102608.GB9045@one.firstfloor.org>
+	 <1185360414.5439.335.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707261758280.370@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 07:35:15 +1000
+Message-Id: <1185485715.5495.127.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2007-07-26 at 18:11 +0100, Hugh Dickins wrote:
+> That will often be the case for anonymous pages, but not for pagecache
+> pages.  I had wondered whether to make exit_mmap unmap the stack first
+> (rather than text first as usually happens), but seems rather a hack.
 
-* Tong Li <tong.n.li@intel.com> wrote:
+Yup and defeated by HIGHMEM ,so I'm back to per-cpu page lists for now
+and we'll see how to move to the next step once I've ironed out other
+issues such as sparc64/ia64 related bits.
 
-> > you need to measure it over longer periods of time. Its not worth 
-> > balancing for such a thing in any high-frequency manner. (we'd trash 
-> > the cache constantly migrating tasks back and forth.)
-> 
-> I have some data below, but before that, I'd like to say, at the same 
-> load balancing rate, my proposed approach would allow us to have 
-> fairness on the order of seconds. I'm less concerned about trashing 
-> the cache. The important thing is to have a knob that allow users to 
-> trade off fairness and performance based on their needs. [...]
+Ben.
 
-such a knob already exists to a certain degree, but i havent tested its 
-full effects on SMP fairness yet. If you pull my scheduler tree:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
-
-and if you enable CONFIG_SCHED_DEBUG, then all the sched-domain 
-parameters become runtime tunable under /proc/sys/cpu*.
-
-Could you try to increase the cross-CPU rebalancing frequency and see 
-how it impacts the precision of your measurement? Tune 'min_interval' 
-and 'max_interval' down to increase the frequency of rebalancing.
-
-	Ingo
