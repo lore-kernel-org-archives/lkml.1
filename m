@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937354AbXG0QgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933603AbXG0QiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937354AbXG0QgT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 12:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934631AbXG0QgM
+	id S933603AbXG0QiO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 12:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934631AbXG0Qh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 12:36:12 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:52692 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S934570AbXG0QgL (ORCPT
+	Fri, 27 Jul 2007 12:37:59 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57719 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933398AbXG0Qh6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 12:36:11 -0400
-Date: Fri, 27 Jul 2007 12:35:41 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Yoann Padioleau <padator@wanadoo.fr>
-Cc: kernel-janitors@vger.kernel.org,
-       user-mode-linux-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 18/68] 0 -> NULL, for arch/um
-Message-ID: <20070727163541.GA6930@c2.user-mode-linux.org>
-References: <200707270945.LAA17372@ifs.emn.fr>
+	Fri, 27 Jul 2007 12:37:58 -0400
+Subject: Re: [PATCH] remove hugetlb_instantiation_mutex
+From: Adam Litke <agl@us.ibm.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1185523069.4688.115.camel@ymzhang>
+References: <1185523069.4688.115.camel@ymzhang>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 11:37:57 -0500
+Message-Id: <1185554277.23817.18.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707270945.LAA17372@ifs.emn.fr>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 11:45:56AM +0200, Yoann Padioleau wrote:
-> When comparing a pointer, it's clearer to compare it to NULL than to 0.
+Hey... I am amazed at how quickly you came back with a patch for this :)
+Thanks for looking at it.  Unfortunately there is one show-stopper and I
+have some reservations (pun definitely intended) with your approach:
 
-ACK
+First, your patch does not pass the libhugetlbfs test
+'alloc-instantiate-race' which was written to tickle the the race which
+the mutex was introduced to solve.  Your patch works for shared
+mappings, but not for the private case.
 
->  sys-i386/fault.c   |    2 +-
->  sys-x86_64/fault.c |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
-
-Except you should probably diff from the top of the kernel tree.
-
-				Jeff
+Second, the introduction of another pair of global counters triggers my
+internal warning system... These global counters are known to cause
+problems with NUMA and cpusets.  Have you considered these interactions?
+Additionally, the commit/rollback logic you are using closely parallels
+what we already do with the huge page reservation mechanism.  Is there
+any way you could integrate your stuff into the reservation system to
+avoid all the duplicated logic?
 
 -- 
-Work email - jdike at linux dot intel dot com
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
+
