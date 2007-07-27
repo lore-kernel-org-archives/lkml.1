@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938328AbXG0WZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938325AbXG0W02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938328AbXG0WZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937663AbXG0WZe
+	id S938325AbXG0W02 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 18:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938348AbXG0W0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 18:25:34 -0400
-Received: from neon.samage.net ([85.17.153.66]:47335 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937373AbXG0WZd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 18:25:33 -0400
-Message-ID: <41532.81.207.0.53.1185575131.squirrel@secure.samage.net>
-In-Reply-To: <20070724044520.913891976.dtor@insightbb.com>
-References: <20070724044520.913891976.dtor@insightbb.com>
-Date: Sat, 28 Jul 2007 00:25:31 +0200 (CEST)
-Subject: Re: [RFC/RFT 0/5] Input locking patches
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+	Fri, 27 Jul 2007 18:26:01 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:33770 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938343AbXG0WZ7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 18:25:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=DB1TQGHk+yqUBaYEQ+SmiXorPXMo7rRbZeKJkWGPwqLAPthOPT1cBdt+FqvvHdvpCMhdOBmP4PiKD39Z786AzzzhFoRtsuvfqW7l4vTJRIPlt1V9r27paWAfOvzcCUgEGAIroXzb0dWIUNTQGIcAZFt4RUqLB3pyd9SkImIW1U0=
+Message-ID: <92a12cdb0707271525i46970157ke1b2b2e6575682d6@mail.gmail.com>
+Date: Fri, 27 Jul 2007 23:25:59 +0100
+From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Problems with framebuffer in 2.6.22-git17
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       lethal@users.sourceforge.net
+In-Reply-To: <1185571890.26603.7.camel@daplas>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 2ecd0b53b7de9511489f92806276a3d7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
+	 <1185146563.6370.8.camel@daplas>
+	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
+	 <1185406433.5046.23.camel@daplas>
+	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
+	 <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
+	 <1185571890.26603.7.camel@daplas>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, July 24, 2007 06:45, Dmitry Torokhov wrote:
-> Hi everyone,
+On 27/07/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Fri, 2007-07-27 at 21:18 +0100, Adrian McMenamin wrote:
+> > On 27/07/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
+> >
+> > > With the patch reverted and 24bpp, it oopses before freezing (with two
+> > > odd looking boot logos on the screen):
+> > >
+> > Tested this further and it fails on:
+> >
+> > rev = fb_readl(par->mmio_base + 0x04);
 >
-> I finally managed to put together some patches implementing
-> locking in input core and main input handles. Please look
-> over them and give them a spin.
-
-Since kernel 2.6.21 or so I was annoyed by a warping mouse, and
-one kernel version later also by "stuck" keys, causing repeated input
-at the most inconvenient moments (e.g. when opening a program by
-pressing F1).
-
-As it happened irregularly and unpredictable it was hard to debug,
-and I suspected faulty hardware. My cpu was quite hot, but after
-removing all the dust it seems all right again. Unfortunately that
-was about the same time I upgraded to 2.6.23-rc1, so all I can say
-is that the stuck key problem seems to be gone, though not sure
-thanks to what, but that neither the cleaning nor the upgrade fixed
-the warping mouse problem.
-
-I'm running with these locking patches for two days now and the
-mouse doesn't warp any more (it can also have fixed the stuck key
-problem, not sure). Normally it would warp several times a day,
-and that didn't happen yet, so I'm tempted to praise your patches.
-
-Sorry for the babbling, just wanted to say that I've tested these
-patches and that they seem to fix real problems.
-
-Thanks,
-
-Indan
+> Doubtful if this line is the point of failure, this line is executed
+> only once, on initialization.
 
 
+par->mmio_base is corrupted in some way during the call to
+register_framebuffer - still investigating how/why.
