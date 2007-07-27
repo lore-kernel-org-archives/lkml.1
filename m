@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965516AbXG0Xly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXG0Xm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965516AbXG0Xly (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965139AbXG0Xln
+	id S965558AbXG0Xm1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965154AbXG0XmR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:41:43 -0400
-Received: from relay.dedenet.de ([195.145.96.7]:2080 "HELO relay.dedenet.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760961AbXG0Xlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:41:42 -0400
-X-Greylist: delayed 51052 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 19:41:41 EDT
-Date: Sat, 28 Jul 2007 01:41:38 +0200
-From: Mario Doering <mario@dedenet.de>
+	Fri, 27 Jul 2007 19:42:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45803 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965139AbXG0XmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 19:42:16 -0400
+Date: Fri, 27 Jul 2007 18:42:14 -0500
 To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Subject: Re: D-Link DFE-580TX 4 port NIC problems
-Message-ID: <20070728014138.43e8e16b@snibbles.dedenet.de>
-In-Reply-To: <46A9E029.4080200@anagramm.de>
-References: <20070509120142.2305a1d1@snibbles.dedenet.de>
-	<20070509032700.569789a0.akpm@linux-foundation.org>
-	<20070727113044.76630826@snibbles.dedenet.de>
-	<46A9E029.4080200@anagramm.de>
-X-Mailer: Claws Mail 2.7.0 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: ATA scsi driver misbehavior under kdump capture kernel
+Message-ID: <46AA82D6.mailxB9W1BQ61V@eag09.americas.sgi.com>
+User-Agent: nail 11.4 8/29/04
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-DeDe-Auth: true
-X-DeDe-Envelope-To: linux-kernel@vger.kernel.org
+From: cpw@sgi.com (Cliff Wickman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007 14:08:09 +0200
-Clemens Koller <clemens.koller@anagramm.de> wrote:
-
-> Hi, Mario!
-> 
-> Mario Doering schrieb:
-> > Hello,
-> > 
-> > are there any news or questions on this issue?
-> 
-> Can you try the latest kernel to see if the same problem
-> persists?
-> Is there any kernel version where it was working fine?
 
 
-Hello Clemens,
 
-I have tried different kernerls with no success so far. I have not
-tried a 2.6.22 kernel yet, but I can do so of course.
+I've run into a problem with the ATA SCSI disk driver when running in a
+kdump dump-capture kernel.
 
-It would take some time then again to wait for the error to arise ;-)
+I'm running on 2-processor x86_64 box.  It has 2 scsi disks, /dev/sda and
+/dev/sdb
 
-Bye,
-Mario.
+My kernel is 2.6.22, and built to be a dump capturing kernel loaded by kexec.
+When I boot this kernel by itself, it finds both sda and sdb.
+
+But when it is loaded by kexec and booted on a panic it only finds sda.
+
+Any ideas from those familiar with the ATA driver?
+
+
+-Cliff Wickman
+ SGI
+
+
+
+I put some printk's into it and get this:
+
+Standalone:
+
+                                                   [nv_adma_error_handler]
+cpw: ata_host_register probe port 1 (error_handler:ffffffff81348625)
+cpw: ata_host_register call ata_port_probe
+cpw: ata_host_register call ata_port_schedule
+cpw: ata_host_register call ata_port_wait_eh
+cpw: ata_port_wait_eh entered
+cpw: ata_port_wait_eh, preparing to wait
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+cpw: ata_dev_configure entered
+cpw: ata_dev_configure testing class
+cpw: ata_dev_configure class is ATA_DEV_ATA
+ata2.00: ATA-6: ST3200822AS, 3.01, max UDMA/133
+ata2.00: 390721968 sectors, multi 16: LBA48
+cpw: ata_dev_configure exiting
+cpw: ata_dev_configure entered
+cpw: ata_dev_configure testing class
+cpw: ata_dev_configure class is ATA_DEV_ATA
+cpw: ata_dev_configure exiting
+cpw: ata_dev_set_mode printing:
+ata2.00: configured for UDMA/133
+cpw: ata_port_wait_eh, finished wait
+cpw: ata_port_wait_eh exiting
+cpw: ata_host_register done with probe port 1
+
+
+When loaded with kexec and booted on a panic:
+
+cpw: ata_host_register probe port 1 (error_handler:ffffffff81348625)
+cpw: ata_host_register call ata_port_probe
+cpw: ata_host_register call ata_port_schedule
+cpw: ata_host_register call ata_port_wait_eh
+cpw: ata_port_wait_eh entered
+cpw: ata_port_wait_eh, preparing to wait
+ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+cpw: ata_port_wait_eh, finished wait
+cpw: ata_port_wait_eh exiting
+cpw: ata_host_register done with probe port 1
+
