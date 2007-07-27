@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937439AbXG0RMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937536AbXG0RNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937439AbXG0RMs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbXG0RMl
+	id S937536AbXG0RNH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:13:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937490AbXG0RMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:12:41 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:45903 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756486AbXG0RMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:12:40 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: Fwd: PNP: Lindent all source files
-Date: Fri, 27 Jul 2007 10:57:10 -0600
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <46A928D2.6030702@simon.arlott.org.uk>
-In-Reply-To: <46A928D2.6030702@simon.arlott.org.uk>
+	Fri, 27 Jul 2007 13:12:51 -0400
+Received: from gateway.howardsilvan.com ([64.146.212.27]:48015 "EHLO
+	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937473AbXG0RMu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 13:12:50 -0400
+Message-ID: <46AA2748.80703@howardsilvan.com>
+Date: Fri, 27 Jul 2007 10:11:36 -0700
+From: Lee Howard <faxguy@howardsilvan.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc4
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: serial flow control appears broken
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707271057.10419.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 July 2007 05:05:54 pm Simon Arlott wrote:
-> Does anyone ever review what Lindent does? There's a fix up patch after this 
-> but it missed this at the very top of the patch and the labels.
+Maciej W. Rozycki wrote:
 
-I think you answered your own question.
+>On Thu, 26 Jul 2007, Lee Howard wrote:
+>
+>  
+>
+>>If the application were to use TIOCM_RTS how would it know when to apply it or
+>>not?  Is there some approach that the application could take to manage flow
+>>control on the serial port?  What about software flow control?  Does the
+>>    
+>>
+>
+> Well, an application could negate RTS when it receives a character and 
+>is running out of resources for further processing of incoming data.
+>
+> Smarter UARTs may be able to negate RTS themselves based on the amount of 
+>data in their receive FIFO.  The threshold may be configurable.
+>
 
-Did I miss some things in the fixup patch?  Yes; unfortunately,
-I'm not as consistent as the machine.
+Okay, so let's say we've got a loop around a blocking read on the modem 
+file descriptor...
 
-I started another fixup patch with the things you mentioned.
-Let me know if you find others, and I'll fix them, too.  I'll
-probably wait for the next cycle to do more fixups.
+  for (;;) {
+      read some data from modem
+      process data from modem
+      if (end-of-data detected) break;
+  }
 
-Bjorn
+Are you suggesting that the application should be using deasserting RTS 
+after the read and asserting it before?
 
+I had previously thought that the control of RTS was something that the 
+serial/tty driver was supposed to do independently based on the buffer 
+fill.  Was I wrong?
+
+Thanks,
+
+Lee.
