@@ -1,39 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934120AbXG0Ecu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765716AbXG0EgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934120AbXG0Ecu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 00:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXG0Ecl
+	id S1765716AbXG0EgT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 00:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751805AbXG0EgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 00:32:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60701 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751800AbXG0Eck (ORCPT
+	Fri, 27 Jul 2007 00:36:05 -0400
+Received: from mx.c3sl.ufpr.br ([200.17.202.3]:44024 "EHLO
+	urquell.c3sl.ufpr.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751643AbXG0EgE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 00:32:40 -0400
-Message-ID: <46A97565.6070409@zytor.com>
-Date: Thu, 26 Jul 2007 21:32:37 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 27 Jul 2007 00:36:04 -0400
+Message-ID: <46A97630.9080506@c3sl.ufpr.br>
+Date: Fri, 27 Jul 2007 01:36:00 -0300
+From: Tiago Vignatti <vignatti@c3sl.ufpr.br>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
 MIME-Version: 1.0
-To: Jian-Xin Lai <laijx03@gmail.com>
+To: Felipe Balbi <felipebalbi@users.sourceforge.net>
 CC: linux-kernel@vger.kernel.org
-Subject: Re: wrong constraints "=g" at include/asm-i386/string.h, line 186?
-References: <824323160707260458h490e9ae5la44aabcfa413bba7@mail.gmail.com>	 <46A8BBF2.5010406@zytor.com> <824323160707261945n2e625beal486c7b1cfe91e01c@mail.gmail.com>
-In-Reply-To: <824323160707261945n2e625beal486c7b1cfe91e01c@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] exporting address to the page fault notifier
+References: <46A95CFC.9050509@c3sl.ufpr.br> <31e679430707262025g5aa7c812s7522d2ff7fd2994c@mail.gmail.com>
+In-Reply-To: <31e679430707262025g5aa7c812s7522d2ff7fd2994c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jian-Xin Lai wrote:
-> But as we know, the kerword 'register' is only a suggestion. The
-> language specification does not force to put the 'register' variable
-> into a register.
-> Putting the variable onto stack does not violate anything, but the
-> assembler will fail.
-> I think the hack does not really work. THX.
+Felipe Balbi escreveu:
+> On 7/26/07, Tiago Vignatti <vignatti@c3sl.ufpr.br> wrote:
+>> I made a module using the notifier scheme which already exists inside
+>> the kernel. The problem is that the page fault notifier doesn't show the
+>> address which happened the fault.
+>>
+>> This little patch increments this functionality. I chose to break the
+>> ABI putting a new field in 'die_args' instead build a new struct only
+>> for it. The patch and the module notifier comes attached.
+> 
+> don't send attachments... send the patch inline at the mail body this
+> allows easier commenting on the code.
+> 
+> read Documentation/SubmittingPatches about how to send patches to lkml.
 
-Well, gcc is a bit more strict than that, but it's ugly and should be fixed.
+Okay. I sent another mail. Thanks for pointing this.
 
-	-hpa
+The page fault notifier can be seen here:
+http://web.inf.ufpr.br/vignatti/code/page_fault_notifier.c
+
+
+Cheers,
+
+-- 
+Tiago Vignatti
+C3SL - Centro de Computação Científica e Software Livre
+www.c3sl.ufpr.br
