@@ -1,88 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965558AbXG0Xm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965524AbXG0Xp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965558AbXG0Xm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965154AbXG0XmR
+	id S965524AbXG0Xp1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965162AbXG0XpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:42:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45803 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965139AbXG0XmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:42:16 -0400
-Date: Fri, 27 Jul 2007 18:42:14 -0500
-To: linux-kernel@vger.kernel.org
-Subject: ATA scsi driver misbehavior under kdump capture kernel
-Message-ID: <46AA82D6.mailxB9W1BQ61V@eag09.americas.sgi.com>
-User-Agent: nail 11.4 8/29/04
+	Fri, 27 Jul 2007 19:45:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55740 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965148AbXG0XpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 19:45:13 -0400
+Date: Fri, 27 Jul 2007 19:43:17 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] remove gratuitous space in airo module description
+Message-ID: <20070727234317.GA3595@nostromo.devel.redhat.com>
+Mail-Followup-To: linux-wireless@vger.kernel.org,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: cpw@sgi.com (Cliff Wickman)
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently the modinfo looks like:
 
+description:    Support for Cisco/Aironet 802.11 wireless ethernet                    cards.  Direct support for ISA/PCI/MPI cards and support               for PCMCIA when used with airo_cs.
 
+Arguably, it should be cut at the end of the first sentence. 
+This at least makes it somewhat more legible.
 
-I've run into a problem with the ATA SCSI disk driver when running in a
-kdump dump-capture kernel.
+diff -up linux-2.6.22.x86_64/drivers/net/wireless/airo.c.foo linux-2.6.22.x86_64/drivers/net/wireless/airo.c
+--- linux-2.6.22.x86_64/drivers/net/wireless/airo.c.foo	2007-07-27 19:03:59.000000000 -0400
++++ linux-2.6.22.x86_64/drivers/net/wireless/airo.c	2007-07-27 19:04:15.000000000 -0400
+@@ -241,8 +241,8 @@ static int proc_perm = 0644;
+ 
+ MODULE_AUTHOR("Benjamin Reed");
+ MODULE_DESCRIPTION("Support for Cisco/Aironet 802.11 wireless ethernet \
+-                   cards.  Direct support for ISA/PCI/MPI cards and support \
+-		   for PCMCIA when used with airo_cs.");
++cards.  Direct support for ISA/PCI/MPI cards and support \
++for PCMCIA when used with airo_cs.");
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_SUPPORTED_DEVICE("Aironet 4500, 4800 and Cisco 340/350");
+ module_param_array(io, int, NULL, 0);
 
-I'm running on 2-processor x86_64 box.  It has 2 scsi disks, /dev/sda and
-/dev/sdb
+Signed-off-by: Bill Nottingham <notting@redhat.com>
 
-My kernel is 2.6.22, and built to be a dump capturing kernel loaded by kexec.
-When I boot this kernel by itself, it finds both sda and sdb.
-
-But when it is loaded by kexec and booted on a panic it only finds sda.
-
-Any ideas from those familiar with the ATA driver?
-
-
--Cliff Wickman
- SGI
-
-
-
-I put some printk's into it and get this:
-
-Standalone:
-
-                                                   [nv_adma_error_handler]
-cpw: ata_host_register probe port 1 (error_handler:ffffffff81348625)
-cpw: ata_host_register call ata_port_probe
-cpw: ata_host_register call ata_port_schedule
-cpw: ata_host_register call ata_port_wait_eh
-cpw: ata_port_wait_eh entered
-cpw: ata_port_wait_eh, preparing to wait
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-cpw: ata_dev_configure entered
-cpw: ata_dev_configure testing class
-cpw: ata_dev_configure class is ATA_DEV_ATA
-ata2.00: ATA-6: ST3200822AS, 3.01, max UDMA/133
-ata2.00: 390721968 sectors, multi 16: LBA48
-cpw: ata_dev_configure exiting
-cpw: ata_dev_configure entered
-cpw: ata_dev_configure testing class
-cpw: ata_dev_configure class is ATA_DEV_ATA
-cpw: ata_dev_configure exiting
-cpw: ata_dev_set_mode printing:
-ata2.00: configured for UDMA/133
-cpw: ata_port_wait_eh, finished wait
-cpw: ata_port_wait_eh exiting
-cpw: ata_host_register done with probe port 1
-
-
-When loaded with kexec and booted on a panic:
-
-cpw: ata_host_register probe port 1 (error_handler:ffffffff81348625)
-cpw: ata_host_register call ata_port_probe
-cpw: ata_host_register call ata_port_schedule
-cpw: ata_host_register call ata_port_wait_eh
-cpw: ata_port_wait_eh entered
-cpw: ata_port_wait_eh, preparing to wait
-ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-cpw: ata_port_wait_eh, finished wait
-cpw: ata_port_wait_eh exiting
-cpw: ata_host_register done with probe port 1
-
+Bill
