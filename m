@@ -1,97 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937372AbXG0Urm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937725AbXG0Utk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937372AbXG0Urm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763544AbXG0Urc
+	id S937725AbXG0Utk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763926AbXG0Utc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:47:32 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:43979 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763516AbXG0Ur1 (ORCPT
+	Fri, 27 Jul 2007 16:49:32 -0400
+Received: from gateway.howardsilvan.com ([64.146.212.27]:33104 "EHLO
+	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763066AbXG0Utb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:47:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ug6JrYtKi9B9PswrhY5zg5I6ONxQ4cIeNYKqkApRoGLlnBVfzR00jFPLh8mIXgQj5VtL15CN5LKyGbQVskBrR/5g8VtZDCcdhpbsE9aawPIBE30q7/HtPabmGYMas0twTrSlnCegKr27fsW8Sv/qW7o9b9j4wYd6wMyTFgKYXhI=
-Message-ID: <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com>
-Date: Sat, 28 Jul 2007 02:17:24 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Rodolfo Giometti" <giometti@enneenne.com>
-Subject: Re: LinuxPPS & spinlocks
-Cc: "Chris Friesen" <cfriesen@nortel.com>,
-       "David Woodhouse" <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070727194516.GX9840@enneenne.com>
+	Fri, 27 Jul 2007 16:49:31 -0400
+Message-ID: <46AA5A0E.1050600@howardsilvan.com>
+Date: Fri, 27 Jul 2007 13:48:14 -0700
+From: Lee Howard <faxguy@howardsilvan.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc4
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Paul Fulghum <paulkf@microgate.com>
+CC: Tilman Schmidt <tilman@imap.cc>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: serial flow control appears broken
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>	<46A84B4A.6070902@shaw.ca>	<46A8C6F1.4080309@howardsilvan.com> <20070726173121.70088a92@the-village.bc.nu> <46A98845.8010806@howardsilvan.com> <46A9F712.70706@imap.cc> <46D33636.7070200@microgate.com>
+In-Reply-To: <46D33636.7070200@microgate.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070717180550.GA24759@enneenne.com>
-	 <20070724080013.GA22171@gundam.enneenne.com>
-	 <1185284942.14697.319.camel@pmac.infradead.org>
-	 <20070724142050.GD4074@enneenne.com>
-	 <1185288769.14697.339.camel@pmac.infradead.org>
-	 <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com>
-	 <20070727192848.GW9840@enneenne.com> <46AA4A1E.8040302@nortel.com>
-	 <20070727194516.GX9840@enneenne.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rodolfo,
+Paul Fulghum wrote:
 
-On 7/28/07, Rodolfo Giometti <giometti@enneenne.com> wrote:
-> On Fri, Jul 27, 2007 at 01:40:14PM -0600, Chris Friesen wrote:
-> >
-> > My point is that the lock should be used to protect specific data. Thus, it
-> > would be more correct to say, "spinlock foo is taken because
-> > pps_register_source() accesses variable bar".
-> >
-> > That way, if someone else wants to access "bar", they know that they need
-> > to take lock "foo".
+> Tilman Schmidt wrote:
 >
-> Ah, ok! I see. :)
+>> Could this be related?
+>>
+>> http://lkml.org/lkml/2007/7/18/245
+>>
+>> Quote:
+>> "I've recently found (using 2.6.21.4) that configuring a serial ports
+>> (ST16654) which use the 8250 driver using setserial results in the
+>> UART's FIFOs being disabled (unless you specify autoconfig)."
+>
+>
+> That would make sense.
+>
+> Lee's error is a hardware FIFO overrun which could occur
+> if the FIFO is being disabled as described in your
+> link (by trying to set the uart type with setserial).
 
-I only glanced through the code, so could be wrong, but I noticed that
-the only global / shared data you have in there is a global "pps_source"
-array of pps_s structs. That's accessed / modified from the various
-syscalls introduced in the API exported to userspace, as well as the
-register/unregister/pps_event API exported to in-kernel client subsystems,
-yes? So it looks like you need to introduce proper locking for it, simply
-type-qualifying it as "volatile" is not enough.
 
-However, I think you've introduced two locks for it. The syscalls (that
-run in process context, obviously) seem to use a pps_mutex and
-pps_event() seems to be using the pps_lock spinlock (because that
-gets executed from interrupt context) -- and from the looks of it, the
-register/unregister functions are using /both/ the mutex and spinlock (!)
+I'm not using setserial on this port, myself.  If something in init is 
+calling on setserial then I don't know about it.
 
-This isn't quite right, (in fact there's nothing to protect pps_event from
-racing against a syscall), so you should use *only* the spinlock for
-synchronization -- the spin_lock_irqsave/restore() variants, in fact.
+That said, tests on the serial port from within the application show 
+that xmit_fifo_size is set to 16 as it should be.
 
-[ Also, have you considered making pps_source a list and not an array?
-It'll help you lose a whole lot of MAX_SOURCES, pps_is_allocated, etc
-kind of gymnastics in there, and you _can_ return a pointer to the
-corresponding pps source struct from the register() function to the in-kernel
-users, so that way you get to retain the O(1) access to the corresponding
-source when a client calls into pps_event(), similar to how you're using the
-array index presently. ]
+I wrote up a little test app:
 
-I also noticed code like (from pps_event):
+    struct serial_struct serial;
+    ioctl(modemFd, TIOCGSERIAL, &serial);
+    printf("            type: %d\n", serial.type);
+    printf("            line: %d\n", serial.line);
+    printf("            line: %u\n", serial.port);
+    printf("             irq: %d\n", serial.irq);
+    printf("           flags: %d\n", serial.flags);
+    printf("  xmit_fifo_size: %d\n", serial.xmit_fifo_size);
+    printf("  custom_divisor: %d\n", serial.custom_divisor);
+    printf("       baud_base: %d\n", serial.baud_base);
+    printf("     close_delay: %u\n", serial.close_delay);
+    printf("         io_type: 0x%X\n", serial.io_type);
+    printf("reserved_char[0]: 0x%X\n", serial.reserved_char[0]);
+    printf("            hub6: %d\n", serial.hub6);
+    printf("    closing_wait: %u\n", serial.closing_wait);
+    printf("   closing_wait2: %u\n", serial.closing_wait2);
+    printf(" iomem_reg_shift: %u\n", serial.iomem_reg_shift);
+    printf("       port_high: %u\n", serial.port_high);
+    printf("     reserved[0]: %d\n", serial.reserved[0]);
 
-+	/* Try to grab the lock, if not we prefere loose the event... */
-+	if (!spin_trylock(&pps_lock))
-+		return;
+Here's the output:
 
-which looks worrisome and unnecessary. That spinlock looks to be of
-fine enough granularity to me, do you think there'd be any contention
-on it? I /think/ you can simply make that a spin_lock().
-
-Overall the code looks simple / straightforward enough to me (except for
-the parport / uart stuff that I have no clue about), and I'll also read up on
-the relevant RFC for this and would hopefully try and give you a more
-meaningful review over the weekend.
+            type: 4
+            line: 1
+            line: 760
+             irq: 3
+           flags: 1358954688
+  xmit_fifo_size: 16
+  custom_divisor: 0
+       baud_base: 115200
+     close_delay: 500
+         io_type: 0x0
+reserved_char[0]: 0x0
+            hub6: 0
+    closing_wait: 30000
+   closing_wait2: 0
+ iomem_reg_shift: 0
+       port_high: 0
+     reserved[0]: 0
 
 Thanks,
-Satyam
+
+Lee.
