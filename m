@@ -1,64 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965232AbXG0UPu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965176AbXG0UQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965232AbXG0UPu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:15:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965127AbXG0UOF
+	id S965176AbXG0UQY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965145AbXG0UOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:14:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60800 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965121AbXG0UOB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:14:01 -0400
-Subject: Re: IRQF_DISABLED problem
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>, matthew@wil.cx, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.999.0707261616050.3442@woody.linux-foundation.org>
-References: <20070726201355.GP19275@parisc-linux.org>
-	 <20070726.152352.70218024.davem@davemloft.net>
-	 <alpine.LFD.0.999.0707261557150.3442@woody.linux-foundation.org>
-	 <alpine.LFD.0.999.0707261616050.3442@woody.linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 27 Jul 2007 13:11:56 -0700
-Message-Id: <1185567116.2711.2.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 27 Jul 2007 16:14:36 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4989 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965134AbXG0UOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:14:34 -0400
+Date: Fri, 27 Jul 2007 16:13:57 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
+       martin.pitt@ubuntu.com, wwoods@redhat.com
+Cc: nhorman@tuxdriver.com
+Subject: [PATCH 3/3] core_pattern: fix up a few miscelaneous bugs
+Message-ID: <20070727201357.GD18946@hmsreliant.homelinux.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 16:17 -0700, Linus Torvalds wrote:
-> 
-> On Thu, 26 Jul 2007, Linus Torvalds wrote:
-> > 
-> >  (c) "one IRQF_DISABLED means that everything runs disabled". This is 
-> >      quite possibly buggy.
-> 
-> (Side note: I'm not claiming this (or it's mirror image (d)) is really any 
-> better/worse than the current behaviour from a theoretical standpoint, but 
-> at least the current behaviour is _tested_, which makes it better in 
-> practice. So if we want to change this, I think we want to change it to 
-> something that is _obviously_ better).
+Hey
+	This patch fixes up a few bugs I found while testing my other work.
+Specifically:
 
-my personal preference would actually be to just never enable
-interrupts. It's the fastest solution obviously, the most friendly on
-stack and.. well simplest. Drivers no longer need to play some of the
-games that they do today. And while there is an argument that this may
-introduce a bit of latency... I'm not really convinced. The real work if
-it's really heavy is supposed to happen in not-hard-irq context anyway,
-and for all other cases interrupting the original handler is very likely
-the most expensive thing in terms of adding latency to the system.
+1) Fixes call_usermodehelper_pipe to not wait for program exit on the user mode
+helper process.  Since this context fill the pipe.  The user mode helper, if it
+reads stdin, will block waiting for the pipe to have data on it, and we will
+wait forever for the usermodehelper to exit.  Changed this to wait only for a
+successful exec.
+
+2) Fixes do_coredump to detect a crash in the user mode helper process and abort
+the attempt  to recursively dump core to another copy of the helper process,
+potentially ad-infinitum.
+
+Thanks & Regards
+Neil
+
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
 
-If I remember correctly there have been a few fedora releases which did
-this, with no bad behavior.. I don't know if Fedora still does this.
+ fs/exec.c     |   14 +++++++++++++-
+ kernel/kmod.c |    2 +-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
+
+diff --git a/fs/exec.c b/fs/exec.c
+index 6855a52..1398d07 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1791,12 +1791,24 @@
+ 		goto fail_unlock;
+ 
+  	if (ispipe) {
+-		core_limit = RLIM_INFINITY;
+ 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
+ 		/* Terminate the string before the first option */
+ 		delimit = strchr(corename, ' ');
+ 		if (delimit)
+ 			*delimit = '\0';
++		delimit = strrchr(helper_argv[0], '/');
++		if (delimit) 
++			delimit++;
++		else
++			delimit = helper_argv[0];
++		if (!strcmp(delimit, current->comm))
++		{	
++			printk(KERN_NOTICE "Recursive core dump detected, Aborting\n");
++			goto fail_unlock;
++		}
++
++		core_limit = RLIM_INFINITY;
++
+ 		/* SIGPIPE can happen, but it's just never processed */
+  		if(call_usermodehelper_pipe(corename+1, helper_argv, NULL, &file)) {
+  			printk(KERN_INFO "Core dump to %s pipe failed\n",
+diff --git a/kernel/kmod.c b/kernel/kmod.c
+index 9809cc1..c6a4f8a 100644
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -505,7 +505,7 @@
+ 	if (ret < 0)
+ 		goto out;
+ 
+-	return call_usermodehelper_exec(sub_info, 1);
++	return call_usermodehelper_exec(sub_info, UMH_WAIT_EXEC);
+ 
+   out:
+ 	call_usermodehelper_freeinfo(sub_info);
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
