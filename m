@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937698AbXG0RRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937515AbXG0RS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937698AbXG0RRp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763162AbXG0RRe
+	id S937515AbXG0RS3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764737AbXG0RSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:17:34 -0400
-Received: from mail42.messagelabs.com ([216.82.244.163]:17937 "HELO
-	mail42.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761866AbXG0RRd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:17:33 -0400
-X-VirusChecked: Checked
-X-Env-Sender: subbus@serverengines.com
-X-Msg-Ref: server-23.tower-42.messagelabs.com!1185556651!40673362!1
-X-StarScan-Version: 5.5.12.11; banners=-,-,-
-X-Originating-IP: [66.92.219.162]
-To: linux-kernel@vger.kernel.org
-From: "Subbu Seetharaman" <subbus@serverengines.com>
-Subject: Source organization for two drivers sharing coomon code
-Message-ID: <20070727171729.f3ff0878@mailhost.serverengines.com>
-Date: Fri, 27 Jul 2007 10:17:29 -0700
-X-User-Agent: Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; FunWebProducts; .NET CLR
-	1.1.4322)
+	Fri, 27 Jul 2007 13:18:22 -0400
+Received: from khc.piap.pl ([195.187.100.11]:36471 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764928AbXG0RSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 13:18:21 -0400
+To: Eric Sandeen <sandeen@sandeen.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrea Arcangeli <andrea@suse.de>,
+       Matt Mackall <mpm@selenic.com>, Rene Herman <rene.herman@gmail.com>,
+       Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz>
+	<469A5D7C.5010904@gmail.com>
+	<Pine.LNX.4.58.0707161523500.25779@be1.lrz>
+	<469BF104.1040703@gmail.com>
+	<2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
+	<469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org>
+	<469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org>
+	<20070719001539.GC29728@v2.random>
+	<20070719013955.1bedc423@the-village.bc.nu>
+	<46A9ED28.3070508@sandeen.net>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 27 Jul 2007 19:18:18 +0200
+In-Reply-To: <46A9ED28.3070508@sandeen.net> (Eric Sandeen's message of "Fri, 27 Jul 2007 08:03:36 -0500")
+Message-ID: <m3vec54vfp.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Sandeen <sandeen@sandeen.net> writes:
 
+>> 8K stacks without IRQ stacks are not "safer" so I don't understand your
+>> comment ?
+>
+> Hmm was it SuSE or RH kernels (or mainline?) I saw which had a test to
+> defer soft IRQs if they occurred too deep in the stack for the current
+> thread.
 
-What is the recommended way for two drivers to share common code ?
-Our device has two PCI functions and hence two drivers -  NIC and 
-SCSI driver.   The source code for these dirvers will fit under 
-drivers/net and drivers/scsi.  But both drivers share some common 
-code.  If possible, I would like to avoid duplicating the common 
-code under the two driver directories.   Is there any recommened 
-way to organize such common  code ?  Thanks.
+Perhaps the "8 KB softpage" should be an option instead
+of 8 KB stack size?
 
-Subbu
-
-___________________________________________________________________________________
-This message, together with any attachment(s), contains confidential and proprietary information of
-ServerEngines LLC and is intended only for the designated recipient(s) named above. Any unauthorized
-review, printing, retention, copying, disclosure or distribution is strictly prohibited.  If you are not the
-intended recipient of this message, please immediately advise the sender by reply email message and
-delete all copies of this message and any attachment(s). Thank you.
-
+Not sure about ABI compatibility.
+-- 
+Krzysztof Halasa
