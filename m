@@ -1,83 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935002AbXG0J0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934589AbXG0JbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935002AbXG0J0Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbXG0J0N
+	id S934589AbXG0JbT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763027AbXG0JbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:26:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:43176 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754294AbXG0J0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:26:11 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+t81l+hMitqzajSZfPKhNaizcyRJj3N+PFMA9MkF
-	HVqE08mju2ejrF
-Subject: Re: updatedb
-From: Mike Galbraith <efault@gmx.de>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Andika Triwidada <andika@gmail.com>,
-       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
-In-Reply-To: <46A9ACB2.9030302@gmail.com>
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>
-	 <46A773EA.5030103@gmail.com>
-	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
-	 <46A81C39.4050009@gmail.com>
-	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>
-	 <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>
-	 <46A98A14.3040300@gmail.com> <1185522844.6295.64.camel@Homer.simpson.net>
-	 <46A9ACB2.9030302@gmail.com>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 11:26:08 +0200
-Message-Id: <1185528368.7851.44.camel@Homer.simpson.net>
+	Fri, 27 Jul 2007 05:31:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48697 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762949AbXG0JbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:31:01 -0400
+Date: Fri, 27 Jul 2007 11:30:44 +0200
+From: Mario Doering <mario@dedenet.de>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org
+Subject: Re: D-Link DFE-580TX 4 port NIC problems
+Message-ID: <20070727113044.76630826@snibbles.dedenet.de>
+In-Reply-To: <20070509032700.569789a0.akpm@linux-foundation.org>
+References: <20070509120142.2305a1d1@snibbles.dedenet.de>
+	<20070509032700.569789a0.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.7.0 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-DeDe-Auth: true
+X-DeDe-Envelope-To: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 10:28 +0200, Rene Herman wrote:
-> On 07/27/2007 09:54 AM, Mike Galbraith wrote:
+Hello,
+
+are there any news or questions on this issue?
+
+
+Mario.
+
+
+
+On Wed, 9 May 2007 03:27:00 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Wed, 9 May 2007 12:01:42 +0200 Mario Doering <mario@dedenet.de>
+> wrote:
 > 
-> > On Fri, 2007-07-27 at 08:00 +0200, Rene Herman wrote:
+> > Hello,
 > > 
-> >> The remaining issue of updatedb unnecessarily blowing away VFS caches is 
-> >> being discussed (*) in a few thread-branches still running.
+> > we have a D-Link DFE-580TX 4 port network card in our main router.
 > > 
-> > If you solve that, the swap thing dies too, they're one and the same
-> > problem.
+> > It works pretty well most of the time, even though an error
+> > message pops up in dmesg every now and then (sometimes once a day
+> > sometimes once every few hours).
+> > 
+> > 
+> > But every few weeks those error messages increase rapidly, spamming
+> > dmesg. When this happens the system does not react anymore and
+> > pushing the reset button is the only option left.
+> > 
+> > I googled around and found out that other users have same problem,
+> > but no solution to this.
+> > 
+> > 
+> > Part of the message log is located here:
+> > http://test.dedenet.de/messages.gz
+> > or
+> > http://test.dedenet.de/messages.txt
+> > 
+> > 
+> > uname -a
+> > Linux router1 2.6.19-gentoo-r5 #1 Sat Feb 17 17:04:03 CET 2007 i686
+> > AMD Athlon(tm) XP AuthenticAMD GNU/Linux
+> > 
+> > 
+> > driver:
+> > [   17.364707] sundance.c:v1.2 11-Sep-2006  Written by Donald Becker
+> > [   17.364711]   http://www.scyld.com/network/sundance.html
+> > [   17.364844] ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 17 (level,
+> > low) -> IRQ 17 [   17.365396] eth1: D-Link DFE-580TX 4 port Server
+> > Adapter at 0001bc00, 00:0d:88:cc:a5:f0, IRQ 17. [   17.366350] eth1:
+> > MII PHY found at address 1, status 0x7829 advertising 01e1.
+> > [   17.676491] ACPI: PCI Interrupt 0000:03:05.0[A] -> GSI 18 (level,
+> > low) -> IRQ 18 [   17.676912] eth2: D-Link DFE-580TX 4 port Server
+> > Adapter at 0001b800, 00:0d:88:cc:a5:f1, IRQ 18. [   17.677864] eth2:
+> > MII PHY found at address 1, status 0x7809 advertising 01e1.
+> > [   17.987730] ACPI: PCI Interrupt 0000:03:06.0[A] -> GSI 19 (level,
+> > low) -> IRQ 16 [   17.988107] eth3: D-Link DFE-580TX 4 port Server
+> > Adapter at 0001b400, 00:0d:88:cc:a5:f2, IRQ 16. [   17.989059] eth3:
+> > MII PHY found at address 1, status 0x7829 advertising 01e1.
+> > [   18.298910] ACPI: PCI Interrupt 0000:03:07.0[A] -> GSI 16 (level,
+> > low) -> IRQ 19 [   18.299320] eth4: D-Link DFE-580TX 4 port Server
+> > Adapter at 0001b000, 00:0d:88:cc:a5:f3, IRQ 19. [   18.300272] eth4:
+> > MII PHY found at address 1, status 0x7809 advertising 01e1.
+> > 
+> > 
+> > 
+> > No such error message appears for about 7-10 days after a reboot.
+> > Maybe there is some kind of buffer running full?
+> > 
+> > Do you need any additional info?
+> > 
+> > 
+> > Please CC me :-)
 > 
-> I still wonder what the "the swap thing" is though. People just kept saying 
-> that swap-prefetch helped which would seem to indicate their problem didnt 
-> have anything to do with updatedb.
-
-I haven't rummaged around in the VM in quite a long while, so don't know
-exactly where the balance lies any more, and have never looked at
-swap-prefetch, but the mechanism of how swap-prefetch can help the
-"morning after syndrome" seems simple enough:
-
-Reclaim (swapout) a slew of application pages because there are
-truckloads of utterly bored pages laying about when updatedb comes along
-and introduces memory pressure in the middle of the night.  Updatedb
-finishes, freeing some ram (doesn't matter how much) swap-prefetch
-detects idle CPU, and begins faulting swapped out pages back in.  In the
-process of doing so, memory pressure is generated, and now these freshly
-accessed pages are a less lovely target than the now aging VFS caches
-that updatedb bloated up, so they shrink back down enough that the
-balance you had before updatedb ran is restored... with the notable
-exception that cached data is now toast, so what you gained by faulting
-god knows how frequently used pages back in isn't _necessarily_ going to
-help you.  Heck, it could even step on what was left of your cached
-working set after updatedb finished.
-
-> Also, I know shit about the VFS so this may well be not very educated but to 
-> me something like FADV_NOREUSE on a dirfd sounds like a much more promising 
-> approach than the convoluted userspace schemes being discussed, if only 
-> because it'll actually be implemented/used.
-
-I like Andrew's mention of a future option... put that sucker and
-everybody who looks like him in a resource limited container.
-
-	-Mike
-
+> (cc netdev)
