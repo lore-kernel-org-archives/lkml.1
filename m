@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764130AbXG0IZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765625AbXG0I1r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764130AbXG0IZf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 04:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbXG0IZV
+	id S1765625AbXG0I1r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 04:27:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbXG0I1l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 04:25:21 -0400
-Received: from zone4.gcu.info ([217.195.17.234]:53756 "EHLO
-	zone4.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754002AbXG0IZS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 04:25:18 -0400
-X-Greylist: delayed 992 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 04:25:18 EDT
-Date: Fri, 27 Jul 2007 10:07:45 +0200 (CEST)
-To: guichaz@yahoo.fr, mhoffman@lightlink.com
-Subject: Re: [PATCH] Fix regression caused by typo in lm90.c
-X-IlohaMail-Blah: khali@localhost
-X-IlohaMail-Method: mail() [mem]
-X-IlohaMail-Dummy: moo
-X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
-Message-ID: <BbJeFUOL.1185523665.8121830.khali@localhost>
-In-Reply-To: <20070726230422.2955.70451.sendpatchset@localhost.localdomain>
-From: "Jean Delvare" <khali@linux-fr.org>
-Bounce-To: "Jean Delvare" <khali@linux-fr.org>
-CC: "Rainer Birkenmaier" <rainer.birkenmaier@siemens.com>,
-       linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Jul 2007 04:27:41 -0400
+Received: from gate.crashing.org ([63.228.1.57]:41388 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753217AbXG0I1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 04:27:39 -0400
+In-Reply-To: <11854393721520-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <45F59724-0FE8-4FE1-B663-ECF58F812B30@kernel.crashing.org>
+Cc: mporter@kernel.crashing.org, paulus@samba.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 0/5 v3] Porting RapidIO driver from ppc to powerpc architecture and adding memory mapped RapidIO driver.
+Date: Fri, 27 Jul 2007 03:28:26 -0500
+To: Zhang Wei <wei.zhang@freescale.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Hi Guillaume,
+On Jul 26, 2007, at 3:42 AM, Zhang Wei wrote:
 
-On 7/26/2007, "Guillaume Chazarain" <guichaz@yahoo.fr> wrote:
->The commit http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=32c82a934759b2c9939c9e25865c2d7d1204b9e8
->broke lm90 for my (Asus V6VA) laptop.
+> These patches are the version 3 patches for RapidIO with dts update  
+> and some minor fixups.
 >
->Before 2.6.23-rc1 and with the following patch, I get:
+> These patches are used for supporting RapidIO controllers of  
+> Freescale. I ported them from ppc architecture to powerpc  
+> architecture and added some new features, such as memory mapped  
+> driver.
 >
->[g ~]$ sensors
->max6657-i2c-0-4c
->Adapter: SMBus I801 adapter at 0400
->M/B Temp:    +64°C  (low  =    +0°C, high =  +127°C)
->CPU Temp:  +78.9°C  (low  = +73.2°C, high = +88.2°C)
->M/B Crit:   +105°C  (hyst =   +95°C)
->CPU Crit:   +105°C  (hyst =   +95°C)
+> [PATCH 1/5] Add the explanation and sample of RapidIO DTS OF-node  
+> to the document of booting-without-of.txt file.
+> [PATCH 2/5] Add RapidIO OF-node to MPC8641HPCN board dts file.
+> [PATCH 3/5] Add the platform device support with RapidIO to  
+> MPC8641HPCN platform.
+> [PATCH 4/5] Add RapidIO support to powerpc architecture.
+> [PATCH 5/5] Add the memory management driver to RapidIO.
 >
->Which regressed into:
->
->[g ~]$ sensors
->No sensors found!
->Make sure you loaded all the kernel drivers you need.
->Try sensors-detect to find out which these are.
->zsh: 2701 exit 1     sensors
->
->and dmesg contains:
->
->i2c-adapter i2c-0: Unsupported chip (man_id=0x4D, chip_id=0x4D).
->
->It seems to be a typo, as address 0X4F is mentionned nowhere else in the
->file, and my chip is actually at 0x4C.
+> Please see below descriptions of these patches:
+> 1. Add the RapidIO driver of-device support.
+> 2. Add the RapidIO driver support to MPC8641HPCN board.
+> 3. Port the RapidIO from ppc to powerpc architecture.
 
-You are right :( Sorry for missing it.
+Can we do the port from ppc as follows:
+- cp arch/ppc/syslib/*85xx*rio to arch/powerpc/syslib/fsl_rio.{c,h}  
+make everything still build
+- rename cleanup the code in fsl_rio.{c,h}
 
->Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
->---
->
->diff -r 4cad6fced1a8 drivers/hwmon/lm90.c
->--- a/drivers/hwmon/lm90.c	Thu Jul 26 13:44:58 2007 -0700
->+++ b/drivers/hwmon/lm90.c	Tue Jul 24 00:02:52 2007 +0200
->@@ -585,7 +585,7 @@ static int lm90_detect(struct i2c_adapte
-> 			 * those of the man_id register.
-> 			 */
-> 			if (chip_id == man_id
->-			 && (address == 0x4F || address == 0x4D)
->+			 && (address == 0x4C || address == 0x4D)
-> 			 && (reg_config1 & 0x1F) == (man_id & 0x0F)
-> 			 && reg_convrate <= 0x09) {
-> 			 	kind = max6657;
+this makes it easier to see what changes actually are to fsl_rio.{c,h}
 
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+> 4. Add Memory mapped RapidIO driver.
+> 5. Add the support to multi master ports.
+> 6. Add a simple bitmap RapidIO space allocator driver.
+> 7. Change the RapidIO system size of menuconfig to automatically  
+> detection.
 
-Mark, please apply.
+also you describe 7 items, was expect 7 patches :)
 
---
-Jean Delvare
+- k
