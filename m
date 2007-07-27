@@ -1,70 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934783AbXG0BWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935747AbXG0BWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934783AbXG0BWY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 21:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759616AbXG0BWR
+	id S935747AbXG0BWr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761005AbXG0BWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 21:22:17 -0400
-Received: from mx2.suse.de ([195.135.220.15]:44185 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753693AbXG0BWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 21:22:16 -0400
-Date: Fri, 27 Jul 2007 03:22:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] sched: introduce SD_BALANCE_FORK for ht/mc/smp domains
-Message-ID: <20070727012214.GB13939@wotan.suse.de>
-References: <20070726183225.GJ3318@linux-os.sc.intel.com> <20070726221830.GA4113@elte.hu> <20070726223455.GK3318@linux-os.sc.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726223455.GK3318@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 26 Jul 2007 21:22:37 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:52544 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759616AbXG0BWg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 21:22:36 -0400
+Date: Fri, 27 Jul 2007 02:22:34 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
+cc: linux-kernel@vger.kernel.org
+Subject: [git pull] AGP fixes for 2.6.23-rc1
+Message-ID: <Pine.LNX.4.64.0707270206580.9484@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 03:34:56PM -0700, Suresh B wrote:
-> On Fri, Jul 27, 2007 at 12:18:30AM +0200, Ingo Molnar wrote:
-> > 
-> > * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
-> > 
-> > > Introduce SD_BALANCE_FORK for HT/MC/SMP domains.
-> > > 
-> > > For HT/MC, as caches are shared, SD_BALANCE_FORK is the right thing to 
-> > > do. Given that NUMA domain already has this flag and the scheduler 
-> > > currently doesn't have the concept of running threads belonging to a 
-> > > process as close as possible(i.e., forking may keep close, but 
-> > > periodic balance later will likely take them far away), introduce 
-> > > SD_BALANCE_FORK for SMP domain too.
-> > > 
-> > > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> > 
-> > i'm not opposed to this fundamentally, but it would be nice to better 
-> > map the effects of this change: do you have any particular workload 
-> > under which you've tested this and under which you've seen it makes a 
-> > difference? I'd expect this to improve fork-intense half-idle workloads 
-> > perhaps - things like a make -j3 on a 4-core CPU.
-> 
-> They might be doing more exec's and probably covered by exec balance.
-> 
-> There was a small pthread test case which was calculating the time to create
-> all the threads and how much time each thread took to start running. It
-> appeared as if the threads ran sequentially one after another on a DP system
-> with four cores leading to this SD_BALANCE_FORK observation.
 
-If it helps throughput in a non-trivial microbenchmark it would be
-helpful. I'm not against it either really, but keep in mind that it
-can make fork more expensive and less scalable; the reason we do it
-for the NUMA domain is because today we're basically screwed WRT
-existing working set if we have to migrage processes over nodes. It
-is really important to try to minimise that any way we possibly can.
+Hi Linus,
 
-When (if) we get NUMA page replication and automatic migration going,
-I will be looking at whether we can make NUMA migration more
-aggressive (and potentially remove SD_BALANCE_FORK). Not that either
-replication or migration help with kernel allocations, nor are they
-cheap, so NUMA placement will always be worth spending more cycles
-on to get right.
+Please pull the 'agp-patches' branch from
+git://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
+
+It contains one very important fix from Nick for AGP hangs with the 
+nopage/pfn/flush stuff.. it also contains some minor docs changes and one 
+coverity fix.
+
+Dave.
+
+  Documentation/kernel-parameters.txt |    7 +++++++
+  drivers/char/agp/Kconfig            |    2 +-
+  drivers/char/agp/ati-agp.c          |    9 ++-------
+  drivers/char/agp/generic.c          |    2 --
+  drivers/char/agp/intel-agp.c        |   19 ++++++++++++-------
+  drivers/char/agp/sgi-agp.c          |    1 -
+  6 files changed, 22 insertions(+), 18 deletions(-)
+
+commit f191f144079b0083c6fa7d01a4acbd7263fb5032
+Author: Alan Hourihane <alanh@fairlite.demon.co.uk>
+Date:   Fri Jul 27 10:56:43 2007 +1000
+
+     agp: AMD AGP is used on UP1100 & UP1500 alpha boxen
+
+     Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit dde4787642ee3cb85aef80bdade04b6f8ddc3df8
+Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
+Date:   Thu Jul 26 09:18:09 2007 +0800
+
+     intel_agp: really fix 945/965GME
+
+     Fix some missing places to check with device id info, which
+     should probe the device gart correctly.
+
+     Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
+     Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit a51b34593f691a0837d752a1394dcee19483c607
+Author: Nick Piggin <npiggin@suse.de>
+Date:   Wed Jul 25 13:19:22 2007 +0200
+
+     agp: don't lock pages
+
+     AGP should not need to lock pages. They are not protecting any race
+     because there is no lock_page calls, only SetPageLocked.
+
+     This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
+
+     Signed-off-by: Nick Piggin <npiggin@suse.de>
+     Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit c99c108ac362f5cc37f79fad7e9897bd9d033bcc
+Author: Chuck Ebbert <cebbert@redhat.com>
+Date:   Fri Jul 27 10:46:20 2007 +1000
+
+     AGP: document boot options
+
+     Add documentation for AGP boot options.
+
+     Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+     Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 190644e180794208bc638179f4d5940fe419bf9c
+Author: Jesper Juhl <jesper.juhl@gmail.com>
+Date:   Sat Jul 21 17:39:11 2007 +0200
+
+     Fix "use after free" / "double free" bug in ati_create_gatt_pages / ati_free_gatt_pages
+
+     Hi,
+
+     Coverity spotted a "use after free" bug in
+     drivers/char/agp/ati-agp.c::ati_create_gatt_pages().
+
+     The same one that was in
+       drivers/char/agp/amd-k7-agp.c::amd_create_gatt_pages()
+
+     The problem is this:
+            If "entry = kzalloc(sizeof(struct ati_page_map), GFP_KERNEL);"
+     fails, then there's a loop in the function to free all entries
+     allocated so far and break out of the allocation loop. That in itself
+     is pretty sane, but then the (now freed) 'tables' is assigned to
+     ati_generic_private.gatt_pages and 'retval' is set to -ENOMEM which
+     causes ati_free_gatt_pages(); to be called at the end of the function.
+     The problem with this is that ati_free_gatt_pages() will then loop
+     'ati_generic_private.num_tables' times and try to free each entry in
+     tables[] - this is bad since tables has already been freed and
+     furthermore it will call kfree(tables) at the end - a double free.
+
+     This patch removes the freeing loop in ati_create_gatt_pages() and
+     instead relies entirely on the call to ati_free_gatt_pages() to free
+     everything we allocated in case of an error. It also sets
+     ati_generic_private.num_tables to the actual number of entries
+     allocated instead of just using the value passed in from the caller -
+     this ensures that ati_free_gatt_pages() will only attempt to free
+     stuff that was actually allocated.
+
+     Note: I'm in no way intimate with this code and I have no way to
+     actually test this patch (besides compile test it), so while I've
+     tried to be careful in reading the code and make sure the patch
+     does the right thing an ACK from someone who actually knows the
+     code in-depth would be very much appreciated.
+
+     Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
 
