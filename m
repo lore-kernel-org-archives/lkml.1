@@ -1,85 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765949AbXG0HPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934448AbXG0HQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765949AbXG0HPf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 03:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760416AbXG0HP0
+	id S934448AbXG0HQA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 03:16:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbXG0HPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 03:15:26 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37258 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756403AbXG0HP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 03:15:26 -0400
-Subject: [PATCH/RFC] Add MM_DEAD flag to struct mm_struct #2
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-mm <linux-mm@kvack.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <1185501659.5495.174.camel@localhost.localdomain>
-References: <1185501659.5495.174.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 17:13:18 +1000
-Message-Id: <1185520398.5495.190.camel@localhost.localdomain>
+	Fri, 27 Jul 2007 03:15:48 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:35303 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933231AbXG0HPl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 03:15:41 -0400
+Date: Fri, 27 Jul 2007 15:15:47 +0800
+From: Joe Jin <joe.jin@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Joe Jin <joe.jin@oracle.com>, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       gurudas.pai@oracle.com, wen.gang.wang@oracle.com,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] add check do_direct_IO() return val
+Message-ID: <20070727071547.GA25084@joejin-pc.cn.oracle.com>
+References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070726221307.3d7b3446.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAA==
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I think we still want to run dio_cleanup() if do_direct_IO() failed? 
+> Otherwise we can leak pages.
+> 
+> And there's nothing special about EFAULT or ENOMEM here: if do_direct_IO()
+> returns any error then that's it: we bale out, yes?
+> 
 
-Some architectures like sparc can do useful optimizations when knowing
-that an entire MM is being destroyed. At the moment, they rely on
-fullmm in the mmu_gather structure. However, that doesn't always work
-out very well with some of the changes we are doing. Among other things,
-the TLB flushing on sparc64 is done using per-CPU tracking data, making
-the batch not per-CPU will break that link.
+Yes, I think we'll out from here if get EFAULT/ENOMEM error, also maybe -EIO
+return, return diretly should ok.
 
-So instead, we add a new flag to struct mm_struct that indicates that
-the mm is going away, for those archs to use. It also allows to use it
-in situations (such as PTE ops) where the batch isn't accessible (or
-there is no batch)
+> In fact I'm suspecting that this is what the code in there used to do. 
+> Something like:
+> 
+> 	for (...) {
+> 		...
+> 		ret = do_direct_IO(...);
+> 		...
+> 		if (ret) {
+> 			dio_dleanup(dio);
+> 			break
+> 		}
+> 	}
+> 	return ret;
+> 
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+Yes, we need call dio_cleanup() to release page cache, I lost it.
 
-And here's a version that clears it too...
+However, we need do more while return -ENOTBLK, right?
+so I think the patch maybe like following:
 
-Index: linux-work/include/linux/sched.h
-===================================================================
---- linux-work.orig/include/linux/sched.h	2007-07-27 11:09:16.000000000 +1000
-+++ linux-work/include/linux/sched.h	2007-07-27 11:09:22.000000000 +1000
-@@ -353,6 +353,7 @@ extern int get_dumpable(struct mm_struct
- #define MMF_DUMPABLE      0  /* core dump is permitted */
- #define MMF_DUMP_SECURELY 1  /* core file is readable only by root */
- #define MMF_DUMPABLE_BITS 2
-+#define MMF_DEAD          3  /* mm is being destroyed */
+
+--- linux-2.6.22/fs/direct-io.c.orig	2007-07-27 14:39:15.000000000 +0800
++++ linux-2.6.22/fs/direct-io.c	2007-07-27 15:08:58.000000000 +0800
+@@ -1032,18 +1032,19 @@ direct_io_worker(int rw, struct kiocb *i
+ 					blkbits);
  
- /* coredump filter bits */
- #define MMF_DUMP_ANON_PRIVATE	2
-Index: linux-work/mm/mmap.c
-===================================================================
---- linux-work.orig/mm/mmap.c	2007-07-27 11:09:52.000000000 +1000
-+++ linux-work/mm/mmap.c	2007-07-27 11:10:05.000000000 +1000
-@@ -1991,6 +1991,9 @@ void exit_mmap(struct mm_struct *mm)
- 	unsigned long nr_accounted = 0;
- 	unsigned long end;
+ 		if (ret) {
++			if (ret == -ENOTBLK && (rw & WRITE)) {
++				/*
++				 * The remaining part of the request will be
++				 * be handled by buffered I/O when we return
++				 */
++				ret = 0;
++				break;
++			}
+ 			dio_cleanup(dio);
+-			break;
++			goto out;
+ 		}
+ 	} /* end iovec loop */
  
-+	/* Mark the MM as dead */
-+	__set_bit(MMF_DEAD, &mm->flags);
-+
- 	/* mm's last user has gone, and its about to be pulled down */
- 	arch_exit_mmap(mm);
- 
-Index: linux-work/kernel/fork.c
-===================================================================
---- linux-work.orig/kernel/fork.c	2007-07-27 16:12:30.000000000 +1000
-+++ linux-work/kernel/fork.c	2007-07-27 16:12:52.000000000 +1000
-@@ -336,6 +336,7 @@ static struct mm_struct * mm_init(struct
- 	INIT_LIST_HEAD(&mm->mmlist);
- 	mm->flags = (current->mm) ? current->mm->flags
- 				  : MMF_DUMP_FILTER_DEFAULT;
-+	__clear_bit(MMF_DEAD, &mm->flags);
- 	mm->core_waiters = 0;
- 	mm->nr_ptes = 0;
- 	set_mm_counter(mm, file_rss, 0);
+-	if (ret == -ENOTBLK && (rw & WRITE)) {
+-		/*
+-		 * The remaining part of the request will be
+-		 * be handled by buffered I/O when we return
+-		 */
+-		ret = 0;
+-	}
+ 	/*
+ 	 * There may be some unwritten disk at the end of a part-written
+ 	 * fs-block-sized block.  Go zero that now.
 
 
+
+
+> _
+> 
+> However I'd like to ask you guys to carefully review and test that please.
+> 
+Gurudas, would you please give more test of this patch?
+
+Thanks, 
+Joe
