@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762972AbXG0SJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760889AbXG0SNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762972AbXG0SJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 14:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757361AbXG0SIj
+	id S1760889AbXG0SNO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 14:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbXG0SM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 14:08:39 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4817 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755350AbXG0SIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 14:08:38 -0400
-Date: Fri, 27 Jul 2007 11:46:38 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm <linux-pm@lists.linux-foundation.org>
-Subject: Re: Power Management framework proposal
-Message-ID: <20070727114637.GC11895@ucw.cz>
-References: <Pine.LNX.4.64.0707212339550.6350@asgard.lang.hm> <1185125189.2714.13.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0707221130380.6350@asgard.lang.hm> <1185143240.2714.24.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0707221946170.6350@asgard.lang.hm> <1185163239.2714.37.camel@laptopd505.fenrus.org> <Pine.LNX.4.64.0707222105310.6350@asgard.lang.hm>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707222105310.6350@asgard.lang.hm>
-User-Agent: Mutt/1.5.9i
+	Fri, 27 Jul 2007 14:12:59 -0400
+Received: from gateway.howardsilvan.com ([64.146.212.27]:52191 "EHLO
+	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753563AbXG0SM6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 14:12:58 -0400
+Message-ID: <46AA355E.20901@howardsilvan.com>
+Date: Fri, 27 Jul 2007 11:11:42 -0700
+From: Lee Howard <faxguy@howardsilvan.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc4
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+CC: Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: serial flow control appears broken
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl> <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Maciej W. Rozycki wrote:
 
-> >>example 1: a laptop screen
-> >>
-> >>mode  capacity power description
-> >>0        0        0    off
-> >>1      100      100    full brightness
-> >>2       70       60    half power to the backlight
-> >>3       50       35    quarter power to the backlight
-> >>4       30       25    eighth power to the backlight
-> >>5        5       10    backlight off.
-> >>
-> >>example 2: a front-panel display on a server (no 
-> >>variable backlight
-> >>control)
-> >>
-> >>mode capacity power description
-> >>0       0        0   off
-> >>1     100      100   backlight on
-> >>2      50       10   backlight off
-> >
-> >
-> >the problem is: the person who SETS these needs to know 
-> >what they mean.
-> 
-> that's what the description is for. this info can be 
-> provided by the driver as part of the list_modes() 
-> function.
+> The TTY line discipline driver could do that based on the amount of 
+>received data present in its buffer.  And it should if asked to (a brief 
+>look at drivers/char/n_tty.c reveals it does; obviously there may be a bug 
+>somewhere though).  So could e.g. the SLIP and PPP line discipline 
+>drivers, though the criteria might be different (apparently they do not, 
+>which is a shame).
+>
+> The serial drivers have nothing to do about it -- all they can do is 
+>pushing data upstream, to the discipline driver.  They can provide an 
+>interface to hardware flow control features though, if implemented by a 
+>given UART.
+>
 
-That's what /sys/class/backlight/ is for :-).
+Thank you for this clarification.  So I should have more correctly been 
+saying that "tty flow control appears broken".  Right?
 
-> >as someone who wrote (part of) a power policy manager; 
-> >sorry but you
-> >take away information I need, and in addition the 
-> >different API's are
-> >absolutely no big deal.
-> 
-> assuming that nobody else chimes in to disagree with you 
-> I'll accept your judgement and drop the issue.
+I've asked the manufacturer to take a look at drivers/char/n_tty.c to 
+see if they can't see anything obvious.
 
-Just for the record, I agree with Arjan here.
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Thanks,
+
+Lee.
