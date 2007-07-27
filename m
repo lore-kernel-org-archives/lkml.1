@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935262AbXG0PTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937240AbXG0PY4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935262AbXG0PTS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 11:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761524AbXG0PTG
+	id S937240AbXG0PY4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 11:24:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933819AbXG0PYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 11:19:06 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57415 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751273AbXG0PTC (ORCPT
+	Fri, 27 Jul 2007 11:24:48 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:52440 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S933813AbXG0PYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 11:19:02 -0400
-Date: Sat, 28 Jul 2007 00:18:19 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Zoltan.Menyhart@bull.net, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org, tony.luck@intel.com,
-       nickpiggin@yahoo.com.au, clameter@sgi.com
-Subject: Re: [PATCH] flush cache fixes for ia64 [2/2] sync icache dcache
-Message-Id: <20070728001819.617080ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070728000223.31492de4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070727133657.8c9c6803.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070727133936.36b047cd.kamezawa.hiroyu@jp.fujitsu.com>
-	<46A9FE3B.7070402@bull.net>
-	<20070728000223.31492de4.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Fri, 27 Jul 2007 11:24:47 -0400
+Date: Fri, 27 Jul 2007 11:23:44 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
+       Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
+Subject: [PATCH] UML - Console should handle spurious IRQS
+Message-ID: <20070727152344.GA6776@c2.user-mode-linux.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jul 2007 00:02:23 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+The previous DEBUG_SHIRQ patch missed one case.  The console doesn't
+set its host descriptors non-blocking.
 
-> On Fri, 27 Jul 2007 16:16:27 +0200
-> Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
-> 
-> > Do you really need a "sync_icache_dcache()" in "do_wp_page()"?
-> > I guess it is only needed when the EXEC bit of the PTE gets turned on.
-> > 
-> Ah, sorry. do_wp_page() without page copy (reuse case) doesn't need sync.
-> 
-> About page copy case
-> There was an issue that Java receives SIGILL because lazy_mmu_prot_update()
-> is called before set_pte(). Then, Only do_wp_page() calls lazy_mmu_prot_update()
-            after....
-Sorry..
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+--
+ arch/um/drivers/chan_kern.c |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
--Kame
-> before set_pte().
-> 
+Index: linux-2.6.21-mm/arch/um/drivers/chan_kern.c
+===================================================================
+--- linux-2.6.21-mm.orig/arch/um/drivers/chan_kern.c	2007-07-27 10:52:02.000000000 -0400
++++ linux-2.6.21-mm/arch/um/drivers/chan_kern.c	2007-07-27 11:09:12.000000000 -0400
+@@ -157,7 +157,7 @@ static void tty_receive_char(struct tty_
+ 
+ static int open_one_chan(struct chan *chan)
+ {
+-	int fd;
++	int fd, err;
+ 
+ 	if(chan->opened)
+ 		return 0;
+@@ -168,6 +168,13 @@ static int open_one_chan(struct chan *ch
+ 				     chan->data, &chan->dev);
+ 	if(fd < 0)
+ 		return fd;
++
++	err = os_set_fd_block(fd, 0);
++	if (err) {
++		(*chan->ops->close)(fd, chan->data);
++		return err;
++	}
++
+ 	chan->fd = fd;
+ 
+ 	chan->opened = 1;
