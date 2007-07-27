@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964948AbXG0LuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936707AbXG0L5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964948AbXG0LuR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 07:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbXG0LuE
+	id S936707AbXG0L5W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 07:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763562AbXG0L5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 07:50:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53742 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1765469AbXG0LuC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 07:50:02 -0400
-Date: Fri, 27 Jul 2007 12:56:55 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Lee Howard <faxguy@howardsilvan.com>
-Cc: Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= 
-	<ukleinek@informatik.uni-freiburg.de>,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-Message-ID: <20070727125655.6a71ab77@the-village.bc.nu>
-In-Reply-To: <46A98DFE.3050304@howardsilvan.com>
-References: <46A7FE6A.4030309@howardsilvan.com>
-	<20070726123420.GA14163@informatik.uni-freiburg.de>
-	<46A8CB96.1010501@howardsilvan.com>
-	<20070726174150.4ffcabd4@the-village.bc.nu>
-	<46A98DFE.3050304@howardsilvan.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Jul 2007 07:57:13 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:51791 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759268AbXG0L5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 07:57:12 -0400
+Message-ID: <46A9DD7A.80104@free.fr>
+Date: Fri, 27 Jul 2007 13:56:42 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: System clock frequency offset changes drastically across reboots
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -parenb -parodd cs8 -hupcl -cstopb cread clocal crtscts
+Hello everyone,
 
-Ok so crtscts is set, but you have clocal set too. That shouldn't matter
+I'm using 2.6.20.7-rt8 on a P3.
 
-> Using software flow control this is what stty tells me about the port 
-> set up done by the application:
+I've noticed that the frequency offset of my system clock (computed 
+either by ntpd, or by hand) changes drastically across reboots.
 
-This also looks fine
+By drastically, I mean +/- 60 ppm every time I reboot.
 
-> They seem correct to me, but I am certainly willing to be wrong.
+Apparently this is caused by some imprecision in the frequency 
+estimation done in calculate_cpu_khz() (arch/i386/kernel/tsc.c)
 
-clocal set as well is unusual but if I remember the spec right then
-clocal would not interfere with rts/cts handshake and certainly not with
-xon/xoff
+My brutally crude work-around was to skip the computation altogether and 
+hard-code the "correct" value for cpu_khz.
 
-Looks correct, two boards so its unlikely both didnt wire it.
+http://linux.kernel.free.fr/cpu_khz.adlink
 
-> A quick google on "input overrun(s)" may lend some credence (although, 
-> certainly this is not in any way conclusive) that I'm not the only one 
-> who may be seeking a solution on this matter.
-> 
->   http://www.google.com/search?hl=en&q=%2B%22input+overrun%28s%29%22
+Has this issue been investigated more thoroughly by other users?
 
-Those look different on the whole - there are two reasons you'll get an
-input overrun with a 16x50 UART. The first is because we ran out of
-buffers to empty the chip, in which case we would have asserted flow
-control in software. The second is if we cannot keep up and fail to empty
-the on chip FIFO within the required time (about 1mS)
-
-As the flow control is driven by software on most 16x50 chips (there are
-a couple of exceptions) if we fail to empty the fifo fast enough then any
-flow control will be asserted too late to save the day.
-
-If you stop the application and do the following
-
-	cat /dev/ttywhatever
-	^Z
-	[stopped]
-
-(so you are asking the OS to buffer data but not ever reading it)
-
-and then fire data at it does the flow control eventually occur ?
-
-Alan
+Regards.
