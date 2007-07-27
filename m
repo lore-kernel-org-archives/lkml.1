@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765578AbXG0BAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764285AbXG0BHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765578AbXG0BAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 21:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761153AbXG0A7y
+	id S1764285AbXG0BHs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756987AbXG0BHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 20:59:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:45062 "EHLO ozlabs.org"
+	Thu, 26 Jul 2007 21:07:39 -0400
+Received: from kai.krose.org ([140.186.190.96]:35916 "EHLO kai.krose.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759449AbXG0A7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 20:59:51 -0400
-Subject: Re: 07/26 GIT - Build breakage
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>
-In-Reply-To: <alpine.LFD.0.999.0707261605560.3442@woody.linux-foundation.org>
-References: <46A924A0.9010501@gmail.com>
-	 <alpine.LFD.0.999.0707261605560.3442@woody.linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 10:59:24 +1000
-Message-Id: <1185497965.12151.2.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1752711AbXG0BHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 21:07:39 -0400
+Message-ID: <46A94559.5080700@krose.org>
+Date: Thu, 26 Jul 2007 21:07:37 -0400
+From: Kyle Rose <krose@krose.org>
+Organization: The Valley of Wind
+User-Agent: Thunderbird 2.0.0.5 (X11/20070725)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Kyle Rose <krose@akamai.com>, linux-kernel@vger.kernel.org
+Subject: Re: sk98lin for 2.6.23-rc1
+References: <46A8BAD4.8020004@akamai.com> <Pine.LNX.4.64.0707261826180.12711@fbirervta.pbzchgretzou.qr> <46A8CC41.306@krose.org> <Pine.LNX.4.64.0707261840480.12711@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0707261840480.12711@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 16:07 -0700, Linus Torvalds wrote: 
-> 
-> On Thu, 26 Jul 2007, Parag Warudkar wrote:
-> >
-> > arch/i386/kernel/paravirt.o: In function `init_IRQ':
-> > (.text+0xb20): multiple definition of `init_IRQ'
-> > arch/i386/kernel/i8259.o:(.init.text+0x30): first defined here
-> > ld: Warning: size of symbol `init_IRQ' changed from 66 in
-> > arch/i386/kernel/i8259.o to 14 in arch/i386/kernel/paravirt.o
-> > make[1]: *** [arch/i386/kernel/built-in.o] Error 1
-> > make: *** [arch/i386/kernel] Error 2
-> 
-> Ok, it seems that some versions of gcc/binutils have problems with the 
-> games that paravirt introduced with the "weak" thing. 
-> 
-> I'm not entirely surprised. That stuff was trying to be too clever by 
-> half.
-> 
-> Rusty?
+Thanks for the pointer.  I've done this, and created an actual kernel
+module tarball that is now available at
+http://www.krose.org/~krose/projects/sk98lin/sk98lin.tar.gz.
 
-Sure, but this was in .21 and .22.  This config is from 2.6.21.5, in
-fact.
-
-Parag, does your arch/i386/kernel/i8259.c look like this around line
-384?  If not, perhaps it's a mis-merge for you? 
-        
-        /* Overridden in paravirt.c */
-        void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
-        
-        void __init native_init_IRQ(void)
-        {
-        
 Thanks,
-Rusty.
+Kyle
+
+
+Jan Engelhardt wrote:
+> On Jul 26 2007 12:30, Kyle Rose wrote:
+>>> Sorry for the nitpick, it can be done easier :)
+>> I'm sure it can.  I didn't want to have to figure out the kernel build
+>> system just to get this one driver working.  Hence my desire for it to
+>> remain in the kernel proper until sky2 utterly works. ;-)
+> 
+> Oh it's really easy, have a look at
+> https://dev.computergmbh.de/svn/misc_kernel/oopser/trunk/Makefile
+> 
+> 
+> 	Jan
 
