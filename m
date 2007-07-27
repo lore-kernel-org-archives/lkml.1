@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937755AbXG0UhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937852AbXG0Uhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937755AbXG0UhJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934055AbXG0Ug4
+	id S937852AbXG0Uhk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934911AbXG0UhP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:36:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58863 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763020AbXG0Ugz (ORCPT
+	Fri, 27 Jul 2007 16:37:15 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51298 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934819AbXG0UhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:36:55 -0400
-Subject: Re: swap-prefetch:  A smart way to make good use of idle resources
-	(was: updatedb)
-From: Arjan van de Ven <arjan@infradead.org>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200707272243.02336.a1426z@gawab.com>
-References: <200707272243.02336.a1426z@gawab.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 27 Jul 2007 13:34:58 -0700
-Message-Id: <1185568498.2711.5.camel@laptopd505.fenrus.org>
+	Fri, 27 Jul 2007 16:37:13 -0400
+Date: Fri, 27 Jul 2007 13:35:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
+       Adam Belay <ambx1@neo.rr.com>, Len Brown <lenb@kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] x86, serial: always probe for legacy COM ports
+Message-Id: <20070727133528.bfebb869.akpm@linux-foundation.org>
+In-Reply-To: <200707271426.30962.bjorn.helgaas@hp.com>
+References: <200707271158.50028.bjorn.helgaas@hp.com>
+	<200707271411.42253.bjorn.helgaas@hp.com>
+	<46AA53E3.5080501@garzik.org>
+	<200707271426.30962.bjorn.helgaas@hp.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Jul 2007 14:26:30 -0600
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
-> IMHO, what everybody agrees on, is that swap-prefetch has a positive effect 
-> in some cases, and nobody can prove an adverse effect (excluding power 
-> consumption).  The reason for this positive effect is also crystal clear:  
-> It prefetches from swap on idle into free memory, ie: it doesn't force 
+> On Friday 27 July 2007 02:21:55 pm Jeff Garzik wrote:
+> > Bjorn Helgaas wrote:
+> > > On Friday 27 July 2007 12:05:51 pm Jeff Garzik wrote:
+> > >> This is still incomplete, as repeatedly stated.  Here is the email, again.
+> > 
+> > > OK, uncle!  I'll work on your helpful advice (thanks for that), but
+> > > it feels too risky for this stage of 2.6.23.  Maybe I can come up with
+> > > something for a future release.
+> > 
+> > The changeset in the kernel is too risky _without_ the changes I described.
+> 
+> That's what I meant.  Andrew already has a revert patch in -mm, and
+> the safest path seems like putting the reversion in 2.6.23 and working
+> on your advice post-2.6.23.
+> 
 
-the fact that there is free memory is ... strange. IN principle, Linux
-keeps almost no memory free (except some emergency buffers) so that
-things you swap in prematurely will BY DEFINITION go at the expense of
-other things that could be there.... 
-
-also, they take up seek time (5 to 10 msec), so if you were to read
-something else at the time you get additional latency.
-
-so the conclusion that it only can be better (if you don't care about
-power) is imo premature.
-
-Sure it still can be worth it, but it for sure is NOT an automatic
-thing.
-
-
+ok, thanks, I'll pull that trigger.
