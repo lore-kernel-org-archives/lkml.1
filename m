@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764779AbXG0NUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933413AbXG0NUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764779AbXG0NUE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:20:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbXG0NTy
+	id S933413AbXG0NUj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759066AbXG0NUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:19:54 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41828 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754365AbXG0NTx (ORCPT
+	Fri, 27 Jul 2007 09:20:31 -0400
+Received: from hunley.homeip.net ([69.12.222.146]:49453 "EHLO
+	hunley.homeip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758630AbXG0NUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:19:53 -0400
-Date: Fri, 27 Jul 2007 14:19:52 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
-Subject: [PATCH] more include order horrors
-Message-ID: <20070727131952.GZ27237@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Jul 2007 09:20:30 -0400
+X-Greylist: delayed 1483 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 09:20:30 EDT
+From: Douglas J Hunley <doug@hunley.homeip.net>
+To: slocate@trakker.ca
+Subject: solving(?) the updatedb problem w/ the kernel cache
+Date: Fri, 27 Jul 2007 08:55:26 -0400
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Message-Id: <200707270855.26997.doug@hunley.homeip.net>
+X-Greylist: Sender succeded SMTP AUTH authentication, not delayed by milter-greylist-1.6 (hunley.homeip.net [69.12.222.146]); Fri, 27 Jul 2007 08:55:33 -0400 (EDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	... because somebody had added preempt.h -> list.h, resulting in
-asm/system.h -> hardirq.h -> preempt.h -> list.h -> asm/system.h on m68k,
-with smp_wmb() used in list.h and defined in asm/system.h below the include
-of hardirq.h.
+I've been following lkml for a little while (not understanding it all, but 
+following nonetheless <g>) and I've noticed that in a lot of the talks about 
+schedulers, elevators, and performance, the issue of running updatedb and its 
+effects on the kernel's fs cache seems to recur. I've also yet to see anyone 
+present a solution that others think is worth pursuing. I'm curious why we're 
+trying to solve the problem, when we can simply avoid the problem to begin 
+with by making use of inotify and introducing a new user-space 
+daemon, 'located'. 
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
+This daemon would be started by the init scripts, register one or more inotify 
+listeners based on /etc/updatedb.conf and then go to sleep. Whenever the fs 
+is modified, an inotify event is triggered and 'located' wakes up, 
+adjusts 'locate.db', and then goes back to sleep. It's about as simple as a 
+daemon can get and still be of use, I think.
 
-diff --git a/include/asm-m68k/system.h b/include/asm-m68k/system.h
-index 198878b..caa9b16 100644
---- a/include/asm-m68k/system.h
-+++ b/include/asm-m68k/system.h
-@@ -46,6 +46,22 @@ asmlinkage void resume(void);
- } while (0)
- 
- 
-+/*
-+ * Force strict CPU ordering.
-+ * Not really required on m68k...
-+ */
-+#define nop()		do { asm volatile ("nop"); barrier(); } while (0)
-+#define mb()		barrier()
-+#define rmb()		barrier()
-+#define wmb()		barrier()
-+#define read_barrier_depends()	((void)0)
-+#define set_mb(var, value)	({ (var) = (value); wmb(); })
-+
-+#define smp_mb()	barrier()
-+#define smp_rmb()	barrier()
-+#define smp_wmb()	barrier()
-+#define smp_read_barrier_depends()	((void)0)
-+
- /* interrupt control.. */
- #if 0
- #define local_irq_enable() asm volatile ("andiw %0,%%sr": : "i" (ALLOWINT) : "memory")
-@@ -70,23 +86,6 @@ static inline int irqs_disabled(void)
- /* For spinlocks etc */
- #define local_irq_save(x)	({ local_save_flags(x); local_irq_disable(); })
- 
--/*
-- * Force strict CPU ordering.
-- * Not really required on m68k...
-- */
--#define nop()		do { asm volatile ("nop"); barrier(); } while (0)
--#define mb()		barrier()
--#define rmb()		barrier()
--#define wmb()		barrier()
--#define read_barrier_depends()	((void)0)
--#define set_mb(var, value)	({ (var) = (value); wmb(); })
--
--#define smp_mb()	barrier()
--#define smp_rmb()	barrier()
--#define smp_wmb()	barrier()
--#define smp_read_barrier_depends()	((void)0)
--
--
- #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
- 
- struct __xchg_dummy { unsigned long a[100]; };
+Add a little 'configure' foo to detect if the system has inotify support and 
+if it does, build/install the new daemon. If it doesn't, then don't build it 
+and use the old behavior. With the daemon up and running, you can rm the 
+updatedb entry in cron.daily and the negative impact it causes on the 
+kernel's fs simply goes away. 
+
+You wouldn't need to modify 'locate' itself, as it would still read 
+from 'locate.db' like it does now. As an added bonus, you'd now have 
+real-time results from 'locate'. If your Sys Admin just 
+installed /usr/bin/foo, then 'locate foo' would find it "immediately". No 
+more waiting until the next run of 'updatedb' for accurate results.
+
+All the major distros support inotify at this point, I believe. If I could 
+code, I'd have attached the daemon here myself :)
+
+I must admit, though, I'm a little perplexed why greater minds than mine 
+haven't already implemented this. I must be missing some technical issue. Can 
+anyone enlighten me on the same?
+-- 
+Douglas J Hunley (doug at hunley.homeip.net)
