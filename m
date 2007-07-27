@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932645AbXG0DZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbXG0DgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932645AbXG0DZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 23:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759073AbXG0DZR
+	id S932115AbXG0DgT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 23:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbXG0DgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 23:25:17 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:13029 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755630AbXG0DZQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 23:25:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=LLUuC8QkuBxvWPK82b30NpL/mMoUlbMpYBHBU+DaHTYclduQLrUeyZ+fFAwfLknU9ksb/3az18I+f+dM1h50v3Iq7J9q/XsXabOwuXvU3DF1aJuDMSIkhFE61wgrTsR0RtNvbT0zHygD854dCgyzF0Vdn2u1J5LZ8+mPg247h5k=
-Message-ID: <31e679430707262025g5aa7c812s7522d2ff7fd2994c@mail.gmail.com>
-Date: Thu, 26 Jul 2007 23:25:15 -0400
-From: "Felipe Balbi" <felipebalbi@users.sourceforge.net>
-To: "Tiago Vignatti" <vignatti@c3sl.ufpr.br>
-Subject: Re: [PATCH] exporting address to the page fault notifier
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46A95CFC.9050509@c3sl.ufpr.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <46A95CFC.9050509@c3sl.ufpr.br>
-X-Google-Sender-Auth: e66523946ecb744a
+	Thu, 26 Jul 2007 23:36:10 -0400
+Received: from ozlabs.org ([203.10.76.45]:48529 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759120AbXG0DgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 23:36:08 -0400
+Subject: [PATCH] Fix lguest bzImage loading with CONFIG_RELOCATABLE=y
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: lguest <lguest@ozlabs.org>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 13:35:43 +1000
+Message-Id: <1185507343.12151.25.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/26/07, Tiago Vignatti <vignatti@c3sl.ufpr.br> wrote:
-> I made a module using the notifier scheme which already exists inside
-> the kernel. The problem is that the page fault notifier doesn't show the
-> address which happened the fault.
->
-> This little patch increments this functionality. I chose to break the
-> ABI putting a new field in 'die_args' instead build a new struct only
-> for it. The patch and the module notifier comes attached.
+Jason Yeh sent his crashing .config: bzImages made with
+CONFIG_RELOCATABLE=y put the relocs where the BSS is expected, and we
+crash with unusual results such as:
 
-don't send attachments... send the patch inline at the mail body this
-allows easier commenting on the code.
+	lguest: unhandled trap 14 at 0xc0122ae1 (0xa9)
 
-read Documentation/SubmittingPatches about how to send patches to lkml.
+Relying on BSS being zero was merely laziness on my part.
 
->
-> my regards
->
->
-> --
-> Tiago Vignatti
-> C3SL - Centro de Computação Científica e Software Livre
-> www.c3sl.ufpr.br
->
->
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r cf2bfb364110 drivers/lguest/lguest.c
+--- a/drivers/lguest/lguest.c	Fri Jul 27 13:04:22 2007 +1000
++++ b/drivers/lguest/lguest.c	Fri Jul 27 13:15:22 2007 +1000
+@@ -1039,6 +1039,11 @@ __init void lguest_init(void *boot)
+ 	 * the normal data segment to get through booting. */
+ 	asm volatile ("mov %0, %%fs" : : "r" (__KERNEL_DS) : "memory");
+ 
++	/* Clear the part of the kernel data which is expected to be zero.
++	 * Normally it will be anyway, but if we're loading from a bzImage with
++	 * CONFIG_RELOCATALE=y, the relocations will be sitting here. */
++	memset(__bss_start, 0, __bss_stop - __bss_start);
++
+ 	/* The Host uses the top of the Guest's virtual address space for the
+ 	 * Host<->Guest Switcher, and it tells us how much it needs in
+ 	 * lguest_data.reserve_mem, set up on the LGUEST_INIT hypercall. */
 
 
--- 
-Best Regards,
-
-Felipe Balbi
-felipebalbi@users.sourceforge.net
