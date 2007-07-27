@@ -1,86 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933891AbXG0Nc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbXG0Ndb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933891AbXG0Nc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbXG0Ncp
+	id S934078AbXG0Ndb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbXG0NdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:32:45 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:4645 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765946AbXG0Nch (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:32:37 -0400
-Message-ID: <46A9F3DA.2090203@imap.cc>
-Date: Fri, 27 Jul 2007 15:32:10 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Rene Herman <rene.herman@gmail.com>
-CC: Mike Galbraith <efault@gmx.de>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Andika Triwidada <andika@gmail.com>,
-       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org, B.Steinbrink@gmx.de,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: updatedb
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com>	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>	 <46A81C39.4050009@gmail.com>	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>	 <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>	 <46A98A14.3040300@gmail.com> <1185522844.6295.64.camel@Homer.simpson.net>	 <46A9ACB2.9030302@gmail.com> <1185528368.7851.44.camel@Homer.simpson.net>	 <46A9D26E.9010703@gmail.com> <1185536880.8978.34.camel@Homer.simpson.net> <46A9E4FC.80403@gmail.com>
-In-Reply-To: <46A9E4FC.80403@gmail.com>
-X-Enigmail-Version: 0.95.1
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig57656030EDDE835AF478E4E6"
+	Fri, 27 Jul 2007 09:33:17 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:37122 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760446AbXG0NdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 09:33:15 -0400
+X-IronPort-AV: E=Sophos;i="4.16,589,1175497200"; 
+   d="scan'208";a="86543604"
+Subject: Re: NFSv4 poops itself
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <46A9EAB0.3090306@garzik.org>
+References: <46A9EAB0.3090306@garzik.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Fri, 27 Jul 2007 09:33:07 -0400
+Message-Id: <1185543187.6586.10.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 27 Jul 2007 13:33:09.0038 (UTC) FILETIME=[ABBAA4E0:01C7D052]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig57656030EDDE835AF478E4E6
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2007-07-27 at 08:53 -0400, Jeff Garzik wrote:
+> Background:
+> 
+> Server: x86-64 dual core Intel, kernel 2.6.23-rc1 (my home fileserver)
+> 	Exporting NFS/NFSv4 mounts.  Client count: 1  Uptime: 4 days
+> 
+> Client: x86-64 dual core Intel, kernel 2.6.23-rc1 (my main workstation)
+> 	NFS mount setup:
+> 	pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
+> 	Uptime: 4 days
+> 
+> 	Home directory mounted via NFSv4.
+> 
+> Problem:
+> 
+> My workstation has been happily talking to my file server for several 
+> days without incident.  An hour ago, my numeric keypad stopping working 
+> (unrelated problem... USB or X bug?).  The solution to the keypad 
+> problem is usually to log out of X and log back in, or worse case, reboot.
+> 
+> So, I log out, and log back in.  At first, a few shell windows open and 
+> successfully initialize themselves (read bash profile over NFS, etc.) 
+> Then, as more shell windows open, things start hanging.  I can easily 
+> switch to console and ssh to the fileserver, so it is clear this is an 
+> NFS hang.
+> 
+> No adverse messages at all on the client.
+> 
+> On the server, I see NFSv4 spamming dmesg with hundreds of thousands of 
+> messages:
+> 
+> Jul 27 08:20:53 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
+> Jul 27 08:21:24 pretzel last message repeated 167966 times
+> Jul 27 08:21:55 pretzel last message repeated 173628 times
+> Jul 27 08:21:55 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
+> Jul 27 08:22:26 pretzel last message repeated 171286 times
+> Jul 27 08:23:27 pretzel last message repeated 344461 times
+> Jul 27 08:23:30 pretzel last message repeated 18656 times
+> 
+> I rebooted the client, the problem disappeared, and everything is happy 
+> again...  but clearly NFSv4 shat itself.  And now I am worried this will 
+> happen again.
+> 
+> In all my quite-heavy use of NFSv4 I've never seen this behavior before, 
+>   so I would call this a regression.
 
-Rene Herman schrieb:
-> On 07/27/2007 01:48 PM, Mike Galbraith wrote:
->=20
->> I believe the users who say their apps really do get paged back in
->> though, so suspect that's not the case.
->=20
-> Stopping the bush-circumference beating, I do not. -ck (and gentoo) hav=
-e=20
-> this massive Calimero thing going among their users where people are mu=
-ch=20
-> less interested in technology than in how the nasty big kernel meanies =
-are=20
-> keeping them down (*).
+Yup. Bruce has reported the same bug so it is under investigation. I'll
+keep you posted when I think we have a fix.
 
-I think the problem is elsewhere. Users don't say: "My apps get paged
-back in." They say: "My system is more responsive". They really don't
-care *why* the reaction to a mouse click that takes three seconds with
-a mainline kernel is instantaneous with -ck. Nasty big kernel meanies,
-OTOH, want to understand *why* a patch helps in order to decide whether
-it is really a good idea to merge it. So you've got a bunch of patches
-(aka -ck) which visibly improve the overall responsiveness of a desktop
-system, but apparently no one can conclusively explain why or how they
-achieve that, and therefore they cannot be merged into mainline.
-
-I don't have a solution to that dilemma either.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig57656030EDDE835AF478E4E6
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGqfPjMdB4Whm86/kRAsblAJ9UaxX+tApYsxEJui6A4QFvZ8AXeACfdhB5
-Yj6CyRC0P4nqzC3+cW0K1k0=
-=mEA1
------END PGP SIGNATURE-----
-
---------------enig57656030EDDE835AF478E4E6--
+Cheers
+  Trond
