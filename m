@@ -1,95 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937986AbXG0WpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938195AbXG0Wst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937986AbXG0WpE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 18:45:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765640AbXG0Woz
+	id S938195AbXG0Wst (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 18:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765552AbXG0Wsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 18:44:55 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:50592 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765552AbXG0Woy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 18:44:54 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.23-rc1-mm1 - seems OK on Dell Latitude D820, except for tpm_tis
-Date: Fri, 27 Jul 2007 16:43:13 -0600
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, Kylene Hall <kjhall@us.ibm.com>,
-       tpm@selhorst.net, linux-kernel@vger.kernel.org
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <5208.1185508832@turing-police.cc.vt.edu> <23912.1185542889@turing-police.cc.vt.edu>
-In-Reply-To: <23912.1185542889@turing-police.cc.vt.edu>
+	Fri, 27 Jul 2007 18:48:42 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:44235 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759362AbXG0Wsl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 18:48:41 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46AA7609.1040900@s5r6.in-berlin.de>
+Date: Sat, 28 Jul 2007 00:47:37 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [2.6 patch] let SUSPEND select HOTPLUG_CPU
+References: <200707251238.50218.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl> <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org> <200707262248.09187.rjw@sisk.pl> <alpine.LFD.0.999.0707261351430.3442@woody.linux-foundation.org> <20070727222503.GB15129@stusta.de>
+In-Reply-To: <20070727222503.GB15129@stusta.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707271643.14028.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 July 2007 07:28:09 am Valdis.Kletnieks@vt.edu wrote:
-> Looks like the problematic code is in tpm_tis.c tpm_tis_init() near here:
-> 
->                 for (i = 3; i < 16 && chip->vendor.irq == 0; i++) {
->                         iowrite8(i, chip->vendor.iobase +
->                                     TPM_INT_VECTOR(chip->vendor.locality));
->                         if (request_irq
->                             (i, tis_int_probe, IRQF_SHARED,
->                              chip->vendor.miscdev.name, chip) != 0) {
->                                 dev_info(chip->dev,
->                                          "Unable to request irq: %d for probe\n"
-> ,           
->                                          i);
->                                 continue;
->                         }
-> 
-> This seems to be misbehaving differently for the two different DEBUG_SHIRQ
-> cases.
-> 
-> With DEBUG_SHIRQ=n, it starts at IRQ3, gets to at least 8 (where it complains
-> it can't request it for probing), and possibly all the way to 15, without ever
-> actually selecting and assigning an IRQ (to refresh memories, in that range
-> /proc/interrupts only lists:
-> 
->   8:          0          0   IO-APIC-edge      rtc
->   9:          3          0   IO-APIC-fasteoi   acpi
->  12:         94          0   IO-APIC-edge      i8042
->  14:     148166          0   IO-APIC-edge      libata
->  15:         94          0   IO-APIC-edge      libata
-> 
-> So there's certainly IRQ's available.  No idea why it doesn't choose one. But
-> since it never chose one, it never gets into the "wait for the IRQ" protected
-> by 'if (chip->vendor.irq)' at the end of tpm_tis_send.
-> 
-> With DEBUG_SHIRQ=y, It starts at IRQ3, and assigns it (which seems a good thing).
-> Unfortunately, this then hits the timeouts in tpm_tis_send.
-> 
-> Anybody got an idea what *should* be happening here?
+Adrian Bunk wrote:
+> The dependency of SUSPEND_SMP on HOTPLUG_CPU is quite unintuitive,
 
-I don't know why tpm_tis_init() is messing around trying different
-IRQs between 3 and 16.  That looks suspiciously x86-dependent.
+It's not entirely unintuitive.  That option's full name is "Support for
+suspend on SMP and hot-pluggable CPUs".
 
-Maybe if you don't have PNP (though I doubt TPMs exist on any
-pre-PNPBIOS machines) the "check-IRQ" loop would be necessary.
+Only the place where you find the option is unintuitive, as far as its
+first application is concerned.  (It lives in the "Processor type and
+features" menu which is OK for the 2nd application of this option.)  And
+the variable name of that option is unintuitive because it covers only
+the 2nd application of the option, I suppose for historical reasons.
 
-But you're using the PNP probe, and PNP should just tell you what
-IRQ the device is configured for (and whether the IRQ can be
-shared -- see 8250_pnp.c for an example).
+> +config SUSPEND_SMP_POSSIBLE
+> +	bool
+> +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
+> +	depends on SMP
+> +	default y
+> +
+> +config SUSPEND_SMP
+> +	bool
+> +	depends on SUSPEND_SMP_POSSIBLE && SOFTWARE_SUSPEND
+> +	select HOTPLUG_CPU
+> +	default y
 
-The BIOS should have configured the TPM IRQ, and if we go and
-mess with that IRQ setting without going through the PNP interface,
-e.g., the ACPI _SRS method, we're liable to mess something up.  The
-TPM is often behind a few bridges, and if the bridge has any IRQ
-routing configuration, only the BIOS knows how to keep that in
-sync with the TPM IRQ configuration.
+Yes, that's the price to pay if you want to select something that in
+turn depends on a number of other things.
 
-> Just for the record, I see this in /sys:
-> 
-> % cat /sys/bus/pnp/devices/00:0e/id
-> BCM0102
-> PNP0c31
-
-What's in /sys/bus/pnp/devices/00:0e/resources?
-
-Bjorn
-
+Wait, doesn't HOTPLUG_CPU also depend on EXPERIMENTAL?
+-- 
+Stefan Richter
+-=====-=-=== -=== ===--
+http://arcgraph.de/sr/
