@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934078AbXG0Ndb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933398AbXG0Nez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934078AbXG0Ndb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbXG0NdR
+	id S933398AbXG0Nez (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbXG0Neq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:33:17 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:37122 "EHLO mx2.netapp.com"
+	Fri, 27 Jul 2007 09:34:46 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57604 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760446AbXG0NdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:33:15 -0400
-X-IronPort-AV: E=Sophos;i="4.16,589,1175497200"; 
-   d="scan'208";a="86543604"
-Subject: Re: NFSv4 poops itself
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <46A9EAB0.3090306@garzik.org>
-References: <46A9EAB0.3090306@garzik.org>
-Content-Type: text/plain
+	id S1758585AbXG0Neq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 09:34:46 -0400
+Message-ID: <46A9F471.1020504@garzik.org>
+Date: Fri, 27 Jul 2007 09:34:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Al Viro <viro@ftp.linux.org.uk>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] rip some includes from linux/interrupt.h
+References: <20070727132433.GB27237@ftp.linux.org.uk>
+In-Reply-To: <20070727132433.GB27237@ftp.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: Network Appliance Inc
-Date: Fri, 27 Jul 2007 09:33:07 -0400
-Message-Id: <1185543187.6586.10.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 27 Jul 2007 13:33:09.0038 (UTC) FILETIME=[ABBAA4E0:01C7D052]
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 08:53 -0400, Jeff Garzik wrote:
-> Background:
-> 
-> Server: x86-64 dual core Intel, kernel 2.6.23-rc1 (my home fileserver)
-> 	Exporting NFS/NFSv4 mounts.  Client count: 1  Uptime: 4 days
-> 
-> Client: x86-64 dual core Intel, kernel 2.6.23-rc1 (my main workstation)
-> 	NFS mount setup:
-> 	pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
-> 	Uptime: 4 days
-> 
-> 	Home directory mounted via NFSv4.
-> 
-> Problem:
-> 
-> My workstation has been happily talking to my file server for several 
-> days without incident.  An hour ago, my numeric keypad stopping working 
-> (unrelated problem... USB or X bug?).  The solution to the keypad 
-> problem is usually to log out of X and log back in, or worse case, reboot.
-> 
-> So, I log out, and log back in.  At first, a few shell windows open and 
-> successfully initialize themselves (read bash profile over NFS, etc.) 
-> Then, as more shell windows open, things start hanging.  I can easily 
-> switch to console and ssh to the fileserver, so it is clear this is an 
-> NFS hang.
-> 
-> No adverse messages at all on the client.
-> 
-> On the server, I see NFSv4 spamming dmesg with hundreds of thousands of 
-> messages:
-> 
-> Jul 27 08:20:53 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
-> Jul 27 08:21:24 pretzel last message repeated 167966 times
-> Jul 27 08:21:55 pretzel last message repeated 173628 times
-> Jul 27 08:21:55 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
-> Jul 27 08:22:26 pretzel last message repeated 171286 times
-> Jul 27 08:23:27 pretzel last message repeated 344461 times
-> Jul 27 08:23:30 pretzel last message repeated 18656 times
-> 
-> I rebooted the client, the problem disappeared, and everything is happy 
-> again...  but clearly NFSv4 shat itself.  And now I am worried this will 
-> happen again.
-> 
-> In all my quite-heavy use of NFSv4 I've never seen this behavior before, 
->   so I would call this a regression.
+Al Viro wrote:
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> ---
+> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
+> index 0a3c2eb..5523f19 100644
+> --- a/include/linux/interrupt.h
+> +++ b/include/linux/interrupt.h
+> @@ -11,8 +11,6 @@
+>  #include <linux/hardirq.h>
+>  #include <linux/sched.h>
+>  #include <linux/irqflags.h>
+> -#include <linux/bottom_half.h>
+> -#include <linux/device.h>
+>  #include <asm/atomic.h>
+>  #include <asm/ptrace.h>
+>  #include <asm/system.h>
+> @@ -97,6 +95,8 @@ extern int __must_check request_irq(unsigned int, irq_handler_t handler,
+>  		       unsigned long, const char *, void *);
+>  extern void free_irq(unsigned int, void *);
+>  
+> +struct device;
+> +
+>  extern int __must_check devm_request_irq(struct device *dev, unsigned int irq,
+>  			    irq_handler_t handler, unsigned long irqflags,
+>  			    const char *devname, void *dev_id);
+> diff --git a/kernel/irq/devres.c b/kernel/irq/devres.c
+> index d8ee241..6d9204f 100644
+> --- a/kernel/irq/devres.c
+> +++ b/kernel/irq/devres.c
+> @@ -1,5 +1,6 @@
+>  #include <linux/module.h>
+>  #include <linux/interrupt.h>
+> +#include <linux/device.h>
 
-Yup. Bruce has reported the same bug so it is under investigation. I'll
-keep you posted when I think we have a fix.
+ACK
 
-Cheers
-  Trond
+Thanks for the devres.c patch, that was on my TODO list.  Caught that 
+when I backported SATA into Red Hat's kernel.
+
+	Jeff
+
+
+
