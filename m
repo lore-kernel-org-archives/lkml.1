@@ -1,32 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765377AbXG0U5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938054AbXG0U6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765377AbXG0U5k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937768AbXG0U4P
+	id S938054AbXG0U6A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937791AbXG0U4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:56:15 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:20943 "EHLO
+	Fri, 27 Jul 2007 16:56:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:20193 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936387AbXG0U4C (ORCPT
+	with ESMTP id S936846AbXG0U4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:56:02 -0400
+	Fri, 27 Jul 2007 16:56:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=gZ2VN6izsQIO/zAid/L/Pv8Cga5DlJac/n8YNTRXJluhFiz96DfDfJ0raU7bp1jhzn9OS1bftv/JOYQENKK0w56Z1ePZyvPGxNi6T8nYBac1Vmv5yF6Z1l99VvowyfbZhzTqIzxsjSMc9zip+60bs4bLAu0Rx0tHcAC87iw/Vys=
-Message-ID: <46AA5B39.2010209@googlemail.com>
-Date: Fri, 27 Jul 2007 22:53:13 +0200
+        b=kUVFP9JJOG2bm5Wv0UOMqQ5Q11W5FGEvovLi/U4kqep7fYnYVHfZNtrRTG/EPIunnICl5xUtdFqvs5oULBxCpapQ68e57pdKHIN4jk7eQohD9impfT512VJ+kfsifSIOoTPoHr1F8ywBEsD87CgDCSSejn9scdFyxvwA3vO+fpM=
+Message-ID: <46AA5B3E.7000106@googlemail.com>
+Date: Fri, 27 Jul 2007 22:53:18 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Eric Sesterhenn <snakebyte@gmx.de>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>, linux-ide@vger.kernel.org,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, dth <dth@dth.net>,
-       Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
-       Florian Lohoff <flo@rfc822.org>
-Subject: Re: [2/3] 2.6.23-rc1: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       James Smart <James.Smart@emulex.com>, Adrian Bunk <bunk@stusta.de>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [3/3] 2.6.23-rc1: known regressions v2
 References: <46AA581D.6080100@googlemail.com>
 In-Reply-To: <46AA581D.6080100@googlemail.com>
 X-Enigmail-Version: 0.95.2
@@ -58,55 +59,38 @@ Hugh Dickins                           2
 
 
 
-Unclassified
+SCSI
 
-Subject         : 2.6.23-rc1-git3 init failure
-References      : http://lkml.org/lkml/2007/7/26/467
+Subject         : lpfc_sli.c: off-by-10
+References      : http://lkml.org/lkml/2007/7/22/284
 Last known good : ?
-Submitter       : Sid Boyce <g3vbv@blueyonder.co.uk>
-Caused-By       : ?
-Handled-By      : ?
-Status          : unknown
-
-Subject         : Time Problems with 2.6.23-rc1-gf695baf2
-References      : http://lkml.org/lkml/2007/7/23/486
-Last known good : ?
-Submitter       : Eric Sesterhenn <snakebyte@gmx.de>
-Caused-By       : ?
-Handled-By      : ?
-Status          : problem is being debugged
-
-
-
-IDE
-
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-Last known good : ?
-Submitter       : dth <dth@dth.net>
+Submitter       : Adrian Bunk <bunk@stusta.de>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
 
 
-Networking
+USB
 
-Subject         : sky2 boot crash in sky2_mac_intr
-References      : http://lkml.org/lkml/2007/7/24/91
+Subject         : 2.6.23-rc1: USB hard disk broken
+References      : http://lkml.org/lkml/2007/7/25/62
 Last known good : ?
-Submitter       : Florian Lohoff <flo@rfc822.org>
-Caused-By       : 
-Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Submitter       : Tino Keitel <tino.keitel@gmx.de>
+Caused-By       : ?
+Handled-By      : Oliver Neukum <oliver@neukum.org>
 Status          : unknown
 
-Subject         : New wake ups from sky2
-References      : http://lkml.org/lkml/2007/7/20/386
+
+
+Virtualization
+
+Subject         : drivers/net/xen-netfront.c: bogus code
+References      : http://lkml.org/lkml/2007/7/22/256
 Last known good : ?
-Submitter       : Thomas Meyer <thomas@m3y3r.de>
-Caused-By       : Stephen Hemminger <shemminger@osdl.org>
-                  commit eb35cf60e462491249166182e3e755d3d5d91a28
-Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Submitter       : Adrian Bunk <bunk@stusta.de>
+Caused-By       : ?
+Handled-By      : Jeremy Fitzhardinge <jeremy@goop.org>
 Status          : unknown
 
 
