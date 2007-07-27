@@ -1,36 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936054AbXG0GGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934436AbXG0GSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936054AbXG0GGw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 02:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbXG0GGq
+	id S934436AbXG0GSX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 02:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbXG0GSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 02:06:46 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:11302 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753649AbXG0GGo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 02:06:44 -0400
-Date: Fri, 27 Jul 2007 08:07:29 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Subject: Re: [PATCH] docbook: add pipes, other fixes
-Message-ID: <20070727060728.GZ32258@kernel.dk>
-References: <20070726211818.ee87e773.randy.dunlap@oracle.com>
-MIME-Version: 1.0
+	Fri, 27 Jul 2007 02:18:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:2424 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753740AbXG0GSN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 02:18:13 -0400
+Date: Fri, 27 Jul 2007 06:17:52 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Aaron Durbin <adurbin@google.com>
+Cc: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com, akpm@osdl.org
+Subject: Re: [PATCH] ACPI: Add reboot mechanism
+Message-ID: <20070727061751.GA11895@ucw.cz>
+References: <20070716180019.GA5112@google.com> <200707171331.59414.ak@suse.de> <8f95bb250707170808u5afee515y592c0a0ccafa95b2@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070726211818.ee87e773.randy.dunlap@oracle.com>
+In-Reply-To: <8f95bb250707170808u5afee515y592c0a0ccafa95b2@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26 2007, Randy Dunlap wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+On Tue 2007-07-17 08:08:24, Aaron Durbin wrote:
+> On 7/17/07, Andi Kleen <ak@suse.de> wrote:
+> >On Monday 16 July 2007 20:00:19 Aaron Durbin wrote:
+> >>
+> >> Add the ability to reset the machine using the 
+> >RESET_REG in ACPI's FADT table.
+> >
+> >Why? I had such a patch at some point as experiment, 
+> >but it never
+> >helped actually fix a box.
 > 
-> Fix some typos in pipe.c and splice.c.
-> Add pipes API to kernel-api.tmpl.
+> I have a box here that it fixes, but I also don't see 
+> what it hurts. How much
 
-Thanks Randy, applied.
-
+What machine is it?
+							Pavel
 -- 
-Jens Axboe
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
