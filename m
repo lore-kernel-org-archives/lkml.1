@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936117AbXG0Jpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936007AbXG0JqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936117AbXG0Jpr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935647AbXG0Jpd
+	id S936007AbXG0JqQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935942AbXG0Jpj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:45:33 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:35673 "EHLO ron.emn.fr"
+	Fri, 27 Jul 2007 05:45:39 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:35713 "EHLO ron.emn.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935471AbXG0Jpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:45:31 -0400
-Date: Fri, 27 Jul 2007 11:44:07 +0200 (MEST)
-Message-Id: <200707270944.LAA17082@ifs.emn.fr>
+	id S935838AbXG0Jph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:45:37 -0400
+Date: Fri, 27 Jul 2007 11:44:13 +0200 (MEST)
+Message-Id: <200707270944.LAA17103@ifs.emn.fr>
 To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 02/68] 0 -> NULL, for arch/arm
-Cc: rmk@arm.linux.org.uk, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
+Subject: [PATCH 03/68] 0 -> NULL, for arch/arm26
+Cc: spyro@f2s.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 From: Yoann Padioleau <padator@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -41,38 +40,51 @@ expression *E;
 + NULL
 
 Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: rmk@arm.linux.org.uk
+Cc: spyro@f2s.com
 Cc: akpm@linux-foundation.org
 ---
 
- common/dmabounce.c |    2 +-
- mach-omap1/clock.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ udivdi3.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm/common/dmabounce.c b/arch/arm/common/dmabounce.c
-index b36b1e8..74ff750 100644
---- a/arch/arm/common/dmabounce.c
-+++ b/arch/arm/common/dmabounce.c
-@@ -238,7 +238,7 @@ map_single(struct device *dev, void *ptr
- 		struct safe_buffer *buf;
+diff --git a/arch/arm26/lib/udivdi3.c b/arch/arm26/lib/udivdi3.c
+index d25195f..0f8e702 100644
+--- a/arch/arm26/lib/udivdi3.c
++++ b/arch/arm26/lib/udivdi3.c
+@@ -127,7 +127,7 @@ __udivmoddi4 (UDItype n, UDItype d, UDIt
+           /* Remainder in n0 >> bm.  */
+         }
  
- 		buf = alloc_safe_buffer(device_info, ptr, size, dir);
--		if (buf == 0) {
-+		if (buf == NULL) {
- 			dev_err(dev, "%s: unable to map unsafe buffer %p!\n",
- 			       __func__, ptr);
- 			return 0;
-diff --git a/arch/arm/mach-omap1/clock.c b/arch/arm/mach-omap1/clock.c
-index f625f6d..b7e1b22 100644
---- a/arch/arm/mach-omap1/clock.c
-+++ b/arch/arm/mach-omap1/clock.c
-@@ -193,7 +193,7 @@ static int calc_dsor_exp(struct clk *clk
- 		return -EINVAL;
+-      if (rp != 0)
++      if (rp != NULL)
+         {
+           rr.s.low = n0 >> bm;
+           rr.s.high = 0;
+@@ -144,7 +144,7 @@ __udivmoddi4 (UDItype n, UDItype d, UDIt
+           q1 = 0;
  
- 	parent = clk->parent;
--	if (unlikely(parent == 0))
-+	if (unlikely(parent == NULL))
- 		return -EIO;
+           /* Remainder in n1n0.  */
+-          if (rp != 0)
++          if (rp != NULL)
+             {
+               rr.s.low = n0;
+               rr.s.high = n1;
+@@ -176,7 +176,7 @@ __udivmoddi4 (UDItype n, UDItype d, UDIt
  
- 	realrate = parent->rate;
+               q1 = 0;
+ 
+-              if (rp != 0)
++              if (rp != NULL)
+                 {
+                   rr.s.low = n0;
+                   rr.s.high = n1;
+@@ -208,7 +208,7 @@ __udivmoddi4 (UDItype n, UDItype d, UDIt
+               q1 = 0;
+ 
+               /* Remainder in (n1n0 - m1m0) >> bm.  */
+-              if (rp != 0)
++              if (rp != NULL)
+                 {
+                   sub_ddmmss (n1, n0, n1, n0, m1, m0);
+                   rr.s.low = (n1 << b) | (n0 >> bm);
 
