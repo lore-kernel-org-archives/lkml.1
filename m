@@ -1,40 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937469AbXG0Qj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764339AbXG0Qmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937469AbXG0Qj1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 12:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbXG0QjT
+	id S1764339AbXG0Qmk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 12:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753085AbXG0Qmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 12:39:19 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40712 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752516AbXG0QjS (ORCPT
+	Fri, 27 Jul 2007 12:42:32 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:15321 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752714AbXG0Qmb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 12:39:18 -0400
-Date: Fri, 27 Jul 2007 09:39:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "tony.luck@intel.com" <tony.luck@intel.com>,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       Zoltan.Menyhart@bull.net
-Subject: Re: [PATCH] flush cache fixes for ia64 [1/2] migration fix
-In-Reply-To: <20070727133843.6cd3f57a.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0707270934300.15619@schroedinger.engr.sgi.com>
-References: <20070727133657.8c9c6803.kamezawa.hiroyu@jp.fujitsu.com>
- <20070727133843.6cd3f57a.kamezawa.hiroyu@jp.fujitsu.com>
+	Fri, 27 Jul 2007 12:42:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=bhJ2k1gA2hS0IwM8XQDKSh4pe8oeepPjNE9Q+wFTTG2wk/B6QnuWoipBD2Ja73trzvyi7Ee1So2H5gw72RvtPpSBKWPvLQh33xMXDikFMItD/DHM+lIxPgIjYz8AqhlFrQ7Btc+4WNyyheqlNIptKNGYx9j2yBsV/YwUN5FtpmY=
+Message-ID: <2c0942db0707270942k784890a2ld44d1312dde02379@mail.gmail.com>
+Date: Fri, 27 Jul 2007 09:42:27 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Douglas J Hunley" <doug@hunley.homeip.net>
+Subject: Re: solving(?) the updatedb problem w/ the kernel cache
+Cc: slocate@trakker.ca, linux-kernel@vger.kernel.org
+In-Reply-To: <200707270855.26997.doug@hunley.homeip.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707270855.26997.doug@hunley.homeip.net>
+X-Google-Sender-Auth: 0843426387fe8a43
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will have no effect on x86_64, ia64 and i386. Maybe useful for 
-virtually mapped platforms (parisc)?
+On 7/27/07, Douglas J Hunley <doug@hunley.homeip.net> wrote:
+> I've been following lkml for a little while (not understanding it all, but
+> following nonetheless <g>) and I've noticed that in a lot of the talks about
+> schedulers, elevators, and performance, the issue of running updatedb and its
+> effects on the kernel's fs cache seems to recur. I've also yet to see anyone
+> present a solution that others think is worth pursuing. I'm curious why we're
+> trying to solve the problem, when we can simply avoid the problem to begin
+> with by making use of inotify and introducing a new user-space
+> daemon, 'located'.
 
-asm-ia64/cacheflush.c
+inotify doesn't scale for lots of directories. I have about 18,000
+directories under ~ on my laptop, and that's with a few source trees
+that I use infrequently tarballed up.
 
-#define flush_icache_page(vma,page)             do { } while (0)
+But yes, if we had a full filesystem events notifier, then we could
+just toss updatedb aside and have the benefit of a live index into the
+system. It's been suggested before, at least by me. Other projects
+want this as well, such as an on-demand virus scanner, or a live
+backup to another site, or beagle/tracker who would like to index
+documents on the fly. beagled already uses inotify, I think, but as it
+takes over my system (in a bad way) whenever I tried to run it, I had
+no choice but to remove it.
 
-Acked-by: Christoph Lameter <clameter@sgi.com>
+Perhaps it was choking on the 18k subdirectories, dunno.
 
+Ray
