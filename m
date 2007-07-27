@@ -1,374 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934792AbXG0UE5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936685AbXG0UFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934792AbXG0UE5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:04:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933322AbXG0UEp
+	id S936685AbXG0UFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763714AbXG0UFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:04:45 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:3155 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932886AbXG0UEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:04:44 -0400
-Date: Fri, 27 Jul 2007 16:03:55 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
-       martin.pitt@ubuntu.com, wwoods@redhat.com
-Subject: [PATCH 1/3] core_pattern: ignore RLIMIT_CORE if core_pattern is a pipe
-Message-ID: <20070727200355.GB18946@hmsreliant.homelinux.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+	Fri, 27 Jul 2007 16:05:22 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:32816 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763691AbXG0UFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:05:19 -0400
+To: chuck.lever@oracle.com
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       kzak@redhat.com, ericvh@gmail.com, lucho@ionkov.net,
+       zippel@linux-m68k.org, hpa@zytor.com, raven@themaw.net,
+       rathamahata@php4.ru, dhowells@redhat.com, sfrench@samba.org,
+       mhalcrow@us.ibm.com, phillip@hellewell.homeip.net,
+       hirofumi@mail.parknet.co.jp, mikulas@artax.karlin.mff.cuni.cz,
+       wli@holomorphy.com, shaggy@austin.ibm.com, vandrove@vc.cvut.cz,
+       trond.myklebust@fys.uio.no, aia21@cantab.net, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com, reiserfs-devel@vger.kernel.org,
+       bfennema@falcon.csc.calpoly.edu, dushistov@mail.ru,
+       xfs-masters@oss.sgi.com, arnd@arndb.de, holzheu@de.ibm.com
+In-reply-to: <46AA4AC5.2050200@oracle.com> (message from Chuck Lever on Fri,
+	27 Jul 2007 15:43:01 -0400)
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com>
+Message-Id: <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 27 Jul 2007 22:03:25 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey,
+> Some mount options are never passed to the kernel, and thus can't appear 
+> in /proc/mounts.  Examples include user, users, and _netdev for NFS.
 
-	Patch 1/3 for the core_pattern enhancements.  This removes the check of
-RLIMIT_CORE if core_pattern is a pipe.  In the event that core_pattern is a
-pipe, the entire core will be fed to the user mode helper.
+These options control *who* may mount and *when* to mount.  They are
+not a property of the mount itself and are not added to /etc/mtab.
 
-Thanks & Regards
-Neil
+There's a "user=ID" option that is added to /etc/mtab in case of user
+mounts.  This identifies the owner of the mount, so that it can be
+unmounted by that user.  There are patches in -mm that enable the
+kernel to store this info.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+Do you have other examples in mind?
 
+Miklos
 
- arch/mips/kernel/irixelf.c          |    5 ++---
- arch/sparc64/kernel/binfmt_aout32.c |   10 ++++------
- arch/x86_64/ia32/ia32_aout.c        |   10 ++++------
- fs/binfmt_aout.c                    |   16 ++++++----------
- fs/binfmt_elf.c                     |    5 ++---
- fs/binfmt_elf_fdpic.c               |    5 ++---
- fs/binfmt_flat.c                    |    4 ++--
- fs/binfmt_som.c                     |    2 +-
- fs/exec.c                           |   19 +++++++++++++++----
- include/linux/binfmts.h             |    2 +-
- 10 files changed, 39 insertions(+), 39 deletions(-)
-
-
-diff --git a/arch/mips/kernel/irixelf.c b/arch/mips/kernel/irixelf.c
-index 403d96f..6272f37 100644
---- a/arch/mips/kernel/irixelf.c
-+++ b/arch/mips/kernel/irixelf.c
-@@ -44,7 +44,7 @@
- static int load_irix_binary(struct linux_binprm * bprm, struct pt_regs * regs);
- static int load_irix_library(struct file *);
- static int irix_core_dump(long signr, struct pt_regs * regs,
--                          struct file *file);
-+                          struct file *file, unsigned long limit);
- 
- static struct linux_binfmt irix_format = {
- 	NULL, THIS_MODULE, load_irix_binary, load_irix_library,
-@@ -1088,7 +1088,7 @@ end_coredump:
-  * and then they are actually written out.  If we run out of core limit
-  * we just truncate.
-  */
--static int irix_core_dump(long signr, struct pt_regs * regs, struct file *file)
-+static int irix_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit)
- {
- 	int has_dumped = 0;
- 	mm_segment_t fs;
-@@ -1098,7 +1098,6 @@ static int irix_core_dump(long signr, struct pt_regs * regs, struct file *file)
- 	struct vm_area_struct *vma;
- 	struct elfhdr elf;
- 	off_t offset = 0, dataoff;
--	int limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 	int numnote = 3;
- 	struct memelfnote notes[3];
- 	struct elf_prstatus prstatus;	/* NT_PRSTATUS */
-diff --git a/arch/sparc64/kernel/binfmt_aout32.c b/arch/sparc64/kernel/binfmt_aout32.c
-index f205fc7..7086108 100644
---- a/arch/sparc64/kernel/binfmt_aout32.c
-+++ b/arch/sparc64/kernel/binfmt_aout32.c
-@@ -35,7 +35,7 @@
- 
- static int load_aout32_binary(struct linux_binprm *, struct pt_regs * regs);
- static int load_aout32_library(struct file*);
--static int aout32_core_dump(long signr, struct pt_regs * regs, struct file *file);
-+static int aout32_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit);
- 
- static struct linux_binfmt aout32_format = {
- 	NULL, THIS_MODULE, load_aout32_binary, load_aout32_library, aout32_core_dump,
-@@ -83,7 +83,7 @@ if (file->f_op->llseek) { \
-  * dumping of the process results in another error..
-  */
- 
--static int aout32_core_dump(long signr, struct pt_regs *regs, struct file *file)
-+static int aout32_core_dump(long signr, struct pt_regs *regs, struct file *file, unsigned long limit)
- {
- 	mm_segment_t fs;
- 	int has_dumped = 0;
-@@ -102,13 +102,11 @@ static int aout32_core_dump(long signr, struct pt_regs *regs, struct file *file)
- 
- /* If the size of the dump file exceeds the rlimit, then see what would happen
-    if we wrote the stack, but not the data area.  */
--	if ((dump.u_dsize+dump.u_ssize) >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_dsize+dump.u_ssize) > limit)
- 		dump.u_dsize = 0;
- 
- /* Make sure we have enough room to write the stack and data areas. */
--	if ((dump.u_ssize) >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_ssize) > limit)
- 		dump.u_ssize = 0;
- 
- /* make sure we actually have a data and stack area to dump */
-diff --git a/arch/x86_64/ia32/ia32_aout.c b/arch/x86_64/ia32/ia32_aout.c
-index 0878137..3f6f1c3 100644
---- a/arch/x86_64/ia32/ia32_aout.c
-+++ b/arch/x86_64/ia32/ia32_aout.c
-@@ -40,7 +40,7 @@ static int load_aout_binary(struct linux_binprm *, struct pt_regs * regs);
- static int load_aout_library(struct file*);
- 
- #ifdef CORE_DUMP
--static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file);
-+static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit);
- 
- /*
-  * fill in the user structure for a core dump..
-@@ -148,7 +148,7 @@ if (file->f_op->llseek) { \
-  * dumping of the process results in another error..
-  */
- 
--static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file)
-+static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit)
- {
- 	mm_segment_t fs;
- 	int has_dumped = 0;
-@@ -168,13 +168,11 @@ static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file)
- 
- /* If the size of the dump file exceeds the rlimit, then see what would happen
-    if we wrote the stack, but not the data area.  */
--	if ((dump.u_dsize+dump.u_ssize+1) * PAGE_SIZE >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_dsize+dump.u_ssize+1) * PAGE_SIZE > limit)
- 		dump.u_dsize = 0;
- 
- /* Make sure we have enough room to write the stack and data areas. */
--	if ((dump.u_ssize+1) * PAGE_SIZE >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_ssize+1) * PAGE_SIZE > limit)
- 		dump.u_ssize = 0;
- 
- /* make sure we actually have a data and stack area to dump */
-diff --git a/fs/binfmt_aout.c b/fs/binfmt_aout.c
-index 813a887..9eaac56 100644
---- a/fs/binfmt_aout.c
-+++ b/fs/binfmt_aout.c
-@@ -31,7 +31,7 @@
- 
- static int load_aout_binary(struct linux_binprm *, struct pt_regs * regs);
- static int load_aout_library(struct file*);
--static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file);
-+static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit);
- 
- static struct linux_binfmt aout_format = {
- 	.module		= THIS_MODULE,
-@@ -88,7 +88,7 @@ if (file->f_op->llseek) { \
-  * dumping of the process results in another error..
-  */
- 
--static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file)
-+static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit)
- {
- 	mm_segment_t fs;
- 	int has_dumped = 0;
-@@ -123,23 +123,19 @@ static int aout_core_dump(long signr, struct pt_regs * regs, struct file *file)
- /* If the size of the dump file exceeds the rlimit, then see what would happen
-    if we wrote the stack, but not the data area.  */
- #ifdef __sparc__
--	if ((dump.u_dsize+dump.u_ssize) >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_dsize+dump.u_ssize) > limit)
- 		dump.u_dsize = 0;
- #else
--	if ((dump.u_dsize+dump.u_ssize+1) * PAGE_SIZE >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_dsize+dump.u_ssize+1) * PAGE_SIZE > limit)
- 		dump.u_dsize = 0;
- #endif
- 
- /* Make sure we have enough room to write the stack and data areas. */
- #ifdef __sparc__
--	if ((dump.u_ssize) >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_ssize) > limit)
- 		dump.u_ssize = 0;
- #else
--	if ((dump.u_ssize+1) * PAGE_SIZE >
--	    current->signal->rlim[RLIMIT_CORE].rlim_cur)
-+	if ((dump.u_ssize+1) * PAGE_SIZE > limit)
- 		dump.u_ssize = 0;
- #endif
- 
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 4482a06..cbda09b 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -52,7 +52,7 @@ static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, i
-  * don't even try.
-  */
- #if defined(USE_ELF_CORE_DUMP) && defined(CONFIG_ELF_CORE)
--static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file);
-+static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, unsigned long limit);
- #else
- #define elf_core_dump	NULL
- #endif
-@@ -1488,7 +1488,7 @@ static struct vm_area_struct *next_vma(struct vm_area_struct *this_vma,
-  * and then they are actually written out.  If we run out of core limit
-  * we just truncate.
-  */
--static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
-+static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file, unsigned long limit)
- {
- #define	NUM_NOTES	6
- 	int has_dumped = 0;
-@@ -1499,7 +1499,6 @@ static int elf_core_dump(long signr, struct pt_regs *regs, struct file *file)
- 	struct vm_area_struct *vma, *gate_vma;
- 	struct elfhdr *elf = NULL;
- 	loff_t offset = 0, dataoff, foffset;
--	unsigned long limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 	int numnote;
- 	struct memelfnote *notes = NULL;
- 	struct elf_prstatus *prstatus = NULL;	/* NT_PRSTATUS */
-diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
-index 2f5d8db..5dc7cab 100644
---- a/fs/binfmt_elf_fdpic.c
-+++ b/fs/binfmt_elf_fdpic.c
-@@ -75,7 +75,7 @@ static int elf_fdpic_map_file_by_direct_mmap(struct elf_fdpic_params *,
- 					     struct file *, struct mm_struct *);
- 
- #if defined(USE_ELF_CORE_DUMP) && defined(CONFIG_ELF_CORE)
--static int elf_fdpic_core_dump(long, struct pt_regs *, struct file *);
-+static int elf_fdpic_core_dump(long, struct pt_regs *, struct file *, unsigned long limit);
- #endif
- 
- static struct linux_binfmt elf_fdpic_format = {
-@@ -1552,7 +1552,7 @@ static int elf_fdpic_dump_segments(struct file *file, size_t *size,
-  * we just truncate.
-  */
- static int elf_fdpic_core_dump(long signr, struct pt_regs *regs,
--			       struct file *file)
-+			       struct file *file, unsigned long limit)
- {
- #define	NUM_NOTES	6
- 	int has_dumped = 0;
-@@ -1563,7 +1563,6 @@ static int elf_fdpic_core_dump(long signr, struct pt_regs *regs,
- 	struct vm_area_struct *vma;
- 	struct elfhdr *elf = NULL;
- 	loff_t offset = 0, dataoff;
--	unsigned long limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 	int numnote;
- 	struct memelfnote *notes = NULL;
- 	struct elf_prstatus *prstatus = NULL;	/* NT_PRSTATUS */
-diff --git a/fs/binfmt_flat.c b/fs/binfmt_flat.c
-index 861141b..cc24c5d 100644
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -75,7 +75,7 @@ static int load_flat_shared_library(int id, struct lib_info *p);
- #endif
- 
- static int load_flat_binary(struct linux_binprm *, struct pt_regs * regs);
--static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file);
-+static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit);
- 
- static struct linux_binfmt flat_format = {
- 	.module		= THIS_MODULE,
-@@ -90,7 +90,7 @@ static struct linux_binfmt flat_format = {
-  * Currently only a stub-function.
-  */
- 
--static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file)
-+static int flat_core_dump(long signr, struct pt_regs * regs, struct file *file, unsigned long limit)
- {
- 	printk("Process %s:%d received signr %d and should have core dumped\n",
- 			current->comm, current->pid, (int) signr);
-diff --git a/fs/binfmt_som.c b/fs/binfmt_som.c
-index 5bcdaaf..7474970 100644
---- a/fs/binfmt_som.c
-+++ b/fs/binfmt_som.c
-@@ -44,7 +44,7 @@ static int load_som_library(struct file *);
-  * don't even try.
-  */
- #if 0
--static int som_core_dump(long signr, struct pt_regs * regs);
-+static int som_core_dump(long signr, struct pt_regs * regs, unsigned long limit);
- #else
- #define som_core_dump	NULL
- #endif
-diff --git a/fs/exec.c b/fs/exec.c
-index 7bdea79..c0b5def 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1726,6 +1726,7 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- 	int fsuid = current->fsuid;
- 	int flag = 0;
- 	int ispipe = 0;
-+	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
- 
- 	audit_core_dumps(signr);
- 
-@@ -1759,9 +1760,6 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- 	 */
- 	clear_thread_flag(TIF_SIGPENDING);
- 
--	if (current->signal->rlim[RLIMIT_CORE].rlim_cur < binfmt->min_coredump)
--		goto fail_unlock;
--
- 	/*
- 	 * lock_kernel() because format_corename() is controlled by sysctl, which
- 	 * uses lock_kernel()
-@@ -1769,7 +1767,20 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
-  	lock_kernel();
- 	ispipe = format_corename(corename, core_pattern, signr);
- 	unlock_kernel();
-+	/*
-+	 * Don't bother to check the RLIMIT_CORE value if core_pattern points
-+	 * to a pipe.  Since we're not writing directly to the filesystem
-+	 * RLIMIT_CORE doesn't really apply, as no actual core file will be
-+	 * created unless the pipe reader choses to write out the core file
-+	 * at which point file size limits and permissions will be imposed 
-+	 * as it does with any other process
-+	 */
-+	if ((!ispipe) &&
-+	   (core_limit < binfmt->min_coredump))
-+		goto fail_unlock;
-+
-  	if (ispipe) {
-+		core_limit = RLIM_INFINITY;
- 		/* SIGPIPE can happen, but it's just never processed */
-  		if(call_usermodehelper_pipe(corename+1, NULL, NULL, &file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
-@@ -1799,7 +1810,7 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- 	if (!ispipe && do_truncate(file->f_path.dentry, 0, 0, file) != 0)
- 		goto close_fail;
- 
--	retval = binfmt->core_dump(signr, regs, file);
-+	retval = binfmt->core_dump(signr, regs, file, core_limit);
- 
- 	if (retval)
- 		current->signal->group_exit_code |= 0x80;
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 91c8c07..fb62eda 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -67,7 +67,7 @@ struct linux_binfmt {
- 	struct module *module;
- 	int (*load_binary)(struct linux_binprm *, struct  pt_regs * regs);
- 	int (*load_shlib)(struct file *);
--	int (*core_dump)(long signr, struct pt_regs * regs, struct file * file);
-+	int (*core_dump)(long signr, struct pt_regs * regs, struct file * file, unsigned long limit);
- 	unsigned long min_coredump;	/* minimal dump size */
- 	int hasvdso;
- };
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
