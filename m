@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965387AbXG0URX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965229AbXG0URl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965387AbXG0URX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:17:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937073AbXG0UQA
+	id S965229AbXG0URl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965179AbXG0UQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:16:00 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:53723 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965277AbXG0UP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:15:58 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [patch] x86, serial: always probe for legacy COM ports
-Date: Fri, 27 Jul 2007 14:11:41 -0600
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>, Adam Belay <ambx1@neo.rr.com>,
-       Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       =?iso-8859-15?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200707271158.50028.bjorn.helgaas@hp.com> <46AA33FF.4070504@garzik.org>
-In-Reply-To: <46AA33FF.4070504@garzik.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200707271411.42253.bjorn.helgaas@hp.com>
+	Fri, 27 Jul 2007 16:16:29 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41994 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965313AbXG0UQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:16:27 -0400
+Date: Fri, 27 Jul 2007 12:31:26 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>, mingo@elte.hu
+Subject: [PATCH] sched: fix kernel-doc warnings
+Message-Id: <20070727123126.7fc35002.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 July 2007 12:05:51 pm Jeff Garzik wrote:
-> Bjorn Helgaas wrote:
-> > Andrew, if you drop
-> >     revert-x86-serial-convert-legacy-com-ports-to-platform-devices.patch
-> > and apply this, we should have the previous behavior.  I think the
-> > conversion to platform devices is still worthwhile.  Obviously, I intend
-> > this as 2.6.23 material.
-> > 
-> > 
-> > Always probe for serial ports at legacy addresses, even if we have PNPBIOS
-> > or ACPI that should tell us about those ports.
-> > 
-> > We have no reports yet of defective firmware that completely omits ports.
-> > However, Sébastien Dugué <sebastien.dugue@bull.net> reported that the
-> > NEC Express5800/120Lh with Phoenix BIOS 6.0.5N52, released 7/12/2005,
-> > reports COM2 first, then COM1 in the ACPI namespace.
-> > 
-> > 8250_pnp currently registers devices in namespace order.  On this machine,
-> > that makes ttyS0=COM2 and ttyS1=COM1, the reverse of what we want.
-> > 
-> > Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> This is still incomplete, as repeatedly stated.  Here is the email, again.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-OK, uncle!  I'll work on your helpful advice (thanks for that), but
-it feels too risky for this stage of 2.6.23.  Maybe I can come up with
-something for a future release.
+Fix kernel-doc warnings in sched.c:
 
-Bjorn
+Warning(linux-2623-rc1g4//kernel/sched.c:1685): No description found for parameter 'notifier'
+Warning(linux-2623-rc1g4//kernel/sched.c:1696): No description found for parameter 'notifier'
+Warning(linux-2623-rc1g4//kernel/sched.c:1750): No description found for parameter 'prev'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ kernel/sched.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+--- linux-2623-rc1g4.orig/kernel/sched.c
++++ linux-2623-rc1g4/kernel/sched.c
+@@ -1678,8 +1678,8 @@ void fastcall wake_up_new_task(struct ta
+ #ifdef CONFIG_PREEMPT_NOTIFIERS
+ 
+ /**
+- * preempt_notifier_register - tell me when current is being being preempted
+- *                         and rescheduled
++ * preempt_notifier_register - tell me when current is being being preempted & rescheduled
++ * @notifier: notifier struct to register
+  */
+ void preempt_notifier_register(struct preempt_notifier *notifier)
+ {
+@@ -1689,6 +1689,7 @@ EXPORT_SYMBOL_GPL(preempt_notifier_regis
+ 
+ /**
+  * preempt_notifier_unregister - no longer interested in preemption notifications
++ * @notifier: notifier struct to unregister
+  *
+  * This is safe to call from within a preemption notifier.
+  */
+@@ -1735,6 +1736,7 @@ fire_sched_out_preempt_notifiers(struct 
+ /**
+  * prepare_task_switch - prepare to switch tasks
+  * @rq: the runqueue preparing to switch
++ * @prev: the current task that is being switched out
+  * @next: the task we are going to switch to.
+  *
+  * This is called with the rq lock held and interrupts off. It must
