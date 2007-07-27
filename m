@@ -1,103 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934589AbXG0JbT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934552AbXG0Jk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934589AbXG0JbT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763027AbXG0JbD
+	id S934552AbXG0Jk5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:40:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760735AbXG0Jks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:31:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48697 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762949AbXG0JbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:31:01 -0400
-Date: Fri, 27 Jul 2007 11:30:44 +0200
-From: Mario Doering <mario@dedenet.de>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org
-Subject: Re: D-Link DFE-580TX 4 port NIC problems
-Message-ID: <20070727113044.76630826@snibbles.dedenet.de>
-In-Reply-To: <20070509032700.569789a0.akpm@linux-foundation.org>
-References: <20070509120142.2305a1d1@snibbles.dedenet.de>
-	<20070509032700.569789a0.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.7.0 (GTK+ 2.10.13; x86_64-pc-linux-gnu)
+	Fri, 27 Jul 2007 05:40:48 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47243 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759142AbXG0Jkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:40:47 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19tHgZElUBt2g+y6L9aUmqnIlX2j3c6AZuNpmMvDe
+	xeOhRbbWYrrNFe
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge
+	plans for 2.6.23]
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070727014749.85370e77.akpm@linux-foundation.org>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46A57068.3070701@yahoo.com.au>
+	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	 <46A58B49.3050508@yahoo.com.au>
+	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	 <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>
+	 <46A85D95.509@kingswood-consulting.co.uk> <20070726092025.GA9157@elte.hu>
+	 <20070726023401.f6a2fbdf.akpm@linux-foundation.org>
+	 <20070726094024.GA15583@elte.hu>
+	 <20070726030902.02f5eab0.akpm@linux-foundation.org>
+	 <1185454019.6449.12.camel@Homer.simpson.net>
+	 <20070726110549.da3a7a0d.akpm@linux-foundation.org>
+	 <1185513177.6295.21.camel@Homer.simpson.net>
+	 <1185521021.6295.50.camel@Homer.simpson.net>
+	 <20070727014749.85370e77.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 11:40:44 +0200
+Message-Id: <1185529244.7851.51.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-DeDe-Auth: true
-X-DeDe-Envelope-To: linux-kernel@vger.kernel.org
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 2007-07-27 at 01:47 -0700, Andrew Morton wrote:
 
-are there any news or questions on this issue?
+> Anyway, blockdev pagecache is a problem, I expect.  It's worth playing with
+> that patch.
 
+(may tinker a bit, but i'm way rusty.  ain't had the urge to mutilate
+anything down there in quite a while... works just fine for me these
+days)
 
-Mario.
+> Another problem is atime updates.  You really do want to mount noatime. 
+> Because with atimes enabled, each touch of a file will touch its inode and
+> will keep its backing blockdev pagecache page in core.
 
+Yeah, I mount noatime,nodiratime,data=writeback.  ext3's journal with my
+crusty old disk/fs is painful as heck.
 
+	-Mike
 
-On Wed, 9 May 2007 03:27:00 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Wed, 9 May 2007 12:01:42 +0200 Mario Doering <mario@dedenet.de>
-> wrote:
-> 
-> > Hello,
-> > 
-> > we have a D-Link DFE-580TX 4 port network card in our main router.
-> > 
-> > It works pretty well most of the time, even though an error
-> > message pops up in dmesg every now and then (sometimes once a day
-> > sometimes once every few hours).
-> > 
-> > 
-> > But every few weeks those error messages increase rapidly, spamming
-> > dmesg. When this happens the system does not react anymore and
-> > pushing the reset button is the only option left.
-> > 
-> > I googled around and found out that other users have same problem,
-> > but no solution to this.
-> > 
-> > 
-> > Part of the message log is located here:
-> > http://test.dedenet.de/messages.gz
-> > or
-> > http://test.dedenet.de/messages.txt
-> > 
-> > 
-> > uname -a
-> > Linux router1 2.6.19-gentoo-r5 #1 Sat Feb 17 17:04:03 CET 2007 i686
-> > AMD Athlon(tm) XP AuthenticAMD GNU/Linux
-> > 
-> > 
-> > driver:
-> > [   17.364707] sundance.c:v1.2 11-Sep-2006  Written by Donald Becker
-> > [   17.364711]   http://www.scyld.com/network/sundance.html
-> > [   17.364844] ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 17 (level,
-> > low) -> IRQ 17 [   17.365396] eth1: D-Link DFE-580TX 4 port Server
-> > Adapter at 0001bc00, 00:0d:88:cc:a5:f0, IRQ 17. [   17.366350] eth1:
-> > MII PHY found at address 1, status 0x7829 advertising 01e1.
-> > [   17.676491] ACPI: PCI Interrupt 0000:03:05.0[A] -> GSI 18 (level,
-> > low) -> IRQ 18 [   17.676912] eth2: D-Link DFE-580TX 4 port Server
-> > Adapter at 0001b800, 00:0d:88:cc:a5:f1, IRQ 18. [   17.677864] eth2:
-> > MII PHY found at address 1, status 0x7809 advertising 01e1.
-> > [   17.987730] ACPI: PCI Interrupt 0000:03:06.0[A] -> GSI 19 (level,
-> > low) -> IRQ 16 [   17.988107] eth3: D-Link DFE-580TX 4 port Server
-> > Adapter at 0001b400, 00:0d:88:cc:a5:f2, IRQ 16. [   17.989059] eth3:
-> > MII PHY found at address 1, status 0x7829 advertising 01e1.
-> > [   18.298910] ACPI: PCI Interrupt 0000:03:07.0[A] -> GSI 16 (level,
-> > low) -> IRQ 19 [   18.299320] eth4: D-Link DFE-580TX 4 port Server
-> > Adapter at 0001b000, 00:0d:88:cc:a5:f3, IRQ 19. [   18.300272] eth4:
-> > MII PHY found at address 1, status 0x7809 advertising 01e1.
-> > 
-> > 
-> > 
-> > No such error message appears for about 7-10 days after a reboot.
-> > Maybe there is some kind of buffer running full?
-> > 
-> > Do you need any additional info?
-> > 
-> > 
-> > Please CC me :-)
-> 
-> (cc netdev)
