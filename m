@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934151AbXG0HYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765380AbXG0H1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934151AbXG0HYB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 03:24:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762949AbXG0HXv
+	id S1765380AbXG0H1w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 03:27:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753066AbXG0H1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 03:23:51 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60428 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762667AbXG0HXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 03:23:50 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18R3uZEM3YRFj7yww475dTi8gn99eoIQdW0eVRITi
-	/kMvu0JFH7Kwlj
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge
-	plans for 2.6.23]
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1185513177.6295.21.camel@Homer.simpson.net>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46A57068.3070701@yahoo.com.au>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>
-	 <46A85D95.509@kingswood-consulting.co.uk> <20070726092025.GA9157@elte.hu>
-	 <20070726023401.f6a2fbdf.akpm@linux-foundation.org>
-	 <20070726094024.GA15583@elte.hu>
-	 <20070726030902.02f5eab0.akpm@linux-foundation.org>
-	 <1185454019.6449.12.camel@Homer.simpson.net>
-	 <20070726110549.da3a7a0d.akpm@linux-foundation.org>
-	 <1185513177.6295.21.camel@Homer.simpson.net>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 09:23:41 +0200
-Message-Id: <1185521021.6295.50.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Fri, 27 Jul 2007 03:27:44 -0400
+Received: from smtp2a.orange.fr ([80.12.242.140]:29275 "EHLO smtp2a.orange.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753016AbXG0H1n convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 03:27:43 -0400
+X-ME-UUID: 20070727072742662.A1B537000087@mwinf2a21.orange.fr
+From: David CHANIAL <david.ml@euro-web.fr>
+Organization: Euro Web
+To: "Linux Kernel Mailinglist" <linux-kernel@vger.kernel.org>
+Subject: Re: BUG: unable to handle kernel NULL pointer dereference - nfs v3
+Date: Fri, 27 Jul 2007 09:28:27 +0200
+User-Agent: KMail/1.9.5
+Cc: "Satyam Sharma" <satyam.sharma@gmail.com>, "Neil Brown" <neilb@suse.de>
+References: <200707160638.15750.david.ml@euro-web.fr> <200707201533.14517.david.ml@euro-web.fr> <a781481a0707200636s353c8a64l5564d5f81cc7f266@mail.gmail.com>
+In-Reply-To: <a781481a0707200636s353c8a64l5564d5f81cc7f266@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200707270928.27328.david.ml@euro-web.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 07:13 +0200, Mike Galbraith wrote:
-> On Thu, 2007-07-26 at 11:05 -0700, Andrew Morton wrote:
-> > > drops caches prior to both updatedb runs.
-> > 
-> > I think that was the wrong thing to do.  That will leave gobs of free
-> > memory for updatedb to populate with dentries and inodes.
-> > 
-> > Instead, fill all of memory up with pagecache, then do the updatedb.  See
-> > how much pagecache is left behind and see how large the vfs caches end up.
+Le vendredi 20 juillet 2007 15:36, Satyam Sharma a écrit :
+> Yes, you can apply the patch Neil just sent to your kernel,
+> re-build, and test that.
 
-I didn't _fill_ memory, but loaded it up a bit with some real workload
-data...
+Hi, I have no patched the kernel as asked by Neil, but i would notice that 
+with 2.6.22.1 kernel it continue to happend :
 
-I tried time sh -c 'git diff v2.6.11 HEAD > /dev/null' to populate the
-cache, and tried different values for vfs_cache_pressure.  Nothing
-prevented git's data from being trashed by updatedb.  Turning the knob
-downward rapidly became very unpleasant due to swap, (with 0 not
-surprisingly being a true horror) but turning it up didn't help git one
-bit.  The amount of data that had to be re-read with stock 100 or 10000
-was the same, or at least so close that you couldn't see a difference in
-vmstat and wall-clock.  Cache sizes varied, but the bottom line didn't.
-(wasn't surprised, seems quite reasonable that git's data looks old and
-useless to the reclaim logic when updatedb runs in between git runs)
+http://internetworkpro.org/pastebin/765
 
-	-Mike
+I would patch the kernel now and wait to see...
+
+Best regards,
+-- 
+David
 
