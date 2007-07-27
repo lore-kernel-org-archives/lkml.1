@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbXG0Jt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936930AbXG0Jtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765020AbXG0Jt3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936260AbXG0Jq1
+	id S936930AbXG0Jtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936515AbXG0Jqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:46:27 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:36022 "EHLO ron.emn.fr"
+	Fri, 27 Jul 2007 05:46:36 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:36086 "EHLO ron.emn.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S936433AbXG0JqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:46:25 -0400
-Date: Fri, 27 Jul 2007 11:45:00 +0200 (MEST)
-Message-Id: <200707270945.LAA17237@ifs.emn.fr>
+	id S1764350AbXG0Jqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:46:35 -0400
+Date: Fri, 27 Jul 2007 11:45:05 +0200 (MEST)
+Message-Id: <200707270945.LAA17250@ifs.emn.fr>
 To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 10/68] 0 -> NULL, for arch/mips
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org, akpm@linux-foundation.org,
+Subject: [PATCH 11/68] 0 -> NULL, for arch/parisc
+Cc: matthew@wil.cx, grundler@parisc-linux.org, kyle@parisc-linux.org,
+       parisc-linux@parisc-linux.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
 From: Yoann Padioleau <padator@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,84 +42,27 @@ expression *E;
 + NULL
 
 Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: ralf@linux-mips.org
-Cc: linux-mips@linux-mips.org
+Cc: matthew@wil.cx
+Cc: grundler@parisc-linux.org
+Cc: kyle@parisc-linux.org
+Cc: parisc-linux@parisc-linux.org
 Cc: akpm@linux-foundation.org
 ---
 
- ops-emma2rh.c |    2 +-
- ops-pnx8550.c |   12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ smp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/pci/ops-emma2rh.c b/arch/mips/pci/ops-emma2rh.c
-index 38f1816..d31bfc6 100644
---- a/arch/mips/pci/ops-emma2rh.c
-+++ b/arch/mips/pci/ops-emma2rh.c
-@@ -45,7 +45,7 @@ static int check_args(struct pci_bus *bu
- 	/* check if the bus is top-level */
- 	if (bus->parent != NULL) {
- 		*bus_num = bus->number;
--		db_assert(bus_num != 0);
-+		db_assert(bus_num != NULL);
- 	} else
- 		*bus_num = 0;
+diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
+index 04c7e1d..16fccbe 100644
+--- a/arch/parisc/kernel/smp.c
++++ b/arch/parisc/kernel/smp.c
+@@ -333,7 +333,7 @@ smp_call_function (void (*func) (void *i
  
-diff --git a/arch/mips/pci/ops-pnx8550.c b/arch/mips/pci/ops-pnx8550.c
-index f556b7a..d610646 100644
---- a/arch/mips/pci/ops-pnx8550.c
-+++ b/arch/mips/pci/ops-pnx8550.c
-@@ -117,7 +117,7 @@ read_config_byte(struct pci_bus *bus, un
- 	unsigned int data = 0;
- 	int err;
- 
--	if (bus == 0)
-+	if (bus == NULL)
- 		return -1;
- 
- 	err = config_access(PCI_CMD_CONFIG_READ, bus, devfn, where, ~(1 << (where & 3)), &data);
-@@ -145,7 +145,7 @@ read_config_word(struct pci_bus *bus, un
- 	unsigned int data = 0;
- 	int err;
- 
--	if (bus == 0)
-+	if (bus == NULL)
- 		return -1;
- 
- 	if (where & 0x01)
-@@ -168,7 +168,7 @@ static int
- read_config_dword(struct pci_bus *bus, unsigned int devfn, int where, u32 * val)
- {
- 	int err;
--	if (bus == 0)
-+	if (bus == NULL)
- 		return -1;
- 
- 	if (where & 0x03)
-@@ -185,7 +185,7 @@ write_config_byte(struct pci_bus *bus, u
- 	unsigned int data = (unsigned int)val;
- 	int err;
- 
--	if (bus == 0)
-+	if (bus == NULL)
- 		return -1;
- 
- 	switch (where & 0x03) {
-@@ -213,7 +213,7 @@ write_config_word(struct pci_bus *bus, u
- 	unsigned int data = (unsigned int)val;
- 	int err;
- 
--	if (bus == 0)
-+	if (bus == NULL)
- 		return -1;
- 
- 	if (where & 0x01)
-@@ -235,7 +235,7 @@ static int
- write_config_dword(struct pci_bus *bus, unsigned int devfn, int where, u32 val)
- {
- 	int err;
--	if (bus == 0)
-+	if (bus == NULL)
- 		return -1;
- 
- 	if (where & 0x03)
+ 	if (retry) {
+ 		spin_lock (&lock);
+-		while (smp_call_function_data != 0)
++		while (smp_call_function_data != NULL)
+ 			barrier();
+ 	}
+ 	else {
 
