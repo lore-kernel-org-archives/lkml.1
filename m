@@ -1,71 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938008AbXG0Vv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938135AbXG0VxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938008AbXG0Vv4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 17:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760603AbXG0Vvt
+	id S938135AbXG0VxR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 17:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764920AbXG0VxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 17:51:49 -0400
-Received: from neon.samage.net ([85.17.153.66]:54528 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760212AbXG0Vvr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 17:51:47 -0400
-Message-ID: <52449.81.207.0.53.1185573103.squirrel@secure.samage.net>
-In-Reply-To: <1185568498.2711.5.camel@laptopd505.fenrus.org>
-References: <200707272243.02336.a1426z@gawab.com>
-    <1185568498.2711.5.camel@laptopd505.fenrus.org>
-Date: Fri, 27 Jul 2007 23:51:43 +0200 (CEST)
-Subject: Re: swap-prefetch:  A smart way to make good use of idle resources 
-     (was: updatedb)
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Cc: "Al Boldi" <a1426z@gawab.com>, linux-kernel@vger.kernel.org
-User-Agent: SquirrelMail/1.4.8
+	Fri, 27 Jul 2007 17:53:06 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:7999 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763906AbXG0VxE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 17:53:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=FKBHeKwd6clFl5FCTpp6ZvAEpd0Y6ZzJCmQ77oB7TIFzPbICiYMmkgoVBSOg6nuPhrfF6PJW3Ht9Bb2G/czLJu5k7ALuHWLnUp7ychpmaZ5twr6eXcq/0CqvSEcpb2g9zKm7qyl/6wTHYxpDXg76gZFOsVNn5seFi2EkrERyQmo=
+Message-ID: <3ae72650707271453s223bd484xd1d70ef8ad5b3d77@mail.gmail.com>
+Date: Fri, 27 Jul 2007 23:53:02 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>,
+       "Shaohua Li" <shaohua.li@intel.com>,
+       "=?UTF-8?Q?S=C3=A9bastien_Dugu=C3=A9?=" <sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
+       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
+       mjg59@srcf.ucam.org, castet.matthieu@free.fr
+In-Reply-To: <46AA5E1A.8020303@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: 76f3589a93270604ea078d468a2051b3
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
+	 <200707271256.17025.bjorn.helgaas@hp.com>
+	 <86802c440707271335y29ca79ccq844b5cb457bd2314@mail.gmail.com>
+	 <200707271458.44391.bjorn.helgaas@hp.com>
+	 <46AA5E1A.8020303@garzik.org>
+X-Google-Sender-Auth: 28c37804a8e89df9
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, July 27, 2007 22:34, Arjan van de Ven wrote:
-> On Fri, July 27, 2007 21:43, Al Boldi wrote:
->> IMHO, what everybody agrees on, is that swap-prefetch has a positive effect
->> in some cases, and nobody can prove an adverse effect (excluding power
->> consumption).  The reason for this positive effect is also crystal clear:
->> It prefetches from swap on idle into free memory, ie: it doesn't force
+On 7/27/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Bjorn Helgaas wrote:
+> > And couldn't we use udev to associate a fixed name with a MAC
+> > address?  Then the user could use the same persistent name,
+> > regardless of the order in which the driver found the devices.
 >
-> the fact that there is free memory is ... strange. IN principle, Linux
-> keeps almost no memory free (except some emergency buffers) so that
-> things you swap in prematurely will BY DEFINITION go at the expense of
-> other things that could be there....
+>
+> I don't know about udev, but people are definitely using fixed names
+> based on MAC address for ethernet devices already:  nameif(8) and
+> /etc/mactab, iftab(5) and ifrename(8).
 
-It's not strange, the use case here is if something memory hungry process
-is shut down it leaves behind a lot of free memory. Having things swapped
-out while there's free memory is strange, so swap prefetch fills it up again.
+That's all obsolete with udev, it creates persistent name entries on
+first device discovery, and keeps them forever.
+You can edit the automatically created/updated udev rules, if you want
+different names, but by default there is no intervention needed to
+have stable network device names out of the box, regardless of any
+kernel module loading/linking order or whatever.
 
-> also, they take up seek time (5 to 10 msec), so if you were to read
-> something else at the time you get additional latency.
-
-If there's other disk activity swap prefetch shouldn't do much, so this isn't
-really true.
-
->> Conclusion:  Either prove swap-prefetch is broken, or get this merged quick.
-
-There are a whole lot of other requirements too than that it isn't broken (of
-which most are fulfilled, but anyway). One reason could be that there's a
-better solution out there for the problem swap prefetch tries to solve. That
-said, as swap prefetch is here now for a while and that other solution not it's
-not such a great argument.
-
-Personally I think that a more generic solution would be better, one that
-prefetches the lastly evicted pages back in, not favouring either of swap or
-file data, like swap prefetch does now.
-
-Greetings,
-
-Indan
-
-
+Kay
