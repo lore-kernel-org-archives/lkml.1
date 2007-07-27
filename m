@@ -1,105 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932814AbXG0Mzw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933424AbXG0M5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932814AbXG0Mzw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 08:55:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbXG0Mzo
+	id S933424AbXG0M5S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 08:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbXG0M5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 08:55:44 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:38960 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756380AbXG0Mzo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 08:55:44 -0400
-Date: Fri, 27 Jul 2007 13:55:33 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Stephane Eranian <eranian@hpl.hp.com>
-Cc: linux-kernel@vger.kernel.org, mucci@cs.utk.edu, linux-mips@linux-mips.org,
-       ak@suse.de, akpm@linux-foundation.org
-Subject: Re: [PATCH] MIPS: add smp_call_function_single()
-Message-ID: <20070727125533.GD5118@linux-mips.org>
-References: <20070727124451.GC9828@frankl.hpl.hp.com>
+	Fri, 27 Jul 2007 08:57:00 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57291 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753922AbXG0M47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 08:56:59 -0400
+Message-ID: <46A9EB97.4010406@garzik.org>
+Date: Fri, 27 Jul 2007 08:56:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070727124451.GC9828@frankl.hpl.hp.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Dave Airlie <airlied@linux.ie>
+CC: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [git pull] AGP fixes for 2.6.23-rc1
+References: <Pine.LNX.4.64.0707270206580.9484@skynet.skynet.ie>
+In-Reply-To: <Pine.LNX.4.64.0707270206580.9484@skynet.skynet.ie>
+Content-Type: multipart/mixed;
+ boundary="------------030609030703020107040602"
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 05:44:51AM -0700, Stephane Eranian wrote:
+This is a multi-part message in MIME format.
+--------------030609030703020107040602
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-> index be7362b..9e376e2 100644
-> --- a/arch/mips/kernel/smp.c
-> +++ b/arch/mips/kernel/smp.c
-> @@ -193,6 +193,53 @@ void smp_call_function_interrupt(void)
->  	}
->  }
->  
-> +int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int retry,
-> +			     int wait)
-> +{
-> +  struct call_data_struct data;
-> +  int me = smp_processor_id();
-> +
-> +  /*
-> +     * Can die spectacularly if this CPU isn't yet marked online
-> +      */
-> +  BUG_ON(!cpu_online(me));
-> +  if (cpu == me) {
-> +    WARN_ON(1);
-> +    return -EBUSY;
-> +    }
-> +
-> +  /* Can deadlock when called with interrupts disabled */
-> +  WARN_ON(irqs_disabled());
-> +
-> +  data.func = func;
-> +  data.info = info;
-> +  atomic_set(&data.started, 0);
-> +  data.wait = wait;
-> +  if (wait)
-> +    atomic_set(&data.finished, 0);
-> +
-> +  spin_lock(&smp_call_lock);
-> +  call_data = &data;
-> +  mb();
-> +
-> +  /* Send a message to the other CPU */
-> +  core_send_ipi(cpu, SMP_CALL_FUNCTION);
-> +
-> +  /* Wait for response */
-> +  /* FIXME: lock-up detection, backtrace on lock-up */
-> +  while (atomic_read(&data.started) != 1)
-> +    barrier();
-> +
-> +  if (wait)
-> +    while (atomic_read(&data.finished) != 1)
-> +      barrier();
-> +  call_data = NULL;
-> +  spin_unlock(&smp_call_lock);
-> +
-> +  return 0;
-> +}
-> +EXPORT_SYMBOL(smp_call_function_single);
+Dave Airlie wrote:
+> 
+> Hi Linus,
+> 
+> Please pull the 'agp-patches' branch from
+> git://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git 
+> agp-patches
+> 
+> It contains one very important fix from Nick for AGP hangs with the 
+> nopage/pfn/flush stuff.. it also contains some minor docs changes and 
+> one coverity fix.
+> 
+> Dave.
+> 
+>  Documentation/kernel-parameters.txt |    7 +++++++
+>  drivers/char/agp/Kconfig            |    2 +-
+>  drivers/char/agp/ati-agp.c          |    9 ++-------
+>  drivers/char/agp/generic.c          |    2 --
+>  drivers/char/agp/intel-agp.c        |   19 ++++++++++++-------
+>  drivers/char/agp/sgi-agp.c          |    1 -
+>  6 files changed, 22 insertions(+), 18 deletions(-)
 
-Please fix the indentation to use tabs as per Documentation/CodingStyle.
+It would really be nice to actually see the patches that go along with 
+this.  Otherwise you are not giving outside reviewers any chance at all 
+to evaluate these fixes.
 
->  static void stop_this_cpu(void *dummy)
->  {
->  	/*
-> diff --git a/include/asm-mips/smp.h b/include/asm-mips/smp.h
-> index 13aef6a..5acbf38 100644
-> --- a/include/asm-mips/smp.h
-> +++ b/include/asm-mips/smp.h
-> @@ -102,6 +102,8 @@ static inline void smp_send_reschedule(int cpu)
->  	core_send_ipi(cpu, SMP_RESCHEDULE_YOURSELF);
->  }
->  
-> +extern int smp_call_function_single(int cpuid, void (*func) (void *info),
-> +				void *info, int retry, int wait);
+Or were they posted on LKML, and I missed them?
 
-The function is already declared in include/linux/smp.h so this segment
-is unecessary.
+Attached is the shell script I use to submit stuff to Linus, in case 
+that helps any.
 
-  Ralf
+	Jeff
+
+
+
+
+--------------030609030703020107040602
+Content-Type: application/x-shellscript;
+ name="mkmsg.sh"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="mkmsg.sh"
+
+IyEvYmluL3NoCgojCiMgdXNhZ2U6IG1rbXNnIFticmFuY2hdIFtvdXRwdXQgdGV4dCBmaWxl
+XQojCgpCUkFOQ0g9IiQxIgpURVhUX09VVD0iJDIiCgpQV0Q9YHB3ZGAKUkVQTz1gYmFzZW5h
+bWUgJFBXRGAKCmVjaG8gIlBsZWFzZSBwdWxsIGZyb20gJyRCUkFOQ0gnIGJyYW5jaCBvZiIg
+PiAkVEVYVF9PVVQKZWNobyAibWFzdGVyLmtlcm5lbC5vcmc6L3B1Yi9zY20vbGludXgva2Vy
+bmVsL2dpdC9qZ2FyemlrLyRSRVBPLmdpdCAkQlJBTkNIIiBcCgk+PiAkVEVYVF9PVVQKZWNo
+byAiIiA+PiAkVEVYVF9PVVQKZWNobyAidG8gcmVjZWl2ZSB0aGUgZm9sbG93aW5nIHVwZGF0
+ZXM6IiA+PiAkVEVYVF9PVVQKZWNobyAiIiA+PiAkVEVYVF9PVVQKCmdpdCBkaWZmIC1NIC0t
+c3RhdCAtLXN1bW1hcnkgbWFzdGVyLi4kQlJBTkNIID4+ICRURVhUX09VVAplY2hvICIiID4+
+ICRURVhUX09VVApnaXQgbG9nIC0tbm8tbWVyZ2VzIG1hc3Rlci4uJEJSQU5DSCB8IGdpdCBz
+aG9ydGxvZyA+PiAkVEVYVF9PVVQKZ2l0IGRpZmYgbWFzdGVyLi4kQlJBTkNIID4+ICRURVhU
+X09VVAoK
+--------------030609030703020107040602--
