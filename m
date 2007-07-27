@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933880AbXG0Bin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbXG0Bma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933880AbXG0Bin (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 21:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759440AbXG0Bih
+	id S1765426AbXG0Bma (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759566AbXG0BmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 21:38:37 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:34911 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754058AbXG0Big (ORCPT
+	Thu, 26 Jul 2007 21:42:21 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57999 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754735AbXG0BmU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 21:38:36 -0400
-Date: Fri, 27 Jul 2007 02:38:35 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] lockd and nfsd endianness annotation fixes
-Message-ID: <20070727013835.GR27237@ftp.linux.org.uk>
-References: <E1IE6Hd-0005Dl-Hu@ZenIV.linux.org.uk> <20070726220853.GN8125@fieldses.org> <18089.14397.946323.617318@notabene.brown> <20070727011922.GC27538@fieldses.org>
+	Thu, 26 Jul 2007 21:42:20 -0400
+Date: Thu, 26 Jul 2007 18:41:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai.Lu@Sun.COM
+Cc: Horms <horms@verge.net.au>, linux-ia64 <linux-ia64@vger.kernel.org>,
+       Tony Luck <tony.luck@intel.com>, Andi Kleen <ak@suse.de>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>,
+       Russell King <rmk@arm.linux.org.uk>, Gerd Hoffmann <kraxel@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: Regression in serial console on ia64 after 2.6.22
+Message-Id: <20070726184130.404a13d3.akpm@linux-foundation.org>
+In-Reply-To: <46A76E95.90903@sun.com>
+References: <20070719074147.GA23879@verge.net.au>
+	<46A0191E.3000100@sun.com>
+	<200707241657.33095.yinghai.lu@sun.com>
+	<20070725071718.GB18068@verge.net.au>
+	<46A76E95.90903@sun.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070727011922.GC27538@fieldses.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 09:19:22PM -0400, J. Bruce Fields wrote:
- 
-> Thanks, uh, I probably saw that message too.
-> 
-> Hm, trying it just now--it catches the svclock.c mistake, but not the
-> one in nfsd/nfs4xdr.c--at least not as far as I can tell.
+On Wed, 25 Jul 2007 08:39:01 -0700 Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-fs/nfsd/nfs4xdr.c:2659:32: warning: incorrect type in argument 2 (different base types)
-fs/nfsd/nfs4xdr.c:2659:32:    expected int [signed] nfserr
-fs/nfsd/nfs4xdr.c:2659:32:    got restricted unsigned int [usertype] status
+> >> Subject         : Regression in serial console on ia64 after 2.6.22
+> >> References      : http://marc.info/?l=linux-ia64&m=118483645914066&w=2
+> >> Last known good : ?
+> >> Submitter       : Horms <horms@verge.net.au>
+> >> Caused-By       : Yinghai Lu <Yinghai.Lu@Sun.COM>
+> >>                   commit 18a8bd949d6adb311ea816125ff65050df1f3f6e
 
-is what got triggered.  I.e. call in
-        case OP_SECINFO:
-                nfsd4_encode_secinfo(resp, op->status, &op->u.secinfo);
-                break;
-which pointed to the misannotated function...
+afaik we still haven't fixed this and I don't think we've seen
+the final agreed-upon patch?
+
+Thanks.
