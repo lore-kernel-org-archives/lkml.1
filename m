@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938004AbXG0Vbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938054AbXG0Vd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938004AbXG0Vbo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 17:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935269AbXG0Vbg
+	id S938054AbXG0Vd3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 17:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935789AbXG0VdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 17:31:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:64411 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935176AbXG0Vbg (ORCPT
+	Fri, 27 Jul 2007 17:33:22 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:54795 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S933586AbXG0VdV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 17:31:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=FjDuY/AWU7FUu+u1Wtv0MLy0Fi6HUqIIgsqrxWH+cxR/38YLm2RwqNQ83I19FnhT3UUhrbtFpqimkMdKWHL+zVYDE1ljNIf2xoqlm1XZFeLQV8hKvZsoy/ZocmqqZdgrkNvQXy7GXxP4BVoQjMrzO87PQ8Wi2NXuzt/hnTjUYvg=
-Subject: Re: Problems with framebuffer in 2.6.22-git17
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Adrian McMenamin <adrianmcmenamin@gmail.com>
-Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
-       lethal@users.sourceforge.net
-In-Reply-To: <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
-References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
-	 <1185146563.6370.8.camel@daplas>
-	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
-	 <1185406433.5046.23.camel@daplas>
-	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
-	 <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 28 Jul 2007 05:31:30 +0800
-Message-Id: <1185571890.26603.7.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 17:33:21 -0400
+Date: Fri, 27 Jul 2007 17:33:14 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: linux-serial@vger.kernel.org,
+       Kernel development list <linux-kernel@vger.kernel.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Lockdep violation in the serial driver
+Message-ID: <Pine.LNX.4.44L0.0707271726080.2810-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 21:18 +0100, Adrian McMenamin wrote:
-> On 27/07/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
-> 
-> > With the patch reverted and 24bpp, it oopses before freezing (with two
-> > odd looking boot logos on the screen):
-> >
-> Tested this further and it fails on:
-> 
-> rev = fb_readl(par->mmio_base + 0x04);
+I want to make some changes to the Power Management core, and one of
+the side effects will be to make it illegal for a driver to acquire a
+mutex within its suspend() or resume() method if that mutex was locked
+while the device was registered.
 
-Doubtful if this line is the point of failure, this line is executed
-only once, on initialization.
+Unfortunately the serial core does exactly that.  In 
+drivers/serial/serial_core.c the uart_add_one_port() routine holds 
+state->mutex while calling tty_register_device(), and the same mutex is 
+acquired by uart_suspend_port() and uart_resume_port().
 
-> 
-> Will try to see what's up - but if anyone knows what is likely to be
-> wrong here please shout out!
+Can anybody suggest a way around this?  Does the mutex really need to 
+be locked at all these times?  Can it be released before calling 
+tty_register_device()?  Or could two separate mutexes be used?
 
-I'm still thinking there's something wrong on how the resources are
-allocated causing a pseudo_palette overrun. 
+Thanks,
 
-I'll post a clean-up patch later.
-
-Tony
+Alan Stern
 
