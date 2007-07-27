@@ -1,107 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763504AbXG0DAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765005AbXG0DDA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763504AbXG0DAv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 23:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbXG0DAp
+	id S1765005AbXG0DDA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 23:03:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754712AbXG0DCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 23:00:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39428 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbXG0DAo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 23:00:44 -0400
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Curry <pacman@theworld.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-In-Reply-To: <20070726184800.0bb3b9fb.akpm@linux-foundation.org>
-References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>
-	 <1185347565.5439.310.camel@localhost.localdomain>
-	 <20070726184800.0bb3b9fb.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 13:00:21 +1000
-Message-Id: <1185505222.5495.182.camel@localhost.localdomain>
+	Thu, 26 Jul 2007 23:02:54 -0400
+Received: from c-68-45-216-119.hsd1.nj.comcast.net ([68.45.216.119]:3570 "EHLO
+	mail.cyberdogtech.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755187AbXG0DCx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 23:02:53 -0400
+Date: Thu, 26 Jul 2007 22:59:34 -0400
+From: Matt LaPlante <kernel1@cyberdogtech.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 2.6.21-git15 - Kconfig Cleanup
+Message-Id: <20070726225934.fbef0c8d.kernel1@cyberdogtech.com>
+In-Reply-To: <20070518150953.c647230b.kernel1@cyberdogtech.com>
+References: <20070511220501.02181278.kernel1@cyberdogtech.com>
+	<20070518130441.060a9190.kernel1@cyberdogtech.com>
+	<20070518180154.GA6291@stusta.de>
+	<20070518150953.c647230b.kernel1@cyberdogtech.com>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Spam-Processed: mail.cyberdogtech.com, Thu, 26 Jul 2007 22:59:44 -0400
+	(not processed: message from valid local sender)
+X-Return-Path: kernel1@cyberdogtech.com
+X-Envelope-From: kernel1@cyberdogtech.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+X-MDAV-Processed: mail.cyberdogtech.com, Thu, 26 Jul 2007 22:59:45 -0400
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 18:48 -0700, Andrew Morton wrote:
-> On Wed, 25 Jul 2007 17:12:45 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Fri, 18 May 2007 15:09:53 -0400
+Matt LaPlante <kernel1@cyberdogtech.com> wrote:
+
+> On Fri, 18 May 2007 20:01:54 +0200
+> Adrian Bunk <bunk@stusta.de> wrote:
 > 
-> > On Tue, 2007-07-24 at 21:28 -0400, Alan Curry wrote:
-> > > As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse controller
-> > > on the PegasosPPC. This is because of a feature/bug in the OF device tree:
-> > > the "device_type" attribute is an empty string instead of "8042" as the
-> > > kernel expects. This patch (against 2.6.22.1) adds a secondary detection
-> > > which looks for a device whose *name* is "8042" if there is no device whose
-> > > *type* is "8042".
-> > > 
-> > > Signed-off-by: Alan Curry <pacman@world.std.com>
+> > On Fri, May 18, 2007 at 01:04:41PM -0400, Matt LaPlante wrote:
 > > 
-> > Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > > ping?
 > > 
-> > Note, if there's a volunteer, we could probably turn that code into a
-> > nice table lookup.
+> > Noone disagreed, and trivial patches will be forwarded again during the 
+> > 2.6.23 merge window.
 > 
-> Did this get merged, or otherwise fixed?  Even though the code in there has
-> changed quite a bit, it looks to my untrained eye like the fix is still
-> applicable?
 
-Merged a fixed version:
+This patch doesn't appear to have ever found its way into the trivial git after
+it was accepted, and as a result doesn't seem to have made it into 2.6.23 before
+the window closed.  Was there a problem?
 
-f5d834fc34e61f1a40435981062000e5d2b2baa8
+FWIW, I have a second patch that also doesn't seem to have made it to the trivial git yet... but unlike the patch above, the second one is only a few weeks old and may just be sitting in the old inbox (http://article.gmane.org/gmane.linux.kernel/554613).
 
-(In linus tree as of now)
-
-Cheers,
-Ben.
+Thanks,
+Matt
 
 > 
-> From: Alan Curry <pacman@TheWorld.com>
-> 
-> As of 2.6.22 the kernel doesn't recognize the i8042 keyboard/mouse
-> controller on the PegasosPPC.  This is because of a feature/bug in the OF
-> device tree: the "device_type" attribute is an empty string instead of
-> "8042" as the kernel expects.  This patch (against 2.6.22.1) adds a
-> secondary detection which looks for a device whose *name* is "8042" if
-> there is no device whose *type* is "8042".
-> 
-> Signed-off-by: Alan Curry <pacman@world.std.com>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  arch/powerpc/kernel/setup-common.c |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff -puN /dev/null /dev/null
-> diff -puN arch/powerpc/kernel/setup-common.c~powerpc-pegasos-keyboard-detection arch/powerpc/kernel/setup-common.c
-> --- a/arch/powerpc/kernel/setup-common.c~powerpc-pegasos-keyboard-detection
-> +++ a/arch/powerpc/kernel/setup-common.c
-> @@ -496,6 +496,12 @@ int check_legacy_ioport(unsigned long ba
->  			break;
->  		}
->  		np = of_find_node_by_type(NULL, "8042");
-> +		/*
-> +		 * Pegasos has no device_type on its 8042 node, look for the
-> +		 * name instead
-> +		 */
-> +		if (!np)
-> +			np = of_find_node_by_name(NULL, "8042");
->  		break;
->  	case FDC_BASE: /* FDC1 */
->  		np = of_find_node_by_type(NULL, "fdc");
-> _
+> > 
+> > cu
+> > Adrian
+> > 
+> > -- 
+> > 
+> >        "Is there not promise of rain?" Ling Tan asked suddenly out
+> >         of the darkness. There had been need of rain for many days.
+> >        "Only a promise," Lao Er said.
+> >                                        Pearl S. Buck - Dragon Seed
+> > 
 > 
 > 
-> And ALan says that 2.6.22 is bust, but this patch no won't apply there so
-> if we want to fix 2.6.22.x then Alan's original patch would be needed.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
