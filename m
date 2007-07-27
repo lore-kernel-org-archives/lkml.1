@@ -1,79 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965073AbXG0JyD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935079AbXG0J7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965073AbXG0JyD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:54:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936948AbXG0Jt5
+	id S935079AbXG0J7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762740AbXG0J7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:49:57 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:36914 "EHLO ron.emn.fr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S936931AbXG0Jtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:49:55 -0400
-Date: Fri, 27 Jul 2007 11:45:56 +0200 (MEST)
-Message-Id: <200707270945.LAA17372@ifs.emn.fr>
-To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 18/68] 0 -> NULL, for arch/um
-Cc: jdike@karaya.com, user-mode-linux-devel@lists.sourceforge.net,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-From: Yoann Padioleau <padator@wanadoo.fr>
+	Fri, 27 Jul 2007 05:59:00 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:55826 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761540AbXG0J67 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:58:59 -0400
+Date: Fri, 27 Jul 2007 12:58:57 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Takashi Iwai <tiwai@suse.de>
+cc: Sam Ravnborg <sam@ravnborg.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       sparclinux@vger.kernel.org
+Subject: Re: ALSA & missing dma_*_coherent on sparc32
+In-Reply-To: <s5hzm1jtiy1.wl%tiwai@suse.de>
+Message-ID: <Pine.SOC.4.64.0707271257570.20751@math.ut.ee>
+References: <Pine.SOC.4.64.0707261317001.20971@math.ut.ee> <s5h7ionv0xc.wl%tiwai@suse.de>
+ <Pine.SOC.4.64.0707261501130.24473@math.ut.ee> <s5h6447uzrk.wl%tiwai@suse.de>
+ <20070726125834.GA4041@uranus.ravnborg.org> <s5hzm1jtiy1.wl%tiwai@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> [ALSA] Fix build error without CONFIG_HAS_DMA
+> 
+> The recent change of include/asm-generic/dma-mapping-broken.h breaks
+> the build without CONFIG_HAS_DMA.  This patch is an ad hoc fix.
 
-When comparing a pointer, it's clearer to compare it to NULL than to 0.
+This seems to fix the issue, thnaks!
 
-Here is an excerpt of the semantic patch: 
-
-@@
-expression *E;
-@@
-
-  E ==
-- 0
-+ NULL
-
-@@
-expression *E;
-@@
-
-  E !=
-- 0
-+ NULL
-
-Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: jdike@karaya.com
-Cc: user-mode-linux-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org
----
-
- sys-i386/fault.c   |    2 +-
- sys-x86_64/fault.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/um/sys-i386/fault.c b/arch/um/sys-i386/fault.c
-index 745b4fd..8004023 100644
---- a/arch/um/sys-i386/fault.c
-+++ b/arch/um/sys-i386/fault.c
-@@ -20,7 +20,7 @@ int arch_fixup(unsigned long address, un
- 	const struct exception_table_entry *fixup;
- 
- 	fixup = search_exception_tables(address);
--	if(fixup != 0){
-+	if(fixup != NULL){
- 		UPT_IP(regs) = fixup->fixup;
- 		return(1);
- 	}
-diff --git a/arch/um/sys-x86_64/fault.c b/arch/um/sys-x86_64/fault.c
-index 4636b14..67d4a19 100644
---- a/arch/um/sys-x86_64/fault.c
-+++ b/arch/um/sys-x86_64/fault.c
-@@ -19,7 +19,7 @@ int arch_fixup(unsigned long address, un
- 	const struct exception_table_entry *fixup;
- 
- 	fixup = search_exception_tables(address);
--	if(fixup != 0){
-+	if(fixup != NULL){
- 		UPT_IP(regs) = fixup->fixup;
- 		return(1);
- 	}
-
+-- 
+Meelis Roos (mroos@linux.ee)
