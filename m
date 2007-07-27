@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938335AbXG0Xu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938468AbXG0Xwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938335AbXG0Xu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937983AbXG0XuK
+	id S938468AbXG0Xwh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765552AbXG0Xwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:50:10 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47610 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762431AbXG0XuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:50:09 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: Jan Dittmer <jdi@l4x.org>
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-References: <200707251238.50218.lenb@kernel.org> <46A98FF9.8060801@l4x.org>
-X-Yow: ..  I wonder if I ought to tell them about my PREVIOUS LIFE
- as a COMPLETE STRANGER?
-Date: Sat, 28 Jul 2007 01:50:06 +0200
-In-Reply-To: <46A98FF9.8060801@l4x.org> (Jan Dittmer's message of "Fri\, 27 Jul
-	2007 08\:26\:01 +0200")
-Message-ID: <je8x91flu9.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	Fri, 27 Jul 2007 19:52:31 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:7642 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760903AbXG0Xwa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 19:52:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=H/viNBL/6VVbh3pWvU30vMvqFqZnA0p1XwoW8fOrTt26pLqovELeyDb4e2+ERdhUvrbc4mM4n5fr9ZpUvwMxf581m0suWdYtT28lkwsr7Ipa23hULU/TUX7eqg4yi7xEZmw20Qe+S+1PbUvyaZK//Q0UF3EW1y9toNQ+9BTOBsQ=
+Message-ID: <46AA844E.7010806@googlemail.com>
+Date: Sat, 28 Jul 2007 01:48:30 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, jdike@karaya.com
+Subject: Re: UML compile error
+References: <46AA75E1.10606@googlemail.com> <20070727162802.a52307dc.akpm@linux-foundation.org>
+In-Reply-To: <20070727162802.a52307dc.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Dittmer <jdi@l4x.org> writes:
-
-> Len Brown wrote:
->> Hi Linus,
+Andrew Morton wrote:
+> On Sat, 28 Jul 2007 00:46:57 +0200
+> Gabriel C <nix.or.die@googlemail.com> wrote:
+> 
+>> UML does not compile on current git head. 
 >>
->> please pull from: 
->>
->> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
->
-> This seems to break ia64 defconfig:
->
->   Building modules, stage 2.
->   MODPOST 157 modules
-> FATAL: drivers/acpi/button: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=144.
+>> ....
+>> $ make defconfig ARCH=um
+>> [..]
+>> $ make  ARCH=um
+>> scripts/kconfig/conf -s arch/um/Kconfig
+>> net/bluetooth/hidp/Kconfig:4:warning: 'select' used by config symbol 'BT_HIDP' refers to undefined symbol 'HID'
+>> drivers/net/wireless/Kconfig:552:warning: 'select' used by config symbol 'RTL8187' refers to undefined symbol 'EEPROM_93CX6'
+>>   SYMLINK arch/um/include/kern_constants.h
+>>   CHK     arch/um/include/uml-config.h
+>>   UPD     arch/um/include/uml-config.h
+>>   CC      arch/um/sys-i386/user-offsets.s
+>>   CHK     arch/um/include/user_constants.h
+>>   CHK     include/linux/version.h
+>>   CHK     include/linux/utsrelease.h
+>>   CC      arch/um/kernel/asm-offsets.s
+>> In file included from include/linux/sched.h:54,
+>>                  from arch/um/include/sysdep/kernel-offsets.h:2,
+>>                  from arch/um/kernel/asm-offsets.c:1:
+>> include/linux/jiffies.h:18:5: warning: "CONFIG_HZ" is not defined
+>> include/linux/jiffies.h:20:7: warning: "CONFIG_HZ" is not defined
+>> include/linux/jiffies.h:22:7: warning: "CONFIG_HZ" is not defined
+>> include/linux/jiffies.h:24:7: warning: "CONFIG_HZ" is not defined
+>> include/linux/jiffies.h:26:7: warning: "CONFIG_HZ" is not defined
+>> include/linux/jiffies.h:28:7: warning: "CONFIG_HZ" is not defined
+>> include/linux/jiffies.h:30:7: warning: "CONFIG_HZ" is not defined
+> 
+> I suspect your build setup broke.  Try `make mrproper' then
+> have another go.
+> 
 
-Are you cross-compiling?  The definition of kernel_ulong_t won't work on
-x86.
+Right this auto build tree broke for some reason.
 
-Andreas.
+A fresh git tree is fine ,  sorry for the noise.
 
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+
+Gabriel
