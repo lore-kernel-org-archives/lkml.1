@@ -1,45 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbXG0BAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765578AbXG0BAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764484AbXG0BAA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 21:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758449AbXG0A7u
+	id S1765578AbXG0BAZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761153AbXG0A7y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 20:59:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37276 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757064AbXG0A7t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 20:59:49 -0400
-Date: Thu, 26 Jul 2007 17:59:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Josh Triplett <josht@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-sparse@vger.kernel.org
-Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
-Message-Id: <20070726175929.730fc0be.akpm@linux-foundation.org>
-In-Reply-To: <46A93F92.6050708@s5r6.in-berlin.de>
-References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
-	<m3abtir95x.fsf@maximus.localdomain>
-	<46A93F92.6050708@s5r6.in-berlin.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 26 Jul 2007 20:59:54 -0400
+Received: from ozlabs.org ([203.10.76.45]:45062 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759449AbXG0A7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 20:59:51 -0400
+Subject: Re: 07/26 GIT - Build breakage
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Parag Warudkar <parag.warudkar@gmail.com>, linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>
+In-Reply-To: <alpine.LFD.0.999.0707261605560.3442@woody.linux-foundation.org>
+References: <46A924A0.9010501@gmail.com>
+	 <alpine.LFD.0.999.0707261605560.3442@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 10:59:24 +1000
+Message-Id: <1185497965.12151.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007 02:42:58 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-
-> Krzysztof Halasa wrote:
-> > and even if I could, "always use" seems way too strong in this case.
+On Thu, 2007-07-26 at 16:07 -0700, Linus Torvalds wrote: 
 > 
-> Besides, how about reorienting the CodingStyle text to the essential?
+> On Thu, 26 Jul 2007, Parag Warudkar wrote:
+> >
+> > arch/i386/kernel/paravirt.o: In function `init_IRQ':
+> > (.text+0xb20): multiple definition of `init_IRQ'
+> > arch/i386/kernel/i8259.o:(.init.text+0x30): first defined here
+> > ld: Warning: size of symbol `init_IRQ' changed from 66 in
+> > arch/i386/kernel/i8259.o to 14 in arch/i386/kernel/paravirt.o
+> > make[1]: *** [arch/i386/kernel/built-in.o] Error 1
+> > make: *** [arch/i386/kernel] Error 2
 > 
-> (But leave the humorous language in --- the few parts that are inherited
-> from old versions of that file, now more and more being buried in dry
-> nitpicking.)
+> Ok, it seems that some versions of gcc/binutils have problems with the 
+> games that paravirt introduced with the "weak" thing. 
+> 
+> I'm not entirely surprised. That stuff was trying to be too clever by 
+> half.
+> 
+> Rusty?
 
-If sparse has gone and added a warning for this then it is more than
-nitpicking.  Reducing the amount of noise coming out of sparse is useful.
+Sure, but this was in .21 and .22.  This config is from 2.6.21.5, in
+fact.
+
+Parag, does your arch/i386/kernel/i8259.c look like this around line
+384?  If not, perhaps it's a mis-merge for you? 
+        
+        /* Overridden in paravirt.c */
+        void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+        
+        void __init native_init_IRQ(void)
+        {
+        
+Thanks,
+Rusty.
+
