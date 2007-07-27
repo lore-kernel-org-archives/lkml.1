@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbXG0T1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765127AbXG0Tas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764277AbXG0T1q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760025AbXG0T1i
+	id S1765127AbXG0Tas (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 15:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761430AbXG0Tal
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:27:38 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:60219 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759352AbXG0T1h (ORCPT
+	Fri, 27 Jul 2007 15:30:41 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:39106 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760978AbXG0Tal (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:27:37 -0400
-Date: Fri, 27 Jul 2007 21:28:48 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070727192848.GW9840@enneenne.com>
-References: <20070717180550.GA24759@enneenne.com> <1185197716.14697.244.camel@pmac.infradead.org> <20070724080013.GA22171@gundam.enneenne.com> <1185284942.14697.319.camel@pmac.infradead.org> <20070724142050.GD4074@enneenne.com> <1185288769.14697.339.camel@pmac.infradead.org> <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com>
+	Fri, 27 Jul 2007 15:30:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=XAIA7iz1wvjyO8AZJ8cIN46KJi1swaHYvRGcwQhJbSGyixLUU0ewl9vZxbr1Z8qJXyHqOc5teUL6TkgqEet+VQFU5Gb/1cShEYDzITTsfWQOYgIyjdKV/oLAaHeB3mCc9V6bE67wPpyFt4Ui4/Hr5B8lAd2Dp69QBuPrFM4Ht24=
+Message-ID: <6bffcb0e0707271230s1f3f3c63w8ccdd8a0945e706a@mail.gmail.com>
+Date: Fri, 27 Jul 2007 21:30:34 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Christoph Pfister" <christophpfister@gmail.com>
+Subject: Re: BUG: soft lockup detected on CPU#0!
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <19a3b7a80707251241t1cb5389ak8e5e3b27af2bde41@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46AA42CA.4060004@nortel.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: LinuxPPS & spinlocks
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+References: <19a3b7a80707251241t1cb5389ak8e5e3b27af2bde41@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 01:08:58PM -0600, Chris Friesen wrote:
-> Rodolfo Giometti wrote:
+Hi Christoph,
+
+On 25/07/07, Christoph Pfister <christophpfister@gmail.com> wrote:
+> Hi,
 >
->> The pps_event() is now protected by a spinlock against
->> pps_register_source() and pps_unregister_source()...
+> After burning a dvd I had to eject it and found that message in dmesg.
+> Syslog snippet and dmesg attached.
+> System is 2.6.21 (debian version), running a p4, issue reproducible.
+
+Does this happen on the latest -stable?
+http://eu.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
+
 >
-> Locks protect data, not code.  It may make more sense to identify the 
-> specific data being protected by the spinlock.
+> Thanks for taking care of this,
+>
+> Christoph
+>
+>
 
-What do you mean? Did you find an error into my patch? :-o
-
-Functions pps_event() and
-pps_register_source()/pps_unregister_source() take accesso to shared
-data, that's why I used spinlocks.
-
-Thanks,
-
-Rodolfo
+Regards,
+Michal
 
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+LOG
+http://www.stardust.webpages.pl/log/
