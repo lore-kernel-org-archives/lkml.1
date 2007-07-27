@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937903AbXG0WG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938145AbXG0WIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937903AbXG0WG7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 18:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765481AbXG0WGu
+	id S938145AbXG0WIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 18:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765708AbXG0WIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 18:06:50 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58392 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765465AbXG0WGt (ORCPT
+	Fri, 27 Jul 2007 18:08:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39068 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761697AbXG0WIM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 18:06:49 -0400
-Date: Sat, 28 Jul 2007 07:06:09 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       tony.luck@intel.com, nickpiggin@yahoo.com.au, Zoltan.Menyhart@bull.net
-Subject: Re: [PATCH] flush cache fixes for ia64 [1/2] migration fix
-Message-Id: <20070728070609.3a775842.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0707270934300.15619@schroedinger.engr.sgi.com>
-References: <20070727133657.8c9c6803.kamezawa.hiroyu@jp.fujitsu.com>
-	<20070727133843.6cd3f57a.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0707270934300.15619@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Fri, 27 Jul 2007 18:08:12 -0400
+Subject: Re: swap-prefetch:  A smart way to make good use of idle resources
+	 (was: updatedb)
+From: Arjan van de Ven <arjan@infradead.org>
+To: Indan Zupancic <indan@nul.nu>
+Cc: Al Boldi <a1426z@gawab.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <52449.81.207.0.53.1185573103.squirrel@secure.samage.net>
+References: <200707272243.02336.a1426z@gawab.com>
+	 <1185568498.2711.5.camel@laptopd505.fenrus.org>
+	 <52449.81.207.0.53.1185573103.squirrel@secure.samage.net>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Fri, 27 Jul 2007 15:06:14 -0700
+Message-Id: <1185573974.2711.8.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007 09:39:16 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
+On Fri, 2007-07-27 at 23:51 +0200, Indan Zupanci
+> > also, they take up seek time (5 to 10 msec), so if you were to read
+> > something else at the time you get additional latency.
+> 
+> If there's other disk activity swap prefetch shouldn't do much, so this isn't
+> really true.
 
-> This will have no effect on x86_64, ia64 and i386. Maybe useful for 
-> virtually mapped platforms (parisc)?
-> 
-yes.
+how do you know there will be other activity? You start the IO and that
+basically blacks out the disk for 5 to 10 ms. If the "real" IO gets
+submitted in that time you add latency. You cannot predict that IO
+happening or not happening.
 
-- Kame
 
-> asm-ia64/cacheflush.c
-> 
-> #define flush_icache_page(vma,page)             do { } while (0)
-> 
-> Acked-by: Christoph Lameter <clameter@sgi.com>
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
