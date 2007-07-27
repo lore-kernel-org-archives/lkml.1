@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936689AbXG0VUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937781AbXG0VZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936689AbXG0VUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 17:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754369AbXG0VUn
+	id S937781AbXG0VZi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 17:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764663AbXG0VZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 17:20:43 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46889 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753563AbXG0VUm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 17:20:42 -0400
-Date: Fri, 27 Jul 2007 23:20:15 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, v4l-dvb-maintainer@linuxtv.org,
-       Thierry MERLE <thierry.merle@free.fr>,
-       "Dwaine P. Garden" <dwainegarden@rogers.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [2/2] 2.6.23-rc1: known regressions with patches v2
-Message-ID: <20070727212015.GA15129@stusta.de>
-References: <46AA5A28.3090205@googlemail.com> <46AA5B4A.40500@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Fri, 27 Jul 2007 17:25:31 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51700 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761459AbXG0VZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 17:25:31 -0400
+Date: Fri, 27 Jul 2007 23:26:41 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>, Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH] alpha: fix two section mismatch warnings
+Message-ID: <20070727212641.GA16236@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46AA5B4A.40500@googlemail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 10:53:30PM +0200, Michal Piotrowski wrote:
-> Hi all,
-> 
-> Here is a list of some known regressions in 2.6.23-rc1
-> with patches available.
-> 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
->...
-> Media
-> 
-> Subject         : usbvision: don't return an uninitialized value
-> References      : http://lkml.org/lkml/2007/7/23/65
-> Last known good : ?
-> Submitter       : Adrian Bunk <bunk@stusta.de>
-> Caused-By       : ?
-> Handled-By      : Adrian Bunk <bunk@stusta.de>
-> Patch           : http://lkml.org/lkml/2007/7/23/65
-> Status          : patch available
->...
+Fix the following section mismatch warnings:
 
-There's a better patch available, updated entry:
+WARNING: o-alpha/vmlinux.o(.text+0x1a4d4): Section mismatch: reference to .init.text:free_area_init (between 'paging_init' and 'srm_paging_stop')
+WARNING: o-alpha/vmlinux.o(.text+0x1a4dc): Section mismatch: reference to .init.text:free_area_init (between 'paging_init' and 'srm_paging_stop')
 
-Subject         : usbvision: don't return an uninitialized value
-References      : http://lkml.org/lkml/2007/7/23/65
-Last known good : ?
-Submitter       : Adrian Bunk <bunk@stusta.de>
-Caused-By       : Thierry MERLE <thierry.merle@free.fr>
-                  commit c5f48367fe54c46805774eeea8e828de54a5ad7b
-Handled-By      : Trent Piepho <xyzzy@speakeasy.org>
-Patch           : http://lkml.org/lkml/2007/7/23/114
-Status          : patch available
+One instance of paging_init() was declared __init but not the other one - used by defconfig.
+Fixed by declaring the second instance ___init too.
 
-
-> Regards,
-> Michal
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
+index 550f490..5e6da47 100644
+--- a/arch/alpha/mm/init.c
++++ b/arch/alpha/mm/init.c
+@@ -267,8 +267,7 @@ callback_init(void * kernel_end)
+ /*
+  * paging_init() sets up the memory map.
+  */
+-void
+-paging_init(void)
++void __init paging_init(void)
+ {
+ 	unsigned long zones_size[MAX_NR_ZONES] = {0, };
+ 	unsigned long dma_pfn, high_pfn;
