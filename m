@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763201AbXG0QRM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937293AbXG0QXy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763201AbXG0QRM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 12:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762922AbXG0QQz
+	id S937293AbXG0QXy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 12:23:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763275AbXG0QXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 12:16:55 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:34233 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762794AbXG0QQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 12:16:54 -0400
-To: smfrench@gmail.com
-CC: miklos@szeredi.hu, raven@themaw.net, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       kzak@redhat.com, ericvh@gmail.com, lucho@ionkov.net,
-       zippel@linux-m68k.org, hpa@zytor.com, rathamahata@php4.ru,
-       dhowells@redhat.com, sfrench@samba.org, mhalcrow@us.ibm.com,
-       phillip@hellewell.homeip.net, hirofumi@mail.parknet.co.jp,
-       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
-       shaggy@austin.ibm.com, vandrove@vc.cvut.cz, trond.myklebust@fys.uio.no,
-       aia21@cantab.net, mark.fasheh@oracle.com, kurt.hackel@oracle.com,
-       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
-       dushistov@mail.ru, xfs-masters@oss.sgi.com, arnd@arndb.de,
-       holzheu@de.ibm.com
-In-reply-to: <524f69650707270904j24038282le55f3981dff560a@mail.gmail.com>
-	(smfrench@gmail.com)
-Subject: Re: request for patches: showing mount options
-References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu>
-	 <1185550256.3203.77.camel@raven.themaw.net>
-	 <E1IERvH-00016M-00@dorka.pomaz.szeredi.hu> <524f69650707270904j24038282le55f3981dff560a@mail.gmail.com>
-Message-Id: <E1IESNi-0001B9-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 27 Jul 2007 18:09:34 +0200
+	Fri, 27 Jul 2007 12:23:44 -0400
+Received: from mx1.suse.de ([195.135.220.2]:59398 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762985AbXG0QXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 12:23:43 -0400
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Jan Dittmer <jdi@l4x.org>
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, trenn <trenn@suse.de>
+In-Reply-To: <46A98FF9.8060801@l4x.org>
+References: <200707251238.50218.lenb@kernel.org>  <46A98FF9.8060801@l4x.org>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 18:25:12 +0200
+Message-Id: <1185553512.3849.46.camel@noname>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> cifs and nfs (probably others) have some mount options which are mount
-> order dependent ie may be invalid or ignored when you have more than
-> one mount to the same server, or mount the same resource in two places
-> with different options.  In the long run, at least for cifs, we may be
-> able to better handle a user mounting to the same server twice with
-> e.g. different security options (authentication, packet signing ...),
-> but in the meantime are there any thoughts on whether those type of
-> mount options should be displayed differently
+On Fri, 2007-07-27 at 08:26 +0200, Jan Dittmer wrote:
+> Len Brown wrote:
+> > Hi Linus,
+> > 
+> > please pull from: 
+> > 
+> > git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+> 
+> This seems to break ia64 defconfig:
+> 
+>    Building modules, stage 2.
+>    MODPOST 157 modules
+> FATAL: drivers/acpi/button: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=144.
+> Fix definition of struct acpi_device_id in mod_devicetable.h
+> make[2]: *** [__modpost] Error 1
+> make[1]: *** [modules] Error 2
+> make: *** [_all] Error 2
+> 
+> gcc 3.3.6, binutils 2.15.94
+> 
+> http://l4x.org/k/?d=32569
 
-I think they should be displayed normally, just as all the other
-options.  If an option is shared by multiple mounts, that option
-should be displayed for all of them.
+This is strange, I just compiled on a IA64 with button as module
+(defconfig), but with gcc version 4.1.2, all is fine.
+Anyone an idea how to run into that?
 
-This is similar to the case of per-mount vs. per-superblock options,
-which aren't separated either.
+I won't be able to detailed debug this before Monday, but be sure I will
+do so then.
 
-Miklos
+Thanks,
+
+    Thomas
+
