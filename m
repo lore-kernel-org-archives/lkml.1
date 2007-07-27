@@ -1,72 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965229AbXG0URl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937857AbXG0USq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965229AbXG0URl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965179AbXG0UQ3
+	id S937857AbXG0USq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934546AbXG0USf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:16:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:41994 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965313AbXG0UQ1 (ORCPT
+	Fri, 27 Jul 2007 16:18:35 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:62339 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934165AbXG0USe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:16:27 -0400
-Date: Fri, 27 Jul 2007 12:31:26 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, mingo@elte.hu
-Subject: [PATCH] sched: fix kernel-doc warnings
-Message-Id: <20070727123126.7fc35002.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Jul 2007 16:18:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=LIrdIGbdwKTAOSuLTibJxMkgYhjgTsL3sCfARxtGMSYB++gE5fL1ItopxKfy44yGXuNZ4wBSgarsVGNv9q0CwKeQVgBf9UrL9v+IX0cRsMIGScPVEqwFAQaHUtlZnJ/1VUrsgpjzO+Rw6E+mrZP9SZ7oJgtWRqC4yqwLKeqbJV8=
+Message-ID: <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
+Date: Fri, 27 Jul 2007 21:18:33 +0100
+From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Problems with framebuffer in 2.6.22-git17
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       lethal@users.sourceforge.net
+In-Reply-To: <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
+	 <1185146563.6370.8.camel@daplas>
+	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
+	 <1185406433.5046.23.camel@daplas>
+	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On 27/07/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
 
-Fix kernel-doc warnings in sched.c:
+> With the patch reverted and 24bpp, it oopses before freezing (with two
+> odd looking boot logos on the screen):
+>
+Tested this further and it fails on:
 
-Warning(linux-2623-rc1g4//kernel/sched.c:1685): No description found for parameter 'notifier'
-Warning(linux-2623-rc1g4//kernel/sched.c:1696): No description found for parameter 'notifier'
-Warning(linux-2623-rc1g4//kernel/sched.c:1750): No description found for parameter 'prev'
+rev = fb_readl(par->mmio_base + 0x04);
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- kernel/sched.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
---- linux-2623-rc1g4.orig/kernel/sched.c
-+++ linux-2623-rc1g4/kernel/sched.c
-@@ -1678,8 +1678,8 @@ void fastcall wake_up_new_task(struct ta
- #ifdef CONFIG_PREEMPT_NOTIFIERS
- 
- /**
-- * preempt_notifier_register - tell me when current is being being preempted
-- *                         and rescheduled
-+ * preempt_notifier_register - tell me when current is being being preempted & rescheduled
-+ * @notifier: notifier struct to register
-  */
- void preempt_notifier_register(struct preempt_notifier *notifier)
- {
-@@ -1689,6 +1689,7 @@ EXPORT_SYMBOL_GPL(preempt_notifier_regis
- 
- /**
-  * preempt_notifier_unregister - no longer interested in preemption notifications
-+ * @notifier: notifier struct to unregister
-  *
-  * This is safe to call from within a preemption notifier.
-  */
-@@ -1735,6 +1736,7 @@ fire_sched_out_preempt_notifiers(struct 
- /**
-  * prepare_task_switch - prepare to switch tasks
-  * @rq: the runqueue preparing to switch
-+ * @prev: the current task that is being switched out
-  * @next: the task we are going to switch to.
-  *
-  * This is called with the rq lock held and interrupts off. It must
+Will try to see what's up - but if anyone knows what is likely to be
+wrong here please shout out!
