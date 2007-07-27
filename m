@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937818AbXG0Uu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbXG0UvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937818AbXG0Uu1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934681AbXG0UuM
+	id S1764277AbXG0UvQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937896AbXG0Uum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:50:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:32931 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934605AbXG0UuK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:50:10 -0400
-Message-ID: <46AA5A57.7010108@garzik.org>
-Date: Fri, 27 Jul 2007 16:49:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>, Adam Belay <ambx1@neo.rr.com>,
-       Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       =?ISO-8859-15?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] x86, serial: always probe for legacy COM ports
-References: <200707271158.50028.bjorn.helgaas@hp.com> <200707271411.42253.bjorn.helgaas@hp.com> <46AA53E3.5080501@garzik.org> <200707271426.30962.bjorn.helgaas@hp.com>
-In-Reply-To: <200707271426.30962.bjorn.helgaas@hp.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Fri, 27 Jul 2007 16:50:42 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56273
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S937894AbXG0Uul (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:50:41 -0400
+Date: Fri, 27 Jul 2007 13:50:37 -0700 (PDT)
+Message-Id: <20070727.135037.52167499.davem@davemloft.net>
+To: arjan@infradead.org
+Cc: torvalds@linux-foundation.org, matthew@wil.cx, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+Subject: Re: IRQF_DISABLED problem
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1185567116.2711.2.camel@laptopd505.fenrus.org>
+References: <alpine.LFD.0.999.0707261557150.3442@woody.linux-foundation.org>
+	<alpine.LFD.0.999.0707261616050.3442@woody.linux-foundation.org>
+	<1185567116.2711.2.camel@laptopd505.fenrus.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn Helgaas wrote:
-> On Friday 27 July 2007 02:21:55 pm Jeff Garzik wrote:
->> Bjorn Helgaas wrote:
->>> On Friday 27 July 2007 12:05:51 pm Jeff Garzik wrote:
->>>> This is still incomplete, as repeatedly stated.  Here is the email, again.
+From: Arjan van de Ven <arjan@infradead.org>
+Date: Fri, 27 Jul 2007 13:11:56 -0700
 
->>> OK, uncle!  I'll work on your helpful advice (thanks for that), but
->>> it feels too risky for this stage of 2.6.23.  Maybe I can come up with
->>> something for a future release.
-
->> The changeset in the kernel is too risky _without_ the changes I described.
+> On Thu, 2007-07-26 at 16:17 -0700, Linus Torvalds wrote:
+> > 
+> > On Thu, 26 Jul 2007, Linus Torvalds wrote:
+> > > 
+> > >  (c) "one IRQF_DISABLED means that everything runs disabled". This is 
+> > >      quite possibly buggy.
+> > 
+> > (Side note: I'm not claiming this (or it's mirror image (d)) is really any 
+> > better/worse than the current behaviour from a theoretical standpoint, but 
+> > at least the current behaviour is _tested_, which makes it better in 
+> > practice. So if we want to change this, I think we want to change it to 
+> > something that is _obviously_ better).
 > 
-> That's what I meant.  Andrew already has a revert patch in -mm, and
-> the safest path seems like putting the reversion in 2.6.23 and working
-> on your advice post-2.6.23.
+> my personal preference would actually be to just never enable
+> interrupts. It's the fastest solution obviously, the most friendly on
+> stack and.. well simplest. Drivers no longer need to play some of the
+> games that they do today. And while there is an argument that this may
+> introduce a bit of latency... I'm not really convinced.
 
-Ah, my apologies!
+If you have a "chirpy" serial controller with only a 1 byte
+fifo, even a quite reasonable interrupt handler can cause
+receive characters to get lost if you disable interrupts during
+the entirety of it's execution.
 
-I read "I'll work on your advice, but it feels too risky" as describing 
-my advice as too risky, rather than the changeset currently in the kernel.
+It really is needed.
 
-IMO the changeset should be resubmitted as two changes, separating the 
-probe behavior changes from the platform driver conversion.  They are 
-two distinct changes, and that would allow git-bisect to identify the 
-culprit easily if future breakage occurs.
-
-	Jeff
-
-
+And it's just plain rude to disable interrupts when it isn't
+absolutely necessary.
