@@ -1,127 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938042AbXG0WvI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965144AbXG0Wvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938042AbXG0WvI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 18:51:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765869AbXG0Wu4
+	id S965144AbXG0Wvx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 18:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933968AbXG0Wvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 18:50:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:28897 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765713AbXG0Wu4 (ORCPT
+	Fri, 27 Jul 2007 18:51:45 -0400
+Received: from keil-draco.com ([216.193.185.50]:50816 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765869AbXG0Wvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 18:50:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=pB6nhP0W8PnGTARf+I0+kVjP4kAUyrUqmh8FYalheR4gsPrTkcoZ6QujxRzufG3sC9VfoWh9OpvZcngbzMciNNy4I6xgqUs63WDQjhKbkcOna4LP4uFchITkIeMzjLDkF4Z7BkLKbXXGRmsk62G1t80XUJENHwU9vsJ569QbtFE=
-Message-ID: <46AA75E1.10606@googlemail.com>
-Date: Sat, 28 Jul 2007 00:46:57 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Fri, 27 Jul 2007 18:51:44 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
+Date: Fri, 27 Jul 2007 18:51:28 -0400
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <200707271345.55187.dhazelton@enter.net> <1185574124.6342.31.camel@Homer.simpson.net>
+In-Reply-To: <1185574124.6342.31.camel@Homer.simpson.net>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: jdike@karaya.com
-Subject: UML compile error
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707271851.29061.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday 27 July 2007 18:08:44 Mike Galbraith wrote:
+> On Fri, 2007-07-27 at 13:45 -0400, Daniel Hazelton wrote:
+> > On Friday 27 July 2007 06:25:18 Mike Galbraith wrote:
+> > > On Fri, 2007-07-27 at 03:00 -0700, Andrew Morton wrote:
+> > > > So hrm.  Are we sure that updatedb is the problem?  There are quite a
+> > > > few heavyweight things which happen in the wee small hours.
+> > >
+> > > The balance in _my_ world seems just fine.  I don't let any of those
+> > > system maintenance things run while I'm using the system, and it
+> > > doesn't bother me if my working set has to be reconstructed after
+> > > heavy-weight maintenance things are allowed to run.  I'm not seeing
+> > > anything I wouldn't expect to see when running a job the size of
+> > > updatedb.
+> > >
+> > > 	-Mike
+> >
+> > Do you realize you've totally missed the point?
+>
+> Did you notice that I didn't make one disparaging remark about the patch
+> or the concept behind it?   Did you notice that I took _my time_  to
+> test, to actually look at  the problem?  No, you're too busy running
+> your mouth to appreciate the efforts of others.
 
-UML does not compile on current git head. 
+If you're done being an ass, take note of the fact that I never even said you 
+were doing that. What I was commenting on was the fact that you (and a lot of 
+the other developers) seem to keep saying "It doesn't happen here, so it 
+doesn't matter!" - ie: If I don't see something happening, it doesn't matter.
 
-....
-$ make defconfig ARCH=um
-[..]
-$ make  ARCH=um
-scripts/kconfig/conf -s arch/um/Kconfig
-net/bluetooth/hidp/Kconfig:4:warning: 'select' used by config symbol 'BT_HIDP' refers to undefined symbol 'HID'
-drivers/net/wireless/Kconfig:552:warning: 'select' used by config symbol 'RTL8187' refers to undefined symbol 'EEPROM_93CX6'
-  SYMLINK arch/um/include/kern_constants.h
-  CHK     arch/um/include/uml-config.h
-  UPD     arch/um/include/uml-config.h
-  CC      arch/um/sys-i386/user-offsets.s
-  CHK     arch/um/include/user_constants.h
-  CHK     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  CC      arch/um/kernel/asm-offsets.s
-In file included from include/linux/sched.h:54,
-                 from arch/um/include/sysdep/kernel-offsets.h:2,
-                 from arch/um/kernel/asm-offsets.c:1:
-include/linux/jiffies.h:18:5: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:20:7: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:22:7: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:24:7: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:26:7: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:28:7: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:30:7: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:33:3: error: #error You lose.
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: warning: "CONFIG_HZ" is not defined
-include/linux/jiffies.h:225:31: error: division by zero in #if
-include/linux/jiffies.h:225:46: warning: "SHIFT_HZ" is not defined
-In file included from arch/um/include/sysdep/kernel-offsets.h:2,
-                 from arch/um/kernel/asm-offsets.c:1:
-include/linux/sched.h: In function 'dequeue_signal_lock':
-include/linux/sched.h:1501: error: implicit declaration of function 'local_irq_save'
-include/linux/sched.h:1503: error: implicit declaration of function 'local_irq_restore'
-In file included from arch/um/kernel/asm-offsets.c:1:
-arch/um/include/sysdep/kernel-offsets.h: In function 'foo':
-arch/um/include/sysdep/kernel-offsets.h:20: error: 'struct thread_struct' has no member named 'arch'
-In file included from arch/um/include/sysdep/kernel-offsets.h:21,
-                 from arch/um/kernel/asm-offsets.c:1:
-arch/um/include/common-offsets.h:8: error: 'struct thread_struct' has no member named 'regs'
-make[1]: *** [arch/um/kernel/asm-offsets.s] Error 1
-make: *** [prepare0] Error 2
+> <snips load of useless spleen venting>
+>
+> Do yourself a favor, go dig into the VM source.  Read it, understand it
+> (not terribly easy), _then_ come back and preach to me.
 
-...
+I've been trying to do that since the thread started. Note that you snipped 
+where I said (and I'm going to paraphrase myself) "There is another way to 
+fix this, but I don't have the understanding necessary".
 
-Regards, 
+Now, once more, I'm going to ask: What is so terribly wrong with swap 
+prefetch? Why does it seem that everyone against it says "Its treating a 
+symptom, so it can't go in"?
 
-Gabriel C
+Try coming up with an answer that isn't "I don't see the problem on my $10K 
+system" or similar - try explaining it based on the *technical* merits. Does 
+it cause the processor cache to get thrashed? Does it create locking 
+problems?
+
+I stand by my statements, as vitriolic as you and Rene seem to want to get 
+over it. So far in this thread I have not seen one bit of *technical* 
+discussion over the merits, just the bits I've simplified and stated before.
+
+> Have a nice day.
+
+I am. You being nasty when somebody gets fed up with a line of BS doesn't stop 
+me from having a nice day. Only thing that could make my life any better 
+would be to have the questions I've asked answered, rather than having 
+supposedly intelligent people act like trolls.
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
