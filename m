@@ -1,66 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936903AbXG0Ocx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937012AbXG0Ojg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936903AbXG0Ocx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 10:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbXG0Ocq
+	id S937012AbXG0Ojg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 10:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761506AbXG0OjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 10:32:46 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:50488 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932291AbXG0Ocp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 10:32:45 -0400
-Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Joachim Deguara <joachim.deguara@amd.com>,
-       Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <20070727084252.GA9347@wotan.suse.de>
-References: <20070727084252.GA9347@wotan.suse.de>
+	Fri, 27 Jul 2007 10:39:19 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:35547 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761057AbXG0OjS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 10:39:18 -0400
+Subject: Re: [PATCH 1/4] fix endianness bug in l2cap_sock_listen()
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <E1IEPNS-0005RS-7o@ZenIV.linux.org.uk>
+References: <E1IEPNS-0005RS-7o@ZenIV.linux.org.uk>
 Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 27 Jul 2007 10:30:47 -0400
-Message-Id: <1185546647.5069.17.camel@localhost>
+Date: Fri, 27 Jul 2007 16:41:18 +0200
+Message-Id: <1185547278.13228.15.camel@violet>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 10:42 +0200, Nick Piggin wrote:
-> Hi,
+Hi Al,
+
+> We loop through psm values, calling __l2cap_get_sock_by_addr(psm, ...)
+> until we get NULL; then we set ->psm of our socket to htobs(psm).
+> IOW, we find unused psm value and put it into our socket.  So far, so
+> good, but...  __l2cap_get_sock_by_addr() compares its argument with
+> ->psm of sockets.  IOW, the entire thing works correctly only on
+> little-endian.  On big-endian we'll get "no socket with such psm"
+> on the first iteration, since we won't find a socket with ->psm == 0x1001.
+> We will happily conclude that 0x1001 is unused and slap htobs(0x1001)
+> (i.e. 0x110) into ->psm of our socket.  Of course, the next time around
+> the same thing will repeat and we'll just get a fsckload of sockets
+> with the same ->psm assigned.
 > 
-> Just got a bit of time to take another look at the replicated pagecache
-> patch. The nopage vs invalidate race and clear_page_dirty_for_io fixes
-> gives me more confidence in the locking now; the new ->fault API makes
-> MAP_SHARED write faults much more efficient; and a few bugs were found
-> and fixed.
+> Fix: pass htobs(psm) to __l2cap_get_sock_by_addr() there.  All other
+> callers are already passing little-endian values and all places that
+> store something in ->psm are storing little-endian.
 > 
-> More stats were added: *repl* in /proc/vmstat. Survives some kbuilding
-> tests...
-> 
-> --
-> 
-> Page-based NUMA pagecache replication.
-<snip really big patch!>
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Hi, Nick.
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
 
-Glad to see you're back on this.  It's been on my list, but delayed by
-other patch streams...
+Dave, all four patches are good and should go in sooner than later. If
+you want me to put them into my tree first, then I can do that or you
+can apply them directly. You choice.
 
-As I mentioned to you in prior mail, I want to try to integrate this
-atop my "auto/lazy migration" patches, such that when a task moves to a
-new node, we remove just that task's pte ref's to page cache pages
-[along with all refs to anon pages, as I do now] so that the task will
-take a fault on next touch and either use an existing local copy or
-replicate the page at that time.  Unfortunately, that's in the queue
-behind the memoryless node patches and my stalled shared policy patches,
-among other things :-(.
+Regards
 
-Also, what kernel is this patch against?  Diffs just say "linux-2.6".
-Somewhat ambiguous...
+Marcel
 
-Lee
+
+
 
