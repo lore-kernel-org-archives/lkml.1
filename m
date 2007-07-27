@@ -1,46 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935962AbXG0NAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbXG0NSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935962AbXG0NAr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbXG0NAf
+	id S1763011AbXG0NSX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbXG0NSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:00:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57361 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755139AbXG0NAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:00:34 -0400
-Message-ID: <46A9EC6B.3030208@garzik.org>
-Date: Fri, 27 Jul 2007 09:00:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 27 Jul 2007 09:18:13 -0400
+Received: from www19.your-server.de ([213.133.104.19]:34710 "EHLO
+	www19.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754116AbXG0NSL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 09:18:11 -0400
+From: Uli Luckas <u.luckas@road.de>
+Organization: Road GmbH
+To: LKML <linux-kernel@vger.kernel.org>, bryan.wu@analog.com
+Subject: Re: [PATCH 04/68] 0 -> NULL, for arch/blackfin
+Date: Fri, 27 Jul 2007 15:17:59 +0200
+User-Agent: KMail/1.9.7
+Cc: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@vger.kernel.org,
+       aubrey.li@analog.com, akpm@linux-foundation.org
+References: <200707270944.LAA17116@ifs.emn.fr> <1185531824.11601.25.camel@roc-desktop>
+In-Reply-To: <1185531824.11601.25.camel@roc-desktop>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: Andrew Gallatin <gallatin@myri.com>, netdev <netdev@vger.kernel.org>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
-References: <200707201741.45079.ossthema@de.ibm.com> <46A785C2.9090708@myri.com> <200707271418.49781.ossthema@de.ibm.com>
-In-Reply-To: <200707271418.49781.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200707271517.59770.u.luckas@road.de>
+X-Authenticated-Sender: webmaster@road.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to chime in...
+On Friday, 27. July 2007, Bryan Wu wrote:
+> On Fri, 2007-07-27 at 11:44 +0200, Yoann Padioleau wrote:
+> > When comparing a pointer, it's clearer to compare it to NULL than to 0.
+> >
+> > Here is an excerpt of the semantic patch:
+> >
+> > @@
+> > expression *E;
+> > @@
+> >
+> >   E ==
+> > - 0
+> > + NULL
+> >
+> > @@
+> > expression *E;
+> > @@
+> >
+> >   E !=
+> > - 0
+> > + NULL
+> >
+> > Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
+> > Cc: aubrey.li@analog.com
+> > Cc: bryan.wu@analog.com
+> > Cc: akpm@linux-foundation.org
+> > ---
+> >
+> >  traps.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
+> > index 3909f5b..691c66d 100644
+> > --- a/arch/blackfin/kernel/traps.c
+> > +++ b/arch/blackfin/kernel/traps.c
+> > @@ -546,7 +546,7 @@ void dump_bfin_regs(struct pt_regs *fp,
+> >  	}
+> >
+> >  	printk(KERN_EMERG "return address: [0x%p]; contents of:", retaddr);
+> > -	if (retaddr != 0 && retaddr <= (void *)physical_mem_end
+> > +	if (retaddr != NULL && retaddr <= (void *)physical_mem_end
+> >  #if L1_CODE_LENGTH != 0
+> >  	    /* FIXME: Copy the code out of L1 Instruction SRAM through dma
+> >  	       memcpy.  */
+>
+> Why not just use " if (!E)" instead of " if (E != NULL)"?
+> more readable?
+>
+Or even "if (E)"
 
-In general, I like where this LRO effort is going, and I really 
-appreciate you guys working on it.
+Uli
 
-	Jeff
+-- 
 
+------- ROAD ...the handyPC Company - - -  ) ) )
 
+Uli Luckas
+Software Development
 
+ROAD GmbH
+Bennigsenstr. 14 | 12159 Berlin | Germany
+fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
+url: www.road.de
+
+Amtsgericht Charlottenburg: HRB 96688 B
+Managing directors: Hans-Peter Constien, Hubertus von Streit
