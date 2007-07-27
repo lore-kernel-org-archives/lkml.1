@@ -1,128 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935533AbXG0Toz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934176AbXG0TqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935533AbXG0Toz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:44:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932636AbXG0Tor
+	id S934176AbXG0TqO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 15:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933426AbXG0Tpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:44:47 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:57738 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932438AbXG0Toq (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:44:46 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+	Fri, 27 Jul 2007 15:45:52 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:46523
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932636AbXG0Tpv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 15:45:51 -0400
+From: Michael Buesch <mb@bu3sch.de>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kylene Hall <kjhall@us.ibm.com>, tpm@selhorst.net,
-       linux-kernel@vger.kernel.org,
-       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Subject: Re: 2.6.23-rc1-mm1 - seems OK on Dell Latitude D820, except for tpm_tis
-In-Reply-To: Your message of "Fri, 27 Jul 2007 11:07:01 PDT."
-             <20070727110701.be3a8459.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <23659.1185400994@turing-police.cc.vt.edu> <20070725203737.85871711.akpm@linux-foundation.org> <5208.1185508832@turing-police.cc.vt.edu> <23912.1185542889@turing-police.cc.vt.edu>
-            <20070727110701.be3a8459.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1185565477_3506P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Subject: Re: [PATCH] Merge the Sonics Silicon Backplane subsystem
+Date: Fri, 27 Jul 2007 21:43:59 +0200
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>
+References: <200707271857.24162.mb@bu3sch.de> <200707272130.48973.mb@bu3sch.de> <20070727123853.d16e875c.akpm@linux-foundation.org>
+In-Reply-To: <20070727123853.d16e875c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Fri, 27 Jul 2007 15:44:37 -0400
-Message-ID: <26949.1185565477@turing-police.cc.vt.edu>
+Content-Disposition: inline
+Message-Id: <200707272143.59551.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1185565477_3506P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 27 Jul 2007 11:07:01 PDT, Andrew Morton said:
-> On Fri, 27 Jul 2007 09:28:09 -0400
-> Valdis.Kletnieks@vt.edu wrote:
-
-> > And we have a winner.  In my bisect 'hunt' file, I ended at:
+On Friday 27 July 2007 21:38:53 Andrew Morton wrote:
+> > > > +static ssize_t ssb_pci_attr_sprom_show(struct device *pcidev,
+> > > > +				       struct device_attribute *attr,
+> > > > +				       char *buf)
+> > > > +{
+> > > > +	struct pci_dev *pdev = container_of(pcidev, struct pci_dev, dev);
+> > > > +	struct ssb_bus *bus;
+> > > > +	u16 *sprom;
+> > > > +	int err = -ENODEV;
+> > > > +	ssize_t count = 0;
+> > > > +
+> > > > +	bus = ssb_pci_dev_to_bus(pdev);
+> > > > +	if (!bus)
+> > > > +		goto out;
+> > > > +	err = -ENOMEM;
+> > > > +	sprom = kcalloc(SSB_SPROMSIZE_WORDS, sizeof(u16), GFP_KERNEL);
+> > > > +	if (!sprom)
+> > > > +		goto out;
+> > > > +
+> > > > +	err = -ERESTARTSYS;
+> > > > +	if (mutex_lock_interruptible(&bus->pci_sprom_mutex))
+> > > > +		goto out_kfree;
+> > > > +	sprom_do_read(bus, sprom);
+> > > > +	mutex_unlock(&bus->pci_sprom_mutex);
+> > > > +
+> > > > +	count = sprom2hex(sprom, buf, PAGE_SIZE);
+> > > > +	err = 0;
+> > > > +
+> > > > +out_kfree:
+> > > > +	kfree(sprom);
+> > > > +out:
+> > > > +	return err ? err : count;
+> > > > +}
+> > > 
+> > > The mutex_lock_interruptible() looks fishy.  Some commented explanation of
+> > > what it's doing would be good here.  It's quite unobvious to this reader. 
+> > > Cheesy deadlock avoidance?  Hope not.
 > > 
-> > fs-use-kmem_cache_zalloc-instead.patch GOOD
-> > # remove-kconfig-setting-config_debug_shirq.patch: Ingo worried
-> > remove-kconfig-setting-config_debug_shirq.patch BAD
+> > No, it's simply to avoid writing the SPROM concurrently.
+> > SPROM writing is hairy and we must make sure here that
+> > we are the only one accessing the whole bus. We do that
+> > by suspending all devices and taking a lock to protect
+> > the SPROM from write concurrency.
 > 
-> Thanks for working that out.
+> Sure, but why is the locking interruptible rather than plain old
+> mutex_lock()?
 
-Hey, it's what I'm here for. :)
+Hm, well. We hold this mutex for several seconds, as writing takes
+this long. So I simply thought it was worth allowing the waiter
+to interrupt here. If you say that's not an issue, I'll be happy
+to use mutex_lock() and reduce code complexity in this area.
 
-> > Looks like Ingo was right. :)  As a cross-check, I tested a 'GOOD' kernel,
-> > but rebuilt with CONFIG_DEBUG_SHIRQ=y, and that *also* died. 
-
-> Fernando, those patches are just too scary for me because of stuff like
-> this.
-> 
-> Perhaps we should look at implementing this new behaviour on a per-driver
-> basis?  Pass smoe new flag into request_irq(), perhaps?
-
-Has anybody else hit an actual problem with this, or is the borkage restricted
-to this one driver?  And, quite frankly, given that *before*, the driver would
-try and reject 5 different unused IRQs and then complain when it found one in
-use, I'm not totally convinced that the driver wasn't on crack *before*.  The
-only thing I've been able to prove to myself is that it's acting differently,
-but I'm pretty sure that *both* before and after are broken, just in different
-ways.
-
-I'd not fault Fernando's patch here - if I'd enabled the DEBUG_SHIRQ on
-previous kernels, I'd have spotted it then.  I never enabled it because I
-didn't know I had drivers that might have bugs in that area.
-
-Kylene or somebody else who actually understands the TPM chipsets would have
-to provide guidance on how it's *supposed* to work, and I'm certainly willing
-to testbed patches.
-
-For what it's worth - I actually read the source some more, discovered the
-module parm 'interrupts=0' (which forces polling mode), and managed to get
-things at least semi-working with the libtpm-2.0 test suite:
-
-~/src/libtpm-2.0/utils % ./tpm_demo 
-TPM version 1.1.0.0
-24 PCR registers are available
-PCR-00: 48 88 FD B3 F6 04 AF 54 9F 6A 53 19 96 38 4F BF 02 52 3F C7 
-PCR-01: 5B 93 BB A0 A6 64 A7 10 52 59 4A 70 95 B2 07 75 77 03 45 0B 
-PCR-02: 5B 93 BB A0 A6 64 A7 10 52 59 4A 70 95 B2 07 75 77 03 45 0B 
-PCR-03: 5B 93 BB A0 A6 64 A7 10 52 59 4A 70 95 B2 07 75 77 03 45 0B 
-PCR-04: 7D 89 C5 0D C7 E5 2F F1 2C 56 0C C2 84 40 FD ED 06 B4 D6 B7 
-PCR-05: 23 E4 5B 96 79 C4 52 F7 4A EA 76 04 46 FF BB D1 02 D0 3D 27 
-PCR-06: 5B 93 BB A0 A6 64 A7 10 52 59 4A 70 95 B2 07 75 77 03 45 0B 
-PCR-07: 5B 93 BB A0 A6 64 A7 10 52 59 4A 70 95 B2 07 75 77 03 45 0B 
-PCR-08: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-09: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-11: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-12: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-13: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-14: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-15: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-16: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-PCR-17: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-PCR-18: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-PCR-19: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-PCR-20: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-PCR-21: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-PCR-22: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-PCR-23: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
-3 Key slots are available
-No keys are loaded
-Unable to read Pubek
-
-Unsure why it reports TPM 1.1 here, and 1.2 when the driver initializes.
-But at least I've gotten the chip to do a "Hello World!", so that's progress. :)
-
-
-
---==_Exmh_1185565477_3506P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGqkslcC3lWbTT17ARAr9zAJ9fvS0KPUG+3AdfZHgtxKOMQkYnZgCg0xMU
-7SEwTwtsEyOz4lnpn00tsbw=
-=qLZ3
------END PGP SIGNATURE-----
-
---==_Exmh_1185565477_3506P--
+-- 
+Greetings Michael.
