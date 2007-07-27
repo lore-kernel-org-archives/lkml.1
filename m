@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbXG0STD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbXG0STW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbXG0STD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 14:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbXG0SSy
+	id S1762378AbXG0STW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 14:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXG0SS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 14:18:54 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:59021 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750700AbXG0SSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 14:18:53 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Shaohua Li <shaohua.li@intel.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Date: Fri, 27 Jul 2007 12:16:59 -0600
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       =?utf-8?q?S=C3=A9bastien_Dugu=C3=A9?= <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <86802c440707251737p3be3ae69qe3f91282bec8984a@mail.gmail.com> <1185416466.31345.1.camel@sli10-conroe.sh.intel.com>
-In-Reply-To: <1185416466.31345.1.camel@sli10-conroe.sh.intel.com>
+	Fri, 27 Jul 2007 14:18:58 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:52499 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758017AbXG0SS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 14:18:57 -0400
+Message-ID: <46AA3680.4010508@gmail.com>
+Date: Fri, 27 Jul 2007 20:16:32 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200707271217.00164.bjorn.helgaas@hp.com>
+To: Daniel Hazelton <dhazelton@enter.net>
+CC: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net> <200707271345.55187.dhazelton@enter.net>
+In-Reply-To: <200707271345.55187.dhazelton@enter.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 July 2007 08:21:06 pm Shaohua Li wrote:
-> On Wed, 2007-07-25 at 17:37 -0700, Yinghai Lu wrote:
-> > On 7/25/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > > On Wednesday 25 July 2007 07:32:53 am Sébastien Dugué wrote:
-> > > > On Wed, 25 Jul 2007 07:16:44 -0600 Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > > >
-> > > > > The _DDN is a "DOS device name", and the _UID is a "logical device ID
-> > > > > that does not change across reboots."  Both are optional, and PNPACPI
-> > > > > ignores them.  But maybe we could change PNPACPI to sort by them if
-> > > > > they are present.  I'll think about this a bit.
-> > > >
-> > > >   That would be nice, but I wish you good luck with all those
-> > > > crappy BIOSes out there.
-> > >
-> > > Yeah, it's an ugly world we live in.  Would you be able to try the
-> > > attached patch just for testing?  It should sort devices with the
-> > > same _HID by their _UID.  It doesn't have any effect on my systems,
-> > > because my devices are already ordered by _UID by default.  But I
-> > > think it should switch your COM1/COM2 ports back to the order you
-> > > expect.
-> > >
-> > > Yinghai, you mentioned the same issue on boxes with multiple root
-> > > bridges.  Any chance you could try this out there as well?
-> > >
-> > it doesn't solve pci_root_bus reverse problem.
-> > 
-> > is that too late for PNP0A03?
-> > 
-> > I wonder if we need to modify acpi_device_register to sort them.
-> The pci root driver is an acpi driver not a pnp driver, so Bjorn's patch
-> will not work. Maybe the ACPI core (ACPICA) should do the sort?
+On 07/27/2007 07:45 PM, Daniel Hazelton wrote:
 
-I talked to Adam about this yesterday.  He convinced me that we
-shouldn't rely on device ordering to determine names.  For one
-thing, that would make threaded probing difficult.  Better to
-rely on a unique identifier, and let udev take care of user-space
-persistent naming issues.
+> Updatedb or another process that uses the FS heavily runs on a users
+> 256MB P3-800 (when it is idle) and the VFS caches grow, causing memory
+> pressure that causes other applications to be swapped to disk. In the
+> morning the user has to wait for the system to swap those applications
+> back in.
+> 
+> Questions about it:
+> Q) Does swap-prefetch help with this? 
+> A) [From all reports I've seen (*)] Yes, it does. 
 
-I don't think udev solves the problem for built-in drivers like
-serial, where you need to be able to do "console=ttyS0" and have
-it mean something predictable.  But possibly we could expose the
-_DDN and/or _UID through PNP and have 8250_pnp give a hint about
-what the ttyS device should be when it registers with 8250.
+No it does not. If updatedb filled memory to the point of causing swapping 
+(which noone is reproducing anyway) it HAS FILLED MEMORY and swap-prefetch 
+hasn't any memory to prefetch into -- updatedb itself doesn't use any 
+significant memory.
 
-For example, 8250_pnp could have rules like "COM1 should always
-be ttyS0" or "a port at 0x3f8 should always be ttyS0."
+Here's swap-prefetch's author saying the same:
 
-That doesn't help with Yinghai's PCI root ordering issue, of course.
-But I hope that can be addressed with udev, because there's not so
-much need for a persistent kernel name.  If that's not enough, can
-you explain more about the problem?
+http://lkml.org/lkml/2007/2/9/112
 
-Bjorn
+| It can't help the updatedb scenario. Updatedb leaves the ram full and
+| swap prefetch wants to cost as little as possible so it will never
+| move anything out of ram in preference for the pages it wants to swap
+| back in.
+
+Now please finally either understand this, or tell us how we're wrong.
+
+Rene.
+
