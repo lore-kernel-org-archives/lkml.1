@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765124AbXG0Pit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936660AbXG0Pne@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765124AbXG0Pit (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 11:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbXG0Pik
+	id S936660AbXG0Pne (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 11:43:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbXG0PnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 11:38:40 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2958 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755798AbXG0Pij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 11:38:39 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: thomas.dahlmann@amd.com, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] usb: remove redundant memset from amd5536udc
-Date: Fri, 27 Jul 2007 17:38:37 +0200
-User-Agent: KMail/1.9.5
-Cc: info-linux@geode.amd.com, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707271738.37793.m.kozlowski@tuxland.pl>
+	Fri, 27 Jul 2007 11:43:24 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:49329 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761723AbXG0PnX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 11:43:23 -0400
+To: raven@themaw.net
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       kzak@redhat.com, ericvh@gmail.com, lucho@ionkov.net,
+       zippel@linux-m68k.org, hpa@zytor.com, rathamahata@php4.ru,
+       dhowells@redhat.com, sfrench@samba.org, mhalcrow@us.ibm.com,
+       phillip@hellewell.homeip.net, hirofumi@mail.parknet.co.jp,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
+       shaggy@austin.ibm.com, vandrove@vc.cvut.cz, trond.myklebust@fys.uio.no,
+       aia21@cantab.net, mark.fasheh@oracle.com, kurt.hackel@oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       dushistov@mail.ru, xfs-masters@oss.sgi.com, arnd@arndb.de,
+       holzheu@de.ibm.com
+In-reply-to: <1185550256.3203.77.camel@raven.themaw.net> (message from Ian
+	Kent on Fri, 27 Jul 2007 23:30:56 +0800)
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <1185550256.3203.77.camel@raven.themaw.net>
+Message-Id: <E1IERvH-00016M-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 27 Jul 2007 17:40:11 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+>   all - fs has options, but doesn't define ->show_options()
+>   some - fs defines ->show_options(), but some options are not shown
+>   noopt - fs does not have options
+>   good - fs shows all options
+>   patch - I have a patch
 
-	This patch removes redundant memset() call
-from udc_pci_probe(). No functional change.
+[...]
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> > autofs      all
+> 
+> I'm not sure I understand this.
+> How does autofs show it's options without a ->show_options method?
 
- drivers/usb/gadget/amd5536udc.c | 86768 -> 86731 (-37 bytes)
- drivers/usb/gadget/amd5536udc.o | 187342 -> 187066 (-276 bytes)
+It doesn't.  The "all" means, all of them need to be added to
+->show_options(), not that all are shown.
 
- drivers/usb/gadget/amd5536udc.c |    1 -
- 1 file changed, 1 deletion(-)
+I can see now that this is slightly confusing, sorry.
 
---- linux-2.6.23-rc1-mm1-a/drivers/usb/gadget/amd5536udc.c	2007-07-26 13:07:41.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/usb/gadget/amd5536udc.c	2007-07-27 17:25:04.000000000 +0200
-@@ -3242,11 +3242,10 @@ static int udc_pci_probe(
- 	dev = kzalloc(sizeof(struct udc), GFP_KERNEL);
- 	if (!dev) {
- 		retval = -ENOMEM;
- 		goto finished;
- 	}
--	memset(dev, 0, sizeof(struct udc));
+So the ones that need attention are "all" and "some".  The others are
+fine in theory.  Of course I may have missed something.
 
- 	/* pci setup */
- 	if (pci_enable_device(pdev) < 0) {
- 		retval = -ENODEV;
- 		goto finished;
+> > autofs4     some
+> 
+> OK, uid and gid aren't shown.
+> That should be straight forward to fix.
+> What's your time frame for this?
+
+ASAP ;)
+
+2.6.24 would be a nice, but it won't be easy...
+
+Miklos
