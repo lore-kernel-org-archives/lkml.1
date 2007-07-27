@@ -1,172 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764200AbXG0Mrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXG0Mti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764200AbXG0Mrf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 08:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756706AbXG0MrZ
+	id S932768AbXG0Mti (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 08:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756919AbXG0Mtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 08:47:25 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:49769 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753757AbXG0MrX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 08:47:23 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Andrew Gallatin <gallatin@myri.com>
-Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
-Date: Fri, 27 Jul 2007 14:18:48 +0200
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-References: <200707201741.45079.ossthema@de.ibm.com> <46A785C2.9090708@myri.com>
-In-Reply-To: <46A785C2.9090708@myri.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707271418.49781.ossthema@de.ibm.com>
+	Fri, 27 Jul 2007 08:49:31 -0400
+Received: from thoth.sbs.de ([192.35.17.2]:21981 "EHLO thoth.sbs.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756706AbXG0Mta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 08:49:30 -0400
+X-Greylist: delayed 1469 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 08:49:30 EDT
+Subject: Re: [PATCH] Fix regression caused by typo in lm90.c
+From: Rainer Birkenmaier <rainer.birkenmaier@siemens.com>
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+In-Reply-To: <20070726230422.2955.70451.sendpatchset@localhost.localdomain>
+References: <20070726230422.2955.70451.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Organization: Siemens AG, CT SE 2
+Date: Fri, 27 Jul 2007 14:24:23 +0200
+Message-Id: <1185539063.6855.2.camel@ella.mchp.siemens.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Drew,
+Hi,
 
-thanks a lot for your good feedback. See comments below.
-I'll try to provide an updated version next week. It would
-be nice if you could post a patch for your driver once
-we have addressed the issues you mentioned. Then we would
-have the eHEA driver for the SKB interface, and your driver
-for the "receive in pages" interface.
+my original patch for this didn't have that typo, however I had spelled
+it in small letters instead of capital letters. So I guess, the typo
+sneaked in while switching from small to capital letter.
 
-Thanks,
-Jan-Bernd
+Main message: I can confirm that it actually is a typo :)
 
-On Wednesday 25 July 2007 19:17, Andrew Gallatin wrote:
-> Code review / comments:
-> ===================
-> 
-> 1) Checksum information for CHECKSUM_COMPLETE drivers.
-> 
-> Our NIC passes partial checksums to our driver.  In the current code,
-> it seems impossible for page based CHECKSUM_COMPLETE drivers to behave
-> correctly in the case of "rejected" frames.  Eg, there is no way
-> to pass the partial checksum to the LRO module so that it gets
-> set in the skb header and passed up the stack.
-> 
-> Further, there seems to be no (easy) way to use CHECKSUM_COMPLETE
-> on an aggregated packet at LRO flush time.  By the time a packet
-> is aggregated, the partial checksum from the first segment is
-> out of date.
-> 
-> I think it would make sense to require that a CHECKSUM_COMPLETE style
-> driver verify the checksum in its get_frag_header / get_skb_header
-> callback.  This allows the LRO code to unconditionally set
-> CHECKSUM_UNNECESSARY.
+have a great day
+/Rainer
 
-I agree
+Am Freitag, den 27.07.2007, 01:04 +0200 schrieb Guillaume Chazarain:
+> Hi,
+> 
+> The commit http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=32c82a934759b2c9939c9e25865c2d7d1204b9e8
+> broke lm90 for my (Asus V6VA) laptop.
+> 
+> Before 2.6.23-rc1 and with the following patch, I get:
+> 
+> [g ~]$ sensors
+> max6657-i2c-0-4c
+> Adapter: SMBus I801 adapter at 0400
+> M/B Temp:    +64°C  (low  =    +0°C, high =  +127°C)   
+> CPU Temp:  +78.9°C  (low  = +73.2°C, high = +88.2°C)   
+> M/B Crit:   +105°C  (hyst =   +95°C)                   
+> CPU Crit:   +105°C  (hyst =   +95°C)                   
+> 
+> Which regressed into:
+> 
+> [g ~]$ sensors
+> No sensors found!
+> Make sure you loaded all the kernel drivers you need.
+> Try sensors-detect to find out which these are.
+> zsh: 2701 exit 1     sensors
+> 
+> and dmesg contains:
+> 
+> i2c-adapter i2c-0: Unsupported chip (man_id=0x4D, chip_id=0x4D).
+> 
+> It seems to be a typo, as address 0X4F is mentionned nowhere else in the file,
+> and my chip is actually at 0x4C.
+> 
+> Thanks.
+> 
+> Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+> ---
+> 
+> diff -r 4cad6fced1a8 drivers/hwmon/lm90.c
+> --- a/drivers/hwmon/lm90.c	Thu Jul 26 13:44:58 2007 -0700
+> +++ b/drivers/hwmon/lm90.c	Tue Jul 24 00:02:52 2007 +0200
+> @@ -585,7 +585,7 @@ static int lm90_detect(struct i2c_adapte
+>  			 * those of the man_id register.
+>  			 */
+>  			if (chip_id == man_id
+> -			 && (address == 0x4F || address == 0x4D)
+> +			 && (address == 0x4C || address == 0x4D)
+>  			 && (reg_config1 & 0x1F) == (man_id & 0x0F)
+>  			 && reg_convrate <= 0x09) {
+>  			 	kind = max6657;
+-- 
+>>> SIEMENS AG - Corporate Technology (CT SE 2)        <<<
+>>> Dipl.-Inf. Rainer Birkenmaier                      <<<
+>>>              email: rainer.birkenmaier@siemens.com <<<
+>>>     phone: +49-89-636-53725  fax: +49-89-636-45450 <<<
 
-> 2) Non-accelerated VLAN tags
-> 
-> Our firmware currently does not do vlan tag insertion
-> and removal.  This causes a problem in __lro_proc_segment()
-> where the tcp and ip headers are setup to point into the
-> newly created skb.  A frame containing an unstripped vlan
-> tag will cause the headers to be garbage.
-> 
-> The attached patch modifies __lro_proc_segment() to offset
-> those pointers by VLAN_HLEN when required.
-> 
+Siemens Aktiengesellschaft: Vorsitzender des Aufsichtsrats: Gerhard Cromme
+Vorstand: Peter L�scher, Vorsitzender; Johannes Feldmayer, Heinrich
+Hiesinger, Joe Kaeser, Rudi Lamprecht, Eduardo Montes, 
+J�rgen Radomski, Erich R. Reinhardt, Hermann Requardt, Uriel J. Sharef,
+Klaus Wucherer
+Sitz der Gesellschaft: Berlin und M�nchen; Registergericht: Berlin
+Charlottenburg, HRB 12300, M�nchen, HRB 6684
+WEEE-Reg.-Nr. DE 23691322
 
-The modifications you propose are not sufficient to work with HW
-which actually extracts the VLAN IDs but does not change the 
-eth protocol. Thus we have to add an additional field in
-lro_mgr indicating how to interpret the eth protocol regarding
-the VLAN header.
-
-> 3) Padded frames.
-> 
-> I may be missing something, but I don't see where you
-> either strip padding from frames or reject padded frames.
-> (see the pskb_trim_rcsum() in net/ipv4/ip_input.c:ip_rcv()
-> 
-I think I missed something :-) Will fix that.
-In lro_tcp_ip_check we check for the "SKB aggregation interface"
-the skb->len against ip->tot_len. This catches padded frames as
-eth_type_trans(skb, dev) reduces the length of the SKB.
-However, the possible VLAN header is not taken into account. 
-And for the "receive in pages" interface a wrong length is passed
-as argument as well. 
-
-I'd suggest to reject padded frames for aggregation as we do now
-(when bugs are fixed) and thus keep the code simple.
-I guess that padded frames don't occur too often in high load 
-situations. If we detect a real performance issue we can still
-change that later.
-
-> I did not add such a feature as I was confused about the intended
-> use of len/true_size.
-len: number of bytes received
-true_size: used to fill the "truesize" field in the SKB. Thus this reflects
-           the amount of memory that is actually used by that SKB. If you
-           receive into pages und you have some space between packets, you
-           should take this into account. Example: you use 1 page for each
-           packet, then you pass 4096 as argument.
-
-> 
-> Also, trimming is a pain when dealing with pure frags (without a
-> containing skb).  We have code in our out-of-kernel driver to deal
-> with it which you are welcome to use.
-> 
-> 
-
-> 4) LRO_MIN_PG_HLEN (== 80)
-> 
-> This confuses me.  Can you please explain what you're trying to do?
-> Because of this, I kept getting crashes in the skb_pull() done by
-> eth_type_trans() because I was passing segments which were 60 bytes
-> and the skb->data_len of the skb constructed by lro_gen_skb() was -20.
-> I added my own code to bump the length to a magic 80 bytes, and the
-> panics disappeared.  This may cause data corruption because of
-> #3 above!
-Yes, I see the point... I'm not sure in how far there are any requirements
-that a certain amount of data (header) for other types of traffic
-has to be in the skb->data field and not in frags. Maybe someone
-can comment on this?
-I suggest to remove LRO_MIN_PG_HLEN for tcp/ip packets that are aggregated,
-but should we use a minimal length for other traffic (depending on the
-number of received bytes)? Is that necessary?
-
-> 
-> 5) NAPI/non-NAPI
-> 
-> The LRO code assumes the underlying driver uses NAPI, and calls
-> netif_receive_skb() rather than netif_rx().  Perhaps there should be a
-> field in the lro_mgr struct to specify napi / non-napi.
-> 
-Yes, if someone intends to use it without napi, we can add this.
-
-> 6) The checks for when to stop aggregating and flush in
->     __lro_proc_{segment|skb} need some improvement.
-> 
-> The skb variant currently uses a pure count (max_aggr).  In order to
-> keep the resulting aggregated frame below 64KB, the underlying driver
-> computes max_aggr as 0xffff / MTU.  This reduces the effectiveness of
-> LRO on mixed MTU networks.  Eg, this causes packets coming from a
-> source with a 1500b MTU to be aggregated after 7 frames when using a
-> 9000b MTU on the receiver, rather than after 43 frames.  As you can
-> see from the differences in inet_lro's performance in the table
-> above, this is a real problem.
-> 
-> I believe that a hybrid byte / max_aggr model should be used.  The
-> __lro_proc_segment takes this approach.  Note that there is a subtle
-> bug in that the maximum aggregated bytes should not be be 0xffff.
-> Rather, one must leave room for the next frame to arrive by setting
-> the max aggregated bytes to 0xffff - dev->mtu.  This is masked
-> by the driver computing max_aggr as above.
-
-This suggestions sounds good. Will add it.
