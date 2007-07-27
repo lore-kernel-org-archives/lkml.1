@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964950AbXG0Pv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765611AbXG0QAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964950AbXG0Pv6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 11:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758871AbXG0Pvv
+	id S1765611AbXG0QAq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 12:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762270AbXG0QAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 11:51:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60103 "EHLO mx1.redhat.com"
+	Fri, 27 Jul 2007 12:00:36 -0400
+Received: from khc.piap.pl ([195.187.100.11]:42532 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758105AbXG0Pvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 11:51:50 -0400
-Message-ID: <46AA1494.5020709@redhat.com>
-Date: Fri, 27 Jul 2007 11:51:48 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1761723AbXG0QAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 12:00:35 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Josh Triplett <josht@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-sparse@vger.kernel.org
+Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
+References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
+	<m3abtir95x.fsf@maximus.localdomain>
+	<20070726173501.9ba466ba.akpm@linux-foundation.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Fri, 27 Jul 2007 18:00:33 +0200
+In-Reply-To: <20070726173501.9ba466ba.akpm@linux-foundation.org> (Andrew Morton's message of "Thu, 26 Jul 2007 17:35:01 -0700")
+Message-ID: <m3bqdx6dlq.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: bbpetkov@yahoo.de, Xudong Guan <xudong.guan@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1: no setup signature found...
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <46A8E3F9.5070809@zytor.com> <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com>
-In-Reply-To: <46A9753A.1010206@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2007 12:31 AM, H. Peter Anvin wrote:
-> Borislav Petkov wrote:
->>> The absolute best would be if we could replicate this in simulation
->>> (Bochs or Qemu); this would make it very simple to debug.  Would you be
->>> willing to try to do that?
->> sure, will do, however i'll be busy at work/travelling tomorrow but as soon as i
->> get home i'll whip up my qemu and run the kernel in question in it. However,
->>  Xudong said that grub 0.97 boots just fine on his machine and i think it'll be
->>  better to debug this right on the bare hardware (i.e. my laptop) ...?
->>  Suggestions ?
-> 
-> If we can't reproduce the problem in simulation, that itself will tell
-> us something very important.  If we *can* reproduce it in simulation, it
-> will be vastly easier to debug.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-We're seeing boot failure when using isolinux with the latest kernels,
-but so far only on Dell machines. It loads the kernel and initrd, types
-"Ready." and then just reboots. Adding "vga=ask" gives the mode prompt
-and allows selecting a video mode, but it just reboots after that too.
+> it's better that we all do things the same way.  What that way _is_ is
+> actually less important, unless it's something stupid, of course.
 
+It's certainly true WRT things like indentation but IMHO it shouldn't
+go that far, and if it goes, it should be non-braced version.
+
+If we prefer non-braced versions of "if" and "while", it would be
+a bit strange to require braces with "do while", wouldn't it?
+
+Sparse warnings... I think it shouldn't complain either, unless
+called with extra parameter.
+
+
+Perhaps some pointer to a bad-looking example so I can see for myself?
+-- 
+Krzysztof Halasa
