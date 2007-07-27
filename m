@@ -1,121 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937342AbXG0UJy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964944AbXG0UK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937342AbXG0UJy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:09:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933217AbXG0UJq
+	id S964944AbXG0UK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936988AbXG0UJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:09:46 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4983 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932279AbXG0UJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:09:45 -0400
-Date: Fri, 27 Jul 2007 16:08:31 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
-       martin.pitt@ubuntu.com, wwoods@redhat.com
-Cc: nhorman@tuxdriver.com
-Subject: [PATCH 2/3] core_pattern: allow passing of arguments to user mode helper when core_pattern is a pipe
-Message-ID: <20070727200746.GC18946@hmsreliant.homelinux.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+	Fri, 27 Jul 2007 16:09:52 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:39154 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934546AbXG0UJu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:09:50 -0400
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric W Biederman <ebiederm@xmission.com>
+Date: Sat, 28 Jul 2007 01:39:37 +0530
+Message-Id: <20070727200937.31565.78623.sendpatchset@balbir-laptop>
+Subject: [-mm PATCH 0/9] Memory controller introduction (v4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey
-	Patch 2/3 of my core_pattern enhancements.  This patch is a rewrite of
-my previous post for this enhancement.  It uses jeremy's split_argv/free_argv
-library functions to translate core_pattern into an argv array to be passed to
-the user mode helper process.  It also adds a translation to format_corename
-such that the origional value of RLIMIT_CORE can be passed to userspace as an
-argument.
+Here's version 4 of the memory controller.
 
-Thanks & Regards
-Neil
+Changelog since version 3
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+1. Ported to v11 of the containers patchset (2.6.23-rc1-mm1). Paul Menage
+   helped immensely with a detailed review of v3
+2. Reclaim is retried to allow reclaim of pages coming in as a result
+   of mapped pages reclaim (swap cache growing as a result of RSS reclaim)
+3. page_referenced() is now container aware. During container reclaim,
+   references from other containers do not prevent a page from being
+   reclaimed from a non-referencing container
+4. Fixed a possible race condition spotted by YAMAMOTO Takashi
 
+Changelog since version 2
 
- exec.c |   25 ++++++++++++++++++++++---
- 1 file changed, 22 insertions(+), 3 deletions(-)
+1. Improved error handling in mm/memory.c (spotted by YAMAMOTO Takashi)
+2. Test results included
+3. try_to_free_mem_container_pages() bug fix (sc->may_writepage is now
+   set to !laptop_mode)
 
+Changelog since version 1
 
-diff --git a/fs/exec.c b/fs/exec.c
-index c0b5def..6855a52 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -51,6 +51,7 @@
- #include <linux/cn_proc.h>
- #include <linux/audit.h>
- #include <linux/signalfd.h>
-+#include <linux/string.h>
- 
- #include <asm/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -1543,6 +1544,14 @@ static int format_corename(char *corename, const char *pattern, long signr)
- 					goto out;
- 				out_ptr += rc;
- 				break;
-+			/* core limit size */
-+			case 'c':
-+				rc = snprintf(out_ptr, out_end - out_ptr,
-+					      "%lu", current->signal->rlim[RLIMIT_CORE].rlim_cur); 
-+				if (rc > out_end - out_ptr)
-+					goto out;
-+				out_ptr += rc;
-+				break;
- 			default:
- 				break;
- 			}
-@@ -1727,6 +1736,9 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- 	int flag = 0;
- 	int ispipe = 0;
- 	unsigned long core_limit = current->signal->rlim[RLIMIT_CORE].rlim_cur;
-+	char **helper_argv = NULL;
-+	int helper_argc = 0;
-+	char *delimit;
- 
- 	audit_core_dumps(signr);
- 
-@@ -1775,14 +1787,18 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- 	 * at which point file size limits and permissions will be imposed 
- 	 * as it does with any other process
- 	 */
--	if ((!ispipe) &&
--	   (core_limit < binfmt->min_coredump))
-+	if ((!ispipe) && (core_limit < binfmt->min_coredump))
- 		goto fail_unlock;
- 
-  	if (ispipe) {
- 		core_limit = RLIM_INFINITY;
-+		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
-+		/* Terminate the string before the first option */
-+		delimit = strchr(corename, ' ');
-+		if (delimit)
-+			*delimit = '\0';
- 		/* SIGPIPE can happen, but it's just never processed */
-- 		if(call_usermodehelper_pipe(corename+1, NULL, NULL, &file)) {
-+ 		if(call_usermodehelper_pipe(corename+1, helper_argv, NULL, &file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
- 			       corename);
-  			goto fail_unlock;
-@@ -1817,6 +1833,9 @@ int do_coredump(long signr, int exit_code, struct pt_regs * regs)
- close_fail:
- 	filp_close(file, NULL);
- fail_unlock:
-+	if (helper_argv)
-+		argv_free(helper_argv);
-+
- 	current->fsuid = fsuid;
- 	complete_all(&mm->core_done);
- fail:
+1. Fixed some compile time errors (in mm/migrate.c from Vaidyanathan S)
+2. Fixed a panic seen when LIST_DEBUG is enabled
+3. Added a mechanism to control whether we track page cache or both
+   page cache and mapped pages (as requested by Pavel)
+4. Dave Hansen provided detail review comments on the code.
+
+This patchset implements another version of the memory controller. These
+patches have been through a big churn, the first set of patches were posted
+last year and earlier this year at
+	http://lkml.org/lkml/2007/2/19/10
+
+This patchset draws from the patches listed above and from some of the
+contents of the patches posted by Vaidyanathan for page cache control.
+	http://lkml.org/lkml/2007/6/20/92
+
+At OLS, the resource management BOF, it was discussed that we need to manage
+RSS and unmapped page cache together. This patchset is a step towards that
+
+TODO's
+
+1. Add memory controller water mark support. Reclaim on high water mark
+2. Add support for shrinking on limit change
+3. Add per zone per container LRU lists (this is being actively worked
+   on by Pavel Emelianov)
+4. Figure out a better CLUI for the controller
+5. Add better statistics
+6. Explore using read_unit64() as recommended by Paul Menage
+   (NOTE: read_ulong() would also be nice to have)
+
+In case you have been using/testing the RSS controller, you'll find that
+this controller works slower than the RSS controller. The reason being
+that both swap cache and page cache is accounted for, so pages do go
+out to swap upon reclaim (they cannot live in the swap cache).
+
+Any test output, feedback, comments, suggestions are welcome! I am committed
+to fixing any bugs and improving the performance of the memory controller.
+Do not hesitate to send any fixes, request for fixes that is required.
+
+Using the patches
+
+1. Enable Memory controller configuration
+2. Compile and boot the new kernel
+3. mount -t container container -o mem_container /container
+   will mount the memory controller to the /container mount point
+4. mkdir /container/a
+5. echo $$ > /container/a/tasks (add tasks to the new container)
+6. echo -n <num_pages> > /container/a/mem_limit
+   example
+   echo -n 204800 > /container/a/mem_limit, sets the limit to 800 MB
+   on a system with 4K page size
+7. run tasks, see the memory controller work
+8. Report results, provide feedback
+9. Develop/use new patches and go to step 1
+
+Test Results
+
+Results for version 3 of the patch were posted at
+http://lwn.net/Articles/242554/
+
+The code was also tested on a power box with regular machine usage scenarios,
+the config disabled and with a stress suite that touched all the memory
+in the system and was limited in a container.
+
+series
+
+res_counters_infra.patch
+mem-control-setup.patch
+mem-control-accounting-setup.patch
+mem-control-accounting.patch
+mem-control-task-migration.patch
+mem-control-lru-and-reclaim.patch
+mem-control-out-of-memory.patch
+mem-control-choose-rss-vs-rss-and-pagecache.patch
+mem-control-per-container-page-referenced.patch
+
 -- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
