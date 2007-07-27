@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934843AbXG0Ho6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933709AbXG0Hyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934843AbXG0Ho6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 03:44:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763248AbXG0How
+	id S933709AbXG0Hyb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 03:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762719AbXG0HyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 03:44:52 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:27201 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762821AbXG0Hov (ORCPT
+	Fri, 27 Jul 2007 03:54:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57689 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761192AbXG0HyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 03:44:51 -0400
-Date: Fri, 27 Jul 2007 15:44:57 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Joe Jin <joe.jin@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, gurudas.pai@oracle.com,
-       wen.gang.wang@oracle.com, Badari Pulavarty <pbadari@us.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] add check do_direct_IO() return val
-Message-ID: <20070727074457.GB25084@joejin-pc.cn.oracle.com>
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org> <20070727071547.GA25084@joejin-pc.cn.oracle.com> <a8e1da0707270031u3a4e5616t7cb38356dd86a560@mail.gmail.com>
+	Fri, 27 Jul 2007 03:54:19 -0400
+Date: Fri, 27 Jul 2007 00:53:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Josh Triplett <josht@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-sparse@vger.kernel.org
+Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
+Message-Id: <20070727005349.512c2f8d.akpm@linux-foundation.org>
+In-Reply-To: <46A9A18D.2050401@s5r6.in-berlin.de>
+References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
+	<m3abtir95x.fsf@maximus.localdomain>
+	<46A93F92.6050708@s5r6.in-berlin.de>
+	<20070726175929.730fc0be.akpm@linux-foundation.org>
+	<46A9A18D.2050401@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0707270031u3a4e5616t7cb38356dd86a560@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> If you are sure the problem is caused by EFAULT or ENOMEM , why not:
+On Fri, 27 Jul 2007 09:41:01 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-To this issue(wengang have posted the background), I hit it for 
-do_direct_IO() return EFAULT caused the panic, however, the function
-not only return these critical errors, maybe other error return like
-EIO.
+> Andrew Morton wrote:
+> > On Fri, 27 Jul 2007 02:42:58 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+> >> Besides, how about reorienting the CodingStyle text to the essential?
+> ...
+> > If sparse has gone and added a warning for this then it is more than
+> > nitpicking.  Reducing the amount of noise coming out of sparse is useful.
+> 
+> Sure, that'd be useful.  But then, SubmitChecklist already tells us to
+> check with sparse before submission.
 
-Thanks,
-Joe
+rofl.  First we have to talk everyone into checking their stuff with gcc.
+
