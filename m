@@ -1,36 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755423AbXG0EQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757241AbXG0ESh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755423AbXG0EQW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 00:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbXG0EQJ
+	id S1757241AbXG0ESh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 00:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbXG0ESb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 00:16:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33080 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbXG0EQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 00:16:08 -0400
-In-Reply-To: <46A7BEE2.8020504@garzik.org>
-References: <20070725174312.5818.61155.stgit@localhost.localdomain> <46A7BEE2.8020504@garzik.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EA6C9E6A-9E8B-437A-8DBD-369F31632EC8@kernel.crashing.org>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 27 Jul 2007 00:18:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:23502 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbXG0ESa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 00:18:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=RYXcdGlm65hDJX0iYDMlUagcKhAeaL0zF50PEr+ovjamM/Qz/xKfhydPttsISw1Y5fzVH1sX80/FxZOIyCJGLw2G2iEm7h8F/9Ary6rbbK1A7ZWRYO/xejTyrIO5JiFKuqZjVYsSe8Pn9YC6nMt0lD9AUgJHhhbBCgS5tWK8xgA=
+Message-ID: <46A97210.1090605@gmail.com>
+Date: Fri, 27 Jul 2007 13:18:24 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 8535] USB input death then system freeze
+References: <Pine.LNX.4.44L0.0707261022260.3529-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707261022260.3529-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] [POWERPC] Add support of platforms without PHY to gianfar	driver
-Date: Thu, 26 Jul 2007 23:16:55 -0500
-To: Jeff Garzik <jeff@garzik.org>
-X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Stern wrote:
+> Tejun:
+> 
+> Please take a look at comment #50 in Bugzilla 8535:
+> 
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=8535#c50
+> 
+> There have been several reports like this one recently of BUGs
+> occurring in release_sysfs_dirent() during device unregistration.  
+> Obviously a use-after-free issue, probably caused by a refcounting 
+> error.
+> 
+> Is there already a patch available to fix it?
 
-On Jul 25, 2007, at 4:21 PM, Jeff Garzik wrote:
+http://article.gmane.org/gmane.linux.kernel/556682/raw
 
-> I'll let paulus and linuxppc merge this one (or not)...
+Does this patch fix the problem?
 
-That would most likely be me, than paulus.  Since this is for a  
-Freescale PPC SoC.
-
-- k
+-- 
+tejun
