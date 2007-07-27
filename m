@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937921AbXG0V33@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938004AbXG0Vbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937921AbXG0V33 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 17:29:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764939AbXG0V3Q
+	id S938004AbXG0Vbo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 17:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935269AbXG0Vbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 17:29:16 -0400
-Received: from ik-out-1112.google.com ([66.249.90.182]:19632 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760891AbXG0V3O (ORCPT
+	Fri, 27 Jul 2007 17:31:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:64411 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935176AbXG0Vbg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 17:29:14 -0400
+	Fri, 27 Jul 2007 17:31:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=q8B8wndttKjGGibmsQ4pV7YCQE+CCO4FlemEOfgIskQHAjMMIfuESCg+iN9wJjyhem98OSbOcGngYWxQenZjBTGmhjCWb0SH5YZ0d23IWyiWtOGdvjzrr60XAVi8Cb+QTW3g16GSyEUakIC2jZuf6tR9Qnhlas0IDU93DG7pxk8=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: linux-scsi@vger.kernel.org
-Subject: [PATCH][sas] Fix potential NULL pointer dereference bug in sas_smp_get_phy_events()
-Date: Fri, 27 Jul 2007 23:27:57 +0200
-User-Agent: KMail/1.9.7
-Cc: Luben Tuikov <luben_tuikov@adaptec.com>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=FjDuY/AWU7FUu+u1Wtv0MLy0Fi6HUqIIgsqrxWH+cxR/38YLm2RwqNQ83I19FnhT3UUhrbtFpqimkMdKWHL+zVYDE1ljNIf2xoqlm1XZFeLQV8hKvZsoy/ZocmqqZdgrkNvQXy7GXxP4BVoQjMrzO87PQ8Wi2NXuzt/hnTjUYvg=
+Subject: Re: Problems with framebuffer in 2.6.22-git17
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Adrian McMenamin <adrianmcmenamin@gmail.com>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       lethal@users.sourceforge.net
+In-Reply-To: <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
+References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
+	 <1185146563.6370.8.camel@daplas>
+	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
+	 <1185406433.5046.23.camel@daplas>
+	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
+	 <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 28 Jul 2007 05:31:30 +0800
+Message-Id: <1185571890.26603.7.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707272327.57356.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, 2007-07-27 at 21:18 +0100, Adrian McMenamin wrote:
+> On 27/07/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
+> 
+> > With the patch reverted and 24bpp, it oopses before freezing (with two
+> > odd looking boot logos on the screen):
+> >
+> Tested this further and it fails on:
+> 
+> rev = fb_readl(par->mmio_base + 0x04);
 
-In sas_smp_get_phy_events() we never test if the call to 
-alloc_smp_req(RPEL_REQ_SIZE) succeeds or fails. That means we run 
-the risk of dereferencing a NULL pointer if it does fail. Far 
-better to test if we got NULL back and in that case return -ENOMEM 
-just as we already do for the other memory allocation in that 
-function.
-This patch reworks the memory allocation a bit to deal with it 
-(compile tested only).
+Doubtful if this line is the point of failure, this line is executed
+only once, on initialization.
 
+> 
+> Will try to see what's up - but if anyone knows what is likely to be
+> wrong here please shout out!
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+I'm still thinking there's something wrong on how the resources are
+allocated causing a pseudo_palette overrun. 
 
- drivers/scsi/libsas/sas_expander.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+I'll post a clean-up patch later.
 
-diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
-index b500f0c..85f5145 100644
---- a/drivers/scsi/libsas/sas_expander.c
-+++ b/drivers/scsi/libsas/sas_expander.c
-@@ -507,14 +507,21 @@ static int sas_dev_present_in_domain(struct asd_sas_port *port,
- int sas_smp_get_phy_events(struct sas_phy *phy)
- {
- 	int res;
-+	u8 *req;
-+	u8 *resp;
- 	struct sas_rphy *rphy = dev_to_rphy(phy->dev.parent);
- 	struct domain_device *dev = sas_find_dev_by_rphy(rphy);
--	u8 *req = alloc_smp_req(RPEL_REQ_SIZE);
--	u8 *resp = kzalloc(RPEL_RESP_SIZE, GFP_KERNEL);
- 
-+	resp = kzalloc(RPEL_RESP_SIZE, GFP_KERNEL);
- 	if (!resp)
- 		return -ENOMEM;
- 
-+	req = alloc_smp_req(RPEL_REQ_SIZE);
-+	if (!req) {
-+        	res = -ENOMEM;
-+		goto out;
-+	}
-+
- 	req[1] = SMP_REPORT_PHY_ERR_LOG;
- 	req[9] = phy->number;
- 
-
-
-
-
-
-  PS. Please keep me on Cc when replying.
-
+Tony
 
