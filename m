@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764277AbXG0UvQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937916AbXG0Uuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764277AbXG0UvQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:51:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937896AbXG0Uum
+	id S937916AbXG0Uuq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934681AbXG0Uuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:50:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56273
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S937894AbXG0Uul (ORCPT
+	Fri, 27 Jul 2007 16:50:35 -0400
+Received: from dsl017-112-150.lax1.dsl.speakeasy.net ([69.17.112.150]:41558
+	"EHLO NickAndBarb2.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935397AbXG0Uue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:50:41 -0400
-Date: Fri, 27 Jul 2007 13:50:37 -0700 (PDT)
-Message-Id: <20070727.135037.52167499.davem@davemloft.net>
-To: arjan@infradead.org
-Cc: torvalds@linux-foundation.org, matthew@wil.cx, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: IRQF_DISABLED problem
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1185567116.2711.2.camel@laptopd505.fenrus.org>
-References: <alpine.LFD.0.999.0707261557150.3442@woody.linux-foundation.org>
-	<alpine.LFD.0.999.0707261616050.3442@woody.linux-foundation.org>
-	<1185567116.2711.2.camel@laptopd505.fenrus.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 16:50:34 -0400
+X-Greylist: delayed 794 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 16:50:34 EDT
+Date: Fri, 27 Jul 2007 13:37:08 -0700
+From: Nick Pasich <NewsLetters@NickAndBarb.net>
+To: Greg Kroah-Hartman <greg@kroah.com>
+Cc: Peter Berger <pberger@brimson.com>,
+       Al Borchers <alborchers@steinerpoint.com>, linux-kernel@vger.kernel.org
+Subject: Edgeport UPS Monitoring Problems
+Message-ID: <20070727203708.GA10839@NICK2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@infradead.org>
-Date: Fri, 27 Jul 2007 13:11:56 -0700
 
-> On Thu, 2007-07-26 at 16:17 -0700, Linus Torvalds wrote:
-> > 
-> > On Thu, 26 Jul 2007, Linus Torvalds wrote:
-> > > 
-> > >  (c) "one IRQF_DISABLED means that everything runs disabled". This is 
-> > >      quite possibly buggy.
-> > 
-> > (Side note: I'm not claiming this (or it's mirror image (d)) is really any 
-> > better/worse than the current behaviour from a theoretical standpoint, but 
-> > at least the current behaviour is _tested_, which makes it better in 
-> > practice. So if we want to change this, I think we want to change it to 
-> > something that is _obviously_ better).
-> 
-> my personal preference would actually be to just never enable
-> interrupts. It's the fastest solution obviously, the most friendly on
-> stack and.. well simplest. Drivers no longer need to play some of the
-> games that they do today. And while there is an argument that this may
-> introduce a bit of latency... I'm not really convinced.
+Greg/Peter/Al,
 
-If you have a "chirpy" serial controller with only a 1 byte
-fifo, even a quite reasonable interrupt handler can cause
-receive characters to get lost if you disable interrupts during
-the entirety of it's execution.
+I've been using the edgeport 4 port USB to Serial Converter 
+to monitor APC Smart UPS's via apcupsd for quite awhile on 
+various Linux boxes.
 
-It really is needed.
+I just upgraded to Kernel Version 2.6.22.1 from 2.6.20.6 on a 
+couple of systems and both the edgeports stopped communicating.
 
-And it's just plain rude to disable interrupts when it isn't
-absolutely necessary.
+I tried applying various patches, "PATCH 026/149" and "PATCH 082/149" 
+and one by Alan Cox..  but they didn't fix the problem.
+
+I copied the 2.6.20.6 edgeport module sources to the new 
+2.6.22.1 tree and everything works again.
+
+          linux/drivers/usb/serial/io_edgeport.c
+          linux/drivers/usb/serial/io_edgeport.h
+          linux/drivers/usb/serial/io_edgeport.mod.c
+          linux/drivers/usb/serial/io_tables.h
+
+
+I thought you guys ought to be aware of this....
+
+                  Nick Pasich
+
+
