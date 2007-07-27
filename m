@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937515AbXG0RS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937293AbXG0RZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937515AbXG0RS3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764737AbXG0RSW
+	id S937293AbXG0RZM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757080AbXG0RY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:18:22 -0400
-Received: from khc.piap.pl ([195.187.100.11]:36471 "EHLO khc.piap.pl"
+	Fri, 27 Jul 2007 13:24:59 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:55737 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764928AbXG0RSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:18:21 -0400
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrea Arcangeli <andrea@suse.de>,
-       Matt Mackall <mpm@selenic.com>, Rene Herman <rene.herman@gmail.com>,
-       Ray Lee <ray-lk@madrabbit.org>, Bodo Eggert <7eggert@gmx.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
-References: <8GVjY-PL-25@gated-at.bofh.it> <E1IA7j1-0000j9-I3@be1.lrz>
-	<469A5D7C.5010904@gmail.com>
-	<Pine.LNX.4.58.0707161523500.25779@be1.lrz>
-	<469BF104.1040703@gmail.com>
-	<2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>
-	<469BF768.6040200@gmail.com> <20070716230719.GC11115@waste.org>
-	<469BFB73.3070105@gmail.com> <20070716232755.GD11115@waste.org>
-	<20070719001539.GC29728@v2.random>
-	<20070719013955.1bedc423@the-village.bc.nu>
-	<46A9ED28.3070508@sandeen.net>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Fri, 27 Jul 2007 19:18:18 +0200
-In-Reply-To: <46A9ED28.3070508@sandeen.net> (Eric Sandeen's message of "Fri, 27 Jul 2007 08:03:36 -0500")
-Message-ID: <m3vec54vfp.fsf@maximus.localdomain>
+	id S1755116AbXG0RY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 13:24:58 -0400
+Date: Fri, 27 Jul 2007 13:24:52 -0400
+To: Michael Tharp <gxti@partiallystapled.com>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Douglas J Hunley <doug@hunley.homeip.net>,
+       slocate@trakker.ca, linux-kernel@vger.kernel.org
+Subject: Re: solving(?) the updatedb problem w/ the kernel cache
+Message-ID: <20070727172452.GD13965@fieldses.org>
+References: <200707270855.26997.doug@hunley.homeip.net> <2c0942db0707270942k784890a2ld44d1312dde02379@mail.gmail.com> <46AA26B9.7050904@partiallystapled.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46AA26B9.7050904@partiallystapled.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen <sandeen@sandeen.net> writes:
+On Fri, Jul 27, 2007 at 01:09:13PM -0400, Michael Tharp wrote:
+> Ray Lee wrote:
+> > But yes, if we had a full filesystem events notifier, then we could
+> > just toss updatedb aside and have the benefit of a live index into the
+> > system. It's been suggested before, at least by me. Other projects
+> > want this as well, such as an on-demand virus scanner, or a live
+> > backup to another site, or beagle/tracker who would like to index
+> > documents on the fly. beagled already uses inotify, I think, but as it
+> > takes over my system (in a bad way) whenever I tried to run it, I had
+> > no choice but to remove it.
+> 
+> Beagle's problem is that it inspects the file contents, often far too
+> closely. I, too, had to uninstall it after it started indexing 40GB raw
+> huffyuv video files (probably treating them as text) and driving load
+> averages through the roof. Just watching for structure changes won't be
+> nearly as painful, assuming inotify can handle watching the entire
+> filesystem tree.
 
->> 8K stacks without IRQ stacks are not "safer" so I don't understand your
->> comment ?
->
-> Hmm was it SuSE or RH kernels (or mainline?) I saw which had a test to
-> defer soft IRQs if they occurred too deep in the stack for the current
-> thread.
+Events notification only helps while you've got someone around to listen
+to the events.  If you reboot (or even just log out?  I don't know),
+then when you come back the only completely reliable way to find out
+what's changed may be to re-read everything.
 
-Perhaps the "8 KB softpage" should be an option instead
-of 8 KB stack size?
+So I'd think that far more important and basic than events notification
+would be ways to reliably tell when a file have changed by looking just
+at the attributes.
 
-Not sure about ABI compatibility.
--- 
-Krzysztof Halasa
+You can just use everything that "stat" gives you and figure that if a
+file is still at the same path, with the same ctime, mtime, size,
+permissions, owner, inode number, etc., then it's probably the same
+file.
+
+If that's not enough, then maybe you want a change attribute (that's
+guaranteed to change even when changes happen within less than the
+granularity of ctime), and generation number (that's bumped whenever an
+inode number is reused).
+
+--b.
