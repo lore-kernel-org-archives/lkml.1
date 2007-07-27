@@ -1,89 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934870AbXG0IKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935261AbXG0IMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934870AbXG0IKo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 04:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763857AbXG0IJy
+	id S935261AbXG0IMs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 04:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758276AbXG0IMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 04:09:54 -0400
-Received: from gate.crashing.org ([63.228.1.57]:38321 "EHLO gate.crashing.org"
+	Fri, 27 Jul 2007 04:12:34 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60291 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759142AbXG0IJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 04:09:51 -0400
-Subject: [PATCH/RFC] Add MM_DEAD flag to struct mm_struct #3
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-mm <linux-mm@kvack.org>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <1185520398.5495.190.camel@localhost.localdomain>
-References: <1185501659.5495.174.camel@localhost.localdomain>
-	 <1185520398.5495.190.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 18:09:44 +1000
-Message-Id: <1185523784.5495.202.camel@localhost.localdomain>
+	id S1758110AbXG0IMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 04:12:33 -0400
+Date: Fri, 27 Jul 2007 18:12:21 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Zhang Wei <wei.zhang@freescale.com>
+Cc: galak@kernel.crashing.org, mporter@kernel.crashing.org, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5 v3] Add RapidIO support to powerpc architecture.
+Message-Id: <20070727181221.79433178.sfr@canb.auug.org.au>
+In-Reply-To: <11854393763547-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	<11854393741899-git-send-email-wei.zhang@freescale.com>
+	<11854393753986-git-send-email-wei.zhang@freescale.com>
+	<11854393763547-git-send-email-wei.zhang@freescale.com>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Jul_2007_18_12_21_+1000_/oiy7i_VmRjfKJ/y"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some architectures like sparc can do useful optimizations when knowing
-that an entire MM is being destroyed. At the moment, they rely on
-fullmm in the mmu_gather structure. However, that doesn't always work
-out very well with some of the changes we are doing. Among other things,
-the TLB flushing on sparc64 is done using per-CPU tracking data, making
-the batch not per-CPU will break that link.
+--Signature=_Fri__27_Jul_2007_18_12_21_+1000_/oiy7i_VmRjfKJ/y
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-So instead, we add a new flag to struct mm_struct that indicates that
-the mm is going away, for those archs to use. It also allows to use it
-in situations (such as PTE ops) where the batch isn't accessible (or
-there is no batch)
+On Thu, 26 Jul 2007 16:42:51 +0800 Zhang Wei <wei.zhang@freescale.com> wrot=
+e:
+>
+> +
+> +#include <../sysdev/fsl_rio.h>
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+This can just be <sysdev/fsl_rio.h> if it is only built on 32bit.
 
-And because I really have shit in my eyes today, here's a version that
-doesn't use a bit already used for something else... yuck. 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Thanks David !
+--Signature=_Fri__27_Jul_2007_18_12_21_+1000_/oiy7i_VmRjfKJ/y
+Content-Type: application/pgp-signature
 
-Index: linux-work/include/linux/sched.h
-===================================================================
---- linux-work.orig/include/linux/sched.h	2007-07-27 11:09:16.000000000 +1000
-+++ linux-work/include/linux/sched.h	2007-07-27 18:06:37.000000000 +1000
-@@ -366,6 +366,8 @@ extern int get_dumpable(struct mm_struct
- #define MMF_DUMP_FILTER_DEFAULT \
- 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
- 
-+#define MMF_DEAD          	6  /* mm is being destroyed */
-+
- struct mm_struct {
- 	struct vm_area_struct * mmap;		/* list of VMAs */
- 	struct rb_root mm_rb;
-Index: linux-work/mm/mmap.c
-===================================================================
---- linux-work.orig/mm/mmap.c	2007-07-27 11:09:52.000000000 +1000
-+++ linux-work/mm/mmap.c	2007-07-27 11:10:05.000000000 +1000
-@@ -1991,6 +1991,9 @@ void exit_mmap(struct mm_struct *mm)
- 	unsigned long nr_accounted = 0;
- 	unsigned long end;
- 
-+	/* Mark the MM as dead */
-+	__set_bit(MMF_DEAD, &mm->flags);
-+
- 	/* mm's last user has gone, and its about to be pulled down */
- 	arch_exit_mmap(mm);
- 
-Index: linux-work/kernel/fork.c
-===================================================================
---- linux-work.orig/kernel/fork.c	2007-07-27 16:12:30.000000000 +1000
-+++ linux-work/kernel/fork.c	2007-07-27 16:12:52.000000000 +1000
-@@ -336,6 +336,7 @@ static struct mm_struct * mm_init(struct
- 	INIT_LIST_HEAD(&mm->mmlist);
- 	mm->flags = (current->mm) ? current->mm->flags
- 				  : MMF_DUMP_FILTER_DEFAULT;
-+	__clear_bit(MMF_DEAD, &mm->flags);
- 	mm->core_waiters = 0;
- 	mm->nr_ptes = 0;
- 	set_mm_counter(mm, file_rss, 0);
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFGqajuTgG2atn1QN8RAt+GAJ4+PGrI0sH940WErfsYSWrQhJAlaACfZ0la
+2DuaS6P2ye4ObokhC4vBwQI=
+=UcRa
+-----END PGP SIGNATURE-----
 
+--Signature=_Fri__27_Jul_2007_18_12_21_+1000_/oiy7i_VmRjfKJ/y--
