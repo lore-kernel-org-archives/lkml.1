@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934401AbXG0Tkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934546AbXG0Tlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934401AbXG0Tkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932668AbXG0Tk3
+	id S934546AbXG0Tlp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 15:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932665AbXG0Tle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:40:29 -0400
-Received: from zcars04f.nortel.com ([47.129.242.57]:62666 "EHLO
-	zcars04f.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932341AbXG0Tk2 (ORCPT
+	Fri, 27 Jul 2007 15:41:34 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:45833
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932236AbXG0Tlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:40:28 -0400
-Message-ID: <46AA4A1E.8040302@nortel.com>
-Date: Fri, 27 Jul 2007 13:40:14 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Fri, 27 Jul 2007 15:41:32 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH] Merge the Sonics Silicon Backplane subsystem
+Date: Fri, 27 Jul 2007 21:39:45 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>
+References: <200707271857.24162.mb@bu3sch.de> <20070727192120.GB7572@tuxdriver.com>
+In-Reply-To: <20070727192120.GB7572@tuxdriver.com>
 MIME-Version: 1.0
-To: Rodolfo Giometti <giometti@enneenne.com>
-CC: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: LinuxPPS & spinlocks
-References: <20070717180550.GA24759@enneenne.com> <1185197716.14697.244.camel@pmac.infradead.org> <20070724080013.GA22171@gundam.enneenne.com> <1185284942.14697.319.camel@pmac.infradead.org> <20070724142050.GD4074@enneenne.com> <1185288769.14697.339.camel@pmac.infradead.org> <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com> <20070727192848.GW9840@enneenne.com>
-In-Reply-To: <20070727192848.GW9840@enneenne.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Disposition: inline
+Message-Id: <200707272139.45629.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jul 2007 19:40:17.0664 (UTC) FILETIME=[F5D03800:01C7D085]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rodolfo Giometti wrote:
-
-> What do you mean? Did you find an error into my patch? :-o
+On Friday 27 July 2007 21:21:20 John W. Linville wrote:
+> On Fri, Jul 27, 2007 at 06:57:20PM +0200, Michael Buesch wrote:
+> > The Sonics Silicon Backplane is a mini-bus used on
+> > various Broadcom chips and embedded devices.
+> > Devices using the SSB include b44, bcm43xx and various
+> > Broadcom based wireless routers.
+> > A b44 and bcm43xx port and a SSB based OHCI driver is available.
+> > 
+> > Signed-off-by: Michael Buesch <mb@bu3sch.de>
 > 
-> Functions pps_event() and
-> pps_register_source()/pps_unregister_source() take accesso to shared
-> data, that's why I used spinlocks.
+> At first glance it looks like there might be some tab/space issues
+> in some of the #define blocks toward the end of the patch, although
+> those might be intentional.
 
-My point is that the lock should be used to protect specific data. 
-Thus, it would be more correct to say, "spinlock foo is taken because 
-pps_register_source() accesses variable bar".
+They are intentional. It's something like this:
 
-That way, if someone else wants to access "bar", they know that they 
-need to take lock "foo".
+#define SSB_REGISTER_XX			0xF88
+#define  SSB_VALUE_FOR_REGISTER_XX	0x0001
+#define  SSB_MASK_FOR_REGISTER_XX	0xFF00
+#define SSB_REGISTER_YY			0xF99
+...
 
-Chris
+> Aside from whatever other style issues that might be identified, I'll
+> state that this code has been carried in wireless-dev for months and
+> thereby also spent a lot of time in -mm as well as Fedora (rawhide
+> and F-7).  The code has proven to be reasonably stable and reliable.
+
+And it's in the OpenWRT trunk since quite some time.
+
+-- 
+Greetings Michael.
