@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935923AbXG0Lcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934206AbXG0LdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935923AbXG0Lcm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 07:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbXG0Lcd
+	id S934206AbXG0LdG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 07:33:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935690AbXG0Lcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 07:32:33 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:63310 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755404AbXG0Lcc (ORCPT
+	Fri, 27 Jul 2007 07:32:41 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:40638 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934637AbXG0Lck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 07:32:32 -0400
-Message-Id: <20070727113348.413110503@de.ibm.com>
+	Fri, 27 Jul 2007 07:32:40 -0400
+Message-Id: <20070727113540.638204787@de.ibm.com>
+References: <20070727113348.413110503@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 27 Jul 2007 13:33:48 +0200
+Date: Fri, 27 Jul 2007 13:33:49 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Subject: [patch 0/6] more s390 patches for 2.6.23-rc1
+Cc: Frank Munzert <munzert@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 1/6] vmur: fix diag14_read.
+Content-Disposition: inline; filename=010-vmur-read.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Six additional patches for the 2.6.23-rc1 update for s390.
-The shortlog:
+From: Frank Munzert <munzert@de.ibm.com>
 
-Cornelia Huck (3):
-      [S390] cio: Clean up messages.
-      [S390] cio: Make CIO_* macros safe if dbfs are not available.
-      [S390] cio: Reorganize initialization.
+Record length of spool file must be only stored in 1st SPLINK record
 
-Frank Munzert (1):
-      [S390] vmur: fix diag14_read.
+Signed-off-by: Frank Munzert <munzert@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
-Heiko Carstens (2):
-      [S390] Fix IRQ tracing.
-      [S390] Fix sclp_vt220 error handling.
+ drivers/s390/char/vmur.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: quilt-2.6/drivers/s390/char/vmur.c
+===================================================================
+--- quilt-2.6.orig/drivers/s390/char/vmur.c
++++ quilt-2.6/drivers/s390/char/vmur.c
+@@ -486,7 +486,7 @@ static ssize_t diag14_read(struct file *
+ 		}
+ 		if (rc)
+ 			goto fail;
+-		if (reclen)
++		if (reclen && (copied == 0) && (*offs < PAGE_SIZE))
+ 			*((u16 *) &buf[FILE_RECLEN_OFFSET]) = reclen;
+ 		len = min(count - copied, PAGE_SIZE - res);
+ 		if (copy_to_user(ubuf + copied, buf + res, len)) {
 
 -- 
 blue skies,
