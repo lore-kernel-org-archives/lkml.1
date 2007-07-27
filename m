@@ -1,46 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933655AbXG0Hlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934439AbXG0HnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933655AbXG0Hlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 03:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761046AbXG0Hli
+	id S934439AbXG0HnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 03:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762396AbXG0Hm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 03:41:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49761 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760100AbXG0Hlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 03:41:37 -0400
-X-Greylist: delayed 25100 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 03:41:36 EDT
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46A9A18D.2050401@s5r6.in-berlin.de>
-Date: Fri, 27 Jul 2007 09:41:01 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Josh Triplett <josht@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-sparse@vger.kernel.org
-Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
-References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>	<m3abtir95x.fsf@maximus.localdomain>	<46A93F92.6050708@s5r6.in-berlin.de> <20070726175929.730fc0be.akpm@linux-foundation.org>
-In-Reply-To: <20070726175929.730fc0be.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 03:42:59 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:39869 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761986AbXG0Hm6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 03:42:58 -0400
+Date: Fri, 27 Jul 2007 09:44:13 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] ia64: fix a few section mismatch warnings
+Message-ID: <20070727074413.GA11424@uranus.ravnborg.org>
+References: <20070726210141.GA7266@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070726210141.GA7266@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 27 Jul 2007 02:42:58 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
->> Besides, how about reorienting the CodingStyle text to the essential?
-...
-> If sparse has gone and added a warning for this then it is more than
-> nitpicking.  Reducing the amount of noise coming out of sparse is useful.
+Fix the following section mismatch warnings:
 
-Sure, that'd be useful.  But then, SubmitChecklist already tells us to
-check with sparse before submission.
--- 
-Stefan Richter
--=====-=-=== -=== ==-==
-http://arcgraph.de/sr/
+WARNING: vmlinux.o(.text+0x41902): Section mismatch: reference to .init.text:__alloc_bootmem (between 'ia64_mca_cpu_init' and 'ia64_do_tlb_purge')
+WARNING: vmlinux.o(.text+0x49222): Section mismatch: reference to .init.text:__alloc_bootmem (between 'register_intr' and 'iosapic_register_intr')
+WARNING: vmlinux.o(.text+0x62beb2): Section mismatch: reference to .init.text:__alloc_bootmem_node (between 'hubdev_init_node' and 'cnodeid_get_geoid')
+
+For ithe first warning a helper function marked __init_refok was used.
+For the last warning a missing __init annotation was added.
+
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+---
+Updated - inspired by comments from Al Viro.
+
+diff --git a/arch/ia64/kernel/iosapic.c b/arch/ia64/kernel/iosapic.c
+index 91e6dc1..f4bd285 100644
+--- a/arch/ia64/kernel/iosapic.c
++++ b/arch/ia64/kernel/iosapic.c
+@@ -560,7 +560,7 @@ iosapic_reassign_vector (int irq)
+ 	}
+ }
+ 
+-static struct iosapic_rte_info *iosapic_alloc_rte (void)
++static struct iosapic_rte_info * __init_refok iosapic_alloc_rte (void)
+ {
+ 	int i;
+ 	struct iosapic_rte_info *rte;
+diff --git a/arch/ia64/kernel/mca.c b/arch/ia64/kernel/mca.c
+index 4b5daa3..8b7681b 100644
+--- a/arch/ia64/kernel/mca.c
++++ b/arch/ia64/kernel/mca.c
+@@ -1751,6 +1751,10 @@ format_mca_init_stack(void *mca_data, unsigned long offset,
+ }
+ 
+ /* Do per-CPU MCA-related initialization.  */
++static void * __init_refok mca_bootmem(unsigned long size)
++{
++	return alloc_bootmem(size * sizeof(struct ia64_mca_cpu));
++}
+ 
+ void __cpuinit
+ ia64_mca_cpu_init(void *cpu_data)
+@@ -1763,8 +1767,7 @@ ia64_mca_cpu_init(void *cpu_data)
+ 		int cpu;
+ 
+ 		first_time = 0;
+-		mca_data = alloc_bootmem(sizeof(struct ia64_mca_cpu)
+-					 * NR_CPUS + KERNEL_STACK_SIZE);
++		mca_data = mca_bootmem(NR_CPUS + KERNEL_STACK_SIZE);
+ 		mca_data = (void *)(((unsigned long)mca_data +
+ 					KERNEL_STACK_SIZE - 1) &
+ 				(-KERNEL_STACK_SIZE));
+diff --git a/arch/ia64/sn/kernel/io_common.c b/arch/ia64/sn/kernel/io_common.c
+index 787ed64..4594770 100644
+--- a/arch/ia64/sn/kernel/io_common.c
++++ b/arch/ia64/sn/kernel/io_common.c
+@@ -391,7 +391,7 @@ void sn_bus_free_sysdata(void)
+  * hubdev_init_node() - Creates the HUB data structure and link them to it's
+  *			own NODE specific data area.
+  */
+-void hubdev_init_node(nodepda_t * npda, cnodeid_t node)
++void __init hubdev_init_node(nodepda_t * npda, cnodeid_t node)
+ {
+ 	struct hubdev_info *hubdev_info;
+ 	int size;
