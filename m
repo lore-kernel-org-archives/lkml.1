@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935482AbXG0UD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936239AbXG0UET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935482AbXG0UD0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932886AbXG0UDT
+	id S936239AbXG0UET (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932886AbXG0UEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:03:19 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:25196 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932542AbXG0UDR (ORCPT
+	Fri, 27 Jul 2007 16:04:10 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:34862 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932542AbXG0UEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:03:17 -0400
+	Fri, 27 Jul 2007 16:04:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VYb7i58/Q1Jg005DW14QFxOvtKUhbrFhX6EKaLWiH5H/HJU7Z0dZgCeBZDcbN85eNo2A6x1mDJgwxOvnItBtqB1X2R9ope2xsV8uY7oHwxgOSjYFnjANaYXRi6Slpb9n5L2JM9WhmKMLT1bGIaKUZRkZMTxInmdJFA5zhhHbuE0=
-Message-ID: <9a8748490707271303h7f5187ffk31d211c34fd885bf@mail.gmail.com>
-Date: Fri, 27 Jul 2007 22:03:16 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: shacky <shacky83@gmail.com>
-Subject: Re: Kernel modules compilation
+        b=cGsS3uvSBz4vf/6b9dOCdX1sgNjk6fl9VF9CIFT2Az+39GJtXR2lt5bdPryi1UneGmKZwLTN0O9j2EUdPtrIDThktqPq7Zo3fKFXtBXIdRsy/uiPLAvmwzy21nhqhocHCy8/UqbXz0MXeyxiZgkFzScRq9waE5XAsOroWbIO5FQ=
+Message-ID: <19a3b7a80707271304g231860b8g690a32b12cac5835@mail.gmail.com>
+Date: Fri, 27 Jul 2007 22:04:07 +0200
+From: "Christoph Pfister" <christophpfister@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: BUG: soft lockup detected on CPU#0!
 Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <7fedbc910707271211v2ac2c927k3dd8fec8643ee250@mail.gmail.com>
+In-Reply-To: <6bffcb0e0707271230s1f3f3c63w8ccdd8a0945e706a@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <7fedbc910707271211v2ac2c927k3dd8fec8643ee250@mail.gmail.com>
+References: <19a3b7a80707251241t1cb5389ak8e5e3b27af2bde41@mail.gmail.com>
+	 <6bffcb0e0707271230s1f3f3c63w8ccdd8a0945e706a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 27/07/07, shacky <shacky83@gmail.com> wrote:
-> Hi.
->
-> During the Linux kernel compilation, I need to compile some modules
-> which are necessary for the system boot.
-> I localized these modules analyzing the modules which are
-> automatically loaded at the startup of my Debian system whith the
-> standard Debian kernel, through the output of the "lsmod" command.
-> I tried to search for these modules in the "menuconfig" kernel
-> configuration program, but I cannot find some of them, not even
-> searching in the .config file.
->
-> How I can find what items in "menuconfig" I need to activate (marking
-> it with "m") to compile the modules I need for the system startup?
->
-You could start by telling people what modules you are talking about.
+Hi Michal,
 
+2007/7/27, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>:
+> Hi Christoph,
+>
+> On 25/07/07, Christoph Pfister <christophpfister@gmail.com> wrote:
+> > Hi,
+> >
+> > After burning a dvd I had to eject it and found that message in dmesg.
+> > Syslog snippet and dmesg attached.
+> > System is 2.6.21 (debian version), running a p4, issue reproducible.
+>
+> Does this happen on the latest -stable?
+> http://eu.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+I'm on holiday really soon - but will try when I'm back :)
+
+> > Thanks for taking care of this,
+> >
+> > Christoph
+> >
+> >
+>
+> Regards,
+> Michal
+
+Christoph
