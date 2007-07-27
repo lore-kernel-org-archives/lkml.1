@@ -1,54 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765178AbXG0Nce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933891AbXG0Nc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765178AbXG0Nce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbXG0NcZ
+	id S933891AbXG0Nc4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbXG0Ncp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:32:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:53642 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755935AbXG0NcY (ORCPT
+	Fri, 27 Jul 2007 09:32:45 -0400
+Received: from mail.phnxsoft.com ([195.227.45.4]:4645 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765946AbXG0Nch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:32:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=CmRjOZvxNuMDJvCkzOJcNmUIAjaQXBxt1EHnd4q4kmX4SDsHHdontBN7NpHsamEgKMMKnX53FxBoKbdxkgXW5ankWyjZtHesnEV4KfGUDcsQDDMSVicGZOuOxAfqZz09KfxpBsLwkJ/VIOyaY0Gk5FbpUwRn9Q4pF/ZRF0xmx2w=
-Date: Fri, 27 Jul 2007 15:28:53 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, chris@zankel.net
-Subject: [-mm patch] xtensa console.c: remove duplicate #include
-Message-ID: <20070727132853.GA31203@slug>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
+	Fri, 27 Jul 2007 09:32:37 -0400
+Message-ID: <46A9F3DA.2090203@imap.cc>
+Date: Fri, 27 Jul 2007 15:32:10 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.4) Gecko/20070509 SeaMonkey/1.1.2 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Rene Herman <rene.herman@gmail.com>
+CC: Mike Galbraith <efault@gmx.de>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Andika Triwidada <andika@gmail.com>,
+       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org, B.Steinbrink@gmx.de,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: updatedb
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com>	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>	 <46A81C39.4050009@gmail.com>	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>	 <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>	 <46A98A14.3040300@gmail.com> <1185522844.6295.64.camel@Homer.simpson.net>	 <46A9ACB2.9030302@gmail.com> <1185528368.7851.44.camel@Homer.simpson.net>	 <46A9D26E.9010703@gmail.com> <1185536880.8978.34.camel@Homer.simpson.net> <46A9E4FC.80403@gmail.com>
+In-Reply-To: <46A9E4FC.80403@gmail.com>
+X-Enigmail-Version: 0.95.1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig57656030EDDE835AF478E4E6"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
-> 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig57656030EDDE835AF478E4E6
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-This patch removes one of the two linux/console.h included in
-arch/xtensa/platform-iss/console.c
+Rene Herman schrieb:
+> On 07/27/2007 01:48 PM, Mike Galbraith wrote:
+>=20
+>> I believe the users who say their apps really do get paged back in
+>> though, so suspect that's not the case.
+>=20
+> Stopping the bush-circumference beating, I do not. -ck (and gentoo) hav=
+e=20
+> this massive Calimero thing going among their users where people are mu=
+ch=20
+> less interested in technology than in how the nasty big kernel meanies =
+are=20
+> keeping them down (*).
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+I think the problem is elsewhere. Users don't say: "My apps get paged
+back in." They say: "My system is more responsive". They really don't
+care *why* the reaction to a mouse click that takes three seconds with
+a mainline kernel is instantaneous with -ck. Nasty big kernel meanies,
+OTOH, want to understand *why* a patch helps in order to decide whether
+it is really a good idea to merge it. So you've got a bunch of patches
+(aka -ck) which visibly improve the overall responsiveness of a desktop
+system, but apparently no one can conclusively explain why or how they
+achieve that, and therefore they cannot be merged into mainline.
 
-diff --git a/arch/xtensa/platform-iss/console.c b/arch/xtensa/platform-iss/console.c
-index 2f4f20f..854677d 100644
---- a/arch/xtensa/platform-iss/console.c
-+++ b/arch/xtensa/platform-iss/console.c
-@@ -20,7 +20,6 @@
- #include <linux/param.h>
- #include <linux/serial.h>
- #include <linux/serialP.h>
--#include <linux/console.h>
- 
- #include <asm/uaccess.h>
- #include <asm/irq.h>
+I don't have a solution to that dilemma either.
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enig57656030EDDE835AF478E4E6
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGqfPjMdB4Whm86/kRAsblAJ9UaxX+tApYsxEJui6A4QFvZ8AXeACfdhB5
+Yj6CyRC0P4nqzC3+cW0K1k0=
+=mEA1
+-----END PGP SIGNATURE-----
+
+--------------enig57656030EDDE835AF478E4E6--
