@@ -1,283 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934843AbXG0It2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935084AbXG0IvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934843AbXG0It2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 04:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbXG0ItT
+	id S935084AbXG0IvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 04:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758027AbXG0IvK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 04:49:19 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35315 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761177AbXG0ItR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 04:49:17 -0400
-Date: Fri, 27 Jul 2007 01:47:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-Message-Id: <20070727014749.85370e77.akpm@linux-foundation.org>
-In-Reply-To: <1185521021.6295.50.camel@Homer.simpson.net>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	<46A57068.3070701@yahoo.com.au>
-	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	<46A58B49.3050508@yahoo.com.au>
-	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	<46A6CC56.6040307@yahoo.com.au>
-	<p73abtkrz37.fsf@bingen.suse.de>
-	<46A85D95.509@kingswood-consulting.co.uk>
-	<20070726092025.GA9157@elte.hu>
-	<20070726023401.f6a2fbdf.akpm@linux-foundation.org>
-	<20070726094024.GA15583@elte.hu>
-	<20070726030902.02f5eab0.akpm@linux-foundation.org>
-	<1185454019.6449.12.camel@Homer.simpson.net>
-	<20070726110549.da3a7a0d.akpm@linux-foundation.org>
-	<1185513177.6295.21.camel@Homer.simpson.net>
-	<1185521021.6295.50.camel@Homer.simpson.net>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Jul 2007 04:51:10 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35743 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758735AbXG0IvJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 04:51:09 -0400
+In-Reply-To: <11854393733580-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com> <11854393733580-git-send-email-wei.zhang@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <98CA70A1-9888-4508-A0E9-0EB28C14945F@kernel.crashing.org>
+Cc: mporter@kernel.crashing.org, paulus@samba.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/5 v3] Add the explanation and a sample of RapidIO OF node to the document of booting-without-of.txt file.
+Date: Fri, 27 Jul 2007 03:51:54 -0500
+To: Zhang Wei <wei.zhang@freescale.com>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007 09:23:41 +0200 Mike Galbraith <efault@gmx.de> wrote:
 
-> On Fri, 2007-07-27 at 07:13 +0200, Mike Galbraith wrote:
-> > On Thu, 2007-07-26 at 11:05 -0700, Andrew Morton wrote:
-> > > > drops caches prior to both updatedb runs.
-> > > 
-> > > I think that was the wrong thing to do.  That will leave gobs of free
-> > > memory for updatedb to populate with dentries and inodes.
-> > > 
-> > > Instead, fill all of memory up with pagecache, then do the updatedb.  See
-> > > how much pagecache is left behind and see how large the vfs caches end up.
-> 
-> I didn't _fill_ memory, but loaded it up a bit with some real workload
-> data...
-> 
-> I tried time sh -c 'git diff v2.6.11 HEAD > /dev/null' to populate the
-> cache, and tried different values for vfs_cache_pressure.  Nothing
-> prevented git's data from being trashed by updatedb.  Turning the knob
-> downward rapidly became very unpleasant due to swap, (with 0 not
-> surprisingly being a true horror) but turning it up didn't help git one
-> bit.  The amount of data that had to be re-read with stock 100 or 10000
-> was the same, or at least so close that you couldn't see a difference in
-> vmstat and wall-clock.  Cache sizes varied, but the bottom line didn't.
-> (wasn't surprised, seems quite reasonable that git's data looks old and
-> useless to the reclaim logic when updatedb runs in between git runs)
-> 
+On Jul 26, 2007, at 3:42 AM, Zhang Wei wrote:
 
-Did a bit of playing with this with 128MB of memory.
+> Add the explanation and a sample of RapidIO OF node to the document  
+> of booting-without-of.txt file.
+>
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> ---
+>  Documentation/powerpc/booting-without-of.txt |   37 +++++++++++++++ 
+> +++++++++++
+>  1 files changed, 37 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+> Documentation/powerpc/booting-without-of.txt
+> index 76733a3..d89b805 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1824,6 +1824,43 @@ platforms are moved over to use the  
+> flattened-device-tree model.
+>  		fsl,has-rstcr;
+>  	};
+>
+> +   l) RapidIO
+> +
+> +   RapidIO is a definition of a system interconnect. This node add
+> +   the support for RapidIO processor in kernel. The node name is
+> +   suggested to be 'rapidio'.
+> +
+> +   Required properties:
+> +
+> +    - compatible : Using "fsl,rapidio-delta" for Freescale PowerPC
+> +      RapidIO controller.
+> +    - #address-cells : Address representation for "rapidio" devices.
+> +      This field represents the number of cells needed to represent
+> +      the RapidIO address of the registers.
 
-- drop caches
-- read a 1MB file
-- run slocate.cron
+Can you explain this a little further.  I'm a bit confused by  
+'RapidIO address of the registers'.
 
-With vfs_cache_pressure=100:
-
-MemTotal:       116316 kB
-MemFree:          3196 kB
-Buffers:         54408 kB
-Cached:           5128 kB
-SwapCached:          0 kB
-Active:          41728 kB
-Inactive:        27540 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:       116316 kB
-LowFree:          3196 kB
-SwapTotal:     1020116 kB
-SwapFree:      1019496 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:        9760 kB
-Mapped:           3808 kB
-Slab:            40468 kB
-SReclaimable:    34824 kB
-SUnreclaim:       5644 kB
-PageTables:        720 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   1078272 kB
-Committed_AS:    25988 kB
-VmallocTotal:   901112 kB
-VmallocUsed:       656 kB
-VmallocChunk:   900412 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-Hugepagesize:     4096 kB
-
-WIth vfs_cache_pressure=10000:
-
-MemTotal:       116316 kB
-MemFree:          3060 kB
-Buffers:         80792 kB
-Cached:           5052 kB
-SwapCached:          0 kB
-Active:          59432 kB
-Inactive:        36140 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:       116316 kB
-LowFree:          3060 kB
-SwapTotal:     1020116 kB
-SwapFree:      1019512 kB
-Dirty:               0 kB
-Writeback:           0 kB
-AnonPages:        9756 kB
-Mapped:           3832 kB
-Slab:            14304 kB
-SReclaimable:     7992 kB
-SUnreclaim:       6312 kB
-PageTables:        732 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   1078272 kB
-Committed_AS:    26000 kB
-VmallocTotal:   901112 kB
-VmallocUsed:       656 kB
-VmallocChunk:   900412 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-Hugepagesize:     4096 kB
-
-so we reaped quite a lot more slab with the higher vfs_cache_pressure.
-
-What I think is killing us here is the blockdev pagecache: the pagecache
-which backs those directory entries and inodes.  These pages get read
-multiple times because they hold multiple directory entries and multiple
-inodes.  These multiple touches will put those pages onto the active list
-so they stick around for a long time and everything else gets evicted.
-
-
-I've never been very sure about this policy for the metadata pagecache.  We
-read the filesystem objects into the dcache and icache and then we won't
-read from that page again for a long time (I expect).  But the page will
-still hang around for a long time.
-
-It could be that we should leave those pages inactive.
-
-<tries it>
-
-diff -puN include/linux/buffer_head.h~a include/linux/buffer_head.h
---- a/include/linux/buffer_head.h~a
-+++ a/include/linux/buffer_head.h
-@@ -130,7 +130,7 @@ BUFFER_FNS(Eopnotsupp, eopnotsupp)
- BUFFER_FNS(Unwritten, unwritten)
- 
- #define bh_offset(bh)		((unsigned long)(bh)->b_data & ~PAGE_MASK)
--#define touch_buffer(bh)	mark_page_accessed(bh->b_page)
-+#define touch_buffer(bh)	do { } while(0)
- 
- /* If we *know* page->private refers to buffer_heads */
- #define page_buffers(page)					\
-_
-
-vfs_cache_pressure=100:
-
-vmm:/home/akpm# cat /proc/meminfo 
-MemTotal:       116524 kB
-MemFree:          2692 kB
-Buffers:         51044 kB
-Cached:           5440 kB
-SwapCached:          0 kB
-Active:          19248 kB
-Inactive:        46996 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:       116524 kB
-LowFree:          2692 kB
-SwapTotal:     1020116 kB
-SwapFree:      1019492 kB
-Dirty:            2008 kB
-Writeback:           0 kB
-AnonPages:        9772 kB
-Mapped:           3812 kB
-Slab:            44336 kB
-SReclaimable:    38792 kB
-SUnreclaim:       5544 kB
-PageTables:        720 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   1078376 kB
-Committed_AS:    26108 kB
-VmallocTotal:   901112 kB
-VmallocUsed:       648 kB
-VmallocChunk:   900412 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-Hugepagesize:     4096 kB
-
-
-vfs_cache_pressure=10000
-
-vmm:/home/akpm# cat /proc/meminfo                       
-MemTotal:       116524 kB
-MemFree:          3720 kB
-Buffers:         79832 kB
-Cached:           6260 kB
-SwapCached:          0 kB
-Active:          18276 kB
-Inactive:        77584 kB
-HighTotal:           0 kB
-HighFree:            0 kB
-LowTotal:       116524 kB
-LowFree:          3720 kB
-SwapTotal:     1020116 kB
-SwapFree:      1019500 kB
-Dirty:            2228 kB
-Writeback:           0 kB
-AnonPages:        9788 kB
-Mapped:           3828 kB
-Slab:            13680 kB
-SReclaimable:     7676 kB
-SUnreclaim:       6004 kB
-PageTables:        736 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   1078376 kB
-Committed_AS:    26112 kB
-VmallocTotal:   901112 kB
-VmallocUsed:       648 kB
-VmallocChunk:   900412 kB
-HugePages_Total:     0
-HugePages_Free:      0
-HugePages_Rsvd:      0
-Hugepagesize:     4096 kB
-
-
-So again, slab was trimmed a lot more, but all our pagecache still got
-evicted.
-
-ah, but I started that pagecache out on the inactive list.  Try again. 
-This time, instead of reading a 1GB file once, let's read an 80MB file four
-times.
-
-<no difference>
-
-OK, I saw what happened then.  The inode for my 80MB file got reclaimed
-from icache and that instantly reclaimed all 80MB of pagecache.
-
-A single large file probably isn't a good testcase, but the same will
-happen with multiple files.  Higher vfs_cache_pressure will worsen this
-effect.  But it won't happen with mapped files because their inodes aren't
-reclaimable.  More sophisticated testing is needed - there's something in
-ext3-tools which will mmap, page in and hold a file for you.
-
-
-Anyway, blockdev pagecache is a problem, I expect.  It's worth playing with
-that patch.
-
-Another problem is atime updates.  You really do want to mount noatime. 
-Because with atimes enabled, each touch of a file will touch its inode and
-will keep its backing blockdev pagecache page in core.
+> +      See 1) above for more details on defining #address-cells.
+> +    - reg : Offset and length of the register set for the device
+> +    - ranges : Should be defined as specified in 1) to describe the
+> +      translation of addresses for memory mapped RapidIO memory
+> +      space.
+> +    - interrupts : binding interrupts for this device node,
+> +      please follow below orders:
+> +      <err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
+> +      msg2_tx_irq msg2_rx_irq ... msgN_tx_irq msgN_rx_irq>.
+> +
+> +  Example:
+> +
+> +	rapidio@c0000 {
+> +		compatible = "fsl,rapidio-delta";
+> +		#address-cells = <2>;
+> +		#size-cells = <2>;
+> +		reg = <c0000 20000>;
+> +		ranges = <0 0 c0000000 20000000>;
+> +		interrupt-parent = <&mpic>;
+> +		/* err_irq bell_outb_irq bell_inb_irq msg1_tx_irq msg1_rx_irq
+> +						      msg2_tx_irq msg2_rx_irq */
+> +		interrupts = <30 2 31 2 32 2 35 2 36 2 37 2 38 2>;
+> +	};
+> +
+>     More devices will be defined as this spec matures.
+>
+>  VII - Specifying interrupt information for devices
+> -- 
+> 1.5.1
 
