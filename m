@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937054AbXG0Kne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936495AbXG0Ku2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937054AbXG0Kne (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 06:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934393AbXG0KnR
+	id S936495AbXG0Ku2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 06:50:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759681AbXG0KuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 06:43:17 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:5101 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933973AbXG0KnQ convert rfc822-to-8bit (ORCPT
+	Fri, 27 Jul 2007 06:50:18 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45973 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958AbXG0KuR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 06:43:16 -0400
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, general@lists.openfabrics.org
-Subject: [PATCH 2/2] ehca: correction include order according kernel coding style
-Date: Fri, 27 Jul 2007 12:55:19 +0200
-User-Agent: KMail/1.8.2
-Cc: raisch@de.ibm.com, stefan.roscher@de.ibm.com
+	Fri, 27 Jul 2007 06:50:17 -0400
+Date: Fri, 27 Jul 2007 12:50:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@vger.kernel.org,
+       rmk@arm.linux.org.uk, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/68] 0 -> NULL, for arch/arm
+In-Reply-To: <20070727095905.GU27237@ftp.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0707271250020.12711@fbirervta.pbzchgretzou.qr>
+References: <200707270944.LAA17082@ifs.emn.fr> <20070727095905.GU27237@ftp.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707271255.19456.hnguyen@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a2794450cbee597cefd7b6e159257583c459d358 Mon Sep 17 00:00:00 2001
-From: Hoang-Nam Nguyen <hnguyen at de.ibm.com>
-Date: Fri, 27 Jul 2007 10:26:40 +0200
-Subject: [PATCH] correction include order according kernel coding style
 
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_mrmw.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+On Jul 27 2007 10:59, Al Viro wrote:
+>On Fri, Jul 27, 2007 at 11:44:07AM +0200, Yoann Padioleau wrote:
+>>  		buf = alloc_safe_buffer(device_info, ptr, size, dir);
+>> -		if (buf == 0) {
+>> +		if (buf == NULL) {
+>
+>		if (!buf)
+>surely...
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_mrmw.c b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-index 773ac3f..1180b65 100644
---- a/drivers/infiniband/hw/ehca/ehca_mrmw.c
-+++ b/drivers/infiniband/hw/ehca/ehca_mrmw.c
-@@ -40,9 +40,8 @@
-  * POSSIBILITY OF SUCH DAMAGE.
-  */
- 
--#include <rdma/ib_umem.h>
--
- #include <asm/current.h>
-+#include <rdma/ib_umem.h>
- 
- #include "ehca_iverbs.h"
- #include "ehca_mrmw.h"
+Makes it look like it's used as a bool.
+
+
+	Jan
 -- 
-1.5.2
-
-
