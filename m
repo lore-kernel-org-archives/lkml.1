@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764061AbXG0EsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbXG0FNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764061AbXG0EsZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 00:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbXG0EsR
+	id S1760655AbXG0FNS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 01:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXG0FNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 00:48:17 -0400
-Received: from pcls5.std.com ([192.74.137.145]:54235 "EHLO TheWorld.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751659AbXG0EsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 00:48:16 -0400
-From: Alan Curry <pacman@TheWorld.com>
-Message-Id: <200707270448.l6R4m1O31531714@shell01.TheWorld.com>
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-To: akpm@linux-foundation.org (Andrew Morton)
-Date: Fri, 27 Jul 2007 00:48:01 -0400 (EDT)
-Cc: benh@kernel.crashing.org (Benjamin Herrenschmidt),
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-In-Reply-To: <20070726212241.032e9755.akpm@linux-foundation.org> from "Andrew Morton" at Jul 26, 2007 09:22:41 PM
-X-Mailer: ELM [version 2.5 PL2]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Jul 2007 01:13:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59448 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752306AbXG0FNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 01:13:04 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19wp6NPa2lwB80r1RETQyb6UD8g0onhxAUmFR2GWJ
+	Le4Bz1tJgl81ho
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge
+	plans for 2.6.23]
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070726110549.da3a7a0d.akpm@linux-foundation.org>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46A57068.3070701@yahoo.com.au>
+	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
+	 <46A58B49.3050508@yahoo.com.au>
+	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
+	 <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>
+	 <46A85D95.509@kingswood-consulting.co.uk> <20070726092025.GA9157@elte.hu>
+	 <20070726023401.f6a2fbdf.akpm@linux-foundation.org>
+	 <20070726094024.GA15583@elte.hu>
+	 <20070726030902.02f5eab0.akpm@linux-foundation.org>
+	 <1185454019.6449.12.camel@Homer.simpson.net>
+	 <20070726110549.da3a7a0d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 07:12:57 +0200
+Message-Id: <1185513177.6295.21.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes the following:
->> > 
->> > Did this get merged, or otherwise fixed?  Even though the code in there has
->> > changed quite a bit, it looks to my untrained eye like the fix is still
->> > applicable?
->> 
->> Merged a fixed version:
->> 
->> f5d834fc34e61f1a40435981062000e5d2b2baa8
->> 
->> (In linus tree as of now)
->
->I hope so.  Alan's patch looks rather different from what you have now:
->fall back to of_find_node_by_name() if of_find_node_by_type() failed.
->
+On Thu, 2007-07-26 at 11:05 -0700, Andrew Morton wrote:
+> On Thu, 26 Jul 2007 14:46:58 +0200 Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > On Thu, 2007-07-26 at 03:09 -0700, Andrew Morton wrote:
+> > 
+> > > Setting it to zero will maximise the preservation of the vfs caches.  You
+> > > wanted 10000 there.
+> > > 
+> > > <bets that nobody will test this>
+> > 
+> > drops caches prior to both updatedb runs.
+> 
+> I think that was the wrong thing to do.  That will leave gobs of free
+> memory for updatedb to populate with dentries and inodes.
+> 
+> Instead, fill all of memory up with pagecache, then do the updatedb.  See
+> how much pagecache is left behind and see how large the vfs caches end up.
 
-Looking at it via gitweb, I think the commit mentioned above is actually the
-same as what I submitted. The diff context lines are different because there
-was a similar patch in between the 2.6.22 release and my patch, which
-apparently fixed the same problem on a different type of machine. It looks
-like these 2 workarounds will function independently of each other.
+Yeah.  Before these two runs just to see what difference there was in
+caches with those two settings, I tried running with a heavier than
+normal (for me) desktop application mix, to see if it would start
+swapping, but it didn't.   Seems that 1GB ram is enough space for
+everything I do, and everything updatedb does as well.  You need a
+larger working set to feel the pain I guess.
 
-The first 8042-detection fix was:
-db0dbae9d9680bce69fe1ce775709e60c8ee9c29
+	-Mike
 
-And mine is:
-f5d834fc34e61f1a40435981062000e5d2b2baa8
-
--- 
-Alan Curry
-pacman@world.std.com
