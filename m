@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764782AbXG0UAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933407AbXG0UBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764782AbXG0UAY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765997AbXG0UAB
+	id S933407AbXG0UBJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762483AbXG0UAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:00:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:30694 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765408AbXG0T75 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:59:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=qO0b58glj2Ts028SQVc/Jg1r8vTmkPbiH+zUrA32zf3pxSp4Cr+3BpKhW/o+PKxg/6OLe7+tyUKuIqjB+wF7Fh8q/kN/3rA+TfT7Yh9NnshAuuU5/1LNyOcgptjgNDefHZ6QebOK59NRIBoNO2/YDO3wbUS33hvyEbB3+U/1PPs=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: linux-scsi@vger.kernel.org
-Subject: [PATCH][sas] Fix potential NULL pointer dereference bug in sas_smp_handler()
-Date: Fri, 27 Jul 2007 21:58:41 +0200
-User-Agent: KMail/1.9.7
-Cc: Luben Tuikov <luben_tuikov@adaptec.com>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Fri, 27 Jul 2007 16:00:55 -0400
+Received: from zaphod.dth.net ([85.159.112.68]:54733 "EHLO zaphod.dth.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762417AbXG0UAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:00:54 -0400
+X-Greylist: delayed 1339 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 16:00:53 EDT
+Date: Fri, 27 Jul 2007 21:38:32 +0200
+From: dth <dth@dth.net>
+To: linux-kernel@vger.kernel.org
+Subject: ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+Message-ID: <20070727193832.GA20289@dth.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707272158.41374.jesper.juhl@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have a via mini-itx epia 5000 motherboard as a firewall.
+It has an ide device: PQI 128MB flash DOM [1] which just plugs
+directly into the ide connector on the motherboard.
+2.6.22-git17 works, although it gives some warning 
+hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+hda: set_drive_speed_status: error=0x04 { DriveStatusError }
+Full dmesg output [2]
 
-Hi,
+When i compiled any 2.6.23-rc1 kernel out so far it always froze on me.
+Yesterday i tried 2.6.23-rc1-git3 and i booted until:
 
-The Coverity checker found a problem in 
-drivers/scsi/libsas/sas_expander.c::sas_smp_handler().
-We dereference a pointer before testing if it is NULL. Easily fixed 
-in this case by simply moving an assignment down a bit.
+VP_IDE: VIA vt8231 (rev 10) IDE UDMA100 controller on pci0000:00:11.1
+    ide0: BM-DMA at 0xd000-0xd007, BIOS settings: hda:pio, hdb:pio
+    ide1: BM-DMA at 0xd008-0xd00f, BIOS settings: hdc:pio, hdd:pio
+Marking TSC unstable due to: possible TSC halt in C2.
+Time: acpi_pm clocksource has been installed.
+hda: PQI IDE DiskOnModule, ATA DISK drive
+hda: IRQ probe failed (0xfff2)
+Clocksource tsc unstable (delta = 84358771493 ns)
 
-Please consider for inclusion.
+So i went back to 2.6.22-git17.
+This morning i saw a fresh git4 and compiled/installed that.
+This kernel actually booted! (once)
+I had a netconsole running to catch the lucky event [3]
 
-Patch has been compile tested only.
+After about 2 minutes of working however, the whole machine froze.
+No message at the console, not able to toggle numlock, no magic
+sysrq key features: solid frozen.
+After the power cycle i was not able to boot the same kernel
+ever again. It was just like a timer had run out and it wouldn't 
+work anymore. 
 
+I know my hardware is "ancient" and the flash thing is probably
+not current. My firewall however is solar powerpowered (10 watt 
+power consumption) and it would be fun if i could run the latest/
+greatest kernels on it.
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+Config files and hdparm info on the DOM in the same directory as
+dmesg output.
 
- drivers/scsi/libsas/sas_expander.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Any comments appriciated.
 
-diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
-index b500f0c..7871406 100644
---- a/drivers/scsi/libsas/sas_expander.c
-+++ b/drivers/scsi/libsas/sas_expander.c
-@@ -1879,7 +1879,7 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 		    struct request *req)
- {
- 	struct domain_device *dev;
--	int ret, type = rphy->identify.device_type;
-+	int ret, type;
- 	struct request *rsp = req->next_rq;
- 
- 	if (!rsp) {
-@@ -1895,6 +1895,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
- 		return -EINVAL;
- 	}
- 
-+	type = rphy->identify.device_type;
-+
- 	if (type != SAS_EDGE_EXPANDER_DEVICE &&
- 	    type != SAS_FANOUT_EXPANDER_DEVICE) {
- 		printk("%s: can we send a smp request to a device?\n",
+Danny
 
+[1] http://www.memorydepot.com/ssd_diskonmodule.asp
+[2] http://www.dth.net/kernel/via_output_2.6.22_git17
+[3] http://www.dth.net/kernel/via_output_2.6.23-rc1-git4
 
 
-
-
-  PS. Please keep me on Cc when replying.
-
-
+-- 
