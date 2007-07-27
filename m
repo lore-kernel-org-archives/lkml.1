@@ -1,91 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765572AbXG0Mt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932239AbXG0MxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765572AbXG0Mt4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 08:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758209AbXG0Mtt
+	id S932239AbXG0MxS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 08:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbXG0MxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 08:49:49 -0400
-Received: from madara.hpl.hp.com ([192.6.19.124]:59940 "EHLO madara.hpl.hp.com"
+	Fri, 27 Jul 2007 08:53:10 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57240 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758478AbXG0Mts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 08:49:48 -0400
-Date: Fri, 27 Jul 2007 05:49:34 -0700
-From: Stephane Eranian <eranian@hpl.hp.com>
-To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, akpm@linux-foundation.org,
-       Stephane Eranian <eranian@hpl.hp.com>, B.Steinbrink@gmx.de
-Subject: [PATCH] perfctr_watchdog: do not BUG_ON() when MSR is unknown
-Message-ID: <20070727124934.GD9828@frankl.hpl.hp.com>
-Reply-To: eranian@hpl.hp.com
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
-Organisation: HP Labs Palo Alto
-Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
-E-mail: eranian@hpl.hp.com
-X-HPL-MailScanner: Found to be clean
-X-HPL-MailScanner-From: eranian@hpl.hp.com
+	id S1755507AbXG0MxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 08:53:09 -0400
+Message-ID: <46A9EAB0.3090306@garzik.org>
+Date: Fri, 27 Jul 2007 08:53:04 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: NFSv4 poops itself
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Background:
 
-Here is a small patch to change the behavior of the PMU msr allocator
-to avoid BUG_ON() when the MSR is unknwon. Instead, it now returns
-ok, which means "I do not manage". The current allocator is not
-yet managing the full set of PMU registers (e.g., GLOBAL_* on Core 2).
+Server: x86-64 dual core Intel, kernel 2.6.23-rc1 (my home fileserver)
+	Exporting NFS/NFSv4 mounts.  Client count: 1  Uptime: 4 days
+
+Client: x86-64 dual core Intel, kernel 2.6.23-rc1 (my main workstation)
+	NFS mount setup:
+	pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
+	Uptime: 4 days
+
+	Home directory mounted via NFSv4.
+
+Problem:
+
+My workstation has been happily talking to my file server for several 
+days without incident.  An hour ago, my numeric keypad stopping working 
+(unrelated problem... USB or X bug?).  The solution to the keypad 
+problem is usually to log out of X and log back in, or worse case, reboot.
+
+So, I log out, and log back in.  At first, a few shell windows open and 
+successfully initialize themselves (read bash profile over NFS, etc.) 
+Then, as more shell windows open, things start hanging.  I can easily 
+switch to console and ssh to the fileserver, so it is clear this is an 
+NFS hang.
+
+No adverse messages at all on the client.
+
+On the server, I see NFSv4 spamming dmesg with hundreds of thousands of 
+messages:
+
+Jul 27 08:20:53 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
+Jul 27 08:21:24 pretzel last message repeated 167966 times
+Jul 27 08:21:55 pretzel last message repeated 173628 times
+Jul 27 08:21:55 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
+Jul 27 08:22:26 pretzel last message repeated 171286 times
+Jul 27 08:23:27 pretzel last message repeated 344461 times
+Jul 27 08:23:30 pretzel last message repeated 18656 times
+
+I rebooted the client, the problem disappeared, and everything is happy 
+again...  but clearly NFSv4 shat itself.  And now I am worried this will 
+happen again.
+
+In all my quite-heavy use of NFSv4 I've never seen this behavior before, 
+  so I would call this a regression.
+
+I always run vanilla linux-2.6.git self-built kernels on both client and 
+server.
+
+	Jeff
 
 
-    [watchdog] do not BUG_ON() in the MSR allocator if MSR is unknown, return ok instead
-    
-    signed-off-by: Stephane Eranian <eranian@hpl.hp.com>
-
-diff --git a/arch/i386/kernel/cpu/perfctr-watchdog.c b/arch/i386/kernel/cpu/perfctr-watchdog.c
-index 4be488e..9b5d6af 100644
---- a/arch/i386/kernel/cpu/perfctr-watchdog.c
-+++ b/arch/i386/kernel/cpu/perfctr-watchdog.c
-@@ -120,7 +120,9 @@ int reserve_perfctr_nmi(unsigned int msr)
- 	unsigned int counter;
- 
- 	counter = nmi_perfctr_msr_to_bit(msr);
--	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
-+	/* register not managed by the allocator? */
-+	if (counter > NMI_MAX_COUNTER_BITS)
-+		return 1;
- 
- 	if (!test_and_set_bit(counter, perfctr_nmi_owner))
- 		return 1;
-@@ -132,7 +134,9 @@ void release_perfctr_nmi(unsigned int msr)
- 	unsigned int counter;
- 
- 	counter = nmi_perfctr_msr_to_bit(msr);
--	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
-+	/* register not managed by the allocator? */
-+	if (counter > NMI_MAX_COUNTER_BITS)
-+		return;
- 
- 	clear_bit(counter, perfctr_nmi_owner);
- }
-@@ -142,7 +146,9 @@ int reserve_evntsel_nmi(unsigned int msr)
- 	unsigned int counter;
- 
- 	counter = nmi_evntsel_msr_to_bit(msr);
--	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
-+	/* register not managed by the allocator? */
-+	if (counter > NMI_MAX_COUNTER_BITS)
-+		return 1;
- 
- 	if (!test_and_set_bit(counter, evntsel_nmi_owner))
- 		return 1;
-@@ -154,7 +160,9 @@ void release_evntsel_nmi(unsigned int msr)
- 	unsigned int counter;
- 
- 	counter = nmi_evntsel_msr_to_bit(msr);
--	BUG_ON(counter > NMI_MAX_COUNTER_BITS);
-+	/* register not managed by the allocator? */
-+	if (counter > NMI_MAX_COUNTER_BITS)
-+		return;
- 
- 	clear_bit(counter, evntsel_nmi_owner);
- }
