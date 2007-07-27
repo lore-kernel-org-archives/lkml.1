@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937590AbXG0RxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937342AbXG0R5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937590AbXG0RxW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760760AbXG0RxO
+	id S937342AbXG0R5z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933076AbXG0R5r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:53:14 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1611 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756911AbXG0RxN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:53:13 -0400
-Date: Fri, 27 Jul 2007 18:53:11 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Lee Howard <faxguy@howardsilvan.com>
-cc: Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-In-Reply-To: <46AA2748.80703@howardsilvan.com>
-Message-ID: <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca>
- <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
- <46AA2748.80703@howardsilvan.com>
+	Fri, 27 Jul 2007 13:57:47 -0400
+Received: from clump.bawx.ca ([64.251.30.168]:51162 "EHLO bawx.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933002AbXG0R5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 13:57:46 -0400
+X-Greylist: delayed 1887 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 13:57:46 EDT
+X-Spam-Score: 1.932
+Date: Fri, 27 Jul 2007 10:22:19 -0700
+From: Kevin Lindsay <kevin@trakker.ca>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Douglas J Hunley <doug@hunley.homeip.net>, slocate@trakker.ca,
+       linux-kernel@vger.kernel.org
+Subject: Re: solving(?) the updatedb problem w/ the kernel cache
+Message-ID: <20070727172219.GO3357@trakker.ca>
+References: <200707270855.26997.doug@hunley.homeip.net> <2c0942db0707270942k784890a2ld44d1312dde02379@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2c0942db0707270942k784890a2ld44d1312dde02379@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007, Lee Howard wrote:
+On Fri, Jul 27, 2007 at 09:42:27AM -0700, Ray Lee wrote:
 
-> Okay, so let's say we've got a loop around a blocking read on the modem file
-> descriptor...
+> On 7/27/07, Douglas J Hunley <doug@hunley.homeip.net> wrote:
+> > I've been following lkml for a little while (not understanding it all, but
+> > following nonetheless <g>) and I've noticed that in a lot of the talks about
+> > schedulers, elevators, and performance, the issue of running updatedb and its
+> > effects on the kernel's fs cache seems to recur. I've also yet to see anyone
+> > present a solution that others think is worth pursuing. I'm curious why we're
+> > trying to solve the problem, when we can simply avoid the problem to begin
+> > with by making use of inotify and introducing a new user-space
+> > daemon, 'located'.
 > 
->  for (;;) {
->      read some data from modem
->      process data from modem
->      if (end-of-data detected) break;
->  }
+> inotify doesn't scale for lots of directories. I have about 18,000
+> directories under ~ on my laptop, and that's with a few source trees
+> that I use infrequently tarballed up.
 > 
-> Are you suggesting that the application should be using deasserting RTS after
-> the read and asserting it before?
+> But yes, if we had a full filesystem events notifier, then we could
+> just toss updatedb aside and have the benefit of a live index into the
+> system. It's been suggested before, at least by me. Other projects
+> want this as well, such as an on-demand virus scanner, or a live
+> backup to another site, or beagle/tracker who would like to index
+> documents on the fly. beagled already uses inotify, I think, but as it
+> takes over my system (in a bad way) whenever I tried to run it, I had
+> no choice but to remove it.
+> 
+> Perhaps it was choking on the 18k subdirectories, dunno.
 
- It certainly could -- you were asking how it would know. ;-)
+The interface for inotify requires you to explicity watch files and folders.
+As Ray suggests, I am also skeptical that using inotify to watch 18k of inodes
+is very efficient, although it would be nice to be wrong. Possibly someone
+needs to take a peak into OS X's fsevents mechanism?
 
-> I had previously thought that the control of RTS was something that the
-> serial/tty driver was supposed to do independently based on the buffer fill.
+The other problems with this approach is that the locate DB uses incremental
+encoding. Each change to the filesystem may require large protions or possibly
+a complete re-encoding of the database. An alterntive DB format would need to
+be considered.
 
- The TTY line discipline driver could do that based on the amount of 
-received data present in its buffer.  And it should if asked to (a brief 
-look at drivers/char/n_tty.c reveals it does; obviously there may be a bug 
-somewhere though).  So could e.g. the SLIP and PPP line discipline 
-drivers, though the criteria might be different (apparently they do not, 
-which is a shame).
-
- The serial drivers have nothing to do about it -- all they can do is 
-pushing data upstream, to the discipline driver.  They can provide an 
-interface to hardware flow control features though, if implemented by a 
-given UART.
-
-  Maciej
+Kevin
