@@ -1,170 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964900AbXG0Lfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964973AbXG0Lgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964900AbXG0Lfo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 07:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937024AbXG0Ld0
+	id S964973AbXG0Lgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 07:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933873AbXG0Lgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 07:33:26 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:8440 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937002AbXG0LdX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 07:33:23 -0400
-Message-Id: <20070727113627.488693533@de.ibm.com>
-References: <20070727113348.413110503@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 27 Jul 2007 13:33:54 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 6/6] Fix sclp_vt220 error handling.
-Content-Disposition: inline; filename=015-sclp-vt220.diff
+	Fri, 27 Jul 2007 07:36:35 -0400
+Received: from www.sophics.cz ([194.108.6.2]:44611 "EHLO www.sophics.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933655AbXG0Lge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 07:36:34 -0400
+X-Greylist: delayed 2392 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 07:36:33 EDT
+Message-ID: <46A9CF66.90108@sophics.cz>
+Date: Fri, 27 Jul 2007 12:56:38 +0200
+From: Petr Stehlik <pstehlik@sophics.cz>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
+MIME-Version: 1.0
+To: Yoann Padioleau <padator@wanadoo.fr>
+CC: kernel-janitors@vger.kernel.org, geert@linux-m68k.org,
+       zippel@linux-m68k.org, linux-m68k@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 08/68] 0 -> NULL, for arch/m68k
+References: <200707270944.LAA17213@ifs.emn.fr>
+In-Reply-To: <200707270944.LAA17213@ifs.emn.fr>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Yoann Padioleau wrote:
+> When comparing a pointer, it's clearer to compare it to NULL than to 0.
 
-Also convert to slab_is_available() as an indicator if
-get_zeroed_page() will work or not.
+>  	stram_start = phys_to_virt(0);
+> -	kernel_in_stram = (stram_start == 0);
+> +	kernel_in_stram = (stram_start == NULL);
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+stram_start is more like an offset than pointer, IMHO. And 0 is a valid 
+offset. The "==NULL" does not make much sense in this particular case. 
+NULL is usually used when checking for an uninitialized pointer, right?
 
- drivers/s390/char/sclp_vt220.c |   61 ++++++++++++++++++++++++++---------------
- 1 file changed, 40 insertions(+), 21 deletions(-)
-
-Index: quilt-2.6/drivers/s390/char/sclp_vt220.c
-===================================================================
---- quilt-2.6.orig/drivers/s390/char/sclp_vt220.c
-+++ quilt-2.6/drivers/s390/char/sclp_vt220.c
-@@ -621,10 +621,24 @@ sclp_vt220_flush_buffer(struct tty_struc
- /*
-  * Initialize all relevant components and register driver with system.
-  */
--static int __init_refok __sclp_vt220_init(int early)
-+static void __init __sclp_vt220_cleanup(void)
-+{
-+	struct list_head *page, *p;
-+
-+	list_for_each_safe(page, p, &sclp_vt220_empty) {
-+		list_del(page);
-+		if (slab_is_available())
-+			free_page((unsigned long) page);
-+		else
-+			free_bootmem((unsigned long) page, PAGE_SIZE);
-+	}
-+}
-+
-+static int __init __sclp_vt220_init(void)
- {
- 	void *page;
- 	int i;
-+	int num_pages;
- 
- 	if (sclp_vt220_initialized)
- 		return 0;
-@@ -641,13 +655,16 @@ static int __init_refok __sclp_vt220_ini
- 	sclp_vt220_flush_later = 0;
- 
- 	/* Allocate pages for output buffering */
--	for (i = 0; i < (early ? MAX_CONSOLE_PAGES : MAX_KMEM_PAGES); i++) {
--		if (early)
--			page = alloc_bootmem_low_pages(PAGE_SIZE);
--		else
-+	num_pages = slab_is_available() ? MAX_KMEM_PAGES : MAX_CONSOLE_PAGES;
-+	for (i = 0; i < num_pages; i++) {
-+		if (slab_is_available())
- 			page = (void *) get_zeroed_page(GFP_KERNEL | GFP_DMA);
--		if (!page)
-+		else
-+			page = alloc_bootmem_low_pages(PAGE_SIZE);
-+		if (!page) {
-+			__sclp_vt220_cleanup();
- 			return -ENOMEM;
-+		}
- 		list_add_tail((struct list_head *) page, &sclp_vt220_empty);
- 	}
- 	return 0;
-@@ -661,14 +678,13 @@ static const struct tty_operations sclp_
- 	.flush_chars = sclp_vt220_flush_chars,
- 	.write_room = sclp_vt220_write_room,
- 	.chars_in_buffer = sclp_vt220_chars_in_buffer,
--	.flush_buffer = sclp_vt220_flush_buffer
-+	.flush_buffer = sclp_vt220_flush_buffer,
- };
- 
- /*
-  * Register driver with SCLP and Linux and initialize internal tty structures.
-  */
--static int __init
--sclp_vt220_tty_init(void)
-+static int __init sclp_vt220_tty_init(void)
- {
- 	struct tty_driver *driver;
- 	int rc;
-@@ -678,18 +694,15 @@ sclp_vt220_tty_init(void)
- 	driver = alloc_tty_driver(1);
- 	if (!driver)
- 		return -ENOMEM;
--	rc = __sclp_vt220_init(0);
--	if (rc) {
--		put_tty_driver(driver);
--		return rc;
--	}
-+	rc = __sclp_vt220_init();
-+	if (rc)
-+		goto out_driver;
- 	rc = sclp_register(&sclp_vt220_register);
- 	if (rc) {
- 		printk(KERN_ERR SCLP_VT220_PRINT_HEADER
- 		       "could not register tty - "
- 		       "sclp_register returned %d\n", rc);
--		put_tty_driver(driver);
--		return rc;
-+		goto out_init;
- 	}
- 
- 	driver->owner = THIS_MODULE;
-@@ -708,14 +721,20 @@ sclp_vt220_tty_init(void)
- 		printk(KERN_ERR SCLP_VT220_PRINT_HEADER
- 		       "could not register tty - "
- 		       "tty_register_driver returned %d\n", rc);
--		put_tty_driver(driver);
--		return rc;
-+		goto out_sclp;
- 	}
- 	sclp_vt220_driver = driver;
- 	return 0;
--}
- 
--module_init(sclp_vt220_tty_init);
-+out_sclp:
-+	sclp_unregister(&sclp_vt220_register);
-+out_init:
-+	__sclp_vt220_cleanup();
-+out_driver:
-+	put_tty_driver(driver);
-+	return rc;
-+}
-+__initcall(sclp_vt220_tty_init);
- 
- #ifdef CONFIG_SCLP_VT220_CONSOLE
- 
-@@ -761,7 +780,7 @@ sclp_vt220_con_init(void)
- 
- 	if (!CONSOLE_IS_SCLP)
- 		return 0;
--	rc = __sclp_vt220_init(1);
-+	rc = __sclp_vt220_init();
- 	if (rc)
- 		return rc;
- 	/* Attach linux console */
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+Petr
 
