@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762378AbXG0STW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761642AbXG0SXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762378AbXG0STW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 14:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758304AbXG0SS6
+	id S1761642AbXG0SXr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 14:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbXG0SXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 14:18:58 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:52499 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758017AbXG0SS5 (ORCPT
+	Fri, 27 Jul 2007 14:23:40 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:27150 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752635AbXG0SXj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 14:18:57 -0400
-Message-ID: <46AA3680.4010508@gmail.com>
-Date: Fri, 27 Jul 2007 20:16:32 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: Daniel Hazelton <dhazelton@enter.net>
-CC: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net> <200707271345.55187.dhazelton@enter.net>
-In-Reply-To: <200707271345.55187.dhazelton@enter.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Fri, 27 Jul 2007 14:23:39 -0400
+Date: Fri, 27 Jul 2007 12:22:57 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: serial flow control appears broken
+In-reply-to: <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Message-id: <46AA3801.7090204@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
+ <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com>
+ <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
+ <46AA2748.80703@howardsilvan.com>
+ <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2007 07:45 PM, Daniel Hazelton wrote:
-
-> Updatedb or another process that uses the FS heavily runs on a users
-> 256MB P3-800 (when it is idle) and the VFS caches grow, causing memory
-> pressure that causes other applications to be swapped to disk. In the
-> morning the user has to wait for the system to swap those applications
-> back in.
+Maciej W. Rozycki wrote:
+> On Fri, 27 Jul 2007, Lee Howard wrote:
 > 
-> Questions about it:
-> Q) Does swap-prefetch help with this? 
-> A) [From all reports I've seen (*)] Yes, it does. 
+>> Okay, so let's say we've got a loop around a blocking read on the modem file
+>> descriptor...
+>>
+>>  for (;;) {
+>>      read some data from modem
+>>      process data from modem
+>>      if (end-of-data detected) break;
+>>  }
+>>
+>> Are you suggesting that the application should be using deasserting RTS after
+>> the read and asserting it before?
+> 
+>  It certainly could -- you were asking how it would know. ;-)
+> 
+>> I had previously thought that the control of RTS was something that the
+>> serial/tty driver was supposed to do independently based on the buffer fill.
+> 
+>  The TTY line discipline driver could do that based on the amount of 
+> received data present in its buffer.  And it should if asked to (a brief 
+> look at drivers/char/n_tty.c reveals it does; obviously there may be a bug 
 
-No it does not. If updatedb filled memory to the point of causing swapping 
-(which noone is reproducing anyway) it HAS FILLED MEMORY and swap-prefetch 
-hasn't any memory to prefetch into -- updatedb itself doesn't use any 
-significant memory.
+Really, where? In my look through the code I haven't found any mechanism 
+that would result in RTS being lowered based on TTY buffers filling up, 
+at least not in the 8250 case.
 
-Here's swap-prefetch's author saying the same:
+In this situation, though, it appears it's not the TTY buffers that are 
+filling but the UART's own buffer. I would think this must be caused by 
+some kind of interrupt latency that results in not draining the FIFO in 
+time.
 
-http://lkml.org/lkml/2007/2/9/112
-
-| It can't help the updatedb scenario. Updatedb leaves the ram full and
-| swap prefetch wants to cost as little as possible so it will never
-| move anything out of ram in preference for the pages it wants to swap
-| back in.
-
-Now please finally either understand this, or tell us how we're wrong.
-
-Rene.
-
+> somewhere though).  So could e.g. the SLIP and PPP line discipline 
+> drivers, though the criteria might be different (apparently they do not, 
+> which is a shame).
+> 
+>  The serial drivers have nothing to do about it -- all they can do is 
+> pushing data upstream, to the discipline driver.  They can provide an 
+> interface to hardware flow control features though, if implemented by a 
+> given UART.
+> 
+>   Maciej
+> 
