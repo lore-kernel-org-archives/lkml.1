@@ -1,281 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937224AbXG0O6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937244AbXG0PBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937224AbXG0O6V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 10:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933110AbXG0O6L
+	id S937244AbXG0PBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 11:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761302AbXG0PBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 10:58:11 -0400
-Received: from nz-out-0506.google.com ([64.233.162.230]:5897 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759460AbXG0O6K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 10:58:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EZSkQsFuCSuXhl8d4u+Z3azxv2cJ9xRhltYt77vu1XiLDa9VKWt/fm++Q8BsALz/62ZzJRYHNHiKJKt3yR68JLa9hEV9ADN8OMvIyK2oBn84r5BCihF7kmYexHFnc3eIsvk1DxAXX9L7GCBpOemgnuv/k9FTQbRan8f0RgCtA0o=
-Message-ID: <a781481a0707270758n16e4e174t344f539e0be27a6f@mail.gmail.com>
-Date: Fri, 27 Jul 2007 20:28:08 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Marc Dietrich" <Marc.Dietrich@ap.physik.uni-giessen.de>
-Subject: Re: NFSv4 poops itself
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "kernel list" <linux-kernel@vger.kernel.org>,
-       "Trond Myklebust" <Trond.Myklebust@netapp.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-In-Reply-To: <200707271537.00647.marc.dietrich@ap.physik.uni-giessen.de>
+	Fri, 27 Jul 2007 11:01:07 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:53706 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759540AbXG0PBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 11:01:06 -0400
+Date: Fri, 27 Jul 2007 18:01:04 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Paul Mackerras <paulus@samba.org>
+cc: linuxppc-dev@ozlabs.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix ppc kernels after build-id addition
+In-Reply-To: <18088.10923.67233.336636@cargo.ozlabs.ibm.com>
+Message-ID: <Pine.SOC.4.64.0707271742450.27338@math.ut.ee>
+References: <Pine.SOC.4.64.0707251301200.21641@math.ut.ee>
+ <18088.10923.67233.336636@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46A9EAB0.3090306@garzik.org>
-	 <200707271537.00647.marc.dietrich@ap.physik.uni-giessen.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/27/07, Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de> wrote:
->
-> Hi,
->
-> Am Friday 27 July 2007 14:53 schrieben Sie:
-> > Background:
-> >
-> > Server: x86-64 dual core Intel, kernel 2.6.23-rc1 (my home fileserver)
-> >       Exporting NFS/NFSv4 mounts.  Client count: 1  Uptime: 4 days
-> >
-> > Client: x86-64 dual core Intel, kernel 2.6.23-rc1 (my main workstation)
-> >       NFS mount setup:
-> >       pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
-> >       Uptime: 4 days
-> >
-> >       Home directory mounted via NFSv4.
-> >
-> > Problem:
-> >
-> > My workstation has been happily talking to my file server for several
-> > days without incident.  An hour ago, my numeric keypad stopping working
-> > (unrelated problem... USB or X bug?).  The solution to the keypad
-> > problem is usually to log out of X and log back in, or worse case, reboot.
-> >
-> > So, I log out, and log back in.  At first, a few shell windows open and
-> > successfully initialize themselves (read bash profile over NFS, etc.)
-> > Then, as more shell windows open, things start hanging.  I can easily
-> > switch to console and ssh to the fileserver, so it is clear this is an
-> > NFS hang.
-> >
-> > No adverse messages at all on the client.
-> >
-> > On the server, I see NFSv4 spamming dmesg with hundreds of thousands of
-> > messages:
-> >
-> > Jul 27 08:20:53 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
-> > Jul 27 08:21:24 pretzel last message repeated 167966 times
-> > Jul 27 08:21:55 pretzel last message repeated 173628 times
-> > Jul 27 08:21:55 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
-> > Jul 27 08:22:26 pretzel last message repeated 171286 times
-> > Jul 27 08:23:27 pretzel last message repeated 344461 times
-> > Jul 27 08:23:30 pretzel last message repeated 18656 times
-> >
-> > I rebooted the client, the problem disappeared, and everything is happy
-> > again...  but clearly NFSv4 shat itself.  And now I am worried this will
-> > happen again.
-> >
-> > In all my quite-heavy use of NFSv4 I've never seen this behavior before,
-> >   so I would call this a regression.
-> >
-> > I always run vanilla linux-2.6.git self-built kernels on both client and
-> > server.
->
-> me too, my server has 2.6.18-? (openSUSE 10.2). On the client
-> (2.6.23-rc1-mm1), I also see (shortly before the hang)
->
-> Jul 26 13:09:19 fb07-iapwap2 kernel: =================================
-> Jul 26 13:09:19 fb07-iapwap2 kernel: [ INFO: inconsistent lock state ]
-> Jul 26 13:09:19 fb07-iapwap2 kernel: 2.6.23-rc1-mm1 #1
-> Jul 26 13:09:19 fb07-iapwap2 kernel: ---------------------------------
-> Jul 26 13:09:19 fb07-iapwap2 kernel: inconsistent {softirq-on-W} ->
-> {in-softirq-W} usage.
-> Jul 26 13:09:19 fb07-iapwap2 kernel: hald/3873 [HC0[0]:SC1[1]:HE1:SE0] takes:
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  (rpc_credcache_lock){-+..}, at:
-> [<c01dc166>] _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel: {softirq-on-W} state was registered at:
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013d4f7>] mark_lock+0x77/0x630
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013c094>] add_lock_to_list+0x44/0xc0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013e8af>]
-> __lock_acquire+0x65f/0x1020
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013db0e>] mark_held_locks+0x5e/0x80
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c012448d>] local_bh_enable+0x7d/0x130
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013f2cf>] lock_acquire+0x5f/0x80
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01dc166>]
-> _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c02d156a>] _spin_lock+0x2a/0x40
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01dc166>]
-> _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01dc166>]
-> _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c02d156a>] _spin_lock+0x2a/0x40
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcecf770>] put_rpccred+0x60/0x110
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcecf840>]
-> rpcauth_unbindcred+0x20/0x60 [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcece1f4>] rpc_put_task+0x44/0xb0
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcec8ffd>] rpc_call_sync+0x2d/0x40
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dced680d>] rpcb_register+0x10d/0x1c0
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dced06ef>] svc_register+0x8f/0x160
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013dca5>]
-> trace_hardirqs_on+0xc5/0x170
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dced0fc5>] __svc_create+0x1d5/0x200
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dced1160>] svc_create+0x10/0x20
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcf69602>] nfs_callback_up+0x82/0x120
-> [nfs]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcf43efd>] nfs_get_client+0x17d/0x390
-> [nfs]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c0175f59>] kmem_cache_alloc+0x79/0xd0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013dca5>]
-> trace_hardirqs_on+0xc5/0x170
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcf44144>] nfs4_set_client+0x34/0x1a0
-> [nfs]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcf448d1>]
-> nfs4_create_server+0x61/0x3c0 [nfs]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c017657f>] __kmalloc+0xdf/0x120
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013dca5>]
-> trace_hardirqs_on+0xc5/0x170
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013e987>]
-> __lock_acquire+0x737/0x1020
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01e22cd>] copy_from_user+0x3d/0x80
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01636e2>] strndup_user+0x62/0x80
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<dcf4d647>] nfs4_get_sb+0x3c7/0x610
-> [nfs]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013e987>]
-> __lock_acquire+0x737/0x1020
-> Jul 26Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c015d536>]
-> get_page_from_freelist+0x316/0x460
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c013dca5>]
-> trace_hardirqs_on+0xc5/0x170
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c015e0be>] __alloc_pages+0x4e/0x370
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c017b380>] vfs_kern_mount+0xa0/0x120
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c0190b1d>] do_mount+0x21d/0x840
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01667c7>]
-> handle_mm_fault+0x4a7/0x690
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c02d1494>] _spin_unlock+0x14/0x20
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c0166773>]
-> handle_mm_fault+0x453/0x690
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c0135c24>] up_read+0x14/0x30
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c0116ddd>] do_page_fault+0x1ed/0x6e0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c018f597>]
-> copy_mount_options+0xb7/0x150
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01911b2>] sys_mount+0x72/0xb0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<c01040b2>] syscall_call+0x7/0xb
-> Jul 26 13:09:19 fb07-iapwap2 kernel:   [<ffffffff>] 0xffffffff
-> Jul 26 13:09:19 fb07-iapwap2 kernel: irq event stamp: 240896
-> Jul 26 13:09:19 fb07-iapwap2 kernel: hardirqs last  enabled at (240896):
-> [<c017592e>] kmem_cache_free+0x7e/0xb0
-> Jul 26 13:09:19 fb07-iapwap2 kernel: hardirqs last disabled at (240895):
-> [<c01758fc>] kmem_cache_free+0x4c/0xb0
-> Jul 26 13:09:19 fb07-iapwap2 kernel: softirqs last  enabled at (240446):
-> [<c0124255>] do_softirq+0x45/0x50
-> Jul 26 13:09:19 fb07-iapwap2 kernel: softirqs last disabled at (240887):
-> [<c0124255>] do_softirq+0x45/0x50
-> Jul 26 13:09:19 fb07-iapwap2 kernel:
-> Jul 26 13:09:19 fb07-iapwap2 kernel: other info that might help us debug this:
-> Jul 26 13:09:19 fb07-iapwap2 kernel: no locks held by hald/3873.
-> Jul 26 13:09:19 fb07-iapwap2 kernel:
-> Jul 26 13:09:19 fb07-iapwap2 kernel: stack backtrace:
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013ccbc>] print_usage_bug+0x15c/0x170
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013d8da>] mark_lock+0x45a/0x630
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013e857>] __lock_acquire+0x607/0x1020
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013e987>] __lock_acquire+0x737/0x1020
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013f2cf>] lock_acquire+0x5f/0x80
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01dc166>]
-> _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02d156a>] _spin_lock+0x2a/0x40
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01dc166>]
-> _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01dc166>]
-> _atomic_dec_and_lock+0x16/0x60
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<dcecf770>] put_rpccred+0x60/0x110
-> [sunrpc]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<dcf67e10>]
-> nfs_free_delegation_callback+0x10/0x20 [nfs]
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c012fa47>]
-> __rcu_process_callbacks+0x67/0x1c0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c012fbaf>]
-> rcu_process_callbacks+0xf/0x20
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0124293>] tasklet_action+0x33/0x70
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01241b5>] __do_softirq+0x55/0xb0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0124255>] do_softirq+0x45/0x50
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0112490>]
-> smp_apic_timer_interrupt+0x40/0x80
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0104ad9>]
-> apic_timer_interrupt+0x29/0x38
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0104ae3>]
-> apic_timer_interrupt+0x33/0x38
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02d18a2>] _spin_unlock_irq+0x22/0x30
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02cecb4>]
-> __sched_text_start+0x1c4/0x390
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02cec29>]
-> __sched_text_start+0x139/0x390
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0127feb>] __mod_timer+0x8b/0xa0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02cf63a>] schedule_timeout+0x4a/0xc0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0127b40>] process_timeout+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0186197>] do_sys_poll+0x237/0x320
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0186d70>] __pollwait+0x0/0xf0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c011aa50>]
-> default_wake_function+0x0/0x10
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02d1444>] _read_unlock+0x14/0x20
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c02cbae5>]
-> unix_stream_sendmsg+0x1a5/0x350
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0263727>] sock_aio_write+0x117/0x140
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013e987>] __lock_acquire+0x737/0x1020
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0179874>] do_readv_writev+0x144/0x1c0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0263610>] sock_aio_write+0x0/0x140
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0136ac1>] do_gettimeofday+0x31/0xf0
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c0104108>] restore_nocheck+0x12/0x15
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c013dca5>]
-> trace_hardirqs_on+0xc5/0x170
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01e25af>] copy_to_user+0x3f/0x70
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01862a8>] sys_poll+0x28/0x40
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  [<c01040b2>] syscall_call+0x7/0xb
-> Jul 26 13:09:19 fb07-iapwap2 kernel:  =======================
+> > This patch fixes arch/ppc kernels, at least for prep subarch, after 
+> > build-id addition. Without the patch, kernels were 3 times the size and 
+> > bootloader refused to load them. Now they are back to normal again.
+> 
+> I just built an ARCH=ppc kernel for the prep subarch and the vmlinux
+> size was normal.  Can you identify exactly why the kernels got so much
+> bigger, i.e. what is taking up all the space?
 
-Doesn't appear related ... could you rebuild with CONFIG_FRAME_POINTER
-and test + resend the above log? The trace up there looks quite ugly.
+Now I got the previous patches tested and got to this one. Retested with 
+fresh git (build-id patch already applied) and latest Debian unstable 
+(binutils package 2.17cvs20070718-1, GNU ld (GNU Binutils for Debian) 
+2.17.50.20070718).
 
-[ Unrelated, but I just realized from lib/Kconfig.debug that stuff in there
-"select"s LOCKDEP, which itself "selects" frame pointers (on some archs).
-But I thought "select" didn't chain properly like that? There's whole lots
-of depending and selecting and non-user-visible options out there in
-that file -- and I'm not sure all those selects and depends are really
-even required to successfully build (?) ]
+size -A vmlinux yields the same results (module notes section) and is 
+roughly the same size:
 
+vmlinux  :
+section                      size         addr
+.note.gnu.build-id             36          180
+.text                     2399820   3221225472
+.rodata                    378440   3223625728
+.pci_fixup                   1448   3224004168
+__ksymtab                   18376   3224005616
+__ksymtab_gpl                4600   3224023992
+__ksymtab_strings           53334   3224028592
+__param                      1600   3224081928
+__ex_table                  11096   3224084480
+__bug_table                 18276   3224095576
+.data                      126504   3224117248
+.data.page_aligned          12288   3224244224
+.data.read_mostly            5468   3224256512
+.data.cacheline_aligned       256   3224264704
+.data.init_task              8192   3224272896
+.init.text                 103668   3224281088
+.exit.text                   2964   3224384768
+.init.data                  21516   3224387732
+.init.setup                   684   3224409248
+.initcall.init                556   3224409932
+.con_initcall.init              8   3224410488
+__ftr_fixup                   544   3224410496
+.bss                       198296   3224412160
+.stab                        1236            0
+.stabstr                     1783            0
+.comment                    34278            0
+Total                     3405267
 
-Satyam
+The differneces come in under arc/ppc/boot/images.
+Without the patch:
+
+-rwxr-xr-x 1 mroos mroos    4654112 2007-07-27 17:20 zImage.bugboot
+-rwxr-xr-x 1 mroos mroos    4719626 2007-07-27 17:20 zImage.elf
+-rwxr-xr-x 1 mroos mroos    4655114 2007-07-27 17:20 zImage.prep
+-rw-r--r-- 1 mroos mroos 3224410860 2007-07-27 17:00 vmlinux.bin
+-rw-r--r-- 1 mroos mroos    4604269 2007-07-27 17:14 vmlinux.gz
+
+With the patch:
+
+-rwxr-xr-x 1 mroos mroos 1528864 2007-07-27 02:01 zImage.bugboot
+-rwxr-xr-x 1 mroos mroos 1594378 2007-07-27 02:01 zImage.elf
+-rwxr-xr-x 1 mroos mroos 1529866 2007-07-27 02:01 zImage.prep
+-rwxr-xr-x 1 mroos mroos 3189664 2007-07-27 01:31 vmlinux.bin
+-rw-r--r-- 1 mroos mroos 1476643 2007-07-27 01:31 vmlinux.gz
+
+Without the patch, vmlinux.bin is ... huge. However, only zImage.elf is 
+easily measurable with size.
+
+size -A arch/ppc/boot/images/zImage.elf (without patch):
+section      size       addr
+.text     24964    8388608
+.data   4620288    8417280
+.bss      35660   13037568
+Total   4680912
+
+size -A arch/ppc/boot/images/zImage.elf (with patch): 
+section      size      addr
+.text     24964   8388608
+.data   1495040   8417280
+.bss      35660   9912320
+Total   1555664
+
+It seems the differences come in in .data section.
+
+objdump -t -j .data arch/ppc/boot/images/zImage.elf (without patch):
+
+arch/ppc/boot/images/zImage.elf:     file format elf32-powerpc
+
+SYMBOL TABLE:
+00807000 l    d  .data	00000000 .data
+00808f38 l     O .data	00000130 rs_table
+008090dc l     O .data	00000026 order.2247
+00809182 l     O .data	00000800 lenfix.2194
+00809102 l     O .data	00000080 distfix.2195
+008099c2 l     O .data	00000040 dbase.2118
+00809982 l     O .data	00000040 dext.2119
+00809a40 l     O .data	0000003e lbase.2116
+00809a02 l     O .data	0000003e lext.2117
+008089d0 l     O .data	00000004 key_pending
+00809ab0 l     O .data	00000ff0 font
+00807634 g     O .data	00000200 ctrl_map
+00807434 g     O .data	00000200 altgr_map
+00c6efb5 g       .data	00000000 __image_end
+00808db0 g     O .data	00000015 AC
+00808dc8 g     O .data	000000c0 PCI_slots
+00808e88 g     O .data	00000004 cmd_line
+00807a34 g     O .data	00000200 alt_map
+0080ae48 g       .data	00000000 __image_begin
+00808ea0 g     O .data	00000004 orig_y
+00c6f000 g       .data	00000000 __ramdisk_begin
+00808e9c g     O .data	00000004 cols
+00808234 g     O .data	00000099 func_buf
+00808e90 g     O .data	00000004 hold_residual
+00807c34 g     O .data	00000200 ctrl_alt_map
+00808eac g     O .data	00000004 funcbufsize
+00808eb0 g     O .data	00000004 accent_table_size
+00808e8c g     O .data	00000004 keyb_present
+00808ea8 g     O .data	00000004 funcbufptr
+00807e34 g     O .data	00000400 key_maps
+00808e94 g     O .data	00000004 vidmem
+00808ea4 g     O .data	00000004 keymap_count
+008089d4 g     O .data	000000dc GenVgaTextRegs
+00807834 g     O .data	00000200 shift_ctrl_map
+00807034 g     O .data	00000200 plain_map
+0080702f g       .data	00000000 timebase_period_ns
+00c6f000 g       .data	00000000 __ramdisk_end
+008082d0 g     O .data	00000400 func_table
+00807234 g     O .data	00000200 shift_map
+008086d0 g     O .data	00000300 accent_table
+00808ab0 g     O .data	00000300 TextCLUT
+00807000 g     O .data	0000002f cmd_preset
+00808e98 g     O .data	00000004 lines
+
+objdump -t -j .data arch/ppc/boot/images/zImage.elf (with patch):
+
+/home/mroos/kraam/linux-2.6/arch/ppc/boot/images/zImage.elf:     file format elf32-powerpc
+
+SYMBOL TABLE:
+00807000 l    d  .data	00000000 .data
+00808f38 l     O .data	00000130 rs_table
+008090dc l     O .data	00000026 order.2247
+00809182 l     O .data	00000800 lenfix.2194
+00809102 l     O .data	00000080 distfix.2195
+008099c2 l     O .data	00000040 dbase.2118
+00809982 l     O .data	00000040 dext.2119
+00809a40 l     O .data	0000003e lbase.2116
+00809a02 l     O .data	0000003e lext.2117
+008089d0 l     O .data	00000004 key_pending
+00809ab0 l     O .data	00000ff0 font
+00807634 g     O .data	00000200 ctrl_map
+00807434 g     O .data	00000200 altgr_map
+0097366b g       .data	00000000 __image_end
+00808db0 g     O .data	00000015 AC
+00808dc8 g     O .data	000000c0 PCI_slots
+00808e88 g     O .data	00000004 cmd_line
+00807a34 g     O .data	00000200 alt_map
+0080ae48 g       .data	00000000 __image_begin
+00808ea0 g     O .data	00000004 orig_y
+00974000 g       .data	00000000 __ramdisk_begin
+00808e9c g     O .data	00000004 cols
+00808234 g     O .data	00000099 func_buf
+00808e90 g     O .data	00000004 hold_residual
+00807c34 g     O .data	00000200 ctrl_alt_map
+00808eac g     O .data	00000004 funcbufsize
+00808eb0 g     O .data	00000004 accent_table_size
+00808e8c g     O .data	00000004 keyb_present
+00808ea8 g     O .data	00000004 funcbufptr
+00807e34 g     O .data	00000400 key_maps
+00808e94 g     O .data	00000004 vidmem
+00808ea4 g     O .data	00000004 keymap_count
+008089d4 g     O .data	000000dc GenVgaTextRegs
+00807834 g     O .data	00000200 shift_ctrl_map
+00807034 g     O .data	00000200 plain_map
+0080702f g       .data	00000000 timebase_period_ns
+00974000 g       .data	00000000 __ramdisk_end
+008082d0 g     O .data	00000400 func_table
+00807234 g     O .data	00000200 shift_map
+008086d0 g     O .data	00000300 accent_table
+00808ab0 g     O .data	00000300 TextCLUT
+00807000 g     O .data	0000002f cmd_preset
+00808e98 g     O .data	00000004 lines
+
+The only differences are __image_end, __ramdisk_begin and __ramdisk_end.
+
+What more to look at?
+
+-- 
+Meelis Roos (mroos@linux.ee)
