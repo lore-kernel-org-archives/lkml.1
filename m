@@ -1,74 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbXG0FNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932574AbXG0FOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760655AbXG0FNS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 01:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbXG0FNF
+	id S932574AbXG0FOA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 01:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXG0FNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 01:13:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59448 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752306AbXG0FNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 01:13:04 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19wp6NPa2lwB80r1RETQyb6UD8g0onhxAUmFR2GWJ
-	Le4Bz1tJgl81ho
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge
-	plans for 2.6.23]
-From: Mike Galbraith <efault@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070726110549.da3a7a0d.akpm@linux-foundation.org>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46A57068.3070701@yahoo.com.au>
-	 <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>
-	 <46A58B49.3050508@yahoo.com.au>
-	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>
-	 <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>
-	 <46A85D95.509@kingswood-consulting.co.uk> <20070726092025.GA9157@elte.hu>
-	 <20070726023401.f6a2fbdf.akpm@linux-foundation.org>
-	 <20070726094024.GA15583@elte.hu>
-	 <20070726030902.02f5eab0.akpm@linux-foundation.org>
-	 <1185454019.6449.12.camel@Homer.simpson.net>
-	 <20070726110549.da3a7a0d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 07:12:57 +0200
-Message-Id: <1185513177.6295.21.camel@Homer.simpson.net>
+	Fri, 27 Jul 2007 01:13:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59896 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753254AbXG0FNt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 01:13:49 -0400
+Date: Thu, 26 Jul 2007 22:13:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Joe Jin <joe.jin@oracle.com>
+Cc: torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, gurudas.pai@oracle.com,
+       wen.gang.wang@oracle.com, Badari Pulavarty <pbadari@us.ibm.com>,
+       Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] add check do_direct_IO() return val
+Message-Id: <20070726221307.3d7b3446.akpm@linux-foundation.org>
+In-Reply-To: <20070726090400.GA18640@joejin-pc.cn.oracle.com>
+References: <20070726090400.GA18640@joejin-pc.cn.oracle.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-07-26 at 11:05 -0700, Andrew Morton wrote:
-> On Thu, 26 Jul 2007 14:46:58 +0200 Mike Galbraith <efault@gmx.de> wrote:
-> 
-> > On Thu, 2007-07-26 at 03:09 -0700, Andrew Morton wrote:
-> > 
-> > > Setting it to zero will maximise the preservation of the vfs caches.  You
-> > > wanted 10000 there.
-> > > 
-> > > <bets that nobody will test this>
-> > 
-> > drops caches prior to both updatedb runs.
-> 
-> I think that was the wrong thing to do.  That will leave gobs of free
-> memory for updatedb to populate with dentries and inodes.
-> 
-> Instead, fill all of memory up with pagecache, then do the updatedb.  See
-> how much pagecache is left behind and see how large the vfs caches end up.
+On Thu, 26 Jul 2007 17:04:00 +0800 Joe Jin <joe.jin@oracle.com> wrote:
 
-Yeah.  Before these two runs just to see what difference there was in
-caches with those two settings, I tried running with a heavier than
-normal (for me) desktop application mix, to see if it would start
-swapping, but it didn't.   Seems that 1GB ram is enough space for
-everything I do, and everything updatedb does as well.  You need a
-larger working set to feel the pain I guess.
+> This is the patch for check do_direct_IO() return val.
+> 
+> At do_direct_IO(), sometimes dio_get_page() will return -EFAULT/-ENOMEM,
+> according to orig source, it will go on left work. buf for dio_get_page()
+> return a error will made many useful member of dio not initialized like
+> dio->map_bh and others, at this point, kernel will panic.
+> 
+> Signed-off-by: Joe Jin <joe.jin@oracle.com>
+> 
+> 
+> ---
+> --- linux-2.6.22/fs/direct-io.c.orig	2007-07-26 11:32:27.000000000 +0800
+> +++ linux-2.6.22/fs/direct-io.c	2007-07-26 11:33:58.000000000 +0800
+> @@ -1031,7 +1031,9 @@ direct_io_worker(int rw, struct kiocb *i
+>  			((dio->final_block_in_request - dio->block_in_file) <<
+>  					blkbits);
+>  
+> -		if (ret) {
+> +		if (ret == -EFAULT || ret == -ENOMEM) 
+> +			goto out;
+> +		else if (ret) {
+>  			dio_cleanup(dio);
+>  			break;
+>  		}
+> @@ -1113,6 +1115,7 @@ direct_io_worker(int rw, struct kiocb *i
+>  	} else
+>  		BUG_ON(ret != -EIOCBQUEUED);
+>  
+> +out:
+>  	return ret;
+>  }
+>  
 
-	-Mike
+I think we still want to run dio_cleanup() if do_direct_IO() failed? 
+Otherwise we can leak pages.
+
+And there's nothing special about EFAULT or ENOMEM here: if do_direct_IO()
+returns any error then that's it: we bale out, yes?
+
+In fact I'm suspecting that this is what the code in there used to do. 
+Something like:
+
+	for (...) {
+		...
+		ret = do_direct_IO(...);
+		...
+		if (ret) {
+			dio_dleanup(dio);
+			break
+		}
+	}
+	return ret;
+
+but then someone later came along and added more code between the end of
+the for loop and the `return' statement.
+
+<I do miss the BK diffviewer sometimes>
+
+<does a binary search>
+
+yep, that's exactly what happened.  We broke it in the 2.5.45 release back
+in October 2002. (Where "we" == "Badari")
+
+So I think what we need to do is something close to this:
+
+--- a/fs/direct-io.c~add-check-do_direct_io-return-val
++++ a/fs/direct-io.c
+@@ -1033,7 +1033,7 @@ direct_io_worker(int rw, struct kiocb *i
+ 
+ 		if (ret) {
+ 			dio_cleanup(dio);
+-			break;
++			goto out;
+ 		}
+ 	} /* end iovec loop */
+ 
+@@ -1112,7 +1112,7 @@ direct_io_worker(int rw, struct kiocb *i
+ 		kfree(dio);
+ 	} else
+ 		BUG_ON(ret != -EIOCBQUEUED);
+-
++out:
+ 	return ret;
+ }
+ 
+_
+
+However I'd like to ask you guys to carefully review and test that please.
 
