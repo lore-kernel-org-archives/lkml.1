@@ -1,43 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932613AbXG0IKK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934870AbXG0IKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932613AbXG0IKK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 04:10:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXG0IJW
+	id S934870AbXG0IKo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 04:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763857AbXG0IJy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 04:09:22 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:60855 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbXG0IJS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 04:09:18 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] usb-storage autosuspend bug?
-Date: Fri, 27 Jul 2007 10:11:07 +0200
-User-Agent: KMail/1.9.7
-Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <20070720034456.GA5826@kroah.com> <alpine.LFD.0.999.0707251628200.3607@woody.linux-foundation.org> <20070726155746.GA5493@suse.de>
-In-Reply-To: <20070726155746.GA5493@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 27 Jul 2007 04:09:54 -0400
+Received: from gate.crashing.org ([63.228.1.57]:38321 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759142AbXG0IJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 04:09:51 -0400
+Subject: [PATCH/RFC] Add MM_DEAD flag to struct mm_struct #3
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-mm <linux-mm@kvack.org>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <1185520398.5495.190.camel@localhost.localdomain>
+References: <1185501659.5495.174.camel@localhost.localdomain>
+	 <1185520398.5495.190.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 18:09:44 +1000
+Message-Id: <1185523784.5495.202.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707271011.07471.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 26 Juli 2007 schrieb Greg KH:
-> Alan and Oliver, was this caused by the autosuspend changes for
-> usb-storage?
+Some architectures like sparc can do useful optimizations when knowing
+that an entire MM is being destroyed. At the moment, they rely on
+fullmm in the mmu_gather structure. However, that doesn't always work
+out very well with some of the changes we are doing. Among other things,
+the TLB flushing on sparc64 is done using per-CPU tracking data, making
+the batch not per-CPU will break that link.
 
-The oops itself looks like refcounting. What caused the initial io error
-does not become clear from the log. It is possible that the device cannot
-stand suspension. But there's no evidence from that. On the contrary,
-these devices usually do an unplug/plug cycle, which is not in the log.
+So instead, we add a new flag to struct mm_struct that indicates that
+the mm is going away, for those archs to use. It also allows to use it
+in situations (such as PTE ops) where the batch isn't accessible (or
+there is no batch)
 
-	Regards
-		Oliver
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+And because I really have shit in my eyes today, here's a version that
+doesn't use a bit already used for something else... yuck. 
+
+Thanks David !
+
+Index: linux-work/include/linux/sched.h
+===================================================================
+--- linux-work.orig/include/linux/sched.h	2007-07-27 11:09:16.000000000 +1000
++++ linux-work/include/linux/sched.h	2007-07-27 18:06:37.000000000 +1000
+@@ -366,6 +366,8 @@ extern int get_dumpable(struct mm_struct
+ #define MMF_DUMP_FILTER_DEFAULT \
+ 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
+ 
++#define MMF_DEAD          	6  /* mm is being destroyed */
++
+ struct mm_struct {
+ 	struct vm_area_struct * mmap;		/* list of VMAs */
+ 	struct rb_root mm_rb;
+Index: linux-work/mm/mmap.c
+===================================================================
+--- linux-work.orig/mm/mmap.c	2007-07-27 11:09:52.000000000 +1000
++++ linux-work/mm/mmap.c	2007-07-27 11:10:05.000000000 +1000
+@@ -1991,6 +1991,9 @@ void exit_mmap(struct mm_struct *mm)
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
+ 
++	/* Mark the MM as dead */
++	__set_bit(MMF_DEAD, &mm->flags);
++
+ 	/* mm's last user has gone, and its about to be pulled down */
+ 	arch_exit_mmap(mm);
+ 
+Index: linux-work/kernel/fork.c
+===================================================================
+--- linux-work.orig/kernel/fork.c	2007-07-27 16:12:30.000000000 +1000
++++ linux-work/kernel/fork.c	2007-07-27 16:12:52.000000000 +1000
+@@ -336,6 +336,7 @@ static struct mm_struct * mm_init(struct
+ 	INIT_LIST_HEAD(&mm->mmlist);
+ 	mm->flags = (current->mm) ? current->mm->flags
+ 				  : MMF_DUMP_FILTER_DEFAULT;
++	__clear_bit(MMF_DEAD, &mm->flags);
+ 	mm->core_waiters = 0;
+ 	mm->nr_ptes = 0;
+ 	set_mm_counter(mm, file_rss, 0);
+
 
