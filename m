@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933398AbXG0Nez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934376AbXG0NgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933398AbXG0Nez (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbXG0Neq
+	id S934376AbXG0NgR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760367AbXG0NgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:34:46 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57604 "EHLO mail.dvmed.net"
+	Fri, 27 Jul 2007 09:36:04 -0400
+Received: from sandeen.net ([209.173.210.139]:10950 "EHLO sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758585AbXG0Neq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:34:46 -0400
-Message-ID: <46A9F471.1020504@garzik.org>
-Date: Fri, 27 Jul 2007 09:34:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1758209AbXG0NgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 09:36:00 -0400
+X-Greylist: delayed 2024 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 09:36:00 EDT
+Message-ID: <46A9ED28.3070508@sandeen.net>
+Date: Fri, 27 Jul 2007 08:03:36 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.5 (Macintosh/20070716)
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] rip some includes from linux/interrupt.h
-References: <20070727132433.GB27237@ftp.linux.org.uk>
-In-Reply-To: <20070727132433.GB27237@ftp.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Andrea Arcangeli <andrea@suse.de>, Matt Mackall <mpm@selenic.com>,
+       Rene Herman <rene.herman@gmail.com>, Ray Lee <ray-lk@madrabbit.org>,
+       Bodo Eggert <7eggert@gmx.de>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       William Lee Irwin III <wli@holomorphy.com>, David Chinner <dgc@sgi.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+References: <8GVjY-PL-25@gated-at.bofh.it>	<E1IA7j1-0000j9-I3@be1.lrz>	<469A5D7C.5010904@gmail.com>	<Pine.LNX.4.58.0707161523500.25779@be1.lrz>	<469BF104.1040703@gmail.com>	<2c0942db0707161537o2852a308s26e79235e897e282@mail.gmail.com>	<469BF768.6040200@gmail.com>	<20070716230719.GC11115@waste.org>	<469BFB73.3070105@gmail.com>	<20070716232755.GD11115@waste.org>	<20070719001539.GC29728@v2.random> <20070719013955.1bedc423@the-village.bc.nu>
+In-Reply-To: <20070719013955.1bedc423@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
-> diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-> index 0a3c2eb..5523f19 100644
-> --- a/include/linux/interrupt.h
-> +++ b/include/linux/interrupt.h
-> @@ -11,8 +11,6 @@
->  #include <linux/hardirq.h>
->  #include <linux/sched.h>
->  #include <linux/irqflags.h>
-> -#include <linux/bottom_half.h>
-> -#include <linux/device.h>
->  #include <asm/atomic.h>
->  #include <asm/ptrace.h>
->  #include <asm/system.h>
-> @@ -97,6 +95,8 @@ extern int __must_check request_irq(unsigned int, irq_handler_t handler,
->  		       unsigned long, const char *, void *);
->  extern void free_irq(unsigned int, void *);
->  
-> +struct device;
-> +
->  extern int __must_check devm_request_irq(struct device *dev, unsigned int irq,
->  			    irq_handler_t handler, unsigned long irqflags,
->  			    const char *devname, void *dev_id);
-> diff --git a/kernel/irq/devres.c b/kernel/irq/devres.c
-> index d8ee241..6d9204f 100644
-> --- a/kernel/irq/devres.c
-> +++ b/kernel/irq/devres.c
-> @@ -1,5 +1,6 @@
->  #include <linux/module.h>
->  #include <linux/interrupt.h>
-> +#include <linux/device.h>
+Alan Cox wrote:
+>> About 4k stacks I was generally against them, much better to fail in
+>> fork than to risk corruption. The per-irq stack part is great feature
+>> instead (too bad it wasn't enabled for the safer 8k stacks).
+> 
+> 8K stacks without IRQ stacks are not "safer" so I don't understand your
+> comment ?
 
-ACK
+Hmm was it SuSE or RH kernels (or mainline?) I saw which had a test to
+defer soft IRQs if they occurred too deep in the stack for the current
+thread.
 
-Thanks for the devres.c patch, that was on my TODO list.  Caught that 
-when I backported SATA into Red Hat's kernel.
-
-	Jeff
-
-
-
+-Eric
