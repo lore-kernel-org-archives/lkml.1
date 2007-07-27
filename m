@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935416AbXG0GDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934344AbXG0GEo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935416AbXG0GDJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 02:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbXG0GC4
+	id S934344AbXG0GEo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 02:04:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbXG0GEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 02:02:56 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:56875 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbXG0GCz (ORCPT
+	Fri, 27 Jul 2007 02:04:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32780
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752650AbXG0GEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 02:02:55 -0400
-Message-ID: <46A98A14.3040300@gmail.com>
-Date: Fri, 27 Jul 2007 08:00:52 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Andika Triwidada <andika@gmail.com>, Robert Deaton <false.hopes@gmail.com>,
-       linux-kernel@vger.kernel.org, ck list <ck@vds.kolivas.org>,
-       linux-mm@kvack.org
-Subject: Re: updatedb
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com>	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>	 <46A81C39.4050009@gmail.com>	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com> <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>
-In-Reply-To: <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Fri, 27 Jul 2007 02:04:36 -0400
+Date: Thu, 26 Jul 2007 23:04:35 -0700 (PDT)
+Message-Id: <20070726.230435.68159913.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+Cc: adobriyan@sw.ru
+Subject: Re: /proc/bus/pci IOCTL breakage
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070726.190751.66179795.davem@davemloft.net>
+References: <20070726.190751.66179795.davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2007 02:46 AM, Jesper Juhl wrote:
+From: David Miller <davem@davemloft.net>
+Date: Thu, 26 Jul 2007 19:07:51 -0700 (PDT)
 
-> On 26/07/07, Andika Triwidada <andika@gmail.com> wrote:
-
->> Might be insignificant, but updatedb calls find (~2M) and sort (~26M). 
->> Definitely not RAM intensive though (RAM is 1GB).
+> Two ways to fix:
 > 
-> That doesn't match my box at all :
+> 1) Make the PROC wrapper call ->unlocked_ioctl() or ->ioctl()
+>    as a fallback of ->compat_ioctl is NULL.
+> 
+> 2) Make proc_bus_pci_operations provide a .compat_ioctl method,
+>    but then we'll need to audit the entire tree for cases like
+>    this and make the same fix.
+> 
+> Because it's easier to validate that all cases are covered,
+> I think #1 is the preferred fix.
 
-[ ... ]
+Here is my suggested fix.
 
-> This is a Slackware Linux 12.0 system.
+It is important to only provide the compat_ioctl method
+if the downstream de->proc_fops does too, otherwise this
+utterly confuses the logic in fs/compat_ioctl.c and we
+end up doing the right thing.
 
-Yes, already identified that there are more updatedb's around. We are using 
-"Secure Locate" and others simply the locate from the GNU findutils. Either 
-version does not itself use significant memory though and seems irrelevant 
-to the orginal swap-prefetch issue -- if updatedb filled memory with inodes 
-and dentries the memory is no longer free and swap-prefetch can't prefetch 
-anything.
+To be honest, the other unlocked_ioctl fallback scheme in
+this file should be scrutinized for similar problems.
 
-The remaining issue of updatedb unnecessarily blowing away VFS caches is 
-being discussed (*) in a few thread-branches still running.
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-Rene.
-
-(*) I so much wanted to say "buried".
-
+diff --git a/fs/proc/inode.c b/fs/proc/inode.c
+index 94e2c1a..a5b0dfd 100644
+--- a/fs/proc/inode.c
++++ b/fs/proc/inode.c
+@@ -386,6 +386,19 @@ static const struct file_operations proc_reg_file_ops = {
+ 	.release	= proc_reg_release,
+ };
+ 
++#ifdef CONFIG_COMPAT
++static const struct file_operations proc_reg_file_ops_no_compat = {
++	.llseek		= proc_reg_llseek,
++	.read		= proc_reg_read,
++	.write		= proc_reg_write,
++	.poll		= proc_reg_poll,
++	.unlocked_ioctl	= proc_reg_unlocked_ioctl,
++	.mmap		= proc_reg_mmap,
++	.open		= proc_reg_open,
++	.release	= proc_reg_release,
++};
++#endif
++
+ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
+ 				struct proc_dir_entry *de)
+ {
+@@ -413,8 +426,15 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
+ 		if (de->proc_iops)
+ 			inode->i_op = de->proc_iops;
+ 		if (de->proc_fops) {
+-			if (S_ISREG(inode->i_mode))
+-				inode->i_fop = &proc_reg_file_ops;
++			if (S_ISREG(inode->i_mode)) {
++#ifdef CONFIG_COMPAT
++				if (!de->proc_fops->compat_ioctl)
++					inode->i_fop =
++						&proc_reg_file_ops_no_compat;
++				else
++#endif
++					inode->i_fop = &proc_reg_file_ops;
++			}
+ 			else
+ 				inode->i_fop = de->proc_fops;
+ 		}
