@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937073AbXG0Ufp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937755AbXG0UhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937073AbXG0Ufp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933410AbXG0Ufi
+	id S937755AbXG0UhJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934055AbXG0Ug4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:35:38 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:39224 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933190AbXG0Ufh (ORCPT
+	Fri, 27 Jul 2007 16:36:56 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58863 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763020AbXG0Ugz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:35:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OWuH9OIr6qBTR0xjNHs/LpL3HL+ralIG3YUOxzpObmxKCaXrhZZIcfPHX5uHdJzNEStDfwbI62anWIAK2quyZs1Br0g0k2x+gOCe6J+rmi6yEoBUJmk3c+WNL8+4bUT8rD8fAXjbrQLdtc3dg7qkD24Gx+YEoNgYjC1x8+WnPcY=
-Message-ID: <86802c440707271335y29ca79ccq844b5cb457bd2314@mail.gmail.com>
-Date: Fri, 27 Jul 2007 13:35:30 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Bjorn Helgaas" <bjorn.helgaas@hp.com>
-Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
-Cc: "Shaohua Li" <shaohua.li@intel.com>,
-       "=?ISO-8859-1?Q?S=E9bastien_Dugu=E9?=" <sebastien.dugue@bull.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
-       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
-       mjg59@srcf.ucam.org, castet.matthieu@free.fr
-In-Reply-To: <200707271256.17025.bjorn.helgaas@hp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Jul 2007 16:36:55 -0400
+Subject: Re: swap-prefetch:  A smart way to make good use of idle resources
+	(was: updatedb)
+From: Arjan van de Ven <arjan@infradead.org>
+To: Al Boldi <a1426z@gawab.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200707272243.02336.a1426z@gawab.com>
+References: <200707272243.02336.a1426z@gawab.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Fri, 27 Jul 2007 13:34:58 -0700
+Message-Id: <1185568498.2711.5.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070724162805.76ea8328@frecb000686.frec.bull.fr>
-	 <200707271217.00164.bjorn.helgaas@hp.com>
-	 <86802c440707271138k822077cl9dd9995ee2b9c7dd@mail.gmail.com>
-	 <200707271256.17025.bjorn.helgaas@hp.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/27/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> On Friday 27 July 2007 12:38:56 pm Yinghai Lu wrote:
-> > On 7/27/07, Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
-> > > On Wednesday 25 July 2007 08:21:06 pm Shaohua Li wrote:
-> > > That doesn't help with Yinghai's PCI root ordering issue, of course.
-> >
-> > I could
-> > sort the acpi_pci_roots before using it, in acpi_pci_register_driver()
->
-> acpi_pci_register_driver() is only used by hotplug.  acpi_pci_root_add()
-> does the pci_acpi_scan_root(), so sorting in acpi_pci_register_driver()
-> won't affect that.
 
-Not sure. will test that later.
+> IMHO, what everybody agrees on, is that swap-prefetch has a positive effect 
+> in some cases, and nobody can prove an adverse effect (excluding power 
+> consumption).  The reason for this positive effect is also crystal clear:  
+> It prefetches from swap on idle into free memory, ie: it doesn't force 
 
->
-> Can you give a more detailed example?  Maybe that would help me understand
-> the problem you're seeing.
->
-> And why is udev not sufficient to give the NICs persistent names?
+the fact that there is free memory is ... strange. IN principle, Linux
+keeps almost no memory free (except some emergency buffers) so that
+things you swap in prematurely will BY DEFINITION go at the expense of
+other things that could be there.... 
 
-yes. NIC on node1 become the eth0 instead of eth2.
+also, they take up seek time (5 to 10 msec), so if you were to read
+something else at the time you get additional latency.
 
-YH
+so the conclusion that it only can be better (if you don't care about
+power) is imo premature.
+
+Sure it still can be worth it, but it for sure is NOT an automatic
+thing.
+
+
