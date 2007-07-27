@@ -1,129 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936043AbXG0LLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935923AbXG0LRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936043AbXG0LLu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 07:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbXG0LLl
+	id S935923AbXG0LRj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 07:17:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755404AbXG0LRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 07:11:41 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:36523 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753339AbXG0LLk (ORCPT
+	Fri, 27 Jul 2007 07:17:32 -0400
+Received: from smtp-vbr13.xs4all.nl ([194.109.24.33]:2112 "EHLO
+	smtp-vbr13.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753688AbXG0LRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 07:11:40 -0400
-Message-ID: <46A9D26E.9010703@gmail.com>
-Date: Fri, 27 Jul 2007 13:09:34 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Fri, 27 Jul 2007 07:17:31 -0400
+X-Greylist: delayed 457 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 07:17:26 EDT
+Date: Fri, 27 Jul 2007 13:09:27 +0200
+From: thunder7@xs4all.nl
+To: Paulo da Silva <psdasilva@esoterica.pt>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: USB subsystem (part of it) hangs
+Message-ID: <20070727110927.GA20862@amd64.of.nowhere>
+References: <46A94543.9050105@esoterica.pt>
 MIME-Version: 1.0
-To: Mike Galbraith <efault@gmx.de>
-CC: Jesper Juhl <jesper.juhl@gmail.com>, Andika Triwidada <andika@gmail.com>,
-       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org, B.Steinbrink@gmx.de,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: updatedb
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>	 <46A773EA.5030103@gmail.com>	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>	 <46A81C39.4050009@gmail.com>	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>	 <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>	 <46A98A14.3040300@gmail.com> <1185522844.6295.64.camel@Homer.simpson.net>	 <46A9ACB2.9030302@gmail.com> <1185528368.7851.44.camel@Homer.simpson.net>
-In-Reply-To: <1185528368.7851.44.camel@Homer.simpson.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A94543.9050105@esoterica.pt>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2007 11:26 AM, Mike Galbraith wrote:
+From: Paulo da Silva <psdasilva@esoterica.pt>
+Date: Fri, Jul 27, 2007 at 02:07:15AM +0100
+> This is a bug report. Any further information you may need, please let
+> me know.
+> Modules Loaded         ndiswrapper
 
-> On Fri, 2007-07-27 at 10:28 +0200, Rene Herman wrote:
+problem is, once you load ndiswrapper + the proprietary, closed source
+windows drivers that go with that, nobody here can tell you what's going
+wrong, since nobody here can know what goes on inside that driver.
 
->> I still wonder what the "the swap thing" is though. People just kept
->> saying that swap-prefetch helped which would seem to indicate their
->> problem didnt have anything to do with updatedb.
-> 
-> I haven't rummaged around in the VM in quite a long while, so don't know 
-> exactly where the balance lies any more, and have never looked at 
-> swap-prefetch, but the mechanism of how swap-prefetch can help the 
-> "morning after syndrome" seems simple enough:
+So unless you can reproduce it without ndiswrapper, it can't be solved.
 
-As far as I've googled things together, the below scenario won't happen:
-
-> Reclaim (swapout) a slew of application pages because there are 
-> truckloads of utterly bored pages laying about when updatedb comes along 
-> and introduces memory pressure in the middle of the night.
-
-Ack (*)
-
-> Updatedb finishes, freeing some ram (doesn't matter how much)
-
-Will be very little and swap-prefetch at least in its current form needs 
-more than very little to start doing anything:
-
-http://ck.kolivas.org/patches/swap-prefetch/2.6.21-swap_prefetch-38.patch
-
-| /*
-|  * Set max number of entries to 2/3 the size of physical ram  as we
-|  * only ever prefetch to consume 2/3 of the ram.
-|  */
-
-However, okay, let's just ignore that and pretend it kicks in even with the 
-little free memory updatedb itself left behind when it finished:
-
-> swap-prefetch detects idle CPU, and begins faulting swapped out pages 
-> back in. In the process of doing so, memory pressure is generated, and
-> now these freshly accessed pages are a less lovely target than the now
-> aging VFS caches that updatedb bloated up, so they shrink back down
-> enough that the balance you had before updatedb ran is restored...
-
-The story now again breaks down here. Over at:
-
-http://lkml.org/lkml/2007/2/9/112
-
-we have swap-prefetch's author saying:
-
-| swap prefetch stores the data at the tail end of the lru list which
-| means that even if you do want to use that ram for something else,
-| the prefetched pages will be immediately dropped.
-
-So those aging VFS caches will never be replaced by anything prefetched it 
-seems and any prefetching stops after the couple of pages that updatedb 
-itself freed have been taken again.
-
-A subsequent bit in that same message reads:
-
-| It can't help the updatedb scenario. Updatedb leaves the ram full and
-| swap prefetch wants to cost as little as possible so it will never
-| move anything out of ram in preference for the pages it wants to swap
-| back in.
-
-which I'll take as confirmation.
-
-> with the notable exception that cached data is now toast, so what you
-> gained by faulting god knows how frequently used pages back in isn't
-> _necessarily_ going to help you.
-
-Also file-backed pages (such as the program binaries itself). However, _if_ 
-prefetching were to take place, I'd be okay assuming it helps.
-
-> Heck, it could even step on what was left of your cached working set
-> after updatedb finished.
-
-Given swap-prefetch's focus on being as free as possible I don't believe it 
-should hurt any. And yes, it's always going to help _some_ workload shifts 
-and as far as I'm concerned is a "makes sense" kind of tweak even if it's 
-not the be all end all so again, not against swap-prefetch or its merger or 
-anything...
-
->> Also, I know shit about the VFS so this may well be not very educated but to 
->> me something like FADV_NOREUSE on a dirfd sounds like a much more promising 
->> approach than the convoluted userspace schemes being discussed, if only 
->> because it'll actually be implemented/used.
-> 
-> I like Andrew's mention of a future option... put that sucker and
-> everybody who looks like him in a resource limited container.
-
-As to the (*) above -- now that I actually know about the "swappiness" 
-thing, shouldn't setting that to 0 around updatedb runs really be quite 
-effective and if it's not, is there anything to be fixed there? Bjoern 
-Steinbrink (added to CC) earlier in this thread tried that and said stuff 
-went weird.
-
-Rene.
-
+Kind regards,
+Jurriaan
+-- 
+..and the great tagline hunter crouches silently, text editor at the ready..
+Debian (Unstable) GNU/Linux 2.6.22-rc6 2x2010 bogomips load 0.07
+the Jack Vance Integral Edition: http://www.integralarchive.org
