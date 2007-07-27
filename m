@@ -1,94 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938299AbXG0XDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938389AbXG0XDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938299AbXG0XDI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761029AbXG0XCz
+	id S938389AbXG0XDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937513AbXG0XDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:02:55 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:47076 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752680AbXG0XCy (ORCPT
+	Fri, 27 Jul 2007 19:03:36 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:46957 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761029AbXG0XDf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:02:54 -0400
-Subject: Re: [PATCH][sas] Fix potential NULL pointer dereference bug in
-	sas_smp_get_phy_events()
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: linux-scsi@vger.kernel.org, Luben Tuikov <luben_tuikov@adaptec.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200707272327.57356.jesper.juhl@gmail.com>
-References: <200707272327.57356.jesper.juhl@gmail.com>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 19:02:52 -0400
-Message-Id: <1185577372.3434.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 19:03:35 -0400
+Date: Sat, 28 Jul 2007 01:03:07 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [2.6 patch] let SUSPEND select HOTPLUG_CPU
+Message-ID: <20070727230307.GC15129@stusta.de>
+References: <200707251238.50218.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl> <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org> <200707262248.09187.rjw@sisk.pl> <alpine.LFD.0.999.0707261351430.3442@woody.linux-foundation.org> <20070727222503.GB15129@stusta.de> <46AA7609.1040900@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46AA7609.1040900@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 23:27 +0200, Jesper Juhl wrote:
-> In sas_smp_get_phy_events() we never test if the call to 
-> alloc_smp_req(RPEL_REQ_SIZE) succeeds or fails. That means we run 
-> the risk of dereferencing a NULL pointer if it does fail. Far 
-> better to test if we got NULL back and in that case return -ENOMEM 
-> just as we already do for the other memory allocation in that 
-> function.
-> This patch reworks the memory allocation a bit to deal with it 
-> (compile tested only).
+On Sat, Jul 28, 2007 at 12:47:37AM +0200, Stefan Richter wrote:
+> Adrian Bunk wrote:
+> > The dependency of SUSPEND_SMP on HOTPLUG_CPU is quite unintuitive,
 > 
+> It's not entirely unintuitive.  That option's full name is "Support for
+> suspend on SMP and hot-pluggable CPUs".
 > 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
+> Only the place where you find the option is unintuitive, as far as its
+> first application is concerned.  (It lives in the "Processor type and
+> features" menu which is OK for the 2nd application of this option.)  And
+> the variable name of that option is unintuitive because it covers only
+> the 2nd application of the option, I suppose for historical reasons.
+
+We can figure out ourselves when HOTPLUG_CPU is required, so there's no 
+reason to bother the user with it.
+
+> > +config SUSPEND_SMP_POSSIBLE
+> > +	bool
+> > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
+> > +	depends on SMP
+> > +	default y
+> > +
+> > +config SUSPEND_SMP
+> > +	bool
+> > +	depends on SUSPEND_SMP_POSSIBLE && SOFTWARE_SUSPEND
+> > +	select HOTPLUG_CPU
+> > +	default y
 > 
->  drivers/scsi/libsas/sas_expander.c |   11 +++++++++--
->  1 files changed, 9 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
-> index b500f0c..85f5145 100644
-> --- a/drivers/scsi/libsas/sas_expander.c
-> +++ b/drivers/scsi/libsas/sas_expander.c
-> @@ -507,14 +507,21 @@ static int sas_dev_present_in_domain(struct asd_sas_port *port,
->  int sas_smp_get_phy_events(struct sas_phy *phy)
->  {
->  	int res;
-> +	u8 *req;
-> +	u8 *resp;
->  	struct sas_rphy *rphy = dev_to_rphy(phy->dev.parent);
->  	struct domain_device *dev = sas_find_dev_by_rphy(rphy);
-> -	u8 *req = alloc_smp_req(RPEL_REQ_SIZE);
-> -	u8 *resp = kzalloc(RPEL_RESP_SIZE, GFP_KERNEL);
->  
-> +	resp = kzalloc(RPEL_RESP_SIZE, GFP_KERNEL);
+> Yes, that's the price to pay if you want to select something that in
+> turn depends on a number of other things.
 
-Actually, this should be alloc_smp_resp(RPEL_RESP_SIZE);
+Yes, but a good user interface is worth it.
 
->  	if (!resp)
->  		return -ENOMEM;
->  
-> +	req = alloc_smp_req(RPEL_REQ_SIZE);
-> +	if (!req) {
-> +        	res = -ENOMEM;
-> +		goto out;
-> +	}
+> Wait, doesn't HOTPLUG_CPU also depend on EXPERIMENTAL?
 
-Just for the sake of being the same as all the rest of the code, the
-sequence should be
+Damn, I started thinking about it, and then forgot about it when 
+finishing the patch.
 
-	req = alloc_smp_req(xxx_REQ_SIZE);
-	if (!req)
-		return -ENOMEM;
+My thoughts were:
+Is HOTPLUG_CPU still an experimental feature, or has it become a 
+well-tested no longer experimental feature now that it's used on
+most recent laptops?
 
-	resp = alloc_smp_resp(xxx_RESP_SIZE);
-	if (!resp) {
-		kfree(req);
-		return -ENOMEM;
-	}
+> Stefan Richter
 
-(allocate request then response).
+cu
+Adrian
 
-It looks like disc_resp could use a little love too (it's using the req
-alloc routines).
+-- 
 
-James
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
