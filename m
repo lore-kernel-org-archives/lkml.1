@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965524AbXG0Xp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938335AbXG0Xu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965524AbXG0Xp1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965162AbXG0XpP
+	id S938335AbXG0Xu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937983AbXG0XuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:45:15 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55740 "EHLO mx1.redhat.com"
+	Fri, 27 Jul 2007 19:50:10 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47610 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965148AbXG0XpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:45:13 -0400
-Date: Fri, 27 Jul 2007 19:43:17 -0400
-From: Bill Nottingham <notting@redhat.com>
-To: linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] remove gratuitous space in airo module description
-Message-ID: <20070727234317.GA3595@nostromo.devel.redhat.com>
-Mail-Followup-To: linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org
+	id S1762431AbXG0XuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 19:50:09 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Jan Dittmer <jdi@l4x.org>
+Cc: Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+References: <200707251238.50218.lenb@kernel.org> <46A98FF9.8060801@l4x.org>
+X-Yow: ..  I wonder if I ought to tell them about my PREVIOUS LIFE
+ as a COMPLETE STRANGER?
+Date: Sat, 28 Jul 2007 01:50:06 +0200
+In-Reply-To: <46A98FF9.8060801@l4x.org> (Jan Dittmer's message of "Fri\, 27 Jul
+	2007 08\:26\:01 +0200")
+Message-ID: <je8x91flu9.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the modinfo looks like:
+Jan Dittmer <jdi@l4x.org> writes:
 
-description:    Support for Cisco/Aironet 802.11 wireless ethernet                    cards.  Direct support for ISA/PCI/MPI cards and support               for PCMCIA when used with airo_cs.
+> Len Brown wrote:
+>> Hi Linus,
+>>
+>> please pull from: 
+>>
+>> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
+>
+> This seems to break ia64 defconfig:
+>
+>   Building modules, stage 2.
+>   MODPOST 157 modules
+> FATAL: drivers/acpi/button: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=144.
 
-Arguably, it should be cut at the end of the first sentence. 
-This at least makes it somewhat more legible.
+Are you cross-compiling?  The definition of kernel_ulong_t won't work on
+x86.
 
-diff -up linux-2.6.22.x86_64/drivers/net/wireless/airo.c.foo linux-2.6.22.x86_64/drivers/net/wireless/airo.c
---- linux-2.6.22.x86_64/drivers/net/wireless/airo.c.foo	2007-07-27 19:03:59.000000000 -0400
-+++ linux-2.6.22.x86_64/drivers/net/wireless/airo.c	2007-07-27 19:04:15.000000000 -0400
-@@ -241,8 +241,8 @@ static int proc_perm = 0644;
- 
- MODULE_AUTHOR("Benjamin Reed");
- MODULE_DESCRIPTION("Support for Cisco/Aironet 802.11 wireless ethernet \
--                   cards.  Direct support for ISA/PCI/MPI cards and support \
--		   for PCMCIA when used with airo_cs.");
-+cards.  Direct support for ISA/PCI/MPI cards and support \
-+for PCMCIA when used with airo_cs.");
- MODULE_LICENSE("Dual BSD/GPL");
- MODULE_SUPPORTED_DEVICE("Aironet 4500, 4800 and Cisco 340/350");
- module_param_array(io, int, NULL, 0);
+Andreas.
 
-Signed-off-by: Bill Nottingham <notting@redhat.com>
-
-Bill
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
