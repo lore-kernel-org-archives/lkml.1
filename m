@@ -1,86 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938389AbXG0XDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938420AbXG0XEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938389AbXG0XDp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937513AbXG0XDg
+	id S938420AbXG0XEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937623AbXG0XEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:03:36 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:46957 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761029AbXG0XDf (ORCPT
+	Fri, 27 Jul 2007 19:04:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:35536 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937513AbXG0XEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:03:35 -0400
-Date: Sat, 28 Jul 2007 01:03:07 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
-       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [2.6 patch] let SUSPEND select HOTPLUG_CPU
-Message-ID: <20070727230307.GC15129@stusta.de>
-References: <200707251238.50218.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl> <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org> <200707262248.09187.rjw@sisk.pl> <alpine.LFD.0.999.0707261351430.3442@woody.linux-foundation.org> <20070727222503.GB15129@stusta.de> <46AA7609.1040900@s5r6.in-berlin.de>
+	Fri, 27 Jul 2007 19:04:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=SJqrbzbcJo4p7f5KjbDhcCOk0wNYjyS8+1lRNpKgh8krW7uM237P1cgvEQI0PWjWU5bn3FanUp6Qohu42QsuLayZxdzq51XMD1b1MPAHCGp5b2URk1kx40+bOxt/crzg5uC8guauBI5x5Ofwf7hYet5AdX+XeV+FoF2KHS+X5/c=
+Message-ID: <9a8748490707271604x45ad26e2te8082b5f64504ad2@mail.gmail.com>
+Date: Sat, 28 Jul 2007 01:04:30 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: shacky <shacky83@gmail.com>
+Subject: Re: Kernel modules compilation
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <7fedbc910707271552x71010f82o8455c17b21f80eab@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46AA7609.1040900@s5r6.in-berlin.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <7fedbc910707271211v2ac2c927k3dd8fec8643ee250@mail.gmail.com>
+	 <9a8748490707271303h7f5187ffk31d211c34fd885bf@mail.gmail.com>
+	 <7fedbc910707271438t183bab6bxe295f161a5ec0fba@mail.gmail.com>
+	 <9a8748490707271542s13862269h79f85d4171233f47@mail.gmail.com>
+	 <7fedbc910707271552x71010f82o8455c17b21f80eab@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 28, 2007 at 12:47:37AM +0200, Stefan Richter wrote:
-> Adrian Bunk wrote:
-> > The dependency of SUSPEND_SMP on HOTPLUG_CPU is quite unintuitive,
-> 
-> It's not entirely unintuitive.  That option's full name is "Support for
-> suspend on SMP and hot-pluggable CPUs".
-> 
-> Only the place where you find the option is unintuitive, as far as its
-> first application is concerned.  (It lives in the "Processor type and
-> features" menu which is OK for the 2nd application of this option.)  And
-> the variable name of that option is unintuitive because it covers only
-> the 2nd application of the option, I suppose for historical reasons.
+On 28/07/07, shacky <shacky83@gmail.com> wrote:
+> > Symbol: USB [=y]
+> > Prompt: Support for Host-side USB
+> >   Defined at drivers/usb/Kconfig:51
+> >   Depends on: USB_SUPPORT && USB_ARCH_HAS_HCD
+> >   Location:
+> >     -> Device Drivers
+> >       -> USB support (USB_SUPPORT [=y])
+>
+> Could you tell me how you found them, please?
+>
 
-We can figure out ourselves when HOTPLUG_CPU is required, so there's no 
-reason to bother the user with it.
+Some of them I just knew from past experiences where to find, some of
+them are logical (like, obviously 'reiserfs' is found in the
+Filesystems submenu), some I searched for using "/" and a few I
+googled.
 
-> > +config SUSPEND_SMP_POSSIBLE
-> > +	bool
-> > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
-> > +	depends on SMP
-> > +	default y
-> > +
-> > +config SUSPEND_SMP
-> > +	bool
-> > +	depends on SUSPEND_SMP_POSSIBLE && SOFTWARE_SUSPEND
-> > +	select HOTPLUG_CPU
-> > +	default y
-> 
-> Yes, that's the price to pay if you want to select something that in
-> turn depends on a number of other things.
+> > Hint: In menuconfig, type "/" to search.
+>
+> Thank you very much!
+>
+You're welcome.  By the way; if you had taken the time to read the
+text at the top of the menuconfig interface you'd have known this
+already - "... Press <Esc><Esc> to exit, <?> for Help, </> for
+Search."
 
-Yes, but a good user interface is worth it.
+> > Not really. Your distribution could be loading a ton of modules that
+> > you don't really need. 'lsmod' will just show you what is currently
+> > loaded, but that that doesn't necessarily mean that all those modules
+> > are really needed.
+>
+> Ok, how I can know what modules are needed and what not? Only knowing
+> the hardware of my system?
+>
+If you know the hardware of the system, the filesystems you use etc
+etc, then it should be possible to deduce what modules you need...
+Read the help text for each config option related to your modules and
+think about whether or not you need it...
 
-> Wait, doesn't HOTPLUG_CPU also depend on EXPERIMENTAL?
-
-Damn, I started thinking about it, and then forgot about it when 
-finishing the patch.
-
-My thoughts were:
-Is HOTPLUG_CPU still an experimental feature, or has it become a 
-well-tested no longer experimental feature now that it's used on
-most recent laptops?
-
-> Stefan Richter
-
-cu
-Adrian
+> Another question please, what the symbol "---" near a kernel
+> configuration entry in menuconfig means? This entry is activated (with
+> * or M) or not?
+>
+It means that the option was automagically selected by some other
+option you selected, so you can't disable it unless you first disable
+that other option that selected it.
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
