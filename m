@@ -1,100 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937171AbXG0RB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936846AbXG0RFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937171AbXG0RB1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXG0RBR
+	id S936846AbXG0RFJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759517AbXG0RE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:01:17 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:60303 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757105AbXG0RBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:01:16 -0400
-Date: Fri, 27 Jul 2007 13:01:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-scsi@vger.kernel.org, erich@areca.com.tw
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] arcmsr: irq handler fixes, cleanups, micro-opts
-Message-ID: <20070727170114.GA27441@havoc.gtf.org>
-References: <20070727170048.GA27353@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070727170048.GA27353@havoc.gtf.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 27 Jul 2007 13:04:56 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:39604 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758929AbXG0REx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 13:04:53 -0400
+Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
+From: Josh Triplett <josht@linux.vnet.ibm.com>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-sparse@vger.kernel.org
+In-Reply-To: <m3bqdx6dlq.fsf@maximus.localdomain>
+References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
+	 <m3abtir95x.fsf@maximus.localdomain>
+	 <20070726173501.9ba466ba.akpm@linux-foundation.org>
+	 <m3bqdx6dlq.fsf@maximus.localdomain>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 10:05:16 -0700
+Message-Id: <1185555916.2642.8.camel@josh-work.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2007-07-27 at 18:00 +0200, Krzysztof Halasa wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > it's better that we all do things the same way.  What that way _is_ is
+> > actually less important, unless it's something stupid, of course.
+> 
+> It's certainly true WRT things like indentation but IMHO it shouldn't
+> go that far, and if it goes, it should be non-braced version.
+> 
+> If we prefer non-braced versions of "if" and "while", it would be
+> a bit strange to require braces with "do while", wouldn't it?
 
-commit 97618f90f021d457c5078ab85f0f443553f93d51
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Fri Jul 27 12:58:00 2007 -0400
+Perhaps, but
+     1. Existing kernel style uses braces with single-statement
+        do-while.
+     2. Linus prefers (or at least preferred in October of 2006) braces
+        with single-statement do-while.
 
-    [SCSI] arcmsr: interrupt handling fixes, cleanups, micro-opts
-    
-    * Remove IRQF_DISABLED, it is clearly wrong for this driver.
-    
-    * Remove wasteful spin_lock_irqsave() in interrupt handler.
-      The lighter-weight spin_lock() is all that's needed.
-    
-    * Annotate with FIXME where arcmsr_interrupt() is called
-      without any spinlock being acquired.
-    
-    * Eliminate pointless cast from void pointer in arcmsr_do_interrupt()
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+> Sparse warnings... I think it shouldn't complain either, unless
+> called with extra parameter.
 
- drivers/scsi/arcmsr/arcmsr_hba.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+Good point; Sparse shouldn't warn about this by default.  I've turned
+that off in latest Sparse from Git, so you need to give -Wdo-while or
+-Wall to get warnings about that.  However, the kernel gives -Wall, so
+you'll still see the warnings there.
 
-97618f90f021d457c5078ab85f0f443553f93d51
-diff --git a/drivers/scsi/arcmsr/arcmsr_hba.c b/drivers/scsi/arcmsr/arcmsr_hba.c
-index ae26ed4..d9fadb4 100644
---- a/drivers/scsi/arcmsr/arcmsr_hba.c
-+++ b/drivers/scsi/arcmsr/arcmsr_hba.c
-@@ -159,14 +159,12 @@ static struct pci_driver arcmsr_pci_driver = {
- static irqreturn_t arcmsr_do_interrupt(int irq, void *dev_id)
- {
- 	irqreturn_t handle_state;
--	struct AdapterControlBlock *acb;
--	unsigned long flags;
--
--	acb = (struct AdapterControlBlock *)dev_id;
-+	struct AdapterControlBlock *acb = dev_id;
- 
--	spin_lock_irqsave(acb->host->host_lock, flags);
-+	spin_lock(acb->host->host_lock);
- 	handle_state = arcmsr_interrupt(acb);
--	spin_unlock_irqrestore(acb->host->host_lock, flags);
-+	spin_unlock(acb->host->host_lock);
-+
- 	return handle_state;
- }
- 
-@@ -331,7 +329,7 @@ static int arcmsr_probe(struct pci_dev *pdev,
- 		goto out_iounmap;
- 
- 	error = request_irq(pdev->irq, arcmsr_do_interrupt,
--			IRQF_DISABLED | IRQF_SHARED, "arcmsr", acb);
-+			    IRQF_SHARED, "arcmsr", acb);
- 	if (error)
- 		goto out_free_ccb_pool;
- 
-@@ -421,7 +419,7 @@ static void arcmsr_remove(struct pci_dev *pdev)
- 	for (poll_count = 0; poll_count < 256; poll_count++) {
- 		if (!atomic_read(&acb->ccboutstandingcount))
- 			break;
--		arcmsr_interrupt(acb);
-+		arcmsr_interrupt(acb);	/* FIXME: need spinlock */
- 		msleep(25);
- 	}
- 
-@@ -1452,7 +1450,7 @@ static int arcmsr_bus_reset(struct scsi_cmnd *cmd)
- 	for (i = 0; i < 400; i++) {
- 		if (!atomic_read(&acb->ccboutstandingcount))
- 			break;
--		arcmsr_interrupt(acb);
-+		arcmsr_interrupt(acb);	/* FIXME: need spinlock */
- 		msleep(25);
- 	}
- 	arcmsr_iop_reset(acb);
+- Josh Triplett
+
+
