@@ -1,50 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937373AbXG0U15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937541AbXG0U3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937373AbXG0U15 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761532AbXG0U1s
+	id S937541AbXG0U3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933270AbXG0U3H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:27:48 -0400
-Received: from atlrel8.hp.com ([156.153.255.206]:38123 "EHLO atlrel8.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759965AbXG0U1r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:27:47 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [patch] x86, serial: always probe for legacy COM ports
-Date: Fri, 27 Jul 2007 14:26:30 -0600
+	Fri, 27 Jul 2007 16:29:07 -0400
+Received: from keil-draco.com ([216.193.185.50]:50342 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760706AbXG0U3F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:29:05 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Rene Herman <rene.herman@gmail.com>
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
+Date: Fri, 27 Jul 2007 16:28:46 -0400
 User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>, Adam Belay <ambx1@neo.rr.com>,
-       Len Brown <lenb@kernel.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       =?iso-8859-15?q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <200707271158.50028.bjorn.helgaas@hp.com> <200707271411.42253.bjorn.helgaas@hp.com> <46AA53E3.5080501@garzik.org>
-In-Reply-To: <46AA53E3.5080501@garzik.org>
+Cc: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
+In-Reply-To: <46AA3680.4010508@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707271426.30962.bjorn.helgaas@hp.com>
+Message-Id: <200707271628.46804.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 July 2007 02:21:55 pm Jeff Garzik wrote:
-> Bjorn Helgaas wrote:
-> > On Friday 27 July 2007 12:05:51 pm Jeff Garzik wrote:
-> >> This is still incomplete, as repeatedly stated.  Here is the email, again.
-> 
-> > OK, uncle!  I'll work on your helpful advice (thanks for that), but
-> > it feels too risky for this stage of 2.6.23.  Maybe I can come up with
-> > something for a future release.
-> 
-> The changeset in the kernel is too risky _without_ the changes I described.
+On Friday 27 July 2007 14:16:32 Rene Herman wrote:
+> On 07/27/2007 07:45 PM, Daniel Hazelton wrote:
+> > Updatedb or another process that uses the FS heavily runs on a users
+> > 256MB P3-800 (when it is idle) and the VFS caches grow, causing memory
+> > pressure that causes other applications to be swapped to disk. In the
+> > morning the user has to wait for the system to swap those applications
+> > back in.
+> >
+> > Questions about it:
+> > Q) Does swap-prefetch help with this?
+> > A) [From all reports I've seen (*)] Yes, it does.
+>
+> No it does not. If updatedb filled memory to the point of causing swapping
+> (which noone is reproducing anyway) it HAS FILLED MEMORY and swap-prefetch
+> hasn't any memory to prefetch into -- updatedb itself doesn't use any
+> significant memory.
 
-That's what I meant.  Andrew already has a revert patch in -mm, and
-the safest path seems like putting the reversion in 2.6.23 and working
-on your advice post-2.6.23.
+Check the attitude at the door then re-read what I actually said:
+> > Updatedb or another process that uses the FS heavily runs on a users
+> > 256MB P3-800 (when it is idle) and the VFS caches grow, causing memory
+> > pressure that causes other applications to be swapped to disk. In the
+> > morning the user has to wait for the system to swap those applications
+> > back in.
 
-Bjorn
+I never said that it was the *program* itself - or *any* specific program (I 
+used "Updatedb" because it has been the big name in the discussion) - doing 
+the filling of memory. I actually said that the problem is that the kernel's 
+caches - VFS and others - will grow *WITHOUT* *LIMIT*, filling all available 
+memory. 
 
+Swap prefetch on its own will not alleviate *all* of the problem, but it 
+appears to fix enough of it that the problem doesn't seem to bother people 
+anymore. (As I noted later on there are things that can be changes that would 
+also fix things. Those changes, however, are quite tricky and involve changes 
+to the page faulting mechanism, the way the various caches work and a number 
+of other things)
+
+In light of the fact that swap prefetch appears to solve the problem for the 
+people that have been vocal about it, and because it is a less intrusive 
+change than the other potential solutions, I'd like to know why all the 
+complaints and arguments against it come down to "Its treating the symptom".
+
+I mean it - because I fail to see how it isn't getting at the root of the 
+problem - which is, pretty much, that Swap has classically been and, in the 
+case of most modern systems, still is damned slow. By prefetching those pages 
+that have most recently been evicted the problem of "slow swap" is being 
+directly addressed.
+
+You want to know what causes the problem? The current design of the caches. 
+They will extend without much limit, to the point of actually pushing pages 
+to disk so they can grow even more. 
+
+> Here's swap-prefetch's author saying the same:
+>
+> http://lkml.org/lkml/2007/2/9/112
+>
+> | It can't help the updatedb scenario. Updatedb leaves the ram full and
+> | swap prefetch wants to cost as little as possible so it will never
+> | move anything out of ram in preference for the pages it wants to swap
+> | back in.
+>
+> Now please finally either understand this, or tell us how we're wrong.
+>
+> Rene.
+
+I already did. You completely ignored it because I happened to use the magic 
+words "updatedb" and "swap prefetch". 
+
+Did I ever say it was about "updatedb" in particular? You've got the statement 
+in the part of my post that you quoted. Nope, appears that I used the name as 
+a specific example - and one that has been used previously in the thread. Now 
+drop the damned attitude and start using your brain. Okay?
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
