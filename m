@@ -1,98 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbXG0NSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764779AbXG0NUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763011AbXG0NSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbXG0NSN
+	id S1764779AbXG0NUE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbXG0NTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:18:13 -0400
-Received: from www19.your-server.de ([213.133.104.19]:34710 "EHLO
-	www19.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbXG0NSL (ORCPT
+	Fri, 27 Jul 2007 09:19:54 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:41828 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754365AbXG0NTx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:18:11 -0400
-From: Uli Luckas <u.luckas@road.de>
-Organization: Road GmbH
-To: LKML <linux-kernel@vger.kernel.org>, bryan.wu@analog.com
-Subject: Re: [PATCH 04/68] 0 -> NULL, for arch/blackfin
-Date: Fri, 27 Jul 2007 15:17:59 +0200
-User-Agent: KMail/1.9.7
-Cc: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@vger.kernel.org,
-       aubrey.li@analog.com, akpm@linux-foundation.org
-References: <200707270944.LAA17116@ifs.emn.fr> <1185531824.11601.25.camel@roc-desktop>
-In-Reply-To: <1185531824.11601.25.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 09:19:53 -0400
+Date: Fri, 27 Jul 2007 14:19:52 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org
+Subject: [PATCH] more include order horrors
+Message-ID: <20070727131952.GZ27237@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707271517.59770.u.luckas@road.de>
-X-Authenticated-Sender: webmaster@road.de
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 27. July 2007, Bryan Wu wrote:
-> On Fri, 2007-07-27 at 11:44 +0200, Yoann Padioleau wrote:
-> > When comparing a pointer, it's clearer to compare it to NULL than to 0.
-> >
-> > Here is an excerpt of the semantic patch:
-> >
-> > @@
-> > expression *E;
-> > @@
-> >
-> >   E ==
-> > - 0
-> > + NULL
-> >
-> > @@
-> > expression *E;
-> > @@
-> >
-> >   E !=
-> > - 0
-> > + NULL
-> >
-> > Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-> > Cc: aubrey.li@analog.com
-> > Cc: bryan.wu@analog.com
-> > Cc: akpm@linux-foundation.org
-> > ---
-> >
-> >  traps.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> >
-> > diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
-> > index 3909f5b..691c66d 100644
-> > --- a/arch/blackfin/kernel/traps.c
-> > +++ b/arch/blackfin/kernel/traps.c
-> > @@ -546,7 +546,7 @@ void dump_bfin_regs(struct pt_regs *fp,
-> >  	}
-> >
-> >  	printk(KERN_EMERG "return address: [0x%p]; contents of:", retaddr);
-> > -	if (retaddr != 0 && retaddr <= (void *)physical_mem_end
-> > +	if (retaddr != NULL && retaddr <= (void *)physical_mem_end
-> >  #if L1_CODE_LENGTH != 0
-> >  	    /* FIXME: Copy the code out of L1 Instruction SRAM through dma
-> >  	       memcpy.  */
->
-> Why not just use " if (!E)" instead of " if (E != NULL)"?
-> more readable?
->
-Or even "if (E)"
+	... because somebody had added preempt.h -> list.h, resulting in
+asm/system.h -> hardirq.h -> preempt.h -> list.h -> asm/system.h on m68k,
+with smp_wmb() used in list.h and defined in asm/system.h below the include
+of hardirq.h.
 
-Uli
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
 
--- 
-
-------- ROAD ...the handyPC Company - - -  ) ) )
-
-Uli Luckas
-Software Development
-
-ROAD GmbH
-Bennigsenstr. 14 | 12159 Berlin | Germany
-fon: +49 (30) 230069 - 64 | fax: +49 (30) 230069 - 69
-url: www.road.de
-
-Amtsgericht Charlottenburg: HRB 96688 B
-Managing directors: Hans-Peter Constien, Hubertus von Streit
+diff --git a/include/asm-m68k/system.h b/include/asm-m68k/system.h
+index 198878b..caa9b16 100644
+--- a/include/asm-m68k/system.h
++++ b/include/asm-m68k/system.h
+@@ -46,6 +46,22 @@ asmlinkage void resume(void);
+ } while (0)
+ 
+ 
++/*
++ * Force strict CPU ordering.
++ * Not really required on m68k...
++ */
++#define nop()		do { asm volatile ("nop"); barrier(); } while (0)
++#define mb()		barrier()
++#define rmb()		barrier()
++#define wmb()		barrier()
++#define read_barrier_depends()	((void)0)
++#define set_mb(var, value)	({ (var) = (value); wmb(); })
++
++#define smp_mb()	barrier()
++#define smp_rmb()	barrier()
++#define smp_wmb()	barrier()
++#define smp_read_barrier_depends()	((void)0)
++
+ /* interrupt control.. */
+ #if 0
+ #define local_irq_enable() asm volatile ("andiw %0,%%sr": : "i" (ALLOWINT) : "memory")
+@@ -70,23 +86,6 @@ static inline int irqs_disabled(void)
+ /* For spinlocks etc */
+ #define local_irq_save(x)	({ local_save_flags(x); local_irq_disable(); })
+ 
+-/*
+- * Force strict CPU ordering.
+- * Not really required on m68k...
+- */
+-#define nop()		do { asm volatile ("nop"); barrier(); } while (0)
+-#define mb()		barrier()
+-#define rmb()		barrier()
+-#define wmb()		barrier()
+-#define read_barrier_depends()	((void)0)
+-#define set_mb(var, value)	({ (var) = (value); wmb(); })
+-
+-#define smp_mb()	barrier()
+-#define smp_rmb()	barrier()
+-#define smp_wmb()	barrier()
+-#define smp_read_barrier_depends()	((void)0)
+-
+-
+ #define xchg(ptr,x) ((__typeof__(*(ptr)))__xchg((unsigned long)(x),(ptr),sizeof(*(ptr))))
+ 
+ struct __xchg_dummy { unsigned long a[100]; };
