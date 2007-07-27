@@ -1,48 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933603AbXG0QiO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937469AbXG0Qj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933603AbXG0QiO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 12:38:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934631AbXG0Qh7
+	id S937469AbXG0Qj1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 12:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753176AbXG0QjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 12:37:59 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57719 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933398AbXG0Qh6 (ORCPT
+	Fri, 27 Jul 2007 12:39:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40712 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752516AbXG0QjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 12:37:58 -0400
-Subject: Re: [PATCH] remove hugetlb_instantiation_mutex
-From: Adam Litke <agl@us.ibm.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1185523069.4688.115.camel@ymzhang>
-References: <1185523069.4688.115.camel@ymzhang>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 11:37:57 -0500
-Message-Id: <1185554277.23817.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 12:39:18 -0400
+Date: Fri, 27 Jul 2007 09:39:16 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       Zoltan.Menyhart@bull.net
+Subject: Re: [PATCH] flush cache fixes for ia64 [1/2] migration fix
+In-Reply-To: <20070727133843.6cd3f57a.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0707270934300.15619@schroedinger.engr.sgi.com>
+References: <20070727133657.8c9c6803.kamezawa.hiroyu@jp.fujitsu.com>
+ <20070727133843.6cd3f57a.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey... I am amazed at how quickly you came back with a patch for this :)
-Thanks for looking at it.  Unfortunately there is one show-stopper and I
-have some reservations (pun definitely intended) with your approach:
+This will have no effect on x86_64, ia64 and i386. Maybe useful for 
+virtually mapped platforms (parisc)?
 
-First, your patch does not pass the libhugetlbfs test
-'alloc-instantiate-race' which was written to tickle the the race which
-the mutex was introduced to solve.  Your patch works for shared
-mappings, but not for the private case.
+asm-ia64/cacheflush.c
 
-Second, the introduction of another pair of global counters triggers my
-internal warning system... These global counters are known to cause
-problems with NUMA and cpusets.  Have you considered these interactions?
-Additionally, the commit/rollback logic you are using closely parallels
-what we already do with the huge page reservation mechanism.  Is there
-any way you could integrate your stuff into the reservation system to
-avoid all the duplicated logic?
+#define flush_icache_page(vma,page)             do { } while (0)
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
+Acked-by: Christoph Lameter <clameter@sgi.com>
 
