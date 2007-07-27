@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965326AbXG0XbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965392AbXG0Xcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965326AbXG0XbV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964832AbXG0XbO
+	id S965392AbXG0Xcp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964930AbXG0Xci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:31:14 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:51893 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756499AbXG0XbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:31:14 -0400
-Subject: [PATCH] lzo: Add some missing casts
-From: Richard Purdie <richard@openedhand.com>
-To: Edward Shishkin <edward@namesys.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Nitin Gupta <nitingupta910@gmail.com>,
-       reiserfs-devel <reiserfs-devel@vger.kernel.org>,
-       Adrian Bunk <bunk@stusta.de>
+	Fri, 27 Jul 2007 19:32:38 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:57459
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964923AbXG0Xcg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 19:32:36 -0400
+Subject: Re: serial flow control appears broken
+From: Paul Fulghum <paulkf@microgate.com>
+To: Lee Howard <faxguy@howardsilvan.com>
+Cc: Tilman Schmidt <tilman@imap.cc>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+In-Reply-To: <46AA5A0E.1050600@howardsilvan.com>
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
+	 <46A84B4A.6070902@shaw.ca>	<46A8C6F1.4080309@howardsilvan.com>
+	 <20070726173121.70088a92@the-village.bc.nu>
+	 <46A98845.8010806@howardsilvan.com> <46A9F712.70706@imap.cc>
+	 <46D33636.7070200@microgate.com>  <46AA5A0E.1050600@howardsilvan.com>
 Content-Type: text/plain
-Date: Sat, 28 Jul 2007 00:30:55 +0100
-Message-Id: <1185579055.6148.29.camel@localhost.localdomain>
+Date: Fri, 27 Jul 2007 18:28:28 -0500
+Message-Id: <1185578908.2989.15.camel@x2>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+X-Mailer: Evolution 2.10.2 (2.10.2-3.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some casts to the LZO compression algorithm after they were removed
-during cleanup and shouldn't have been.
+On Fri, 2007-07-27 at 13:48 -0700, Lee Howard wrote:
+> Here's the output:
+> 
+>             type: 4
+>             line: 1
+>             line: 760
+>              irq: 3
+>            flags: 1358954688
+>   xmit_fifo_size: 16
+>   custom_divisor: 0
+>        baud_base: 115200
 
-Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
+OK, the FIFO should be enabled.
 
----
+What is known:
 
-This fixes the reported problems for me, I've checked fairly carefully
-and I can't see any other issues. Edward, could you see if this resolves
-the problems in your case please?
+* The error is a hardware FIFO overrun.
+  - observed message is in n_tty due to driver setting TTY_OVERRUN
 
-Index: linux-2.6.22/lib/lzo/lzo1x_compress.c
-===================================================================
---- linux-2.6.22.orig/lib/lzo/lzo1x_compress.c
-+++ linux-2.6.22/lib/lzo/lzo1x_compress.c
-@@ -32,13 +32,13 @@ _lzo1x_1_do_compress(const unsigned char
- 	ip += 4;
- 
- 	for (;;) {
--		dindex = ((0x21 * DX3(ip, 5, 5, 6)) >> 5) & D_MASK;
-+		dindex = ((size_t)(0x21 * DX3(ip, 5, 5, 6)) >> 5) & D_MASK;
- 		m_pos = dict[dindex];
- 
- 		if (m_pos < in)
- 			goto literal;
- 
--		if (ip == m_pos || (ip - m_pos) > M4_MAX_OFFSET)
-+		if (ip == m_pos || ((size_t)(ip - m_pos) > M4_MAX_OFFSET))
- 			goto literal;
- 
- 		m_off = ip - m_pos;
-@@ -51,7 +51,7 @@ _lzo1x_1_do_compress(const unsigned char
- 		if (m_pos < in)
- 			goto literal;
- 
--		if (ip == m_pos || (ip - m_pos) > M4_MAX_OFFSET)
-+		if (ip == m_pos || ((size_t)(ip - m_pos) > M4_MAX_OFFSET))
- 			goto literal;
- 
- 		m_off = ip - m_pos;
+* The RTS/CTS flow control is not involved
+  - this is done only by the ldisc in response to buffer levels
+  - you verified crtscts is set
+  - you did not observed RTS change when 'overflow error' logged
+  - you did observe RTS change when application stopped reading
+
+So this seems to be a latency issue reading the receive
+FIFO in the ISR. The current rx FIFO trigger level
+should be 8 bytes (UART_FCR_R_TRIG_10) which gives the
+ISR 694usec to get the data at 115200bps.
+
+IIRC, in 2.2.X kernels this defaulted to 4 bytes
+(TRIG_01) which gave a little more time to service the interrupt.
+
+How does the data rate affect the frequency of the overrun errors?
+Does 57600bps make them go away?
+
+--
+Paul
+
+
 
 
