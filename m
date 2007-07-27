@@ -1,80 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932239AbXG0MxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932814AbXG0Mzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932239AbXG0MxS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 08:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbXG0MxK
+	id S932814AbXG0Mzw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 08:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757608AbXG0Mzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 08:53:10 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:57240 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755507AbXG0MxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 08:53:09 -0400
-Message-ID: <46A9EAB0.3090306@garzik.org>
-Date: Fri, 27 Jul 2007 08:53:04 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 27 Jul 2007 08:55:44 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:38960 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756380AbXG0Mzo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 08:55:44 -0400
+Date: Fri, 27 Jul 2007 13:55:33 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Stephane Eranian <eranian@hpl.hp.com>
+Cc: linux-kernel@vger.kernel.org, mucci@cs.utk.edu, linux-mips@linux-mips.org,
+       ak@suse.de, akpm@linux-foundation.org
+Subject: Re: [PATCH] MIPS: add smp_call_function_single()
+Message-ID: <20070727125533.GD5118@linux-mips.org>
+References: <20070727124451.GC9828@frankl.hpl.hp.com>
 MIME-Version: 1.0
-To: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: NFSv4 poops itself
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070727124451.GC9828@frankl.hpl.hp.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Background:
+On Fri, Jul 27, 2007 at 05:44:51AM -0700, Stephane Eranian wrote:
 
-Server: x86-64 dual core Intel, kernel 2.6.23-rc1 (my home fileserver)
-	Exporting NFS/NFSv4 mounts.  Client count: 1  Uptime: 4 days
+> diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
+> index be7362b..9e376e2 100644
+> --- a/arch/mips/kernel/smp.c
+> +++ b/arch/mips/kernel/smp.c
+> @@ -193,6 +193,53 @@ void smp_call_function_interrupt(void)
+>  	}
+>  }
+>  
+> +int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int retry,
+> +			     int wait)
+> +{
+> +  struct call_data_struct data;
+> +  int me = smp_processor_id();
+> +
+> +  /*
+> +     * Can die spectacularly if this CPU isn't yet marked online
+> +      */
+> +  BUG_ON(!cpu_online(me));
+> +  if (cpu == me) {
+> +    WARN_ON(1);
+> +    return -EBUSY;
+> +    }
+> +
+> +  /* Can deadlock when called with interrupts disabled */
+> +  WARN_ON(irqs_disabled());
+> +
+> +  data.func = func;
+> +  data.info = info;
+> +  atomic_set(&data.started, 0);
+> +  data.wait = wait;
+> +  if (wait)
+> +    atomic_set(&data.finished, 0);
+> +
+> +  spin_lock(&smp_call_lock);
+> +  call_data = &data;
+> +  mb();
+> +
+> +  /* Send a message to the other CPU */
+> +  core_send_ipi(cpu, SMP_CALL_FUNCTION);
+> +
+> +  /* Wait for response */
+> +  /* FIXME: lock-up detection, backtrace on lock-up */
+> +  while (atomic_read(&data.started) != 1)
+> +    barrier();
+> +
+> +  if (wait)
+> +    while (atomic_read(&data.finished) != 1)
+> +      barrier();
+> +  call_data = NULL;
+> +  spin_unlock(&smp_call_lock);
+> +
+> +  return 0;
+> +}
+> +EXPORT_SYMBOL(smp_call_function_single);
 
-Client: x86-64 dual core Intel, kernel 2.6.23-rc1 (my main workstation)
-	NFS mount setup:
-	pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
-	Uptime: 4 days
+Please fix the indentation to use tabs as per Documentation/CodingStyle.
 
-	Home directory mounted via NFSv4.
+>  static void stop_this_cpu(void *dummy)
+>  {
+>  	/*
+> diff --git a/include/asm-mips/smp.h b/include/asm-mips/smp.h
+> index 13aef6a..5acbf38 100644
+> --- a/include/asm-mips/smp.h
+> +++ b/include/asm-mips/smp.h
+> @@ -102,6 +102,8 @@ static inline void smp_send_reschedule(int cpu)
+>  	core_send_ipi(cpu, SMP_RESCHEDULE_YOURSELF);
+>  }
+>  
+> +extern int smp_call_function_single(int cpuid, void (*func) (void *info),
+> +				void *info, int retry, int wait);
 
-Problem:
+The function is already declared in include/linux/smp.h so this segment
+is unecessary.
 
-My workstation has been happily talking to my file server for several 
-days without incident.  An hour ago, my numeric keypad stopping working 
-(unrelated problem... USB or X bug?).  The solution to the keypad 
-problem is usually to log out of X and log back in, or worse case, reboot.
-
-So, I log out, and log back in.  At first, a few shell windows open and 
-successfully initialize themselves (read bash profile over NFS, etc.) 
-Then, as more shell windows open, things start hanging.  I can easily 
-switch to console and ssh to the fileserver, so it is clear this is an 
-NFS hang.
-
-No adverse messages at all on the client.
-
-On the server, I see NFSv4 spamming dmesg with hundreds of thousands of 
-messages:
-
-Jul 27 08:20:53 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
-Jul 27 08:21:24 pretzel last message repeated 167966 times
-Jul 27 08:21:55 pretzel last message repeated 173628 times
-Jul 27 08:21:55 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
-Jul 27 08:22:26 pretzel last message repeated 171286 times
-Jul 27 08:23:27 pretzel last message repeated 344461 times
-Jul 27 08:23:30 pretzel last message repeated 18656 times
-
-I rebooted the client, the problem disappeared, and everything is happy 
-again...  but clearly NFSv4 shat itself.  And now I am worried this will 
-happen again.
-
-In all my quite-heavy use of NFSv4 I've never seen this behavior before, 
-  so I would call this a regression.
-
-I always run vanilla linux-2.6.git self-built kernels on both client and 
-server.
-
-	Jeff
-
-
+  Ralf
