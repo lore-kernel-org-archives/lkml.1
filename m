@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935359AbXG0Hyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935144AbXG0Hza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935359AbXG0Hyt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 03:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763161AbXG0HyX
+	id S935144AbXG0Hza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 03:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763957AbXG0HzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 03:54:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45857 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761966AbXG0HyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 03:54:20 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/kSDA+EWzkmKp2n9YDz4dcQQtsX7obp6Go0BB3NU
-	owBFItw5t8pRK3
-Subject: Re: updatedb
-From: Mike Galbraith <efault@gmx.de>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Andika Triwidada <andika@gmail.com>,
-       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
-In-Reply-To: <46A98A14.3040300@gmail.com>
-References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>
-	 <46A773EA.5030103@gmail.com>
-	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
-	 <46A81C39.4050009@gmail.com>
-	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>
-	 <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>
-	 <46A98A14.3040300@gmail.com>
-Content-Type: text/plain
-Date: Fri, 27 Jul 2007 09:54:04 +0200
-Message-Id: <1185522844.6295.64.camel@Homer.simpson.net>
+	Fri, 27 Jul 2007 03:55:12 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34034 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763632AbXG0HzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 03:55:10 -0400
+Date: Fri, 27 Jul 2007 17:54:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Zhang Wei <wei.zhang@freescale.com>
+Cc: galak@kernel.crashing.org, mporter@kernel.crashing.org, paulus@samba.org,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5 v3] Add the platform device support with RapidIO to
+ MPC8641HPCN platform.
+Message-Id: <20070727175449.e8915b5d.sfr@canb.auug.org.au>
+In-Reply-To: <11854393753986-git-send-email-wei.zhang@freescale.com>
+References: <11854393721520-git-send-email-wei.zhang@freescale.com>
+	<11854393733580-git-send-email-wei.zhang@freescale.com>
+	<11854393741899-git-send-email-wei.zhang@freescale.com>
+	<11854393753986-git-send-email-wei.zhang@freescale.com>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-07-27 at 08:00 +0200, Rene Herman wrote:
+--Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> The remaining issue of updatedb unnecessarily blowing away VFS caches is 
-> being discussed (*) in a few thread-branches still running.
+On Thu, 26 Jul 2007 16:42:50 +0800 Zhang Wei <wei.zhang@freescale.com> wrot=
+e:
+>
+> +#include <asm/of_device.h>
+> +#include <asm/of_platform.h>
 
-If you solve that, the swap thing dies too, they're one and the same
-problem.
+These should now be <linux/of_device.h> and <linux/of_platform.h>
 
-	-Mike
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGqaTSTgG2atn1QN8RApDmAJ4j7AQLvOW1eHwSgnUD2NWIXr02qgCcDX/q
+mG14ygnsm9uwxnM17BFCCpk=
+=2kyQ
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Jul_2007_17_54_49_+1000_fv+hKl.ew.OoBb9j--
