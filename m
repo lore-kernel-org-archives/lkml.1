@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765707AbXG0Bee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766002AbXG0BhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765707AbXG0Bee (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 21:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbXG0BeZ
+	id S1766002AbXG0BhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759440AbXG0BhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 21:34:25 -0400
-Received: from mga02.intel.com ([134.134.136.20]:1720 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751210AbXG0BeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 21:34:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.16,585,1175497200"; 
-   d="scan'208";a="271149501"
-Date: Thu, 26 Jul 2007 18:34:23 -0700 (PDT)
-From: Tong Li <tong.n.li@intel.com>
-X-X-Sender: tongli@tongli.jf.intel.com
-To: "Li, Tong N" <tong.n.li@intel.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Chris Snook <csnook@redhat.com>
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-In-Reply-To: <1185487225.3122.11.camel@tongli.jf.intel.com>
-Message-ID: <Pine.LNX.4.64.0707261806450.5321@tongli.jf.intel.com>
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> 
- <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu> 
- <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>  <20070725192442.GC4463@elte.hu>
-  <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>  <20070726213154.GA26569@elte.hu>
- <1185487225.3122.11.camel@tongli.jf.intel.com>
+	Thu, 26 Jul 2007 21:37:06 -0400
+Received: from smtp107.plus.mail.re1.yahoo.com ([69.147.102.70]:35831 "HELO
+	smtp107.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752486AbXG0BhF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 21:37:05 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=bIZ0MVZmvxaGF/RJbF4isXacUDLex7Vv6IqSCoZJ9BSJg4qLLfGtAauCgohciVUyB0njpR5mMED03I+I6kabS0PtzahVV4B4OlFh8NdZLhfsB3OWYS9qU4cDPYpur/22ImOh1zJu3pY2524sdOB7pYg4y4vPnURPSOR8zuLfuEk=  ;
+X-YMail-OSG: kvUVBoIVM1kQJhrvU735AwIuMY9l.aA6NWOT383oFUtUJ8aqOK2xRreh2KmFUSxg5rSmWhvaZQ--
+Date: Fri, 27 Jul 2007 03:36:16 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1: no setup signature found...
+Message-ID: <20070727013615.GC4570@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <46A8E3F9.5070809@zytor.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46A8E3F9.5070809@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd like to clarify that I'm not trying to push this particular code to 
-the kernel. I'm a researcher. My intent was to point out that we have a 
-problem in the scheduler and my dwrr algorithm can potentially help fix 
-it. The patch itself was merely a proof-of-concept. I'd be thrilled if the 
-algorithm can be proven useful in the real world. I appreciate the people 
-who have given me comments. Since then, I've revised my algorithm/code. 
-Now it doesn't require global locking but retains strong fairness 
-properties (which I was able to prove mathematically).
+On Thu, Jul 26, 2007 at 11:12:09AM -0700, H. Peter Anvin wrote:
+> Borislav Petkov wrote:
+> > 
+> >> What distro/version of grub are you running?  
+> > Debian unstable
+> >> I'm wondering if there are
+> >> some old version of grub out there which did the "load four sectors"
+> >> way-anciently-obsolete crap; the other possibility that comes to mind is
+> >> setting up the stack in an invalid manner.
+> > grub version:
+> > 
+> > [boris@gollum:18:17:27:->  apt-cache show grub
+> > Package: grub
+> > Priority: optional
+> > Section: admin
+> > Installed-Size: 708
+> > Maintainer: Grub Maintainers <pkg-grub-devel@lists.alioth.debian.org>
+> > Architecture: i386
+> > Version: 0.97-29
+> > Depends: libc6 (>= 2.5-5), libncurses5 (>= 5.4-5)
+> > Suggests: grub-doc, mdadm
+> > Filename: pool/main/g/grub/grub_0.97-29_i386.deb
+> > Size: 366884
+> > MD5sum: 2da7a5942db06eaba046dff4615bcce9
+> > SHA1: 7f4da793da209d011ce94fceebaebe0e5f08790f
+> > SHA256: 2596782c08f1f7365e9935f687fef74c67d8702503188f22448db9f0ac98e18e
+> > Description: GRand Unified Bootloader
+> > ...
+> 
+> This concerns me deeply.  This is a current version of Grub which
+> shouldn't have any silly 8K limitations.  Yet it appears to have a
+> similar pathology over the ancient version Xudong just described.
+> 
+> The absolute best would be if we could replicate this in simulation
+> (Bochs or Qemu); this would make it very simple to debug.  Would you be
+> willing to try to do that?
+sure, will do, however i'll be busy at work/travelling tomorrow but as soon as i
+get home i'll whip up my qemu and run the kernel in question in it. However,
+ Xudong said that grub 0.97 boots just fine on his machine and i think it'll be
+ better to debug this right on the bare hardware (i.e. my laptop) ...?
+ Suggestions ?
 
-Thank you,
-
-   tong
-
-On Thu, 26 Jul 2007, Li, Tong N wrote:
-
-> On Thu, 2007-07-26 at 23:31 +0200, Ingo Molnar wrote:
->> * Tong Li <tong.n.li@intel.com> wrote:
->>
->>>> you need to measure it over longer periods of time. Its not worth
->>>> balancing for such a thing in any high-frequency manner. (we'd trash
->>>> the cache constantly migrating tasks back and forth.)
->>>
->>> I have some data below, but before that, I'd like to say, at the same
->>> load balancing rate, my proposed approach would allow us to have
->>> fairness on the order of seconds. I'm less concerned about trashing
->>> the cache. The important thing is to have a knob that allow users to
->>> trade off fairness and performance based on their needs. [...]
->>
->> such a knob already exists to a certain degree, but i havent tested its
->> full effects on SMP fairness yet. If you pull my scheduler tree:
->>
->>   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
->>
->> and if you enable CONFIG_SCHED_DEBUG, then all the sched-domain
->> parameters become runtime tunable under /proc/sys/cpu*.
->>
->> Could you try to increase the cross-CPU rebalancing frequency and see
->> how it impacts the precision of your measurement? Tune 'min_interval'
->> and 'max_interval' down to increase the frequency of rebalancing.
->>
->> 	Ingo
->
-> Yes, I'll do it when I find time. If anyone is willing to do the
-> testing, please let me know and I can post my benchmark. On the other
-> hand, I don't think tuning the existing knobs will help solve the
-> problem. The root of the problem is that the current load balancing
-> doesn't take into account how much time each task has been running and
-> how much it's entitled. This is why I'm proposing a new approach for
-> solving it. The new approach, as I said, will be much more fair/accurate
-> than the current one even without tuning those balancing intervals
-> (i.e., it's able to provide good fairness even if balancing is less
-> frequent).
->
->  tong
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-- 
+Regards/Gruﬂ,
+    Boris.
