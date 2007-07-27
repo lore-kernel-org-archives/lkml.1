@@ -1,81 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764112AbXG0TsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765636AbXG0Tvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764112AbXG0TsE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934323AbXG0Trc
+	id S1765636AbXG0Tvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 15:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761372AbXG0Tvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:47:32 -0400
-Received: from dsl.myri.com ([64.172.73.26]:1813 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933638AbXG0Tra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:47:30 -0400
-Message-ID: <46AA4BBA.5060905@myri.com>
-Date: Fri, 27 Jul 2007 15:47:06 -0400
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+	Fri, 27 Jul 2007 15:51:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:23000 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759893AbXG0Tvb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 15:51:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=TRe52CzNHdk1krNh4u1CrxCYrA6aOiDU0y+oCTObz1pPQtRWkRllnyW/3Ir4QqA3xl6I8RVaQ3TesE8rqF6oO2ZBe45ZfJjKSRnQAQwjsISxMnZ8BI5ZknGRzIZOF3kdKBZ7otZE2PV1uzY0ZyYJC6WW1A9swep9PzDMce3JAMs=
+Message-ID: <46AA4CEA.7070400@gmail.com>
+Date: Fri, 27 Jul 2007 21:52:10 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>,
-       Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: [RFC 0/1] lro: Generic Large Receive Offload for TCP traffic
-References: <200707201741.45079.ossthema@de.ibm.com> <46A785C2.9090708@myri.com> <200707271418.49781.ossthema@de.ibm.com>
-In-Reply-To: <200707271418.49781.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] Char: moxa, fix and optimise empty timer
+References: <31400312111566521886@wsc.cz> <20070725220826.3fdb7677.akpm@linux-foundation.org>
+In-Reply-To: <20070725220826.3fdb7677.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Bernd Themann wrote:
+Andrew Morton napsal(a):
+> On Wed, 25 Jul 2007 23:43:29 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
+> 
+>> moxa, fix and optimise empty timer
+>>
+>> don't wait and delete empty timer in empty timer function. Also fire next
+>> empty timer at rounded jiffies to save power.
+>>
+> 
+> What is actually being "fixed" here?
 
- > On Wednesday 25 July 2007 19:17, Andrew Gallatin wrote:
+Lockup (see below).
 
- >> 3) Padded frames.
- >>
- >> I may be missing something, but I don't see where you
- >> either strip padding from frames or reject padded frames.
- >> (see the pskb_trim_rcsum() in net/ipv4/ip_input.c:ip_rcv()
- >>
- > I think I missed something :-) Will fix that.
- > In lro_tcp_ip_check we check for the "SKB aggregation interface"
- > the skb->len against ip->tot_len. This catches padded frames as
- > eth_type_trans(skb, dev) reduces the length of the SKB.
- > However, the possible VLAN header is not taken into account.
- > And for the "receive in pages" interface a wrong length is passed
- > as argument as well.
- >
- > I'd suggest to reject padded frames for aggregation as we do now
- > (when bugs are fixed) and thus keep the code simple.
- > I guess that padded frames don't occur too often in high load
- > situations. If we detect a real performance issue we can still
- > change that later.
+>> ---
+>> commit da52793b6347e8b6b048526ce2422e29b20bb335
+>> tree ad0bee78e45beef89dc740f81e0606d782296542
+>> parent 3a69b463dcad1ff142f46e8fb74e7dc5a092eb60
+>> author Jiri Slaby <jirislaby@gmail.com> Wed, 25 Jul 2007 23:42:49 +0200
+>> committer Jiri Slaby <jirislaby@gmail.com> Wed, 25 Jul 2007 23:42:49 +0200
+>>
+>>  drivers/char/moxa.c |    4 ++--
+>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+>> index ed76f0a..5000b3b 100644
+>> --- a/drivers/char/moxa.c
+>> +++ b/drivers/char/moxa.c
+>> @@ -1040,14 +1040,14 @@ static void check_xmit_empty(unsigned long data)
+>>  	struct moxa_port *ch;
+>>  
+>>  	ch = (struct moxa_port *) data;
+>> -	del_timer_sync(&moxa_ports[ch->port].emptyTimer);
 
-The one case where performance may be at issue is in aggregating Acks
-on connections w/o TCP timestamps where a frame size of 54 bytes is
-padded out to 60.  I did some very quick measurements using netperf
--tTCP_SENDFILE on the same athlons mentioned earlier using our 1.3.1
-driver.  I see a roughly 8% CPU increase (~17% -> ~25%) when I disable
-LRO (and hence Ack aggregation) on the sender.  This works out to an
-increase in service demand from ~0.3 to ~0.44 according to netperf.
-With LRO enabled, our counters show we're aggregating acks at a
-roughly 3:1 ratio.  This is probably an optimization that can be done
-later, but it is helpful.
+It's "wait until the code below me is finished". At least the _sync is buggy.
 
-This reminds me.. what would you think about adding some sort of
-counters, ideally per-interface, to expose how well LRO is working?
-At the simplest level, you could add them to the lro mgr struct and
-let drivers export them via ethtool.  I think a central approach might
-be more appropriate.  At any rate, I'd prefer the final
-version to at least have counters to indicate how many packets were
-aggregated, how many packets were flushed, and how many times we
-failed to aggregate something due to insufficient net_lro_desc
-descriptors.
+>>  	if (ch->tty && (ch->statusflags & EMPTYWAIT)) {
+>>  		if (MoxaPortTxQueue(ch->port) == 0) {
+>>  			ch->statusflags &= ~EMPTYWAIT;
+>>  			tty_wakeup(ch->tty);
+>>  			return;
+>>  		}
+>> -		mod_timer(&moxa_ports[ch->port].emptyTimer, jiffies + HZ);
+>> +		mod_timer(&moxa_ports[ch->port].emptyTimer,
+>> +				round_jiffies(jiffies + HZ));
+>>  	} else
+>>  		ch->statusflags &= ~EMPTYWAIT;
+>>  }
+> 
+> A call to check_xmit_empty() used to guarantee that the timer was no longer
+> running (if the first `if' succeeds and the second does not), but that is
 
-Thanks again for taking the lead on this,
+Correct me if I'm wrong, but it guaranteed nothing. When the timer function is
+called (note, that check_xmit_empty is timer.function), timer base lock is held
+and there is no window to schedule the timer again when its function is running.
 
-Drew
+> no longer the case.  You're sure this is correct?
+
+I still think so.
+
+thanks,
+-- 
+Jiri Slaby (jirislaby@gmail.com)
+Faculty of Informatics, Masaryk University
