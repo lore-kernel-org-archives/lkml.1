@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936449AbXG0GTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936096AbXG0GYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936449AbXG0GTI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 02:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760503AbXG0GSx
+	id S936096AbXG0GYB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 02:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756143AbXG0GXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 02:18:53 -0400
-Received: from gateway.howardsilvan.com ([64.146.212.27]:54846 "EHLO
-	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756685AbXG0GSw (ORCPT
+	Fri, 27 Jul 2007 02:23:53 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:53928 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754886AbXG0GXw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 02:18:52 -0400
-Message-ID: <46A98DFE.3050304@howardsilvan.com>
-Date: Thu, 26 Jul 2007 23:17:34 -0700
-From: Lee Howard <faxguy@howardsilvan.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc4
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<ukleinek@informatik.uni-freiburg.de>,
-       linux-serial@vger.kernel.org, tytso@mit.edu, rmk@arm.linux.org.uk,
+	Fri, 27 Jul 2007 02:23:52 -0400
+Date: Thu, 26 Jul 2007 23:23:43 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Andrew Patterson <andrew.patterson@hp.com>
+Cc: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-References: <46A7FE6A.4030309@howardsilvan.com>	<20070726123420.GA14163@informatik.uni-freiburg.de>	<46A8CB96.1010501@howardsilvan.com> <20070726174150.4ffcabd4@the-village.bc.nu>
-In-Reply-To: <20070726174150.4ffcabd4@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: Q: PCI-X @ 266MHz on HP rx6600 (Qlogic 4Gb FC HBA)
+Message-ID: <20070727062343.GC15408@plap.qlogic.org>
+References: <46A8BF75.161.5C8424A@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de> <1185487419.7134.485.camel@bluto.andrew>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185487419.7134.485.camel@bluto.andrew>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 27 Jul 2007 06:23:00.0174 (UTC) FILETIME=[947286E0:01C7D016]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
+On Thu, 26 Jul 2007, Andrew Patterson wrote:
 
->>The manufacturer is using a scope to look for RTS and they're not seeing 
->>it, either.  I just use my eyes to look at the LED, but I can see the 
->>CTS, DTR, DCD, RD, and TD lights blink, flicker, or dim... (and TD, RD, 
->>and CTS tend to go on and off rather quickly).
->>    
->>
->
->And you have
->
->1.	The port set up correctly for flow control options in the
->kernel ?
->  
->
+> On Thu, 2007-07-26 at 15:36 +0200, Ulrich Windl wrote:
+> > Hi,
+> > 
+> > I have a question: The Qlogic ISP2422 chip is said to handle PCI-X 266MHz. So does 
+> > the HP Itanium2 server rx6600. Basically that was the reason to select that 
+> > server. The FC-HBA is in a 266 MHz capable slot. However when booting SLES10 SP1 
+> > for IA64, the logs say:
 
-I suppose that you mean that the application has properly set up the 
-port using termios/tcsetattr/ioctl and the like... rather than if the 
-kernel build/config options were set to permit flow control (I know of 
-no relevant flow-control-enabling kernel build options).  Using hardware 
-flow control this is what stty tells me about the port set up done by 
-the application:
+There's a mixup here in terminology...  The QLA2460 card which you
+have does in fact support 'PCI-X 266'...
 
-# stty -F /dev/ttyS1 -a
-speed 115200 baud; rows 0; columns 0; line = 0;
-intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; 
-eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = 
-^W; lnext = ^V; flush = ^O;
-min = 1; time = 0;
--parenb -parodd cs8 -hupcl -cstopb cread clocal crtscts
--ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl 
--ixon -ixoff -iuclc -ixany -imaxbel
--opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 
-bs0 vt0 ff0
--isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop 
--echoprt -echoctl -echoke
-#
+> > <6>QLogic Fibre Channel HBA Driver
+> > <6>GSI 49 (level, low) -> CPU 3 (0x0300) vector 51
+> > <6>ACPI: PCI Interrupt 0000:0f:01.0[A] -> GSI 49 (level, low) -> IRQ 51
+> > <6>qla2xxx 0000:0f:01.0: Found an ISP2422, irq 51, iobase 0xc0000000b0040000
+> > [...]
+> > <6>qla2xxx 0000:0f:01.0: LOOP UP detected (4 Gbps).
+> > <6>qla2xxx 0000:0f:01.0: Topology - (F_Port), Host Loop address 0x0
+> > <6>scsi0 : qla2xxx
+> > <6>qla2xxx 0000:0f:01.0:
+> > <4> QLogic Fibre Channel HBA Driver: 8.01.07-k3
+> > <4>  QLogic HP AB378-60001 -
+> > <4>  ISP2422: PCI-X Mode 2 (133 MH4.00.26 [IP]  @ 0000:0f:01.0 hdma+, host#=0, 
+> > fw=4.00.26 [IP]
 
-Using software flow control this is what stty tells me about the port 
-set up done by the application:
+The 33/66/100/133 values refer to the bus-clock speed at which the
+card is operating.  As is seen here (although a bit truncated --
+separate issue, I'll try to see if I can reproduce this on one of my
+HPQ rigs), the card is inserted into a PCI-X Mode-2 capable 133MHz
+(bus clock) slot.  When operating under this mode, each data-phase
+between two devices is divided into 2 sub-phases, effectively doubling
+the transfer-data-rate to 266Mhz.
 
-# stty -F /dev/ttyS1 -a
-speed 115200 baud; rows 0; columns 0; line = 0;
-intr = ^C; quit = ^\; erase = ^?; kill = ^U; eof = ^D; eol = <undef>; 
-eol2 = <undef>; start = ^Q; stop = ^S; susp = ^Z; rprnt = ^R; werase = 
-^W; lnext = ^V; flush = ^O;
-min = 1; time = 0;
--parenb -parodd cs8 -hupcl -cstopb cread clocal -crtscts
--ignbrk -brkint -ignpar -parmrk -inpck -istrip -inlcr -igncr -icrnl ixon 
-ixoff -iuclc -ixany -imaxbel
--opost -olcuc -ocrnl -onlcr -onocr -onlret -ofill -ofdel nl0 cr0 tab0 
-bs0 vt0 ff0
--isig -icanon -iexten -echo -echoe -echok -echonl -noflsh -xcase -tostop 
--echoprt -echoctl -echoke
-#
+> > <5>  Vendor: HP        Model: HSV200            Rev: 6100
+> > <5>  Type:   RAID                               ANSI SCSI revision: 02
+> > <5> 0:0:0:0: Attached scsi generic sg0 type 12
+> > 
+> > Now does Linux support the speed of 266 MHz, and is it just displayed incorrectly, 
+> > or doesn't Linux support the speed of 266MHz yet?
+> 
+> This is a bug in the driver.  The lookup table only goes to 133 MHz.
+> 
+> static char *pci_bus_modes[] = {
+>                 "33", "66", "100", "133",
+> 
+> The same problem exists in the scsi_misc tree.
 
-They seem correct to me, but I am certainly willing to be wrong.
-
->2.	Verified that the board vendor remembered to wire it ?
->
-
-I don't know how to verify directly that the board manufacturer wired 
-the serial port correctly.  I've tested this on two different 
-motherboards made several years apart (but, yes, both were made by the 
-same manufacturer).  However, when using RedHat 6.0 (kernel 2.2.5) I 
-have no problems with data corruption occurring in the data coming from 
-the DCE.  So that tells me that *something* was working before that 
-isn't working now... and I'm trying to determine what the difference 
-is... whether it be a problem in modern kernels or whether it be 
-something that the application (HylaFAX) is not doing to accomodate 
-whatever changes occurred in modern kernels.
-
-A quick google on "input overrun(s)" may lend some credence (although, 
-certainly this is not in any way conclusive) that I'm not the only one 
-who may be seeking a solution on this matter.
-
-  http://www.google.com/search?hl=en&q=%2B%22input+overrun%28s%29%22
-
-Thanks,
-
-Lee.
-
+Regards,
+Andrew Vasquez
