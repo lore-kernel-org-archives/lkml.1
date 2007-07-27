@@ -1,30 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935059AbXG0Tl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934988AbXG0TnG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935059AbXG0Tl7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933891AbXG0Tlk
+	id S934988AbXG0TnG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 15:43:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932944AbXG0Tmz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:41:40 -0400
-Received: from tartu.cyber.ee ([193.40.6.68]:4200 "EHLO tartu.cyber.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933339AbXG0Tlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:41:39 -0400
-From: Meelis Roos <mroos@linux.ee>
-To: ismail@pardus.org.tr (Ismail =?ISO-8859-15?Q?D=F6nmez?=),
-       linux-kernel@vger.kernel.org
-Subject: Re: New ACPI error/warning with Linus' latest GIT
-In-Reply-To: <200707262329.20478.ismail@pardus.org.tr>
-User-Agent: tin/1.9.2-20070201 ("Dalaruan") (UNIX) (Linux/2.6.23-rc1-ge4903fb5 (i686))
-Message-Id: <20070727194040.EAD2B13D76@rhn.tartu-labor>
-Date: Fri, 27 Jul 2007 22:40:40 +0300 (EEST)
+	Fri, 27 Jul 2007 15:42:55 -0400
+Received: from [212.12.190.8] ([212.12.190.8]:33191 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932975AbXG0Tmz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 15:42:55 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: swap-prefetch:  A smart way to make good use of idle resources (was: updatedb)
+Date: Fri, 27 Jul 2007 22:43:02 +0300
+User-Agent: KMail/1.5
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707272243.02336.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ID> ACPI: EC: Handler for query 0x57 is not found!
+People wrote:
+> >> I believe the users who say their apps really do get paged back in
+> >> though, so suspect that's not the case.
+> >
+> > Stopping the bush-circumference beating, I do not. -ck (and gentoo) have
+> > this massive Calimero thing going among their users where people are
+> > much less interested in technology than in how the nasty big kernel
+> > meanies are keeping them down (*).
+>
+> I think the problem is elsewhere. Users don't say: "My apps get paged
+> back in." They say: "My system is more responsive". They really don't
+> care *why* the reaction to a mouse click that takes three seconds with
+> a mainline kernel is instantaneous with -ck. Nasty big kernel meanies,
+> OTOH, want to understand *why* a patch helps in order to decide whether
+> it is really a good idea to merge it. So you've got a bunch of patches
+> (aka -ck) which visibly improve the overall responsiveness of a desktop
+> system, but apparently no one can conclusively explain why or how they
+> achieve that, and therefore they cannot be merged into mainline.
+>
+> I don't have a solution to that dilemma either.
 
-And similar message on IBM Thinkpad X20:
+IMHO, what everybody agrees on, is that swap-prefetch has a positive effect 
+in some cases, and nobody can prove an adverse effect (excluding power 
+consumption).  The reason for this positive effect is also crystal clear:  
+It prefetches from swap on idle into free memory, ie: it doesn't force 
+anybody out, and they are the first to be dropped without further swap-out, 
+which sounds really smart.
 
-ACPI: EC: Handler for query 0x2e is not found!
+Conclusion:  Either prove swap-prefetch is broken, or get this merged quick.
 
--- 
-Meelis Roos <mroos@linux.ee>
+
+Thanks!
+
+--
+Al
+
