@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937179AbXG0Le0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937101AbXG0Lep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937179AbXG0Le0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 07:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936958AbXG0LdF
+	id S937101AbXG0Lep (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 07:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934656AbXG0LdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 07:33:05 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4359 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936926AbXG0Lc6 (ORCPT
+	Fri, 27 Jul 2007 07:33:09 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:49031 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934246AbXG0LdH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 07:32:58 -0400
-Date: Fri, 27 Jul 2007 12:32:54 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Lee Howard <faxguy@howardsilvan.com>
-cc: Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-In-Reply-To: <46A8C6F1.4080309@howardsilvan.com>
-Message-ID: <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca>
- <46A8C6F1.4080309@howardsilvan.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Jul 2007 07:33:07 -0400
+Message-Id: <20070727113610.218646624@de.ibm.com>
+References: <20070727113348.413110503@de.ibm.com>
+User-Agent: quilt/0.46-1
+Date: Fri, 27 Jul 2007 13:33:52 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 4/6] cio: Make CIO_* macros safe if dbfs are not available.
+Content-Disposition: inline; filename=013-cio-dbf.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007, Lee Howard wrote:
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-> If the application were to use TIOCM_RTS how would it know when to apply it or
-> not?  Is there some approach that the application could take to manage flow
-> control on the serial port?  What about software flow control?  Does the
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
 
- Well, an application could negate RTS when it receives a character and 
-is running out of resources for further processing of incoming data.
+ drivers/s390/cio/cio_debug.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
- Smarter UARTs may be able to negate RTS themselves based on the amount of 
-data in their receive FIFO.  The threshold may be configurable.
+Index: quilt-2.6/drivers/s390/cio/cio_debug.h
+===================================================================
+--- quilt-2.6.orig/drivers/s390/cio/cio_debug.h
++++ quilt-2.6/drivers/s390/cio/cio_debug.h
+@@ -23,6 +23,8 @@ extern debug_info_t *cio_debug_crw_id;
+ static inline void
+ CIO_HEX_EVENT(int level, void *data, int length)
+ {
++	if (unlikely(!cio_debug_trace_id))
++		return;
+ 	while (length > 0) {
+ 		debug_event(cio_debug_trace_id, level, data, length);
+ 		length -= cio_debug_trace_id->buf_size;
 
-  Maciej
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
