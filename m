@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbXG0NYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765178AbXG0Nce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932419AbXG0NYk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 09:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756797AbXG0NYe
+	id S1765178AbXG0Nce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 09:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757631AbXG0NcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 09:24:34 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:46795 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753891AbXG0NYe (ORCPT
+	Fri, 27 Jul 2007 09:32:25 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:53642 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755935AbXG0NcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 09:24:34 -0400
-Date: Fri, 27 Jul 2007 14:24:33 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] rip some includes from linux/interrupt.h
-Message-ID: <20070727132433.GB27237@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Fri, 27 Jul 2007 09:32:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=CmRjOZvxNuMDJvCkzOJcNmUIAjaQXBxt1EHnd4q4kmX4SDsHHdontBN7NpHsamEgKMMKnX53FxBoKbdxkgXW5ankWyjZtHesnEV4KfGUDcsQDDMSVicGZOuOxAfqZz09KfxpBsLwkJ/VIOyaY0Gk5FbpUwRn9Q4pF/ZRF0xmx2w=
+Date: Fri, 27 Jul 2007 15:28:53 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, chris@zankel.net
+Subject: [-mm patch] xtensa console.c: remove duplicate #include
+Message-ID: <20070727132853.GA31203@slug>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/
+> 
+Hi,
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index 0a3c2eb..5523f19 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -11,8 +11,6 @@
- #include <linux/hardirq.h>
- #include <linux/sched.h>
- #include <linux/irqflags.h>
--#include <linux/bottom_half.h>
--#include <linux/device.h>
- #include <asm/atomic.h>
- #include <asm/ptrace.h>
- #include <asm/system.h>
-@@ -97,6 +95,8 @@ extern int __must_check request_irq(unsigned int, irq_handler_t handler,
- 		       unsigned long, const char *, void *);
- extern void free_irq(unsigned int, void *);
+This patch removes one of the two linux/console.h included in
+arch/xtensa/platform-iss/console.c
+
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+
+diff --git a/arch/xtensa/platform-iss/console.c b/arch/xtensa/platform-iss/console.c
+index 2f4f20f..854677d 100644
+--- a/arch/xtensa/platform-iss/console.c
++++ b/arch/xtensa/platform-iss/console.c
+@@ -20,7 +20,6 @@
+ #include <linux/param.h>
+ #include <linux/serial.h>
+ #include <linux/serialP.h>
+-#include <linux/console.h>
  
-+struct device;
-+
- extern int __must_check devm_request_irq(struct device *dev, unsigned int irq,
- 			    irq_handler_t handler, unsigned long irqflags,
- 			    const char *devname, void *dev_id);
-diff --git a/kernel/irq/devres.c b/kernel/irq/devres.c
-index d8ee241..6d9204f 100644
---- a/kernel/irq/devres.c
-+++ b/kernel/irq/devres.c
-@@ -1,5 +1,6 @@
- #include <linux/module.h>
- #include <linux/interrupt.h>
-+#include <linux/device.h>
- 
- /*
-  * Device resource management aware IRQ request/free implementation.
+ #include <asm/uaccess.h>
+ #include <asm/irq.h>
