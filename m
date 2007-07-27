@@ -1,152 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935352AbXG0BYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765707AbXG0Bee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935352AbXG0BYI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 21:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759616AbXG0BXz
+	id S1765707AbXG0Bee (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbXG0BeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 21:23:55 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:52561 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759265AbXG0BXy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 21:23:54 -0400
-Date: Fri, 27 Jul 2007 02:23:52 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [git pull] AGP fixes for 2.6.23-rc1
-In-Reply-To: <Pine.LNX.4.64.0707270206580.9484@skynet.skynet.ie>
-Message-ID: <Pine.LNX.4.64.0707270223000.9484@skynet.skynet.ie>
-References: <Pine.LNX.4.64.0707270206580.9484@skynet.skynet.ie>
+	Thu, 26 Jul 2007 21:34:25 -0400
+Received: from mga02.intel.com ([134.134.136.20]:1720 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751210AbXG0BeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 21:34:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.16,585,1175497200"; 
+   d="scan'208";a="271149501"
+Date: Thu, 26 Jul 2007 18:34:23 -0700 (PDT)
+From: Tong Li <tong.n.li@intel.com>
+X-X-Sender: tongli@tongli.jf.intel.com
+To: "Li, Tong N" <tong.n.li@intel.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Chris Snook <csnook@redhat.com>
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+In-Reply-To: <1185487225.3122.11.camel@tongli.jf.intel.com>
+Message-ID: <Pine.LNX.4.64.0707261806450.5321@tongli.jf.intel.com>
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> 
+ <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu> 
+ <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>  <20070725192442.GC4463@elte.hu>
+  <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>  <20070726213154.GA26569@elte.hu>
+ <1185487225.3122.11.camel@tongli.jf.intel.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007, Dave Airlie wrote:
+I'd like to clarify that I'm not trying to push this particular code to 
+the kernel. I'm a researcher. My intent was to point out that we have a 
+problem in the scheduler and my dwrr algorithm can potentially help fix 
+it. The patch itself was merely a proof-of-concept. I'd be thrilled if the 
+algorithm can be proven useful in the real world. I appreciate the people 
+who have given me comments. Since then, I've revised my algorithm/code. 
+Now it doesn't require global locking but retains strong fairness 
+properties (which I was able to prove mathematically).
 
->
-> Hi Linus,
->
-> Please pull the 'agp-patches' branch from
-> git://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
+Thank you,
 
-and of course I find the old version of my script..
+   tong
 
-that should be
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-patches
+On Thu, 26 Jul 2007, Li, Tong N wrote:
 
-Dave.
-
+> On Thu, 2007-07-26 at 23:31 +0200, Ingo Molnar wrote:
+>> * Tong Li <tong.n.li@intel.com> wrote:
+>>
+>>>> you need to measure it over longer periods of time. Its not worth
+>>>> balancing for such a thing in any high-frequency manner. (we'd trash
+>>>> the cache constantly migrating tasks back and forth.)
+>>>
+>>> I have some data below, but before that, I'd like to say, at the same
+>>> load balancing rate, my proposed approach would allow us to have
+>>> fairness on the order of seconds. I'm less concerned about trashing
+>>> the cache. The important thing is to have a knob that allow users to
+>>> trade off fairness and performance based on their needs. [...]
+>>
+>> such a knob already exists to a certain degree, but i havent tested its
+>> full effects on SMP fairness yet. If you pull my scheduler tree:
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+>>
+>> and if you enable CONFIG_SCHED_DEBUG, then all the sched-domain
+>> parameters become runtime tunable under /proc/sys/cpu*.
+>>
+>> Could you try to increase the cross-CPU rebalancing frequency and see
+>> how it impacts the precision of your measurement? Tune 'min_interval'
+>> and 'max_interval' down to increase the frequency of rebalancing.
+>>
+>> 	Ingo
 >
-> It contains one very important fix from Nick for AGP hangs with the 
-> nopage/pfn/flush stuff.. it also contains some minor docs changes and one 
-> coverity fix.
+> Yes, I'll do it when I find time. If anyone is willing to do the
+> testing, please let me know and I can post my benchmark. On the other
+> hand, I don't think tuning the existing knobs will help solve the
+> problem. The root of the problem is that the current load balancing
+> doesn't take into account how much time each task has been running and
+> how much it's entitled. This is why I'm proposing a new approach for
+> solving it. The new approach, as I said, will be much more fair/accurate
+> than the current one even without tuning those balancing intervals
+> (i.e., it's able to provide good fairness even if balancing is less
+> frequent).
 >
-> Dave.
+>  tong
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 >
-> Documentation/kernel-parameters.txt |    7 +++++++
-> drivers/char/agp/Kconfig            |    2 +-
-> drivers/char/agp/ati-agp.c          |    9 ++-------
-> drivers/char/agp/generic.c          |    2 --
-> drivers/char/agp/intel-agp.c        |   19 ++++++++++++-------
-> drivers/char/agp/sgi-agp.c          |    1 -
-> 6 files changed, 22 insertions(+), 18 deletions(-)
->
-> commit f191f144079b0083c6fa7d01a4acbd7263fb5032
-> Author: Alan Hourihane <alanh@fairlite.demon.co.uk>
-> Date:   Fri Jul 27 10:56:43 2007 +1000
->
->    agp: AMD AGP is used on UP1100 & UP1500 alpha boxen
->
->    Signed-off-by: Dave Airlie <airlied@redhat.com>
->
-> commit dde4787642ee3cb85aef80bdade04b6f8ddc3df8
-> Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-> Date:   Thu Jul 26 09:18:09 2007 +0800
->
->    intel_agp: really fix 945/965GME
->
->    Fix some missing places to check with device id info, which
->    should probe the device gart correctly.
->
->    Signed-off-by: Wang Zhenyu <zhenyu.z.wang@intel.com>
->    Signed-off-by: Dave Airlie <airlied@redhat.com>
->
-> commit a51b34593f691a0837d752a1394dcee19483c607
-> Author: Nick Piggin <npiggin@suse.de>
-> Date:   Wed Jul 25 13:19:22 2007 +0200
->
->    agp: don't lock pages
->
->    AGP should not need to lock pages. They are not protecting any race
->    because there is no lock_page calls, only SetPageLocked.
->
->    This is causing hangs with d00806b183152af6d24f46f0c33f14162ca1262a.
->
->    Signed-off-by: Nick Piggin <npiggin@suse.de>
->    Signed-off-by: Dave Airlie <airlied@redhat.com>
->
-> commit c99c108ac362f5cc37f79fad7e9897bd9d033bcc
-> Author: Chuck Ebbert <cebbert@redhat.com>
-> Date:   Fri Jul 27 10:46:20 2007 +1000
->
->    AGP: document boot options
->
->    Add documentation for AGP boot options.
->
->    Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
->    Signed-off-by: Dave Airlie <airlied@redhat.com>
->
-> commit 190644e180794208bc638179f4d5940fe419bf9c
-> Author: Jesper Juhl <jesper.juhl@gmail.com>
-> Date:   Sat Jul 21 17:39:11 2007 +0200
->
->    Fix "use after free" / "double free" bug in ati_create_gatt_pages / 
-> ati_free_gatt_pages
->
->    Hi,
->
->    Coverity spotted a "use after free" bug in
->    drivers/char/agp/ati-agp.c::ati_create_gatt_pages().
->
->    The same one that was in
->      drivers/char/agp/amd-k7-agp.c::amd_create_gatt_pages()
->
->    The problem is this:
->           If "entry = kzalloc(sizeof(struct ati_page_map), GFP_KERNEL);"
->    fails, then there's a loop in the function to free all entries
->    allocated so far and break out of the allocation loop. That in itself
->    is pretty sane, but then the (now freed) 'tables' is assigned to
->    ati_generic_private.gatt_pages and 'retval' is set to -ENOMEM which
->    causes ati_free_gatt_pages(); to be called at the end of the function.
->    The problem with this is that ati_free_gatt_pages() will then loop
->    'ati_generic_private.num_tables' times and try to free each entry in
->    tables[] - this is bad since tables has already been freed and
->    furthermore it will call kfree(tables) at the end - a double free.
->
->    This patch removes the freeing loop in ati_create_gatt_pages() and
->    instead relies entirely on the call to ati_free_gatt_pages() to free
->    everything we allocated in case of an error. It also sets
->    ati_generic_private.num_tables to the actual number of entries
->    allocated instead of just using the value passed in from the caller -
->    this ensures that ati_free_gatt_pages() will only attempt to free
->    stuff that was actually allocated.
->
->    Note: I'm in no way intimate with this code and I have no way to
->    actually test this patch (besides compile test it), so while I've
->    tried to be careful in reading the code and make sure the patch
->    does the right thing an ACK from someone who actually knows the
->    code in-depth would be very much appreciated.
->
->    Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
->    Signed-off-by: Dave Airlie <airlied@linux.ie>
->
->
-
--- 
-David Airlie, Software Engineer
-http://www.skynet.ie/~airlied / airlied at skynet.ie
-Linux kernel - DRI, VAX / pam_smb / ILUG
-
