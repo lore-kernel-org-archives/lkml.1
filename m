@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935873AbXG0RJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937437AbXG0RKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935873AbXG0RJZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbXG0RJS
+	id S937437AbXG0RKD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbXG0RJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:09:18 -0400
-Received: from osiris.atheme.org ([69.60.119.211]:38706 "EHLO
-	osiris.atheme.org" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753619AbXG0RJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:09:17 -0400
-Message-ID: <46AA26B9.7050904@partiallystapled.com>
-Date: Fri, 27 Jul 2007 13:09:13 -0400
-From: Michael Tharp <gxti@partiallystapled.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070619)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Douglas J Hunley <doug@hunley.homeip.net>, slocate@trakker.ca,
-       linux-kernel@vger.kernel.org
-Subject: Re: solving(?) the updatedb problem w/ the kernel cache
-References: <200707270855.26997.doug@hunley.homeip.net> <2c0942db0707270942k784890a2ld44d1312dde02379@mail.gmail.com>
-In-Reply-To: <2c0942db0707270942k784890a2ld44d1312dde02379@mail.gmail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
+	Fri, 27 Jul 2007 13:09:53 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:58877 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754829AbXG0RJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 13:09:52 -0400
+X-IronPort-AV: E=Sophos;i="4.16,589,1175497200"; 
+   d="scan'208";a="86623831"
+Subject: Re: NFSv4 poops itself
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Jeff Garzik <jeff@garzik.org>,
+       "Dr. J. Bruce Fields" <bfields@fieldses.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <1185543187.6586.10.camel@localhost>
+References: <46A9EAB0.3090306@garzik.org>
+	 <1185543187.6586.10.camel@localhost>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Fri, 27 Jul 2007 13:09:38 -0400
+Message-Id: <1185556178.6586.40.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 27 Jul 2007 17:09:39.0886 (UTC) FILETIME=[EAE0BCE0:01C7D070]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> But yes, if we had a full filesystem events notifier, then we could
-> just toss updatedb aside and have the benefit of a live index into the
-> system. It's been suggested before, at least by me. Other projects
-> want this as well, such as an on-demand virus scanner, or a live
-> backup to another site, or beagle/tracker who would like to index
-> documents on the fly. beagled already uses inotify, I think, but as it
-> takes over my system (in a bad way) whenever I tried to run it, I had
-> no choice but to remove it.
+On Fri, 2007-07-27 at 09:33 -0400, Trond Myklebust wrote:
+> On Fri, 2007-07-27 at 08:53 -0400, Jeff Garzik wrote:
+> > Background:
+> > 
+> > Server: x86-64 dual core Intel, kernel 2.6.23-rc1 (my home fileserver)
+> > 	Exporting NFS/NFSv4 mounts.  Client count: 1  Uptime: 4 days
+> > 
+> > Client: x86-64 dual core Intel, kernel 2.6.23-rc1 (my main workstation)
+> > 	NFS mount setup:
+> > 	pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
+> > 	Uptime: 4 days
+> > 
+> > 	Home directory mounted via NFSv4.
+> > 
+> > Problem:
+> > 
+> > My workstation has been happily talking to my file server for several 
+> > days without incident.  An hour ago, my numeric keypad stopping working 
+> > (unrelated problem... USB or X bug?).  The solution to the keypad 
+> > problem is usually to log out of X and log back in, or worse case, reboot.
+> > 
+> > So, I log out, and log back in.  At first, a few shell windows open and 
+> > successfully initialize themselves (read bash profile over NFS, etc.) 
+> > Then, as more shell windows open, things start hanging.  I can easily 
+> > switch to console and ssh to the fileserver, so it is clear this is an 
+> > NFS hang.
+> > 
+> > No adverse messages at all on the client.
+> > 
+> > On the server, I see NFSv4 spamming dmesg with hundreds of thousands of 
+> > messages:
+> > 
+> > Jul 27 08:20:53 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
+> > Jul 27 08:21:24 pretzel last message repeated 167966 times
+> > Jul 27 08:21:55 pretzel last message repeated 173628 times
+> > Jul 27 08:21:55 pretzel kernel: NFSD: preprocess_seqid_op: old stateid!
+> > Jul 27 08:22:26 pretzel last message repeated 171286 times
+> > Jul 27 08:23:27 pretzel last message repeated 344461 times
+> > Jul 27 08:23:30 pretzel last message repeated 18656 times
 
-Beagle's problem is that it inspects the file contents, often far too
-closely. I, too, had to uninstall it after it started indexing 40GB raw
-huffyuv video files (probably treating them as text) and driving load
-averages through the roof. Just watching for structure changes won't be
-nearly as painful, assuming inotify can handle watching the entire
-filesystem tree.
+Jeff and Bruce, could you please try to reproduce the problem after
+either applying patches 001 to 004 or just the single NFS_ALL patch
+from 
 
+   http://client.linux-nfs.org/Linux-2.6.x/2.6.23-rc1/
 
--- m. tharp
+Cheers
+  Trond
