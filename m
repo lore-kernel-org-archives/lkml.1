@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933112AbXG0Te1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933820AbXG0Tgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933112AbXG0Te1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762571AbXG0TeS
+	id S933820AbXG0Tgx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 15:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763336AbXG0Tgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:34:18 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:33174 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762146AbXG0TeR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:34:17 -0400
-Date: Fri, 27 Jul 2007 21:34:16 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Chris Friesen <cfriesen@nortel.com>
-cc: Subbu Seetharaman <subbus@serverengines.com>, linux-kernel@vger.kernel.org
-Subject: Re: Source organization for two drivers sharing coomon code
-In-Reply-To: <46AA4395.3050907@nortel.com>
-Message-ID: <Pine.LNX.4.64.0707272131270.16356@fbirervta.pbzchgretzou.qr>
-References: <20070727171729.f3ff0878@mailhost.serverengines.com>
- <Pine.LNX.4.64.0707272102070.16356@fbirervta.pbzchgretzou.qr>
- <46AA4395.3050907@nortel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Jul 2007 15:36:43 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4843 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762378AbXG0Tgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 15:36:41 -0400
+Date: Fri, 27 Jul 2007 15:21:20 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>
+Subject: Re: [PATCH] Merge the Sonics Silicon Backplane subsystem
+Message-ID: <20070727192120.GB7572@tuxdriver.com>
+References: <200707271857.24162.mb@bu3sch.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707271857.24162.mb@bu3sch.de>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jul 27, 2007 at 06:57:20PM +0200, Michael Buesch wrote:
+> The Sonics Silicon Backplane is a mini-bus used on
+> various Broadcom chips and embedded devices.
+> Devices using the SSB include b44, bcm43xx and various
+> Broadcom based wireless routers.
+> A b44 and bcm43xx port and a SSB based OHCI driver is available.
+> 
+> Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-On Jul 27 2007 13:12, Chris Friesen wrote:
-> Jan Engelhardt wrote:
->> On Jul 27 2007 10:17, Subbu Seetharaman wrote:
->> 
->> >What is the recommended way for two drivers to share common code ?
->> ><snip>...The source code for these dirvers will fit under drivers/net and
->> >drivers/scsi.  But both drivers share some common code.
->
->> You could create (in total) three modules, e.g. my-common.ko,
->> my-net.ko and my-scsi.ko, of which the latter two use functions from the
->> first.
->
-> Where would the common code live, in such a case?  Would you just pick one of
-> the two locations at random, or put it in drivers/misc or maybe lib?
+At first glance it looks like there might be some tab/space issues
+in some of the #define blocks toward the end of the patch, although
+those might be intentional.
 
-Perhaps drivers/message - well I can't answer that exactly.
+Aside from whatever other style issues that might be identified, I'll
+state that this code has been carried in wireless-dev for months and
+thereby also spent a lot of time in -mm as well as Fedora (rawhide
+and F-7).  The code has proven to be reasonably stable and reliable.
 
-As far as the output object files are concerned, it is not relevant,
-since they will be autoloaded anyway :)
+Acked-by: John W. Linville <linville@tuxdriver.com>
 
-
-
-	Jan
 -- 
+John W. Linville
+linville@tuxdriver.com
