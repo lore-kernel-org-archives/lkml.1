@@ -1,150 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935913AbXG0OaP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbXG0Oas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935913AbXG0OaP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 10:30:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760871AbXG0O37
+	id S934032AbXG0Oas (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 10:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXG0Oaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 10:29:59 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:54669 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760259AbXG0O36 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 10:29:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----_=_NextPart_001_01C7D05A.88F2AF67"
-Subject: [PATCH 1/1] aacraid: fix Sunrise Lake reset handling
-Date: Fri, 27 Jul 2007 10:29:26 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01C5B438@otce2k301.adaptec.com>
-In-Reply-To: <AE4F746F2AECFC4DA4AADD66A1DFEF01C5B28D@otce2k301.adaptec.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/1] aacraid: fix Sunrise Lake reset handling
-Thread-Index: AceixUkFx9b76PWqQ52cGmijDMeweQAACOTAAAGnwaABloQXwAKKSD8AA7guTYACwMiJ0ACfXxgwAClKgWA=
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: <linux-scsi@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Cc: "Yinghai Lu" <yhlu.kernel@gmail.com>, "Vivek Goyal" <vgoyal@in.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
+	Fri, 27 Jul 2007 10:30:39 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:36391 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933394AbXG0Oai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 10:30:38 -0400
+Date: Fri, 27 Jul 2007 16:30:35 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Investigating SD card failures
+Message-ID: <20070727163035.4ec23c19@poseidon.drzeus.cx>
+In-Reply-To: <20070727055026.GB27423@roarinelk.homelinux.net>
+References: <20070727055026.GB27423@roarinelk.homelinux.net>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
+On Fri, 27 Jul 2007 07:50:26 +0200
+Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
 
-------_=_NextPart_001_01C7D05A.88F2AF67
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> Hi Pierre,
+> 
+> I have a 1GB SanDisk SD card here which linux does not recognize.
+> Looking at the MMC debug output, I see the MMC core repeatedly
+> issues CMD55/CMD41 commands (which all succeed!) then stops
+> after 100 times.  In sd_ops.c the code checks for a bit to get set.
+> My question is, what exactly is this bit supposed to indicate?
+> 
 
-The patch is *much* smaller than the description. I am attempting to
-answer to those that want to understand an issue that was reported in
-May this year.
+That the card has initialized. Try extending the time that loop runs and see if the card powers up.
 
-If a Sunrise Lake based card that requires an alternate reset mechanism
-is set up to ignore the commanded IOP_RESET it reports 0x00000010
-(IOP_RESET ignored) instead of 0x3803000F (use alternate reset mechanism
-to reset all cores), and thus the reset platform function decides to
-switch to IOP_RESET_ALWAYS because the reset platform function
-parameters indicate that we *need* to reset the card. IOP_RESET_ALWAYS
-then responds with the 0x3803000F return code, but alas we treat this as
-an error instead of using the alternate reset mechanism (put a 0x03 into
-the register offset 0x38). The reset fails, but the fact that the
-IOP_RESET_ALWAYS command was issued has put the card in a purposeful
-shutdown state in preparation for the alternate hardware reset to be
-applied. Yuck.
+-- 
+     -- Pierre Ossman
 
-IOP_RESET is ignored in internal production cards, typically to ensure
-that we catch all adapter lockup issues without the driver progressing
-further, so this would not appear to be a field issue and thus this
-patch was destined to be only in the internal Adaptec source tree.
-IOP_RESET_ALWAYS is reserved for
-kexec/kdump/FirmwareUpdate/AutomatedTestFrames so we did not function as
-expected in any case. Also in the past we have had OEMs specifically
-request that cards not be resetable after a BlinkLED/FirmwareAssert for
-one reason or another and To head off the possibility that the Sunrise
-Lake based cards would suffer a similar fate, we propose the enclosed
-fix.
-
-Yinghai Lu of SUN had a pre-production card with IOP_RESET disabled when
-he reported an issue to the linux kernel list back in May regarding a
-kexec problem resulting from this reset being ignore. His fix was to
-update the Firmware to one that did not ignore the IOP_RESET. Previous
-kernels did not attempt to reset the adapter and that is why it surfaced
-as a regression in his hands.
-
-The current list of aacraid based cards that use Sunrise Lake:
-
-9005:0285:9005:02b5     Adaptec 5445
-9005:0285:9005:02b6     Adaptec 5805
-9005:0285:9005:02b7     Adaptec 5085
-9005:0285:9005:02c3     Adaptec 51205
-9005:0285:9005:02c4     Adaptec 51605
-9005:0285:9005:02ce     Adaptec 51245
-9005:0285:9005:02cf     Adaptec 51645
-9005:0285:9005:02d0     Adaptec 52445
-9005:0285:9005:02d1     Adaptec 5405
-9005:0285:9005:02b8     ICP     ICP5445SL
-9005:0285:9005:02b9     ICP     ICP5085SL
-9005:0285:9005:02ba     ICP     ICP5805SL
-9005:0285:9005:02c5     ICP     ICP5125SL
-9005:0285:9005:02c6     ICP     ICP5165SL
-9005:0285:108e:7aac     SUN     STK RAID REM
-9005:0285:108e:0286     SUN     STK RAID INT
-9005:0285:108e:0287     SUN     STK RAID EXT
-9005:0285:108e:7aae     SUN     STK RAID EM
-
-All of these are publicly released with IOP_RESET enabled. So there is
-no immediate need for this patch.
-
-This attached patch is against July 11 2007 scsi-misc-2.6, still applies
-today.
-
-ObligatoryDisclaimer: Please accept my condolences regarding Outlook's
-handling of patch attachments.
-
-Signed-off-by: Mark Salyzyn <aacraid@adaptec.com>
-
- /drivers/scsi/aacraid/rx.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Sincerely -- Mark Salyzyn
-
------Original Message-----
-From: Yinghai Lu [mailto:yhlu.kernel@gmail.com]=20
-Sent: Tuesday, May 29, 2007 10:00 PM
-To: Andrew Morton; Vivek Goyal; Eric W. Biederman; AACRAID
-Cc: Linux Kernel Mailing List
-Subject: kexec and aacraid broken
-
-latest tree, can not use kexec to load 2.6.22-rc3 at least.
-
-got:
-
-AAC0: adapter kernel panic'd fffffffd
-AAC0: adapter kernel failed to start, init status=3D0
-
-but can load 2.6.21.3
-
-YH
-
-------_=_NextPart_001_01C7D05A.88F2AF67
-Content-Type: application/octet-stream;
-	name="aacraid_voodoo_reset.patch"
-Content-Transfer-Encoding: base64
-Content-Description: aacraid_voodoo_reset.patch
-Content-Disposition: attachment;
-	filename="aacraid_voodoo_reset.patch"
-
-ZGlmZiAtcnUgYS8vZHJpdmVycy9zY3NpL2FhY3JhaWQvcnguYyBiLy9kcml2ZXJzL3Njc2kvYWFj
-cmFpZC9yeC5jCi0tLSBhLy9kcml2ZXJzL3Njc2kvYWFjcmFpZC9yeC5jCTIwMDctMDctMTEgMTE6
-MjY6MjUuMDkxMDY2NzYxIC0wNDAwCisrKyBiLy9kcml2ZXJzL3Njc2kvYWFjcmFpZC9yeC5jCTIw
-MDctMDctMTEgMTE6Mjg6MzEuOTYxODU5NDk2IC0wNDAwCkBAIC00NzIsNyArNDcyLDcgQEAKIAkJ
-ZWxzZSB7CiAJCQlibGVkID0gYWFjX2FkYXB0ZXJfc3luY19jbWQoZGV2LCBJT1BfUkVTRVRfQUxX
-QVlTLAogCQkJICAwLCAwLCAwLCAwLCAwLCAwLCAmdmFyLCBOVUxMLCBOVUxMLCBOVUxMLCBOVUxM
-KTsKLQkJCWlmICghYmxlZCAmJiAodmFyICE9IDB4MDAwMDAwMDEpKQorCQkJaWYgKCFibGVkICYm
-ICh2YXIgIT0gMHgwMDAwMDAwMSkgJiYgKHZhciAhPSAweDM4MDMwMDBGKSkKIAkJCQlibGVkID0g
-LUVJTlZBTDsKIAkJfQogCQlpZiAoYmxlZCAmJiAoYmxlZCAhPSAtRVRJTUVET1VUKSkK
-
-------_=_NextPart_001_01C7D05A.88F2AF67--
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
