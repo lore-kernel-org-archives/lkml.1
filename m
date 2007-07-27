@@ -1,102 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932671AbXG0JZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935002AbXG0J0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932671AbXG0JZy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755913AbXG0JZp
+	id S935002AbXG0J0Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761650AbXG0J0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:25:45 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:3153 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758027AbXG0JZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:25:44 -0400
-Date: Fri, 27 Jul 2007 13:25:35 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: /proc/bus/pci IOCTL breakage
-Message-ID: <20070727092534.GB6924@localhost.sw.ru>
-References: <20070726.190751.66179795.davem@davemloft.net> <20070726.230435.68159913.davem@davemloft.net>
+	Fri, 27 Jul 2007 05:26:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43176 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754294AbXG0J0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:26:11 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+t81l+hMitqzajSZfPKhNaizcyRJj3N+PFMA9MkF
+	HVqE08mju2ejrF
+Subject: Re: updatedb
+From: Mike Galbraith <efault@gmx.de>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>, Andika Triwidada <andika@gmail.com>,
+       Robert Deaton <false.hopes@gmail.com>, linux-kernel@vger.kernel.org,
+       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org
+In-Reply-To: <46A9ACB2.9030302@gmail.com>
+References: <367a23780707250830i20a04a60n690e8da5630d39a9@mail.gmail.com>
+	 <46A773EA.5030103@gmail.com>
+	 <a491f91d0707251015x75404d9fld7b3382f69112028@mail.gmail.com>
+	 <46A81C39.4050009@gmail.com>
+	 <7e0bae390707252323k2552c701x5673c55ff2cf119e@mail.gmail.com>
+	 <9a8748490707261746p638e4a98p3cdb7d9912af068a@mail.gmail.com>
+	 <46A98A14.3040300@gmail.com> <1185522844.6295.64.camel@Homer.simpson.net>
+	 <46A9ACB2.9030302@gmail.com>
+Content-Type: text/plain
+Date: Fri, 27 Jul 2007 11:26:08 +0200
+Message-Id: <1185528368.7851.44.camel@Homer.simpson.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070726.230435.68159913.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jul 26, 2007 at 11:04:35PM -0700, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 26 Jul 2007 19:07:51 -0700 (PDT)
+On Fri, 2007-07-27 at 10:28 +0200, Rene Herman wrote:
+> On 07/27/2007 09:54 AM, Mike Galbraith wrote:
 > 
-> > Two ways to fix:
+> > On Fri, 2007-07-27 at 08:00 +0200, Rene Herman wrote:
 > > 
-> > 1) Make the PROC wrapper call ->unlocked_ioctl() or ->ioctl()
-> >    as a fallback of ->compat_ioctl is NULL.
+> >> The remaining issue of updatedb unnecessarily blowing away VFS caches is 
+> >> being discussed (*) in a few thread-branches still running.
 > > 
-> > 2) Make proc_bus_pci_operations provide a .compat_ioctl method,
-> >    but then we'll need to audit the entire tree for cases like
-> >    this and make the same fix.
-> > 
-> > Because it's easier to validate that all cases are covered,
-> > I think #1 is the preferred fix.
->
-> Here is my suggested fix.
+> > If you solve that, the swap thing dies too, they're one and the same
+> > problem.
 > 
-> It is important to only provide the compat_ioctl method
-> if the downstream de->proc_fops does too, otherwise this
-> utterly confuses the logic in fs/compat_ioctl.c and we
-> end up doing the right thing.
+> I still wonder what the "the swap thing" is though. People just kept saying 
+> that swap-prefetch helped which would seem to indicate their problem didnt 
+> have anything to do with updatedb.
 
-Indeed, my patch broke cases where .compat_ioctl was not supplied and
-ioctl was done with compat_sys_ioctl(). 
+I haven't rummaged around in the VM in quite a long while, so don't know
+exactly where the balance lies any more, and have never looked at
+swap-prefetch, but the mechanism of how swap-prefetch can help the
+"morning after syndrome" seems simple enough:
 
-> To be honest, the other unlocked_ioctl fallback scheme in
-> this file should be scrutinized for similar problems.
+Reclaim (swapout) a slew of application pages because there are
+truckloads of utterly bored pages laying about when updatedb comes along
+and introduces memory pressure in the middle of the night.  Updatedb
+finishes, freeing some ram (doesn't matter how much) swap-prefetch
+detects idle CPU, and begins faulting swapped out pages back in.  In the
+process of doing so, memory pressure is generated, and now these freshly
+accessed pages are a less lovely target than the now aging VFS caches
+that updatedb bloated up, so they shrink back down enough that the
+balance you had before updatedb ran is restored... with the notable
+exception that cached data is now toast, so what you gained by faulting
+god knows how frequently used pages back in isn't _necessarily_ going to
+help you.  Heck, it could even step on what was left of your cached
+working set after updatedb finished.
 
-I checked on test module all (3 + 3 + 1) x 2 combinations of available
-methods and ioctl/compat_ioctl accesses. Regression were only in
-compat_sys_ioctl(2) part. And your patch fixes all of them.
+> Also, I know shit about the VFS so this may well be not very educated but to 
+> me something like FADV_NOREUSE on a dirfd sounds like a much more promising 
+> approach than the convoluted userspace schemes being discussed, if only 
+> because it'll actually be implemented/used.
 
-> --- a/fs/proc/inode.c
-> +++ b/fs/proc/inode.c
-> @@ -386,6 +386,19 @@ static const struct file_operations proc_reg_file_ops = {
->  	.release	= proc_reg_release,
->  };
->  
-> +#ifdef CONFIG_COMPAT
-> +static const struct file_operations proc_reg_file_ops_no_compat = {
-> +	.llseek		= proc_reg_llseek,
-> +	.read		= proc_reg_read,
-> +	.write		= proc_reg_write,
-> +	.poll		= proc_reg_poll,
-> +	.unlocked_ioctl	= proc_reg_unlocked_ioctl,
-> +	.mmap		= proc_reg_mmap,
-> +	.open		= proc_reg_open,
-> +	.release	= proc_reg_release,
-> +};
-> +#endif
-> +
->  struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
->  				struct proc_dir_entry *de)
->  {
-> @@ -413,8 +426,15 @@ struct inode *proc_get_inode(struct super_block *sb, unsigned int ino,
->  		if (de->proc_iops)
->  			inode->i_op = de->proc_iops;
->  		if (de->proc_fops) {
-> -			if (S_ISREG(inode->i_mode))
-> -				inode->i_fop = &proc_reg_file_ops;
-> +			if (S_ISREG(inode->i_mode)) {
-> +#ifdef CONFIG_COMPAT
-> +				if (!de->proc_fops->compat_ioctl)
-> +					inode->i_fop =
-> +						&proc_reg_file_ops_no_compat;
-> +				else
-> +#endif
-> +					inode->i_fop = &proc_reg_file_ops;
-> +			}
->  			else
->  				inode->i_fop = de->proc_fops;
->  		}
+I like Andrew's mention of a future option... put that sucker and
+everybody who looks like him in a resource limited container.
 
-Looks good, thanks David.
+	-Mike
 
