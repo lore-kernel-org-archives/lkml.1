@@ -1,133 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932248AbXG0IJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932613AbXG0IKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932248AbXG0IJh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 04:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbXG0IJU
+	id S932613AbXG0IKK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 04:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXG0IJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 04:09:20 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:37285 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbXG0IJR (ORCPT
+	Fri, 27 Jul 2007 04:09:22 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:60855 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbXG0IJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 04:09:17 -0400
-Message-ID: <46A9A81C.1070309@oracle.com>
-Date: Fri, 27 Jul 2007 13:39:00 +0530
-From: gurudas pai <gurudas.pai@oracle.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 27 Jul 2007 04:09:18 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] usb-storage autosuspend bug?
+Date: Fri, 27 Jul 2007 10:11:07 +0200
+User-Agent: KMail/1.9.7
+Cc: Greg KH <gregkh@suse.de>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070720034456.GA5826@kroah.com> <alpine.LFD.0.999.0707251628200.3607@woody.linux-foundation.org> <20070726155746.GA5493@suse.de>
+In-Reply-To: <20070726155746.GA5493@suse.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Joe Jin <joe.jin@oracle.com>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       wen.gang.wang@oracle.com, Badari Pulavarty <pbadari@us.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] add check do_direct_IO() return val
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org>
-In-Reply-To: <20070726221307.3d7b3446.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200707271011.07471.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Am Donnerstag 26 Juli 2007 schrieb Greg KH:
+> Alan and Oliver, was this caused by the autosuspend changes for
+> usb-storage?
 
+The oops itself looks like refcounting. What caused the initial io error
+does not become clear from the log. It is possible that the device cannot
+stand suspension. But there's no evidence from that. On the contrary,
+these devices usually do an unplug/plug cycle, which is not in the log.
 
-Andrew Morton wrote:
-> On Thu, 26 Jul 2007 17:04:00 +0800 Joe Jin <joe.jin@oracle.com> wrote:
->
->> This is the patch for check do_direct_IO() return val.
->>
->> At do_direct_IO(), sometimes dio_get_page() will return -EFAULT/-ENOMEM,
->> according to orig source, it will go on left work. buf for dio_get_page()
->> return a error will made many useful member of dio not initialized like
->> dio->map_bh and others, at this point, kernel will panic.
->>
->> Signed-off-by: Joe Jin <joe.jin@oracle.com>
->>
->>
->> ---
->> --- linux-2.6.22/fs/direct-io.c.orig	2007-07-26 11:32:27.000000000 +0800
->> +++ linux-2.6.22/fs/direct-io.c	2007-07-26 11:33:58.000000000 +0800
->> @@ -1031,7 +1031,9 @@ direct_io_worker(int rw, struct kiocb *i
->>  			((dio->final_block_in_request - dio->block_in_file) <<
->>  					blkbits);
->>  
->> -		if (ret) {
->> +		if (ret == -EFAULT || ret == -ENOMEM) 
->> +			goto out;
->> +		else if (ret) {
->>  			dio_cleanup(dio);
->>  			break;
->>  		}
->> @@ -1113,6 +1115,7 @@ direct_io_worker(int rw, struct kiocb *i
->>  	} else
->>  		BUG_ON(ret != -EIOCBQUEUED);
->>  
->> +out:
->>  	return ret;
->>  }
->>  
->
-> I think we still want to run dio_cleanup() if do_direct_IO() failed? 
-> Otherwise we can leak pages.
->
-> And there's nothing special about EFAULT or ENOMEM here: if do_direct_IO()
-> returns any error then that's it: we bale out, yes?
->
-> In fact I'm suspecting that this is what the code in there used to do. 
-> Something like:
->
-> 	for (...) {
-> 		...
-> 		ret = do_direct_IO(...);
-> 		...
-> 		if (ret) {
-> 			dio_dleanup(dio);
-> 			break
-> 		}
-> 	}
-> 	return ret;
->
-> but then someone later came along and added more code between the end of
-> the for loop and the `return' statement.
->
-> <I do miss the BK diffviewer sometimes>
->
-> <does a binary search>
->
-> yep, that's exactly what happened.  We broke it in the 2.5.45 release back
-> in October 2002. (Where "we" == "Badari")
->
-> So I think what we need to do is something close to this:
->
-> --- a/fs/direct-io.c~add-check-do_direct_io-return-val
-> +++ a/fs/direct-io.c
-> @@ -1033,7 +1033,7 @@ direct_io_worker(int rw, struct kiocb *i
->  
->  		if (ret) {
->  			dio_cleanup(dio);
-> -			break;
-> +			goto out;
->  		}
->  	} /* end iovec loop */
->  
-> @@ -1112,7 +1112,7 @@ direct_io_worker(int rw, struct kiocb *i
->  		kfree(dio);
->  	} else
->  		BUG_ON(ret != -EIOCBQUEUED);
-> -
-> +out:
->  	return ret;
->  }
->  
-> _
->
-> However I'd like to ask you guys to carefully review and test that please.
-Tested Andrew's patch , works! . My test case passed without any panic. 
-But got couple of ENOTBLK.
+	Regards
+		Oliver
 
-
-Thanks,
--Guru
