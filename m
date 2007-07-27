@@ -1,43 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763455AbXG0ANj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762544AbXG0AOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763455AbXG0ANj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 20:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbXG0ANa
+	id S1762544AbXG0AOc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 20:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbXG0AOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 20:13:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42591
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758813AbXG0AN3 (ORCPT
+	Thu, 26 Jul 2007 20:14:24 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:48029
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751817AbXG0AOX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 20:13:29 -0400
-Date: Thu, 26 Jul 2007 15:23:52 -0700 (PDT)
-Message-Id: <20070726.152352.70218024.davem@davemloft.net>
-To: matthew@wil.cx
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, torvalds@osdl.org
-Subject: Re: IRQF_DISABLED problem
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070726201355.GP19275@parisc-linux.org>
-References: <20070726201355.GP19275@parisc-linux.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Jul 2007 20:14:23 -0400
+Date: Thu, 26 Jul 2007 17:12:07 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Jeff Garzik <jeff@garzik.org>
+cc: Dirk Schoebel <dirk@liji-und-dirk.de>, ck@vds.kolivas.org,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       Eric St-Laurent <ericstl34@sympatico.ca>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Paul Jackson <pj@sgi.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rene Herman <rene.herman@gmail.com>
+Subject: Re: [ck] Re: -mm merge plans for 2.6.23
+In-Reply-To: <46A930A0.1030701@garzik.org>
+Message-ID: <Pine.LNX.4.64.0707261705160.4183@asgard.lang.hm>
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
+ <20070726111326.873f7b0a.akpm@linux-foundation.org> <200707270004.46211.dirk@liji-und-dirk.de>
+ <200707270033.41055.dirk@liji-und-dirk.de> <46A92DF4.6000301@garzik.org>
+ <Pine.LNX.4.64.0707261627220.4183@asgard.lang.hm> <46A930A0.1030701@garzik.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Wilcox <matthew@wil.cx>
-Date: Thu, 26 Jul 2007 14:13:56 -0600
+On Thu, 26 Jul 2007, Jeff Garzik wrote:
 
-> 
-> I noticed that we only look at the first action in the chain when
-> determining whether to re-enable local interrupts during handle_IRQ_event.
-> But we don't try to exclude sharing interrupts with mixtures of
-> IRQF_DISABLED set and clear.  I just tried to do that locally, and one
-> of my USB ports disappears, because it shares an interrupt with qla2xxx
-> which sets IRQF_DISABLED, and UHCI doesn't.
-> 
-> Another possibility is to force it if *any* of the handlers want
-> IRQF_DISABLED.  This seems to work:
+> david@lang.hm wrote:
+>>  On Thu, 26 Jul 2007, Jeff Garzik wrote:
+>> 
+>> >  Dirk Schoebel wrote:
+>> > >   as long as the maintainer follows the kernel development things can 
+>> > >   be
+>> > >   left in, if the maintainer can't follow anymore they are taken out 
+>> > >  quite
+>> > >  fast again. (This statement mostly counts for parts of the kernel 
+>> > >  where a
+>> > >  choice is possible or the coding overhead of making such choice 
+>> > >  possible
+>> > >   is quite low.)
+>> > 
+>> > 
+>> >  This is just not good engineering.
+>> > 
+>> >  It is axiomatic that it is easy to add code, but difficult to remove 
+>> >  code. It takes -years- to remove code that no one uses.  Long after the 
+>> >  maintainer disappears, the users (and bug reports!) remain.
+>>
+>>  I'll point out that the code that's so hard to remove is the code that
+>>  exposes an API to userspace.
+>
+> True.
+>
+>
+>>  code that's an internal implementation (like a couple of the things being
+>>  discussed) gets removed much faster.
+>
+> Not true.  It is highly unlikely that code will get removed if it has active 
+> users, even if the maintainer has disappeared.
 
-Yes, this is consistent with how we handle sharing, we should
-enforce that all the flags on the chain are compatible.
+if you propose removing code in such a way that performance suffers then 
+yes, it's hard to remove (and it should be).
+
+but if it has no API the code is only visable to the users as a side 
+effect of it's use. if the new code works better then it can be replaced.
+
+the scheduler change that we're going through right now is an example, new 
+code came along that was better and the old code went away very quickly.
+
+the SLAB/SLOB/SLUB/S**B debate is another example. currently the different 
+versions have different performance advantages and disadvantages, as one 
+drops behind to the point where one of the others is better at all times, 
+it goes away.
+
+> The only things that get removed rapidly are those things mathematically 
+> guaranteed to be dead code.
+>
+> _Behavior changes_, driver removals, feature removals happen more frequently 
+> than userspace ABI changes -- true -- but the rate of removal is still very, 
+> very slow.
+
+a large part of this is that it's so hard to get a replacement that works 
+better (this is very definantly a compliment to the kernel coders :-)
+
+
+
+> It is axiomatic that we are automatically burdened with new code for at 
+> least 10 years :)  That's what you have to assume, when accepting 
+> anything.
+
+for userspace API's 10 years is reasonable, for internal features it's 
+not. there is a LOT of internal stuff that was in the kernel 10 (or even 
+5) years ago that isn't there now. the key is that the behavior as far as 
+users is concerned is better now.
+
+David Lang
