@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932180AbXG0Aiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760595AbXG0AjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932180AbXG0Aiy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 20:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbXG0Aiq
+	id S1760595AbXG0AjO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 20:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760149AbXG0Ais
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 20:38:46 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:9563 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755458AbXG0Aip (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 20:38:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=e3qnUbc8l0tl1oSxpFy2GlAc0UFbSQIE4e/PcmM4iP9YJQk3j6qOVvH+tAsgAxtiAkkhztAYH7hShmKlMxQKLDGqjyO79V/yBZPugIZmoLJndwm53rY5wGdaCRQmkAc6XUhkWXTJtx+jiPI7oleHEeb6uFFoye2nPm/STzNAy9k=
-Message-ID: <a8e1da0707261738q72e13b32k3fb49ab750d60fc7@mail.gmail.com>
-Date: Fri, 27 Jul 2007 00:38:44 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "WANG Cong" <xiyou.wangcong@gmail.com>
-Subject: Re: [PATCH][resend] sysfs/file.c - use mutex instead of semaphore
-Cc: "Greg KH" <gregkh@suse.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070726120334.GA2404@localhost.localdomain>
+	Thu, 26 Jul 2007 20:38:48 -0400
+Received: from mail4.kite.se ([212.214.165.225]:45291 "EHLO mail4.kite.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757734AbXG0Air (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 20:38:47 -0400
+X-Greylist: delayed 618 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Jul 2007 20:38:47 EDT
+Message-ID: <46A93C2B.4080902@kite.se>
+Date: Fri, 27 Jul 2007 02:28:27 +0200
+From: Magnus Naeslund <mag@kite.se>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Al Boldi <a1426z@gawab.com>
+CC: Ray Lee <ray-lk@madrabbit.org>, "david@lang.hm" <david@lang.hm>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <Pine.LNX.4.64.0707242130470.2229@asgard.lang.hm> <2c0942db0707250855v414cd72di1e859da423fa6a3a@mail.gmail.com> <200707252316.01021.a1426z@gawab.com>
+In-Reply-To: <200707252316.01021.a1426z@gawab.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070726110354.GA3672@darkstar.te-china.tietoenator.com>
-	 <20070726054600.GA25263@suse.de>
-	 <a8e1da0707252346r471c66f5ycac75a0ec69b5b94@mail.gmail.com>
-	 <20070726120334.GA2404@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 7/26/07, WANG Cong <xiyou.wangcong@gmail.com> wrote:
-> On Thu, Jul 26, 2007 at 06:46:26AM +0000, Dave Young wrote:
-> >>On 7/26/07, Greg KH <gregkh@suse.de> wrote:
-> >> On Thu, Jul 26, 2007 at 11:03:54AM +0000, Dave Young wrote:
-> >> > Use mutex instead of semaphore in sysfs/file.c : sys_buffer.
-> >>
-> >> Thanks, it's in my queue, but I'm at a conference this week, so I'll get
-> >> to it on monday, sorry for the delay.
-> >>
-> >Hi, thank you. I'm not sure why it's ignored, I think maybe it should
-> >be splitted to two patches.
-> >
-> >Andrew has added this one to -mm tree. I'm happy to hear from you. I
-> >will send the seperated header cleanup patch again. gmail will convert
-> > tab to white space, so I have to send another post.
->
-> Well, it seems that you use web browsers to visit gmail. Can you try to
-> use an email client, such as claws mail, mutt, or even git-send-email?
-> I am using gmail with mutt, tabs aren't replaced.
->
-Yes, I use  webmail to write messages other than patches, the patches
-are sent by mutt.
+Al Boldi wrote:
+> 
+> Thanks for asking.  I'm rather surprised why nobody's noticing any of this 
+> slowdown.  To be fair, it's not really a regression, on the contrary, 2.4 is 
+> lot worse wrt swapin and swapout, and Rik van Riel even considers a 50% 
+> swapin slowdown wrt swapout something like better than expected (see thread 
+> '[RFC] kswapd: Kernel Swapper performance').  He probably meant random 
+> swapin, which seems to offer a 4x slowdown.
+> 
+
+Sorry for the late reply.
+Well I think I reported this or another swap/tmpfs performance issue earlier ( http://marc.info/?t=116542915700004&r=1&w=2 ), we got the suggestion to increase /proc/sys/vm/page-cluster to 5, but we never came around to try it.
+Maybe this was the reason for my report to be almost entirely ignored, sorry for that.
+
+Regards,
+Magnus
