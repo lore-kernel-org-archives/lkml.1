@@ -1,133 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762585AbXG0Rqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937582AbXG0RuA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762585AbXG0Rqv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 13:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760705AbXG0Rqm
+	id S937582AbXG0RuA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 13:50:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932876AbXG0Rtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 13:46:42 -0400
-Received: from keil-draco.com ([216.193.185.50]:50901 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755022AbXG0Rql (ORCPT
+	Fri, 27 Jul 2007 13:49:53 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:25354 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933074AbXG0Rtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 13:46:41 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Date: Fri, 27 Jul 2007 13:45:54 -0400
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net>
-In-Reply-To: <1185531918.8799.17.camel@Homer.simpson.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 27 Jul 2007 13:49:52 -0400
+Date: Fri, 27 Jul 2007 10:53:43 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: use relevant mailing lists
+Message-Id: <20070727105343.6486c74a.randy.dunlap@oracle.com>
+In-Reply-To: <20070726173140.a76ff4a6.akpm@linux-foundation.org>
+References: <20070726170857.dbb42674.randy.dunlap@oracle.com>
+	<20070726173140.a76ff4a6.akpm@linux-foundation.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707271345.55187.dhazelton@enter.net>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 July 2007 06:25:18 Mike Galbraith wrote:
-> On Fri, 2007-07-27 at 03:00 -0700, Andrew Morton wrote:
-> > On Fri, 27 Jul 2007 01:47:49 -0700 Andrew Morton 
-<akpm@linux-foundation.org> wrote:
-> > > More sophisticated testing is needed - there's something in
-> > > ext3-tools which will mmap, page in and hold a file for you.
-> >
-> > So much for that theory.  afaict mmapped, active pagecache is immune to
-> > updatedb activity.  It just sits there while updatedb continues munching
-> > away at the slab and blockdev pagecache which it instantiated.  I assume
-> > we're never getting the VM into enough trouble to tip it over the
-> > start-reclaiming-mapped-pages threshold (ie: /proc/sys/vm/swappiness).
-> >
-> > Start the updatedb on this 128MB machine with 80MB of mapped pagecache,
-> > it falls to 55MB fairly soon and then never changes.
-> >
-> > So hrm.  Are we sure that updatedb is the problem?  There are quite a few
-> > heavyweight things which happen in the wee small hours.
->
-> The balance in _my_ world seems just fine.  I don't let any of those
-> system maintenance things run while I'm using the system, and it doesn't
-> bother me if my working set has to be reconstructed after heavy-weight
-> maintenance things are allowed to run.  I'm not seeing anything I
-> wouldn't expect to see when running a job the size of updatedb.
->
-> 	-Mike
+On Thu, 26 Jul 2007 17:31:40 -0700 Andrew Morton wrote:
 
-Do you realize you've totally missed the point?
+> On Thu, 26 Jul 2007 17:08:57 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > +	Use the relevant mailing list(s) -- don't just send everything to
+> > +	lkml (linux-kernel@vger.kernel.org).
+> 
+> True.
+> 
+> I personally only troll lkml for unloved patches, so I suspect that a
+> random patch which is sent to mailing-list-A and not to lkml has a higher
+> probability of getting lost than one which is sent to both lists.  Plus
+> it'd be nice to get lkml's patch-to-noise ratio above one percent.
 
-It isn't about what is fine in the Kernel Developers world, but what is fine 
-in the *USERS* world. 
+Yes (to P-N ratio).
 
-There are dozens of big businesses pushing Linux for Enterprise performance. 
-Rather than discussing the merit of those patches - some of which just 
-improve the performance of a specific application by 1 or 2  percent - they 
-get a nod and go into the kernel. But when a group of users that don't 
-represent one of those businesses says "Hey, this helps with problems I see 
-on my system" there is a big discussion and ultimately those patches get 
-rejected. Why? Because they'll give an example using a program that they see 
-causing part of the problem and be told "Use program X - it does things 
-differently and shouldn't cause the problem" or "But what causes the problem 
-to happen? The patch treats a symptom of a larger problem".
+I'd really like to see netdev patches going to netdev (only :)
+and SCSI patches to linux-scsi (only), e.g., unless they actually
+address some linux-arch like issue(s).
 
-The fucked up part of that is that the (mass of) kernel developers will see a 
-similar report saying "mySQL has a performance problem because of X, this 
-fixes it" and not blink twice - even if it is "treating the symptom and not 
-the cause". It's this attitude more than anything that caused Con 
-to "retire" - at least that is the impression I got from the interviews he's 
-given. (The exact impression was "I'm sick of the kernel developers doing 
-everything they can to help enterprise users and ignoring the home users")
+However, those maintainers are quite different regarding patch
+handling.  Maybe you could try to address some of that at that
+Cambridge/September event.
 
-So...
-The problem:
-Updatedb or another process that uses the FS heavily runs on a users 256MB 
-P3-800 (when it is idle) and the VFS caches grow, causing memory pressure 
-that causes other applications to be swapped to disk. In the morning the user 
-has to wait for the system to swap those applications back in.
+> So I'd suggest that you rework the text here to make it clearer that
+> patches should go to lkml _and_ to the subsystem-specific mailing list.
 
-Questions about it:
-Q) Does swap-prefetch help with this? 
-A) [From all reports I've seen (*)] Yes, it does. 
+Patch is withdrawn.
 
-Q) Why does it help? 
-A) Because it pro-actively swaps stuff back-in when the memory pressure that 
-caused it to be swapped out is gone. 
-
-Q) What causes the problem? 
-A) The VFS layer not keeping a limited cache. Instead the VFS will chew 
-through available memory in the name of "increasing performance".
-
-Solution(s) to the problem:
-1) Limit the amount of memory the pagecache and other VFS caches can consume
-2) Implement swap prefetch
-
-If I had a (more) complete understanding of how the VFS cache(s) work I'd try 
-to code a patch to do #1 myself. Patches to do #2 already exist and have been 
-shown to work for the users that have tried it. My question is thus, simply: 
-What is the reason that it is argued against?(**)
-
-DRH
-PS: Yes, I realize I've repeated some people from earlier in this thread, but 
-it seems that people have been forgetting the point.
-
-(*) I've followed this thread and all of its splinters. The reports that are 
-in them, where the person making the report has a system that has the limited 
-memory needed for the problem to exhibit itself, all show that swap-prefetch 
-helps.
-
-(**) No, I won't settle for "Its treating a symptom". The fact is that this 
-isn't a *SYMPTOM* of anything. It treats the cause of the lag the users that 
-have less than (for the sake of argument) 1G of memory are seeing. And no, 
-changing userspace isn't a solution - updatedb may be the program that has 
-been used as an example, but there are others. The proper fix is to change 
-the kernel to either make the situation impossible (limit the VFS and other 
-kernel caches) or make the situation as painless as possible (implement swap 
-prefetch to alleviate the lag of swapping data back in).
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
