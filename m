@@ -1,42 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763908AbXG0Ac4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932469AbXG0Ad0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763908AbXG0Ac4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 20:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbXG0Act
+	id S932469AbXG0Ad0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 20:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbXG0AdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 20:32:49 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56528 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755577AbXG0Acs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 20:32:48 -0400
-Date: Thu, 26 Jul 2007 17:31:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] MAINTAINERS: use relevant mailing lists
-Message-Id: <20070726173140.a76ff4a6.akpm@linux-foundation.org>
-In-Reply-To: <20070726170857.dbb42674.randy.dunlap@oracle.com>
-References: <20070726170857.dbb42674.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Jul 2007 20:33:19 -0400
+Received: from rs19.luxsci.com ([65.61.136.23]:56296 "EHLO rs19.luxsci.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755597AbXG0AdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Jul 2007 20:33:19 -0400
+Message-ID: <46A93D4E.5070405@invtools.com>
+Date: Thu, 26 Jul 2007 19:33:18 -0500
+From: Jon Hedlund <JonH@invtools.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: solved - eth device going missing
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Jul 2007 17:08:57 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+Further Googling revealed the cause was my /etc/iftab file.
+Sorry for bothering the list, the problems I have been having with acpi 
+and the Q965 express chipset had me thinking this was a related issue.
 
-> +	Use the relevant mailing list(s) -- don't just send everything to
-> +	lkml (linux-kernel@vger.kernel.org).
-
-True.
-
-I personally only troll lkml for unloved patches, so I suspect that a
-random patch which is sent to mailing-list-A and not to lkml has a higher
-probability of getting lost than one which is sent to both lists.  Plus
-it'd be nice to get lkml's patch-to-noise ratio above one percent.
-
-So I'd suggest that you rework the text here to make it clearer that
-patches should go to lkml _and_ to the subsystem-specific mailing list.
+JonH
 
