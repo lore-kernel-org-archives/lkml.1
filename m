@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938459AbXG0XzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938536AbXG0X53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938459AbXG0XzX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 19:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934589AbXG0XzK
+	id S938536AbXG0X53 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 19:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938044AbXG0X5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 19:55:10 -0400
-Received: from mga09.intel.com ([134.134.136.24]:7184 "EHLO mga09.intel.com"
+	Fri, 27 Jul 2007 19:57:21 -0400
+Received: from mga01.intel.com ([192.55.52.88]:53787 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762431AbXG0XzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 19:55:08 -0400
+	id S1765640AbXG0X5U convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 19:57:20 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,192,1183359600"; 
-   d="scan'208";a="110801587"
-Subject: Volanomark slows by 80% under CFS
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Reply-To: tim.c.chen@linux.intel.com
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Content-Type: multipart/mixed; boundary="=-SFFeNoP0kmgx3XwklKec"
-Organization: Intel
-Date: Fri, 27 Jul 2007 15:01:27 -0700
-Message-Id: <1185573687.19777.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+   d="scan'208";a="273700336"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [1/2] 2.6.23-rc1: known regressions with patches v2
+Date: Fri, 27 Jul 2007 16:57:18 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A0209BC14@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <46AA5B44.2030909@googlemail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [1/2] 2.6.23-rc1: known regressions with patches v2
+Thread-Index: AcfQkJJSthQHdvJCSh6UJwv1Bldq9gAGNASA
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "Gabriel C" <nix.or.die@googlemail.com>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Jan Engelhardt" <jengelh@linux01.gwdg.de>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Greg Kroah-Hartman" <gregkh@suse.de>,
+       "Kay Sievers" <kay.sievers@gmail.com>,
+       "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       "Vitaly Bordug" <vitb@kernel.crashing.org>,
+       <linux-fsdevel@vger.kernel.org>, "Doug Chapman" <doug.chapman@hp.com>,
+       "Vasily Tarasov" <vtaras@openvz.org>, "Jeff Garzik" <jeff@garzik.org>,
+       "Trond Myklebust" <Trond.Myklebust@netapp.com>
+X-OriginalArrivalTime: 27 Jul 2007 23:57:18.0998 (UTC) FILETIME=[DDA50B60:01C7D0A9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Subject         : ia64 build failure from recent diskquota patch
+> References      : http://lkml.org/lkml/2007/7/18/407
+> Last known good : ?
+> Submitter       : Doug Chapman <doug.chapman@hp.com>
+> Caused-By       : Vasily Tarasov <vtaras@openvz.org>
+>                   commit b716395e2b8e450e294537de0c91476ded2f0395
+> Handled-By      : Luck, Tony <tony.luck@intel.com>
+> Patch1          : http://lkml.org/lkml/2007/7/20/255
+> Patch2          : http://lkml.org/lkml/2007/7/20/272
+> Status          : patch available
 
---=-SFFeNoP0kmgx3XwklKec
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Just sent the "please pull" message to Linus.  The fix should show up in
+his tree soon as commit 7a6c813594c9eb25a9afbcbd30c9865e38ee6f39
 
-Ingo,
-
-Volanomark slows by 80% with CFS scheduler on 2.6.23-rc1.  
-Benchmark was run on a 2 socket Core2 machine.
-
-The change in scheduler treatment of sched_yield 
-could play a part in changing Volanomark behavior.
-In CFS, sched_yield is implemented
-by dequeueing and requeueing a process .  The time a process 
-has spent running probably reduced the the cpu time due it 
-by only a bit. The process could get re-queued pretty close
-to head of the queue, and may get scheduled again pretty
-quickly if there is still a lot of cpu time due.  
-
-It may make sense to queue the
-yielding process a bit further behind in the queue. 
-I made a slight change by zeroing out wait_runtime 
-(i.e. have the process gives
-up cpu time due for it to run) for experimentation. 
-Let's put aside gripes that Volanomark should have used a 
-better mechanism to coordinate threads instead sched_yield for 
-a second.   Volanomark runs better
-and is only 40% (instead of 80%) down from old scheduler 
-without CFS.  
-
-Of course we should not tune for Volanomark and this is
-reference data. 
-What are your view on how CFS's sched_yield should behave?
-
-Regards,
-Tim
-
-
-
-
---=-SFFeNoP0kmgx3XwklKec
-Content-Disposition: attachment; filename=patch.sched_yield
-Content-Type: text/plain; name=patch.sched_yield; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
---- linux-2.6.23-rc1/kernel/sched_fair.c.orig	2007-07-27 09:39:11.000000000 -0700
-+++ linux-2.6.23-rc1/kernel/sched_fair.c	2007-07-27 09:40:41.000000000 -0700
-@@ -841,6 +841,7 @@
- 	 * position within the tree:
- 	 */
- 	dequeue_entity(cfs_rq, &p->se, 0, now);
-+    	p->se.wait_runtime = 0; 
- 	enqueue_entity(cfs_rq, &p->se, 0, now);
- }
- 
-
---=-SFFeNoP0kmgx3XwklKec--
+-Tony
