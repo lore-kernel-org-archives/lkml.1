@@ -1,36 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763513AbXG0AzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764484AbXG0BAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763513AbXG0AzS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Jul 2007 20:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756901AbXG0AzF
+	id S1764484AbXG0BAA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Jul 2007 21:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758449AbXG0A7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Jul 2007 20:55:05 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48610
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756658AbXG0AzE (ORCPT
+	Thu, 26 Jul 2007 20:59:50 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37276 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757064AbXG0A7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Jul 2007 20:55:04 -0400
-Date: Thu, 26 Jul 2007 17:55:03 -0700 (PDT)
-Message-Id: <20070726.175503.32096994.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] remove flush_tlb_pgtables
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1185497047.5495.159.camel@localhost.localdomain>
-References: <1185497047.5495.159.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 26 Jul 2007 20:59:49 -0400
+Date: Thu, 26 Jul 2007 17:59:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Josh Triplett <josht@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-sparse@vger.kernel.org
+Subject: Re: [PATCH] CodingStyle: proscribe do-while without braces.
+Message-Id: <20070726175929.730fc0be.akpm@linux-foundation.org>
+In-Reply-To: <46A93F92.6050708@s5r6.in-berlin.de>
+References: <1185485822.4459.1.camel@josh-work.beaverton.ibm.com>
+	<m3abtir95x.fsf@maximus.localdomain>
+	<46A93F92.6050708@s5r6.in-berlin.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 27 Jul 2007 10:44:06 +1000
+On Fri, 27 Jul 2007 02:42:58 +0200 Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> After my frv patch, nobody uses flush_tlb_pgtables anymore, this patch
-> removes all remaining traces of it from all archs.
+> Krzysztof Halasa wrote:
+> > and even if I could, "always use" seems way too strong in this case.
 > 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Besides, how about reorienting the CodingStyle text to the essential?
+> 
+> (But leave the humorous language in --- the few parts that are inherited
+> from old versions of that file, now more and more being buried in dry
+> nitpicking.)
 
-Acked-by: David S. Miller <davem@davemloft.net>
+If sparse has gone and added a warning for this then it is more than
+nitpicking.  Reducing the amount of noise coming out of sparse is useful.
