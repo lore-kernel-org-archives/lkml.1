@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936607AbXG0Jsv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765020AbXG0Jt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936607AbXG0Jsv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 05:48:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936066AbXG0JqS
+	id S1765020AbXG0Jt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 05:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936260AbXG0Jq1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 05:46:18 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:35977 "EHLO ron.emn.fr"
+	Fri, 27 Jul 2007 05:46:27 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:36022 "EHLO ron.emn.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935861AbXG0JqP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 05:46:15 -0400
-Date: Fri, 27 Jul 2007 11:44:53 +0200 (MEST)
-Message-Id: <200707270944.LAA17230@ifs.emn.fr>
+	id S936433AbXG0JqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 05:46:25 -0400
+Date: Fri, 27 Jul 2007 11:45:00 +0200 (MEST)
+Message-Id: <200707270945.LAA17237@ifs.emn.fr>
 To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 09/68] 0 -> NULL, for arch/m68knommu
-Cc: gerg@uclinux.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 10/68] 0 -> NULL, for arch/mips
+Cc: ralf@linux-mips.org, linux-mips@linux-mips.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
 From: Yoann Padioleau <padator@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -40,24 +41,84 @@ expression *E;
 + NULL
 
 Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: gerg@uclinux.org
+Cc: ralf@linux-mips.org
+Cc: linux-mips@linux-mips.org
 Cc: akpm@linux-foundation.org
 ---
 
- comempci.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ ops-emma2rh.c |    2 +-
+ ops-pnx8550.c |   12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/m68knommu/kernel/comempci.c b/arch/m68knommu/kernel/comempci.c
-index 6ee00ef..528517e 100644
---- a/arch/m68knommu/kernel/comempci.c
-+++ b/arch/m68knommu/kernel/comempci.c
-@@ -736,7 +736,7 @@ #endif
+diff --git a/arch/mips/pci/ops-emma2rh.c b/arch/mips/pci/ops-emma2rh.c
+index 38f1816..d31bfc6 100644
+--- a/arch/mips/pci/ops-emma2rh.c
++++ b/arch/mips/pci/ops-emma2rh.c
+@@ -45,7 +45,7 @@ static int check_args(struct pci_bus *bu
+ 	/* check if the bus is top-level */
+ 	if (bus->parent != NULL) {
+ 		*bus_num = bus->number;
+-		db_assert(bus_num != 0);
++		db_assert(bus_num != NULL);
+ 	} else
+ 		*bus_num = 0;
  
- 	/* Find a free spot to put this handler */
- 	for (i = 0; (i < COMEM_MAXPCI); i++) {
--		if (pci_irqlist[i].handler == 0) {
-+		if (pci_irqlist[i].handler == NULL) {
- 			pci_irqlist[i].handler = handler;
- 			pci_irqlist[i].device = device;
- 			pci_irqlist[i].dev_id = dev_id;
+diff --git a/arch/mips/pci/ops-pnx8550.c b/arch/mips/pci/ops-pnx8550.c
+index f556b7a..d610646 100644
+--- a/arch/mips/pci/ops-pnx8550.c
++++ b/arch/mips/pci/ops-pnx8550.c
+@@ -117,7 +117,7 @@ read_config_byte(struct pci_bus *bus, un
+ 	unsigned int data = 0;
+ 	int err;
+ 
+-	if (bus == 0)
++	if (bus == NULL)
+ 		return -1;
+ 
+ 	err = config_access(PCI_CMD_CONFIG_READ, bus, devfn, where, ~(1 << (where & 3)), &data);
+@@ -145,7 +145,7 @@ read_config_word(struct pci_bus *bus, un
+ 	unsigned int data = 0;
+ 	int err;
+ 
+-	if (bus == 0)
++	if (bus == NULL)
+ 		return -1;
+ 
+ 	if (where & 0x01)
+@@ -168,7 +168,7 @@ static int
+ read_config_dword(struct pci_bus *bus, unsigned int devfn, int where, u32 * val)
+ {
+ 	int err;
+-	if (bus == 0)
++	if (bus == NULL)
+ 		return -1;
+ 
+ 	if (where & 0x03)
+@@ -185,7 +185,7 @@ write_config_byte(struct pci_bus *bus, u
+ 	unsigned int data = (unsigned int)val;
+ 	int err;
+ 
+-	if (bus == 0)
++	if (bus == NULL)
+ 		return -1;
+ 
+ 	switch (where & 0x03) {
+@@ -213,7 +213,7 @@ write_config_word(struct pci_bus *bus, u
+ 	unsigned int data = (unsigned int)val;
+ 	int err;
+ 
+-	if (bus == 0)
++	if (bus == NULL)
+ 		return -1;
+ 
+ 	if (where & 0x01)
+@@ -235,7 +235,7 @@ static int
+ write_config_dword(struct pci_bus *bus, unsigned int devfn, int where, u32 val)
+ {
+ 	int err;
+-	if (bus == 0)
++	if (bus == NULL)
+ 		return -1;
+ 
+ 	if (where & 0x03)
 
