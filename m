@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbXG0Oas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936903AbXG0Ocx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934032AbXG0Oas (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 10:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932184AbXG0Oaj
+	id S936903AbXG0Ocx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 10:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933080AbXG0Ocq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 10:30:39 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:36391 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933394AbXG0Oai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 10:30:38 -0400
-Date: Fri, 27 Jul 2007 16:30:35 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Investigating SD card failures
-Message-ID: <20070727163035.4ec23c19@poseidon.drzeus.cx>
-In-Reply-To: <20070727055026.GB27423@roarinelk.homelinux.net>
-References: <20070727055026.GB27423@roarinelk.homelinux.net>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.5; i386-redhat-linux-gnu)
+	Fri, 27 Jul 2007 10:32:46 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:50488 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932291AbXG0Ocp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 10:32:45 -0400
+Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Joachim Deguara <joachim.deguara@amd.com>,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20070727084252.GA9347@wotan.suse.de>
+References: <20070727084252.GA9347@wotan.suse.de>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Fri, 27 Jul 2007 10:30:47 -0400
+Message-Id: <1185546647.5069.17.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007 07:50:26 +0200
-Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
-
-> Hi Pierre,
+On Fri, 2007-07-27 at 10:42 +0200, Nick Piggin wrote:
+> Hi,
 > 
-> I have a 1GB SanDisk SD card here which linux does not recognize.
-> Looking at the MMC debug output, I see the MMC core repeatedly
-> issues CMD55/CMD41 commands (which all succeed!) then stops
-> after 100 times.  In sd_ops.c the code checks for a bit to get set.
-> My question is, what exactly is this bit supposed to indicate?
+> Just got a bit of time to take another look at the replicated pagecache
+> patch. The nopage vs invalidate race and clear_page_dirty_for_io fixes
+> gives me more confidence in the locking now; the new ->fault API makes
+> MAP_SHARED write faults much more efficient; and a few bugs were found
+> and fixed.
 > 
+> More stats were added: *repl* in /proc/vmstat. Survives some kbuilding
+> tests...
+> 
+> --
+> 
+> Page-based NUMA pagecache replication.
+<snip really big patch!>
 
-That the card has initialized. Try extending the time that loop runs and see if the card powers up.
+Hi, Nick.
 
--- 
-     -- Pierre Ossman
+Glad to see you're back on this.  It's been on my list, but delayed by
+other patch streams...
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+As I mentioned to you in prior mail, I want to try to integrate this
+atop my "auto/lazy migration" patches, such that when a task moves to a
+new node, we remove just that task's pte ref's to page cache pages
+[along with all refs to anon pages, as I do now] so that the task will
+take a fault on next touch and either use an existing local copy or
+replicate the page at that time.  Unfortunately, that's in the queue
+behind the memoryless node patches and my stalled shared policy patches,
+among other things :-(.
+
+Also, what kernel is this patch against?  Diffs just say "linux-2.6".
+Somewhat ambiguous...
+
+Lee
+
