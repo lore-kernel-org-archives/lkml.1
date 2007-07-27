@@ -1,102 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965176AbXG0UQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965363AbXG0UQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965176AbXG0UQY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 16:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965145AbXG0UOg
+	id S965363AbXG0UQv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 16:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965140AbXG0UPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 16:14:36 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4989 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965134AbXG0UOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 16:14:34 -0400
-Date: Fri, 27 Jul 2007 16:13:57 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
-       martin.pitt@ubuntu.com, wwoods@redhat.com
-Cc: nhorman@tuxdriver.com
-Subject: [PATCH 3/3] core_pattern: fix up a few miscelaneous bugs
-Message-ID: <20070727201357.GD18946@hmsreliant.homelinux.net>
+	Fri, 27 Jul 2007 16:15:49 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:41370 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965170AbXG0UPp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 16:15:45 -0400
+Message-ID: <46AA51CA.7030105@oracle.com>
+Date: Fri, 27 Jul 2007 16:12:58 -0400
+From: Chuck Lever <chuck.lever@oracle.com>
+Reply-To: chuck.lever@oracle.com
+Organization: Corporate Architecture team, Oracle USA
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.12-2006-07-14
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kzak@redhat.com, ericvh@gmail.com,
+       lucho@ionkov.net, zippel@linux-m68k.org, hpa@zytor.com,
+       raven@themaw.net, rathamahata@php4.ru, dhowells@redhat.com,
+       sfrench@samba.org, mhalcrow@us.ibm.com, phillip@hellewell.homeip.net,
+       hirofumi@mail.parknet.co.jp, mikulas@artax.karlin.mff.cuni.cz,
+       wli@holomorphy.com, shaggy@austin.ibm.com, vandrove@vc.cvut.cz,
+       trond.myklebust@fys.uio.no, aia21@cantab.net, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com, reiserfs-devel@vger.kernel.org,
+       bfennema@falcon.csc.calpoly.edu, dushistov@mail.ru,
+       xfs-masters@oss.sgi.com, arnd@arndb.de, holzheu@de.ibm.com
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu>
+Content-Type: multipart/mixed;
+ boundary="------------040108050409040809030404"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hey
-	This patch fixes up a few bugs I found while testing my other work.
-Specifically:
+This is a multi-part message in MIME format.
+--------------040108050409040809030404
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-1) Fixes call_usermodehelper_pipe to not wait for program exit on the user mode
-helper process.  Since this context fill the pipe.  The user mode helper, if it
-reads stdin, will block waiting for the pipe to have data on it, and we will
-wait forever for the usermodehelper to exit.  Changed this to wait only for a
-successful exec.
+Miklos Szeredi wrote:
+>> Some mount options are never passed to the kernel, and thus can't appear 
+>> in /proc/mounts.  Examples include user, users, and _netdev for NFS.
+> 
+> These options control *who* may mount and *when* to mount.  They are
+> not a property of the mount itself and are not added to /etc/mtab.
+> 
+> There's a "user=ID" option that is added to /etc/mtab in case of user
+> mounts.  This identifies the owner of the mount, so that it can be
+> unmounted by that user.  There are patches in -mm that enable the
+> kernel to store this info.
+> 
+> Do you have other examples in mind?
 
-2) Fixes do_coredump to detect a crash in the user mode helper process and abort
-the attempt  to recursively dump core to another copy of the helper process,
-potentially ad-infinitum.
+[no]quota comes to mind; also auto, [no]owner, [no]group, and 
+quiet/loud, but these may fall into the same category you mention above.
 
-Thanks & Regards
-Neil
+Aside: It's a confusing artifact of the mount CLI that these options 
+control who/when but are passed to the mount command in the same way the 
+other options are.
 
-Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+--------------040108050409040809030404
+Content-Type: text/x-vcard; charset=utf-8;
+ name="chuck.lever.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="chuck.lever.vcf"
+
+begin:vcard
+fn:Chuck Lever
+n:Lever;Chuck
+org:Oracle Corporation;Corporate Architecture: Linux Projects Group
+adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
+title:Principal Member of Staff
+tel;work:+1 248 614 5091
+x-mozilla-html:FALSE
+version:2.1
+end:vcard
 
 
- fs/exec.c     |   14 +++++++++++++-
- kernel/kmod.c |    2 +-
- 2 files changed, 14 insertions(+), 2 deletions(-)
-
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 6855a52..1398d07 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1791,12 +1791,24 @@
- 		goto fail_unlock;
- 
-  	if (ispipe) {
--		core_limit = RLIM_INFINITY;
- 		helper_argv = argv_split(GFP_KERNEL, corename+1, &helper_argc);
- 		/* Terminate the string before the first option */
- 		delimit = strchr(corename, ' ');
- 		if (delimit)
- 			*delimit = '\0';
-+		delimit = strrchr(helper_argv[0], '/');
-+		if (delimit) 
-+			delimit++;
-+		else
-+			delimit = helper_argv[0];
-+		if (!strcmp(delimit, current->comm))
-+		{	
-+			printk(KERN_NOTICE "Recursive core dump detected, Aborting\n");
-+			goto fail_unlock;
-+		}
-+
-+		core_limit = RLIM_INFINITY;
-+
- 		/* SIGPIPE can happen, but it's just never processed */
-  		if(call_usermodehelper_pipe(corename+1, helper_argv, NULL, &file)) {
-  			printk(KERN_INFO "Core dump to %s pipe failed\n",
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 9809cc1..c6a4f8a 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -505,7 +505,7 @@
- 	if (ret < 0)
- 		goto out;
- 
--	return call_usermodehelper_exec(sub_info, 1);
-+	return call_usermodehelper_exec(sub_info, UMH_WAIT_EXEC);
- 
-   out:
- 	call_usermodehelper_freeinfo(sub_info);
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+--------------040108050409040809030404--
