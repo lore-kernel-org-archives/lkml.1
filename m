@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938623AbXG1AKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938560AbXG1ANk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938623AbXG1AKe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 20:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765012AbXG1AK1
+	id S938560AbXG1ANk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 20:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765012AbXG1ANd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 20:10:27 -0400
-Received: from s36.avahost.net ([74.53.95.194]:58092 "EHLO s36.avahost.net"
+	Fri, 27 Jul 2007 20:13:33 -0400
+Received: from waste.org ([66.93.16.53]:39726 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762241AbXG1AK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 20:10:26 -0400
-X-Greylist: delayed 55612 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 20:10:26 EDT
-Message-ID: <46A9B029.1030106@katalix.com>
-Date: Fri, 27 Jul 2007 09:43:21 +0100
-From: James Chapman <jchapman@katalix.com>
-Organization: Katalix Systems Ltd
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	id S1764283AbXG1ANc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 20:13:32 -0400
+Date: Fri, 27 Jul 2007 19:12:59 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Eric St-Laurent <ericstl34@sympatico.ca>,
+       Rene Herman <rene.herman@gmail.com>,
+       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: -mm merge plans for 2.6.23
+Message-ID: <20070728001259.GJ11166@waste.org>
+References: <46A57068.3070701@yahoo.com.au> <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com> <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com> <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au> <2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com> <20070725215717.df1d2eea.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-CC: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       davem@daveloft.net
-Subject: Re: [PATCH] misannotation in pppol2tp
-References: <E1IE6Iv-0005Lj-N2@ZenIV.linux.org.uk>
-In-Reply-To: <E1IE6Iv-0005Lj-N2@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-PopBeforeSMTPSenders: careers@katalix.com,forums@katalix.com,info@katalix.com,jchapman@katalix.com,katalixc,lists@katalix.com,orders@katalix.com,sales@katalix.com,support@katalix.com,webmaster@katalix.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - s36.avahost.net
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - katalix.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070725215717.df1d2eea.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Viro wrote:
-> Address of auto variable is not a userland pointer.  A good thing, too,
-> since if pppol2tp_tunnel_getsockopt() would _really_ get a userland pointer
-> as argument, it would be an instant roothole...
+On Wed, Jul 25, 2007 at 09:57:17PM -0700, Andrew Morton wrote:
+> So.  We can
 > 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Acked-by: James Chapman <jchapman@katalix.com>
+> a) provide a way for userspace to reload pagecache and
+> 
+> b) merge maps2 (once it's finished) (pokes mpm)
 
-Thanks Al.
+Consider me poked, despite not being cc:ed.
 
 -- 
-James Chapman
-Katalix Systems Ltd
-http://www.katalix.com
-Catalysts for your Embedded Linux software development
-
+Mathematics is the supreme nostalgia of our time.
