@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763226AbXG1GYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760875AbXG1Gpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763226AbXG1GYl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 02:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXG1GYd
+	id S1760875AbXG1Gpn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 02:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbXG1Gpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 02:24:33 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:49702 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754038AbXG1GYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 02:24:33 -0400
-Date: Sat, 28 Jul 2007 08:25:49 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc1-mm1 + hotfixes -- Section mismatches
-Message-ID: <20070728062549.GB21626@uranus.ravnborg.org>
-References: <a44ae5cd0707272216o60185470k30a785ebbffe57f5@mail.gmail.com>
+	Sat, 28 Jul 2007 02:45:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40915 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754659AbXG1Gpe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 02:45:34 -0400
+Date: Fri, 27 Jul 2007 23:45:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mm/sparse.c:482: error: implicit declaration of function
+ =?UTF-8?B?4oCYc3BhcnNlX2Vhcmx5X3VzZW1hcF9hbGxvY+KAmQ==?=
+Message-Id: <20070727234526.f4a3ad83.akpm@linux-foundation.org>
+In-Reply-To: <a44ae5cd0707272314y3b4066drda32661642f08eda@mail.gmail.com>
+References: <a44ae5cd0707272300y85825d0v9b8ff60de0de50a0@mail.gmail.com>
+	<a44ae5cd0707272314y3b4066drda32661642f08eda@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a44ae5cd0707272216o60185470k30a785ebbffe57f5@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 10:16:35PM -0700, Miles Lane wrote:
->   MODPOST vmlinux.o
-> WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to
-> .init.text.1:start_kernel (between 'is386' and 'check_x87')
+On Fri, 27 Jul 2007 23:14:04 -0700 "Miles Lane" <miles.lane@gmail.com> wrote:
 
-This one is not fixed - yet.
+> On 7/27/07, Miles Lane <miles.lane@gmail.com> wrote:
+> > Do you need my .config file?
+> >
+> >   CC      mm/sparse.o
+> > mm/sparse.c: In function 'sparse_init':
+> > mm/sparse.c:482: error: implicit declaration of function
+> > 'sparse_early_usemap_alloc'
+> > mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+> > make[1]: *** [mm/sparse.o] Error 1
+> >
+> 
+> #
+> # Automatically generated make config: don't edit
+> # Linux kernel version: 2.6.23-rc1-mm1
+> # Fri Jul 27 22:54:36 2007
 
-The rest are fixed in latest -linus.
-modpost choked over the added number following the section name.
-Like in .init.text.4 below.
-                  ^^
-
-> WARNING: vmlinux.o(.data+0x53c0): Section mismatch: reference to
-> .init.text.4:native_smp_prepare_boot_cpu (between 'smp_ops' and
-> 'call_lock')
-
-	Sam
+Whatever it is was gone away in the current -mm lineup so I
+guess one of the post-2.6.23-rc1-mm1 patches I merged fixed it.
