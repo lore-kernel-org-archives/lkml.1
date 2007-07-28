@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937128AbXG1IAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937564AbXG1IIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937128AbXG1IAS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 04:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763611AbXG1IAF
+	id S937564AbXG1IIV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 04:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765496AbXG1IIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 04:00:05 -0400
-Received: from mail.trixing.net ([87.230.125.58]:47915 "EHLO mail.trixing.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763389AbXG1IAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 04:00:01 -0400
-Message-ID: <46AAF709.9060407@l4x.org>
-Date: Sat, 28 Jul 2007 09:58:01 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	Sat, 28 Jul 2007 04:08:05 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:8414 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765460AbXG1IIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 04:08:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=pOQ6KCUXwkveIb8oRVOg6rIxjSHAmaiX7JPpGe49vRWaLkNZ7pQnBKuLRA6HQN1zPdR+VEBHJGKy8YoeNUKBIU3SISP4nGRH2QNwfHhTwDkW2LzgWUHS/0ubbFcgPsdwFTcUeACiiUrzG8bURUMFcyRzYVSKG/akAQChewY5f6E=
+Message-ID: <e1d5030b0707280108v236cc522m454c58e1044f1996@mail.gmail.com>
+Date: Sat, 28 Jul 2007 13:38:01 +0530
+From: "Midhun A" <midhunagni@gmail.com>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-mtd@lists.infradead.org
+Subject: Testing of CPRM on SD Card
 MIME-Version: 1.0
-To: Andreas Schwab <schwab@suse.de>
-CC: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Renninger <trenn@suse.de>
-References: <200707251238.50218.lenb@kernel.org> <46A98FF9.8060801@l4x.org> <je8x91flu9.fsf@sykes.suse.de>
-In-Reply-To: <je8x91flu9.fsf@sykes.suse.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andreas Schwab wrote:
-> Jan Dittmer <jdi@l4x.org> writes:
-> 
->> Len Brown wrote:
->>> Hi Linus,
->>>
->>> please pull from: 
->>>
->>> git://git.kernel.org/pub/scm/linux/kernel/git/lenb/linux-acpi-2.6.git release
->> This seems to break ia64 defconfig:
->>
->>   Building modules, stage 2.
->>   MODPOST 157 modules
->> FATAL: drivers/acpi/button: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=144.
-> 
-> Are you cross-compiling?  The definition of kernel_ulong_t won't work on
-> x86.
+Hi All,
 
-Yes, sorry, should have mentioned that. Build system is x86. Still,
-it didn't happen before the recent acpi merge.
+    Our product development requires that we use the CPRM security
+feature of SD card for protecting our material. I have been searching
+the web for a SD host controller / Software which is CPRM capable, so
+that we can write/read an encrypted SD card with the testing keys
+provided by the 4C Entity) and test our prototype. But I could find
+none. There are IP cores but no manufactured chips.
 
-Jan
+   Has anybody of you done similar stuff ? How do I go about testing
+the CPRM feature of the SD card on our prototype ?
+
+Thanks,
+Midhun.
