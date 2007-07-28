@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763028AbXG1LQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762292AbXG1Lgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763028AbXG1LQd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 07:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXG1LQ0
+	id S1762292AbXG1Lgf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 07:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXG1Lg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 07:16:26 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45528 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755250AbXG1LQZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 07:16:25 -0400
-Date: Sat, 28 Jul 2007 12:21:39 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: david@lang.hm, Daniel Hazelton <dhazelton@enter.net>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-Message-ID: <20070728122139.3c7f4290@the-village.bc.nu>
-In-Reply-To: <46AB166A.2000300@gmail.com>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	<20070727030040.0ea97ff7.akpm@linux-foundation.org>
-	<1185531918.8799.17.camel@Homer.simpson.net>
-	<200707271345.55187.dhazelton@enter.net>
-	<46AA3680.4010508@gmail.com>
-	<Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm>
-	<46AAEDEB.7040003@gmail.com>
-	<Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-	<46AB166A.2000300@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Sat, 28 Jul 2007 07:36:27 -0400
+Received: from ns.firmix.at ([62.141.48.66]:58853 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755363AbXG1Lg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 07:36:26 -0400
+Subject: Re: How to register block device as read-only
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: beck0778@umn.edu
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <Prayer.1.0.16.0707271307310.28071@wm1.tc.umn.edu>
+References: <Prayer.1.0.16.0707271307310.28071@wm1.tc.umn.edu>
+Content-Type: text/plain
+Organization: http://www.firmix.at/
+Date: Sat, 28 Jul 2007 13:36:14 +0200
+Message-Id: <1185622574.3655.11.camel@gimli.at.home>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.332 required=5
+X-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It is. Prefetched pages can be dropped on the floor without additional I/O.
+On Fri, 2007-07-27 at 13:07 -0500, beck0778@umn.edu wrote:
+> Hello,
+> 
+> In a block device driver, how do you tell the kernel that your block device 
+> is read-only? Is it in the registration of the gendisk, or is there an 
+> ioctl I should be catching to inform the kernel (and user) that this disk 
+> is read-only?
 
-Which is essentially free for most cases. In addition your disk access
-may well have been in idle time (and should be for this sort of stuff)
-and if it was in the same chunk as something nearby was effectively free
-anyway. 
+Unless I misunderstand the question, the "write" and "writev" function
+of the "struct file_operations" should return an appropriate error value
+(which is here -EACCES).
+You may think of returning an error in the "open" if someone wants to
+open it to write to it (so that the must open it read-only).
+But I don't know if that is common practice or not (or even disliked) as
+it may interfere with not properly implemented tools which open devices
+read-write even if they never write to it.
 
-Actual physical disk ops are precious resource and anything that mostly
-reduces the number will be a win - not to stay swap prefetch is the right
-answer but accidentally or otherwise there are good reasons it may happen
-to help.
-
-Bigger more linear chunks of writeout/readin is much more important I
-suspect than swap prefetching. 
-
-> good overview of exactly how broken -mm can be at times. How many -mm users 
-> use it anyway? He himself said he's not convinced of usefulness having not 
-
-I've been using it for months with no noticed problem. I turn it on
-because it might as well get tested. I've not done comparison tests so I
-can't comment on if its worth it.
-
-Lots of -mm testers turn *everything* on because its a test kernel.
-
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
 
