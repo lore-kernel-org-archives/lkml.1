@@ -1,113 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938796AbXG1B46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938821AbXG1CCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938796AbXG1B46 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 21:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763328AbXG1B4t
+	id S938821AbXG1CCQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 22:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938471AbXG1CCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 21:56:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53895 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760547AbXG1B4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 21:56:48 -0400
-Message-ID: <46AAA25E.7040301@redhat.com>
-Date: Fri, 27 Jul 2007 21:56:46 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 27 Jul 2007 22:02:05 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49165 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934704AbXG1CCE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 22:02:04 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Maxim Levitsky <maximlevitsky@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [BUG] i386 relocable kernel breakes /proc/kcore debugging
+References: <200707280443.44048.maximlevitsky@gmail.com>
+Date: Fri, 27 Jul 2007 19:58:56 -0600
+In-Reply-To: <200707280443.44048.maximlevitsky@gmail.com> (Maxim Levitsky's
+	message of "Sat, 28 Jul 2007 04:43:43 +0300")
+Message-ID: <m1fy39thjz.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: swap-prefetch:  A smart way to make good use of idle resources
- (was: updatedb)
-References: <200707272243.02336.a1426z@gawab.com>
-In-Reply-To: <200707272243.02336.a1426z@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> People wrote:
->>>> I believe the users who say their apps really do get paged back in
->>>> though, so suspect that's not the case.
->>> Stopping the bush-circumference beating, I do not. -ck (and gentoo) have
->>> this massive Calimero thing going among their users where people are
->>> much less interested in technology than in how the nasty big kernel
->>> meanies are keeping them down (*).
->> I think the problem is elsewhere. Users don't say: "My apps get paged
->> back in." They say: "My system is more responsive". They really don't
->> care *why* the reaction to a mouse click that takes three seconds with
->> a mainline kernel is instantaneous with -ck. Nasty big kernel meanies,
->> OTOH, want to understand *why* a patch helps in order to decide whether
->> it is really a good idea to merge it. So you've got a bunch of patches
->> (aka -ck) which visibly improve the overall responsiveness of a desktop
->> system, but apparently no one can conclusively explain why or how they
->> achieve that, and therefore they cannot be merged into mainline.
->>
->> I don't have a solution to that dilemma either.
-> 
-> IMHO, what everybody agrees on, is that swap-prefetch has a positive effect 
-> in some cases, and nobody can prove an adverse effect (excluding power 
-> consumption).  The reason for this positive effect is also crystal clear:  
-> It prefetches from swap on idle into free memory, ie: it doesn't force 
-> anybody out, and they are the first to be dropped without further swap-out, 
-> which sounds really smart.
-> 
-> Conclusion:  Either prove swap-prefetch is broken, or get this merged quick.
+Maxim Levitsky <maximlevitsky@gmail.com> writes:
 
-If you can't prove why it helps and doesn't hurt, then it's a hack, by 
-definition.  Behind any performance hack is some fundamental truth that can be 
-exploited to greater effect if we reason about it.  So let's reason about it. 
-I'll start.
+> Hello,
+>
+> Today I noticed that gdb gets confused when I try to load a vmlinux image.
+> gdb 'thinks' that all kernel symbols are below 0x80000000 , while they are at 
+> 0xC000....
+>
+> Turning CONFIG_RELOCATABLE off fixes that, so I assume that is the reason for 
+> that.
+>
+> I am using 2.6.23-rc1, although I don't think that older versions are better.
+>
+> Best regards,
+> 	Maxim Levitsky
 
-Resource size has been outpacing processing latency since the dawn of time. 
-Disks get bigger much faster than seek times shrink.  Main memory and cache keep 
-growing, while single-threaded processing speed has nearly ground to a halt.
+Weird.
 
-In the old days, it made lots of sense to manage resource allocation in pages 
-and blocks.  In the past few years, we started reserving blocks in ext3 
-automatically because it saves more in seek time than it costs in disk space. 
-Now we're taking preallocation and antifragmentation to the next level with 
-extent-based allocation in ext4.
+Vivek could this be related to the problem of problematic core dumps we
+were seeing earlier?
 
-Well, we're still using bitmap-style allocation for pages, and the prefetch-less 
-swap mechanism adheres to this design as well.  Maybe it's time to start 
-thinking about memory in a somewhat more extent-like fashion.
+Eric
 
-With swap prefetch, we're only optimizing the case when the box isn't loaded and 
-there's RAM free, but we're not optimizing the case when the box is heavily 
-loaded and we need for RAM to be free.  This is a complete reversal of sane 
-development priorities.  If swap batching is an optimization at all (and we have 
-empirical evidence that it is) then it should also be an optimization to swap 
-out chunks of pages when we need to free memory.
 
-So, how do we go about this grouping?  I suggest that if we keep per-VMA 
-reference/fault/dirty statistics, we can tell which logically distinct chunks of 
-memory are being regularly used.  This would also us to apply different page 
-replacement policies to chunks of memory that are being used in different fashions.
+> PS: 
+> This is what gdb says:
 
-With such statistics, we could then page out VMAs in 2MB chunks when we're under 
-memory pressure, also giving us the option of transparently paging them back in 
-to hugepages when we have the memory free, once anonymous hugepage support is in 
-place.
-
-I'm inclined to view swap prefetch as a successful scientific experiment, and 
-use that data to inform a more reasoned engineering effort.  If we can design 
-something intelligent which happens to behave more or less like swap prefetch 
-does under the circumstances where swap prefetch helps, and does something else 
-smart under the circumstances where swap prefetch makes no discernable 
-difference, it'll be a much bigger improvement.
-
-Because we cannot prove why the existing patch helps, we cannot say what impact 
-it will have when things like virtualization and solid state drives radically 
-change the coefficients of the equation we have not solved.  Providing a sysctl 
-to turn off a misbehaving feature is a poor substitute for doing it right the 
-first time, and leaving it off by default will ensure that it only gets used by 
-the handful of people who know enough to rebuild with the patch anyway.
-
-Let's talk about how we can make page replacement smarter, so it naturally 
-accomplishes what swap prefetch accomplishes, as part of a design we can reason 
-about.
-
-CC-ing linux-mm, since that's where I think we should take this next.
-
-	-- Chris
+>
+> (gdb) disassemble sys_open
+> Dump of assembler code for function sys_open:
+> 0x8026fa60 <sys_open+0>:        Cannot access memory at address 0x8026fa60
+>
+> While real address of sys_open is:
+>
+> [root@MAIN linux-2.6]# nm ./.obj/vmlinux |  grep sys_open
+> .........
+> c016ea60 T sys_open
+>
+> Strange, but gdb recordnizes the above address directly:
+>
+> (gdb) disassemble 0xc016ea60
+> Dump of assembler code for function sys_open:
+> 0xc016ea60 <sys_open+0>:        sub    $0x4,%esp
+> 0xc016ea63 <sys_open+3>:        mov    0x10(%esp),%eax
+> ...............
