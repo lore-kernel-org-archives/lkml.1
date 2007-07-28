@@ -1,79 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760356AbXG1LG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbXG1LPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760356AbXG1LG5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 07:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbXG1LGr
+	id S1761330AbXG1LPT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 07:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbXG1LPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 07:06:47 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:52819 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753807AbXG1LGq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 07:06:46 -0400
-From: Dirk Schoebel <dirk@liji-und-dirk.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-Date: Sat, 28 Jul 2007 13:06:24 +0200
-User-Agent: KMail/1.9.7
-Cc: Martin Steigerwald <Martin@lichtvoll.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org> <200707281205.10871.Martin@lichtvoll.de>
-In-Reply-To: <200707281205.10871.Martin@lichtvoll.de>
+	Sat, 28 Jul 2007 07:15:08 -0400
+Received: from [212.12.190.100] ([212.12.190.100]:33319 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754614AbXG1LPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 07:15:06 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Chris Snook <csnook@redhat.com>
+Subject: Re: How can we make page replacement smarter (was: swap-prefetch)
+Date: Sat, 28 Jul 2007 14:11:57 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <200707272243.02336.a1426z@gawab.com> <200707280717.41250.a1426z@gawab.com> <46AAEFC4.8000006@redhat.com>
+In-Reply-To: <46AAEFC4.8000006@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1305017.U9Naz6njL5";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707281306.30051.dirk@liji-und-dirk.de>
-X-Provags-ID: V01U2FsdGVkX1/EVW+QrB2Ad/u9Tkk7gAp9QONh6DwbdJopYDx
- 6X3yNDe6z2E3pGSWWFd2KShOdrB7GP1l7JhOhKX8aS+ElvsMwI
- 1alTUQOP9YkZughtZUZrw==
+Content-Disposition: inline
+Message-Id: <200707281411.57823.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1305017.U9Naz6njL5
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Up till now i haven't read the interview with Linus.
-
-> [2] http://www.oneopensource.it/interview-linus-torvalds/
+Chris Snook wrote:
+> Al Boldi wrote:
+> > Because it is hard to quantify the expected swap-in speed for random
+> > pages, let's first tackle the swap-in of consecutive pages, which should
+> > be at least as fast as swap-out.  So again, why is swap-in so slow?
 >
+> If I'm writing 20 pages to swap, I can find a suitable chunk of swap and
+> write them all in one place.  If I'm reading 20 pages from swap, they
+> could be anywhere.  Also, writes get buffered at one or more layers of
+> hardware.
 
-It is interesting, he mentiones a lesson to learn from Microsoft:
-"'Well, historically, the most important lesson from Microsoft - and one th=
-ey=20
-themselves seem to have forgotten - is simply 'Give your customers what the=
-y=20
-want'."
-But as i see all the discussion here that's what's _not_ being honored. Peo=
-ple=20
-request swap prefetch, it wouldn't be hard to give it to them but they=20
-probably won't get it (or it takes a 5 days, 200+ messages discussion(in th=
-e=20
-ck list alone were already 190 messages posted about this)).
-Give the people plugshed so everyone can happily be using SD instead of CFS=
- - =20
-no way!
-There sure are more examples to be given.
+Ok, this explains swap-in of random pages.  Makes sense, but it doesn't 
+explain the awful tmpfs performance degradation of consecutive read-in runs 
+from swap, which should have at least stayed constant
 
-Dirk.
+> At best, reads can be read-ahead and cached, which is why
+> sequential swap-in sucks less.  On-demand reads are as expensive as I/O
+> can get.
 
---nextPart1305017.U9Naz6njL5
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Which means that it should be at least as fast as swap-out, even faster 
+because write to disk is usually slower than read on modern disks.  But 
+linux currently shows a distinct 2x slowdown for sequential swap-in wrt 
+swap-out.  And to prove this point, just try suspend to disk where you can 
+see sequential swap-out being reported at about twice the speed of 
+sequential swap-in on resume.  Why is that?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
 
-iD8DBQBGqyM26YYnt7muP7IRAhLZAKCR3yiTw8tRMmefXJB/EC2AnD3qYwCfU3LW
-7ar/dnuzNb/3ZLggA7nsOdw=
-=3piz
------END PGP SIGNATURE-----
+Thanks!
 
---nextPart1305017.U9Naz6njL5--
+--
+Al
+
