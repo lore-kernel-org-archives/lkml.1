@@ -1,89 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938538AbXG1Abg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938629AbXG1Acq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938538AbXG1Abg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 20:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764630AbXG1AbZ
+	id S938629AbXG1Acq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 20:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938070AbXG1Acj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 20:31:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37433 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761185AbXG1AbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 20:31:24 -0400
-Message-ID: <46AA8E57.8010105@redhat.com>
-Date: Fri, 27 Jul 2007 20:31:19 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 27 Jul 2007 20:32:39 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:58076 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937082AbXG1Aci (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 20:32:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YGLRR5b5e+oKDYCeGAGpj4S3ImuBX0k7ZgbL934fEUhQ/tyvic8yEEdYT2AyslDyf3X3FJdv2EAQw/Ac1Bh7mrQ3jKdJf0vV3rVxwp5FsHp8MDE6QLpSBcFnIkA58ZCPYHYcP9Jxximpz5viMIfAsLfq/72kW0DYNson67NfiGw=
+Message-ID: <92a12cdb0707271732l1d61f0aajfbd72c62d7ded3b6@mail.gmail.com>
+Date: Sat, 28 Jul 2007 01:32:37 +0100
+From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Problems with framebuffer in 2.6.22-git17
+Cc: "Adrian McMenamin" <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       lethal@users.sourceforge.net
+In-Reply-To: <1185578576.26603.16.camel@daplas>
 MIME-Version: 1.0
-To: tim.c.chen@linux.intel.com
-CC: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Re: Volanomark slows by 80% under CFS
-References: <1185573687.19777.44.camel@localhost.localdomain>
-In-Reply-To: <1185573687.19777.44.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
+	 <1185146563.6370.8.camel@daplas>
+	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
+	 <1185406433.5046.23.camel@daplas>
+	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
+	 <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
+	 <1185571890.26603.7.camel@daplas>
+	 <92a12cdb0707271525i46970157ke1b2b2e6575682d6@mail.gmail.com>
+	 <1185578576.26603.16.camel@daplas>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Chen wrote:
-> Ingo,
-> 
-> Volanomark slows by 80% with CFS scheduler on 2.6.23-rc1.  
-> Benchmark was run on a 2 socket Core2 machine.
-> 
-> The change in scheduler treatment of sched_yield 
-> could play a part in changing Volanomark behavior.
-> In CFS, sched_yield is implemented
-> by dequeueing and requeueing a process .  The time a process 
-> has spent running probably reduced the the cpu time due it 
-> by only a bit. The process could get re-queued pretty close
-> to head of the queue, and may get scheduled again pretty
-> quickly if there is still a lot of cpu time due.  
-> 
-> It may make sense to queue the
-> yielding process a bit further behind in the queue. 
-> I made a slight change by zeroing out wait_runtime 
-> (i.e. have the process gives
-> up cpu time due for it to run) for experimentation. 
-> Let's put aside gripes that Volanomark should have used a 
-> better mechanism to coordinate threads instead sched_yield for 
-> a second.   Volanomark runs better
-> and is only 40% (instead of 80%) down from old scheduler 
-> without CFS.  
-> 
-> Of course we should not tune for Volanomark and this is
-> reference data. 
-> What are your view on how CFS's sched_yield should behave?
-> 
-> Regards,
-> Tim
+On 28/07/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> On Fri, 2007-07-27 at 23:25 +0100, Adrian McMenamin wrote:
+> > On 27/07/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
+> > > On Fri, 2007-07-27 at 21:18 +0100, Adrian McMenamin wrote:
+> > > > On 27/07/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
+> > > >
+> > > > > With the patch reverted and 24bpp, it oopses before freezing (with two
+> > > > > odd looking boot logos on the screen):
+> > > > >
+> > > > Tested this further and it fails on:
+> > > >
+> > > > rev = fb_readl(par->mmio_base + 0x04);
+> > >
+> > > Doubtful if this line is the point of failure, this line is executed
+> > > only once, on initialization.
+> >
+> >
+> > par->mmio_base is corrupted in some way during the call to
+> > register_framebuffer - still investigating how/why.
+>
+> Possible, par->mmio_base is the last field in struct pvr2fb_par,
+> after that is the pseudo_palette. The oops did not manifest when the
+> pseudo_palette was written as u16, but oops'ed when written as u32.
+> Memory alignment problems?
+>
+> Try the patch I posted before, might help.
+>
+Apologies, missed the patch before.
 
-The primary purpose of sched_yield is for SCHED_FIFO realtime processes.  Where 
-nothing else will run, ever, unless the running thread blocks or yields the CPU. 
-  Under CFS, the yielding process will still be leftmost in the rbtree, 
-otherwise it would have already been scheduled out.
+With the patch applied the Dreamcast no longer crashes or locks with
+either 16, 24 or 32 bpp, so that's good.
 
-Zeroing out wait_runtime on sched_yield strikes me as completely appropriate. 
-If the process wanted to sleep a finite duration, it should actually call a 
-sleep function, but sched_yield is essentially saying "I don't have anything 
-else to do right now", so it's hardly fair to claim you've been waiting for your 
-chance when you just gave it up.
+With 24bpp everything is doubled up (eg two boot logos on screen) and
+about twice (?) the size it should be - though with a black screen.
 
-As for the remaining 40% degradation, if Volanomark is using it for 
-synchronization, the scheduler is probably cycling through threads until it gets 
-to the one that actually wants to do work.  The O(1) scheduler will do this very 
-  quickly, whereas CFS has a bit more overhead.  Interactivity boosting may have 
-also helped the old scheduler find the right thread faster.
+With 32 bpp everything is about 4 (?) times the size it should be and
+all on a yellow background.
 
-I think Volanomark is being pretty stupid, and deserves to run slowly, but there 
-are legitimate reasons to want to call sched_yield in a non-SCHED_FIFO process. 
-  If I'm performing multiple different calculations on the same set of data in 
-multiple threads, and accessing the shared data in a linear fashion, I'd like to 
-be able to have one thread give the other some CPU time so they can stay at the 
-same point in the stream and improve cache hit rates, but this is only an 
-optimization if I can do it without wasting CPU or gradually nicing myself into 
-oblivion.  Having sched_yield zero out wait_runtime seems like an appropriate 
-way to make this use case work to the extent possible.  Any user attempting such 
-an optimization should have the good sense to do real work between sched_yield 
-calls, to avoid calling the scheduler in a tight loop.
+With 16bpp then everything is on a blue background as before, but is
+also the correct size (as before).
 
-	-- Chris
+So, it's better certainly, but there are still a few issues with the
+driver, though nothing that takes down the box.
+
+So thanks!
+
+Adrian
