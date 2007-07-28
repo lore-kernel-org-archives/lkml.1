@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbXG1Ulw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbXG1UwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbXG1Ulw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 16:41:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbXG1Ulo
+	id S1757482AbXG1UwX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 16:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755903AbXG1UwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 16:41:44 -0400
-Received: from wildsau.enemy.org ([193.170.194.34]:32843 "EHLO
-	wildsau.enemy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755442AbXG1Ulo (ORCPT
+	Sat, 28 Jul 2007 16:52:09 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:44912 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756003AbXG1UwA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 16:41:44 -0400
-From: Herbert Rosmanith <kernel@wildsau.enemy.org>
-Message-Id: <200707282041.l6SKfgM8000387@wildsau.enemy.org>
-Subject: Re: kernel panic w/ 2.6.22.1, VIA EPIA Mini ITX
-In-Reply-To: <200707282104.31989.alistair@devzero.co.uk>
-To: linux-kernel@vger.kernel.org
-Date: Sat, 28 Jul 2007 22:41:39 +0200 (MET DST)
-X-Mailer: ELM [version 2.4ME+ PL100 (25)]
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Jul 2007 16:52:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=rUNh/OJhqS1svOaTrlRl1vWGbkjS2NCfPCNf82SFfslkEgNqSBkn8DNT69h88s0DT1dK5UAegWzMtKReU7491xKV0kPGDuW8NAGu7FsrLUyjDwkNFt/01+Lt0gmbAo4xhV7f+KEgqkXJva2ut0Q0141dSIwC3oiUTAYq3bsoQ2w=
+Date: Sat, 28 Jul 2007 22:51:48 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Jonathan Jessup <jonathanjessup@gmail.com>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org, lkml@metanurb.dk
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+Message-Id: <20070728225148.a0e58fdd.diegocg@gmail.com>
+In-Reply-To: <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<1185588279.1654.1.camel@localhost>
+	<alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+	<Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
+	<954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
+	<alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
+	<alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Checked the RAM on the box? Kinda weird if you're getting VRAM corruption, I 
-> wonder if this is due to the RAM failing at the point where the framebuffer 
-> is mapped?
+El Sat, 28 Jul 2007 11:05:25 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> escribió:
 
-you are probably right... I removed one of the RAMs, no crash
-anymore. This is not ... nice. The manual says, that the board can
-handle up to 1GB (2x512MB). I don't think the RAM itself is damaged --
-these are brandnew Kingston "ValueRam" PC133 SD-RAMs with lifelong 
-guarantee. I wonder if this behaviour only apperas with my particular
-board, or if all VIA EPIA Mini ITX 500 are affected (I've run out
-of boards to test ...)
+> So "modal" things are good for fixing behaviour in the short run. But they 
+> are a total disaster in the long run, and even in the short run they tend 
+> to have problems (simply because there will be cases that straddle the 
+> line, and show some of _both_ issues, and now *neither* mode is the right 
+> one)
 
-thanks,
-herp
 
-> Try running memtest86 on it.
-
-good idea.
-
+I fully agree with this, but plugsched could have avoided this useless "division"
+on the topic of SD vs CFS. IMO that counts as an advantage, too ;)
