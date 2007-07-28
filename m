@@ -1,93 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbXG1VtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbXG1Vzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757649AbXG1VtU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 17:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754354AbXG1VtK
+	id S1757913AbXG1Vzs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 17:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbXG1Vzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 17:49:10 -0400
-Received: from keil-draco.com ([216.193.185.50]:50978 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753019AbXG1VtI (ORCPT
+	Sat, 28 Jul 2007 17:55:40 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:44155 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755412AbXG1Vzj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 17:49:08 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: david@lang.hm
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Date: Sat, 28 Jul 2007 17:48:50 -0400
-User-Agent: KMail/1.9.6
-Cc: Rene Herman <rene.herman@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <200707281156.53439.dhazelton@enter.net> <Pine.LNX.4.64.0707281403510.32476@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707281403510.32476@asgard.lang.hm>
+	Sat, 28 Jul 2007 17:55:39 -0400
+Date: Sat, 28 Jul 2007 23:55:38 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
+Subject: Re: Linus 2.6.23-rc1
+In-Reply-To: <alpine.LFD.0.999.0707281417201.3442@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707282355010.9488@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+ <1185615848.13701.16.camel@localhost> <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707282054330.15125@fbirervta.pbzchgretzou.qr>
+ <alpine.LFD.0.999.0707281222410.3442@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0707281417201.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707281748.50381.dhazelton@enter.net>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 July 2007 17:06:50 david@lang.hm wrote:
-> On Sat, 28 Jul 2007, Daniel Hazelton wrote:
-> > On Saturday 28 July 2007 04:55:58 david@lang.hm wrote:
-> >> On Sat, 28 Jul 2007, Rene Herman wrote:
-> >>> On 07/27/2007 09:43 PM, david@lang.hm wrote:
-> >>>>  On Fri, 27 Jul 2007, Rene Herman wrote:
-> >>>>>  On 07/27/2007 07:45 PM, Daniel Hazelton wrote:
-> >>
-> >> nobody is arguing that swap prefetch helps in the second cast.
-> >
-> > Actually, I made a mistake when tracking the thread and reading the code
-> > for the patch and started to argue just that. But I have to admit I made
-> > a mistake - the patches author has stated (as Rene was kind enough to
-> > point out) that swap prefetch can't help when memory is filled.
+
+On Jul 28 2007 14:33, Linus Torvalds wrote:
 >
-> I stand corrected, thaks for speaking up and correcting your position.
-
-If you had made the statement before I decided to speak up you would have been 
-correct :)
-
-Anyway, I try to always admit when I've made a mistake - its part of my 
-philosophy. (There have been times when I haven't done it, but I'm trying to 
-make that stop entirely)
-
-> >> what people are arguing is that there are situations where it helps for
-> >> the first case. on some machines and version of updatedb the nighly run
-> >> of updatedb can cause both sets of problems. but the nightly updatedb
-> >> run is not the only thing that can cause problems
-> >
-> > Solving the cache filling memory case is difficult. There have been a
-> > number of discussions about it. The simplest solution, IMHO, would be to
-> > place a (configurable) hard limit on the maximum size any of the kernels
-> > caches can grow to. (The only solution that was discussed, however, is a
-> > complex beast)
+>Btw, people who actually have 3D games installed (I have exactly one: 
+>ppracer, and I can't really say that I care about how it feels), if you 
+>don't have CONFIG_HZ=1000, this really is worth testing.
 >
-> limiting the size of the cache is also the wrong thing to do in many
-> situations. it's only right if the cache pushes out other data you care
-> about, if you are trying to do one thing as fast as you can you really do
-> want the system to use all the memory it can for the cache.
+>I think Ingo probably ran with CONFIG_NO_HZ and HZ_1000, but the default 
+>timer tick is actually 250Hz, which makes all the default scheduler values 
+>come out four times bigger than they are documented/supposed to be.
 
-After thinking about this you are partially correct. There are those sorts of 
-situations where you want the system to use all the memory it can for caches. 
-OTOH, if those situations could be described in some sort of simple 
-heuristic, then a soft-limit that uses those heuristics to determine when to 
-let the cache expand could exploit the benefits of having both a limited and 
-unlimited cache. (And, potentially, if the heuristic has allowed a cache to 
-expand beyond the limit then, when the heuristic no longer shows the oversize 
-cache is no longer necessary it could trigger and automatic reclaim of that 
-memory.)
+I generally run with CONFIG_HZ=100, CONFIG_NO_HZ=n, CONFIG_PREEMPT_NONE.
 
-(I'm willing to help write and test code to do this exactly. There is no 
-guarantee that I'll be able to help with more than testing - I don't 
-understand the parts of the code involved all that well)
 
-DRH
 
+	Jan
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
