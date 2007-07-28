@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756462AbXG1Tfj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbXG1Tg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756462AbXG1Tfj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 15:35:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbXG1Tfc
+	id S1757014AbXG1Tg7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 15:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXG1Tgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 15:35:32 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50178 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753227AbXG1Tfc (ORCPT
+	Sat, 28 Jul 2007 15:36:52 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:48446 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751446AbXG1Tgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 15:35:32 -0400
-Date: Sat, 28 Jul 2007 12:34:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
-Subject: Re: Linus 2.6.23-rc1
-In-Reply-To: <Pine.LNX.4.64.0707282054330.15125@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0707281222410.3442@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
- <1185615848.13701.16.camel@localhost> <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707282054330.15125@fbirervta.pbzchgretzou.qr>
+	Sat, 28 Jul 2007 15:36:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=s5Plm9QiX26Cru7oGfJmpPjGyzvQKav3UKeT25Ig5lVBtLZotXm/UVCLAaHh286tUx8fcOcdtDjxDpmrlOD39RSct8BkWsoXY1JomRCCg+qoTXfaxJL53rDMZOwQw0e1oRFtkqTITTdsTCsLTh6nWF4Qhbi7hpPxUBPgn5/jf/4=
+Message-ID: <46AB99DA.6050402@googlemail.com>
+Date: Sat, 28 Jul 2007 21:32:42 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, jgarzik@pobox.com, linux-ide@vger.kernel.org
+Subject: [PATCH -mm] Fix libata warnings with CONFIG_PM=n
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jeff,
 
+I noticed this warnings when CONFIG_PM=n 
 
-On Sat, 28 Jul 2007, Jan Engelhardt wrote:
-> 
-> Time to investigate...
+...
 
-Well, one thing that would be worth doing is to simply create a trace of 
-time-slices for both schedulers.
+drivers/ata/libata-core.c:5993: warning: 'ata_host_disable_link_pm' defined but not used
+drivers/ata/libata-core.c:6004: warning: 'ata_host_enable_link_pm' defined but not used
 
-It could easily be some hacky thing that just saves the process name and 
-TSC at each scheduling event in some fairly small fixed-sized per-CPU 
-circular buffer, and have a /sys interface that reads it out, and then you 
-do
+...
 
-	sleep 60 ; cat /sys/cpubuffer > buffer
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
-and play the game for 60 seconds (so that you get a buffer that represents 
-perhaps the last 10 seconds of play).
+---
 
-It could *literally* just be an effect of the time quanta used, and CFS 
-just deciding that it's not interactive and giving things too long of a 
-CPU slice.
+--- linux-2.6.23-rc1/drivers/ata/libata-core.c.orig	2007-07-28 21:17:31.000000000 +0200
++++ linux-2.6.23-rc1/drivers/ata/libata-core.c	2007-07-28 21:17:48.000000000 +0200
+@@ -5989,6 +5989,7 @@ int ata_flush_cache(struct ata_device *d
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
+ static void ata_host_disable_link_pm(struct ata_host *host)
+ {
+ 	int i;
+@@ -6011,7 +6012,7 @@ static void ata_host_enable_link_pm(stru
+ 	}
+ }
+ 
+-#ifdef CONFIG_PM
++
+ static int ata_host_request_pm(struct ata_host *host, pm_message_t mesg,
+ 			       unsigned int action, unsigned int ehi_flags,
+ 			       int wait)
 
-Yes, it's what "/proc/sys/kernel/sched_granularity_ns" is supposed to 
-tweak, but maybe there's some misfeature there, or maybe the default is 
-just bad for games, or whatever.
-
-Ingo: that sysctl_sched_granularity initialization doesn't make sense. You 
-talk about it being in units of nanoseconds, but then you do
-
-	2000000000ULL/HZ
-
-which is nonsensical. That value is "2 seconds" (not 2ms like the comment 
-says) in nanoseconds, but then divided by HZ, so what's the meaning of 
-that HZ thing? Nothing in the scheduler should care about jiffies, why is 
-that related to HZ? All the scheduler clocks are in ns.
-
-			Linus
