@@ -1,100 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752378AbXG1NJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbXG1NKO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752378AbXG1NJn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 09:09:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751233AbXG1NJd
+	id S1751674AbXG1NKO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 09:10:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbXG1NJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 09:09:33 -0400
-Received: from mfo32.po.2iij.NET ([210.128.50.15]:11203 "EHLO
-	mfo32.po.2iij.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751074AbXG1NJb (ORCPT
+	Sat, 28 Jul 2007 09:09:56 -0400
+Received: from mail.lysator.liu.se ([130.236.254.3]:50465 "EHLO
+	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752528AbXG1NJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 09:09:31 -0400
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 09:09:31 EDT
-Date: Sat, 28 Jul 2007 22:04:20 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Greg KH <greg@kroah.com>
-Cc: yoichi_yuasa@tripeaks.co.jp,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-Subject: [PATCH] fix IDE legacy mode resource
-Message-Id: <20070728220420.352c316b.yoichi_yuasa@tripeaks.co.jp>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Jul 2007 09:09:50 -0400
+X-Greylist: delayed 1555 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 09:09:50 EDT
+In-Reply-To: <200707270945.LAA17237@ifs.emn.fr>
+References: <200707270945.LAA17237@ifs.emn.fr>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-1--986484589"
+Message-Id: <CF450A74-EB6C-41EC-AB9B-AD618E10FFBB@27m.se>
+Cc: kernel-janitors@vger.kernel.org, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Markus Gothe <markus.gothe@27m.se>
+Subject: Re: [PATCH 10/68] 0 -> NULL, for arch/mips
+Date: Sat, 28 Jul 2007 14:43:49 +0200
+To: Yoann Padioleau <padator@wanadoo.fr>
+X-Pgp-Agent: GPGMail 1.1.2 (Tiger)
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--Apple-Mail-1--986484589
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
 
-I got the following error on MIPS Cobalt.
-MIPS Cobalt has the 0x10000000 offset between resource and bus region. 
+Usually it's not only cleaner, it's what you want to do... AFAIK =20
+'NULL' is implemented/defined by the compiler, so if you've got a =20
+compiler which defines NULL otherwise than( a pointer to) zero you're =20=
 
-PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
-pata_via 0000:00:09.1: failed to request/iomap BARs for port 0 (errno=-16)
-PCI: Unable to reserve I/O region #3:8@f0000170 for device 0000:00:09.1
-pata_via 0000:00:09.1: failed to request/iomap BARs for port 1 (errno=-16)
-pata_via 0000:00:09.1: no available native port
+screwed. ;)
 
-At this point, these resources should be the bus regions.
+//Markus
 
-Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+On 27 Jul, 2007, at 11:45 , Yoann Padioleau wrote:
 
-diff -pruN -X generic/Documentation/dontdiff generic-orig/drivers/pci/probe.c generic/drivers/pci/probe.c
---- generic-orig/drivers/pci/probe.c	2007-07-26 17:07:44.151670750 +0900
-+++ generic/drivers/pci/probe.c	2007-07-26 17:25:42.227046250 +0900
-@@ -744,22 +744,40 @@ static int pci_setup_device(struct pci_d
- 		 */
- 		if (class == PCI_CLASS_STORAGE_IDE) {
- 			u8 progif;
-+			struct pci_bus_region region;
-+			struct resource resource;
- 			pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
- 			if ((progif & 1) == 0) {
--				dev->resource[0].start = 0x1F0;
--				dev->resource[0].end = 0x1F7;
--				dev->resource[0].flags = LEGACY_IO_RESOURCE;
--				dev->resource[1].start = 0x3F6;
--				dev->resource[1].end = 0x3F6;
--				dev->resource[1].flags = LEGACY_IO_RESOURCE;
-+				resource.start = 0x1F0;
-+				resource.end = 0x1F7;
-+				resource.flags = LEGACY_IO_RESOURCE;
-+				pcibios_resource_to_bus(dev, &region, &resource);
-+				dev->resource[0].start = region.start;
-+				dev->resource[0].end = region.end;
-+				dev->resource[0].flags = resource.flags;
-+				resource.start = 0x3F6;
-+				resource.end = 0x3F6;
-+				resource.flags = LEGACY_IO_RESOURCE;
-+				pcibios_resource_to_bus(dev, &region, &resource);
-+				dev->resource[1].start = region.start;
-+				dev->resource[1].end = region.end;
-+				dev->resource[1].flags = resource.flags;
- 			}
- 			if ((progif & 4) == 0) {
--				dev->resource[2].start = 0x170;
--				dev->resource[2].end = 0x177;
--				dev->resource[2].flags = LEGACY_IO_RESOURCE;
--				dev->resource[3].start = 0x376;
--				dev->resource[3].end = 0x376;
--				dev->resource[3].flags = LEGACY_IO_RESOURCE;
-+				resource.start = 0x170;
-+				resource.end = 0x177;
-+				resource.flags = LEGACY_IO_RESOURCE;
-+				pcibios_resource_to_bus(dev, &region, &resource);
-+				dev->resource[2].start = region.start;
-+				dev->resource[2].end = region.end;
-+				dev->resource[2].flags = resource.flags;
-+				resource.start = 0x376;
-+				resource.end = 0x376;
-+				resource.flags = LEGACY_IO_RESOURCE;
-+				pcibios_resource_to_bus(dev, &region, &resource);
-+				dev->resource[3].start = region.start;
-+				dev->resource[3].end = region.end;
-+				dev->resource[3].flags = resource.flags;
- 			}
- 		}
- 		break;
+>
+> When comparing a pointer, it's clearer to compare it to NULL than =20
+> to 0.
+>
+> Here is an excerpt of the semantic patch:
+>
+> @@
+> expression *E;
+> @@
+>
+>   E =3D=3D
+> - 0
+> + NULL
+>
+> @@
+> expression *E;
+> @@
+>
+>   E !=3D
+> - 0
+> + NULL
+>
+> Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
+> Cc: ralf@linux-mips.org
+> Cc: linux-mips@linux-mips.org
+> Cc: akpm@linux-foundation.org
+> ---
+>
+>  ops-emma2rh.c |    2 +-
+>  ops-pnx8550.c |   12 ++++++------
+>  2 files changed, 7 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/mips/pci/ops-emma2rh.c b/arch/mips/pci/ops-emma2rh.c
+> index 38f1816..d31bfc6 100644
+> --- a/arch/mips/pci/ops-emma2rh.c
+> +++ b/arch/mips/pci/ops-emma2rh.c
+> @@ -45,7 +45,7 @@ static int check_args(struct pci_bus *bu
+>  	/* check if the bus is top-level */
+>  	if (bus->parent !=3D NULL) {
+>  		*bus_num =3D bus->number;
+> -		db_assert(bus_num !=3D 0);
+> +		db_assert(bus_num !=3D NULL);
+>  	} else
+>  		*bus_num =3D 0;
+>
+> diff --git a/arch/mips/pci/ops-pnx8550.c b/arch/mips/pci/ops-pnx8550.c
+> index f556b7a..d610646 100644
+> --- a/arch/mips/pci/ops-pnx8550.c
+> +++ b/arch/mips/pci/ops-pnx8550.c
+> @@ -117,7 +117,7 @@ read_config_byte(struct pci_bus *bus, un
+>  	unsigned int data =3D 0;
+>  	int err;
+>
+> -	if (bus =3D=3D 0)
+> +	if (bus =3D=3D NULL)
+>  		return -1;
+>
+>  	err =3D config_access(PCI_CMD_CONFIG_READ, bus, devfn, where, =
+~(1 =20
+> << (where & 3)), &data);
+> @@ -145,7 +145,7 @@ read_config_word(struct pci_bus *bus, un
+>  	unsigned int data =3D 0;
+>  	int err;
+>
+> -	if (bus =3D=3D 0)
+> +	if (bus =3D=3D NULL)
+>  		return -1;
+>
+>  	if (where & 0x01)
+> @@ -168,7 +168,7 @@ static int
+>  read_config_dword(struct pci_bus *bus, unsigned int devfn, int =20
+> where, u32 * val)
+>  {
+>  	int err;
+> -	if (bus =3D=3D 0)
+> +	if (bus =3D=3D NULL)
+>  		return -1;
+>
+>  	if (where & 0x03)
+> @@ -185,7 +185,7 @@ write_config_byte(struct pci_bus *bus, u
+>  	unsigned int data =3D (unsigned int)val;
+>  	int err;
+>
+> -	if (bus =3D=3D 0)
+> +	if (bus =3D=3D NULL)
+>  		return -1;
+>
+>  	switch (where & 0x03) {
+> @@ -213,7 +213,7 @@ write_config_word(struct pci_bus *bus, u
+>  	unsigned int data =3D (unsigned int)val;
+>  	int err;
+>
+> -	if (bus =3D=3D 0)
+> +	if (bus =3D=3D NULL)
+>  		return -1;
+>
+>  	if (where & 0x01)
+> @@ -235,7 +235,7 @@ static int
+>  write_config_dword(struct pci_bus *bus, unsigned int devfn, int =20
+> where, u32 val)
+>  {
+>  	int err;
+> -	if (bus =3D=3D 0)
+> +	if (bus =3D=3D NULL)
+>  		return -1;
+>
+>  	if (where & 0x03)
+>
+>
+
+_______________________________________
+
+Mr Markus Gothe
+Software Engineer
+
+Phone: +46 (0)13 21 81 20 (ext. 1046)
+Fax: +46 (0)13 21 21 15
+Mobile: +46 (0)73 718 72 80
+Diskettgatan 11, SE-583 35 Link=F6ping, Sweden
+www.27m.com
+
+
+
+--Apple-Mail-1--986484589
+content-type: application/pgp-signature; x-mac-type=70674453;
+	name=PGP.sig
+content-description: This is a digitally signed message part
+content-disposition: inline; filename=PGP.sig
+content-transfer-encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (Darwin)
+
+iD8DBQFGqzoF6I0XmJx2NrwRArLyAJ9DvrSQ783776HhKqV6qQ6TFoljdwCfejWJ
+dLC8Ljd1xstD3ThVPdCmwJM=
+=as6o
+-----END PGP SIGNATURE-----
+
+--Apple-Mail-1--986484589--
