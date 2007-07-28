@@ -1,92 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbXG1Tic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXG1Tuy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757188AbXG1Tic (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 15:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753574AbXG1TiZ
+	id S1756620AbXG1Tuy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 15:50:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbXG1Tup
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 15:38:25 -0400
-Received: from mga02.intel.com ([134.134.136.20]:54669 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752679AbXG1TiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 15:38:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,194,1183359600"; 
-   d="scan'208";a="271770537"
-Date: Sat, 28 Jul 2007 12:38:23 -0700 (PDT)
-From: Tong Li <tong.n.li@intel.com>
-X-X-Sender: tongli@tongli.jf.intel.com
-To: Chris Snook <csnook@redhat.com>
-cc: "Bill Huey (hui)" <billh@gnuppy.monkey.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-In-Reply-To: <46AAB106.2030104@redhat.com>
-Message-ID: <Pine.LNX.4.64.0707281224100.22772@tongli.jf.intel.com>
-References: <20070725120358.GA30755@elte.hu> <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>
- <20070725192442.GC4463@elte.hu> <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>
- <20070726213154.GA26569@elte.hu> <1185487225.3122.11.camel@tongli.jf.intel.com>
- <Pine.LNX.4.64.0707261806450.5321@tongli.jf.intel.com> <46AA287D.8070200@redhat.com>
- <Pine.LNX.4.64.0707271159420.12201@tongli.jf.intel.com> <46AA8171.2060400@redhat.com>
- <20070728005438.GE32582@gnuppy.monkey.org> <46AAB106.2030104@redhat.com>
+	Sat, 28 Jul 2007 15:50:45 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37810 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751513AbXG1Tuo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 15:50:44 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+3de1uTt+3VaaB8vCoqHnApAURFo6te2XzQTHnpK
+	o2VIBFjkAw5q+d
+Date: Sat, 28 Jul 2007 21:50:40 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Cliff Wickman <cpw@sgi.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: ATA scsi driver misbehavior under kdump capture kernel
+In-Reply-To: <46AA82D6.mailxB9W1BQ61V@eag09.americas.sgi.com>
+Message-ID: <Pine.LNX.4.60.0707282149450.4440@poirot.grange>
+References: <46AA82D6.mailxB9W1BQ61V@eag09.americas.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007, Chris Snook wrote:
+On Fri, 27 Jul 2007, Cliff Wickman wrote:
 
-> Bill Huey (hui) wrote:
->> You have to consider the target for this kind of code. There are 
->> applications
->> where you need something that falls within a constant error bound. 
->> According
->> to the numbers, the current CFS rebalancing logic doesn't achieve that to
->> any degree of rigor. So CFS is ok for SCHED_OTHER, but not for anything 
->> more
->> strict than that.
->
-> I've said from the beginning that I think that anyone who desperately needs 
-> perfect fairness should be explicitly enforcing it with the aid of realtime 
-> priorities.  The problem is that configuring and tuning a realtime 
-> application is a pain, and people want to be able to approximate this 
-> behavior without doing a whole lot of dirty work themselves.  I believe that 
-> CFS can and should be enhanced to ensure SMP-fairness over potentially short, 
-> user-configurable intervals, even for SCHED_OTHER.  I do not, however, 
-> believe that we should take it to the extreme of wasting CPU cycles on 
-> migrations that will not improve performance for *any* task, just to avoid 
-> letting some tasks get ahead of others.  We should be as fair as possible but 
-> no fairer.  If we've already made it as fair as possible, we should account 
-> for the margin of error and correct for it the next time we rebalance.  We 
-> should not burn the surplus just to get rid of it.
+> I've run into a problem with the ATA SCSI disk driver when running in a
+> kdump dump-capture kernel.
+> 
+> I'm running on 2-processor x86_64 box.  It has 2 scsi disks, /dev/sda and
+> /dev/sdb
+> 
+> My kernel is 2.6.22, and built to be a dump capturing kernel loaded by kexec.
+> When I boot this kernel by itself, it finds both sda and sdb.
+> 
+> But when it is loaded by kexec and booted on a panic it only finds sda.
+> 
+> Any ideas from those familiar with the ATA driver?
 
-Proportional-share scheduling actually has one of its roots in real-time 
-and having a p-fair scheduler is essential for real-time apps (soft 
-real-time).
+No, just wanted to suggest to try to ask on kexec /fastboot seems to be 
+deprecated) mailing list?
 
->
-> On a non-NUMA box with single-socket, non-SMT processors, a constant error 
-> bound is fine.  Once we add SMT, go multi-core, go NUMA, and add 
-> inter-chassis interconnects on top of that, we need to multiply this error 
-> bound at each stage in the hierarchy, or else we'll end up wasting CPU cycles 
-> on migrations that actually hurt the processes they're supposed to be 
-> helping, and hurt everyone else even more.  I believe we should enforce an 
-> error bound that is proportional to migration cost.
->
+Thanks
+Guennadi
 
-I think we are actually in agreement. When I say constant bound, it can 
-certainly be a constant that's determined based on inputs from the memory 
-hierarchy. The point is that it needs to be a constant independent of 
-things like # of tasks.
+> 
+> 
+> -Cliff Wickman
+>  SGI
+> 
+> 
+> 
+> I put some printk's into it and get this:
+> 
+> Standalone:
+> 
+>                                                    [nv_adma_error_handler]
+> cpw: ata_host_register probe port 1 (error_handler:ffffffff81348625)
+> cpw: ata_host_register call ata_port_probe
+> cpw: ata_host_register call ata_port_schedule
+> cpw: ata_host_register call ata_port_wait_eh
+> cpw: ata_port_wait_eh entered
+> cpw: ata_port_wait_eh, preparing to wait
+> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> cpw: ata_dev_configure entered
+> cpw: ata_dev_configure testing class
+> cpw: ata_dev_configure class is ATA_DEV_ATA
+> ata2.00: ATA-6: ST3200822AS, 3.01, max UDMA/133
+> ata2.00: 390721968 sectors, multi 16: LBA48
+> cpw: ata_dev_configure exiting
+> cpw: ata_dev_configure entered
+> cpw: ata_dev_configure testing class
+> cpw: ata_dev_configure class is ATA_DEV_ATA
+> cpw: ata_dev_configure exiting
+> cpw: ata_dev_set_mode printing:
+> ata2.00: configured for UDMA/133
+> cpw: ata_port_wait_eh, finished wait
+> cpw: ata_port_wait_eh exiting
+> cpw: ata_host_register done with probe port 1
+> 
+> 
+> When loaded with kexec and booted on a panic:
+> 
+> cpw: ata_host_register probe port 1 (error_handler:ffffffff81348625)
+> cpw: ata_host_register call ata_port_probe
+> cpw: ata_host_register call ata_port_schedule
+> cpw: ata_host_register call ata_port_wait_eh
+> cpw: ata_port_wait_eh entered
+> cpw: ata_port_wait_eh, preparing to wait
+> ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> cpw: ata_port_wait_eh, finished wait
+> cpw: ata_port_wait_eh exiting
+> cpw: ata_host_register done with probe port 1
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-> But this patch is only relevant to SCHED_OTHER.  The realtime scheduler 
-> doesn't have a concept of fairness, just priorities.  That why each realtime 
-> priority level has its own separate runqueue.  Realtime schedulers are 
-> supposed to be dumb as a post, so they cannot heuristically decide to do 
-> anything other than precisely what you configured them to do, and so they 
-> don't get in the way when you're context switching a million times a second.
-
-Are you referring to hard real-time? As I said, an infrastructure that 
-enables p-fair scheduling, EDF, or things alike is the foundation for 
-real-time. I designed DWRR, however, with a target of non-RT apps, 
-although I was hoping the research results might be applicable to RT.
-
-   tong
+---
+Guennadi Liakhovetski
