@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXG1GCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759557AbXG1GNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758299AbXG1GCP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 02:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbXG1GB7
+	id S1759557AbXG1GNd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 02:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754659AbXG1GNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 02:01:59 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46543 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753068AbXG1GB6 (ORCPT
+	Sat, 28 Jul 2007 02:13:24 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:34752 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754654AbXG1GNY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 02:01:58 -0400
-Date: Sat, 28 Jul 2007 15:03:19 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "tony.luck@intel.com" <tony.luck@intel.com>, Zoltan.Menyhart@bull.net,
-       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH] flush icache before set_pte() take 5.
-Message-Id: <20070728150319.d19f531f.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Sat, 28 Jul 2007 02:13:24 -0400
+Date: Fri, 27 Jul 2007 23:17:10 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Miles Lane" <miles.lane@gmail.com>
+Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: mm/sparse.c:482: error: implicit declaration of function
+ =?UTF-8?Q?=E2=80=98sparse=5Fearly=5Fusemap=5Falloc=E2=80=99?=
+Message-Id: <20070727231710.0c5b52a9.randy.dunlap@oracle.com>
+In-Reply-To: <a44ae5cd0707272300y85825d0v9b8ff60de0de50a0@mail.gmail.com>
+References: <a44ae5cd0707272300y85825d0v9b8ff60de0de50a0@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Appliled comments on take 4.
-patches are against 2.6.23-rc1.
+On Fri, 27 Jul 2007 23:00:54 -0700 Miles Lane wrote:
 
-Changes:
-  - changes flush_icache_page to be flush_cache_page() in remove_migration_pte().
-  - removed sync_icache_dcahe() in page reuse case of do_wp_page(). 
+> Do you need my .config file?
 
-Considerations:
-  - I can add CONFIG_MONTECITO if necessary. But it will be confusing, I think.
+Ideally, yes.  Is this for 2.6.23-rc1-mm1?
 
-Thanks,
--Kame
 
+>   CC      mm/sparse.o
+> mm/sparse.c: In function 'sparse_init':
+> mm/sparse.c:482: error: implicit declaration of function
+> 'sparse_early_usemap_alloc'
+> mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+> make[1]: *** [mm/sparse.o] Error 1
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
