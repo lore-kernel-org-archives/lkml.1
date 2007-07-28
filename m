@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938505AbXG1AYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938538AbXG1Abg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938505AbXG1AYj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 20:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936614AbXG1AYb
+	id S938538AbXG1Abg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 20:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764630AbXG1AbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 20:24:31 -0400
-Received: from waste.org ([66.93.16.53]:56347 "EHLO waste.org"
+	Fri, 27 Jul 2007 20:31:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37433 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933273AbXG1AYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 20:24:30 -0400
-Date: Fri, 27 Jul 2007 19:24:03 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ray Lee <ray-lk@madrabbit.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Eric St-Laurent <ericstl34@sympatico.ca>,
-       Rene Herman <rene.herman@gmail.com>,
-       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: -mm merge plans for 2.6.23
-Message-ID: <20070728002403.GK11166@waste.org>
-References: <46A58B49.3050508@yahoo.com.au> <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com> <46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com> <1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au> <2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com> <20070725215717.df1d2eea.akpm@linux-foundation.org> <2c0942db0707252333uc7631fduadb080193f6ad323@mail.gmail.com> <20070725235037.e59f30fc.akpm@linux-foundation.org>
+	id S1761185AbXG1AbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 20:31:24 -0400
+Message-ID: <46AA8E57.8010105@redhat.com>
+Date: Fri, 27 Jul 2007 20:31:19 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070725235037.e59f30fc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: tim.c.chen@linux.intel.com
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: Volanomark slows by 80% under CFS
+References: <1185573687.19777.44.camel@localhost.localdomain>
+In-Reply-To: <1185573687.19777.44.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 11:50:37PM -0700, Andrew Morton wrote:
-> On Wed, 25 Jul 2007 23:33:24 -0700 "Ray Lee" <ray-lk@madrabbit.org> wrote:
+Tim Chen wrote:
+> Ingo,
 > 
-> > > So.  We can
-> > >
-> > > a) provide a way for userspace to reload pagecache and
-> > >
-> > > b) merge maps2 (once it's finished) (pokes mpm)
-> > >
-> > > and we're done?
-> > 
-> > Eh, dunno. Maybe?
-> > 
-> > We're assuming we come up with an API for userspace to get
-> > notifications of evictions (without polling, though poll() would be
-> > fine -- you know what I mean), and an API for re-victing those things
-> > on demand.
+> Volanomark slows by 80% with CFS scheduler on 2.6.23-rc1.  
+> Benchmark was run on a 2 socket Core2 machine.
 > 
-> I was assuming that polling would work OK.  I expect it would.
+> The change in scheduler treatment of sched_yield 
+> could play a part in changing Volanomark behavior.
+> In CFS, sched_yield is implemented
+> by dequeueing and requeueing a process .  The time a process 
+> has spent running probably reduced the the cpu time due it 
+> by only a bit. The process could get re-queued pretty close
+> to head of the queue, and may get scheduled again pretty
+> quickly if there is still a lot of cpu time due.  
 > 
-> > If you think that adding that API and maintaining it is
-> > simpler/better than including a variation on the above hueristic I
-> > offered, then yeah, I guess we are. It'll all have that vague
-> > userspace s2ram odor about it, but I'm sure it could be made to work.
+> It may make sense to queue the
+> yielding process a bit further behind in the queue. 
+> I made a slight change by zeroing out wait_runtime 
+> (i.e. have the process gives
+> up cpu time due for it to run) for experimentation. 
+> Let's put aside gripes that Volanomark should have used a 
+> better mechanism to coordinate threads instead sched_yield for 
+> a second.   Volanomark runs better
+> and is only 40% (instead of 80%) down from old scheduler 
+> without CFS.  
 > 
-> Actually, I overdesigned the API, I suspect.  What we _could_ do is to
-> provide a way of allowing userspace to say "pretend process A touched page
-> B": adopt its mm and go touch the page.  We in fact already have that:
-> PTRACE_PEEKTEXT.
+> Of course we should not tune for Volanomark and this is
+> reference data. 
+> What are your view on how CFS's sched_yield should behave?
 > 
-> So I suspect this could all be done by polling maps2 and using PEEKTEXT. 
-> The tricky part would be working out when to poll, and when to reestablish.
-> 
-> A neater implementation than PEEKTEXT would be to make the maps2 files
-> writeable(!) so as a party trick you could tar 'em up and then, when you
-> want to reestablish firefox's previous working set, do a untar in
-> /proc/$(pidof firefox)/
+> Regards,
+> Tim
 
-Sick. But thankfully, unnecessary. The pagemaps give you more than
-just a present bit, which is all we care about here. We simply need to
-record which pages are mapped, then reference them all back to life..
+The primary purpose of sched_yield is for SCHED_FIFO realtime processes.  Where 
+nothing else will run, ever, unless the running thread blocks or yields the CPU. 
+  Under CFS, the yielding process will still be leftmost in the rbtree, 
+otherwise it would have already been scheduled out.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Zeroing out wait_runtime on sched_yield strikes me as completely appropriate. 
+If the process wanted to sleep a finite duration, it should actually call a 
+sleep function, but sched_yield is essentially saying "I don't have anything 
+else to do right now", so it's hardly fair to claim you've been waiting for your 
+chance when you just gave it up.
+
+As for the remaining 40% degradation, if Volanomark is using it for 
+synchronization, the scheduler is probably cycling through threads until it gets 
+to the one that actually wants to do work.  The O(1) scheduler will do this very 
+  quickly, whereas CFS has a bit more overhead.  Interactivity boosting may have 
+also helped the old scheduler find the right thread faster.
+
+I think Volanomark is being pretty stupid, and deserves to run slowly, but there 
+are legitimate reasons to want to call sched_yield in a non-SCHED_FIFO process. 
+  If I'm performing multiple different calculations on the same set of data in 
+multiple threads, and accessing the shared data in a linear fashion, I'd like to 
+be able to have one thread give the other some CPU time so they can stay at the 
+same point in the stream and improve cache hit rates, but this is only an 
+optimization if I can do it without wasting CPU or gradually nicing myself into 
+oblivion.  Having sched_yield zero out wait_runtime seems like an appropriate 
+way to make this use case work to the extent possible.  Any user attempting such 
+an optimization should have the good sense to do real work between sched_yield 
+calls, to avoid calling the scheduler in a tight loop.
+
+	-- Chris
