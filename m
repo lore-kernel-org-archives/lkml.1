@@ -1,157 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbXG1TXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755493AbXG1T2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbXG1TXr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 15:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbXG1TXi
+	id S1755493AbXG1T2b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 15:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbXG1T2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 15:23:38 -0400
-Received: from mga03.intel.com ([143.182.124.21]:9190 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750982AbXG1TXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 15:23:37 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,194,1183359600"; 
-   d="scan'208";a="255922565"
-Date: Sat, 28 Jul 2007 12:23:35 -0700 (PDT)
-From: Tong Li <tong.n.li@intel.com>
-X-X-Sender: tongli@tongli.jf.intel.com
-To: Chris Snook <csnook@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-In-Reply-To: <46AA8171.2060400@redhat.com>
-Message-ID: <Pine.LNX.4.64.0707281121580.22772@tongli.jf.intel.com>
-References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com> 
- <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu> 
- <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>  <20070725192442.GC4463@elte.hu>
-  <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>  <20070726213154.GA26569@elte.hu>
- <1185487225.3122.11.camel@tongli.jf.intel.com> <Pine.LNX.4.64.0707261806450.5321@tongli.jf.intel.com>
- <46AA287D.8070200@redhat.com> <Pine.LNX.4.64.0707271159420.12201@tongli.jf.intel.com>
- <46AA8171.2060400@redhat.com>
+	Sat, 28 Jul 2007 15:28:25 -0400
+Received: from wildsau.enemy.org ([193.170.194.34]:32835 "EHLO
+	wildsau.enemy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbXG1T2Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 15:28:24 -0400
+X-Greylist: delayed 2463 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 15:28:23 EDT
+From: Herbert Rosmanith <kernel@wildsau.enemy.org>
+Message-Id: <200707281847.l6SIl7Sl000239@wildsau.enemy.org>
+Subject: kernel panic w/ 2.6.22.1, VIA EPIA Mini ITX
+To: linux-kernel@vger.kernel.org
+Date: Sat, 28 Jul 2007 20:47:07 +0200 (MET DST)
+X-Mailer: ELM [version 2.4ME+ PL100 (25)]
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007, Chris Snook wrote:
 
-> I don't think that achieving a constant error bound is always a good thing. 
-> We all know that fairness has overhead.  If I have 3 threads and 2 
-> processors, and I have a choice between fairly giving each thread 1.0 billion 
-> cycles during the next second, or unfairly giving two of them 1.1 billion 
-> cycles and giving the other 0.9 billion cycles, then we can have a useful 
-> discussion about where we want to draw the line on the fairness/performance 
-> tradeoff.  On the other hand, if we can give two of them 1.1 billion cycles 
-> and still give the other one 1.0 billion cycles, it's madness to waste those 
-> 0.2 billion cycles just to avoid user jealousy.  The more complex the memory 
-> topology of a system, the more "free" cycles you'll get by tolerating 
-> short-term unfairness.  As a crude heuristic, scaling some fairly low 
-> tolerance by log2(NCPUS) seems appropriate, but eventually we should take the 
-> boot-time computed migration costs into consideration.
+good day,
 
-I think we are in agreement. To avoid confusion, I think we should be more 
-precise on what fairness means. Lag (i.e., ideal fair time - actual 
-service time) is the commonly used metric for fairness. The definition is 
-that a scheduler is proportionally fair if for any task in any time 
-interval, the task's lag is bounded by a constant (note it's in terms of 
-absolute time). The knob here is this constant and can help trade off 
-performance and fairness. The reason for a constant bound is that we want 
-consistent fairness properties regardless of the number of tasks. For 
-example, we don't want the system to be much less fair as the number of 
-tasks increases. With DWRR, the lag bound is the max weight of currently 
-running tasks, multiplied by sysctl_base_round_slice. So if all tasks are 
-of nice 0, i.e., weight 1, and sysctl_base_round_slice equals 30 ms, then 
-we are guaranteed each task is at most 30ms off of the ideal case. This is 
-a useful property. Just like what you mentioned about the migration cost, 
-this property allows the scheduler or user to accurately reason about the 
-tradeoffs. If we want to trade fairness for performance, we can increase 
-sysctl_base_round_slice to, say, 100ms; doing so we also know accurately 
-the worst impact it has on fairness.
+when setting up a more or less old board, 2.6.22.1 crashes during an
+"emerge --sync" (gentoo installation).
 
-> Adding system calls, while great for research, is not something which is done 
-> lightly in the published kernel.  If we're going to implement a user 
-> interface beyond simply interpreting existing priorities more precisely, it 
-> would be nice if this was part of a framework with a broader vision, such as 
-> a scheduler economy.
+first, the screen will start funny - like a crashed C64 (from the "good"
+old days). I made a photo, you can look at it here:
 
-Agreed. I've seen papers on scheduler economy but not familiar enough to 
-comment on it.
+	http://wildsau.enemy.org/~kernel/epia-crash.jpg
 
->
->> Scheduling Algorithm:
->> 
->> The scheduler keeps a set data structures, called Trio groups, to maintain 
->> the weight or reservation of each thread group (including one or more 
->> threads) and the local weight of each member thread. When scheduling a 
->> thread, it consults these data structures and computes (in constant time) a 
->> system-wide weight for the thread that represents an equivalent CPU share. 
->> Consequently, the scheduling algorithm, DWRR, operates solely based on the 
->> system-wide weight (or weight for short, hereafter) of each thread. Having 
->> a flat space of system-wide weights for individual threads avoids 
->> performing seperate scheduling at each level of the group hierarchy and 
->> thus greatly simplies the implementation for group scheduling.
->
-> Implementing a flat weight space efficiently is nontrivial.  I'm curious to 
-> see how you reworked the original patch without global locking.
+actually, that's not a static picture, but there's also a lotta
+blinking going on. the image you see is from a non-framebuffer
+mode kernel, since I first suspected the framebuffer being the
+culprit, because when I framebuffer mode, the crash will result
+in many coloured pixels on the screen, like when doing
+"cat /dev/random /dev/fb0". But since this happens in textmode too,
+something else is triggering this.
 
-I simply removed the locking and changed a little bit in idle_balance(). 
-The lock was trying to avoid a thread from reading or writing the global 
-highest round value while another thread is writing to it. For writes, 
-it's simple to ensure without locking only one write takes effect when 
-multiple writes are concurrent. For the case that there's one write going 
-on and multiple threads read, without locking, the only problem is that a 
-reader may read a stale value and thus thinks the current highest round is 
-X while it's actually X + 1. The end effect is that a thread can be at 
-most two rounds behind the highest round. This changes DWRR's lag bound to 
-2 * (max weight of current tasks) * sysctl_base_round_slice, which is 
-still constant.
+anyway .... hardware: the board is a VIA EPIA 500Mhz fanless (Mini ITX)
+with a C3 processor and 1GB (2x512) SD-RAM.
 
-> I had a feeling this patch was originally designed for the O(1) scheduler, 
-> and this is why.  The old scheduler had expired arrays, so adding a 
-> round-expired array wasn't a radical departure from the design.  CFS does not 
-> have an expired rbtree, so adding one *is* a radical departure from the 
-> design.  I think we can implement DWRR or something very similar without 
-> using this implementation method.  Since we've already got a tree of queued 
-> tasks, it might be easiest to basically break off one subtree (usually just 
-> one task, but not necessarily) and migrate it to a less loaded tree whenever 
-> we can reduce the difference between the load on the two trees by at least 
-> half.  This would prevent both overcorrection and undercorrection.
+the kernel complains about this:
+Jul 28 22:30:17 localhost BUG: unable to handle kernel paging request at virtual
+ address 00ffffff
 
-Yes, the description was based on O(1) and the intent was exactly not to 
-be much a departure from its design. I totally agree the same philosophy 
-should apply to an implementation based on CFS.
 
-> The idea of rounds was another implementation detail that bothered me.  In 
-> the old scheduler, quantizing CPU time was a necessary evil.  Now that we can 
-> account for CPU time with nanosecond resolution, doing things on an as-needed 
-> basis seems more appropriate, and should reduce the need for global 
-> synchronization.
+or, to me more specific:
 
-Without the global locking, the global synchronization here is simply 
-ping-ponging a cache line once of while. This doesn't look expensive to 
-me, but if it does after benchmarking, adjusting sysctl_base_round_slice 
-can reduce the ping-pong frequency. There might also be a smart 
-implementation that can alleviate this problem.
 
-I don't understand why quantizing CPU time is a bad thing. Could you 
-educate me on this?
+Jul 28 22:30:17 localhost BUG: unable to handle kernel paging request at virtual
+ address 00ffffff
+Jul 28 22:30:17 localhost printing eip:
+Jul 28 22:30:17 localhost c016c506
+Jul 28 22:30:17 localhost *pde = 00000000
+Jul 28 22:30:17 localhost Oops: 0000 [#1]
+Jul 28 22:30:17 localhost Modules linked in: parport_pc parport uhci_hcd usbcore
+Jul 28 22:30:17 localhost CPU:    0
+Jul 28 22:30:17 localhost EIP:    0060:[<c016c506>]    Not tainted VLI
+Jul 28 22:30:17 localhost EFLAGS: 00010206   (2.6.22.1 #2)
+Jul 28 22:30:17 localhost EIP is at __d_lookup+0x66/0xe0
+Jul 28 22:30:17 localhost eax: 4c482617   ebx: 00ffffff   ecx: 00000011   edx: c
+1819180
+Jul 28 22:30:17 localhost esi: 00ffffff   edi: f7634005   ebp: ef848780   esp: f
+7a87dc0
+Jul 28 22:30:17 localhost ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Jul 28 22:30:17 localhost Process bash (pid: 4209, ti=f7a86000 task=c1bb8070 tas
+k.ti=f7a86000)
+Jul 28 22:30:17 localhost Stack: 4c482617 f7a87e1c f7a87e3c f7fe7114 f7a87f30 00
+000011 f7634005 f7634016 
+Jul 28 22:30:17 localhost f7a87e3c f7a87f04 f7a87e3c c0162f48 f7a87e48 c18e6220 
+c01a82b0 f7ef12a0 
+Jul 28 22:30:17 localhost f7634016 f7a87e3c f7ef12a0 f7a87f04 c0164a69 f7634005 
+00000001 4c482617 
+Jul 28 22:30:17 localhost Call Trace:
+Jul 28 22:30:17 localhost [<c0162f48>] do_lookup+0x28/0x190
+Jul 28 22:30:17 localhost [<c01a82b0>] ext3_permission+0x0/0x10
+Jul 28 22:30:17 localhost [<c0164a69>] __link_path_walk+0x669/0xb20
+Jul 28 22:30:17 localhost [<c017055b>] mntput_no_expire+0x1b/0x70
+Jul 28 22:30:17 localhost [<c0164f83>] link_path_walk+0x63/0xc0
+Jul 28 22:30:17 localhost [<c0164f63>] link_path_walk+0x43/0xc0
+Jul 28 22:30:17 localhost [<c0165184>] do_path_lookup+0x64/0x180
+Jul 28 22:30:17 localhost [<c0164113>] getname+0xb3/0xe0
+Jul 28 22:30:17 localhost [<c0165b6b>] __user_walk_fd+0x3b/0x60
+Jul 28 22:30:17 localhost [<c015f682>] vfs_stat_fd+0x22/0x60
+Jul 28 22:30:17 localhost [<c015f76f>] sys_stat64+0xf/0x30
+Jul 28 22:30:17 localhost [<c0104f02>] syscall_call+0x7/0xb
+Jul 28 22:30:17 localhost =======================
+Jul 28 22:30:17 localhost Code: ea 31 d0 8b 15 b4 9e 3b c0 89 7c 24 18 21 d0 8b 
+15 bc 9e 3b c0 8b 34 82 85 f6 75 0f eb 54 8d b4 26 00 00 00 00 85 db 89 de 74 47
+ <8b> 1e 8d 74 26 00 8d 6e f4 8b 04 24 3b 45 18 75 e9 8b 44 24 0c 
+Jul 28 22:30:17 localhost EIP: [<c016c506>] __d_lookup+0x66/0xe0 SS:ESP 0068:f7a
+87dc0
+Jul 28 22:30:17 localhost BUG: unable to handle kernel paging request at virtual
+ address 00ffffff
+Jul 28 22:30:17 localhost printing eip:
+Jul 28 22:30:17 localhost c016c506
+Jul 28 22:30:17 localhost *pde = 00000000
+Jul 28 22:30:17 localhost Oops: 0000 [#2]
+Jul 28 22:30:17 localhost Modules linked in: parport_pc parport uhci_hcd usbcore
+Jul 28 22:30:17 localhost CPU:    0
+Jul 28 22:30:17 localhost EIP:    0060:[<c016c506>]    Not tainted VLI
+Jul 28 22:30:17 localhost EFLAGS: 00010206   (2.6.22.1 #2)
+Jul 28 22:30:17 localhost EIP is at __d_lookup+0x66/0xe0
+Jul 28 22:30:17 localhost eax: 00284951   ebx: 00ffffff   ecx: 00000011   edx: c
+1819180
+Jul 28 22:30:17 localhost esi: 00ffffff   edi: f7bb1005   ebp: efa49688   esp: e
+4837dc0
+Jul 28 22:30:17 localhost ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
+Jul 28 22:30:17 localhost Process utempter (pid: 4308, ti=e4836000 task=f7c34090
+ task.ti=e4836000)
+Jul 28 22:30:17 localhost Stack: 00284951 e4837e1c e4837e3c f7d3a5ec e4837e48 00
+000003 f7bb1005 f7bb1009 
+Jul 28 22:30:17 localhost e4837e3c e4837f04 e4837e3c c0162f48 e4837e48 c18e6e20 
+c0158690 c1b54cc0 
 
-I guess it's worth mentioning that although we now have nanosecond-level 
-accounting, scheduling in the common case still occurs at timer tick 
-granularity.
 
-> In summary, I think the accounting is sound, but the enforcement is 
-> sub-optimal for the new scheduler.  A revision of the algorithm more 
-> cognizant of the capabilities and design of the current scheduler would seem 
-> to be in order.
->
-> I've referenced many times my desire to account for CPU/memory hierarchy in 
-> these patches.  At present, I'm not sure we have sufficient infrastructure in 
-> the kernel to automatically optimize for system topology, but I think 
-> whatever design we pursue should have some concept of this hierarchy, even if 
-> we end up using a depth-1 tree in the short term while we figure out how to 
-> optimize this.
->
+I have absolutely no idea what triggers this crash.
 
-Agreed.
-
-   tong
+cheers,
+herp
