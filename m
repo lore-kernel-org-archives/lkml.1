@@ -1,75 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXG1Xlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758902AbXG1Xo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbXG1Xlf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 19:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755095AbXG1Xl3
+	id S1758902AbXG1Xo5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 19:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758090AbXG1Xoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 19:41:29 -0400
-Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:64607 "EHLO
-	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbXG1Xl2 convert rfc822-to-8bit (ORCPT
+	Sat, 28 Jul 2007 19:44:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:55347 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758067AbXG1Xop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 19:41:28 -0400
-From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Linus 2.6.23-rc1
-Date: Sun, 29 Jul 2007 01:41:19 +0200
-User-Agent: KMail/1.9.7
+	Sat, 28 Jul 2007 19:44:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=ql8PyB2mtNbKFEJ8lrZA7g7yqhkzoD2Vg6o8yh16yEODoUAKZMSbDOMcNtV+cjSEQYG57HwkBA0fpoAG7j9pPqjLYHK1bmzoYJXxmoDf2D1SqRU81ni/bakPOdZNicXdf+z678p+V8RsGfRqnfz7GmEMLax2DneuNLgdIfC6C8Q=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: David Lamparter <lists@diac24.net>
+Subject: Re: [PATCH] ide: sis5513.c: Add FSC Amilo A1630 PCI subvendor/dev to laptops
+Date: Sun, 29 Jul 2007 00:55:19 +0200
+User-Agent: KMail/1.9.6
+Cc: Lionel Bouton <Lionel.Bouton@inet6.fr>, linux-kernel@vger.kernel.org
+References: <20070727205242.GA1216@charon.n2.diac24.net>
+In-Reply-To: <20070727205242.GA1216@charon.n2.diac24.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707290141.19790.volker.armin.hemmann@tu-clausthal.de>
+Message-Id: <200707290055.19816.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Friday 27 July 2007, David Lamparter wrote:
+> [PATCH] ide: sis5513.c: Add FSC Amilo A1630 PCI subvendor/dev to laptops
+> 
+> Recognise the FSC Amilo A1630's incarnation of a SiS5513 chip as laptop to
+> get UDMA100 support.
+> 
+> Signed-off-by: David Lamparter <equinox@diac24.net>
 
-I never tried Con's patchset, for two reasons:
-I tried his 2.4 patches ones, and I never saw any improvements. So when people 
-were reporting huge improvements with his SD scheduler, I compared that with 
-the reports of huge improvements with his 2.4 kernel patches.
-...
-The second: too many patches. I only would have tried one or two, but the 
-ck-patchset is a lot bigger.. and I am a little bit uneasy about that.
-
-But I tried a lot of Ingo's cfs patches - and it was a very pleasant 
-experience. Ingo reacted very fast on my feedback and when I hit a problem he 
-really tried to find the cause and solve it - and it always was one patch, so 
-I felt a lot less scared ;)
-
-My usual workload is very 'usual'. KDE desktop, kmail, konqueror, sometimes 
-xine or amarok providing some background noise while typing away in kate, 
-triplea, wesnoth or some other game when I need to 'rest' for a while. A lot 
-of compiling in the background, because I am one of these gentoo users.
-
-With cfs the experience was much more pleasant than with the 'old' scheduler. 
-Compiling did not hurt as much as usual anymore - the only thing that hurts 
-is swap.... 
-
-But there is another thing I do regularly: I play ut2004. Not every single 
-day, but sometimes several times a day. 20minutes of mayhem and then back to 
-the desktop.
-
-And I do not see any problems with cfs and ut2004. The maximum FPS are indeed 
-a little bit lower (and you can argue that this really is not important if 
-the pre-game FPS in a level looking down on the floor go down from 390 to 
-380FPS), but the minimum FPS went up!
-
-In scenes when my system is fighting hard to provide the FPS, when the action 
-is high (like when fighting with half a douzend bots at a power node, while 
-some other bots are shooting into the mess) CFS is much better than the old 
-scheduler. It is a big difference if you get 6-10FPS or 15-25.
-(I am playing with maximum 'beautifullness' - I would be able to get a lot 
-more FPS, if I wanted, but I want a nice scenery and maximum visual 
-effects ...)
-
->From my point of view 3D is a lot better with cfs. 
-
-Now the question for all the people who are bashing cfs for its bad 3d 
-performance: what am I doing wrong?
-
-Glück Auf,
-Volker
-
+applied, thanks
