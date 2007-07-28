@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761330AbXG1LPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763028AbXG1LQd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761330AbXG1LPT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 07:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbXG1LPI
+	id S1763028AbXG1LQd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 07:16:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXG1LQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 07:15:08 -0400
-Received: from [212.12.190.100] ([212.12.190.100]:33319 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754614AbXG1LPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 07:15:06 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Chris Snook <csnook@redhat.com>
-Subject: Re: How can we make page replacement smarter (was: swap-prefetch)
-Date: Sat, 28 Jul 2007 14:11:57 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <200707272243.02336.a1426z@gawab.com> <200707280717.41250.a1426z@gawab.com> <46AAEFC4.8000006@redhat.com>
-In-Reply-To: <46AAEFC4.8000006@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 28 Jul 2007 07:16:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45528 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755250AbXG1LQZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 07:16:25 -0400
+Date: Sat, 28 Jul 2007 12:21:39 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: david@lang.hm, Daniel Hazelton <dhazelton@enter.net>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+Message-ID: <20070728122139.3c7f4290@the-village.bc.nu>
+In-Reply-To: <46AB166A.2000300@gmail.com>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	<20070727030040.0ea97ff7.akpm@linux-foundation.org>
+	<1185531918.8799.17.camel@Homer.simpson.net>
+	<200707271345.55187.dhazelton@enter.net>
+	<46AA3680.4010508@gmail.com>
+	<Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm>
+	<46AAEDEB.7040003@gmail.com>
+	<Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
+	<46AB166A.2000300@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707281411.57823.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
-> Al Boldi wrote:
-> > Because it is hard to quantify the expected swap-in speed for random
-> > pages, let's first tackle the swap-in of consecutive pages, which should
-> > be at least as fast as swap-out.  So again, why is swap-in so slow?
->
-> If I'm writing 20 pages to swap, I can find a suitable chunk of swap and
-> write them all in one place.  If I'm reading 20 pages from swap, they
-> could be anywhere.  Also, writes get buffered at one or more layers of
-> hardware.
+> It is. Prefetched pages can be dropped on the floor without additional I/O.
 
-Ok, this explains swap-in of random pages.  Makes sense, but it doesn't 
-explain the awful tmpfs performance degradation of consecutive read-in runs 
-from swap, which should have at least stayed constant
+Which is essentially free for most cases. In addition your disk access
+may well have been in idle time (and should be for this sort of stuff)
+and if it was in the same chunk as something nearby was effectively free
+anyway. 
 
-> At best, reads can be read-ahead and cached, which is why
-> sequential swap-in sucks less.  On-demand reads are as expensive as I/O
-> can get.
+Actual physical disk ops are precious resource and anything that mostly
+reduces the number will be a win - not to stay swap prefetch is the right
+answer but accidentally or otherwise there are good reasons it may happen
+to help.
 
-Which means that it should be at least as fast as swap-out, even faster 
-because write to disk is usually slower than read on modern disks.  But 
-linux currently shows a distinct 2x slowdown for sequential swap-in wrt 
-swap-out.  And to prove this point, just try suspend to disk where you can 
-see sequential swap-out being reported at about twice the speed of 
-sequential swap-in on resume.  Why is that?
+Bigger more linear chunks of writeout/readin is much more important I
+suspect than swap prefetching. 
 
+> good overview of exactly how broken -mm can be at times. How many -mm users 
+> use it anyway? He himself said he's not convinced of usefulness having not 
 
-Thanks!
+I've been using it for months with no noticed problem. I turn it on
+because it might as well get tested. I've not done comparison tests so I
+can't comment on if its worth it.
 
---
-Al
+Lots of -mm testers turn *everything* on because its a test kernel.
+
 
