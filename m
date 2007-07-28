@@ -1,137 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbXG1SD6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbXG1SFx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbXG1SD6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 14:03:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXG1SDv
+	id S1756676AbXG1SFx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 14:05:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXG1SFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 14:03:51 -0400
-Received: from psmtp13.wxs.nl ([195.121.247.25]:44387 "EHLO psmtp13.wxs.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752370AbXG1SDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 14:03:50 -0400
-Date: Sat, 28 Jul 2007 20:03:41 +0200
-From: jos poortvliet <jos@mijnkamer.nl>
-X-Face: $0>4o"Xx2u2q(Tx!D+6~yPc{ZhEfnQnu:/nthh%Kr%f$aiATk$xjx^X4admsd*)=?utf-8?q?IZz=3A=5FkT=0A=09=7CurITP!=2E?=)L`*)Vw@4\@6>#r;3xSPW`,~C9vb`W/s]}Gq]b!o_/+(lJ:b)=?utf-8?q?T0=26KCLMGvG=7CS=5E=0A=09z=7B=5C=2E7EtehxhFQE=27eYSsir/=7CtQ?=
- =?utf-8?q?j=23rWQe4o?=>WC>_R<vO,d]czmqWYkq[v~iB.e_GuxB'")
- =?utf-8?q?p3=0A=09jGdrhlY4=5E!vd=3F=3AegW?=)xn&fP4!FV<.
+	Sat, 28 Jul 2007 14:05:46 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44474 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752447AbXG1SFp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 14:05:45 -0400
+Date: Sat, 28 Jul 2007 11:05:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Jonathan Jessup <jonathanjessup@gmail.com>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org, lkml@metanurb.dk
 Subject: Re: [ck] Re: Linus 2.6.23-rc1
-In-reply-to: <alpine.LFD.0.999.0707281017230.3442@woody.linux-foundation.org>
-To: ck@vds.kolivas.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Chang <thenewme91@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200707282003.45142.jos@mijnkamer.nl>
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart1498472.m48f8JVY1L
-Content-transfer-encoding: 7bit
-User-Agent: KMail/1.9.7
+In-Reply-To: <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
 References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
- <b14e81f00707280618m73461fdfx989d87a3a0074192@mail.gmail.com>
- <alpine.LFD.0.999.0707281017230.3442@woody.linux-foundation.org>
+  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+  <Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
+ <954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
+ <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1498472.m48f8JVY1L
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-Op Saturday 28 July 2007, schreef Linus Torvalds:
-> On Sat, 28 Jul 2007, Michael Chang wrote:
-> > I do recall there is one issue on which Con wouldn't budge -- anything
-> > that involved boosting certain kinds of processes in the kernel.
->
-> I did that myself, so that's a non-issue.
->
-> No. The complaints were about the CK scheduler not being as responsive
-> under load as even the _old_ scheduler was. I don't know why people ignore
-> this fact. It was a long thread back in March or April, and I'm pretty
-> sure the CK mailing list was cc'd.
-
-Of course it wasn't. The speed of tasks slows proportionally with the amoun=
-t=20
-of system usage. That's the whole point, and CFS can't fix that either, can=
-=20
-it?
-
-> Sure, most people don't actually have load-averages above ten etc, but
-> it's important to do those well _too_.
->
-> 			Linus
-
-<sarcasm>
-http://osnews.com/permalink.php?news_id=3D18350&comment_id=3D259044
-
-Now I wonder. Apparently, one person complaining about SD was reason to kee=
-p=20
-it out http://osnews.com/permalink.php?news_id=3D18350&comment_id=3D258997
-
-Will this first post stop CFS from entering the kernel?
-</sarcasm>
 
 
-Now I'll try to be a bit more constructive. I hope your benevolent=20
-dictatorship allows self reflection.
+On Sat, 28 Jul 2007, Jan Engelhardt wrote:
+> 
+> You cannot please everybody in the scheduler question, that is clear,
+> then why not offer dedicated scheduling alternatives (plugsched comes to mind)
+> and let them choose what pleases them most, and handles their workload best?
 
-Sure, the difference in behaviour (not in code) between SD and CFS is small=
-,=20
-and for me it doesn't matter. I'm fine with CFS in the kernel, it's a huge=
-=20
-improvement over the previous one. But why, while there was a seemingly goo=
-d=20
-alternative, did THAT one stay in that long? And this argument goes for mor=
-e=20
-code 'out there', btw.
-=20
- Some things get into the kernel, other don't. Some get in too soon, others=
-=20
-too late. Sure. But shouldn't we try to improve this process, instead of=20
-saying 'it is what it is, get over it'?
-=20
- For me, that's the purpose of this whole discussion. We're losing valuable=
-=20
-code and contributors, yet at the same time code which isn't mature yet=20
-enters the kernel. Acknowledging there is a problem is the first step in=20
-solving it.
+This is one approach, but it's actually one that I personally think is  
+often the worst possible choice. 
 
- Of course, I don't have answers - but I do feel strongly that you think th=
-ere=20
-is no issue. Is there, or isn't there? And if there is, what do you plan to=
-=20
-do about it?
+Why? Because it ends up meaning that you never get the cross-pollination 
+from different approaches (they stay separate "modes"), and it's also 
+usually really bad for users in that it forces the user to make some 
+particular choice that the user is usually not even aware of.
 
+So I personally think that it's much better to find a setup that works 
+"well enough" for people, without having modal behaviour. People complain 
+and gripe now, but what people seem to be missing is that it's a journey, 
+not an end-of-the-line destination. We haven't had a single release kernel 
+with the new scheduler yet, so the only people who have tried it are 
+either
 
+ (a) interested in schedulers in the first place (which I think is *not* a 
+     good subset, because they have very specific expectations of what is 
+     right and what is wrong, and they come into the whole thing with that 
+     mental baggage)
 
-Your influence on the behaviour of the people around you, your 'lieutenants=
-',=20
-is huge. Larger than you might think. And in many cases, ppl following=20
-someone behave more extreme. That's a big reason why the LKML isn't very=20
-polite nor inviting (mind you, I don't think that's necessarily a bad thing=
-,=20
-that's up to you to decide).
+ (b) people who test -rc1 kernels (I love you guys, but sadly, you're not 
+     nearly as common as I'd like ;)
 
-You might want to think about ways to improve the whole process. Again, I'm=
- no=20
-Linus, it's your call. And you can make a big difference, I'm sure.
+so the fact is, we'll find out more information about where CFS falls 
+down, and where it does well,  and we'll be able to *fix* it and tweak it.
 
+In contrast, if you go for a modal approach, you tend to always fixate 
+those two modes forever, and you'll never get something that works well: 
+people have to switch modes when they switch workloads.
 
-Greetings,
+[ This, btw, has nothing to do with schedulers per se. We have had these 
+  exact same issues in the memory management too - which is a lot more 
+  complex than scheduling, btw. The whole page replacement algorithm is 
+  something where you could easily have "specialized" algorithms in order 
+  to work really well under certain loads, but exactly as with scheduling, 
+  I will argue that it's a lot better to be "good across a wide swath of 
+  loads" than to try to be "perfect in one particular modal setup". ]
 
-Jos
+This is also, btw, why I think that people who argue for splitting desktop 
+kernels from server kernels are total morons, and only show that they 
+don't know what the hell they are talking about.
 
---nextPart1498472.m48f8JVY1L
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+The fact is, the work we've done on server loads has improved the desktop 
+experience _immensely_, with all the scalability work (or the work on 
+large memory configurations, etc etc) that went on there, and that used to 
+be totally irrelevant for the desktop.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+And btw, the same is very much true in reverse: a lot of the stuff that 
+was done for desktop reasons (hotplug etc) has been a _huge_ boon for the 
+server side, and while there were certainly issues that had to be resolved 
+(the sysfs stuff so central to the hotplug model used tons of memory when 
+you had ten thousand disks, and server people were sometimes really 
+unhappy), a lot of the big improvements actually happen because somethng 
+totally _unrelated_ needed them, and then it just turns out that it's good 
+for the desktop too, even if it started out as a server thing or vice 
+versa.
 
-iD8DBQBGq4T9+wgQ1AD35iwRAjOkAJ9R2JUPaG0QXrwUNlHY6aX1TRj5QgCgu+O3
-NmsxqseICr9IxhA2H+YphSc=
-=K39q
------END PGP SIGNATURE-----
+This is why the whole "modal" mindset is stupid. It basically freezes a 
+choice that shouldn't be frozen. It sets up an artificial barrier between 
+two kinds of uses (whether they be about "server" vs "desktop" or "3D 
+gaming" vs "audio processing", or anything else), and that frozen choice 
+actually ends up being a barrier to development in the long run.
 
---nextPart1498472.m48f8JVY1L--
+So "modal" things are good for fixing behaviour in the short run. But they 
+are a total disaster in the long run, and even in the short run they tend 
+to have problems (simply because there will be cases that straddle the 
+line, and show some of _both_ issues, and now *neither* mode is the right 
+one)
+
+			Linus
