@@ -1,119 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbXG1XpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbXG1XzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbXG1XpS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 19:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758204AbXG1Xot
+	id S1759166AbXG1XzO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 19:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754427AbXG1XzC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 19:44:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:54460 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758107AbXG1Xos (ORCPT
+	Sat, 28 Jul 2007 19:55:02 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:6568 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753900AbXG1XzA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 19:44:48 -0400
+	Sat, 28 Jul 2007 19:55:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=JyXOIB5RcBj316lxR9i+d9JMb50A2/baaeSHlDlf0f/Ei6vVPNl9y5cN/QVJoTv/aVkxD9oh8jNIQp0xlRgJ9FpMdsVkReTCPglMecPKO2Oz+HxqhpHVFXIC8RkEIRv3OxPSOr4BvmJ2rk/l/b9SN+qEUy6GPkS5U+7hA9dGhiY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: dth <dth@dth.net>
-Subject: Re: ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-Date: Sun, 29 Jul 2007 01:42:53 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <20070727193832.GA20289@dth.net>
-In-Reply-To: <20070727193832.GA20289@dth.net>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=rHT3u0V2Iaq85Wb163f3oDvEmbe8vnULRBX9HRDXO8TDCi5xskpYUg7jEAqYcdl0T1Dw2IDGSJnaFa+sS1T4Um4hplpUknpydhsTlhAfMhVr7fhHm49a5I7uildd0fnuRPi90dn/wz2dU1mzc3mh83v1C3UkDG41xYnPk1faNkU=
+Message-ID: <9a8748490707281655u66e50bbfqba58687b579a85fe@mail.gmail.com>
+Date: Sun, 29 Jul 2007 01:55:00 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Satyam Sharma" <satyam.sharma@gmail.com>
+Subject: Re: [PATCH] USB Pegasus driver - avoid a potential NULL pointer dereference.
+Cc: "Petko Manolov" <petkan@users.sourceforge.net>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Greg Kroah-Hartman" <greg@kroah.com>,
+       linux-usb-devel@lists.sourceforge.net, netdev@vger.kernel.org
+In-Reply-To: <a781481a0707281637n5b123e4aib46c4e4b009b0018@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200707290142.53689.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707290019.02591.jesper.juhl@gmail.com>
+	 <a781481a0707281637n5b123e4aib46c4e4b009b0018@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 29/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> Hi,
+>
+> On 7/29/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> > Hello,
+> >
+> > This patch makes sure we don't dereference a NULL pointer in
+> > drivers/net/usb/pegasus.c::write_bulk_callback() in the initial
+> > struct net_device *net = pegasus->net; assignment.
+> > The existing code checks if 'pegasus' is NULL and bails out if
+> > it is, so we better not touch that pointer until after that check.
+> > [...]
+> > diff --git a/drivers/net/usb/pegasus.c b/drivers/net/usb/pegasus.c
+> > index a05fd97..04cba6b 100644
+> > --- a/drivers/net/usb/pegasus.c
+> > +++ b/drivers/net/usb/pegasus.c
+> > @@ -768,11 +768,13 @@ done:
+> >  static void write_bulk_callback(struct urb *urb)
+> >  {
+> >         pegasus_t *pegasus = urb->context;
+> > -       struct net_device *net = pegasus->net;
+> > +       struct net_device *net;
+> >
+> >         if (!pegasus)
+> >                 return;
+> >
+> > +       net = pegasus->net;
+> > +
+> >         if (!netif_device_present(net) || !netif_running(net))
+> >                 return;
+>
+> Is it really possible that we're called into this function with
+> urb->context == NULL? If not, I'd suggest let's just get rid of
+> the check itself, instead.
+>
+I'm not sure. I am not very familiar with this code. I just figured
+that moving the assignment is potentially a little safer and it is
+certainly no worse than the current code, so that's a safe and
+potentially benneficial change. Removing the check may be safe but I'm
+not certain enough to make that call...
 
-Hi,
-
-On Friday 27 July 2007, dth wrote:
-> I have a via mini-itx epia 5000 motherboard as a firewall.
-> It has an ide device: PQI 128MB flash DOM [1] which just plugs
-> directly into the ide connector on the motherboard.
-> 2.6.22-git17 works, although it gives some warning 
-> hda: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
-> hda: set_drive_speed_status: error=0x04 { DriveStatusError }
-
-Should be harmless for now but we would like to fix it the long-term,
-please send "hdparm --Istdout /dev/hda" output.
-
-> Full dmesg output [2]
-> 
-> When i compiled any 2.6.23-rc1 kernel out so far it always froze on me.
-> Yesterday i tried 2.6.23-rc1-git3 and i booted until:
-
-No IDE changes yet after 2.6.22-git17 so something else must have broke down.
-
-Please retry with the latest -git kernel and if the problem is still
-there install git, get kernel tree and run git-bisect.
-
-Since 2.6.22-git17 works fine the initial "good" commit would be
-e51f802babc5e368c60fbfd08c6c11269c9253b0 and the initial "bad" one
-f695baf2df9e0413d3521661070103711545207a (for 2.6.23-rc1).
-
-If you need some practical examples on using git-bisect, this one
-
-http://www.reactivated.net/weblog/archives/2006/01/using-git-bisect-to-find-buggy-kernel-patches/
-
-is a very good one (IMO).
-
-> VP_IDE: VIA vt8231 (rev 10) IDE UDMA100 controller on pci0000:00:11.1
->     ide0: BM-DMA at 0xd000-0xd007, BIOS settings: hda:pio, hdb:pio
->     ide1: BM-DMA at 0xd008-0xd00f, BIOS settings: hdc:pio, hdd:pio
-> Marking TSC unstable due to: possible TSC halt in C2.
-> Time: acpi_pm clocksource has been installed.
-> hda: PQI IDE DiskOnModule, ATA DISK drive
-> hda: IRQ probe failed (0xfff2)
-
-This message would indicate broken IRQ routing, however it is no
-longer present in the log for the kernel 2.6.23-rc1-git4 ([3]).
-
-Interesting that the kernel 2.6.22-git17 (log [2]) doesn't use via82cxxx
-IDE host driver while the kernel 2.6.23-rc1-git4 (log [3]) does...?
-
-> Clocksource tsc unstable (delta = 84358771493 ns)
-> 
-> So i went back to 2.6.22-git17.
-> This morning i saw a fresh git4 and compiled/installed that.
-> This kernel actually booted! (once)
-> I had a netconsole running to catch the lucky event [3]
-> 
-> After about 2 minutes of working however, the whole machine froze.
-> No message at the console, not able to toggle numlock, no magic
-> sysrq key features: solid frozen.
-> After the power cycle i was not able to boot the same kernel
-> ever again. It was just like a timer had run out and it wouldn't 
-> work anymore. 
-> 
-> I know my hardware is "ancient" and the flash thing is probably
-> not current. My firewall however is solar powerpowered (10 watt 
-
-Neat. :)
-
-> power consumption) and it would be fun if i could run the latest/
-> greatest kernels on it.
-
-With the buggy commit number obtained from git-bisect it should be
-fixed quite quickly.
-
-> Config files and hdparm info on the DOM in the same directory as
-> dmesg output.
-> 
-> Any comments appriciated.
-> 
-> Danny
-> 
-> [1] http://www.memorydepot.com/ssd_diskonmodule.asp
-> [2] http://www.dth.net/kernel/via_output_2.6.22_git17
-> [3] http://www.dth.net/kernel/via_output_2.6.23-rc1-git4
-
-Thanks,
-Bart
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
