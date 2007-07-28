@@ -1,36 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXG1GBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758299AbXG1GCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbXG1GBH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 02:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbXG1GA4
+	id S1758299AbXG1GCP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 02:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbXG1GB7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 02:00:56 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:54751 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752821AbXG1GA4 (ORCPT
+	Sat, 28 Jul 2007 02:01:59 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46543 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753068AbXG1GB6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 02:00:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=NArMffj8SHuRRFNWe3Qc4et1ptw0q2nsSlvpiVRwzFo1WcU0pMATY1rxWvoB4alTVScsX+4umN5WICqRHcZnzA4EdfYwe7EoCAnpfRsIzo9uQu/9dob6RCZ5pXnRfdScxSxDLGYnCaFNS/kSfmpzAYD2noaVnYtl9mPhShHhQa4=
-Message-ID: <a44ae5cd0707272300y85825d0v9b8ff60de0de50a0@mail.gmail.com>
-Date: Fri, 27 Jul 2007 23:00:54 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: =?WINDOWS-1252?Q?mm/sparse.c:482:_error:_implicit_declarati?= =?WINDOWS-1252?Q?on_of_function_=91sparse=5Fearly=5Fusemap=5Falloc=92?=
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 28 Jul 2007 02:01:58 -0400
+Date: Sat, 28 Jul 2007 15:03:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>, Zoltan.Menyhart@bull.net,
+       "nickpiggin@yahoo.com.au" <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: [PATCH] flush icache before set_pte() take 5.
+Message-Id: <20070728150319.d19f531f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do you need my .config file?
+Appliled comments on take 4.
+patches are against 2.6.23-rc1.
 
-  CC      mm/sparse.o
-mm/sparse.c: In function 'sparse_init':
-mm/sparse.c:482: error: implicit declaration of function
-'sparse_early_usemap_alloc'
-mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
-make[1]: *** [mm/sparse.o] Error 1
+Changes:
+  - changes flush_icache_page to be flush_cache_page() in remove_migration_pte().
+  - removed sync_icache_dcahe() in page reuse case of do_wp_page(). 
+
+Considerations:
+  - I can add CONFIG_MONTECITO if necessary. But it will be confusing, I think.
+
+Thanks,
+-Kame
+
