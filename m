@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbXG1SNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbXG1SUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756904AbXG1SNT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 14:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbXG1SNL
+	id S1755433AbXG1SUt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 14:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751331AbXG1SUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 14:13:11 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36731 "EHLO mail.dvmed.net"
+	Sat, 28 Jul 2007 14:20:40 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45721 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbXG1SNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 14:13:10 -0400
-Message-ID: <46AB8732.6080109@garzik.org>
-Date: Sat, 28 Jul 2007 14:13:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1751165AbXG1SUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 14:20:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1)
+Date: Sat, 28 Jul 2007 20:29:02 +0200
+User-Agent: KMail/1.9.5
+Cc: Len Brown <lenb@kernel.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+References: <200707251238.50218.lenb@kernel.org> <alpine.LFD.0.999.0707280921150.3442@woody.linux-foundation.org> <alpine.LFD.0.999.0707280932470.3442@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707280932470.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-CC: Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org, Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] fix IDE legacy mode resource
-References: <20070728220420.352c316b.yoichi_yuasa@tripeaks.co.jp>
-In-Reply-To: <20070728220420.352c316b.yoichi_yuasa@tripeaks.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200707282029.03563.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yoichi Yuasa wrote:
-> Hi,
+On Saturday, 28 July 2007 18:55, Linus Torvalds wrote:
 > 
-> I got the following error on MIPS Cobalt.
-> MIPS Cobalt has the 0x10000000 offset between resource and bus region. 
+> On Sat, 28 Jul 2007, Linus Torvalds wrote:
+> > 
+> > And it's the *top*level* code that selects HOTPLUG_CPU. Through 
+> > SUSPEND_SMP (which will select HOTPLUG_CPU) and SOFTWARE_SUSPEND.
 > 
-> PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
-> pata_via 0000:00:09.1: failed to request/iomap BARs for port 0 (errno=-16)
-> PCI: Unable to reserve I/O region #3:8@f0000170 for device 0000:00:09.1
-> pata_via 0000:00:09.1: failed to request/iomap BARs for port 1 (errno=-16)
-> pata_via 0000:00:09.1: no available native port
+> In other words, the problem seems to be that 
 > 
-> At this point, these resources should be the bus regions.
+> 	kernel/power/main.c:
+> 		suspend_devices_and_enter()
 > 
-> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> does the proper "disable/enable_nonboot_cpus()", but it does so without 
+> having enabled CPU hotplug.
+> 
+> And you seem to think that it's ACPI that should enable the hotplug, even 
+> though the code that actually needs it is _outside_ ACPI. And I think 
+> that's wrong, and that this is a bug.
+> 
+> So I think the real issue is that we allow that 
+> "suspend_devices_and_enter()" code to be compiled without HOTPLUG_CPU in 
+> the first place. It's not supposed to work that way.
+> 
+> Of course, it may well be that other architectures can happily suspend 
+> even with multiple CPU's active, which may be the cause of this mess. But 
+> I really think it shouldn't be ACPI that has to select the CPU hotplug, 
+> since it's not ACPI that _uses_ it in the first place.
+> 
+> Rafael: making a config option for STR (the same way we have a config 
+> option for hibernate), and just not allowing it on SMP without HOTPLUG_CPU 
+> seems to be the right thing. Len is right in that we do insane things 
+> right now (trying to STR with multiple CPU's still active), and I just 
+> don't think he's the one that should work around it!
 
-I'm not sure I understand what's going on here... could you or someone 
-provide additional explanation as to why this is a fix?
+Well, I agree and that's why I asked. :-)
 
-Thanks,
+OK, I'll prepare a patch to introduce CONFIG_SUSPEND, but that will require
+quite a bit of (compilation) testing on different architectures.
 
-	Jeff
+Greetings,
+Rafael
 
 
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
