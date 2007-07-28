@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXG1WUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758352AbXG1WXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXG1WUi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 18:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbXG1WU3
+	id S1758352AbXG1WXE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 18:23:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756724AbXG1WWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 18:20:29 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:52277 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756299AbXG1WU2 (ORCPT
+	Sat, 28 Jul 2007 18:22:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35643 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756511AbXG1WWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 18:20:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=J71znTD8jMlHo/6Cn5cA5Ae0/cU5FbrOg18UlfyJgGAWcyg+xElyZ1fix3+s5jLHdYdZtHJNTYObt6m7liDwSPakWPnB6U4PrnKCblB4UV727TNB8EsRxRX8nu5hiNrIgq6i7Gl5elX4gLVrhGVFN6G3jSbbENfpg2yfnOkclVA=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Petko Manolov <petkan@users.sourceforge.net>
-Subject: [PATCH] USB Pegasus driver - avoid a potential NULL pointer dereference.
-Date: Sun, 29 Jul 2007 00:19:02 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       linux-usb-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Sat, 28 Jul 2007 18:22:54 -0400
+Date: Sat, 28 Jul 2007 15:22:31 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
+Subject: Re: Linus 2.6.23-rc1
+In-Reply-To: <Pine.LNX.4.64.0707282355010.9488@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LFD.0.999.0707281518490.3442@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+ <1185615848.13701.16.camel@localhost> <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707282054330.15125@fbirervta.pbzchgretzou.qr>
+ <alpine.LFD.0.999.0707281222410.3442@woody.linux-foundation.org>
+ <alpine.LFD.0.999.0707281417201.3442@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707282355010.9488@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707290019.02591.jesper.juhl@gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-This patch makes sure we don't dereference a NULL pointer in 
-drivers/net/usb/pegasus.c::write_bulk_callback() in the initial 
-struct net_device *net = pegasus->net; assignment.
-The existing code checks if 'pegasus' is NULL and bails out if 
-it is, so we better not touch that pointer until after that check.
-
-Please consider merging.
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+On Sat, 28 Jul 2007, Jan Engelhardt wrote:
+> 
+> I generally run with CONFIG_HZ=100, CONFIG_NO_HZ=n, CONFIG_PREEMPT_NONE.
 
- drivers/net/usb/pegasus.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+Ok, that's HZ=100 is likely the worst case, as it effectively multiples 
+all the scheduler latencies by 10 (rather than by 4, which is what the 
+default 250Hz does).
 
-diff --git a/drivers/net/usb/pegasus.c b/drivers/net/usb/pegasus.c
-index a05fd97..04cba6b 100644
---- a/drivers/net/usb/pegasus.c
-+++ b/drivers/net/usb/pegasus.c
-@@ -768,11 +768,13 @@ done:
- static void write_bulk_callback(struct urb *urb)
- {
- 	pegasus_t *pegasus = urb->context;
--	struct net_device *net = pegasus->net;
-+	struct net_device *net;
- 
- 	if (!pegasus)
- 		return;
- 
-+	net = pegasus->net;
-+
- 	if (!netif_device_present(net) || !netif_running(net))
- 		return;
- 
+That said, I think most testing showed that the CFS scheduler tunables 
+didn't have a huge amount of impact on how things felt, so that 
+factor-of-ten might not even matter that much. The 3D game issues may well 
+be totally elsewhere.
 
+But it's certainly worth looking at.
+
+		Linus
