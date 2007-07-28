@@ -1,58 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbXG1R36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbXG1Ra5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbXG1R36 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 13:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbXG1R3v
+	id S1756536AbXG1Ra5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 13:30:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbXG1Rav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 13:29:51 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:44665 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753638AbXG1R3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 13:29:51 -0400
-Date: Sat, 28 Jul 2007 20:29:50 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jay Estabrook <jay.estabrook@hp.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix alpha objstrip.c compilation warnings
-Message-ID: <Pine.SOC.4.64.0707282025430.20474@math.ut.ee>
+	Sat, 28 Jul 2007 13:30:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:40100 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753889AbXG1Rau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 13:30:50 -0400
+Date: Sat, 28 Jul 2007 10:30:02 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Ronni Nielsen <theronni@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linus 2.6.23-rc1
+In-Reply-To: <46AB5839.709@gmail.com>
+Message-ID: <alpine.LFD.0.999.0707281026370.3442@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <46AB5839.709@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In current 2.6.23-rc1+git, make bootimage gives the following warnings 
-while compiling objstrip.c. The patch below fixes these warnings by 
-casting strncmp argument to char * - it does not seem feasible to change 
-its type in struct elfhdr.
 
-  HOSTCC  arch/alpha/boot/tools/objstrip
-arch/alpha/boot/tools/objstrip.c: In function 'main':
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of 'strlen' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of 'strlen' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of '__builtin_strcmp' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of 'strlen' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of '__builtin_strcmp' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of '__builtin_strcmp' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of '__builtin_strcmp' differ in signedness
-arch/alpha/boot/tools/objstrip.c:147: warning: pointer targets in passing argument 1 of 'strncmp' differ in signedness
 
-Signed-off-by: Meelis Roos <mroos@linux.ee>
+On Sat, 28 Jul 2007, Ronni Nielsen wrote:
+> 
+> - Linus 2.6.23-rc1
+> + Linux 2.6.23-rc1
+> 
+> Or are *you* now under versioning?
+> Or maybe a silent namechange of the kernel?
 
-diff --git a/arch/alpha/boot/tools/objstrip.c b/arch/alpha/boot/tools/objstrip.c
-index 96154e7..ef18382 100644
---- a/arch/alpha/boot/tools/objstrip.c
-+++ b/arch/alpha/boot/tools/objstrip.c
-@@ -144,7 +144,7 @@ main (int argc, char *argv[])
- #ifdef __ELF__
-     elf = (struct elfhdr *) buf;
- 
--    if (elf->e_ident[0] == 0x7f && strncmp(elf->e_ident + 1, "ELF", 3) == 0) {
-+    if (elf->e_ident[0] == 0x7f && strncmp((char *)elf->e_ident + 1, "ELF", 3) == 0) {
- 	if (elf->e_type != ET_EXEC) {
- 	    fprintf(stderr, "%s: %s is not an ELF executable\n",
- 		    prog_name, inname);
+Yeah, yeah, my fingers get confused. I type "Linux" and "Linus" 
+interchangably, and _most_ of the time I notice, but then at other times I 
+don't look closely enough at what I wrote, so something slips through. 
 
--- 
-Meelis Roos (mroos@linux.ee)
+And sometimes when my right hand is off by a key, I'm Kubys.
+
+My fingers have minds all their own.
+
+			Linus
