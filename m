@@ -1,71 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbXG1VKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbXG1Vc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbXG1VKa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 17:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbXG1VKL
+	id S1757487AbXG1Vc7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 17:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbXG1Vcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 17:10:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:45605 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756901AbXG1VKI (ORCPT
+	Sat, 28 Jul 2007 17:32:50 -0400
+Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:55258
+	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbXG1Vcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 17:10:08 -0400
-Date: Sat, 28 Jul 2007 14:09:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
+	Sat, 28 Jul 2007 17:32:50 -0400
+Date: Sat, 28 Jul 2007 14:32:32 -0700
 To: Diego Calleja <diegocg@gmail.com>
-cc: Jan Engelhardt <jengelh@computergmbh.de>,
-       Jonathan Jessup <jonathanjessup@gmail.com>,
-       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, lkml@metanurb.dk
+Cc: jos poortvliet <jos@mijnkamer.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, ck@vds.kolivas.org,
+       Michael Chang <thenewme91@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
 Subject: Re: [ck] Re: Linus 2.6.23-rc1
-In-Reply-To: <20070728225148.a0e58fdd.diegocg@gmail.com>
-Message-ID: <alpine.LFD.0.999.0707281401280.3442@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
- <1185588279.1654.1.camel@localhost> <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
- <Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
- <954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
- <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
- <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
- <20070728225148.a0e58fdd.diegocg@gmail.com>
+Message-ID: <20070728213232.GG32582@gnuppy.monkey.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <200707282003.45142.jos@mijnkamer.nl> <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org> <200707282128.39906.jos@mijnkamer.nl> <20070728200705.GF32582@gnuppy.monkey.org> <20070728230609.43273a75.diegocg@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070728230609.43273a75.diegocg@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: Bill Huey (hui) <billh@gnuppy.monkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Jul 28, 2007 at 11:06:09PM +0200, Diego Calleja wrote:
+> So your argument is that SD shouldn't have been merged either, because it
+> would have resulted in one scheduler over the other?
 
+My argument is that schedule development is open ended. Although having
+a central scheduler to hack is a a good thing, it shouldn't lock out or
+supress development from other groups that might be trying to solve the
+problem in unique ways.
 
-On Sat, 28 Jul 2007, Diego Calleja wrote:
+This can be accomplished in a couple of ways:
 
-> El Sat, 28 Jul 2007 11:05:25 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> escribió:
-> > 
-> > So "modal" things are good for fixing behaviour in the short run. But they 
-> > are a total disaster in the long run, and even in the short run they tend 
-> > to have problems (simply because there will be cases that straddle the 
-> > line, and show some of _both_ issues, and now *neither* mode is the right 
-> > one)
+1) scheduler modularity
+
+Clearly Con is highly qualified to experiement with scheduler code and
+this should be technically facilitate by some means if not a maintainer.
+He's only a part time maintainer and nobody helped him with this stuff
+nor did they try to understand what his scheduler was trying to do other
+than Tong Li.
+
+2) better code modularity
+
+Now, cleaner code would help with this a lot. If that was in place, we
+might not need (1) and pluggable scheduler. It would limit the amount
+of refactoring for folks so that their code can drop in easier. There's
+a significant amount of churn that it locks out developers by default
+since they have to constantly clean up the code in question while another
+developer can commit without consideration to how it effects others.
+That's their right as a maintainer, but also as maintainer, they should
+give proper amount of consideration to how others might intend to extend
+the code so that development remains "inclusive".
+
+This notion of "open source, open development" is false when working
+under those circumstances.
+
+> > where capable but one is locked out now because of the choices of
+> > current high level kernel developers in Linux.
 > 
-> I fully agree with this, but plugsched could have avoided this useless "division"
-> on the topic of SD vs CFS. IMO that counts as an advantage, too ;)
+> Well, there are two schedulers...it's obvious that "high level kernel
+> developers" needed to chose one.
 
-Sure. I actually think it's a huge advantage (see the ManagementStyle file 
-on pissing people off), but at the same time, I don't like playing 
-politics with technology. The kernel is a technical project, and I make 
-technical decisions.
+I think that's kind of a bogus assumption from the very get go. Scheduling
+in Linux is one of the most unevolved systems in the kernel that still
+could go through a large transformation and get big gains like what
+we've had over the last few months. This evident with both schedulers,
+both do well and it's a good thing overall the CFS is going in.
 
-So I absolutely detest adding code for "political" reasons.
+Now, the way it happened is completely screwed up in so many ways that I
+don't see how folks can miss it. This is not just Ingo versus Con, this
+is the current Linux community and how it makes decision from the top down
+and the current cultural attitude towards developers doing things that
+are:
 
-I personally feel that modal behaviour is bad, so it would introduce what 
-is in my opinion bad code, and likely result in problems not being found 
-and fixed as well (because people would pick the thing that "works for 
-them", and ignore the problems in the other module). So while I don't like 
-making irreversible decisions (and the choice of CFS wasn't irreversible 
-in itself, but if it pisses off Con, _that_ is generally not reversible), 
-I dislike even more making a half-assed decision.
+1) architecturally significant
 
-So rather than making a choice at all, my other choice would have been to 
-not merge _either_ scheduler, and let people just continue to fight it 
-out. Would that have made people happier? I seriously doubt it.
+which they will get flamed to death by the establish Linux kernel culture
+before they can get any users to report bugs after their posting on lkml.
 
-			Linus
+2) conceptual different
+
+which is subject to the reasons above, but also get flamed to death unless
+it comes from folks internal to the Linux development processes.
+
+When groups get to a certain size like it has, there needs to be a
+revision of development processes so that they can scale and be "inclusive"
+to the overall spirit the Linux development process. When that breaks down,
+we get situations like what we have with Con leaving development. Other
+developers like me get turned off to the situation, also feel the same as
+Con and stop Linux development. That's my current status as well.
+
+> The main problem is clearly that no scheduler was clearly better than the
+> other. This remembers me of the LVM2/MD vs EVMS in the 2.5 days - both
+> of them were good enought, but only one of them could be merged. The
+> difference is that EVMS developers didn't get that annoyed, and not only
+> they didn't quit but they continued developing their userspace tools to
+> make it work with the solution included in the kernel
+
+That's a good point to have folks not go down that particular path. But
+Con was kind of put down during the arguments with Ingo about his
+assumptions of the problems and then was personally crapped on by having
+his own idea under go a a complete reversal in opinion by Ingo, with
+Ingo then doing this own version of Con's work displacing him
+
+How would you feel in that situation ? I'd be pretty damn pissed.
+
+[For the record Peter Zijlstra did the same thing to me which is annoying,
+but since he's my buddy doesn't get as rude as the above situation, included
+me in every private mail about his working so that I don't feel like RH
+is paying him to undermine my brilliance, it's ok :)]
+
+bill
+
