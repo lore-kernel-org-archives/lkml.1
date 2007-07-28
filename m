@@ -1,185 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751674AbXG1NKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbXG1NSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751674AbXG1NKO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 09:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbXG1NJ4
+	id S1752617AbXG1NSY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 09:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbXG1NSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 09:09:56 -0400
-Received: from mail.lysator.liu.se ([130.236.254.3]:50465 "EHLO
-	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752528AbXG1NJu (ORCPT
+	Sat, 28 Jul 2007 09:18:16 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:48615 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbXG1NSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 09:09:50 -0400
-X-Greylist: delayed 1555 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 09:09:50 EDT
-In-Reply-To: <200707270945.LAA17237@ifs.emn.fr>
-References: <200707270945.LAA17237@ifs.emn.fr>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=pgp-sha1; boundary="Apple-Mail-1--986484589"
-Message-Id: <CF450A74-EB6C-41EC-AB9B-AD618E10FFBB@27m.se>
-Cc: kernel-janitors@vger.kernel.org, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
+	Sat, 28 Jul 2007 09:18:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lHTZU8gQbHOMpsiqU05qVteCSH8AUF3qUZKN9juX3vgXUIRhXf0qG+7tJDgbldYoPYvycaMshtDVqTWNQlMNfYROG/uls0law7H96knLo7Fi5r9HfxfNI+AlpAIvNkWnghl01lF0VlXVPh/O6fAnhSXdkAtLwVLhJXNsBVd+ZIE=
+Message-ID: <b14e81f00707280618m73461fdfx989d87a3a0074192@mail.gmail.com>
+Date: Sat, 28 Jul 2007 09:18:14 -0400
+From: "Michael Chang" <thenewme91@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
+       "CK Mailinglist" <ck@vds.kolivas.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Markus Gothe <markus.gothe@27m.se>
-Subject: Re: [PATCH 10/68] 0 -> NULL, for arch/mips
-Date: Sat, 28 Jul 2007 14:43:49 +0200
-To: Yoann Padioleau <padator@wanadoo.fr>
-X-Pgp-Agent: GPGMail 1.1.2 (Tiger)
-X-Mailer: Apple Mail (2.752.3)
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <1185588279.1654.1.camel@localhost>
+	 <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---Apple-Mail-1--986484589
-Content-Transfer-Encoding: quoted-printable
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
+On 7/27/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Usually it's not only cleaner, it's what you want to do... AFAIK =20
-'NULL' is implemented/defined by the compiler, so if you've got a =20
-compiler which defines NULL otherwise than( a pointer to) zero you're =20=
+> Con ended up arguing against people who reported problems, rather than
+> trying to work with them.
 
-screwed. ;)
+I do recall there is one issue on which Con wouldn't budge -- anything
+that involved boosting certain kinds of processes in the kernel. He
+said that it would defeat the whole point of the way he had designed
+it, and that nicing could work just as well. Perhaps there could have
+been a better way of handling that issue, such as adding (yet another)
+kernel compilation configuration option for this code (since Con
+didn't believe it would help all users).
 
-//Markus
+> Andrew also reported an oops in the scheduler when SD was merged into -mm,
+> so there were other issues.
 
-On 27 Jul, 2007, at 11:45 , Yoann Padioleau wrote:
+I don't know how you can blame Con for not finding a PPC oops before
+SD was merged into -mm, considering he seemed to be coding solely on
+an x86-based architecture. Of course, you could say that his design
+should have factored in all the architectures and such, but even the
+best design can fall apart if it doesn't get tested somewhere. Again,
+this is probably a subjective case in that Con might have pushed SD to
+-mm rather early; but considering the readership of his -ck list, I
+don't think it would have been tested on anything other than X86 until
+it went into -mm because I've ever seen anyone on -ck report "it works
+on <something other than x86/x86-64/IA64>". I don't know what made it
+on to other lists, but Con tried his best to fix this oops, and unless
+it was done privately, this oops was never re-reported. (Now, if SD
+was _STILL_ causing this oops on PPC, I can see how this might be a
+concern.)
 
+> > As far as im concerned, i may be forced to unofficially maintain SD for
+> > my own systems(allthough lots in the gaming community is bound to be
+> > interrested, as it does make games lots better)
 >
-> When comparing a pointer, it's clearer to compare it to NULL than =20
-> to 0.
+> You know what? You can do whatever you want to. That's kind of the point
+> of open source. Keep people honest by having alternatives.
 >
-> Here is an excerpt of the semantic patch:
+> But the the thing is, if you want to do a good job of doing that, here's a
+> big hint: instead of keeping to your isolated world, instead of just
+> talking about your own machine and ignoring other peoples machines and
+> issues and instead of just denying that problems may exist, and instead of
+> attacking people who report problems, how about working with them?
 >
-> @@
-> expression *E;
-> @@
->
->   E =3D=3D
-> - 0
-> + NULL
->
-> @@
-> expression *E;
-> @@
->
->   E !=3D
-> - 0
-> + NULL
->
-> Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-> Cc: ralf@linux-mips.org
-> Cc: linux-mips@linux-mips.org
-> Cc: akpm@linux-foundation.org
-> ---
->
->  ops-emma2rh.c |    2 +-
->  ops-pnx8550.c |   12 ++++++------
->  2 files changed, 7 insertions(+), 7 deletions(-)
->
-> diff --git a/arch/mips/pci/ops-emma2rh.c b/arch/mips/pci/ops-emma2rh.c
-> index 38f1816..d31bfc6 100644
-> --- a/arch/mips/pci/ops-emma2rh.c
-> +++ b/arch/mips/pci/ops-emma2rh.c
-> @@ -45,7 +45,7 @@ static int check_args(struct pci_bus *bu
->  	/* check if the bus is top-level */
->  	if (bus->parent !=3D NULL) {
->  		*bus_num =3D bus->number;
-> -		db_assert(bus_num !=3D 0);
-> +		db_assert(bus_num !=3D NULL);
->  	} else
->  		*bus_num =3D 0;
->
-> diff --git a/arch/mips/pci/ops-pnx8550.c b/arch/mips/pci/ops-pnx8550.c
-> index f556b7a..d610646 100644
-> --- a/arch/mips/pci/ops-pnx8550.c
-> +++ b/arch/mips/pci/ops-pnx8550.c
-> @@ -117,7 +117,7 @@ read_config_byte(struct pci_bus *bus, un
->  	unsigned int data =3D 0;
->  	int err;
->
-> -	if (bus =3D=3D 0)
-> +	if (bus =3D=3D NULL)
->  		return -1;
->
->  	err =3D config_access(PCI_CMD_CONFIG_READ, bus, devfn, where, =
-~(1 =20
-> << (where & 3)), &data);
-> @@ -145,7 +145,7 @@ read_config_word(struct pci_bus *bus, un
->  	unsigned int data =3D 0;
->  	int err;
->
-> -	if (bus =3D=3D 0)
-> +	if (bus =3D=3D NULL)
->  		return -1;
->
->  	if (where & 0x01)
-> @@ -168,7 +168,7 @@ static int
->  read_config_dword(struct pci_bus *bus, unsigned int devfn, int =20
-> where, u32 * val)
->  {
->  	int err;
-> -	if (bus =3D=3D 0)
-> +	if (bus =3D=3D NULL)
->  		return -1;
->
->  	if (where & 0x03)
-> @@ -185,7 +185,7 @@ write_config_byte(struct pci_bus *bus, u
->  	unsigned int data =3D (unsigned int)val;
->  	int err;
->
-> -	if (bus =3D=3D 0)
-> +	if (bus =3D=3D NULL)
->  		return -1;
->
->  	switch (where & 0x03) {
-> @@ -213,7 +213,7 @@ write_config_word(struct pci_bus *bus, u
->  	unsigned int data =3D (unsigned int)val;
->  	int err;
->
-> -	if (bus =3D=3D 0)
-> +	if (bus =3D=3D NULL)
->  		return -1;
->
->  	if (where & 0x01)
-> @@ -235,7 +235,7 @@ static int
->  write_config_dword(struct pci_bus *bus, unsigned int devfn, int =20
-> where, u32 val)
->  {
->  	int err;
-> -	if (bus =3D=3D 0)
-> +	if (bus =3D=3D NULL)
->  		return -1;
->
->  	if (where & 0x03)
->
->
+> That was where the SD patches fell down. They didn't have a maintainer
+> that I could trust to actually care about any other issues than his own.
 
-_______________________________________
+So if we found a better maintainer who would commit to maintaining the
+SD patches, would you still be willing to consider merging them? Is
+this what you're saying?
 
-Mr Markus Gothe
-Software Engineer
+> I'm happy that SD was perfect for you. It wasn't for others, and it had
+> nobody who was even interested in trying to solve those issues.
 
-Phone: +46 (0)13 21 81 20 (ext. 1046)
-Fax: +46 (0)13 21 21 15
-Mobile: +46 (0)73 718 72 80
-Diskettgatan 11, SE-583 35 Link=F6ping, Sweden
-www.27m.com
+-- 
+Michael Chang
 
-
-
---Apple-Mail-1--986484589
-content-type: application/pgp-signature; x-mac-type=70674453;
-	name=PGP.sig
-content-description: This is a digitally signed message part
-content-disposition: inline; filename=PGP.sig
-content-transfer-encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (Darwin)
-
-iD8DBQFGqzoF6I0XmJx2NrwRArLyAJ9DvrSQ783776HhKqV6qQ6TFoljdwCfejWJ
-dLC8Ljd1xstD3ThVPdCmwJM=
-=as6o
------END PGP SIGNATURE-----
-
---Apple-Mail-1--986484589--
+Please avoid sending me Word or PowerPoint attachments. Send me ODT,
+RTF, or HTML instead.
+See http://www.gnu.org/philosophy/no-word-attachments.html
+Thank you.
