@@ -1,119 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965436AbXG1I7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936173AbXG1JHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965436AbXG1I7T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 04:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763295AbXG1I7K
+	id S936173AbXG1JHl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 05:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753704AbXG1JHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 04:59:10 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37361
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758856AbXG1I7I (ORCPT
+	Sat, 28 Jul 2007 05:07:32 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:51946 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752434AbXG1JHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 04:59:08 -0400
-Date: Sat, 28 Jul 2007 01:55:58 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Rene Herman <rene.herman@gmail.com>
-cc: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-In-Reply-To: <46AAEDEB.7040003@gmail.com>
-Message-ID: <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
- <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net>
- <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
- <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com>
+	Sat, 28 Jul 2007 05:07:31 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46AB073D.6010802@s5r6.in-berlin.de>
+Date: Sat, 28 Jul 2007 11:07:09 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Adrian Bunk <bunk@stusta.de>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [2.6 patch] SOFTWARE_SUSPEND: handle HOTPLUG_CPU automatically
+References: <200707251238.50218.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl> <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org> <200707262248.09187.rjw@sisk.pl> <alpine.LFD.0.999.0707261351430.3442@woody.linux-foundation.org> <20070727222503.GB15129@stusta.de> <alpine.LFD.0.999.0707271545220.3442@woody.linux-foundation.org> <20070728045247.GF15129@stusta.de>
+In-Reply-To: <20070728045247.GF15129@stusta.de>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jul 2007, Rene Herman wrote:
+Adrian Bunk wrote:
+> On Fri, Jul 27, 2007 at 03:57:39PM -0700, Linus Torvalds wrote:
+>> [ For extra bonus points: the SUSPEND_POSSIBLE thing is still pretty 
+>>   complicated, and it might actually be a better idea to make it a 
+>>   per-arch config option,
+...
+> This would give you "trying to assign nonexistent symbol SUSPEND_POSSIBLE"
+> kconfig warnings on architectures without SUSPEND_POSSIBLE.
 
-> On 07/27/2007 09:43 PM, david@lang.hm wrote:
->
->>  On Fri, 27 Jul 2007, Rene Herman wrote:
->> 
->> >  On 07/27/2007 07:45 PM, Daniel Hazelton wrote:
->> > 
->> > >   Questions about it:
->> > >   Q) Does swap-prefetch help with this?
->> > >   A) [From all reports I've seen (*)]
->> > >   Yes, it does. 
->> > 
->> >  No it does not. If updatedb filled memory to the point of causing 
->> >  swapping (which noone is reproducing anyway) it HAS FILLED MEMORY and 
->> >  swap-prefetch hasn't any memory to prefetch into -- updatedb itself 
->> >  doesn't use any significant memory.
->>
->>  however there are other programs which are known to take up significant
->>  amounts of memory and will cause the issue being described (openoffice for
->>  example)
->>
->>  please don't get hung up on the text 'updatedb' and accept that there are
->>  programs that do run intermittently and do use a significant amount of ram
->>  and then free it.
->
-> Different issue. One that's worth pursueing perhaps, but a different issue 
-> from the VFS caches issue that people have been trying to track down.
-
-people are trying to track down the problem of their machine being slow 
-until enough data is swapped back in to operate normally.
-
-in at some situations swap prefetch can help becouse something that used 
-memory freed it so there is free memory that could be filled with data 
-(which is something that Linux does agressivly in most other situations)
-
-in some other situations swap prefetch cannot help becouse useless data is 
-getting cached at the expense of useful data.
-
-nobody is arguing that swap prefetch helps in the second cast.
-
-what people are arguing is that there are situations where it helps for 
-the first case. on some machines and version of updatedb the nighly run of 
-updatedb can cause both sets of problems. but the nightly updatedb run is 
-not the only thing that can cause problems
-
-
-but let's talk about the concept here for a little bit
-
-the design is to use CPU and I/O capacity that's otherwise idle to fill 
-free memory with data from swap.
-
-pro:
-   more ram has potentially useful data in it
-
-con:
-   it takes a little extra effort to give this memory to another app (the 
-page must be removed from the list and zeroed at the time it's needed, I 
-assume that the data is left in swap so that it doesn't have to be written 
-out again)
-
-   it adds some complexity to the kernel (~500 lines IIRC from this thread)
-
-   by undoing recent swapouts it can potentially mask problems with swapout
-
-it looks to me like unless the code was really bad (and after 23 months in 
--mm it doesn't sound like it is) that the only significant con left is the 
-potential to mask other problems.
-
-however there are many legitimate cases where it is definantly dong the 
-right thing (swapout was correct in pushing out the pages, but now the 
-cause of that preasure is gone). the amount of benifit from this will vary 
-from situation to situation, but it's not reasonable to claim that this 
-provides no benifit (you have benchmark numbers that show it in synthetic 
-benchmarks, and you have user reports that show it in the real-worlk)
-
-there are lots of things in the kernel who's job is to pre-fill the memroy 
-with data that may (or may not) be useful in the future. this is just 
-another method of filling the cache. it does so my saying "the user wanted 
-these pages in the recent past, so it's a reasonable guess to say that the 
-user will want them again in the future"
-
-David Lang
+Unless /all/ architectures define it, of course.
+-- 
+Stefan Richter
+-=====-=-=== -=== ===--
+http://arcgraph.de/sr/
