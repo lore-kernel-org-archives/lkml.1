@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbXG1UxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757537AbXG1U6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbXG1UxK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 16:53:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbXG1Uw5
+	id S1757537AbXG1U6g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 16:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753696AbXG1U62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 16:52:57 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:55975 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756055AbXG1Uw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 16:52:56 -0400
-Date: Sat, 28 Jul 2007 23:52:54 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jay Estabrook <jay.estabrook@hp.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: [PATCH] add a missing LIB_Y to arch/alpha/boot Makefile
-In-Reply-To: <20070728202012.GB25619@uranus.ravnborg.org>
-Message-ID: <Pine.SOC.4.64.0707282338580.22996@math.ut.ee>
-References: <Pine.SOC.4.64.0706041419470.7370@math>
- <20070605231712.ff1df46f.akpm@linux-foundation.org>
- <Pine.SOC.4.64.0707281950340.20474@math.ut.ee> <20070728200450.GA25619@uranus.ravnborg.org>
- <20070728202012.GB25619@uranus.ravnborg.org>
+	Sat, 28 Jul 2007 16:58:28 -0400
+Received: from styx.suse.cz ([82.119.242.94]:40582 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752196AbXG1U61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 16:58:27 -0400
+Date: Sat, 28 Jul 2007 22:55:14 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Christoph Pfister <christophpfister@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: keyboard stopped working after de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
+Message-ID: <20070728205514.GA17084@suse.cz>
+References: <200707132249.26106.christophpfister@gmail.com> <200707132304.30795.christophpfister@gmail.com> <d120d5000707160749r1084ab4ex8d2c4e89e6134d41@mail.gmail.com> <200707172101.06878.christophpfister@gmail.com> <d120d5000707171252j501a25f5v56beae0c11462cb9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d120d5000707171252j501a25f5v56beae0c11462cb9@mail.gmail.com>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> kasprintf pulls in kmalloc which proved to be fatal for at least
-> bootimage target on alpha.
-> Move it to a separate file so only users of kasprintf are exposed
-> to the dependency on kmalloc.
+On Tue, Jul 17, 2007 at 03:52:07PM -0400, Dmitry Torokhov wrote:
+> Hi Christoph,
+> 
+> On 7/17/07, Christoph Pfister <christophpfister@gmail.com> wrote:
+> >
+> >Yep, attached (cold reboot, not pressing any keys, 2.6.21).
+> >
+> 
+> Ok, I see. You don't use PS/2 mouse and so BIOS told us that mouse is
+> absent and reassigned IRQ12 to EHCI controller. However we do not
+> listen to BIOS on i386 (for historucal reasons) and process with
+> registering AUX port... Now IRQ12 is shared between AUX port and EHCI
+> and the keyboard controller is unhappy wehereas before (with polling
+> timer) it would release IRQ12 and close port...
 
-Withe the addition of missing $(LIB_Y) it really seems to compile now. 
-Can not boot test before some time next week.
+Here I should add that IRQ sharing between ISA/LPC where i8042 lives and
+PCI where EHCI lives doesn't work - only one of the sides will ever be
+able to trigger interrupts, depending on the bridge config.
 
-Add $(LIBS_Y) to get lib/lib.a so srm_printk is present.
-
-Signed-off-by: Meelis Roos <mroos@linux.ee>
-
-diff --git a/arch/alpha/boot/Makefile b/arch/alpha/boot/Makefile
-index e1ae14c..cd14388 100644
---- a/arch/alpha/boot/Makefile
-+++ b/arch/alpha/boot/Makefile
-@@ -104,7 +104,7 @@ OBJ_bootlx   := $(obj)/head.o $(obj)/main.o
- OBJ_bootph   := $(obj)/head.o $(obj)/bootp.o
- OBJ_bootpzh  := $(obj)/head.o $(obj)/bootpz.o $(obj)/misc.o
- 
--$(obj)/bootloader: $(obj)/bootloader.lds $(OBJ_bootlx) FORCE
-+$(obj)/bootloader: $(obj)/bootloader.lds $(OBJ_bootlx) $(LIBS_Y) FORCE
- 	$(call if_changed,ld)
- 
- $(obj)/bootpheader: $(obj)/bootloader.lds $(OBJ_bootph) $(LIBS_Y) FORCE
+> Does your keyboard start working if you boot with i8042.noaux?
 
 -- 
-Meelis Roos (mroos@linux.ee)
+Vojtech Pavlik
+Director SuSE Labs
