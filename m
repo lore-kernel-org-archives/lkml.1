@@ -1,47 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938718AbXG1DrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751634AbXG1ESU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938718AbXG1DrZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 23:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935917AbXG1DrS
+	id S1751634AbXG1ESU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 00:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750723AbXG1ESK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 23:47:18 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:16056 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935689AbXG1DrR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 23:47:17 -0400
-Date: Sat, 28 Jul 2007 11:47:19 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: gurudas pai <gurudas.pai@oracle.com>
-Cc: Joe Jin <joe.jin@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, wen.gang.wang@oracle.com,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] add check do_direct_IO() return val
-Message-ID: <20070728034719.GA24448@joejin-pc.cn.oracle.com>
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org> <20070727071547.GA25084@joejin-pc.cn.oracle.com> <46A9E6F9.20603@oracle.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 28 Jul 2007 00:18:10 -0400
+Received: from [212.12.190.38] ([212.12.190.38]:33267 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750743AbXG1ESI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 00:18:08 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Chris Snook <csnook@redhat.com>
+Subject: How can we make page replacement smarter (was: swap-prefetch)
+Date: Sat, 28 Jul 2007 07:17:41 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <200707272243.02336.a1426z@gawab.com> <46AAA25E.7040301@redhat.com>
+In-Reply-To: <46AAA25E.7040301@redhat.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <46A9E6F9.20603@oracle.com>
-User-Agent: Mutt/1.4.2.2i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707280717.41250.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I tested Andrew's patch and panic was gone but got few ENOTBLK.
-> So I tried with Joe's patch , both panic and ENOTBLK are gone now.
-> But in Joe's patch if (ret == -ENOTBLK && (rw & WRITE)), dio_cleanup(dio)
-> was not getting called because of break. So I moved dio_cleanup just 
-> after if (ret).
+Chris Snook wrote:
+> Resource size has been outpacing processing latency since the dawn of
+> time. Disks get bigger much faster than seek times shrink.  Main memory
+> and cache keep growing, while single-threaded processing speed has nearly
+> ground to a halt.
+>
+> In the old days, it made lots of sense to manage resource allocation in
+> pages and blocks.  In the past few years, we started reserving blocks in
+> ext3 automatically because it saves more in seek time than it costs in
+> disk space. Now we're taking preallocation and antifragmentation to the
+> next level with extent-based allocation in ext4.
+>
+> Well, we're still using bitmap-style allocation for pages, and the
+> prefetch-less swap mechanism adheres to this design as well.  Maybe it's
+> time to start thinking about memory in a somewhat more extent-like
+> fashion.
+>
+> With swap prefetch, we're only optimizing the case when the box isn't
+> loaded and there's RAM free, but we're not optimizing the case when the
+> box is heavily loaded and we need for RAM to be free.  This is a complete
+> reversal of sane development priorities.  If swap batching is an
+> optimization at all (and we have empirical evidence that it is) then it
+> should also be an optimization to swap out chunks of pages when we need to
+> free memory.
+>
+> So, how do we go about this grouping?  I suggest that if we keep per-VMA
+> reference/fault/dirty statistics, we can tell which logically distinct
+> chunks of memory are being regularly used.  This would also us to apply
+> different page replacement policies to chunks of memory that are being
+> used in different fashions.
+>
+> With such statistics, we could then page out VMAs in 2MB chunks when we're
+> under memory pressure, also giving us the option of transparently paging
+> them back in to hugepages when we have the memory free, once anonymous
+> hugepage support is in place.
+>
+> I'm inclined to view swap prefetch as a successful scientific experiment,
+> and use that data to inform a more reasoned engineering effort.  If we can
+> design something intelligent which happens to behave more or less like
+> swap prefetch does under the circumstances where swap prefetch helps, and
+> does something else smart under the circumstances where swap prefetch
+> makes no discernable difference, it'll be a much bigger improvement.
+>
+> Because we cannot prove why the existing patch helps, we cannot say what
+> impact it will have when things like virtualization and solid state drives
+> radically change the coefficients of the equation we have not solved. 
+> Providing a sysctl to turn off a misbehaving feature is a poor substitute
+> for doing it right the first time, and leaving it off by default will
+> ensure that it only gets used by the handful of people who know enough to
+> rebuild with the patch anyway.
+>
+> Let's talk about how we can make page replacement smarter, so it naturally
+> accomplishes what swap prefetch accomplishes, as part of a design we can
+> reason about.
+>
+> CC-ing linux-mm, since that's where I think we should take this next.
 
-Guru, actually, break from the loop with ENOTBLK will call dio_cleanup
-at leater, if call it too early, that means will put_page(), maybe cause
-other panic.
+Good idea, but unless we understand the problems involved, we are bound to 
+repeat it.  So my first question would be:  Why is swap-in so slow?
 
-Thanks,
-Joe
+As I have posted in other threads, swap-in of consecutive pages suffers a 2x 
+slowdown wrt swap-out, whereas swap-in of random pages suffers over 6x 
+slowdown.
+
+Because it is hard to quantify the expected swap-in speed for random pages, 
+let's first tackle the swap-in of consecutive pages, which should be at 
+least as fast as swap-out.  So again, why is swap-in so slow?
+
+Once we understand this problem, we may be able to suggest a smart 
+improvement.
+
+
+Thanks!
+
+--
+Al
+
