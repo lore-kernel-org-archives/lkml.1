@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938821AbXG1CCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938871AbXG1CGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938821AbXG1CCQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 22:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938471AbXG1CCF
+	id S938871AbXG1CGt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 22:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938439AbXG1CGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 22:02:05 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:49165 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934704AbXG1CCE (ORCPT
+	Fri, 27 Jul 2007 22:06:41 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:42950 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933111AbXG1CGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 22:02:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Maxim Levitsky <maximlevitsky@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [BUG] i386 relocable kernel breakes /proc/kcore debugging
-References: <200707280443.44048.maximlevitsky@gmail.com>
-Date: Fri, 27 Jul 2007 19:58:56 -0600
-In-Reply-To: <200707280443.44048.maximlevitsky@gmail.com> (Maxim Levitsky's
-	message of "Sat, 28 Jul 2007 04:43:43 +0300")
-Message-ID: <m1fy39thjz.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Jul 2007 22:06:41 -0400
+X-Greylist: delayed 51679 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Jul 2007 22:06:40 EDT
+Subject: Re: Linus 2.6.23-rc1
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
+In-Reply-To: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 28 Jul 2007 04:04:39 +0200
+Message-Id: <1185588279.1654.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maxim Levitsky <maximlevitsky@gmail.com> writes:
+(sorry for repost, but there seemed to have been some troubles..)
 
-> Hello,
->
-> Today I noticed that gdb gets confused when I try to load a vmlinux image.
-> gdb 'thinks' that all kernel symbols are below 0x80000000 , while they are at 
-> 0xC000....
->
-> Turning CONFIG_RELOCATABLE off fixes that, so I assume that is the reason for 
-> that.
->
-> I am using 2.6.23-rc1, although I don't think that older versions are better.
->
-> Best regards,
-> 	Maxim Levitsky
+On Sun, 2007-07-22 at 14:04 -0700, Linus Torvalds wrote:
+> Ok, right on time, two weeks afetr 2.6.22, there's a 2.6.23-rc1 out there.
+> 
+> And it has a *ton* of changes as usual for the merge window, way too much 
+> for me to be able to post even just the shortlog or diffstat on the 
+> mailing list (but I had many people who wanted to full logs to stay 
+> around, so you'll continue to see those being uploaded to kernel.org).
+> 
+> Lots of architecture updates (for just about all of them - x86[-64], arm, 
+> alpha, mips, ia64, powerpc, s390, sh, sparc, um..), lots of driver updates 
+> (again, all over - usb, net, dvb, ide, sata, scsi, isdn, infiniband, 
+> firewire, i2c, you name it).
+> 
+> Filesystems, VM, networking, ACPI, it's all there. And virtualization all 
+> over the place (kvm, lguest, Xen).
+> 
+> Notable new things might be the merge of the cfs scheduler, and the UIO 
+> driver infrastructure might interest some people.
+> 
+Im still not so keen about this, Ingo never did get CFS to match SD in
+smoothness for 3d applications, where my test subjects are quake(s),
+world of warcraft via wine, unreal tournament 2004. And this is despite
+many patches he sent me to try and tweak it. As far as im concerned, i
+may be forced to unofficially maintain SD for my own systems(allthough
+lots in the gaming community is bound to be interrested, as it does make
+games lots better)
 
-Weird.
 
-Vivek could this be related to the problem of problematic core dumps we
-were seeing earlier?
-
-Eric
+<snip>
 
 
-> PS: 
-> This is what gdb says:
-
->
-> (gdb) disassemble sys_open
-> Dump of assembler code for function sys_open:
-> 0x8026fa60 <sys_open+0>:        Cannot access memory at address 0x8026fa60
->
-> While real address of sys_open is:
->
-> [root@MAIN linux-2.6]# nm ./.obj/vmlinux |  grep sys_open
-> .........
-> c016ea60 T sys_open
->
-> Strange, but gdb recordnizes the above address directly:
->
-> (gdb) disassemble 0xc016ea60
-> Dump of assembler code for function sys_open:
-> 0xc016ea60 <sys_open+0>:        sub    $0x4,%esp
-> 0xc016ea63 <sys_open+3>:        mov    0x10(%esp),%eax
-> ...............
