@@ -1,174 +1,527 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938439AbXG1C7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937775AbXG1DZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938439AbXG1C7o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 22:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761089AbXG1C7f
+	id S937775AbXG1DZB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 23:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933484AbXG1DYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 22:59:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35884 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761261AbXG1C7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 22:59:34 -0400
-Message-ID: <46AAB106.2030104@redhat.com>
-Date: Fri, 27 Jul 2007 22:59:18 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 27 Jul 2007 23:24:51 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56110 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933438AbXG1DYt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 23:24:49 -0400
+Date: Sat, 28 Jul 2007 12:23:56 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [RFC][Doc] memory hotplug documentaion take 2.
+Cc: linux-mm <linux-mm@kvack.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Hiroyuki KAMEZAWA <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070727101846.19f01671.randy.dunlap@oracle.com>
+References: <20070727230204.E920.Y-GOTO@jp.fujitsu.com> <20070727101846.19f01671.randy.dunlap@oracle.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070728115546.5A8D.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-CC: Tong Li <tong.n.li@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
-References: <20070725120358.GA30755@elte.hu> <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com> <20070725192442.GC4463@elte.hu> <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com> <20070726213154.GA26569@elte.hu> <1185487225.3122.11.camel@tongli.jf.intel.com> <Pine.LNX.4.64.0707261806450.5321@tongli.jf.intel.com> <46AA287D.8070200@redhat.com> <Pine.LNX.4.64.0707271159420.12201@tongli.jf.intel.com> <46AA8171.2060400@redhat.com> <20070728005438.GE32582@gnuppy.monkey.org>
-In-Reply-To: <20070728005438.GE32582@gnuppy.monkey.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bill Huey (hui) wrote:
-> On Fri, Jul 27, 2007 at 07:36:17PM -0400, Chris Snook wrote:
->> I don't think that achieving a constant error bound is always a good thing. 
->>  We all know that fairness has overhead.  If I have 3 threads and 2 
->> processors, and I have a choice between fairly giving each thread 1.0 
->> billion cycles during the next second, or unfairly giving two of them 1.1 
->> billion cycles and giving the other 0.9 billion cycles, then we can have a 
->> useful discussion about where we want to draw the line on the 
->> fairness/performance tradeoff.  On the other hand, if we can give two of 
->> them 1.1 billion cycles and still give the other one 1.0 billion cycles, 
->> it's madness to waste those 0.2 billion cycles just to avoid user jealousy. 
->>  The more complex the memory topology of a system, the more "free" cycles 
->> you'll get by tolerating short-term unfairness.  As a crude heuristic, 
->> scaling some fairly low tolerance by log2(NCPUS) seems appropriate, but 
->> eventually we should take the boot-time computed migration costs into 
->> consideration.
-> 
-> You have to consider the target for this kind of code. There are applications
-> where you need something that falls within a constant error bound. According
-> to the numbers, the current CFS rebalancing logic doesn't achieve that to
-> any degree of rigor. So CFS is ok for SCHED_OTHER, but not for anything more
-> strict than that.
+Thanks for your comment.
+Fixed patch is attached at the last of this mail.
 
-I've said from the beginning that I think that anyone who desperately needs 
-perfect fairness should be explicitly enforcing it with the aid of realtime 
-priorities.  The problem is that configuring and tuning a realtime application 
-is a pain, and people want to be able to approximate this behavior without doing 
-a whole lot of dirty work themselves.  I believe that CFS can and should be 
-enhanced to ensure SMP-fairness over potentially short, user-configurable 
-intervals, even for SCHED_OTHER.  I do not, however, believe that we should take 
-it to the extreme of wasting CPU cycles on migrations that will not improve 
-performance for *any* task, just to avoid letting some tasks get ahead of 
-others.  We should be as fair as possible but no fairer.  If we've already made 
-it as fair as possible, we should account for the margin of error and correct 
-for it the next time we rebalance.  We should not burn the surplus just to get 
-rid of it.
+> > +
+> > +Note(1): x86_64's has special implementation for memory hotplug.
+> > +         This test does not describe it.
+> 
+>                  text (?)
 
-On a non-NUMA box with single-socket, non-SMT processors, a constant error bound 
-is fine.  Once we add SMT, go multi-core, go NUMA, and add inter-chassis 
-interconnects on top of that, we need to multiply this error bound at each stage 
-in the hierarchy, or else we'll end up wasting CPU cycles on migrations that 
-actually hurt the processes they're supposed to be helping, and hurt everyone 
-else even more.  I believe we should enforce an error bound that is proportional 
-to migration cost.
+Oops. Yes.
 
-> Even the rt overload code (from my memory) is subject to these limitations
-> as well until it's moved to use a single global queue while using CPU
-> binding to turn off that logic. It's the price you pay for accuracy.
+> > +1.2. Phases of memory hotplug
+> > +---------------
+> > +There are 2 phases in Memory Hotplug.
+> > +  1) Physical Memory Hotplug phase
+> > +  2) Logical Memory Hotplug phase.
+> > +
+> > +The First phase is to communicate hardware/firmware and make/erase
+> > +environment for hotplugged memory. Basically, this phase is necessary
+> > +for the purpose (B), but this is good phase for communication between
+> > +highly virtulaized environments too.
 > 
->> If we allow a little short-term fairness (and I think we should) we can 
->> still account for this unfairness and compensate for it (again, with the 
->> same tolerance) at the next rebalancing.
-> 
-> Again, it's a function of *when* and depends on that application.
-> 
->> Adding system calls, while great for research, is not something which is 
->> done lightly in the published kernel.  If we're going to implement a user 
->> interface beyond simply interpreting existing priorities more precisely, it 
->> would be nice if this was part of a framework with a broader vision, such 
->> as a scheduler economy.
-> 
-> I'm not sure what you mean by scheduler economy, but CFS can and should
-> be extended to handle proportional scheduling which is outside of the
-> traditional Unix priority semantics. Having a new API to get at this is
-> unavoidable if you want it to eventually support -rt oriented appications
-> that have bandwidth semantics.
+>           virtualized
 
-A scheduler economy is basically a credit scheduler, augmented to allow 
-processes to exchange credits with each other.  If you want to get more 
-sophisticated with fairness, you could price CPU time proportional to load on 
-that CPU.
+Yes. fixed...
 
-I've been house-hunting lately, so I like to think of it in real estate terms. 
-If you're comfortable with your standard of living and you have enough money, 
-you can rent the apartment in the chic part of town, right next to the subway 
-station.  If you want to be more frugal because you're saving for retirement, 
-you can get a place out in the suburbs, but the commute will be more of a pain. 
-  If you can't make up your mind and keep moving back and forth, you spend a lot 
-on moving and all your stuff gets dented and scratched.
+> 
+> > +
+> > +When memory is hotplugged, the kernel recognizes new memory, makes new memory
+> > +management tables, and makes sysfs files for new memory's operation.
+> > +
+> > +If firmware supports notification of connection of new memory to OS,
+> > +this phase is triggered automatically. ACPI can notify this event. If not,
+> > +"probe" operation by system administration works instead of it.
+> 
+>                                               is used instead.
 
-> All deadline based schedulers have API mechanisms like this to support
-> extended semantics. This is no different.
-> 
->> I had a feeling this patch was originally designed for the O(1) scheduler, 
->> and this is why.  The old scheduler had expired arrays, so adding a 
->> round-expired array wasn't a radical departure from the design.  CFS does 
->> not have an expired rbtree, so adding one *is* a radical departure from the 
->> design.  I think we can implement DWRR or something very similar without 
->> using this implementation method.  Since we've already got a tree of queued 
->> tasks, it might be easiest to basically break off one subtree (usually just 
->> one task, but not necessarily) and migrate it to a less loaded tree 
->> whenever we can reduce the difference between the load on the two trees by 
->> at least half.  This would prevent both overcorrection and undercorrection.
-> 
->> The idea of rounds was another implementation detail that bothered me.  In 
->> the old scheduler, quantizing CPU time was a necessary evil.  Now that we 
->> can account for CPU time with nanosecond resolution, doing things on an 
->> as-needed basis seems more appropriate, and should reduce the need for 
->> global synchronization.
-> 
-> Well, there's nanosecond resolution with no mechanism that exploits it for
-> rebalancing. Rebalancing in general is a pain and the code for it is
-> generally orthogonal to the in-core scheduler data structures that are in
-> use, so I don't understand the objection to this argument and the choice
-> of methods. If it it gets the job done, then these kind of choices don't
-> have that much meaning.
+Ah, ok.
 
-If we stick to the CFS way of doing things, instead of slapping on a construct 
-that is alien to the current code, we can implement it in 20 lines of code, 
-rather than 700.  That's an optimization worth making.
 
->> In summary, I think the accounting is sound, but the enforcement is 
->> sub-optimal for the new scheduler.  A revision of the algorithm more 
->> cognizant of the capabilities and design of the current scheduler would 
->> seem to be in order.
+> > +(see Section 4.).
+> > +
+> > +Logical Memory Hotplug phase is to change memory state into
+> > +avaiable/unavailable for users. Amount of memory from user's view is
+> > +changed by this phase. The kernel makes all memory in it as free pages
+> > +when a memory range is into available.
 > 
-> That would be nice. But the amount of error in Tong's solution is much
-> less than the current CFS logic as was previously tested even without
-> consideration to high resolution clocks.
-> 
-> So you have to give some kind of credit for that approach and recognized
-> that current methods in CFS are technically a dead end if there's a need for
-> strict fairness in a more rigorous run category than SCHED_OTHER.
+>                           ?? drop "into" ?
+> or is a memory range always available?  Confusing.
 
-But this patch is only relevant to SCHED_OTHER.  The realtime scheduler doesn't 
-have a concept of fairness, just priorities.  That why each realtime priority 
-level has its own separate runqueue.  Realtime schedulers are supposed to be 
-dumb as a post, so they cannot heuristically decide to do anything other than 
-precisely what you configured them to do, and so they don't get in the way when 
-you're context switching a million times a second.
+Ok. I didn't know it was confusing. Thanks. I dropped it.
 
-What you're describing is group fairness, which is precisely what I believe we 
-can improve in SCHED_OTHER or something similar using the general DWRR concept, 
-but implemented in a more efficient and maintainable manner.
+> > +In this document, this phase is described online/offline.
+> 
+>                                    described as online/offline.
 
->> I've referenced many times my desire to account for CPU/memory hierarchy in 
->> these patches.  At present, I'm not sure we have sufficient infrastructure 
->> in the kernel to automatically optimize for system topology, but I think 
->> whatever design we pursue should have some concept of this hierarchy, even 
->> if we end up using a depth-1 tree in the short term while we figure out how 
->> to optimize this.
+OK.
+
+> > +
+> > +Logical Memory Hotplug phase is trigged by write of sysfs file by system
 > 
-> Yes, it would be nice. :)
+>                                    triggered
+
+Oops. yes.
+
 > 
-> bill
+> > +administrator. When hot-add case, it must be executed after Physical Hotplug
 > 
+>                   For the hot-add case,
+
+OK.
+
+> 
+> > +phase by hand.
+> > +(However, if you writes udev's hotplug scripts for memory hotplug, these
+> > + phases can be execute in seamless way.)
+> > +
+> > +
+> > +1.3. Unit of Memory online/offline operation
+> > +------------
+> > +Memory hotplug uses SPARSEMEM memory model. SPARSEMEM divides the whole memory
+> > +into chunks of the same size. The chunk is called a "section". The size of
+> > +a section is architecture dependent. For example, power uses 16MiB, ia64 uses
+> > +1GiB. The unit of online/offline operation is "one section". (see Section 3.)
+> > +
+> > +To know the size of sections, please read this file:
+> 
+>    To determine the size ...
+
+I didn't know "determine" can be used for this sentence.
+I remembered it means just "decide" due to my English 
+vocabulary problem. Thanks. I changed it. :-)
+
+> > +- For using remove memory, followings are necessary too
+> 
+>      To enable memory removal, the following are also necessary
+
+
+Ok.
+
+> 
+> > +    Allow for memory hot remove    (CONFIG_MEMORY_HOTREMOVE)
+> > +    Page Migration                 (CONFIG_MIGRATION)
+> > +
+> > +- For ACPI memory hotplug, followings are necessary too
+> 
+>                               the following are also necessary
+
+Ok.
+
+> > +Now, XXX is defined as start_address_of_section / secion_size.
+> 
+>                                                      section_size.
+
+Yes. Thanks.
+
+> > +
+> > +For example, assume 1GiB section size. A device for a memory starts from address
+> 
+>                                                    for memory starting at
+
+Ok.
+
+> > +
+> > +In general, the firmware (ACPI) which supports memory hotplug defines
+> > +memory class object of _HID "PNP0C80". When a notify is asserted to PNP0C80,
+> > +Linux's ACPI handler does hot-add memory to the system and calls a hotplug udev
+> > +script. This will be done in automatically.
+> 
+>                              drop "in"
+
+Ok.
+
+
+> > +If firmware supports NUMA-node hotplug, and define object of _HID "ACPI0004",
+> 
+>                                                defines an object
+
+Ok.
+
+> 
+> > +"PNP0A05", or "PNP0A06", notification is asserted to it, and ACPI hander
+> 
+>                                                                      handler
+
+Ah, yes.
+
+Thanks again!
+
+
+
+-------
+This is add a document for memory hotplug to describe "How to use" and "Current
+status".
+
+
+-------
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+
+ Documentation/memory-hotplug.txt |  322 +++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 322 insertions(+)
+
+Index: makedocument/Documentation/memory-hotplug.txt
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ makedocument/Documentation/memory-hotplug.txt	2007-07-28 11:47:52.000000000 +0900
+@@ -0,0 +1,322 @@
++==============
++Memory Hotplug
++==============
++
++Last Updated: Jul 28 2007
++
++This document is about memory hotplug including how-to-use and current status.
++Because Memory Hotplug is still under development, contents of this text will
++be changed often.
++
++1. Introduction
++  1.1 purpose of memory hotplug
++  1.2. Phases of memory hotplug
++  1.3. Unit of Memory online/offline operation
++2. Kernel Configuration
++3. sysfs files for memory hotplug
++4. Physical memory hot-add phase
++  4.1 Hardware(Firmware) Support
++  4.2 Notify memory hot-add event by hand
++5. Logical Memory hot-add phase
++  5.1. State of memory
++  5.2. How to online memory
++6. Logical memory remove
++  6.1 Memory offline and ZONE_MOVABLE
++  6.2. How to offline memory
++7. Physical memory remove
++8. Future Work List
++
++Note(1): x86_64's has special implementation for memory hotplug.
++         This text does not describe it.
++Note(2): This text assumes that sysfs is mounted at /sys.
++
++
++---------------
++1. Introduction
++---------------
++
++1.1 purpose of memory hotplug
++------------
++Memory Hotplug allows users to increase/decrease the amount of memory.
++Generally, there are two purposes.
++
++(A) For changing the amount of memory.
++    This is to allow a feature like capacity on demand.
++(B) For installing/removing DIMMs or NUMA-nodes physically.
++    This is to exchange DIMMs/NUMA-nodes, reduce power consumption, etc.
++
++(A) is required by highly virtualized environments and (B) is required by
++hardware which supports memory power management.
++
++Linux memory hotplug is designed for both purpose.
++
++
++1.2. Phases of memory hotplug
++---------------
++There are 2 phases in Memory Hotplug.
++  1) Physical Memory Hotplug phase
++  2) Logical Memory Hotplug phase.
++
++The First phase is to communicate hardware/firmware and make/erase
++environment for hotplugged memory. Basically, this phase is necessary
++for the purpose (B), but this is good phase for communication between
++highly virtualized environments too.
++
++When memory is hotplugged, the kernel recognizes new memory, makes new memory
++management tables, and makes sysfs files for new memory's operation.
++
++If firmware supports notification of connection of new memory to OS,
++this phase is triggered automatically. ACPI can notify this event. If not,
++"probe" operation by system administration is used instead.
++(see Section 4.).
++
++Logical Memory Hotplug phase is to change memory state into
++avaiable/unavailable for users. Amount of memory from user's view is
++changed by this phase. The kernel makes all memory in it as free pages
++when a memory range is available.
++
++In this document, this phase is described as online/offline.
++
++Logical Memory Hotplug phase is triggred by write of sysfs file by system
++administrator. For the hot-add case, it must be executed after Physical Hotplug
++phase by hand.
++(However, if you writes udev's hotplug scripts for memory hotplug, these
++ phases can be execute in seamless way.)
++
++
++1.3. Unit of Memory online/offline operation
++------------
++Memory hotplug uses SPARSEMEM memory model. SPARSEMEM divides the whole memory
++into chunks of the same size. The chunk is called a "section". The size of
++a section is architecture dependent. For example, power uses 16MiB, ia64 uses
++1GiB. The unit of online/offline operation is "one section". (see Section 3.)
++
++To determine the size of sections, please read this file:
++
++/sys/devices/system/memory/block_size_bytes
++
++This file shows the size of sections in byte.
++
++-----------------------
++2. Kernel Configuration
++-----------------------
++To use memory hotplug feature, kernel must be compiled with following
++config options.
++
++- For all memory hotplug
++    Memory model -> Sparse Memory  (CONFIG_SPARSEMEM)
++    Allow for memory hot-add       (CONFIG_MEMORY_HOTPLUG)
++
++- To enable memory removal, the followings are also necessary
++    Allow for memory hot remove    (CONFIG_MEMORY_HOTREMOVE)
++    Page Migration                 (CONFIG_MIGRATION)
++
++- For ACPI memory hotplug, the followings are also necessary
++    Memory hotplug (under ACPI Support menu) (CONFIG_ACPI_HOTPLUG_MEMORY)
++    This option can be kernel module.
++
++- As a related configuration, if your box has a feature of NUMA-node hotplug
++  via ACPI, then this option is necessary too.
++    ACPI0004,PNP0A05 and PNP0A06 Container Driver (under ACPI Support menu)
++    (CONFIG_ACPI_CONTAINER).
++    This option can be kernel module too.
++
++--------------------------------
++3 sysfs files for memory hotplug
++--------------------------------
++All sections have their device information under /sys/devices/system/memory as
++
++/sys/devices/system/memory/memoryXXX
++(XXX is section id.)
++
++Now, XXX is defined as start_address_of_section / section_size.
++
++For example, assume 1GiB section size. A device for a memory starting at
++0x100000000 is /sys/device/system/memory/memory4
++(0x100000000 / 1Gib = 4)
++This device covers address range [0x100000000 ... 0x140000000)
++
++Under each section, you can see 3 files.
++
++/sys/devices/system/memory/memoryXXX/phys_index
++/sys/devices/system/memory/memoryXXX/phys_device
++/sys/devices/system/memory/memoryXXX/state
++
++'phys_index' : read-only and contains section id, same as XXX.
++'state'      : read-write
++               at read:  contains online/offline state of memory.
++               at write: user can specify "online", "offline" command
++'phys_device': read-only: designed to show the name of physical memory device.
++               This is not well implemented now.
++
++NOTE:
++  These directories/files appear after physical memory hotplug phase.
++
++
++--------------------------------
++4. Physical memory hot-add phase
++--------------------------------
++
++4.1 Hardware(Firmware) Support
++------------
++On x86_64/ia64 platform, memory hotplug by ACPI is supported.
++
++In general, the firmware (ACPI) which supports memory hotplug defines
++memory class object of _HID "PNP0C80". When a notify is asserted to PNP0C80,
++Linux's ACPI handler does hot-add memory to the system and calls a hotplug udev
++script. This will be done automatically.
++
++But scripts for memory hotplug are not contained in generic udev package(now).
++You may have to write it by yourself or online/offline memory by hand.
++Please see "How to online memory", "How to offline memory" in this text.
++
++If firmware supports NUMA-node hotplug, and defines an object _HID "ACPI0004",
++"PNP0A05", or "PNP0A06", notification is asserted to it, and ACPI handler
++calls hotplug code for all of objects which are defined in it.
++If memory device is found, memory hotplug code will be called.
++
++
++4.2 Notify memory hot-add event by hand
++------------
++In some environments, especially virtualized environment, firmware will not
++notify memory hotplug event to the kernel. For such environment, "probe"
++interface is supported. This interface depends on CONFIG_ARCH_MEMORY_PROBE.
++
++Now, CONFIG_ARCH_MEMORY_PROBE is supported only by powerpc but it does not
++contain highly architecture codes. Please add config if you need "probe"
++interface.
++
++Probe interface is located at
++/sys/devices/system/memory/probe
++
++You can tell the physical address of new memory to the kernel by
++
++% echo start_address_of_new_memory > /sys/devices/system/memory/probe
++
++Then, [start_address_of_new_memory, start_address_of_new_memory + section_size)
++memory range is hot-added. In this case, hotplug script is not called (in
++current implementation). You'll have to online memory by yourself.
++Please see "How to online memory" in this text.
++
++
++
++------------------------------
++5. Logical Memory hot-add phase
++------------------------------
++
++5.1. State of memory
++------------
++To see (online/offline) state of memory section, read 'state' file.
++
++% cat /sys/device/system/memory/memoryXXX/state
++
++
++If the memory section is online, you'll read "online".
++If the memory section is offline, you'll read "offline".
++
++
++5.2. How to online memory
++------------
++Even if the memory is hot-added, it is not at ready-to-use state.
++For using newly added memory, you have to "online" the memory section.
++
++For onlining, you have to write "online" to the section's state file as:
++
++% echo online > /sys/devices/system/memory/memoryXXX/state
++
++After this, section memoryXXX's state will be 'online' and the amount of
++available memory will be increased.
++
++Currently, newly added memory is added as ZONE_NORMAL (for powerpc, ZONE_DMA).
++This may be changed in future.
++
++
++
++------------------------
++6. Logical memory remove
++------------------------
++
++6.1 Memory offline and ZONE_MOVABLE
++------------
++Memory offlining is more complicated than memory online. Because memory offline
++has to make the whole memory section be unused, memory offline can fail if
++the section includes memory which cannot be freed.
++
++In general, memory offline can use 2 techniques.
++
++(1) reclaim and free all memory in the section.
++(2) migrate all pages in the section.
++
++In the current implementation, Linux's memory offline uses method (2), freeing
++all  pages in the section by page migration. But not all pages are
++migratable. Under current Linux, migratable pages are anonymous pages and
++page caches. For offlining a section by migration, the kernel has to guarantee
++that the section contains only migratable pages.
++
++Now, a boot option for making a section which consists of migratable pages is
++supported. By specifying "kernelcore=" or "movablecore=" boot option, you can
++create ZONE_MOVABLE...a zone which is just used for movable pages.
++(See also Documentation/kernel-parameters.txt)
++
++Assume the system has "TOTAL" amount of memory at boot time, this boot option
++creates ZONE_MOVABLE as following.
++
++1) When kernelcore=YYYY boot option is used,
++  Size of memory not for movable pages (not for offline) is YYYY.
++  Size of memory for movable pages (for offline) is TOTAL-YYYY.
++
++2) When movablecore=ZZZZ boot option is used,
++  Size of memory not for movable pages (not for offline) is TOTAL - ZZZZ.
++  Size of memory for movable pages (for offline) is ZZZZ.
++
++
++Note) Unfortunately, there is no information to show which section belongs
++to ZONE_MOVABLE. This is TBD.
++
++
++6.2. How to offline memory
++------------
++You can offline a section by using the same sysfs interface that was used in
++memory onlining.
++
++% echo offline > /sys/devices/system/memory/memoryXXX/state
++
++If offline succeeds, the state of the memory section is changed to be "offline".
++If it fails, some error core (like -EBUSY) will be returned by the kernel.
++Even if a section does not belong to ZONE_MOVABLE, you can try to offline it.
++If it doesn't contain 'unmovable' memory, you'll get success.
++
++A section under ZONE_MOVABLE is considered to be able to be offlined easily.
++But under some busy state, it may return -EBUSY. Even if a memory section
++cannot be offlined due to -EBUSY, you can retry offlining it and may be able to
++offline it (or not).
++(For example, a page is referred to by some kernel internal call and released
++ soon.)
++
++Consideration:
++Memory hotplug's design direction is to make the possibility of memory offlining
++higher and to guarantee unplugging memory under any situation. But it needs
++more work. Returning -EBUSY under some situation may be good because the user
++can decide to retry more or not by himself. Currently, memory offlining code
++does some amount of retry with 120 seconds timeout.
++
++-------------------------
++7. Physical memory remove
++-------------------------
++Need more implementation yet....
++ - Notification completion of remove works by OS to firmware.
++ - Guard from remove if not yet.
++
++--------------
++8. Future Work
++--------------
++  - allowing memory hot-add to ZONE_MOVABLE. maybe we need some switch like
++    sysctl or new control file.
++  - showing memory section and physical device relationship.
++  - showing memory section and node relationship (maybe good for NUMA)
++  - showing memory section is under ZONE_MOVABLE or not
++  - test and make it better memory offlining.
++  - support HugeTLB page migration and offlining.
++  - memmap removing at memory offline.
++  - physical remove memory.
++
+
+
+-- 
+Yasunori Goto 
+
 
