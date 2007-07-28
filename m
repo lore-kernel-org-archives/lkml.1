@@ -1,81 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938848AbXG1Bup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938796AbXG1B46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938848AbXG1Bup (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 21:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763328AbXG1Buf
+	id S938796AbXG1B46 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 21:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763328AbXG1B4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 21:50:35 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:28150 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938505AbXG1BuC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 21:50:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=O35ABDme3vx9953+si/P+pv1Z79dBuuqhGEV4Qo1tvilBLDSFFxwvIweZY4ESPJEZs2cve89pzsnr+xJSq/1GnKTygvjzd6/OCPn6Mu0PBJIjqoDkdmiar5r9UU9KCLl8u5L2tex5SDmn8APAh8JfTk+WLVWKPzWbIOv2i3GREY=
-Message-ID: <7e5f60720707271850pd744157w9bea603be2719fa9@mail.gmail.com>
-Date: Sat, 28 Jul 2007 03:50:02 +0200
-From: "Peter Bortas" <bortas@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>, "Peter Bortas" <bortas@gmail.com>,
-       "Marcus Comstedt" <marcus@mc.pp.se>,
-       "Adrian McMenamin" <adrianmcmenamin@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix DMA on Dreamcast
-In-Reply-To: <20070726130635.GA28375@linux-sh.org>
+	Fri, 27 Jul 2007 21:56:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53895 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760547AbXG1B4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 21:56:48 -0400
+Message-ID: <46AAA25E.7040301@redhat.com>
+Date: Fri, 27 Jul 2007 21:56:46 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Al Boldi <a1426z@gawab.com>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: swap-prefetch:  A smart way to make good use of idle resources
+ (was: updatedb)
+References: <200707272243.02336.a1426z@gawab.com>
+In-Reply-To: <200707272243.02336.a1426z@gawab.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <92a12cdb0707191230g216feaf2ied3e95bacf4dd572@mail.gmail.com>
-	 <20070720120408.1f190269.akpm@linux-foundation.org>
-	 <92a12cdb0707210322m6670acaer768d078c5e358b0c@mail.gmail.com>
-	 <7e5f60720707210424w48f9dc10hff044d702f7bd1d3@mail.gmail.com>
-	 <92a12cdb0707210506t5cf58cc4gc5b70f335545dc3f@mail.gmail.com>
-	 <7e5f60720707210713o4ff0825eu463abee77dc1f04c@mail.gmail.com>
-	 <yf9y7h3a31l.fsf@mc.pp.se>
-	 <7e5f60720707260559m64211206q581a4c83c9060485@mail.gmail.com>
-	 <20070726130635.GA28375@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/26/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> On Thu, Jul 26, 2007 at 02:59:51PM +0200, Peter Bortas wrote:
-> > On 7/26/07, Marcus Comstedt <marcus@mc.pp.se> wrote:
-> > > "Peter Bortas" <bortas@gmail.com> writes:
-> > > > On 7/21/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
-> > > >> On 21/07/07, Peter Bortas <bortas@gmail.com> wrote:
-> > > >> > Sidenote: Does Linux handle the Dreamcast DMA errata?
-> > > >>
-> > > >> You need to explain what you mean (at least to me!).
-> > > >>
-> > > >> If you mean will it degrade gracefully - not without this patch if set
-> > > >> to the (correct) defconfig. With iffy settings it will.
-> > > >
-> > > > If I remember correctly (and that's a big if since I last looked at it
-> > > > in 2001) some revisions of the Dreamcast hardware would sporadically
-> > > > lock up if you scheduled a new DMA request to quickly after a previous
-> > > > one, even if you checked the ready bit. It's worked around by a delay
-> > > > of X microseconds as recommended by Sega engineers. I don't remember
-> > > > the value of X, nor where exactly in the flow this workaround should
-> > > > be applied.
-> > > >
-> > > > Adding Marcus in case he has a better memory than me.
-> > >
-> > > I don't remeber any such delay.  Are you sure you're not thinking
-> > > about the G2 bus problem (where accesses need to be programatically
-> > > serialized, whether they are PIO or DMA)?
-> >
-> > In that case my memory is worse than I thought. I'll see if I can dig
-> > up my old notes.
-> >
-> We've never hit any problems with the SH DMAC, so it would be interesting
-> if you had some more information on this. The G2 problems are well known
-> and documented, and the driver takes care of those issues already.
+Al Boldi wrote:
+> People wrote:
+>>>> I believe the users who say their apps really do get paged back in
+>>>> though, so suspect that's not the case.
+>>> Stopping the bush-circumference beating, I do not. -ck (and gentoo) have
+>>> this massive Calimero thing going among their users where people are
+>>> much less interested in technology than in how the nasty big kernel
+>>> meanies are keeping them down (*).
+>> I think the problem is elsewhere. Users don't say: "My apps get paged
+>> back in." They say: "My system is more responsive". They really don't
+>> care *why* the reaction to a mouse click that takes three seconds with
+>> a mainline kernel is instantaneous with -ck. Nasty big kernel meanies,
+>> OTOH, want to understand *why* a patch helps in order to decide whether
+>> it is really a good idea to merge it. So you've got a bunch of patches
+>> (aka -ck) which visibly improve the overall responsiveness of a desktop
+>> system, but apparently no one can conclusively explain why or how they
+>> achieve that, and therefore they cannot be merged into mainline.
+>>
+>> I don't have a solution to that dilemma either.
+> 
+> IMHO, what everybody agrees on, is that swap-prefetch has a positive effect 
+> in some cases, and nobody can prove an adverse effect (excluding power 
+> consumption).  The reason for this positive effect is also crystal clear:  
+> It prefetches from swap on idle into free memory, ie: it doesn't force 
+> anybody out, and they are the first to be dropped without further swap-out, 
+> which sounds really smart.
+> 
+> Conclusion:  Either prove swap-prefetch is broken, or get this merged quick.
 
-After grep-ing through some 8GiB of archived mails and notes it seems
-marcus is absolutely correct, I'm thinking of the known G2 problem.
+If you can't prove why it helps and doesn't hurt, then it's a hack, by 
+definition.  Behind any performance hack is some fundamental truth that can be 
+exploited to greater effect if we reason about it.  So let's reason about it. 
+I'll start.
 
--- 
-Peter
+Resource size has been outpacing processing latency since the dawn of time. 
+Disks get bigger much faster than seek times shrink.  Main memory and cache keep 
+growing, while single-threaded processing speed has nearly ground to a halt.
+
+In the old days, it made lots of sense to manage resource allocation in pages 
+and blocks.  In the past few years, we started reserving blocks in ext3 
+automatically because it saves more in seek time than it costs in disk space. 
+Now we're taking preallocation and antifragmentation to the next level with 
+extent-based allocation in ext4.
+
+Well, we're still using bitmap-style allocation for pages, and the prefetch-less 
+swap mechanism adheres to this design as well.  Maybe it's time to start 
+thinking about memory in a somewhat more extent-like fashion.
+
+With swap prefetch, we're only optimizing the case when the box isn't loaded and 
+there's RAM free, but we're not optimizing the case when the box is heavily 
+loaded and we need for RAM to be free.  This is a complete reversal of sane 
+development priorities.  If swap batching is an optimization at all (and we have 
+empirical evidence that it is) then it should also be an optimization to swap 
+out chunks of pages when we need to free memory.
+
+So, how do we go about this grouping?  I suggest that if we keep per-VMA 
+reference/fault/dirty statistics, we can tell which logically distinct chunks of 
+memory are being regularly used.  This would also us to apply different page 
+replacement policies to chunks of memory that are being used in different fashions.
+
+With such statistics, we could then page out VMAs in 2MB chunks when we're under 
+memory pressure, also giving us the option of transparently paging them back in 
+to hugepages when we have the memory free, once anonymous hugepage support is in 
+place.
+
+I'm inclined to view swap prefetch as a successful scientific experiment, and 
+use that data to inform a more reasoned engineering effort.  If we can design 
+something intelligent which happens to behave more or less like swap prefetch 
+does under the circumstances where swap prefetch helps, and does something else 
+smart under the circumstances where swap prefetch makes no discernable 
+difference, it'll be a much bigger improvement.
+
+Because we cannot prove why the existing patch helps, we cannot say what impact 
+it will have when things like virtualization and solid state drives radically 
+change the coefficients of the equation we have not solved.  Providing a sysctl 
+to turn off a misbehaving feature is a poor substitute for doing it right the 
+first time, and leaving it off by default will ensure that it only gets used by 
+the handful of people who know enough to rebuild with the patch anyway.
+
+Let's talk about how we can make page replacement smarter, so it naturally 
+accomplishes what swap prefetch accomplishes, as part of a design we can reason 
+about.
+
+CC-ing linux-mm, since that's where I think we should take this next.
+
+	-- Chris
