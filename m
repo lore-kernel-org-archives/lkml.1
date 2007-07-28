@@ -1,158 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753691AbXG1P5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbXG1QHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753691AbXG1P5U (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 11:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750856AbXG1P5N
+	id S1754015AbXG1QHh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 12:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbXG1QH2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 11:57:13 -0400
-Received: from keil-draco.com ([216.193.185.50]:50916 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbXG1P5L (ORCPT
+	Sat, 28 Jul 2007 12:07:28 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:36975
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750992AbXG1QH1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 11:57:11 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: david@lang.hm
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Date: Sat, 28 Jul 2007 11:56:53 -0400
+	Sat, 28 Jul 2007 12:07:27 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH 0/3][try 1] init: enable system-on-initramfs
+Date: Sat, 28 Jul 2007 12:07:24 -0400
 User-Agent: KMail/1.9.6
-Cc: Rene Herman <rene.herman@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <46AAEDEB.7040003@gmail.com> <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
+Cc: linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.58.0707132039080.3222@be1.lrz> <200707181754.05560.rob@landley.net> <Pine.LNX.4.58.0707191442440.2138@be1.lrz>
+In-Reply-To: <Pine.LNX.4.58.0707191442440.2138@be1.lrz>
 MIME-Version: 1.0
+Content-Disposition: inline
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707281156.53439.dhazelton@enter.net>
+Message-Id: <200707281207.24998.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 July 2007 04:55:58 david@lang.hm wrote:
-> On Sat, 28 Jul 2007, Rene Herman wrote:
-> > On 07/27/2007 09:43 PM, david@lang.hm wrote:
-> >>  On Fri, 27 Jul 2007, Rene Herman wrote:
-> >> >  On 07/27/2007 07:45 PM, Daniel Hazelton wrote:
-> >> > >   Questions about it:
-> >> > >   Q) Does swap-prefetch help with this?
-> >> > >   A) [From all reports I've seen (*)]
-> >> > >   Yes, it does.
-> >> >
-> >> >  No it does not. If updatedb filled memory to the point of causing
-> >> >  swapping (which noone is reproducing anyway) it HAS FILLED MEMORY and
-> >> >  swap-prefetch hasn't any memory to prefetch into -- updatedb itself
-> >> >  doesn't use any significant memory.
-> >>
-> >>  however there are other programs which are known to take up significant
-> >>  amounts of memory and will cause the issue being described (openoffice
-> >> for example)
-> >>
-> >>  please don't get hung up on the text 'updatedb' and accept that there
-> >> are programs that do run intermittently and do use a significant amount
-> >> of ram and then free it.
+I had this unsent on my desktop, buried by other windows.  Let me know if the 
+conversation's moved on since, but if so I wasn't cc'd...
+
+On Thursday 19 July 2007 9:56:11 am Bodo Eggert wrote:
+> On Wed, 18 Jul 2007, Rob Landley wrote:
+> > On Friday 13 July 2007 2:56:00 pm Bodo Eggert wrote:
+> > > I toyed with setting up a diskless system in initramfs. In the process,
+> > > I came across some things:
+> > >
+> > > 1)  There is no way to have the kernel not mount a filesystem,
+> > >     unless you use /init or rdinit=.
 > >
-> > Different issue. One that's worth pursueing perhaps, but a different
-> > issue from the VFS caches issue that people have been trying to track
-> > down.
+> > Er, yes.  By design.
+> >
+> > The kernel has to run an init program in order to hand off control to
+> > userspace.  In initramfs, this is defined as /init.  It looks in exactly
+> > one documented place.
+> >
+> > The older root= mechanism fell back to a half-dozen places (eventually
+> > trying things like /bin/sh if it couldn't find anything else).  This is
+> > because there wasn't a documented standard for what should be executed,
+> > like there is with initramfs.
 >
-> people are trying to track down the problem of their machine being slow
-> until enough data is swapped back in to operate normally.
+> Ever since I started using linux in 1997, the first program to run from an
+> installed system was /sbin/init. (I might think about removing the other
+> paths.)
+
+So pass in rdinit=/sbin/init.  (Back in 1997 you didn't have to 
+specify "root=", you used rdev.)
+
+> The ramfs' /init was intended for system setup, which is a separate job.
+
+The ramfs /init was "intended" to be the first process to run, which inherits 
+PID 1 and thus all responsibility for further system setup.  You can't return 
+back to the kernel from that, it panics if PID 1 exits.  Whether you choose 
+to do "system setup" or keep running with rootfs as your root filesystem 
+(very popular with embedded devices) is not the kernel's problem.
+
+This has been documented and has worked fine for years.
+
+Note that the initrd mechanism (which used to run /linuxrc) was _not_ PID 1, 
+and expected you to return to the kernel.  That's one of the big improvements 
+initramfs made over initrd.
+
+> It is not intended to be the program running the system.
+
+That's policy, and none of the kernel's business.
+
+> Mixing those two 
+> up just does not feel right.
+
+You're mixing them in your head, and it sounds like you don't understand what 
+it's doing.
+
+> Setting root= in order to change the root 
+> directory is much more natural.
+
+Setting root= is not _used_ if initramfs triggers, because /init gets run 
+before ever reaching that code.  In initramfs, the root filesystem is rootfs, 
+and no attempt to mount anything else is made by the kernel unless userspace 
+explicitly asks for it.  Userspace is welcome to mount anything it wants, and 
+userspace can switch_root to it, but that's not the kernel's problem.
+
+> > > 1a) In the process of writing these patches, I found prepare_namespace
+> > > not to be called if /init is present. prepare_namespace will call
+> > >     security_sb_post_mountroot after mounting the root fs. I did not
+> > > yet see a way to call this from /init, and grepping kinit for
+> > > "security" did not help, too.
+> >
+> > I don't use selinux.  I'm neither a Fortune 500 company nor the NSA.
 >
-> in at some situations swap prefetch can help becouse something that used
-> memory freed it so there is free memory that could be filled with data
-> (which is something that Linux does agressivly in most other situations)
+> That's no reason for keeping bugs in that part.
+
+*shrug*  I was saying I can't really comment much on a subsystem I neither use 
+nor see much point in.
+
+> > However, if you don't trust your own initramfs, where everything starts
+> > out running as root, you have bigger problems.
 >
-> in some other situations swap prefetch cannot help becouse useless data is
-> getting cached at the expense of useful data.
+> Using that argument, you can deduce that nobody would need selinux at all.
+
+Yeah, pretty much.  Then again I feel the same way about the Itanium, and try 
+to stay out of the way of people who feel they do need it.
+
+> Obviously some people disagree, and maybe some of them are no fools,
+> therefore we should try to DTRT for them and do the callback when it's
+> supposed to happen.
 >
-> nobody is arguing that swap prefetch helps in the second cast.
+> BTW: The problems start as soon as you have to do "reflections on trusting
+> trust".
 
-Actually, I made a mistake when tracking the thread and reading the code for 
-the patch and started to argue just that. But I have to admit I made a 
-mistake - the patches author has stated (as Rene was kind enough to point 
-out) that swap prefetch can't help when memory is filled.
+Which led to David Wheeler's "diverse double-compiling": 
+http://www.dwheeler.com/trusting-trust/
 
-> what people are arguing is that there are situations where it helps for
-> the first case. on some machines and version of updatedb the nighly run of
-> updatedb can cause both sets of problems. but the nightly updatedb run is
-> not the only thing that can cause problems
+Which led to rather a lot of patches being integrated into the tcc fork I 
+maintain in my nonexistent free time, such as: 
+http://www.landley.net/hg/tinycc?cs=e6ddaffce6a8
 
-Solving the cache filling memory case is difficult. There have been a number 
-of discussions about it. The simplest solution, IMHO, would be to place a 
-(configurable) hard limit on the maximum size any of the kernels caches can 
-grow to. (The only solution that was discussed, however, is a complex beast)
-
+> > > Using tmpfs instead for the first root mount is as cheap as
+> > > using ramfs, as long as tmpfs is used anyway (and most likely it is).
+> >
+> > *shrug*  I don't object to doing so, but I've heard nebulous technical
+> > objections from people who know more about the implementation details fo
+> > tmpfs than I do.
 >
-> but let's talk about the concept here for a little bit
+> Obviously these problems were solved.
+
+I'm all for a patch to make initramfs use tmpfs.  I'm kind of dubious about 
+one coming from somebody who thinks that the initramfs interface in use by 
+thousands of developers for years now needs to be totally rewritten as a 
+prerequisite of doing so.
+
+> > > 2a) I figured if you prepared the root fs to contain a running system,
+> > > you woud probably also set up a runnable system on it.
+> >
+> > *scratches head*
+> >
+> > That's a tautology, right?
 >
-> the design is to use CPU and I/O capacity that's otherwise idle to fill
-> free memory with data from swap.
+> You may also use the same kernel with the same initramfs in order to start
+> a classic system, just by changing root=.
+
+Do you mean if you program initramfs to parse the environment variable "root", 
+or if you set rdinit=/nonexistent and fall back to the old root= code?
+
+> > I have no idea what you just said.  If there's an /init, we boot from it.
+> >  If there's no /init, they just violated the spec and we don't know what
+> > to boot from.
 >
-> pro:
->    more ram has potentially useful data in it
+> These patches changes the spec in order to support system-on-rootfs:
+
+When I said the existing initramfs interface has been "in use by thousands of 
+developers for years now", I wasn't speaking metaphorically.  I was speaking 
+from personal experience.
+
+Hi.  I used to maintain busybox, which is probably _the_ most widely used 
+embedded Linux package.  I wrote the kernel's current 
+Documentation/filesystems/ramfs-rootfs-initramfs.txt and some other random
+documentation on initramfs (http://linuxdevices.com/articles/AT4017834659.html 
+and http://www.timesys.com/timesource/initramfs.htm).  I have personally 
+taken apart a dozen or more different systems using "system-on-rootfs", and 
+know _of_ over a hundred.  I can tell you the plusses and minuses of doing 
+that vs jffs2 vs squashfs vs ext2.  Entire system generators like buildroot 
+and uClinux create initramfs images by default.
+
+This is why I'm fairly certain the current initramfs interface is usable by a 
+large variety of people.
+
+> If there is an init, it will run. No change from the current situation
+> ever, at least if not using rdev.
 >
-> con:
->    it takes a little extra effort to give this memory to another app (the
-> page must be removed from the list and zeroed at the time it's needed, I
-> assume that the data is left in swap so that it doesn't have to be written
-> out again)
+> If you use root=rootfs, a system-on-rootfs will run.
 >
->    it adds some complexity to the kernel (~500 lines IIRC from this thread)
+> If you use rootfs=tmpfs, root= will default to rootfs, and I did it in a
+> way disabeling that obsolete rdev.
+
+The way to specify a filesystem type to go with the mount "root=" does is 
+actually "rootfstype=".  I use this when mounting a hostfs root for User Mode 
+Linux, ala this woefully out of date document:
+http://landley.net/writing/docs/UML.html
+
+You don't specify a filesystem type for "root=", you specify a path there.
+
+> > They made an initramfs.  They constructed it, explicitly, for the Linux
+> > kernel, and /init is what the kernel will try to boot.  I documented this
+> > years ago.  If they chose not to put an /init, then they didn't want us
+> > to boot from initramfs.  (Maybe they're supplying firmware and an
+> > /sbin/hotplug for a statically linked device.  I dunno.)
 >
->    by undoing recent swapouts it can potentially mask problems with swapout
+> Not booting /using/ an intramfs differs from not booting /from/ an
+> intramfs. Mixing them works by accident.
+
+I have no idea what you just said.
+
+> > >     Unfortunately the way I do it, this will override the rdev setting,
+> > > but that should be OK, since rdev is dead. Isn't it?
+> > >
+> > > 3)  While I was at it, I figured I would not need most of the
+> > > init/mount* code anymore. Therefore I made patch 3, which ifdefs it out
+> > > as far as possible while still aiming for a small change.
+> > >
+> > > Patch 1 adds the capability to use root=rootfs.
+> >
+> > I've been using initramfs since back around 2.6.12.  It works fine.  Why
+> > are you patching the kernel for something that already works?
 >
-> it looks to me like unless the code was really bad (and after 23 months in
-> -mm it doesn't sound like it is) that the only significant con left is the
-> potential to mask other problems.
+> Why do you build a way if walking through the fields already works?
+> Besides that, using all these features safes about 3KB.
 
-I'll second this. But with the swap system itself having seen as heavy testing 
-as it has I don't know if it would be masking other problems.
+An option to removing the "root=" infrastructure that never gets reached if 
+you use initramfs should save space, yes.  The other stuff you added just 
+shows you don't seem to understand the existing, documented way to use 
+initramfs.
 
-That is why I've been asking "What is so wrong with it?" - while it definately 
-doesn't help with programs that cause caches to balloon (that problem does 
-need another solution) it does help to speed things up when a memory hog has 
-exited. (And since its a pretty safe assumption that swap is going to be 
-noticeably slower than RAM this patch seems to me to be a rather visible and 
-obvious solution to that problem)
-
-> however there are many legitimate cases where it is definantly dong the
-> right thing (swapout was correct in pushing out the pages, but now the
-> cause of that preasure is gone). the amount of benifit from this will vary
-> from situation to situation, but it's not reasonable to claim that this
-> provides no benifit (you have benchmark numbers that show it in synthetic
-> benchmarks, and you have user reports that show it in the real-worlk)
-
-Exactly. Though I have seen posts which (to me at least) appear to claim 
-exactly that. It was part of the reason why I got a bit incensed. (The other 
-was that it looked like the kernel devs with the ultra-powerful machines were 
-claiming 'I don't see the problem on my machine, so it doesn't exist'. That 
-sort of attitude is fine, in some cases, but not, IMHO, where performance is 
-concerned)
-
-> there are lots of things in the kernel who's job is to pre-fill the memroy
-> with data that may (or may not) be useful in the future. this is just
-> another method of filling the cache. it does so my saying "the user wanted
-> these pages in the recent past, so it's a reasonable guess to say that the
-> user will want them again in the future"
-
-Yep. And it's a pretty obvious step forward. The VFS system already does 
-readahead and caching for mounted volumes to improve performance - why not do 
-similar to improve the performance of swap?
-
-The only real downside is that swap-prefetch won't be effective in all cases 
-and it will cause some extra power consumption. (drives can't spin-down as 
-soon as the would without it, etc...) While I can only make some suggestions 
-as to how to fix the problem of ballooning caches (I've been wading through 
-the VM code for a few days now and still don't fully understand any of it), 
-the solution to the power consumption seems obvious - swap prefetch doesn't 
-work when the system is running on battery (or UPS or whatever)
-
-DRH
-
+Rob
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
