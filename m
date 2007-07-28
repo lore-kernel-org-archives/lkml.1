@@ -1,67 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938663AbXG1BGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938694AbXG1BLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938663AbXG1BGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 21:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938353AbXG1BGl
+	id S938694AbXG1BLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 21:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938353AbXG1BLN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 21:06:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:51188 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S938309AbXG1BGk (ORCPT
+	Fri, 27 Jul 2007 21:11:13 -0400
+Received: from keil-draco.com ([216.193.185.50]:50309 "EHLO
+	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933633AbXG1BLM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 21:06:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=htXkHgB78O9KWSCUS+3iLwyCvHXRc2CBCzYzI33AtSiHLLTIcK4rZt7bV1Uju6hM0SzeKwUE1SKbgeqIQtPdUUnlJFQDFKaqMUR1e4BxeJQroOA6y0qa5ECs+2DjMLXFzE7C4aN3ooAcxiBbZeKHlCE8pGwEG8sSss/fzwSqQfc=
-Message-ID: <92a12cdb0707271806q60fcaa91s77a628b31cd65b4d@mail.gmail.com>
-Date: Sat, 28 Jul 2007 02:06:39 +0100
-From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Problems with framebuffer in 2.6.22-git17
-Cc: "Adrian McMenamin" <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
-       lethal@users.sourceforge.net
-In-Reply-To: <1185583925.26603.24.camel@daplas>
+	Fri, 27 Jul 2007 21:11:12 -0400
+From: Daniel Hazelton <dhazelton@enter.net>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
+Date: Fri, 27 Jul 2007 21:10:46 -0400
+User-Agent: KMail/1.9.6
+Cc: =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       Rene Herman <rene.herman@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
+       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727231545.GA14457@atjola.homenet> <20070727232919.GA8960@one.firstfloor.org>
+In-Reply-To: <20070727232919.GA8960@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Content-Disposition: inline
-References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
-	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
-	 <1185406433.5046.23.camel@daplas>
-	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
-	 <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
-	 <1185571890.26603.7.camel@daplas>
-	 <92a12cdb0707271525i46970157ke1b2b2e6575682d6@mail.gmail.com>
-	 <1185578576.26603.16.camel@daplas>
-	 <92a12cdb0707271732l1d61f0aajfbd72c62d7ded3b6@mail.gmail.com>
-	 <1185583925.26603.24.camel@daplas>
+Message-Id: <200707272110.46860.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28/07/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-
+On Friday 27 July 2007 19:29:19 Andi Kleen wrote:
+> > Any faults in that reasoning?
 >
-> Is this with commit a66ad56eb2c9644717da4d7f05f971d6786145e3 reverted?
-> Reapply this commit again, it might (fingers crossed) correct the color
-> problem.
->
-> As to your display doubling/quadrupling with bpp 24/32, I don't have any
-> answers (no hardware) though it seems to be a framebuffer pitch/display
-> width mismatch.
->
+> GNU sort uses a merge sort with temporary files on disk. Not sure
+> how much it keeps in memory during that, but it's probably less
+> than 150MB. At some point the dirty limit should kick in and write back the
+> data of the temporary files; so it's not quite the same as anonymous
+> memory. But it's not that different given.
 
-Mostly solved the colour problem at 16bpp (black background but pale
-blue text - had previously been white). At 32bpp just as before -
-oversized and yellow.
+Yes, this should occur. But how many programs use temporary files like that? 
+>From what I can tell FireFox and OpenOffice both keep all their data in 
+memory, only using a single file for some buffering purposes. When they get 
+pushed out by a memory hog (either short term or long term) it takes several 
+seconds for them to be swapped back in. (I'm on a P4-1.3GHz machine with 1G 
+of ram and rarely run more than four programs (Mail Client, XChat, FireFox 
+and a console window) and I've seen this lag in FireFox when switching to it 
+after starting OOo. I've also seen the same sort of lag when exiting OOo. 
+I'll see about getting some numbers about this)
 
-At 24bpp much as before too - all against black but two boot logos in
-greenish shade and everything doubled up on screen in greenish shade
-(ie around half of pixels in console text message on left, around half
-in repeat on right).
+> It would be better to measure than to guess. At least Andrew's measurements
+> on 128MB actually didn't show updatedb being really that big a problem.
 
-But certainly better at 16bpp
+I agree. As I've said previously, it isn't updatedb itself which causes the 
+problem. It's the way the VFS cache seems to just expand and expand - to the 
+point of evicting pages to make room for itself. However, I may be wrong 
+about that - I haven't actually tested it for myself, just looked at the 
+numbers and other information that has been posted in this thread.
 
-Can mess about with it later to see if I can get the colours right I suppose.
+> Perhaps some people have much more files or simply a less efficient
+> updatedb implementation?
 
-Adrian
+Yes, it could be the proliferation of files. It could also be some other sort 
+of problem that is exposing a corner-case in the VFS cache or the MM. I, 
+personally, am of the opinion that it is likely the aforementioned corner 
+case for people reporting the "updatedb" problem. If it is, then 
+swap-prefetch is just papering over the problem. However I do not have the 
+knowledge and understanding of the subsystems involved to be able to do much 
+more than make a (probably wrong) guess.
+
+> I guess the people who complain here that loudly really need to supply
+> some real numbers.
+
+I've seen numerous "real numbers" posted about this. As was said earlier in 
+the thread "every time numbers are posted they are claimed to be no good". 
+But hey, nobodies perfect :)
+
+Anyway, the discussion seems to be turning to the technical merits of 
+swap-prefetch...
+
+Now, a completely different question:
+During the research (and lots of thinking) I've been doing while this thread 
+has been going on I've often wondered why swap prefetch wasn't already in the 
+kernel. The problem of slow swap-in has long been known, and, given current 
+hardware, the optimal solution would be some sort of data prefetch - similar 
+to what is done to speed up normal disk reads. Swap prefetch looks like it 
+does exactly that. The algo could be argued over and/or improved (to suggest 
+ways to do that I'd have to give it more than a 10 minute look) but it does 
+provide a speed-up.
+
+This speed increase will probably be enjoyed more by the home users, but the 
+performance increase could also help on enterprise systems.
+
+Now I'll be the first one to admit that there is a trade-off there - it will 
+cause more power to be used because the disk's don't get a chance to spin 
+down (or go through a cycle every time the prefetch system starts) but that 
+could, potentially, be alleviated by having "laptop mode" switch it off.
+
+(And no, I'm not claiming that it is perfect - but then, what is when its 
+first merged into the kernel?)
+
+DRH
+
+-- 
+Dialup is like pissing through a pipette. Slow and excruciatingly painful.
