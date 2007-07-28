@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765627AbXG1Lxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbXG1Lzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765627AbXG1Lxk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 07:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbXG1Lxa
+	id S933142AbXG1Lzz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 07:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755643AbXG1Lzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 07:53:30 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44243 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755460AbXG1Lx2 (ORCPT
+	Sat, 28 Jul 2007 07:55:47 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:57088 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755607AbXG1Lzq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 07:53:28 -0400
-Date: Sat, 28 Jul 2007 13:00:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Lee Howard <faxguy@howardsilvan.com>
-Cc: Paul Fulghum <paulkf@microgate.com>, Tilman Schmidt <tilman@imap.cc>,
-       Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-Message-ID: <20070728130009.43ea9e14@the-village.bc.nu>
-In-Reply-To: <46AACB4D.7080004@howardsilvan.com>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
-	<46A84B4A.6070902@shaw.ca>
-	<46A8C6F1.4080309@howardsilvan.com>
-	<20070726173121.70088a92@the-village.bc.nu>
-	<46A98845.8010806@howardsilvan.com>
-	<46A9F712.70706@imap.cc>
-	<46D33636.7070200@microgate.com>
-	<46AA5A0E.1050600@howardsilvan.com>
-	<1185578908.2989.15.camel@x2>
-	<46AACB4D.7080004@howardsilvan.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Jul 2007 07:55:46 -0400
+Date: Sat, 28 Jul 2007 07:55:34 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: zd1211b question.
+To: lkml <linux-kernel@vger.kernel.org>
+Message-id: <200707280755.34930.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Curiously, the session at 38400 bps that skipped 858 bytes... coincided, 
-> not just in sequence but also in precice timing within the session, with 
-> a small but noticeable disk load that I caused by grepping through a 
-> hundred session logs.  (I can't reproduce it easily, though, because of 
-> disk caching.)
+Greetings all;
 
-Can you send me a dmesg, there are some cases when high disk load can
-cause high interrupt latency in both 2.2 and 2.6 depending upon what is
-configured. I don't think thats related to the main problem but it is
-worth knowing about hdparm -u1
+A net friend of mine has a Gateway m305CRV laptop, with this radio in it:
+Bus 003 Device 003: ID 050d:705c Belkin Components
 
-> as it leaves the DCE.  I mention this in case there is any limitation to 
-> how the 8250 driver performs when two modems are being run simultaneously.
+Its apparently sitting on the usb bus, and from my grepping of the kernel 
+srcs, it looks as if the zd1211b driver might be the correct one:
 
-It means more load but that shouldn't matter much, and the transmit side
-if under load with asynchronous traffic will not lose bytes sending.
+drivers/net/wireless/zd1211rw/zd_usb.c: /* ZD1211B */
+drivers/net/wireless/zd1211rw/zd_usb.c: { USB_DEVICE(0x0ace, 
+0x1215), .driver_info = DEVICE_ZD1211B },
+drivers/net/wireless/zd1211rw/zd_usb.c: { USB_DEVICE(0x157e, 
+0x300d), .driver_info = DEVICE_ZD1211B },
+drivers/net/wireless/zd1211rw/zd_usb.c: { USB_DEVICE(0x079b, 
+0x0062), .driver_info = DEVICE_ZD1211B },
+drivers/net/wireless/zd1211rw/zd_usb.c: { USB_DEVICE(0x1582, 
+0x6003), .driver_info = DEVICE_ZD1211B },
 
-Alan
+drivers/net/wireless/zd1211rw/zd_usb.c: { USB_DEVICE(0x050d, 
+0x705c), .driver_info = DEVICE_ZD1211B },
+
+This last one is the right set of numbers.  However, I'll be dipped but I 
+can't find anyplace in a make xconfig in the 2.6.22.1-rt9 tree, to turn on 
+the building of that driver.
+
+Am I blind, don't know how to run grep, or does the xconfig script need more 
+tlc?
+
+Can somebody toss me a bone of info here?
+
+Thanks everybody.
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Thus spake the master programmer:
+	"When a program is being tested, it is too late to make design changes."
+		-- Geoffrey James, "The Tao of Programming"
