@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbXG1Prg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbXG1PtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbXG1Prg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 11:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbXG1Pra
+	id S1754637AbXG1PtA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 11:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752378AbXG1Psv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 11:47:30 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47302 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752378AbXG1Pr3 (ORCPT
+	Sat, 28 Jul 2007 11:48:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:46656 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752012AbXG1Psu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 11:47:29 -0400
-Date: Sat, 28 Jul 2007 17:47:05 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Jeff Dike <jdike@addtoit.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: RFC: UML: remove MODE_TT?
-Message-ID: <20070728154705.GB30976@stusta.de>
-References: <20061212233533.GB28443@stusta.de> <20061213041837.GA8825@ccure.user-mode-linux.org>
+	Sat, 28 Jul 2007 11:48:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=HiyMmPyLY0ovcjbyLItUmGlhpJm0V3cm4GDVzbKr+XYsPs92Nq9wLZfPHw9BEPfEQi40J5nV6xnevqDJcvJKh/O/04AyCwICL3nXvWlPW13TqbaT2FQT8HtoFsyux0MhJJRMfAPbO2ZkjOibpGeY85HBssU0NaaHifEVL+BpgTE=
+Message-ID: <46AB646D.8020104@googlemail.com>
+Date: Sat, 28 Jul 2007 17:44:45 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20061213041837.GA8825@ccure.user-mode-linux.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jason.wessel@windriver.com, amitkale@linsyssoft.com
+Subject: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Dec 12, 2006 at 11:18:37PM -0500, Jeff Dike wrote:
-> On Wed, Dec 13, 2006 at 12:35:33AM +0100, Adrian Bunk wrote:
-> > MODE_TT is both marked as deprecated and marked as BROKEN.
-> > 
-> > Would a patch to remove MODE_TT, always enable MODE_SKAS, and doing all 
-> > possible cleanups after this be accepted?
-> 
-> Thanks, but not yet.
-> 
-> I've got that queued up in my tree now, waiting for SMP to work.  SMP is 
-> the one remaining justification for TT mode, so I'll get that in, then remove
-> MODE_TT and do the associated cleanups.
+Hi,
 
-MODE_TT is still marked as broken and still not compiling...
+I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
 
-Will anyone fix it or can it finally be removed?
+...
 
-> 				Jeff
+net/core/netpoll.c: In function 'netpoll_poll':
+net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
+net/core/netpoll.c: In function 'netpoll_setup':
+net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
+make[2]: *** [net/core/netpoll.o] Error 1
+make[1]: *** [net/core] Error 2
+make: *** [net] Error 2
+make: *** Waiting for unfinished jobs....
 
-cu
-Adrian
+...
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+I think is because KGDBOE selects just NETPOLL.
 
+
+Regards,
+
+Gabriel
