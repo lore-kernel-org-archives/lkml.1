@@ -1,64 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757905AbXG1VGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbXG1VGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757905AbXG1VGS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 17:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXG1VGK
+	id S1758044AbXG1VGr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 17:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756865AbXG1VGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 17:06:10 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51674
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbXG1VGJ (ORCPT
+	Sat, 28 Jul 2007 17:06:39 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:54676 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755533AbXG1VGh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 17:06:09 -0400
-Date: Sat, 28 Jul 2007 14:03:01 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Rene Herman <rene.herman@gmail.com>, Daniel Hazelton <dhazelton@enter.net>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-In-Reply-To: <20070728122139.3c7f4290@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64.0707281400580.32476@asgard.lang.hm>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
- <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net>
- <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
- <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com>
- <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com>
- <20070728122139.3c7f4290@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 28 Jul 2007 17:06:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=IRa+TktlHEZ5duwX39BPwE5ld3oi4bqrnVFCT5fm7N4qMbArlVZFDcJMrsb1qUycv9/0XR3bKm3n660gDmTwN8WHrLuenog+h0poWm9oZOca25n3rt8Uc2/fcPRWMhmbTlOAOsLC/hg1KblIVTY6mcbjai4vHhvtZ5bbXIMC8s8=
+Date: Sat, 28 Jul 2007 23:06:09 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Bill Huey (hui) <billh@gnuppy.monkey.org>
+Cc: jos poortvliet <jos@mijnkamer.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, ck@vds.kolivas.org,
+       Michael Chang <thenewme91@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+Message-Id: <20070728230609.43273a75.diegocg@gmail.com>
+In-Reply-To: <20070728200705.GF32582@gnuppy.monkey.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<200707282003.45142.jos@mijnkamer.nl>
+	<alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>
+	<200707282128.39906.jos@mijnkamer.nl>
+	<20070728200705.GF32582@gnuppy.monkey.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jul 2007, Alan Cox wrote:
+El Sat, 28 Jul 2007 13:07:05 -0700, Bill Huey (hui) <billh@gnuppy.monkey.org> escribió:
 
->> It is. Prefetched pages can be dropped on the floor without additional I/O.
->
-> Which is essentially free for most cases. In addition your disk access
-> may well have been in idle time (and should be for this sort of stuff)
-> and if it was in the same chunk as something nearby was effectively free
-> anyway.
+> of how crappy X is. This is an open argument on how to solve, but it
+> should not have resulted in really one scheduler over the other. Both
 
-as I understand it the swap-prefetch only kicks in if the device is idle
+So your argument is that SD shouldn't have been merged either, because it
+would have resulted in one scheduler over the other?
 
-> Actual physical disk ops are precious resource and anything that mostly
-> reduces the number will be a win - not to stay swap prefetch is the right
-> answer but accidentally or otherwise there are good reasons it may happen
-> to help.
->
-> Bigger more linear chunks of writeout/readin is much more important I
-> suspect than swap prefetching.
+> where capable but one is locked out now because of the choices of
+> current high level kernel developers in Linux.
 
-I'm sure this is true while you are doing the swapout or swapin and the 
-system is waiting for it. but with prefetch you may be able to avoid doing 
-the swapin at a time when the system is waiting for it by doing it at a 
-time when the system is otherwise idle.
+Well, there are two schedulers...it's obvious that "high level kernel
+developers" needed to chose one.
 
-David Lang
+The main problem is clearly that no scheduler was clearly better than the
+other. This remembers me of the LVM2/MD vs EVMS in the 2.5 days - both
+of them were good enought, but only one of them could be merged. The
+difference is that EVMS developers didn't get that annoyed, and not only
+they didn't quit but they continued developing their userspace tools to
+make it work with the solution included in the kernel
+(http://lwn.net/Articles/14714/)
