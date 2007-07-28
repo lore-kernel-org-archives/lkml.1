@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbXG1QaK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754629AbXG1QdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752971AbXG1QaK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 12:30:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbXG1Q36
+	id S1754629AbXG1QdY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 12:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbXG1QdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 12:29:58 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:19085 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbXG1Q35 (ORCPT
+	Sat, 28 Jul 2007 12:33:16 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:56834 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752480AbXG1QdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 12:29:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iHSzbC9mq3FIUlCD37UVq3oTGxtg0l1qEhRMO2Y9Yu8HG9NCo4mV29qBKEf7mXXvf0oiRbsSAwJMI1tt296LC1kuqzDlj6atO/1EvDeILLa1xJ2xqZ1FhXsSm/Q3sfXF2CvN45MKSUOxFzgj5ixWxZEyqRZ9nKdG0F+Ixiu3Rxs=
-Message-ID: <2c0942db0707280929s56cc4588obb4abf78d766af66@mail.gmail.com>
-Date: Sat, 28 Jul 2007 09:29:55 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Cc: "Rene Herman" <rene.herman@gmail.com>, david@lang.hm,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Frank Kingswood" <frank@kingswood-consulting.co.uk>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070728122139.3c7f4290@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <20070727030040.0ea97ff7.akpm@linux-foundation.org>
-	 <1185531918.8799.17.camel@Homer.simpson.net>
-	 <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
-	 <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm>
-	 <46AAEDEB.7040003@gmail.com>
-	 <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-	 <46AB166A.2000300@gmail.com>
-	 <20070728122139.3c7f4290@the-village.bc.nu>
-X-Google-Sender-Auth: 1f7aae0da60fe426
+	Sat, 28 Jul 2007 12:33:15 -0400
+Date: Sat, 28 Jul 2007 10:32:47 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: How can we make page replacement smarter (was: swap-prefetch)
+In-reply-to: <fa.0CL7DLsw6U7akTkW79pdCM5NPRk@ifi.uio.no>
+To: Al Boldi <a1426z@gawab.com>
+Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Message-id: <46AB6FAF.5030306@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.RQO1FPcnWSV7f0LbL9tuLuh/fYY@ifi.uio.no>
+ <fa.FI89MRq1q0M+6SmmYNPsXQv2gC8@ifi.uio.no>
+ <fa./S2LBynIjozRhHfPsYxB9mQDpKE@ifi.uio.no>
+ <fa.0CL7DLsw6U7akTkW79pdCM5NPRk@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> Actual physical disk ops are precious resource and anything that mostly
-> reduces the number will be a win - not to stay swap prefetch is the right
-> answer but accidentally or otherwise there are good reasons it may happen
-> to help.
->
-> Bigger more linear chunks of writeout/readin is much more important I
-> suspect than swap prefetching.
+Al Boldi wrote:
+> Chris Snook wrote:
+>> Al Boldi wrote:
+>>> Because it is hard to quantify the expected swap-in speed for random
+>>> pages, let's first tackle the swap-in of consecutive pages, which should
+>>> be at least as fast as swap-out.  So again, why is swap-in so slow?
+>> If I'm writing 20 pages to swap, I can find a suitable chunk of swap and
+>> write them all in one place.  If I'm reading 20 pages from swap, they
+>> could be anywhere.  Also, writes get buffered at one or more layers of
+>> hardware.
+> 
+> Ok, this explains swap-in of random pages.  Makes sense, but it doesn't 
+> explain the awful tmpfs performance degradation of consecutive read-in runs 
+> from swap, which should have at least stayed constant
+> 
+>> At best, reads can be read-ahead and cached, which is why
+>> sequential swap-in sucks less.  On-demand reads are as expensive as I/O
+>> can get.
+> 
+> Which means that it should be at least as fast as swap-out, even faster 
+> because write to disk is usually slower than read on modern disks.  But 
+> linux currently shows a distinct 2x slowdown for sequential swap-in wrt 
+> swap-out.  And to prove this point, just try suspend to disk where you can 
+> see sequential swap-out being reported at about twice the speed of 
+> sequential swap-in on resume.  Why is that?
 
-<nod>. The larger the chunks are that we swap out, the less it
-actually hurts to swap, which might make all this a moot point. Not
-all I/O is created equal...
+Depends if swap-in is doing any read-ahead. If it's reading one page at 
+a time in from the disk then the performance will definitely suck 
+because of all the overhead from the tiny I/O's. With random swap-in you 
+then pay the horrible seek penalty for all the reads as well.
 
-Ray
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
