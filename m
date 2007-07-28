@@ -1,78 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbXG1FQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbXG1FW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754858AbXG1FQr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 01:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXG1FQh
+	id S1754529AbXG1FW2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 01:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbXG1FWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 01:16:37 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:20434 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751475AbXG1FQg (ORCPT
+	Sat, 28 Jul 2007 01:22:19 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50554 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbXG1FWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 01:16:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=T+rJVWRA3oaxn5BPepKRhosTj1JIYoEgxUWfrjlUezaP6T2AB2OTuJ9AiHAyIzCJRZnVMVt+1EvnMr0X08+oEIIHs5X/dOT4y5PuOGVsn1wmLhDOL6CvqnEQyslAAncMYepGxg/T8dvivf7CjHS5yB7/AWcC9xnBS/2XR0Ec+Oc=
-Message-ID: <a44ae5cd0707272216o60185470k30a785ebbffe57f5@mail.gmail.com>
-Date: Fri, 27 Jul 2007 22:16:35 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: 2.6.23-rc1-mm1 + hotfixes -- Section mismatches
+	Sat, 28 Jul 2007 01:22:18 -0400
+Message-ID: <46AAD1F7.50801@gmail.com>
+Date: Sat, 28 Jul 2007 07:19:51 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Daniel Hazelton <dhazelton@enter.net>
+CC: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, B.Steinbrink@gmx.de
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com> <200707271628.46804.dhazelton@enter.net>
+In-Reply-To: <200707271628.46804.dhazelton@enter.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  MODPOST vmlinux.o
-WARNING: vmlinux.o(.text+0x183): Section mismatch: reference to
-.init.text.1:start_kernel (between 'is386' and 'check_x87')
-WARNING: vmlinux.o(.data+0x53c0): Section mismatch: reference to
-.init.text.4:native_smp_prepare_boot_cpu (between 'smp_ops' and
-'call_lock')
-WARNING: vmlinux.o(.data+0x53c4): Section mismatch: reference to
-.init.text.4:native_smp_prepare_cpus (between 'smp_ops' and
-'call_lock')
-WARNING: vmlinux.o(.data+0x53cc): Section mismatch: reference to
-.init.text.4:native_smp_cpus_done (between 'smp_ops' and 'call_lock')
-WARNING: vmlinux.o(.data+0x6598): Section mismatch: reference to
-.init.text.6:machine_specific_memory_setup (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x65a0): Section mismatch: reference to
-.init.text.4:native_init_IRQ (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x65a4): Section mismatch: reference to
-.init.text.4:hpet_time_init (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x65a8): Section mismatch: reference to
-.init.text.5:native_pagetable_setup_start (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x65ac): Section mismatch: reference to
-.init.text.5:native_pagetable_setup_done (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x65b0): Section mismatch: reference to
-.init.text.4:default_banner (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x6674): Section mismatch: reference to
-.init.text.4:setup_boot_APIC_clock (between 'paravirt_ops' and
-'reserve_ioports')
-WARNING: vmlinux.o(.data+0x17840): Section mismatch: reference to
-.init.text.19:vesafb_probe (between 'vesafb_driver' and 'vesafb_ops')
-WARNING: vmlinux.o(.data+0x1ef00): Section mismatch: reference to
-.init.text.19:hvc_console_setup (between 'hvc_con_driver' and
-'vtermnos')
-WARNING: vmlinux.o(.data+0x20780): Section mismatch: reference to
-.init.text.19:serial8250_console_setup (between 'serial8250_console'
-and 'serial8250_reg')
-WARNING: vmlinux.o(.data+0x20784): Section mismatch: reference to
-.init.text.19:serial8250_console_early_setup (between
-'serial8250_console' and 'serial8250_reg')
-WARNING: vmlinux.o(.data+0x259cc): Section mismatch: reference to
-.init.text.19:smsc_ircc_pnp_probe (between 'smsc_ircc_pnp_driver' and
-'__param_str_ircc_transceiver')
-WARNING: vmlinux.o(.data+0x2e5f0): Section mismatch: reference to
-.init.text.19:pci_eisa_init (between 'pci_eisa_driver' and
-'pci_eisa_pci_tbl')
+On 07/27/2007 10:28 PM, Daniel Hazelton wrote:
+
+> Check the attitude at the door then re-read what I actually said:
+
+Attitude? You wanted attitude dear boy?
+
+>>> Updatedb or another process that uses the FS heavily runs on a users
+>>> 256MB P3-800 (when it is idle) and the VFS caches grow, causing memory
+>>> pressure that causes other applications to be swapped to disk. In the
+>>> morning the user has to wait for the system to swap those applications
+>>> back in.
+> 
+> I never said that it was the *program* itself - or *any* specific program (I 
+> used "Updatedb" because it has been the big name in the discussion) - doing 
+> the filling of memory. I actually said that the problem is that the kernel's 
+> caches - VFS and others - will grow *WITHOUT* *LIMIT*, filling all available 
+> memory. 
+
+WHICH SWAP-PREFETCH DOES NOT HELP WITH.
+WHICH SWAP-PREFETCH DOES NOT HELP WITH.
+WHICH SWAP-PREFETCH DOES NOT HELP WITH.
+
+And now finally get that through your thick scull or shut up, right fucking now.
+
+> You want to know what causes the problem? The current design of the caches. 
+> They will extend without much limit, to the point of actually pushing pages 
+> to disk so they can grow even more. 
+
+Due to being a generally nice guy, I am going to try _once_ more to try and 
+make you understand. Not twice, once. So pay attention. Right now.
+
+Those caches are NOT causing any problem under discussion. If any caches 
+grow to the point of causing swap-out, they have filled memory and 
+swap-prefetch cannot and will not do anything since it needs free (as in not 
+occupied by caches) memory. As such, people maintaining that swap-prefetch 
+helps their situation are not being hit by caches.
+
+The only way swap-prefetch can (and will) do anything is when something that 
+by itself takes up lots of memory runs and exits. So can we now please 
+finally drop the fucking red herring and start talking about swap-prefetch?
+
+If we accept that some of the people maintaining that swap-prefetch helps 
+them are not in fact deluded -- a bit of a stretch seeing as how not a 
+single one of them is substantiating anything -- we have a number of 
+slightly different possibilities for "something" in the above.
+
+-- 1)
+
+It could be an inefficient updatedb. Although he isn't experiencing the 
+problem, Bjoern Steinbrink is posting numbers (weeee!) that show that at 
+least the GNU version spawns a large memory "sort" process meaning that on a 
+low-memory box updatedb itself can be what causes the observed problem.
+
+While in this situation switching to a different updatedb (slocate, mlocate) 
+obviously makes sense it's the kind of situation where swap-prefetch will help.
+
+-- 2)
+
+It could be something else entirely such as a backup run. I suppose people 
+would know if they were running anything of the sort though and wouldn't 
+blaim anything on updatedb.
+
+Other than that, it's again the situation where swap-prefetch would help.
+
+-- 3)
+
+The something else entirely can also run _after_ updatedb, kicking out the 
+VFS caches and leaving free memory upon exit. I still suppose the same thing 
+as under (2) but this is the only way how updatedb / VFS caches can even be 
+part of any problem, if the _combined_ memory pressure is just enough to 
+make the difference.
+
+The direct problem is still just the "something else entirely" and needs 
+someone affected to tell us what it is.
+
+> I already did. You completely ignored it because I happened to use the magic 
+> words "updatedb" and "swap prefetch". 
+
+No I did not. This thread is about swap-prefetch and you used the magic 
+words VFS caches. I don't give a fryin' fuck if their filling is caused by 
+updatedb or the cat sleeping on the "find /<enter>" keys on your keyboard, 
+they're still not causing anything swap-prefetch helps with.
+
+This thread has seen input from a selection of knowledgeable people and 
+Morton was even running benchmarks to look at this supposed VFS cache 
+problem and not finding it. The only further input this thread needs is 
+someone affected by the supposed problem.
+
+Which I ofcourse notice in a followup of yours you are not either -- you're 
+just here to blabber, not to solve anything.
+
+Rene.
+
