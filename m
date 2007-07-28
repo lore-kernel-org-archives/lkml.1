@@ -1,76 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbXG1RZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbXG1R0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbXG1RZs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 13:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbXG1RZk
+	id S1756078AbXG1R0S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 13:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbXG1R0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 13:25:40 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:44641 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751840AbXG1RZk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 13:25:40 -0400
-Date: Sat, 28 Jul 2007 20:25:39 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jay Estabrook <jay.estabrook@hp.com>
-Subject: [PATCH] fix alpha mkbb compilation warnings
-Message-ID: <Pine.SOC.4.64.0707282021150.20474@math.ut.ee>
+	Sat, 28 Jul 2007 13:26:03 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36820 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751860AbXG1R0B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 13:26:01 -0400
+Date: Sat, 28 Jul 2007 10:25:50 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Michael Chang <thenewme91@gmail.com>
+cc: Kasper Sandberg <lkml@metanurb.dk>, CK Mailinglist <ck@vds.kolivas.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+In-Reply-To: <b14e81f00707280618m73461fdfx989d87a3a0074192@mail.gmail.com>
+Message-ID: <alpine.LFD.0.999.0707281017230.3442@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+ <b14e81f00707280618m73461fdfx989d87a3a0074192@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In current 2.6.23-rc1+git, make bootimage gives the following warnings 
-while compiling mkbb.c. The patch below fixes these warnings by using 
-the proper include for exit() and using appropriate printf format.
 
-  HOSTCC  arch/alpha/boot/tools/mkbb
-arch/alpha/boot/tools/mkbb.c: In function 'main':
-arch/alpha/boot/tools/mkbb.c:95: warning: implicit declaration of function 'exit'
-arch/alpha/boot/tools/mkbb.c:95: warning: incompatible implicit declaration of built-in function 'exit'
-arch/alpha/boot/tools/mkbb.c:102: warning: incompatible implicit declaration of built-in function 'exit'
-arch/alpha/boot/tools/mkbb.c:110: warning: incompatible implicit declaration of built-in function 'exit'
-arch/alpha/boot/tools/mkbb.c:117: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
-arch/alpha/boot/tools/mkbb.c:118: warning: incompatible implicit declaration of built-in function 'exit'
-arch/alpha/boot/tools/mkbb.c:125: warning: format '%d' expects type 'int', but argument 3 has type 'long unsigned int'
-arch/alpha/boot/tools/mkbb.c:126: warning: incompatible implicit declaration of built-in function 'exit'
-arch/alpha/boot/tools/mkbb.c:143: warning: incompatible implicit declaration of built-in function 'exit'
-arch/alpha/boot/tools/mkbb.c:148: warning: incompatible implicit declaration of built-in function 'exit'
 
-Signed-off-by: Meelis Roos <mroos@linux.ee>
+On Sat, 28 Jul 2007, Michael Chang wrote:
+> 
+> I do recall there is one issue on which Con wouldn't budge -- anything
+> that involved boosting certain kinds of processes in the kernel.
 
-diff --git a/arch/alpha/boot/tools/mkbb.c b/arch/alpha/boot/tools/mkbb.c
-index 632a7fd..1185778 100644
---- a/arch/alpha/boot/tools/mkbb.c
-+++ b/arch/alpha/boot/tools/mkbb.c
-@@ -11,6 +11,7 @@
- 
- #include <fcntl.h>
- #include <unistd.h>
-+#include <stdlib.h>
- #include <stdio.h>
- 
- /* Minimal definition of disklabel, so we don't have to include
-@@ -114,7 +115,7 @@ int main(int argc, char ** argv)
-     nread = read(fd, &bootloader_image, sizeof(bootblock));
-     if(nread != sizeof(bootblock)) {
- 	perror("lxboot read");
--	fprintf(stderr, "expected %d, got %d\n", sizeof(bootblock), nread);
-+	fprintf(stderr, "expected %zd, got %d\n", sizeof(bootblock), nread);
- 	exit(0);
-     }
- 
-@@ -122,7 +123,7 @@ int main(int argc, char ** argv)
-     nread = read(dev, &bootblock_from_disk, sizeof(bootblock));
-     if(nread != sizeof(bootblock)) {
- 	perror("bootblock read");
--	fprintf(stderr, "expected %d, got %d\n", sizeof(bootblock), nread);
-+	fprintf(stderr, "expected %zd, got %d\n", sizeof(bootblock), nread);
- 	exit(0);
-     }
- 
+I did that myself, so that's a non-issue.
 
--- 
-Meelis Roos (mroos@linux.ee)
+No. The complaints were about the CK scheduler not being as responsive 
+under load as even the _old_ scheduler was. I don't know why people ignore 
+this fact. It was a long thread back in March or April, and I'm pretty 
+sure the CK mailing list was cc'd.
+
+Sure, most people don't actually have load-averages above ten etc, but 
+it's important to do those well _too_. 
+
+			Linus
