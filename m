@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXG1Sz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbXG1TOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756130AbXG1Sz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 14:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbXG1Szs
+	id S1755878AbXG1TOF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 15:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbXG1TNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 14:55:48 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:4326 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752073AbXG1Szo (ORCPT
+	Sat, 28 Jul 2007 15:13:55 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:59114 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752030AbXG1TNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 14:55:44 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Volanomark slows by 80% under CFS
-Date: Sat, 28 Jul 2007 11:55:35 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKGEEIFLAC.davids@webmaster.com>
+	Sat, 28 Jul 2007 15:13:54 -0400
+Date: Sat, 28 Jul 2007 21:13:53 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
+Subject: Re: Linus 2.6.23-rc1
+In-Reply-To: <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0707282054330.15125@fbirervta.pbzchgretzou.qr>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+ <1185615848.13701.16.camel@localhost> <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <b647ffbd0707280536q4a7c5da3he3ec6e2a8a19fc00@mail.gmail.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Sat, 28 Jul 2007 11:56:17 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Sat, 28 Jul 2007 11:56:19 -0700
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> > Volanomark runs better
-> > and is only 40% (instead of 80%) down from old scheduler
-> > without CFS.
+On Jul 28 2007 10:50, Linus Torvalds wrote:
+>On Sat, 28 Jul 2007, Kasper Sandberg wrote:
+>>
+>> First off, i've personally run tests on many more machines than my own,
+>> i've had lots of people try on their machines, and i've seen totally
+>> unrelated posts to lkml, plus i've seen the experiences people are
+>> writing about on IRC. Frankly, im not just thinking of myself.
+>
+>Ok, good. Has anybody tried to figure out why 3D games seem to be such a 
+>special case? 
 
-> 40 or 80 % is still a huge regression.
-> Dmitry Adamushko
+Is it specific to 3D? I would not think so. dosbox, bochs should have
+the same issue. Games with "a lot of motion" usually implement their event
+handling and screen drawing in a busy loop to get the maximum possible
+frame rate.
 
-Can anyone explain precisely what Volanomark is doing? If it's something
-dumb like "looping on sched_yield until the 'right' thread runs and finishes
-what we're waiting for" then I think any regression can be ignored.
+Usually, only the GL thread would need to run at full power, and reducing the
+input subsystem to a simple event-based loop (for example reading a pipe in
+blocking mode). This could IMO makes games a bit more responsive.
 
-This applies if and only if CFS' sched_yield behavior is sane and Volano's
-is insane.
-
-A sane sched_yield implementation must do two things:
-
-1) Reward processes that actually do yield most of their CPU time to another
-process.
-
-2) Make an effort to run every ready-to-run process at the same or higher
-static priority level before re-scheduling this process. (That won't always
-be possible due to SMP issues, but a reasonable effort is needed.)
-
-If CFS is doing these two things, and Volanomark is looping on sched_yield
-until the 'right thread' runs, then CFS is doing the right and Volanomark
-isn't. Volanomark deserves to lose.
-
-If CFS binds processes to processors more tightly and thus sched_yield can't
-yield to a process that was planned to run on another CPU in the future,
-that would be a legitimate complaint about CFS.
-
-DS
+However, most games combine the input subsystem and graphics output in one
+thread. Due to the way CFS works, it may mean that processes get scheduled
+too fair, though I'd suspect that a GL busy loop has no interactivity bonus at
+all anyway in the old scheduler or SD.
 
 
+
+
+I/O is also something that can hurt games in their framerate and/or handling
+(something the user cares most about). Since I have not tried 2.6.23-rc yet, I
+can only speak for the old scheduler. I have always turned cron off so that
+updatedb does not run, because it makes games sluggish for some reason,
+even though updatedb (or subordinate processes) don't take a lot of CPU time
+according to `top`. What's more, running BOINC in the background (nice 20)
+while running unreal (nice 0), everything is ok.
+(But not if BOINC is at nice 0).
+
+Time to investigate...
+
+
+
+	Jan
+-- 
