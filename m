@@ -1,132 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbXG1KO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757398AbXG1KbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756270AbXG1KO0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 06:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751929AbXG1KOQ
+	id S1757398AbXG1KbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 06:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbXG1KbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 06:14:16 -0400
-Received: from smtpq3.groni1.gr.home.nl ([213.51.130.202]:45929 "EHLO
-	smtpq3.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbXG1KOP (ORCPT
+	Sat, 28 Jul 2007 06:31:10 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:3256 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753523AbXG1KbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 06:14:15 -0400
-Message-ID: <46AB166A.2000300@gmail.com>
-Date: Sat, 28 Jul 2007 12:11:54 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Sat, 28 Jul 2007 06:31:08 -0400
+X-Greylist: delayed 1555 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 06:31:08 EDT
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: ck@vds.kolivas.org
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+Date: Sat, 28 Jul 2007 12:05:10 +0200
+User-Agent: KMail/1.9.7
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185588279.1654.1.camel@localhost> <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org> (sfid-20070728_101007_531837_EA6AB2C7)
+In-Reply-To: <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com> <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com> <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart5949748.SGI2Qe3VAN";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Message-Id: <200707281205.10871.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/28/2007 10:55 AM, david@lang.hm wrote:
+--nextPart5949748.SGI2Qe3VAN
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> in at some situations swap prefetch can help becouse something that used 
-> memory freed it so there is free memory that could be filled with data 
-> (which is something that Linux does agressivly in most other situations)
-> 
-> in some other situations swap prefetch cannot help becouse useless data 
-> is getting cached at the expense of useful data.
-> 
-> nobody is arguing that swap prefetch helps in the second cast.
+Am Samstag 28 Juli 2007 schrieb Linus Torvalds:
+> On Sat, 28 Jul 2007, Kasper Sandberg wrote:
+> > Im still not so keen about this, Ingo never did get CFS to match SD
+> > in smoothness for 3d applications, where my test subjects are
+> > quake(s), world of warcraft via wine, unreal tournament 2004. And
+> > this is despite many patches he sent me to try and tweak it.
 
-Oh yes they are. Daniel for example did twice, telling me to turn my brain 
-on in between (if you read it, you may have noticed I got a little annoyed 
-at that point).
+[...]
 
-> but let's talk about the concept here for a little bit
-> 
-> the design is to use CPU and I/O capacity that's otherwise idle to fill 
-> free memory with data from swap.
-> 
-> pro:
->   more ram has potentially useful data in it
-> 
-> con:
->   it takes a little extra effort to give this memory to another app (the 
-> page must be removed from the list and zeroed at the time it's needed, I 
-> assume that the data is left in swap so that it doesn't have to be 
-> written out again)
+> I'm happy that SD was perfect for you. It wasn't for others, and it had
+> nobody who was even interested in trying to solve those issues.
 
-It is. Prefetched pages can be dropped on the floor without additional I/O.
+Linus, I seen somethimg *completely* different on the CK mailinglist. Con=20
+Koliva worked up to his limits and likely beyond them to fix any and all=20
+issues reported. Heck, he maintained that thing out of the kernel tree=20
+for a long time and the version number 1.0 does not come from nothing, it=20
+has gone through at least 50 iterations.
 
->   it adds some complexity to the kernel (~500 lines IIRC from this thread)
-> 
->   by undoing recent swapouts it can potentially mask problems with swapout
-> 
-> it looks to me like unless the code was really bad (and after 23 months 
-> in -mm it doesn't sound like it is)
+The only thing I know of where Con did not want to "fix" a problem, was=20
+with renicing X, cause he didn't want to introduce a special case in the=20
+scheduler, where a simple nice would do the trick. That said I never saw=20
+serious problems with X unreniced at all.
 
-Not to sound pretentious or anything but I assume that Andrew has a fairly 
-good overview of exactly how broken -mm can be at times. How many -mm users 
-use it anyway? He himself said he's not convinced of usefulness having not 
-seen it help for him (and notice that most developers are also users), 
-turned it off due to it annoying him at some point and hasn't seen a serious 
-investigation into potential downsides.
+So I think your statements here are simply not accurate and also not fair,=
+=20
+cause I have the impression that you did not look carefully before=20
+writing them.
 
-> that the only significant con left is the potential to mask other
-> problems.
+You speak about working together, but now I ask you: Did you ever have a=20
+personal word with Con, did you ever tell him that you don't trust that=20
+he can maintain the SD scheduler when its mainline? Did you ever outspoke=20
+your concerns to *him*?
 
-Which is not a madeup issue, mind you. As an example, I just now tried GNU 
-locate and saw it's a complete pig and specifically unsuitable for the low 
-memory boxes under discussion. Upon completion, it actually frees enough 
-memory that swap-prefetch _could_ help on some boxes, while the real issue 
-is that they should first and foremost dump GNU locate.
+Granted, from a health point of view and maybe also from looking at how=20
+much time a maintainer will be able to spend more time on the scheduler=20
+Ingo *may* can do more than Con - if he doesn't do too much else;-). But=20
+looking at personal committment actually I saw no difference between Con=20
+and Ingo.
 
-> however there are many legitimate cases where it is definantly dong the 
-> right thing (swapout was correct in pushing out the pages, but now the 
-> cause of that preasure is gone). the amount of benifit from this will 
-> vary from situation to situation, but it's not reasonable to claim that 
-> this provides no benifit (you have benchmark numbers that show it in 
-> synthetic benchmarks, and you have user reports that show it in the 
-> real-worlk)
+So while it may be good that CFS went in from that point of view, the way=20
+the decision was made was very suitable to piss off a very talented=20
+developer.
 
-I certainly would not want to argue anything of the sort no. As said a few 
-times, I agree that swap-prefetch makes sense and has at least the potential 
-to help some situations that you really wouldnt even want to try and fix any 
-other way, simply because nothing's broken.
+Anyway, the decision is done, Con resigned already, he gave up on it. And=20
+actually when I read your mail I can understand why he did so[1]. Sure,=20
+he is involved as well and I think he felt hurt on some things that in my=20
+perception were meant neutral or even supporting and postive, but still I=20
+disagree a lot on the tone in LKML and understand exactly why Linux=20
+users, Linux desktop users away from it as much as they can. Actually I=20
+do not get that as you state in one of your latest interviews that you=20
+are actually very interested into the desktop, cause its a very suitable=20
+kernel test case[2].
 
-> there are lots of things in the kernel who's job is to pre-fill the 
-> memroy with data that may (or may not) be useful in the future. this is 
-> just another method of filling the cache. it does so my saying "the user
-> wanted these pages in the recent past, so it's a reasonable guess to say
-> that the user will want them again in the future"
+Well I for sure will patch whatever into my kernels that I think should be=
+=20
+in there for me to have a *pleasant* desktop experience, including, but=20
+not limited to, TuxOnIce ;-). Oh, but that might possibly not be mainted=20
+nicely enough as well then. (Yes, here is sarcastic irony, lots of it. So=20
+no offence intended, Nigel;-)
 
-Well, _that_ is what the kernel is already going to great lengths at doing, 
-and it decided that those pages us poor overnight OO.o users want in in the 
-morning weren't reasonable guesses. The kernel also won't any time soon be 
-reading our minds, so any solution would need either user intervention (we 
-could devise a way to tell the kernel "hey ho, I consider these pages to be 
-very important -- try not to swap them out" possible even with a "and if you 
-do, please pull them back in when possible") or we can let swap-prefetch do 
-the "just in case" thing it is doing.
 
-While swap-prefetch may not be the be all end all of solutions I agree that 
-having a machine sit around with free memory and applications in swap seems 
-not too useful if (as is the case) fetched pages can be dropped immediately 
-when it turns out swap-prefetch made the wrong decision.
+[1] http://apcmag.com/6735/interview_con_kolivas
+[2] http://www.oneopensource.it/interview-linus-torvalds/
 
-So that's for the concept. As to implementation, if I try and look at the 
-code, it seems to be trying hard to really be free and as such, potential 
-downsides seem limited. It's a rather core concept though and as such needs 
-someone with a _lot_ more VM clue to ack. Sorry for not knowing, but who's 
-maintaining/submitting the thing now that Con's not? He or she should 
-preferably address any concerns it seems.
 
-Rene.
+Regards,
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
 
+--nextPart5949748.SGI2Qe3VAN
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGqxTWmRvqrKWZhMcRAuiAAJ0ZUoUvSJuOeX0nzeN9XsY8rolLgwCfb0o/
+m6qInzim5Y16RFGhursYUb4=
+=vCfF
+-----END PGP SIGNATURE-----
+
+--nextPart5949748.SGI2Qe3VAN--
