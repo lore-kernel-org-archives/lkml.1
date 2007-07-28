@@ -1,127 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbXG1Sqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbXG1Sz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756408AbXG1Sqe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 14:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753328AbXG1SqN
+	id S1756130AbXG1Sz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 14:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbXG1Szs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 14:46:13 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:47803 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752727AbXG1SqK (ORCPT
+	Sat, 28 Jul 2007 14:55:48 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4326 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752073AbXG1Szo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 14:46:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=Jiwi9mF9RgMty2isXsuLaJuTLSyzmhyBoql5M/JowwOUfY9y4FH73Gybol4iPRONRna4UqBhdVUdBhcyujLIQnCPUM3a1854KVBbTjFukmlY2QzYV8dO4wh7ZcSH1bbPcp6pZfOZLji/0HFkJH+SZYCTj7ZwGZDWOGwILOEJb00=
-Message-ID: <46AB8DF9.8060903@googlemail.com>
-Date: Sat, 28 Jul 2007 20:42:01 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Sat, 28 Jul 2007 14:55:44 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Volanomark slows by 80% under CFS
+Date: Sat, 28 Jul 2007 11:55:35 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKGEEIFLAC.davids@webmaster.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jason.wessel@windriver.com, amitkale@linsyssoft.com
-Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
-References: <20070725040304.111550f4.akpm@linux-foundation.org>	<46AB646D.8020104@googlemail.com> <20070728102639.872ec9a0.akpm@linux-foundation.org>
-In-Reply-To: <20070728102639.872ec9a0.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <b647ffbd0707280536q4a7c5da3he3ec6e2a8a19fc00@mail.gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Sat, 28 Jul 2007 11:56:17 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Sat, 28 Jul 2007 11:56:19 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-> 
->> Hi,
->>
->> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
->>
->> ...
->>
->> net/core/netpoll.c: In function 'netpoll_poll':
->> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
->> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
->> net/core/netpoll.c: In function 'netpoll_setup':
->> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
->> make[2]: *** [net/core/netpoll.o] Error 1
->> make[1]: *** [net/core] Error 2
->> make: *** [net] Error 2
->> make: *** Waiting for unfinished jobs....
->>
->> ...
->>
->>
->> I think is because KGDBOE selects just NETPOLL.
->>
-> 
-> Looks like it.
-> 
-> Select went and selected NETPOLL and NETPOLL_TRAP but things like
-> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
-> remains evil.
-> 
-> Something like this..
-> 
-> --- a/lib/Kconfig.kgdb~kgdb-kconfig-fix
-> +++ a/lib/Kconfig.kgdb
-> @@ -175,8 +175,7 @@ endchoice
->  config KGDBOE
->  	tristate "KGDB: On ethernet" if !KGDBOE_NOMODULE
->  	depends on m && KGDB
-> -	select NETPOLL
-> -	select NETPOLL_TRAP
-> +	depends on NETPOLL_TRAP && NET_POLL_CONTROLLER
->  	help
->  	  Uses the NETPOLL API to communicate with the host GDB via UDP.
->  	  In order for this to work, the ethernet interface specified must
-> _
-> 
-> 
+
+> > Volanomark runs better
+> > and is only 40% (instead of 80%) down from old scheduler
+> > without CFS.
+
+> 40 or 80 % is still a huge regression.
+> Dmitry Adamushko
+
+Can anyone explain precisely what Volanomark is doing? If it's something
+dumb like "looping on sched_yield until the 'right' thread runs and finishes
+what we're waiting for" then I think any regression can be ignored.
+
+This applies if and only if CFS' sched_yield behavior is sane and Volano's
+is insane.
+
+A sane sched_yield implementation must do two things:
+
+1) Reward processes that actually do yield most of their CPU time to another
+process.
+
+2) Make an effort to run every ready-to-run process at the same or higher
+static priority level before re-scheduling this process. (That won't always
+be possible due to SMP issues, but a reasonable effort is needed.)
+
+If CFS is doing these two things, and Volanomark is looping on sched_yield
+until the 'right thread' runs, then CFS is doing the right and Volanomark
+isn't. Volanomark deserves to lose.
+
+If CFS binds processes to processors more tightly and thus sched_yield can't
+yield to a process that was planned to run on another CPU in the future,
+that would be a legitimate complaint about CFS.
+
+DS
 
 
-That doesn't fix it. With that patch an 'make oldconfig' all NETPOLL stuff gone and we end up with :
-
-...
-
-drivers/built-in.o: In function `option_setup':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:160: undefined reference to `netpoll_parse_options'
-drivers/built-in.o: In function `configure_kgdboe':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:183: undefined reference to `netpoll_setup'
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:189: undefined reference to `netpoll_cleanup'
-drivers/built-in.o: In function `eth_post_exception_handler':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:119: undefined reference to `netpoll_set_trap'
-drivers/built-in.o: In function `eth_pre_exception_handler':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:111: undefined reference to `netpoll_set_trap'
-drivers/built-in.o: In function `eth_flush_buf':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:138: undefined reference to `netpoll_send_udp'
-drivers/built-in.o: In function `eth_get_char':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:127: undefined reference to `netpoll_poll'
-drivers/built-in.o: In function `cleanup_kgdboe':
-/work/crazy/linux-git/MM/linux-2.6.23-rc1/drivers/net/kgdboe.c:217: undefined reference to `netpoll_cleanup'
-make: *** [.tmp_vmlinux1] Error 1
-
-...
-
-
-If I get that right  select is needed here because  all NETPOLL{_*} depends on if NETDEVICES && if NET_ETHERNET.
-
-Also doing 
-	
-	...
-	select NETPOLL_TRAP 
-	select NETPOLL
-	select NET_POLL_CONTROLLER
-	...
-
-makes the driver happy and everything compiles fine.
-
-I think there may be a logical issue ( again if I got it right ).
-We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
-
-So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
-
-( really sory if I said something stupid these Kconfig depends are not really easy to figure for me )
-
-
-Gabriel 
