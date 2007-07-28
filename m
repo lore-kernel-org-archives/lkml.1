@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938071AbXG1DnM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938788AbXG1Dnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938071AbXG1DnM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 23:43:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933484AbXG1Dm5
+	id S938788AbXG1Dnn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 23:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935689AbXG1Dnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 23:42:57 -0400
-Received: from main.gmane.org ([80.91.229.2]:54264 "EHLO ciao.gmane.org"
+	Fri, 27 Jul 2007 23:43:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43632 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761854AbXG1Dm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 23:42:56 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Daniel Cheng <gmane@sdiz.net>
-Subject: Re: -mm merge plans for 2.6.23
-Date: Sat, 28 Jul 2007 11:42:43 +0800
-Message-ID: <46AABB33.1080301@sdiz.net>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>	<9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	<46A57068.3070701@yahoo.com.au>	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	<46A58B49.3050508@yahoo.com.au>	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>	<46A6CC56.6040307@yahoo.com.au> <46A6D7D2.4050708@gmail.com>	<1185341449.7105.53.camel@perkele> <46A6E1A1.4010508@yahoo.com.au>	<2c0942db0707250909r435fef75sa5cbf8b1c766000b@mail.gmail.com> <20070725215717.df1d2eea.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=Big5-HKSCS
+	id S934872AbXG1Dnc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Jul 2007 23:43:32 -0400
+Message-ID: <46AABB5B.3030702@redhat.com>
+Date: Fri, 27 Jul 2007 23:43:23 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andrea Arcangeli <andrea@suse.de>
+CC: tim.c.chen@linux.intel.com, mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: pluggable scheduler flamewar thread (was Re: Volanomark slows by
+ 80% under CFS)
+References: <1185573687.19777.44.camel@localhost.localdomain> <46AA8E57.8010105@redhat.com> <20070728005920.GA31622@v2.random>
+In-Reply-To: <20070728005920.GA31622@v2.random>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: ck@vds.kolivas.org, linux-mm@kvack.org
-X-Gmane-NNTP-Posting-Host: n219079086056.netvigator.com
-User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070622)
-In-Reply-To: <20070725215717.df1d2eea.akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-[...]
+Andrea Arcangeli wrote:
+> On Fri, Jul 27, 2007 at 08:31:19PM -0400, Chris Snook wrote:
+>> I think Volanomark is being pretty stupid, and deserves to run slowly, but 
 > 
-> And userspace can do a much better implementation of this
-> how-to-handle-large-load-shifts problem, because it is really quite
-> complex.  The system needs to be monitored to determine what is the "usual"
-[...]
-> All this would end up needing runtime configurability and tweakability and
-> customisability.  All standard fare for userspace stuff - much easier than
-> patching the kernel.
-
-But a patch already exist.
-Which is easier: (1) apply the patch ; or (2) write a new patch?
-
+> Indeed, any app doing what volanomark does is pretty inefficient.
 > 
-> So.  We can
-> a) provide a way for userspace to reload pagecache and
-> b) merge maps2 (once it's finished) (pokes mpm)
-> and we're done?
+> But this is not the point. I/O schedulers are pluggable to help for
+> inefficient apps too. If apps would be extremely smart they would all
+> use async-io for their reads, and there wouldn't be the need of
+> anticipatory scheduler just for an example.
 
-might be.
-but merging maps2 have higher risk which should be done in a development
-branch (er... 2.7, but we don't have it now).
+I'm pretty sure the point of posting a patch that triples CFS performance on a 
+certain benchmark and arguably improves the semantics of sched_yield was to 
+improve CFS.  You have a point, but it is a point for a different thread.  I 
+have taken the liberty of starting this thread for you.
 
--- 
+> The fact is there's no technical explanation for which we're forbidden
+> to be able to choose between CFS and O(1) at least at boot time.
 
+Sure there is.  We can run a fully-functional POSIX OS without using any block 
+devices at all.  We cannot run a fully-functional POSIX OS without a scheduler. 
+  Any feature without which the OS cannot execute userspace code is sufficiently 
+primitive that somewhere there is a device on which it will be impossible to 
+debug if that feature fails to initialize.  It is quite reasonable to insist on 
+only having one implementation of such features in any given kernel build.
+
+Whether or not these alternatives belong in the source tree as config-time 
+options is a political question, but preserving boot-time debugging capability 
+is a perfectly reasonable technical motivation.
+
+	-- Chris
