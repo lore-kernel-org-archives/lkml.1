@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbXG1Q4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXG1RFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755457AbXG1Q4T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 12:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752855AbXG1Q4G
+	id S1754477AbXG1RFZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 13:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbXG1RFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 12:56:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56108 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752095AbXG1Q4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 12:56:04 -0400
-Date: Sat, 28 Jul 2007 09:55:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Len Brown <lenb@kernel.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for
- 2.6.23-rc1)
-In-Reply-To: <alpine.LFD.0.999.0707280921150.3442@woody.linux-foundation.org>
-Message-ID: <alpine.LFD.0.999.0707280932470.3442@woody.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707262248.09187.rjw@sisk.pl>
- <alpine.LFD.0.999.0707261351430.3442@woody.linux-foundation.org>
- <200707280330.26991.lenb@kernel.org>
- <alpine.LFD.0.999.0707280921150.3442@woody.linux-foundation.org>
+	Sat, 28 Jul 2007 13:05:12 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:53219 "EHLO smtp2.it.da.ut.ee"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750723AbXG1RFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 13:05:10 -0400
+Date: Sat, 28 Jul 2007 20:05:08 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jay Estabrook <jay.estabrook@hp.com>
+Subject: Re: alpha compile failure (srm_printk)
+In-Reply-To: <20070605231712.ff1df46f.akpm@linux-foundation.org>
+Message-ID: <Pine.SOC.4.64.0707281950340.20474@math.ut.ee>
+References: <Pine.SOC.4.64.0706041419470.7370@math>
+ <20070605231712.ff1df46f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Retested this compile error with todays 2.6.23-rc1+git, still the same.
 
-
-On Sat, 28 Jul 2007, Linus Torvalds wrote:
+> >   LD      arch/alpha/boot/bootloader
+> > arch/alpha/boot/bootloader.lds:25: undefined symbol `srm_printk' referenced in expression
 > 
-> And it's the *top*level* code that selects HOTPLUG_CPU. Through 
-> SUSPEND_SMP (which will select HOTPLUG_CPU) and SOFTWARE_SUSPEND.
+> I was unable to repeoduce these errors on 2.6.22-rc4 with your config.
 
-In other words, the problem seems to be that 
+Hmm. Just make works, make bootimage does not. I debugged this further 
+today and I can not see how it can work.
 
-	kernel/power/main.c:
-		suspend_devices_and_enter()
+The link command in question is
+ld   -static -uvsprintf -T   arch/alpha/boot/bootloader.lds arch/alpha/boot/head.o arch/alpha/boot/main.o -o arch/alpha/boot/bootloader
+and it still tells
+arch/alpha/boot/bootloader.lds:25: undefined symbol `srm_printk' referenced in expression
 
-does the proper "disable/enable_nonboot_cpus()", but it does so without 
-having enabled CPU hotplug.
+arch/alpha/boot/bootloader.lds contains a single related line referring 
+to srm_printk:
+printk = srm_printk;
+This only seems to define an alias to srm_printk so not important (and 
+unused)?
 
-And you seem to think that it's ACPI that should enable the hotplug, even 
-though the code that actually needs it is _outside_ ACPI. And I think 
-that's wrong, and that this is a bug.
+nm arch/alpha/boot/head.o outputs
+0000000000000000 T __start
+0000000000000108 T halt
+0000000000000110 T move_stack
+                 U start_kernel
+0000000000000060 T switch_to_osf_pal
+0000000000000100 T tbi
+0000000000000020 T wrent
+0000000000000040 T wrkg
 
-So I think the real issue is that we allow that 
-"suspend_devices_and_enter()" code to be compiled without HOTPLUG_CPU in 
-the first place. It's not supposed to work that way.
+so no mention of srm_printk.
 
-Of course, it may well be that other architectures can happily suspend 
-even with multiple CPU's active, which may be the cause of this mess. But 
-I really think it shouldn't be ACPI that has to select the CPU hotplug, 
-since it's not ACPI that _uses_ it in the first place.
+nm arch/alpha/boot/main.o outputs
+                 U _end
+                 U callback_close
+                 U callback_getenv
+                 U callback_open
+                 U callback_read
+0000000000000000 G hwrpb
+0000000000000000 T pal_init
+0000000000000000 b pcb_va
+                 U srm_printk
+0000000000000130 T start_kernel
+                 U strcpy
+                 U switch_to_osf_pal
 
-Rafael: making a config option for STR (the same way we have a config 
-option for hibernate), and just not allowing it on SMP without HOTPLUG_CPU 
-seems to be the right thing. Len is right in that we do insane things 
-right now (trying to STR with multiple CPU's still active), and I just 
-don't think he's the one that should work around it!
+and the U srm_printk is breaking things. main.c actually uses srm_printk 
+inside so it really needs to link one in. I do not see where that 
+srm_printk could come from? The only implementation seems to be in 
+arch/alpha/lib/srm_printk.c that goes into arch/alpha/lib/lib.a.. maybe 
+this is forgotten?
 
-		Linus
+arch/alpha/boot/Makefile contains different link rules for bootloader vs 
+bootpheader and bootpzheader - the others also have $(LIBS_Y). However, 
+as trial and error showed, adding $(LIBS_Y) to get lib/lib.a does not 
+work - I got new unresolved symbols (__kmalloc or some other malloc 
+variant).
+
+So, can anyone guide me further - where should srm_printk come from in 
+bootloader image?
+
+-- 
+Meelis Roos (mroos@linux.ee)
