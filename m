@@ -1,110 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbXG1SFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbXG1SKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbXG1SFx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 14:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXG1SFq
+	id S1756591AbXG1SKv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 14:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbXG1SKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 14:05:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44474 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752447AbXG1SFp (ORCPT
+	Sat, 28 Jul 2007 14:10:44 -0400
+Received: from pfepc.post.tele.dk ([195.41.46.237]:34781 "EHLO
+	pfepc.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754260AbXG1SKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 14:05:45 -0400
-Date: Sat, 28 Jul 2007 11:05:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Jonathan Jessup <jonathanjessup@gmail.com>,
-       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, lkml@metanurb.dk
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-In-Reply-To: <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
+	Sat, 28 Jul 2007 14:10:43 -0400
+Subject: Re: Linus 2.6.23-rc1
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
+In-Reply-To: <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
 References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
-  <Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
- <954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
- <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	 <1185588279.1654.1.camel@localhost>
+	 <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+	 <1185615848.13701.16.camel@localhost>
+	 <alpine.LFD.0.999.0707281035390.3442@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 28 Jul 2007 20:07:35 +0200
+Message-Id: <1185646055.13701.23.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 28 Jul 2007, Jan Engelhardt wrote:
+On Sat, 2007-07-28 at 10:50 -0700, Linus Torvalds wrote:
 > 
-> You cannot please everybody in the scheduler question, that is clear,
-> then why not offer dedicated scheduling alternatives (plugsched comes to mind)
-> and let them choose what pleases them most, and handles their workload best?
+> On Sat, 28 Jul 2007, Kasper Sandberg wrote:
+> >
+> > First off, i've personally run tests on many more machines than my own,
+> > i've had lots of people try on their machines, and i've seen totally
+> > unrelated posts to lkml, plus i've seen the experiences people are
+> > writing about on IRC. Frankly, im not just thinking of myself.
+> 
+> Ok, good. Has anybody tried to figure out why 3D games seem to be such a 
+> special case? 
+> 
+> I know Ingo looked at it, and seemed to think that he found and fixed 
+> something. But it sounds like it's worth a lot more discussion.
+> 
 
-This is one approach, but it's actually one that I personally think is  
-often the worst possible choice. 
+Yes, but the various patches i've recieved seems to not solve it, it
+simply changed the load at which CFS seemed to perform well.
 
-Why? Because it ends up meaning that you never get the cross-pollination 
-from different approaches (they stay separate "modes"), and it's also 
-usually really bad for users in that it forces the user to make some 
-particular choice that the user is usually not even aware of.
+On irc there has been wild speculation as to whether its the
+sched_yield() stuff in most 3d drivers, but my tests with stubbing it
+out, and altering behavior has not changed anything.
 
-So I personally think that it's much better to find a setup that works 
-"well enough" for people, without having modal behaviour. People complain 
-and gripe now, but what people seem to be missing is that it's a journey, 
-not an end-of-the-line destination. We haven't had a single release kernel 
-with the new scheduler yet, so the only people who have tried it are 
-either
+> > Okay, i wasnt going to ask, but ill do it anyway, did you even read the
+> > threads about SD?
+> 
+> I don't _ever_ go on specialty mailing lists. I don't read -mm, and I 
+> don't read the -fs mailing lists. I don't think they are interesting. 
+> 
+> And I tried to explain why: people who concentrate on one thing tend to 
+> become this self-selecting group that never looks at anything else, and 
+> then rejects outside input from people who hadn't become part of the "mind 
+> meld". 
+> 
+> That's what I think I saw - I saw the reactions from where external people 
+> were talking and cc'ing me.
+> 
+> And yes, it's quite possible that I also got a very one-sided picture of 
+> it. I'm not disputing that. Con was also ill for a rather critical period, 
+> which was certainly not helping it all.
+> 
+> > Con was extremely polite to everyone, and he did work
+> > with a multitude of people, you seem to be totally deadlocked into the
+> > ONE incident with a person that was unhappy with SD, simply for being a
+> > fair scheduler.
+> 
+> Hey, maybe that one incident just ended up being a rather big portion of 
+> what I saw. Too bad. That said, the end result (Con's public gripes about 
+> other kernel developers) mostly reinforced my opinion that I did the right 
+> choice.
+> 
+> But maybe you can show a better side of it all. I don't think _any_ 
+> scheduler is perfect, and almost all of the time, the RightAnswer(tm) ends 
+> up being not "one or the other", but "somewhere in between".
+> 
+> It's not like we've come to the end of the road: the baseline has just 
+> improved. If you guys can show that SD actually is better at some loads, 
+> without penalizing others, we can (and will) revisit this issue.
 
- (a) interested in schedulers in the first place (which I think is *not* a 
-     good subset, because they have very specific expectations of what is 
-     right and what is wrong, and they come into the whole thing with that 
-     mental baggage)
+well, as far as my tests show, the only real difference between SD and
+CFS in terms of performance, is 3d, where both will deliver basically
+the same FPS in a given application, SD does it smooth, which is the
+best way to explain it, what happens with CFS, as i experience it, is
+that it seems to burstly allocate ressources.
 
- (b) people who test -rc1 kernels (I love you guys, but sadly, you're not 
-     nearly as common as I'd like ;)
+> 
+> So what you should take away from this is that: from what I saw over the 
+> last couple of months, it really wasn't much of a decision. The difference 
+> in how Ingo and Con reacted to peoples reports was pretty stark. And no, I 
+> haven't followed the ck mailing list, and so yes, I obviously did get just 
+> a part of the picture, but the part I got was pretty damn unambiguous.
 
-so the fact is, we'll find out more information about where CFS falls 
-down, and where it does well,  and we'll be able to *fix* it and tweak it.
+I really think you should try read the SD and RSDL threads on lkml
+again, the only place where con havent been extremely fourthcoming was
+deep in the thread where Mike was unhappy with SD not giving X more
+prioity than fairness dictates..
 
-In contrast, if you go for a modal approach, you tend to always fixate 
-those two modes forever, and you'll never get something that works well: 
-people have to switch modes when they switch workloads.
+> 
+> But at the same time, no technical decision is ever written in stone. It's 
+> all a balancing act. I've replaced the scheduler before, I'm 100% sure 
+> we'll replace it again. Schedulers are actually not at all that important 
+> in the end: they are a very very small detail in the kernel.
+> 
+> 				Linus
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-[ This, btw, has nothing to do with schedulers per se. We have had these 
-  exact same issues in the memory management too - which is a lot more 
-  complex than scheduling, btw. The whole page replacement algorithm is 
-  something where you could easily have "specialized" algorithms in order 
-  to work really well under certain loads, but exactly as with scheduling, 
-  I will argue that it's a lot better to be "good across a wide swath of 
-  loads" than to try to be "perfect in one particular modal setup". ]
-
-This is also, btw, why I think that people who argue for splitting desktop 
-kernels from server kernels are total morons, and only show that they 
-don't know what the hell they are talking about.
-
-The fact is, the work we've done on server loads has improved the desktop 
-experience _immensely_, with all the scalability work (or the work on 
-large memory configurations, etc etc) that went on there, and that used to 
-be totally irrelevant for the desktop.
-
-And btw, the same is very much true in reverse: a lot of the stuff that 
-was done for desktop reasons (hotplug etc) has been a _huge_ boon for the 
-server side, and while there were certainly issues that had to be resolved 
-(the sysfs stuff so central to the hotplug model used tons of memory when 
-you had ten thousand disks, and server people were sometimes really 
-unhappy), a lot of the big improvements actually happen because somethng 
-totally _unrelated_ needed them, and then it just turns out that it's good 
-for the desktop too, even if it started out as a server thing or vice 
-versa.
-
-This is why the whole "modal" mindset is stupid. It basically freezes a 
-choice that shouldn't be frozen. It sets up an artificial barrier between 
-two kinds of uses (whether they be about "server" vs "desktop" or "3D 
-gaming" vs "audio processing", or anything else), and that frozen choice 
-actually ends up being a barrier to development in the long run.
-
-So "modal" things are good for fixing behaviour in the short run. But they 
-are a total disaster in the long run, and even in the short run they tend 
-to have problems (simply because there will be cases that straddle the 
-line, and show some of _both_ issues, and now *neither* mode is the right 
-one)
-
-			Linus
