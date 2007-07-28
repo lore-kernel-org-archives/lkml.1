@@ -1,60 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965509AbXG1CSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936044AbXG1Cgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965509AbXG1CSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 22:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933056AbXG1CSs
+	id S936044AbXG1Cgg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Jul 2007 22:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754174AbXG1Cg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 22:18:48 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:51885 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932619AbXG1CSr (ORCPT
+	Fri, 27 Jul 2007 22:36:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48800 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753085AbXG1Cg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 22:18:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=GZNh++LUQ1kds8fq1RFjhYdEAg9x2B5BVm4yST0nnG6tWTORO6GB/cSsZLNzlAZwV/CvnfQTMOdX57d1v8XER7kfTEzDyfyQdujh6Tr+94696vVryZdH5DJQMdGj6UCZmMhrM1yBUVXl5PX56BgTbDjvblhHjHU1kPJpe1bobEc=
-Subject: Re: Problems with framebuffer in 2.6.22-git17
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Adrian McMenamin <adrianmcmenamin@gmail.com>
-Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
-       lethal@users.sourceforge.net
-In-Reply-To: <1185588887.26603.42.camel@daplas>
-References: <92a12cdb0707221141i4398d6fdxa7994c5f1f809b0a@mail.gmail.com>
-	 <8b67d60707241445l2764d9f1odb72848342135048@mail.gmail.com>
-	 <1185406433.5046.23.camel@daplas>
-	 <92a12cdb0707271247s727993b8i33999a9652b2ca20@mail.gmail.com>
-	 <92a12cdb0707271318t141ee32bs69cb9dab22eabba2@mail.gmail.com>
-	 <1185571890.26603.7.camel@daplas>
-	 <92a12cdb0707271525i46970157ke1b2b2e6575682d6@mail.gmail.com>
-	 <1185578576.26603.16.camel@daplas>
-	 <92a12cdb0707271732l1d61f0aajfbd72c62d7ded3b6@mail.gmail.com>
-	 <1185583925.26603.24.camel@daplas>
-	 <92a12cdb0707271806q60fcaa91s77a628b31cd65b4d@mail.gmail.com>
-	 <1185588887.26603.42.camel@daplas>
-Content-Type: text/plain
-Date: Sat, 28 Jul 2007 10:18:38 +0800
-Message-Id: <1185589118.26603.45.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Jul 2007 22:36:26 -0400
+Date: Fri, 27 Jul 2007 19:35:58 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Kasper Sandberg <lkml@metanurb.dk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, CK Mailinglist <ck@vds.kolivas.org>
+Subject: Re: Linus 2.6.23-rc1
+In-Reply-To: <1185588279.1654.1.camel@localhost>
+Message-ID: <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <1185588279.1654.1.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-07-28 at 10:14 +0800, Antonino A. Daplas wrote:
-> On Sat, 2007-07-28 at 02:06 +0100, Adrian McMenamin wrote:
-> > On 28/07/07, Antonino A. Daplas <adaplas@gmail.com> wrote:
-> > 
-> > >
 
-> tmp = transp << var->transp.offset | red << var->red.offset |
-> 	green << var->green.offset | blue << var->green.offset;
->  
 
-The above should be:
+On Sat, 28 Jul 2007, Kasper Sandberg wrote:
+>
+> Im still not so keen about this, Ingo never did get CFS to match SD in
+> smoothness for 3d applications, where my test subjects are quake(s),
+> world of warcraft via wine, unreal tournament 2004. And this is despite
+> many patches he sent me to try and tweak it.
 
-tmp = regno << var->transp.offset | regno << var->red.offset |
-	regno << var->green.offset | regno << var->green.offset;
- 
-Tony
+You realize that different people get different behaviour, don't you? 
+Maybe not.
 
+People who think SD was "perfect" were simply ignoring reality. Sadly, 
+that seemed to include Con too, which was one of the main reasons that I 
+never ended entertaining the notion of merging SD for very long at all: 
+Con ended up arguing against people who reported problems, rather than 
+trying to work with them.
+
+Andrew also reported an oops in the scheduler when SD was merged into -mm, 
+so there were other issues.
+
+> As far as im concerned, i may be forced to unofficially maintain SD for 
+> my own systems(allthough lots in the gaming community is bound to be 
+> interrested, as it does make games lots better)
+
+You know what? You can do whatever you want to. That's kind of the point 
+of open source. Keep people honest by having alternatives.
+
+But the the thing is, if you want to do a good job of doing that, here's a 
+big hint: instead of keeping to your isolated world, instead of just 
+talking about your own machine and ignoring other peoples machines and 
+issues and instead of just denying that problems may exist, and instead of 
+attacking people who report problems, how about working with them?
+
+That was where the SD patches fell down. They didn't have a maintainer 
+that I could trust to actually care about any other issues than his own.
+
+So here's a hint: if you think that your particular graphics card setup is 
+the only one that matters, it's not going to be very interesting for 
+anybody else. 
+
+[ I realize that this comes as a shock to some of the SD people, but I'm 
+  told that there was a university group that did some double-blind 
+  testing of the different schedulers - old, SD and CFS - and that 
+  everybody agreed that both SD and CFS were better than the old, but that 
+  there was no significant difference between SD and CFS. You can try 
+  asking Thomas Gleixner for more details. ]
+
+I'm happy that SD was perfect for you. It wasn't for others, and it had 
+nobody who was even interested in trying to solve those issues. 
+
+As a long-term maintainer, trust me, I know what matters. And a person who 
+can actually be bothered to follow up on problem reports is a *hell* of a 
+lot more important than one who just argues with reporters.
+
+			Linus
