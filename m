@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758586AbXG1WfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758644AbXG1Wi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758586AbXG1WfW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 18:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757353AbXG1WfL
+	id S1758644AbXG1Wi0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 18:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbXG1WiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 18:35:11 -0400
-Received: from main.gmane.org ([80.91.229.2]:44536 "EHLO ciao.gmane.org"
+	Sat, 28 Jul 2007 18:38:19 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53337 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757318AbXG1WfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 18:35:09 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Alex Besogonov <cyberax@elewise.com>
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-Date: Sun, 29 Jul 2007 01:16:20 +0300
-Message-ID: <f8gf7v$o89$1@sea.gmane.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185588279.1654.1.camel@localhost> <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org> <Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net> <954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com> <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org> <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org> <20070728225148.a0e58fdd.diegocg@gmail.com> <alpine.LFD.0.999.0707281401280.3442@woody.linux-foundation.org>
+	id S1756249AbXG1WiT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 18:38:19 -0400
+Subject: Re: [patch] mm: reduce pagetable-freeing latencies
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0707280627110.26545@blonde.wat.veritas.com>
+References: <20070724083855.GA858@elte.hu>
+	 <20070724015441.8604d85d.akpm@linux-foundation.org>
+	 <1185270045.5439.249.camel@localhost.localdomain>
+	 <p73abtmt2y7.fsf@bingen.suse.de>
+	 <1185312559.5439.276.camel@localhost.localdomain>
+	 <1185345850.8197.64.camel@twins>
+	 <1185586601.5495.299.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0707280627110.26545@blonde.wat.veritas.com>
+Content-Type: text/plain
+Date: Sun, 29 Jul 2007 08:36:20 +1000
+Message-Id: <1185662181.5495.325.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: ip.82.144.205.104.stat-3.volia.net
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-In-Reply-To: <alpine.LFD.0.999.0707281401280.3442@woody.linux-foundation.org>
-Cc: ck@vds.kolivas.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> I personally feel that modal behaviour is bad, so it would introduce what 
-> is in my opinion bad code, and likely result in problems not being found 
-> and fixed as well (because people would pick the thing that "works for 
-> them", and ignore the problems in the other module). 
-I'm sorry, but this argument doesn't hold water. It was invoked years 
-ago and turned out to be incorrect - the new CFS scheduler is not just a
-fixed old scheduler, it's a completely redesigned one.
 
--- 
-With respect,
-             Alex Besogonov (cyberax@elewise.com)
+> The onstack array seems fine to me, even if you do end up deciding on
+> an array of one.  Is there any evidence that it's a problem getting a
+> page for the freeing (other than in circumstances that are already
+> badly slowed down)?  It's obvious that we need a fallback route,
+> but optimizing throughput on that route seems premature.
+
+Hrm, no evidence of that so far indeed. I'm worried by the stack usage
+of the unmap_mapping_ranges() but appart from that, no.
+
+Appart from that, yeah, I suppose we can have a macro defining how many
+on-stack backup we have and adjust it if we see that being a problem.
+I'm not fan of dynamic on-stack allocations.
+
+Ben.
+
 
