@@ -1,135 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXG1QRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbXG1QSX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXG1QRi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 12:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbXG1QR3
+	id S1754911AbXG1QSX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 12:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752635AbXG1QSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 12:17:29 -0400
-Received: from piware.de ([213.9.79.162]:53798 "EHLO box79162.elkhouse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751241AbXG1QR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 12:17:28 -0400
-Date: Sat, 28 Jul 2007 18:17:25 +0200
-From: Martin Pitt <martin.pitt@ubuntu.com>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Martin Pitt <martin.pitt@ubuntu.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, jeremy@goop.org, wwoods@redhat.com,
-       Ben Collins <ben.collins@ubuntu.com>
-Subject: Re: [PATCH 2/3] core_pattern: allow passing of arguments to user
-	mode helper when core_pattern is a pipe
-Message-ID: <20070728161725.GA5836@piware.de>
-References: <20070727200746.GC18946@hmsreliant.homelinux.net> <20070728092355.GA5808@piware.de> <20070728134627.GA10006@hmsreliant.homelinux.net>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="45Z9DzgjV8m4Oswq"
-Content-Disposition: inline
-In-Reply-To: <20070728134627.GA10006@hmsreliant.homelinux.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Sat, 28 Jul 2007 12:18:16 -0400
+Received: from mxout4.netvision.net.il ([194.90.9.27]:36374 "EHLO
+	mxout4.netvision.net.il" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbXG1QSP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 12:18:15 -0400
+Date: Sat, 28 Jul 2007 10:47:25 +0300
+From: Alon Ziv <lkml@nolaviz.org>
+Subject: [PATCH] Try harder to probe some finicky mice
+To: linux-kernel@vger.kernel.org
+Cc: Alon Ziv <alonz@nolaviz.org>, Alon Ziv <lkml@nolaviz.org>
+Message-id: <11856088452370-git-send-email-lkml@nolaviz.org>
+X-Mailer: git-send-email 1.5.2.146.gb75c6
+Content-transfer-encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Alon Ziv <alonz@nolaviz.org>
 
---45Z9DzgjV8m4Oswq
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Some rodents appear to be extra-finicky, and require both a PSMOUSE_RESET_DIS
+and a PSMOUSE_RESET_BAT before they are unconfused enough to be probed.
 
-Hi Neil,
+Signed-off-by: Alon Ziv <lkml@nolaviz.org>
+---
+ drivers/input/mouse/psmouse-base.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Neil Horman [2007-07-28  9:46 -0400]:
-> > I just want to mention a potential problem with this: If you first
-> > expand the macros (from pattern to corename) and then split
-> > corename into an argv, then this breaks macro expansions
-> > containing spaces.  This mostly affects the executable name, of
-> > course.
-> >=20
-> I never intended for this core_pattern argument passing to be able
-> to expand macros, other than the macros specified by the
-> core_pattern code.  If you want it to do that, we can address that
-> with a later patch.
+diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
+index b9f0fb2..ca039a5 100644
+--- a/drivers/input/mouse/psmouse-base.c
++++ b/drivers/input/mouse/psmouse-base.c
+@@ -651,6 +651,7 @@ static int psmouse_extensions(struct psmouse *psmouse,
+  * protocol probes. Note that we do full reset becuase some mice
+  * put themselves to sleep when see PSMOUSE_RESET_DIS.
+  */
++	ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_RESET_DIS);
+ 	psmouse_reset(psmouse);
+ 
+ 	if (max_proto >= PSMOUSE_IMEX && im_explorer_detect(psmouse, set_properties) == 0)
+-- 
+1.5.2.146.gb75c6
 
-No, I specifically mean the standard ones provided by
-format_corename(), such as %p (pid), %s (signal), or %e (executable
-name). I don't see a reason to provide additional functionality.
-
-> > In fact we considered this macro approach when doing the original
-> > patches in the Ubuntu kernel, but we eventually used environment
-> > variables because they are much easier and more robust to
-> > implement than doing a robust macro expansion (i. e. first split
-> > core_pattern into an argv and then call the macro expansion for
-> > each element).
-> >=20
-> I disagree. While it might be nice to be able to specify environment
-> variables as command line arguments, it would be much easier to just
-> let the core_pattern executable inherit the crashing processes
-> environment.  we don't do that currently, but we easily could.  That
-> way any information that the crashing process wants the dying
-> process to know can be inherited and vetted easily by apport (or
-> whatever the core_pattern points to).  I'll do a patch later for
-> that if you don't like it.
-
-I don't think that this will be necessary. After all, the crash
-handler can read all the environment from /proc/<pid>/ (and that's
-indeed what apport does to figure out relevant parts from the
-environment like the locale).
-
-It seems we misunderstood each other, I don't expect or want any new
-functionality in core_pattern. AN example might make it more clear:
-
-The original problem that we are trying to solve is the current
-behaviour of core_pattern expansion with pipes:
-
-  |/bin/crash --pid %p
-
-would try to execute the program '/bin/crash --pid 1234' instead of
-calling /bin/crash with ['--pid', '1234'] as argv, right? Your patch
-achieves the latter by splitting the formatted core dump string into
-an array (at spaces).
-
-I pointed out that this leads to problems when macro values contain
-spaces. This currently affects hostname (%h) (although this really
-should not happen in practice) and executable name (%e) (rare, but at
-least valid).  I. e. for an executable name "foo bar" your patch would
-expand
-
-  |/bin/crash %e
-
-to ['/bin/crash', 'foo', 'bar'] instead of ['/bin/crash', 'foo bar'].
-
-Of course this is a corner case, and personally I don't really care.
-I strive to keep the assumptions about the interface at a minimum, so
-right now Apport's only required input is the core dump itself (over
-stdin); signal and pid can be read from the environment, and if not
-present, they are read from the core dump.
-
-I did not defend Ubuntu's usage of environment variables, on the
-contrary. Using the standard macros is more explicit and elegant, and
-I welcome that change. I just pointed out the reason why we chose the
-environment variable approach initially.
-
-I just wanted to mention this little problem for the sake of
-correctness.
-
-Thank you, and have a nice weekend!
-
-Martin
-
---=20
-Martin Pitt        http://www.piware.de
-Ubuntu Developer   http://www.ubuntu.com
-Debian Developer   http://www.debian.org
-
---45Z9DzgjV8m4Oswq
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGq2wVDecnbV4Fd/IRAnTWAKCnUmvnHJ9rLs4giGA7ftMolB4lqACeP5Y2
-NXW60ZuLLgGcE87ar4Te74U=
-=9APC
------END PGP SIGNATURE-----
-
---45Z9DzgjV8m4Oswq--
