@@ -1,43 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752968AbXG1O2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbXG1Oqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752968AbXG1O2W (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 10:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbXG1O2O
+	id S1753305AbXG1Oqh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 10:46:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbXG1Oq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 10:28:14 -0400
-Received: from smtp161.iad.emailsrvr.com ([207.97.245.161]:42572 "EHLO
-	smtp161.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbXG1O2N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 10:28:13 -0400
-Message-ID: <46AB5222.1060404@gentoo.org>
-Date: Sat, 28 Jul 2007 10:26:42 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
-MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: zd1211b question.
-References: <200707280755.34930.gene.heskett@gmail.com>
-In-Reply-To: <200707280755.34930.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 28 Jul 2007 10:46:28 -0400
+Received: from mo10.iij4u.or.jp ([210.138.174.78]:40902 "EHLO mo10.iij4u.or.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751849AbXG1Oq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 10:46:27 -0400
+Message-Id: <200707281446.l6SEkGOD003581@mbox.iij4u.or.jp>
+To: James.Bottomley@SteelEye.com, nix.or.die@googlemail.com
+Cc: linux-kernel@vger.kernel.org, fujita.tomonori@lab.ntt.co.jp,
+       linux-scsi@vger.kernel.org, tomof@acm.org
+Subject: Re: BSG: BLK_DEV_BSG=y , BLOCK=n compile error
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <46AB3C6A.2070209@googlemail.com>
+References: <46AB3C6A.2070209@googlemail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Date: Sat, 28 Jul 2007 23:45:43 +0900
+X-Dispatcher: imput version 20040704(IM147)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> This last one is the right set of numbers.  However, I'll be dipped but I 
-> can't find anyplace in a make xconfig in the 2.6.22.1-rt9 tree, to turn on 
-> the building of that driver.
+From: Gabriel C <nix.or.die@googlemail.com>
+Subject: BSG: BLK_DEV_BSG=y , BLOCK=n compile error
+Date: Sat, 28 Jul 2007 14:54:02 +0200
 
-Sounds like you haven't satisfied the dependencies or are looking in the 
-wrong menu.
+> Hi,
+> 
+> BSG does not compile without BLOCK set :
 
-Under menuconfig you can type: /ZD1211<enter>
+Thanks, this has already been addressed.
 
-That will tell you where abouts it resides, and it's dependencies.
+http://marc.info/?l=linux-kernel&m=118534836402440&w=2
 
-You'll also need firmware with this driver. See 
-http://www.linuxwireless.org/en/users/Drivers/zd1211rw
 
-Daniel
+James, could you add the patch to scsi-rc-fixes? Thanks.
+
+---
+From: Paul Mundt <lethal@linux-sh.org>
+Subject: [PATCH] bsg: Fix build for CONFIG_BLOCK=n
+
+BLK_DEV_BSG was added outside of the if BLOCK check, which allows it to
+be enabled when CONFIG_BLOCK=n. This leads to many screenlengths of
+errors, starting with a parse error on the request_queue_t definition.
+Obviously this wasn't intended for CONFIG_BLOCK=n usage, so just move the
+option back in to the block.
+
+Caught with a randconfig on sh.
+
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ block/Kconfig |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/block/Kconfig b/block/Kconfig
+index ca2ef4e..2484e0e 100644
+--- a/block/Kconfig
++++ b/block/Kconfig
+@@ -49,8 +49,6 @@ config LSF
+ 
+ 	  If unsure, say Y.
+ 
+-endif # BLOCK
+-
+ config BLK_DEV_BSG
+ 	bool "Block layer SG support v4 (EXPERIMENTAL)"
+ 	depends on EXPERIMENTAL
+@@ -64,4 +62,6 @@ config BLK_DEV_BSG
+ 	protocols (e.g. Task Management Functions and SMP in Serial
+ 	Attached SCSI).
+ 
++endif # BLOCK
++
+ source block/Kconfig.iosched
+-- 
+1.5.2.4
+
