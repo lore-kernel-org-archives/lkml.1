@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbXG1RFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbXG1RLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754477AbXG1RFZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 13:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbXG1RFM
+	id S1754786AbXG1RLj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 13:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbXG1RLa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 13:05:12 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:53219 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750723AbXG1RFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 13:05:10 -0400
-Date: Sat, 28 Jul 2007 20:05:08 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Jay Estabrook <jay.estabrook@hp.com>
-Subject: Re: alpha compile failure (srm_printk)
-In-Reply-To: <20070605231712.ff1df46f.akpm@linux-foundation.org>
-Message-ID: <Pine.SOC.4.64.0707281950340.20474@math.ut.ee>
-References: <Pine.SOC.4.64.0706041419470.7370@math>
- <20070605231712.ff1df46f.akpm@linux-foundation.org>
+	Sat, 28 Jul 2007 13:11:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:54267 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751995AbXG1RL3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 13:11:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=PeF5Hf0frR4ZC/Xs5398P0/UkFHrf1amxrR69iFOxHuAY6YrnX44DvlBygBmtuYzvWsYfggmCLYAGMHvYZ/bO3D1HRBQYMY2ZxMUw8tj/o6VsWZJTGXD8VLA4E9IZVI+QvOZ2pD3wFLyH0aCvJNqJaiK1klij0QXGrOp3VVSTBk=
+Message-ID: <46AB77CA.1060705@googlemail.com>
+Date: Sat, 28 Jul 2007 19:07:22 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>,
+       Bob Picco <bob.picco@hp.com>, Andy Whitcroft <apw@shadowen.org>,
+       William Irwin <bill.irwin@oracle.com>, Tony Luck <tony.luck@intel.com>
+Subject: mm/sparse.c compile error ( Re: 2.6.23-rc1-mm1 )
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Retested this compile error with todays 2.6.23-rc1+git, still the same.
+Hi,
 
-> >   LD      arch/alpha/boot/bootloader
-> > arch/alpha/boot/bootloader.lds:25: undefined symbol `srm_printk' referenced in expression
-> 
-> I was unable to repeoduce these errors on 2.6.22-rc4 with your config.
+next randconfig error ( http://194.231.229.228/MM/randconfig-auto-87.mm_sparse.error )
 
-Hmm. Just make works, make bootimage does not. I debugged this further 
-today and I can not see how it can work.
 
-The link command in question is
-ld   -static -uvsprintf -T   arch/alpha/boot/bootloader.lds arch/alpha/boot/head.o arch/alpha/boot/main.o -o arch/alpha/boot/bootloader
-and it still tells
-arch/alpha/boot/bootloader.lds:25: undefined symbol `srm_printk' referenced in expression
+...
 
-arch/alpha/boot/bootloader.lds contains a single related line referring 
-to srm_printk:
-printk = srm_printk;
-This only seems to define an alias to srm_printk so not important (and 
-unused)?
+mm/sparse.c: In function 'sparse_init':
+mm/sparse.c:482: error: implicit declaration of function 'sparse_early_usemap_alloc'
+mm/sparse.c:482: warning: assignment makes pointer from integer without a cast
+make[1]: *** [mm/sparse.o] Error 1
+make: *** [mm] Error 2
+make: *** Waiting for unfinished jobs....
 
-nm arch/alpha/boot/head.o outputs
-0000000000000000 T __start
-0000000000000108 T halt
-0000000000000110 T move_stack
-                 U start_kernel
-0000000000000060 T switch_to_osf_pal
-0000000000000100 T tbi
-0000000000000020 T wrent
-0000000000000040 T wrkg
+...
 
-so no mention of srm_printk.
 
-nm arch/alpha/boot/main.o outputs
-                 U _end
-                 U callback_close
-                 U callback_getenv
-                 U callback_open
-                 U callback_read
-0000000000000000 G hwrpb
-0000000000000000 T pal_init
-0000000000000000 b pcb_va
-                 U srm_printk
-0000000000000130 T start_kernel
-                 U strcpy
-                 U switch_to_osf_pal
+guessing while this patch , but I am not really sure :
 
-and the U srm_printk is breaking things. main.c actually uses srm_printk 
-inside so it really needs to link one in. I do not see where that 
-srm_printk could come from? The only implementation seems to be in 
-arch/alpha/lib/srm_printk.c that goes into arch/alpha/lib/lib.a.. maybe 
-this is forgotten?
+fix-corruption-of-memmap-on-ia64-sparsemem-when-mem_section-is-not-a-power-of-2.patch
 
-arch/alpha/boot/Makefile contains different link rules for bootloader vs 
-bootpheader and bootpzheader - the others also have $(LIBS_Y). However, 
-as trial and error showed, adding $(LIBS_Y) to get lib/lib.a does not 
-work - I got new unresolved symbols (__kmalloc or some other malloc 
-variant).
 
-So, can anyone guide me further - where should srm_printk come from in 
-bootloader image?
+Regards,
 
--- 
-Meelis Roos (mroos@linux.ee)
+Gabriel C
