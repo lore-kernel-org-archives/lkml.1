@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbXG1QiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755885AbXG1Qkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755768AbXG1QiQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 12:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753113AbXG1QiH
+	id S1755885AbXG1Qkq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 12:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbXG1Qkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 12:38:07 -0400
-Received: from aa014msr.fastwebnet.it ([85.18.95.74]:56117 "EHLO
-	aa014msr.fastwebnet.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbXG1QiG (ORCPT
+	Sat, 28 Jul 2007 12:40:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:28427 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbXG1Qkj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 12:38:06 -0400
-X-Greylist: delayed 360 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 12:38:06 EDT
-Date: Sat, 28 Jul 2007 22:33:06 +0200
-From: Edward Ando <edwardando@fastwebnet.it>
-To: linux-kernel@vger.kernel.org
-Subject: Removing the prism54 module
-Message-ID: <20070728223306.786b47a9@ed.anywhere>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.8.20; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Sat, 28 Jul 2007 12:40:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=kGA9u1o6m91gl08PgGADYApFtV/ssLxPKwFtVN0dFuv4DT7SbMrMpSoW4nGFqeHB5ZBCQdW2F+claWwr5ylTjzN4ADtlxAUPywQk1zZrg/rzubEM2liq97Kl7vzkEldapYCjRZy6VxB3i8MMcnC6y+d63E3OsqBlvlRvOgS/5JI=
+Message-ID: <46AB7091.3030508@googlemail.com>
+Date: Sat, 28 Jul 2007 18:36:33 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, "Nelson, Shannon" <shannon.nelson@intel.com>
+Subject: DCA=n , INTEL_IOATDMA=y compile error ( Re: 2.6.23-rc1-mm1 )
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All,
-I am trying to set up software suspend 2 (TuxOnIce now it seems). This
-has decided it wants to remove the prism54 module before starting the
-hibernate process.
+Hi,
 
-When it tries to do this, (or when I manually do: "ifconfig eth1
-down"), I start getting these messages on all terminals, ad infinitum:
+I got this error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-86.ioat )
 
-kernel: unregister_netdevice: waiting for eth1 to become free. Usage
-count = 4
+...
 
-I asked a bit on #prism54 on freenode, and so I upgraded to
-linux 2.6.22.1 from kernel.org, always building prism54 as a module,
-but the problem continues.
+  LD      .tmp_vmlinux1
+drivers/built-in.o: In function `ioat_shutdown_functionality':
+ioat.c:(.text+0x21ed32): undefined reference to `unregister_dca_provider'
+ioat.c:(.text+0x21ed3a): undefined reference to `free_dca_provider'
+drivers/built-in.o: In function `ioat_dca_init':
+(.text+0x2201f3): undefined reference to `alloc_dca_provider'
+drivers/built-in.o: In function `ioat_dca_init':
+(.text+0x22022e): undefined reference to `register_dca_provider'
+drivers/built-in.o: In function `ioat_dca_init':
+(.text+0x22023b): undefined reference to `free_dca_provider'
+make: *** [.tmp_vmlinux1] Error 1
 
-I have tried doing "ifconfig eth1 down" before rmmod, but this does not
-help.
+...
 
-If you have any hints or answers as to what I should do, that would be
-great. I think I have subscribed successfully to this mailing list, but
-any CCs to this address are also welcome.
 
-Thanks in advance,
-Yours,
+Regards,
 
-Edward Ando
+Gabriel C
