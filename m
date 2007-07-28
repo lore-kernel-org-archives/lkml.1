@@ -1,65 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757779AbXG1U77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757664AbXG1VDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757779AbXG1U77 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 16:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbXG1U7w
+	id S1757664AbXG1VDq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 17:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755533AbXG1VDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 16:59:52 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:53327 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752196AbXG1U7v (ORCPT
+	Sat, 28 Jul 2007 17:03:39 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:51656
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752491AbXG1VDh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 16:59:51 -0400
-Date: Sat, 28 Jul 2007 22:59:50 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Diego Calleja <diegocg@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Jessup <jonathanjessup@gmail.com>,
-       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, lkml@metanurb.dk
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-In-Reply-To: <20070728225148.a0e58fdd.diegocg@gmail.com>
-Message-ID: <Pine.LNX.4.64.0707282259220.15125@fbirervta.pbzchgretzou.qr>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
- <1185588279.1654.1.camel@localhost> <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
- <Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
- <954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
- <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
- <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
- <20070728225148.a0e58fdd.diegocg@gmail.com>
+	Sat, 28 Jul 2007 17:03:37 -0400
+Date: Sat, 28 Jul 2007 14:00:21 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Rene Herman <rene.herman@gmail.com>
+cc: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+In-Reply-To: <46AB166A.2000300@gmail.com>
+Message-ID: <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+ <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net>
+ <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
+ <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com>
+ <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-351318019-1185656390=:15125"
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, 28 Jul 2007, Rene Herman wrote:
 
----699020219-351318019-1185656390=:15125
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-
-On Jul 28 2007 22:51, Diego Calleja wrote:
->El Sat, 28 Jul 2007 11:05:25 -0700 (PDT), Linus Torvalds <torvalds@linux-foundation.org> escribió:
+> On 07/28/2007 10:55 AM, david@lang.hm wrote:
 >
->> So "modal" things are good for fixing behaviour in the short run. But they 
->> are a total disaster in the long run, and even in the short run they tend 
->> to have problems (simply because there will be cases that straddle the 
->> line, and show some of _both_ issues, and now *neither* mode is the right 
->> one)
+>>  it looks to me like unless the code was really bad (and after 23 months in
+>>  -mm it doesn't sound like it is)
 >
->I fully agree with this, but plugsched could have avoided this useless "division"
->on the topic of SD vs CFS. IMO that counts as an advantage, too ;)
+> Not to sound pretentious or anything but I assume that Andrew has a fairly 
+> good overview of exactly how broken -mm can be at times. How many -mm users 
+> use it anyway? He himself said he's not convinced of usefulness having not 
+> seen it help for him (and notice that most developers are also users), turned 
+> it off due to it annoying him at some point and hasn't seen a serious 
+> investigation into potential downsides.
+
+if that was the case then people should be responding to the request to 
+get it merged with 'but it caused problems for me when I tried it'
+
+I haven't seen any comments like that.
+
+>>  that the only significant con left is the potential to mask other
+>>  problems.
 >
+> Which is not a madeup issue, mind you. As an example, I just now tried GNU 
+> locate and saw it's a complete pig and specifically unsuitable for the low 
+> memory boxes under discussion. Upon completion, it actually frees enough 
+> memory that swap-prefetch _could_ help on some boxes, while the real issue is 
+> that they should first and foremost dump GNU locate.
 
-It's like CONFIG_HZ - more or less often debated, and now we have everyone
-happy by giving them the choice.
+I see the conclusion as being exactly the opposite.
 
+here is a workload with some badly designed userspace software that the 
+kernel can make much more pleasent for users.
 
+arguing that users should never use badly designed software in userspace 
+doesn't seem like an argument that will gain much traction. I'm not saying 
+the kernel needs to fix the software itself (ala the sched_yeild issues), 
+but the kernel should try and keep such software from hurting the rest of 
+the system where it can.
 
+in this case it can't help it while the bad software is running, but it 
+could minimize the impact after it finishes.
 
-	Jan
--- 
----699020219-351318019-1185656390=:15125--
+>>  however there are many legitimate cases where it is definantly dong the
+>>  right thing (swapout was correct in pushing out the pages, but now the
+>>  cause of that preasure is gone). the amount of benifit from this will vary
+>>  from situation to situation, but it's not reasonable to claim that this
+>>  provides no benifit (you have benchmark numbers that show it in synthetic
+>>  benchmarks, and you have user reports that show it in the real-worlk)
+>
+> I certainly would not want to argue anything of the sort no. As said a few 
+> times, I agree that swap-prefetch makes sense and has at least the potential 
+> to help some situations that you really wouldnt even want to try and fix any 
+> other way, simply because nothing's broken.
+
+so there is a legitimate situation where swap-prefetch will help 
+significantly, what is the downside that prevents it from being included? 
+(reading this thread it sometimes seems like the downside is that updatedb 
+shouldn't cause this problem and so if you fixed updatedb there wold be no 
+legitimate benifit, or alturnatly this patch doesn't help updatedb so 
+there's no legitimate benifit)
+
+>>  there are lots of things in the kernel who's job is to pre-fill the memroy
+>>  with data that may (or may not) be useful in the future. this is just
+>>  another method of filling the cache. it does so my saying "the user
+>>  wanted these pages in the recent past, so it's a reasonable guess to say
+>>  that the user will want them again in the future"
+>
+> Well, _that_ is what the kernel is already going to great lengths at doing, 
+> and it decided that those pages us poor overnight OO.o users want in in the 
+> morning weren't reasonable guesses. The kernel also won't any time soon be 
+> reading our minds, so any solution would need either user intervention (we 
+> could devise a way to tell the kernel "hey ho, I consider these pages to be 
+> very important -- try not to swap them out" possible even with a "and if you 
+> do, please pull them back in when possible") or we can let swap-prefetch do 
+> the "just in case" thing it is doing.
+
+it's not that they shouldn't have been swapped out (they should have 
+been), it's that the reason they were swapped out no longer exists.
+
+> While swap-prefetch may not be the be all end all of solutions I agree that 
+> having a machine sit around with free memory and applications in swap seems 
+> not too useful if (as is the case) fetched pages can be dropped immediately 
+> when it turns out swap-prefetch made the wrong decision.
+>
+> So that's for the concept. As to implementation, if I try and look at the 
+> code, it seems to be trying hard to really be free and as such, potential 
+> downsides seem limited. It's a rather core concept though and as such needs 
+> someone with a _lot_ more VM clue to ack. Sorry for not knowing, but who's 
+> maintaining/submitting the thing now that Con's not? He or she should 
+> preferably address any concerns it seems.
+
+I've seen it mentioned that there is still a maintainer but I missed who 
+it is, but I haven't seen any concerns that can be addressed, they all 
+seem to be 'this is a core concept, people need to think about it' or 'but 
+someone may find a better answer in the future' type of things. it's 
+impossible to address these concerns directly.
+
+David Lang
