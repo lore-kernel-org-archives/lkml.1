@@ -1,129 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbXG1FW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbXG1Fjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbXG1FW2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 01:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbXG1FWT
+	id S1754529AbXG1Fjl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 01:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbXG1Fjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 01:22:19 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:50554 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751391AbXG1FWS (ORCPT
+	Sat, 28 Jul 2007 01:39:31 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:46216 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752039AbXG1Fja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 01:22:18 -0400
-Message-ID: <46AAD1F7.50801@gmail.com>
-Date: Sat, 28 Jul 2007 07:19:51 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: Daniel Hazelton <dhazelton@enter.net>
-CC: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, B.Steinbrink@gmx.de
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com> <200707271628.46804.dhazelton@enter.net>
-In-Reply-To: <200707271628.46804.dhazelton@enter.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Sat, 28 Jul 2007 01:39:30 -0400
+To: chuck.lever@oracle.com
+CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       kzak@redhat.com, ericvh@gmail.com, lucho@ionkov.net,
+       zippel@linux-m68k.org, hpa@zytor.com, raven@themaw.net,
+       rathamahata@php4.ru, dhowells@redhat.com, sfrench@samba.org,
+       mhalcrow@us.ibm.com, phillip@hellewell.homeip.net,
+       hirofumi@mail.parknet.co.jp, mikulas@artax.karlin.mff.cuni.cz,
+       wli@holomorphy.com, shaggy@austin.ibm.com, vandrove@vc.cvut.cz,
+       trond.myklebust@fys.uio.no, aia21@cantab.net, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com, reiserfs-devel@vger.kernel.org,
+       bfennema@falcon.csc.calpoly.edu, dushistov@mail.ru,
+       xfs-masters@oss.sgi.com, arnd@arndb.de, holzheu@de.ibm.com
+In-reply-to: <46AA51CA.7030105@oracle.com> (message from Chuck Lever on Fri,
+	27 Jul 2007 16:12:58 -0400)
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu> <46AA51CA.7030105@oracle.com>
+Message-Id: <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Sat, 28 Jul 2007 07:37:09 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/27/2007 10:28 PM, Daniel Hazelton wrote:
-
-> Check the attitude at the door then re-read what I actually said:
-
-Attitude? You wanted attitude dear boy?
-
->>> Updatedb or another process that uses the FS heavily runs on a users
->>> 256MB P3-800 (when it is idle) and the VFS caches grow, causing memory
->>> pressure that causes other applications to be swapped to disk. In the
->>> morning the user has to wait for the system to swap those applications
->>> back in.
+> >> Some mount options are never passed to the kernel, and thus can't appear 
+> >> in /proc/mounts.  Examples include user, users, and _netdev for NFS.
+> > 
+> > These options control *who* may mount and *when* to mount.  They are
+> > not a property of the mount itself and are not added to /etc/mtab.
+> > 
+> > There's a "user=ID" option that is added to /etc/mtab in case of user
+> > mounts.  This identifies the owner of the mount, so that it can be
+> > unmounted by that user.  There are patches in -mm that enable the
+> > kernel to store this info.
+> > 
+> > Do you have other examples in mind?
 > 
-> I never said that it was the *program* itself - or *any* specific program (I 
-> used "Updatedb" because it has been the big name in the discussion) - doing 
-> the filling of memory. I actually said that the problem is that the kernel's 
-> caches - VFS and others - will grow *WITHOUT* *LIMIT*, filling all available 
-> memory. 
+> [no]quota comes to mind;
 
-WHICH SWAP-PREFETCH DOES NOT HELP WITH.
-WHICH SWAP-PREFETCH DOES NOT HELP WITH.
-WHICH SWAP-PREFETCH DOES NOT HELP WITH.
+These are passed to the kernel.
 
-And now finally get that through your thick scull or shut up, right fucking now.
+> also auto,
 
-> You want to know what causes the problem? The current design of the caches. 
-> They will extend without much limit, to the point of actually pushing pages 
-> to disk so they can grow even more. 
+This controls when a filesystem is mounted, same category as '_netdev'
 
-Due to being a generally nice guy, I am going to try _once_ more to try and 
-make you understand. Not twice, once. So pay attention. Right now.
+> [no]owner, [no]group,
 
-Those caches are NOT causing any problem under discussion. If any caches 
-grow to the point of causing swap-out, they have filled memory and 
-swap-prefetch cannot and will not do anything since it needs free (as in not 
-occupied by caches) memory. As such, people maintaining that swap-prefetch 
-helps their situation are not being hit by caches.
+These control who can mount the filesystem, same category as 'user' and 'users'
 
-The only way swap-prefetch can (and will) do anything is when something that 
-by itself takes up lots of memory runs and exits. So can we now please 
-finally drop the fucking red herring and start talking about swap-prefetch?
+> quiet/loud,
 
-If we accept that some of the people maintaining that swap-prefetch helps 
-them are not in fact deluded -- a bit of a stretch seeing as how not a 
-single one of them is substantiating anything -- we have a number of 
-slightly different possibilities for "something" in the above.
+I can't find these in the manual as universal options.  Quiet is
+defined for a couple of filesystems but with different meaning for
+each of them.
 
--- 1)
+> Aside: It's a confusing artifact of the mount CLI that these options 
+> control who/when but are passed to the mount command in the same way the 
+> other options are.
 
-It could be an inefficient updatedb. Although he isn't experiencing the 
-problem, Bjoern Steinbrink is posting numbers (weeee!) that show that at 
-least the GNU version spawns a large memory "sort" process meaning that on a 
-low-memory box updatedb itself can be what causes the observed problem.
+Yes, slightly.  Actually most of these options are just ignored on the
+command line.  They only have an affect in /etc/fstab.
 
-While in this situation switching to a different updatedb (slocate, mlocate) 
-obviously makes sense it's the kind of situation where swap-prefetch will help.
+The right behavior of mount(8) would probably be to error out on these
+options, since they make no sense on the command line.  But this is
+not a kernel issue.
 
--- 2)
-
-It could be something else entirely such as a backup run. I suppose people 
-would know if they were running anything of the sort though and wouldn't 
-blaim anything on updatedb.
-
-Other than that, it's again the situation where swap-prefetch would help.
-
--- 3)
-
-The something else entirely can also run _after_ updatedb, kicking out the 
-VFS caches and leaving free memory upon exit. I still suppose the same thing 
-as under (2) but this is the only way how updatedb / VFS caches can even be 
-part of any problem, if the _combined_ memory pressure is just enough to 
-make the difference.
-
-The direct problem is still just the "something else entirely" and needs 
-someone affected to tell us what it is.
-
-> I already did. You completely ignored it because I happened to use the magic 
-> words "updatedb" and "swap prefetch". 
-
-No I did not. This thread is about swap-prefetch and you used the magic 
-words VFS caches. I don't give a fryin' fuck if their filling is caused by 
-updatedb or the cat sleeping on the "find /<enter>" keys on your keyboard, 
-they're still not causing anything swap-prefetch helps with.
-
-This thread has seen input from a selection of knowledgeable people and 
-Morton was even running benchmarks to look at this supposed VFS cache 
-problem and not finding it. The only further input this thread needs is 
-someone affected by the supposed problem.
-
-Which I ofcourse notice in a followup of yours you are not either -- you're 
-just here to blabber, not to solve anything.
-
-Rene.
-
+Miklos
