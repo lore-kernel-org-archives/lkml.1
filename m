@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764678AbXG2O7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764792AbXG2PAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764678AbXG2O7v (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763024AbXG2O5Z
+	id S1764792AbXG2PAX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:00:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764043AbXG2O50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:57:25 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:45772 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764025AbXG2O5X (ORCPT
+	Sun, 29 Jul 2007 10:57:26 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47771 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763833AbXG2O5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:57:23 -0400
-Date: Sun, 29 Jul 2007 16:57:22 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Alexey Dobriyan <adobriyan@sw.ru>
-cc: akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] .gitignore update
-In-Reply-To: <20070726121547.GA16937@localhost.sw.ru>
-Message-ID: <Pine.LNX.4.64.0707291656380.9488@fbirervta.pbzchgretzou.qr>
-References: <20070726121547.GA16937@localhost.sw.ru>
+	Sun, 29 Jul 2007 10:57:24 -0400
+Date: Sun, 29 Jul 2007 16:57:01 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Hans de Goede <j.w.r.degoede@hhs.nl>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] make abituguru3_read_increment_offset() static
+Message-ID: <20070729145701.GJ16817@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+abituguru3_read_increment_offset() can become static.
 
-On Jul 26 2007 16:15, Alexey Dobriyan wrote:
->
->Somehow I ended up with the following in tree:
->
->	$ git status
->		...
->	# Untracked files:
->	#   (use "git add <file>..." to include in what will be committed)
->	#
->	#       fs/proc/root.o.FuMxJQ
->	#       net/ipv4/tcp_minisocks.o.geCDYR
->
->These are presumably temporary gcc files, which aren't interesting.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-But they should not be there by default! Or are they?
-Looks like an interrupted assembler stage or so.
-So I do not think *.o.* should be added.
+---
+--- linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c.old	2007-07-26 08:56:33.000000000 +0200
++++ linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c	2007-07-26 08:57:00.000000000 +0200
+@@ -691,8 +691,9 @@
+ 
+ /* Sensor settings are stored 1 byte per offset with the bytes
+    placed add consecutive offsets. */
+-int abituguru3_read_increment_offset(struct abituguru3_data *data, u8 bank,
+-	u8 offset, u8 count, u8 *buf, int offset_count)
++static int abituguru3_read_increment_offset(struct abituguru3_data *data,
++					    u8 bank, u8 offset, u8 count,
++					    u8 *buf, int offset_count)
+ {
+ 	int i, x;
+ 
 
-
-	Jan
--- 
