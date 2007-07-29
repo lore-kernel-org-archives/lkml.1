@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934531AbXG2T4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934986AbXG2T6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934531AbXG2T4p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 15:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765920AbXG2T4h
+	id S934986AbXG2T6w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 15:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933371AbXG2T6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 15:56:37 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:58867 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763211AbXG2T4g (ORCPT
+	Sun, 29 Jul 2007 15:58:42 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:3677 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763211AbXG2T6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 15:56:36 -0400
-Subject: Re: [BUG] undefined reference to `kobject_actions'
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-In-Reply-To: <20070729193704.GA27994@flint.arm.linux.org.uk>
-References: <20070729193401.GA18225@flint.arm.linux.org.uk>
-	 <20070729193704.GA27994@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Sun, 29 Jul 2007 21:59:05 +0200
-Message-Id: <1185739145.2469.0.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.5 
+	Sun, 29 Jul 2007 15:58:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FX8OWBpNB7Lqxffw2XCldQDlx2wpXfaPbVBZgS2wj+p0ky3yNQwZe5hlG4CCm+QC08h6XJzebugAxlow6EvX7+kMOf0SxMMgqvF77fPYThsD0KEMVCARg4o253Rhz48gxlEBL8enrDXJRp7mseN067MNFC0W8ia5li40w4yGIII=
+Message-ID: <5ebbd9b50707291258l1d67fa20g3542dd3bbfcb4aef@mail.gmail.com>
+Date: Sun, 29 Jul 2007 19:58:39 +0000
+From: "Frank Hale" <frankhale@gmail.com>
+To: "Cal Peake" <cp@absolutedigital.net>
+Subject: Re: ACPI on Averatec 2370
+Cc: "Gabriel C" <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com
+In-Reply-To: <5ebbd9b50707291158n4cfffcbl7f620bd10181fb6d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19ACF9NU/nxYO/3Qrz/feUgAjdh0XDjy1UsBNR
- 43lCCn/sL9wWOQ2I+slxyQ+hMK8nsoNSK+5LxQhLJXLnjUsKZt
- K0nndZJuh/l1yCCYICj08MZVRsdJ83S
+Content-Disposition: inline
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
+	 <46ACD8DB.2020108@googlemail.com>
+	 <Pine.LNX.4.64.0707291428100.7379@lancer.cnet.absolutedigital.net>
+	 <5ebbd9b50707291158n4cfffcbl7f620bd10181fb6d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Your work around seems to do the trick. I took out SMP support, added
+ACPI and now it boots normally.
 
-On Sun, 2007-07-29 at 20:37 +0100, Russell King wrote:
-> On Sun, Jul 29, 2007 at 08:34:01PM +0100, Russell King wrote:
-> > Many ARM platforms fail to build with the following:
-> > 
-> > drivers/built-in.o: In function `store_uevent':
-> > hid-input.c:(.text+0x19c4c): undefined reference to `kobject_actions'
-> > 
-> > It appears that if hotplug is disabled, kobject_actions is ifdef'd
-> > away but hid-input still references it.
-> 
-> What I also meant to say is that it looks like it's caused by
-> commit 60a96a59569bab85571d0089682109bd3324e896.
-> 
-> Presumably if hotplug is disabled, we want store_uevent to be
-> removed as well?
-
-Does this patch fix it?
-  http://lkml.org/lkml/2007/7/20/143
-
-Thanks,
-Kay
-
+On 7/29/07, Frank Hale <frankhale@gmail.com> wrote:
+> > Frank, can you try a non-SMP build with ACPI and see if you still have the
+> > problem?
+>
+> I certainly will, I never tried it without it so now I am curious.
+> Thanks a bunch!
+>
