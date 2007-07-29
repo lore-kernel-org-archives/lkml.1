@@ -1,96 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759882AbXG2Cx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760006AbXG2DBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759882AbXG2Cx4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 22:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756935AbXG2Cxs
+	id S1760006AbXG2DBi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 23:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759587AbXG2DBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 22:53:48 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:38697 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754351AbXG2Cxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 22:53:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:message-id:reply-to:mime-version:content-type:content-disposition:content-transfer-encoding:user-agent:from:sender;
-        b=BShJY/WWM8VE5HbgSrPWRxzWsu6Klrm0dRNUbI+VxW6/sjfN9qEfu1i1tD+/gZSB1EPDxMh97DCHDuAnmb8re6sfSOH0zEtss7lox/D+lW3OTqLoq1upPj2aMe1u5ZqYEiFT4eeD3GCSqlT7Pp2Q/RHpD9DxETFXXh7ecArKqQc=
-Date: Sun, 29 Jul 2007 10:53:39 +0800
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fs/partitions/check.c: add_partition() warning fixes
-Message-ID: <20070729025339.GB19311@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+	Sat, 28 Jul 2007 23:01:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49681 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759118AbXG2DB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 23:01:29 -0400
+Message-ID: <46AC02FA.8060303@redhat.com>
+Date: Sat, 28 Jul 2007 23:01:14 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.14 (2007-02-12)
-From: Eugene Teo <eugeneteo@kernel.sg>
+To: Tong Li <tong.n.li@intel.com>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] scheduler: improve SMP fairness in CFS
+References: <Pine.LNX.4.64.0707231123080.3239@tongli.jf.intel.com>  <20070725110159.GA15076@elte.hu> <20070725120358.GA30755@elte.hu>  <Pine.LNX.4.64.0707251014520.14515@tongli.jf.intel.com>  <20070725192442.GC4463@elte.hu>  <Pine.LNX.4.64.0707261123060.9352@tongli.jf.intel.com>  <20070726213154.GA26569@elte.hu> <1185487225.3122.11.camel@tongli.jf.intel.com> <Pine.LNX.4.64.0707261806450.5321@tongli.jf.intel.com> <46AA287D.8070200@redhat.com> <Pine.LNX.4.64.0707271159420.12201@tongli.jf.intel.com> <46AA8171.2060400@redhat.com> <Pine.LNX.4.64.0707281121580.22772@tongli.jf.intel.com>
+In-Reply-To: <Pine.LNX.4.64.0707281121580.22772@tongli.jf.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes these warnings:
+Tong Li wrote:
+> Without the global locking, the global synchronization here is simply 
+> ping-ponging a cache line once of while. This doesn't look expensive to 
+> me, but if it does after benchmarking, adjusting sysctl_base_round_slice 
+> can reduce the ping-pong frequency. There might also be a smart 
+> implementation that can alleviate this problem.
 
-fs/partitions/check.c: In function ‘add_partition’:
-fs/partitions/check.c:391: warning: ignoring return value of ‘kobject_add’,
-	declared with attribute warn_unused_result
-fs/partitions/check.c:394: warning: ignoring return value of
-	‘sysfs_create_link’, declared with attribute warn_unused_result
-fs/partitions/check.c:401: warning: ignoring return value of
-	‘sysfs_create_file’, declared with attribute warn_unused_result
+Scaling it proportionally to migration cost and log2(cpus) should suffice.
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- fs/partitions/check.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
+> I don't understand why quantizing CPU time is a bad thing. Could you 
+> educate me on this?
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 783c57e..01397c1 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -371,6 +371,7 @@ void delete_partition(struct gendisk *disk, int part)
- void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
- {
- 	struct hd_struct *p;
-+	int err;
- 
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
-@@ -388,20 +389,34 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
-+	err = kobject_add(&p->kobj);
-+	if (err)
-+		goto err_out;
- 	if (!disk->part_uevent_suppress)
- 		kobject_uevent(&p->kobj, KOBJ_ADD);
--	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
-+	err = sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
-+	if (err)
-+		goto err_out_del_kobj;
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
- 			.mode = S_IRUSR | S_IRGRP | S_IROTH,
- 		};
- 
--		sysfs_create_file(&p->kobj, &addpartattr);
-+		err = sysfs_create_file(&p->kobj, &addpartattr);
-+		if (err)
-+			goto err_out_del_link;
- 	}
- 	partition_sysfs_add_subdir(p);
- 	disk->part[part-1] = p;
-+	return;
-+
-+err_out_del_link:
-+	sysfs_remove_link(&p->kobj, "subsystem");
-+err_out_del_kobj:
-+	kobject_del(&p->kobj);
-+err_out:
-+	kfree(p);
- }
- 
- static char *make_block_name(struct gendisk *disk)
+It depends on how precisely you do it.  We save a lot of power going 
+tickless.  If round expiration is re-introducing ticks on idle CPUs, we 
+could waste a lot of power.  Hardware is getting even more aggressive 
+about power saving, to the point of allowing individual cores to be 
+completely powered off when idle.  We need to make sure the scheduler 
+doesn't interfere with power management.
 
+	-- Chris
