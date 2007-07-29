@@ -1,64 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933255AbXG2Ruj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXG2RwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933255AbXG2Ruj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 13:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763929AbXG2Ruc
+	id S933383AbXG2RwV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 13:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763929AbXG2RwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 13:50:32 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2763 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758139AbXG2Rub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 13:50:31 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
-       rjw@sisk.pl
-Subject: [PATCH] ppc: chipsfb.c build fix for CONFIG_PM
-Date: Sun, 29 Jul 2007 19:50:28 +0200
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	Sun, 29 Jul 2007 13:52:14 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:48135 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760244AbXG2RwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 13:52:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=eak5BuWjs1XIpNyqhh7NlwlbW644CDBg8RqAyI1li4TC6WzI8+7TfUqdxCGhNAXV8kb98+19FPlghod5qanAOkXHfJzfWy+TTCBzhhu9OZ3zQqs73OdBSePSgjdMMeKas8yuGq39jpZdm22rYtN7Ef1QGqbz5X+2Ijxe93Qeq6Q=
+Message-ID: <2c0942db0707291052r79bed95fv30ed6c3badf21338@mail.gmail.com>
+Date: Sun, 29 Jul 2007 10:52:12 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, david@lang.hm,
+       "Daniel Hazelton" <dhazelton@enter.net>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Ingo Molnar" <mingo@elte.hu>,
+       "Frank Kingswood" <frank@kingswood-consulting.co.uk>,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
+       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46ACCF7A.1080207@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707291950.30261.m.kozlowski@tuxland.pl>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	 <46AC9F2C.8090601@gmail.com>
+	 <2c0942db0707290758p39fef2e8o68d67bec5c7ba6ab@mail.gmail.com>
+	 <46ACAB45.6080307@gmail.com>
+	 <2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
+	 <46ACB40C.2040908@gmail.com>
+	 <2c0942db0707290904n4356582dt91ab96b77db1e84e@mail.gmail.com>
+	 <46ACC76A.3080303@gmail.com>
+	 <2c0942db0707291019q14f309d0jab3bf083aa37d707@mail.gmail.com>
+	 <46ACCF7A.1080207@gmail.com>
+X-Google-Sender-Auth: 6a7aa4d8a3b92bc4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 7/29/07, Rene Herman <rene.herman@gmail.com> wrote:
+> On 07/29/2007 07:19 PM, Ray Lee wrote:
+> For me, it is generally the case yes. We are still discussing this in the
+> context of desktop machines and their problems with being slow as things
+> have been swapped out and generally I expect a desktop to have plenty of
+> swap which it's not regularly going to fillup significantly since then the
+> machine's unworkably slow as a desktop anyway.
 
-	This patch fixes the following build error on powerpc:
+<Shrug> Well, that doesn't match my systems. My laptop has 400MB in swap:
 
-  CC      drivers/video/chipsfb.o
-drivers/video/chipsfb.c: In function 'chipsfb_pci_suspend':
-drivers/video/chipsfb.c:461: error: 'PM_SUSPEND_MEM' undeclared (first use in this function)
-drivers/video/chipsfb.c:461: error: (Each undeclared identifier is reported only once
-drivers/video/chipsfb.c:461: error: for each function it appears in.)
-make[2]: *** [drivers/video/chipsfb.o] Blad 1
-make[1]: *** [drivers/video] Blad 2
-make: *** [drivers] Blad 2
+ray@phoenix:~$ free
+             total       used       free     shared    buffers     cached
+Mem:        894208     883920      10288          0       3044     163224
+-/+ buffers/cache:     717652     176556
+Swap:      1116476     393132     723344
 
+> > And once there's something already in swap, you now have a packing
+> > problem when you want to swap something else out.
+>
+> Once we're crammed, it gets to be a different situation yes. As far as I'm
+> concerned that's for another thread though. I'm spending too much time on
+> LKML as it is...
 
+No, it's not even when crammed. It's just when there are holes.
+mm/swapfile.c does try to cluster things, but doesn't work too hard at
+it as we don't want to spend all our time looking for a perfect fit
+that may not exist.
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-
- drivers/video/chipsfb.c | 12751 -> 12804 (+53 bytes)
- drivers/video/chipsfb.o |  -> 112880 ( bytes)
-
- drivers/video/chipsfb.c |    5 +++++
- 1 file changed, 5 insertions(+)
-
---- linux-2.6.23-rc1-mm1-a/drivers/video/chipsfb.c	2007-07-26 13:07:41.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/video/chipsfb.c	2007-07-29 19:34:15.000000000 +0200
-@@ -27,6 +27,11 @@
- #include <linux/init.h>
- #include <linux/pci.h>
- #include <linux/console.h>
-+
-+#ifdef CONFIG_PM
-+#include <linux/suspend.h>
-+#endif
-+
- #include <asm/io.h>
-
- #ifdef CONFIG_PMAC_BACKLIGHT
+Ray
