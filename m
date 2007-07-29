@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXG2RwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933267AbXG2SE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933383AbXG2RwV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 13:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763929AbXG2RwO
+	id S933267AbXG2SE3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 14:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764184AbXG2SEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 13:52:14 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:48135 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760244AbXG2RwN (ORCPT
+	Sun, 29 Jul 2007 14:04:20 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:45379 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764161AbXG2SET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 13:52:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=eak5BuWjs1XIpNyqhh7NlwlbW644CDBg8RqAyI1li4TC6WzI8+7TfUqdxCGhNAXV8kb98+19FPlghod5qanAOkXHfJzfWy+TTCBzhhu9OZ3zQqs73OdBSePSgjdMMeKas8yuGq39jpZdm22rYtN7Ef1QGqbz5X+2Ijxe93Qeq6Q=
-Message-ID: <2c0942db0707291052r79bed95fv30ed6c3badf21338@mail.gmail.com>
-Date: Sun, 29 Jul 2007 10:52:12 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, david@lang.hm,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Frank Kingswood" <frank@kingswood-consulting.co.uk>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46ACCF7A.1080207@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Jul 2007 14:04:19 -0400
+Date: Sun, 29 Jul 2007 19:03:07 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Shaohua Li <shaohua.li@intel.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       =?iso-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
+       akpm@linux-foundation.org, lenb@kernel.org, mjg59@srcf.ucam.org,
+       castet.matthieu@free.fr
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Message-ID: <20070729180307.GC25431@flint.arm.linux.org.uk>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <86802c440707251737p3be3ae69qe3f91282bec8984a@mail.gmail.com> <1185416466.31345.1.camel@sli10-conroe.sh.intel.com> <200707271217.00164.bjorn.helgaas@hp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46AC9F2C.8090601@gmail.com>
-	 <2c0942db0707290758p39fef2e8o68d67bec5c7ba6ab@mail.gmail.com>
-	 <46ACAB45.6080307@gmail.com>
-	 <2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
-	 <46ACB40C.2040908@gmail.com>
-	 <2c0942db0707290904n4356582dt91ab96b77db1e84e@mail.gmail.com>
-	 <46ACC76A.3080303@gmail.com>
-	 <2c0942db0707291019q14f309d0jab3bf083aa37d707@mail.gmail.com>
-	 <46ACCF7A.1080207@gmail.com>
-X-Google-Sender-Auth: 6a7aa4d8a3b92bc4
+In-Reply-To: <200707271217.00164.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/07, Rene Herman <rene.herman@gmail.com> wrote:
-> On 07/29/2007 07:19 PM, Ray Lee wrote:
-> For me, it is generally the case yes. We are still discussing this in the
-> context of desktop machines and their problems with being slow as things
-> have been swapped out and generally I expect a desktop to have plenty of
-> swap which it's not regularly going to fillup significantly since then the
-> machine's unworkably slow as a desktop anyway.
+On Fri, Jul 27, 2007 at 12:16:59PM -0600, Bjorn Helgaas wrote:
+> For example, 8250_pnp could have rules like "COM1 should always
+> be ttyS0" or "a port at 0x3f8 should always be ttyS0."
 
-<Shrug> Well, that doesn't match my systems. My laptop has 400MB in swap:
+In which case register via the legacy ports first, and then register
+PNP ports.  If the PNP ports correspond with legacy ports, they will
+re-use those slots.
 
-ray@phoenix:~$ free
-             total       used       free     shared    buffers     cached
-Mem:        894208     883920      10288          0       3044     163224
--/+ buffers/cache:     717652     176556
-Swap:      1116476     393132     723344
+So, if we register 0x3f8 first (which ends up as ttyS0), followed by
+0x2f8 (ttyS1) and then PNP tries to register a port at 0x2f8 then
+0x3f8, you'll still end up with 0x3f8 being ttyS0 and 0x2f8 as ttyS1.
 
-> > And once there's something already in swap, you now have a packing
-> > problem when you want to swap something else out.
->
-> Once we're crammed, it gets to be a different situation yes. As far as I'm
-> concerned that's for another thread though. I'm spending too much time on
-> LKML as it is...
+> That doesn't help with Yinghai's PCI root ordering issue, of course.
+> But I hope that can be addressed with udev, because there's not so
+> much need for a persistent kernel name.  If that's not enough, can
+> you explain more about the problem?
 
-No, it's not even when crammed. It's just when there are holes.
-mm/swapfile.c does try to cluster things, but doesn't work too hard at
-it as we don't want to spend all our time looking for a perfect fit
-that may not exist.
+However, aren't PNP serial ports attached to separate PNP devices?  If
+so, udev can work it out already - they just need to look at the
+backing device associated with the serial port.  For legacy ports that'll
+be serial8250.0.  For PNP, it'll be some PNP device.
 
-Ray
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
