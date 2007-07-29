@@ -1,116 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXG2J2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761486AbXG2JcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761481AbXG2J2U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 05:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760747AbXG2J2I
+	id S1761486AbXG2JcS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 05:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760747AbXG2JcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 05:28:08 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:51368 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760873AbXG2J2G (ORCPT
+	Sun, 29 Jul 2007 05:32:10 -0400
+Received: from neopsis.com ([213.239.204.14]:60027 "EHLO
+	matterhorn.dbservice.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760775AbXG2JcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 05:28:06 -0400
-Date: Sun, 29 Jul 2007 12:28:04 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Willy Tarreau <w@1wt.eu>
-cc: "Darryl L. Miles" <darryl-mailinglists@netbauds.net>,
-       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-Subject: Re: TCP SACK issue, hung connection, tcpdump included
-In-Reply-To: <20070729085427.GA22784@1wt.eu>
-Message-ID: <Pine.LNX.4.64.0707291208230.10340@kivilampi-30.cs.helsinki.fi>
-References: <46AC2CBE.5010500@netbauds.net> <20070729064511.GA18718@1wt.eu>
- <Pine.LNX.4.64.0707291052300.10340@kivilampi-30.cs.helsinki.fi>
- <20070729085427.GA22784@1wt.eu>
+	Sun, 29 Jul 2007 05:32:09 -0400
+X-Greylist: delayed 1839 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 05:32:08 EDT
+Message-ID: <46AC5D25.4040703@dbservice.com>
+Date: Sun, 29 Jul 2007 11:25:57 +0200
+From: Tomas Carnecky <tom@dbservice.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-1547136570-1185700118=:10340"
-Content-ID: <Pine.LNX.4.64.0707291225250.10340@kivilampi-30.cs.helsinki.fi>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Jonathan Jessup <jonathanjessup@gmail.com>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org, lkml@metanurb.dk
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>  <1185588279.1654.1.camel@localhost>  <alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>  <Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net> <954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com> <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Neopsis-MailScanner-Information: Neopsis MailScanner using ClamAV and Spaassassin
+X-Neopsis-MailScanner: Found to be clean
+X-Neopsis-MailScanner-SpamCheck: not spam, SpamAssassin (score=-2.379,
+	required 5, autolearn=spam, AWL 0.22, BAYES_00 -2.60)
+X-MailScanner-From: tom@dbservice.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Linus Torvalds wrote:
+> The fact is, I've _always_ considered the desktop to be the most important 
+> part. And I suspect that that actually is true for most kernel developers, 
+> because quite frankly, that's what 99% of them ends up using. If a kernel 
+> developer uses Windows for his day-to-day work, I sure as hell wouldn't 
+> want to have him developing Linux. That has nothing to do with anything 
+> anti-windows: but the whole "eat your own dogfood" is a very fundamental 
+> thing, and somebody who doesn't do that shouldn't be allowed to be even 
+> _close_ to a compiler!
 
----696243703-1547136570-1185700118=:10340
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0707291210121.10340@kivilampi-30.cs.helsinki.fi>
+That comes from someone whose desktop is a dual CPU Mac with how much 
+RAM? 4GB? That can hardly be regarded as the average desktop computer. 
+You cannot have computers with heaps of CPU/RAM and claim that you know 
+how a Linux feels on a 'normal' desktop. That simply doesn't add up. So 
+please stop saying that you're 'eating your own dogfood'. Sure, there 
+may be kernel developers who actually test the kernels on older 
+computers, but don't tell us that you're using those for your daily work.
 
-On Sun, 29 Jul 2007, Willy Tarreau wrote:
+That being said, I can't but agree with Con what he said in his recent 
+interview, namely that some kernel developers are out of touch with the 
+'normal' desktop users who have a bit slower machines (Linus, if you 
+indeed use a desktop computer like I described above then this also 
+applies to you). And I can't imagine that any of you have done such 
+intensive tests of desktop responsiveness etc. like Con did. By all 
+means I'm not a 'Con Fanboy', nor want I be involved in the whole 'CFS 
+vs. CD' flamewar, but I simply can't let your statement leave unanswered.
 
-> On Sun, Jul 29, 2007 at 11:26:00AM +0300, Ilpo Järvinen wrote:
-> > On Sun, 29 Jul 2007, Willy Tarreau wrote:
-> > 
-> > > On Sun, Jul 29, 2007 at 06:59:26AM +0100, Darryl L. Miles wrote:
-> > > > CLIENT = Linux 2.6.20.1-smp [Customer build]
-> > > > SERVER = Linux 2.6.9-55.ELsmp [Red Hat Enterprise Linux AS release 4 
-> > > > (Nahant Update 5)]
-> > > > 
-> > > > The problems start around time index 09:21:39.860302 when the CLIENT issues 
-> > > > a TCP packet with SACK option set (seemingly for a data segment which has 
-> > > > already been seen) from that point on the connection hangs.
-> > 
-> > ...That's DSACK and it's being correctly sent. To me, it seems unlikely to 
-> > be the cause for this breakage...
-> > 
-> > > Where was the capture taken ? on CLIENT or on SERVER (I suspect client from
-> > > the timers) ? 
-> > 
-> > ...I would guess the same based on SYN timestamps (and from the DSACK 
-> > timestamps)...
-> > 
-> > > A possible, but very unlikely reason would be an MTU limitation
-> > > somewhere, because the segment which never gets correctly ACKed is also the
-> > > largest one in this trace.
-> > 
-> > Limitation for 48 byte segments? You have to be kidding... :-) But yes,
-> > it seems that one of the directions is dropping packets for some reason 
-> > though I would not assume MTU limitation... Or did you mean some other 
-> > segment?
-> 
-> No, I was talking about the 1448 bytes segments. But in fact I don't
-> believe it much because the SACKs are always retransmitted just afterwards.
-
-Ah, but it's ACKed correctly right below it...:
-
-[...snip...]
-> > > > 09:21:39.490740 IP SERVER.ssh > CLIENT.50727: P 18200:18464(264) ack 2991 
-> > > > win 2728 <nop,nop,timestamp 7692910 800001727>
-> > > > 09:21:39.490775 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> > > > <nop,nop,timestamp 800001755 7692910>
-> > > > 09:21:39.860245 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> > > > win 2728 <nop,nop,timestamp 7693293 800001749>
-
-...segment below snd_una arrived => snd_una remains 18464, receiver 
-generates a duplicate ACK:
- 
-> > > > 09:21:39.860302 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> > > > <nop,nop,timestamp 800001847 7692910,nop,nop,sack sack 1 {12408:13856} >
-
-The cumulative ACK field of it covers _everything_ below 18464 (i.e., it 
-ACKs them), including the 1448 bytes in 12408:13856... In addition, the 
-SACK block is DSACK information [RFC2883] telling explicitly the address 
-of the received duplicate block. However, if this ACK doesn't reach the 
-SERVER TCP, RTO is triggered and the first not yet cumulatively ACKed 
-segment is retransmitted (I guess cumulative ACKs up to 12408 arrived 
-without problems to the SERVER):
-
-> > > > 09:21:40.453440 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> > > > win 2728 <nop,nop,timestamp 7693887 800001749>
-[...snip...]
-
-> BTW, some information are missing. It would have been better if the trace
-> had been read with tcpdump -Svv. We would have got seq numbers and ttl.
-> Also, we do not know if there's a firewall between both sides. Sometimes,
-> some IDS identify attacks in crypted traffic and kill connections. It
-> might have been the case here, with the connection closed one way on an
-> intermediate firewall.
-
-Yeah, firewall or some other issue, I'd say it's quite unlikely a bug in 
-TCP because behavior to both directions indicate client -> sender 
-blackhole independently of each other...
-
-
--- 
- i.
----696243703-1547136570-1185700118=:10340--
+tom
