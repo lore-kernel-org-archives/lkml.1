@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764544AbXG2O7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764678AbXG2O7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764544AbXG2O7a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764132AbXG2O5S
+	id S1764678AbXG2O7v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763024AbXG2O5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:57:18 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47768 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763886AbXG2O5R (ORCPT
+	Sun, 29 Jul 2007 10:57:25 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:45772 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764025AbXG2O5X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:57:17 -0400
-Date: Sun, 29 Jul 2007 16:56:53 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: airlied@linux.ie
-Cc: dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] radeon_driver_vblank_do_wait() static
-Message-ID: <20070729145653.GI16817@stusta.de>
+	Sun, 29 Jul 2007 10:57:23 -0400
+Date: Sun, 29 Jul 2007 16:57:22 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Alexey Dobriyan <adobriyan@sw.ru>
+cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] .gitignore update
+In-Reply-To: <20070726121547.GA16937@localhost.sw.ru>
+Message-ID: <Pine.LNX.4.64.0707291656380.9488@fbirervta.pbzchgretzou.qr>
+References: <20070726121547.GA16937@localhost.sw.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-radeon_driver_vblank_do_wait() can become static.
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+On Jul 26 2007 16:15, Alexey Dobriyan wrote:
+>
+>Somehow I ended up with the following in tree:
+>
+>	$ git status
+>		...
+>	# Untracked files:
+>	#   (use "git add <file>..." to include in what will be committed)
+>	#
+>	#       fs/proc/root.o.FuMxJQ
+>	#       net/ipv4/tcp_minisocks.o.geCDYR
+>
+>These are presumably temporary gcc files, which aren't interesting.
 
----
---- linux-2.6.23-rc1-mm1/drivers/char/drm/radeon_irq.c.old	2007-07-26 08:49:12.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/char/drm/radeon_irq.c	2007-07-26 08:49:46.000000000 +0200
-@@ -144,8 +144,8 @@
- 	return ret;
- }
- 
--int radeon_driver_vblank_do_wait(struct drm_device * dev, unsigned int *sequence,
--				 int crtc)
-+static int radeon_driver_vblank_do_wait(struct drm_device * dev,
-+					unsigned int *sequence, int crtc)
- {
- 	drm_radeon_private_t *dev_priv =
- 	    (drm_radeon_private_t *) dev->dev_private;
+But they should not be there by default! Or are they?
+Looks like an interrupted assembler stage or so.
+So I do not think *.o.* should be added.
 
+
+	Jan
+-- 
