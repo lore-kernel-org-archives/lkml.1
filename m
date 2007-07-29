@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbXG2MPi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762517AbXG2MQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762300AbXG2MPi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 08:15:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758952AbXG2MPb
+	id S1762517AbXG2MQF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 08:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758803AbXG2MPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 08:15:31 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4725 "EHLO ra.tuxdriver.com"
+	Sun, 29 Jul 2007 08:15:53 -0400
+Received: from neon.samage.net ([85.17.153.66]:46547 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758803AbXG2MPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 08:15:30 -0400
-Date: Sun, 29 Jul 2007 08:14:44 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Eugene Teo <eteo@redhat.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
-       martin.pitt@ubuntu.com, wwoods@redhat.com
-Subject: Re: [PATCH 0/3] core_pattern: cleaned up repost/continuing post of core_pattern enhancements
-Message-ID: <20070729121444.GA9644@hmsreliant.homelinux.net>
-References: <20070727200050.GA18946@hmsreliant.homelinux.net> <46AC6EAB.7000502@redhat.com>
+	id S1758604AbXG2MPw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 08:15:52 -0400
+Message-ID: <49425.81.207.0.53.1185711345.squirrel@secure.samage.net>
+In-Reply-To: <200707282338.48346.dtor@insightbb.com>
+References: <20070724044520.913891976.dtor@insightbb.com>
+    <41532.81.207.0.53.1185575131.squirrel@secure.samage.net>
+    <200707282338.48346.dtor@insightbb.com>
+Date: Sun, 29 Jul 2007 14:15:45 +0200 (CEST)
+Subject: Re: [RFC/RFT 0/5] Input locking patches
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46AC6EAB.7000502@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: c74461a82029b6293650421ecb57b64a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 06:40:43PM +0800, Eugene Teo wrote:
-> Neil Horman wrote:
-> > Ok, here we go
-> > 
-> > As promised, I'm reposting the core_pattern enhancements I've done over the past
-> > few days.  These three patches replace and conintue the work contained in the
-> > following patches, and can replace them:
-> > update-coredump-path-in-kernel-to-not-check-coredump-rlim-if-core_pattern-is-a-pipe.patch
-> > allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe.patch
-> > allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix.patch
-> > allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix-2.patch
-> > allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix-2-fix.patch
-> > allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-sparc64-fix.patch
-> > allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix-2-sparc64-fix.patch
-> [...]
-> 
-> You may want to improve your patches with style-related changes, including
-> removing trailing spaces, using tabs instead of spaces, and defining pointers
-> like char *ptr instead of char * ptr.
-> 
-I assume this is just a general comment, since as far as I can see, I've
-followed those guidelines.
+On Sun, July 29, 2007 05:38, Dmitry Torokhov wrote:
+> Hi Indan,
+>
+> On Friday 27 July 2007 18:25, Indan Zupancic wrote:
+>> Sorry for the babbling, just wanted to say that I've tested these
+>> patches and that they seem to fix real problems.
+>>
+>
+> Thank you for testing the patches.
 
-> Also, it is probably good to think how we can "drop privileges" while piping
-> the core dump output to an external program. A malicious user can potentially
-> use it as a possible backdoor since anything that is executed by "|program" will
-> be executed with root privileges.
-> 
-It was my understanding that apport already did this.
+Unfortunately I spoke too soon and some mouse warps occurred
+yesterday. I suspect faulty hardware, so I'll try with my old
+non-optical mouse. If it still happens then it's either the mobo
+or the kernel. In the meantime I'll plug this one in another pc
+and see if the warps happen there. After that it's running old
+kernels to see if the warps happen there too. Any other ideas
+to check whether it's a software or hardware problem?
 
-Thanks and Regards
-Neil
+The more annoying sticking key problem is gone for good though.
 
-> Eugene
+Greetings,
 
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+Indan
+
+
