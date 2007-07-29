@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763400AbXG2NGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762799AbXG2Nod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763400AbXG2NGW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 09:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760674AbXG2NGN
+	id S1762799AbXG2Nod (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 09:44:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760927AbXG2NoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 09:06:13 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48282 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762264AbXG2NGM (ORCPT
+	Sun, 29 Jul 2007 09:44:24 -0400
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:42641 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758752AbXG2NoY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 09:06:12 -0400
-Date: Sun, 29 Jul 2007 14:12:15 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: david@lang.hm, Daniel Hazelton <dhazelton@enter.net>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-Message-ID: <20070729141215.08973d54@the-village.bc.nu>
-In-Reply-To: <46AC4B97.5050708@gmail.com>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	<20070727030040.0ea97ff7.akpm@linux-foundation.org>
-	<1185531918.8799.17.camel@Homer.simpson.net>
-	<200707271345.55187.dhazelton@enter.net>
-	<46AA3680.4010508@gmail.com>
-	<Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm>
-	<46AAEDEB.7040003@gmail.com>
-	<Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-	<46AB166A.2000300@gmail.com>
-	<20070728122139.3c7f4290@the-village.bc.nu>
-	<46AC4B97.5050708@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 29 Jul 2007 09:44:24 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: 2.6.23-rc1, KVM-AMD problem
+Date: Sun, 29 Jul 2007 14:44:17 +0100
+User-Agent: KMail/1.9.7
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200707281855.41277.alistair@devzero.co.uk> <200707291229.49155.alistair@devzero.co.uk> <46AC7B44.1040509@qumranet.com>
+In-Reply-To: <46AC7B44.1040509@qumranet.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707291444.18024.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Contrived thing and all, but what it does do is show exactly how bad seeking 
-> all over swap-space is. If you push it out before hitting enter, the time it 
-> takes easily grows past 10 minutes (with my 768M) versus sub-second (!) when 
-> it's all in to start with.
+On Sunday 29 July 2007 12:34:28 you wrote:
+[snip]
+> > Doesn't help, I still get the same crashes. I tried 2.6.22 again and it's
+> > rock solid by comparison.
+>
+> Do you mean, kvm-33 on top of 2.6.22, or the kvm modules from 2.6.22?
+> Please describe your configuration *exactly*.
 
-Think in "operations/second" and you get a better view of the disk.
+I'm using the kvm-33 *userspace* package (based on Debian's kvm-28 packaging) 
+and 2.6.23-rc1's KVM modules. I patched 2.6.23-rc1 with the patch you 
+provided in your last email. So I'm not using -git HEAD.
 
-> What are the tradeoffs here? What wants small chunks? Also, as far as I'm 
-> aware Linux does not do things like up the granularity when it notices it's 
-> swapping in heavily? That sounds sort of promising...
+Maybe there's been additional necessary fixes to -git requiring me to update 
+to HEAD? That wasn't clear from your last email.
 
-Small chunks means you get better efficiency of memory use - large chunks
-mean you may well page in a lot more than you needed to each time (and
-cause more paging in turn). Your disk would prefer you fed it big linear
-I/O's - 512KB would probably be my first guess at tuning a large box
-under load for paging chunk size.
+> And what do you mean, "rock solid by comparison"?  Either it's rock
+> solid or it isn't.
 
-More radically if anyone wants to do real researchy type work - how about
-log structured swap with a cleaner  ?
+It's rock solid. It does not crash.
 
-Alan
+-- 
+Cheers,
+Alistair.
+
+137/1 Warrender Park Road, Edinburgh, UK.
+
