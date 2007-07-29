@@ -1,60 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763588AbXG2Or6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXG2OuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763588AbXG2Or6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762864AbXG2Ort
+	id S1763648AbXG2OuJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762902AbXG2Ot4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:47:49 -0400
-Received: from qb-out-0506.google.com ([72.14.204.226]:18874 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762815AbXG2Ors (ORCPT
+	Sun, 29 Jul 2007 10:49:56 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:58695 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762878AbXG2Oty (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:47:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent:from:sender;
-        b=I1Iv/1UZNuaVWJAqewr+nh+LeN+I+AowTDUskh1GLeyM/metLQKdG4sBsMySXl/AaTZRLkjqfLjbKqzMBE25GBOQglz0ihlPtfrM6A0p3duLrijYo88G14phNwPAHOamcMBQLZU7GtGCCld6gXUHwcueUlZO2ByTqmUHDUhae8A=
-Date: Sun, 29 Jul 2007 22:47:36 +0800
-To: linux-kernel@vger.kernel.org
-Cc: marcel@holtmann.org
-Subject: [PATCH] drivers/bluetooth/hci_ldisc.c: fix possible NULL
-	dereferences
-Message-ID: <20070729144736.GA13275@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-From: Eugene Teo <eugeneteo@kernel.sg>
+	Sun, 29 Jul 2007 10:49:54 -0400
+Subject: [GIT PATCH] SCSI bug fixes for 2.6.23-rc1
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 29 Jul 2007 09:49:52 -0500
+Message-Id: <1185720592.3434.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 22ad42033b7d2b3d7928fba9f89d1c7f8a3c9581 did not completely fix all 
-the possible NULL dereferences. Besides hci_uart_close(), we also need to 
-make sure that hdev is valid before calling hci_{unregister,free}_dev().
+This is basically a set of bug fixes with a few minor cleanups thrown
+in.  There are also a few bsg fixes we're taking through this tree
+because SCSI is the current sole consumer. The reason for the huge size
+is the lindent of the advansys driver along with a few cleanups.
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- drivers/bluetooth/hci_ldisc.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
+The patch is available here:
 
-diff --git a/drivers/bluetooth/hci_ldisc.c b/drivers/bluetooth/hci_ldisc.c
-index 6055b9c..4813f7c 100644
---- a/drivers/bluetooth/hci_ldisc.c
-+++ b/drivers/bluetooth/hci_ldisc.c
-@@ -308,11 +308,10 @@ static void hci_uart_tty_close(struct tty_struct *tty)
- 	if (hu) {
- 		struct hci_dev *hdev = hu->hdev;
- 
--		if (hdev)
-+		if (hdev) {
- 			hci_uart_close(hdev);
--
--		if (test_and_clear_bit(HCI_UART_PROTO_SET, &hu->flags)) {
--			hu->proto->close(hu);
-+			if (test_and_clear_bit(HCI_UART_PROTO_SET, &hu->flags))
-+				hu->proto->close(hu);
- 			hci_unregister_dev(hdev);
- 			hci_free_dev(hdev);
- 		}
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+
+The short changelog is:
+
+Alan Cox (1):
+      aacraid: Fix security hole
+
+Boaz Harrosh (1):
+      qla2xxx: Data accessors Cleanup of last merge
+
+Chip Coldwell (1):
+      sym53c8xx: don't claim cpqarray device
+
+Darrick J. Wong (1):
+      libsas: SMP request handler shouldn't crash when rphy is NULL
+
+FUJITA Tomonori (3):
+      simscsi: convert to use the data buffer accessors
+      bsg: remove unnecessary code and comments
+      bsg: use lib/idr.c to find a unique minor number
+
+James Bottomley (2):
+      aic79xx, aic7xxx: Fix incorrect width setting
+      bsg: fix unused variable warnings for BLK_DEV_BSG=n
+
+Jeff Garzik (1):
+      libsas: Remove PCI dependencies
+
+Jesper Juhl (1):
+      libsas: Fix potential NULL dereference in sas_smp_get_phy_events()
+
+Matthew Wilcox (1):
+      advansys: lindent and other large, uninteresting changes
+
+Mike Christie (4):
+      iscsi_tcp: Turn off bounce buffers
+      libiscsi: fix cmd seqeunce number checking
+      iscsi_tcp, ib_iser Enable module refcounting for iscsi host template
+      libiscsi: make sure session is not blocked when removing host
+
+Paul Mundt (1):
+      bsg: Fix build for CONFIG_BLOCK=n
+
+Prakash, Sathya (5):
+      mpt fusion: Changes in mptctl.c for logging support
+      mpt fusion: Changes in mptfc.c mptlan.c mptsas.c and mptspi.c for logging support
+      mpt fusion: Changes in mptscsih.c for logging support
+      mpt fusion: Changes in mptbase.c for logging support
+      mpt fusion: logging support in Kconfig, Makefile, mptbase.h and addition of mptdebug.h
+
+Salyzyn, Mark (4):
+      aacraid: fix Sunrise Lake reset handling
+      aacraid: add SCSI SYNCHONIZE_CACHE range checking
+      aacraid: draw line in sand, sundry cleanup and version update
+      aacraid: sysfs adapter reset/status format change.
+
+Seokmann Ju (1):
+      qla2xxx: fix to honor ignored parameters in sysfs attributes
+
+akpm@linux-foundation.org (1):
+      add easyRAID to the no report luns blacklist
+
+
+And the diffstat:
+
+ arch/ia64/hp/sim/simscsi.c               |   66 
+ block/Kconfig                            |    4 
+ block/bsg.c                              |   78 
+ drivers/infiniband/ulp/iser/iscsi_iser.c |    1 
+ drivers/message/fusion/Kconfig           |   14 
+ drivers/message/fusion/Makefile          |   37 
+ drivers/message/fusion/mptbase.c         |  467 
+ drivers/message/fusion/mptbase.h         |  198 
+ drivers/message/fusion/mptctl.c          |  266 
+ drivers/message/fusion/mptdebug.h        |  288 
+ drivers/message/fusion/mptfc.c           |  108 
+ drivers/message/fusion/mptlan.c          |    3 
+ drivers/message/fusion/mptsas.c          |  276 
+ drivers/message/fusion/mptscsih.c        |  446 
+ drivers/message/fusion/mptspi.c          |   53 
+ drivers/scsi/aacraid/aachba.c            |   66 
+ drivers/scsi/aacraid/aacraid.h           |    6 
+ drivers/scsi/aacraid/linit.c             |    9 
+ drivers/scsi/aacraid/nark.c              |    3 
+ drivers/scsi/aacraid/rkt.c               |    2 
+ drivers/scsi/aacraid/rx.c                |    2 
+ drivers/scsi/advansys.c                  |28261 +++++++++++++++----------------
+ drivers/scsi/aic7xxx/aic79xx_osm.c       |   23 
+ drivers/scsi/aic7xxx/aic7xxx_osm.c       |   11 
+ drivers/scsi/aic94xx/aic94xx_init.c      |    4 
+ drivers/scsi/iscsi_tcp.c                 |    2 
+ drivers/scsi/libiscsi.c                  |   47 
+ drivers/scsi/libsas/sas_ata.c            |   30 
+ drivers/scsi/libsas/sas_discover.c       |    3 
+ drivers/scsi/libsas/sas_dump.c           |    2 
+ drivers/scsi/libsas/sas_expander.c       |   18 
+ drivers/scsi/qla2xxx/qla_attr.c          |   39 
+ drivers/scsi/qla2xxx/qla_def.h           |    4 
+ drivers/scsi/qla2xxx/qla_init.c          |   19 
+ drivers/scsi/qla2xxx/qla_isr.c           |    4 
+ drivers/scsi/scsi_devinfo.c              |    3 
+ drivers/scsi/sym53c8xx_2/sym_glue.c      |    2 
+ include/linux/bsg.h                      |   10 
+ include/scsi/libiscsi.h                  |    3 
+ include/scsi/libsas.h                    |    2 
+ 40 files changed, 15957 insertions(+), 14923 deletions(-)
+
+James
+
 
