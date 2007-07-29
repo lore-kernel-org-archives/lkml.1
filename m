@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXG2O4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbXG2O4z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763995AbXG2O4l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763744AbXG2O4R
+	id S1764083AbXG2O4z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:56:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763847AbXG2O4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:56:17 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47743 "EHLO
+	Sun, 29 Jul 2007 10:56:31 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47746 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763252AbXG2O4J (ORCPT
+	with ESMTP id S1763603AbXG2O4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:56:09 -0400
-Date: Sun, 29 Jul 2007 16:55:45 +0200
+	Sun, 29 Jul 2007 10:56:12 -0400
+Date: Sun, 29 Jul 2007 16:55:49 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Divy Le Ray <divy@chelsio.com>, Jeff Garzik <jeff@garzik.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] drivers/net/cxgb3/xgmac.c: remove dead code
-Message-ID: <20070729145544.GA16817@stusta.de>
+To: perex@suse.cz
+Cc: linux-kernel@vger.kernel.org
+Subject: [2.6 patch] sound/synth/util_mem.c: remove pointless check
+Message-ID: <20070729145549.GB16817@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,56 +23,30 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes dead code ("tx_xcnt" can never be != 0 at this place) 
-spotted by the Coverity checker.
+The Coverity checker spotted that if anyone would call this function 
+with "prev == NULL", he would still get an Oops a few lines below.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/net/cxgb3/xgmac.c |    5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
-
---- linux-2.6.22-rc6-mm1/drivers/net/cxgb3/xgmac.c.old	2007-07-24 13:55:33.000000000 +0200
-+++ linux-2.6.22-rc6-mm1/drivers/net/cxgb3/xgmac.c	2007-07-24 13:57:06.000000000 +0200
-@@ -510,38 +510,35 @@ int t3b2_mac_watchdog_task(struct cmac *
- 	if (tx_mcnt == mac->tx_mcnt) {
- 		tx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
- 						A_XGM_TX_SPI4_SOP_EOP_CNT +
- 					       	mac->offset)));
- 		if (tx_xcnt == 0) {
- 			t3_write_reg(adap, A_TP_PIO_ADDR,
- 				     A_TP_TX_DROP_CNT_CH0 + macidx(mac));
- 			tx_tcnt = (G_TXDROPCNTCH0RCVD(t3_read_reg(adap,
- 						      A_TP_PIO_DATA)));
- 		} else {
- 			goto rxcheck;
- 		}
- 	} else {
- 		mac->toggle_cnt = 0;
- 		goto rxcheck;
- 	}
+--- linux-2.6.22-rc6-mm1/sound/synth/util_mem.c.old	2007-07-24 19:37:50.000000000 +0200
++++ linux-2.6.22-rc6-mm1/sound/synth/util_mem.c	2007-07-24 19:38:37.000000000 +0200
+@@ -112,15 +112,15 @@ __snd_util_memblk_new(struct snd_util_me
+ 	struct snd_util_memblk *blk;
  
--	if (((tx_tcnt != mac->tx_tcnt) &&
--	     (tx_xcnt == 0) && (mac->tx_xcnt == 0)) ||
--	    ((mac->tx_mcnt == tx_mcnt) &&
--	     (tx_xcnt != 0) && (mac->tx_xcnt != 0))) {
-+	if ((tx_tcnt != mac->tx_tcnt) && (mac->tx_xcnt == 0))  {
- 		if (mac->toggle_cnt > 4) {
- 			status = 2;
- 			goto out;
- 		} else {
- 			status = 1;
- 			goto out;
- 		}
- 	} else {
- 		mac->toggle_cnt = 0;
- 		goto rxcheck;
- 	}
+ 	blk = kmalloc(sizeof(struct snd_util_memblk) + hdr->block_extra_size,
+ 		      GFP_KERNEL);
+ 	if (blk == NULL)
+ 		return NULL;
  
- rxcheck:
- 	if (rx_mcnt != mac->rx_mcnt)
- 		rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
- 						A_XGM_RX_SPI4_SOP_EOP_CNT +
- 						mac->offset)));
+-	if (! prev || prev == &hdr->block)
++	if (prev == &hdr->block)
+ 		blk->offset = 0;
+ 	else {
+ 		struct snd_util_memblk *p = get_memblk(prev);
+ 		blk->offset = p->offset + p->size;
+ 	}
+ 	blk->size = units;
+ 	list_add(&blk->list, prev);
 
