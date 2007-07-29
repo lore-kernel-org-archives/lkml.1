@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932211AbXG2PGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763403AbXG2PGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932211AbXG2PGK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764511AbXG2O6h
+	id S1763403AbXG2PGi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764549AbXG2O6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:58:37 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47819 "EHLO
+	Sun, 29 Jul 2007 10:58:39 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47825 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764491AbXG2O6g (ORCPT
+	with ESMTP id S1764514AbXG2O6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:58:36 -0400
-Date: Sun, 29 Jul 2007 16:58:12 +0200
+	Sun, 29 Jul 2007 10:58:38 -0400
+Date: Sun, 29 Jul 2007 16:58:15 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Kyungmin Park <kyungmin.park@samsung.com>, dwmw2@infradead.org
-Cc: linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org
-Subject: [-mm patch] MTD onenand_sim.c: make struct info static
-Message-ID: <20070729145812.GW16817@stusta.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Oruba <peter.oruba@amd.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>, cramerj@intel.com,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com,
+       jeffrey.t.kirsher@intel.com, auke-jan.h.kok@intel.com,
+       jgarzik@pobox.com, linux-kernel@vger.kernel.org,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: [-mm patch] e1000: #if 0 two functions
+Message-ID: <20070729145815.GX16817@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc6-mm1:
->...
->  git-mtd.patch
->...
->  git trees
->...
-
-This patch makes the needlessly global struct info static.
+e1000_{read,write}_pci_cfg() are no longer used.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.23-rc1-mm1/drivers/mtd/onenand/onenand_sim.c.old	2007-07-26 16:11:57.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/mtd/onenand/onenand_sim.c	2007-07-26 16:12:19.000000000 +0200
-@@ -78,7 +78,7 @@
- 	struct onenand_flash	flash;
- };
+
+This patch has been sent on:
+- 1 Jul 2007
+- 5 Jun 2007
+
+ drivers/net/e1000/e1000_hw.h   |    2 --
+ drivers/net/e1000/e1000_main.c |    4 ++++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+--- linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_hw.h.old	2007-06-04 22:03:05.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_hw.h	2007-06-04 22:03:14.000000000 +0200
+@@ -421,8 +421,6 @@ void e1000_tbi_adjust_stats(struct e1000
+ void e1000_get_bus_info(struct e1000_hw *hw);
+ void e1000_pci_set_mwi(struct e1000_hw *hw);
+ void e1000_pci_clear_mwi(struct e1000_hw *hw);
+-void e1000_read_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t * value);
+-void e1000_write_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t * value);
+ int32_t e1000_read_pcie_cap_reg(struct e1000_hw *hw, uint32_t reg, uint16_t *value);
+ void e1000_pcix_set_mmrbc(struct e1000_hw *hw, int mmrbc);
+ int e1000_pcix_get_mmrbc(struct e1000_hw *hw);
+--- linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_main.c.old	2007-06-04 22:03:24.000000000 +0200
++++ linux-2.6.22-rc3-mm1/drivers/net/e1000/e1000_main.c	2007-06-04 22:03:40.000000000 +0200
+@@ -4888,6 +4888,8 @@ e1000_pci_clear_mwi(struct e1000_hw *hw)
+ 	pci_clear_mwi(adapter->pdev);
+ }
  
--struct onenand_info *info;
-+static struct onenand_info *info;
++#if 0
++
+ void
+ e1000_read_pci_cfg(struct e1000_hw *hw, uint32_t reg, uint16_t *value)
+ {
+@@ -4904,6 +4906,8 @@ e1000_write_pci_cfg(struct e1000_hw *hw,
+ 	pci_write_config_word(adapter->pdev, reg, *value);
+ }
  
- #define DPRINTK(format, args...)					\
- do {									\
++#endif  /*  0  */
++
+ int
+ e1000_pcix_get_mmrbc(struct e1000_hw *hw)
+ {
+
 
