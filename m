@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760824AbXG2IQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbXG2IQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760824AbXG2IQc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 04:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760255AbXG2IQQ
+	id S1760954AbXG2IQw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 04:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760302AbXG2IQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 04:16:16 -0400
-Received: from mo30.po.2iij.net ([210.128.50.53]:4572 "EHLO mo30.po.2iij.net"
+	Sun, 29 Jul 2007 04:16:36 -0400
+Received: from il.qumranet.com ([82.166.9.18]:55510 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760078AbXG2IQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 04:16:13 -0400
-Date: Sun, 29 Jul 2007 17:15:44 +0900
-From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: yoichi_yuasa@tripeaks.co.jp, greg@kroah.com, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH] fix IDE legacy mode resource
-Message-Id: <20070729171544.2b352801.yoichi_yuasa@tripeaks.co.jp>
-In-Reply-To: <46AB8732.6080109@garzik.org>
-References: <20070728220420.352c316b.yoichi_yuasa@tripeaks.co.jp>
-	<46AB8732.6080109@garzik.org>
-Organization: TriPeaks Corporation
-X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1760828AbXG2IQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 04:16:33 -0400
+Message-ID: <46AC4CEB.9060401@qumranet.com>
+Date: Sun, 29 Jul 2007 11:16:43 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Alistair John Strachan <alistair@devzero.co.uk>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1, KVM-AMD problem
+References: <200707281855.41277.alistair@devzero.co.uk>
+In-Reply-To: <200707281855.41277.alistair@devzero.co.uk>
+Content-Type: multipart/mixed;
+ boundary="------------020605050006080107070004"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Jul 2007 14:13:06 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+This is a multi-part message in MIME format.
+--------------020605050006080107070004
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Yoichi Yuasa wrote:
-> > Hi,
-> > 
-> > I got the following error on MIPS Cobalt.
-> > MIPS Cobalt has the 0x10000000 offset between resource and bus region. 
-> > 
-> > PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
-> > pata_via 0000:00:09.1: failed to request/iomap BARs for port 0 (errno=-16)
-> > PCI: Unable to reserve I/O region #3:8@f0000170 for device 0000:00:09.1
-> > pata_via 0000:00:09.1: failed to request/iomap BARs for port 1 (errno=-16)
-> > pata_via 0000:00:09.1: no available native port
-> > 
-> > At this point, these resources should be the bus regions.
-> > 
-> > Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-> 
-> I'm not sure I understand what's going on here... could you or someone 
-> provide additional explanation as to why this is a fix?
+Alistair John Strachan wrote:
+> Hi,
+>
+> I'm getting periodic oopses running KVM-33 on 2.6.23-rc1. Here is a digital 
+> photo of the oops. Alarmingly, a lot of the time it triple faults the machine 
+> and I don't get a chance to grab it. This time I was lucky, though.
+>
+> http://devzero.co.uk/~alistair/kvm-2.6.23-rc1.jpg
+>
+> Unfortunately, some of the oops text scrolled out of the screen. I will 
+> endeavour to reproduce the bug over serial console, but I can make no 
+> guarantees.
+>
+> The CPU is an AMD X2 BE-2350, chipset is AMD 690G.
+>
+>   
 
-The legacy mode IDE resources set the following order. 
+If you are using the modules from 2.6.23-rc1, try upgrading to latest 
+-git, which contains a patch that might fix this problem.  If you are 
+using the modules from kvm-33, try applying the attached patch.
 
-pci_setup_device()
-    Legacy mode ATA controllers have fixed addresses.
-    IDE resources: 0x1F0-0x1F7, 0x3F6, 0x170-0x177, 0x376
-    |
-    V
-pcibios_fixup_bus()
-    MIPS Cobalt PCI bus have the -0x10000000 offset from PCI resources.
-    pcibios_fixup_bus() fix PCI bus regions.
-    0x1F0 - 0x10000000 = 0xF00001F0
-    |
-    V
-ata_pci_init_one()
-    PCI: Unable to reserve I/O region #1:8@f00001f0 for device 0000:00:09.1
 
-In some architectures, PCI bus have the offset from PCI resource.
-They are adjusted by pcibios_fixup_bus().
+-- 
+error compiling committee.c: too many arguments to function
 
-For this reason, pci_setup_device() should set PCI bus regions. 
 
-Yoichi
+--------------020605050006080107070004
+Content-Type: text/x-patch;
+ name="fix-0f-01.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="fix-0f-01.patch"
+
+commit bfa6c62f98bd0602025d7b48e267d817082f5d07
+Author: Aurelien Jarno <aurelien@aurel32.net>
+Date:   Wed Jul 25 10:19:54 2007 +0200
+
+    KVM: disable writeback for 0x0f 0x01 instructions.
+    
+    0x0f 0x01 instructions (ie lgdt, lidt, smsw, lmsw and invlpg) does
+    not use writeback. This patch set no_wb=1 when emulating those
+    instructions.
+    
+    This fixes a regression booting the FreeBSD kernel on AMD.
+    
+    Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+    Signed-off-by: Avi Kivity <avi@qumranet.com>
+
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 21ce977..cbbb9c5 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -1183,6 +1183,8 @@ pop_instruction:
+ twobyte_insn:
+ 	switch (b) {
+ 	case 0x01: /* lgdt, lidt, lmsw */
++		/* Disable writeback. */
++		no_wb = 1;
+ 		switch (modrm_reg) {
+ 			u16 size;
+ 			unsigned long address;
+
+--------------020605050006080107070004--
