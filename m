@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964907AbXG2Vv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937206AbXG2Vzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964907AbXG2Vv0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936138AbXG2VvT
+	id S937206AbXG2Vzg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935349AbXG2Vz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:51:19 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:38789 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936064AbXG2VvS (ORCPT
+	Sun, 29 Jul 2007 17:55:29 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:10365 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935348AbXG2Vz2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:51:18 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Sun, 29 Jul 2007 17:48:27 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Jesper Juhl <jesper.juhl@gmail.com>
-cc: Ian Molton <spyro@f2s.com>,
+	Sun, 29 Jul 2007 17:55:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=Cc1Yq+5wdbKU6pUYyvht4ThN1WGoQrqssbMl/uRImSH0vKMBaji5kBZyJC58xkB3byaD1cDzBcHub6tQJ9OnO/jSlo8V5DBfZAkAJCHcWjkNwmV9/9F+yCcW95aF8n0u4ihxhXmT9Mad30ZhIrr2RFcBR9tRAWbZs6uvzcXdAZU=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: Greg Ungerer <gerg@uclinux.org>
+Subject: [PATCH] m68knommu: Get rid of duplicate include
+Date: Sun, 29 Jul 2007 23:53:54 +0200
+User-Agent: KMail/1.9.7
+Cc: Greg Ungerer <gerg@snapgear.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] arm26: remove duplicate include of linux/module.h
-In-Reply-To: <200707292343.18706.jesper.juhl@gmail.com>
-Message-ID: <Pine.LNX.4.64.0707291747470.8611@localhost.localdomain>
-References: <200707292343.18706.jesper.juhl@gmail.com>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707292353.55129.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007, Jesper Juhl wrote:
+Hi,
 
-> Hi,
->
-> This patch removes the duplicate inclusion of
-> linux/module.h from arm26.
+This patch removes the duplicate inclusion of asm/irq.h 
+from arch/m68knommu/platform/5206e/config.c
 
-is it really worth doing any cleanup of arm26 given the recent
-discussion of tossing it entirely?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+ arch/m68knommu/platform/5206e/config.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/arch/m68knommu/platform/5206e/config.c b/arch/m68knommu/platform/5206e/config.c
+index 4ab614f..425703f 100644
+--- a/arch/m68knommu/platform/5206e/config.c
++++ b/arch/m68knommu/platform/5206e/config.c
+@@ -20,7 +20,6 @@
+ #include <asm/mcftimer.h>
+ #include <asm/mcfsim.h>
+ #include <asm/mcfdma.h>
+-#include <asm/irq.h>
+ 
+ /***************************************************************************/
+ 
+
+
