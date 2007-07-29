@@ -1,64 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765542AbXG2Qqn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXG2QrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765542AbXG2Qqn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:46:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763873AbXG2Qqf
+	id S932227AbXG2QrX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764084AbXG2QrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:46:35 -0400
-Received: from xenotime.net ([66.160.160.81]:38748 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1762366AbXG2Qqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:46:35 -0400
-Date: Sun, 29 Jul 2007 09:51:51 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [-mm patch] kernel/printk.c: make 2 variables static
-Message-Id: <20070729095151.f5f96c99.rdunlap@xenotime.net>
-In-Reply-To: <20070729145918.GG16817@stusta.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
-	<20070729145918.GG16817@stusta.de>
-Organization: YPO4
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Sun, 29 Jul 2007 12:47:16 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:36132 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762366AbXG2QrP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:47:15 -0400
+Subject: Re: [PATCH] drivers/bluetooth/hci_ldisc.c: fix possible NULL
+	dereferences
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070729144736.GA13275@kernel.sg>
+References: <20070729144736.GA13275@kernel.sg>
+Content-Type: text/plain
+Date: Sun, 29 Jul 2007 18:49:11 +0200
+Message-Id: <1185727751.5868.60.camel@violet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007 16:59:18 +0200 Adrian Bunk wrote:
+Hi Eugene,
 
-> On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.22-rc6-mm1:
-> >...
-> > +slow-down-printk-during-boot.patch
-> >...
-> >  Misc
-> >...
-> 
-> This patch makes two needlessly global variables static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Commit 22ad42033b7d2b3d7928fba9f89d1c7f8a3c9581 did not completely fix all 
+> the possible NULL dereferences. Besides hci_uart_close(), we also need to 
+> make sure that hdev is valid before calling hci_{unregister,free}_dev().
 
-Aye.  Thanks.
+I don't see any issue. Without HCI_UART_PROTO_SET, the hdev will never
+be registered. So no need to protect it twice.
 
-> ---
-> --- linux-2.6.23-rc1-mm1/kernel/printk.c.old	2007-07-26 22:40:09.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/kernel/printk.c	2007-07-26 22:40:50.000000000 +0200
-> @@ -166,8 +166,8 @@
->  
->  #ifdef CONFIG_BOOT_PRINTK_DELAY
->  
-> -unsigned int boot_delay; /* msecs delay after each printk during bootup */
-> -unsigned long long printk_delay_msec; /* per msec, based on boot_delay */
-> +static unsigned int boot_delay; /* msecs delay after each printk during bootup */
-> +static unsigned long long printk_delay_msec; /* per msec, based on boot_delay */
->  
->  static int __init boot_delay_setup(char *str)
->  {
+Regards
+
+Marcel
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
