@@ -1,64 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763496AbXG2Obv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXG2OhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763496AbXG2Obv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762662AbXG2Obm
+	id S1763481AbXG2OhE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762686AbXG2Ogy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:31:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:4410 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761026AbXG2Obl convert rfc822-to-8bit (ORCPT
+	Sun, 29 Jul 2007 10:36:54 -0400
+Received: from dsl017-112-251.lax1.dsl.speakeasy.net ([69.17.112.251]:39577
+	"EHLO NickAndBarb.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762555AbXG2Ogy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:31:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=Uc6R4rOtWpC0WMb4rkvsiXJ+uaeAPob9Dmlo4qg6nBOxFZV9z01JXcFyyMyerLdeDug4VViy7q67/wzA+Qtabni2pUWpXWTm/J/3cVQ8vbEZFE8o3lUMJvBDqtEYkfpwEutJQZobZzItCaXy2X2o8bYlH32nxdmOV4FRCqB0onE=
-Date: Sun, 29 Jul 2007 16:31:29 +0200
-From: Diego Calleja <diegocg@gmail.com>
-To: Bill Huey (hui) <billh@gnuppy.monkey.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       jos poortvliet <jos@mijnkamer.nl>, ck@vds.kolivas.org,
-       Michael Chang <thenewme91@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-Message-Id: <20070729163129.c8427d51.diegocg@gmail.com>
-In-Reply-To: <20070729010039.GA11661@gnuppy.monkey.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	<200707282003.45142.jos@mijnkamer.nl>
-	<alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>
-	<200707282128.39906.jos@mijnkamer.nl>
-	<20070728200705.GF32582@gnuppy.monkey.org>
-	<20070728230609.43273a75.diegocg@gmail.com>
-	<20070728213232.GG32582@gnuppy.monkey.org>
-	<alpine.LFD.0.999.0707281445170.3442@woody.linux-foundation.org>
-	<20070729010039.GA11661@gnuppy.monkey.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 29 Jul 2007 10:36:54 -0400
+Date: Sun, 29 Jul 2007 07:36:02 -0700
+From: Nick Pasich <NewsLetters@NickAndBarb.net>
+To: Adam Kropelin <akropel1@rochester.rr.com>
+Cc: Nick Pasich <NewsLetters@NickAndBarb.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-usb-devel@lists.sourceforge.net,
+       Greg Kroah-Hartman <greg@kroah.com>,
+       Al Borchers <alborchers@steinerpoint.com>, linux-kernel@vger.kernel.org,
+       Peter Berger <pberger@brimson.com>
+Subject: Re: [linux-usb-devel] Edgeport UPS Monitoring Problems
+Message-ID: <20070729143602.GA14118@69.17.112.251>
+References: <20070727203708.GA10839@NICK2> <20070727152254.202959c1.akpm@linux-foundation.org> <003701c7d16c$8c72b7b0$03c8a8c0@kroptech.com> <20070729124813.GA30633@69.17.112.251> <008001c7d1e9$6a8625b0$03c8a8c0@kroptech.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <008001c7d1e9$6a8625b0$03c8a8c0@kroptech.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Sat, 28 Jul 2007 18:00:39 -0700, Bill Huey (hui) <billh@gnuppy.monkey.org> escribió:
+Adam,
 
-> The scheduler could have and still can undertake good solid transformation,
-> but getting folks to listen is another story which is why Con quit. CFS
-> basically locks him and his ideas out, not just from a technical stand
+Yep..... That did it....
 
-This is just wrong: AFAIK nobody is stopping Con or any other people from
-continuing developing SD or any other scheduler, and CFS certainly is subject
-to criticism. The idea that Linux can't use other innovative ideas in the scheduler
-is only in your mind.
+Thank You Very Much for your Super Quick Fix......
+
+         ---( Nick )---
+
+On Sun, Jul 29, 2007 at 10:04:44AM -0400, Adam Kropelin wrote:
+> From: "Nick Pasich" <NewsLetters@NickAndBarb.net>
+> >Here's the dmesg output ......
+> >
+> >[...]
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: LCR - 
+> >write to send_cmd_write_uart_register register 0x03
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >SendCmdWriteUartReg - Not writing to MCR Register
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: MCR - 
+> >write to send_cmd_write_uart_register register 0x0b
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >SendCmdWriteUartReg - Not writing to MCR Register
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >change_port_settings - baud rate = 9600
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >SendCmdWriteBaudRate - NOT Setting baud rate for port = 0, baud = 9600
+> 
+> Yup, there's what I expected. Not setting the baud rate and not writing 
+> status registers is unlikely to produce working results. This 9600 must 
+> be the default setting being applied.
+> 
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >SendCmdWriteUartReg - Not writing to MCR Register
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: MCR - 
+> >write to send_cmd_write_uart_register register 0x0b
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >SendCmdWriteUartReg - Not writing to MCR Register
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >change_port_settings - baud rate = 2400
+> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> >SendCmdWriteBaudRate - NOT Setting baud rate for port = 0, baud = 2400
+> 
+> Here's apcupsd trying to set 2400 baud.
+> 
+> Please try the attached patch (against 2.6.22.1). This will allow 
+> writing to the baud rate and MCR/LCR registers on non-EPIC adapters. I 
+> suspect the previous code was a copy-paste error.
+> 
+> --Adam
 
 
-> This time it was Con being the Mindcraft catalyst. But he's on *our* side
-> and he got beat down by the Linux kernel community. That's the tragedy here.
-> He was beaten down by the very people he was trying to help out and
-> support. It should have been handled better.
 
-Get real: I don't the linux development has always been "friendly". The idea
-of a "GNU-hippie community" where everybody is good and helps others and
-shares their pots is what the Sun bloggers seem to think that opensolaris
-should resemble, but it doesn't matches the real world.
+-- 
+--------
+WebSite: http://NickAndBarb.net
+--------
+
