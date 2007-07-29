@@ -1,272 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965179AbXG2WUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965326AbXG2Wa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965179AbXG2WUS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 18:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964816AbXG2WUD
+	id S965326AbXG2Wa3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 18:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964833AbXG2WaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 18:20:03 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:26742 "EHLO
+	Sun, 29 Jul 2007 18:30:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:33315 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964808AbXG2WUA (ORCPT
+	with ESMTP id S964853AbXG2WaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 18:20:00 -0400
+	Sun, 29 Jul 2007 18:30:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=pLqzGO1gMwAJVoCsEXVWGSTZbMxIbZbIFe8MQ4ojOCk93GVyG9/CXbOLofjHSCbRs/JJw4Evph9BlfkIKubnj9VNHJE6ssj0tivg6WDIgEYHsAjsf86ieQt1sC8b59Nsl47p+U1plFg1EuOYzbh4c2H5TOvpKaQToNHm1+2+Zyc=
+        h=received:from:to:subject:user-agent:cc:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
+        b=p5x3Gski76yIeVWiPosChzV4L86HCtb2lyN99i7XDmyEm32Rf+OaMEUISt6RvqpLWOPTIISj1uxDY08Nn7bzMBs9vy4HAyMdgoctuSbz/o5nwY6SlDk5pkgYhgfJahhw/PyvFwWGWhtq5BCzBBw21z2DthUE759IHCPNkTAhWTo=
 From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] powerpc: clean out a bunch of duplicate includes
-Date: Mon, 30 Jul 2007 00:18:25 +0200
+To: Tony Luck <tony.luck@intel.com>, Jes Sorensen <jes@sgi.com>
+Subject: [PATCH] ia64: Remove a few duplicate includes
 User-Agent: KMail/1.9.7
-Cc: Dave Engebretsen <engebret@us.ibm.com>, Peter Bergner <bergner@us.ibm.com>,
-       Mike Corrigan <mikec@us.ibm.com>, Olof Johansson <olof@lixom.net>,
-       Cort Dougan <cort@cs.nmt.edu>, Dan Malek <dmalek@jlc.net>,
-       Mike Corrigan <mikejc@us.ibm.com>, Gabriel Paubert <paubert@iram.es>,
-       Anton Blanchard <anton@au.ibm.com>, Rohit Seth <rohit.seth@intel.com>,
-       Gary Thomas <gdt@linuxppc.org>, Paul Mackerras <paulus@cs.anu.edu.au>,
-       Matt Porter <mporter@mvista.com>, Cort Dougan <cort@cs.nmt.edu>,
-       Sylvain Munaut <tnt@246tnt.com>,
-       Dale Farnsworth <dfarnsworth@mvista.com>,
-       Grant Erickson <grant@lcse.umn.edu>, Dan Malek <dan@net4x.com>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-ia64@vger.kernel.org,
+       linux-altix@sgi.com, Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707300018.26324.jesper.juhl@gmail.com>
+Date: Mon, 30 Jul 2007 00:28:42 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707300028.42496.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+(sorry about the duplicate mail, forgot a recipient first time)
+
 Hi,
 
-Here's a patch to clean out a bunch of duplicate includes from 
-arch/powerpc/
 
-Please consider for inclusion.
+This patch removes a few duplicate includes from arch/ia64/
+
+
+Please consider merging :-)
+
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
 
- arch/powerpc/kernel/btext.c                |    1 -
- arch/powerpc/kernel/crash.c                |    1 -
- arch/powerpc/kernel/iommu.c                |    1 -
- arch/powerpc/kernel/prom.c                 |    1 -
- arch/powerpc/kernel/time.c                 |    1 -
- arch/powerpc/mm/hash_utils_64.c            |    1 -
- arch/powerpc/mm/hugetlbpage.c              |    3 ---
- arch/powerpc/mm/init_32.c                  |    1 -
- arch/powerpc/mm/mem.c                      |    1 -
- arch/powerpc/platforms/52xx/mpc52xx_pic.c  |    1 -
- arch/powerpc/platforms/chrp/setup.c        |    1 -
- arch/powerpc/platforms/chrp/smp.c          |    1 -
- arch/powerpc/platforms/iseries/setup.c     |    1 -
- arch/powerpc/platforms/powermac/low_i2c.c  |    1 -
- arch/powerpc/platforms/powermac/udbg_adb.c |    1 -
- arch/powerpc/platforms/pseries/lpar.c      |    1 -
- 16 files changed, 0 insertions(+), 18 deletions(-)
+ arch/ia64/ia32/sys_ia32.c   |    1 -
+ arch/ia64/kernel/setup.c    |    1 -
+ arch/ia64/sn/kernel/setup.c |    1 -
+ 3 files changed, 0 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
-index e7b6846..3ef51fb 100644
---- a/arch/powerpc/kernel/btext.c
-+++ b/arch/powerpc/kernel/btext.c
-@@ -11,7 +11,6 @@
- #include <asm/sections.h>
- #include <asm/prom.h>
- #include <asm/btext.h>
--#include <asm/prom.h>
- #include <asm/page.h>
- #include <asm/mmu.h>
- #include <asm/pgtable.h>
-diff --git a/arch/powerpc/kernel/crash.c b/arch/powerpc/kernel/crash.c
-index 37658ea..77c749a 100644
---- a/arch/powerpc/kernel/crash.c
-+++ b/arch/powerpc/kernel/crash.c
-@@ -24,7 +24,6 @@
- #include <linux/init.h>
- #include <linux/irq.h>
- #include <linux/types.h>
--#include <linux/irq.h>
- 
- #include <asm/processor.h>
- #include <asm/machdep.h>
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index c08ceca..e4ec6ee 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -30,7 +30,6 @@
- #include <linux/spinlock.h>
- #include <linux/string.h>
- #include <linux/dma-mapping.h>
--#include <linux/init.h>
- #include <linux/bitops.h>
- #include <asm/io.h>
- #include <asm/prom.h>
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index a38197b..0028fe6 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -52,7 +52,6 @@
- #include <asm/pSeries_reconfig.h>
- #include <asm/pci-bridge.h>
- #include <asm/kexec.h>
+diff --git a/arch/ia64/ia32/sys_ia32.c b/arch/ia64/ia32/sys_ia32.c
+index af10462..a3405b3 100644
+--- a/arch/ia64/ia32/sys_ia32.c
++++ b/arch/ia64/ia32/sys_ia32.c
+@@ -34,7 +34,6 @@
+ #include <linux/uio.h>
+ #include <linux/nfs_fs.h>
+ #include <linux/quota.h>
+-#include <linux/syscalls.h>
+ #include <linux/sunrpc/svc.h>
+ #include <linux/nfsd/nfsd.h>
+ #include <linux/nfsd/cache.h>
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index 7cecd29..cd9a37a 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -60,7 +60,6 @@
+ #include <asm/smp.h>
+ #include <asm/system.h>
+ #include <asm/unistd.h>
 -#include <asm/system.h>
  
- #ifdef DEBUG
- #define DBG(fmt...) printk(KERN_ERR fmt)
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 727a669..c85d9b0 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -72,7 +72,6 @@
- #include <asm/iseries/it_lp_queue.h>
- #include <asm/iseries/hv_call_xm.h>
- #endif
--#include <asm/smp.h>
- 
- /* keep track of when we need to update the rtc */
- time_t last_rtc_update;
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index bc7b0ce..c2bf404 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -49,7 +49,6 @@
- #include <asm/tlb.h>
- #include <asm/cacheflush.h>
- #include <asm/cputable.h>
--#include <asm/abs_addr.h>
- #include <asm/sections.h>
- #include <asm/spu.h>
- 
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 4835f73..ba5f12a 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -22,11 +22,8 @@
- #include <asm/mmu_context.h>
- #include <asm/machdep.h>
- #include <asm/cputable.h>
--#include <asm/tlb.h>
- #include <asm/spu.h>
- 
--#include <linux/sysctl.h>
--
- #define NUM_LOW_AREAS	(0x100000000UL >> SID_SHIFT)
- #define NUM_HIGH_AREAS	(PGTABLE_RANGE >> HTLB_AREA_SHIFT)
- 
-diff --git a/arch/powerpc/mm/init_32.c b/arch/powerpc/mm/init_32.c
-index e1f5ded..d65995a 100644
---- a/arch/powerpc/mm/init_32.c
-+++ b/arch/powerpc/mm/init_32.c
-@@ -41,7 +41,6 @@
- #include <asm/machdep.h>
- #include <asm/btext.h>
- #include <asm/tlb.h>
--#include <asm/prom.h>
- #include <asm/lmb.h>
- #include <asm/sections.h>
- 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index f0e7eed..32dcfc9 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -42,7 +42,6 @@
- #include <asm/machdep.h>
- #include <asm/btext.h>
- #include <asm/tlb.h>
--#include <asm/prom.h>
- #include <asm/lmb.h>
- #include <asm/sections.h>
- #include <asm/vdso.h>
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-index fbfff95..8c464c5 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-@@ -22,7 +22,6 @@
- #include <linux/init.h>
- #include <linux/sched.h>
- #include <linux/signal.h>
--#include <linux/stddef.h>
- #include <linux/delay.h>
- #include <linux/irq.h>
- #include <linux/hardirq.h>
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index 373de4c..dde5ef4 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -32,7 +32,6 @@
- #include <linux/seq_file.h>
- #include <linux/root_dev.h>
- #include <linux/initrd.h>
--#include <linux/module.h>
- #include <linux/timer.h>
- 
- #include <asm/io.h>
-diff --git a/arch/powerpc/platforms/chrp/smp.c b/arch/powerpc/platforms/chrp/smp.c
-index 3ea0eb7..a137d13 100644
---- a/arch/powerpc/platforms/chrp/smp.c
-+++ b/arch/powerpc/platforms/chrp/smp.c
-@@ -29,7 +29,6 @@
- #include <asm/residual.h>
- #include <asm/time.h>
- #include <asm/machdep.h>
--#include <asm/smp.h>
- #include <asm/mpic.h>
- #include <asm/rtas.h>
- 
-diff --git a/arch/powerpc/platforms/iseries/setup.c b/arch/powerpc/platforms/iseries/setup.c
-index 13a8b19..fad493e 100644
---- a/arch/powerpc/platforms/iseries/setup.c
-+++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -41,7 +41,6 @@
- #include <asm/time.h>
- #include <asm/paca.h>
- #include <asm/cache.h>
--#include <asm/sections.h>
- #include <asm/abs_addr.h>
- #include <asm/iseries/hv_lp_config.h>
- #include <asm/iseries/hv_call_event.h>
-diff --git a/arch/powerpc/platforms/powermac/low_i2c.c b/arch/powerpc/platforms/powermac/low_i2c.c
-index efdf5eb..da2007e 100644
---- a/arch/powerpc/platforms/powermac/low_i2c.c
-+++ b/arch/powerpc/platforms/powermac/low_i2c.c
-@@ -40,7 +40,6 @@
- #include <linux/completion.h>
- #include <linux/platform_device.h>
+ #if defined(CONFIG_SMP) && (IA64_CPU_SIZE > PAGE_SIZE)
+ # error "struct cpuinfo_ia64 too big!"
+diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
+index 684b1c9..1f38a3a 100644
+--- a/arch/ia64/sn/kernel/setup.c
++++ b/arch/ia64/sn/kernel/setup.c
+@@ -25,7 +25,6 @@
  #include <linux/interrupt.h>
--#include <linux/completion.h>
- #include <linux/timer.h>
- #include <linux/mutex.h>
- #include <asm/keylargo.h>
-diff --git a/arch/powerpc/platforms/powermac/udbg_adb.c b/arch/powerpc/platforms/powermac/udbg_adb.c
-index 6124e59..b1882e4 100644
---- a/arch/powerpc/platforms/powermac/udbg_adb.c
-+++ b/arch/powerpc/platforms/powermac/udbg_adb.c
-@@ -12,7 +12,6 @@
- #include <asm/xmon.h>
- #include <asm/prom.h>
- #include <asm/bootx.h>
--#include <asm/machdep.h>
- #include <asm/errno.h>
- #include <asm/pmac_feature.h>
- #include <asm/processor.h>
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 8cc6eee..ea327ca 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -35,7 +35,6 @@
- #include <asm/tlbflush.h>
- #include <asm/tlb.h>
- #include <asm/prom.h>
--#include <asm/abs_addr.h>
- #include <asm/cputable.h>
- #include <asm/udbg.h>
- #include <asm/smp.h>
-
+ #include <linux/acpi.h>
+ #include <linux/compiler.h>
+-#include <linux/sched.h>
+ #include <linux/root_dev.h>
+ #include <linux/nodemask.h>
+ #include <linux/pm.h>
 
 
