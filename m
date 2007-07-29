@@ -1,43 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXG2BtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbXG2CBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbXG2BtP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 21:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754721AbXG2BtB
+	id S1759478AbXG2CBn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 22:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbXG2CBf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 21:49:01 -0400
-Received: from max.aladin.ro ([80.96.155.2]:58419 "EHLO aladin.ro"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754530AbXG2BtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 21:49:00 -0400
-X-Greylist: delayed 3478 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 21:49:00 EDT
-Message-ID: <46ABE473.2030507@aladin.ro>
-Date: Sun, 29 Jul 2007 03:50:59 +0300
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sat, 28 Jul 2007 22:01:35 -0400
+Received: from simq1-srv.bellnexxia.net ([206.47.199.151]:48092 "EHLO
+	simq1-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752261AbXG2CBe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 22:01:34 -0400
+X-Greylist: delayed 2290 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Jul 2007 22:01:34 EDT
+From: "Charles philip Chan" <cpchan@sympatico.ca>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: ck@vds.kolivas.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Chang <thenewme91@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+X-Face: G;Z,`sm>)4t4LB/GUrgH$W`!AmfHMj,LG)Z}X0ax@s9:0>0)B&@vcm{v-le)wng)?|o]D<V6&ay<F=H{M5?$T%p!dPdJeF,au\E@TA"v22K!Zl\\mzpU4]6$ZnAI3_L)h;fpd}mn2py/7gv^|*85-D_f:07cT>\Z}0:6X
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<200707282128.39906.jos@mijnkamer.nl>
+	<alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>
+	<200707291003.52817.kernel@kolivas.org>
+Date: Sat, 28 Jul 2007 21:23:20 -0400
+In-Reply-To: <200707291003.52817.kernel@kolivas.org> (Con Kolivas's message of "Sun\, 29 Jul 2007 10\:03\:52 +1000")
+Message-ID: <87wswkq9yv.fsf@MagnumOpus.khem>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: Jeff Dike <jdike@addtoit.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UML - Console should handle spurious IRQS
-References: <20070727152344.GA6776@c2.user-mode-linux.org>
-In-Reply-To: <20070727152344.GA6776@c2.user-mode-linux.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="=-=-=";
+	micalg=pgp-sha1; protocol="application/pgp-signature"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*This message was transferred with a trial version of CommuniGate(r) Pro*
-Jeff Dike wrote:
-> The previous DEBUG_SHIRQ patch missed one case.  The console doesn't
-> set its host descriptors non-blocking.
+--=-=-=
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Sorry, things looked okay when I tested on my UML environment (Puppy 
-Linux). Some xterms popped around (because I was using "con=xterm") and 
-the system was usable, so it gave me no indication something was wrong.
+Con Kolivas <kernel@kolivas.org> writes:
 
-I thought of adding an extra debugging option to warn us when a blocking 
-  I/O operation is issued for a socket/fd, but UML-specific code is not 
-consistent regarding glibc functions. That is, most of the time it calls 
-os_*(), but sometimes it calls functions like recvfrom() directly. I'll 
-grep the source code for such calls and send a patch to clean it up a bit.
+> Interesting... Trying to avoid reading email but with a flooded inbox
+> it's quite hard to do.
 
-There might still be such cases, I haven't tested all channel types yet.
+Con, good to hear from you. Good luck with your future endeavors.
+
+Charles
+
+=2D-=20
+"Are [Linux users] lemmings collectively jumping off of the cliff of
+reliable, well-engineered commercial software?"
+(By Matt Welsh)
+
+--=-=-=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQFGq+wI3epPyyKbwPYRAs6zAJ9rDHOicvKuw5h+eJ6OgnCAXeppKgCgr/k6
+zYkTjJUmsUGacreOiUG7zEM=
+=pEmo
+-----END PGP SIGNATURE-----
+--=-=-=--
