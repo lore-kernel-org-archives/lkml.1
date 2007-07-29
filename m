@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764445AbXG2QVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbXG2Q0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764445AbXG2QVV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762701AbXG2QVK
+	id S1765035AbXG2Q0w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763596AbXG2Q0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:21:10 -0400
-Received: from smtp2.versatel.nl ([62.58.50.89]:41103 "EHLO smtp2.versatel.nl"
+	Sun, 29 Jul 2007 12:26:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48480 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762813AbXG2QVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:21:09 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 12:21:09 EDT
-Message-ID: <46ACBB8E.9080302@hhs.nl>
-Date: Sun, 29 Jul 2007 18:08:46 +0200
-From: Hans de Goede <j.w.r.degoede@hhs.nl>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
+	id S1762701AbXG2Q0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:26:42 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Adrian Bunk <bunk@stusta.de>
-CC: "Mark M. Hoffman" <mhoffman@lightlink.com>, linux-kernel@vger.kernel.org,
-       lm-sensors@lm-sensors.org
-Subject: Re: [lm-sensors] [2.6 patch] make abituguru3_read_increment_offset()
- static
-References: <20070729145701.GJ16817@stusta.de>
-In-Reply-To: <20070729145701.GJ16817@stusta.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: Re: [2.6 patch] make kernel/power/main.c:suspend_enter() static
+Date: Sun, 29 Jul 2007 18:35:19 +0200
+User-Agent: KMail/1.9.5
+Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20070729145742.GP16817@stusta.de>
+In-Reply-To: <20070729145742.GP16817@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707291835.20105.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> abituguru3_read_increment_offset() can become static.
+On Sunday, 29 July 2007 16:57, Adrian Bunk wrote:
+> suspend_enter() can now become static.
 > 
 > Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
-Looks good, good catch.
-
-Acked-by: Hans de Goede <j.w.r.degoede@hhs.nl>
-
 > 
 > ---
-> --- linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c.old	2007-07-26 08:56:33.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c	2007-07-26 08:57:00.000000000 +0200
-> @@ -691,8 +691,9 @@
+
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+>  kernel/power/main.c  |    2 +-
+>  kernel/power/power.h |    1 -
+>  2 files changed, 1 insertion(+), 2 deletions(-)
+> 
+> --- linux-2.6.23-rc1-mm1/kernel/power/power.h.old	2007-07-26 14:49:29.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/kernel/power/power.h	2007-07-26 14:49:36.000000000 +0200
+> @@ -177,7 +177,6 @@
+>  				unsigned int, char *);
 >  
->  /* Sensor settings are stored 1 byte per offset with the bytes
->     placed add consecutive offsets. */
-> -int abituguru3_read_increment_offset(struct abituguru3_data *data, u8 bank,
-> -	u8 offset, u8 count, u8 *buf, int offset_count)
-> +static int abituguru3_read_increment_offset(struct abituguru3_data *data,
-> +					    u8 bank, u8 offset, u8 count,
-> +					    u8 *buf, int offset_count)
+>  /* kernel/power/main.c */
+> -extern int suspend_enter(suspend_state_t state);
+>  extern int suspend_devices_and_enter(suspend_state_t state);
+>  extern struct blocking_notifier_head pm_chain_head;
+>  
+> --- linux-2.6.23-rc1-mm1/kernel/power/main.c.old	2007-07-26 14:49:44.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/kernel/power/main.c	2007-07-26 14:50:05.000000000 +0200
+> @@ -120,7 +120,7 @@
+>   *
+>   *	This function should be called after devices have been suspended.
+>   */
+> -int suspend_enter(suspend_state_t state)
+> +static int suspend_enter(suspend_state_t state)
 >  {
->  	int i, x;
+>  	int error = 0;
 >  
 > 
 > 
-> _______________________________________________
-> lm-sensors mailing list
-> lm-sensors@lm-sensors.org
-> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
 > 
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
