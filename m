@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXG2Fwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbXG2GF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759339AbXG2Fwp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 01:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXG2Fwe
+	id S1759531AbXG2GF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 02:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbXG2GFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 01:52:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35349 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755559AbXG2Fwd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 01:52:33 -0400
-Date: Sun, 29 Jul 2007 11:34:47 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Domen Puncer <domen@coderock.org>
-cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Franco Venturi <fventuri@mediaone.net>
-Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in
- sb1000_dev_ioctl()
-In-Reply-To: <20070729043707.GA8343@nd47.coderock.org>
-Message-ID: <alpine.LFD.0.999.0707291106500.30928@enigma.security.iitk.ac.in>
-References: <200707290002.42722.jesper.juhl@gmail.com>
- <20070729043707.GA8343@nd47.coderock.org>
+	Sun, 29 Jul 2007 02:05:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:58173 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754813AbXG2GFM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 02:05:12 -0400
+Message-ID: <46AC2D9C.3080307@goop.org>
+Date: Sat, 28 Jul 2007 23:03:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] sched: make cpu_clock() not use the rq clock
+References: <20070726090012.GA5287@elte.hu>
+In-Reply-To: <20070726090012.GA5287@elte.hu>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> Subject: sched: make cpu_clock() not use the rq clock
+>   
 
+This subject doesn't make much sense to me.  All this patch does is get
+the rq's current time under irq_disable rather than spinlock, right?
 
-On Sun, 29 Jul 2007, Domen Puncer wrote:
+    J
 
-> On 29/07/07 00:02 +0200, Jesper Juhl wrote:
-> > Hi,
-> > 
-> > Here's a small patch, prompted by a find by the Coverity checker, 
-> > that removes a potential NULL pointer dereference from 
-> > drivers/net/sb1000.c::sb1000_dev_ioctl().
-> > The checker spotted that we do a NULL test of 'dev', yet we 
-> > dereference the pointer prior to that check.
-> > This patch simply moves the dereference after the NULL test.
-> 
-> But... it can't be called without a valid 'dev', no?
-> A quick 'grep do_ioctl net/' confirms that all calls are in
-> the form of 'dev->do_ioctl(dev, ...'.
+> From: Ingo Molnar <mingo@elte.hu>
+>
+> it is enough to disable interrupts to get the precise rq-clock
+> of the local CPU.
+>
+> this also solves an NMI watchdog regression: the NMI watchdog
+> calls touch_softlockup_watchdog(), which might deadlock on
+> rq->lock if the NMI hits an rq-locked critical section.
+>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  kernel/sched.c |    7 +++----
+>  1 file changed, 3 insertions(+), 4 deletions(-)
+>
+> Index: linux-rt-rebase.q/kernel/sched.c
+> ===================================================================
+> --- linux-rt-rebase.q.orig/kernel/sched.c
+> +++ linux-rt-rebase.q/kernel/sched.c
+> @@ -446,13 +446,12 @@ static inline unsigned long long rq_cloc
+>   */
+>  unsigned long long cpu_clock(int cpu)
+>  {
+> -	struct rq *rq = cpu_rq(cpu);
+>  	unsigned long long now;
+>  	unsigned long flags;
+>  
+> -	spin_lock_irqsave(&rq->lock, flags);
+> -	now = rq_clock(rq);
+> -	spin_unlock_irqrestore(&rq->lock, flags);
+> +	local_irq_save(flags);
+> +	now = rq_clock(cpu_rq(cpu));
+> +	local_irq_restore(flags);
+>  
+>  	return now;
+>  }
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>   
 
-Yup, I think so too ...
-
-
-> > @@ -991,11 +991,13 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-> >  	short PID[4];
-> >  	int ioaddr[2], status, frequency;
-> >  	unsigned int stats[5];
-> > -	struct sb1000_private *lp = netdev_priv(dev);
-> > +	struct sb1000_private *lp;
-> >  
-> >  	if (!(dev && dev->flags & IFF_UP))
-> >  		return -ENODEV;
-
-I think we could get rid of the !dev check itself. Actually, the IFF_UP
-check /also/ looks suspect to me for two reasons: (1) I remember Stephen
-Hemminger once telling me dev->flags is legacy and unsafe, and one of
-the netif_xxx() functions be used instead, and, (2) I wonder if we really
-require the interface to be up and *running* when we do this ioctl.
-
-
-Satyam
