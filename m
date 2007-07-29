@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXG2MAF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762218AbXG2MKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXG2MAF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 08:00:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757219AbXG2L7y
+	id S1762218AbXG2MKd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 08:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758952AbXG2MKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 07:59:54 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35217 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757845AbXG2L7x (ORCPT
+	Sun, 29 Jul 2007 08:10:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57064 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758949AbXG2MKY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 07:59:53 -0400
-Date: Sun, 29 Jul 2007 04:59:51 -0700
-From: Paul Jackson <pj@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       lee.schermerhorn@hp.com, bob.picco@hp.com, clameter@sgi.com
-Subject: Re: +
- numa-generic-management-of-nodemasks-for-various-purposes.patch added to
- -mm tree
-Message-Id: <20070729045951.55b2285b.pj@sgi.com>
-In-Reply-To: <200707290715.l6T7FtN8013215@imap1.linux-foundation.org>
-References: <200707290715.l6T7FtN8013215@imap1.linux-foundation.org>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Sun, 29 Jul 2007 08:10:24 -0400
+Date: Sun, 29 Jul 2007 13:10:12 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: spyro@f2s.com, john@dnsworld.co.uk, linux-kernel@vger.kernel.org,
+       rmk@arm.linux.org.uk
+Subject: Re: RFC: Remove the arm26 port
+Message-ID: <20070729121012.GA1375@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Adrian Bunk <bunk@stusta.de>, spyro@f2s.com, john@dnsworld.co.uk,
+	linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
+References: <20070707201208.GJ3492@stusta.de> <20070729115040.GD30976@stusta.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070729115040.GD30976@stusta.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Schermerhorn (via Andrew) wrote:
-> +static inline void node_set_state(int node, enum node_states state)
-> +{
-> +	__node_set(node, &node_states[state]);
-> +}
-> +
-> +static inline void node_clear_state(int node, enum node_states state)
-> +{
-> +	__node_clear(node, &node_states[state]);
-> +}
+On Sun, Jul 29, 2007 at 01:50:40PM +0200, Adrian Bunk wrote:
+> Considering the state of the arm26 port, I do hereby suggest to remove 
+> it from the Linx kernel since it's far from a usable state and doesn't 
+> seem to come back into a usable state.
+> 
+> If anyone wants to work on getting this port back into a usable state in 
+> the forseeable future he should speak up now.
 
+Yes, please.  This bitrotting code has been in the way for quite bit of
+cross-architecture work I've been doing.
 
-Lee - would you get the same result (same compiled binary code) with
-something like:
+Btw, there's probably no point to Cc rmk as he's not involved with that
+stinkin' pile.
 
-+static inline void node_set_state(int node, enum node_states state)
-+{
-+	node_set(node, node_states[state]);
-+}
-+
-+static inline void node_clear_state(int node, enum node_states state)
-+{
-+	node_clear(node, node_states[state]);
-+}
-
-If so, then I're prefer the latter, as it doesn't depend on the strange
-#define wrapping an inline implementation of node_set and node_clear.
-
-In other words, the latter looks 'simpler'.
-
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
