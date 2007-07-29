@@ -1,95 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764591AbXG2Qnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764158AbXG2QoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764591AbXG2Qnp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763385AbXG2Qng
+	id S1764158AbXG2QoM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763748AbXG2Qn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:43:36 -0400
-Received: from h155.mvista.com ([63.81.120.155]:56842 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763122AbXG2Qnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:43:35 -0400
-Message-ID: <46ACC42E.8040907@ru.mvista.com>
-Date: Sun, 29 Jul 2007 20:45:34 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Sun, 29 Jul 2007 12:43:56 -0400
+Received: from web52007.mail.re2.yahoo.com ([206.190.48.56]:30057 "HELO
+	web52007.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761486AbXG2Qnz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:43:55 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Tf9/u91LLA6E/Ay7pCwVd47T6Zm8lLzw4HpJBJ67g/Bv7jc3ROukVt/4n79L/JrJ3bBYofKWi5Dj0w3Pi/qU0lKlzc/RvAhm64Qv//7tFpiRs183CvHoBIckEeG5wvNkRjC8Zd87nyeEckoTO7XteXySUauC7ObEBCisdQQVRys=;
+X-YMail-OSG: OQf70t4VM1mKTKGRcywwLO146CbmX2wIQjCsLA6MOoW9Y5yQoFSeCN71bRXkUHJxaU.QdVruCVddzy5LA46hrtQCw8rFl.oBOdi7mPRsUotJBYImlEpquUzNb6i1DtbPAHo7Hvw8hS21YEjbUxmY2s8k5w--
+Date: Sun, 29 Jul 2007 09:43:54 -0700 (PDT)
+From: "Hendrik ." <chasake@yahoo.com>
+Subject: Re: Reading a bad sector does not report failure as 'read error' but hangs PC with 'Machine Check Exception'
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <46ACB357.4030006@shaw.ca>
 MIME-Version: 1.0
-To: niklaus.giger@member.fsf.org
-Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org,
-       kristen.c.accardi@intel.com
-Subject: Re: [PATCH] Fix compilation for non CONFIG_HOTPLUG case
-References: <200707291807.52042.niklaus.giger@member.fsf.org>
-In-Reply-To: <200707291807.52042.niklaus.giger@member.fsf.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <626611.9154.qm@web52007.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Niklaus Giger wrote:
-
-> Fixes compilation issues for embedded boards which do not support HOTPLUG
-
-> Signed-off-by: Niklaus Giger <niklaus.giger@member.fsf.org>
-
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 3599ab2..a09bfc8 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -24,7 +24,9 @@
->  #include "base.h"
->  #include "power/power.h"
+> > HARDWARE ERROR
+> > CPU 0: Machine Check Exception: 4  Bank 4:
+> > b200000000070f0f
+> > TSC b7d4a144d0
+> > This is not a software problem!
+> > Run through mcelog --ascii to decode and contact
+> your
+> > hardware vendor
+> > Kernel panic - not syncing: Machine check
 > 
-> +#ifdef CONFIG_HOTPLUG
->  extern const char *kobject_actions[];
-> +#endif
+> You should run this through mcelog as it suggests
+> and see what it shows. 
+>   The kernel should be handling this properly,
+> unless the drive problem 
+> is causing the controller to do something bad. Note
+> that kernels 2.6.20 
+> and later use ADMA mode on the nForce4 SATA
+> controller whereas previous 
+> versions used it essentially like a PATA controller,
+> so it is not 
+> surprising that the behavior is different.
 
-    No need for #ifdef around extern declarations.
+How can I do this? I have installed mcelog but I
+cannot run it after the MCE error because the whole PC
+hangs. If I try it after a reboot with 'mcelog --k8
+--ascii' or whatever parameter, there is no output at
+all. If I try to redirect the output to the syslog,
+nothing is in there because the computer stopped
+working and did not save the log anymore.
 
->  int (*platform_notify)(struct device * dev) = NULL;
->  int (*platform_notify_remove)(struct device * dev) = NULL;
-> @@ -306,11 +308,13 @@ static ssize_t store_uevent(struct device *dev, struct 
-> device_attribute *attr,
->  			    const char *buf, size_t count)
->  {
->  	size_t len = count;
-> +#ifdef CONFIG_HOTPLUG
->  	enum kobject_action action;
-> -
-> +#endif
+Isn't it strange to say that the controller does
+something bad if there is just a bad sector on the
+drive that is reported and handled correctly in an
+older kernel (I have confirmed a bad sector on the
+drive using the Seatools software from Seagate)? In my
+opinion a kernel should not stop responding at all
+with a bad sector on the disk. I cannot change the
+controller's behavior and did all the updates there
+are to make in function, but the problem is introduced
+using the newer kernel series.
 
-    Please don't remove newline between the declaration block and the code.
+Perhaps nobody has tried accessing a bad SATA drive
+before, to simulate such an error? If it helps I could
+try a different type of motherboard to see what
+happens there? (Asus M2NPV-VM)
 
->  	if (len && buf[len-1] == '\n')
->  		len--;
-> 
-> +#ifdef CONFIG_HOTPLUG
->  	for (action = 0; action < KOBJ_MAX; action++) {
->  		if (strncmp(kobject_actions[action], buf, len) != 0)
->  			continue;
-> @@ -319,11 +323,14 @@ static ssize_t store_uevent(struct device *dev, struct 
-> device_attribute *attr,
->  		kobject_uevent(&dev->kobj, action);
->  		goto out;
+Regards,
+Hendrik
 
-    Grr... cleanup style abuse -- ISO a mere return they used goto. :-/
 
->  	}
-> +#endif
-> 
->  	dev_err(dev, "uevent: unsupported action-string; this will "
->  		     "be ignored in a future kernel version\n");
->  	kobject_uevent(&dev->kobj, KOBJ_ADD);
-> +#ifdef CONFIG_HOTPLUG
->  out:
-> +#endif
-
-    Well, #ifdef'ing out label seems too much.
-
->  	return count;
->  }
-
-WBR, Sergei
+       
+____________________________________________________________________________________
+Moody friends. Drama queens. Your life? Nope! - their life, your story. Play Sims Stories at Yahoo! Games.
+http://sims.yahoo.com/  
