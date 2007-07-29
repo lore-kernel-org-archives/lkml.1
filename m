@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761002AbXG2Irn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761175AbXG2IwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761002AbXG2Irn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 04:47:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760311AbXG2Irf
+	id S1761175AbXG2IwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 04:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760519AbXG2IwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 04:47:35 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:34396 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754775AbXG2Ire (ORCPT
+	Sun, 29 Jul 2007 04:52:03 -0400
+Received: from smtp107.plus.mail.re1.yahoo.com ([69.147.102.70]:41537 "HELO
+	smtp107.plus.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760316AbXG2IwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 04:47:34 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB Pegasus driver - avoid a potential NULL pointer dereference.
-Date: Sun, 29 Jul 2007 10:49:26 +0200
-User-Agent: KMail/1.9.7
-Cc: "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Satyam Sharma" <satyam.sharma@gmail.com>,
-       Greg Kroah-Hartman <greg@kroah.com>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Petko Manolov <petkan@users.sourceforge.net>
-References: <200707290019.02591.jesper.juhl@gmail.com> <a781481a0707281637n5b123e4aib46c4e4b009b0018@mail.gmail.com> <9a8748490707281655u66e50bbfqba58687b579a85fe@mail.gmail.com>
-In-Reply-To: <9a8748490707281655u66e50bbfqba58687b579a85fe@mail.gmail.com>
+	Sun, 29 Jul 2007 04:52:01 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=EOXJFoVlsd2//MzrzExg/kgAhcHEJwjEs+LFu8KrYPQQQwqEIfUZ6e3VleORyENpwEunUbMg0R80E138unDx65zaqe8w6dDXlyZX7B/SIFRnQjaVQNmWPny8g/mKcoyosR/Wt73SOL0Ih8qKAs0gzl/Ak+PitnI69CgDU95BPuE=  ;
+X-YMail-OSG: Hv9tzm0VM1kSY5z1.bJtnylsLZrHObBsOIDvaG6vkgFFDNgnKt.IC3Fe.UVL_KVpELevrFcZoA--
+Date: Sun, 29 Jul 2007 10:51:00 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: 2.6.23-rc1: no setup signature found...
+Message-ID: <20070729085059.GA10758@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <46A8E3F9.5070809@zytor.com> <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200707291049.26619.oliver@neukum.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46A9753A.1010206@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 29 Juli 2007 schrieb Jesper Juhl:
-> On 29/07/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
-> > Hi,
-> >
-> > On 7/29/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> > > Hello,
-> > >
-> > > This patch makes sure we don't dereference a NULL pointer in
-> > > drivers/net/usb/pegasus.c::write_bulk_callback() in the initial
-> > > struct net_device *net = pegasus->net; assignment.
-> > > The existing code checks if 'pegasus' is NULL and bails out if
-> > > it is, so we better not touch that pointer until after that check.
-> > > [...]
-> > > diff --git a/drivers/net/usb/pegasus.c b/drivers/net/usb/pegasus.c
-> > > index a05fd97..04cba6b 100644
-> > > --- a/drivers/net/usb/pegasus.c
-> > > +++ b/drivers/net/usb/pegasus.c
-> > > @@ -768,11 +768,13 @@ done:
-> > >  static void write_bulk_callback(struct urb *urb)
-> > >  {
-> > >         pegasus_t *pegasus = urb->context;
-> > > -       struct net_device *net = pegasus->net;
-> > > +       struct net_device *net;
-> > >
-> > >         if (!pegasus)
-> > >                 return;
-> > >
-> > > +       net = pegasus->net;
-> > > +
-> > >         if (!netif_device_present(net) || !netif_running(net))
-> > >                 return;
-> >
-> > Is it really possible that we're called into this function with
-> > urb->context == NULL? If not, I'd suggest let's just get rid of
-> > the check itself, instead.
-> >
-> I'm not sure. I am not very familiar with this code. I just figured
-> that moving the assignment is potentially a little safer and it is
-> certainly no worse than the current code, so that's a safe and
-> potentially benneficial change. Removing the check may be safe but I'm
-> not certain enough to make that call...
+On Thu, Jul 26, 2007 at 09:31:54PM -0700, H. Peter Anvin wrote:
 
-pegasus == NULL there would be a kernel bug. Silently ignoring
-it, like the code now wants to do is bad. As the oops has never been
-reported, I figure turning it into an explicit debugging test is overkill,
-so removal seems to be the best option.
+[added to cc: Chuck Ebbert]
+> Borislav Petkov wrote:
+> >>
+> >> The absolute best would be if we could replicate this in simulation
+> >> (Bochs or Qemu); this would make it very simple to debug.  Would you be
+> >> willing to try to do that?
+> > sure, will do, however i'll be busy at work/travelling tomorrow but as soon as i
+> > get home i'll whip up my qemu and run the kernel in question in it. However,
+> >  Xudong said that grub 0.97 boots just fine on his machine and i think it'll be
+> >  better to debug this right on the bare hardware (i.e. my laptop) ...?
+> >  Suggestions ?
+> 
+> If we can't reproduce the problem in simulation, that itself will tell
+> us something very important.  If we *can* reproduce it in simulation, it
+> will be vastly easier to debug.
 
-	Regards
-		Oliver
+Hi Peter,
+
+   sorry for the delay, here's my report. I got the qemu linux image from the
+   qemu website and did the following:
+
+[boris@gollum:10:34:25:qemu:9553)->  qemu -kernel /boot/2.6.22-4fd06960f120e02e9abc802a09f9511c400042a5-12 -append "root=/dev/hda" linux-0.2.img
+
+and the kernel did boot just fine so the problem should be pertaining only to the
+case when we boot on the bare hardware...
+-- 
+Regards/Gruﬂ,
+    Boris.
