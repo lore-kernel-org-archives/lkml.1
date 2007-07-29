@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbXG2F1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbXG2Flu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbXG2F1h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 01:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbXG2F13
+	id S1758320AbXG2Flu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 01:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbXG2Flm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 01:27:29 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:27925 "EHLO
-	asav07.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752618AbXG2F12 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 01:27:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoXAIjBq0ZKhRO4Rmdsb2JhbACBToVqiCQBAQEWDQYMAQ
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: fernando@oss.ntt.co.jp
-Subject: Re: [PATCH] fix return value of i8042_aux_test_irq
-Date: Sun, 29 Jul 2007 01:27:25 -0400
-User-Agent: KMail/1.9.3
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       vojtech@suse.cz, akpm@linux-foundation.org
-References: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp> <20070726162913.2dc9a9b2@the-village.bc.nu> <2090.172.50.1.13.1185465429.squirrel@172.19.0.2>
-In-Reply-To: <2090.172.50.1.13.1185465429.squirrel@172.19.0.2>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707290127.26058.dtor@insightbb.com>
+	Sun, 29 Jul 2007 01:41:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59982 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbXG2Fll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 01:41:41 -0400
+Date: Sun, 29 Jul 2007 15:41:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Intel Turbo Memory
+Message-Id: <20070729154131.4df4258b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 July 2007 11:57, fernando@oss.ntt.co.jp wrote:
-> On Fri, July 27, 2007 12:29 am, Alan Cox wrote:
-> >> > A small number of boxes do share IRQ12 and it was switched to shared
-> >> for
-> >> > them.
-> >> If that is the case interrupt handlers should be able to determine
-> >> whether
-> >> a certain interrupt comes from their respective devices, and return
-> >> IRQ_HANDLED or IRQ_NONE accordingly. Returning IRQ_HANDLED
-> >> unconditionally
-> >> when IRQF_SHARED is set seems strange. Is this behavior intended?
-> >
-> > Sometimes you simple can't tell and in those cases you have no choice.
-> As I mentioned in a previous email, i8042_interrupt considers that it
-> should not handle an interrupt when there is no data to read and,
-> accordingly, it returns IRQ_NONE in such cases. I was just wondering if we
-> could follow the same approach to make i8042_aux_test_irq more
-> IRQF_SHARED-friendly.
->
+--Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0=
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes, you are right. Patch applied to 'for-linus' branch of input tree.
+Hi all,
 
-Thank you.
+My new laptop came with some of the above.  Has anyone tried looking at
+this to see what is involved in using it?
 
--- 
-Dmitry
+http://www.intel.com/support/chipsets/itm/
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0=
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGrCiQTgG2atn1QN8RAnafAJ9FBzGQwoGL1v19mh4BR3NhNc2+MQCcC7XR
+dQbxlIBvaAxuyRUekC9vZKg=
+=fNHL
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0=--
