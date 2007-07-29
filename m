@@ -1,73 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934809AbXG2TII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934195AbXG2TO4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934809AbXG2TII (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 15:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933301AbXG2THw
+	id S934195AbXG2TO4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 15:14:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760691AbXG2TOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 15:07:52 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:60951 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933130AbXG2THv (ORCPT
+	Sun, 29 Jul 2007 15:14:46 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:46426 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765755AbXG2TOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 15:07:51 -0400
-X-Greylist: delayed 1355 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 15:07:50 EDT
-Date: Sun, 29 Jul 2007 14:45:00 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Frank Hale <frankhale@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-acpi@vger.kernel.org, len.brown@intel.com
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <46ACD8DB.2020108@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0707291428100.7379@lancer.cnet.absolutedigital.net>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com>
+	Sun, 29 Jul 2007 15:14:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=a54lE5bMb0GLvy/KAKLrWUX8F1pn2nCUT/haNClEFKPRhnBo+1tby/YX7ScvYAYIleABogIN9MHIT/LDIN4Wo4Ky/ZUdI8y/ysaiol17tC7O9bEhllPcxLJO8/ZTCELmdYqF+n9N7S0FmsEwduqziX/DNgId5UIevzU/GnXo6yg=
+Message-ID: <39ef3f7b0707291214p5e2b3c7dg7a2ffd2a4482c6ce@mail.gmail.com>
+Date: Sun, 29 Jul 2007 22:14:45 +0300
+From: "Indrek Kruusa" <indrek.kruusa@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] pci_ids: additional NFORCE MCP61 devices
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007, Gabriel C wrote:
+This patch adds the following 7 Nforce devices:
 
-> Frank Hale wrote:
-> [ added  linux-acpi to CC ]
-> > I have an Averatec 2370 laptop with the nVidia MCP51. With kernel
-> > 2.6.20 I had no issues with ACPI however with 2.6.21 and higher the
-> > kernel will hang on boot until I press the suspend button or the power
-> > button in which case the kernel wakes up and finishes the boot
-> > process. Including the following support only causes the issue:
-> > 
-> >  [*] ACPI Support
-> > 
-> > What I mean by that is every ACPI option has been deactivated and only
-> > ACPI support checked. The boot process with 2.6.21 and higher hangs at
-> > the point where the Scheduler is being registered.
-> > 
-> > io scheduler cfq registered (default)
-> > 
-> > If I allow it to sit there it never comes back to life and finishes
-> > booting. If I press the power or suspend button it will finish booting
-> > as expected.
-> > 
-> > I've scoured google for quite a while but cannot find any relevant
-> > information pertaining to this issue. For now I've disabled ACPI
-> > altogether.
+- LPC Bridge (MCP61_LPC_BRG)
+- Memory Controller (MCP61_MC1)
+- High Definition Audio (MCP61_HDA)
+- USB Controller (MCP61_OHCI)
+- USB Controller (MCP61_EHCI)
+- PCI bridge (MCP61_PCI_BRG)
+- Memory Controller (MCP61_MC2)
 
-Hi Frank et al.
+to the pci_ids.h file.
 
-Same laptop (well 2371 actually - same hardware though), same issue. In my 
-testing I've determined that SMP is influential on it hanging up. Building 
-my same config with SMP disabled causes the hang to go away. Same with the 
-Slackware 12 default kernels, 2.6.21.5 is OK, 2.6.21.5-smp hangs.
+Signed-off-by: Indrek Kruusa <indrek.kruusa@gmail.com>
 
-Frank, can you try a non-SMP build with ACPI and see if you still have the 
-problem?
 
-I've tried so many different option combos I don't remember if I've done 
-one with SMP and w/o ACPI but I'll try that sometime today. Haven't tried 
-ACPI debugging yet either so we'll see if that shows anything. Maybe we 
-can narrow it down to something with ACPI and SMP.
+lspci output on Gigabyte GA-M61SME-S2 (GF6100/NF405) can be seen from [1],[2]
 
-Cheers,
--- 
-Cal Peake
+thanks,
+Indrek
 
+______________
+
+[1] http://www.hot.ee/bzmeez/nv_mcp61_lspci-n.txt
+[2] http://www.hot.ee/bzmeez/nv_mcp61_lspci-vv.txt
+
+
+
+diff -pur linux-2.6.git1/include/linux/pci_ids.h
+linux-2.6_p/include/linux/pci_ids.h
+--- linux-2.6.git1/include/linux/pci_ids.h	2007-07-29 20:48:28.000000000 +0300
++++ linux-2.6_p/include/linux/pci_ids.h	2007-07-29 20:54:21.000000000 +0300
+@@ -1206,13 +1206,20 @@
+ #define PCI_DEVICE_ID_NVIDIA_QUADRO_FX_1100         0x034E
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_14              0x0372
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_15              0x0373
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_LPC_BRG   0x03E0
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_16              0x03E5
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_17              0x03E6
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA      0x03E7
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_MC1       0x03EA
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SMBUS	    0x03EB
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_IDE       0x03EC
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_18              0x03EE
+ #define PCI_DEVICE_ID_NVIDIA_NVENET_19              0x03EF
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_HDA       0x03F0
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_OHCI      0x03F1
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_EHCI      0x03F2
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_PCI_BRG   0x03F3
++#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_MC2       0x03F5
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA2     0x03F6
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA3     0x03F7
+ #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP65_SMBUS	    0x0446
