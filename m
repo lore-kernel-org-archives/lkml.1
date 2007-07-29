@@ -1,170 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759216AbXG2AkD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759380AbXG2AnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759216AbXG2AkD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 20:40:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbXG2Ajx
+	id S1759380AbXG2AnU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 20:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXG2AnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 20:39:53 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:28276 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751580AbXG2Ajw (ORCPT
+	Sat, 28 Jul 2007 20:43:14 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:53421 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756324AbXG2AnN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 20:39:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=QX8gyrSYpWPQQat8Fiu99ifI809IXx/DlVGSSyFf1bZSOCrynZ/2BNlMOEcuNcWZKy9IG6b3nnsW8JFIXQBBpncl2zZ+yrjG4vg1FfRAxu5dJWK5o+xrOTeOMdHCmVIx3ZR4BIpMBEepQ3dEYkbX4WlunadDTPnMJJ8l9JASVSw=
-Message-ID: <8b67d60707281739l6fc544e9k5eb130ab6e426ad2@mail.gmail.com>
-Date: Sun, 29 Jul 2007 01:39:51 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: [PATCH] Framebuffer: Consolidated cleanup of pvr2fb.c for Sega Dreamcast
-Cc: lethal@linux-sh.org, linux-kernel@vger.kernel.org,
-       "Ondrej Zajicek" <santiago@crfreenet.org>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_16091_8919501.1185669591043"
+	Sat, 28 Jul 2007 20:43:13 -0400
+Subject: Re: Linus 2.6.23-rc1
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200707290141.19790.volker.armin.hemmann@tu-clausthal.de>
+References: <200707290141.19790.volker.armin.hemmann@tu-clausthal.de>
+Content-Type: text/plain; charset=ISO-8859-15
+Date: Sun, 29 Jul 2007 02:40:31 +0200
+Message-Id: <1185669631.1432.2.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_16091_8919501.1185669591043
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 2007-07-29 at 01:41 +0200, Volker Armin Hemmann wrote:
+> Hi,
+> 
+> I never tried Con's patchset, for two reasons:
+> I tried his 2.4 patches ones, and I never saw any improvements. So when people 
+> were reporting huge improvements with his SD scheduler, I compared that with 
+> the reports of huge improvements with his 2.4 kernel patches.
 
-Tony,
+Well thats a reason if there ever were one...
 
-Second time attempt at this and a much better job I think.
+> ...
+> The second: too many patches. I only would have tried one or two, but the 
+> ck-patchset is a lot bigger.. and I am a little bit uneasy about that.
 
-This patch consolidates your earlier patch, some cleanup of the
-documentation and, crucially, some better handling of the pvr2
-registers based on more up to date information.
+so use only the scheduler? nobody forces you to do many things..
 
-Testing shows that it seems to work pretty well at 16bpp, 24bpp and
-32bpp - including proper rendering of the boot logo at all levels
-(previously this was a bit broken even at 16bpp) and giving white
-against black text. Really detailed testing (eg with X11) requires
-support for the maple bus - which isn't (currently - next project
-assuming this is okay) available, but I have no reason to think this
-is broken.
+> 
+> But I tried a lot of Ingo's cfs patches - and it was a very pleasant 
+> experience. Ingo reacted very fast on my feedback and when I hit a problem he 
+> really tried to find the cause and solve it - and it always was one patch, so 
+> I felt a lot less scared ;)
+> 
+> My usual workload is very 'usual'. KDE desktop, kmail, konqueror, sometimes 
+> xine or amarok providing some background noise while typing away in kate, 
+> triplea, wesnoth or some other game when I need to 'rest' for a while. A lot 
+> of compiling in the background, because I am one of these gentoo users.
+> 
+> With cfs the experience was much more pleasant than with the 'old' scheduler. 
+> Compiling did not hurt as much as usual anymore - the only thing that hurts 
+> is swap.... 
+> 
+> But there is another thing I do regularly: I play ut2004. Not every single 
+> day, but sometimes several times a day. 20minutes of mayhem and then back to 
+> the desktop.
+> 
+> And I do not see any problems with cfs and ut2004. The maximum FPS are indeed 
+> a little bit lower (and you can argue that this really is not important if 
+> the pre-game FPS in a level looking down on the floor go down from 390 to 
+> 380FPS), but the minimum FPS went up!
 
-Incidentally, substituing DIRECTCOLOR for TRUECOLOR appears to break the driver.
+well, surely CFS is better than the old vanilla scheduler, also with 3d,
+and if you have that high fps, i doubt you will notice the effects me
+and others are having. it is not that it is bad, its just not as good as
+SD has shown to be possible..
 
-Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+> 
+> In scenes when my system is fighting hard to provide the FPS, when the action 
+> is high (like when fighting with half a douzend bots at a power node, while 
+> some other bots are shooting into the mess) CFS is much better than the old 
+> scheduler. It is a big difference if you get 6-10FPS or 15-25.
+> (I am playing with maximum 'beautifullness' - I would be able to get a lot 
+> more FPS, if I wanted, but I want a nice scenery and maximum visual 
+> effects ...)
+> 
+> From my point of view 3D is a lot better with cfs. 
 
-------=_Part_16091_8919501.1185669591043
-Content-Type: text/x-patch; name=DC-pvr2fb-clean.diff; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f4osz0pm
-Content-Disposition: attachment; filename="DC-pvr2fb-clean.diff"
+Better than old vanilla yes, but than SD? well, you should give it a
+try.
 
-ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZmIvcHZyMmZiLnR4dCBiL0RvY3VtZW50YXRpb24v
-ZmIvcHZyMmZiLnR4dAppbmRleCAyYmY2YzIzLi4zZDA4NTUxIDEwMDY0NAotLS0gYS9Eb2N1bWVu
-dGF0aW9uL2ZiL3B2cjJmYi50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9mYi9wdnIyZmIudHh0CkBA
-IC05LDE0ICs5LDE0IEBAIG9uZSBmb3VuZCBpbiB0aGUgRHJlYW1jYXN0LgogQWR2YW50YWdlczoK
-IAogICogSXQgcHJvdmlkZXMgYSBuaWNlIGxhcmdlIGNvbnNvbGUgKDEyOCBjb2xzICsgNDggbGlu
-ZXMgd2l0aCAxMDI0eDc2OCkKLSAgIHdpdGhvdXQgdXNpbmcgdGlueSwgdW5yZWFkYWJsZSBmb250
-cy4KKyAgIHdpdGhvdXQgdXNpbmcgdGlueSwgdW5yZWFkYWJsZSBmb250cyAodGhpcyBzaXplIGlz
-IE5PVCBhdmFpbGFibGUgb24gdGhlIAorICAgRHJlYW1jYXN0KQogICogWW91IGNhbiBydW4gWEY4
-Nl9GQkRldiBvbiB0b3Agb2YgL2Rldi9mYjAKICAqIE1vc3QgaW1wb3J0YW50OiBib290IGxvZ28g
-Oi0pCiAKIERpc2FkdmFudGFnZXM6CiAKLSAqIERyaXZlciBpcyBjdXJyZW50bHkgbGltaXRlZCB0
-byB0aGUgRHJlYW1jYXN0IFBvd2VyVlIgMiBpbXBsZW1lbnRhdGlvbgotICAgYXQgdGhlIHRpbWUg
-b2YgdGhpcyB3cml0aW5nLgorICogRHJpdmVyIGlzIGxhcmdlbHkgdW50ZXN0ZWQgb24gbm9uLURy
-ZW1jYXN0IHN5c3RlbXMuCiAKIENvbmZpZ3VyYXRpb24KID09PT09PT09PT09PT0KQEAgLTI5LDEx
-ICsyOSwxNSBAQCBBY2NlcHRlZCBvcHRpb25zOgogZm9udDpYICAgIC0gZGVmYXVsdCBmb250IHRv
-IHVzZS4gQWxsIGZvbnRzIGFyZSBzdXBwb3J0ZWQsIGluY2x1ZGluZyB0aGUKICAgICAgICAgICAg
-IFNVTjEyeDIyIGZvbnQgd2hpY2ggaXMgdmVyeSBuaWNlIGF0IGhpZ2ggcmVzb2x1dGlvbnMuCiAK
-LW1vZGU6WCAgICAtIGRlZmF1bHQgdmlkZW8gbW9kZS4gVGhlIGZvbGxvd2luZyB2aWRlbyBtb2Rl
-cyBhcmUgc3VwcG9ydGVkOgotICAgICAgICAgICAgNjQweDI0MC02MCwgNjQweDQ4MC02MC4KK21v
-ZGU6WCAgICAtIGRlZmF1bHQgdmlkZW8gbW9kZQorICAgICAgICAgICAgVGhlIGZvbGxvd2luZyB2
-aWRlbyBtb2RlcyBhcmUgc3VwcG9ydGVkOgorICAgICAgICAgICAgNjQweDY0MC0xNkA2MCwgNjQw
-eDQ4MC0yNEA2MCwgNjQweDQ4MC0zMkA2MC4gVGhlIERyZWFtY2FzdAorCSAgICBkZWZhdWx0cyB0
-byA2NDB4NDgwLTE2QDYwLiBBdCB0aGUgdGltZSBvZiB3cml0aW5nIHRoZSAKKyAgICAgICAgICAg
-IDI0YnBwIGFuZCAzMmJwcCBtb2RlcyBmdW5jdGlvbiBwb29ybHkuIFdvcmsgdG8gZml4IHRoYXQg
-aXMKKyAgICAgICAgICAgIG9uZ29pbmcKIAkgICAgCiAgICAgICAgICAgICBOb3RlOiB0aGUgNjQw
-eDI0MCBtb2RlIGlzIGN1cnJlbnRseSBicm9rZW4sIGFuZCBzaG91bGQgbm90IGJlCi0gICAgICAg
-ICAgICB1c2VkIGZvciBhbnkgcmVhc29uLiBJdCBpcyBvbmx5IG1lbnRpb25lZCBhcyBhIHJlZmVy
-ZW5jZS4KKyAgICAgICAgICAgIHVzZWQgZm9yIGFueSByZWFzb24uIEl0IGlzIG9ubHkgbWVudGlv
-bmVkIGhlcmUgYXMgYSByZWZlcmVuY2UuCiAKIGludmVyc2UgICAtIGludmVydCBjb2xvcnMgb24g
-c2NyZWVuIChmb3IgTENEIGRpc3BsYXlzKQogCkBAIC00OSwxMyArNTMsMjAgQEAgY2FibGU6WCAg
-IC0gY2FibGUgdHlwZS4gVGhpcyBjYW4gYmUgYW55IG9mIHRoZSBmb2xsb3dpbmc6IHZnYSwgcmdi
-LCBhbmQKIG91dHB1dDpYICAtIG91dHB1dCB0eXBlLiBUaGlzIGNhbiBiZSBhbnkgb2YgdGhlIGZv
-bGxvd2luZzogcGFsLCBudHNjLCBhbmQKICAgICAgICAgICAgIHZnYS4gSWYgbm9uZSBpcyBzcGVj
-aWZpZWQsIHdlIGd1ZXNzLgogCitWaWRlbyBtb2RlIG1heSBhbHNvIGJlIHNwZWNpZmllZCBpbiB0
-aGUgZm9ybToKKworCSAgIFt4cmVzXXhbeXJlc11bLTxicHA+XVtAcmVmcmVzaC1yYXRlXQorCisJ
-ICAgZWcgNjQweDQ4MC0zMkA2MAorCisKIFgxMQogPT09CiAKLVhGODZfRkJEZXYgc2hvdWxkIHdv
-cmssIGluIHRoZW9yeS4gQXQgdGhlIHRpbWUgb2YgdGhpcyB3cml0aW5nIGl0IGlzCi10b3RhbGx5
-IHVudGVzdGVkIGFuZCBtYXkgb3IgbWF5IG5vdCBldmVuIHBvcnRyYXkgdGhlIGJlZ2lubmluZ3Mg
-b2YKLXdvcmtpbmcuIElmIHlvdSBlbmQgdXAgdGVzdGluZyB0aGlzLCBwbGVhc2UgbGV0IG1lIGtu
-b3chCitYRjg2X0ZCRGV2IGhhcyBiZWVuIHNob3duIHRvIHdvcmsgb24gdGhlIERyZW1jYXN0IGlu
-IHRoZSBwYXN0IC0gdGhvdWdoIG5vdCB5ZXQKK29uIGFueSAyLjYgc2VyaWVzIGtlcm5lbC4KIAog
-LS0KIFBhdWwgTXVuZHQgPGxldGhhbEBsaW51eGRjLm9yZz4KK1VwZGF0ZWQgYnkgQWRyaWFuIE1j
-TWVuYW1pbiA8YWRyaWFuQG1jbWVuLmRlbW9uLmNvLnVrPgogCmRpZmYgLS1naXQgYS9kcml2ZXJz
-L3ZpZGVvL3B2cjJmYi5jIGIvZHJpdmVycy92aWRlby9wdnIyZmIuYwppbmRleCAzYWMzMmYzLi4y
-NjRiNmE2IDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL3B2cjJmYi5jCisrKyBiL2RyaXZlcnMv
-dmlkZW8vcHZyMmZiLmMKQEAgLTk0LDYgKzk0LDcgQEAKICNkZWZpbmUgRElTUF9ESVdDT05GIChE
-SVNQX0JBU0UgKyAweGU4KQogI2RlZmluZSBESVNQX0RJV0hTVFJUIChESVNQX0JBU0UgKyAweGVj
-KQogI2RlZmluZSBESVNQX0RJV1ZTVFJUIChESVNQX0JBU0UgKyAweGYwKQorI2RlZmluZSBESVNQ
-X1BJWERFUFRIIChESVNQX0JBU0UgKyAweDEwOCkKIAogLyogUGl4ZWwgY2xvY2tzLCBvbmUgZm9y
-IFRWIG91dHB1dCwgZG91YmxlZCBmb3IgVkdBIG91dHB1dCAqLwogI2RlZmluZSBUVl9DTEsgNzQy
-MzkKQEAgLTE0Myw2ICsxNDQsNyBAQCBzdGF0aWMgc3RydWN0IHB2cjJmYl9wYXIgewogCXVuc2ln
-bmVkIGNoYXIgaXNfbG93cmVzOwkvKiBJcyBob3Jpem9udGFsIHBpeGVsLWRvdWJsaW5nIGVuYWJs
-ZWQ/ICovCiAKIAl1bnNpZ25lZCBsb25nIG1taW9fYmFzZTsJLyogTU1JTyBiYXNlICovCisJdTMy
-IHBhbGV0dGVbMTZdOwogfSAqY3VycmVudHBhcjsKIAogc3RhdGljIHN0cnVjdCBmYl9pbmZvICpm
-Yl9pbmZvOwpAQCAtMzIwLDcgKzMyMiw3IEBAIHN0YXRpYyBpbnQgcHZyMmZiX3NldGNvbHJlZyh1
-bnNpZ25lZCBpbnQgcmVnbm8sIHVuc2lnbmVkIGludCByZWQsCiAKIAlpZiAocmVnbm8gPiBpbmZv
-LT5jbWFwLmxlbikKIAkJcmV0dXJuIDE7Ci0KKwkKIAkvKgogCSAqIFdlIG9ubHkgc3VwcG9ydCB0
-aGUgaGFyZHdhcmUgcGFsZXR0ZSBmb3IgMTYgYW5kIDMyYnBwLiBJdCdzIGFsc28KIAkgKiBleHBl
-Y3RlZCB0aGF0IHRoZSBwYWxldHRlIGZvcm1hdCBoYXMgYmVlbiBzZXQgYnkgdGhlIHRpbWUgd2Ug
-Z2V0CkBAIC0zMzMsMjQgKzMzNSwyNSBAQCBzdGF0aWMgaW50IHB2cjJmYl9zZXRjb2xyZWcodW5z
-aWduZWQgaW50IHJlZ25vLCB1bnNpZ25lZCBpbnQgcmVkLAogCQkgICAgICAoKGJsdWUgICYgMHhm
-ODAwKSA+PiAxMSk7CiAKIAkJcHZyMmZiX3NldF9wYWxfZW50cnkocGFyLCByZWdubywgdG1wKTsK
-LQkJKCh1MTYqKShpbmZvLT5wc2V1ZG9fcGFsZXR0ZSkpW3JlZ25vXSA9IHRtcDsKIAkJYnJlYWs7
-CiAJICAgIGNhc2UgMjQ6IC8qIFJHQiA4ODggKi8KIAkJcmVkID4+PSA4OyBncmVlbiA+Pj0gODsg
-Ymx1ZSA+Pj0gODsKLQkJKCh1MzIqKShpbmZvLT5wc2V1ZG9fcGFsZXR0ZSkpW3JlZ25vXSA9IChy
-ZWQgPDwgMTYpIHwgKGdyZWVuIDw8IDgpIHwgYmx1ZTsKKwkJdG1wID0gKHJlZCA8PCAxNikgfCAo
-Z3JlZW4gPDwgOCkgfCBibHVlOwogCQlicmVhazsKIAkgICAgY2FzZSAzMjogLyogQVJHQiA4ODg4
-ICovCiAJCXJlZCA+Pj0gODsgZ3JlZW4gPj49IDg7IGJsdWUgPj49IDg7CiAJCXRtcCA9ICh0cmFu
-c3AgPDwgMjQpIHwgKHJlZCA8PCAxNikgfCAoZ3JlZW4gPDwgOCkgfCBibHVlOwogCiAJCXB2cjJm
-Yl9zZXRfcGFsX2VudHJ5KHBhciwgcmVnbm8sIHRtcCk7Ci0JCSgodTMyKikoaW5mby0+cHNldWRv
-X3BhbGV0dGUpKVtyZWdub10gPSB0bXA7CiAJCWJyZWFrOwogCSAgICBkZWZhdWx0OgogCQlwcl9k
-ZWJ1ZygiSW52YWxpZCBiaXQgZGVwdGggJWQ/IT9cbiIsIGluZm8tPnZhci5iaXRzX3Blcl9waXhl
-bCk7CiAJCXJldHVybiAxOwogCX0KIAorCWlmIChyZWdubyA8IDE2KQorCQkoKHUzMiopKGluZm8t
-PnBzZXVkb19wYWxldHRlKSlbcmVnbm9dID0gdG1wOworCiAJcmV0dXJuIDA7CiB9CiAKQEAgLTU5
-OCw2ICs2MDEsNyBAQCBzdGF0aWMgdm9pZCBwdnIyX2luaXRfZGlzcGxheShzdHJ1Y3QgZmJfaW5m
-byAqaW5mbykKIAogCS8qIGJpdHMgcGVyIHBpeGVsICovCiAJZmJfd3JpdGVsKGZiX3JlYWRsKERJ
-U1BfRElXTU9ERSkgfCAoLS1ieXRlc3BlcnBpeGVsIDw8IDIpLCBESVNQX0RJV01PREUpOworCWZi
-X3dyaXRlbChieXRlc3BlcnBpeGVsIDw8IDIsIERJU1BfUElYREVQVEgpOwogCiAJLyogdmlkZW8g
-ZW5hYmxlLCBjb2xvciBzeW5jLCBpbnRlcmxhY2UsCiAJICogaHN5bmMgYW5kIHZzeW5jIHBvbGFy
-aXR5IChjdXJyZW50bHkgdW51c2VkKSAqLwpAQCAtNzg5LDcgKzc5Myw3IEBAIHN0YXRpYyBpbnQg
-X19kZXZpbml0IHB2cjJmYl9jb21tb25faW5pdCh2b2lkKQogCWZiX2luZm8tPmZib3BzCQk9ICZw
-dnIyZmJfb3BzOwogCWZiX2luZm8tPmZpeAkJPSBwdnIyX2ZpeDsKIAlmYl9pbmZvLT5wYXIJCT0g
-Y3VycmVudHBhcjsKLQlmYl9pbmZvLT5wc2V1ZG9fcGFsZXR0ZQk9ICh2b2lkICopKGZiX2luZm8t
-PnBhciArIDEpOworCWZiX2luZm8tPnBzZXVkb19wYWxldHRlCT0gY3VycmVudHBhci0+cGFsZXR0
-ZTsKIAlmYl9pbmZvLT5mbGFncwkJPSBGQklORk9fREVGQVVMVCB8IEZCSU5GT19IV0FDQ0VMX1lQ
-QU47CiAKIAlpZiAodmlkZW9fb3V0cHV0ID09IFZPX1ZHQSkKQEAgLTgwNiw2ICs4MTAsOCBAQCBz
-dGF0aWMgaW50IF9fZGV2aW5pdCBwdnIyZmJfY29tbW9uX2luaXQodm9pZCkKIAogCWlmIChyZWdp
-c3Rlcl9mcmFtZWJ1ZmZlcihmYl9pbmZvKSA8IDApCiAJCWdvdG8gb3V0X2VycjsKKwkvKk11c3Qg
-d3JpdGUgUElYREVQVEggdG8gcmVnaXN0ZXIgYmVmb3JlIGFueXRoaW5nIGlzIGRpc3BsYXllZCAt
-IHNvIGZvcmNlIGluaXQgKi8KKwlwdnIyX2luaXRfZGlzcGxheShmYl9pbmZvKTsKIAogCW1vZGVt
-ZW11c2VkID0gZ2V0X2xpbmVfbGVuZ3RoKGZiX2luZm8tPnZhci54cmVzX3ZpcnR1YWwsCiAJCQkJ
-ICAgICAgZmJfaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsKTsKQEAgLTEwODEsMTQgKzEwODcsMTUg
-QEAgc3RhdGljIGludCBfX2luaXQgcHZyMmZiX2luaXQodm9pZCkKICNlbmRpZgogCXNpemUgPSBz
-aXplb2Yoc3RydWN0IGZiX2luZm8pICsgc2l6ZW9mKHN0cnVjdCBwdnIyZmJfcGFyKSArIDE2ICog
-c2l6ZW9mKHUzMik7CiAKLQlmYl9pbmZvID0ga3phbGxvYyhzaXplLCBHRlBfS0VSTkVMKTsKKwlm
-Yl9pbmZvID0gZnJhbWVidWZmZXJfYWxsb2Moc2l6ZW9mKHN0cnVjdCBwdnIyZmJfcGFyKSwgTlVM
-TCk7CisKIAlpZiAoIWZiX2luZm8pIHsKIAkJcHJpbnRrKEtFUk5fRVJSICJGYWlsZWQgdG8gYWxs
-b2NhdGUgbWVtb3J5IGZvciBmYl9pbmZvXG4iKTsKIAkJcmV0dXJuIC1FTk9NRU07CiAJfQogCiAK
-LQljdXJyZW50cGFyID0gKHN0cnVjdCBwdnIyZmJfcGFyICopKGZiX2luZm8gKyAxKTsKKwljdXJy
-ZW50cGFyID0gZmJfaW5mby0+cGFyOwogCiAJZm9yIChpID0gMDsgaSA8IEFSUkFZX1NJWkUoYm9h
-cmRfZHJpdmVyKTsgaSsrKSB7CiAJCXN0cnVjdCBwdnIyX2JvYXJkICpwdnJfYm9hcmQgPSBib2Fy
-ZF9kcml2ZXIgKyBpOwpAQCAtMTEwMSw3ICsxMTA4LDcgQEAgc3RhdGljIGludCBfX2luaXQgcHZy
-MmZiX2luaXQodm9pZCkKIAkJaWYgKHJldCAhPSAwKSB7CiAJCQlwcmludGsoS0VSTl9FUlIgInB2
-cjJmYjogRmFpbGVkIGluaXQgb2YgJXMgZGV2aWNlXG4iLAogCQkJCXB2cl9ib2FyZC0+bmFtZSk7
-Ci0JCQlrZnJlZShmYl9pbmZvKTsKKwkJCWZyYW1lYnVmZmVyX3JlbGVhc2UoZmJfaW5mbyk7CiAJ
-CQlicmVhazsKIAkJfQogCX0KQEAgLTExMjUsNyArMTEzMiw3IEBAIHN0YXRpYyB2b2lkIF9fZXhp
-dCBwdnIyZmJfZXhpdCh2b2lkKQogI2VuZGlmCiAKIAl1bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKGZi
-X2luZm8pOwotCWtmcmVlKGZiX2luZm8pOworCWZyYW1lYnVmZmVyX3JlbGVhc2UoZmJfaW5mbyk7
-CiB9CiAKIG1vZHVsZV9pbml0KHB2cjJmYl9pbml0KTsK
-------=_Part_16091_8919501.1185669591043--
+> 
+> Now the question for all the people who are bashing cfs for its bad 3d 
+> performance: what am I doing wrong?
+
+As said, we never said CFS was worse than old vanilla, and we never said
+it was BAD, we did however say its not as good as SD :)
+
+> 
+> Glück Auf,
+> Volker
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
