@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754328AbXG2EIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbXG2Eht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754328AbXG2EIX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 00:08:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750939AbXG2EIO
+	id S1754461AbXG2Eht (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 00:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751218AbXG2Ehj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 00:08:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36905 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750916AbXG2EIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 00:08:14 -0400
-Message-ID: <46AC1297.9030009@redhat.com>
-Date: Sun, 29 Jul 2007 00:07:51 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	Sun, 29 Jul 2007 00:37:39 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:23472 "EHLO
+	asav02.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbXG2Ehj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 00:37:39 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgoXAMC2q0ZKhRO4Rmdsb2JhbACBToVqiCQBAQEWDQYMAQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Parag Warudkar <parag.warudkar@gmail.com>
+Subject: Re: [PATCH] TSDEV - Don't flood dmesg with removal warnings
+Date: Sun, 29 Jul 2007 00:37:36 -0400
+User-Agent: KMail/1.9.3
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org
+References: <Pine.LNX.4.64.0707271038100.5691@parag-desktop>
+In-Reply-To: <Pine.LNX.4.64.0707271038100.5691@parag-desktop>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: How can we make page replacement smarter (was: swap-prefetch)
-References: <200707272243.02336.a1426z@gawab.com> <200707280717.41250.a1426z@gawab.com> <46AAEFC4.8000006@redhat.com> <200707281411.57823.a1426z@gawab.com>
-In-Reply-To: <200707281411.57823.a1426z@gawab.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707290037.37606.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Chris Snook wrote:
+Hi Parag,
 
->> At best, reads can be read-ahead and cached, which is why
->> sequential swap-in sucks less.  On-demand reads are as expensive as I/O
->> can get.
+On Friday 27 July 2007 10:43, Parag Warudkar wrote:
+> Ignore my previous whitespace damaged patch. This one should be good.
 > 
-> Which means that it should be at least as fast as swap-out, even faster 
-> because write to disk is usually slower than read on modern disks.  But 
-> linux currently shows a distinct 2x slowdown for sequential swap-in wrt 
-> swap-out. 
+> tsdev.c warns about scheduled removal each time tsdev_open is called -
+> So even for a default boot I get to see the warning 3 times -
+> 
+> [  340.537078] tsdev (compaq touchscreen emulation) is scheduled for
+> removal.
+> [  340.537081] See Documentation/feature-removal-schedule.txt for details.
+> [  340.550314] tsdev (compaq touchscreen emulation) is scheduled for
+> removal.
+> [  340.550318] See Documentation/feature-removal-schedule.txt for details.
+> [  340.565065] tsdev (compaq touchscreen emulation) is scheduled for
+> removal.
+> [  340.565068] See Documentation/feature-removal-schedule.txt for details.
+> 
+> Move the warning to tsdev_init() from tsdev_open so we don't end up
+> printing a large string in dmesg everytime tsdev_open is called.
+>
 
-That's because writes are faster than reads in moderate
-quantities.
-
-The disk caches writes, allowing the OS to write a whole
-bunch of data into the disk cache and the disk can optimize
-the IO a bit internally.
-
-The same optimization is not possible for reads.
+The printk was moved per Andrew's request to make it more annoying.
+Obviously it is working ;) Do you know what is opening /dev/input/tsX
+nodes?
 
 -- 
-Politics is the struggle between those who want to make their country
-the best in the world, and those who believe it already is.  Each group
-calls the other unpatriotic.
+Dmitry
