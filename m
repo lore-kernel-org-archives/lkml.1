@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764927AbXG2PjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764902AbXG2Pl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764927AbXG2PjU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763616AbXG2PjK
+	id S1764902AbXG2Pl2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761278AbXG2PlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:39:10 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:55628 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761217AbXG2PjJ (ORCPT
+	Sun, 29 Jul 2007 11:41:20 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:64262 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760567AbXG2PlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:39:09 -0400
-Message-ID: <46ACB40C.2040908@gmail.com>
-Date: Sun, 29 Jul 2007 17:36:44 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, david@lang.hm,
-       Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
-       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	 <46AAEDEB.7040003@gmail.com>	 <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>	 <46AB166A.2000300@gmail.com>	 <20070728122139.3c7f4290@the-village.bc.nu>	 <46AC4B97.5050708@gmail.com>	 <20070729141215.08973d54@the-village.bc.nu>	 <46AC9F2C.8090601@gmail.com>	 <2c0942db0707290758p39fef2e8o68d67bec5c7ba6ab@mail.gmail.com>	 <46ACAB45.6080307@gmail.com> <2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
-In-Reply-To: <2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Sun, 29 Jul 2007 11:41:19 -0400
+Date: Sun, 29 Jul 2007 09:41:04 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: IRQF_DISABLED problem
+In-reply-to: <fa./08N/HtpJQ6zg8Xc1K5pP6/aKMM@ifi.uio.no>
+To: David Miller <davem@davemloft.net>
+Cc: arjan@infradead.org, torvalds@linux-foundation.org, matthew@wil.cx,
+       mingo@elte.hu, linux-kernel@vger.kernel.org
+Message-id: <46ACB510.5060700@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.mb8woD3e5JnT1x6AgEMOmnlVvg0@ifi.uio.no>
+ <fa.axY2ukp7kqKVMAidyu4NVN81MbI@ifi.uio.no>
+ <fa.tS+LCGnYgeCNRIaF90yH21XBCqI@ifi.uio.no>
+ <fa./08N/HtpJQ6zg8Xc1K5pP6/aKMM@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/29/2007 05:20 PM, Ray Lee wrote:
-
->> I understand what log structure is generally, but how does it help swapin?
+David Miller wrote:
+> From: Arjan van de Ven <arjan@infradead.org>
+> Date: Fri, 27 Jul 2007 13:11:56 -0700
 > 
-> Look at the swap out case first.
+>> On Thu, 2007-07-26 at 16:17 -0700, Linus Torvalds wrote:
+>>> On Thu, 26 Jul 2007, Linus Torvalds wrote:
+>>>>  (c) "one IRQF_DISABLED means that everything runs disabled". This is 
+>>>>      quite possibly buggy.
+>>> (Side note: I'm not claiming this (or it's mirror image (d)) is really any 
+>>> better/worse than the current behaviour from a theoretical standpoint, but 
+>>> at least the current behaviour is _tested_, which makes it better in 
+>>> practice. So if we want to change this, I think we want to change it to 
+>>> something that is _obviously_ better).
+>> my personal preference would actually be to just never enable
+>> interrupts. It's the fastest solution obviously, the most friendly on
+>> stack and.. well simplest. Drivers no longer need to play some of the
+>> games that they do today. And while there is an argument that this may
+>> introduce a bit of latency... I'm not really convinced.
 > 
-> Right now, when swapping out the kernel places whatever it can
-> wherever it can inside the swap space. The closer you are to filling
-> your swap space, the more likely that those swapped out blocks will be
-> all over place, rather than in one nice chunk. Contrast that with a
-> log structured scheme, where the writeout happens to sequential spaces
-> on the drive instead of scattered about.
-
-This seems to be now fixing the different problem of swap-space filling up. 
-I'm quite willing to for now assume I've got plenty free.
-
-> So, at some point when the system needs to fault those blocks that
-> back in, it now has a linear span of sectors to read instead of asking
-> the drive to bounce over twenty tracks for a hundred blocks.
-
-Moreover though -- what I know about log structure is that generally it 
-optimises for write (swapout) and might make read (swapin) worse due to 
-fragmentation that wouldn't happen with a regular fs structure.
-
-I guess that cleaner that Alan mentioned might be involved there -- I don't 
-know how/what it would be doing.
-
-> So, it eliminates the seeks. My laptop drive can read (huh, how odd,
-> it got slower, need to retest in single user mode), hmm, let's go with
-> about 25 MB/s. If we ask for a single block from each track, though,
-> that'll drop to 4k * (1 second / seek time) which is about a megabyte
-> a second if we're lucky enough to read from consecutive tracks. Even
-> worse if it's not.
+> If you have a "chirpy" serial controller with only a 1 byte
+> fifo, even a quite reasonable interrupt handler can cause
+> receive characters to get lost if you disable interrupts during
+> the entirety of it's execution.
 > 
-> Seeks are the enemy any time you need to hit the drive for anything,
-> be it swapping or optimizing a database.
+> It really is needed.
+> 
+> And it's just plain rude to disable interrupts when it isn't
+> absolutely necessary.
 
-I am very aware of the costs of seeks (on current magnetic media).
+Does anyone really use those serial controllers with no FIFO anymore? 
+They've never been reliable for remotely high speeds..
 
-Rene.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
