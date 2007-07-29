@@ -1,88 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935302AbXG2P1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935444AbXG2P1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935302AbXG2P1Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934487AbXG2PU4
+	id S935444AbXG2P1s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934827AbXG2PWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:20:56 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:47092 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934482AbXG2PUw (ORCPT
+	Sun, 29 Jul 2007 11:22:47 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:62309 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934121AbXG2PWp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:20:52 -0400
+	Sun, 29 Jul 2007 11:22:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OGGKjsVL/mSYa/qaCWh7lQtI5XB/oiYrC26Q+GfvbfZdQ60nA8ICtN1mX3n153PDPqD+d4IjMW/zAXSCLXkyAnUMcZGFN/KcYVHV35kkeIaYDNeoyERtqpty/K8UnXxDS9UzKCLgplAAQMbIjgaXMguilkwkrEfaRnneJYWvwYw=
-Message-ID: <2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
-Date: Sun, 29 Jul 2007 08:20:50 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, david@lang.hm,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Frank Kingswood" <frank@kingswood-consulting.co.uk>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46ACAB45.6080307@gmail.com>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=MLuz7o6kOihHFOCALXWU10Z4zHFkNW+ZZYBHHoYUXsFjCa/np8LHz1vyiHx8g5pVQt386Adcn9Ju3AcGqQrhRR8Ht+a5i/I8xc3JjNfjm0xd0Ck00tSB5WMjtvo0w+RJLM52N7c6osZLRf0q2yAYbVW9xrPhfSYyPcCYdifnh6Q=
+Message-ID: <46ACAFBF.6060609@googlemail.com>
+Date: Sun, 29 Jul 2007 17:18:23 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, virtualization@lists.osdl.org
+Subject: [PATCH] BLOCK=n , LGUEST=m/y compile error
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46AAEDEB.7040003@gmail.com>
-	 <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
-	 <46AB166A.2000300@gmail.com>
-	 <20070728122139.3c7f4290@the-village.bc.nu>
-	 <46AC4B97.5050708@gmail.com>
-	 <20070729141215.08973d54@the-village.bc.nu>
-	 <46AC9F2C.8090601@gmail.com>
-	 <2c0942db0707290758p39fef2e8o68d67bec5c7ba6ab@mail.gmail.com>
-	 <46ACAB45.6080307@gmail.com>
-X-Google-Sender-Auth: 569ebd2c982cc101
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/07, Rene Herman <rene.herman@gmail.com> wrote:
-> On 07/29/2007 04:58 PM, Ray Lee wrote:
-> > On 7/29/07, Rene Herman <rene.herman@gmail.com> wrote:
-> >> Right over my head. Why does log-structure help anything?
-> >
-> > Log structured disk layouts allow for better placement of writeout, so
-> > that you cn eliminate most or all seeks. Seeks are the enemy when
-> > trying to get full disk bandwidth.
-> >
-> > google on log structured disk layout, or somesuch, for details.
->
-> I understand what log structure is generally, but how does it help swapin?
+Hi Rusty,
 
-Look at the swap out case first.
+Lguest should depend on BLOCK too , without BLOCK set I get this error:
 
-Right now, when swapping out the kernel places whatever it can
-wherever it can inside the swap space. The closer you are to filling
-your swap space, the more likely that those swapped out blocks will be
-all over place, rather than in one nice chunk. Contrast that with a
-log structured scheme, where the writeout happens to sequential spaces
-on the drive instead of scattered about.
+...
 
-So, at some point when the system needs to fault those blocks that
-back in, it now has a linear span of sectors to read instead of asking
-the drive to bounce over twenty tracks for a hundred blocks.
+drivers/block/lguest_blk.c: In function 'end_entire_request':
+drivers/block/lguest_blk.c:80: error: implicit declaration of function 'end_that_request_first'
+drivers/block/lguest_blk.c:80: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:82: error: implicit declaration of function 'add_disk_randomness'
+drivers/block/lguest_blk.c:82: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:83: error: implicit declaration of function 'blkdev_dequeue_request'
+drivers/block/lguest_blk.c:84: error: implicit declaration of function 'end_that_request_last'
+drivers/block/lguest_blk.c: In function 'lgb_irq':
+drivers/block/lguest_blk.c:128: error: implicit declaration of function 'blk_start_queue'
+drivers/block/lguest_blk.c:128: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c: In function 'req_to_dma':
+drivers/block/lguest_blk.c:148: error: implicit declaration of function 'rq_for_each_bio'
+drivers/block/lguest_blk.c:148: error: expected ';' before '{' token
+drivers/block/lguest_blk.c:145: warning: unused variable 'idx'
+drivers/block/lguest_blk.c:145: warning: unused variable 'i'
+drivers/block/lguest_blk.c: In function 'setup_req':
+drivers/block/lguest_blk.c:185: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c: In function 'do_write':
+drivers/block/lguest_blk.c:202: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c: In function 'do_read':
+drivers/block/lguest_blk.c:215: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c: In function 'do_lgb_request':
+drivers/block/lguest_blk.c:234: error: implicit declaration of function 'elv_next_request'
+drivers/block/lguest_blk.c:234: warning: assignment makes pointer from integer without a cast
+drivers/block/lguest_blk.c:239: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:246: error: implicit declaration of function 'blk_fs_request'
+drivers/block/lguest_blk.c:247: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:248: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:253: error: implicit declaration of function 'rq_data_dir'
+drivers/block/lguest_blk.c:260: error: implicit declaration of function 'blk_stop_queue'
+drivers/block/lguest_blk.c: In function 'lguestblk_probe':
+drivers/block/lguest_blk.c:304: error: implicit declaration of function 'register_blkdev'
+drivers/block/lguest_blk.c:313: error: implicit declaration of function 'alloc_disk'
+drivers/block/lguest_blk.c:313: warning: assignment makes pointer from integer without a cast
+drivers/block/lguest_blk.c:322: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:322: error: implicit declaration of function 'blk_init_queue'
+drivers/block/lguest_blk.c:323: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:335: error: implicit declaration of function 'blk_queue_max_hw_segments'
+drivers/block/lguest_blk.c:335: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:341: error: implicit declaration of function 'blk_queue_segment_boundary'
+drivers/block/lguest_blk.c:341: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:349: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:360: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:373: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:374: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:375: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:376: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:378: error: implicit declaration of function 'set_capacity'
+drivers/block/lguest_blk.c:379: error: implicit declaration of function 'add_disk'
+drivers/block/lguest_blk.c:382: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:392: error: implicit declaration of function 'blk_cleanup_queue'
+drivers/block/lguest_blk.c:392: error: dereferencing pointer to incomplete type
+drivers/block/lguest_blk.c:394: error: implicit declaration of function 'put_disk'
+drivers/block/lguest_blk.c:396: error: implicit declaration of function 'unregister_blkdev'
+make[2]: *** [drivers/block/lguest_blk.o] Error 1
+make[1]: *** [drivers/block] Error 2
 
-So, it eliminates the seeks. My laptop drive can read (huh, how odd,
-it got slower, need to retest in single user mode), hmm, let's go with
-about 25 MB/s. If we ask for a single block from each track, though,
-that'll drop to 4k * (1 second / seek time) which is about a megabyte
-a second if we're lucky enough to read from consecutive tracks. Even
-worse if it's not.
+....
 
-Seeks are the enemy any time you need to hit the drive for anything,
-be it swapping or optimizing a database.
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
-Ray
+---
+
+ Documentation/lguest/lguest.txt |    1 +
+ drivers/lguest/Kconfig          |    2 +-
+ 2 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/lguest/lguest.txt b/Documentation/lguest/lguest.txt
+index 821617b..4e7408c 100644
+--- a/Documentation/lguest/lguest.txt
++++ b/Documentation/lguest/lguest.txt
+@@ -33,6 +33,7 @@ Running Lguest:
+   CONFIG_EXPERIMENTAL=y ("Prompt for development and/or incomplete code/drivers")
+   CONFIG_PARAVIRT=y ("Paravirtualization support (EXPERIMENTAL)")
+   CONFIG_LGUEST=y/m ("Linux hypervisor example code")
++  CONFIG_BLOCK=y  ("Enable the block layer")
+ 
+   and I recommend:
+   CONFIG_HZ=100 ("Timer frequency")[2]
+diff --git a/drivers/lguest/Kconfig b/drivers/lguest/Kconfig
+index 43d901f..4bc0577 100644
+--- a/drivers/lguest/Kconfig
++++ b/drivers/lguest/Kconfig
+@@ -1,6 +1,6 @@
+ config LGUEST
+ 	tristate "Linux hypervisor example code"
+-	depends on X86 && PARAVIRT && NET && EXPERIMENTAL && !X86_PAE
++	depends on X86 && PARAVIRT && NET && EXPERIMENTAL && BLOCK && !X86_PAE
+ 	select LGUEST_GUEST
+ 	select HVC_DRIVER
+ 	---help---
+
