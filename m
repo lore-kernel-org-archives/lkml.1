@@ -1,44 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbXG2Q2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932597AbXG2Q24@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932437AbXG2Q2h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763678AbXG2Q21
+	id S932597AbXG2Q24 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:28:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764160AbXG2Q2p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:28:27 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:2857 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765996AbXG2Q2Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:28:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=qCS88UTSNs10IxQTnmk75cws9rPDvK95Z8e3qF1vQ1udM+I9rmNrMes7mMA/jtIItX6ktEPnl2THCoG1UBd8gCW0vBf0J3QpdcMxrPnb7Pp1TZlhhDZ/njNSjtEccP/9QvjSOA8TwdvvhF/NDezThb2PyIUgGgskGqam0ttxuEM=
-Message-ID: <e9c3a7c20707290928r53bf2530ue02c5e1d4f03be46@mail.gmail.com>
-Date: Sun, 29 Jul 2007 09:28:25 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-To: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
-Subject: checkpatch.pl false positive on exported pointers
-Cc: lkml <linux-kernel@vger.kernel.org>
+	Sun, 29 Jul 2007 12:28:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48494 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763678AbXG2Q2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:28:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [2.6 patch] drivers/base/power/: make 2 functions static
+Date: Sun, 29 Jul 2007 18:37:36 +0200
+User-Agent: KMail/1.9.5
+Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+References: <20070729145650.GH16817@stusta.de>
+In-Reply-To: <20070729145650.GH16817@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Google-Sender-Auth: 0d365f24f9ffb598
+Message-Id: <200707291837.37244.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
-#563: FILE: drivers/scsi/iioc34x/iioc34x_sas.c:58:
-+EXPORT_SYMBOL(iioc34x_transport_template);
+On Sunday, 29 July 2007 16:56, Adrian Bunk wrote:
+> suspend_device() and resume_device() can now become static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> 
+> ---
 
-drivers/scsi/iioc34x/iioc34x_sas.c:57
-struct scsi_transport_template *iioc34x_transport_template;
-EXPORT_SYMBOL(iioc34x_transport_template);
+Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+ 
+>  drivers/base/power/power.h   |    6 ------
+>  drivers/base/power/resume.c  |    2 +-
+>  drivers/base/power/suspend.c |    2 +-
+>  3 files changed, 2 insertions(+), 8 deletions(-)
+> 
+> --- linux-2.6.23-rc1-mm1/drivers/base/power/power.h.old	2007-07-26 05:14:12.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/drivers/base/power/power.h	2007-07-26 05:15:49.000000000 +0200
+> @@ -55,12 +55,6 @@
+>  
+>  extern void dpm_resume(void);
+>  extern void dpm_power_up(void);
+> -extern int resume_device(struct device *);
+> -
+> -/*
+> - * suspend.c
+> - */
+> -extern int suspend_device(struct device *, pm_message_t);
+>  
+>  #else /* CONFIG_PM */
+>  
+> --- linux-2.6.23-rc1-mm1/drivers/base/power/resume.c.old	2007-07-26 05:14:28.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/drivers/base/power/resume.c	2007-07-26 05:14:39.000000000 +0200
+> @@ -20,7 +20,7 @@
+>   *
+>   */
+>  
+> -int resume_device(struct device * dev)
+> +static int resume_device(struct device * dev)
+>  {
+>  	int error = 0;
+>  
+> --- linux-2.6.23-rc1-mm1/drivers/base/power/suspend.c.old	2007-07-26 05:16:00.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/drivers/base/power/suspend.c	2007-07-26 05:16:17.000000000 +0200
+> @@ -54,7 +54,7 @@
+>   *	@state:	Power state device is entering.
+>   */
+>  
+> -int suspend_device(struct device * dev, pm_message_t state)
+> +static int suspend_device(struct device * dev, pm_message_t state)
+>  {
+>  	int error = 0;
+>  
+> 
+> 
+> 
 
-I suspect the script wants:
-EXPORT_SYMBOL(*iioc34x_transport_template);
-...but that does not compile.
-
-Thanks,
-Dan
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
