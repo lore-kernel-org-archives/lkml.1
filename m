@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXG2XFM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936807AbXG2XGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965778AbXG2XFM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 19:05:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764015AbXG2XFA
+	id S936807AbXG2XGB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 19:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764400AbXG2XFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 19:05:00 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:48262 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbXG2XE7 (ORCPT
+	Sun, 29 Jul 2007 19:05:53 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:13944 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762199AbXG2XFw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 19:04:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CkXWwer3TPKNboyV3BKg+mUDFiu4yhEp0JsqmyLqPT9qpjDah+0VGr51FPe6UluD6jSa+uavWqbv8q0KzxXplegpL+4xrZG25riI8AMWEBW2RZHn10RcM7VgMr2HFjclURtXbhk2BoSuEnoJ21NuC4CVeOWOcA0isPDe3jj7yKw=
-Message-ID: <a12e280d0707291604s618c0b14lc8572b2f48cd4ca1@mail.gmail.com>
-Date: Mon, 30 Jul 2007 09:04:58 +1000
-From: "George Sescher" <gesacs@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Linus 2.6.23-rc1
-Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "CK Mailinglist" <ck@vds.kolivas.org>
-In-Reply-To: <20070729150436.GA6598@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 29 Jul 2007 19:05:52 -0400
+X-Trace: 10884031-mk-filter-1.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.82.215
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=_TTNmgpoho0R1BgnMXAA:9 a=ul_MJ5LH-GY_T_MnrOwA:7 a=r_RWg8KAjKmMGY_ClZFKil_UiY0A:4
+X-IronPort-AV: E=Sophos;i="4.19,196,1183330800"; 
+   d="scan'208";a="10884031"
+Subject: Re: Fwd: [PATCH] Reboot Dreamcast under software control
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
+       linuxsh-dev@lists.sourceforge.net
+In-Reply-To: <20070729225024.GA8039@linux-sh.org>
+References: <8b67d60707291104k64ba6e0dpf86a7604ce63ae8e@mail.gmail.com>
+	 <8b67d60707291125o5c78d87dq59c842a9dac3e521@mail.gmail.com>
+	 <20070729225024.GA8039@linux-sh.org>
+Content-Type: text/plain
+Date: Mon, 30 Jul 2007 00:05:31 +0100
+Message-Id: <1185750331.23949.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <1185588279.1654.1.camel@localhost> <20070729150436.GA6598@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * Kasper Sandberg <lkml@metanurb.dk> wrote:
-> > [...] As far as im concerned, i may be forced to unofficially maintain
-> > SD for my own systems(allthough lots in the gaming community is bound
-> > to be interrested, as it does make games lots better)
+On Mon, 2007-07-30 at 07:50 +0900, Paul Mundt wrote:
+> On Sun, Jul 29, 2007 at 07:25:21PM +0100, Adrian McMenamin wrote:
+> > diff --git a/arch/sh/kernel/process.c b/arch/sh/kernel/process.c
+> > index 6334a4c..6f5e9e4 100644
+> > --- a/arch/sh/kernel/process.c
+> > +++ b/arch/sh/kernel/process.c
+> > @@ -97,6 +97,11 @@ void cpu_idle(void)
+> > 
+> >  void machine_restart(char * __unused)
+> >  {
+> > +
+> > +#ifdef CONFIG_SH_DREAMCAST
+> > +       /*reboot the Dreamcast under software control*/
+> > +       writel(0x00007611, 0xA05F6890);
+> > +#endif
+> >         /* SR.BL=1 and invoke address error to let CPU reset (manual reset) */
+> >         asm volatile("ldc %0, sr\n\t"
+> >                      "mov.l @%1, %0" : : "r" (0x10000000), "r" (0x80000001));
+> 
+> No, if you want to do this, at least use a function pointer and leave
+> this as the default implementation. The dreamcast presumably only needs
+> this magic write anyways, rather than the SR.BL trick.
+> 
 
-On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
-> i'd encourage you to do it - in fact i already tried to prod Peter
-> Williams into doing exactly that ;) The more reality checks a scheduler
-> has, the better. [ Btw., after the obvious initial merging trouble it
-> should be much easier to keep SD maintained against future upstream
-> kernels due to the policy modularity that CFS introduces. (and which
-> policy-modularity should also help reduce the size and complexity of the
-> SD patch.) ]
+Well, when I tested it, it did have a "return" in after the call and it
+worked - but I took that out as it looked like code bloat to me :)
 
-<chuckle>
+Explain what you mean by using a function pointer and I'll do that.
 
-You're advocating plugsched now?
+Adrian
