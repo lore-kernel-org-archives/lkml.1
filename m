@@ -1,50 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761294AbXG2JYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbXG2J2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761294AbXG2JYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 05:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbXG2JYI
+	id S1761481AbXG2J2U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 05:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760747AbXG2J2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 05:24:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:26834 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759586AbXG2JYH (ORCPT
+	Sun, 29 Jul 2007 05:28:08 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51368 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760873AbXG2J2G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 05:24:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=UGkYGzjUvq+GdzShwchMi9F4lKBQWZKi15XKohRpBGfx2JGT60hc97huAEPDnZMFxWp0Am3UukhJIENMFpsCwyFKKbBqttmgjcCDCS3uMZtzKGnHEhd/QAGGJRlfVgXZsTORD9zjdH5smFb+E7xSkr3RgemVch7b+8YVLczGo7M=
-Date: Sun, 29 Jul 2007 10:24:02 +0100
-From: Xudong Guan <xudong.guan@gmail.com>
-To: Borislav Petkov <bbpetkov@yahoo.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: 2.6.23-rc1: no setup signature found...
-Message-ID: <20070729092402.GA2272@xguan-laptop>
-References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <46A8E3F9.5070809@zytor.com> <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com> <20070729085059.GA10758@gollum.tnic>
+	Sun, 29 Jul 2007 05:28:06 -0400
+Date: Sun, 29 Jul 2007 12:28:04 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Willy Tarreau <w@1wt.eu>
+cc: "Darryl L. Miles" <darryl-mailinglists@netbauds.net>,
+       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+Subject: Re: TCP SACK issue, hung connection, tcpdump included
+In-Reply-To: <20070729085427.GA22784@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0707291208230.10340@kivilampi-30.cs.helsinki.fi>
+References: <46AC2CBE.5010500@netbauds.net> <20070729064511.GA18718@1wt.eu>
+ <Pine.LNX.4.64.0707291052300.10340@kivilampi-30.cs.helsinki.fi>
+ <20070729085427.GA22784@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070729085059.GA10758@gollum.tnic>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: MULTIPART/MIXED; boundary="-696243703-1547136570-1185700118=:10340"
+Content-ID: <Pine.LNX.4.64.0707291225250.10340@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> On Thu, Jul 26, 2007 at 09:31:54PM -0700, H. Peter Anvin wrote:
-> > If we can't reproduce the problem in simulation, that itself will tell
-> > us something very important.  If we *can* reproduce it in simulation, it
-> > will be vastly easier to debug.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
+
+---696243703-1547136570-1185700118=:10340
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0707291210121.10340@kivilampi-30.cs.helsinki.fi>
+
+On Sun, 29 Jul 2007, Willy Tarreau wrote:
+
+> On Sun, Jul 29, 2007 at 11:26:00AM +0300, Ilpo Järvinen wrote:
+> > On Sun, 29 Jul 2007, Willy Tarreau wrote:
+> > 
+> > > On Sun, Jul 29, 2007 at 06:59:26AM +0100, Darryl L. Miles wrote:
+> > > > CLIENT = Linux 2.6.20.1-smp [Customer build]
+> > > > SERVER = Linux 2.6.9-55.ELsmp [Red Hat Enterprise Linux AS release 4 
+> > > > (Nahant Update 5)]
+> > > > 
+> > > > The problems start around time index 09:21:39.860302 when the CLIENT issues 
+> > > > a TCP packet with SACK option set (seemingly for a data segment which has 
+> > > > already been seen) from that point on the connection hangs.
+> > 
+> > ...That's DSACK and it's being correctly sent. To me, it seems unlikely to 
+> > be the cause for this breakage...
+> > 
+> > > Where was the capture taken ? on CLIENT or on SERVER (I suspect client from
+> > > the timers) ? 
+> > 
+> > ...I would guess the same based on SYN timestamps (and from the DSACK 
+> > timestamps)...
+> > 
+> > > A possible, but very unlikely reason would be an MTU limitation
+> > > somewhere, because the segment which never gets correctly ACKed is also the
+> > > largest one in this trace.
+> > 
+> > Limitation for 48 byte segments? You have to be kidding... :-) But yes,
+> > it seems that one of the directions is dropping packets for some reason 
+> > though I would not assume MTU limitation... Or did you mean some other 
+> > segment?
 > 
-> [boris@gollum:10:34:25:qemu:9553)->  qemu -kernel /boot/2.6.22-4fd06960f120e02e9abc802a09f9511c400042a5-12 -append "root=/dev/hda" linux-0.2.img
+> No, I was talking about the 1448 bytes segments. But in fact I don't
+> believe it much because the SACKs are always retransmitted just afterwards.
 
-You are using qemu itself as the kernel loader instead of your
-possible problematic grub on your harddisk. To duplicate the problem,
-you need to manually copy your grub and the kernel to linux-0.2.img
-and boot it with "qemu linux-0.2.img", although I am not sure
-exactly how to manually do this. Another way is to know your
-installation media that contains the copy of grub you are using,
-and use it to do an installation in qemu.
+Ah, but it's ACKed correctly right below it...:
 
-Xudong
+[...snip...]
+> > > > 09:21:39.490740 IP SERVER.ssh > CLIENT.50727: P 18200:18464(264) ack 2991 
+> > > > win 2728 <nop,nop,timestamp 7692910 800001727>
+> > > > 09:21:39.490775 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
+> > > > <nop,nop,timestamp 800001755 7692910>
+> > > > 09:21:39.860245 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
+> > > > win 2728 <nop,nop,timestamp 7693293 800001749>
 
+...segment below snd_una arrived => snd_una remains 18464, receiver 
+generates a duplicate ACK:
+ 
+> > > > 09:21:39.860302 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
+> > > > <nop,nop,timestamp 800001847 7692910,nop,nop,sack sack 1 {12408:13856} >
+
+The cumulative ACK field of it covers _everything_ below 18464 (i.e., it 
+ACKs them), including the 1448 bytes in 12408:13856... In addition, the 
+SACK block is DSACK information [RFC2883] telling explicitly the address 
+of the received duplicate block. However, if this ACK doesn't reach the 
+SERVER TCP, RTO is triggered and the first not yet cumulatively ACKed 
+segment is retransmitted (I guess cumulative ACKs up to 12408 arrived 
+without problems to the SERVER):
+
+> > > > 09:21:40.453440 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
+> > > > win 2728 <nop,nop,timestamp 7693887 800001749>
+[...snip...]
+
+> BTW, some information are missing. It would have been better if the trace
+> had been read with tcpdump -Svv. We would have got seq numbers and ttl.
+> Also, we do not know if there's a firewall between both sides. Sometimes,
+> some IDS identify attacks in crypted traffic and kill connections. It
+> might have been the case here, with the connection closed one way on an
+> intermediate firewall.
+
+Yeah, firewall or some other issue, I'd say it's quite unlikely a bug in 
+TCP because behavior to both directions indicate client -> sender 
+blackhole independently of each other...
+
+
+-- 
+ i.
+---696243703-1547136570-1185700118=:10340--
