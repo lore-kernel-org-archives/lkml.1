@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbXG2NCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762950AbXG2NEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762878AbXG2NCv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 09:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbXG2NCo
+	id S1762950AbXG2NEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 09:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762154AbXG2NED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 09:02:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48268 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760788AbXG2NCn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 09:02:43 -0400
-Date: Sun, 29 Jul 2007 14:09:36 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rik van Riel <riel@redhat.com>
-Cc: Al Boldi <a1426z@gawab.com>, Chris Snook <csnook@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: How can we make page replacement smarter
-Message-ID: <20070729140936.6cd364a9@the-village.bc.nu>
-In-Reply-To: <46ABF184.40803@redhat.com>
-References: <200707272243.02336.a1426z@gawab.com>
-	<46AAA25E.7040301@redhat.com>
-	<200707280717.41250.a1426z@gawab.com>
-	<46ABF184.40803@redhat.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 29 Jul 2007 09:04:03 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55605 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761975AbXG2NEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 09:04:01 -0400
+Message-ID: <46AC900E.9090405@redhat.com>
+Date: Sun, 29 Jul 2007 21:03:10 +0800
+From: Eugene Teo <eteo@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Neil Horman <nhorman@tuxdriver.com>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
+       martin.pitt@ubuntu.com, wwoods@redhat.com
+Subject: Re: [PATCH 0/3] core_pattern: cleaned up repost/continuing post of
+ core_pattern enhancements
+References: <20070727200050.GA18946@hmsreliant.homelinux.net> <46AC6EAB.7000502@redhat.com> <20070729121444.GA9644@hmsreliant.homelinux.net>
+In-Reply-To: <20070729121444.GA9644@hmsreliant.homelinux.net>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Files are different.  File content tends to be grouped
-> in large related chunks, both logically in the file and
-> on disk.  Generally there is a lot more file data on a
-> system than what fits in memory.
+Neil Horman wrote:
+> On Sun, Jul 29, 2007 at 06:40:43PM +0800, Eugene Teo wrote:
+>> Neil Horman wrote:
+[...]
+>> You may want to improve your patches with style-related changes, including
+>> removing trailing spaces, using tabs instead of spaces, and defining pointers
+>> like char *ptr instead of char * ptr.
+>>
+> I assume this is just a general comment, since as far as I can see, I've
+> followed those guidelines.
 
-Binary paging patterns don't always look like that unfortunately although
-I suspect we might want to be weighing towards paging out R/O file mapped
-pages earlier simply because they are bigger linear chunks
+Please see the next few emails.
+
+>> Also, it is probably good to think how we can "drop privileges" while piping
+>> the core dump output to an external program. A malicious user can potentially
+>> use it as a possible backdoor since anything that is executed by "|program" will
+>> be executed with root privileges.
+>>
+> It was my understanding that apport already did this.
+
+I haven't looked at apport yet, but are you talking about the userspace portion of
+apport or the kernel changes in the Ubuntu kernel?
+
+Eugene
