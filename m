@@ -1,132 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbXG2JE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbXG2JPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761413AbXG2JE6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 05:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760707AbXG2JEt
+	id S1761300AbXG2JPp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 05:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760707AbXG2JPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 05:04:49 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:3172 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755614AbXG2JEm (ORCPT
+	Sun, 29 Jul 2007 05:15:36 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39510 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758163AbXG2JPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 05:04:42 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-Date: Sun, 29 Jul 2007 11:04:33 +0200
-User-Agent: KMail/1.9.7
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
-       lkml@metanurb.dk
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr> <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org> (sfid-20070729_101032_902278_7E626EF8)
-In-Reply-To: <alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
+	Sun, 29 Jul 2007 05:15:35 -0400
+Date: Sun, 29 Jul 2007 11:17:10 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070729091709.GY9840@enneenne.com>
+References: <20070724080013.GA22171@gundam.enneenne.com> <1185284942.14697.319.camel@pmac.infradead.org> <20070724142050.GD4074@enneenne.com> <1185288769.14697.339.camel@pmac.infradead.org> <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com> <20070727192848.GW9840@enneenne.com> <46AA4A1E.8040302@nortel.com> <20070727194516.GX9840@enneenne.com> <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1555556.WuYB3rUxzR";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707291104.39945.Martin@lichtvoll.de>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: LinuxPPS & spinlocks
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1555556.WuYB3rUxzR
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, Jul 28, 2007 at 02:17:24AM +0530, Satyam Sharma wrote:
+> 
+> I only glanced through the code, so could be wrong, but I noticed that
+> the only global / shared data you have in there is a global "pps_source"
+> array of pps_s structs. That's accessed / modified from the various
+> syscalls introduced in the API exported to userspace, as well as the
+> register/unregister/pps_event API exported to in-kernel client subsystems,
+> yes? So it looks like you need to introduce proper locking for it, simply
+> type-qualifying it as "volatile" is not enough.
+> 
+> However, I think you've introduced two locks for it. The syscalls (that
+> run in process context, obviously) seem to use a pps_mutex and
+> pps_event() seems to be using the pps_lock spinlock (because that
+> gets executed from interrupt context) -- and from the looks of it, the
+> register/unregister functions are using /both/ the mutex and spinlock (!)
 
-Am Samstag 28 Juli 2007 schrieb Linus Torvalds:
-> On Sat, 28 Jul 2007, Jan Engelhardt wrote:
-> > You cannot please everybody in the scheduler question, that is clear,
-> > then why not offer dedicated scheduling alternatives (plugsched comes
-> > to mind) and let them choose what pleases them most, and handles
-> > their workload best?
+This is right.
 
-[...]
+> This isn't quite right, (in fact there's nothing to protect pps_event from
+> racing against a syscall), so you should use *only* the spinlock for
+> synchronization -- the spin_lock_irqsave/restore() variants, in fact.
 
-> So I personally think that it's much better to find a setup that works
-> "well enough" for people, without having modal behaviour. People
-> complain and gripe now, but what people seem to be missing is that it's
-> a journey, not an end-of-the-line destination. We haven't had a single
-> release kernel with the new scheduler yet, so the only people who have
-> tried it are either
->
->  (a) interested in schedulers in the first place (which I think is
-> *not* a good subset, because they have very specific expectations of
-> what is right and what is wrong, and they come into the whole thing
-> with that mental baggage)
->
->  (b) people who test -rc1 kernels (I love you guys, but sadly, you're
-> not nearly as common as I'd like ;)
->
-> so the fact is, we'll find out more information about where CFS falls
-> down, and where it does well,  and we'll be able to *fix* it and tweak
-> it.
+We can't use the spin_lock_irqsave/restore() variants since PPS
+sources cannot manage IRQ enable/disable. For instance, the serial
+source doesn't manage IRQs directly but just uses it to record PPS
+events. The serial driver manages the IRQ enable/disable, not the PPS
+source which only uses the IRQ handler to records events.
 
-I have nothing against CFS in the kernel. I had as long as my ThinkPad T23=
-=20
-had interruptions in music playback initially even though the machine was=20
-idling - while at the same time music playback was perfectly fine with SD=20
-since quite some iterations. After quite some iterations of testing new=20
-CFS versions from Ingo it started working like I think it should.=20
+About using both mutex and spinlock I did it since (I think) I should
+protect syscalls from each others and from pps_register/unregister(),
+and pps_event() against pps_register/unregister().
 
-Expecting a interruption free music playback IMO by no way is any mental=20
-baggage. I for sure am interested in schedulers, but actually I do not=20
-understand the exact principles by with SD and CFS work, I just had no=20
-time to look at them closer, and thus just looked at: How does it behave=20
-on my laptops with different desktop loads? Actually from a technical=20
-point of view I do not care whether CFS or SD goes in, cause I simply=20
-understand enough of the technical concepts behind them. And since they=20
-are behaving roughly the same on my laptops now I have no issue with CFS=20
-going in from a functional view. It seems to do what I expect from a=20
-scheduler and I am happy with that.
+> [ Also, have you considered making pps_source a list and not an array?
+> It'll help you lose a whole lot of MAX_SOURCES, pps_is_allocated, etc
+> kind of gymnastics in there, and you _can_ return a pointer to the
+> corresponding pps source struct from the register() function to the in-kernel
+> users, so that way you get to retain the O(1) access to the corresponding
+> source when a client calls into pps_event(), similar to how you're using the
+> array index presently. ]
+> 
+> I also noticed code like (from pps_event):
+> 
+> +	/* Try to grab the lock, if not we prefere loose the event... */
+> +	if (!spin_trylock(&pps_lock))
+> +		return;
+> 
+> which looks worrisome and unnecessary. That spinlock looks to be of
+> fine enough granularity to me, do you think there'd be any contention
+> on it? I /think/ you can simply make that a spin_lock().
 
-While I have nothing against CFS in the kernel, I actually do not like the=
-=20
-way the decision was done and how it was communicated. Its not the=20
-outcome of the decision but the way it was done that bothers me. I=20
-actually also think that the communication between Ingo and Con could=20
-have been better especially when Ingo decided to write CFS while Con was=20
-still working hard on SD.
+This is due the fact I cannot manage IRQ enable/disable.
 
-I do think that it would not have been necessary to loose Con's talent.=20
-Sure I think that Con had its share in it, but it does not make sense to=20
-concentrate on his share, cause only he can do that and he is gone for=20
-now. But thats exactly what I perceive you are doing.=20
+> Overall the code looks simple / straightforward enough to me (except for
+> the parport / uart stuff that I have no clue about), and I'll also read up on
+> the relevant RFC for this and would hopefully try and give you a more
+> meaningful review over the weekend.
 
-And I realize it doesn't make sense for me at all to concentrate at your=20
-or Ingo's share. I made my point and unless you Ingo and the others=20
-involved decide to look at whether there might be something you have done=20
-that has contributed to loosing the talent of a good kernel developer the=20
-issue can't be helped. Unless people decide to look at themselves instead=20
-of pointing out what in their eyes has been wrong with others, the issue=20
-will stand still.
+Thanks a lot for your help!
 
-I am pretty confident that SD in the kernel would have been a viable=20
-choice as well and that Con would have done his best to support and=20
-maintain it. Well now thats history. Con decided to stay out of kernel=20
-development and I actually can understand him.
+Ciao,
 
-I believe it is possible to learn something out of how this all happened.=20
-And actually I merely wanted to point this out to you. Whether you decide=20
-to learn something out of it or not, actually is your choice.=20
+Rodolfo
 
-Regards,
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+-- 
 
---nextPart1555556.WuYB3rUxzR
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGrFgnmRvqrKWZhMcRAh9bAKCoaiVNPvwx1PTsDEyjCLfHjeJZgQCgnOmo
-+eFIByWUF7k3SbDYk2gPVLg=
-=EP1/
------END PGP SIGNATURE-----
-
---nextPart1555556.WuYB3rUxzR--
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
