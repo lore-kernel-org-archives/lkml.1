@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765468AbXG2PLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933077AbXG2PLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765468AbXG2PLU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764537AbXG2O75
+	id S933077AbXG2PLq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763786AbXG2O76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:59:57 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47873 "EHLO
+	Sun, 29 Jul 2007 10:59:58 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47875 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764845AbXG2O7v (ORCPT
+	with ESMTP id S1763580AbXG2O7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:59:51 -0400
-Date: Sun, 29 Jul 2007 16:59:28 +0200
+	Sun, 29 Jul 2007 10:59:55 -0400
+Date: Sun, 29 Jul 2007 16:59:32 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, v4l-dvb-maintainer@linuxtv.org
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Serge E. Hallyn" <serue@us.ibm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] export v4l2_int_device_{,un}register
-Message-ID: <20070729145928.GH16817@stusta.de>
+Subject: [-mm patch] kernel/pid.c: remove unused exports
+Message-ID: <20070729145932.GI16817@stusta.de>
 References: <20070725040304.111550f4.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,46 +30,34 @@ On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
 >...
 > Changes since 2.6.22-rc6-mm1:
 >...
->  git-dvb.patch
+> +pid-namespaces-define-is_global_init-and-is_container_init.patch
 >...
->  git trees
+>  pid namespaces
 >...
 
-This patch fixes the following build error:
-
-<--  snip  -->
-
-...
-  MODPOST 2135 modules
-ERROR: "v4l2_int_device_register" [drivers/media/video/tcm825x.ko] undefined!
-ERROR: "v4l2_int_device_unregister" [drivers/media/video/tcm825x.ko] undefined!
-make[2]: *** [__modpost] Error 1
-
-<--  snip  -->
+This patch removes two unused exports.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
 
- drivers/media/video/v4l2-int-device.c |    2 ++
- 1 file changed, 2 insertions(+)
+ kernel/pid.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- linux-2.6.23-rc1-mm1/drivers/media/video/v4l2-int-device.c.old	2007-07-27 14:03:33.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/media/video/v4l2-int-device.c	2007-07-27 14:04:03.000000000 +0200
-@@ -101,6 +101,7 @@
+--- linux-2.6.23-rc1-mm1/kernel/pid.c.old	2007-07-28 07:31:12.000000000 +0200
++++ linux-2.6.23-rc1-mm1/kernel/pid.c	2007-07-28 07:31:23.000000000 +0200
+@@ -69,13 +69,11 @@ struct pid_namespace init_pid_ns = {
+ 	.last_pid = 0,
+ 	.child_reaper = &init_task
+ };
+-EXPORT_SYMBOL(init_pid_ns);
  
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(v4l2_int_device_register);
- 
- void v4l2_int_device_unregister(struct v4l2_int_device *d)
+ int is_global_init(struct task_struct *tsk)
  {
-@@ -114,6 +115,7 @@
- 	}
- 	mutex_unlock(&mutex);
+ 	return tsk == init_pid_ns.child_reaper;
  }
-+EXPORT_SYMBOL_GPL(v4l2_int_device_unregister);
+-EXPORT_SYMBOL(is_global_init);
  
- /* Adapted from search_extable in extable.c. */
- static v4l2_int_ioctl_func *find_ioctl(struct v4l2_int_slave *slave, int cmd,
+ /*
+  * Note: disable interrupts while the pidmap_lock is held as an
 
