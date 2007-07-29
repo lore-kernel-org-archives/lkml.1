@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759842AbXG2Ctk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759655AbXG2Cw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759842AbXG2Ctk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 22:49:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbXG2Cta
+	id S1759655AbXG2Cw1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 22:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756116AbXG2CwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 22:49:30 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:16469 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759588AbXG2CtY (ORCPT
+	Sat, 28 Jul 2007 22:52:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:1716 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756776AbXG2CwU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 22:49:24 -0400
+	Sat, 28 Jul 2007 22:52:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent:from:sender;
-        b=hCEhN/gRvBxpMFb2Gi9rBtnE7w4Gx0/bq2XYUL2xGTNXPwCFsMRg0zWARWxc3wN4VEuG66K5afBIDOkhgASqP0j6mphbld5ig0OMgOdYepYVoRvD/zPBQ7QraBsi937i04lQ953sWYvbJnSMwYGUL/0cu59ZdEJT9flfmFiygDM=
-Date: Sun, 29 Jul 2007 10:49:18 +0800
-To: linux-kernel@vger.kernel.org
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH] arch/i386/kernel/apm.c: apm_init() warning fix
-Message-ID: <20070729024918.GA19311@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Xv0P0hgl9Uyhpy336gpSSNxk9oIADDT2t1EzOhv/A7Y+b0aZxJSEH3ooMvO000ix0aoRiXPaUzyYKj2h7UK/TP8/rVLWF3wrST+h2PfvHZ+y1tCMkiqqlO4SAi7EIojPyEMDp2sHnSQacCd/lK4VrqZhZuJkwftrx0UariF1tfY=
+Message-ID: <46ABFFE4.3060703@googlemail.com>
+Date: Sun, 29 Jul 2007 04:48:04 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
+To: Danny ter Haar <dth@dth.net>
+CC: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+References: <20070727193832.GA20289@dth.net> <200707290142.53689.bzolnier@gmail.com> <20070729012324.GA29723@dth.net>
+In-Reply-To: <20070729012324.GA29723@dth.net>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-From: Eugene Teo <eugeneteo@kernel.sg>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/i386/kernel/apm.c: In function 'apm_init':
-arch/i386/kernel/apm.c:2240: warning: format '%lx' expects type 'long
-	unsigned int', but argument 3 has type 'u32'
+Danny ter Haar wrote:
+> Quoting Bartlomiej Zolnierkiewicz (bzolnier@gmail.com):
+>> Please retry with the latest -git kernel and if the problem is still
+>> there install git, get kernel tree and run git-bisect.
+> 
+> I ran over "make menuconfig" and did a few changes.
+> 
+> http://www.dth.net/kernel/config-2.6.23-rc1-git5
+> 
 
-apm_info.bios.offset is of type 'u32'.
+Maybe try to : 
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- arch/i386/kernel/apm.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+disable BSG ( maybe some leftover bug )
+boot acpi=off ( that got merged kind late )
 
-diff --git a/arch/i386/kernel/apm.c b/arch/i386/kernel/apm.c
-index 47001d5..f02a8ac 100644
---- a/arch/i386/kernel/apm.c
-+++ b/arch/i386/kernel/apm.c
-@@ -2235,7 +2235,7 @@ static int __init apm_init(void)
- 		apm_info.bios.cseg_16_len = 0; /* 64k */
- 
- 	if (debug) {
--		printk(KERN_INFO "apm: entry %x:%lx cseg16 %x dseg %x",
-+		printk(KERN_INFO "apm: entry %x:%x cseg16 %x dseg %x",
- 			apm_info.bios.cseg, apm_info.bios.offset,
- 			apm_info.bios.cseg_16, apm_info.bios.dseg);
- 		if (apm_info.bios.version > 0x100)
+> 
+> Danny
 
+
+Gabriel
