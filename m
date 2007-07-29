@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936989AbXG2V3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937032AbXG2Vbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936989AbXG2V3Z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935584AbXG2V3S
+	id S937032AbXG2Vbc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935486AbXG2VbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:29:18 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:40953
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S935684AbXG2V3R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:29:17 -0400
-Date: Sun, 29 Jul 2007 23:29:09 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 0/5] use mutex instead of semaphore in several drivers
-Message-ID: <20070729212909.GC3432@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+	Sun, 29 Jul 2007 17:31:24 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2677 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762834AbXG2VbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 17:31:23 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH] ppc: chipsfb.c build fix for CONFIG_PM
+Date: Sun, 29 Jul 2007 23:31:21 +0200
+User-Agent: KMail/1.9.5
+Cc: paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <200707291950.30261.m.kozlowski@tuxland.pl> <200707292333.12766.rjw@sisk.pl>
+In-Reply-To: <200707292333.12766.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707292331.22120.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset converts semaphores that are used as mutexes to the
-mutex API in the following drivers/code:
+> > 	This patch fixes the following build error on powerpc:
+> > 
+> >   CC      drivers/video/chipsfb.o
+> > drivers/video/chipsfb.c: In function 'chipsfb_pci_suspend':
+> > drivers/video/chipsfb.c:461: error: 'PM_SUSPEND_MEM' undeclared (first use in this function)
+> > drivers/video/chipsfb.c:461: error: (Each undeclared identifier is reported only once
+> > drivers/video/chipsfb.c:461: error: for each function it appears in.)
+> > make[2]: *** [drivers/video/chipsfb.o] Blad 1
+> > make[1]: *** [drivers/video] Blad 2
+> > make: *** [drivers] Blad 2
+> 
+> Already fixed in the right way.  Please see:
+> http://www.mail-archive.com/mm-commits@vger.kernel.org/msg22171.html
 
-Host AP driver
-OnStream SCSI Tape driver
-SCSI Tape driver
-ISDN subsystem common functions
-DVB frontend tuning interface
+Ah... ok. Didn't see that.
 
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
+Thanks,
 
-        Representation of the world, like the world itself, is
-        the work of men; they describe it from their own point
-         of view, which they  confuse with the absolute truth
-                          (Simone de Beauvoir)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+	Mariusz
