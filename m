@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758320AbXG2Flu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXG2Fwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758320AbXG2Flu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 01:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbXG2Flm
+	id S1759339AbXG2Fwp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 01:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755582AbXG2Fwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 01:41:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59982 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754733AbXG2Fll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 01:41:41 -0400
-Date: Sun, 29 Jul 2007 15:41:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Intel Turbo Memory
-Message-Id: <20070729154131.4df4258b.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0="
+	Sun, 29 Jul 2007 01:52:34 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35349 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755559AbXG2Fwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 01:52:33 -0400
+Date: Sun, 29 Jul 2007 11:34:47 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Domen Puncer <domen@coderock.org>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
+       "David S. Miller" <davem@davemloft.net>,
+       Franco Venturi <fventuri@mediaone.net>
+Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in
+ sb1000_dev_ioctl()
+In-Reply-To: <20070729043707.GA8343@nd47.coderock.org>
+Message-ID: <alpine.LFD.0.999.0707291106500.30928@enigma.security.iitk.ac.in>
+References: <200707290002.42722.jesper.juhl@gmail.com>
+ <20070729043707.GA8343@nd47.coderock.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
 
-My new laptop came with some of the above.  Has anyone tried looking at
-this to see what is involved in using it?
+On Sun, 29 Jul 2007, Domen Puncer wrote:
 
-http://www.intel.com/support/chipsets/itm/
+> On 29/07/07 00:02 +0200, Jesper Juhl wrote:
+> > Hi,
+> > 
+> > Here's a small patch, prompted by a find by the Coverity checker, 
+> > that removes a potential NULL pointer dereference from 
+> > drivers/net/sb1000.c::sb1000_dev_ioctl().
+> > The checker spotted that we do a NULL test of 'dev', yet we 
+> > dereference the pointer prior to that check.
+> > This patch simply moves the dereference after the NULL test.
+> 
+> But... it can't be called without a valid 'dev', no?
+> A quick 'grep do_ioctl net/' confirms that all calls are in
+> the form of 'dev->do_ioctl(dev, ...'.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yup, I think so too ...
 
---Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0=
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> > @@ -991,11 +991,13 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+> >  	short PID[4];
+> >  	int ioaddr[2], status, frequency;
+> >  	unsigned int stats[5];
+> > -	struct sb1000_private *lp = netdev_priv(dev);
+> > +	struct sb1000_private *lp;
+> >  
+> >  	if (!(dev && dev->flags & IFF_UP))
+> >  		return -ENODEV;
 
-iD8DBQFGrCiQTgG2atn1QN8RAnafAJ9FBzGQwoGL1v19mh4BR3NhNc2+MQCcC7XR
-dQbxlIBvaAxuyRUekC9vZKg=
-=fNHL
------END PGP SIGNATURE-----
+I think we could get rid of the !dev check itself. Actually, the IFF_UP
+check /also/ looks suspect to me for two reasons: (1) I remember Stephen
+Hemminger once telling me dev->flags is legacy and unsafe, and one of
+the netif_xxx() functions be used instead, and, (2) I wonder if we really
+require the interface to be up and *running* when we do this ioctl.
 
---Signature=_Sun__29_Jul_2007_15_41_31_+1000_UqI/jvozBE7cCQ0=--
+
+Satyam
