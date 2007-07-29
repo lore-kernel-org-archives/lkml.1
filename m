@@ -1,76 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934270AbXG2S52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934657AbXG2S6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934270AbXG2S52 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 14:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762572AbXG2S5R
+	id S934657AbXG2S6W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 14:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933130AbXG2S6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 14:57:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35154 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760369AbXG2S5Q (ORCPT
+	Sun, 29 Jul 2007 14:58:12 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:32838 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758183AbXG2S6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 14:57:16 -0400
-Date: Mon, 30 Jul 2007 00:39:31 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Michael Buesch <mb@bu3sch.de>
-cc: Domen Puncer <domen@coderock.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in
- sb1000_dev_ioctl()
-In-Reply-To: <200707292048.20531.mb@bu3sch.de>
-Message-ID: <alpine.LFD.0.999.0707300034460.30928@enigma.security.iitk.ac.in>
-References: <200707290002.42722.jesper.juhl@gmail.com>
- <alpine.LFD.0.999.0707291106500.30928@enigma.security.iitk.ac.in>
- <alpine.LFD.0.999.0707300003440.30928@enigma.security.iitk.ac.in>
- <200707292048.20531.mb@bu3sch.de>
+	Sun, 29 Jul 2007 14:58:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=W71nStBeZPcdiiBMgJKhvVC+3DNk/md1MS6XIz99v94Y0BxAseh8P3AEWChjtRSFSxoQ2Uw7fRTt6cMV0sXMmHmdZsHdEFloeb8LEwQh+eXD1PObqzh1V96djIPKDERuw8Z9ZTUtUJQNZCnhtmFhUaniKbJMIx19kvmas9njgM0=
+Message-ID: <5ebbd9b50707291158n4cfffcbl7f620bd10181fb6d@mail.gmail.com>
+Date: Sun, 29 Jul 2007 18:58:09 +0000
+From: "Frank Hale" <frankhale@gmail.com>
+To: "Cal Peake" <cp@absolutedigital.net>
+Subject: Re: ACPI on Averatec 2370
+Cc: "Gabriel C" <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, len.brown@intel.com
+In-Reply-To: <Pine.LNX.4.64.0707291428100.7379@lancer.cnet.absolutedigital.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
+	 <46ACD8DB.2020108@googlemail.com>
+	 <Pine.LNX.4.64.0707291428100.7379@lancer.cnet.absolutedigital.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+> Frank, can you try a non-SMP build with ACPI and see if you still have the
+> problem?
 
-
-On Sun, 29 Jul 2007, Michael Buesch wrote:
-
-> On Sunday 29 July 2007 20:34:46 Satyam Sharma wrote:
-> > (2) !(dev->flags & IFF_UP) is bogus because the functions of this ioctl
-> > can (and should) be allowed even when the interface is not up and running.
-> 
-> Are you _sure_? This function does poke with the device hardware.
-> It might return crap or even machinecheck when not initialized.
-> Hardware is probably powered down, if not IFF_UP. (I don't know if that's
-> the case here, though).
-
-IFF_UP checks if the _interface_ is up -- the hardware / card could still
-be powered up, but the interface down (ifconfing eth0 down or ip link set
-eth0 down).
-
-Probably what we want here is netif_device_present()? -- I think that
-should return true only when the *device* itself is up (as in powered)
-but the interface itself could be down ...
-
-Let's wait for comments from the netdev people Cc:'ed here, in that case.
-
-
-> >  drivers/net/sb1000.c |    3 ---
-> >  1 files changed, 0 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/drivers/net/sb1000.c b/drivers/net/sb1000.c
-> > index 1de3eec..f60fe98 100644
-> > --- a/drivers/net/sb1000.c
-> > +++ b/drivers/net/sb1000.c
-> > @@ -993,9 +993,6 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
-> >  	unsigned int stats[5];
-> >  	struct sb1000_private *lp = netdev_priv(dev);
-> >  
-> > -	if (!(dev && dev->flags & IFF_UP))
-> > -		return -ENODEV;
-> > -
-
-
-Satyam
+I certainly will, I never tried it without it so now I am curious.
+Thanks a bunch!
