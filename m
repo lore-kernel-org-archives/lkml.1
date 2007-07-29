@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759709AbXG2DjA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXG2Dja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759709AbXG2DjA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 23:39:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbXG2Div
+	id S1759255AbXG2Dja (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 23:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759860AbXG2DjT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 23:38:51 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:35186 "EHLO
-	asav01.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756707AbXG2Div (ORCPT
+	Sat, 28 Jul 2007 23:39:19 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:39185 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759580AbXG2DjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 23:38:51 -0400
+	Sat, 28 Jul 2007 23:39:17 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgoXALKoq0ZKhRO4Rmdsb2JhbACBToVqiCQBAQEWDQYMAQ
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Indan Zupancic <indan@nul.nu>
-Subject: Re: [RFC/RFT 0/5] Input locking patches
-Date: Sat, 28 Jul 2007 23:38:47 -0400
-User-Agent: KMail/1.9.3
-Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
-References: <20070724044520.913891976.dtor@insightbb.com> <41532.81.207.0.53.1185575131.squirrel@secure.samage.net>
-In-Reply-To: <41532.81.207.0.53.1185575131.squirrel@secure.samage.net>
+X-IronPort-Anti-Spam-Result: Ao8CALKoq0arR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.19,194,1183359600"; 
+   d="scan'208"; a="190497985:sNHT21749580"
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       general@lists.openfabrics.org, stefan.roscher@de.ibm.com
+Subject: Re: [ofa-general] [PATCH 1/2] ehca: remove checkpatch.pl's warnings "externs should be avoided in .c files"
+X-Message-Flag: Warning: May contain useful information
+References: <200707271254.51055.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 28 Jul 2007 20:39:14 -0700
+Message-ID: <adahcnnvpy5.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707282338.48346.dtor@insightbb.com>
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 29 Jul 2007 03:39:14.0753 (UTC) FILETIME=[08DDC310:01C7D192]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Indan,
+the patch looks fine except your mailer seems to have mangled
+it... can you resend so I can apply it?
 
-On Friday 27 July 2007 18:25, Indan Zupancic wrote:
-> Sorry for the babbling, just wanted to say that I've tested these
-> patches and that they seem to fix real problems.
-> 
-
-Thank you for testing the patches.
-
--- 
-Dmitry
+thanks...
