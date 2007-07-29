@@ -1,182 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbXG2Gpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbXG2GyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbXG2Gpi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 02:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759566AbXG2Gp3
+	id S1760156AbXG2GyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 02:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759711AbXG2GyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 02:45:29 -0400
-Received: from 1wt.eu ([62.212.114.60]:4052 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758775AbXG2Gp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 02:45:28 -0400
-Date: Sun, 29 Jul 2007 08:45:11 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "Darryl L. Miles" <darryl-mailinglists@netbauds.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: TCP SACK issue, hung connection, tcpdump included
-Message-ID: <20070729064511.GA18718@1wt.eu>
-References: <46AC2CBE.5010500@netbauds.net>
-Mime-Version: 1.0
+	Sun, 29 Jul 2007 02:54:13 -0400
+Received: from styx.suse.cz ([82.119.242.94]:33210 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759709AbXG2GyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 02:54:12 -0400
+Date: Sun, 29 Jul 2007 08:53:52 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "Dr. David Alan Gilbert" <linux@treblig.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Huang, Ying" <ying.huang@intel.com>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Kyle Moffett <mrmacman_g4@mac.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>, david@lang.hm,
+       Al Boldi <a1426z@gawab.com>
+Subject: Re: Hibernation considerations
+Message-ID: <20070729065352.GB17084@suse.cz>
+References: <200707151433.34625.rjw@sisk.pl> <20070715125855.GA1737@gallifrey> <200707160038.12943.rjw@sisk.pl>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46AC2CBE.5010500@netbauds.net>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200707160038.12943.rjw@sisk.pl>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jul 16, 2007 at 12:38:11AM +0200, Rafael J. Wysocki wrote:
 
-[CCing netdev as it's where people competent on the subject are]
+> > Or the user unplugs their flash drive after hibernation rather than before.
+> > 
+> > Two things which I think would be nice to consider are:
+> >    1) Encryption - I'd actually prefer if my luks device did not
+> >        remember the key accross a hibernation; I want to be forced to
+> >        reenter the phrase.  However I don't know what the best thing
+> >        to do to partitions/applications using the luks device is.
+> 
+> Encryption is possible with both the userland hibernation (aka uswsusp) and
+> TuxOnIce (formerly known as suspend2).  Still, I don't consider it as a "must
+> have" feature for a framework to be generally useful (many users don't use it
+> anyway).
 
-On Sun, Jul 29, 2007 at 06:59:26AM +0100, Darryl L. Miles wrote:
-> CLIENT = Linux 2.6.20.1-smp [Customer build]
-> SERVER = Linux 2.6.9-55.ELsmp [Red Hat Enterprise Linux AS release 4 
-> (Nahant Update 5)]
-> 
-> The problems start around time index 09:21:39.860302 when the CLIENT issues 
-> a TCP packet with SACK option set (seemingly for a data segment which has 
-> already been seen) from that point on the connection hangs.
+If a user uses an encrypted filesystem, then he also needs an encrypted
+swap and encrypted hibernation image: Otherwise the fileystem encryption
+is not very useful.
 
-Where was the capture taken ? on CLIENT or on SERVER (I suspect client from
-the timers) ? A possible, but very unlikely reason would be an MTU limitation
-somewhere, because the segment which never gets correctly ACKed is also the
-largest one in this trace. It would be strange as the SACKs are send
-immediately after, but it should be something to consider anyway.
+Forgetting the filesystem/swap decryption keys before hibernation is
+probably harder to do - there may be sensitive data in the kernel memory
+image that weren't cleared - even if the key itself is not there.
 
-Also, if everything is right with the packets on the server side, then
-it would means that it's the RHEL kernel which is buggy (which does not
-mean that the same bug does not exist in mainline).
+In my opinion, encrypted hibernation is what every notebook user should
+want - that's the only way how to make sure data from the notebook
+aren't available when the notebook is physically stolen.
 
-Regards,
-Willy
-
-
-> Full dump available via email.
-> 
-> 
-> 09:12:13.444999 IP CLIENT.50727 > SERVER.ssh: S 2919512080:2919512080(0) 
-> win 5840 <mss 1460,sackOK,timestamp 799860259 0,nop,wscale 7>
-> 09:12:13.535643 IP SERVER.ssh > CLIENT.50727: S 492909547:492909547(0) ack 
-> 2919512081 win 5792 <mss 1460,sackOK,timestamp 7126976 799860259,nop,wscale 
-> 2>
-> 09:12:13.535717 IP CLIENT.50727 > SERVER.ssh: . ack 1 win 46 
-> <nop,nop,timestamp 799860282 7126976>
-> 09:12:13.665481 IP SERVER.ssh > CLIENT.50727: P 1:24(23) ack 1 win 1448 
-> <nop,nop,timestamp 7127074 799860282>
-> 09:12:13.665895 IP CLIENT.50727 > SERVER.ssh: . ack 24 win 46 
-> <nop,nop,timestamp 799860314 7127074>
-> 09:12:13.666044 IP CLIENT.50727 > SERVER.ssh: P 1:23(22) ack 24 win 46 
-> <nop,nop,timestamp 799860314 7127074>
-> 09:12:13.776318 IP SERVER.ssh > CLIENT.50727: . ack 23 win 1448 
-> <nop,nop,timestamp 7127216 799860314>
-> 
-> ...SNIPPED SUCCESSFUL TRAFFIC...
-> 
-> 09:21:39.490740 IP SERVER.ssh > CLIENT.50727: P 18200:18464(264) ack 2991 
-> win 2728 <nop,nop,timestamp 7692910 800001727>
-> 09:21:39.490775 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800001755 7692910>
-> 09:21:39.860245 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7693293 800001749>
-> 09:21:39.860302 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800001847 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:21:40.453440 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7693887 800001749>
-> 09:21:40.453495 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800001996 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:21:41.641821 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7695075 800001749>
-> 09:21:41.641938 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800002293 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:21:44.017552 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7697451 800001749>
-> 09:21:44.017622 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800002887 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:21:48.770051 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7702203 800001749>
-> 09:21:48.770099 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800004075 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:21:58.274061 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7711707 800001749>
-> 09:21:58.274180 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800006450 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:22:17.282035 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7730715 800001749>
-> 09:22:17.282153 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800011202 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:22:55.298955 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7768731 800001749>
-> 09:22:55.299023 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800020705 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:24:11.329853 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7844763 800001749>
-> 09:24:11.329923 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800039711 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:26:11.331578 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 7964763 800001749>
-> 09:26:11.331699 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800069708 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:26:13.011885 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800070128 7692910>
-> 09:26:13.309032 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800070202 7692910>
-> 09:26:13.901048 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800070350 7692910>
-> 09:26:15.085103 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800070646 7692910>
-> 09:26:17.453195 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800071238 7692910>
-> 09:26:22.189378 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800072422 7692910>
-> 09:26:31.661696 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800074790 7692910>
-> 09:26:50.610374 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800079526 7692910>
-> 09:27:28.499729 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800088998 7692910>
-> 09:28:11.331256 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 8084763 800001749>
-> 09:28:11.331354 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800099704 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:28:44.286495 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800107942 7692910>
-> 09:30:11.330959 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 8204763 800001749>
-> 09:30:11.331074 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800129701 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:30:44.298756 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800137942 7692910>
-> 09:32:11.331661 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 8324763 800001749>
-> 09:32:11.331727 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800159698 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:32:44.311051 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800167942 7692910>
-> 09:34:11.332375 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 8444763 800001749>
-> 09:34:11.332447 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800189695 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:34:44.323298 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800197942 7692910>
-> 09:36:11.332073 IP SERVER.ssh > CLIENT.50727: . 12408:13856(1448) ack 2991 
-> win 2728 <nop,nop,timestamp 8564763 800001749>
-> 09:36:11.332166 IP CLIENT.50727 > SERVER.ssh: . ack 18464 win 378 
-> <nop,nop,timestamp 800219692 7692910,nop,nop,sack sack 1 {12408:13856} >
-> 09:36:44.335591 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800227942 7692910>
-> 09:38:44.351950 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800257942 7692910>
-> 09:40:44.368172 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> 378 <nop,nop,timestamp 800287943 7692910>
-> 
-> At the end of the dump here the connection is dropped by the client side.
-> 
-> 
-> Darryl
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
+Vojtech Pavlik
+Director SuSE Labs
