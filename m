@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXG2FEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbXG2F1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbXG2FEf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 01:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXG2FE3
+	id S1757307AbXG2F1h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 01:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752720AbXG2F13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 01:04:29 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:48143 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752309AbXG2FE2 (ORCPT
+	Sun, 29 Jul 2007 01:27:29 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:27925 "EHLO
+	asav07.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752618AbXG2F12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 01:04:28 -0400
+	Sun, 29 Jul 2007 01:27:28 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAJ68q0arR7MV/2dsb2JhbAA
-X-IronPort-AV: i="4.19,194,1183359600"; 
-   d="scan'208"; a="190514312:sNHT23488416"
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Diego Calleja <diegocg@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jonathan Jessup <jonathanjessup@gmail.com>,
-       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org, lkml@metanurb.dk
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-X-Message-Flag: Warning: May contain useful information
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	<1185588279.1654.1.camel@localhost>
-	<alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
-	<Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
-	<954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
-	<alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
-	<alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
-	<20070728225148.a0e58fdd.diegocg@gmail.com>
-	<Pine.LNX.4.64.0707282259220.15125@fbirervta.pbzchgretzou.qr>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Sat, 28 Jul 2007 22:04:14 -0700
-Message-ID: <adaodhvu7g1.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+X-IronPort-Anti-Spam-Result: AgoXAIjBq0ZKhRO4Rmdsb2JhbACBToVqiCQBAQEWDQYMAQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: fernando@oss.ntt.co.jp
+Subject: Re: [PATCH] fix return value of i8042_aux_test_irq
+Date: Sun, 29 Jul 2007 01:27:25 -0400
+User-Agent: KMail/1.9.3
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       vojtech@suse.cz, akpm@linux-foundation.org
+References: <1185437065.4805.19.camel@sebastian.kern.oss.ntt.co.jp> <20070726162913.2dc9a9b2@the-village.bc.nu> <2090.172.50.1.13.1185465429.squirrel@172.19.0.2>
+In-Reply-To: <2090.172.50.1.13.1185465429.squirrel@172.19.0.2>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 29 Jul 2007 05:04:15.0502 (UTC) FILETIME=[E9264AE0:01C7D19D]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707290127.26058.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > It's like CONFIG_HZ - more or less often debated, and now we have everyone
- > happy by giving them the choice.
+On Thursday 26 July 2007 11:57, fernando@oss.ntt.co.jp wrote:
+> On Fri, July 27, 2007 12:29 am, Alan Cox wrote:
+> >> > A small number of boxes do share IRQ12 and it was switched to shared
+> >> for
+> >> > them.
+> >> If that is the case interrupt handlers should be able to determine
+> >> whether
+> >> a certain interrupt comes from their respective devices, and return
+> >> IRQ_HANDLED or IRQ_NONE accordingly. Returning IRQ_HANDLED
+> >> unconditionally
+> >> when IRQF_SHARED is set seems strange. Is this behavior intended?
+> >
+> > Sometimes you simple can't tell and in those cases you have no choice.
+> As I mentioned in a previous email, i8042_interrupt considers that it
+> should not handle an interrupt when there is no data to read and,
+> accordingly, it returns IRQ_NONE in such cases. I was just wondering if we
+> could follow the same approach to make i8042_aux_test_irq more
+> IRQF_SHARED-friendly.
+>
 
-That's an interesting analogy -- since really the right answer there
-seems not to be modal at all, but rather to do CONFIG_NO_HZ.
+Yes, you are right. Patch applied to 'for-linus' branch of input tree.
 
- - R.
+Thank you.
+
+-- 
+Dmitry
