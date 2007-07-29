@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935325AbXG2UTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935549AbXG2UX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935325AbXG2UTK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 16:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933925AbXG2US4
+	id S935549AbXG2UX4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 16:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934266AbXG2UXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 16:18:56 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:54697 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933402AbXG2USz (ORCPT
+	Sun, 29 Jul 2007 16:23:47 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:42189 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934262AbXG2UXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 16:18:55 -0400
-Date: Sun, 29 Jul 2007 13:18:49 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Cc: rene.herman@gmail.com, alan@lxorguk.ukuu.org.uk, david@lang.hm,
-       dhazelton@enter.net, efault@gmx.de, akpm@linux-foundation.org,
-       mingo@elte.hu, frank@kingswood-consulting.co.uk, andi@firstfloor.org,
-       nickpiggin@yahoo.com.au, jesper.juhl@gmail.com, ck@vds.kolivas.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-Message-Id: <20070729131849.15f29159.pj@sgi.com>
-In-Reply-To: <2c0942db0707291300k3e30e410wdd0aba7644382e3b@mail.gmail.com>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	<46AB166A.2000300@gmail.com>
-	<20070728122139.3c7f4290@the-village.bc.nu>
-	<46AC4B97.5050708@gmail.com>
-	<20070729141215.08973d54@the-village.bc.nu>
-	<46AC9F2C.8090601@gmail.com>
-	<2c0942db0707290758p39fef2e8o68d67bec5c7ba6ab@mail.gmail.com>
-	<46ACAB45.6080307@gmail.com>
-	<2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
-	<20070729123353.2bfb9630.pj@sgi.com>
-	<2c0942db0707291300k3e30e410wdd0aba7644382e3b@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Sun, 29 Jul 2007 16:23:46 -0400
+Date: Sun, 29 Jul 2007 21:30:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Hendrik ." <chasake@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Reading a bad sector does not report failure as 'read error'
+ but hangs PC with 'Machine Check Exception'
+Message-ID: <20070729213051.20ebc51e@the-village.bc.nu>
+In-Reply-To: <626611.9154.qm@web52007.mail.re2.yahoo.com>
+References: <46ACB357.4030006@shaw.ca>
+	<626611.9154.qm@web52007.mail.re2.yahoo.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray wrote:
-> Ah, so in a normal scenario where a working-set is getting faulted
-> back in, we have the swap storage as well as the file-backed stuff
-> that needs to be read as well. So even if swap is organized perfectly,
-> we're still seeking. Damn.
+> How can I do this? I have installed mcelog but I
+> cannot run it after the MCE error because the whole PC
+> hangs. If I try it after a reboot with 'mcelog --k8
+> --ascii' or whatever parameter, there is no output at
 
-Perhaps this applies in some cases ... perhaps.
+You could type error back in from the email ?
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+> Isn't it strange to say that the controller does
+> something bad if there is just a bad sector on the
+> drive that is reported and handled correctly in an
+> older kernel 
+
+Not really. Its very strange it gives an MCE at all but this is a known
+failure path (and should be a fixed known failure path) for the Nvidia
+SATA.
