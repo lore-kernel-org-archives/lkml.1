@@ -1,204 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932103AbXG2PCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765384AbXG2PCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932103AbXG2PCA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763681AbXG2O6F
+	id S1765384AbXG2PCc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764229AbXG2O6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:58:05 -0400
-Received: from vms046pub.verizon.net ([206.46.252.46]:53144 "EHLO
-	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764328AbXG2O6A convert rfc822-to-8bit (ORCPT
+	Sun, 29 Jul 2007 10:58:06 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47793 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1764160AbXG2O6D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:58:00 -0400
-Date: Sun, 29 Jul 2007 10:57:33 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: nvidia installer DIW with 2.6.23-rc1
-To: linux-kernel@vger.kernel.org
-Message-id: <200707291057.34291.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-User-Agent: KMail/1.9.7
+	Sun, 29 Jul 2007 10:58:03 -0400
+Date: Sun, 29 Jul 2007 16:57:38 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Michael Halcrow <mhalcrow@us.ibm.com>, phillip@hellewell.homeip.net
+Cc: linux-kernel@vger.kernel.org, ecryptfs-devel@lists.sourceforge.net
+Subject: [-mm patch] fs/ecryptfs/: make code static
+Message-ID: <20070729145738.GO16817@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings;
+On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+>... 
+> Changes since 2.6.22-rc6-mm1:
+>...
+> +ecryptfs-add-key-list-structure-search-keyring.patch
+>...
+>  ecryptfs feature work
+>...
 
-I got around to building the 2.6.23-rc1 tree, updated to yesterday with git 
-from the linus tree.  The build was fairly clean, but when I rebooted to it, 
-the latest nvidia installer fails, with these messages:
+This patch makes some needlessly global code static.
 
-nvidia-installer log file '/var/log/nvidia-installer.log'
-creation time: Sun Jul 29 10:14:04 2007
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-option status:
-  license pre-accepted    : false
-  update                  : false
-  force update            : false
-  expert                  : false
-  uninstall               : false
-  driver info             : false
-  precompiled interfaces  : true
-  no ncurses color        : false
-  query latest version    : false
-  OpenGL header files     : true
-  no questions            : false
-  silent                  : false
-  no recursion            : false
-  no backup               : false
-  kernel module only      : false
-  sanity                  : false
-  add this kernel         : false
-  no runlevel check       : false
-  no network              : false
-  no ABI note             : false
-  no RPMs                 : false
-  no kernel module        : false
-  force SELinux           : default
-  no X server check       : false
-  force tls               : (not specified)
-  X install prefix        : (not specified)
-  X library install path  : (not specified)
-  X module install path   : (not specified)
-  OpenGL install prefix   : (not specified)
-  OpenGL install libdir   : (not specified)
-  utility install prefix  : (not specified)
-  utility install libdir  : (not specified)
-  doc install prefix      : (not specified)
-  kernel name             : (not specified)
-  kernel include path     : (not specified)
-  kernel source path      : (not specified)
-  kernel output path      : (not specified)
-  kernel install path     : (not specified)
-  proc mount point        : /proc
-  ui                      : (not specified)
-  tmpdir                  : /tmp
-  ftp mirror              : ftp://download.nvidia.com
-  RPM file list           : (not specified)
-[...]  
-   NVIDIA: calling KBUILD...
-   make CC=cc KBUILD_OUTPUT=/lib/modules/2.6.23-rc1/build 
-KBUILD_VERBOSE=1 -C /
-   lib/modules/2.6.23-rc1/source 
-SUBDIRS=/tmp/selfgz9678/NVIDIA-Linux-x86-100.1
-   4.11-pkg1/usr/src/nv modules
-   make -C /lib/modules/2.6.23-rc1/build \
-   	KBUILD_SRC=/usr/src/linux.git \   <-------has softlink to linux-2.6.23-rc1
-   	KBUILD_EXTMOD="/tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv" 
-   -f /usr/src/linux.git/Makefile modules
-   test -e include/linux/autoconf.h -a -e include/config/auto.conf || (		\
-   	echo;								\
-   	echo "  ERROR: Kernel configuration is invalid.";		\
-   	echo "         include/linux/autoconf.h or include/config/auto.conf are 
-missing.";	\
-   	echo "         Run 'make oldconfig && make prepare' on kernel src to fix 
-it
-------------
-I've done the above, no effect
-------------
-[...]     
-cc -Wp,-MD,/tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/.nv.
-   
-o.d  -nostdinc -isystem /usr/lib/gcc/i386-redhat-linux/4.1.2/include -D__KER
-   NEL__ -Iinclude -Iinclude2 -I/usr/src/linux.git/include -include 
-include/lin
-   ux/autoconf.h  -I/tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv 
-   -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-c
-   
-ommon -Werror-implicit-function-declaration -Os -pipe -msoft-float -mregparm
-   
-=3 -freg-struct-return -mpreferred-stack-boundary=2 -march=athlon -mtune=gen
-   
-eric -ffreestanding -maccumulate-outgoing-args -DCONFIG_AS_CFI=1 -DCONFIG_AS
-   _CFI_SIGNAL_FRAME=1 -
-   
-I/usr/src/linux.git/include/asm-i386/mach-default -Iinclude/asm-i386/mach-de
-   
-fault -fomit-frame-pointer -fno-stack-protector -Wdeclaration-after-statemen
-   
-t -Wno-pointer-sign  -I/tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/s
-   
-rc/nv -Wall -Wimplicit -Wreturn-type -Wswitch -Wformat -Wchar-subscripts -Wp
-   
-arentheses -Wpointer-arith -Wno-multichar -Werror -O -fno-common -msoft-floa
-   
-t -MD -Wsign-compare -Wno-cast-qual -Wno-error -D_LOOSE_KERNEL_NAMES -D__KER
-   
-NEL__ -DMODULE -DNVRM -DNV_VERSION_STRING=\"100.14.11\" -UDEBUG -U_DEBUG -DN
-   
-DEBUG -DNV_SIGNAL_STRUCT_RLIM -DNV_MULTIPLE_BRIDGE_AGPGART_PRESENT -DNV_PCI_
-   
-GET_CLASS_PRESENT -DNV_SYSCTL_MAX_MAP_COUNT_PRESENT -DNV_PM_MESSAGE_T_PRESEN
-   
-T -DNV_PCI_CHOOSE_STATE_PRESENT -DNV_VM_INSERT_PAGE_PRESENT -DNV_OLD_MM_KGDB
-   
-_BREAKPOINT_PRESENT -DNV_REMAP_PFN_RANGE_PRESENT -DNV_CHANGE_PAGE_ATTR_PRESE
-   
-NT -DNV_ACQUIRE_CONSOLE_SEM_PRESENT -DNV_VMAP_4_PRESENT -DMODULE -D"KBUILD_S
-   
-TR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(nv)"  -D"KBUILD_MODNAME=KBUILD_STR(n
-   vidia)" -c -o /tmp/selfgz9678/NVIDIA
-   -Linux-x86-100.14.11-pkg1/usr/src/nv/nv.o /tmp/selfgz9678/NVIDIA-Linux-x86-1
-   00.14.11-pkg1/usr/src/nv/nv.c
-   In file included from include/linux/list.h:9,
-                    from include/linux/preempt.h:12,
-                    from include/linux/spinlock.h:50,
-                    from include/linux/seqlock.h:30,
-                    from include/linux/time.h:9,
-                    from include/linux/timex.h:58,
-                    from include/linux/sched.h:54,
-                    from include/linux/utsname.h:36,
-                    
-from /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/sr
-   c/nv/nv-linux.h:20,
-                    
-from /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/sr
-   c/nv/nv.c:15:
-   include/linux/prefetch.h: In function ‘prefetch_range’:
-   include/linux/prefetch.h:62: warning: pointer of type ‘void *’ used in a
-   rithmetic
-   /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.c: In 
-function
-   ‘nvidia_init_module’:
-   /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.c:1326: 
-error:
-   too many arguments to function ‘kmem_cache_create’
-   /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.c:1435: 
-error:
-   too many arguments to function ‘kmem_cache_create’
-   /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.c:1569: 
-error:
-   void value not ignored as it ought to be
-   /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.c: In 
-function
-   ‘nvidia_exit_module’:
-   /tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.c:1601: 
-error:
-   void value not ignored as it ought to be
-   make[4]: *** 
-[/tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/src/nv/nv.
-   o] Error 1
-   make[3]: *** 
-[_module_/tmp/selfgz9678/NVIDIA-Linux-x86-100.14.11-pkg1/usr/sr
-   c/nv] Error 2
-   make[2]: *** [modules] Error 2
-   NVIDIA: left KBUILD.
-   nvidia.ko failed to build!
-   make[1]: *** [module] Error 1
-   make: *** [module] Error 2
-------------
+---
 
-Is this a known problem?  Do I need to report it to nvidia somehow?  It looks 
-to me like it may be their problem, and I have submitted it, but if anyone 
-has a better idea, please advise.  System is FC6, uptodate as of yesterday.
+ fs/ecryptfs/crypto.c          |   15 +++++------
+ fs/ecryptfs/ecryptfs_kernel.h |   10 -------
+ fs/ecryptfs/keystore.c        |   43 +++++++++++++++++-----------------
+ 3 files changed, 29 insertions(+), 39 deletions(-)
+
+--- linux-2.6.23-rc1-mm1/fs/ecryptfs/ecryptfs_kernel.h.old	2007-07-26 13:50:59.000000000 +0200
++++ linux-2.6.23-rc1-mm1/fs/ecryptfs/ecryptfs_kernel.h	2007-07-26 14:09:15.000000000 +0200
+@@ -156,7 +156,6 @@
+ 	} token;
+ } __attribute__ ((packed));
  
-Thanks all.
+-int ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok);
+ void ecryptfs_dump_auth_tok(struct ecryptfs_auth_tok *auth_tok);
+ extern void ecryptfs_to_hex(char *dst, char *src, size_t src_size);
+ extern void ecryptfs_from_hex(char *dst, char *src, int dst_size);
+@@ -290,9 +289,6 @@
+ 	unsigned char cipher_name[ECRYPTFS_MAX_CIPHER_NAME_SIZE + 1];
+ };
+ 
+-extern struct list_head key_tfm_list;
+-extern struct mutex key_tfm_list_mutex;
+-
+ /**
+  * This struct is to enable a mount-wide passphrase/salt combo. This
+  * is more or less a stopgap to provide similar functionality to other
+@@ -520,9 +516,6 @@
+ void ecryptfs_destruct_mount_crypt_stat(
+ 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat);
+ int ecryptfs_init_crypt_ctx(struct ecryptfs_crypt_stat *crypt_stat);
+-int ecryptfs_crypto_api_algify_cipher_name(char **algified_name,
+-					   char *cipher_name,
+-					   char *chaining_modifier);
+ #define ECRYPTFS_LOWER_I_MUTEX_NOT_HELD 0
+ #define ECRYPTFS_LOWER_I_MUTEX_HELD 1
+ int ecryptfs_write_inode_size_to_metadata(struct file *lower_file,
+@@ -563,13 +556,10 @@
+ 				     struct ecryptfs_crypt_stat *crypt_stat,
+ 				     struct dentry *ecryptfs_dentry,
+ 				     size_t *len, size_t max);
+-int process_request_key_err(long err_code);
+ int
+ ecryptfs_parse_packet_set(struct ecryptfs_crypt_stat *crypt_stat,
+ 			  unsigned char *src, struct dentry *ecryptfs_dentry);
+ int ecryptfs_truncate(struct dentry *dentry, loff_t new_length);
+-int ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
+-				char *cipher_name, size_t *key_size);
+ int ecryptfs_inode_test(struct inode *inode, void *candidate_lower_inode);
+ int ecryptfs_inode_set(struct inode *inode, void *lower_inode);
+ void ecryptfs_init_inode(struct inode *inode, struct inode *lower_inode);
+--- linux-2.6.23-rc1-mm1/fs/ecryptfs/crypto.c.old	2007-07-26 13:51:13.000000000 +0200
++++ linux-2.6.23-rc1-mm1/fs/ecryptfs/crypto.c	2007-07-26 13:59:12.000000000 +0200
+@@ -123,9 +123,9 @@
+ 	return rc;
+ }
+ 
+-int ecryptfs_crypto_api_algify_cipher_name(char **algified_name,
+-					   char *cipher_name,
+-					   char *chaining_modifier)
++static int ecryptfs_crypto_api_algify_cipher_name(char **algified_name,
++						  char *cipher_name,
++						  char *chaining_modifier)
+ {
+ 	int cipher_name_len = strlen(cipher_name);
+ 	int chaining_modifier_len = strlen(chaining_modifier);
+@@ -1828,9 +1828,8 @@
+  * should be released by other functions, such as on a superblock put
+  * event, regardless of whether this function succeeds for fails.
+  */
+-int
+-ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
+-			    char *cipher_name, size_t *key_size)
++static int ecryptfs_process_key_cipher(struct crypto_blkcipher **key_tfm,
++				       char *cipher_name, size_t *key_size)
+ {
+ 	char dummy_key[ECRYPTFS_MAX_KEY_BYTES];
+ 	char *full_alg_name;
+@@ -1874,8 +1873,8 @@
+ }
+ 
+ struct kmem_cache *ecryptfs_key_tfm_cache;
+-struct list_head key_tfm_list;
+-struct mutex key_tfm_list_mutex;
++static struct list_head key_tfm_list;
++static struct mutex key_tfm_list_mutex;
+ 
+ int ecryptfs_init_crypto(void)
+ {
+--- linux-2.6.23-rc1-mm1/fs/ecryptfs/keystore.c.old	2007-07-26 14:01:08.000000000 +0200
++++ linux-2.6.23-rc1-mm1/fs/ecryptfs/keystore.c	2007-07-26 14:09:26.000000000 +0200
+@@ -39,7 +39,7 @@
+  * determine the type of error, make appropriate log entries, and
+  * return an error code.
+  */
+-int process_request_key_err(long err_code)
++static int process_request_key_err(long err_code)
+ {
+ 	int rc = 0;
+ 
+@@ -396,6 +396,27 @@
+ 	return rc;
+ }
+ 
++static int ecryptfs_get_auth_tok_sig(char **sig,
++				     struct ecryptfs_auth_tok *auth_tok)
++{
++	int rc = 0;
++
++	(*sig) = NULL;
++	switch (auth_tok->token_type) {
++	case ECRYPTFS_PASSWORD:
++		(*sig) = auth_tok->token.password.signature;
++		break;
++	case ECRYPTFS_PRIVATE_KEY:
++		(*sig) = auth_tok->token.private_key.signature;
++		break;
++	default:
++		printk(KERN_ERR "Cannot get sig for auth_tok of type [%d]\n",
++		       auth_tok->token_type);
++		rc = -EINVAL;
++	}
++	return rc;
++}
++
+ /**
+  * decrypt_pki_encrypted_session_key - Decrypt the session key with
+  * the given auth_tok.
+@@ -1080,26 +1101,6 @@
+ 	return rc;
+ }
+ 
+-int ecryptfs_get_auth_tok_sig(char **sig, struct ecryptfs_auth_tok *auth_tok)
+-{
+-	int rc = 0;
+-
+-	(*sig) = NULL;
+-	switch (auth_tok->token_type) {
+-	case ECRYPTFS_PASSWORD:
+-		(*sig) = auth_tok->token.password.signature;
+-		break;
+-	case ECRYPTFS_PRIVATE_KEY:
+-		(*sig) = auth_tok->token.private_key.signature;
+-		break;
+-	default:
+-		printk(KERN_ERR "Cannot get sig for auth_tok of type [%d]\n",
+-		       auth_tok->token_type);
+-		rc = -EINVAL;
+-	}
+-	return rc;
+-}
+-
+ /**
+  * ecryptfs_parse_packet_set
+  * @dest: The header page in memory
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-This will be a memorable month -- no matter how hard you try to forget it.
