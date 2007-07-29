@@ -1,62 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763281AbXG2N6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763396AbXG2OEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763281AbXG2N6t (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 09:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762207AbXG2N6l
+	id S1763396AbXG2OEV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762207AbXG2OEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 09:58:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:18221 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753521AbXG2N6k (ORCPT
+	Sun, 29 Jul 2007 10:04:10 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57277 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760991AbXG2OEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 09:58:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OXYiNm3xTAS4NGRritVdKRAK6lRX+ucIlDxMAfMnDQm7/VGDppyVptscccmr1XqdgStvYSrQgwayFN0+OuZuf7mYvJ0J5G6ptqY8w/sr/BHxhPXFPjgZZcUnyo68E1veukPi+oxJw6X50UML44I9OBoWvgo7y6M0Mg0quUZEIms=
-Message-ID: <82e4877d0707290658y2861473fs3b10d9ddbe521401@mail.gmail.com>
-Date: Sun, 29 Jul 2007 09:58:39 -0400
-From: "Parag Warudkar" <parag.warudkar@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: [PATCH] TSDEV - Don't flood dmesg with removal warnings
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-In-Reply-To: <200707290037.37606.dtor@insightbb.com>
+	Sun, 29 Jul 2007 10:04:08 -0400
+Message-ID: <46AC9DC5.8070900@gmail.com>
+Date: Sun, 29 Jul 2007 16:01:41 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: david@lang.hm
+CC: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com> <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com> <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com> <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm> <46AC6771.8080000@gmail.com> <Pine.LNX.4.64.0707290420250.15835@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707290420250.15835@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0707271038100.5691@parag-desktop>
-	 <200707290037.37606.dtor@insightbb.com>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On 07/29/2007 01:41 PM, david@lang.hm wrote:
 
-On 7/29/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> Hi Parag,
->
-> On Friday 27 July 2007 10:43, Parag Warudkar wrote:
-> > Ignore my previous whitespace damaged patch. This one should be good.
-> >
-> > tsdev.c warns about scheduled removal each time tsdev_open is called -
-> > So even for a default boot I get to see the warning 3 times -
->
-> The printk was moved per Andrew's request to make it more annoying.
+>> And now you do it again :-) There is no conclusion -- just the 
+>> inescapable observation that swap-prefetch was (or may have been) 
+>> masking the problem of GNU locate being a program that noone in their 
+>> right mind should be using.
+> 
+> isn't your conclusion then that if people just stopped useing that 
+> version of updatedb the problem would be solved and there would be no 
+> need for the swap prefetch patch? that seemed to be what you were 
+> strongly implying (if not saying outright)
 
-The fact that tsdev loads on most people's laptop for no reason and
-then gets opened 3 times ought to be annoying enough to make people
-delete that module :)
+No. What I said outright, every single time, is that swap-prefetch in itself 
+seems to make sense. And specifically that even if the _direct_ problem is a 
+crummy program, it _still_ makes sense generally. Every single time.
 
-> Obviously it is working ;) Do you know what is opening /dev/input/tsX
-> nodes?
->
+But see -- you failed to notice this because you guys are stuck in this dumb 
+adversary "us against them" thing so inherent of (online) communities, where 
+you sit around your own habitats patting each other on the back for extended 
+periods of time and then every once a while go out clinging on to each other 
+vigorously and going "boo! hiss!" at the big bad outside world.
 
-Who else but Xorg and the boat load of totally irrelevant crap (wacom
-etc.) that Ubuntu fills up in xorg.conf (perhaps)? Frankly I don't
-know for sure.
+I already got overly violent at one point in this thread so I'll leave out 
+any further references to sense-deprived fanboy-culture but please, I said 
+every single time that I'm not against swap-prefetch. I cannot communicate 
+when I'm not being read.
 
-Anyway the stated removal is only 3 months away so I guess people can
-live with the dmesg annoyance until that time.
+> I agree that tinkering with the core VM code should not be done lightly, 
+> but this has been put through the proper process and is stalled with no 
+> hints on how to move forward.
 
-Parag
+It has not. Concerns that were raised (by specifically Nick Piggin) weren't 
+being addressed.
+
+> forget the nightly cron jobs for the moment. think of this scenerio. you 
+> have your memory fairly full with apps that you have open (including 
+> firefox with many tabs), you receive a spreadsheet you need to look at, 
+> so you fire up openoffice to look at it. then you exit openoffice and try
+>  to go back to firefox (after a pause while you walk to the printer to
+> get the printout of the spreadsheet)
+
+And swinging a dead rat from its tail facing east-wards while reciting 
+Documentation/CodingStyle.
+
+Okay, very very sorry, that was particularly childish, but that "walking to 
+the printer" is ofcourse completely constructed and this _is_ something to 
+take into account. Swap-prefetch wants to be free, which (also again) it is 
+doing a good job at it seems, but this also means that it waits for the VM 
+to be _very_ idle before it does anything and as such, we cannot just forget 
+the "nightly" scenario and pretend it's about something else entirely. As 
+long as the machine's being used, swap-prefetch doesn't kick in.
+
+Which is a good feature for swap-prefetch, but also something that needs to 
+weighed alongside its other features in a discussion of alternatives, where 
+for example something like a larger swap granularity would not have anything 
+of the sort to take into account. If it were about walks to the printer, we 
+could shelve the issue as being of too limited practical use for inclusion.
+
+>> -- 2: no serious investigation into possible downsides
+>>
+>> Swap-prefetch tries hard to be as free as possible and it seems to 
+>> largely be succeeding at that. Thing that (obviously -- as in I 
+>> wouldn't want to state it's the only possible worry anyone could have 
+>> left) remains is the "papering over effect" it has by design that one 
+>> might not care for.
+
+Arjan van de Ven made another point here about seeking away due to 
+swap-prefetch (just) before the next request comes in, but that's probably a 
+bit of a non-issue in practice with the "very idle" precondition.
+
+>> -- 3: no serious consideration of possible alternatives
+>>
+>> Tweaking existing use-oce logic is one I've heard but if we consider 
+>> the i/dcache issue dead, I believe that one is as well. Going to 
+>> userspace is another one. Largest theoretical potential. I myself am 
+>> extremely sceptical about the Linux userland, and largely equate it 
+>> with "smallest _practical_ potential" -- but that might just be me.
+>>
+>> A larger swap granularity, possible even a self-training granularity. 
+>> Up to now, seeks only get costlier and costlier with respect to reads 
+>> with every generation of disk (flash would largely overcome it though) 
+>> and doing more in one read/write _greatly_ improves throughput, maybe 
+>> up to the point that swap-prefetch is no longer very useful. I myself 
+>> don't know about the tradeoffs involved.
+> 
+> larger swap granularity may help, but waiting for the user to need the 
+> ram and have to wait for it to be read back in is always going to be 
+> worse for the user then pre-populating the free memory (for the case 
+> where the pre-population is right, for other cases it's the same). so I 
+> see this as a red herring
+
+I saw Chris Snook make a good post here and am going to defer this part to 
+that discussion:
+
+http://lkml.org/lkml/2007/7/27/421
+
+But no, it's not a red herring if _practically_ speaking the swapin is fast 
+enough once started that people don't actually mind anymore since in that 
+case you could simply do without yet more additional VM complexity (and 
+kernel daemon).
+
+> there are fully legitimate situations where this is useful, the 'papering
+> over' effect is not referring to these, it's referring to other possible
+> problems in the future.
+
+No, it's not just future. Just look at the various things under discussion 
+now such as improved use-once and better swapin.
+
+Rene.
+
