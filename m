@@ -1,85 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760534AbXG2Hht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760558AbXG2Hop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760534AbXG2Hht (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 03:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759714AbXG2Hhm
+	id S1760558AbXG2Hop (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 03:44:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758030AbXG2Hog
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 03:37:42 -0400
-Received: from metis.extern.pengutronix.de ([83.236.181.26]:39078 "EHLO
-	metis.extern.pengutronix.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750916AbXG2Hhl (ORCPT
+	Sun, 29 Jul 2007 03:44:36 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48505 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757222AbXG2Hof (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 03:37:41 -0400
-Date: Sun, 29 Jul 2007 09:37:39 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Subject: bug in slab.c
-Message-ID: <20070729073739.GD1678@pengutronix.de>
+	Sun, 29 Jul 2007 03:44:35 -0400
+Subject: Re: [PATCH 0/3] readahead drop behind and size adjustment
+From: Eric St-Laurent <ericstl34@sympatico.ca>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Fengguang Wu <fengguang.wu@gmail.com>, Dave Jones <davej@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel <linux-kernel@vger.kernel.org>, riel <riel@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Tim Pepper <lnxninja@us.ibm.com>, Chris Snook <csnook@redhat.com>
+In-Reply-To: <46A6F732.3080905@yahoo.com.au>
+References: <20070721210005.000228000@chello.nl>
+	 <20070722023923.GA6438@mail.ustc.edu.cn> <20070722024428.GA724@redhat.com>
+	 <20070722081010.GA6317@mail.ustc.edu.cn>
+	 <1185093236.6344.87.camel@localhost.localdomain>
+	 <46A46E4B.7050007@yahoo.com.au> <1185338106.7105.44.camel@perkele>
+	 <46A6DD7F.1050505@yahoo.com.au> <1185344325.7105.91.camel@perkele>
+	 <46A6F732.3080905@yahoo.com.au>
+Content-Type: text/plain
+Date: Sun, 29 Jul 2007 03:44:33 -0400
+Message-Id: <1185695073.6665.6.camel@perkele>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-25-07 at 17:09 +1000, Nick Piggin wrote:
+> Eric St-Laurent wrote:
+> > I test this on my main system, so patches with basic testing and
+> > reasonable stability are preferred. I just want to avoid data corruption
+> > bugs. FYI, I used to run the -rt tree most of the time.
+> 
+> OK here is one which just changes the rate that the active and inactive
+> lists get scanned. Data corruption bugs should be minimal ;)
+> 
 
-My Dell Latitude D520 just dies with this BUG:
+Nick,
 
-----------8<----------8<----------8<----------8<----------
-Jul 29 09:30:00 localhost kernel: ------------[ cut here ]------------
-Jul 29 09:30:00 localhost kernel: kernel BUG at mm/slab.c:2980!
-Jul 29 09:30:00 localhost kernel: invalid opcode: 0000 [#1]
-Jul 29 09:30:00 localhost kernel: PREEMPT SMP 
-Jul 29 09:30:00 localhost kernel: Modules linked in: button psmouse hidp rfcomm l2cap hci_vhci dtl1_cs btuart_cs bt3c_cs bluecard_cs bf
-usb bcm203x hci_uart michael_mic arc4 ecb ieee80211_crypt_tkip ieee80211_crypt_ccmp ipw3945 ieee80211 ieee80211_crypt i915 drm cpufreq_
-ondemand cpufreq_userspace cpufreq_powersave speedstep_centrino freq_table nfs nfsd exportfs lockd nfs_acl sunrpc ac battery sbp2 loop 
-pcmcia firmware_class snd_hda_intel snd_pcm_oss snd_mixer_oss snd_pcm snd_timer yenta_socket hci_usb rsrc_nonstatic snd serio_raw sound
-core bluetooth i2c_i801 intel_agp pcmcia_core snd_page_alloc i2c_core rtc pcspkr evdev ext3 jbd mbcache sha256 aes cbc blkcipher usbhid
- dm_crypt dm_mirror dm_snapshot dm_mod sd_mod ohci1394 ieee1394 ata_piix b44 mii libata scsi_mod ehci_hcd uhci_hcd usbcore thermal proc
-essor fan
-Jul 29 09:30:00 localhost kernel: CPU:    1
-Jul 29 09:30:00 localhost kernel: EIP:    0060:[<c0163ac4>]    Not tainted VLI
-Jul 29 09:30:00 localhost kernel: EFLAGS: 00210046   (2.6.22.1 #1)
-Jul 29 09:30:00 localhost kernel: EIP is at cache_alloc_refill+0xeb/0x447
-Jul 29 09:30:00 localhost kernel: eax: 0000000f   ebx: 00000005   ecx: dffff4c0   edx: dffff4c0
-Jul 29 09:30:00 localhost kernel: esi: e451e000   edi: 00000026   ebp: c18ea800   esp: edbedd90
-Jul 29 09:30:00 localhost kernel: ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Jul 29 09:30:00 localhost kernel: Process firefox-bin (pid: 3865, ti=edbec000 task=dfc02a50 task.ti=edbec000)
-Jul 29 09:30:00 localhost kernel: Stack: 0000000f 000004d0 dffff4c0 dfffd2c0 00000000 00000000 00000001 00200202 
-Jul 29 09:30:00 localhost kernel:        d63a0218 e60df3c0 dffff4c0 00200286 ef84c6c0 000004d0 c0163e6f ef84c6c0 
-Jul 29 09:30:00 localhost kernel:        00000040 c0246212 00000000 dfcc2c40 e2c91740 000004d0 efd29740 00000000 
-Jul 29 09:30:00 localhost kernel: Call Trace:
-Jul 29 09:30:00 localhost kernel:  [<c0163e6f>] __kmalloc+0x4f/0x58
-Jul 29 09:30:00 localhost kernel:  [<c0246212>] __alloc_skb+0x49/0xf5
-Jul 29 09:30:00 localhost kernel:  [<c0242bef>] sock_alloc_send_skb+0x6e/0x196
-Jul 29 09:30:00 localhost kernel:  [<c029a7d2>] unix_stream_sendmsg+0x14d/0x309
-Jul 29 09:30:00 localhost kernel:  [<c02401d3>] sock_aio_write+0xf9/0x105
-Jul 29 09:30:00 localhost kernel:  [<c016677b>] do_sync_write+0xc7/0x10a
-Jul 29 09:30:00 localhost kernel:  [<c0131fac>] autoremove_wake_function+0x0/0x35
-Jul 29 09:30:00 localhost kernel:  [<c02405a2>] sock_ioctl+0x1a2/0x1c1
-Jul 29 09:30:00 localhost kernel:  [<c0240400>] sock_ioctl+0x0/0x1c1
-Jul 29 09:30:00 localhost kernel:  [<c0166f73>] vfs_write+0xbc/0x12a
-Jul 29 09:30:00 localhost kernel:  [<c01674ea>] sys_write+0x41/0x67
-Jul 29 09:30:00 localhost kernel:  [<c0103d42>] sysenter_past_esp+0x5f/0x85
-Jul 29 09:30:00 localhost kernel:  =======================
-Jul 29 09:30:00 localhost kernel: Code: 8b 30 39 c6 75 19 c7 40 38 01 00 00 00 8b 70 10 8b 44 24 0c 83 c0 10 39 c6 0f 84 9e 00 00 00 8b
- 54 24 08 8b 42 20 39 46 10 72 2d <0f> 0b eb fe 8b 44 24 08 8b 5e 14 8b 4d 00 8b 50 14 8b 04 24 0f 
-Jul 29 09:30:00 localhost kernel: EIP: [<c0163ac4>] cache_alloc_refill+0xeb/0x447 SS:ESP 0068:edbedd90
-Jul 29 09:30:00 localhost kernel: note: firefox-bin[3865] exited with preempt_count 1
-Jul 29 09:30:03 localhost kernel: ipw3945: Detected geography ABG (13 802.11bg channels, 23 802.11a channels)
-----------8<----------8<----------8<----------8<----------
+I have tried your patch with my test case, unfortunately it doesn't
+help.
 
-root@thebe:~# uname -a
-Linux thebe 2.6.22.1 #1 SMP PREEMPT Fri Jul 13 08:23:52 CEST 2007 i686 GNU/Linux
+Numbers did vary a little bit more, and it seemed drop_caches was not
+working as well as usual (used between the runs).
 
-The only non-standard thing is the ipw drivers (ipw3945-1.2.1).
+Also, overall the runs took about .1s more to complete.
 
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+
+Linux 2.6.23-rc1-nick PREEMPT x86_64
+
+Base test:
+
+1st run: 0m9.123s
+2nd run: 0m3.565s
+3rd run: 0m3.553s
+4th run: 0m3.565s
+
+Reading a large file test:
+
+1st run: 0m9.146s
+2nd run: 0m3.560s
+`/tmp/large_file' -> `/dev/null'
+3rd run: 0m19.759s
+4th run: 0m3.515s
+
+Copying (using cp) a large file test:
+
+1st run: 0m9.085s
+2nd run: 0m3.522s
+`/tmp/large_file' -> `/tmp/large_file.copy'
+3rd run: 0m9.977s
+4th run: 0m3.518s
+
+
+Anyway, what is the theory behind the patch?
+
+
+- Eric
+
 
