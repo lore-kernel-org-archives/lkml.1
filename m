@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765197AbXG2PeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764678AbXG2Pgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765197AbXG2PeF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761358AbXG2Pdx
+	id S1764678AbXG2Pgq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763289AbXG2Pgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:33:53 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:8490 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761333AbXG2Pdx (ORCPT
+	Sun, 29 Jul 2007 11:36:38 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36248 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761047AbXG2Pgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:33:53 -0400
-Date: Sun, 29 Jul 2007 09:33:43 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Reading a bad sector does not report failure as 'read error' but
- hangs PC with 'Machine Check Exception'
-In-reply-to: <fa.0jeOedb9xyA9k8S1VmCEkqHxsyw@ifi.uio.no>
-To: "Hendrik ." <chasake@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46ACB357.4030006@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.0jeOedb9xyA9k8S1VmCEkqHxsyw@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Sun, 29 Jul 2007 11:36:38 -0400
+Date: Sun, 29 Jul 2007 16:22:48 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Andrew Morton <akpm@osdl.org>, spyro@f2s.com, James.Bottomley@SteelEye.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC: 2.6 patch] remove the broken SCSI_ACORNSCSI_3 driver
+Message-ID: <20070729152248.GB25431@flint.arm.linux.org.uk>
+References: <20070729145915.GF16817@stusta.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070729145915.GF16817@stusta.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hendrik . wrote:
-> Last night I discovered a problem in my RAID5 array
-> and finally after a lot of tests I narrowed it down to
-> a bad sector on one of the hard disks and some goofy
-> kernels.
+On Sun, Jul 29, 2007 at 04:59:15PM +0200, Adrian Bunk wrote:
+> The SCSI_ACORNSCSI_3 driver:
+> - has been marked as BROKEN for more than one year and
+> - is still marked as BROKEN.
 > 
-> I just yesterday build a new PC using an existing
-> array of 5 disks in RAID 5. I did build the array with
-> only 4 out of 5 disks in the system but the rebuild
-> processes stopped over and over again apparently at
-> the same position. At last I found out that the
-> harddisk at the first SATA port had developed some bad
-> sectors which made the kernel stop completely when it
-> tried to read that sector with the following error on
-> the screen:
+> Drivers that had been marked as BROKEN for such a long time seem to be
+> unlikely to be revived in the forseeable future.
 > 
-> HARDWARE ERROR
-> CPU 0: Machine Check Exception: 4  Bank 4:
-> b200000000070f0f
-> TSC b7d4a144d0
-> This is not a software problem!
-> Run through mcelog --ascii to decode and contact your
-> hardware vendor
-> Kernel panic - not syncing: Machine check
+> But if anyone wants to ever revive this driver, the code is still
+> present in the older kernel releases.
 
-You should run this through mcelog as it suggests and see what it shows. 
-  The kernel should be handling this properly, unless the drive problem 
-is causing the controller to do something bad. Note that kernels 2.6.20 
-and later use ADMA mode on the nForce4 SATA controller whereas previous 
-versions used it essentially like a PATA controller, so it is not 
-surprising that the behavior is different.
+NAK.  I've had a patch to resurect it for some time.  Notice that this
+merge window I applied some patches to the other acorn scsi drivers -
+once I get enough time to separate out the changes I'll be applying
+those patches.  It's relatively low priority for me though.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
