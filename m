@@ -1,79 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763497AbXG2OEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763487AbXG2OFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763497AbXG2OEl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763054AbXG2OES
+	id S1763487AbXG2OFw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762555AbXG2OFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:04:18 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2291 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762834AbXG2OEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:04:15 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [POWERPC] 2.6.23-rc1-mm1 build failure
-Date: Sun, 29 Jul 2007 16:04:13 +0200
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	Sun, 29 Jul 2007 10:05:44 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:47012 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762439AbXG2OFn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 10:05:43 -0400
+Message-ID: <008001c7d1e9$6a8625b0$03c8a8c0@kroptech.com>
+From: "Adam Kropelin" <akropel1@rochester.rr.com>
+To: "Nick Pasich" <NewsLetters@NickAndBarb.net>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Nick Pasich" <NewsLetters@NickAndBarb.net>,
+       <linux-usb-devel@lists.sourceforge.net>,
+       "Greg Kroah-Hartman" <greg@kroah.com>,
+       "Al Borchers" <alborchers@steinerpoint.com>,
+       <linux-kernel@vger.kernel.org>, "Peter Berger" <pberger@brimson.com>
+References: <20070727203708.GA10839@NICK2> <20070727152254.202959c1.akpm@linux-foundation.org> <003701c7d16c$8c72b7b0$03c8a8c0@kroptech.com> <20070729124813.GA30633@69.17.112.251>
+Subject: Re: [linux-usb-devel] Edgeport UPS Monitoring Problems
+Date: Sun, 29 Jul 2007 10:04:44 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707291604.14202.m.kozlowski@tuxland.pl>
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_007D_01C7D1C7.E357FD00"
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3138
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+This is a multi-part message in MIME format.
 
-	iMac G3 series.
+------=_NextPart_000_007D_01C7D1C7.E357FD00
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
 
-$ make mrproper && make allmodconfig && make
+From: "Nick Pasich" <NewsLetters@NickAndBarb.net>
+> Here's the dmesg output ......
+>
+> [...]
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: LCR - 
+> write to send_cmd_write_uart_register register 0x03
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> SendCmdWriteUartReg - Not writing to MCR Register
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: MCR - 
+> write to send_cmd_write_uart_register register 0x0b
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> SendCmdWriteUartReg - Not writing to MCR Register
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> change_port_settings - baud rate = 9600
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> SendCmdWriteBaudRate - NOT Setting baud rate for port = 0, baud = 9600
 
-results in this:
+Yup, there's what I expected. Not setting the baud rate and not writing 
+status registers is unlikely to produce working results. This 9600 must 
+be the default setting being applied.
 
-  CC      arch/powerpc/kernel/lparmap.s
-  AS      arch/powerpc/kernel/head_64.o
-lparmap.c: Assembler messages:
-lparmap.c:84: Error: file number 1 already allocated
-make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
-make: *** [arch/powerpc/kernel] Blad 2
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> SendCmdWriteUartReg - Not writing to MCR Register
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: MCR - 
+> write to send_cmd_write_uart_register register 0x0b
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> SendCmdWriteUartReg - Not writing to MCR Register
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> change_port_settings - baud rate = 2400
+> Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
+> SendCmdWriteBaudRate - NOT Setting baud rate for port = 0, baud = 2400
 
-Regards,
+Here's apcupsd trying to set 2400 baud.
 
-	Mariusz
+Please try the attached patch (against 2.6.22.1). This will allow 
+writing to the baud rate and MCR/LCR registers on non-EPIC adapters. I 
+suspect the previous code was a copy-paste error.
 
+--Adam
 
+------=_NextPart_000_007D_01C7D1C7.E357FD00
+Content-Type: application/octet-stream;
+	name="usb-serial-edgeport-non-epic-baud-rate-fix.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="usb-serial-edgeport-non-epic-baud-rate-fix.patch"
 
-$ cat /proc/cpuinfo 
-processor       : 0
-cpu             : 740/750
-temperature     : 46-52 C (uncalibrated)
-clock           : 400MHz
-revision        : 2.2 (pvr 0008 0202)
-bogomips        : 796.67
-machine         : PowerMac2,1
-motherboard     : PowerMac2,1 MacRISC2 MacRISC Power Macintosh
-detected as     : 66 (iMac FireWire)
-pmac flags      : 00000005
-L2 cache        : 512K unified
-memory          : 256MB
-pmac-generation : NewWorld
+--- linux-2.6.22.1/drivers/usb/serial/io_edgeport.c	2007-07-10 =
+14:56:30.000000000 -0400=0A=
++++ linux-2.6.22.1.new/drivers/usb/serial/io_edgeport.c	2007-07-29 =
+09:45:18.000000000 -0400=0A=
+@@ -2366,9 +2366,8 @@=0A=
+ 	int status;=0A=
+ 	unsigned char number =3D edge_port->port->number - =
+edge_port->port->serial->minor;=0A=
+ =0A=
+-	if ((!edge_serial->is_epic) ||=0A=
+-	    ((edge_serial->is_epic) &&=0A=
+-	     (!edge_serial->epic_descriptor.Supports.IOSPSetBaudRate))) {=0A=
++	if (edge_serial->is_epic &&=0A=
++	    !edge_serial->epic_descriptor.Supports.IOSPSetBaudRate) {=0A=
+ 		dbg("SendCmdWriteBaudRate - NOT Setting baud rate for port =3D %d, =
+baud =3D %d",=0A=
+ 		    edge_port->port->number, baudRate);=0A=
+ 		return 0;=0A=
+@@ -2461,18 +2460,16 @@=0A=
+ =0A=
+ 	dbg("%s - write to %s register 0x%02x", (regNum =3D=3D MCR) ? "MCR" : =
+"LCR", __FUNCTION__, regValue);=0A=
+ =0A=
+-	if ((!edge_serial->is_epic) ||=0A=
+-	    ((edge_serial->is_epic) &&=0A=
+-	     (!edge_serial->epic_descriptor.Supports.IOSPWriteMCR) &&=0A=
+-	     (regNum =3D=3D MCR))) {=0A=
++	if (edge_serial->is_epic &&=0A=
++	    !edge_serial->epic_descriptor.Supports.IOSPWriteMCR &&=0A=
++	    regNum =3D=3D MCR) {=0A=
+ 		dbg("SendCmdWriteUartReg - Not writing to MCR Register");=0A=
+ 		return 0;=0A=
+ 	}=0A=
+ =0A=
+-	if ((!edge_serial->is_epic) ||=0A=
+-	    ((edge_serial->is_epic) &&=0A=
+-	     (!edge_serial->epic_descriptor.Supports.IOSPWriteLCR) &&=0A=
+-	     (regNum =3D=3D LCR))) {=0A=
++	if (edge_serial->is_epic &&=0A=
++	    !edge_serial->epic_descriptor.Supports.IOSPWriteLCR &&=0A=
++	    regNum =3D=3D LCR) {=0A=
+ 		dbg ("SendCmdWriteUartReg - Not writing to LCR Register");=0A=
+ 		return 0;=0A=
+ 	}=0A=
 
+------=_NextPart_000_007D_01C7D1C7.E357FD00--
 
-Linux iMac-tux 2.6.8-powerpc #1 Thu Nov 24 00:17:15 UTC 2005 ppc GNU/Linux
- 
-Gnu C                  4.1.2
-Gnu make               3.81
-binutils               2.17
-util-linux             2.12r
-mount                  2.12r
-module-init-tools      3.3-pre2
-e2fsprogs              1.40-WIP
-Linux C Library        3.6
-Dynamic linker (ldd)   2.3.6
-Procps                 3.2.7
-Net-tools              1.60
-Console-tools          0.2.3
-Sh-utils               5.97
-Modules Loaded         ipv6 af_packet joydev tsdev evdev eth1394 tulip crc32 ohci1394 ieee1394 uninorth_agp agpgart dm_snapshot dm_mirror dm_mod snd_powermac snd_pcm_oss snd_pcm snd_page_alloc snd_mixer_oss snd_seq_oss snd_seq_device snd_seq_midi_event snd_seq snd_timer snd soundcore ide_cd cdrom ext3 jbd mbcache usbhid uhci_hcd ohci_hcd usbcore ide_disk unix
