@@ -1,146 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763396AbXG2OEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763497AbXG2OEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763396AbXG2OEV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762207AbXG2OEK
+	id S1763497AbXG2OEl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763054AbXG2OES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:04:10 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:57277 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760991AbXG2OEI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:04:08 -0400
-Message-ID: <46AC9DC5.8070900@gmail.com>
-Date: Sun, 29 Jul 2007 16:01:41 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Sun, 29 Jul 2007 10:04:18 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2291 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762834AbXG2OEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 10:04:15 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [POWERPC] 2.6.23-rc1-mm1 build failure
+Date: Sun, 29 Jul 2007 16:04:13 +0200
+User-Agent: KMail/1.9.5
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com> <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com> <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com> <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm> <46AC6771.8080000@gmail.com> <Pine.LNX.4.64.0707290420250.15835@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0707290420250.15835@asgard.lang.hm>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+Message-Id: <200707291604.14202.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/29/2007 01:41 PM, david@lang.hm wrote:
+Hello,
 
->> And now you do it again :-) There is no conclusion -- just the 
->> inescapable observation that swap-prefetch was (or may have been) 
->> masking the problem of GNU locate being a program that noone in their 
->> right mind should be using.
-> 
-> isn't your conclusion then that if people just stopped useing that 
-> version of updatedb the problem would be solved and there would be no 
-> need for the swap prefetch patch? that seemed to be what you were 
-> strongly implying (if not saying outright)
+	iMac G3 series.
 
-No. What I said outright, every single time, is that swap-prefetch in itself 
-seems to make sense. And specifically that even if the _direct_ problem is a 
-crummy program, it _still_ makes sense generally. Every single time.
+$ make mrproper && make allmodconfig && make
 
-But see -- you failed to notice this because you guys are stuck in this dumb 
-adversary "us against them" thing so inherent of (online) communities, where 
-you sit around your own habitats patting each other on the back for extended 
-periods of time and then every once a while go out clinging on to each other 
-vigorously and going "boo! hiss!" at the big bad outside world.
+results in this:
 
-I already got overly violent at one point in this thread so I'll leave out 
-any further references to sense-deprived fanboy-culture but please, I said 
-every single time that I'm not against swap-prefetch. I cannot communicate 
-when I'm not being read.
+  CC      arch/powerpc/kernel/lparmap.s
+  AS      arch/powerpc/kernel/head_64.o
+lparmap.c: Assembler messages:
+lparmap.c:84: Error: file number 1 already allocated
+make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
+make: *** [arch/powerpc/kernel] Blad 2
 
-> I agree that tinkering with the core VM code should not be done lightly, 
-> but this has been put through the proper process and is stalled with no 
-> hints on how to move forward.
+Regards,
 
-It has not. Concerns that were raised (by specifically Nick Piggin) weren't 
-being addressed.
+	Mariusz
 
-> forget the nightly cron jobs for the moment. think of this scenerio. you 
-> have your memory fairly full with apps that you have open (including 
-> firefox with many tabs), you receive a spreadsheet you need to look at, 
-> so you fire up openoffice to look at it. then you exit openoffice and try
->  to go back to firefox (after a pause while you walk to the printer to
-> get the printout of the spreadsheet)
 
-And swinging a dead rat from its tail facing east-wards while reciting 
-Documentation/CodingStyle.
 
-Okay, very very sorry, that was particularly childish, but that "walking to 
-the printer" is ofcourse completely constructed and this _is_ something to 
-take into account. Swap-prefetch wants to be free, which (also again) it is 
-doing a good job at it seems, but this also means that it waits for the VM 
-to be _very_ idle before it does anything and as such, we cannot just forget 
-the "nightly" scenario and pretend it's about something else entirely. As 
-long as the machine's being used, swap-prefetch doesn't kick in.
+$ cat /proc/cpuinfo 
+processor       : 0
+cpu             : 740/750
+temperature     : 46-52 C (uncalibrated)
+clock           : 400MHz
+revision        : 2.2 (pvr 0008 0202)
+bogomips        : 796.67
+machine         : PowerMac2,1
+motherboard     : PowerMac2,1 MacRISC2 MacRISC Power Macintosh
+detected as     : 66 (iMac FireWire)
+pmac flags      : 00000005
+L2 cache        : 512K unified
+memory          : 256MB
+pmac-generation : NewWorld
 
-Which is a good feature for swap-prefetch, but also something that needs to 
-weighed alongside its other features in a discussion of alternatives, where 
-for example something like a larger swap granularity would not have anything 
-of the sort to take into account. If it were about walks to the printer, we 
-could shelve the issue as being of too limited practical use for inclusion.
 
->> -- 2: no serious investigation into possible downsides
->>
->> Swap-prefetch tries hard to be as free as possible and it seems to 
->> largely be succeeding at that. Thing that (obviously -- as in I 
->> wouldn't want to state it's the only possible worry anyone could have 
->> left) remains is the "papering over effect" it has by design that one 
->> might not care for.
-
-Arjan van de Ven made another point here about seeking away due to 
-swap-prefetch (just) before the next request comes in, but that's probably a 
-bit of a non-issue in practice with the "very idle" precondition.
-
->> -- 3: no serious consideration of possible alternatives
->>
->> Tweaking existing use-oce logic is one I've heard but if we consider 
->> the i/dcache issue dead, I believe that one is as well. Going to 
->> userspace is another one. Largest theoretical potential. I myself am 
->> extremely sceptical about the Linux userland, and largely equate it 
->> with "smallest _practical_ potential" -- but that might just be me.
->>
->> A larger swap granularity, possible even a self-training granularity. 
->> Up to now, seeks only get costlier and costlier with respect to reads 
->> with every generation of disk (flash would largely overcome it though) 
->> and doing more in one read/write _greatly_ improves throughput, maybe 
->> up to the point that swap-prefetch is no longer very useful. I myself 
->> don't know about the tradeoffs involved.
-> 
-> larger swap granularity may help, but waiting for the user to need the 
-> ram and have to wait for it to be read back in is always going to be 
-> worse for the user then pre-populating the free memory (for the case 
-> where the pre-population is right, for other cases it's the same). so I 
-> see this as a red herring
-
-I saw Chris Snook make a good post here and am going to defer this part to 
-that discussion:
-
-http://lkml.org/lkml/2007/7/27/421
-
-But no, it's not a red herring if _practically_ speaking the swapin is fast 
-enough once started that people don't actually mind anymore since in that 
-case you could simply do without yet more additional VM complexity (and 
-kernel daemon).
-
-> there are fully legitimate situations where this is useful, the 'papering
-> over' effect is not referring to these, it's referring to other possible
-> problems in the future.
-
-No, it's not just future. Just look at the various things under discussion 
-now such as improved use-once and better swapin.
-
-Rene.
-
+Linux iMac-tux 2.6.8-powerpc #1 Thu Nov 24 00:17:15 UTC 2005 ppc GNU/Linux
+ 
+Gnu C                  4.1.2
+Gnu make               3.81
+binutils               2.17
+util-linux             2.12r
+mount                  2.12r
+module-init-tools      3.3-pre2
+e2fsprogs              1.40-WIP
+Linux C Library        3.6
+Dynamic linker (ldd)   2.3.6
+Procps                 3.2.7
+Net-tools              1.60
+Console-tools          0.2.3
+Sh-utils               5.97
+Modules Loaded         ipv6 af_packet joydev tsdev evdev eth1394 tulip crc32 ohci1394 ieee1394 uninorth_agp agpgart dm_snapshot dm_mirror dm_mod snd_powermac snd_pcm_oss snd_pcm snd_page_alloc snd_mixer_oss snd_seq_oss snd_seq_device snd_seq_midi_event snd_seq snd_timer snd soundcore ide_cd cdrom ext3 jbd mbcache usbhid uhci_hcd ohci_hcd usbcore ide_disk unix
