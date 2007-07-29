@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934412AbXG2Sso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934602AbXG2StX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934412AbXG2Sso (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 14:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932726AbXG2Ssc
+	id S934602AbXG2StX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 14:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932726AbXG2StO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 14:48:32 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:48916
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761718AbXG2Ssc (ORCPT
+	Sun, 29 Jul 2007 14:49:14 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:7189 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933042AbXG2StN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 14:48:32 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Satyam Sharma <satyam@infradead.org>
-Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in sb1000_dev_ioctl()
-Date: Sun, 29 Jul 2007 20:48:20 +0200
-User-Agent: KMail/1.9.6
-Cc: Domen Puncer <domen@coderock.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
-       "David S. Miller" <davem@davemloft.net>
-References: <200707290002.42722.jesper.juhl@gmail.com> <alpine.LFD.0.999.0707291106500.30928@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0707300003440.30928@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0707300003440.30928@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Jul 2007 14:49:13 -0400
+Date: Sun, 29 Jul 2007 14:45:31 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Hans de Goede <j.w.r.degoede@hhs.nl>
+Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [2.6 patch] make abituguru3_read_increment_offset() static
+Message-ID: <20070729184531.GB31314@jupiter.solarsys.private>
+References: <20070729145701.GJ16817@stusta.de> <46ACBB8E.9080302@hhs.nl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707292048.20531.mb@bu3sch.de>
+In-Reply-To: <46ACBB8E.9080302@hhs.nl>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 July 2007 20:34:46 Satyam Sharma wrote:
-> (2) !(dev->flags & IFF_UP) is bogus because the functions of this ioctl
-> can (and should) be allowed even when the interface is not up and running.
+Hi:
 
-Are you _sure_? This function does poke with the device hardware.
-It might return crap or even machinecheck when not initialized.
-Hardware is probably powered down, if not IFF_UP. (I don't know if that's
-the case here, though).
-
->  drivers/net/sb1000.c |    3 ---
->  1 files changed, 0 insertions(+), 3 deletions(-)
+* Hans de Goede <j.w.r.degoede@hhs.nl> [2007-07-29 18:08:46 +0200]:
+> Adrian Bunk wrote:
+> >abituguru3_read_increment_offset() can become static.
+> >
+> >Signed-off-by: Adrian Bunk <bunk@stusta.de>
 > 
-> diff --git a/drivers/net/sb1000.c b/drivers/net/sb1000.c
-> index 1de3eec..f60fe98 100644
-> --- a/drivers/net/sb1000.c
-> +++ b/drivers/net/sb1000.c
-> @@ -993,9 +993,6 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
->  	unsigned int stats[5];
->  	struct sb1000_private *lp = netdev_priv(dev);
->  
-> -	if (!(dev && dev->flags & IFF_UP))
-> -		return -ENODEV;
-> -
+> Looks good, good catch.
+> 
+> Acked-by: Hans de Goede <j.w.r.degoede@hhs.nl>
+> 
+> >
+> >---
+> >--- linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c.old	2007-07-26 
+> >08:56:33.000000000 +0200
+> >+++ linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c	2007-07-26 
+> >08:57:00.000000000 +0200
+> >@@ -691,8 +691,9 @@
+> > 
+> > /* Sensor settings are stored 1 byte per offset with the bytes
+> >    placed add consecutive offsets. */
+> >-int abituguru3_read_increment_offset(struct abituguru3_data *data, u8 
+> >bank,
+> >-	u8 offset, u8 count, u8 *buf, int offset_count)
+> >+static int abituguru3_read_increment_offset(struct abituguru3_data *data,
+> >+					    u8 bank, u8 offset, u8 count,
+> >+					    u8 *buf, int offset_count)
+> > {
+> > 	int i, x;
+> > 
+> >
 
+Applied to hwmon-2.6.git/testing, thanks.
 
 -- 
-Greetings Michael.
+Mark M. Hoffman
+mhoffman@lightlink.com
+
