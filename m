@@ -1,95 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760705AbXG2HxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760752AbXG2H51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760705AbXG2HxV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 03:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbXG2HxN
+	id S1760752AbXG2H51 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 03:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760218AbXG2H5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 03:53:13 -0400
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:65407 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760170AbXG2HxM (ORCPT
+	Sun, 29 Jul 2007 03:57:20 -0400
+Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:48708 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760174AbXG2H5U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 03:53:12 -0400
-Subject: [BUG] Linux VM use-once mechanisms don't work (test case with
-	numbers included)
+	Sun, 29 Jul 2007 03:57:20 -0400
+Subject: [BUG] fadvise POSIX_FADV_NOREUSE does nothing
 From: Eric St-Laurent <ericstl34@sympatico.ca>
 To: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary="=-6Gysxto92Mr8vPduR7GF"
-Date: Sun, 29 Jul 2007 03:53:09 -0400
-Message-Id: <1185695589.6665.16.camel@perkele>
+Content-Type: multipart/mixed; boundary="=-kVAFE2/xXwvOOzM2hhpA"
+Date: Sun, 29 Jul 2007 03:57:17 -0400
+Message-Id: <1185695837.6665.22.camel@perkele>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-6Gysxto92Mr8vPduR7GF
+--=-kVAFE2/xXwvOOzM2hhpA
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
-Linux VM use-once mechanisms don't seem to work.  Simple scenario like
-streaming a file much greater than physical RAM size should be
-identified to avoid trashing the page cache with useless data.
+Related to my other bug report today, calling posix_fadvise (which uses
+fadvise64) with the POSIX_FADV_NOREUSE flag does nothing.  The pages are
+not dropped behind.
 
-I know the VM cannot predict the future or assume anything about the
-user's intent.  But this workload is simple and common, it should be
-detected and better handled.
+I also tried call fadvise with POSIX_FADV_SEQUENTIAL first.
 
-Test case:
+This is expected as the POSIX_FADV_NOREUSE is a no-op in the recent
+kernels.
 
-Linux 2.6.20-16-lowlatency SMP PREEMPT x86_64 (also tried on 2.6.23-rc1)
+Also, POSIX_FADV_SEQUENTIAL only does the readahead window. It doesn't
+hint the VM in any way to possibly drop-behind the pages.
 
-- A file of 1/3 the RAM size is created, mapped and frequently accessed
-(4 times).
-- The test is run multiple times (4 total) to time it's execution.
-- After the first run, other runs take much less time, because the file
-is cached.
-- A previously created file, 4 times the size of the RAM, is read or
-copied.
-- The test is re-run (2 times) to time it's execution.
+(See the previous bug report for more details of the test case)
 
-To test:
-
-$ make
-# ./use-once-test.sh
-
-Some big files will be created in your /tmp. They don't get erased after
-the test to speedup multiple runs.
-
-Results:
-
-- The test execution time greatly increase after reading or copying the
-large file.
-- Frequently used data got kick out of the page cache and replaced with
-useless read once data.
-- Both the read only and copy (read + write) cases don't work.
-
-I believe this clearly illustrate the slowdowns I experience after I
-copy large files around my system.  All applications on my desktop are
-jerky for some moments after that.  Watching a DVD is another example.
-
-Base test:
-
-1st run: 0m8.958s
-2nd run: 0m3.442s
-3rd run: 0m3.452s
-4th run: 0m3.443s
-
-Reading a large file test:
-
-1st run: 0m8.997s
-2nd run: 0m3.522s
-`/tmp/large_file' -> `/dev/null'
-3rd run: 0m8.999s    <<< page cache trashed
-4th run: 0m3.440s
-
-Copying (using cp) a large file test:
-
-1st run: 0m8.979s
-2nd run: 0m3.442s
-`/tmp/large_file' -> `/tmp/large_file.copy'
-3rd run: 0m13.814s    <<< page cache trashed
-4th run: 0m3.455s
+Relevant numbers:
 
 Copying (using fadvise_cp) a large file test:
 
@@ -99,35 +50,13 @@ Copying large file...
 3rd run: 0m14.024s    <<< page cache trashed
 4th run: 0m3.449s
 
-Copying (using splice-cp) a large file test:
-
-1st run: 0m8.977s
-2nd run: 0m3.442s
-Copying large file...
-3rd run: 0m14.118s    <<< page cache trashed
-4th run: 0m3.456s
-
-Possible solutions:
-
-Various patches to fix the use-once mechanisms were discussed in the
-past.  Some more that 6 years ago and some more recently.
-
-http://lwn.net/2001/0726/a/2q.php3
-http://lkml.org/lkml/2005/5/3/6
-http://lkml.org/lkml/2006/7/17/192
-http://lkml.org/lkml/2007/7/9/340
-http://lkml.org/lkml/2007/7/21/219 (*1)
-
-(*1) I have tested Peter's patch with some success.  It fix the read
-case, but no the copy case.  Results: http://lkml.org/lkml/2007/7/24/527
-
 Test programs and batch files are attached.
 
 
 - Eric
 
 
---=-6Gysxto92Mr8vPduR7GF
+--=-kVAFE2/xXwvOOzM2hhpA
 Content-Disposition: attachment; filename=fadvise_cp.c
 Content-Type: text/x-csrc; name=fadvise_cp.c; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -184,7 +113,7 @@ int main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
---=-6Gysxto92Mr8vPduR7GF
+--=-kVAFE2/xXwvOOzM2hhpA
 Content-Disposition: attachment; filename=Makefile
 Content-Type: text/x-makefile; name=Makefile; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -194,7 +123,7 @@ all:
 	gcc working_set_simul.c -o working_set_simul
 
 
---=-6Gysxto92Mr8vPduR7GF
+--=-kVAFE2/xXwvOOzM2hhpA
 Content-Disposition: attachment; filename=use-once-test.sh
 Content-Type: application/x-shellscript; name=use-once-test.sh
 Content-Transfer-Encoding: 7bit
@@ -323,7 +252,7 @@ echo
 exit 0
 
 
---=-6Gysxto92Mr8vPduR7GF
+--=-kVAFE2/xXwvOOzM2hhpA
 Content-Disposition: attachment; filename=working_set_simul.c
 Content-Type: text/x-csrc; name=working_set_simul.c; charset=UTF-8
 Content-Transfer-Encoding: 7bit
@@ -366,5 +295,5 @@ int main(int argc, char *argv[])
 	return EXIT_SUCCESS;
 }
 
---=-6Gysxto92Mr8vPduR7GF--
+--=-kVAFE2/xXwvOOzM2hhpA--
 
