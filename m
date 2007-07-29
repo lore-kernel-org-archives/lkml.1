@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935337AbXG2UCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935480AbXG2UHK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935337AbXG2UCW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 16:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935451AbXG2UB2
+	id S935480AbXG2UHK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 16:07:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933547AbXG2UG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 16:01:28 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:43282 "EHLO smtp2.it.da.ut.ee"
+	Sun, 29 Jul 2007 16:06:58 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:35806 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935559AbXG2UB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 16:01:27 -0400
-Date: Sun, 29 Jul 2007 23:01:26 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-cc: linux-ide@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fix runtogether printk's in cmd64x IDE driver
-Message-ID: <Pine.SOC.4.64.0707292257150.10801@math.ut.ee>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S933542AbXG2UG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 16:06:58 -0400
+Date: Sun, 29 Jul 2007 22:08:00 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Meelis Roos <mroos@linux.ee>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Jay Estabrook <jay.estabrook@hp.com>
+Subject: Re: [PATCH] lib: move kasprintf to a separate file
+Message-ID: <20070729200800.GA21064@uranus.ravnborg.org>
+References: <Pine.SOC.4.64.0706041419470.7370@math> <20070605231712.ff1df46f.akpm@linux-foundation.org> <Pine.SOC.4.64.0707281950340.20474@math.ut.ee> <20070728200450.GA25619@uranus.ravnborg.org> <20070728202012.GB25619@uranus.ravnborg.org> <46ABC7C0.9060302@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46ABC7C0.9060302@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a couple of runtogether printks in cmd64x.c IDE driver by adding 
-proper newlines.
+On Sat, Jul 28, 2007 at 03:48:32PM -0700, Jeremy Fitzhardinge wrote:
+> Sam Ravnborg wrote:
+> > kasprintf pulls in kmalloc which proved to be fatal for at least
+> > bootimage target on alpha.
+> > Move it to a separate file so only users of kasprintf are exposed
+> > to the dependency on kmalloc.
+> >   
+> 
+> OK by me (that's what my original patch did), but it might be worth
+> documenting what environmental constraints vsprintf.c is under.  I
+> didn't realize it was used by non-kernel code.
 
-Signed-off-by: Meelis Roos <mroos@linux.ee>
+Looking for other users I saw that i386 iboot had included a minimal printf
+implmentation which could also be a possibility for alpha.
+Now the i386 printf does not support 64 bit - but I dunno if this is
+a problem for alpha.
 
-diff --git a/drivers/ide/pci/cmd64x.c b/drivers/ide/pci/cmd64x.c
-index 19633c5..0e3b5de 100644
---- a/drivers/ide/pci/cmd64x.c
-+++ b/drivers/ide/pci/cmd64x.c
-@@ -475,11 +475,11 @@ static unsigned int __devinit init_chipset_cmd64x(struct pci_dev *dev, const cha
- 		switch (rev) {
- 		case 0x07:
- 		case 0x05:
--			printk("%s: UltraDMA capable", name);
-+			printk("%s: UltraDMA capable\n", name);
- 			break;
- 		case 0x03:
- 		default:
--			printk("%s: MultiWord DMA force limited", name);
-+			printk("%s: MultiWord DMA force limited\n", name);
- 			break;
- 		case 0x01:
- 			printk("%s: MultiWord DMA limited, "
+Actually I would prefer the local printf solution for alpha to
+keep dependencies on the functions in lib/ as one may expect 
+them (kernel only - not boot).
 
--- 
-Meelis Roos (mroos@linux.ee)
+	Sam
