@@ -1,82 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765755AbXG2Q2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932437AbXG2Q2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765755AbXG2Q2W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763678AbXG2Q2N
+	id S932437AbXG2Q2h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763678AbXG2Q21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:28:13 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53124 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763549AbXG2Q2L (ORCPT
+	Sun, 29 Jul 2007 12:28:27 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:2857 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765996AbXG2Q2Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:28:11 -0400
-Date: Sun, 29 Jul 2007 19:28:09 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
-To: Willy Tarreau <w@1wt.eu>
-cc: "Ilpo =?iso-8859-1?Q?J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>,
-       "Darryl L. Miles" <darryl-mailinglists@netbauds.net>,
-       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
-Subject: Re: TCP SACK issue, hung connection, tcpdump included
-In-Reply-To: <20070729160721.GA31276@1wt.eu>
-Message-ID: <Pine.LNX.4.64.0707291922370.11113@kivilampi-30.cs.helsinki.fi>
-References: <46AC2CBE.5010500@netbauds.net> <20070729064511.GA18718@1wt.eu>
- <Pine.LNX.4.64.0707291052300.10340@kivilampi-30.cs.helsinki.fi>
- <20070729085427.GA22784@1wt.eu> <Pine.LNX.4.64.0707291208230.10340@kivilampi-30.cs.helsinki.fi>
- <20070729160721.GA31276@1wt.eu>
+	Sun, 29 Jul 2007 12:28:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=qCS88UTSNs10IxQTnmk75cws9rPDvK95Z8e3qF1vQ1udM+I9rmNrMes7mMA/jtIItX6ktEPnl2THCoG1UBd8gCW0vBf0J3QpdcMxrPnb7Pp1TZlhhDZ/njNSjtEccP/9QvjSOA8TwdvvhF/NDezThb2PyIUgGgskGqam0ttxuEM=
+Message-ID: <e9c3a7c20707290928r53bf2530ue02c5e1d4f03be46@mail.gmail.com>
+Date: Sun, 29 Jul 2007 09:28:25 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: apw@shadowen.org, rdunlap@xenotime.net, jschopp@austin.ibm.com
+Subject: checkpatch.pl false positive on exported pointers
+Cc: lkml <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696243703-2123637381-1185726287=:11113"
-Content-ID: <Pine.LNX.4.64.0707291926380.11113@kivilampi-30.cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 0d365f24f9ffb598
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+WARNING: EXPORT_SYMBOL(foo); should immediately follow its function/variable
+#563: FILE: drivers/scsi/iioc34x/iioc34x_sas.c:58:
++EXPORT_SYMBOL(iioc34x_transport_template);
 
----696243703-2123637381-1185726287=:11113
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0707291925011.11113@kivilampi-30.cs.helsinki.fi>
+drivers/scsi/iioc34x/iioc34x_sas.c:57
+struct scsi_transport_template *iioc34x_transport_template;
+EXPORT_SYMBOL(iioc34x_transport_template);
 
-On Sun, 29 Jul 2007, Willy Tarreau wrote:
+I suspect the script wants:
+EXPORT_SYMBOL(*iioc34x_transport_template);
+...but that does not compile.
 
-> On Sun, Jul 29, 2007 at 12:28:04PM +0300, Ilpo Järvinen wrote:
-> 
-> > [...snip...]
-> > 
-> > > BTW, some information are missing. It would have been better if the trace
-> > > had been read with tcpdump -Svv. We would have got seq numbers and ttl.
-> > > Also, we do not know if there's a firewall between both sides. Sometimes,
-> > > some IDS identify attacks in crypted traffic and kill connections. It
-> > > might have been the case here, with the connection closed one way on an
-> > > intermediate firewall.
-> > 
-> > Yeah, firewall or some other issue, I'd say it's quite unlikely a bug in 
-> > TCP because behavior to both directions indicate client -> sender 
-> > blackhole independently of each other...
-> 
-> It would also be possible that something stupid between both ends simply
-> drops packets with the SACK option set. Also something which sometimes
-> happen is that some firewalls automatically translate sequence numbers
-> but not necessarily SACK values, which could pretty well lead to this
-> packet being received but ignored on the server side.
-
-...One can toggle those off with /proc/sys/net/ipv4/tcp_dsack but I 
-suspect DSACKs are not the cause because these retransmissions neither
-are making it through (there are many of them also earlier in the log, 
-just quoted the easiest ones :-) ):
-
-> > > > 09:36:44.335591 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> > > > 378 <nop,nop,timestamp 800227942 7692910>
-> > > > 09:38:44.351950 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> > > > 378 <nop,nop,timestamp 800257942 7692910>
-> > > > 09:40:44.368172 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
-> > > > 378 <nop,nop,timestamp 800287943 7692910>
-
-...there are no SACKs involved in them, yet no cumulative ACK ever 
-arrives from SERVER...
-
-
--- 
- i.
----696243703-2123637381-1185726287=:11113--
+Thanks,
+Dan
