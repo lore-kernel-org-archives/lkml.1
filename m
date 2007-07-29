@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbXG2FAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXG2FEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbXG2FAG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 01:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXG2E7w
+	id S1757943AbXG2FEf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 01:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752371AbXG2FE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 00:59:52 -0400
-Received: from kukmak.uni-mb.si ([164.8.100.3]:46666 "EHLO kukmak.uni-mb.si"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbXG2E7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 00:59:51 -0400
-X-Greylist: delayed 1351 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 00:59:51 EDT
-Date: Sun, 29 Jul 2007 06:37:08 +0200
-From: Domen Puncer <domen@coderock.org>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Franco Venturi <fventuri@mediaone.net>
-Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in sb1000_dev_ioctl()
-Message-ID: <20070729043707.GA8343@nd47.coderock.org>
-References: <200707290002.42722.jesper.juhl@gmail.com>
-Mime-Version: 1.0
+	Sun, 29 Jul 2007 01:04:29 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:48143 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbXG2FE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 01:04:28 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAJ68q0arR7MV/2dsb2JhbAA
+X-IronPort-AV: i="4.19,194,1183359600"; 
+   d="scan'208"; a="190514312:sNHT23488416"
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Diego Calleja <diegocg@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jonathan Jessup <jonathanjessup@gmail.com>,
+       Grzegorz Kulewski <kangur@polcom.net>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org, lkml@metanurb.dk
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+X-Message-Flag: Warning: May contain useful information
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	<1185588279.1654.1.camel@localhost>
+	<alpine.LFD.0.999.0707271922050.3442@woody.linux-foundation.org>
+	<Pine.LNX.4.63.0707280817540.27758@alpha.polcom.net>
+	<954c7c800707280045t4607cebfj532ef025a7a57c05@mail.gmail.com>
+	<alpine.LFD.0.999.0707280956140.3442@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0707281927500.15125@fbirervta.pbzchgretzou.qr>
+	<alpine.LFD.0.999.0707281050590.3442@woody.linux-foundation.org>
+	<20070728225148.a0e58fdd.diegocg@gmail.com>
+	<Pine.LNX.4.64.0707282259220.15125@fbirervta.pbzchgretzou.qr>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 28 Jul 2007 22:04:14 -0700
+Message-ID: <adaodhvu7g1.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707290002.42722.jesper.juhl@gmail.com>
-User-Agent: Mutt/1.4.2.2i
+X-OriginalArrivalTime: 29 Jul 2007 05:04:15.0502 (UTC) FILETIME=[E9264AE0:01C7D19D]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 29/07/07 00:02 +0200, Jesper Juhl wrote:
-> Hi,
-> 
-> Here's a small patch, prompted by a find by the Coverity checker, 
-> that removes a potential NULL pointer dereference from 
-> drivers/net/sb1000.c::sb1000_dev_ioctl().
-> The checker spotted that we do a NULL test of 'dev', yet we 
-> dereference the pointer prior to that check.
-> This patch simply moves the dereference after the NULL test.
+ > It's like CONFIG_HZ - more or less often debated, and now we have everyone
+ > happy by giving them the choice.
 
-But... it can't be called without a valid 'dev', no?
-A quick 'grep do_ioctl net/' confirms that all calls are in
-the form of 'dev->do_ioctl(dev, ...'.
+That's an interesting analogy -- since really the right answer there
+seems not to be modal at all, but rather to do CONFIG_NO_HZ.
 
-
-	Domen
-
-	
-> @@ -991,11 +991,13 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
->  	short PID[4];
->  	int ioaddr[2], status, frequency;
->  	unsigned int stats[5];
-> -	struct sb1000_private *lp = netdev_priv(dev);
-> +	struct sb1000_private *lp;
->  
->  	if (!(dev && dev->flags & IFF_UP))
->  		return -ENODEV;
->  
-> +	lp = netdev_priv(dev);
-> +
->  	ioaddr[0] = dev->base_addr;
->  	/* mem_start holds the second I/O address */
->  	ioaddr[1] = dev->mem_start;
-> 
+ - R.
