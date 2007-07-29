@@ -1,144 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763648AbXG2OuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763757AbXG2O4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763648AbXG2OuJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762902AbXG2Ot4
+	id S1763757AbXG2O4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761188AbXG2O4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:49:56 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:58695 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762878AbXG2Oty (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:49:54 -0400
-Subject: [GIT PATCH] SCSI bug fixes for 2.6.23-rc1
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 29 Jul 2007 09:49:52 -0500
-Message-Id: <1185720592.3434.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Sun, 29 Jul 2007 10:56:06 -0400
+Received: from [212.12.190.239] ([212.12.190.239]:33636 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762894AbXG2O4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 10:56:05 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Rik van Riel <riel@redhat.com>
+Subject: Re: How can we make page replacement smarter
+Date: Sun, 29 Jul 2007 17:55:24 +0300
+User-Agent: KMail/1.5
+Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <200707272243.02336.a1426z@gawab.com> <200707280717.41250.a1426z@gawab.com> <46ABF184.40803@redhat.com>
+In-Reply-To: <46ABF184.40803@redhat.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707291755.24906.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is basically a set of bug fixes with a few minor cleanups thrown
-in.  There are also a few bsg fixes we're taking through this tree
-because SCSI is the current sole consumer. The reason for the huge size
-is the lindent of the advansys driver along with a few cleanups.
+Rik van Riel wrote:
+> Al Boldi wrote:
+> > Good idea, but unless we understand the problems involved, we are bound
+> > to repeat it.  So my first question would be:  Why is swap-in so slow?
+> >
+> > As I have posted in other threads, swap-in of consecutive pages suffers
+> > a 2x slowdown wrt swap-out, whereas swap-in of random pages suffers over
+> > 6x slowdown.
+> >
+> > Because it is hard to quantify the expected swap-in speed for random
+> > pages, let's first tackle the swap-in of consecutive pages, which should
+> > be at least as fast as swap-out.  So again, why is swap-in so slow?
+>
+> I suspect that this is a locality of reference issue.
+>
+> Anonymous memory can get jumbled up by repeated free and
+> malloc cycles of many smaller objects.  The amount of
+> anonymous memory is often smaller than or roughly the same
+> size as system memory.
 
-The patch is available here:
+Sounds exactly like the tmpfs problem.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+> Locality of refenence to anonymous memory tends to be
+> temporal in nature, with the same sets of pages being
+> accessed over and over again.
+>
+> Files are different.  File content tends to be grouped
+> in large related chunks, both logically in the file and
+> on disk.  Generally there is a lot more file data on a
+> system than what fits in memory.
+>
+> Locality of reference to file data tends to be spatial
+> in nature, with one file access leading up to the system
+> accessing "nearby" data.  The data is not necessarily
+> touched again any time soon.
+>
+> > Once we understand this problem, we may be able to suggest a smart
+> > improvement.
+>
+> Like the one on http://linux-mm.org/PageoutFailureModes ?
 
-The short changelog is:
+Interesting to see that there are known problems, but it doesn't seem to list 
+the resume-from-disk swap-in slowdown.
 
-Alan Cox (1):
-      aacraid: Fix security hole
+> I have the LRU lists split and am working on getting SEQ
+> replacement implemented for the anonymous pages.
+>
+> The most recent (untested) patches are attached.
 
-Boaz Harrosh (1):
-      qla2xxx: Data accessors Cleanup of last merge
-
-Chip Coldwell (1):
-      sym53c8xx: don't claim cpqarray device
-
-Darrick J. Wong (1):
-      libsas: SMP request handler shouldn't crash when rphy is NULL
-
-FUJITA Tomonori (3):
-      simscsi: convert to use the data buffer accessors
-      bsg: remove unnecessary code and comments
-      bsg: use lib/idr.c to find a unique minor number
-
-James Bottomley (2):
-      aic79xx, aic7xxx: Fix incorrect width setting
-      bsg: fix unused variable warnings for BLK_DEV_BSG=n
-
-Jeff Garzik (1):
-      libsas: Remove PCI dependencies
-
-Jesper Juhl (1):
-      libsas: Fix potential NULL dereference in sas_smp_get_phy_events()
-
-Matthew Wilcox (1):
-      advansys: lindent and other large, uninteresting changes
-
-Mike Christie (4):
-      iscsi_tcp: Turn off bounce buffers
-      libiscsi: fix cmd seqeunce number checking
-      iscsi_tcp, ib_iser Enable module refcounting for iscsi host template
-      libiscsi: make sure session is not blocked when removing host
-
-Paul Mundt (1):
-      bsg: Fix build for CONFIG_BLOCK=n
-
-Prakash, Sathya (5):
-      mpt fusion: Changes in mptctl.c for logging support
-      mpt fusion: Changes in mptfc.c mptlan.c mptsas.c and mptspi.c for logging support
-      mpt fusion: Changes in mptscsih.c for logging support
-      mpt fusion: Changes in mptbase.c for logging support
-      mpt fusion: logging support in Kconfig, Makefile, mptbase.h and addition of mptdebug.h
-
-Salyzyn, Mark (4):
-      aacraid: fix Sunrise Lake reset handling
-      aacraid: add SCSI SYNCHONIZE_CACHE range checking
-      aacraid: draw line in sand, sundry cleanup and version update
-      aacraid: sysfs adapter reset/status format change.
-
-Seokmann Ju (1):
-      qla2xxx: fix to honor ignored parameters in sysfs attributes
-
-akpm@linux-foundation.org (1):
-      add easyRAID to the no report luns blacklist
+Applied against 2.6.22; the kernel crashes out on boot.
 
 
-And the diffstat:
+Thanks!
 
- arch/ia64/hp/sim/simscsi.c               |   66 
- block/Kconfig                            |    4 
- block/bsg.c                              |   78 
- drivers/infiniband/ulp/iser/iscsi_iser.c |    1 
- drivers/message/fusion/Kconfig           |   14 
- drivers/message/fusion/Makefile          |   37 
- drivers/message/fusion/mptbase.c         |  467 
- drivers/message/fusion/mptbase.h         |  198 
- drivers/message/fusion/mptctl.c          |  266 
- drivers/message/fusion/mptdebug.h        |  288 
- drivers/message/fusion/mptfc.c           |  108 
- drivers/message/fusion/mptlan.c          |    3 
- drivers/message/fusion/mptsas.c          |  276 
- drivers/message/fusion/mptscsih.c        |  446 
- drivers/message/fusion/mptspi.c          |   53 
- drivers/scsi/aacraid/aachba.c            |   66 
- drivers/scsi/aacraid/aacraid.h           |    6 
- drivers/scsi/aacraid/linit.c             |    9 
- drivers/scsi/aacraid/nark.c              |    3 
- drivers/scsi/aacraid/rkt.c               |    2 
- drivers/scsi/aacraid/rx.c                |    2 
- drivers/scsi/advansys.c                  |28261 +++++++++++++++----------------
- drivers/scsi/aic7xxx/aic79xx_osm.c       |   23 
- drivers/scsi/aic7xxx/aic7xxx_osm.c       |   11 
- drivers/scsi/aic94xx/aic94xx_init.c      |    4 
- drivers/scsi/iscsi_tcp.c                 |    2 
- drivers/scsi/libiscsi.c                  |   47 
- drivers/scsi/libsas/sas_ata.c            |   30 
- drivers/scsi/libsas/sas_discover.c       |    3 
- drivers/scsi/libsas/sas_dump.c           |    2 
- drivers/scsi/libsas/sas_expander.c       |   18 
- drivers/scsi/qla2xxx/qla_attr.c          |   39 
- drivers/scsi/qla2xxx/qla_def.h           |    4 
- drivers/scsi/qla2xxx/qla_init.c          |   19 
- drivers/scsi/qla2xxx/qla_isr.c           |    4 
- drivers/scsi/scsi_devinfo.c              |    3 
- drivers/scsi/sym53c8xx_2/sym_glue.c      |    2 
- include/linux/bsg.h                      |   10 
- include/scsi/libiscsi.h                  |    3 
- include/scsi/libsas.h                    |    2 
- 40 files changed, 15957 insertions(+), 14923 deletions(-)
-
-James
-
+--
+Al
 
