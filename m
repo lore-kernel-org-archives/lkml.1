@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937531AbXG2Vp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936675AbXG2Vpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937531AbXG2Vp0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935849AbXG2Vox
+	id S936675AbXG2Vpl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:45:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936050AbXG2VpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:44:53 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48382 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935709AbXG2Vow (ORCPT
+	Sun, 29 Jul 2007 17:45:13 -0400
+Received: from web52001.mail.re2.yahoo.com ([206.190.49.248]:36125 "HELO
+	web52001.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S937409AbXG2VpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:44:52 -0400
-Date: Sun, 29 Jul 2007 23:44:51 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Mike Houston <mikeserv@bmts.com>
-cc: Gene Heskett <gene.heskett@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: nvidia installer DIW with 2.6.23-rc1
-In-Reply-To: <20070729141206.4181e25b.mikeserv@bmts.com>
-Message-ID: <Pine.LNX.4.64.0707292343490.9488@fbirervta.pbzchgretzou.qr>
-References: <200707291057.34291.gene.heskett@gmail.com>
- <20070729141206.4181e25b.mikeserv@bmts.com>
+	Sun, 29 Jul 2007 17:45:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=bOIeunShKFnMA+fBdtbC+kTPCwmfzNodTmxwrzxb69/EFgpIjOtlHwXDQdJU4mKIyReNjmbNUfCZJRmEtHKheW3jhXPvr95tF3aYHro1auaKmN3Ck6Lx85rNEVChUZ9Z1G6Ix50Dxq8fHl/tSH8c1D0m6V1mMhdRNacNGHagzkY=;
+X-YMail-OSG: doDkHckVM1kkoO20i5aBV_yeTs.9EAkvfdC03XBIKP484y5LP1nhgqH00zAyuZ.fizgCMQzb19V4mx5eDGaDX6sdFDyymmJ2h5KdkRSym31iNHxQhSORStLN70EfnQ--
+Date: Sun, 29 Jul 2007 14:45:09 -0700 (PDT)
+From: "Hendrik ." <chasake@yahoo.com>
+Subject: Re: Reading a bad sector does not report failure as 'read error' but hangs PC with 'Machine Check Exception'
+To: linux-kernel@vger.kernel.org
+In-Reply-To: <20070729213051.20ebc51e@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <4677.91718.qm@web52001.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> hangs. If I try it after a reboot with 'mcelog --k8
+>> --ascii' or whatever parameter, there is no output
+at
+> You could type error back in from the email ?
 
-On Jul 29 2007 14:12, Mike Houston wrote:
->I know it's off topic here, but this will help people.
->
->When that happens, check their forum. Chances are someone has
->posted, and the nvidia developers have answered with a patch, code
->snippet, quick instructions to get it to compile or advice to try a
->beta driver if applicable.
+Ok I copied it into the tool, it gives me:
 
-At least for solidarity for those stuck with it, patch below.
+CPU 0 4 northbridge TSC b7d4a144d0 
+  Northbridge ECC error
+  ECC syndrome = 0
+STATUS 0 MCGSTATUS 4
 
->To build nvidia kernel module failed in
->kernel-2.6.23-0.41.rc0.git14.fc8
->http://www.nvnews.net/vbulletin/showthread.php?t=95296
+This is a bit strange because I repeatedly tested the
+RAM yesterday and it gives no problems. And even more
+interesting: the error occurs at a reproducible
+moment: when reading the bad sector from the Seagate
+harddisk. And with an older kernel I was able to just
+copy all stuff from the drive using dd_rescue... I do
+not have ECC RAM in my PC by the way.
 
-	Jan
-===
+> > Isn't it strange to say that the controller does
+> > something bad if there is just a bad sector on the
+> > drive that is reported and handled correctly in an
+> > older kernel 
+> Not really. Its very strange it gives an MCE at all
+> but this is a known
+> failure path (and should be a fixed known failure
+> path) for the Nvidia SATA.
 
----
- nv-linux.h |    2 +-
- nv.c       |    6 ++----
- 2 files changed, 3 insertions(+), 5 deletions(-)
+So how to proceed in tackling this problem now? Is
+there anything I can do to (help you guys ;)) fix it?
+At this moment it unfortunately does not look to me as
+a fixed failure path...
 
-Index: nv_kernel-100.14.11/nv-linux.h
-===================================================================
---- nv_kernel-100.14.11.orig/nv-linux.h
-+++ nv_kernel-100.14.11/nv-linux.h
-@@ -533,7 +533,7 @@ static inline unsigned long nv_virt_to_p
- #define NV_KMEM_CACHE_CREATE(kmem_cache, name, type)            \
-     {                                                           \
-         kmem_cache = kmem_cache_create(name, sizeof(type),      \
--                        0, 0, NULL, NULL);                      \
-+                        0, 0, NULL);                      \
-     } 
- 
- #define NV_KMEM_CACHE_DESTROY(kmem_cache)                       \
-Index: nv_kernel-100.14.11/nv.c
-===================================================================
---- nv_kernel-100.14.11.orig/nv.c
-+++ nv_kernel-100.14.11/nv.c
-@@ -1566,8 +1566,7 @@ failed:
-         if (apm_nv_dev[i] != NULL) pm_unregister(apm_nv_dev[i]);
- #endif
- 
--    if (unregister_chrdev(nv_major, "nvidia") < 0)
--        nv_printf(NV_DBG_ERRORS, "NVRM: unregister nv chrdev failed\n");
-+    unregister_chrdev(nv_major, "nvidia");
- 
-     for (i = 0; i < num_nv_devices; i++)
-     {
-@@ -1598,8 +1597,7 @@ static void __exit nvidia_exit_module(vo
- 
-     nv_printf(NV_DBG_INFO, "NVRM: nvidia_exit_module\n");
- 
--    if (unregister_chrdev(nv_major, "nvidia") < 0)
--        nv_printf(NV_DBG_ERRORS, "NVRM: unregister nv chrdev failed\n");
-+    unregister_chrdev(nv_major, "nvidia");
- 
-     for (i = 0; i < num_nv_devices; i++)
-     {
+
+       
+____________________________________________________________________________________
+Take the Internet to Go: Yahoo!Go puts the Internet in your pocket: mail, news, photos & more. 
+http://mobile.yahoo.com/go?refer=1GNXIC
