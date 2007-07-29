@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbXG2Nrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763062AbXG2Nux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762952AbXG2Nrz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 09:47:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762292AbXG2Nrs
+	id S1763062AbXG2Nux (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 09:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762399AbXG2Nuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 09:47:48 -0400
-Received: from il.qumranet.com ([82.166.9.18]:35053 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757831AbXG2Nrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 09:47:47 -0400
-Message-ID: <46AC9A8D.8060003@qumranet.com>
-Date: Sun, 29 Jul 2007 16:47:57 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 29 Jul 2007 09:50:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:56969 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762292AbXG2Nup (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 09:50:45 -0400
+Message-ID: <46AC9B28.6060906@zytor.com>
+Date: Sun, 29 Jul 2007 06:50:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Alistair John Strachan <alistair@devzero.co.uk>
-CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1, KVM-AMD problem
-References: <200707281855.41277.alistair@devzero.co.uk> <200707291229.49155.alistair@devzero.co.uk> <46AC7B44.1040509@qumranet.com> <200707291444.18024.alistair@devzero.co.uk>
-In-Reply-To: <200707291444.18024.alistair@devzero.co.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: bbpetkov@yahoo.de
+CC: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: 2.6.23-rc1: no setup signature found...
+References: <20070724112618.GA4431@gollum.tnic> <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <46A8E3F9.5070809@zytor.com> <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com> <20070729085059.GA10758@gollum.tnic> <20070729092402.GA2272@xguan-laptop> <20070729103706.GA16780@gollum.tnic>
+In-Reply-To: <20070729103706.GA16780@gollum.tnic>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alistair John Strachan wrote:
-> On Sunday 29 July 2007 12:34:28 you wrote:
-> [snip]
->   
->>> Doesn't help, I still get the same crashes. I tried 2.6.22 again and it's
->>> rock solid by comparison.
->>>       
->> Do you mean, kvm-33 on top of 2.6.22, or the kvm modules from 2.6.22?
->> Please describe your configuration *exactly*.
->>     
->
-> I'm using the kvm-33 *userspace* package (based on Debian's kvm-28 packaging) 
-> and 2.6.23-rc1's KVM modules. I patched 2.6.23-rc1 with the patch you 
-> provided in your last email. So I'm not using -git HEAD.
->
-> Maybe there's been additional necessary fixes to -git requiring me to update 
-> to HEAD? That wasn't clear from your last email.
->   
+Borislav Petkov wrote:
+> 
+> Right, this was too easy to be true. I now did:
+> 
+> qemu -hda /dev/hda -snapshot
+> 
+> and booted from the hd using the installed grub and the same kernel and it
+> _didn't_ boot showing again "no setup signature found... "
+> 
 
-No,  that patch is the only potential fix post -rc1.  There are a few 
-other fixes there, but they are intended to avoid guest crashes, not 
-host crashes.
+Okay, so it's an algorithmic problem.  This is quite important to know.
 
-What guest are you running?  Maybe I can reproduce it here.
+Is /boot a separate partition on your disk by any chance?  Either way, 
+this means we can use qemu to debug this, which will make it a lot easier.
 
--- 
-error compiling committee.c: too many arguments to function
+This is what I'd like you to do next:
 
+- run qemu in one window with the -S -s options.
+- in another window, do:
+
+	gdb
+	target remote localhost:1234
+	set architecture i8086
+	disp/i ($cs << 4)+$eip
+	br *0x10200
+	br *0x20200
+	br *0x30200
+	br *0x40200
+	br *0x50200
+	br *0x60200
+	br *0x70200
+	br *0x80200
+	br *0x90200
+	c
+
+	# ... hopefully you're now stopped at a jump instruction
+	p/x $ds
+	
+	# Hopefully this is showing, say, 0x9000 if you're stopped
+	# at 0x90200
+
+	# Where X is the first digit of the address stopped at:
+	dump memory setup.dump 0xX0000 0xX8000
+
+
+Please send me setup.dump plus your vmlinuz file.
+
+Thanks,
+
+	-hpa
