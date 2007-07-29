@@ -1,114 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761868AbXG2J6f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbXG2KM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761868AbXG2J6f (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 05:58:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761169AbXG2J62
+	id S1761596AbXG2KM0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 06:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759541AbXG2KMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 05:58:28 -0400
-Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:39749 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761030AbXG2J62 (ORCPT
+	Sun, 29 Jul 2007 06:12:14 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:47221 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757172AbXG2KMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 05:58:28 -0400
-Date: Sun, 29 Jul 2007 12:00:07 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Message-ID: <20070729100007.GB9840@enneenne.com>
-References: <1185284942.14697.319.camel@pmac.infradead.org> <20070724142050.GD4074@enneenne.com> <1185288769.14697.339.camel@pmac.infradead.org> <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com> <20070727192848.GW9840@enneenne.com> <46AA4A1E.8040302@nortel.com> <20070727194516.GX9840@enneenne.com> <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com> <a781481a0707271641n20353a12u7467d093346f2f4c@mail.gmail.com>
+	Sun, 29 Jul 2007 06:12:12 -0400
+Message-ID: <46AC6771.8080000@gmail.com>
+Date: Sun, 29 Jul 2007 12:09:53 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a781481a0707271641n20353a12u7467d093346f2f4c@mail.gmail.com>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.16 (2007-06-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Re: LinuxPPS & spinlocks
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+To: david@lang.hm
+CC: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net> <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com> <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com> <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com> <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 28, 2007 at 05:11:17AM +0530, Satyam Sharma wrote:
+On 07/28/2007 11:00 PM, david@lang.hm wrote:
 
-> Take the race between the time_pps_setparams() syscall and a concurrent
-> pps_event() from an interrupt for instance. From sys_time_pps_setparams,
-> the parameters for an existing source are not modified / set atomically,
-> which means a pps_event() called on the same source in between will see
-> invalid parameters ... and bad things will happen.
+>> many -mm users use it anyway? He himself said he's not convinced of 
+>> usefulness having not seen it help for him (and notice that most 
+>> developers are also users), turned it off due to it annoying him at 
+>> some point and hasn't seen a serious investigation into potential 
+>> downsides.
+> 
+> if that was the case then people should be responding to the request to 
+> get it merged with 'but it caused problems for me when I tried it'
+> 
+> I haven't seen any comments like that.
 
-I think this should be a good solution... :)
+So you're saying Andrew did not say that? You're jumping to the conclusion 
+that I am saying that it's causing problems.
 
-diff --git a/drivers/pps/kapi.c b/drivers/pps/kapi.c
-index 08de71d..f0c42ec 100644
---- a/drivers/pps/kapi.c
-+++ b/drivers/pps/kapi.c
-@@ -29,12 +29,6 @@
- #include <linux/pps.h>
- 
- /*
-- * Local variables
-- */
--
--static spinlock_t pps_lock = SPIN_LOCK_UNLOCKED;
--
--/*
-  * Local functions
-  */
- 
-diff --git a/drivers/pps/pps.c b/drivers/pps/pps.c
-index 9176c01..91b7e4d 100644
---- a/drivers/pps/pps.c
-+++ b/drivers/pps/pps.c
-@@ -35,6 +35,7 @@
- 
- struct pps_s pps_source[PPS_MAX_SOURCES];
- DEFINE_MUTEX(pps_mutex);
-+spinlock_t pps_lock = SPIN_LOCK_UNLOCKED;
- 
- /*
-  * Misc functions
-@@ -227,6 +228,8 @@ asmlinkage long sys_time_pps_setparams(int source,
-                goto sys_time_pps_setparams_exit;
-        }
- 
-+       spin_lock(&pps_lock);
-+
-        /* Save the new parameters */
-        ret = copy_from_user(&pps_source[source].params, params,
-                                                sizeof(struct pps_kparams));
-@@ -245,6 +248,8 @@ asmlinkage long sys_time_pps_setparams(int source,
-                pps_source[source].params.mode |= PPS_CANWAIT;
-        pps_source[source].params.api_version = PPS_API_VERS;
- 
-+       spin_unlock(&pps_lock);
-+
- sys_time_pps_setparams_exit:
-        mutex_unlock(&pps_mutex);
- 
-diff --git a/include/linux/pps.h b/include/linux/pps.h
-index 6eca3ea..93e7384 100644
---- a/include/linux/pps.h
-+++ b/include/linux/pps.h
-@@ -174,6 +174,7 @@ struct pps_s {
- 
- extern struct pps_s pps_source[PPS_MAX_SOURCES];
- extern struct mutex pps_mutex;
-+extern spinlock_t pps_lock;
- 
- /*
-  * Global functions
+>>>  that the only significant con left is the potential to mask other
+>>>  problems.
+>>
+>> Which is not a madeup issue, mind you. As an example, I just now tried 
+>> GNU locate and saw it's a complete pig and specifically unsuitable for 
+>> the low memory boxes under discussion. Upon completion, it actually 
+>> frees enough memory that swap-prefetch _could_ help on some boxes, 
+>> while the real issue is that they should first and foremost dump GNU 
+>> locate.
+> 
+> I see the conclusion as being exactly the opposite.
 
-Ciao,
+And now you do it again :-) There is no conclusion -- just the inescapable 
+observation that swap-prefetch was (or may have been) masking the problem of 
+GNU locate being a program that noone in their right mind should be using.
 
-Rodolfo
+> so there is a legitimate situation where swap-prefetch will help 
+> significantly, what is the downside that prevents it from being 
+> included?
 
--- 
+People being unconvinced it helps all that much, no serious investigation 
+into possible downsides and no consideration of alternatives is three I've 
+personally heard.
 
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+You don't want to merge a conceptually core VM feature if you're not really 
+convinced. It's not a part of the kernel you can throw a feature into like 
+you could some driver saying "ah, heck, if it makes someone happy" since 
+everything in the VM ends up interacting -- that in fact is actually the 
+hard part of VM as far as I've seen it.
+
+And in this situation the proposed feature is something that "papers over a 
+problem" by design -- where it could certainly be that the problem is not 
+solveable in another way simply due to the kernel not growing the possiblity 
+to read user's minds anytime soon (which some might even like to rephrase as 
+"due to no problem existing") but that this gets people a bit anxious is not 
+surprising.
+
+> I've seen it mentioned that there is still a maintainer but I missed who
+> it is, but I haven't seen any concerns that can be addressed, they all 
+> seem to be 'this is a core concept, people need to think about it' or 
+> 'but someone may find a better answer in the future' type of things. it's
+> impossible to address these concerns directly.
+
+So do it indirectly. But please don't just say "it help some people (not me 
+mind you!) so merge it and if you don't it's all just politics and we can't 
+do anything about it anyway". Because that's mostly what I've been hearing.
+
+And no, I'm not subscribed to any ck mailinglists nor do I hang around its 
+IRC community which will can account for part of that. I expect though that 
+the same holds for the people that actually matter in this, such as Andrew 
+Morton and Nick Piggin.
+
+-- 1: people being unconvinced it helps all that much
+
+At least partly caused by the updatedb i/dcache red herring that infected 
+this issue. Also, at the point VM  pressure has mounted high enough to cause 
+enough to be swapped out to give you a bad experience, a lot of other things 
+have been dropped already as well.
+
+It's unsurprising though that it would for example help the issue of 
+openoffice with a large open spreadsheet having been thrown out overnight 
+meaning it's a matter of deciding whether or not this is an important enough 
+issue to fix inside the VM with something like swap-prefetch.
+
+Personally -- no opinion, I do not experience the problem (I even switch off 
+the machine at night and do not run cron at all).
+
+-- 2: no serious investigation into possible downsides
+
+Swap-prefetch tries hard to be as free as possible and it seems to largely 
+be succeeding at that. Thing that (obviously -- as in I wouldn't want to 
+state it's the only possible worry anyone could have left) remains is the 
+"papering over effect" it has by design that one might not care for.
+
+-- 3: no serious consideration of possible alternatives
+
+Tweaking existing use-oce logic is one I've heard but if we consider the 
+i/dcache issue dead, I believe that one is as well. Going to userspace is 
+another one. Largest theoretical potential. I myself am extremely sceptical 
+about the Linux userland, and largely equate it with "smallest _practical_ 
+potential" -- but that might just be me.
+
+A larger swap granularity, possible even a self-training granularity. Up to 
+now, seeks only get costlier and costlier with respect to reads with every 
+generation of disk (flash would largely overcome it though) and doing more 
+in one read/write _greatly_ improves throughput, maybe up to the point that 
+swap-prefetch is no longer very useful. I myself don't know about the 
+tradeoffs involved.
+
+Any other alternatives?
+
+Any 4th and higher points?
+
+Rene.
+
