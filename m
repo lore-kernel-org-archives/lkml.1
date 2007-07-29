@@ -1,74 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937152AbXG2VgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936302AbXG2VhC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937152AbXG2VgG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935705AbXG2Vfx
+	id S936302AbXG2VhC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:37:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936323AbXG2Vgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:35:53 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:45078 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935779AbXG2Vfw (ORCPT
+	Sun, 29 Jul 2007 17:36:52 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:33546
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S936199AbXG2Vgv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:35:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=e0YVuVkdsvly3sFZy2ae/8nPj1H80i4FvOjEpm3NhdmN4PodZbiQCAgOdU25gi2udh0HvLeVPuNAt4UABsveiWQy8jZjjd6wAAH+GWtyZWBj2oyKVFb6w/uumcoK9P+fLoBkqM9vFH87TukUlXqhT+HhKvarFGDYFS0ogYB2y+g=
-Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
-From: Richard Hughes <hughsient@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <200707292336.55588.rjw@sisk.pl>
-References: <200707251238.50218.lenb@kernel.org>
-	 <200707292317.21419.rjw@sisk.pl> <20070729211824.GL16817@stusta.de>
-	 <200707292336.55588.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sun, 29 Jul 2007 22:30:40 +0100
-Message-Id: <1185744640.2295.4.camel@work>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Jul 2007 17:36:51 -0400
+Date: Sun, 29 Jul 2007 23:36:33 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: osst@riede.org, osst-users@lists.sourceforge.net,
+       linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH 2/5] Use mutex instead of semaphore in the OnStream SCSI Tape driver
+Message-ID: <20070729213633.GE3432@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	osst@riede.org, osst-users@lists.sourceforge.net,
+	linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070729212909.GC3432@traven>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070729212909.GC3432@traven>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-29 at 23:36 +0200, Rafael J. Wysocki wrote:
-> On Sunday, 29 July 2007 23:18, Adrian Bunk wrote:
-> > On Sun, Jul 29, 2007 at 11:17:20PM +0200, Rafael J. Wysocki wrote:
-> > > On Sunday, 29 July 2007 22:40, Adrian Bunk wrote:
-> > > > On Sun, Jul 29, 2007 at 02:38:05PM +0200, Rafael J. Wysocki wrote:
-> > > > >...
-> > > > > +config SUSPEND
-> > > > > +	bool "Suspend"
-> > > >              "Suspend to RAM"
-> > > 
-> > > Not only.  This also includes "standby".
-> > 
-> > Whatever it includes - please tell it to the user in the prompt.
-> > 
-> > Technical issues are important, but it's often forgotten how many 
-> > problems people run into because the description of a kconfig option 
-> > could have been better.
-> 
-> Sure.  Please see the updated patch I've just sent. :-)
+The OnStream SCSI Tape driver uses a semaphore as mutex. Use the mutex
+API instead of the (binary) semaphore.
 
-So are you guys using:
+Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-"standby" = idle state, ~0.5 seconds
-"suspend" = sleep to ram, ~10 seconds
-"hibernate" = sleep to disk, ~30 seconds
+--
 
-If so - you rock. This is the common nomenclature I've been pushing for
-a few months now in GNOME, KDE and general userspace. I've written up a
-spec here:
-http://cvs.gnome.org/viewcvs/*checkout*/gnome-power-manager/docs/sleep-names.html
+diff --git a/drivers/scsi/osst.c b/drivers/scsi/osst.c
+index 08060fb..0e2452c 100644
+--- a/drivers/scsi/osst.c
++++ b/drivers/scsi/osst.c
+@@ -3298,7 +3298,7 @@ static ssize_t osst_write(struct file * filp, const char __user * buf, size_t co
+ 	char		    * name = tape_name(STp);
+ 
+ 
+-	if (down_interruptible(&STp->lock))
++	if (mutex_lock_interruptible(&STp->lock))
+ 		return (-ERESTARTSYS);
+ 
+ 	/*
+@@ -3600,7 +3600,7 @@ if (SRpnt) printk(KERN_ERR "%s:A: Not supposed to have SRpnt at line %d\n", name
+ out:
+ 	if (SRpnt != NULL) osst_release_request(SRpnt);
+ 
+-	up(&STp->lock);
++	mutex_unlock(&STp->lock);
+ 
+ 	return retval;
+ }
+@@ -3619,7 +3619,7 @@ static ssize_t osst_read(struct file * filp, char __user * buf, size_t count, lo
+ 	char		    * name  = tape_name(STp);
+ 
+ 
+-	if (down_interruptible(&STp->lock))
++	if (mutex_lock_interruptible(&STp->lock))
+ 		return (-ERESTARTSYS);
+ 
+ 	/*
+@@ -3785,7 +3785,7 @@ static ssize_t osst_read(struct file * filp, char __user * buf, size_t count, lo
+ out:
+ 	if (SRpnt != NULL) osst_release_request(SRpnt);
+ 
+-	up(&STp->lock);
++	mutex_unlock(&STp->lock);
+ 
+ 	return retval;
+ }
+@@ -4852,7 +4852,7 @@ static int osst_ioctl(struct inode * inode,struct file * file,
+ 	char		    * name  = tape_name(STp);
+ 	void	    __user  * p     = (void __user *)arg;
+ 
+-	if (down_interruptible(&STp->lock))
++	if (mutex_lock_interruptible(&STp->lock))
+ 		return -ERESTARTSYS;
+ 
+ #if DEBUG
+@@ -5163,14 +5163,14 @@ static int osst_ioctl(struct inode * inode,struct file * file,
+ 	}
+ 	if (SRpnt) osst_release_request(SRpnt);
+ 
+-	up(&STp->lock);
++	mutex_unlock(&STp->lock);
+ 
+ 	return scsi_ioctl(STp->device, cmd_in, p);
+ 
+ out:
+ 	if (SRpnt) osst_release_request(SRpnt);
+ 
+-	up(&STp->lock);
++	mutex_unlock(&STp->lock);
+ 
+ 	return retval;
+ }
+@@ -5866,7 +5866,7 @@ static int osst_probe(struct device *dev)
+ 	tpnt->modes[2].defined = 1;
+ 	tpnt->density_changed = tpnt->compression_changed = tpnt->blksize_changed = 0;
+ 
+-	init_MUTEX(&tpnt->lock);
++	mutex_init(&tpnt->lock);
+ 	osst_nr_dev++;
+ 	write_unlock(&os_scsi_tapes_lock);
+ 
+diff --git a/drivers/scsi/osst.h b/drivers/scsi/osst.h
+index 2cc7b5a..5aa2274 100644
+--- a/drivers/scsi/osst.h
++++ b/drivers/scsi/osst.h
+@@ -4,6 +4,7 @@
+ 
+ #include <asm/byteorder.h>
+ #include <linux/completion.h>
++#include <linux/mutex.h>
+ 
+ /*	FIXME - rename and use the following two types or delete them!
+  *              and the types really should go to st.h anyway...
+@@ -532,7 +533,7 @@ struct osst_tape {
+   struct scsi_driver *driver;
+   unsigned capacity;
+   struct scsi_device *device;
+-  struct semaphore lock;       /* for serialization */
++  struct mutex lock;           /* for serialization */
+   struct completion wait;      /* for SCSI commands */
+   struct osst_buffer * buffer; 
 
-Richard.
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
 
-
+                Don't walk behind me, I may not lead
+             Don't walk in front of me, I may not follow
+                Just walk beside me and be my friend
+                          (Albert Camus)
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
