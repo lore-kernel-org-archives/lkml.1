@@ -1,55 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762021AbXG2Kle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761734AbXG2KyI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762021AbXG2Kle (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 06:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761341AbXG2Kl1
+	id S1761734AbXG2KyI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 06:54:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760486AbXG2Kx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 06:41:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40999 "EHLO mx1.redhat.com"
+	Sun, 29 Jul 2007 06:53:58 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:16080 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761154AbXG2Kl0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 06:41:26 -0400
-Message-ID: <46AC6EAB.7000502@redhat.com>
-Date: Sun, 29 Jul 2007 18:40:43 +0800
-From: Eugene Teo <eteo@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1760300AbXG2Kx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 06:53:57 -0400
+Date: Sun, 29 Jul 2007 12:54:58 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bsg: Fix warning with CONFIG_BLK_DEV_BSG=n
+Message-ID: <20070729105458.GH32258@kernel.dk>
+References: <ada6443vphh.fsf@cisco.com>
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
-       martin.pitt@ubuntu.com, wwoods@redhat.com
-Subject: Re: [PATCH 0/3] core_pattern: cleaned up repost/continuing post of
- core_pattern enhancements
-References: <20070727200050.GA18946@hmsreliant.homelinux.net>
-In-Reply-To: <20070727200050.GA18946@hmsreliant.homelinux.net>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ada6443vphh.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> Ok, here we go
+On Sat, Jul 28 2007, Roland Dreier wrote:
+> The current stub definitions of bsg_register_queue() and
+> bsg_unregister_queue() as macros leads to
 > 
-> As promised, I'm reposting the core_pattern enhancements I've done over the past
-> few days.  These three patches replace and conintue the work contained in the
-> following patches, and can replace them:
-> update-coredump-path-in-kernel-to-not-check-coredump-rlim-if-core_pattern-is-a-pipe.patch
-> allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe.patch
-> allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix.patch
-> allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix-2.patch
-> allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix-2-fix.patch
-> allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-sparc64-fix.patch
-> allow-individual-core-dump-methods-to-be-unlimited-when-sending-to-a-pipe-fix-2-sparc64-fix.patch
-[...]
+>     drivers/scsi/scsi_sysfs.c: In function 'scsi_sysfs_add_sdev':
+>     drivers/scsi/scsi_sysfs.c:718: warning: unused variable 'rq'
+> 
+> because the first parameter of bsg_register_queue() is completely
+> discarded.  As akpm says, "program in C, not in cpp."  We might as
+> well get a little bit better type-checking when we fix this by
+> converting the stubs to empty inline functions.
 
-You may want to improve your patches with style-related changes, including
-removing trailing spaces, using tabs instead of spaces, and defining pointers
-like char *ptr instead of char * ptr.
+James should already have that patch queued for inclusion since last
+week.
 
-Also, it is probably good to think how we can "drop privileges" while piping
-the core dump output to an external program. A malicious user can potentially
-use it as a possible backdoor since anything that is executed by "|program" will
-be executed with root privileges.
+-- 
+Jens Axboe
 
-Eugene
