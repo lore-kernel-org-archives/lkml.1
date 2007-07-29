@@ -1,39 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935440AbXG2P2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765784AbXG2PbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935440AbXG2P2P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765414AbXG2P1L
+	id S1765784AbXG2PbB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762617AbXG2Pav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:27:11 -0400
-Received: from echo.digadd.de ([195.47.195.234]:53295 "EHLO mx2.digadd.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763147AbXG2P1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:27:09 -0400
-Message-ID: <46ACB1C2.6030701@digadd.de>
-Date: Sun, 29 Jul 2007 18:26:58 +0300
-From: "Christian P. Schmidt" <charlie@digadd.de>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070726)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org
-Subject: ttyS1: LSR safety check engaged! - misidentification?
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -3.0 (---)
+	Sun, 29 Jul 2007 11:30:51 -0400
+Received: from adsl-67-120-171-161.dsl.lsan03.pacbell.net ([67.120.171.161]:45868
+	"HELO linuxace.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1763028AbXG2Pau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 11:30:50 -0400
+Date: Sun, 29 Jul 2007 08:30:49 -0700
+From: Phil Oester <kernel@linuxace.com>
+To: "Darryl L. Miles" <darryl-mailinglists@netbauds.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: TCP SACK issue, hung connection, tcpdump included
+Message-ID: <20070729153049.GA13309@linuxace.com>
+References: <46AC2CBE.5010500@netbauds.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46AC2CBE.5010500@netbauds.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, Jul 29, 2007 at 06:59:26AM +0100, Darryl L. Miles wrote:
+> The problems start around time index 09:21:39.860302 when the CLIENT issues 
+> a TCP packet with SACK option set (seemingly for a data segment which has 
+> already been seen) from that point on the connection hangs.
 
-Ever since Kernel 2.6.21(rc) or so I'm plagued with this message,
-disabling my serial ports that have been working perfectly from 2.6.14
-till that day (and are still doing so, given that I continuously remove
-the code from the source).
-Actually I cannot blame the code, but it seems that on both of my
-laptops the LSR is actually not readable. So, is there any plan to
-remove that piece of code again, or at least change it so it can be
-disabled conditionally?
+I'd say most likely scenario is the SERVER is behind a Cisco Pix firewall,
+which has known bugs in handling packets with sack option.  By default the Cisco
+has sequence number randomization enabled, but it's a half-assed implementation
+which doesn't bother adjusting the sequence numbers inside sack options.
 
-Regards,
-Christian
+This has been reported to Cisco, and they don't seem to care.  As a workaround,
+you can do this:
+
+	echo 0 > /proc/sys/net/ipv4/tcp_sack
+
+and it will probably fix it up.  It'd be really nice, however, to have a per-route
+option for sack, similar to how we can clamp window scaling per route.  Something
+like the below
+
+	ip r a <host> <gw> <nosack>
+
+Phil
