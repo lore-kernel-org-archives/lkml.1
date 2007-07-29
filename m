@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765035AbXG2Q0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765755AbXG2Q2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765035AbXG2Q0w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763596AbXG2Q0n
+	id S1765755AbXG2Q2W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763678AbXG2Q2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:26:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48480 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762701AbXG2Q0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:26:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] make kernel/power/main.c:suspend_enter() static
-Date: Sun, 29 Jul 2007 18:35:19 +0200
-User-Agent: KMail/1.9.5
-Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070729145742.GP16817@stusta.de>
-In-Reply-To: <20070729145742.GP16817@stusta.de>
+	Sun, 29 Jul 2007 12:28:13 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53124 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763549AbXG2Q2L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:28:11 -0400
+Date: Sun, 29 Jul 2007 19:28:09 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Willy Tarreau <w@1wt.eu>
+cc: "Ilpo =?iso-8859-1?Q?J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>,
+       "Darryl L. Miles" <darryl-mailinglists@netbauds.net>,
+       linux-kernel@vger.kernel.org, Netdev <netdev@vger.kernel.org>
+Subject: Re: TCP SACK issue, hung connection, tcpdump included
+In-Reply-To: <20070729160721.GA31276@1wt.eu>
+Message-ID: <Pine.LNX.4.64.0707291922370.11113@kivilampi-30.cs.helsinki.fi>
+References: <46AC2CBE.5010500@netbauds.net> <20070729064511.GA18718@1wt.eu>
+ <Pine.LNX.4.64.0707291052300.10340@kivilampi-30.cs.helsinki.fi>
+ <20070729085427.GA22784@1wt.eu> <Pine.LNX.4.64.0707291208230.10340@kivilampi-30.cs.helsinki.fi>
+ <20070729160721.GA31276@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707291835.20105.rjw@sisk.pl>
+Content-Type: MULTIPART/MIXED; boundary="-696243703-2123637381-1185726287=:11113"
+Content-ID: <Pine.LNX.4.64.0707291926380.11113@kivilampi-30.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 29 July 2007 16:57, Adrian Bunk wrote:
-> suspend_enter() can now become static.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+---696243703-2123637381-1185726287=:11113
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Content-ID: <Pine.LNX.4.64.0707291925011.11113@kivilampi-30.cs.helsinki.fi>
 
->  kernel/power/main.c  |    2 +-
->  kernel/power/power.h |    1 -
->  2 files changed, 1 insertion(+), 2 deletions(-)
+On Sun, 29 Jul 2007, Willy Tarreau wrote:
+
+> On Sun, Jul 29, 2007 at 12:28:04PM +0300, Ilpo Järvinen wrote:
 > 
-> --- linux-2.6.23-rc1-mm1/kernel/power/power.h.old	2007-07-26 14:49:29.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/kernel/power/power.h	2007-07-26 14:49:36.000000000 +0200
-> @@ -177,7 +177,6 @@
->  				unsigned int, char *);
->  
->  /* kernel/power/main.c */
-> -extern int suspend_enter(suspend_state_t state);
->  extern int suspend_devices_and_enter(suspend_state_t state);
->  extern struct blocking_notifier_head pm_chain_head;
->  
-> --- linux-2.6.23-rc1-mm1/kernel/power/main.c.old	2007-07-26 14:49:44.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/kernel/power/main.c	2007-07-26 14:50:05.000000000 +0200
-> @@ -120,7 +120,7 @@
->   *
->   *	This function should be called after devices have been suspended.
->   */
-> -int suspend_enter(suspend_state_t state)
-> +static int suspend_enter(suspend_state_t state)
->  {
->  	int error = 0;
->  
+> > [...snip...]
+> > 
+> > > BTW, some information are missing. It would have been better if the trace
+> > > had been read with tcpdump -Svv. We would have got seq numbers and ttl.
+> > > Also, we do not know if there's a firewall between both sides. Sometimes,
+> > > some IDS identify attacks in crypted traffic and kill connections. It
+> > > might have been the case here, with the connection closed one way on an
+> > > intermediate firewall.
+> > 
+> > Yeah, firewall or some other issue, I'd say it's quite unlikely a bug in 
+> > TCP because behavior to both directions indicate client -> sender 
+> > blackhole independently of each other...
 > 
-> 
-> 
+> It would also be possible that something stupid between both ends simply
+> drops packets with the SACK option set. Also something which sometimes
+> happen is that some firewalls automatically translate sequence numbers
+> but not necessarily SACK values, which could pretty well lead to this
+> packet being received but ignored on the server side.
+
+...One can toggle those off with /proc/sys/net/ipv4/tcp_dsack but I 
+suspect DSACKs are not the cause because these retransmissions neither
+are making it through (there are many of them also earlier in the log, 
+just quoted the easiest ones :-) ):
+
+> > > > 09:36:44.335591 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
+> > > > 378 <nop,nop,timestamp 800227942 7692910>
+> > > > 09:38:44.351950 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
+> > > > 378 <nop,nop,timestamp 800257942 7692910>
+> > > > 09:40:44.368172 IP CLIENT.50727 > SERVER.ssh: P 2991:3039(48) ack 18464 win 
+> > > > 378 <nop,nop,timestamp 800287943 7692910>
+
+...there are no SACKs involved in them, yet no cumulative ACK ever 
+arrives from SERVER...
+
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+ i.
+---696243703-2123637381-1185726287=:11113--
