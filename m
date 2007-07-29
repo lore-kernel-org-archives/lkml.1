@@ -1,112 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936169AbXG2VH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936305AbXG2VIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936169AbXG2VH3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935311AbXG2VHT
+	id S936305AbXG2VIw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935394AbXG2VIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:07:19 -0400
-Received: from keil-draco.com ([216.193.185.50]:51019 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935188AbXG2VHQ (ORCPT
+	Sun, 29 Jul 2007 17:08:44 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49317 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935311AbXG2VIn convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:07:16 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Date: Sun, 29 Jul 2007 17:06:28 -0400
-User-Agent: KMail/1.9.6
-Cc: "Paul Jackson" <pj@sgi.com>, rene.herman@gmail.com,
-       alan@lxorguk.ukuu.org.uk, david@lang.hm, efault@gmx.de,
-       akpm@linux-foundation.org, mingo@elte.hu,
-       frank@kingswood-consulting.co.uk, andi@firstfloor.org,
-       nickpiggin@yahoo.com.au, jesper.juhl@gmail.com, ck@vds.kolivas.org,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com> <20070729123353.2bfb9630.pj@sgi.com> <2c0942db0707291300k3e30e410wdd0aba7644382e3b@mail.gmail.com>
-In-Reply-To: <2c0942db0707291300k3e30e410wdd0aba7644382e3b@mail.gmail.com>
+	Sun, 29 Jul 2007 17:08:43 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
+Date: Sun, 29 Jul 2007 23:17:20 +0200
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org> <200707291438.06849.rjw@sisk.pl> <20070729204001.GJ16817@stusta.de>
+In-Reply-To: <20070729204001.GJ16817@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200707291706.29100.dhazelton@enter.net>
+Message-Id: <200707292317.21419.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 July 2007 16:00:22 Ray Lee wrote:
-> On 7/29/07, Paul Jackson <pj@sgi.com> wrote:
-> > If the problem is reading stuff back in from swap at the *same time*
-> > that the application is reading stuff from some user file system, and if
-> > that user file system is on the same drive as the swap partition
-> > (typical on laptops), then interleaving the user file system accesses
-> > with the swap partition accesses might overwhelm all other performance
-> > problems, due to the frequent long seeks between the two.
->
-> Ah, so in a normal scenario where a working-set is getting faulted
-> back in, we have the swap storage as well as the file-backed stuff
-> that needs to be read as well. So even if swap is organized perfectly,
-> we're still seeking. Damn.
+On Sunday, 29 July 2007 22:40, Adrian Bunk wrote:
+> On Sun, Jul 29, 2007 at 02:38:05PM +0200, Rafael J. Wysocki wrote:
+> >...
+> > +config SUSPEND
+> > +	bool "Suspend"
+>              "Suspend to RAM"
 
-That is one reason why I try to have swap on a device dedicated just for it. 
-It helps keep the system from having to seek all over the drive for data. (I 
-remember that this was recommended years ago with Windows - back when you 
-could tell Windows where to put the swap file)
+Not only.  This also includes "standby".
 
-> On the other hand, that explains another thing that swap prefetch
-> could be helping with -- if it preemptively faults the swap back in,
-> then the file-backed stuff can be faulted back more quickly, just by
-> the virtue of not needing to seek back and forth to swap for its
-> stuff. Hadn't thought of that.
+> >...
+> >  config HIBERNATION
+> >  	bool "Hibernation"
+> >...         "Hibernation (Suspend to disk)"
+> 
+> cu
+> Adrian
 
-For it to really help swap-prefetch would have to be more aggressive. At the 
-moment (if I'm reading the code correctly) the system has to have close to 
-zero for it to kick in. A tunable knob controlling how much activity is too 
-much for the prefetch to kick in would help with finding a sane default. IMHO 
-it should be the one that provides the most benefit with the least hit to 
-performance.
+Greetings,
+Rafael
 
-> That also implies that people running with swap files rather than swap
-> partitions will see less of an issue. I should dig out my old compact
-> flash card and try putting swap on that for a week.
-
-Maybe. It all depends on how much seeking is needed to track down the pages in 
-the swapfile and such. What would really help make the situation even better 
-would be doing the log structured swap + cleaner. The log structured swap + 
-cleaner should provide a performance boost by itself - add in the prefetch 
-mechanism and the benefits are even more visible.
-
-Another way to improve performance would require making the page replacement 
-mechanism more intelligent. There are bounds to what can be done in the 
-kernel without negatively impacting performance, but, if I've read the code 
-correctly, there might be a better way to decide which pages to evict. One 
-way to do this would be to implement some mechanism that allows the system to 
-choose a single group of contiguous pages (or, say, a large soft-page) over 
-swapping out a single page at a time.
-
-(some form of memory defrag would also be nice, but I can't think of a way to 
-do that without massively breaking everything)
-
-<snip>
-> > In case Andrew is so bored he read this far -- yes this wake-up sounds
-> > like user space code, with minimal kernel changes to support any
-> > particular lower level operation that we can't do already.
->
-> He'd suggested using, uhm, ptrace_peek or somesuch for just such a
-> purpose. The second half of the issue is to know when and what to
-> target.
-
-The userspace suggestion that was thrown out earlier would have been as 
-error-prone and problematic as FUSE. A solution like you suggest would be 
-workable - its small and does a task that is best done in userspace (IMHO). 
-(IIRC, the original suggestion involved merging maps2 and another patchset 
-into mainline and using that, combined with PEEKTEXT to provide for a 
-userspace swap daemon. Swap, IMHO, should never be handled outside the 
-kernel)
-
-What might be useful is a userspace daemon that tracks memory pressure and 
-uses a concise API to trigger various levels of prefetch and/or swap 
-aggressiveness.
-
-DRH
 
 -- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+"Premature optimization is the root of all evil." - Donald Knuth
