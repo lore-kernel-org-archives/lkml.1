@@ -1,96 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762606AbXG2MTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762661AbXG2MWV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762606AbXG2MTn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 08:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760073AbXG2MTh
+	id S1762661AbXG2MWV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 08:22:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761577AbXG2MWH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 08:19:37 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4762 "EHLO ra.tuxdriver.com"
+	Sun, 29 Jul 2007 08:22:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47749 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760035AbXG2MTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 08:19:36 -0400
-Date: Sun, 29 Jul 2007 08:19:04 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Martin Pitt <martin.pitt@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, jeremy@goop.org,
-       wwoods@redhat.com, Ben Collins <ben.collins@ubuntu.com>
-Subject: Re: [PATCH 2/3] core_pattern: allow passing of arguments to user mode helper when core_pattern is a pipe
-Message-ID: <20070729121904.GC9644@hmsreliant.homelinux.net>
-References: <20070727200746.GC18946@hmsreliant.homelinux.net> <20070728092355.GA5808@piware.de> <20070728134627.GA10006@hmsreliant.homelinux.net> <20070728161725.GA5836@piware.de> <20070728172142.GA10555@hmsreliant.homelinux.net> <20070729093418.GA5794@piware.de>
+	id S1760024AbXG2MWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 08:22:06 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [PATCH 0/2] Introduce CONFIG_HIBERNATION and CONFIG_SUSPEND (was: CONFIG_SUSPEND?)
+Date: Sun, 29 Jul 2007 12:20:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Len Brown <lenb@kernel.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org> <200707282029.03563.rjw@sisk.pl> <alpine.LFD.0.999.0707281130110.3442@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0707281130110.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070729093418.GA5794@piware.de>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200707291220.14880.rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 11:34:18AM +0200, Martin Pitt wrote:
-> Hi Neil,
+On Saturday, 28 July 2007 20:31, Linus Torvalds wrote:
 > 
-> Neil Horman [2007-07-28 13:21 -0400]:
-> > Jeremy asked that I make a patch next week to address split_argv's requirement
-> > that the argc parameter be non-NULL.  I'll be fixing that next week, and what I
-> > can do is further enhance it such that it ignores spaces in quoted strings,
-> > which should address the case that concerns you.  I.E I can make split_argv
-> > behave such that:
-> > echo "|\"foo bar\" --pid %p" > /proc/sys/kernel/core_pattern
-> > results in the following argv:
-> > {{"foo bar"}, {"--pid"}, {"1234"}}
+> On Sat, 28 Jul 2007, Rafael J. Wysocki wrote:
 > > 
-> > Which I think handles what you are looking for.
+> > OK, I'll prepare a patch to introduce CONFIG_SUSPEND, but that will require
+> > quite a bit of (compilation) testing on different architectures.
 > 
-> Oh, handling escaping and quoting is going to make it fairly
-> complicated, but sure, if you need that for other things, too, that
-> would solve the remaining case. I just wonder if, instead of
-> implementing escaping, it wouldn't be easier to first split on spaces
-> and then escape macros?
-> 
-If it were just this case, then yes.  But we also need to make this work
-properly for when core_pattern is not a pipe.  So the macro expansion routine
-needs to be generalized somewhat.  Certainly doable, it just takes a bit more
-testing and care in coding.  I'll start looking into it in the upcomming week.
+> Sure. I'm not too worried, the fallout should be of the trivial kind. 
+>
+> Also, mind basing it on the (independent) cleanups that Adrian already 
+> sent out. This is all intertwined..
 
-> > Thank you for clearing me up on this.  So it would seem we're ok with what we
-> > have now, correct?  
-> 
-> Absolutely, yes.
-> 
-> > We just have a potential corner case to address, which I can
-> > reasonably handle with a modification to split_argv, that I have a
-> > todo on next week.
-> 
-> Right, it's really just for perfectionism. Spaces in executable names
-> are EBW anyway, and readlink()ing /proc/<pid>/exe is much more robust
-> anyway in terms of a small and orthogonal interface.
-> 
-Understood.
+OK, it took more time than I had hoped, but I wanted CONFIG_HIBERNATION and
+CONFIG_SUSPEND to be really independent of each other.
 
-> If the upstream kernel guys don't worry about it and consider it a
-> blocker for merging, I don't either. :-)
-> 
-Copy that
+The two patches in the next messages implement the idea:
+* replace CONFIG_SOFTWARE_SUSPEND with CONFIG_HIBERNATION
+* introduce CONFIG_SUSPEND that selects CONFIG_HOTPLUG_CPU, if necessary,
+  and make it possible to choose suspend and hibernation independently of each
+  other.
 
-Thanks & Regards
-Neil
+Greetings,
+Rafael
 
-> Thanks a lot,
-> 
-> Martin
-> 
-> -- 
-> Martin Pitt        http://www.piware.de
-> Ubuntu Developer   http://www.ubuntu.com
-> Debian Developer   http://www.debian.org
-
-
-
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
