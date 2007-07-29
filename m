@@ -1,142 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936800AbXG2VXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936924AbXG2VY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936800AbXG2VXs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935579AbXG2VXj
+	id S936924AbXG2VY1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936114AbXG2VYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:23:39 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37584
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765875AbXG2VXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:23:37 -0400
-Date: Sun, 29 Jul 2007 14:19:58 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Rene Herman <rene.herman@gmail.com>
-cc: Daniel Hazelton <dhazelton@enter.net>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-In-Reply-To: <46AC9DC5.8070900@gmail.com>
-Message-ID: <Pine.LNX.4.64.0707291405350.15835@asgard.lang.hm>
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
- <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net>
- <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
- <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com>
- <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com>
- <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm> <46AC6771.8080000@gmail.com>
- <Pine.LNX.4.64.0707290420250.15835@asgard.lang.hm> <46AC9DC5.8070900@gmail.com>
+	Sun, 29 Jul 2007 17:24:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49424 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935579AbXG2VYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 17:24:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Subject: Re: [PATCH] ppc: chipsfb.c build fix for CONFIG_PM
+Date: Sun, 29 Jul 2007 23:33:11 +0200
+User-Agent: KMail/1.9.5
+Cc: paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>, pavel@suse.cz,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <200707291950.30261.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707291950.30261.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707292333.12766.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007, Rene Herman wrote:
+On Sunday, 29 July 2007 19:50, Mariusz Kozlowski wrote:
+> Hello,
+> 
+> 	This patch fixes the following build error on powerpc:
+> 
+>   CC      drivers/video/chipsfb.o
+> drivers/video/chipsfb.c: In function 'chipsfb_pci_suspend':
+> drivers/video/chipsfb.c:461: error: 'PM_SUSPEND_MEM' undeclared (first use in this function)
+> drivers/video/chipsfb.c:461: error: (Each undeclared identifier is reported only once
+> drivers/video/chipsfb.c:461: error: for each function it appears in.)
+> make[2]: *** [drivers/video/chipsfb.o] Blad 1
+> make[1]: *** [drivers/video] Blad 2
+> make: *** [drivers] Blad 2
 
-> On 07/29/2007 01:41 PM, david@lang.hm wrote:
->
->>  I agree that tinkering with the core VM code should not be done lightly,
->>  but this has been put through the proper process and is stalled with no
->>  hints on how to move forward.
->
-> It has not. Concerns that were raised (by specifically Nick Piggin) weren't 
-> being addressed.
+Already fixed in the right way.  Please see:
+http://www.mail-archive.com/mm-commits@vger.kernel.org/msg22171.html
 
-I may have missed them, but what I saw from him weren't specific issues, 
-but instead a nebulous 'something better may come along later'
+Greetings,
+Rafael
 
->>  forget the nightly cron jobs for the moment. think of this scenerio. you
->>  have your memory fairly full with apps that you have open (including
->>  firefox with many tabs), you receive a spreadsheet you need to look at, so
->>  you fire up openoffice to look at it. then you exit openoffice and try
->>  to go back to firefox (after a pause while you walk to the printer to
->>  get the printout of the spreadsheet)
->
-> And swinging a dead rat from its tail facing east-wards while reciting 
-> Documentation/CodingStyle.
->
-> Okay, very very sorry, that was particularly childish, but that "walking to 
-> the printer" is ofcourse completely constructed and this _is_ something to 
-> take into account.
 
-yes it was contrived for simplicity.
-
-the same effect would happen if instead of going back to firefox the user 
-instead went to their e-mail software and read some mail. doing so should 
-still make the machine idle enough to let prefetch kick in.
-
-> Swap-prefetch wants to be free, which (also again) it is 
-> doing a good job at it seems, but this also means that it waits for the VM to 
-> be _very_ idle before it does anything and as such, we cannot just forget the 
-> "nightly" scenario and pretend it's about something else entirely. As long as 
-> the machine's being used, swap-prefetch doesn't kick in.
-
-how long does the machine need to be idle? if someone spends 30 seconds 
-reading an e-mail that's an incredibly long time for the system and I 
-would think it should be enough to let the prefetch kick in.
-
->> >  -- 3: no serious consideration of possible alternatives
->> > 
->> >  Tweaking existing use-oce logic is one I've heard but if we consider 
->> >  the i/dcache issue dead, I believe that one is as well. Going to 
->> >  userspace is another one. Largest theoretical potential. I myself am 
->> >  extremely sceptical about the Linux userland, and largely equate it 
->> >  with "smallest _practical_ potential" -- but that might just be me.
->> > 
->> >  A larger swap granularity, possible even a self-training 
->> >  granularity. Up to now, seeks only get costlier and costlier with 
->> >  respect to reads with every generation of disk (flash would largely 
->> >  overcome it though) and doing more in one read/write _greatly_ 
->> >  improves throughput, maybe up to the point that swap-prefetch is no 
->> >  longer very useful. I myself don't know about the tradeoffs 
->> >  involved.
->>
->>  larger swap granularity may help, but waiting for the user to need the
->>  ram and have to wait for it to be read back in is always going to be
->>  worse for the user then pre-populating the free memory (for the case
->>  where the pre-population is right, for other cases it's the same). so
->>  I see this as a red herring
->
-> I saw Chris Snook make a good post here and am going to defer this part to 
-> that discussion:
->
-> http://lkml.org/lkml/2007/7/27/421
->
-> But no, it's not a red herring if _practically_ speaking the swapin is fast 
-> enough once started that people don't actually mind anymore since in that 
-> case you could simply do without yet more additional VM complexity (and 
-> kernel daemon).
-
-swapin will always require disk access, and avoiding doing disk access 
-while the user is waiting for it by doing it when the system isn't useing 
-the disk will always be a win (possibly not as large of a win, but still a 
-win) on slow laptop drives where you may only get 20MB/second of reads 
-under optimal situations it doesn't take much reading to be noticed by the 
-user.
-
->>  there are fully legitimate situations where this is useful, the 'papering
->>  over' effect is not referring to these, it's referring to other possible
->>  problems in the future.
->
-> No, it's not just future. Just look at the various things under discussion 
-> now such as improved use-once and better swapin.
-
-and these thing do not conflict with prefetch, they compliment it.
-
-improved use-once will avoid pushing things out to swap in the first 
-place. this will help during normal workloads so is valuble in any case.
-
-better swapin (I assume you are talking about things like larger swap 
-granularity) will also help during normal workloads when you are thrashing 
-into swap.
-
-prefetch will help when you have pushed things out to swap and now have 
-free memory and a momentarily idle system.
-
-David Lang
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
