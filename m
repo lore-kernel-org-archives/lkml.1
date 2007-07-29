@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933077AbXG2PLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932988AbXG2PMQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933077AbXG2PLq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763786AbXG2O76
+	id S932988AbXG2PMQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:12:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764628AbXG2O77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:59:58 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:47875 "EHLO
+	Sun, 29 Jul 2007 10:59:59 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47879 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763580AbXG2O7z (ORCPT
+	with ESMTP id S1764538AbXG2O76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:59:55 -0400
-Date: Sun, 29 Jul 2007 16:59:32 +0200
+	Sun, 29 Jul 2007 10:59:58 -0400
+Date: Sun, 29 Jul 2007 16:59:35 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [-mm patch] kernel/pid.c: remove unused exports
-Message-ID: <20070729145932.GI16817@stusta.de>
-References: <20070725040304.111550f4.akpm@linux-foundation.org>
+To: pavel@suse.cz, rjw@sisk.pl
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] unexport pm_power_off_prepare
+Message-ID: <20070729145935.GJ16817@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.22-rc6-mm1:
->...
-> +pid-namespaces-define-is_global_init-and-is_container_init.patch
->...
->  pid namespaces
->...
-
-This patch removes two unused exports.
+This patch removes the unused EXPORT_SYMBOL(pm_power_off_prepare).
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- kernel/pid.c |    2 --
- 1 file changed, 2 deletions(-)
-
---- linux-2.6.23-rc1-mm1/kernel/pid.c.old	2007-07-28 07:31:12.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/kernel/pid.c	2007-07-28 07:31:23.000000000 +0200
-@@ -69,13 +69,11 @@ struct pid_namespace init_pid_ns = {
- 	.last_pid = 0,
- 	.child_reaper = &init_task
- };
--EXPORT_SYMBOL(init_pid_ns);
+--- linux-2.6.23-rc1-mm1/kernel/sys.c.old	2007-07-28 07:38:45.000000000 +0200
++++ linux-2.6.23-rc1-mm1/kernel/sys.c	2007-07-28 07:38:59.000000000 +0200
+@@ -104,7 +104,6 @@ EXPORT_SYMBOL(cad_pid);
+  */
  
- int is_global_init(struct task_struct *tsk)
+ void (*pm_power_off_prepare)(void);
+-EXPORT_SYMBOL(pm_power_off_prepare);
+ 
+ static int set_one_prio(struct task_struct *p, int niceval, int error)
  {
- 	return tsk == init_pid_ns.child_reaper;
- }
--EXPORT_SYMBOL(is_global_init);
- 
- /*
-  * Note: disable interrupts while the pidmap_lock is held as an
 
