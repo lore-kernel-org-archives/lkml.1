@@ -1,86 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763757AbXG2O4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXG2O4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763757AbXG2O4R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761188AbXG2O4G
+	id S1763995AbXG2O4l (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763744AbXG2O4R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:56:06 -0400
-Received: from [212.12.190.239] ([212.12.190.239]:33636 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762894AbXG2O4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:56:05 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: How can we make page replacement smarter
-Date: Sun, 29 Jul 2007 17:55:24 +0300
-User-Agent: KMail/1.5
-Cc: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <200707272243.02336.a1426z@gawab.com> <200707280717.41250.a1426z@gawab.com> <46ABF184.40803@redhat.com>
-In-Reply-To: <46ABF184.40803@redhat.com>
+	Sun, 29 Jul 2007 10:56:17 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:47743 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763252AbXG2O4J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 10:56:09 -0400
+Date: Sun, 29 Jul 2007 16:55:45 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Divy Le Ray <divy@chelsio.com>, Jeff Garzik <jeff@garzik.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/net/cxgb3/xgmac.c: remove dead code
+Message-ID: <20070729145544.GA16817@stusta.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707291755.24906.a1426z@gawab.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Al Boldi wrote:
-> > Good idea, but unless we understand the problems involved, we are bound
-> > to repeat it.  So my first question would be:  Why is swap-in so slow?
-> >
-> > As I have posted in other threads, swap-in of consecutive pages suffers
-> > a 2x slowdown wrt swap-out, whereas swap-in of random pages suffers over
-> > 6x slowdown.
-> >
-> > Because it is hard to quantify the expected swap-in speed for random
-> > pages, let's first tackle the swap-in of consecutive pages, which should
-> > be at least as fast as swap-out.  So again, why is swap-in so slow?
->
-> I suspect that this is a locality of reference issue.
->
-> Anonymous memory can get jumbled up by repeated free and
-> malloc cycles of many smaller objects.  The amount of
-> anonymous memory is often smaller than or roughly the same
-> size as system memory.
+This patch removes dead code ("tx_xcnt" can never be != 0 at this place) 
+spotted by the Coverity checker.
 
-Sounds exactly like the tmpfs problem.
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-> Locality of refenence to anonymous memory tends to be
-> temporal in nature, with the same sets of pages being
-> accessed over and over again.
->
-> Files are different.  File content tends to be grouped
-> in large related chunks, both logically in the file and
-> on disk.  Generally there is a lot more file data on a
-> system than what fits in memory.
->
-> Locality of reference to file data tends to be spatial
-> in nature, with one file access leading up to the system
-> accessing "nearby" data.  The data is not necessarily
-> touched again any time soon.
->
-> > Once we understand this problem, we may be able to suggest a smart
-> > improvement.
->
-> Like the one on http://linux-mm.org/PageoutFailureModes ?
+---
 
-Interesting to see that there are known problems, but it doesn't seem to list 
-the resume-from-disk swap-in slowdown.
+ drivers/net/cxgb3/xgmac.c |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
 
-> I have the LRU lists split and am working on getting SEQ
-> replacement implemented for the anonymous pages.
->
-> The most recent (untested) patches are attached.
-
-Applied against 2.6.22; the kernel crashes out on boot.
-
-
-Thanks!
-
---
-Al
+--- linux-2.6.22-rc6-mm1/drivers/net/cxgb3/xgmac.c.old	2007-07-24 13:55:33.000000000 +0200
++++ linux-2.6.22-rc6-mm1/drivers/net/cxgb3/xgmac.c	2007-07-24 13:57:06.000000000 +0200
+@@ -510,38 +510,35 @@ int t3b2_mac_watchdog_task(struct cmac *
+ 	if (tx_mcnt == mac->tx_mcnt) {
+ 		tx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+ 						A_XGM_TX_SPI4_SOP_EOP_CNT +
+ 					       	mac->offset)));
+ 		if (tx_xcnt == 0) {
+ 			t3_write_reg(adap, A_TP_PIO_ADDR,
+ 				     A_TP_TX_DROP_CNT_CH0 + macidx(mac));
+ 			tx_tcnt = (G_TXDROPCNTCH0RCVD(t3_read_reg(adap,
+ 						      A_TP_PIO_DATA)));
+ 		} else {
+ 			goto rxcheck;
+ 		}
+ 	} else {
+ 		mac->toggle_cnt = 0;
+ 		goto rxcheck;
+ 	}
+ 
+-	if (((tx_tcnt != mac->tx_tcnt) &&
+-	     (tx_xcnt == 0) && (mac->tx_xcnt == 0)) ||
+-	    ((mac->tx_mcnt == tx_mcnt) &&
+-	     (tx_xcnt != 0) && (mac->tx_xcnt != 0))) {
++	if ((tx_tcnt != mac->tx_tcnt) && (mac->tx_xcnt == 0))  {
+ 		if (mac->toggle_cnt > 4) {
+ 			status = 2;
+ 			goto out;
+ 		} else {
+ 			status = 1;
+ 			goto out;
+ 		}
+ 	} else {
+ 		mac->toggle_cnt = 0;
+ 		goto rxcheck;
+ 	}
+ 
+ rxcheck:
+ 	if (rx_mcnt != mac->rx_mcnt)
+ 		rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+ 						A_XGM_RX_SPI4_SOP_EOP_CNT +
+ 						mac->offset)));
 
