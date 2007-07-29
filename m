@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932621AbXG2Q3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764591AbXG2Qnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932621AbXG2Q3i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763928AbXG2Q33
+	id S1764591AbXG2Qnp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763385AbXG2Qng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:29:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48508 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761549AbXG2Q32 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:29:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] unexport pm_power_off_prepare
-Date: Sun, 29 Jul 2007 18:38:18 +0200
-User-Agent: KMail/1.9.5
-Cc: pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org
-References: <20070729145935.GJ16817@stusta.de>
-In-Reply-To: <20070729145935.GJ16817@stusta.de>
+	Sun, 29 Jul 2007 12:43:36 -0400
+Received: from h155.mvista.com ([63.81.120.155]:56842 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763122AbXG2Qnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:43:35 -0400
+Message-ID: <46ACC42E.8040907@ru.mvista.com>
+Date: Sun, 29 Jul 2007 20:45:34 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: niklaus.giger@member.fsf.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org,
+       kristen.c.accardi@intel.com
+Subject: Re: [PATCH] Fix compilation for non CONFIG_HOTPLUG case
+References: <200707291807.52042.niklaus.giger@member.fsf.org>
+In-Reply-To: <200707291807.52042.niklaus.giger@member.fsf.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707291838.19309.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 29 July 2007 16:59, Adrian Bunk wrote:
-> This patch removes the unused EXPORT_SYMBOL(pm_power_off_prepare).
+Hello.
+
+Niklaus Giger wrote:
+
+> Fixes compilation issues for embedded boards which do not support HOTPLUG
+
+> Signed-off-by: Niklaus Giger <niklaus.giger@member.fsf.org>
+
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 3599ab2..a09bfc8 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -24,7 +24,9 @@
+>  #include "base.h"
+>  #include "power/power.h"
 > 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> +#ifdef CONFIG_HOTPLUG
+>  extern const char *kobject_actions[];
+> +#endif
 
-Acked-by: Rafael J. Wysocki <rjw@sisk.pl>
+    No need for #ifdef around extern declarations.
 
-> ---
-> --- linux-2.6.23-rc1-mm1/kernel/sys.c.old	2007-07-28 07:38:45.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1/kernel/sys.c	2007-07-28 07:38:59.000000000 +0200
-> @@ -104,7 +104,6 @@ EXPORT_SYMBOL(cad_pid);
->   */
->  
->  void (*pm_power_off_prepare)(void);
-> -EXPORT_SYMBOL(pm_power_off_prepare);
->  
->  static int set_one_prio(struct task_struct *p, int niceval, int error)
+>  int (*platform_notify)(struct device * dev) = NULL;
+>  int (*platform_notify_remove)(struct device * dev) = NULL;
+> @@ -306,11 +308,13 @@ static ssize_t store_uevent(struct device *dev, struct 
+> device_attribute *attr,
+>  			    const char *buf, size_t count)
 >  {
-> 
-> 
-> 
+>  	size_t len = count;
+> +#ifdef CONFIG_HOTPLUG
+>  	enum kobject_action action;
+> -
+> +#endif
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+    Please don't remove newline between the declaration block and the code.
+
+>  	if (len && buf[len-1] == '\n')
+>  		len--;
+> 
+> +#ifdef CONFIG_HOTPLUG
+>  	for (action = 0; action < KOBJ_MAX; action++) {
+>  		if (strncmp(kobject_actions[action], buf, len) != 0)
+>  			continue;
+> @@ -319,11 +323,14 @@ static ssize_t store_uevent(struct device *dev, struct 
+> device_attribute *attr,
+>  		kobject_uevent(&dev->kobj, action);
+>  		goto out;
+
+    Grr... cleanup style abuse -- ISO a mere return they used goto. :-/
+
+>  	}
+> +#endif
+> 
+>  	dev_err(dev, "uevent: unsupported action-string; this will "
+>  		     "be ignored in a future kernel version\n");
+>  	kobject_uevent(&dev->kobj, KOBJ_ADD);
+> +#ifdef CONFIG_HOTPLUG
+>  out:
+> +#endif
+
+    Well, #ifdef'ing out label seems too much.
+
+>  	return count;
+>  }
+
+WBR, Sergei
