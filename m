@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbXG2MWf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762665AbXG2M31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762790AbXG2MWf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 08:22:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762082AbXG2MWN
+	id S1762665AbXG2M31 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 08:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761996AbXG2M3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 08:22:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:47752 "EHLO ogre.sisk.pl"
+	Sun, 29 Jul 2007 08:29:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47792 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761543AbXG2MWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 08:22:08 -0400
+	id S1760258AbXG2M3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 08:29:16 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 1/2] Replace CONFIG_SOFTWARE_SUSPEND with CONFIG_HIBERNATION
-Date: Sun, 29 Jul 2007 12:21:08 +0200
+Subject: [PATCH 2/2] Introduce CONFIG_SUSPEND
+Date: Sun, 29 Jul 2007 14:38:05 +0200
 User-Agent: KMail/1.9.5
 Cc: Len Brown <lenb@kernel.org>, david@lang.hm,
        Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
@@ -28,565 +28,474 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707291221.09779.rjw@sisk.pl>
+Message-Id: <200707291438.06849.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Replace CONFIG_SOFTWARE_SUSPEND with CONFIG_HIBERNATION to avoid confusion
-(among other things, with CONFIG_SUSPEND introduced in the next patch).
+Introduce CONFIG_SUSPEND representing the ability to enter system sleep states,
+such as the ACPI S3 state, and allow the user to choose SUSPEND and HIBERNATION
+independently of each other.
+
+Make HOTPLUG_CPU be selected automatically if SUSPEND or HIBERNATION has been
+chosen and the kernel is intended for SMP systems.
+
+Also, introduce CONFIG_PM_SLEEP which is automatically selected if
+CONFIG_SUSPEND or CONFIG_HIBERNATION is set and make CONFIG_ACPI_SLEEP depend
+on it.
+
+The top-level power management headers are modified to use the new definitions.
+Still, there are many other files in which CONFIG_PM can be replaced with
+CONFIG_PM_SLEEP or even with CONFIG_SUSPEND, but they can be updated in the
+future.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- arch/i386/Kconfig.debug                 |    4 ++--
- arch/i386/kernel/e820.c                 |    2 +-
- arch/i386/mm/init.c                     |    2 +-
- arch/i386/power/Makefile                |    2 +-
- arch/powerpc/Kconfig.debug              |    2 +-
- arch/powerpc/configs/lite5200_defconfig |    2 +-
- arch/powerpc/configs/pmac32_defconfig   |    2 +-
- arch/powerpc/kernel/Makefile            |    6 +++---
- arch/ppc/configs/TQM8540_defconfig      |    2 +-
- arch/ppc/configs/TQM8541_defconfig      |    2 +-
- arch/ppc/configs/TQM8555_defconfig      |    2 +-
- arch/ppc/configs/TQM8560_defconfig      |    2 +-
- arch/ppc/configs/ev64360_defconfig      |    2 +-
- arch/ppc/configs/ml300_defconfig        |    2 +-
- arch/ppc/configs/ml403_defconfig        |    2 +-
- arch/ppc/configs/mpc834x_sys_defconfig  |    2 +-
- arch/ppc/configs/prep_defconfig         |    2 +-
- arch/sparc64/Kconfig.debug              |    2 +-
- arch/x86_64/defconfig                   |    2 +-
- arch/x86_64/kernel/Makefile             |    2 +-
- arch/x86_64/kernel/suspend.c            |    4 ++--
- drivers/acpi/sleep/main.c               |    6 +++---
- drivers/acpi/sleep/proc.c               |    2 +-
- drivers/i2c/chips/tps65010.c            |    2 +-
- include/asm-i386/e820.h                 |    2 +-
- include/linux/suspend.h                 |    8 ++++----
- kernel/power/Kconfig                    |    6 +++---
- kernel/power/Makefile                   |    2 +-
- kernel/power/main.c                     |    2 +-
- kernel/power/power.h                    |    2 +-
- kernel/sys.c                            |    2 +-
- mm/Kconfig                              |    4 ++--
- mm/swapfile.c                           |    6 +++---
- 33 files changed, 47 insertions(+), 47 deletions(-)
+ drivers/acpi/Kconfig        |    2 +-
+ drivers/base/power/Makefile |    6 +++---
+ drivers/base/power/power.h  |    4 ++--
+ include/acpi/acpi_bus.h     |    7 +++++++
+ include/linux/freezer.h     |    6 +++---
+ include/linux/pm.h          |    8 ++++----
+ include/linux/suspend.h     |   16 ++++++++--------
+ kernel/power/Kconfig        |   39 +++++++++++++++++++++++++++++++--------
+ kernel/power/Makefile       |    3 ++-
+ kernel/power/main.c         |   26 ++++++++++++++++++--------
+ kernel/power/power.h        |   10 +++++++++-
+ mm/page_alloc.c             |    4 ++--
+ 12 files changed, 90 insertions(+), 41 deletions(-)
 
-Index: linux-2.6.23-rc1/arch/i386/Kconfig.debug
-===================================================================
---- linux-2.6.23-rc1.orig/arch/i386/Kconfig.debug	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/i386/Kconfig.debug	2007-07-28 20:57:00.000000000 +0200
-@@ -36,11 +36,11 @@ config DEBUG_STACK_USAGE
- 	  This option will slow down process creation somewhat.
- 
- comment "Page alloc debug is incompatible with Software Suspend on i386"
--	depends on DEBUG_KERNEL && SOFTWARE_SUSPEND
-+	depends on DEBUG_KERNEL && HIBERNATION
- 
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
--	depends on DEBUG_KERNEL && !SOFTWARE_SUSPEND && !HUGETLBFS
-+	depends on DEBUG_KERNEL && !HIBERNATION && !HUGETLBFS
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a large slowdown, but helps to find certain types
-Index: linux-2.6.23-rc1/arch/i386/kernel/e820.c
-===================================================================
---- linux-2.6.23-rc1.orig/arch/i386/kernel/e820.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/i386/kernel/e820.c	2007-07-28 20:57:00.000000000 +0200
-@@ -321,7 +321,7 @@ static int __init request_standard_resou
- 
- subsys_initcall(request_standard_resources);
- 
--#if defined(CONFIG_PM) && defined(CONFIG_SOFTWARE_SUSPEND)
-+#if defined(CONFIG_PM) && defined(CONFIG_HIBERNATION)
- /**
-  * e820_mark_nosave_regions - Find the ranges of physical addresses that do not
-  * correspond to e820 RAM areas and mark the corresponding pages as nosave for
-Index: linux-2.6.23-rc1/arch/i386/mm/init.c
-===================================================================
---- linux-2.6.23-rc1.orig/arch/i386/mm/init.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/i386/mm/init.c	2007-07-28 20:57:00.000000000 +0200
-@@ -432,7 +432,7 @@ static void __init pagetable_init (void)
- 	paravirt_pagetable_setup_done(pgd_base);
- }
- 
--#if defined(CONFIG_SOFTWARE_SUSPEND) || defined(CONFIG_ACPI_SLEEP)
-+#if defined(CONFIG_HIBERNATION) || defined(CONFIG_ACPI_SLEEP)
- /*
-  * Swap suspend & friends need this for resume because things like the intel-agp
-  * driver might have split up a kernel 4MB mapping.
-Index: linux-2.6.23-rc1/arch/i386/power/Makefile
-===================================================================
---- linux-2.6.23-rc1.orig/arch/i386/power/Makefile	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/i386/power/Makefile	2007-07-28 20:57:00.000000000 +0200
-@@ -1,2 +1,2 @@
- obj-$(CONFIG_PM)		+= cpu.o
--obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o suspend.o
-+obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
-Index: linux-2.6.23-rc1/arch/powerpc/Kconfig.debug
-===================================================================
---- linux-2.6.23-rc1.orig/arch/powerpc/Kconfig.debug	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/powerpc/Kconfig.debug	2007-07-28 20:57:00.000000000 +0200
-@@ -20,7 +20,7 @@ config DEBUG_STACK_USAGE
- 
- config DEBUG_PAGEALLOC
-         bool "Debug page memory allocations"
--        depends on DEBUG_KERNEL && !SOFTWARE_SUSPEND
-+        depends on DEBUG_KERNEL && !HIBERNATION
-         help
-           Unmap pages from the kernel linear mapping after free_pages().
-           This results in a large slowdown, but helps to find certain types
-Index: linux-2.6.23-rc1/arch/powerpc/configs/lite5200_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/powerpc/configs/lite5200_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/powerpc/configs/lite5200_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -196,7 +196,7 @@ CONFIG_PM=y
- # CONFIG_PM_LEGACY is not set
- # CONFIG_PM_DEBUG is not set
- # CONFIG_PM_SYSFS_DEPRECATED is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- # CONFIG_WANT_DEVICE_TREE is not set
- CONFIG_ISA_DMA_API=y
-Index: linux-2.6.23-rc1/arch/powerpc/configs/pmac32_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/powerpc/configs/pmac32_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/powerpc/configs/pmac32_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -218,7 +218,7 @@ CONFIG_PM=y
- CONFIG_PM_DEBUG=y
- # CONFIG_DISABLE_CONSOLE_SUSPEND is not set
- CONFIG_PM_SYSFS_DEPRECATED=y
--CONFIG_SOFTWARE_SUSPEND=y
-+CONFIG_HIBERNATION=y
- CONFIG_PM_STD_PARTITION=""
- CONFIG_APM_EMULATION=y
- CONFIG_SECCOMP=y
-Index: linux-2.6.23-rc1/arch/powerpc/kernel/Makefile
-===================================================================
---- linux-2.6.23-rc1.orig/arch/powerpc/kernel/Makefile	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/powerpc/kernel/Makefile	2007-07-28 20:57:00.000000000 +0200
-@@ -37,9 +37,9 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsy
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
- obj-$(CONFIG_TAU)		+= tau_6xx.o
--obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o suspend.o
--obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
--obj64-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_64.o swsusp_asm64.o
-+obj-$(CONFIG_HIBERNATION)	+= swsusp.o suspend.o
-+obj32-$(CONFIG_HIBERNATION) += swsusp_32.o
-+obj64-$(CONFIG_HIBERNATION) += swsusp_64.o swsusp_asm64.o
- obj32-$(CONFIG_MODULES)		+= module_32.o
- 
- ifeq ($(CONFIG_PPC_MERGE),y)
-Index: linux-2.6.23-rc1/arch/ppc/configs/TQM8540_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/TQM8540_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/TQM8540_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -136,7 +136,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- # CONFIG_CMDLINE_BOOL is not set
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/TQM8541_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/TQM8541_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/TQM8541_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -138,7 +138,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- # CONFIG_CMDLINE_BOOL is not set
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/TQM8555_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/TQM8555_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/TQM8555_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -138,7 +138,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- # CONFIG_CMDLINE_BOOL is not set
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/TQM8560_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/TQM8560_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/TQM8560_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -137,7 +137,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- # CONFIG_CMDLINE_BOOL is not set
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/ev64360_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/ev64360_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/ev64360_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -142,7 +142,7 @@ CONFIG_BINFMT_MISC=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE="console=ttyMM0,115200 root=/dev/mtdblock1 rw rootfstype=jffs2"
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/ml300_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/ml300_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/ml300_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -148,7 +148,7 @@ CONFIG_BINFMT_ELF=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE="console=ttyS0,9600"
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/ml403_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/ml403_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/ml403_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -149,7 +149,7 @@ CONFIG_BINFMT_ELF=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE="console=ttyS0,9600"
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/mpc834x_sys_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/mpc834x_sys_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/mpc834x_sys_defconfig	2007-07-28 20:57:00.000000000 +0200
-@@ -130,7 +130,7 @@ CONFIG_BINFMT_ELF=y
- # CONFIG_BINFMT_MISC is not set
- # CONFIG_CMDLINE_BOOL is not set
- # CONFIG_PM is not set
--# CONFIG_SOFTWARE_SUSPEND is not set
-+# CONFIG_HIBERNATION is not set
- CONFIG_SECCOMP=y
- CONFIG_ISA_DMA_API=y
- 
-Index: linux-2.6.23-rc1/arch/ppc/configs/prep_defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/ppc/configs/prep_defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/ppc/configs/prep_defconfig	2007-07-28 20:57:01.000000000 +0200
-@@ -166,7 +166,7 @@ CONFIG_PROC_PREPRESIDUAL=y
- CONFIG_PM=y
- # CONFIG_PM_LEGACY is not set
- # CONFIG_PM_DEBUG is not set
--CONFIG_SOFTWARE_SUSPEND=y
-+CONFIG_HIBERNATION=y
- CONFIG_PM_STD_PARTITION=""
- # CONFIG_SECCOMP is not set
- CONFIG_ISA_DMA_API=y
-Index: linux-2.6.23-rc1/arch/sparc64/Kconfig.debug
-===================================================================
---- linux-2.6.23-rc1.orig/arch/sparc64/Kconfig.debug	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/sparc64/Kconfig.debug	2007-07-28 20:57:01.000000000 +0200
-@@ -29,7 +29,7 @@ config DEBUG_BOOTMEM
- 
- config DEBUG_PAGEALLOC
- 	bool "Debug page memory allocations"
--	depends on DEBUG_KERNEL && !SOFTWARE_SUSPEND
-+	depends on DEBUG_KERNEL && !HIBERNATION
- 	help
- 	  Unmap pages from the kernel linear mapping after free_pages().
- 	  This results in a large slowdown, but helps to find certain types
-Index: linux-2.6.23-rc1/arch/x86_64/defconfig
-===================================================================
---- linux-2.6.23-rc1.orig/arch/x86_64/defconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/x86_64/defconfig	2007-07-28 20:57:01.000000000 +0200
-@@ -199,7 +199,7 @@ CONFIG_GENERIC_PENDING_IRQ=y
- CONFIG_PM=y
- # CONFIG_PM_LEGACY is not set
- # CONFIG_PM_DEBUG is not set
--CONFIG_SOFTWARE_SUSPEND=y
-+CONFIG_HIBERNATION=y
- CONFIG_PM_STD_PARTITION=""
- CONFIG_SUSPEND_SMP=y
- 
-Index: linux-2.6.23-rc1/arch/x86_64/kernel/Makefile
-===================================================================
---- linux-2.6.23-rc1.orig/arch/x86_64/kernel/Makefile	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/x86_64/kernel/Makefile	2007-07-28 20:57:01.000000000 +0200
-@@ -26,7 +26,7 @@ obj-y				+= io_apic.o mpparse.o genapic.
- obj-$(CONFIG_KEXEC)		+= machine_kexec.o relocate_kernel.o crash.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_PM)		+= suspend.o
--obj-$(CONFIG_SOFTWARE_SUSPEND)	+= suspend_asm.o
-+obj-$(CONFIG_HIBERNATION)	+= suspend_asm.o
- obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
- obj-$(CONFIG_EARLY_PRINTK)	+= early_printk.o
- obj-$(CONFIG_IOMMU)		+= pci-gart.o aperture.o
-Index: linux-2.6.23-rc1/arch/x86_64/kernel/suspend.c
-===================================================================
---- linux-2.6.23-rc1.orig/arch/x86_64/kernel/suspend.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/arch/x86_64/kernel/suspend.c	2007-07-28 20:57:01.000000000 +0200
-@@ -146,7 +146,7 @@ void fix_processor_context(void)
- 
- }
- 
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- /* Defined in arch/x86_64/kernel/suspend_asm.S */
- extern int restore_image(void);
- 
-@@ -236,4 +236,4 @@ int pfn_is_nosave(unsigned long pfn)
- 	unsigned long nosave_end_pfn = PAGE_ALIGN(__pa_symbol(&__nosave_end)) >> PAGE_SHIFT;
- 	return (pfn >= nosave_begin_pfn) && (pfn < nosave_end_pfn);
- }
--#endif /* CONFIG_SOFTWARE_SUSPEND */
-+#endif /* CONFIG_HIBERNATION */
-Index: linux-2.6.23-rc1/drivers/acpi/sleep/main.c
-===================================================================
---- linux-2.6.23-rc1.orig/drivers/acpi/sleep/main.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/drivers/acpi/sleep/main.c	2007-07-28 20:57:01.000000000 +0200
-@@ -204,7 +204,7 @@ static struct platform_suspend_ops acpi_
- 	.finish = acpi_pm_finish,
- };
- 
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- static int acpi_hibernation_start(void)
- {
- 	acpi_target_sleep_state = ACPI_STATE_S4;
-@@ -266,7 +266,7 @@ static struct platform_hibernation_ops a
- 	.pre_restore = acpi_hibernation_pre_restore,
- 	.restore_cleanup = acpi_hibernation_restore_cleanup,
- };
--#endif				/* CONFIG_SOFTWARE_SUSPEND */
-+#endif				/* CONFIG_HIBERNATION */
- 
- /**
-  *	acpi_pm_device_sleep_state - return preferred power state of ACPI device
-@@ -386,7 +386,7 @@ int __init acpi_sleep_init(void)
- 
- 	suspend_set_ops(&acpi_pm_ops);
- 
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- 	if (sleep_states[ACPI_STATE_S4])
- 		hibernation_set_ops(&acpi_hibernation_ops);
- #else
-Index: linux-2.6.23-rc1/drivers/acpi/sleep/proc.c
-===================================================================
---- linux-2.6.23-rc1.orig/drivers/acpi/sleep/proc.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/drivers/acpi/sleep/proc.c	2007-07-28 20:57:01.000000000 +0200
-@@ -58,7 +58,7 @@ acpi_system_write_sleep(struct file *fil
- 		goto Done;
- 	}
- 	state = simple_strtoul(str, NULL, 0);
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- 	if (state == 4) {
- 		error = hibernate();
- 		goto Done;
-Index: linux-2.6.23-rc1/drivers/i2c/chips/tps65010.c
-===================================================================
---- linux-2.6.23-rc1.orig/drivers/i2c/chips/tps65010.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/drivers/i2c/chips/tps65010.c	2007-07-28 20:57:01.000000000 +0200
-@@ -352,7 +352,7 @@ static void tps65010_interrupt(struct tp
- 			/* REVISIT:  this might need its own workqueue
- 			 * plus tweaks including deadlock avoidance ...
- 			 * also needs to get error handling and probably
--			 * an #ifdef CONFIG_SOFTWARE_SUSPEND
-+			 * an #ifdef CONFIG_HIBERNATION
- 			 */
- 			hibernate();
- #endif
-Index: linux-2.6.23-rc1/include/asm-i386/e820.h
-===================================================================
---- linux-2.6.23-rc1.orig/include/asm-i386/e820.h	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/include/asm-i386/e820.h	2007-07-28 20:57:01.000000000 +0200
-@@ -47,7 +47,7 @@ extern void e820_register_memory(void);
- extern void limit_regions(unsigned long long size);
- extern void print_memory_map(char *who);
- 
--#if defined(CONFIG_PM) && defined(CONFIG_SOFTWARE_SUSPEND)
-+#if defined(CONFIG_PM) && defined(CONFIG_HIBERNATION)
- extern void e820_mark_nosave_regions(void);
- #else
- static inline void e820_mark_nosave_regions(void)
-Index: linux-2.6.23-rc1/include/linux/suspend.h
-===================================================================
---- linux-2.6.23-rc1.orig/include/linux/suspend.h	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/include/linux/suspend.h	2007-07-28 20:57:01.000000000 +0200
-@@ -174,7 +174,7 @@ struct platform_hibernation_ops {
- };
- 
- #ifdef CONFIG_PM
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- /* kernel/power/snapshot.c */
- extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
- static inline void register_nosave_region(unsigned long b, unsigned long e)
-@@ -192,14 +192,14 @@ extern unsigned long get_safe_page(gfp_t
- 
- extern void hibernation_set_ops(struct platform_hibernation_ops *ops);
- extern int hibernate(void);
--#else /* CONFIG_SOFTWARE_SUSPEND */
-+#else /* CONFIG_HIBERNATION */
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
- static inline void swsusp_set_page_free(struct page *p) {}
- static inline void swsusp_unset_page_free(struct page *p) {}
- 
- static inline void hibernation_set_ops(struct platform_hibernation_ops *ops) {}
- static inline int hibernate(void) { return -ENOSYS; }
--#endif /* CONFIG_SOFTWARE_SUSPEND */
-+#endif /* CONFIG_HIBERNATION */
- 
- void save_processor_state(void);
- void restore_processor_state(void);
-@@ -240,7 +240,7 @@ static inline int unregister_pm_notifier
- #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
- #endif /* CONFIG_PM */
- 
--#if !defined CONFIG_SOFTWARE_SUSPEND || !defined(CONFIG_PM)
-+#if !defined CONFIG_HIBERNATION || !defined(CONFIG_PM)
- static inline void register_nosave_region(unsigned long b, unsigned long e)
- {
- }
 Index: linux-2.6.23-rc1/kernel/power/Kconfig
 ===================================================================
---- linux-2.6.23-rc1.orig/kernel/power/Kconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/power/Kconfig	2007-07-28 21:04:06.000000000 +0200
-@@ -72,8 +72,8 @@ config PM_TRACE
+--- linux-2.6.23-rc1.orig/kernel/power/Kconfig	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/kernel/power/Kconfig	2007-07-29 11:18:49.000000000 +0200
+@@ -46,7 +46,7 @@ config PM_VERBOSE
+ 
+ config DISABLE_CONSOLE_SUSPEND
+ 	bool "Keep console(s) enabled during suspend/resume (DANGEROUS)"
+-	depends on PM_DEBUG
++	depends on PM_DEBUG && PM_SLEEP
+ 	default n
+ 	---help---
+ 	This option turns off the console suspend mechanism that prevents
+@@ -57,7 +57,7 @@ config DISABLE_CONSOLE_SUSPEND
+ 
+ config PM_TRACE
+ 	bool "Suspend/resume event tracing"
+-	depends on PM_DEBUG && X86 && EXPERIMENTAL
++	depends on PM_DEBUG && X86 && PM_SLEEP && EXPERIMENTAL
+ 	default n
+ 	---help---
+ 	This enables some cheesy code to save the last PM event point in the
+@@ -72,9 +72,37 @@ config PM_TRACE
  	CAUTION: this option will cause your machine's real-time clock to be
  	set to an invalid time after a resume.
  
--config SOFTWARE_SUSPEND
--	bool "Software Suspend (Hibernation)"
-+config HIBERNATION
-+	bool "Hibernation"
- 	depends on PM && SWAP && (((X86 || PPC64_SWSUSP) && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
++config SUSPEND_SMP_POSSIBLE
++	bool
++	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
++	depends on SMP
++	default y
++
++config SUSPEND_SMP
++	bool
++	depends on SUSPEND_SMP_POSSIBLE && PM_SLEEP
++	select HOTPLUG_CPU
++	default y
++
++config PM_SLEEP
++	bool
++	depends on SUSPEND || HIBERNATION
++	default y
++
++config SUSPEND
++	bool "Suspend"
++	depends on PM
++	depends on !SMP || SUSPEND_SMP_POSSIBLE
++	default y
++	---help---
++	  Allow the system to enter sleep states in which main memory is
++	  powered and thus its contents are preserved, such as the
++	  suspend-to-RAM state (i.e. the ACPI S3 state).
++
+ config HIBERNATION
+ 	bool "Hibernation"
+-	depends on PM && SWAP && (((X86 || PPC64_SWSUSP) && (!SMP || SUSPEND_SMP)) || ((FRV || PPC32) && !SMP))
++	depends on PM && SWAP
++	depends on ((X86 || PPC64_SWSUSP || FRV || PPC32) && !SMP) || SUSPEND_SMP_POSSIBLE
  	---help---
  	  Enable the suspend to disk (STD) functionality, which is usually
-@@ -112,7 +112,7 @@ config SOFTWARE_SUSPEND
+ 	  called "hibernation" in user interfaces.  STD checkpoints the
+@@ -132,11 +160,6 @@ config PM_STD_PARTITION
+ 	  suspended image to. It will simply pick the first available swap 
+ 	  device.
  
- config PM_STD_PARTITION
- 	string "Default resume partition"
--	depends on SOFTWARE_SUSPEND
-+	depends on HIBERNATION
- 	default ""
- 	---help---
- 	  The default resume partition is the partition that the suspend-
+-config SUSPEND_SMP
+-	bool
+-	depends on HOTPLUG_CPU && (X86 || PPC64) && PM
+-	default y
+-
+ config APM_EMULATION
+ 	tristate "Advanced Power Management Emulation"
+ 	depends on PM && SYS_SUPPORTS_APM_EMULATION
 Index: linux-2.6.23-rc1/kernel/power/Makefile
 ===================================================================
---- linux-2.6.23-rc1.orig/kernel/power/Makefile	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/power/Makefile	2007-07-28 20:57:01.000000000 +0200
-@@ -5,6 +5,6 @@ endif
+--- linux-2.6.23-rc1.orig/kernel/power/Makefile	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/kernel/power/Makefile	2007-07-29 12:53:13.000000000 +0200
+@@ -3,8 +3,9 @@ ifeq ($(CONFIG_PM_DEBUG),y)
+ EXTRA_CFLAGS	+=	-DDEBUG
+ endif
  
- obj-y				:= main.o process.o console.o
+-obj-y				:= main.o process.o console.o
++obj-y				:= main.o
  obj-$(CONFIG_PM_LEGACY)		+= pm.o
--obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o disk.o snapshot.o swap.o user.o
-+obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
++obj-$(CONFIG_PM_SLEEP)		+= process.o console.o
+ obj-$(CONFIG_HIBERNATION)	+= swsusp.o disk.o snapshot.o swap.o user.o
  
  obj-$(CONFIG_MAGIC_SYSRQ)	+= poweroff.o
+Index: linux-2.6.23-rc1/drivers/base/power/Makefile
+===================================================================
+--- linux-2.6.23-rc1.orig/drivers/base/power/Makefile	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/drivers/base/power/Makefile	2007-07-29 11:06:27.000000000 +0200
+@@ -1,6 +1,6 @@
+-obj-y			:= shutdown.o
+-obj-$(CONFIG_PM)	+= main.o suspend.o resume.o sysfs.o
+-obj-$(CONFIG_PM_TRACE)	+= trace.o
++obj-y				:= shutdown.o
++obj-$(CONFIG_PM_SLEEP)	+= main.o suspend.o resume.o sysfs.o
++obj-$(CONFIG_PM_TRACE)		+= trace.o
+ 
+ ifeq ($(CONFIG_DEBUG_DRIVER),y)
+ EXTRA_CFLAGS += -DDEBUG
+Index: linux-2.6.23-rc1/include/linux/suspend.h
+===================================================================
+--- linux-2.6.23-rc1.orig/include/linux/suspend.h	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/include/linux/suspend.h	2007-07-29 12:46:45.000000000 +0200
+@@ -10,7 +10,7 @@
+ #include <linux/pm.h>
+ #include <linux/mm.h>
+ 
+-#if defined(CONFIG_PM) && defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE)
++#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_VT) && defined(CONFIG_VT_CONSOLE)
+ extern int pm_prepare_console(void);
+ extern void pm_restore_console(void);
+ #else
+@@ -77,7 +77,7 @@ struct platform_suspend_ops {
+ 	void (*finish)(void);
+ };
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_SUSPEND
+ /**
+  * suspend_set_ops - set platform dependent suspend operations
+  * @ops: The new suspend operations to set.
+@@ -104,12 +104,12 @@ extern void arch_suspend_disable_irqs(vo
+ extern void arch_suspend_enable_irqs(void);
+ 
+ extern int pm_suspend(suspend_state_t state);
+-#else /* CONFIG_PM */
++#else /* !CONFIG_SUSPEND */
+ #define suspend_valid_only_mem	NULL
+ 
+ static inline void suspend_set_ops(struct platform_suspend_ops *ops) {}
+ static inline int pm_suspend(suspend_state_t state) { return -ENOSYS; }
+-#endif /* CONFIG_PM */
++#endif /* !CONFIG_SUSPEND */
+ 
+ /* struct pbe is used for creating lists of pages that should be restored
+  * atomically during the resume from disk, because the page frames they have
+@@ -173,7 +173,6 @@ struct platform_hibernation_ops {
+ 	void (*restore_cleanup)(void);
+ };
+ 
+-#ifdef CONFIG_PM
+ #ifdef CONFIG_HIBERNATION
+ /* kernel/power/snapshot.c */
+ extern void __register_nosave_region(unsigned long b, unsigned long e, int km);
+@@ -201,6 +200,7 @@ static inline void hibernation_set_ops(s
+ static inline int hibernate(void) { return -ENOSYS; }
+ #endif /* CONFIG_HIBERNATION */
+ 
++#ifdef CONFIG_PM_SLEEP
+ void save_processor_state(void);
+ void restore_processor_state(void);
+ struct saved_context;
+@@ -225,7 +225,7 @@ static inline int unregister_pm_notifier
+ 		{ .notifier_call = fn, .priority = pri };	\
+ 	register_pm_notifier(&fn##_nb);			\
+ }
+-#else /* CONFIG_PM */
++#else /* !CONFIG_PM_SLEEP */
+ 
+ static inline int register_pm_notifier(struct notifier_block *nb)
+ {
+@@ -238,9 +238,9 @@ static inline int unregister_pm_notifier
+ }
+ 
+ #define pm_notifier(fn, pri)	do { (void)(fn); } while (0)
+-#endif /* CONFIG_PM */
++#endif /* !CONFIG_PM_SLEEP */
+ 
+-#if !defined CONFIG_HIBERNATION || !defined(CONFIG_PM)
++#ifndef CONFIG_HIBERNATION
+ static inline void register_nosave_region(unsigned long b, unsigned long e)
+ {
+ }
+Index: linux-2.6.23-rc1/include/linux/pm.h
+===================================================================
+--- linux-2.6.23-rc1.orig/include/linux/pm.h	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/include/linux/pm.h	2007-07-29 11:06:27.000000000 +0200
+@@ -175,7 +175,7 @@ typedef struct pm_message {
+ struct dev_pm_info {
+ 	pm_message_t		power_state;
+ 	unsigned		can_wakeup:1;
+-#ifdef	CONFIG_PM
++#ifdef	CONFIG_PM_SLEEP
+ 	unsigned		should_wakeup:1;
+ 	struct list_head	entry;
+ #endif
+@@ -185,7 +185,7 @@ extern int device_power_down(pm_message_
+ extern void device_power_up(void);
+ extern void device_resume(void);
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ extern int device_suspend(pm_message_t state);
+ extern int device_prepare_suspend(pm_message_t state);
+ 
+@@ -215,7 +215,7 @@ static inline int call_platform_enable_w
+ 	return 0;
+ }
+ 
+-#else /* !CONFIG_PM */
++#else /* !CONFIG_PM_SLEEP */
+ 
+ static inline int device_suspend(pm_message_t state)
+ {
+@@ -232,7 +232,7 @@ static inline int call_platform_enable_w
+ 	return 0;
+ }
+ 
+-#endif
++#endif /* !CONFIG_PM_SLEEP */
+ 
+ /* changes to device_may_wakeup take effect on the next pm state change.
+  * by default, devices should wakeup if they can.
+Index: linux-2.6.23-rc1/kernel/power/power.h
+===================================================================
+--- linux-2.6.23-rc1.orig/kernel/power/power.h	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/kernel/power/power.h	2007-07-29 11:06:27.000000000 +0200
+@@ -176,9 +176,17 @@ struct timeval;
+ extern void swsusp_show_speed(struct timeval *, struct timeval *,
+ 				unsigned int, char *);
+ 
++#ifdef CONFIG_SUSPEND
+ /* kernel/power/main.c */
+-extern int suspend_enter(suspend_state_t state);
+ extern int suspend_devices_and_enter(suspend_state_t state);
++#else /* !CONFIG_SUSPEND */
++static inline int suspend_devices_and_enter(suspend_state_t state)
++{
++	return -ENOSYS;
++}
++#endif /* !CONFIG_SUSPEND */
++
++/* kernel/power/common.c */
+ extern struct blocking_notifier_head pm_chain_head;
+ 
+ static inline int pm_notifier_call_chain(unsigned long val)
 Index: linux-2.6.23-rc1/kernel/power/main.c
 ===================================================================
---- linux-2.6.23-rc1.orig/kernel/power/main.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/power/main.c	2007-07-28 20:57:01.000000000 +0200
-@@ -295,7 +295,7 @@ static ssize_t state_show(struct kset *k
+--- linux-2.6.23-rc1.orig/kernel/power/main.c	2007-07-29 11:05:14.000000000 +0200
++++ linux-2.6.23-rc1/kernel/power/main.c	2007-07-29 11:11:42.000000000 +0200
+@@ -26,14 +26,16 @@
+ 
+ BLOCKING_NOTIFIER_HEAD(pm_chain_head);
+ 
+-/*This is just an arbitrary number */
+-#define FREE_PAGE_NUMBER (100)
+-
+ DEFINE_MUTEX(pm_mutex);
+ 
+ unsigned int pm_flags;
+ EXPORT_SYMBOL(pm_flags);
+ 
++#ifdef CONFIG_SUSPEND
++
++/* This is just an arbitrary number */
++#define FREE_PAGE_NUMBER (100)
++
+ static struct platform_suspend_ops *suspend_ops;
+ 
+ /**
+@@ -272,6 +274,8 @@ int pm_suspend(suspend_state_t state)
+ 
+ EXPORT_SYMBOL(pm_suspend);
+ 
++#endif /* CONFIG_SUSPEND */
++
+ decl_subsys(power,NULL,NULL);
+ 
+ 
+@@ -288,13 +292,15 @@ decl_subsys(power,NULL,NULL);
+ 
+ static ssize_t state_show(struct kset *kset, char *buf)
+ {
++	char *s = buf;
++#ifdef CONFIG_SUSPEND
+ 	int i;
+-	char * s = buf;
+ 
+ 	for (i = 0; i < PM_SUSPEND_MAX; i++) {
  		if (pm_states[i] && valid_state(i))
  			s += sprintf(s,"%s ", pm_states[i]);
  	}
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
++#endif
+ #ifdef CONFIG_HIBERNATION
  	s += sprintf(s, "%s\n", "disk");
  #else
- 	if (s != buf)
-Index: linux-2.6.23-rc1/kernel/power/power.h
+@@ -307,11 +313,13 @@ static ssize_t state_show(struct kset *k
+ 
+ static ssize_t state_store(struct kset *kset, const char *buf, size_t n)
+ {
++#ifdef CONFIG_SUSPEND
+ 	suspend_state_t state = PM_SUSPEND_STANDBY;
+ 	const char * const *s;
++#endif
+ 	char *p;
+-	int error;
+ 	int len;
++	int error = -EINVAL;
+ 
+ 	p = memchr(buf, '\n', n);
+ 	len = p ? p - buf : n;
+@@ -319,17 +327,19 @@ static ssize_t state_store(struct kset *
+ 	/* First, check if we are requested to hibernate */
+ 	if (len == 4 && !strncmp(buf, "disk", len)) {
+ 		error = hibernate();
+-		return error ? error : n;
++  goto Exit;
+ 	}
+ 
++#ifdef CONFIG_SUSPEND
+ 	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
+ 		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
+ 			break;
+ 	}
+ 	if (state < PM_SUSPEND_MAX && *s)
+ 		error = enter_state(state);
+-	else
+-		error = -EINVAL;
++#endif
++
++ Exit:
+ 	return error ? error : n;
+ }
+ 
+Index: linux-2.6.23-rc1/drivers/acpi/Kconfig
 ===================================================================
---- linux-2.6.23-rc1.orig/kernel/power/power.h	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/power/power.h	2007-07-28 20:57:01.000000000 +0200
-@@ -13,7 +13,7 @@ struct swsusp_info {
+--- linux-2.6.23-rc1.orig/drivers/acpi/Kconfig	2007-07-28 22:42:57.000000000 +0200
++++ linux-2.6.23-rc1/drivers/acpi/Kconfig	2007-07-29 12:48:49.000000000 +0200
+@@ -44,7 +44,7 @@ if ACPI
  
- 
- 
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- /*
-  * Keep some memory free so that I/O operations can succeed without paging
-  * [Might this be more than 4 MB?]
-Index: linux-2.6.23-rc1/kernel/sys.c
+ config ACPI_SLEEP
+ 	bool "Sleep States"
+-	depends on X86 && (!SMP || SUSPEND_SMP)
++	depends on X86 && PM_SLEEP
+ 	default y
+ 	---help---
+ 	  This option adds support for ACPI suspend states. 
+Index: linux-2.6.23-rc1/mm/page_alloc.c
 ===================================================================
---- linux-2.6.23-rc1.orig/kernel/sys.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/kernel/sys.c	2007-07-28 20:57:01.000000000 +0200
-@@ -954,7 +954,7 @@ asmlinkage long sys_reboot(int magic1, i
- 		unlock_kernel();
- 		return -EINVAL;
- 
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- 	case LINUX_REBOOT_CMD_SW_SUSPEND:
- 		{
- 			int ret = hibernate();
-Index: linux-2.6.23-rc1/mm/Kconfig
-===================================================================
---- linux-2.6.23-rc1.orig/mm/Kconfig	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/mm/Kconfig	2007-07-28 20:57:01.000000000 +0200
-@@ -116,11 +116,11 @@ config SPARSEMEM_EXTREME
- config MEMORY_HOTPLUG
- 	bool "Allow for memory hot-add"
- 	depends on SPARSEMEM || X86_64_ACPI_NUMA
--	depends on HOTPLUG && !SOFTWARE_SUSPEND && ARCH_ENABLE_MEMORY_HOTPLUG
-+	depends on HOTPLUG && !HIBERNATION && ARCH_ENABLE_MEMORY_HOTPLUG
- 	depends on (IA64 || X86 || PPC64 || SUPERH)
- 
- comment "Memory hotplug is currently incompatible with Software Suspend"
--	depends on SPARSEMEM && HOTPLUG && SOFTWARE_SUSPEND
-+	depends on SPARSEMEM && HOTPLUG && HIBERNATION
- 
- config MEMORY_HOTPLUG_SPARSE
- 	def_bool y
-Index: linux-2.6.23-rc1/mm/swapfile.c
-===================================================================
---- linux-2.6.23-rc1.orig/mm/swapfile.c	2007-07-28 20:56:27.000000000 +0200
-+++ linux-2.6.23-rc1/mm/swapfile.c	2007-07-28 20:57:01.000000000 +0200
-@@ -425,7 +425,7 @@ void free_swap_and_cache(swp_entry_t ent
+--- linux-2.6.23-rc1.orig/mm/page_alloc.c	2007-07-23 22:07:02.000000000 +0200
++++ linux-2.6.23-rc1/mm/page_alloc.c	2007-07-29 12:23:44.000000000 +0200
+@@ -726,7 +726,7 @@ static void __drain_pages(unsigned int c
  	}
  }
  
--#ifdef CONFIG_SOFTWARE_SUSPEND
+-#ifdef CONFIG_PM
 +#ifdef CONFIG_HIBERNATION
- /*
-  * Find the swap type that corresponds to given device (if any).
-  *
-@@ -951,7 +951,7 @@ sector_t map_swap_page(struct swap_info_
- 	}
- }
  
--#ifdef CONFIG_SOFTWARE_SUSPEND
-+#ifdef CONFIG_HIBERNATION
- /*
-  * Get the (PAGE_SIZE) block corresponding to given offset on the swapdev
-  * corresponding to given index in swap_info (swap type).
-@@ -966,7 +966,7 @@ sector_t swapdev_block(int swap_type, pg
- 	sis = swap_info + swap_type;
- 	return (sis->flags & SWP_WRITEOK) ? map_swap_page(sis, offset) : 0;
+ void mark_free_pages(struct zone *zone)
+ {
+@@ -772,7 +772,7 @@ void drain_local_pages(void)
+ 	__drain_pages(smp_processor_id());
+ 	local_irq_restore(flags);	
  }
--#endif /* CONFIG_SOFTWARE_SUSPEND */
+-#endif /* CONFIG_PM */
 +#endif /* CONFIG_HIBERNATION */
  
  /*
-  * Free all of a swapdev's extent information
+  * Free a 0-order page
+Index: linux-2.6.23-rc1/drivers/base/power/power.h
+===================================================================
+--- linux-2.6.23-rc1.orig/drivers/base/power/power.h	2007-07-26 13:00:38.000000000 +0200
++++ linux-2.6.23-rc1/drivers/base/power/power.h	2007-07-29 12:26:23.000000000 +0200
+@@ -5,7 +5,7 @@
+ extern void device_shutdown(void);
+ 
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ 
+ /*
+  * main.c
+@@ -62,7 +62,7 @@ extern int resume_device(struct device *
+  */
+ extern int suspend_device(struct device *, pm_message_t);
+ 
+-#else /* CONFIG_PM */
++#else /* CONFIG_PM_SLEEP */
+ 
+ 
+ static inline int device_pm_add(struct device * dev)
+Index: linux-2.6.23-rc1/include/linux/freezer.h
+===================================================================
+--- linux-2.6.23-rc1.orig/include/linux/freezer.h	2007-07-26 20:51:27.000000000 +0200
++++ linux-2.6.23-rc1/include/linux/freezer.h	2007-07-29 12:38:57.000000000 +0200
+@@ -6,7 +6,7 @@
+ #include <linux/sched.h>
+ #include <linux/wait.h>
+ 
+-#ifdef CONFIG_PM
++#ifdef CONFIG_PM_SLEEP
+ /*
+  * Check if a process has been frozen
+  */
+@@ -157,7 +157,7 @@ static inline void set_freezable(void)
+ 	} while (try_to_freeze());					\
+ 	__ret;								\
+ })
+-#else /* CONFIG_PM */
++#else /* !CONFIG_PM_SLEEP */
+ static inline int frozen(struct task_struct *p) { return 0; }
+ static inline int freezing(struct task_struct *p) { return 0; }
+ static inline void set_freeze_flag(struct task_struct *p) {}
+@@ -181,6 +181,6 @@ static inline void set_freezable(void) {
+ #define wait_event_freezable_timeout(wq, condition, timeout)		\
+ 		wait_event_interruptible_timeout(wq, condition, timeout)
+ 
+-#endif /* CONFIG_PM */
++#endif /* !CONFIG_PM_SLEEP */
+ 
+ #endif	/* FREEZER_H_INCLUDED */
+Index: linux-2.6.23-rc1/include/acpi/acpi_bus.h
+===================================================================
+--- linux-2.6.23-rc1.orig/include/acpi/acpi_bus.h	2007-07-26 20:51:27.000000000 +0200
++++ linux-2.6.23-rc1/include/acpi/acpi_bus.h	2007-07-29 13:21:09.000000000 +0200
+@@ -365,7 +365,14 @@ acpi_handle acpi_get_child(acpi_handle, 
+ acpi_handle acpi_get_pci_rootbridge_handle(unsigned int, unsigned int);
+ #define DEVICE_ACPI_HANDLE(dev) ((acpi_handle)((dev)->archdata.acpi_handle))
+ 
++#ifdef CONFIG_ACPI_SLEEP
+ int acpi_pm_device_sleep_state(struct device *, int, int *);
++#else /* !CONFIG_ACPI_SLEEP */
++static inline int acpi_pm_device_sleep_state(struct device *d, int w, int *p)
++{
++	return ACPI_STATE_D3;
++}
++#endif /* !CONFIG_ACPI_SLEEP */
+ 
+ #endif				/* CONFIG_ACPI */
+ 
