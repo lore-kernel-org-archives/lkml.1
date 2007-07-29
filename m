@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965287AbXG2WBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965450AbXG2WBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965287AbXG2WBA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 18:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936240AbXG2WAx
+	id S965450AbXG2WBZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 18:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964808AbXG2WBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 18:00:53 -0400
+	Sun, 29 Jul 2007 18:01:10 -0400
 Received: from ug-out-1314.google.com ([66.249.92.175]:63640 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935349AbXG2WAw (ORCPT
+	with ESMTP id S965356AbXG2WBI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 18:00:52 -0400
+	Sun, 29 Jul 2007 18:01:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
-        b=KwbFxy0zxdx2DEHlk2a/5JoqzsbOPQKwRq9K4V7X+eUbfwKny3vEPx4DkPqc5ZtEXxNyIStA8UFxWj7zxMccDFwBEHA+Cjnq0ym4CaXiXzlR3VyW4dW1vku7vt4gT5ToD/uDROKoxxQQ+bsDdS7mWvJNtilDrJoWyVBTPe00sQ8=
-Date: Mon, 30 Jul 2007 01:01:25 +0300
-From: Indrek Kruusa <indrek.kruusa@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] pci_ids: additional NFORCE MCP61 devices - (resend)
-Message-Id: <20070730010125.45e21b2b.indrek.kruusa@gmail.com>
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=mXHc8rNIEIHYQtM5IPUgUoU0mgg6cBD2sVHTUUUE63NrzHXjFzmIwAAAAHEHOLM7a0z14NVLA7LqJ28EknkfKHKKqTkwY2VoE58aCmRyvfatXxMdMnTMApJzMn2omFj1HvX+eyto7VbDCtot6wv/yF0pHIDK+iG5obpLp69FtT0=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: linux-mips@linux-mips.org
+Subject: [PATCH] mips: remove some duplicate includes
+Date: Sun, 29 Jul 2007 23:59:35 +0200
+User-Agent: KMail/1.9.7
+Cc: Ralf Baechle <ralf@linux-mips.org>, Fuxin Zhang <zhangfx@lemote.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707292359.35971.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the following 7 Nforce devices:
+Hi,
 
-- LPC Bridge (MCP61_LPC_BRG)
-- Memory Controller (MCP61_MC1)
-- High Definition Audio (MCP61_HDA)
-- USB Controller (MCP61_OHCI)
-- USB Controller (MCP61_EHCI)
-- PCI bridge (MCP61_PCI_BRG)
-- Memory Controller (MCP61_MC2)
-
-to the pci_ids.h file.
-
-Signed-off-by: Indrek Kruusa <indrek.kruusa@gmail.com>
-
-lspci output on Gigabyte GA-M61SME-S2 (GF6100/NF405) can be seen from [1],[2]
- 
-thanks,
-Indrek
- 
-______________
- 
-[1] http://www.hot.ee/bzmeez/nv_mcp61_lspci-n.txt
-[2] http://www.hot.ee/bzmeez/nv_mcp61_lspci-vv.txt
+This patch removes some duplicate includes from arch/mips/
 
 
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-diff -pur linux-2.6.git1/include/linux/pci_ids.h linux-2.6_p/include/linux/pci_ids.h
---- linux-2.6.git1/include/linux/pci_ids.h	2007-07-29 20:48:28.000000000 +0300
-+++ linux-2.6_p/include/linux/pci_ids.h	2007-07-29 20:54:21.000000000 +0300
-@@ -1206,13 +1206,20 @@
- #define PCI_DEVICE_ID_NVIDIA_QUADRO_FX_1100         0x034E
- #define PCI_DEVICE_ID_NVIDIA_NVENET_14              0x0372
- #define PCI_DEVICE_ID_NVIDIA_NVENET_15              0x0373
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_LPC_BRG   0x03E0
- #define PCI_DEVICE_ID_NVIDIA_NVENET_16              0x03E5
- #define PCI_DEVICE_ID_NVIDIA_NVENET_17              0x03E6
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA      0x03E7
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_MC1       0x03EA
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SMBUS	    0x03EB
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_IDE       0x03EC
- #define PCI_DEVICE_ID_NVIDIA_NVENET_18              0x03EE
- #define PCI_DEVICE_ID_NVIDIA_NVENET_19              0x03EF
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_HDA       0x03F0
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_OHCI      0x03F1
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_EHCI      0x03F2
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_PCI_BRG   0x03F3
-+#define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_MC2       0x03F5
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA2     0x03F6
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA3     0x03F7
- #define PCI_DEVICE_ID_NVIDIA_NFORCE_MCP65_SMBUS	    0x0446
+ arch/mips/kernel/signal32.c   |    1 -
+ arch/mips/lemote/lm2e/irq.c   |    1 -
+ arch/mips/mipssim/sim_setup.c |    1 -
+ 3 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/arch/mips/kernel/signal32.c b/arch/mips/kernel/signal32.c
+index 486b8e5..64b612a 100644
+--- a/arch/mips/kernel/signal32.c
++++ b/arch/mips/kernel/signal32.c
+@@ -18,7 +18,6 @@
+ #include <linux/errno.h>
+ #include <linux/wait.h>
+ #include <linux/ptrace.h>
+-#include <linux/compat.h>
+ #include <linux/suspend.h>
+ #include <linux/compiler.h>
+ #include <linux/uaccess.h>
+diff --git a/arch/mips/lemote/lm2e/irq.c b/arch/mips/lemote/lm2e/irq.c
+index 05693bc..3e0b7be 100644
+--- a/arch/mips/lemote/lm2e/irq.c
++++ b/arch/mips/lemote/lm2e/irq.c
+@@ -25,7 +25,6 @@
+  */
+ #include <linux/delay.h>
+ #include <linux/io.h>
+-#include <linux/irq.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/irq.h>
+diff --git a/arch/mips/mipssim/sim_setup.c b/arch/mips/mipssim/sim_setup.c
+index 17819b5..d012719 100644
+--- a/arch/mips/mipssim/sim_setup.c
++++ b/arch/mips/mipssim/sim_setup.c
+@@ -22,7 +22,6 @@
+ #include <linux/io.h>
+ #include <linux/irq.h>
+ #include <linux/ioport.h>
+-#include <linux/serial.h>
+ #include <linux/tty.h>
+ #include <linux/serial.h>
+ #include <linux/serial_core.h>
+
+
