@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936133AbXG2VAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936226AbXG2VBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936133AbXG2VAj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752227AbXG2VAb
+	id S936226AbXG2VBh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763209AbXG2VBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:00:31 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:50163 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371AbXG2VAb (ORCPT
+	Sun, 29 Jul 2007 17:01:30 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:49435 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750952AbXG2VB3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:00:31 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [2.6 patch] arch/powerpc/Kconfig: fix the EMBEDDED6xx dependencies
-Date: Sun, 29 Jul 2007 21:31:37 +0200
-User-Agent: KMail/1.9.6
-Cc: Adrian Bunk <bunk@stusta.de>, Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org
-References: <20061201115410.GV11084@stusta.de> <17779.37050.4039.942954@cargo.ozlabs.ibm.com> <20070728152704.GA30976@stusta.de>
-In-Reply-To: <20070728152704.GA30976@stusta.de>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Sun, 29 Jul 2007 17:01:29 -0400
+Date: Sun, 29 Jul 2007 14:01:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Kay Sievers <kay.sievers@vrfy.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [BUG] undefined reference to `kobject_actions'
+Message-ID: <20070729210107.GA22492@kroah.com>
+References: <20070729193401.GA18225@flint.arm.linux.org.uk> <20070729193704.GA27994@flint.arm.linux.org.uk> <1185739145.2469.0.camel@lov.localdomain> <20070729204110.GB18225@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707292131.38348.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX195Lt7fGpL0zbKqcouGqeC8BDiXcC7G+Waw+gy
- Psb1nXYXLSDLt163QZaJRDr5aIRqB71sQmS9IahtFucxsm9u8I
- au2inWLWJOpaaWpqh/sRg==
+In-Reply-To: <20070729204110.GB18225@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 July 2007, Adrian Bunk wrote:
-> On Mon, Dec 04, 2006 at 02:06:34PM +1100, Paul Mackerras wrote:
-> > Adrian Bunk writes:
+On Sun, Jul 29, 2007 at 09:41:10PM +0100, Russell King wrote:
+> On Sun, Jul 29, 2007 at 09:59:05PM +0200, Kay Sievers wrote:
 > > 
-> > > This patch changes the EMBEDDED6xx dependencies to the equivalent 
-> > > dependency that seems to have been intended.
+> > On Sun, 2007-07-29 at 20:37 +0100, Russell King wrote:
+> > > On Sun, Jul 29, 2007 at 08:34:01PM +0100, Russell King wrote:
+> > > > Many ARM platforms fail to build with the following:
+> > > > 
+> > > > drivers/built-in.o: In function `store_uevent':
+> > > > hid-input.c:(.text+0x19c4c): undefined reference to `kobject_actions'
+> > > > 
+> > > > It appears that if hotplug is disabled, kobject_actions is ifdef'd
+> > > > away but hid-input still references it.
+> > > 
+> > > What I also meant to say is that it looks like it's caused by
+> > > commit 60a96a59569bab85571d0089682109bd3324e896.
+> > > 
+> > > Presumably if hotplug is disabled, we want store_uevent to be
+> > > removed as well?
 > > 
-> > Nack - CONFIG_EMBEDDED6xx is going away entirely, soon.
+> > Does this patch fix it?
+> >   http://lkml.org/lkml/2007/7/20/143
 > 
-> Still there - and still with this strange dependency.
+> Yup, thanks.  Any idea when this fix will hit mainline?  Looks like
+> it's 9 days old, and it fixes real build errors.
 
-The last time I sent my patch to clean up CONFIG_EMBEDDED6xx and a few
-other Kconfig options I still left it intact, but it becomes unnecessary
-after that.
+I've been at OSCON all last week, this will go to Linus on Monday.
+Sorry for the delay, conference season sucks at times...
 
-I still think that having high-level options like
+thanks,
 
-* embedded6xx
-  * MPC7448HPC2
-  * holly
-  * linkstation
-* PPC_83xx
-  * MPC8313_RDB
-  * MPC832x_MDS
-  * MPC832x_RDB
-
-helps keep the platform selection more structured and readable, but the
-dependency on !SMP should probably go into the individual platforms that
-are actually broken, if any, not into the high-level option.
-
-	Arnd <><
+greg k-h
