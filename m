@@ -1,46 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbXG2BXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbXG2BfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756829AbXG2BXf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 21:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751745AbXG2BX0
+	id S1758672AbXG2BfK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 21:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXG2Be6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 21:23:26 -0400
-Received: from zaphod.dth.net ([85.159.112.68]:35220 "EHLO zaphod.dth.net"
+	Sat, 28 Jul 2007 21:34:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57069 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751679AbXG2BX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 21:23:26 -0400
-Date: Sun, 29 Jul 2007 03:23:24 +0200
-From: Danny ter Haar <dth@dth.net>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-Message-ID: <20070729012324.GA29723@dth.net>
-References: <20070727193832.GA20289@dth.net> <200707290142.53689.bzolnier@gmail.com>
+	id S1752261AbXG2Be5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 21:34:57 -0400
+Message-ID: <46ABEE87.5090907@redhat.com>
+Date: Sat, 28 Jul 2007 21:33:59 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707290142.53689.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	<46A57068.3070701@yahoo.com.au>	<2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	<46A58B49.3050508@yahoo.com.au>	<2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>	<46A6CC56.6040307@yahoo.com.au>	<p73abtkrz37.fsf@bingen.suse.de>	<46A85D95.509@kingswood-consulting.co.uk>	<20070726092025.GA9157@elte.hu>	<20070726023401.f6a2fbdf.akpm@linux-foundation.org>	<20070726094024.GA15583@elte.hu>	<20070726030902.02f5eab0.akpm@linux-foundation.org>	<1185454019.6449.12.camel@Homer.simpson.net>	<20070726110549.da3a7a0d.akpm@linux-foundation.org>	<1185513177.6295.21.camel@Homer.simpson.net>	<1185521021.6295.50.camel@Homer.simpson.net> <20070727014749.85370e77.akpm@linux-foundation.org>
+In-Reply-To: <20070727014749.85370e77.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Bartlomiej Zolnierkiewicz (bzolnier@gmail.com):
-> Please retry with the latest -git kernel and if the problem is still
-> there install git, get kernel tree and run git-bisect.
+Andrew Morton wrote:
 
-I ran over "make menuconfig" and did a few changes.
+> What I think is killing us here is the blockdev pagecache: the pagecache
+> which backs those directory entries and inodes.  These pages get read
+> multiple times because they hold multiple directory entries and multiple
+> inodes.  These multiple touches will put those pages onto the active list
+> so they stick around for a long time and everything else gets evicted.
+> 
+> I've never been very sure about this policy for the metadata pagecache.  We
+> read the filesystem objects into the dcache and icache and then we won't
+> read from that page again for a long time (I expect).  But the page will
+> still hang around for a long time.
+> 
+> It could be that we should leave those pages inactive.
 
-http://www.dth.net/kernel/config-2.6.23-rc1-git5
+Good idea for updatedb.
 
-It boots, but freezes solid before doing any "work" as a firewall.
-I was able to catch boot messages with netconsole
+However, it may be a bad idea for files that are often
+written to.  Turning an inode write into a read plus a
+write does not sound like such a hot idea, we really
+want to keep those in the cache.
 
-http://www.dth.net/kernel/via_output_2.6.23-rc1-git5
+I think what you need is to ignore multiple references
+to the same page when they all happen in one time
+interval, counting them only if they happen in multiple
+time intervals.
 
-It didn't respond after the last line.
-magig sysrq etc, all nada.
+The use-once cleanup (which takes a page flag for PG_new,
+I know...) would solve that problem.
 
-Will start to get acquainted with git ;-)
+However, it would introduce the problem of having to scan
+all the pages on the list before a page becomes freeable.
+We would have to add some background scanning (or a separate
+list for PG_new pages) to make the initial pageout run use
+an acceptable amount of CPU time.
 
-Danny
+Not sure that complexity will be worth it...
+
 -- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
