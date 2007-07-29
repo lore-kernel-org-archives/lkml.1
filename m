@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765117AbXG2QLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764445AbXG2QVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765117AbXG2QLu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 12:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761467AbXG2QLn
+	id S1764445AbXG2QVV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 12:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762701AbXG2QVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 12:11:43 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2337 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762370AbXG2QLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 12:11:43 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: perex@suse.cz, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] ac97/ac97_codec.c: make 2 functions stacic
-Date: Sun, 29 Jul 2007 18:11:40 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
+	Sun, 29 Jul 2007 12:21:10 -0400
+Received: from smtp2.versatel.nl ([62.58.50.89]:41103 "EHLO smtp2.versatel.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762813AbXG2QVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 12:21:09 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 12:21:09 EDT
+Message-ID: <46ACBB8E.9080302@hhs.nl>
+Date: Sun, 29 Jul 2007 18:08:46 +0200
+From: Hans de Goede <j.w.r.degoede@hhs.nl>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Adrian Bunk <bunk@stusta.de>
+CC: "Mark M. Hoffman" <mhoffman@lightlink.com>, linux-kernel@vger.kernel.org,
+       lm-sensors@lm-sensors.org
+Subject: Re: [lm-sensors] [2.6 patch] make abituguru3_read_increment_offset()
+ static
+References: <20070729145701.GJ16817@stusta.de>
+In-Reply-To: <20070729145701.GJ16817@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707291811.41644.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Adrian Bunk wrote:
+> abituguru3_read_increment_offset() can become static.
+> 
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-	Fix sparc64 warnings.
+Looks good, good catch.
 
-sound/pci/ac97/ac97_patch.h:86: warning: 'snd_ac97_restore_status' declared 'static' but never defined
-sound/pci/ac97/ac97_patch.h:87: warning: 'snd_ac97_restore_iec958' declared 'static' but never defined
+Acked-by: Hans de Goede <j.w.r.degoede@hhs.nl>
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> 
+> ---
+> --- linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c.old	2007-07-26 08:56:33.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/drivers/hwmon/abituguru3.c	2007-07-26 08:57:00.000000000 +0200
+> @@ -691,8 +691,9 @@
+>  
+>  /* Sensor settings are stored 1 byte per offset with the bytes
+>     placed add consecutive offsets. */
+> -int abituguru3_read_increment_offset(struct abituguru3_data *data, u8 bank,
+> -	u8 offset, u8 count, u8 *buf, int offset_count)
+> +static int abituguru3_read_increment_offset(struct abituguru3_data *data,
+> +					    u8 bank, u8 offset, u8 count,
+> +					    u8 *buf, int offset_count)
+>  {
+>  	int i, x;
+>  
+> 
+> 
+> _______________________________________________
+> lm-sensors mailing list
+> lm-sensors@lm-sensors.org
+> http://lists.lm-sensors.org/mailman/listinfo/lm-sensors
+> 
 
- sound/pci/ac97/ac97_codec.c | 93823 -> 93837 (+14 bytes)
- sound/pci/ac97/ac97_codec.o | 341841 -> 341841 (0 bytes)
-
- sound/pci/ac97/ac97_codec.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-2.6.23-rc1-mm1-a/sound/pci/ac97/ac97_codec.c	2007-07-26 13:07:39.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/sound/pci/ac97/ac97_codec.c	2007-07-29 17:53:23.000000000 +0200
-@@ -2436,7 +2436,7 @@ EXPORT_SYMBOL(snd_ac97_suspend);
- /*
-  * restore ac97 status
-  */
--void snd_ac97_restore_status(struct snd_ac97 *ac97)
-+static void snd_ac97_restore_status(struct snd_ac97 *ac97)
- {
- 	int i;
-
-@@ -2457,7 +2457,7 @@ void snd_ac97_restore_status(struct snd_
- /*
-  * restore IEC958 status
-  */
--void snd_ac97_restore_iec958(struct snd_ac97 *ac97)
-+static void snd_ac97_restore_iec958(struct snd_ac97 *ac97)
- {
- 	if (ac97->ext_id & AC97_EI_SPDIF) {
- 		if (ac97->regs[AC97_EXTENDED_STATUS] & AC97_EA_SPDIF) {
