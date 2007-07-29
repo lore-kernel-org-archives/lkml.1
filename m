@@ -1,61 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933562AbXG2SSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933375AbXG2SWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933562AbXG2SSV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 14:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbXG2SSM
+	id S933375AbXG2SWj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 14:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbXG2SWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 14:18:12 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:53341 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753403AbXG2SSK (ORCPT
+	Sun, 29 Jul 2007 14:22:30 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:55223 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762254AbXG2SW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 14:18:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=UU0iQoliwX73G27qkW84ldLVFYGT8CxVlPCrxgL5rav7PQYTEaq6DXv7RRwfogkIYp52FpTIW+sXyH2fP65HVCP04iIdGSkZgllXJ3hPRotB1QTM61YOpjisJlsUcURTX4S8BwSUYo3J7DHi56tc7n5gmh38MoWdvyL0dUmYhnE=
-Message-ID: <46ACD8DB.2020108@googlemail.com>
-Date: Sun, 29 Jul 2007 20:13:47 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Sun, 29 Jul 2007 14:22:29 -0400
+Date: Mon, 30 Jul 2007 00:04:46 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Domen Puncer <domen@coderock.org>
+cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in
+ sb1000_dev_ioctl()
+In-Reply-To: <alpine.LFD.0.999.0707291106500.30928@enigma.security.iitk.ac.in>
+Message-ID: <alpine.LFD.0.999.0707300003440.30928@enigma.security.iitk.ac.in>
+References: <200707290002.42722.jesper.juhl@gmail.com>
+ <20070729043707.GA8343@nd47.coderock.org>
+ <alpine.LFD.0.999.0707291106500.30928@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-To: Frank Hale <frankhale@gmail.com>
-CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       len.brown@intel.com
-Subject: Re: ACPI on Averatec 2370
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
-In-Reply-To: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frank Hale wrote:
-[ added  linux-acpi to CC ]
-> I have an Averatec 2370 laptop with the nVidia MCP51. With kernel
-> 2.6.20 I had no issues with ACPI however with 2.6.21 and higher the
-> kernel will hang on boot until I press the suspend button or the power
-> button in which case the kernel wakes up and finishes the boot
-> process. Including the following support only causes the issue:
+
+
+> On Sun, 29 Jul 2007, Domen Puncer wrote:
 > 
->  [*] ACPI Support
+> > On 29/07/07 00:02 +0200, Jesper Juhl wrote:
+> > > Hi,
+> > > 
+> > > Here's a small patch, prompted by a find by the Coverity checker, 
+> > > that removes a potential NULL pointer dereference from 
+> > > drivers/net/sb1000.c::sb1000_dev_ioctl().
+> > > The checker spotted that we do a NULL test of 'dev', yet we 
+> > > dereference the pointer prior to that check.
+> > > This patch simply moves the dereference after the NULL test.
+> > 
+> > But... it can't be called without a valid 'dev', no?
+> > A quick 'grep do_ioctl net/' confirms that all calls are in
+> > the form of 'dev->do_ioctl(dev, ...'.
 > 
-> What I mean by that is every ACPI option has been deactivated and only
-> ACPI support checked. The boot process with 2.6.21 and higher hangs at
-> the point where the Scheduler is being registered.
+> Yup, I think so too ...
 > 
-> io scheduler cfq registered (default)
 > 
-> If I allow it to sit there it never comes back to life and finishes
-> booting. If I press the power or suspend button it will finish booting
-> as expected.
+> > > @@ -991,11 +991,13 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+> > >  	short PID[4];
+> > >  	int ioaddr[2], status, frequency;
+> > >  	unsigned int stats[5];
+> > > -	struct sb1000_private *lp = netdev_priv(dev);
+> > > +	struct sb1000_private *lp;
+> > >  
+> > >  	if (!(dev && dev->flags & IFF_UP))
+> > >  		return -ENODEV;
 > 
-> I've scoured google for quite a while but cannot find any relevant
-> information pertaining to this issue. For now I've disabled ACPI
-> altogether.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> I think we could get rid of the !dev check itself. Actually, the IFF_UP
+> check /also/ looks suspect to me for two reasons: (1) I remember Stephen
+> Hemminger once telling me dev->flags is legacy and unsafe, and one of
+> the netif_xxx() functions be used instead, and, (2) I wonder if we really
+> require the interface to be up and *running* when we do this ioctl.
+
+Updated patch below.
+
+[PATCH] sb1000: Remove bogus checks
+
+In net_device->do_ioctl() of the sb1000 driver (sb1000_dev_ioctl):
+
+(1) !dev condition is always false -- this function cannot be called with
+NULL net_device.
+(2) !(dev->flags & IFF_UP) is bogus because the functions of this ioctl
+can (and should) be allowed even when the interface is not up and running.
+
+So let's remove these checks.
+
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Domen Puncer <domen@coderock.org>
+
+---
+
+ drivers/net/sb1000.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/net/sb1000.c b/drivers/net/sb1000.c
+index 1de3eec..f60fe98 100644
+--- a/drivers/net/sb1000.c
++++ b/drivers/net/sb1000.c
+@@ -993,9 +993,6 @@ static int sb1000_dev_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
+ 	unsigned int stats[5];
+ 	struct sb1000_private *lp = netdev_priv(dev);
+ 
+-	if (!(dev && dev->flags & IFF_UP))
+-		return -ENODEV;
+-
+ 	ioaddr[0] = dev->base_addr;
+ 	/* mem_start holds the second I/O address */
+ 	ioaddr[1] = dev->mem_start;
