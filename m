@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763289AbXG2NFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763400AbXG2NGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763289AbXG2NFd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 09:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762227AbXG2NFQ
+	id S1763400AbXG2NGW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 09:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760674AbXG2NGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 09:05:16 -0400
-Received: from mx.treblig.org ([80.68.94.177]:4013 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762261AbXG2NFO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 09:05:14 -0400
-Date: Sun, 29 Jul 2007 14:05:08 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: spyro@f2s.com, john@dnsworld.co.uk, linux-kernel@vger.kernel.org,
-       rmk@arm.linux.org.uk
-Subject: Re: RFC: Remove the arm26 port
-Message-ID: <20070729130507.GA14902@gallifrey>
-References: <20070707201208.GJ3492@stusta.de> <20070729115040.GD30976@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070729115040.GD30976@stusta.de>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.20.3-bytemark-uml-2 (i686)
-X-Uptime: 14:02:15 up 86 days,  6:45,  2 users,  load average: 0.47, 0.47, 0.51
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 29 Jul 2007 09:06:13 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48282 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762264AbXG2NGM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 09:06:12 -0400
+Date: Sun, 29 Jul 2007 14:12:15 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Rene Herman <rene.herman@gmail.com>
+Cc: david@lang.hm, Daniel Hazelton <dhazelton@enter.net>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+Message-ID: <20070729141215.08973d54@the-village.bc.nu>
+In-Reply-To: <46AC4B97.5050708@gmail.com>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+	<20070727030040.0ea97ff7.akpm@linux-foundation.org>
+	<1185531918.8799.17.camel@Homer.simpson.net>
+	<200707271345.55187.dhazelton@enter.net>
+	<46AA3680.4010508@gmail.com>
+	<Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm>
+	<46AAEDEB.7040003@gmail.com>
+	<Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>
+	<46AB166A.2000300@gmail.com>
+	<20070728122139.3c7f4290@the-village.bc.nu>
+	<46AC4B97.5050708@gmail.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Adrian Bunk (bunk@stusta.de) wrote:
-> Considering the state of the arm26 port, I do hereby suggest to remove 
-> it from the Linx kernel since it's far from a usable state and doesn't 
-> seem to come back into a usable state.
-> 
-> If anyone wants to work on getting this port back into a usable state in 
-> the forseeable future he should speak up now.
+> Contrived thing and all, but what it does do is show exactly how bad seeking 
+> all over swap-space is. If you push it out before hitting enter, the time it 
+> takes easily grows past 10 minutes (with my 768M) versus sub-second (!) when 
+> it's all in to start with.
 
-As was being discussed a few weeks ago; the drivers/acorn/block
-should go at the same time since they are only in ARM 26 machines.
+Think in "operations/second" and you get a better view of the disk.
 
-Dave
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+> What are the tradeoffs here? What wants small chunks? Also, as far as I'm 
+> aware Linux does not do things like up the granularity when it notices it's 
+> swapping in heavily? That sounds sort of promising...
+
+Small chunks means you get better efficiency of memory use - large chunks
+mean you may well page in a lot more than you needed to each time (and
+cause more paging in turn). Your disk would prefer you fed it big linear
+I/O's - 512KB would probably be my first guess at tuning a large box
+under load for paging chunk size.
+
+More radically if anyone wants to do real researchy type work - how about
+log structured swap with a cleaner  ?
+
+Alan
