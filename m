@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764678AbXG2Pgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932321AbXG2Phh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764678AbXG2Pgq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763289AbXG2Pgi
+	id S932321AbXG2Phh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762528AbXG2Ph3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:36:38 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36248 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761047AbXG2Pgi (ORCPT
+	Sun, 29 Jul 2007 11:37:29 -0400
+Received: from host06.hostingexpert.com ([216.80.70.60]:56161 "EHLO
+	host06.hostingexpert.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761116AbXG2Ph2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:36:38 -0400
-Date: Sun, 29 Jul 2007 16:22:48 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
+	Sun, 29 Jul 2007 11:37:28 -0400
+Message-ID: <46ACB434.2040007@linuxtv.org>
+Date: Sun, 29 Jul 2007 11:37:24 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
 To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@osdl.org>, spyro@f2s.com, James.Bottomley@SteelEye.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC: 2.6 patch] remove the broken SCSI_ACORNSCSI_3 driver
-Message-ID: <20070729152248.GB25431@flint.arm.linux.org.uk>
-References: <20070729145915.GF16817@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070729145915.GF16817@stusta.de>
-User-Agent: Mutt/1.4.2.1i
+CC: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
+Subject: Re: [v4l-dvb-maintainer] [2.6 patch] make struct dvb_pll_fcv1236d
+ static
+References: <20070729145705.GK16817@stusta.de>
+In-Reply-To: <20070729145705.GK16817@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - host06.hostingexpert.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - linuxtv.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 04:59:15PM +0200, Adrian Bunk wrote:
-> The SCSI_ACORNSCSI_3 driver:
-> - has been marked as BROKEN for more than one year and
-> - is still marked as BROKEN.
-> 
-> Drivers that had been marked as BROKEN for such a long time seem to be
-> unlikely to be revived in the forseeable future.
-> 
-> But if anyone wants to ever revive this driver, the code is still
-> present in the older kernel releases.
+Adrian Bunk wrote:
+> struct dvb_pll_fcv1236d can become static.
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>
+> ---
+> --- linux-2.6.23-rc1-mm1/drivers/media/dvb/frontends/dvb-pll.c.old	2007-07-26 09:04:23.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1/drivers/media/dvb/frontends/dvb-pll.c	2007-07-26 09:04:32.000000000 +0200
+> @@ -501,7 +501,7 @@
+>  
+>  /* Philips FCV1236D
+>   */
+> -struct dvb_pll_desc dvb_pll_fcv1236d = {
+> +static struct dvb_pll_desc dvb_pll_fcv1236d = {
+>  /* Bit_0: RF Input select
+>   * Bit_1: 0=digital, 1=analog
+>   */
+>   
+Oops.  I created that patch before the "dvb: remove static dependencies
+on dvb-pll" patch was applied, but the fcv1236d patch didn't get merged
+until after the fact.  Thanks for the fix, Adrian.  I'll apply this.
 
-NAK.  I've had a patch to resurect it for some time.  Notice that this
-merge window I applied some patches to the other acorn scsi drivers -
-once I get enough time to separate out the changes I'll be applying
-those patches.  It's relatively low priority for me though.
+Regards,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Mike Krufky
