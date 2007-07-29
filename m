@@ -1,123 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932436AbXG2PIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932618AbXG2PIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932436AbXG2PIM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764636AbXG2O7S
+	id S932618AbXG2PIg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764650AbXG2O7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:59:18 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47841 "EHLO
+	Sun, 29 Jul 2007 10:59:23 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:47844 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763695AbXG2O7P (ORCPT
+	with ESMTP id S1764499AbXG2O7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:59:15 -0400
-Date: Sun, 29 Jul 2007 16:58:52 +0200
+	Sun, 29 Jul 2007 10:59:19 -0400
+Date: Sun, 29 Jul 2007 16:58:55 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: Miklos Szeredi <mszeredi@suse.cz>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [2.6 patch] net/unix/af_unix.c: make code static
-Message-ID: <20070729145852.GA16817@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: [-mm patch] make scsi_host_link_pm_policy() static
+Message-ID: <20070729145855.GB16817@stusta.de>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20070725040304.111550f4.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following code can now become static:
-- struct unix_socket_table
-- unix_table_lock
+On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.22-rc6-mm1:
+>...
+> +ata-ahci-alpm-expose-power-management-policy-option-to-users.patch
+>...
+>  ata things
+>...
+
+scsi_host_link_pm_policy() can become static.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
-
- include/net/af_unix.h |   29 -----------------------------
- net/unix/af_unix.c    |   30 ++++++++++++++++++++++++++++--
- 2 files changed, 28 insertions(+), 31 deletions(-)
-
---- linux-2.6.23-rc1-mm1/include/net/af_unix.h.old	2007-07-26 21:17:33.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/include/net/af_unix.h	2007-07-26 21:20:27.000000000 +0200
-@@ -12,37 +12,8 @@
+--- linux-2.6.23-rc1-mm1/drivers/scsi/scsi_sysfs.c.old	2007-07-26 21:31:24.000000000 +0200
++++ linux-2.6.23-rc1-mm1/drivers/scsi/scsi_sysfs.c	2007-07-26 21:31:57.000000000 +0200
+@@ -200,7 +200,7 @@
+ 	{ SHOST_MEDIUM_POWER, "medium_power" },
+ };
  
- #define UNIX_HASH_SIZE	256
- 
--extern struct hlist_head unix_socket_table[UNIX_HASH_SIZE + 1];
--extern spinlock_t unix_table_lock;
--
- extern atomic_t unix_tot_inflight;
- 
--static inline struct sock *first_unix_socket(int *i)
--{
--	for (*i = 0; *i <= UNIX_HASH_SIZE; (*i)++) {
--		if (!hlist_empty(&unix_socket_table[*i]))
--			return __sk_head(&unix_socket_table[*i]);
--	}
--	return NULL;
--}
--
--static inline struct sock *next_unix_socket(int *i, struct sock *s)
--{
--	struct sock *next = sk_next(s);
--	/* More in this chain? */
--	if (next)
--		return next;
--	/* Look for next non-empty chain. */
--	for ((*i)++; *i <= UNIX_HASH_SIZE; (*i)++) {
--		if (!hlist_empty(&unix_socket_table[*i]))
--			return __sk_head(&unix_socket_table[*i]);
--	}
--	return NULL;
--}
--
--#define forall_unix_sockets(i, s) \
--	for (s = first_unix_socket(&(i)); s; s = next_unix_socket(&(i),(s)))
--
- struct unix_address {
- 	atomic_t	refcnt;
- 	int		len;
---- linux-2.6.23-rc1-mm1/net/unix/af_unix.c.old	2007-07-26 21:17:48.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/net/unix/af_unix.c	2007-07-26 21:20:24.000000000 +0200
-@@ -118,14 +118,40 @@
- 
- int sysctl_unix_max_dgram_qlen __read_mostly = 10;
- 
--struct hlist_head unix_socket_table[UNIX_HASH_SIZE + 1];
--DEFINE_SPINLOCK(unix_table_lock);
-+static struct hlist_head unix_socket_table[UNIX_HASH_SIZE + 1];
-+static DEFINE_SPINLOCK(unix_table_lock);
- static atomic_t unix_nr_socks = ATOMIC_INIT(0);
- 
- #define unix_sockets_unbound	(&unix_socket_table[UNIX_HASH_SIZE])
- 
- #define UNIX_ABSTRACT(sk)	(unix_sk(sk)->addr->hash != UNIX_HASH_SIZE)
- 
-+static struct sock *first_unix_socket(int *i)
-+{
-+	for (*i = 0; *i <= UNIX_HASH_SIZE; (*i)++) {
-+		if (!hlist_empty(&unix_socket_table[*i]))
-+			return __sk_head(&unix_socket_table[*i]);
-+	}
-+	return NULL;
-+}
-+
-+static struct sock *next_unix_socket(int *i, struct sock *s)
-+{
-+	struct sock *next = sk_next(s);
-+	/* More in this chain? */
-+	if (next)
-+		return next;
-+	/* Look for next non-empty chain. */
-+	for ((*i)++; *i <= UNIX_HASH_SIZE; (*i)++) {
-+		if (!hlist_empty(&unix_socket_table[*i]))
-+			return __sk_head(&unix_socket_table[*i]);
-+	}
-+	return NULL;
-+}
-+
-+#define forall_unix_sockets(i, s) \
-+	for (s = first_unix_socket(&(i)); s; s = next_unix_socket(&(i),(s)))
-+
- #ifdef CONFIG_SECURITY_NETWORK
- static void unix_get_secdata(struct scm_cookie *scm, struct sk_buff *skb)
+-const char *scsi_host_link_pm_policy(enum scsi_host_link_pm policy)
++static const char *scsi_host_link_pm_policy(enum scsi_host_link_pm policy)
  {
+ 	int i;
+ 	char *name = NULL;
 
