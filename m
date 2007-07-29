@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbXG2OhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763588AbXG2Or6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763481AbXG2OhE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762686AbXG2Ogy
+	id S1763588AbXG2Or6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762864AbXG2Ort
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:36:54 -0400
-Received: from dsl017-112-251.lax1.dsl.speakeasy.net ([69.17.112.251]:39577
-	"EHLO NickAndBarb.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762555AbXG2Ogy (ORCPT
+	Sun, 29 Jul 2007 10:47:49 -0400
+Received: from qb-out-0506.google.com ([72.14.204.226]:18874 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762815AbXG2Ors (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:36:54 -0400
-Date: Sun, 29 Jul 2007 07:36:02 -0700
-From: Nick Pasich <NewsLetters@NickAndBarb.net>
-To: Adam Kropelin <akropel1@rochester.rr.com>
-Cc: Nick Pasich <NewsLetters@NickAndBarb.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-usb-devel@lists.sourceforge.net,
-       Greg Kroah-Hartman <greg@kroah.com>,
-       Al Borchers <alborchers@steinerpoint.com>, linux-kernel@vger.kernel.org,
-       Peter Berger <pberger@brimson.com>
-Subject: Re: [linux-usb-devel] Edgeport UPS Monitoring Problems
-Message-ID: <20070729143602.GA14118@69.17.112.251>
-References: <20070727203708.GA10839@NICK2> <20070727152254.202959c1.akpm@linux-foundation.org> <003701c7d16c$8c72b7b0$03c8a8c0@kroptech.com> <20070729124813.GA30633@69.17.112.251> <008001c7d1e9$6a8625b0$03c8a8c0@kroptech.com>
+	Sun, 29 Jul 2007 10:47:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent:from:sender;
+        b=I1Iv/1UZNuaVWJAqewr+nh+LeN+I+AowTDUskh1GLeyM/metLQKdG4sBsMySXl/AaTZRLkjqfLjbKqzMBE25GBOQglz0ihlPtfrM6A0p3duLrijYo88G14phNwPAHOamcMBQLZU7GtGCCld6gXUHwcueUlZO2ByTqmUHDUhae8A=
+Date: Sun, 29 Jul 2007 22:47:36 +0800
+To: linux-kernel@vger.kernel.org
+Cc: marcel@holtmann.org
+Subject: [PATCH] drivers/bluetooth/hci_ldisc.c: fix possible NULL
+	dereferences
+Message-ID: <20070729144736.GA13275@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <008001c7d1e9$6a8625b0$03c8a8c0@kroptech.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.14 (2007-02-12)
+From: Eugene Teo <eugeneteo@kernel.sg>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adam,
+Commit 22ad42033b7d2b3d7928fba9f89d1c7f8a3c9581 did not completely fix all 
+the possible NULL dereferences. Besides hci_uart_close(), we also need to 
+make sure that hdev is valid before calling hci_{unregister,free}_dev().
 
-Yep..... That did it....
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ drivers/bluetooth/hci_ldisc.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-Thank You Very Much for your Super Quick Fix......
-
-         ---( Nick )---
-
-On Sun, Jul 29, 2007 at 10:04:44AM -0400, Adam Kropelin wrote:
-> From: "Nick Pasich" <NewsLetters@NickAndBarb.net>
-> >Here's the dmesg output ......
-> >
-> >[...]
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: LCR - 
-> >write to send_cmd_write_uart_register register 0x03
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >SendCmdWriteUartReg - Not writing to MCR Register
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: MCR - 
-> >write to send_cmd_write_uart_register register 0x0b
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >SendCmdWriteUartReg - Not writing to MCR Register
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >change_port_settings - baud rate = 9600
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >SendCmdWriteBaudRate - NOT Setting baud rate for port = 0, baud = 9600
-> 
-> Yup, there's what I expected. Not setting the baud rate and not writing 
-> status registers is unlikely to produce working results. This 9600 must 
-> be the default setting being applied.
-> 
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >SendCmdWriteUartReg - Not writing to MCR Register
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: MCR - 
-> >write to send_cmd_write_uart_register register 0x0b
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >SendCmdWriteUartReg - Not writing to MCR Register
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >change_port_settings - baud rate = 2400
-> >Jul 29 05:20:07 NICK2 kernel: drivers/usb/serial/io_edgeport.c: 
-> >SendCmdWriteBaudRate - NOT Setting baud rate for port = 0, baud = 2400
-> 
-> Here's apcupsd trying to set 2400 baud.
-> 
-> Please try the attached patch (against 2.6.22.1). This will allow 
-> writing to the baud rate and MCR/LCR registers on non-EPIC adapters. I 
-> suspect the previous code was a copy-paste error.
-> 
-> --Adam
-
-
-
--- 
---------
-WebSite: http://NickAndBarb.net
---------
+diff --git a/drivers/bluetooth/hci_ldisc.c b/drivers/bluetooth/hci_ldisc.c
+index 6055b9c..4813f7c 100644
+--- a/drivers/bluetooth/hci_ldisc.c
++++ b/drivers/bluetooth/hci_ldisc.c
+@@ -308,11 +308,10 @@ static void hci_uart_tty_close(struct tty_struct *tty)
+ 	if (hu) {
+ 		struct hci_dev *hdev = hu->hdev;
+ 
+-		if (hdev)
++		if (hdev) {
+ 			hci_uart_close(hdev);
+-
+-		if (test_and_clear_bit(HCI_UART_PROTO_SET, &hu->flags)) {
+-			hu->proto->close(hu);
++			if (test_and_clear_bit(HCI_UART_PROTO_SET, &hu->flags))
++				hu->proto->close(hu);
+ 			hci_unregister_dev(hdev);
+ 			hci_free_dev(hdev);
+ 		}
 
