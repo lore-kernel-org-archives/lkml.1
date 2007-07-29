@@ -1,59 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935769AbXG2Urg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936008AbXG2Utj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935769AbXG2Urg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 16:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763427AbXG2Ur2
+	id S936008AbXG2Utj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 16:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934497AbXG2Ut3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 16:47:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43762 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbXG2Ur1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 16:47:27 -0400
-Date: Sun, 29 Jul 2007 22:47:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: John <darknessenvelops@gmail.com>
-Cc: Kasper Sandberg <lkml@metanurb.dk>, ck@vds.kolivas.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-Message-ID: <20070729204716.GB1578@elte.hu>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
+	Sun, 29 Jul 2007 16:49:29 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:49205
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbXG2Ut2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 16:49:28 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Satyam Sharma <satyam@infradead.org>
+Subject: Re: [PATCH] sb1000: prevent a potential NULL pointer dereference in sb1000_dev_ioctl()
+Date: Sun, 29 Jul 2007 22:49:13 +0200
+User-Agent: KMail/1.9.5
+Cc: Domen Puncer <domen@coderock.org>, Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, Steven Hirsch <shirsch@adelphia.net>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+References: <200707290002.42722.jesper.juhl@gmail.com> <200707292048.20531.mb@bu3sch.de> <alpine.LFD.0.999.0707300034460.30928@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0707300034460.30928@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+Message-Id: <200707292249.13957.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* John <darknessenvelops@gmail.com> wrote:
-
-> Ingo-
+On Sunday 29 July 2007 21:09, Satyam Sharma wrote:
+> Hi Michael,
 > 
-> Why not perform the same test using the native linux Q3 client to 
-> compare numbers to wine? [...]
+> 
+> On Sun, 29 Jul 2007, Michael Buesch wrote:
+> 
+> > On Sunday 29 July 2007 20:34:46 Satyam Sharma wrote:
+> > > (2) !(dev->flags & IFF_UP) is bogus because the functions of this ioctl
+> > > can (and should) be allowed even when the interface is not up and running.
+> > 
+> > Are you _sure_? This function does poke with the device hardware.
+> > It might return crap or even machinecheck when not initialized.
+> > Hardware is probably powered down, if not IFF_UP. (I don't know if that's
+> > the case here, though).
+> 
+> IFF_UP checks if the _interface_ is up -- the hardware / card could still
+> be powered up, but the interface down (ifconfing eth0 down or ip link set
+> eth0 down).
 
-I regularly test native Linux games on CFS, and they all behave well. 
-While waiting for more detailed data from Kasper i was looking for 
-atypical stuff in Kasper's description about what his workload involves, 
-and what looked a bit atypical was that Kasper's workload also involved 
-gaming under Wine:
-
-> > > my test subjects are quake(s), world of warcraft via wine, unreal 
-> > > tournament 2004. [...]
-
-and Wine is a more complex server/client scenario instead of a single 
-(and simple) standalone Quake3 binary that the Linux binary does. So it 
-looked more interesting from a scheduler workload (and scheduler 
-regression) POV. In any case i'll need more info from Kasper.
-
-	Ingo
+Well, that is device/driver dependent and I don't know what's
+the case for this driver. It's encouraged to shutdown hardware
+completely (except the WOL parts) when the interface is down.
+Dunno if this driver does it. But _if_ it does it, it could cause
+problems to poke with the hardware while down.
