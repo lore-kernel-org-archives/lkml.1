@@ -1,158 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbXG2Apx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXG2Awq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759450AbXG2Apx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Jul 2007 20:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbXG2Apr
+	id S1759507AbXG2Awq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Jul 2007 20:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbXG2Awi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Jul 2007 20:45:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:31501 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbXG2Apq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Jul 2007 20:45:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
-        b=UVuQlYZ2xpxH3W/JTVzTAWrjrztZtv3NqbY3DInWfN+N9rUyCHJ0okc6LEtQmVzGutuUjkETC3yOq76K+AO099eVhWnR0/gZi9rbnVn5sgYSQpwIzvnzEgdPx7uF9yZWVi7xQ6SzbqrvlLjSC26YXZDzGIzttg4+XDopSWDJny8=
-Message-ID: <8b67d60707281745g226ce7b0x900fefc293d7513a@mail.gmail.com>
-Date: Sun, 29 Jul 2007 01:45:45 +0100
-From: "Adrian McMenamin" <lkmladrian@gmail.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: [PATCH] Framebuffer: Consolidated cleanup of pvr2fb.c for Sega Dreamcast
-Cc: lethal@linux-sh.org, linux-kernel@vger.kernel.org,
-       "Ondrej Zajicek" <santiago@crfreenet.org>
-In-Reply-To: <8b67d60707281739l6fc544e9k5eb130ab6e426ad2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_16135_27564281.1185669945316"
-References: <8b67d60707281739l6fc544e9k5eb130ab6e426ad2@mail.gmail.com>
+	Sat, 28 Jul 2007 20:52:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:40777 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757293AbXG2Awh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Jul 2007 20:52:37 -0400
+Subject: Re: [PATCH] Fix lguest bzImage loading with CONFIG_RELOCATABLE=y
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, lguest <lguest@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <p73wswmqg4o.fsf@bingen.suse.de>
+References: <1185507343.12151.25.camel@localhost.localdomain>
+	 <p73wswmqg4o.fsf@bingen.suse.de>
+Content-Type: text/plain
+Date: Sun, 29 Jul 2007 10:23:30 +1000
+Message-Id: <1185668610.12151.72.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_16135_27564281.1185669945316
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Fri, 2007-07-27 at 12:45 +0200, Andi Kleen wrote:
+> Rusty Russell <rusty@rustcorp.com.au> writes:
+> 
+> > Jason Yeh sent his crashing .config: bzImages made with
+> > CONFIG_RELOCATABLE=y put the relocs where the BSS is expected, and we
+> > crash with unusual results such as:
+> 
+> The normal kernel startup should already clear BSS. Why does
+> this not work here? Can it be fixed?
 
-On 29/07/07, Adrian McMenamin <lkmladrian@gmail.com> wrote:
-> Tony,
->
-> Second time attempt at this and a much better job I think.
->
-Sorry, given I've jsut said this *does* work at 24bpp and 32bpp I'd
-better clean up the Documentation patch,,,
+Unfortunately, lguest doesn't go through the normal startup path (which
+does this in asm).
 
-------=_Part_16135_27564281.1185669945316
-Content-Type: text/x-patch; name=DC-pvr2fb-clean.diff; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f4ot8v9j
-Content-Disposition: attachment; filename="DC-pvr2fb-clean.diff"
+Thanks,
+Rusty.
 
-ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vZmIvcHZyMmZiLnR4dCBiL0RvY3VtZW50YXRpb24v
-ZmIvcHZyMmZiLnR4dAppbmRleCAyYmY2YzIzLi4wZTRhM2M2IDEwMDY0NAotLS0gYS9Eb2N1bWVu
-dGF0aW9uL2ZiL3B2cjJmYi50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi9mYi9wdnIyZmIudHh0CkBA
-IC05LDE0ICs5LDE0IEBAIG9uZSBmb3VuZCBpbiB0aGUgRHJlYW1jYXN0LgogQWR2YW50YWdlczoK
-IAogICogSXQgcHJvdmlkZXMgYSBuaWNlIGxhcmdlIGNvbnNvbGUgKDEyOCBjb2xzICsgNDggbGlu
-ZXMgd2l0aCAxMDI0eDc2OCkKLSAgIHdpdGhvdXQgdXNpbmcgdGlueSwgdW5yZWFkYWJsZSBmb250
-cy4KKyAgIHdpdGhvdXQgdXNpbmcgdGlueSwgdW5yZWFkYWJsZSBmb250cyAodGhpcyBzaXplIGlz
-IE5PVCBhdmFpbGFibGUgb24gdGhlIAorICAgRHJlYW1jYXN0KQogICogWW91IGNhbiBydW4gWEY4
-Nl9GQkRldiBvbiB0b3Agb2YgL2Rldi9mYjAKICAqIE1vc3QgaW1wb3J0YW50OiBib290IGxvZ28g
-Oi0pCiAKIERpc2FkdmFudGFnZXM6CiAKLSAqIERyaXZlciBpcyBjdXJyZW50bHkgbGltaXRlZCB0
-byB0aGUgRHJlYW1jYXN0IFBvd2VyVlIgMiBpbXBsZW1lbnRhdGlvbgotICAgYXQgdGhlIHRpbWUg
-b2YgdGhpcyB3cml0aW5nLgorICogRHJpdmVyIGlzIGxhcmdlbHkgdW50ZXN0ZWQgb24gbm9uLURy
-ZWFtY2FzdCBzeXN0ZW1zLgogCiBDb25maWd1cmF0aW9uCiA9PT09PT09PT09PT09CkBAIC0yOSwx
-MSArMjksMTMgQEAgQWNjZXB0ZWQgb3B0aW9uczoKIGZvbnQ6WCAgICAtIGRlZmF1bHQgZm9udCB0
-byB1c2UuIEFsbCBmb250cyBhcmUgc3VwcG9ydGVkLCBpbmNsdWRpbmcgdGhlCiAgICAgICAgICAg
-ICBTVU4xMngyMiBmb250IHdoaWNoIGlzIHZlcnkgbmljZSBhdCBoaWdoIHJlc29sdXRpb25zLgog
-Ci1tb2RlOlggICAgLSBkZWZhdWx0IHZpZGVvIG1vZGUuIFRoZSBmb2xsb3dpbmcgdmlkZW8gbW9k
-ZXMgYXJlIHN1cHBvcnRlZDoKLSAgICAgICAgICAgIDY0MHgyNDAtNjAsIDY0MHg0ODAtNjAuCitt
-b2RlOlggICAgLSBkZWZhdWx0IHZpZGVvIG1vZGUKKyAgICAgICAgICAgIFRoZSBmb2xsb3dpbmcg
-dmlkZW8gbW9kZXMgYXJlIHN1cHBvcnRlZDoKKyAgICAgICAgICAgIDY0MHg2NDAtMTZANjAsIDY0
-MHg0ODAtMjRANjAsIDY0MHg0ODAtMzJANjAuIFRoZSBEcmVhbWNhc3QKKwkgICAgZGVmYXVsdHMg
-dG8gNjQweDQ4MC0xNkA2MC4KIAkgICAgCiAgICAgICAgICAgICBOb3RlOiB0aGUgNjQweDI0MCBt
-b2RlIGlzIGN1cnJlbnRseSBicm9rZW4sIGFuZCBzaG91bGQgbm90IGJlCi0gICAgICAgICAgICB1
-c2VkIGZvciBhbnkgcmVhc29uLiBJdCBpcyBvbmx5IG1lbnRpb25lZCBhcyBhIHJlZmVyZW5jZS4K
-KyAgICAgICAgICAgIHVzZWQgZm9yIGFueSByZWFzb24uIEl0IGlzIG9ubHkgbWVudGlvbmVkIGhl
-cmUgYXMgYSByZWZlcmVuY2UuCiAKIGludmVyc2UgICAtIGludmVydCBjb2xvcnMgb24gc2NyZWVu
-IChmb3IgTENEIGRpc3BsYXlzKQogCkBAIC00OSwxMyArNTEsMjAgQEAgY2FibGU6WCAgIC0gY2Fi
-bGUgdHlwZS4gVGhpcyBjYW4gYmUgYW55IG9mIHRoZSBmb2xsb3dpbmc6IHZnYSwgcmdiLCBhbmQK
-IG91dHB1dDpYICAtIG91dHB1dCB0eXBlLiBUaGlzIGNhbiBiZSBhbnkgb2YgdGhlIGZvbGxvd2lu
-ZzogcGFsLCBudHNjLCBhbmQKICAgICAgICAgICAgIHZnYS4gSWYgbm9uZSBpcyBzcGVjaWZpZWQs
-IHdlIGd1ZXNzLgogCitWaWRlbyBtb2RlIG1heSBhbHNvIGJlIHNwZWNpZmllZCBpbiB0aGUgZm9y
-bToKKworCSAgIFt4cmVzXXhbeXJlc11bLTxicHA+XVtAcmVmcmVzaC1yYXRlXQorCisJICAgZWcg
-NjQweDQ4MC0zMkA2MAorCisKIFgxMQogPT09CiAKLVhGODZfRkJEZXYgc2hvdWxkIHdvcmssIGlu
-IHRoZW9yeS4gQXQgdGhlIHRpbWUgb2YgdGhpcyB3cml0aW5nIGl0IGlzCi10b3RhbGx5IHVudGVz
-dGVkIGFuZCBtYXkgb3IgbWF5IG5vdCBldmVuIHBvcnRyYXkgdGhlIGJlZ2lubmluZ3Mgb2YKLXdv
-cmtpbmcuIElmIHlvdSBlbmQgdXAgdGVzdGluZyB0aGlzLCBwbGVhc2UgbGV0IG1lIGtub3chCitY
-Rjg2X0ZCRGV2IGhhcyBiZWVuIHNob3duIHRvIHdvcmsgb24gdGhlIERyZW1jYXN0IGluIHRoZSBw
-YXN0IC0gdGhvdWdoIG5vdCB5ZXQKK29uIGFueSAyLjYgc2VyaWVzIGtlcm5lbC4KIAogLS0KIFBh
-dWwgTXVuZHQgPGxldGhhbEBsaW51eGRjLm9yZz4KK1VwZGF0ZWQgYnkgQWRyaWFuIE1jTWVuYW1p
-biA8YWRyaWFuQG1jbWVuLmRlbW9uLmNvLnVrPgogCmRpZmYgLS1naXQgYS9kcml2ZXJzL3ZpZGVv
-L3B2cjJmYi5jIGIvZHJpdmVycy92aWRlby9wdnIyZmIuYwppbmRleCAzYWMzMmYzLi4yNjRiNmE2
-IDEwMDY0NAotLS0gYS9kcml2ZXJzL3ZpZGVvL3B2cjJmYi5jCisrKyBiL2RyaXZlcnMvdmlkZW8v
-cHZyMmZiLmMKQEAgLTk0LDYgKzk0LDcgQEAKICNkZWZpbmUgRElTUF9ESVdDT05GIChESVNQX0JB
-U0UgKyAweGU4KQogI2RlZmluZSBESVNQX0RJV0hTVFJUIChESVNQX0JBU0UgKyAweGVjKQogI2Rl
-ZmluZSBESVNQX0RJV1ZTVFJUIChESVNQX0JBU0UgKyAweGYwKQorI2RlZmluZSBESVNQX1BJWERF
-UFRIIChESVNQX0JBU0UgKyAweDEwOCkKIAogLyogUGl4ZWwgY2xvY2tzLCBvbmUgZm9yIFRWIG91
-dHB1dCwgZG91YmxlZCBmb3IgVkdBIG91dHB1dCAqLwogI2RlZmluZSBUVl9DTEsgNzQyMzkKQEAg
-LTE0Myw2ICsxNDQsNyBAQCBzdGF0aWMgc3RydWN0IHB2cjJmYl9wYXIgewogCXVuc2lnbmVkIGNo
-YXIgaXNfbG93cmVzOwkvKiBJcyBob3Jpem9udGFsIHBpeGVsLWRvdWJsaW5nIGVuYWJsZWQ/ICov
-CiAKIAl1bnNpZ25lZCBsb25nIG1taW9fYmFzZTsJLyogTU1JTyBiYXNlICovCisJdTMyIHBhbGV0
-dGVbMTZdOwogfSAqY3VycmVudHBhcjsKIAogc3RhdGljIHN0cnVjdCBmYl9pbmZvICpmYl9pbmZv
-OwpAQCAtMzIwLDcgKzMyMiw3IEBAIHN0YXRpYyBpbnQgcHZyMmZiX3NldGNvbHJlZyh1bnNpZ25l
-ZCBpbnQgcmVnbm8sIHVuc2lnbmVkIGludCByZWQsCiAKIAlpZiAocmVnbm8gPiBpbmZvLT5jbWFw
-LmxlbikKIAkJcmV0dXJuIDE7Ci0KKwkKIAkvKgogCSAqIFdlIG9ubHkgc3VwcG9ydCB0aGUgaGFy
-ZHdhcmUgcGFsZXR0ZSBmb3IgMTYgYW5kIDMyYnBwLiBJdCdzIGFsc28KIAkgKiBleHBlY3RlZCB0
-aGF0IHRoZSBwYWxldHRlIGZvcm1hdCBoYXMgYmVlbiBzZXQgYnkgdGhlIHRpbWUgd2UgZ2V0CkBA
-IC0zMzMsMjQgKzMzNSwyNSBAQCBzdGF0aWMgaW50IHB2cjJmYl9zZXRjb2xyZWcodW5zaWduZWQg
-aW50IHJlZ25vLCB1bnNpZ25lZCBpbnQgcmVkLAogCQkgICAgICAoKGJsdWUgICYgMHhmODAwKSA+
-PiAxMSk7CiAKIAkJcHZyMmZiX3NldF9wYWxfZW50cnkocGFyLCByZWdubywgdG1wKTsKLQkJKCh1
-MTYqKShpbmZvLT5wc2V1ZG9fcGFsZXR0ZSkpW3JlZ25vXSA9IHRtcDsKIAkJYnJlYWs7CiAJICAg
-IGNhc2UgMjQ6IC8qIFJHQiA4ODggKi8KIAkJcmVkID4+PSA4OyBncmVlbiA+Pj0gODsgYmx1ZSA+
-Pj0gODsKLQkJKCh1MzIqKShpbmZvLT5wc2V1ZG9fcGFsZXR0ZSkpW3JlZ25vXSA9IChyZWQgPDwg
-MTYpIHwgKGdyZWVuIDw8IDgpIHwgYmx1ZTsKKwkJdG1wID0gKHJlZCA8PCAxNikgfCAoZ3JlZW4g
-PDwgOCkgfCBibHVlOwogCQlicmVhazsKIAkgICAgY2FzZSAzMjogLyogQVJHQiA4ODg4ICovCiAJ
-CXJlZCA+Pj0gODsgZ3JlZW4gPj49IDg7IGJsdWUgPj49IDg7CiAJCXRtcCA9ICh0cmFuc3AgPDwg
-MjQpIHwgKHJlZCA8PCAxNikgfCAoZ3JlZW4gPDwgOCkgfCBibHVlOwogCiAJCXB2cjJmYl9zZXRf
-cGFsX2VudHJ5KHBhciwgcmVnbm8sIHRtcCk7Ci0JCSgodTMyKikoaW5mby0+cHNldWRvX3BhbGV0
-dGUpKVtyZWdub10gPSB0bXA7CiAJCWJyZWFrOwogCSAgICBkZWZhdWx0OgogCQlwcl9kZWJ1Zygi
-SW52YWxpZCBiaXQgZGVwdGggJWQ/IT9cbiIsIGluZm8tPnZhci5iaXRzX3Blcl9waXhlbCk7CiAJ
-CXJldHVybiAxOwogCX0KIAorCWlmIChyZWdubyA8IDE2KQorCQkoKHUzMiopKGluZm8tPnBzZXVk
-b19wYWxldHRlKSlbcmVnbm9dID0gdG1wOworCiAJcmV0dXJuIDA7CiB9CiAKQEAgLTU5OCw2ICs2
-MDEsNyBAQCBzdGF0aWMgdm9pZCBwdnIyX2luaXRfZGlzcGxheShzdHJ1Y3QgZmJfaW5mbyAqaW5m
-bykKIAogCS8qIGJpdHMgcGVyIHBpeGVsICovCiAJZmJfd3JpdGVsKGZiX3JlYWRsKERJU1BfRElX
-TU9ERSkgfCAoLS1ieXRlc3BlcnBpeGVsIDw8IDIpLCBESVNQX0RJV01PREUpOworCWZiX3dyaXRl
-bChieXRlc3BlcnBpeGVsIDw8IDIsIERJU1BfUElYREVQVEgpOwogCiAJLyogdmlkZW8gZW5hYmxl
-LCBjb2xvciBzeW5jLCBpbnRlcmxhY2UsCiAJICogaHN5bmMgYW5kIHZzeW5jIHBvbGFyaXR5IChj
-dXJyZW50bHkgdW51c2VkKSAqLwpAQCAtNzg5LDcgKzc5Myw3IEBAIHN0YXRpYyBpbnQgX19kZXZp
-bml0IHB2cjJmYl9jb21tb25faW5pdCh2b2lkKQogCWZiX2luZm8tPmZib3BzCQk9ICZwdnIyZmJf
-b3BzOwogCWZiX2luZm8tPmZpeAkJPSBwdnIyX2ZpeDsKIAlmYl9pbmZvLT5wYXIJCT0gY3VycmVu
-dHBhcjsKLQlmYl9pbmZvLT5wc2V1ZG9fcGFsZXR0ZQk9ICh2b2lkICopKGZiX2luZm8tPnBhciAr
-IDEpOworCWZiX2luZm8tPnBzZXVkb19wYWxldHRlCT0gY3VycmVudHBhci0+cGFsZXR0ZTsKIAlm
-Yl9pbmZvLT5mbGFncwkJPSBGQklORk9fREVGQVVMVCB8IEZCSU5GT19IV0FDQ0VMX1lQQU47CiAK
-IAlpZiAodmlkZW9fb3V0cHV0ID09IFZPX1ZHQSkKQEAgLTgwNiw2ICs4MTAsOCBAQCBzdGF0aWMg
-aW50IF9fZGV2aW5pdCBwdnIyZmJfY29tbW9uX2luaXQodm9pZCkKIAogCWlmIChyZWdpc3Rlcl9m
-cmFtZWJ1ZmZlcihmYl9pbmZvKSA8IDApCiAJCWdvdG8gb3V0X2VycjsKKwkvKk11c3Qgd3JpdGUg
-UElYREVQVEggdG8gcmVnaXN0ZXIgYmVmb3JlIGFueXRoaW5nIGlzIGRpc3BsYXllZCAtIHNvIGZv
-cmNlIGluaXQgKi8KKwlwdnIyX2luaXRfZGlzcGxheShmYl9pbmZvKTsKIAogCW1vZGVtZW11c2Vk
-ID0gZ2V0X2xpbmVfbGVuZ3RoKGZiX2luZm8tPnZhci54cmVzX3ZpcnR1YWwsCiAJCQkJICAgICAg
-ZmJfaW5mby0+dmFyLmJpdHNfcGVyX3BpeGVsKTsKQEAgLTEwODEsMTQgKzEwODcsMTUgQEAgc3Rh
-dGljIGludCBfX2luaXQgcHZyMmZiX2luaXQodm9pZCkKICNlbmRpZgogCXNpemUgPSBzaXplb2Yo
-c3RydWN0IGZiX2luZm8pICsgc2l6ZW9mKHN0cnVjdCBwdnIyZmJfcGFyKSArIDE2ICogc2l6ZW9m
-KHUzMik7CiAKLQlmYl9pbmZvID0ga3phbGxvYyhzaXplLCBHRlBfS0VSTkVMKTsKKwlmYl9pbmZv
-ID0gZnJhbWVidWZmZXJfYWxsb2Moc2l6ZW9mKHN0cnVjdCBwdnIyZmJfcGFyKSwgTlVMTCk7CisK
-IAlpZiAoIWZiX2luZm8pIHsKIAkJcHJpbnRrKEtFUk5fRVJSICJGYWlsZWQgdG8gYWxsb2NhdGUg
-bWVtb3J5IGZvciBmYl9pbmZvXG4iKTsKIAkJcmV0dXJuIC1FTk9NRU07CiAJfQogCiAKLQljdXJy
-ZW50cGFyID0gKHN0cnVjdCBwdnIyZmJfcGFyICopKGZiX2luZm8gKyAxKTsKKwljdXJyZW50cGFy
-ID0gZmJfaW5mby0+cGFyOwogCiAJZm9yIChpID0gMDsgaSA8IEFSUkFZX1NJWkUoYm9hcmRfZHJp
-dmVyKTsgaSsrKSB7CiAJCXN0cnVjdCBwdnIyX2JvYXJkICpwdnJfYm9hcmQgPSBib2FyZF9kcml2
-ZXIgKyBpOwpAQCAtMTEwMSw3ICsxMTA4LDcgQEAgc3RhdGljIGludCBfX2luaXQgcHZyMmZiX2lu
-aXQodm9pZCkKIAkJaWYgKHJldCAhPSAwKSB7CiAJCQlwcmludGsoS0VSTl9FUlIgInB2cjJmYjog
-RmFpbGVkIGluaXQgb2YgJXMgZGV2aWNlXG4iLAogCQkJCXB2cl9ib2FyZC0+bmFtZSk7Ci0JCQlr
-ZnJlZShmYl9pbmZvKTsKKwkJCWZyYW1lYnVmZmVyX3JlbGVhc2UoZmJfaW5mbyk7CiAJCQlicmVh
-azsKIAkJfQogCX0KQEAgLTExMjUsNyArMTEzMiw3IEBAIHN0YXRpYyB2b2lkIF9fZXhpdCBwdnIy
-ZmJfZXhpdCh2b2lkKQogI2VuZGlmCiAKIAl1bnJlZ2lzdGVyX2ZyYW1lYnVmZmVyKGZiX2luZm8p
-OwotCWtmcmVlKGZiX2luZm8pOworCWZyYW1lYnVmZmVyX3JlbGVhc2UoZmJfaW5mbyk7CiB9CiAK
-IG1vZHVsZV9pbml0KHB2cjJmYl9pbml0KTsK
-------=_Part_16135_27564281.1185669945316--
+
