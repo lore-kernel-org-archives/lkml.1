@@ -1,58 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936305AbXG2VIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936362AbXG2VQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936305AbXG2VIw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 17:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935394AbXG2VIo
+	id S936362AbXG2VQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 17:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934891AbXG2VQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 17:08:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49317 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935311AbXG2VIn convert rfc822-to-8bit (ORCPT
+	Sun, 29 Jul 2007 17:16:50 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:33969 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934233AbXG2VQt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 17:08:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
-Date: Sun, 29 Jul 2007 23:17:20 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707291438.06849.rjw@sisk.pl> <20070729204001.GJ16817@stusta.de>
-In-Reply-To: <20070729204001.GJ16817@stusta.de>
+	Sun, 29 Jul 2007 17:16:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding;
+        b=mI+FT4l3fgTc5E256t6HbCziVUSqPjLxWhEPjkJt1bui7HifbJ5Hd+OUY7h1wxbbKSWbMv0ZMQ9mmDWkUPsDk8Stdq5D6udw2BjE9JnWN6oWNlh0tLUBXGqj+yACoG3W+xSNnhN5QrRtTWQcr8QMgTgTHCunzgp7e7AOHWCokCw=
+Message-ID: <46AD03BD.7040203@gmail.com>
+Date: Sun, 29 Jul 2007 15:16:45 -0600
+From: "Berck E. Nash" <flyboy@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.4 (X11/20070621)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200707292317.21419.rjw@sisk.pl>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: cpufreq scaling appears not to work on overclocked systems
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 29 July 2007 22:40, Adrian Bunk wrote:
-> On Sun, Jul 29, 2007 at 02:38:05PM +0200, Rafael J. Wysocki wrote:
-> >...
-> > +config SUSPEND
-> > +	bool "Suspend"
->              "Suspend to RAM"
+This is not new, but exists as far back as 2.6.17.  I haven't reported
+it before because I figured that surely someone else had noticed it, but
+since it's still unfixed and I cannot find any mention of it on LKML,
+here we go.
 
-Not only.  This also includes "standby".
+I'm running a Core2 Duo 1.86GHz overclocked to 2.56GHz.  Everything is
+normal with cpufreq scaling disabled.  With cpufreq scaling enabled in
+the kernel, using any governor, /proc/cpuinfo indicates a maximum of the
+rated frequency rather than the actual frequency.
 
-> >...
-> >  config HIBERNATION
-> >  	bool "Hibernation"
-> >...         "Hibernation (Suspend to disk)"
-> 
-> cu
-> Adrian
+Here it is under 100% utilization, with userspace governor and powernowd:
 
-Greetings,
-Rafael
+berck@luna:~$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
+stepping        : 6
+cpu MHz         : 1862.000
+cache size      : 2048 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall
+lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips        : 5134.39
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 CPU          6300  @ 1.86GHz
+stepping        : 6
+cpu MHz         : 1862.000
+cache size      : 2048 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm syscall
+lm constant_tsc pni monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr lahf_lm
+bogomips        : 5131.64
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+At idle it drops down to 1596.000 MHz reported.  At boot the kernel
+doest report the correct frequency (2564.907), which agrees with the
+bogomips reported by /proc/cpuinfo as well.
+
+I haven't done any benchmarking to try to determine if perhaps freq
+scaling works as it should and just the reported frequency is incorrect.
+
+Berck
