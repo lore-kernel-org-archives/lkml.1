@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932604AbXG2RTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933051AbXG2RVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932604AbXG2RTu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 13:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764187AbXG2RTl
+	id S933051AbXG2RVt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 13:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764685AbXG2RVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 13:19:41 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:19513 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758973AbXG2RTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 13:19:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oLCddidAKHZunYO/UlaRMFJgRSCN23DUUH2u2puSwn2QV+SBHqpdSoO5irgJ9Ht1lUrs8P2k64sn6VuUxN5kRTvwh3Zq13SZwsCNc+FXCGyWfV05jyJ2ZhDPw6GqncusNTDle+JSCJp3ST13Sn8mWzhZzu9K+q6rqCcvfQSpNBM=
-Message-ID: <2c0942db0707291019q14f309d0jab3bf083aa37d707@mail.gmail.com>
-Date: Sun, 29 Jul 2007 10:19:38 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, david@lang.hm,
-       "Daniel Hazelton" <dhazelton@enter.net>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Ingo Molnar" <mingo@elte.hu>,
-       "Frank Kingswood" <frank@kingswood-consulting.co.uk>,
-       "Andi Kleen" <andi@firstfloor.org>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>, "ck list" <ck@vds.kolivas.org>,
-       "Paul Jackson" <pj@sgi.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46ACC76A.3080303@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 29 Jul 2007 13:21:42 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:61789 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764653AbXG2RVl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 13:21:41 -0400
+In-Reply-To: <46AA5E1A.8020303@garzik.org>
+References: <20070724162805.76ea8328@frecb000686.frec.bull.fr> <200707271256.17025.bjorn.helgaas@hp.com> <86802c440707271335y29ca79ccq844b5cb457bd2314@mail.gmail.com> <200707271458.44391.bjorn.helgaas@hp.com> <46AA5E1A.8020303@garzik.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A2444507-569E-4D35-A694-C8F0CD24ED00@mac.com>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Shaohua Li <shaohua.li@intel.com>,
+       =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>, ambx1@neo.rr.com,
+       akpm@linux-foundation.org, lenb@kernel.org, rmk@arm.linux.org.uk,
+       mjg59@srcf.ucam.org, castet.matthieu@free.fr
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
-	 <46AC4B97.5050708@gmail.com>
-	 <20070729141215.08973d54@the-village.bc.nu>
-	 <46AC9F2C.8090601@gmail.com>
-	 <2c0942db0707290758p39fef2e8o68d67bec5c7ba6ab@mail.gmail.com>
-	 <46ACAB45.6080307@gmail.com>
-	 <2c0942db0707290820r2e31f40flb51a43846169a752@mail.gmail.com>
-	 <46ACB40C.2040908@gmail.com>
-	 <2c0942db0707290904n4356582dt91ab96b77db1e84e@mail.gmail.com>
-	 <46ACC76A.3080303@gmail.com>
-X-Google-Sender-Auth: 7519ee10d46704ca
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: commit 7e92b4fc34 - x86, serial: convert legacy COM ports to platform devices - broke my serial console
+Date: Sun, 29 Jul 2007 13:21:33 -0400
+To: Jeff Garzik <jeff@garzik.org>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/07, Rene Herman <rene.herman@gmail.com> wrote:
-> On 07/29/2007 06:04 PM, Ray Lee wrote:
-> >> I am very aware of the costs of seeks (on current magnetic media).
-> >
-> > Then perhaps you can just take it on faith -- log structured layouts
-> > are designed to help minimize seeks, read and write.
+On Jul 27, 2007, at 17:05:30, Jeff Garzik wrote:
+> Bjorn Helgaas wrote:
+>> And couldn't we use udev to associate a fixed name with a MAC  
+>> address?  Then the user could use the same persistent name,  
+>> regardless of the order in which the driver found the devices.
 >
-> I am particularly bad at faith. Let's take that stupid program that I posted:
+> I don't know about udev, but people are definitely using fixed  
+> names based on MAC address for ethernet devices already:  nameif(8)  
+> and /etc/mactab, iftab(5) and ifrename(8).
 
-You only think you are :-). I'm sure there are lots of things you have
-faith in. Gravity, for example :-).
+I was doing that for a while, but now Debian and RedHat and most  
+other modern distros have a udev rules file called something like: / 
+etc/udev/rules.d/z30-persistent-net-generator.rules  Under Debian it  
+generates a file /etc/udev/rules.d/z25-persistent-net.rules which  
+automatically renames net devices based on their mac address.  The  
+persistent-net-generator takes the current name and MAC and stuffs  
+them in an appropriate file.  So really once you've booted with the  
+network card in, all you have to do is modify the persistent- 
+net.rules file to change the name of your NIC and rerun udevtrigger.   
+I've gotten into the habit of using descriptive names lately (7 chars  
+is the most that ifconfig will show without truncating, and it seems  
+to be unable to properly sort/display/operate-on longer ones).
 
-> The program is not a real-world issue and if you do not consider it a useful
-> boundary condition either (okay I guess), how would log structured swap help
-> if I just assume I have plenty of free swap to begin with?
+For example, my Debian firewall box has:
+   world: Connection to the cable modem
+   switch: Connection to my VLAN-capable switch
+   main0: "Primary" VLAN on my switch.
+   main1: A local gigabit switch for connections to a couple other  
+systems
+   main: A bridge of main0 and main1 which is used as the primary LAN  
+interface
+   hbeat: Dedicated NIC for Linux-HA (HeartBeat)
+   debian: A Debian netinst net-boot VLAN with support for PXE and  
+OpenFirmware
+   radius: A VLAN used by my wireless AP for radius traffic
+   wifi: A VLAN used for private wireless traffic
 
-Is that generally the case on your systems? Every linux system I've
-run, regardless of RAM, has always pushed things out to swap. And once
-there's something already in swap, you now have a packing problem when
-you want to swap something else out.
+Most of those interfaces are virtual and created by custom "/etc/ 
+network/if-pre-up.d/*" scripts, but you can see the "world",  
+"switch", "main1", and "hbeat" interfaces are actual physical  
+interfaces.  Such naming (with appropriate comments in /etc/network/ 
+interfaces) vastly eases the management of a box with a shitton of  
+interfaces.  The fact that ifconfig has some outstanding bugs with  
+big interface names is mostly irrelevant since I use the iproute2  
+tool ("ip") to do almost all administration.
+
+Cheers,
+Kyle Moffett
