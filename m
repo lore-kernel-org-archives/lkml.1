@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXG2P0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935358AbXG2P0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932855AbXG2P0e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934332AbXG2PTw
+	id S935358AbXG2P0y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934417AbXG2PUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:19:52 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3427 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S934321AbXG2PTu (ORCPT
+	Sun, 29 Jul 2007 11:20:53 -0400
+Received: from hades.rz.tu-clausthal.de ([139.174.2.20]:62733 "EHLO
+	hades.rz.tu-clausthal.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933844AbXG2PUu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:19:50 -0400
-Date: Sun, 29 Jul 2007 11:19:47 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Mark Hindley <mark@hindley.org.uk>
-cc: linux-kernel@vger.kernel.org, <linux-usb-users@lists.sourceforge.net>
-Subject: Re: [Linux-usb-users] [REGRESSION] 2.6.23-rc1: uhci_hcd. irq 4:
- nobody cared
-In-Reply-To: <20070729130105.GB27939@hindley.org.uk>
-Message-ID: <Pine.LNX.4.44L0.0707291118360.10113-100000@netrider.rowland.org>
+	Sun, 29 Jul 2007 11:20:50 -0400
+From: Volker Armin Hemmann <volker.armin.hemmann@tu-clausthal.de>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Subject: Re: Linus 2.6.23-rc1
+Date: Sun, 29 Jul 2007 17:20:46 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200707290141.19790.volker.armin.hemmann@tu-clausthal.de> <1185669631.1432.2.camel@localhost>
+In-Reply-To: <1185669631.1432.2.camel@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707291720.46336.volker.armin.hemmann@tu-clausthal.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007, Mark Hindley wrote:
+On Sonntag, 29. Juli 2007, Kasper Sandberg wrote:
+> On Sun, 2007-07-29 at 01:41 +0200, Volker Armin Hemmann wrote:
+> > Hi,
+> >
+> > I never tried Con's patchset, for two reasons:
+> > I tried his 2.4 patches ones, and I never saw any improvements. So when
+> > people were reporting huge improvements with his SD scheduler, I compared
+> > that with the reports of huge improvements with his 2.4 kernel patches.
+>
+> Well thats a reason if there ever were one...
+>
 
-> Hi,
-> 
-> I have just tried 2.6.23-rc1 on my Acer Aspire 1350.
-> 
-> On boot I get the following error as the uhci_hcd module is loaded:
-> 
-> Jul 28 18:23:20 mercury kernel: ACPI: PCI Interrupt 0000:00:10.0[A] -> Link [LNKA] -> GSI 4 (level, low) -> IRQ 4
-> Jul 28 18:23:20 mercury kernel: uhci_hcd 0000:00:10.0: UHCI Host Controller
-> Jul 28 18:23:20 mercury kernel: uhci_hcd 0000:00:10.0: new USB bus registered, assigned bus number 2
-> Jul 28 18:23:20 mercury kernel: irq 4: nobody cared (try booting with the "irqpoll" option)
+yes, it is. The fans claimed once lots of stuff that was not true for me. So 
+why believing them 'now'?
 
-Did it work okay with older kernels?  What does /proc/interrupts say in 
-both 2.6.23-rc1 and in a working kernel?
+> > ...
+> > The second: too many patches. I only would have tried one or two, but the
+> > ck-patchset is a lot bigger.. and I am a little bit uneasy about that.
+>
+> so use only the scheduler? nobody forces you to do many things..
 
-Alan Stern
+but which one is needed?
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.22/2.6.22-ck1/patches/
 
+six patches who start with 'sched-' and which one is needed? and which is not? 
+Can I only use sched-staircase-deadline-cpu-scheduler.patch  or do I need the 
+others too?
+
+> Better than old vanilla yes, but than SD? well, you should give it a
+> try.
+>
+
+see above.
