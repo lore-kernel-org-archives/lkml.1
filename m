@@ -1,80 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764223AbXG2PuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932505AbXG2PxN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764223AbXG2PuD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 11:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763463AbXG2Ptx
+	id S932505AbXG2PxN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 11:53:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbXG2Pw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 11:49:53 -0400
-Received: from nordns.ord03.singlehop.net ([216.104.41.85]:54626 "EHLO
-	ans02.midphase.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763436AbXG2Ptx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 11:49:53 -0400
-X-Greylist: delayed 86977 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 11:49:52 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Win Prizes at Dentocafe
-Date: Sat, 28 Jul 2007 11:40:13 -0400
-From: webmaster@dentocafe.com
-Message-ID: <10e108a479cdad383cdb4a75fe907d44@www.e-hyd.com>
-X-Priority: 3
-X-Mailer: PHPMailer [version 1.73]
-X-Mailer: phplist v2.10.4
-X-MessageID: 7
-X-ListMember: linux-kernel@vger.kernel.org
+	Sun, 29 Jul 2007 11:52:59 -0400
+Received: from piware.de ([213.9.79.162]:54675 "EHLO box79162.elkhouse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761972AbXG2Pw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 11:52:58 -0400
+Date: Sun, 29 Jul 2007 17:53:00 +0200
+From: Martin Pitt <martin.pitt@ubuntu.com>
+To: Eugene Teo <eteo@redhat.com>
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, jeremy@goop.org, martin.pitt@ubuntu.com,
+       wwoods@redhat.com
+Subject: Re: [PATCH 0/3] core_pattern: cleaned up repost/continuing post of
+	core_pattern enhancements
+Message-ID: <20070729155300.GC5794@piware.de>
+References: <20070727200050.GA18946@hmsreliant.homelinux.net> <46AC6EAB.7000502@redhat.com> <20070729121444.GA9644@hmsreliant.homelinux.net> <46AC900E.9090405@redhat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - ans02.midphase.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [32421 32422] / [47 12]
-X-AntiAbuse: Sender Address Domain - ans02.midphase.com
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FkmkrVfFsRoUs1wW"
+Content-Disposition: inline
+In-Reply-To: <46AC900E.9090405@redhat.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Friends,
 
-Yes, it's true. We are giving away more than Rs. 1,000,000 to every
+--FkmkrVfFsRoUs1wW
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Dentocafe member!
+Hi Eugene,
 
- For more information please visit
+Eugene Teo [2007-07-29 21:03 +0800]:
+> >> Also, it is probably good to think how we can "drop privileges" while =
+piping
+> >> the core dump output to an external program. A malicious user can pote=
+ntially
+> >> use it as a possible backdoor since anything that is executed by "|pro=
+gram" will
+> >> be executed with root privileges.
+> >>
+> > It was my understanding that apport already did this.
+>=20
+> I haven't looked at apport yet, but are you talking about the userspace p=
+ortion of
+> apport or the kernel changes in the Ubuntu kernel?
 
-http://www.dentocafe.com/showthread.php?t=2833
+Similarly to Neil's patches, the Ubuntu kernel calls the userspace
+helper as root, too. Apport drops privileges to the target process as
+soon as possible (there are a few things it needs to do before, like
+opening an fd to the crash file in /var/crash/ if that is only
+writeable by root).
 
-If you have questions or need additional assistance, please do not
+Martin
 
-hesitate to contact us by replying to this email. If you have forgot
-your
+--=20
+Martin Pitt        http://www.piware.de
+Ubuntu Developer   http://www.ubuntu.com
+Debian Developer   http://www.debian.org
 
-username as well as password also, than mail us at
-webmaster@dentocafe.com
+--FkmkrVfFsRoUs1wW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-OR
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
- dentocafe@yahoo.com
+iD8DBQFGrLfcDecnbV4Fd/IRAvD5AJ96KeQwaPSQpYOPCPDGw5/51M5pNgCfW3V4
+KW5NCc/vtt6Ttd9igGBt+HE=
+=bEtV
+-----END PGP SIGNATURE-----
 
-with your email address from which you registered on Dentocafe.
-
-Best Regards,
-
-ADMIN
-
---
-If you do not want to receive any more newsletters, 
-http://e-hyd.com/mail/?p=unsubscribe&uid=b50831665848cbf1b5b12273e087f855
-
-To update your preferences and to unsubscribe visit
-http://e-hyd.com/mail/?p=preferences&uid=b50831665848cbf1b5b12273e087f855
-
-Forward this Message to your Friends
-http://e-hyd.com/mail/?p=forward&uid=b50831665848cbf1b5b12273e087f855&mid=7
-
-
---
-Powered by PHPlist, www.phplist.com --
-
-
+--FkmkrVfFsRoUs1wW--
