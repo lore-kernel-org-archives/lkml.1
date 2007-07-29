@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763529AbXG2OKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbXG2OKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763529AbXG2OKT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 10:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762439AbXG2OKG
+	id S1763642AbXG2OKs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 10:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762439AbXG2OKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 10:10:06 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:59458 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760753AbXG2OKF (ORCPT
+	Sun, 29 Jul 2007 10:10:40 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:47779 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762641AbXG2OKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 10:10:05 -0400
-Message-ID: <46AC9F2C.8090601@gmail.com>
-Date: Sun, 29 Jul 2007 16:07:40 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Sun, 29 Jul 2007 10:10:39 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Avi Kivity <avi@qumranet.com>
+Subject: Re: 2.6.23-rc1, KVM-AMD problem
+Date: Sun, 29 Jul 2007 15:10:31 +0100
+User-Agent: KMail/1.9.7
+Cc: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <200707281855.41277.alistair@devzero.co.uk> <200707291444.18024.alistair@devzero.co.uk> <46AC9A8D.8060003@qumranet.com>
+In-Reply-To: <46AC9A8D.8060003@qumranet.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: david@lang.hm, Daniel Hazelton <dhazelton@enter.net>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Ray Lee <ray-lk@madrabbit.org>, Jesper Juhl <jesper.juhl@gmail.com>,
-       ck list <ck@vds.kolivas.org>, Paul Jackson <pj@sgi.com>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
- for 2.6.23]
-References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>	<20070727030040.0ea97ff7.akpm@linux-foundation.org>	<1185531918.8799.17.camel@Homer.simpson.net>	<200707271345.55187.dhazelton@enter.net>	<46AA3680.4010508@gmail.com>	<Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm>	<46AAEDEB.7040003@gmail.com>	<Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm>	<46AB166A.2000300@gmail.com>	<20070728122139.3c7f4290@the-village.bc.nu>	<46AC4B97.5050708@gmail.com> <20070729141215.08973d54@the-village.bc.nu>
-In-Reply-To: <20070729141215.08973d54@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+Message-Id: <200707291510.31731.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/29/2007 03:12 PM, Alan Cox wrote:
+On Sunday 29 July 2007 14:47:57 you wrote:
+> Alistair John Strachan wrote:
+> > On Sunday 29 July 2007 12:34:28 you wrote:
+> > [snip]
+> >
+> >>> Doesn't help, I still get the same crashes. I tried 2.6.22 again and
+> >>> it's rock solid by comparison.
+> >>
+> >> Do you mean, kvm-33 on top of 2.6.22, or the kvm modules from 2.6.22?
+> >> Please describe your configuration *exactly*.
+> >
+> > I'm using the kvm-33 *userspace* package (based on Debian's kvm-28
+> > packaging) and 2.6.23-rc1's KVM modules. I patched 2.6.23-rc1 with the
+> > patch you provided in your last email. So I'm not using -git HEAD.
+> >
+> > Maybe there's been additional necessary fixes to -git requiring me to
+> > update to HEAD? That wasn't clear from your last email.
+>
+> No,  that patch is the only potential fix post -rc1.  There are a few
+> other fixes there, but they are intended to avoid guest crashes, not
+> host crashes.
+>
+> What guest are you running?  Maybe I can reproduce it here.
 
->> What are the tradeoffs here? What wants small chunks? Also, as far as
->> I'm aware Linux does not do things like up the granularity when it
->> notices it's swapping in heavily? That sounds sort of promising...
-> 
-> Small chunks means you get better efficiency of memory use - large chunks
-> mean you may well page in a lot more than you needed to each time (and 
-> cause more paging in turn). Your disk would prefer you fed it big linear
-> I/O's - 512KB would probably be my first guess at tuning a large box 
-> under load for paging chunk size.
+Right now, Windows XP. I'm pretty sure Linux (well, Debian Etch) works fine. I 
+could only get Windows to install with -no-acpi, but I run it with the 
+following (if this is at all useful):
 
-That probably kills my momentary hope that I was looking at yet another good 
-use of large soft-pages seeing as how 512K would be going overboard a bit 
-right? :-/
+kvm -no-acpi -m 256 -hda $IMAGE -net nic -net tap,script=/etc/kvm/kvm-ifup
 
-> More radically if anyone wants to do real researchy type work - how about
-> log structured swap with a cleaner  ?
+Basically, the installer seems to work fine, but Windows seemed to have 
+problems after installing post-SP2 updates. Maybe that's why not everybody is 
+seeing it yet.
 
-Right over my head. Why does log-structure help anything?
+-- 
+Cheers,
+Alistair.
 
-Rene.
+137/1 Warrender Park Road, Edinburgh, UK.
 
