@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939789AbXG3W3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940078AbXG3W3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939789AbXG3W3e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969366AbXG3W2i
+	id S940078AbXG3W3x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969426AbXG3W2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:28:38 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54342 "EHLO
+	Mon, 30 Jul 2007 18:28:41 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54344 "EHLO
 	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S969214AbXG3W2h (ORCPT
+	with ESMTP id S969396AbXG3W2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:28:37 -0400
-Date: Tue, 31 Jul 2007 00:28:17 +0200
+	Mon, 30 Jul 2007 18:28:40 -0400
+Date: Tue, 31 Jul 2007 00:28:19 +0200
 From: Adrian Bunk <bunk@stusta.de>
-To: v4l-dvb-maintainer@linuxtv.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [2.6 patch] dvb_frontend_ioctl(): fix check-after-use
-Message-ID: <20070730222817.GE3972@stusta.de>
+To: James.Bottomley@SteelEye.com
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] drivers/scsi/imm.c: fix check-after-use
+Message-ID: <20070730222819.GF3972@stusta.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
@@ -23,27 +23,26 @@ User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Coverity checker spotted that we have already oops'ed if "fe" was NULL.
+The Coverity checker spotted that we have already oops'ed if "cmd"
+was NULL.
 
-Since "fe" being NULL seems impossible at this point this patch removes 
-the NULL check.
+Since "cmd" being NULL doesn't seem to be possible at this point this 
+patch removes the NULL check.
 
 Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
 ---
---- linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c.old	2007-07-29 21:41:56.000000000 +0200
-+++ linux-2.6.23-rc1-mm1/drivers/media/dvb/dvb-core/dvb_frontend.c	2007-07-29 21:42:16.000000000 +0200
-@@ -706,11 +706,11 @@ static int dvb_frontend_ioctl(struct ino
- 	struct dvb_frontend_private *fepriv = fe->frontend_priv;
- 	int err = -EOPNOTSUPP;
- 
- 	dprintk ("%s\n", __FUNCTION__);
- 
--	if (!fe || fepriv->exit)
-+	if (fepriv->exit)
- 		return -ENODEV;
- 
- 	if ((file->f_flags & O_ACCMODE) == O_RDONLY &&
- 	    (_IOC_DIR(cmd) != _IOC_READ || cmd == FE_GET_EVENT ||
- 	     cmd == FE_DISEQC_RECV_SLAVE_REPLY))
 
+--- linux-2.6.23-rc1-mm1/drivers/scsi/imm.c.old	2007-07-30 13:58:00.000000000 +0200
++++ linux-2.6.23-rc1-mm1/drivers/scsi/imm.c	2007-07-30 13:58:24.000000000 +0200
+@@ -740,10 +740,6 @@ static void imm_interrupt(struct work_st
+ 	struct Scsi_Host *host = cmd->device->host;
+ 	unsigned long flags;
+ 
+-	if (!cmd) {
+-		printk("IMM: bug in imm_interrupt\n");
+-		return;
+-	}
+ 	if (imm_engine(dev, cmd)) {
+ 		schedule_delayed_work(&dev->imm_tq, 1);
+ 		return;
