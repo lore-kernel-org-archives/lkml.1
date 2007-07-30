@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968787AbXG3V0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968744AbXG3V1N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968787AbXG3V0v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 17:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968099AbXG3V02
+	id S968744AbXG3V1N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 17:27:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968207AbXG3V03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 30 Jul 2007 17:26:29 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56934 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967421AbXG3V02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 17:26:28 -0400
-Received: from wx-out-0506.google.com ([66.249.82.226]:56939 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967692AbXG3V00 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 17:26:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nsCCSRpDP2MUkL1p3MuMqvxJadeq5LR5dHpyVkxYRt7oBxzk0ntVGO2xMR88rhnE91S/s1p8b/99b58oGAG6DcNiJ0u4b42Ss7rIH+f4rXhM8i/otLl0DIP6AwDtGnhEBQxrMSTbAaIdNXjkjZbLa/9dsSGL/112tUFGbjV18ks=
-Message-ID: <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-Date: Mon, 30 Jul 2007 23:26:26 +0200
-From: "Sasa Ostrouska" <casaxa@gmail.com>
-To: "Avuton Olrich" <avuton@gmail.com>
-Subject: Re: forcedeth ?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>
+Date: Mon, 30 Jul 2007 23:26:08 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Richard Hughes <hughsient@gmail.com>, Adrian Bunk <bunk@stusta.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
+Message-ID: <20070730212608.GB22419@elf.ucw.cz>
+References: <200707251238.50218.lenb@kernel.org> <200707292336.55588.rjw@sisk.pl> <1185744640.2295.4.camel@work> <200707300022.54633.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>
-	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>
+In-Reply-To: <200707300022.54633.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/30/07, Avuton Olrich <avuton@gmail.com> wrote:
-> On 7/30/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
-> > Hi people,
-> >
-> > I'm using this on a x86-64 amd machine. During boot of the last
-> > 2.6.22.1 kernel I get this error:
->
-> Somewhat unrelated, but I had a similar forcedeth problem, I took the
-> latest git forcedeth.c and put it into 2.6.22.1 and it worked for me.
->
-> Good luck!
-> --
-> avuton
+Hi!
 
-Ok, maybe I can try that. In any case I noticed another strange thing.
-I have 2 nics in that machine.
-One is a nvidia MPC61 using the forcedeth.c the other one is a Realtec
-RTL8029 using the
-ne2k_pci.
-Now, whenever I compile them both as modules each reboot the cards get
-inversed eth assignement. Suppose first boot, the forcedeth is eth0 ,
-the next boot it is eth1 , this is very anoying as one cant make only
-one boot, probably this is someway related to the bios.
-Now I configured them one in the kernel and the other as a module so
-they get each time assigned the same name. But when powerloss happens
-(unplug the cable) the next boot they do not work. I see them assigned
-the correct name, ifconfig shows the IP's but ping results in a
-destination unreachable.
+> > > > > Not only.  This also includes "standby".
+> > > > 
+> > > > Whatever it includes - please tell it to the user in the prompt.
+> > > > 
+> > > > Technical issues are important, but it's often forgotten how many 
+> > > > problems people run into because the description of a kconfig option 
+> > > > could have been better.
+> > > 
+> > > Sure.  Please see the updated patch I've just sent. :-)
+> > 
+> > So are you guys using:
+> > 
+> > "standby" = idle state, ~0.5 seconds
+> > "suspend" = sleep to ram, ~10 seconds
+> > "hibernate" = sleep to disk, ~30 seconds
+> 
+> Something like this, but "suspend" is not reserved as a name of specific state.
+> 
+> The second state is usually referred to as "suspend to RAM" or "STR" and is
+> denoted by "mem" in /sys/power/state, if implemented.  Moreover, "standby" and
+> "mem" are both entered using the same code path, so they may generally be
+> referred to as "suspend" states.
+> 
+> The times aren't strictly defined for "mem" and "standby", too.  The general
+> rule is that the times for "mem" are greater then for "standby" and the power
+> drawn in "mem" is smaller than the power drawn in "standby", but the exact
+> values will always depend on the platform.  Apart from this, if the platform
+> supports only one "suspend" state, it decides if that's "mem" or "standby".
+> 
+> On ACPI systems "standby" and "mem" correspond to the S1 and S3 sleep states,
+> respectively.
 
-Any ideas ?
-
-Rgds
-Sasa
+And I'd expect ~2seconds for both "standby" and "mem" on ACPI
+system. ACPI S1 is just "for windows ME compatibility, do not use" --
+it draws too much power, and is not really faster.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
