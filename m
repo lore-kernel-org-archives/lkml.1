@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966703AbXG3Q1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966820AbXG3Q14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966703AbXG3Q1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965052AbXG3QUp
+	id S966820AbXG3Q14 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966557AbXG3QZu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:20:45 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:44276
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939674AbXG3QUn (ORCPT
+	Mon, 30 Jul 2007 12:25:50 -0400
+Received: from el-out-1112.google.com ([209.85.162.178]:17724 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966550AbXG3QZs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:20:43 -0400
-Date: Mon, 30 Jul 2007 09:19:02 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ingo Molnar <mingo@elte.hu>
-cc: John <darknessenvelops@gmail.com>, Kasper Sandberg <lkml@metanurb.dk>,
-       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Mon, 30 Jul 2007 12:25:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=FRAAkUacjx4cf9vorg240L/QoqTfPVw5uzVhVdD0/eWYeGCOe77bdocYAacRAEmZUAsHqtdCAWK1hZ09wKo5bwerdr8aDSyBctSe2Zwy/AG6amZDeCuPf8KgRrN/pmy9M357mXWm0VyguqRXCxVPGkNKd1oy+i1AtlGENjeoE6w=
+Message-ID: <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
+Date: Tue, 31 Jul 2007 02:25:47 +1000
+From: "Matthew Hawkins" <darthmdh@gmail.com>
+To: "Jacob Braun" <jwbraun@gmail.com>
 Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-In-Reply-To: <20070730114649.GB19186@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707300914160.11330@asgard.lang.hm>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
- <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>
- <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
- <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
- <20070730114649.GB19186@elte.hu>
+Cc: kriko <kristjan.ugrin@gmail.com>, ck@vds.kolivas.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "Martin Schwidefsky" <schwidefsky@de.ibm.com>
+In-Reply-To: <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>
+	 <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
+	 <20070729204716.GB1578@elte.hu>
+	 <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
+	 <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>
+	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007, Ingo Molnar wrote:
+On 7/31/07, Jacob Braun <jwbraun@gmail.com> wrote:
+> On 7/30/07, kriko <kristjan.ugrin@gmail.com> wrote:
+> > I would try the new cfs how it performs, but it seems that nvidia drivers
+> > doesn't compile successfully under 2.6.23-rc1.
+> > http://files.myopera.com/kriko/files/nvidia-installer.log
+> >
+> > If someone has the solution, please share.
+>
+> There is a patch for the nvidia drivers here:
+> http://bugs.gentoo.org/attachment.cgi?id=125959
 
-> * John <darknessenvelops@gmail.com> wrote:
->
->> On 7/29/07, Ingo Molnar <mingo@elte.hu> wrote:
->>>
->>>
->>> * John <darknessenvelops@gmail.com> wrote:
->>>
->>>> Ingo-
->>>>
->>>> Why not perform the same test using the native linux Q3 client to
->>>> compare numbers to wine? [...]
->>>
->>> I regularly test native Linux games on CFS, and they all behave well.
->>> While waiting for more detailed data from Kasper i was looking for
->>> atypical stuff in Kasper's description about what his workload involves,
->>> and what looked a bit atypical was that Kasper's workload also involved
->>> gaming under Wine:
->>
->> I understand that, I was just wondering if the FPS scales the same
->> natively vs. Wine as I typically only run native games.  [...]
->
-> people are regularly testing 3D smoothness, and they find CFS good
-> enough:
->
->   http://bhhdoa.org.au/pipermail/ck/2007-June/007816.html
->
-> and that matches my experience as well (as limited as it may be). In
-> general my impression is that CFS and SD are roughly on par when it
-> comes to 3D smoothness.
-<SNIP>
-> i have no numbers now, other than the trivial native 'ppracer' game
-> where SD and CFS have roughly the same framerate under load:
->
->     SD           CFS
-<SNIP>
-> which i'd have expected, ppracer is quite CPU-intense on my test-system,
-> and the fairness model of SD and CFS is similar for CPU-bound tasks.
->
-> But ... numbers from _me_ are suspect by definition, i wrote a good
-> chunk of the CFS code :-) So it would be much more interesting if others
-> provided more numbers.
->
-> Would you be interested in trying CFS and doing some numers perhaps? It
-> requires some work: you have to start up your favorite game in a way
-> that gives a reliable framerate number. (many games allow the display of
-> FPS in-game) In Quake3 i simply started the game and did not move the
-> player - that is something easy to reproduce.
+The ATI drivers (current 8.39.4) were broken by
+commit e21ea246bce5bb93dd822de420172ec280aed492
+Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-the one report that I saw said that the FPS numbers were overall the same, 
-but what the reporter was seeing was that CFS was doing it in bursts of 
-activity while SD was smoother. this wasn't enough to show up in the fps 
-numbers being reported, but was enough to be unreasonable for gameing.
+Bad call on the "nobody was using these", Martin :(
 
-IIRC Linus responded with thoughts on granularity and the fact that 
-changing from Hz 1000 to Hz 100 will increase the timeslices in CFS by 
-10x (which could be enough to trigger this sort of issue)
-
-David Lang
+-- 
+Matt
