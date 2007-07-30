@@ -1,438 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939628AbXG3QTa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939690AbXG3QTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939628AbXG3QTa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:19:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938091AbXG3QOo
+	id S939690AbXG3QTt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938520AbXG3QOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:14:44 -0400
-Received: from ns2.suse.de ([195.135.220.15]:58743 "EHLO mx2.suse.de"
+	Mon, 30 Jul 2007 12:14:47 -0400
+Received: from mx2.suse.de ([195.135.220.15]:58742 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935730AbXG3QOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:14:11 -0400
-Message-Id: <20070730161325.445650656@weierstrass.suse.de>
+	id S934520AbXG3QOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:14:10 -0400
+Message-Id: <20070730161324.428827014@weierstrass.suse.de>
 References: <20070730161323.100048969@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 30 Jul 2007 18:13:48 +0200
+Date: Mon, 30 Jul 2007 18:13:37 +0200
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC 25/26] union-mount: Debug Infrastructure
-Content-Disposition: inline; filename=um/union-mount-debug-infrastructure.diff
+Subject: [RFC 14/26] union-mount: Documentation
+Content-Disposition: inline; filename=um/union-mount-documentation.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds debugfs/relay based debugging infrastructure helpful when doing
-development of the union-mount code itself. The debgging output can be enabled
-during runtime by:
-
- echo 1 > /proc/sys/fs/union-debug
-
-This registers the relayfs files where the debug code is writing its output
-to. There are different levels of debugging output available which can be ORed
-together. For the valid sysctl values see include/linux/union_debug.h.
+Add simple documentation about union mounting in general and this
+implementation in specific.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- include/linux/union_debug.h |   91 ++++++++++++++
- lib/Kconfig.debug           |    9 +
- lib/Makefile                |    2 
- lib/union_debug.c           |  268 ++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 370 insertions(+)
+ Documentation/filesystems/union-mounts.txt |  172 +++++++++++++++++++++++++++++
+ 1 file changed, 172 insertions(+)
 
 --- /dev/null
-+++ b/include/linux/union_debug.h
-@@ -0,0 +1,91 @@
-+/*
-+ * VFS based union mount for Linux
-+ *
-+ * Copyright (C) 2004-2007 IBM Corporation, IBM Deutschland Entwicklung GmbH.
-+ * Copyright (C) 2007 Novell Inc.
-+ *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ *
-+ */
-+#ifndef __LINUX_UNION_DEBUG_H
-+#define __LINUX_UNION_DEBUG_H
++++ b/Documentation/filesystems/union-mounts.txt
+@@ -0,0 +1,172 @@
++VFS based Union Mounts
++----------------------
 +
-+#ifdef __KERNEL__
++ 1. What are "Union Mounts"
++ 2. The Union Stack
++ 3. The White-out Filetype
++ 4. Renaming Unions
++ 5. Directory Reading
++ 6. Known Problems
++ 7. References
 +
-+#ifdef CONFIG_DEBUG_UNION_MOUNT
++-------------------------------------------------------------------------------
 +
-+#include <linux/sched.h>
++1. What are "Union Mounts"
++==========================
 +
-+/* This is taken from klog debugging facility */
-+extern void klog(const void *data, int len);
-+extern void klog_printk(const char *fmt, ...);
-+extern void klog_printk_dentry(const char *func, struct dentry *dentry);
++Please note: this is NOT about UnionFS and it is NOT derived work!
 +
-+extern int sysctl_union_debug;
++Traditionally the mount operation is opaque, which means that the content of
++the mount point, the directory where the file system is mounted on, is hidden
++by the content of the mounted file system's root directory until the file
++system is unmounted again. Unlike the traditional UNIX mount mechanism, that
++hides the contents of the mount point, a union mount presents a view as if
++both filesystems are merged together. Although only the topmost layer of the
++mount stack can be altered, it appears as if transparent file system mounts
++allow any file to be created, modified or deleted.
 +
-+#define UNION_MOUNT_DEBUG		1
-+#define UNION_MOUNT_DEBUG_DCACHE	2
-+#define UNION_MOUNT_DEBUG_LOCK		4
-+#define UNION_MOUNT_DEBUG_READDIR	8
-+#define UNION_MOUNT_DEBUG_LOOKUP	16
++Most people know the concepts and features of union mounts from other
++operating systems like Sun's Translucent Filesystem, Plan9 or BSD.
 +
-+#define UM_DEBUG(fmt, args...)						\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG)			\
-+		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
-+} while (0)
-+#define UM_DEBUG_DENTRY(dentry)						\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG)			\
-+		klog_printk_dentry(__FUNCTION__, (dentry));		\
-+} while (0)
-+#define UM_DEBUG_DCACHE(fmt, args...)					\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG_DCACHE)		\
-+		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
-+} while (0)
-+#define UM_DEBUG_DCACHE_DENTRY(dentry)					\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG_DCACHE)		\
-+		klog_printk_dentry(__FUNCTION__, (dentry));		\
-+} while (0)
-+#define UM_DEBUG_LOCK(fmt, args...)					\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG_LOCK)		\
-+		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
-+} while (0)
-+#define UM_DEBUG_READDIR(fmt, args...)					\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG_READDIR)		\
-+		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
-+} while (0)
-+#define UM_DEBUG_LOOKUP(fmt, args...)					\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG_LOOKUP)		\
-+		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
-+} while (0)
-+#define UM_DEBUG_LOOKUP_DENTRY(dentry)					\
-+do {									\
-+	if (sysctl_union_debug & UNION_MOUNT_DEBUG_LOOKUP)		\
-+		klog_printk_dentry(__FUNCTION__, (dentry));		\
-+} while (0)
++Here are the key features of this implementation:
++- completely VFS based
++- does not change the namespace stacking
++- directory listings have duplicate entries removed
++- writable unions: only the topmost file system layer may be writable
++- writable unions: new white-out filetype handled inside the kernel
 +
-+#else	/* CONFIG_DEBUG_UNION_MOUNT */
++-------------------------------------------------------------------------------
 +
-+#define UM_DEBUG(fmt, args...)			do { /* empty */ } while (0)
-+#define UM_DEBUG_DENTRY(fmt, args...)		do { /* empty */ } while (0)
-+#define UM_DEBUG_DCACHE(fmt, args...)		do { /* empty */ } while (0)
-+#define UM_DEBUG_DCACHE_DENTRY(fmt, args...)	do { /* empty */ } while (0)
-+#define UM_DEBUG_LOCK(fmt, args...)		do { /* empty */ } while (0)
-+#define UM_DEBUG_READDIR(fmt, args...)		do { /* empty */ } while (0)
-+#define UM_DEBUG_LOOKUP_DENTRY(fmt, args...)	do { /* empty */ } while (0)
-+#define UM_DEBUG_LOOKUP_DENTRY(fmt, args...)	do { /* empty */ } while (0)
++2. The Union Stack
++==================
 +
-+#endif	/* CONFIG_DEBUG_UNION_MOUNT */
++The mounted file systems are organized in the "file system hierarchy" (tree of
++vfsmount structures), which keeps track about the stacking of file systems
++upon each other. The per-directory view on the file system hierarchy is called
++"mount stack" and reflects the order of file systems, which are mounted on a
++specific directory.
 +
-+#endif	/* __KERNEL__ */
-+#endif	/*  __LINUX_UNION_DEBUG_H */
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -393,6 +393,15 @@ config DEBUG_LIST
- 
- 	  If unsure, say N.
- 
-+config DEBUG_UNION_MOUNT
-+	bool "Debug VFS based union mounts"
-+	depends on DEBUG_KERNEL && UNION_MOUNT
-+	select DEBUG_FS
-+	default n
-+	help
-+	  If you say Y here, the union mount debugging code will be
-+	  compiled in.
++Union mounts present a single unified view of the contents of two or more file
++systems as if they are merged together. Since the information which file
++system objects are part of a unified view is not directly available from the
++file system hierachy there is a need for a new structure. The file system
++objects, which are part of a unified view are ordered in a so-called "union
++stack". Only directoties can be part of a unified view.
 +
- config FRAME_POINTER
- 	bool "Compile the kernel with frame pointers"
- 	depends on DEBUG_KERNEL && (X86 || CRIS || M68K || M68KNOMMU || FRV || UML || S390 || AVR32 || SUPERH || BFIN)
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -35,6 +35,8 @@ obj-$(CONFIG_PLIST) += plist.o
- obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
- obj-$(CONFIG_DEBUG_LIST) += list_debug.o
- 
-+obj-$(CONFIG_DEBUG_UNION_MOUNT) += union_debug.o
++The link between two layers of the union stack is maintained using the
++union_mount structure (#include <linux/union.h>):
 +
- ifneq ($(CONFIG_HAVE_DEC_LOCK),y)
-   lib-y += dec_and_lock.o
- endif
---- /dev/null
-+++ b/lib/union_debug.c
-@@ -0,0 +1,268 @@
-+/*
-+ * VFS based union mount for Linux
-+ *
-+ * Copyright (C) 2007 SUSE Linux
-+ *   Author(s): Jan Blunck (jblunck@suse.de)
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
++struct union_mount {
++       atomic_t u_count;               /* reference count */
++       struct mutex u_mutex;
++       struct list_head u_unions;      /* list head for d_unions */
++       struct hlist_node u_hash;       /* list head for seaching */
++       struct hlist_node u_rhash;      /* list head for reverse seaching */
 +
-+#include <linux/module.h>
-+#include <linux/sysctl.h>
-+#include <linux/init.h>
-+#include <linux/relay.h>
-+#include <linux/debugfs.h>
-+
-+int sysctl_union_debug;
-+EXPORT_SYMBOL_GPL(sysctl_union_debug);
-+
-+static struct rchan *debug_rchan;
-+static struct dentry *debug_logdir;
-+#define SUBBUF_SIZE 262144
-+#define N_SUBBUF 4
-+
-+static struct dentry *create_buf_file(const char *filename,
-+				      struct dentry *parent, int mode,
-+				      struct rchan_buf *buf, int *is_global)
-+{
-+	return debugfs_create_file(filename, mode, parent, buf,
-+				   &relay_file_operations);
-+}
-+
-+static int remove_buf_file(struct dentry *dentry)
-+{
-+	debugfs_remove(dentry);
-+	return 0;
-+}
-+
-+static int subbuf_start(struct rchan_buf *buf, void *subbuf, void *prev_subbuf,
-+			unsigned int prev_padding)
-+{
-+	return 1;
-+}
-+
-+static struct rchan_callbacks debug_relay_cb = {
-+	.create_buf_file = create_buf_file,
-+	.remove_buf_file = remove_buf_file,
-+	.subbuf_start = subbuf_start,
++       struct path u_this;             /* this is me */
++       struct path u_next;             /* this is what I overlay */
 +};
 +
-+static int union_debug_relay_init(void)
-+{
-+	struct dentry *dentry;
-+	struct rchan *rchan;
++The union_mount structure holds a reference (dget,mntget) to the next lower
++layer of the union stack. Since a dentry can be part of multiple unions
++(e.g. with bind mounts) they are tied together via the d_unions field of the
++dentry structure.
 +
-+	if (!debug_logdir) {
-+		dentry = debugfs_create_dir("union", NULL);
-+		if (IS_ERR(dentry)) {
-+			printk(KERN_INFO
-+			       "%s: debugfs directory creation failed\n",
-+			       __FUNCTION__);
-+			return PTR_ERR(dentry);
-+		}
++All union_mount structures are cached in two hash tables, one for lookups of
++the next lower layer of the union stack and one for reverse lookups of the
++next upper layer of the union stack. The reverse lookup is necessary to
++resolve CWD relative path lookups. For calculation of the hash value, the
++(dentry,vfsmount) pair is used. The u_this field is used for the hash table
++which is used in forward lookups and the u_next field for the reverse lookups.
 +
-+		debug_logdir = dentry;
-+	}
++During every new mount (or mount propagation), a new union_mount structure is
++allocated. A reference to the mountpoint's vfsmount and dentry is taken and
++stored in the u_next field.  In almost the same manner an union_mount
++structure is created during the first time lookup of a directory within a
++union mount point. In this case the lookup proceeds to all lower layers of the
++union. Therefore the complete union stack is constructed during lookups.
 +
-+	if (!debug_rchan) {
-+		rchan = relay_open("logfile", debug_logdir,
-+				   SUBBUF_SIZE, N_SUBBUF,
-+				   &debug_relay_cb, NULL);
-+		if (!rchan) {
-+			printk(KERN_INFO "%s: relay channel creation failed\n",
-+			       __FUNCTION__);
-+			debugfs_remove(debug_logdir);
-+			return -ENOMEM;
-+		}
++The union_mount structures of a dentry are destroyed when the dentry itself is
++destroyed. Therefore the dentry cache is indirectly driving the union_mount
++cache like this is done for inodes too. Please note that lower layer
++union_mount structures are kept in memory until the topmost dentry is
++destroyed.
 +
-+		debug_rchan = rchan;
-+	}
++-------------------------------------------------------------------------------
 +
-+	return 0;
-+}
++3. Writable Unions: The White-out Filetype and Copy-On-Open
++===========================================================
 +
-+static void union_debug_relay_exit(void)
-+{
-+	if (debug_rchan)
-+		relay_close(debug_rchan);
-+	debug_rchan = NULL;
-+	if (debug_logdir)
-+		debugfs_remove(debug_logdir);
-+	debug_logdir = NULL;
-+}
++The white-out filetype isn't new. It has been there for quite some time now
++but Linux's VFS hasn't used it yet. With the availability of union mount code
++inside the VFS the white-out filetype is getting important to support writable
++union mounts. For read-only union mounts support neither white-outs nor
++copy-on-open is necessary.
 +
-+/*
-+ * klog operations
-+ */
-+struct klog_operations
-+{
-+	/*
-+	 * klog - called when klog called, same params
-+	 */
-+	void (*klog) (const void *data, int len);
-+};
++The white-out filetype has the same function as negative dentries: they
++describe a filename which isn't there. The creation of white-outs needs
++lowlevel filesystem support. At the time of writing this, there is white-out
++support for tmpfs, ext2 and ext3 available. The VFS is extended to make the
++white-out handling transparent to all its users. The white-outs are not
++visible by the user-space.
 +
-+/* maximum size of klog formatting buffer beyond which truncation will occur */
-+#define KLOG_TMPBUF_SIZE (1024)
-+/* per-cpu klog formatting temporary buffer */
-+static char klog_buf[NR_CPUS][KLOG_TMPBUF_SIZE];
++-------------------------------------------------------------------------------
 +
-+/*
-+ * do-nothing default klog handler, called if nothing registered
-+ */
-+static void default_klog(const void *data, int len)
-+{
-+}
++4. Renaming Unions
++==================
 +
-+/*
-+ * default klog operations, used if nothing registered
-+ */
-+static struct klog_operations default_klog_ops =
-+{
-+	.klog = default_klog,
-+};
++Rename on union mounts has been handled in a lazy way: it returned -EXDEV.
++This works well for dirctories but not for regular files. Even a kernel build
++doesn't handle rename errors appropriate. Therefore when renaming regular
++files from a lower layer of the union stack it is copied to the topmost
++layer. If the file already resides on the topmost layer, the traditional
++rename method is used.
 +
-+static struct klog_operations *cur_klog_ops = &default_klog_ops;
++-------------------------------------------------------------------------------
 +
-+/**
-+ *      register_klog_handler - register klog handler
-+ *      @klog_ops: klog operations callbacks
-+ *
-+ *      replaces default klog handler with passed-in version
-+ */
-+int register_klog_handler(struct klog_operations *klog_ops)
-+{
-+	if (!klog_ops)
-+		return -EINVAL;
++5. Directory Reading
++====================
 +
-+	if (!klog_ops->klog)
-+		klog_ops->klog = default_klog;
++As mentioned, union mounts represent a single view of multiple directories as
++if they are merged together. This is achieved by reading the contents of every
++directory on the union stack and by merging the result. When the directory
++listing is read via readdir() or getdents() system call, the union stack is
++traversed from the topmost layer of the union stack to the lowermost.
 +
-+	cur_klog_ops = klog_ops;
-+	return 0;
-+}
++Likewise with regular files, directories are seekable and the position of the
++following read is marked by the file position filp->f_pos. When reading from
++multiple directories, it is possible that the file position exceeds the inode
++size of the first directory. Therefore the file position is rearranged to
++select the correct directory in the union stack. This is done by substractiong
++the inode size if the file position exceeds it and selecting the next member
++of the union stack next.
 +
-+/**
-+ *      unregister_klog_handler - unregister klog handler
-+ *
-+ *      default handler will be in effect after this
-+ */
-+void unregister_klog_handler(void)
-+{
-+	cur_klog_ops = &default_klog_ops;
-+}
++This worked well with filesystems like ext2 that used flat file directories.
++The directory entry offsets are arranged linear and are always smaller than
++the inode size of the directory. Modern filesystems have implemented
++directories differently and just return special cookies as directory entry
++offsets which are unrelated to the position in the directory or the inode
++size.
 +
-+/**
-+ *      klog - send raw data to klog handler
-+ */
-+void klog(const void *data, int len)
-+{
-+	cur_klog_ops->klog(data, len);
-+}
++-------------------------------------------------------------------------------
 +
-+/**
-+ *      klog_printk - send a formatted string to the klog handler
-+ *      @fmt: format string, same as printk
-+ */
-+void klog_printk(const char *fmt, ...)
-+{
-+	va_list args;
-+	int len;
-+	char *cbuf;
-+	unsigned long flags;
++6. Known Problems
++=================
 +
-+	local_irq_save(flags);
-+	cbuf = klog_buf[smp_processor_id()];
-+	va_start(args, fmt);
-+	len = vsnprintf(cbuf, KLOG_TMPBUF_SIZE, fmt, args);
-+	va_end(args);
-+	klog(cbuf, len);
-+	local_irq_restore(flags);
-+}
-+EXPORT_SYMBOL_GPL(klog_printk);
++- currently it doesn't support seeking/readdir when d_off > i_size is possible
++- readdir() is a file operation
++- copyup() for other filetypes that reg and dir (e.g. for chown() on devices)
 +
-+void klog_printk_dentry(const char *func, struct dentry *dentry)
-+{
-+	klog_printk("%s: %p{i=%p/%lx,c=%d,n=\"%s\"}\n",
-+		    func,
-+		    dentry,
-+		    dentry->d_inode,
-+		    dentry->d_inode ?
-+		    dentry->d_inode->i_ino : 0UL,
-+		    atomic_read(&dentry->d_count),
-+		    dentry->d_name.name);
-+}
-+EXPORT_SYMBOL_GPL(klog_printk_dentry);
++-------------------------------------------------------------------------------
 +
-+static void log_data(const void *data, int len)
-+{
-+	relay_write(debug_rchan, data, len);
-+}
++7. References
++=============
 +
-+static struct klog_operations klog_handler =
-+{
-+	.klog = log_data,
-+};
++[1] http://marc.info/?l=linux-fsdevel&m=96035682927821&w=2
++[2] http://marc.info/?l=linux-fsdevel&m=117681527820133&w=2
++[3] http://marc.info/?l=linux-fsdevel&m=117913503200362&w=2
++[4] http://marc.info/?l=linux-fsdevel&m=118231827024394&w=2
 +
-+static int union_debug_sysctl_handler(ctl_table *table, int write,
-+				      struct file *file,
-+				      void __user *buffer, size_t *length,
-+				      loff_t *ppos)
-+{
-+	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-+
-+	if (!write)
-+		return 0;
-+
-+	printk(KERN_INFO "sysctl.fs.union-debug: %d\n", sysctl_union_debug);
-+
-+	switch (sysctl_union_debug) {
-+	case 0:
-+		unregister_klog_handler();
-+		union_debug_relay_exit();
-+		break;
-+	default:
-+		union_debug_relay_init();
-+		if (register_klog_handler(&klog_handler))
-+			union_debug_relay_exit();
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static ctl_table union_table[] = {
-+	{
-+		.ctl_name = CTL_UNNUMBERED,
-+		.procname = "union-debug",
-+		.data = &sysctl_union_debug,
-+		.maxlen = sizeof(int),
-+		.mode = 0644,
-+		.proc_handler = &union_debug_sysctl_handler,
-+	},
-+	{.ctl_name = 0}
-+};
-+
-+static ctl_table fs_root[] = {
-+	{
-+		.ctl_name = CTL_FS,
-+		.procname = "fs",
-+		.maxlen = 0,
-+		.mode = 0555,
-+		.child = union_table,
-+	},
-+	{.ctl_name = 0}
-+};
-+
-+static struct ctl_table_header *sysctl_header;
-+
-+static int union_debug_init(void)
-+{
-+	sysctl_header = register_sysctl_table(fs_root);
-+	return 0;
-+}
-+
-+late_initcall(union_debug_init);
++Authors:
++Jan Blunck <jblunck@suse.de>
++Bharata B Rao <bharata@linux.vnet.ibm.com>
 
 -- 
 
