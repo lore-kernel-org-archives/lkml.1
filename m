@@ -1,58 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965896AbXG3COh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965974AbXG3CQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965896AbXG3COh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 22:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964829AbXG3CO0
+	id S965974AbXG3CQq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 22:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765730AbXG3CQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 22:14:26 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38932 "EHLO mail.dvmed.net"
+	Sun, 29 Jul 2007 22:16:39 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:56065 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936048AbXG3CO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 22:14:26 -0400
-Message-ID: <46AD497E.8030401@garzik.org>
-Date: Sun, 29 Jul 2007 22:14:22 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.23-rc1
-References: <1185720592.3434.7.camel@localhost.localdomain>	 <46AD19F7.7040905@garzik.org>	 <1185756759.3434.19.camel@localhost.localdomain>	 <46AD390B.2080400@garzik.org> <1185760909.3434.22.camel@localhost.localdomain>
-In-Reply-To: <1185760909.3434.22.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+	id S936083AbXG3CQi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 22:16:38 -0400
+Date: Sun, 29 Jul 2007 22:16:35 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200707300216.l6U2GZWP024428@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] tiny sched_getaffinity cleanup
+Cc: akpm@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2007-07-29 at 21:04 -0400, Jeff Garzik wrote:
->> James Bottomley wrote:
->>> msleep_interruptible -> ssleep is a
->>> change with zero practical impact for this driver,
->> eh, how do you figure?
->>
->> A signal can clearly cause the abort-related functions to delay far 
->> shorter than the driver wishes.
->>
->> The msleep_interruptible() in arcmsr_wait_msgint_ready() probably isn't 
->> fatal -- unless it's there to ensure the hardware isn't pounded -- but 
->> again, a signal can cause a CPU-wasting busy loop that could last for 
->> quite a while (in CPU terms).
-> 
-> I didn't say the usage wasn't a bad example or couldn't cause problems
-> in certain cases.  I said "zero practical effect".  This is because the
-> two possible threads that enter these routines already have all user
-> signals blocked.
-
-Ah!  Understood.
-
-	Jeff
+Unless I'm missing something quite tricky here's another tiny cleanup.  The
+generated code is not affected (gcc is smart enough) but for people looking
+over the code it is just irritating to have the extra conditional.
 
 
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
 
+--- kernel/sched.c	2007-07-26 14:54:53.000000000 -0700
++++ kernel/sched.c-new	2007-07-29 19:12:16.000000000 -0700
+@@ -4464,10 +4464,8 @@ long sched_getaffinity(pid_t pid, cpumas
+ out_unlock:
+ 	read_unlock(&tasklist_lock);
+ 	mutex_unlock(&sched_hotcpu_mutex);
+-	if (retval)
+-		return retval;
+ 
+-	return 0;
++	return retval;
+ }
+ 
+ /**
