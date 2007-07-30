@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940004AbXG3VMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967639AbXG3VTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940004AbXG3VMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 17:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939471AbXG3VMU
+	id S967639AbXG3VTW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 17:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965031AbXG3VTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 17:12:20 -0400
-Received: from lucidpixels.com ([75.144.35.66]:60031 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939383AbXG3VMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 17:12:19 -0400
-Date: Mon, 30 Jul 2007 17:12:17 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: a1426z@gawab.com, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com,
-       linux-raid@vger.kernel.org
-Subject: Re: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on
- software raid 5
-In-Reply-To: <E1IFb5f-00006O-00@dorka.pomaz.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0707301712030.7153@p34.internal.lan>
-References: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
- <200707302207.02672.a1426z@gawab.com> <E1IFb5f-00006O-00@dorka.pomaz.szeredi.hu>
+	Mon, 30 Jul 2007 17:19:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42031 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S964959AbXG3VTL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 17:19:11 -0400
+Date: Mon, 30 Jul 2007 23:18:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Len Brown <lenb@kernel.org>,
+       david@lang.hm, Andrew Morton <akpm@linux-foundation.org>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] let SUSPEND select HOTPLUG_CPU
+Message-ID: <20070730211826.GA22419@elf.ucw.cz>
+References: <200707251238.50218.lenb@kernel.org> <200707262117.26353.rjw@sisk.pl> <alpine.LFD.0.999.0707261255380.3442@woody.linux-foundation.org> <200707262248.09187.rjw@sisk.pl> <alpine.LFD.0.999.0707261351430.3442@woody.linux-foundation.org> <20070727222503.GB15129@stusta.de> <46AA7609.1040900@s5r6.in-berlin.de> <20070727230307.GC15129@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070727230307.GC15129@stusta.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
+> > Wait, doesn't HOTPLUG_CPU also depend on EXPERIMENTAL?
+> 
+> Damn, I started thinking about it, and then forgot about it when 
+> finishing the patch.
+> 
+> My thoughts were:
+> Is HOTPLUG_CPU still an experimental feature, or has it become a 
+> well-tested no longer experimental feature now that it's used on
+> most recent laptops?
 
-On Mon, 30 Jul 2007, Miklos Szeredi wrote:
+It is complex :-(.
 
->> Extrapolating these %cpu number makes ZFS the fastest.
->>
->> Are you sure these numbers are correct?
->
-> Note, that %cpu numbers for fuse filesystems are inherently skewed,
-> because the CPU usage of the filesystem process itself is not taken
-> into account.
->
-> So the numbers are not all that good, but according to the zfs-fuse
-> author it hasn't been optimized yet, so they may improve.
->
-> Miklos
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+HOTPLUG_CPU is pretty solid for the case how _suspend_ uses it (ie
+drivers quiescent).
 
-This was performed on an E6300, 1 core was ZFS/FUSE (or quite a bit of it 
-anyway)
+It is also known broken for _other_ uses. (There was flamewar about
+that recently).
 
+I'm not sure how to express that in Kconfig language without
+uglyness... We probably could split HOTPLUG_CPU into
+HOTPLUG_CPU_SUSPEND_ONLY (not experimental) and HOTPLUG_CPU (enables
+/sysfs interface)... but I do not think that is good idea. (It would
+also make suspend debugging a bit harder).
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
