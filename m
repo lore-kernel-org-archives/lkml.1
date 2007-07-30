@@ -1,69 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937987AbXG3FMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938086AbXG3FOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937987AbXG3FMj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 01:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbXG3FMa
+	id S938086AbXG3FOl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 01:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbXG3FOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 01:12:30 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:16865 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755058AbXG3FM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 01:12:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XAU2kuLvU6tj2CB7e9gdgXX9JFrDvABQnXAlLDdKV2+AkrxfhSmA75m+1jW52Wip7BK92wz2ewLYYsO6VFaBFi2Py3bS7hGJx87QYYWTlqDmDAnXS49RSl8OtvippftMej/3tDna9w2PRcOj9e8TPUg7UyWCAsrH7oIizURiQrk=
-Message-ID: <b21f8390707292212n2c580bd8o4b7654e62cfe6786@mail.gmail.com>
-Date: Mon, 30 Jul 2007 15:12:28 +1000
-From: "Matthew Hawkins" <darthmdh@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-Cc: "George Sescher" <gesacs@gmail.com>, "CK Mailinglist" <ck@vds.kolivas.org>,
-       "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.999.0707291612410.3442@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <1185588279.1654.1.camel@localhost> <20070729150436.GA6598@elte.hu>
-	 <a12e280d0707291604s618c0b14lc8572b2f48cd4ca1@mail.gmail.com>
-	 <alpine.LFD.0.999.0707291612410.3442@woody.linux-foundation.org>
+	Mon, 30 Jul 2007 01:14:34 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:45452 "EHLO snapgear.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753701AbXG3FOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 01:14:33 -0400
+Date: Mon, 30 Jul 2007 15:13:52 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+Message-Id: <200707300513.l6U5DqSw023959@goober>
+To: linux-kernel@vger.kernel.org
+Subject: changing include/asm-generic/pgtable.h for non-mmu
+Cc: gerg@uclinux.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/30/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> For example, how hard is it for people to just admit that CFS actually
-> does better than SD on a number of things? Including very much on the
-> desktop.
 
-Actually in benchmarks Ingo has quoted, SD was better on the desktop
-(by a small margin).
-CFS is still a bit bursty, though it has significantly improved with
-age.  I know, I did those benchmarks.  That being said, I'm really
-glad to see CFS in your git tree because the new framework around it
-really improves the readability of the code, and actually makes it
-easier to start experimenting with scheduler improvements from an
-entire scheduler like SD to minor bits like priorities.
+Hi All,
 
-I have one concern - my benchmarking took load average as the common
-denominator and CFS alters the way the load average is calculated, so
-perhaps it wasn't a fair comparison.  That being said, they still
-showed CFS could scale very well and SD did not, so considering we're
-dealing with everything from wristwatches to BlueGene/L I believe the
-right choice was made.  Those arguing for the 2% improvement that SD
-would give them in their environment would be better off
+There are some parts of include/asm-generic/pgtable.h that are
+relevant to the non-mmu architectures. To make it easier to include
+this from them I would like to ifdef the relevant parts.
+Does anyone object to something like the patch below?
 
-a) helping port SD to the new scheduler framework
-b) assisting Ingo in improving CFS to meet/exceed their requirements
-c) giving practical assistance to anyone doing either of the above
+Without this there is a handful of functions that are referenced
+in here that are not defined on many non-mmu architectures. They
+could be defined out ofcourse, as an alternative approach.
 
-I'm re-learning git and using my Copious Spare Time (tm) to do what I
-can - but I have to admit I'm really in over my head.  But hey, if
-Jeff Garzik can do it, so can I.  I remember when he couldn't grok C &
-now he's got control over all our data :-)
+Regards
+Greg
 
--- 
-Matt
+
+
+
+diff -Naur linux-2.6.23-rc1-git2/include/asm-generic/pgtable.h linux/include/asm-generic/pgtable.h
+--- linux-2.6.23-rc1-git2/include/asm-generic/pgtable.h	2007-07-26 10:38:56.000000000 +1000
++++ linux/include/asm-generic/pgtable.h	2007-07-30 15:02:40.000000000 +1000
+@@ -2,6 +2,7 @@
+ #define _ASM_GENERIC_PGTABLE_H
+ 
+ #ifndef __ASSEMBLY__
++#ifdef CONFIG_MMU
+ 
+ #ifndef __HAVE_ARCH_PTEP_SET_ACCESS_FLAGS
+ /*
+@@ -133,41 +134,6 @@
+ #endif
+ 
+ /*
+- * A facility to provide lazy MMU batching.  This allows PTE updates and
+- * page invalidations to be delayed until a call to leave lazy MMU mode
+- * is issued.  Some architectures may benefit from doing this, and it is
+- * beneficial for both shadow and direct mode hypervisors, which may batch
+- * the PTE updates which happen during this window.  Note that using this
+- * interface requires that read hazards be removed from the code.  A read
+- * hazard could result in the direct mode hypervisor case, since the actual
+- * write to the page tables may not yet have taken place, so reads though
+- * a raw PTE pointer after it has been modified are not guaranteed to be
+- * up to date.  This mode can only be entered and left under the protection of
+- * the page table locks for all page tables which may be modified.  In the UP
+- * case, this is required so that preemption is disabled, and in the SMP case,
+- * it must synchronize the delayed page table writes properly on other CPUs.
+- */
+-#ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+-#define arch_enter_lazy_mmu_mode()	do {} while (0)
+-#define arch_leave_lazy_mmu_mode()	do {} while (0)
+-#define arch_flush_lazy_mmu_mode()	do {} while (0)
+-#endif
+-
+-/*
+- * A facility to provide batching of the reload of page tables with the
+- * actual context switch code for paravirtualized guests.  By convention,
+- * only one of the lazy modes (CPU, MMU) should be active at any given
+- * time, entry should never be nested, and entry and exits should always
+- * be paired.  This is for sanity of maintaining and reasoning about the
+- * kernel code.
+- */
+-#ifndef __HAVE_ARCH_ENTER_LAZY_CPU_MODE
+-#define arch_enter_lazy_cpu_mode()	do {} while (0)
+-#define arch_leave_lazy_cpu_mode()	do {} while (0)
+-#define arch_flush_lazy_cpu_mode()	do {} while (0)
+-#endif
+-
+-/*
+  * When walking page tables, get the address of the next boundary,
+  * or the end address of the range if that comes earlier.  Although no
+  * vma end wraps to 0, rounded up __boundary may wrap to 0 throughout.
+@@ -233,6 +199,43 @@
+ 	}
+ 	return 0;
+ }
++#endif /* CONFIG_MMU */
++
++/*
++ * A facility to provide lazy MMU batching.  This allows PTE updates and
++ * page invalidations to be delayed until a call to leave lazy MMU mode
++ * is issued.  Some architectures may benefit from doing this, and it is
++ * beneficial for both shadow and direct mode hypervisors, which may batch
++ * the PTE updates which happen during this window.  Note that using this
++ * interface requires that read hazards be removed from the code.  A read
++ * hazard could result in the direct mode hypervisor case, since the actual
++ * write to the page tables may not yet have taken place, so reads though
++ * a raw PTE pointer after it has been modified are not guaranteed to be
++ * up to date.  This mode can only be entered and left under the protection of
++ * the page table locks for all page tables which may be modified.  In the UP
++ * case, this is required so that preemption is disabled, and in the SMP case,
++ * it must synchronize the delayed page table writes properly on other CPUs.
++ */
++#ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
++#define arch_enter_lazy_mmu_mode()	do {} while (0)
++#define arch_leave_lazy_mmu_mode()	do {} while (0)
++#define arch_flush_lazy_mmu_mode()	do {} while (0)
++#endif
++
++/*
++ * A facility to provide batching of the reload of page tables with the
++ * actual context switch code for paravirtualized guests.  By convention,
++ * only one of the lazy modes (CPU, MMU) should be active at any given
++ * time, entry should never be nested, and entry and exits should always
++ * be paired.  This is for sanity of maintaining and reasoning about the
++ * kernel code.
++ */
++#ifndef __HAVE_ARCH_ENTER_LAZY_CPU_MODE
++#define arch_enter_lazy_cpu_mode()	do {} while (0)
++#define arch_leave_lazy_cpu_mode()	do {} while (0)
++#define arch_flush_lazy_cpu_mode()	do {} while (0)
++#endif
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ #endif /* _ASM_GENERIC_PGTABLE_H */
