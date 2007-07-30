@@ -1,52 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968447AbXG3ULa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968585AbXG3UMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968447AbXG3ULa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966935AbXG3ULU
+	id S968585AbXG3UMT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:12:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764057AbXG3UMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:11:20 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55146 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763973AbXG3ULS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:11:18 -0400
-Subject: Re: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on
-	software raid 5
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       xfs@oss.sgi.com, linux-raid@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
-References: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
-Content-Type: text/plain
-Date: Mon, 30 Jul 2007 15:11:06 -0500
-Message-Id: <1185826266.9448.5.camel@kleikamp.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 16:12:05 -0400
+Received: from aug.linbit.com ([212.69.162.22]:60596 "EHLO mail.linbit.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965988AbXG3UMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:12:03 -0400
+X-Greylist: delayed 2179 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 16:12:03 EDT
+Date: Mon, 30 Jul 2007 21:35:33 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Jan Engelhardt <jengelh@computergmbh.de>, Jens Axboe <axboe@kernel.dk>,
+       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
+Message-ID: <20070730192954.GA7363@localhost>
+Mail-Followup-To: Lars Ellenberg <lars.ellenberg@linbit.com>,
+	Pavel Machek <pavel@ucw.cz>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
+	lkml <linux-kernel@vger.kernel.org>
+References: <20070721203819.GA10706@mail.linbit.com> <Pine.LNX.4.64.0707212316530.21737@fbirervta.pbzchgretzou.qr> <20070721224300.GB18326@mail.linbit.com> <20070727184617.GF11895@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070727184617.GF11895@ucw.cz>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 10:29 -0400, Justin Piszcz wrote:
+On Fri, Jul 27, 2007 at 06:46:17PM +0000, Pavel Machek wrote:
+> Hi!
+> 
+> > > >We implement shared-disk semantics in a shared-nothing cluster.
+> > > 
+> > > If nothing is shared, the disk is not shared, but got shared-disk
+> > > semantics? A little confusing.
+> > 
+> > Think of it as RAID1 over TCP.
+> > Typically you have one Node in Primary, the other as Secondary,
+> > replication target only.
+> 
+> I guess TCP means people should not swap over it?
 
-> Overall JFS seems the fastest but reviewing the mailing list for JFS it 
-> seems like there a lot of problems, especially when people who use JFS > 1 
-> year, their speed goes to 5 MiB/s over time and the defragfs tool has been 
-> removed(?) from the source/Makefile and on Google it says not to use it 
-> due to corruption.
+people should not swap over DRBD,
+because it would not be useful.
 
-The defragfs tool was an unported holdover from OS/2, which is why it
-was removed.  There never was a working Linux version.  I have some
-ideas to improve jfs allocation to avoid fragmentation problems, but jfs
-isn't my full-time job anymore, so I can't promise anything.  I'm not
-sure about the corruption claims.  I'd like to hear some specifics on
-that.
+DRBD is to have applicaction data available for more than one node,
+without a single point of failure; when the node the app currently runs
+on crashes, the data is there so some other node can take over from there.
 
-Anyway, for enterprise use, I couldn't recommend jfs, since there is no
-full-time maintainer.
+what would you do with the swap of a crashed node, apart from,
+well, crash analysis?
+you don't need it to be highly available for that.
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
+besides, yes, when you have network io in the block io path,
+with linux (and probably most other OSes),
+there is the posibility of vm starvation or even deadlock.
+
+situation is improving, though - iirc, there has been talk to
+have a emergency memory pool very low level in the network stack,
+and some special "I am doing block-io" socket flag;
+what is the status of that, anyone?
+
+I belive DRBD behaves very good even in oom situations.
+we considered these things from the very beginning.
+
+that said,
+I did not see a DRBD cluster hanging hard in OOM, yet.
+and we do operate quite a few busy
+database/mail/web/file/application/iSCSI/whatever clusters.
+
+	Lars
 
