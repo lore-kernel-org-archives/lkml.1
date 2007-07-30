@@ -1,87 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbXG3PVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765017AbXG3PYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760196AbXG3PVi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 11:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbXG3PV2
+	id S1765017AbXG3PYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 11:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755960AbXG3PYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 11:21:28 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:33320 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbXG3PV1 (ORCPT
+	Mon, 30 Jul 2007 11:24:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:59507 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755927AbXG3PYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 11:21:27 -0400
-Date: Mon, 30 Jul 2007 11:20:40 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <46ACD8DB.2020108@googlemail.com>
-Message-ID: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com>
+	Mon, 30 Jul 2007 11:24:06 -0400
+Message-ID: <46AE01C2.3000008@oracle.com>
+Date: Mon, 30 Jul 2007 11:20:34 -0400
+From: Chuck Lever <chuck.lever@oracle.com>
+Reply-To: chuck.lever@oracle.com
+Organization: Corporate Architecture, Linux Projects Group
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, kzak@redhat.com, ericvh@gmail.com,
+       lucho@ionkov.net, zippel@linux-m68k.org, hpa@zytor.com,
+       raven@themaw.net, rathamahata@php4.ru, dhowells@redhat.com,
+       sfrench@samba.org, mhalcrow@us.ibm.com, phillip@hellewell.homeip.net,
+       hirofumi@mail.parknet.co.jp, mikulas@artax.karlin.mff.cuni.cz,
+       wli@holomorphy.com, shaggy@austin.ibm.com, vandrove@vc.cvut.cz,
+       trond.myklebust@fys.uio.no, aia21@cantab.net, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com, reiserfs-devel@vger.kernel.org,
+       bfennema@falcon.csc.calpoly.edu, dushistov@mail.ru,
+       xfs-masters@oss.sgi.com, arnd@arndb.de, holzheu@de.ibm.com
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu> <46AA51CA.7030105@oracle.com> <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu>
+In-Reply-To: <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu>
+Content-Type: multipart/mixed;
+ boundary="------------030900090601050100040108"
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007, Gabriel C wrote:
+This is a multi-part message in MIME format.
+--------------030900090601050100040108
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> Frank Hale wrote:
-> [ added  linux-acpi to CC ]
-> > I have an Averatec 2370 laptop with the nVidia MCP51. With kernel
-> > 2.6.20 I had no issues with ACPI however with 2.6.21 and higher the
-> > kernel will hang on boot until I press the suspend button or the power
-> > button in which case the kernel wakes up and finishes the boot
-> > process. Including the following support only causes the issue:
-> > 
-> >  [*] ACPI Support
-> > 
-> > What I mean by that is every ACPI option has been deactivated and only
-> > ACPI support checked. The boot process with 2.6.21 and higher hangs at
-> > the point where the Scheduler is being registered.
-> > 
-> > io scheduler cfq registered (default)
-> > 
-> > If I allow it to sit there it never comes back to life and finishes
-> > booting. If I press the power or suspend button it will finish booting
-> > as expected.
-> > 
-> > I've scoured google for quite a while but cannot find any relevant
-> > information pertaining to this issue. For now I've disabled ACPI
-> > altogether.
 
-Frank, thanks for the tip about 2.6.20 being good, it gave me a nice place 
-to start bisecting from.
 
-Thomas, Ingo,
+Miklos Szeredi wrote:
+>>>> Some mount options are never passed to the kernel, and thus can't appear 
+>>>> in /proc/mounts.  Examples include user, users, and _netdev for NFS.
+>>> These options control *who* may mount and *when* to mount.  They are
+>>> not a property of the mount itself and are not added to /etc/mtab.
+>>>
+>>> There's a "user=ID" option that is added to /etc/mtab in case of user
+>>> mounts.  This identifies the owner of the mount, so that it can be
+>>> unmounted by that user.  There are patches in -mm that enable the
+>>> kernel to store this info.
+>>>
+>>> Do you have other examples in mind?
 
-Regarding the issue described above that Frank and I are having, I've 
-narrowed it down to commit e9e2cdb4[1]: [PATCH] clockevents: i386 drivers
+There are a few more cases for NFS mount.
 
-About our systems:
-  Averatec 2370/2371 Laptop
-    AMD Turion 64 X2 TL-50/TL-52
-    nVidia MCP51 chipset
+After a successful mount, the NFS mount command tucks some options into 
+/etc/mtab that reflect which mountd was used for the mount, and what 
+protocol version and port was used for the mount request.  Those options 
+are not passed to the kernel, and do not appear in /proc/mounts today. 
+See nfs(5)'s discussion of the mountport, mounthost, mountprog, and 
+mountvers options.
 
-Here a small matrix of my tests:
+However, the trend for NFS is to push mount option parsing into the 
+kernel.  Thus all options will be passed to the kernel, and at that 
+point it should be able to reflect the mount* options in /proc/mounts. 
+But it doesn't do that quite yet.
 
-2.6.20.15 SMP		: OK
-2.6.21.5 SMP		: hang
-2.6.21.5 UP w/o APIC	: OK
-2.6.22.1 UP		: hang
-2.6.22.1 UP w/o IO-APIC	: hang
-2.6.22.1 UP w/o APIC	: OK
-2.6.22.1 SMP		: hang
-2.6.22.1 SMP w/o ACPI	: OK
+I'm wondering if there are other such cases in other file systems.
 
-Please let me know if there's anything else I can provide to help.
+--------------030900090601050100040108
+Content-Type: text/x-vcard; charset=utf-8;
+ name="chuck.lever.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="chuck.lever.vcf"
 
-thanks!
--- 
-Cal Peake
+begin:vcard
+fn:Chuck Lever
+n:Lever;Chuck
+org:Oracle Corporation;Corporate Architecture: Linux Projects Group
+adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
+title:Principal Member of Staff
+tel;work:+1 248 614 5091
+x-mozilla-html:FALSE
+url:http://oss.oracle.com/~cel
+version:2.1
+end:vcard
 
-[1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e9e2cdb412412326c4827fc78ba27f410d837e6e
+
+--------------030900090601050100040108--
