@@ -1,63 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933466AbXG3M7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934709AbXG3NAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933466AbXG3M7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 08:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760896AbXG3M7E
+	id S934709AbXG3NAT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 09:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763376AbXG3NAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 08:59:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38742 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760057AbXG3M7A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 08:59:00 -0400
-Date: Mon, 30 Jul 2007 14:05:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcin ??lusarz <marcin.slusarz@gmail.com>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070730140517.68babf76@the-village.bc.nu>
-In-Reply-To: <20070730084651.GA14146@elte.hu>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com>
-	<20070629150759.GC2771@ff.dom.local>
-	<4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com>
-	<20070724080534.GC18740@elte.hu>
-	<20070724094202.GA11610@elte.hu>
-	<alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
-	<20070724200431.GA22190@elte.hu>
-	<1185322771.4175.102.camel@chaos>
-	<20070725135718.GB1843@ff.dom.local>
-	<20070725154656.54fd6f13@the-village.bc.nu>
-	<20070730084651.GA14146@elte.hu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 09:00:05 -0400
+Received: from il.qumranet.com ([82.166.9.18]:53974 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756223AbXG3NAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 09:00:04 -0400
+Message-ID: <46ADE0DD.1030505@qumranet.com>
+Date: Mon, 30 Jul 2007 16:00:13 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Alistair John Strachan <alistair@devzero.co.uk>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1, KVM-AMD problem
+References: <200707281855.41277.alistair@devzero.co.uk> <200707291444.18024.alistair@devzero.co.uk> <46AC9A8D.8060003@qumranet.com> <200707291510.31731.alistair@devzero.co.uk>
+In-Reply-To: <200707291510.31731.alistair@devzero.co.uk>
+Content-Type: multipart/mixed;
+ boundary="------------020404030706030604000807"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So the whole locking is to be able to keep irqs enabled for a long time, 
-> without risking entry of the same IRQ handler on this same CPU, correct?
+This is a multi-part message in MIME format.
+--------------020404030706030604000807
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-As implemented - on any CPU.
+Alistair John Strachan wrote:
+> On Sunday 29 July 2007 14:47:57 you wrote:
+>   
+>> Alistair John Strachan wrote:
+>>     
+>>> On Sunday 29 July 2007 12:34:28 you wrote:
+>>> [snip]
+>>>
+>>>       
+>>>>> Doesn't help, I still get the same crashes. I tried 2.6.22 again and
+>>>>> it's rock solid by comparison.
+>>>>>           
+>>>> Do you mean, kvm-33 on top of 2.6.22, or the kvm modules from 2.6.22?
+>>>> Please describe your configuration *exactly*.
+>>>>         
+>>> I'm using the kvm-33 *userspace* package (based on Debian's kvm-28
+>>> packaging) and 2.6.23-rc1's KVM modules. I patched 2.6.23-rc1 with the
+>>> patch you provided in your last email. So I'm not using -git HEAD.
+>>>
+>>> Maybe there's been additional necessary fixes to -git requiring me to
+>>> update to HEAD? That wasn't clear from your last email.
+>>>       
+>> No,  that patch is the only potential fix post -rc1.  There are a few
+>> other fixes there, but they are intended to avoid guest crashes, not
+>> host crashes.
+>>
+>> What guest are you running?  Maybe I can reproduce it here.
+>>     
+>
+> Right now, Windows XP. I'm pretty sure Linux (well, Debian Etch) works fine. I 
+> could only get Windows to install with -no-acpi, but I run it with the 
+> following (if this is at all useful):
+>
+> kvm -no-acpi -m 256 -hda $IMAGE -net nic -net tap,script=/etc/kvm/kvm-ifup
+>
+> Basically, the installer seems to work fine, but Windows seemed to have 
+> problems after installing post-SP2 updates. Maybe that's why not everybody is 
+> seeing it yet.
+>
+>   
 
-We also need to know that the IRQ handler is not doing useful work on
-another processor which is why we take the lock after disabling the
-interrupt line everywhere. Without that we might be completing an IRQ on
-another CPU and that would race the transmit and make a nasty mess.
+How about the attached patch? (I haven't yet tried to reproduce, but 
+this can cause an AMD-only oops).
 
-> So it seems to me that maybe the driver could be surprised via these 
-> spurious interrupts that happen right after the irq_enable(). Does the 
-> patch below make any sense in your opinion?
+-- 
+error compiling committee.c: too many arguments to function
 
-For MMIO it does look like that may be needed. Looks sensible.
 
+--------------020404030706030604000807
+Content-Type: text/x-patch;
+ name="kvm-fix-debug-registers-on-amd.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="kvm-fix-debug-registers-on-amd.patch"
+
+commit 80917728e43e248155c019f743655806b582b099
+Author: Avi Kivity <avi@qumranet.com>
+Date:   Mon Jul 30 15:56:36 2007 +0300
+
+    KVM: x86 emulator: disable writeback for debug register instructions
+    
+    These are handled internally by the instruction.
+    
+    Signed-off-by: Avi Kivity <avi@qumranet.com>
+
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 1a90ba0..2136da5 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -1222,11 +1222,13 @@ twobyte_insn:
+ 		}
+ 		break;
+ 	case 0x21: /* mov from dr to reg */
++		no_wb = 1;
+ 		if (modrm_mod != 3)
+ 			goto cannot_emulate;
+ 		rc = emulator_get_dr(ctxt, modrm_reg, &_regs[modrm_rm]);
+ 		break;
+ 	case 0x23: /* mov from reg to dr */
++		no_wb = 1;
+ 		if (modrm_mod != 3)
+ 			goto cannot_emulate;
+ 		rc = emulator_set_dr(ctxt, modrm_reg, _regs[modrm_rm]);
+
+--------------020404030706030604000807--
