@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966383AbXG3RhU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966708AbXG3Rit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966383AbXG3RhU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbXG3RhG
+	id S966708AbXG3Rit (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbXG3Rim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:37:06 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:2903 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761732AbXG3RhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:37:04 -0400
-Date: Mon, 30 Jul 2007 10:50:05 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-       Michael Buesch <mb@bu3sch.de>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] Use mutex instead of semaphore in the Host AP driver
-Message-ID: <20070730145005.GB6586@tuxdriver.com>
-References: <20070729212909.GC3432@traven> <20070729213434.GD3432@traven> <200707300006.42397.mb@bu3sch.de> <alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0707300904360.10861@enigma.security.iitk.ac.in> <20070730054004.GI3432@traven> <alpine.LFD.0.999.0707301247100.12730@enigma.security.iitk.ac.in>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707301247100.12730@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 30 Jul 2007 13:38:42 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:34446 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1760281AbXG3Rim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 13:38:42 -0400
+Date: Mon, 30 Jul 2007 13:38:40 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       <dbrownell@users.sourceforge.net>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] drivers/usb/gadget/dummy_hcd.c - DEBUG redefined
+ warnings
+In-Reply-To: <46AE18DE.5010704@googlemail.com>
+Message-ID: <Pine.LNX.4.44L0.0707301338000.9339-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 12:50:31PM +0530, Satyam Sharma wrote:
-> 
-> 
-> On Mon, 30 Jul 2007, Matthias Kaehlcke wrote:
-> 
-> > [...]
-> > 
-> > The Host AP driver uses a semaphore as mutex. Use the mutex API
-> > instead of the (binary) semaphore.
-> > 
-> > Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-> 
-> Reviewed-by: Satyam Sharma <satyam@infradead.org>
+On Mon, 30 Jul 2007, Gabriel C wrote:
 
-Is that the same as Acked-by?  Or do you disagree with the patch?
+> Hi,
+> 
+> I noticed the following warnings with a randconfig ( http://194.231.229.228/git-current/randconfig-auto-34 ):
+> 
+> ...
+> 
+>  CC [M]  drivers/usb/gadget/dummy_hcd.o
+> drivers/usb/gadget/dummy_hcd.c:37:1: warning: "DEBUG" redefined
+> <command-line>: warning: this is the location of the previous definition
+>   CC      drivers/scsi/scsi_transport_sas.o
+>   CC      drivers/usb/core/notify.o
+>   CC      drivers/usb/core/generic.o
+> drivers/usb/gadget/dummy_hcd.c:37:1: warning: "DEBUG" redefined
+> <command-line>: warning: this is the location of the previous definition
+> 
+> ...
+> 
+> 
+> Line 37 is #define DEBUG , is that really needed ?
 
-Just checkin'...
+No it isn't -- that's a mistake.  Thanks for pointing it out.
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+Alan Stern
+
