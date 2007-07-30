@@ -1,475 +1,510 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939317AbXG3QR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939398AbXG3QRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939317AbXG3QR0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938340AbXG3QOX
+	id S939398AbXG3QRl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938436AbXG3QO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:14:23 -0400
-Received: from ns1.suse.de ([195.135.220.2]:40567 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 12:14:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40572 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765189AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765683AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 12:14:07 -0400
-Message-Id: <20070730161325.004086646@weierstrass.suse.de>
+Message-Id: <20070730161324.628215686@weierstrass.suse.de>
 References: <20070730161323.100048969@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 30 Jul 2007 18:13:43 +0200
+Date: Mon, 30 Jul 2007 18:13:39 +0200
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC 20/26] union-mount: Simple union-mount readdir implementation
-Content-Disposition: inline; filename=um/union-mount-readdir.diff
+Subject: [RFC 16/26] union-mount: Introduce union_mount structure
+Content-Disposition: inline; filename=um/union-mount-union-stack.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a very simple union mount readdir implementation. It modifies the
-readdir routine to merge the entries of union mounted directories and
-eliminate duplicates while walking the union stack.
+This patch adds the basic structures of VFS based union mounts. It is a new
+implementation based on some of my old idea's that influenced Bharata B Rao
+<bharata@linux.vnet.ibm.com> who came up with the proposal to let the
+union_mount struct only point to the next layer in the union stack. I rewrote
+nearly all of the central patches around lookup and the dcache interaction.
 
-  FIXME:
-  This patch needs to be reworked! At the moment this only works for ext2 and
-  tmpfs. All kind of index directories that return d_off > i_size don't work
-  with this.
-
-The directory entries are read starting from the top layer and they are
-maintained in a cache. Subsequently when the entries from the bottom layers
-of the union stack are read they are checked for duplicates (in the cache)
-before being passed out to the user space. There can be multiple calls
-to readdir/getdents routines for reading the entries of a single directory.
-But union directory cache is not maitained across these calls. Instead
-for every call, the previously read entries are re-read into the cache
-and newly read entires are compared against these for duplicates before
-being they are returned to user space.
+Advantages of the new implementation:
+- the new union stack is no longer tied directly to one dentry
+- the union stack enables dentries to be part of more than one union
+  (bind mounts)
+- it is unnecessary to traverse the union stack when de/referencing a dentry
+- caching of union stack information still driven by dentry cache
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- fs/readdir.c          |   11 -
- fs/union.c            |  336 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/union.h |   25 +++
- 3 files changed, 364 insertions(+), 8 deletions(-)
+ fs/Kconfig             |    8 +
+ fs/Makefile            |    2 
+ fs/dcache.c            |    4 
+ fs/union.c             |  335 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/dcache.h |    9 +
+ include/linux/union.h  |   61 ++++++++
+ 6 files changed, 419 insertions(+)
 
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -16,13 +16,14 @@
- #include <linux/security.h>
- #include <linux/syscalls.h>
- #include <linux/unistd.h>
-+#include <linux/union.h>
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -551,6 +551,14 @@ config INOTIFY_USER
  
- #include <asm/uaccess.h>
+ 	  If unsure, say Y.
  
- int vfs_readdir(struct file *file, filldir_t filler, void *buf)
- {
--	struct inode *inode = file->f_path.dentry->d_inode;
- 	int res = -ENOTDIR;
++config UNION_MOUNT
++       bool "Union mount support (EXPERIMENTAL)"
++       depends on EXPERIMENTAL
++       ---help---
++         If you say Y here, you will be able to mount file systems as
++         union mount stacks. This is a VFS based implementation and
++         should work with all file systems. If unsure, say N.
 +
- 	if (!file->f_op || !file->f_op->readdir)
- 		goto out;
+ config QUOTA
+ 	bool "Quota support"
+ 	help
+--- a/fs/Makefile
++++ b/fs/Makefile
+@@ -49,6 +49,8 @@ obj-$(CONFIG_FS_POSIX_ACL)	+= posix_acl.
+ obj-$(CONFIG_NFS_COMMON)	+= nfs_common/
+ obj-$(CONFIG_GENERIC_ACL)	+= generic_acl.o
  
-@@ -30,13 +31,7 @@ int vfs_readdir(struct file *file, filld
- 	if (res)
- 		goto out;
- 
--	mutex_lock(&inode->i_mutex);
--	res = -ENOENT;
--	if (!IS_DEADDIR(inode)) {
--		res = file->f_op->readdir(file, buf, filler);
--		file_accessed(file);
--	}
--	mutex_unlock(&inode->i_mutex);
-+	res = do_readdir(file, buf, filler);
- out:
- 	return res;
- }
---- a/fs/union.c
++obj-$(CONFIG_UNION_MOUNT)	+= union.o
++
+ obj-$(CONFIG_QUOTA)		+= dquot.o
+ obj-$(CONFIG_QFMT_V1)		+= quota_v1.o
+ obj-$(CONFIG_QFMT_V2)		+= quota_v2.o
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -985,6 +985,10 @@ struct dentry *d_alloc(struct dentry * p
+ #ifdef CONFIG_PROFILING
+ 	dentry->d_cookie = NULL;
+ #endif
++#ifdef CONFIG_UNION_MOUNT
++	INIT_LIST_HEAD(&dentry->d_unions);
++	dentry->d_unionized = 0;
++#endif
+ 	INIT_HLIST_NODE(&dentry->d_hash);
+ 	INIT_LIST_HEAD(&dentry->d_lru);
+ 	INIT_LIST_HEAD(&dentry->d_subdirs);
+--- /dev/null
 +++ b/fs/union.c
-@@ -18,6 +18,8 @@
- #include <linux/hash.h>
- #include <linux/fs.h>
- #include <linux/union.h>
-+#include <linux/module.h>
-+#include <linux/file.h>
- 
- /*
-  * This is borrowed from fs/inode.c. The hashtable for lookups. Somebody
-@@ -462,3 +464,337 @@ void detach_mnt_union(struct vfsmount *m
- 	union_put(um);
- 	return;
- }
-+
-+
+@@ -0,0 +1,335 @@
 +/*
-+ * Union mounts support for readdir.
++ * VFS based union mount for Linux
++ *
++ * Copyright (C) 2004-2007 IBM Corporation, IBM Deutschland Entwicklung GmbH.
++ * Copyright (C) 2007 Novell Inc.
++ *
++ *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
 + */
 +
-+/* This is a copy from fs/readdir.c */
-+struct getdents_callback {
-+	struct linux_dirent __user *current_dir;
-+	struct linux_dirent __user *previous;
-+	int count;
-+	int error;
-+};
++#include <linux/bootmem.h>
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/hash.h>
++#include <linux/fs.h>
++#include <linux/union.h>
 +
-+/* The readdir union cache object */
-+struct union_cache_entry {
-+	struct list_head list;
-+	struct qstr name;
-+};
++/*
++ * This is borrowed from fs/inode.c. The hashtable for lookups. Somebody
++ * should try to make this good - I've just made it work.
++ */
++static unsigned int union_hash_mask __read_mostly;
++static unsigned int union_hash_shift __read_mostly;
++static struct hlist_head *union_hashtable __read_mostly;
++static unsigned int union_rhash_mask __read_mostly;
++static unsigned int union_rhash_shift __read_mostly;
++static struct hlist_head *union_rhashtable __read_mostly;
 +
-+static int union_cache_add_entry(struct list_head *list,
-+				 const char *name, int namelen)
++/*
++ * Locking Rules:
++ * - dcache_lock (for union_rlookup() only)
++ * - union_lock
++ */
++DEFINE_SPINLOCK(union_lock);
++
++static struct kmem_cache *union_cache __read_mostly;
++
++static unsigned long hash(struct dentry *dentry, struct vfsmount *mnt)
 +{
-+	struct union_cache_entry *this;
-+	char *tmp_name;
++	unsigned long tmp;
 +
-+	this = kmalloc(sizeof(*this), GFP_KERNEL);
-+	if (!this) {
-+		printk(KERN_CRIT
-+		       "union_cache_add_entry(): out of kernel memory\n");
-+		return -ENOMEM;
-+	}
++	tmp = ((unsigned long)mnt * (unsigned long)dentry) ^
++		(GOLDEN_RATIO_PRIME + (unsigned long)mnt) / L1_CACHE_BYTES;
++	tmp = tmp ^ ((tmp ^ GOLDEN_RATIO_PRIME) >> union_hash_shift);
++	return tmp & union_hash_mask;
++}
 +
-+	tmp_name = kmalloc(namelen + 1, GFP_KERNEL);
-+	if (!tmp_name) {
-+		printk(KERN_CRIT
-+		       "union_cache_add_entry(): out of kernel memory\n");
-+		kfree(this);
-+		return -ENOMEM;
-+	}
++static __initdata unsigned long union_hash_entries;
 +
-+	this->name.name = tmp_name;
-+	this->name.len = namelen;
-+	this->name.hash = 0;
-+	memcpy(tmp_name, name, namelen);
-+	tmp_name[namelen] = 0;
-+	INIT_LIST_HEAD(&this->list);
-+	list_add(&this->list, list);
++static int __init set_union_hash_entries(char *str)
++{
++	if (!str)
++		return 0;
++	union_hash_entries = simple_strtoul(str, &str, 0);
++	return 1;
++}
++
++__setup("union_hash_entries=", set_union_hash_entries);
++
++static int __init init_union(void)
++{
++	int loop;
++
++	union_cache = kmem_cache_create("union_mount",
++					sizeof(struct union_mount), 0,
++					SLAB_HWCACHE_ALIGN | SLAB_PANIC,
++					NULL, NULL);
++
++	union_hashtable = alloc_large_system_hash("Union-cache",
++						  sizeof(struct hlist_head),
++						  union_hash_entries,
++						  14,
++						  0,
++						  &union_hash_shift,
++						  &union_hash_mask,
++						  0);
++
++	for (loop = 0; loop < (1 << union_hash_shift); loop++)
++		INIT_HLIST_HEAD(&union_hashtable[loop]);
++
++
++	union_rhashtable = alloc_large_system_hash("rUnion-cache",
++						  sizeof(struct hlist_head),
++						  union_hash_entries,
++						  14,
++						  0,
++						  &union_rhash_shift,
++						  &union_rhash_mask,
++						  0);
++
++	for (loop = 0; loop < (1 << union_rhash_shift); loop++)
++		INIT_HLIST_HEAD(&union_rhashtable[loop]);
++
 +	return 0;
 +}
 +
-+static void union_cache_free(struct list_head *uc_list)
++fs_initcall(init_union);
++
++struct union_mount *union_alloc(struct dentry *this, struct vfsmount *this_mnt,
++				struct dentry *next, struct vfsmount *next_mnt)
 +{
-+	struct list_head *p;
-+	struct list_head *ptmp;
-+	int count = 0;
++	struct union_mount *um;
 +
-+	list_for_each_safe(p, ptmp, uc_list) {
-+		struct union_cache_entry *this;
++	BUG_ON(!S_ISDIR(this->d_inode->i_mode));
++	BUG_ON(!S_ISDIR(next->d_inode->i_mode));
 +
-+		this = list_entry(p, struct union_cache_entry, list);
-+		list_del_init(&this->list);
-+		kfree(this->name.name);
-+		kfree(this);
-+		count++;
-+	}
-+	return;
++	um = kmem_cache_alloc(union_cache, GFP_ATOMIC);
++	if (!um)
++		return NULL;
++
++	atomic_set(&um->u_count, 1);
++	INIT_LIST_HEAD(&um->u_unions);
++	INIT_HLIST_NODE(&um->u_hash);
++	INIT_HLIST_NODE(&um->u_rhash);
++
++	um->u_this.mnt = this_mnt;
++	um->u_this.dentry = this;
++	um->u_next.mnt = mntget(next_mnt);
++	um->u_next.dentry = dget(next);
++
++	return um;
 +}
 +
-+static int union_cache_find_entry(struct list_head *uc_list,
-+				  const char *name, int namelen)
++struct union_mount *union_get(struct union_mount *um)
 +{
-+	struct union_cache_entry *p;
-+	int ret = 0;
++	BUG_ON(!atomic_read(&um->u_count));
++	atomic_inc(&um->u_count);
++	return um;
++}
 +
-+	list_for_each_entry(p, uc_list, list) {
-+		if (p->name.len != namelen)
-+			continue;
-+		if (strncmp(p->name.name, name, namelen) == 0) {
-+			ret = 1;
-+			break;
++static int __union_put(struct union_mount *um)
++{
++	if (!atomic_dec_and_test(&um->u_count))
++		return 0;
++
++	BUG_ON(!hlist_unhashed(&um->u_hash));
++	BUG_ON(!hlist_unhashed(&um->u_rhash));
++
++	kmem_cache_free(union_cache, um);
++	return 1;
++}
++
++void union_put(struct union_mount *um)
++{
++	struct path tmp = um->u_next;
++
++	if (__union_put(um))
++		pathput(&tmp);
++}
++
++static void __union_hash(struct union_mount *um)
++{
++	hlist_add_head(&um->u_hash, union_hashtable +
++		       hash(um->u_this.dentry, um->u_this.mnt));
++	hlist_add_head(&um->u_rhash, union_rhashtable +
++		       hash(um->u_next.dentry, um->u_next.mnt));
++}
++
++static void __union_unhash(struct union_mount *um)
++{
++	hlist_del_init(&um->u_hash);
++	hlist_del_init(&um->u_rhash);
++}
++
++struct union_mount *union_lookup(struct dentry *dentry, struct vfsmount *mnt)
++{
++	struct hlist_head *head = union_hashtable + hash(dentry, mnt);
++	struct hlist_node *node;
++	struct union_mount *um;
++
++	hlist_for_each_entry(um, node, head, u_hash) {
++		if ((um->u_this.dentry == dentry) &&
++		    (um->u_this.mnt == mnt))
++			return um;
++	}
++
++	return NULL;
++}
++
++struct union_mount *union_rlookup(struct dentry *dentry, struct vfsmount *mnt)
++{
++	struct hlist_head *head = union_rhashtable + hash(dentry, mnt);
++	struct hlist_node *node;
++	struct union_mount *um;
++
++	hlist_for_each_entry(um, node, head, u_rhash) {
++		if ((um->u_next.dentry == dentry) &&
++		    (um->u_next.mnt == mnt))
++			return um;
++	}
++
++	return NULL;
++}
++
++/*
++ * is_unionized - check if a dentry lives on a union mounted file system
++ *
++ * This tests if a dentry is living on an union mounted file system by walking
++ * the file system hierarchy.
++ */
++int is_unionized(struct dentry *dentry, struct vfsmount *mnt)
++{
++	struct path this = { .mnt = mntget(mnt),
++			     .dentry = dget(dentry) };
++	struct vfsmount *tmp;
++
++	do {
++		/* check if there is an union mounted on top of us */
++		spin_lock(&vfsmount_lock);
++		list_for_each_entry(tmp, &this.mnt->mnt_mounts, mnt_child) {
++			if (!(tmp->mnt_flags & MNT_UNION))
++				continue;
++			/* Isn't this a bug? */
++			if (this.dentry->d_sb != tmp->mnt_mountpoint->d_sb)
++				continue;
++			if (lives_below_in_same_fs(this.dentry,
++						   tmp->mnt_mountpoint)) {
++				spin_unlock(&vfsmount_lock);
++				pathput(&this);
++				return 1;
++			}
 +		}
-+	}
++		spin_unlock(&vfsmount_lock);
 +
-+	return ret;
-+}
++		/* check our mountpoint next */
++		tmp = mntget(this.mnt->mnt_parent);
++		dput(this.dentry);
++		this.dentry = dget(this.mnt->mnt_mountpoint);
++		mntput(this.mnt);
++		this.mnt = tmp;
++	} while (this.mnt != this.mnt->mnt_parent);
 +
-+/*
-+ * There are four filldir() wrapper necessary for the union mount readdir
-+ * implementation:
-+ *
-+ * - filldir_topmost(): fills the union's readdir cache and the user space
-+ *			buffer. This is only used for the topmost directory
-+ *			in the union stack.
-+ * - filldir_topmost_cacheonly(): only fills the union's readdir cache.
-+ *			This is only used for the topmost directory in the
-+ *			union stack.
-+ * - filldir_overlaid(): fills the union's readdir cache and the user space
-+ *			buffer. This is only used for directories on the
-+ *			stack's lower layers.
-+ * - filldir_overlaid_cacheonly(): only fills the union's readdir cache.
-+ *			This is only used for directories on the stack's
-+ *			lower layers.
-+ */
-+
-+struct union_cache_callback {
-+	struct getdents_callback *buf;	/* original getdents_callback */
-+	struct list_head list;		/* list of union cache entries */
-+	filldir_t filler;		/* the filldir() we should call */
-+	loff_t offset;			/* base offset of our dirents */
-+	loff_t count;			/* maximum number of bytes to "read" */
-+};
-+
-+static int filldir_topmost(void *buf, const char *name, int namlen,
-+			   loff_t offset, u64 ino, unsigned int d_type)
-+{
-+	struct union_cache_callback *cb = buf;
-+
-+	union_cache_add_entry(&cb->list, name, namlen);
-+	return cb->filler(cb->buf, name, namlen, cb->offset + offset, ino,
-+			  d_type);
-+}
-+
-+static int filldir_topmost_cacheonly(void *buf, const char *name, int namlen,
-+				     loff_t offset, u64 ino,
-+				     unsigned int d_type)
-+{
-+	struct union_cache_callback *cb = buf;
-+
-+	if (offset > cb->count)
-+		return -EINVAL;
-+
-+	union_cache_add_entry(&cb->list, name, namlen);
++	pathput(&this);
 +	return 0;
 +}
 +
-+static int filldir_overlaid(void *buf, const char *name, int namlen,
-+			    loff_t offset, u64 ino, unsigned int d_type)
++int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
++		    struct vfsmount *dest_mnt, struct dentry *dest_dentry)
 +{
-+	struct union_cache_callback *cb = buf;
++	struct union_mount *this, *um;
 +
-+	switch (namlen) {
-+	case 2:
-+		if (name[1] != '.')
-+			break;
-+	case 1:
-+		if (name[0] != '.')
-+			break;
++	BUG_ON(!IS_MNT_UNION(mnt));
++
++	this = union_alloc(dentry, mnt, dest_dentry, dest_mnt);
++	if (!this)
++		return -ENOMEM;
++
++	spin_lock(&union_lock);
++	um = union_lookup(dentry, mnt);
++	if (um) {
++		BUG_ON((um->u_next.dentry != dest_dentry) ||
++		       (um->u_next.mnt != dest_mnt));
++		spin_unlock(&union_lock);
++		union_put(this);
 +		return 0;
 +	}
-+
-+	if (union_cache_find_entry(&cb->list, name, namlen))
-+		return 0;
-+
-+	union_cache_add_entry(&cb->list, name, namlen);
-+	return cb->filler(cb->buf, name, namlen, cb->offset + offset, ino,
-+			  d_type);
-+}
-+
-+static int filldir_overlaid_cacheonly(void *buf, const char *name, int namlen,
-+				      loff_t offset, u64 ino,
-+				      unsigned int d_type)
-+{
-+	struct union_cache_callback *cb = buf;
-+
-+	if (offset > cb->count)
-+		return -EINVAL;
-+
-+	switch (namlen) {
-+	case 2:
-+		if (name[1] != '.')
-+			break;
-+	case 1:
-+		if (name[0] != '.')
-+			break;
-+		return 0;
-+	}
-+
-+	if (union_cache_find_entry(&cb->list, name, namlen))
-+		return 0;
-+
-+	union_cache_add_entry(&cb->list, name, namlen);
++	__union_hash(this);
++	spin_unlock(&union_lock);
 +	return 0;
 +}
 +
 +/*
-+ * readdir_union_cache - A helper to fill the readdir cache
++ * follow_union_down - follow the union stack one layer down
++ *
++ * This is called to traverse the union stack from one layer to the next
++ * overlayed one. follow_union_down() is called by various lookup functions
++ * that are aware of union mounts.
++ *
++ * Returns none zero if followed to the next layer, zero otherwise.
 + */
-+static int readdir_union_cache(struct file *file, void *_buf, filldir_t filler)
++int follow_union_down(struct vfsmount **mnt, struct dentry **dentry)
 +{
-+	struct union_cache_callback *cb = _buf;
-+	int old_count;
-+	loff_t old_pos;
-+	int res;
++	struct union_mount *um;
 +
-+	old_count = cb->count;
-+	cb->count = ((file->f_pos > i_size_read(file->f_path.dentry->d_inode)) ?
-+		      i_size_read(file->f_path.dentry->d_inode) :
-+		      file->f_pos) & INT_MAX;
-+	old_pos = file->f_pos;
-+	file->f_pos = 0;
-+	res = file->f_op->readdir(file, _buf, filler);
-+	file->f_pos = old_pos;
-+	cb->count = old_count;
-+	return res;
++	if (!IS_MNT_UNION(*mnt))
++		return 0;
++
++	spin_lock(&union_lock);
++	um = union_lookup(*dentry, *mnt);
++	spin_unlock(&union_lock);
++	if (um) {
++		pathget(&um->u_next);
++		dput(*dentry);
++		*dentry = um->u_next.dentry;
++		mntput(*mnt);
++		*mnt = um->u_next.mnt;
++		return 1;
++	}
++	return 0;
 +}
 +
 +/*
-+ * readdir_union - A wrapper around ->readdir()
++ * follow_union_mount - follow the union stack to the topmost layer
 + *
-+ * This is a wrapper around the filesystems readdir(), which is walking
-+ * the union stack and calls ->readdir() for every directory in the stack.
-+ * The directory entries are read into the union mounts readdir cache to
-+ * support whiteout's and duplicate removal.
++ * This is called to traverse the union stack to the topmost layer. This is
++ * necessary for following parent pointers in an union mount.
++ *
++ * Returns none zero if followed to the topmost layer, zero otherwise.
 + */
-+int readdir_union(struct file *file, void *buf, filldir_t filler)
++int follow_union_mount(struct vfsmount **mnt, struct dentry **dentry)
 +{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	struct union_cache_callback cb;
-+	struct path path;
-+	loff_t offset = 0;
-+	int res;
++	struct union_mount *um;
++	int res = 0;
 +
-+	mutex_lock(&inode->i_mutex);
-+	if (IS_DEADDIR(inode)) {
-+		mutex_unlock(&inode->i_mutex);
-+		return -ENOENT;
-+	}
++	while (IS_UNION(*dentry)) {
++		spin_lock(&dcache_lock);
++		spin_lock(&union_lock);
++		um = union_rlookup(*dentry, *mnt);
++		if (um)
++			pathget(&um->u_this);
++		spin_unlock(&union_lock);
++		spin_unlock(&dcache_lock);
 +
-+	INIT_LIST_HEAD(&cb.list);
-+	cb.buf = buf;
-+	cb.filler = filler;
-+	cb.offset = 0;
-+	offset = i_size_read(file->f_path.dentry->d_inode);
-+	cb.count = file->f_pos;
-+
-+	if (file->f_pos > 0) {
 +		/*
-+		 * We have already read from this dir, lets read that stuff to
-+		 * our union-cache only
++		 * Q: Aaargh, how do I validate the topmost dentry pointer?
++		 * A: Eeeeasy! We took the dcache_lock and union_lock. Since
++		 *    this protects from any dput'ng going on, we know that the
++		 *    dentry is valid since the union is unhashed under
++		 *    dcache_lock too.
 +		 */
-+		res = readdir_union_cache(file, &cb,
-+					  filldir_topmost_cacheonly);
-+		if (res) {
-+			mutex_unlock(&inode->i_mutex);
-+			goto out;
-+		}
++		if (!um)
++			break;
++		dput(*dentry);
++		*dentry = um->u_this.dentry;
++		mntput(*mnt);
++		*mnt = um->u_this.mnt;
++		res = 1;
 +	}
 +
-+	if (file->f_pos < offset) {
-+		res = file->f_op->readdir(file, &cb, filldir_topmost);
-+		file_accessed(file);
-+		if (res) {
-+			mutex_unlock(&inode->i_mutex);
-+			goto out;
-+		}
-+		/* We read until EOF of this directory */
-+		file->f_pos = offset;
-+	}
-+
-+	mutex_unlock(&inode->i_mutex);
-+
-+	path = file->f_path;
-+	pathget(&path);
-+	while (follow_union_down(&path.mnt, &path.dentry)) {
-+		struct file *ftmp;
-+
-+		/* get path reference for filep */
-+		pathget(&path);
-+		ftmp = dentry_open(path.dentry, path.mnt,
-+				   ((file->f_flags & ~(O_ACCMODE)) |
-+				    O_RDONLY | O_DIRECTORY | O_NOATIME));
-+		if (IS_ERR(ftmp)) {
-+			res = PTR_ERR(ftmp);
-+			break;
-+		}
-+
-+		inode = path.dentry->d_inode;
-+		mutex_lock(&inode->i_mutex);
-+
-+		/* rearrange the file position */
-+		cb.offset += offset;
-+		offset = i_size_read(inode);
-+		ftmp->f_pos = file->f_pos - cb.offset;
-+		cb.count = ftmp->f_pos;
-+		if (ftmp->f_pos < 0) {
-+			mutex_unlock(&inode->i_mutex);
-+			fput(ftmp);
-+			break;
-+		}
-+
-+		res = -ENOENT;
-+		if (IS_DEADDIR(inode))
-+			goto out_fput;
-+
-+		if (ftmp->f_pos > 0) {
-+			/*
-+			 * We have already read from this dir, lets read that
-+			 * stuff to our union-cache only
-+			 */
-+			res = readdir_union_cache(ftmp, &cb,
-+						  filldir_overlaid_cacheonly);
-+			if (res)
-+				goto out_fput;
-+		}
-+
-+		if (ftmp->f_pos < offset) {
-+			res = ftmp->f_op->readdir(ftmp, &cb, filldir_overlaid);
-+			file_accessed(ftmp);
-+			if (res)
-+				file->f_pos += ftmp->f_pos;
-+			else
-+				/*
-+				 * We read until EOF of this directory, so lets
-+				 * advance the f_pos by the maximum offset
-+				 * (i_size) of this directory
-+				 */
-+				file->f_pos += offset;
-+		}
-+
-+		file_accessed(ftmp);
-+
-+out_fput:
-+		mutex_unlock(&inode->i_mutex);
-+		fput(ftmp);
-+
-+		if (res)
-+			break;
-+	}
-+	pathput(&path);
-+out:
-+	union_cache_free(&cb.list);
 +	return res;
 +}
---- a/include/linux/union.h
-+++ b/include/linux/union.h
-@@ -53,6 +53,7 @@ extern void __shrink_d_unions(struct den
- extern int attach_mnt_union(struct vfsmount *, struct vfsmount *,
- 			    struct dentry *);
- extern void detach_mnt_union(struct vfsmount *);
-+extern int readdir_union(struct file *, void *, filldir_t);
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -93,6 +93,15 @@ struct dentry {
+ 	struct dentry *d_parent;	/* parent directory */
+ 	struct qstr d_name;
  
- #else /* CONFIG_UNION_MOUNT */
- 
-@@ -69,5 +70,29 @@ extern void detach_mnt_union(struct vfsm
- #define detach_mnt_union(x)		do { } while (0)
- 
- #endif	/* CONFIG_UNION_MOUNT */
++#ifdef CONFIG_UNION_MOUNT
++	/*
++	 * The following fields are used by the VFS based union mount
++	 * implementation. Both are protected by union_lock!
++	 */
++	struct list_head d_unions;	/* list of union_mount's */
++	unsigned int d_unionized;	/* unions referencing this dentry */
++#endif
 +
-+static inline int do_readdir(struct file *file, void *buf, filldir_t filler)
-+{
-+	struct inode *inode = file->f_path.dentry->d_inode;
-+	int res;
+ 	struct list_head d_lru;		/* LRU list */
+ 	/*
+ 	 * d_child and d_rcu can share memory
+--- /dev/null
++++ b/include/linux/union.h
+@@ -0,0 +1,61 @@
++/*
++ * VFS based union mount for Linux
++ *
++ * Copyright (C) 2004-2007 IBM Corporation, IBM Deutschland Entwicklung GmbH.
++ * Copyright (C) 2007 Novell Inc.
++ *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ *
++ */
++#ifndef __LINUX_UNION_H
++#define __LINUX_UNION_H
++#ifdef __KERNEL__
++
++#include <linux/list.h>
++#include <asm/atomic.h>
++
++struct dentry;
++struct vfsmount;
 +
 +#ifdef CONFIG_UNION_MOUNT
-+	if (IS_MNT_UNION(file->f_path.mnt))
-+		res = readdir_union(file, buf, filler);
-+	else
-+#endif
-+	{
-+		mutex_lock(&inode->i_mutex);
-+		res = -ENOENT;
-+		if (!IS_DEADDIR(inode)) {
-+			res = file->f_op->readdir(file, buf, filler);
-+			file_accessed(file);
-+		}
-+		mutex_unlock(&inode->i_mutex);
-+	}
 +
-+	return res;
-+}
++/*
++ * The new union mount structure.
++ */
++struct union_mount {
++	atomic_t u_count;		/* reference count */
++	struct mutex u_mutex;
++	struct list_head u_unions;	/* list head for d_unions */
++	struct hlist_node u_hash;	/* list head for seaching */
++	struct hlist_node u_rhash;	/* list head for reverse seaching */
 +
- #endif	/* __KERNEL__ */
- #endif	/* __LINUX_UNION_H */
++	struct path u_this;		/* this is me */
++	struct path u_next;		/* this is what I overlay */
++};
++
++#define IS_UNION(dentry)	(!list_empty(&(dentry)->d_unions) || \
++				 (dentry)->d_unionized)
++#define IS_MNT_UNION(mnt)	((mnt)->mnt_flags & MNT_UNION)
++
++extern int is_unionized(struct dentry *, struct vfsmount *);
++extern int append_to_union(struct vfsmount *, struct dentry *,
++			   struct vfsmount *, struct dentry *);
++extern int follow_union_down(struct vfsmount **, struct dentry **);
++extern int follow_union_mount(struct vfsmount **, struct dentry **);
++
++#else /* CONFIG_UNION_MOUNT */
++
++#define IS_UNION(x)			(0)
++#define IS_MNT_UNION(x)			(0)
++#define is_unionized(x, y)		(0)
++#define append_to_union(x1, y1, x2, y2)	({ BUG(); (0); })
++#define follow_union_down(x, y)		({ (0); })
++#define follow_union_mount(x, y)	({ (0); })
++
++#endif	/* CONFIG_UNION_MOUNT */
++#endif	/* __KERNEL__ */
++#endif	/* __LINUX_UNION_H */
 
 -- 
 
