@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938432AbXG3Qrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939029AbXG3QvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938432AbXG3Qrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761491AbXG3Qr2
+	id S939029AbXG3QvS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932206AbXG3QvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:47:28 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:49458 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759242AbXG3Qr1 (ORCPT
+	Mon, 30 Jul 2007 12:51:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51755 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761023AbXG3QvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:47:27 -0400
+	Mon, 30 Jul 2007 12:51:06 -0400
 Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Matthew Hawkins <darthmdh@gmail.com>
 Cc: Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
        ck@vds.kolivas.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
+       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
 In-Reply-To: <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
 References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
 	 <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>
@@ -28,11 +27,10 @@ References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
 	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
 	 <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
 Content-Type: text/plain
-Organization: IBM Corporation
-Date: Mon, 30 Jul 2007 18:50:43 +0200
-Message-Id: <1185814243.7377.2.camel@localhost>
+Date: Mon, 30 Jul 2007 18:50:28 +0200
+Message-Id: <1185814234.16771.1.camel@lappy>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -55,13 +53,11 @@ On Tue, 2007-07-31 at 02:25 +1000, Matthew Hawkins wrote:
 > 
 > Bad call on the "nobody was using these", Martin :(
 
-Do we care ? The code should be replaced with ptep_get_and_clear +
-pte_modify anyway..
+Nobody in the upstream kernel did, and that is what matters. If you care
+about your kernel code get it upstream.
 
--- 
-blue skies,
-  Martin.
+As for breaking binary crap, thats a bonus. Break them hard, break them
+often.
 
-"Reality continues to ruin my life." - Calvin.
-
+Kudos to Martin.
 
