@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937793AbXG3QM5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938497AbXG3QOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937793AbXG3QM5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:12:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762697AbXG3QMt
+	id S938497AbXG3QOa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbXG3QOH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:12:49 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53920 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762560AbXG3QMs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:12:48 -0400
-Date: Mon, 30 Jul 2007 17:19:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Attila Nagy <bra@fsn.hu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Hangs and reboots under high loads, oops with DEBUG_SHIRQ
-Message-ID: <20070730171953.5fe93979@the-village.bc.nu>
-In-Reply-To: <46AE0420.4030900@fsn.hu>
-References: <46AE0420.4030900@fsn.hu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 12:14:07 -0400
+Received: from mx1.suse.de ([195.135.220.2]:40546 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764281AbXG3QOF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:14:05 -0400
+Message-Id: <20070730161323.329111957@weierstrass.suse.de>
+References: <20070730161323.100048969@weierstrass.suse.de>
+User-Agent: quilt/0.46-62.2
+Date: Mon, 30 Jul 2007 18:13:25 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: [RFC 02/26] VFS: Export dput_path() and path_to_nameidata()
+Content-Disposition: inline; filename=um/vfs-export-dput_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-O> MCE:
-> [153103.918654] HARDWARE ERROR
-> [153103.918655] CPU 1: Machine Check Exception:                5 Bank 0: 
-> b200004010000400
-> [153104.066037] RIP !INEXACT! 10:<ffffffff802569e6> {mwait_idle+0x46/0x60}
-> [153104.145699] TSC 1167e915e93ce
-> [153104.183554] This is not a software problem!
-> [153104.234724] Run through mcelog --ascii to decode and contact your 
-> hardware vendor
+This patch makes dput_path() and path_to_nameidata() general available.
 
-If you it through mcelog as it suggests it wil decode the meaning of the
-MCE data and that should give you some idea. Generally speaking MCE
-errors are real hardware errors but can certainly be caused by external
-factors (power supply glitches, heat etc)
+Signed-off-by: Jan Blunck <jblunck@suse.de>
+---
+ fs/namei.c            |   16 ----------------
+ include/linux/namei.h |   15 +++++++++++++++
+ 2 files changed, 15 insertions(+), 16 deletions(-)
+
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -573,22 +573,6 @@ fail:
+ 	return PTR_ERR(link);
+ }
+ 
+-static inline void dput_path(struct path *path, struct nameidata *nd)
+-{
+-	dput(path->dentry);
+-	if (path->mnt != nd->mnt)
+-		mntput(path->mnt);
+-}
+-
+-static inline void path_to_nameidata(struct path *path, struct nameidata *nd)
+-{
+-	dput(nd->dentry);
+-	if (nd->mnt != path->mnt)
+-		mntput(nd->mnt);
+-	nd->mnt = path->mnt;
+-	nd->dentry = path->dentry;
+-}
+-
+ static __always_inline int __do_follow_link(struct path *path, struct nameidata *nd)
+ {
+ 	int error;
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -119,5 +119,20 @@ static inline void pathput(struct path *
+ 	dput(path->dentry);
+ 	mntput(path->mnt);
+ }
++static inline void dput_path(struct path *path, struct nameidata *nd)
++{
++	dput(path->dentry);
++	if (path->mnt != nd->mnt)
++		mntput(path->mnt);
++}
++
++static inline void path_to_nameidata(struct path *path, struct nameidata *nd)
++{
++	dput(nd->dentry);
++	if (nd->mnt != path->mnt)
++		mntput(nd->mnt);
++	nd->mnt = path->mnt;
++	nd->dentry = path->dentry;
++}
+ 
+ #endif /* _LINUX_NAMEI_H */
+
+-- 
+
