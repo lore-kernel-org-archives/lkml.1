@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934649AbXG3NLm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935624AbXG3NTQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934649AbXG3NLm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 09:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760059AbXG3NLc
+	id S935624AbXG3NTQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 09:19:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbXG3NTA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 09:11:32 -0400
-Received: from xsmtp1.ethz.ch ([82.130.70.13]:46854 "EHLO xsmtp1.ethz.ch"
+	Mon, 30 Jul 2007 09:19:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53484 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760032AbXG3NLb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 09:11:31 -0400
-X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 09:11:31 EDT
-Message-ID: <46ADDFB2.9070709@inf.ethz.ch>
-Date: Mon, 30 Jul 2007 14:55:14 +0200
-From: Stefan Walter <stefan.walter@inf.ethz.ch>
-User-Agent: Mail/News 1.5.0.9 (X11/20061220)
+	id S1759062AbXG3NS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 09:18:59 -0400
+From: Steve Grubb <sgrubb@redhat.com>
+To: Adrian Bunk <bunk@stusta.de>
+Subject: Re: [2.6 patch] kernel/audit.c: change the exports to EXPORT_SYMBOL_GPL
+Date: Mon, 30 Jul 2007 09:18:41 -0400
+User-Agent: KMail/1.9.7
+Cc: David Woodhouse <dwmw2@infradead.org>, linux-audit@redhat.com,
+       linux-kernel@vger.kernel.org
+References: <20070729150233.GX16817@stusta.de>
+In-Reply-To: <20070729150233.GX16817@stusta.de>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: rpc.mountd crashes when extensively using netgroups
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jul 2007 12:55:14.0449 (UTC) FILETIME=[DF352810:01C7D2A8]
+Content-Disposition: inline
+Message-Id: <200707300918.41408.sgrubb@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sunday 29 July 2007 11:02:33 Adrian Bunk wrote:
+> They are still completely unused, but hopefully some of the theoretical
+> code that might use it will appear in the kernel in the near future...
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> Acked-by: Steve Grubb <sgrubb@redhat.com>
 
-we are seeing rpc.mountd crashes on our Red Hat EL4 systems.
-We have tracked down the bug and it seems to be still present
-in the current nfs-utils source.
+I am reluctant to say that I ack this patch for a couple reasons:
 
-We are making extensive use of netgroups for NFS exports. On
-a large file server with hundreds of home directories we export
-every directory to a unique netgroup. Member netgroups are used
-to export to sets of machines. The following example illustrates
-what we do:
+1) We are talking about a basic logging facility that should be open like 
+printk() is.
 
-# cat /etc/exports
-/export/home/jane @jane(async,rw,no_subtree_check,fsid=10000)
-/export/home/joe @joe(async,rw,no_subtree_check,fsid=10001)
-# cat /etc/netgroup
-lab_1 (workstation1,,) (workstation2,,) (workstation3)
-offices_1 (workstation4,,) (workstation5,,)
-jane lab_1 offices_1
-joe offices_1 (joeslaptop,,)
+2) There are no user space GPL restrictions to use the audit netlink API, so 
+why restrict who can send audit events via the in-kernel interfaces? It just 
+doesn't make sense to have 2 different licenses for in-kernel vs user space 
+audit event recording. Its the same subsystem differing only by where the 
+event originated.
 
-We do this on a much larger scale though. The bug we ran into is
-in line 96 in utils/mountd/auth.c. The strcpy can corrupt
-memory when it copies the string returned by client_compose() to
-my_client.m_hostname which has a fixed size of 1024 bytes. 
-For our example above, client_compose() returns "@joe,@jane"
-for any machine in the offices_1 netgroup. Unfortunately we have
-a machine to which roughly 150 netgroups like @joe or @jane
-export to and client_compose() returns a string over 1300 bytes
-long and rpc.mountd nicely segfaults.
- 
-To prevent the crash is of course trivial: Inserting a simple
-'if (strlen(n) > 1024) return NULL;' before line 96 does the job.
+3) The API has been unrestricted for years. I don't think its a good idea to 
+take a basic logging API away from people that have programmed to it.
 
-There are however two issues for which we could not find an easy
-solution:
+4) In the absence of the in-kernel audit logging api, people will either 
+create parallel infrastructure or resort to using printk. It will be 
+difficult for end users to correlate security events from 2 different logs.
 
- 1. For every client rpc.mountd and the kernel seem to exchange
-    and use lists with _all_ netgroups used in exports that are
-    relevant for granting permission to some share for a particular
-    client. We could imagine two optimizations here:
+I would support there being a mechanism for anyone who wants to reduce the 
+number of exported symbols for their own kernels - I believe that is the 
+basic problem here. But I think there are enough reasons to continue keeping 
+this API open and unrestricted for anyone that wants it that way.
 
-       * Resolve netgroups and only put the (member) netgroups that
-         contained the host name that would be used to authorize
-         a mount in the list.
-
-       * Use the list of mounted paths per client and only put the
-         netgroup(s) used to export paths that are actually mounted
-         on a client. 
-
-    This also caused us severe performance problems because
-    rpc.mountd queries all these netgroups. We were initially using
-    a LDAP and mouting a directory took up to ten seconds
-    during which rpc.mountd was busily querying the LDAP server.
-    We got this down to two seconds using file based netgroups.
- 
- 2. Using a fixed size for NFSCLNT_IDMAX does not scale. Mounting
-    shares on a client for which the 'if' clause of the quick fix
-    becomes true will not be possible. We thought about enlarging
-    NFSCLNT_IDMAX and using a custom kernel but dropped the idea. 
-
-Our ultimate goal is to get Red Hat fix the code in nfs-utils 1.0.6
-that is used in RHEL4. A first step would be to get a suitable fix in
-the current nfs-utils. 
-
-Is there somebody on the mailing list who could see an easy fix or
-would have an opinion on how to best address the issues we see?
-
-Thanks in advance and best regards,
-
-Stefan
-
-
+-Steve
