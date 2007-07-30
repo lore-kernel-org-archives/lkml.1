@@ -1,125 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932756AbXG3H3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbXG3HlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932756AbXG3H3w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 03:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762194AbXG3H3l
+	id S1756924AbXG3HlW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 03:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXG3HlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 03:29:41 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:33164 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761708AbXG3H3j (ORCPT
+	Mon, 30 Jul 2007 03:41:12 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59017 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753546AbXG3HlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 03:29:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IAVkLtc9lLmCvO7bPNlHplTAfAEE18h0djUBCQUGrKW8vRz71Sq1jrx6q49nvl0VQIIwmtFUHt35zDjnw+kHpAmAg/WJMovQYv4lcbvICgH40fxsTrvW52jADrfaWOtGRQR/C09n6zevIotzP9GapRhx2b2UP/BOmlxoz474pRA=
-Message-ID: <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
-Date: Mon, 30 Jul 2007 09:29:38 +0200
-From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Jarek Poplawski" <jarkao2@o2.pl>,
-       "Thomas Gleixner" <tglx@linutronix.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-In-Reply-To: <20070726091254.GA8063@elte.hu>
+	Mon, 30 Jul 2007 03:41:11 -0400
+Message-ID: <46AD95E1.6020100@sgi.com>
+Date: Mon, 30 Jul 2007 09:40:17 +0200
+From: Jes Sorensen <jes@sgi.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Tony Luck <tony.luck@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ia64@vger.kernel.org, linux-altix@sgi.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ia64: Remove a few duplicate includes
+References: <200707300028.42496.jesper.juhl@gmail.com>
+In-Reply-To: <200707300028.42496.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070724080534.GC18740@elte.hu>
-	 <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
-	 <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos>
-	 <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
-	 <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos>
-	 <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local>
-	 <20070726091254.GA8063@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/7/26, Ingo Molnar <mingo@elte.hu>:
-> (..)
-> yeah - i meant to cover both arches but forgot about x86_64 - updated
-> patch attached below.
->
->         Ingo
->
-> ----------------->
-> Subject: x86: activate HARDIRQS_SW_RESEND
-> From: Ingo Molnar <mingo@elte.hu>
->
-> activate the software-triggered IRQ-resend logic.
->
-> it appears some chipsets/cpus do not handle local-APIC driven IRQ
-> resends all that well, so always use the soft mechanism to trigger
-> the execution of pending interrupts.
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Jesper Juhl wrote:
+> (sorry about the duplicate mail, forgot a recipient first time)
+> 
+> Hi,
+> This patch removes a few duplicate includes from arch/ia64/
+> Please consider merging :-)
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+
+sn2/Altix portion is fine with me, so.
+
+Acked-by: Jes Sorensen <jes@sgi.com>
+
 > ---
->  arch/i386/Kconfig   |    4 ++++
->  arch/x86_64/Kconfig |    4 ++++
->  kernel/irq/manage.c |    8 ++++++++
->  3 files changed, 16 insertions(+)
->
-> Index: linux-rt-rebase.q/arch/i386/Kconfig
-> ===================================================================
-> --- linux-rt-rebase.q.orig/arch/i386/Kconfig
-> +++ linux-rt-rebase.q/arch/i386/Kconfig
-> @@ -1284,6 +1284,10 @@ config GENERIC_PENDING_IRQ
->         depends on GENERIC_HARDIRQS && SMP
->         default y
->
-> +config HARDIRQS_SW_RESEND
-> +       bool
-> +       default y
-> +
->  config X86_SMP
->         bool
->         depends on SMP && !X86_VOYAGER
-> Index: linux-rt-rebase.q/arch/x86_64/Kconfig
-> ===================================================================
-> --- linux-rt-rebase.q.orig/arch/x86_64/Kconfig
-> +++ linux-rt-rebase.q/arch/x86_64/Kconfig
-> @@ -721,6 +721,10 @@ config GENERIC_PENDING_IRQ
->         depends on GENERIC_HARDIRQS && SMP
->         default y
->
-> +config HARDIRQS_SW_RESEND
-> +       bool
-> +       default y
-> +
->  menu "Power management options"
->
->  source kernel/power/Kconfig
-> Index: linux-rt-rebase.q/kernel/irq/manage.c
-> ===================================================================
-> --- linux-rt-rebase.q.orig/kernel/irq/manage.c
-> +++ linux-rt-rebase.q/kernel/irq/manage.c
-> @@ -175,6 +175,14 @@ void enable_irq(unsigned int irq)
->                 desc->depth--;
->         }
->         spin_unlock_irqrestore(&desc->lock, flags);
-> +#ifdef CONFIG_HARDIRQS_SW_RESEND
-> +       /*
-> +        * Do a bh disable/enable pair to trigger any pending
-> +        * irq resend logic:
-> +        */
-> +       local_bh_disable();
-> +       local_bh_enable();
-> +#endif
->  }
->  EXPORT_SYMBOL(enable_irq);
+> 
+>  arch/ia64/ia32/sys_ia32.c   |    1 -
+>  arch/ia64/kernel/setup.c    |    1 -
+>  arch/ia64/sn/kernel/setup.c |    1 -
+>  3 files changed, 0 insertions(+), 3 deletions(-)
+> 
+> diff --git a/arch/ia64/ia32/sys_ia32.c b/arch/ia64/ia32/sys_ia32.c
+> index af10462..a3405b3 100644
+> --- a/arch/ia64/ia32/sys_ia32.c
+> +++ b/arch/ia64/ia32/sys_ia32.c
+> @@ -34,7 +34,6 @@
+>  #include <linux/uio.h>
+>  #include <linux/nfs_fs.h>
+>  #include <linux/quota.h>
+> -#include <linux/syscalls.h>
+>  #include <linux/sunrpc/svc.h>
+>  #include <linux/nfsd/nfsd.h>
+>  #include <linux/nfsd/cache.h>
+> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+> index 7cecd29..cd9a37a 100644
+> --- a/arch/ia64/kernel/setup.c
+> +++ b/arch/ia64/kernel/setup.c
+> @@ -60,7 +60,6 @@
+>  #include <asm/smp.h>
+>  #include <asm/system.h>
+>  #include <asm/unistd.h>
+> -#include <asm/system.h>
+>  
+>  #if defined(CONFIG_SMP) && (IA64_CPU_SIZE > PAGE_SIZE)
+>  # error "struct cpuinfo_ia64 too big!"
+> diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
+> index 684b1c9..1f38a3a 100644
+> --- a/arch/ia64/sn/kernel/setup.c
+> +++ b/arch/ia64/sn/kernel/setup.c
+> @@ -25,7 +25,6 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/acpi.h>
+>  #include <linux/compiler.h>
+> -#include <linux/sched.h>
+>  #include <linux/root_dev.h>
+>  #include <linux/nodemask.h>
+>  #include <linux/pm.h>
+> 
 
-This patch didn't help (tested on 2.6.22.1) - ne2k_pci timed out.
-
-ps: I retested all patches posted in this thread on top of 2.6.22.1
-and behavior from 2.6.21.3 didn't changed. My next tests will be on
-2.6.22.x only.
-
-Regards,
-Marcin Slusarz
