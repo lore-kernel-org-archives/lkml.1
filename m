@@ -1,56 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939286AbXG3JfN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965722AbXG3Jf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939286AbXG3JfN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 05:35:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939301AbXG3Jeo
+	id S965722AbXG3Jf4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 05:35:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938322AbXG3Jfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 05:34:44 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1554 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939288AbXG3Jel (ORCPT
+	Mon, 30 Jul 2007 05:35:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:35090 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935875AbXG3Jfo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 05:34:41 -0400
-Date: Mon, 30 Jul 2007 10:34:36 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Robert Hancock <hancockr@shaw.ca>
-cc: Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-In-Reply-To: <46AA3801.7090204@shaw.ca>
-Message-ID: <Pine.LNX.4.64N.0707301023150.12082@blysk.ds.pg.gda.pl>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca>
- <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
- <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
- <46AA3801.7090204@shaw.ca>
+	Mon, 30 Jul 2007 05:35:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=CxMiquFfTe1WHOjASDJUXUWxwGMaDou6bHEaFRH6JUFNdwK8qBjK42X4ofVsHmnlwRnWx2iFgQwfu7d2ZEBWtMRnkbWtY5k3THfbOZusZeO+g/Ll86mG4pUYD6VMCXHcioiJqI4PaIE4c7s0i7bl5KEigQKNMVsrK2i2FIKH4KA=
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Jan Kratochvil <jan.kratochvil@redhat.com>
+Subject: Re: [BUG] i386 relocable kernel breakes /proc/kcore debugging
+Date: Mon, 30 Jul 2007 12:32:01 +0300
+User-Agent: KMail/1.9.4
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <200707280443.44048.maximlevitsky@gmail.com> <20070730080303.GA6071@in.ibm.com> <20070730084116.GA18263@host0.dyn.jankratochvil.net>
+In-Reply-To: <20070730084116.GA18263@host0.dyn.jankratochvil.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707301232.01989.maximlevitsky@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007, Robert Hancock wrote:
+On Monday 30 July 2007 11:41, Jan Kratochvil wrote:
+> On Mon, 30 Jul 2007 10:03:03 +0200, Vivek Goyal wrote:
+> > On Sat, Jul 28, 2007 at 04:43:43AM +0300, Maxim Levitsky wrote:
+>
+> ...
+>
+> > > gdb 'thinks' that all kernel symbols are below 0x80000000 , while they
+> > > are at 0xC000....
+> > >
+> > > Turning CONFIG_RELOCATABLE off fixes that, so I assume that is the
+> > > reason for that.
+> >
+> > This is a gdb issue. I had raised it in gdb mailing list some time back.
+> >
+> > http://sourceware.org/ml/gdb/2006-08/msg00137.html
+>
+> There was the patch post:
+> 	http://sources.redhat.com/ml/gdb/2006-08/msg00182.html
+>
+> > What version of gdb you are using? I know it got fixed for gdb shipped
+> > with RHEL5. I am not sure about what upstream version of gdb it got fixed
+> > in.
+>
+> It did not make it to the upstream as the patch above is an imperfect one.
+> It is fixed in RH gdb-6.5-5 upwards, therefore Fedora 6 + RHEL-5.
+> 	http://cvs.fedora.redhat.com/viewcvs/*checkout*/devel/gdb/gdb-6.5-bz203661
+>-emit-relocs.patch?root=core
+>
+>
+> Regards,
+> Jan
 
-> > The TTY line discipline driver could do that based on the amount of received
-> > data present in its buffer.  And it should if asked to (a brief look at
-> > drivers/char/n_tty.c reveals it does; obviously there may be a bug 
-> 
-> Really, where? In my look through the code I haven't found any mechanism that
-> would result in RTS being lowered based on TTY buffers filling up, at least
-> not in the 8250 case.
+Hi,
 
- Look for calls to ->throttle() and ->unthrottle().  XON and XOFF might be 
-used instead as a result of these calls though, depending on terminal 
-settings.
+I am using mandriva 2007 and gdb that come with it ( 6.3 I think)
+I also compiled gdb 6.6, but the same issue persist.
 
-> In this situation, though, it appears it's not the TTY buffers that are
-> filling but the UART's own buffer. I would think this must be caused by some
-> kind of interrupt latency that results in not draining the FIFO in time.
+Thanks for the info, and I will try to apply the above patch and see if helps,
 
- Well, the UART only has its FIFO which is rather small, so automatic flow 
-control would be useful.  Though, admittedly, tty_insert_flip_char() might 
-return some kind of a status related to how much space is left in the 
-receive buffer which would indicate that there is a lag in data stream 
-processing -- which in turn may relate to the system being loaded, so that 
-the receive ISR could decide whether to negate RTS itself for the less 
-capable UARTs (i.e. ones with no autoflow and a tiny or no FIFO).
+Will it make into gdb?
 
-  Maciej
+By the way, I had another issue with /proc/kcore.
+That enabling sparse memory model instead of flat causes /proc/kcore not to 
+work at all. I traced that to a "FIXME" in sparcemem.
+
+/* XXX: FIXME -- wli */
+#define kern_addr_valid(kaddr)  (0)
+
+Kconfig should contatin a warning for those who select sparcemem 
+that /proc/kcore will be disabled.
+or maybe this should be implemented (it is not easy since spacemem allows 
+memory to be discontinous, and nobody wants to allow user to read reserved 
+regions)
+
+Except the above, /proc/kcore works fine, and it is very usefull.
+
+Best regards,
+	Maxim Levitsky
+
+Best regards,
+	Maxim Levitsky
