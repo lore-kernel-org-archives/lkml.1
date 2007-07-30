@@ -1,38 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967171AbXG3Qfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967149AbXG3QgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967171AbXG3Qfv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764063AbXG3Qeb
+	id S967149AbXG3QgX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966990AbXG3Qeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:34:31 -0400
+	Mon, 30 Jul 2007 12:34:36 -0400
 Received: from nf-out-0910.google.com ([64.233.182.185]:6001 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966919AbXG3Qe0 (ORCPT
+	with ESMTP id S966986AbXG3Qed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:34:26 -0400
+	Mon, 30 Jul 2007 12:34:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=NQZ6/K45HVz22EsL3kpHdVg4iiWGCTVEnCQU2VAzNZd2dZ54cBR861cpa3OYKWUWeVH8F3y3QeBRjyJwroZhZ1MfN8bY/FKhhNPkzbLUhlMICd74NU0tk36wjDwVspF4CMSKemsgCd/IVEH3ZHhSbRys7xJM5cWFe4GcS6ZShQs=
-Message-ID: <46AE130B.8020005@googlemail.com>
-Date: Mon, 30 Jul 2007 18:34:19 +0200
+        b=XpQA2mFd7Y/Fbv8JovCiPzAk7BMOsvfCLDYmfS5mmJ6OD2WlTFDQRJzgC5fBQU4auqriAXCOy3qpQMxLeQfNcmYdrSuFZ+7wcYzGr+O3ojiCyvHEN7X2apvgKa3HRR5IbIypoL0tIOG2M9gOG7V3yJP7eez0HcPZj1vbzr/wriQ=
+Message-ID: <46AE1313.2020103@googlemail.com>
+Date: Mon, 30 Jul 2007 18:34:27 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       v4l-dvb-maintainer@linuxtv.org, Thierry MERLE <thierry.merle@free.fr>,
-       "Dwaine P. Garden" <dwainegarden@rogers.com>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Adrian Bunk <bunk@stusta.de>, Trent Piepho <xyzzy@speakeasy.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: Re: [2/3] 2.6.23-rc1: known regressions with patches v3
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Tino Keitel <tino.keitel@gmx.de>,
+       Mark Hindley <mark@hindley.org.uk>
+Subject: Re: [3/3] 2.6.23-rc1: known regressions with patches v3
 References: <46AE114F.2010201@googlemail.com>
 In-Reply-To: <46AE114F.2010201@googlemail.com>
 X-Enigmail-Version: 0.95.2
@@ -65,56 +59,31 @@ Hugh Dickins                           2
 
 
 
-FS
+USB
 
-Subject         : NFSv4 poops itself
-References      : http://lkml.org/lkml/2007/7/27/144
+Subject         : 2.6.23-rc1: uhci_hcd. irq 4: nobody cared
+References      : http://lkml.org/lkml/2007/7/29/75
 Last known good : ?
-Submitter       : Jeff Garzik <jeff@garzik.org> 
+Submitter       : Mark Hindley <mark@hindley.org.uk>
 Caused-By       : ?
-Handled-By      : Trond Myklebust <Trond.Myklebust@netapp.com>
-Patch           : http://lkml.org/lkml/2007/7/27/183
-Status          : patch available
+Handled-By      : Alan Stern <stern@rowland.harvard.edu>
+Status          : unknown
 
-
-
-Media
-
-Subject         : usbvision: don't return an uninitialized value
-References      : http://lkml.org/lkml/2007/7/23/65
+Subject         : 2.6.23-rc1: USB hard disk broken
+References      : http://lkml.org/lkml/2007/7/25/62
 Last known good : ?
-Submitter       : Adrian Bunk <bunk@stusta.de>
-Caused-By       : Thierry MERLE <thierry.merle@free.fr>
-                  commit c5f48367fe54c46805774eeea8e828de54a5ad7b
-Handled-By      : Trent Piepho <xyzzy@speakeasy.org>
-Patch           : http://lkml.org/lkml/2007/7/23/114
-Status          : patch available
-
-
-
-Memory management
-
-Subject         : [bug] SLUB & freeing locks
-References      : http://lkml.org/lkml/2007/7/26/90
-Last known good : ?
-Submitter       : Ingo Molnar <mingo@elte.hu>
+Submitter       : Tino Keitel <tino.keitel@gmx.de>
 Caused-By       : ?
-Handled-By      : Peter Zijlstra <peterz@infradead.org>
-Patch           : http://lkml.org/lkml/2007/7/26/97
-Status          : patch available
+Handled-By      : Oliver Neukum <oliver@neukum.org>
+Status          : unknown
 
-
-
-SYSFS
-
-Subject         : sysfs/udev broken in 2.6.23-rc1
-References      : http://lkml.org/lkml/2007/7/24/276
+Subject         : BUG: sleeping function called from invalid context at drivers/usb/core/urb.c:524,in_atomic():1, irqs_disabled():0
+References      : http://lkml.org/lkml/2007/7/23/400
 Last known good : ?
-Submitter       : Simon Arlott
+Submitter       : Jeremy Fitzhardinge <jeremy@goop.org>
 Caused-By       : ?
-Handled-By      : Kay Sievers <kay.sievers@vrfy.org>
-                  Cornelia Huck <cornelia.huck@de.ibm.com>
-Patch           : http://lkml.org/lkml/2007/7/25/83
+Handled-By      : Oliver Neukum <oliver@neukum.org>
+Patch           : http://lkml.org/lkml/2007/7/24/203
 Status          : patch available
 
 
