@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939379AbXG3Jju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939273AbXG3Jnz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939379AbXG3Jju (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 05:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939270AbXG3Jjh
+	id S939273AbXG3Jnz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 05:43:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932499AbXG3Jnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 05:39:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33129 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939234AbXG3Jjf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 05:39:35 -0400
-Subject: Re: [PATCH -rt 7/9] introduce PICK_FUNCTION
-From: Peter Zijlstra <peterz@infradead.org>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-In-Reply-To: <20070730024720.690642602@mvista.com>
-References: <20070730024534.369897977@mvista.com>
-	 <20070730024720.690642602@mvista.com>
-Content-Type: text/plain
-Date: Mon, 30 Jul 2007 11:39:28 +0200
-Message-Id: <1185788368.7197.2.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 30 Jul 2007 05:43:47 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58480 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933881AbXG3Jnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 05:43:46 -0400
+Message-ID: <46ADB2CA.3070107@kernel.sg>
+Date: Mon, 30 Jul 2007 17:43:38 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+MIME-Version: 1.0
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs/partitions/check.c: add_partition() warning fixes
+References: <20070729025339.GB19311@kernel.sg> <20070730110831.68075b30@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070730110831.68075b30@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-29 at 19:45 -0700, Daniel Walker wrote:
+Hi Cornelia,
 
-> +#undef TYPE_EQUAL
-> +#define TYPE_EQUAL(var, type) \
-> +		__builtin_types_compatible_p(typeof(var), type *)
-> +
+Cornelia Huck wrote:
+> On Sun, 29 Jul 2007 10:53:39 +0800,
+> Eugene Teo <eugeneteo@kernel.sg> wrote:
+[...]
+>> +	return;
+>> +
+>> +err_out_del_link:
+>> +	sysfs_remove_link(&p->kobj, "subsystem");
+> 
+> You need a remove uevent if you did an add uevent above.
+> 
+>> +err_out_del_kobj:
+>> +	kobject_del(&p->kobj);
+>> +err_out:
+>> +	kfree(p);
+> 
+> Please use kobject_put() instead.
 
-If you're going to touch this code, could you perhaps change TYPE_EQUAL
-to do as it says and read like so:
+Thanks for your feedback.
 
-	__builtin_types_compatible_p(typeof(var), type)
-
-
-
+Eugene
