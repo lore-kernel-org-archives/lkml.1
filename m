@@ -1,49 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937397AbXG3BEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965841AbXG3BIW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937397AbXG3BEV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 21:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934959AbXG3BEO
+	id S965841AbXG3BIW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 21:08:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964829AbXG3BIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 21:04:14 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:38803 "EHLO mail.dvmed.net"
+	Sun, 29 Jul 2007 21:08:15 -0400
+Received: from ozlabs.org ([203.10.76.45]:53217 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933615AbXG3BEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 21:04:13 -0400
-Message-ID: <46AD390B.2080400@garzik.org>
-Date: Sun, 29 Jul 2007 21:04:11 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
+	id S1765285AbXG3BIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 21:08:14 -0400
+Subject: Re: [PATCH] Make lguest compile with CONFIG_BLOCK=n and
+	CONFIG_NET=n
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] SCSI bug fixes for 2.6.23-rc1
-References: <1185720592.3434.7.camel@localhost.localdomain>	 <46AD19F7.7040905@garzik.org> <1185756759.3434.19.camel@localhost.localdomain>
-In-Reply-To: <1185756759.3434.19.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lguest <lguest@ozlabs.org>
+In-Reply-To: <a781481a0707291748x5a70c2d3i83ef54d7f2336b33@mail.gmail.com>
+References: <46ACAFBF.6060609@googlemail.com>
+	 <1185755123.12151.102.camel@localhost.localdomain>
+	 <a781481a0707291748x5a70c2d3i83ef54d7f2336b33@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 30 Jul 2007 11:07:49 +1000
+Message-Id: <1185757669.12151.108.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> msleep_interruptible -> ssleep is a
-> change with zero practical impact for this driver,
+On Mon, 2007-07-30 at 06:18 +0530, Satyam Sharma wrote:
+> On 7/30/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > +config LGUEST_NET
+> > +       tristate
+> > +       depends on LGUEST_GUEST && NET
+> 
+> default y ?
 
-eh, how do you figure?
+Thanks, that does work better.  Clean configs get an "N" otherwise 8(
 
-A signal can clearly cause the abort-related functions to delay far 
-shorter than the driver wishes.
+> I /think/ the default "y" would also automatically become "m" if any of the
+> dependencies are modules ... probably need to test this, though.
 
-The msleep_interruptible() in arcmsr_wait_msgint_ready() probably isn't 
-fatal -- unless it's there to ensure the hardware isn't pounded -- but 
-again, a signal can cause a CPU-wasting busy loop that could last for 
-quite a while (in CPU terms).
+No, it doesn't seem to.  But LGUEST_GUEST is a bool anyway, so it's OK.
 
-	Jeff
+Thanks!
+Rusty.
+==
+Make lguest compile with CONFIG_BLOCK=n and CONFIG_NET=n
+
+Gabriel C reports lguest doesn't compile with CONFIG_BLOCK=n.  Fix
+this by introducing a config var for the block device, which depends
+on LGUEST && BLOCK.  Do the same for the net driver, rather then
+depending gratuitously on CONFIG_NET.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff -r 9e987fcabb16 drivers/block/Makefile
+--- a/drivers/block/Makefile	Mon Jul 30 09:47:25 2007 +1000
++++ b/drivers/block/Makefile	Mon Jul 30 10:02:32 2007 +1000
+@@ -31,4 +31,4 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ 
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
+-obj-$(CONFIG_LGUEST_GUEST)	+= lguest_blk.o
++obj-$(CONFIG_LGUEST_BLOCK)	+= lguest_blk.o
+diff -r 9e987fcabb16 drivers/lguest/Kconfig
+--- a/drivers/lguest/Kconfig	Mon Jul 30 09:47:25 2007 +1000
++++ b/drivers/lguest/Kconfig	Mon Jul 30 10:03:39 2007 +1000
+@@ -1,6 +1,6 @@ config LGUEST
+ config LGUEST
+ 	tristate "Linux hypervisor example code"
+-	depends on X86 && PARAVIRT && NET && EXPERIMENTAL && !X86_PAE
++	depends on X86 && PARAVIRT && EXPERIMENTAL && !X86_PAE
+ 	select LGUEST_GUEST
+ 	select HVC_DRIVER
+ 	---help---
+@@ -18,3 +18,13 @@ config LGUEST_GUEST
+ 	  The guest needs code built-in, even if the host has lguest
+ 	  support as a module.  The drivers are tiny, so we build them
+ 	  in too.
++
++config LGUEST_NET
++	tristate
++	default y
++	depends on LGUEST_GUEST && NET
++
++config LGUEST_BLOCK
++	default y
++	tristate
++	depends on LGUEST_GUEST && BLOCK
+diff -r 9e987fcabb16 drivers/net/Makefile
+--- a/drivers/net/Makefile	Mon Jul 30 09:47:25 2007 +1000
++++ b/drivers/net/Makefile	Mon Jul 30 10:02:22 2007 +1000
+@@ -177,7 +177,7 @@ obj-$(CONFIG_HPLANCE) += hplance.o 7990.
+ obj-$(CONFIG_HPLANCE) += hplance.o 7990.o
+ obj-$(CONFIG_MVME147_NET) += mvme147.o 7990.o
+ obj-$(CONFIG_EQUALIZER) += eql.o
+-obj-$(CONFIG_LGUEST_GUEST) += lguest_net.o
++obj-$(CONFIG_LGUEST_NET) += lguest_net.o
+ obj-$(CONFIG_MIPS_JAZZ_SONIC) += jazzsonic.o
+ obj-$(CONFIG_MIPS_AU1X00_ENET) += au1000_eth.o
+ obj-$(CONFIG_MIPS_SIM_NET) += mipsnet.o
 
 
