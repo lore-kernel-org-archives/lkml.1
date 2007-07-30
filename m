@@ -1,60 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935624AbXG3NTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936120AbXG3NVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935624AbXG3NTQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 09:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761525AbXG3NTA
+	id S936120AbXG3NVz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 09:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758913AbXG3NVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 09:19:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53484 "EHLO mx1.redhat.com"
+	Mon, 30 Jul 2007 09:21:45 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:39496 "EHLO twin.jikos.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759062AbXG3NS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 09:18:59 -0400
-From: Steve Grubb <sgrubb@redhat.com>
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [2.6 patch] kernel/audit.c: change the exports to EXPORT_SYMBOL_GPL
-Date: Mon, 30 Jul 2007 09:18:41 -0400
-User-Agent: KMail/1.9.7
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-audit@redhat.com,
-       linux-kernel@vger.kernel.org
-References: <20070729150233.GX16817@stusta.de>
-In-Reply-To: <20070729150233.GX16817@stusta.de>
+	id S1757939AbXG3NVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 09:21:44 -0400
+Date: Mon, 30 Jul 2007 15:19:46 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+cc: Jiri Kosina <jkosina@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Michael Haboustak <mike-@cinci.rr.com>, Andreas Gal <gal@uci.edu>,
+       Vojtech Pavlik <vojtech@suse.cz>, Greg Kroah-Hartman <greg@kroah.com>,
+       linux-input@atrey.karlin.mff.cuni.cz
+Subject: Re: [PATCH][hid] Fix a NULL pointer dereference when we fail to
+ allocate memory
+In-Reply-To: <200707220006.20359.jesper.juhl@gmail.com>
+Message-ID: <Pine.LNX.4.64.0707301518530.5747@twin.jikos.cz>
+References: <200707220006.20359.jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707300918.41408.sgrubb@redhat.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 July 2007 11:02:33 Adrian Bunk wrote:
-> They are still completely unused, but hopefully some of the theoretical
-> code that might use it will appear in the kernel in the near future...
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> Acked-by: Steve Grubb <sgrubb@redhat.com>
+On Sun, 22 Jul 2007, Jesper Juhl wrote:
 
-I am reluctant to say that I ack this patch for a couple reasons:
+> If, in usb_hid_configure(), we fail to allocate storage for 'usbhid', 
+>  "if (!(usbhid = kzalloc(sizeof(struct usbhid_device), GFP_KERNEL)))", 
+> then we'll jump to the 'fail:' label where we have this code:
+>         usb_free_urb(usbhid->urbin);
+>         usb_free_urb(usbhid->urbout);
+>         usb_free_urb(usbhid->urbctrl);
+> Since we got here because we couldn't allocate storage for 'usbhid', 
+> what we have here is a NULL pointer dereference - ouch...
 
-1) We are talking about a basic logging facility that should be open like 
-printk() is.
+Hi Jesper,
 
-2) There are no user space GPL restrictions to use the audit netlink API, so 
-why restrict who can send audit events via the in-kernel interfaces? It just 
-doesn't make sense to have 2 different licenses for in-kernel vs user space 
-audit event recording. Its the same subsystem differing only by where the 
-event originated.
+thanks a lot for noticing this, I have queued your patch in HID tree.
 
-3) The API has been unrestricted for years. I don't think its a good idea to 
-take a basic logging API away from people that have programmed to it.
+(and sorry for late reply, I was offline on vacation for some time).
 
-4) In the absence of the in-kernel audit logging api, people will either 
-create parallel infrastructure or resort to using printk. It will be 
-difficult for end users to correlate security events from 2 different logs.
-
-I would support there being a mechanism for anyone who wants to reduce the 
-number of exported symbols for their own kernels - I believe that is the 
-basic problem here. But I think there are enough reasons to continue keeping 
-this API open and unrestricted for anyone that wants it that way.
-
--Steve
+-- 
+Jiri Kosina
