@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966010AbXG3Qhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967398AbXG3Qhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966010AbXG3Qhh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967109AbXG3QgB
+	id S967398AbXG3Qhx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:37:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967074AbXG3Qg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:36:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43538 "EHLO mx1.redhat.com"
+	Mon, 30 Jul 2007 12:36:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43777 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967077AbXG3Qf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:35:56 -0400
-Subject: Re: [PATCH] Fix msr register allocation
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <20070730153734.GA6921@atjola.homenet>
-References: <1185809155.4347.20.camel@t60>
-	 <20070730153734.GA6921@atjola.homenet>
-Content-Type: text/plain; charset=utf-8
-Organization: Red Hat
-Date: Mon, 30 Jul 2007 13:35:57 -0300
-Message-Id: <1185813358.4347.24.camel@t60>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 8bit
+	id S967145AbXG3QgY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:36:24 -0400
+Message-ID: <46AE1383.3050305@garzik.org>
+Date: Mon, 30 Jul 2007 12:36:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@linux-foundation.org>
+CC: Jan-Bernd Themann <ossthema@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       David Miller <davem@davemloft.net>, Andrew Gallatin <gallatin@myri.com>
+Subject: Re: [PATCH 2/4][RFC] lro: Kconfig and Makefile
+References: <200707301724.45781.ossthema@de.ibm.com> <20070730172535.15993806@oldman.hamilton.local>
+In-Reply-To: <20070730172535.15993806@oldman.hamilton.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 17:37 +0200, Björn Steinbrink wrote:
-> On 2007.07.30 12:25:54 -0300, Glauber de Oliveira Costa wrote:
-> > Since the value in ret will go through a return statement,
->                      ^^^
-> You mean "err" I guess?
-Yeah, you're right.
+Stephen Hemminger wrote:
+> Why make this a user selectable option at all? Unless you want
+> to deal with out of tree drivers (not my problem), it should be hidden
+> to avoid having to explain an support it.
 
-> Note that the EAX output constraint is re-used in the input section for
-> (u32)val, i.e. the lower half of the value to be written. And "wrmsr"
-> needs that in EAX, so you cannot change the output constraint without
-> touching the input constraint.
-Right again. Will send a new patch that also changes the input constraint.
 
-> Also, I do not see how the compiler could do any better than having the
-> return value already in EAX, but that doesn't really mean anything ;-)
+In this case it's an optional library kernel module.  That seems to be a 
+common setup for library modules.  We do the same with CONFIG_MII and 
+drivers/net/mii.ko as well.
 
-Yet, we should only force the compiler to a particular choice when we 
-have to, IMHO. So, unless anyone gives another reason not to, I will
-send another patch with your warnings fixed.
+Originally it was done purely in the Makefile, but that does not account 
+for net drivers in sub-directories (or out of tree as you point out).
 
+	Jeff
 
 
