@@ -1,510 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939398AbXG3QRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939157AbXG3QSD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939398AbXG3QRl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938436AbXG3QO0
+	id S939157AbXG3QSD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:18:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938482AbXG3QOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:14:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40572 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 12:14:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40564 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765683AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1765115AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 12:14:07 -0400
-Message-Id: <20070730161324.628215686@weierstrass.suse.de>
+Message-Id: <20070730161324.806938495@weierstrass.suse.de>
 References: <20070730161323.100048969@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 30 Jul 2007 18:13:39 +0200
+Date: Mon, 30 Jul 2007 18:13:41 +0200
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC 16/26] union-mount: Introduce union_mount structure
-Content-Disposition: inline; filename=um/union-mount-union-stack.diff
+Subject: [RFC 18/26] union-mount: Changes to the namespace handling
+Content-Disposition: inline; filename=um/union-mount-mount-changes.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the basic structures of VFS based union mounts. It is a new
-implementation based on some of my old idea's that influenced Bharata B Rao
-<bharata@linux.vnet.ibm.com> who came up with the proposal to let the
-union_mount struct only point to the next layer in the union stack. I rewrote
-nearly all of the central patches around lookup and the dcache interaction.
-
-Advantages of the new implementation:
-- the new union stack is no longer tied directly to one dentry
-- the union stack enables dentries to be part of more than one union
-  (bind mounts)
-- it is unnecessary to traverse the union stack when de/referencing a dentry
-- caching of union stack information still driven by dentry cache
+Creates the proper struct union_mount when mounting something into a
+union. If the topmost filesystem isn't capable of handling the white-out
+filetype it could only be mount read-only.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/Kconfig             |    8 +
- fs/Makefile            |    2 
- fs/dcache.c            |    4 
- fs/union.c             |  335 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/dcache.h |    9 +
- include/linux/union.h  |   61 ++++++++
- 6 files changed, 419 insertions(+)
+ fs/namespace.c        |   46 ++++++++++++++++++++++++++++++++++++++--
+ fs/union.c            |   57 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/mount.h |    3 ++
+ include/linux/union.h |    6 +++++
+ 4 files changed, 110 insertions(+), 2 deletions(-)
 
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -551,6 +551,14 @@ config INOTIFY_USER
- 
- 	  If unsure, say Y.
- 
-+config UNION_MOUNT
-+       bool "Union mount support (EXPERIMENTAL)"
-+       depends on EXPERIMENTAL
-+       ---help---
-+         If you say Y here, you will be able to mount file systems as
-+         union mount stacks. This is a VFS based implementation and
-+         should work with all file systems. If unsure, say N.
-+
- config QUOTA
- 	bool "Quota support"
- 	help
---- a/fs/Makefile
-+++ b/fs/Makefile
-@@ -49,6 +49,8 @@ obj-$(CONFIG_FS_POSIX_ACL)	+= posix_acl.
- obj-$(CONFIG_NFS_COMMON)	+= nfs_common/
- obj-$(CONFIG_GENERIC_ACL)	+= generic_acl.o
- 
-+obj-$(CONFIG_UNION_MOUNT)	+= union.o
-+
- obj-$(CONFIG_QUOTA)		+= dquot.o
- obj-$(CONFIG_QFMT_V1)		+= quota_v1.o
- obj-$(CONFIG_QFMT_V2)		+= quota_v2.o
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -985,6 +985,10 @@ struct dentry *d_alloc(struct dentry * p
- #ifdef CONFIG_PROFILING
- 	dentry->d_cookie = NULL;
- #endif
-+#ifdef CONFIG_UNION_MOUNT
-+	INIT_LIST_HEAD(&dentry->d_unions);
-+	dentry->d_unionized = 0;
-+#endif
- 	INIT_HLIST_NODE(&dentry->d_hash);
- 	INIT_LIST_HEAD(&dentry->d_lru);
- 	INIT_LIST_HEAD(&dentry->d_subdirs);
---- /dev/null
-+++ b/fs/union.c
-@@ -0,0 +1,335 @@
-+/*
-+ * VFS based union mount for Linux
-+ *
-+ * Copyright (C) 2004-2007 IBM Corporation, IBM Deutschland Entwicklung GmbH.
-+ * Copyright (C) 2007 Novell Inc.
-+ *
-+ *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ */
-+
-+#include <linux/bootmem.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/hash.h>
-+#include <linux/fs.h>
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -25,6 +25,7 @@
+ #include <linux/security.h>
+ #include <linux/mount.h>
+ #include <linux/ramfs.h>
 +#include <linux/union.h>
+ #include <asm/uaccess.h>
+ #include <asm/unistd.h>
+ #include "pnode.h"
+@@ -68,6 +69,9 @@ struct vfsmount *alloc_vfsmnt(const char
+ 		INIT_LIST_HEAD(&mnt->mnt_share);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave_list);
+ 		INIT_LIST_HEAD(&mnt->mnt_slave);
++#ifdef CONFIG_UNION_MOUNT
++		INIT_LIST_HEAD(&mnt->mnt_unions);
++#endif
+ 		if (name) {
+ 			int size = strlen(name) + 1;
+ 			char *newname = kmalloc(size, GFP_KERNEL);
+@@ -157,6 +161,7 @@ static void __touch_mnt_namespace(struct
+ 
+ static void detach_mnt(struct vfsmount *mnt, struct nameidata *old_nd)
+ {
++	detach_mnt_union(mnt);
+ 	old_nd->dentry = mnt->mnt_mountpoint;
+ 	old_nd->mnt = mnt->mnt_parent;
+ 	mnt->mnt_parent = mnt;
+@@ -180,6 +185,7 @@ static void attach_mnt(struct vfsmount *
+ 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
+ 			hash(nd->mnt, nd->dentry));
+ 	list_add_tail(&mnt->mnt_child, &nd->mnt->mnt_mounts);
++	attach_mnt_union(mnt, nd->mnt, nd->dentry);
+ }
+ 
+ /*
+@@ -202,6 +208,7 @@ static void commit_tree(struct vfsmount 
+ 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
+ 				hash(parent, mnt->mnt_mountpoint));
+ 	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
++	attach_mnt_union(mnt, mnt->mnt_parent, mnt->mnt_mountpoint);
+ 	touch_mnt_namespace(n);
+ }
+ 
+@@ -577,6 +584,7 @@ void release_mounts(struct list_head *he
+ 			struct dentry *dentry;
+ 			struct vfsmount *m;
+ 			spin_lock(&vfsmount_lock);
++			detach_mnt_union(mnt);
+ 			dentry = mnt->mnt_mountpoint;
+ 			m = mnt->mnt_parent;
+ 			mnt->mnt_mountpoint = mnt->mnt_root;
+@@ -999,6 +1007,10 @@ static int do_change_type(struct nameida
+ 	if (nd->dentry != nd->mnt->mnt_root)
+ 		return -EINVAL;
+ 
++	/* Don't change the type of union mounts */
++	if (IS_MNT_UNION(nd->mnt))
++		return -EINVAL;
++
+ 	down_write(&namespace_sem);
+ 	spin_lock(&vfsmount_lock);
+ 	for (m = mnt; m; m = (recurse ? next_mnt(m, mnt) : NULL))
+@@ -1011,7 +1023,8 @@ static int do_change_type(struct nameida
+ /*
+  * do loopback mount.
+  */
+-static int do_loopback(struct nameidata *nd, char *old_name, int flags)
++static int do_loopback(struct nameidata *nd, char *old_name, int flags,
++		       int mnt_flags)
+ {
+ 	int clone_flags = 0;
+ 	uid_t owner = 0;
+@@ -1049,6 +1062,18 @@ static int do_loopback(struct nameidata 
+ 	if (IS_ERR(mnt))
+ 		goto out;
+ 
++	/*
++	 * Unions couldn't be writable if the filesystem doesn't know about
++	 * whiteouts
++	 */
++	err = -ENOTSUPP;
++	if ((mnt_flags & MNT_UNION) &&
++	    !(mnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
++		goto out;
++
++	if (mnt_flags & MNT_UNION)
++		mnt->mnt_flags |= MNT_UNION;
++
+ 	err = graft_tree(mnt, nd);
+ 	if (err) {
+ 		LIST_HEAD(umount_list);
+@@ -1121,6 +1146,13 @@ static int do_move_mount(struct nameidat
+ 	if (err)
+ 		return err;
+ 
++	/* moving to or from a union mount is not supported */
++	err = -EINVAL;
++	if (IS_MNT_UNION(nd->mnt))
++		goto exit;
++	if (IS_MNT_UNION(old_nd.mnt))
++		goto exit;
++
+ 	down_write(&namespace_sem);
+ 	while (d_mountpoint(nd->dentry) && follow_down(&nd->mnt, &nd->dentry))
+ 		;
+@@ -1176,6 +1208,7 @@ out:
+ 	up_write(&namespace_sem);
+ 	if (!err)
+ 		path_release(&parent_nd);
++exit:
+ 	path_release(&old_nd);
+ 	return err;
+ }
+@@ -1253,6 +1286,15 @@ int do_add_mount(struct vfsmount *newmnt
+ 	if (S_ISLNK(newmnt->mnt_root->d_inode->i_mode))
+ 		goto unlock;
+ 
++	/*
++	 * Unions couldn't be writable if the filesystem doesn't know about
++	 * whiteouts
++	 */
++	err = -ENOTSUPP;
++	if ((mnt_flags & MNT_UNION) &&
++	    !(newmnt->mnt_sb->s_flags & (MS_WHITEOUT|MS_RDONLY)))
++		goto unlock;
++
+ 	/* some flags may have been set earlier */
+ 	newmnt->mnt_flags |= mnt_flags;
+ 	if ((err = graft_tree(newmnt, nd)))
+@@ -1579,7 +1621,7 @@ long do_mount(char *dev_name, char *dir_
+ 		retval = do_remount(&nd, flags & ~MS_REMOUNT, mnt_flags,
+ 				    data_page);
+ 	else if (flags & MS_BIND)
+-		retval = do_loopback(&nd, dev_name, flags);
++		retval = do_loopback(&nd, dev_name, flags, mnt_flags);
+ 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
+ 		retval = do_change_type(&nd, flags);
+ 	else if (flags & MS_MOVE)
+--- a/fs/union.c
++++ b/fs/union.c
+@@ -114,6 +114,7 @@ struct union_mount *union_alloc(struct d
+ 
+ 	atomic_set(&um->u_count, 1);
+ 	INIT_LIST_HEAD(&um->u_unions);
++	INIT_LIST_HEAD(&um->u_list);
+ 	INIT_HLIST_NODE(&um->u_hash);
+ 	INIT_HLIST_NODE(&um->u_rhash);
+ 
+@@ -258,6 +259,7 @@ int append_to_union(struct vfsmount *mnt
+ 		union_put(this);
+ 		return 0;
+ 	}
++	list_add(&this->u_list, &mnt->mnt_unions);
+ 	list_add(&this->u_unions, &dentry->d_unions);
+ 	dest_dentry->d_unionized++;
+ 	__union_hash(this);
+@@ -366,6 +368,7 @@ repeat:
+ 	list_for_each_entry_safe(this, next, &dentry->d_unions, u_unions) {
+ 		BUG_ON(!hlist_unhashed(&this->u_hash));
+ 		BUG_ON(!hlist_unhashed(&this->u_rhash));
++		list_del(&this->u_list);
+ 		list_del(&this->u_unions);
+ 		this->u_next.dentry->d_unionized--;
+ 		spin_unlock(&union_lock);
+@@ -394,6 +397,7 @@ repeat:
+ 
+ 		BUG_ON(!hlist_unhashed(&this->u_hash));
+ 		BUG_ON(!hlist_unhashed(&this->u_rhash));
++		list_del(&this->u_list);
+ 		list_del(&this->u_unions);
+ 		this->u_next.dentry->d_unionized--;
+ 		spin_unlock(&union_lock);
+@@ -405,3 +409,56 @@ repeat:
+ 	}
+ 	spin_unlock(&union_lock);
+ }
 +
 +/*
-+ * This is borrowed from fs/inode.c. The hashtable for lookups. Somebody
-+ * should try to make this good - I've just made it work.
++ * Remove all union_mounts structures belonging to this vfsmount from the
++ * union lookup hashtable and so on ...
 + */
-+static unsigned int union_hash_mask __read_mostly;
-+static unsigned int union_hash_shift __read_mostly;
-+static struct hlist_head *union_hashtable __read_mostly;
-+static unsigned int union_rhash_mask __read_mostly;
-+static unsigned int union_rhash_shift __read_mostly;
-+static struct hlist_head *union_rhashtable __read_mostly;
-+
-+/*
-+ * Locking Rules:
-+ * - dcache_lock (for union_rlookup() only)
-+ * - union_lock
-+ */
-+DEFINE_SPINLOCK(union_lock);
-+
-+static struct kmem_cache *union_cache __read_mostly;
-+
-+static unsigned long hash(struct dentry *dentry, struct vfsmount *mnt)
++void shrink_mnt_unions(struct vfsmount *mnt)
 +{
-+	unsigned long tmp;
++	struct union_mount *this, *next;
 +
-+	tmp = ((unsigned long)mnt * (unsigned long)dentry) ^
-+		(GOLDEN_RATIO_PRIME + (unsigned long)mnt) / L1_CACHE_BYTES;
-+	tmp = tmp ^ ((tmp ^ GOLDEN_RATIO_PRIME) >> union_hash_shift);
-+	return tmp & union_hash_mask;
-+}
-+
-+static __initdata unsigned long union_hash_entries;
-+
-+static int __init set_union_hash_entries(char *str)
-+{
-+	if (!str)
-+		return 0;
-+	union_hash_entries = simple_strtoul(str, &str, 0);
-+	return 1;
-+}
-+
-+__setup("union_hash_entries=", set_union_hash_entries);
-+
-+static int __init init_union(void)
-+{
-+	int loop;
-+
-+	union_cache = kmem_cache_create("union_mount",
-+					sizeof(struct union_mount), 0,
-+					SLAB_HWCACHE_ALIGN | SLAB_PANIC,
-+					NULL, NULL);
-+
-+	union_hashtable = alloc_large_system_hash("Union-cache",
-+						  sizeof(struct hlist_head),
-+						  union_hash_entries,
-+						  14,
-+						  0,
-+						  &union_hash_shift,
-+						  &union_hash_mask,
-+						  0);
-+
-+	for (loop = 0; loop < (1 << union_hash_shift); loop++)
-+		INIT_HLIST_HEAD(&union_hashtable[loop]);
-+
-+
-+	union_rhashtable = alloc_large_system_hash("rUnion-cache",
-+						  sizeof(struct hlist_head),
-+						  union_hash_entries,
-+						  14,
-+						  0,
-+						  &union_rhash_shift,
-+						  &union_rhash_mask,
-+						  0);
-+
-+	for (loop = 0; loop < (1 << union_rhash_shift); loop++)
-+		INIT_HLIST_HEAD(&union_rhashtable[loop]);
-+
-+	return 0;
-+}
-+
-+fs_initcall(init_union);
-+
-+struct union_mount *union_alloc(struct dentry *this, struct vfsmount *this_mnt,
-+				struct dentry *next, struct vfsmount *next_mnt)
-+{
-+	struct union_mount *um;
-+
-+	BUG_ON(!S_ISDIR(this->d_inode->i_mode));
-+	BUG_ON(!S_ISDIR(next->d_inode->i_mode));
-+
-+	um = kmem_cache_alloc(union_cache, GFP_ATOMIC);
-+	if (!um)
-+		return NULL;
-+
-+	atomic_set(&um->u_count, 1);
-+	INIT_LIST_HEAD(&um->u_unions);
-+	INIT_HLIST_NODE(&um->u_hash);
-+	INIT_HLIST_NODE(&um->u_rhash);
-+
-+	um->u_this.mnt = this_mnt;
-+	um->u_this.dentry = this;
-+	um->u_next.mnt = mntget(next_mnt);
-+	um->u_next.dentry = dget(next);
-+
-+	return um;
-+}
-+
-+struct union_mount *union_get(struct union_mount *um)
-+{
-+	BUG_ON(!atomic_read(&um->u_count));
-+	atomic_inc(&um->u_count);
-+	return um;
-+}
-+
-+static int __union_put(struct union_mount *um)
-+{
-+	if (!atomic_dec_and_test(&um->u_count))
-+		return 0;
-+
-+	BUG_ON(!hlist_unhashed(&um->u_hash));
-+	BUG_ON(!hlist_unhashed(&um->u_rhash));
-+
-+	kmem_cache_free(union_cache, um);
-+	return 1;
-+}
-+
-+void union_put(struct union_mount *um)
-+{
-+	struct path tmp = um->u_next;
-+
-+	if (__union_put(um))
-+		pathput(&tmp);
-+}
-+
-+static void __union_hash(struct union_mount *um)
-+{
-+	hlist_add_head(&um->u_hash, union_hashtable +
-+		       hash(um->u_this.dentry, um->u_this.mnt));
-+	hlist_add_head(&um->u_rhash, union_rhashtable +
-+		       hash(um->u_next.dentry, um->u_next.mnt));
-+}
-+
-+static void __union_unhash(struct union_mount *um)
-+{
-+	hlist_del_init(&um->u_hash);
-+	hlist_del_init(&um->u_rhash);
-+}
-+
-+struct union_mount *union_lookup(struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	struct hlist_head *head = union_hashtable + hash(dentry, mnt);
-+	struct hlist_node *node;
-+	struct union_mount *um;
-+
-+	hlist_for_each_entry(um, node, head, u_hash) {
-+		if ((um->u_this.dentry == dentry) &&
-+		    (um->u_this.mnt == mnt))
-+			return um;
-+	}
-+
-+	return NULL;
-+}
-+
-+struct union_mount *union_rlookup(struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	struct hlist_head *head = union_rhashtable + hash(dentry, mnt);
-+	struct hlist_node *node;
-+	struct union_mount *um;
-+
-+	hlist_for_each_entry(um, node, head, u_rhash) {
-+		if ((um->u_next.dentry == dentry) &&
-+		    (um->u_next.mnt == mnt))
-+			return um;
-+	}
-+
-+	return NULL;
-+}
-+
-+/*
-+ * is_unionized - check if a dentry lives on a union mounted file system
-+ *
-+ * This tests if a dentry is living on an union mounted file system by walking
-+ * the file system hierarchy.
-+ */
-+int is_unionized(struct dentry *dentry, struct vfsmount *mnt)
-+{
-+	struct path this = { .mnt = mntget(mnt),
-+			     .dentry = dget(dentry) };
-+	struct vfsmount *tmp;
-+
-+	do {
-+		/* check if there is an union mounted on top of us */
-+		spin_lock(&vfsmount_lock);
-+		list_for_each_entry(tmp, &this.mnt->mnt_mounts, mnt_child) {
-+			if (!(tmp->mnt_flags & MNT_UNION))
-+				continue;
-+			/* Isn't this a bug? */
-+			if (this.dentry->d_sb != tmp->mnt_mountpoint->d_sb)
-+				continue;
-+			if (lives_below_in_same_fs(this.dentry,
-+						   tmp->mnt_mountpoint)) {
-+				spin_unlock(&vfsmount_lock);
-+				pathput(&this);
-+				return 1;
-+			}
-+		}
-+		spin_unlock(&vfsmount_lock);
-+
-+		/* check our mountpoint next */
-+		tmp = mntget(this.mnt->mnt_parent);
-+		dput(this.dentry);
-+		this.dentry = dget(this.mnt->mnt_mountpoint);
-+		mntput(this.mnt);
-+		this.mnt = tmp;
-+	} while (this.mnt != this.mnt->mnt_parent);
-+
-+	pathput(&this);
-+	return 0;
-+}
-+
-+int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
-+		    struct vfsmount *dest_mnt, struct dentry *dest_dentry)
-+{
-+	struct union_mount *this, *um;
-+
-+	BUG_ON(!IS_MNT_UNION(mnt));
-+
-+	this = union_alloc(dentry, mnt, dest_dentry, dest_mnt);
-+	if (!this)
-+		return -ENOMEM;
-+
++repeat:
 +	spin_lock(&union_lock);
-+	um = union_lookup(dentry, mnt);
-+	if (um) {
-+		BUG_ON((um->u_next.dentry != dest_dentry) ||
-+		       (um->u_next.mnt != dest_mnt));
++	list_for_each_entry_safe(this, next, &mnt->mnt_unions, u_list) {
++		if (this->u_this.dentry == mnt->mnt_root)
++			continue;
++		__union_unhash(this);
++		list_del(&this->u_list);
++		list_del(&this->u_unions);
++		this->u_next.dentry->d_unionized--;
 +		spin_unlock(&union_lock);
 +		union_put(this);
-+		return 0;
++		goto repeat;
 +	}
-+	__union_hash(this);
 +	spin_unlock(&union_lock);
-+	return 0;
 +}
 +
-+/*
-+ * follow_union_down - follow the union stack one layer down
-+ *
-+ * This is called to traverse the union stack from one layer to the next
-+ * overlayed one. follow_union_down() is called by various lookup functions
-+ * that are aware of union mounts.
-+ *
-+ * Returns none zero if followed to the next layer, zero otherwise.
-+ */
-+int follow_union_down(struct vfsmount **mnt, struct dentry **dentry)
++int attach_mnt_union(struct vfsmount *mnt, struct vfsmount *dest_mnt,
++		     struct dentry *dest_dentry)
++{
++	if (!IS_MNT_UNION(mnt))
++		return 0;
++
++	return append_to_union(mnt, mnt->mnt_root, dest_mnt, dest_dentry);
++}
++
++void detach_mnt_union(struct vfsmount *mnt)
 +{
 +	struct union_mount *um;
 +
-+	if (!IS_MNT_UNION(*mnt))
-+		return 0;
++	if (!IS_MNT_UNION(mnt))
++		return;
++
++	shrink_mnt_unions(mnt);
 +
 +	spin_lock(&union_lock);
-+	um = union_lookup(*dentry, *mnt);
++	um = union_lookup(mnt->mnt_root, mnt);
++	__union_unhash(um);
++	list_del(&um->u_list);
++	list_del(&um->u_unions);
++	um->u_next.dentry->d_unionized--;
 +	spin_unlock(&union_lock);
-+	if (um) {
-+		pathget(&um->u_next);
-+		dput(*dentry);
-+		*dentry = um->u_next.dentry;
-+		mntput(*mnt);
-+		*mnt = um->u_next.mnt;
-+		return 1;
-+	}
-+	return 0;
++	union_put(um);
++	return;
 +}
-+
-+/*
-+ * follow_union_mount - follow the union stack to the topmost layer
-+ *
-+ * This is called to traverse the union stack to the topmost layer. This is
-+ * necessary for following parent pointers in an union mount.
-+ *
-+ * Returns none zero if followed to the topmost layer, zero otherwise.
-+ */
-+int follow_union_mount(struct vfsmount **mnt, struct dentry **dentry)
-+{
-+	struct union_mount *um;
-+	int res = 0;
-+
-+	while (IS_UNION(*dentry)) {
-+		spin_lock(&dcache_lock);
-+		spin_lock(&union_lock);
-+		um = union_rlookup(*dentry, *mnt);
-+		if (um)
-+			pathget(&um->u_this);
-+		spin_unlock(&union_lock);
-+		spin_unlock(&dcache_lock);
-+
-+		/*
-+		 * Q: Aaargh, how do I validate the topmost dentry pointer?
-+		 * A: Eeeeasy! We took the dcache_lock and union_lock. Since
-+		 *    this protects from any dput'ng going on, we know that the
-+		 *    dentry is valid since the union is unhashed under
-+		 *    dcache_lock too.
-+		 */
-+		if (!um)
-+			break;
-+		dput(*dentry);
-+		*dentry = um->u_this.dentry;
-+		mntput(*mnt);
-+		*mnt = um->u_this.mnt;
-+		res = 1;
-+	}
-+
-+	return res;
-+}
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -93,6 +93,15 @@ struct dentry {
- 	struct dentry *d_parent;	/* parent directory */
- 	struct qstr d_name;
- 
+--- a/include/linux/mount.h
++++ b/include/linux/mount.h
+@@ -56,6 +56,9 @@ struct vfsmount {
+ 	struct list_head mnt_slave;	/* slave list entry */
+ 	struct vfsmount *mnt_master;	/* slave is on master->mnt_slave_list */
+ 	struct mnt_namespace *mnt_ns;	/* containing namespace */
 +#ifdef CONFIG_UNION_MOUNT
-+	/*
-+	 * The following fields are used by the VFS based union mount
-+	 * implementation. Both are protected by union_lock!
-+	 */
-+	struct list_head d_unions;	/* list of union_mount's */
-+	unsigned int d_unionized;	/* unions referencing this dentry */
++	struct list_head mnt_unions;	/* list of union_mount structures */
 +#endif
-+
- 	struct list_head d_lru;		/* LRU list */
  	/*
- 	 * d_child and d_rcu can share memory
---- /dev/null
+ 	 * We put mnt_count & mnt_expiry_mark at the end of struct vfsmount
+ 	 * to let these frequently modified fields in a separate cache line
+--- a/include/linux/union.h
 +++ b/include/linux/union.h
-@@ -0,0 +1,61 @@
-+/*
-+ * VFS based union mount for Linux
-+ *
-+ * Copyright (C) 2004-2007 IBM Corporation, IBM Deutschland Entwicklung GmbH.
-+ * Copyright (C) 2007 Novell Inc.
-+ *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License as published by the Free
-+ * Software Foundation; either version 2 of the License, or (at your option)
-+ * any later version.
-+ *
-+ */
-+#ifndef __LINUX_UNION_H
-+#define __LINUX_UNION_H
-+#ifdef __KERNEL__
-+
-+#include <linux/list.h>
-+#include <asm/atomic.h>
-+
-+struct dentry;
-+struct vfsmount;
-+
-+#ifdef CONFIG_UNION_MOUNT
-+
-+/*
-+ * The new union mount structure.
-+ */
-+struct union_mount {
-+	atomic_t u_count;		/* reference count */
-+	struct mutex u_mutex;
-+	struct list_head u_unions;	/* list head for d_unions */
-+	struct hlist_node u_hash;	/* list head for seaching */
-+	struct hlist_node u_rhash;	/* list head for reverse seaching */
-+
-+	struct path u_this;		/* this is me */
-+	struct path u_next;		/* this is what I overlay */
-+};
-+
-+#define IS_UNION(dentry)	(!list_empty(&(dentry)->d_unions) || \
-+				 (dentry)->d_unionized)
-+#define IS_MNT_UNION(mnt)	((mnt)->mnt_flags & MNT_UNION)
-+
-+extern int is_unionized(struct dentry *, struct vfsmount *);
-+extern int append_to_union(struct vfsmount *, struct dentry *,
-+			   struct vfsmount *, struct dentry *);
-+extern int follow_union_down(struct vfsmount **, struct dentry **);
-+extern int follow_union_mount(struct vfsmount **, struct dentry **);
-+
-+#else /* CONFIG_UNION_MOUNT */
-+
-+#define IS_UNION(x)			(0)
-+#define IS_MNT_UNION(x)			(0)
-+#define is_unionized(x, y)		(0)
-+#define append_to_union(x1, y1, x2, y2)	({ BUG(); (0); })
-+#define follow_union_down(x, y)		({ (0); })
-+#define follow_union_mount(x, y)	({ (0); })
-+
-+#endif	/* CONFIG_UNION_MOUNT */
-+#endif	/* __KERNEL__ */
-+#endif	/* __LINUX_UNION_H */
+@@ -30,6 +30,7 @@ struct union_mount {
+ 	atomic_t u_count;		/* reference count */
+ 	struct mutex u_mutex;
+ 	struct list_head u_unions;	/* list head for d_unions */
++	struct list_head u_list;	/* list head for mnt_unions */
+ 	struct hlist_node u_hash;	/* list head for seaching */
+ 	struct hlist_node u_rhash;	/* list head for reverse seaching */
+ 
+@@ -49,6 +50,9 @@ extern int follow_union_mount(struct vfs
+ extern void __d_drop_unions(struct dentry *);
+ extern void shrink_d_unions(struct dentry *);
+ extern void __shrink_d_unions(struct dentry *, struct list_head *);
++extern int attach_mnt_union(struct vfsmount *, struct vfsmount *,
++			    struct dentry *);
++extern void detach_mnt_union(struct vfsmount *);
+ 
+ #else /* CONFIG_UNION_MOUNT */
+ 
+@@ -61,6 +65,8 @@ extern void __shrink_d_unions(struct den
+ #define __d_drop_unions(x)		do { } while (0)
+ #define shrink_d_unions(x)		do { } while (0)
+ #define __shrink_d_unions(x)		do { } while (0)
++#define attach_mnt_union(x, y, z)	do { } while (0)
++#define detach_mnt_union(x)		do { } while (0)
+ 
+ #endif	/* CONFIG_UNION_MOUNT */
+ #endif	/* __KERNEL__ */
 
 -- 
 
