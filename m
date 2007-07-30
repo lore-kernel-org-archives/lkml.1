@@ -1,69 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969076AbXG3WIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969110AbXG3WJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969076AbXG3WIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966163AbXG3WID
+	id S969110AbXG3WJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932606AbXG3WJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:08:03 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:41509 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968386AbXG3WIB (ORCPT
+	Mon, 30 Jul 2007 18:09:19 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58955 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966163AbXG3WJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:08:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=UEg2+VuzGtpVb/DlMMUT5M9VwCOvfBdnvQuA5h0t78Ds6FFXDQ3Paq7azFi8Qbk3DmffZLPaI8MvyLpGKK+6A2tNlLbwSVsMvN2jaouON0Nh5CWpbySYgtnQFDuKoe+UUyqYclYYe7B0hpgzHFhLM6gVpsRQshDc7THuBs43ltc=
-Message-ID: <46AE6029.60308@googlemail.com>
-Date: Tue, 31 Jul 2007 00:03:21 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Mon, 30 Jul 2007 18:09:18 -0400
+Date: Mon, 30 Jul 2007 15:08:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: [GIT PATCH] USB fixes for 2.6.23-rc1
+Message-ID: <20070730220823.GA5263@kroah.com>
 MIME-Version: 1.0
-To: Sasa Ostrouska <casaxa@gmail.com>
-CC: Avuton Olrich <avuton@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: forcedeth ?
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com> <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-In-Reply-To: <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sasa Ostrouska wrote:
-> On 7/30/07, Avuton Olrich <avuton@gmail.com> wrote:
->> On 7/30/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
->>> Hi people,
->>>
->>> I'm using this on a x86-64 amd machine. During boot of the last
->>> 2.6.22.1 kernel I get this error:
->> Somewhat unrelated, but I had a similar forcedeth problem, I took the
->> latest git forcedeth.c and put it into 2.6.22.1 and it worked for me.
->>
->> Good luck!
->> --
->> avuton
-> 
-> Ok, maybe I can try that. In any case I noticed another strange thing.
-> I have 2 nics in that machine.
-> One is a nvidia MPC61 using the forcedeth.c the other one is a Realtec
-> RTL8029 using the
-> ne2k_pci.
-> Now, whenever I compile them both as modules each reboot the cards get
-> inversed eth assignement. Suppose first boot, the forcedeth is eth0 ,
-> the next boot it is eth1 , this is very anoying as one cant make only
-> one boot, probably this is someway related to the bios.
-> Now I configured them one in the kernel and the other as a module so
-> they get each time assigned the same name. But when powerloss happens
-> (unplug the cable) the next boot they do not work. I see them assigned
-> the correct name, ifconfig shows the IP's but ping results in a
-> destination unreachable.
-> 
-> Any ideas ?
+Here are some USB fixes against your 2.6.23-rc1 git tree.
 
-Udev rules ?
+They do the following:
+	- usb core fix that you ran into with your broken usb-storage
+	  device
+	- tty fixes (one fix included a big coding style cleanup by Alan
+	  Cox, which dominates the diffstat of this series.)
+	- more quirk updates for broken devices.
+	- io_edgeport regression fix
+	- sparse warning cleanups.
+	- other minor fixes.
 
-> 
-> Rgds
-> Sasa
+Some of these have been in the -mm tree for a while.
 
-Gabriel
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+
+The full patches will be sent to the linux-usb-devel mailing list, if
+anyone wants to see them.
+
+thanks,
+
+greg k-h
+
+
+ drivers/usb/Makefile                 |    1 +
+ drivers/usb/core/message.c           |   41 +-
+ drivers/usb/core/quirks.c            |   22 +
+ drivers/usb/gadget/config.c          |    2 +-
+ drivers/usb/gadget/epautoconf.c      |    2 +-
+ drivers/usb/gadget/ether.c           |    3 +-
+ drivers/usb/gadget/inode.c           |    4 +-
+ drivers/usb/gadget/m66592-udc.c      |    2 +-
+ drivers/usb/gadget/pxa2xx_udc.c      |   30 -
+ drivers/usb/gadget/zero.c            |    6 +-
+ drivers/usb/serial/cp2101.c          |   69 +--
+ drivers/usb/serial/digi_acceleport.c |  970 ++++++++++++++--------------------
+ drivers/usb/serial/io_edgeport.c     |   19 +-
+ drivers/usb/serial/mct_u232.c        |   54 +-
+ drivers/usb/serial/mct_u232.h        |    2 +-
+ drivers/usb/serial/sierra.c          |    7 +-
+ drivers/usb/serial/usb-serial.c      |   32 +-
+ drivers/usb/storage/unusual_devs.h   |   21 +
+ include/linux/usb.h                  |    2 +
+ 19 files changed, 577 insertions(+), 712 deletions(-)
+
+---------------
+
+Adam Kropelin (1):
+      usb-serial: Fix edgeport regression on non-EPiC devices
+
+Adrian Bunk (1):
+      USB: drivers/usb/serial/sierra.c: make 3 functions static
+
+Alan Cox (3):
+      cp2101: Remove broken termios optimisation, use proper speed API
+      digi_acceleport: Drag the driver kicking and screaming into coding style
+      USB: mct_u232: Convert to proper speed handling API
+
+Alan Stern (1):
+      USB: Fix a bug in usb_start_wait_urb
+
+David Brownell (3):
+      USB: fix scatterlist PIO case (IOMMU)
+      USB: more pxa2xx_udc dead code removal
+      USB: "sparse" cleanups for usb gadgets
+
+Jeremy Katz (1):
+      USB: Don't let usb-storage steal Blackberry Pearl
+
+Johann Felix Soden (1):
+      USB: Add CanonScan LiDE30 to the quirk list
+
+Juergen Beisert (1):
+      USB: devices misc: Trivial patch to build the IOWARRIOR when it is selected in Kconfig
+
+Milinevsky Dmitry (1):
+      USB: NIKON D50 is an unusual device
+
+Oliver Neukum (5):
+      USB: more quirky devices
+      USB: even more quirks
+      USB: yet another quirky device
+      USB: fix usb_serial_suspend(): buggy code
+      USB: fix BUG: sleeping function called from invalid context at /home/jeremy/hg/xen/paravirt/linux/drivers/usb/core/urb.c:524, in_atomic():1, irqs_disabled():0
+
+Randy Dunlap (1):
+      USB: usb.h kernel-doc additions
+
