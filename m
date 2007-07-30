@@ -1,289 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965653AbXG3QWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965400AbXG3QXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965653AbXG3QWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938701AbXG3QO7
+	id S965400AbXG3QXE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:23:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938734AbXG3QPD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:14:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58717 "EHLO mx2.suse.de"
+	Mon, 30 Jul 2007 12:15:03 -0400
+Received: from ns.suse.de ([195.135.220.2]:40573 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932359AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932347AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 12:14:07 -0400
-Message-Id: <20070730161323.417978744@weierstrass.suse.de>
+Message-Id: <20070730161324.340905604@weierstrass.suse.de>
 References: <20070730161323.100048969@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 30 Jul 2007 18:13:26 +0200
+Date: Mon, 30 Jul 2007 18:13:36 +0200
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC 03/26] VFS: Make lookup_hash() return a struct path
-Content-Disposition: inline; filename=um/vfs-lookup_hash-returns-path.diff
+Subject: [RFC 13/26] ext3 whiteout support
+Content-Disposition: inline; filename=um/ext3-whiteout.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes lookup_hash() into returning a struct path.
+Introduce whiteout support for ext3.
+
+- Needs a reserved inode number for white-outs
+- S_OPAQUE isn't persistently stored
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/namei.c |  113 ++++++++++++++++++++++++++++++-------------------------------
- 1 file changed, 57 insertions(+), 56 deletions(-)
+ fs/ext3/dir.c           |    3 ++-
+ fs/ext3/namei.c         |   33 +++++++++++++++++++++++++++++++++
+ fs/ext3/super.c         |    5 ++++-
+ include/linux/ext3_fs.h |    5 ++++-
+ 4 files changed, 43 insertions(+), 3 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1297,27 +1297,27 @@ out:
-  * needs parent already locked. Doesn't follow mounts.
-  * SMP-safe.
-  */
--static inline struct dentry * __lookup_hash(struct qstr *name, struct dentry *base, struct nameidata *nd)
-+static int lookup_hash(struct nameidata *nd, struct qstr *name,
-+		       struct path *path)
- {
--	struct dentry *dentry;
- 	struct inode *inode;
- 	int err;
+--- a/fs/ext3/dir.c
++++ b/fs/ext3/dir.c
+@@ -29,7 +29,8 @@
+ #include <linux/rbtree.h>
  
--	inode = base->d_inode;
-+	inode = nd->dentry->d_inode;
+ static unsigned char ext3_filetype_table[] = {
+-	DT_UNKNOWN, DT_REG, DT_DIR, DT_CHR, DT_BLK, DT_FIFO, DT_SOCK, DT_LNK
++	DT_UNKNOWN, DT_REG, DT_DIR, DT_CHR, DT_BLK, DT_FIFO, DT_SOCK, DT_LNK,
++	DT_WHT
+ };
  
- 	err = permission(inode, MAY_EXEC, nd);
--	dentry = ERR_PTR(err);
- 	if (err)
- 		goto out;
+ static int ext3_readdir(struct file *, void *, filldir_t);
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1081,6 +1081,7 @@ static unsigned char ext3_type_by_mode[S
+ 	[S_IFIFO >> S_SHIFT]	= EXT3_FT_FIFO,
+ 	[S_IFSOCK >> S_SHIFT]	= EXT3_FT_SOCK,
+ 	[S_IFLNK >> S_SHIFT]	= EXT3_FT_SYMLINK,
++	[S_IFWHT >> S_SHIFT]	= EXT3_FT_WHT,
+ };
  
--	dentry = __lookup_hash_kern(name, base, nd);
-+	path->mnt =  nd->mnt;
-+	path->dentry = __lookup_hash_kern(name, nd->dentry, nd);
-+	if (IS_ERR(path->dentry)) {
-+		err = PTR_ERR(path->dentry);
-+		path->dentry = NULL;
-+		path->mnt = NULL;
-+	}
- out:
--	return dentry;
--}
--
--static struct dentry *lookup_hash(struct nameidata *nd)
--{
--	return __lookup_hash(&nd->last, nd->dentry, nd);
+ static inline void ext3_set_de_type(struct super_block *sb,
+@@ -2070,6 +2071,37 @@ end_rmdir:
+ 	return retval;
+ }
+ 
++static int ext3_whiteout(struct inode *dir, struct dentry *dentry)
++{
++	struct inode *inode;
++	int err, retries = 0;
++	handle_t *handle;
++
++retry:
++	handle = ext3_journal_start(dir, EXT3_DATA_TRANS_BLOCKS(dir->i_sb) +
++					EXT3_INDEX_EXTRA_TRANS_BLOCKS + 3 +
++					2*EXT3_QUOTA_INIT_BLOCKS(dir->i_sb));
++	if (IS_ERR(handle))
++		return PTR_ERR(handle);
++
++	if (IS_DIRSYNC(dir))
++		handle->h_sync = 1;
++
++	inode = ext3_new_inode (handle, dir, S_IFWHT | S_IRUGO);
++	err = PTR_ERR(inode);
++	if (IS_ERR(inode))
++		goto out_stop;
++
++	init_special_inode(inode, inode->i_mode, 0);
++	err = ext3_add_nondir(handle, dentry, inode);
++
++out_stop:
++	ext3_journal_stop(handle);
++	if (err == -ENOSPC && ext3_should_retry_alloc(dir->i_sb, &retries))
++		goto retry;
 +	return err;
- }
- 
- /* SMP-safe */
-@@ -1351,7 +1351,10 @@ struct dentry *lookup_one_len_nd(const c
- 	err = __lookup_one_len(name, &this, base, len);
- 	if (err)
- 		return ERR_PTR(err);
--	return __lookup_hash(&this, base, nd);
-+	err = permission(base->d_inode, MAY_EXEC, nd);
-+	if (err)
-+		return ERR_PTR(err);
-+	return __lookup_hash_kern(&this, base, nd);
- }
- 
- struct dentry *lookup_one_len_kern(const char *name, struct dentry *base, int len)
-@@ -1709,12 +1712,10 @@ int open_namei(int dfd, const char *path
- 	dir = nd->dentry;
- 	nd->flags &= ~LOOKUP_PARENT;
- 	mutex_lock(&dir->d_inode->i_mutex);
--	path.dentry = lookup_hash(nd);
--	path.mnt = nd->mnt;
-+	error = lookup_hash(nd, &nd->last, &path);
- 
- do_last:
--	error = PTR_ERR(path.dentry);
--	if (IS_ERR(path.dentry)) {
-+	if (error) {
- 		mutex_unlock(&dir->d_inode->i_mutex);
- 		goto exit;
- 	}
-@@ -1817,8 +1818,7 @@ do_link:
- 	}
- 	dir = nd->dentry;
- 	mutex_lock(&dir->d_inode->i_mutex);
--	path.dentry = lookup_hash(nd);
--	path.mnt = nd->mnt;
-+	error = lookup_hash(nd, &nd->last, &path);
- 	__putname(nd->last.name);
- 	goto do_last;
- }
-@@ -1835,7 +1835,8 @@ do_link:
-  */
- struct dentry *lookup_create(struct nameidata *nd, int is_dir)
++}
++
+ static int ext3_unlink(struct inode * dir, struct dentry *dentry)
  {
--	struct dentry *dentry = ERR_PTR(-EEXIST);
-+	struct path path = { .dentry = ERR_PTR(-EEXIST) } ;
-+	int err;
+ 	int retval;
+@@ -2387,6 +2419,7 @@ const struct inode_operations ext3_dir_i
+ 	.mkdir		= ext3_mkdir,
+ 	.rmdir		= ext3_rmdir,
+ 	.mknod		= ext3_mknod,
++	.whiteout	= ext3_whiteout,
+ 	.rename		= ext3_rename,
+ 	.setattr	= ext3_setattr,
+ #ifdef CONFIG_EXT3_FS_XATTR
+--- a/fs/ext3/super.c
++++ b/fs/ext3/super.c
+@@ -1500,6 +1500,9 @@ static int ext3_fill_super (struct super
+ 	sb->s_flags = (sb->s_flags & ~MS_POSIXACL) |
+ 		((sbi->s_mount_opt & EXT3_MOUNT_POSIX_ACL) ? MS_POSIXACL : 0);
  
- 	mutex_lock_nested(&nd->dentry->d_inode->i_mutex, I_MUTEX_PARENT);
- 	/*
-@@ -1851,9 +1852,11 @@ struct dentry *lookup_create(struct name
- 	/*
- 	 * Do the final lookup.
- 	 */
--	dentry = lookup_hash(nd);
--	if (IS_ERR(dentry))
-+	err = lookup_hash(nd, &nd->last, &path);
-+	if (err) {
-+		path.dentry = ERR_PTR(err);
- 		goto fail;
-+	}
++	if (EXT3_HAS_INCOMPAT_FEATURE(sb, EXT3_FEATURE_INCOMPAT_WHITEOUT))
++		sb->s_flags |= MS_WHITEOUT;
++
+ 	if (le32_to_cpu(es->s_rev_level) == EXT3_GOOD_OLD_REV &&
+ 	    (EXT3_HAS_COMPAT_FEATURE(sb, ~0U) ||
+ 	     EXT3_HAS_RO_COMPAT_FEATURE(sb, ~0U) ||
+@@ -2764,7 +2767,7 @@ static struct file_system_type ext3_fs_t
+ 	.name		= "ext3",
+ 	.get_sb		= ext3_get_sb,
+ 	.kill_sb	= kill_block_super,
+-	.fs_flags	= FS_REQUIRES_DEV,
++	.fs_flags	= FS_REQUIRES_DEV | FS_WHT,
+ };
  
- 	/*
- 	 * Special case - lookup gave negative, but... we had foo/bar/
-@@ -1861,14 +1864,16 @@ struct dentry *lookup_create(struct name
- 	 * all is fine. Let's be bastards - you had / on the end, you've
- 	 * been asking for (non-existent) directory. -ENOENT for you.
- 	 */
--	if (!is_dir && nd->last.name[nd->last.len] && !dentry->d_inode)
-+	if (!is_dir && nd->last.name[nd->last.len] && !path.dentry->d_inode)
- 		goto enoent;
--	return dentry;
-+	if (nd->mnt != path.mnt)
-+		mntput(path.mnt);
-+	return path.dentry;
- enoent:
--	dput(dentry);
--	dentry = ERR_PTR(-ENOENT);
-+	dput_path(&path, nd);
-+	path.dentry = ERR_PTR(-ENOENT);
- fail:
--	return dentry;
-+	return path.dentry;
- }
- EXPORT_SYMBOL_GPL(lookup_create);
+ static int __init init_ext3_fs(void)
+--- a/include/linux/ext3_fs.h
++++ b/include/linux/ext3_fs.h
+@@ -63,6 +63,7 @@
+ #define EXT3_UNDEL_DIR_INO	 6	/* Undelete directory inode */
+ #define EXT3_RESIZE_INO		 7	/* Reserved group descriptors inode */
+ #define EXT3_JOURNAL_INO	 8	/* Journal inode */
++#define EXT3_WHT_INO		 9	/* Whiteout inode */
  
-@@ -2075,7 +2080,7 @@ static long do_rmdir(int dfd, const char
- {
- 	int error = 0;
- 	char * name;
--	struct dentry *dentry;
-+	struct path path;
- 	struct nameidata nd;
+ /* First non-reserved inode for old ext3 filesystems */
+ #define EXT3_GOOD_OLD_FIRST_INO	11
+@@ -582,6 +583,7 @@ static inline int ext3_valid_inum(struct
+ #define EXT3_FEATURE_INCOMPAT_RECOVER		0x0004 /* Needs recovery */
+ #define EXT3_FEATURE_INCOMPAT_JOURNAL_DEV	0x0008 /* Journal device */
+ #define EXT3_FEATURE_INCOMPAT_META_BG		0x0010
++#define EXT3_FEATURE_INCOMPAT_WHITEOUT		0x0020
  
- 	name = getname(pathname);
-@@ -2098,12 +2103,11 @@ static long do_rmdir(int dfd, const char
- 			goto exit1;
- 	}
- 	mutex_lock_nested(&nd.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
--	dentry = lookup_hash(&nd);
--	error = PTR_ERR(dentry);
--	if (IS_ERR(dentry))
-+	error = lookup_hash(&nd, &nd.last, &path);
-+	if (error)
- 		goto exit2;
--	error = vfs_rmdir(nd.dentry->d_inode, dentry);
--	dput(dentry);
-+	error = vfs_rmdir(nd.dentry->d_inode, path.dentry);
-+	dput_path(&path, &nd);
- exit2:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
- exit1:
-@@ -2158,7 +2162,7 @@ static long do_unlinkat(int dfd, const c
- {
- 	int error = 0;
- 	char * name;
--	struct dentry *dentry;
-+	struct path path;
- 	struct nameidata nd;
- 	struct inode *inode = NULL;
+ #define EXT3_FEATURE_COMPAT_SUPP	EXT2_FEATURE_COMPAT_EXT_ATTR
+ #define EXT3_FEATURE_INCOMPAT_SUPP	(EXT3_FEATURE_INCOMPAT_FILETYPE| \
+@@ -648,8 +650,9 @@ struct ext3_dir_entry_2 {
+ #define EXT3_FT_FIFO		5
+ #define EXT3_FT_SOCK		6
+ #define EXT3_FT_SYMLINK		7
++#define EXT3_FT_WHT		8
  
-@@ -2173,18 +2177,17 @@ static long do_unlinkat(int dfd, const c
- 	if (nd.last_type != LAST_NORM)
- 		goto exit1;
- 	mutex_lock_nested(&nd.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
--	dentry = lookup_hash(&nd);
--	error = PTR_ERR(dentry);
--	if (!IS_ERR(dentry)) {
-+	error = lookup_hash(&nd, &nd.last, &path);
-+	if (!error) {
- 		/* Why not before? Because we want correct error value */
- 		if (nd.last.name[nd.last.len])
- 			goto slashes;
--		inode = dentry->d_inode;
-+		inode = path.dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
--		error = vfs_unlink(nd.dentry->d_inode, dentry);
-+		error = vfs_unlink(nd.dentry->d_inode, path.dentry);
- 	exit2:
--		dput(dentry);
-+		dput_path(&path, &nd);
- 	}
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
- 	if (inode)
-@@ -2196,8 +2199,8 @@ exit:
- 	return error;
+-#define EXT3_FT_MAX		8
++#define EXT3_FT_MAX		9
  
- slashes:
--	error = !dentry->d_inode ? -ENOENT :
--		S_ISDIR(dentry->d_inode->i_mode) ? -EISDIR : -ENOTDIR;
-+	error = !path.dentry->d_inode ? -ENOENT :
-+		S_ISDIR(path.dentry->d_inode->i_mode) ? -EISDIR : -ENOTDIR;
- 	goto exit2;
- }
- 
-@@ -2528,7 +2531,7 @@ static int do_rename(int olddfd, const c
- {
- 	int error = 0;
- 	struct dentry * old_dir, * new_dir;
--	struct dentry * old_dentry, *new_dentry;
-+	struct path old, new;
- 	struct dentry * trap;
- 	struct nameidata oldnd, newnd;
- 
-@@ -2555,16 +2558,15 @@ static int do_rename(int olddfd, const c
- 
- 	trap = lock_rename(new_dir, old_dir);
- 
--	old_dentry = lookup_hash(&oldnd);
--	error = PTR_ERR(old_dentry);
--	if (IS_ERR(old_dentry))
-+	error = lookup_hash(&oldnd, &oldnd.last, &old);
-+	if (error)
- 		goto exit3;
- 	/* source must exist */
- 	error = -ENOENT;
--	if (!old_dentry->d_inode)
-+	if (!old.dentry->d_inode)
- 		goto exit4;
- 	/* unless the source is a directory trailing slashes give -ENOTDIR */
--	if (!S_ISDIR(old_dentry->d_inode->i_mode)) {
-+	if (!S_ISDIR(old.dentry->d_inode->i_mode)) {
- 		error = -ENOTDIR;
- 		if (oldnd.last.name[oldnd.last.len])
- 			goto exit4;
-@@ -2573,23 +2575,22 @@ static int do_rename(int olddfd, const c
- 	}
- 	/* source should not be ancestor of target */
- 	error = -EINVAL;
--	if (old_dentry == trap)
-+	if (old.dentry == trap)
- 		goto exit4;
--	new_dentry = lookup_hash(&newnd);
--	error = PTR_ERR(new_dentry);
--	if (IS_ERR(new_dentry))
-+	error = lookup_hash(&newnd, &newnd.last, &new);
-+	if (error)
- 		goto exit4;
- 	/* target should not be an ancestor of source */
- 	error = -ENOTEMPTY;
--	if (new_dentry == trap)
-+	if (new.dentry == trap)
- 		goto exit5;
- 
--	error = vfs_rename(old_dir->d_inode, old_dentry,
--				   new_dir->d_inode, new_dentry);
-+	error = vfs_rename(old_dir->d_inode, old.dentry,
-+				   new_dir->d_inode, new.dentry);
- exit5:
--	dput(new_dentry);
-+	dput_path(&new, &newnd);
- exit4:
--	dput(old_dentry);
-+	dput_path(&old, &oldnd);
- exit3:
- 	unlock_rename(new_dir, old_dir);
- exit2:
+ /*
+  * EXT3_DIR_PAD defines the directory entries boundaries
 
 -- 
 
