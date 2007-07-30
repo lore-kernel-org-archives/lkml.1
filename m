@@ -1,46 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932344AbXG3P0P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765911AbXG3PbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932344AbXG3P0P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 11:26:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbXG3P0B
+	id S1765911AbXG3PbP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 11:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755451AbXG3PbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 11:26:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44504 "EHLO mx1.redhat.com"
+	Mon, 30 Jul 2007 11:31:01 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:35720 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756726AbXG3P0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 11:26:00 -0400
-Subject: [PATCH] Fix msr register allocation
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 30 Jul 2007 12:25:54 -0300
-Message-Id: <1185809155.4347.20.camel@t60>
+	id S1755397AbXG3PbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 11:31:00 -0400
+Date: Mon, 30 Jul 2007 19:29:41 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] .gitignore update
+Message-ID: <20070730152941.GA22756@localhost.sw.ru>
+References: <20070726121547.GA16937@localhost.sw.ru> <Pine.LNX.4.64.0707291656380.9488@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0707291656380.9488@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the value in ret will go through a return statement,
-it does not need to be put in eax register directly. Instead,
-we let the compiler do his job and choose what to do with it,
-potentially getting a better register allocation.
-    
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+On Sun, Jul 29, 2007 at 04:57:22PM +0200, Jan Engelhardt wrote:
+> 
+> On Jul 26 2007 16:15, Alexey Dobriyan wrote:
+> >
+> >Somehow I ended up with the following in tree:
+> >
+> >	$ git status
+> >		...
+> >	# Untracked files:
+> >	#   (use "git add <file>..." to include in what will be committed)
+> >	#
+> >	#       fs/proc/root.o.FuMxJQ
+> >	#       net/ipv4/tcp_minisocks.o.geCDYR
+> >
+> >These are presumably temporary gcc files, which aren't interesting.
+> 
+> But they should not be there by default! Or are they?
 
-diff --git a/include/asm-i386/msr.h b/include/asm-i386/msr.h
-index df21ea0..cc4263c 100644
---- a/include/asm-i386/msr.h
-+++ b/include/asm-i386/msr.h
-@@ -54,7 +54,7 @@ static inline int native_write_msr_safe(unsigned int msr,
- 		     "   .align 4\n\t"
- 		     "   .long 	2b,3b\n\t"
- 		     ".previous"
--		     : "=a" (err)
-+		     : "=r" (err)
- 		     : "c" (msr), "0" ((u32)val), "d" ((u32)(val>>32)),
- 		       "i" (-EFAULT));
- 	return err;
+Who knows. I straced a bit but rename(2) seems to not happen. However, this
+is not the first time I see them, and yes, box is frequently rebooted
+hard way.
 
+> Looks like an interrupted assembler stage or so.
+
+These *.o.* are normal but truncated corresponding *.o files.
+
+> So I do not think *.o.* should be added.
 
