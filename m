@@ -1,82 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939942AbXG3WWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969206AbXG3WYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939942AbXG3WWc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968220AbXG3WWE
+	id S969206AbXG3WYU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967474AbXG3WYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:22:04 -0400
-Received: from nz-out-0506.google.com ([64.233.162.237]:49447 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939569AbXG3WWC (ORCPT
+	Mon, 30 Jul 2007 18:24:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40432 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968060AbXG3WYF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:22:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=SeI27cGUA0AySU5XgjiYgh7/gdJ5Yh8tAbrjV8hPN/kMzOvN4pkPMoaxu8hWxK1CbfMxv7+P1oX0ZTBRu03QfT5kARG8Jh4DRz4JsnIh4/Wm+GOG926UgqTYYb4qU3ix76xbMp8AQ+cqawJ+bl7BwprKoosJkyfbkdhK1YCxZ4I=
-Message-ID: <3ae72650707301522r4241353ld1be5dd7a2322233@mail.gmail.com>
-Date: Tue, 31 Jul 2007 00:22:01 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Sasa Ostrouska" <casaxa@gmail.com>
-Subject: Re: forcedeth ?
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Avuton Olrich" <avuton@gmail.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
+	Mon, 30 Jul 2007 18:24:05 -0400
+Date: Tue, 31 Jul 2007 04:06:22 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jeff Garzik <jeff@garzik.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, netdev@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Petko Manolov <petkan@users.sourceforge.net>
+Subject: Re: [git patches] net driver fixes
+In-Reply-To: <20070730212333.GA8049@havoc.gtf.org>
+Message-ID: <alpine.LFD.0.999.0707310349460.17287@enigma.security.iitk.ac.in>
+References: <20070730212333.GA8049@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>
-	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>
-	 <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-	 <46AE6029.60308@googlemail.com>
-	 <dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
-X-Google-Sender-Auth: 7bedb6c9b145684d
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
-> On 7/31/07, Gabriel C <nix.or.die@googlemail.com> wrote:
-> > Sasa Ostrouska wrote:
-> > > On 7/30/07, Avuton Olrich <avuton@gmail.com> wrote:
-> > >> On 7/30/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
-> > >>> Hi people,
-> > >>>
-> > >>> I'm using this on a x86-64 amd machine. During boot of the last
-> > >>> 2.6.22.1 kernel I get this error:
-> > >> Somewhat unrelated, but I had a similar forcedeth problem, I took the
-> > >> latest git forcedeth.c and put it into 2.6.22.1 and it worked for me.
-> > >>
-> > >> Good luck!
-> > >> --
-> > >> avuton
-> > >
-> > > Ok, maybe I can try that. In any case I noticed another strange thing.
-> > > I have 2 nics in that machine.
-> > > One is a nvidia MPC61 using the forcedeth.c the other one is a Realtec
-> > > RTL8029 using the
-> > > ne2k_pci.
-> > > Now, whenever I compile them both as modules each reboot the cards get
-> > > inversed eth assignement. Suppose first boot, the forcedeth is eth0 ,
-> > > the next boot it is eth1 , this is very anoying as one cant make only
-> > > one boot, probably this is someway related to the bios.
-> > > Now I configured them one in the kernel and the other as a module so
-> > > they get each time assigned the same name. But when powerloss happens
-> > > (unplug the cable) the next boot they do not work. I see them assigned
-> > > the correct name, ifconfig shows the IP's but ping results in a
-> > > destination unreachable.
-> > >
-> > > Any ideas ?
-> >
-> > Udev rules ?
-> >
-> Gabriel, hmm, shouldnt udev be able to autoconfigure that ? But I need
-> to check that, thx for the tip.
+Hi Jeff,
 
-Udev does that already, it automatically creates rules and assigns
-persistent names to newly discovered network hardware. The names will
-be stable across reboots, regardless of module loading order or
-anything else. But sure, that's only on distros who take these issues
-serious. :)
 
-Kay
+On Mon, 30 Jul 2007, Jeff Garzik wrote:
+
+>       Fix a potential NULL pointer dereference in mace_interrupt() in drivers/net/pcmcia/nmclan_cs.c
+
+This oops is _programmatically_ impossible (the only way it can occur
+is if the kernel has gone bazooka already anyway ...)
+
+[ BTW even if it were possible, we haven't fixed it still ...
+  note the use of the netdev_priv() before the (dev == NULL)
+  check in the function below ... ]
+
+
+> diff --git a/drivers/net/pcmcia/nmclan_cs.c b/drivers/net/pcmcia/nmclan_cs.c
+> index 73da611..997c2d0 100644
+> --- a/drivers/net/pcmcia/nmclan_cs.c
+> +++ b/drivers/net/pcmcia/nmclan_cs.c
+> @@ -996,7 +996,7 @@ static irqreturn_t mace_interrupt(int irq, void *dev_id)
+>  {
+>    struct net_device *dev = (struct net_device *) dev_id;
+>    mace_private *lp = netdev_priv(dev);
+> -  kio_addr_t ioaddr = dev->base_addr;
+> +  kio_addr_t ioaddr;
+>    int status;
+>    int IntrCnt = MACE_MAX_IR_ITERATIONS;
+>  
+> @@ -1006,6 +1006,8 @@ static irqreturn_t mace_interrupt(int irq, void *dev_id)
+>      return IRQ_NONE;
+>    }
+>  
+> +  ioaddr = dev->base_addr;
+> +
+>    if (lp->tx_irq_disabled) {
+>      printk(
+>        (lp->tx_irq_disabled?
+
+I suggest we should just get rid of the (bogus, always false) dev == NULL
+check itself, instead.
+
+Will submit patch, in a bit ...
+
+
+>       Fix a potential NULL pointer dereference in write_bulk_callback() in drivers/net/usb/pegasus.c
+
+Ditto, for this. Impossible oops. And if it does occur, the kernel would
+have gone irrevocably mad already ...
+
+
+> diff --git a/drivers/net/usb/pegasus.c b/drivers/net/usb/pegasus.c
+> index a05fd97..04cba6b 100644
+> --- a/drivers/net/usb/pegasus.c
+> +++ b/drivers/net/usb/pegasus.c
+> @@ -768,11 +768,13 @@ done:
+>  static void write_bulk_callback(struct urb *urb)
+>  {
+>  	pegasus_t *pegasus = urb->context;
+> -	struct net_device *net = pegasus->net;
+> +	struct net_device *net;
+>  
+>  	if (!pegasus)
+>  		return;
+>  
+> +	net = pegasus->net;
+> +
+>  	if (!netif_device_present(net) || !netif_running(net))
+>  		return;
+
+Again, the (!pegasus) check is bogus (always false) and should be removed
+instead. I believe the maintainer (CC'ed here) already has a patch for
+exactly that.
+
+
+Satyam
