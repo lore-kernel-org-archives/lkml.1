@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966936AbXG3QcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938827AbXG3QdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966936AbXG3QcW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760353AbXG3QcO
+	id S938827AbXG3QdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbXG3QdB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:32:14 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:58799 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760111AbXG3QcN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:32:13 -0400
-Date: Mon, 30 Jul 2007 11:52:44 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: 2.6.23-rc1, spamassassin vs rpc stuffs, rpc 1, spamassassin 0
-In-reply-to: <Pine.LNX.4.64.0707301620210.26373@fbirervta.pbzchgretzou.qr>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Guillaume Chazarain <guichaz@yahoo.fr>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <200707301152.44702.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <200707300957.39667.gene.heskett@gmail.com>
- <46ADF2CB.4030200@zytor.com>
- <Pine.LNX.4.64.0707301620210.26373@fbirervta.pbzchgretzou.qr>
-User-Agent: KMail/1.9.7
+	Mon, 30 Jul 2007 12:33:01 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43720 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760353AbXG3Qc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:32:59 -0400
+Message-ID: <46AE12B6.6090408@garzik.org>
+Date: Mon, 30 Jul 2007 12:32:54 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+References: <20070705194909.337398431@intel.com> <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+In-Reply-To: <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 July 2007, Jan Engelhardt wrote:
->/etc/bindresvport.blacklist
-[root@coyote rc3.d]# less /etc/bindresvport.blacklist
-/etc/bindresvport.blacklist: No such file or directory
+Kristen Carlson Accardi wrote:
+> @@ -42,6 +42,16 @@ enum scsi_eh_timer_return {
+>  	EH_RESET_TIMER,
+>  };
+>  
+> +/*
+> + * shost pm policy: If you alter this, you also need to alter scsi_sysfs.c
+> + * (for the ascii descriptions)
+> + */
+> +enum scsi_host_link_pm {
+> +	SHOST_NOT_AVAILABLE,
+> +	SHOST_MIN_POWER,
+> +	SHOST_MAX_PERFORMANCE,
+> +	SHOST_MEDIUM_POWER,
+> +};
+>  
+>  struct scsi_host_template {
+>  	struct module *module;
+> @@ -345,6 +355,12 @@ struct scsi_host_template {
+>  	int (*suspend)(struct scsi_device *, pm_message_t state);
+>  
+>  	/*
+> + 	 * link power management support
+> + 	 */
+> +	int (*set_link_pm_policy)(struct Scsi_Host *, enum scsi_host_link_pm);
+> +	enum scsi_host_link_pm default_link_pm_policy;
+> +
+> +	/*
+>  	 * Name of proc directory
+>  	 */
+>  	char *proc_name;
+> @@ -642,6 +658,7 @@ struct Scsi_Host {
+>  	
+>  
+>  	enum scsi_host_state shost_state;
+> +	enum scsi_host_link_pm shost_link_pm_policy;
+>  
+>  	/* ldm bits */
+>  	struct device		shost_gendev;
 
-on an FC6 system.
 
-Thanks.
+Any chance the SCSI peeps could ACK this, and then let me include it in 
+the ALPM patchset in the libata tree?
+
+	Jeff
 
 
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-O Lord, grant that we may always be right, for Thou knowest we will
-never change our minds.
