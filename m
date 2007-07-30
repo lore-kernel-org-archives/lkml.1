@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938827AbXG3QdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966795AbXG3QeV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938827AbXG3QdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761675AbXG3QdB
+	id S966795AbXG3QeV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764063AbXG3Qd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:33:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43720 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760353AbXG3Qc7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:32:59 -0400
-Message-ID: <46AE12B6.6090408@garzik.org>
-Date: Mon, 30 Jul 2007 12:32:54 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Mon, 30 Jul 2007 12:33:59 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:6001 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760864AbXG3Qd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:33:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=ja5IdCse43XngF/6FGV2a4dqfuugMYUfyaLwrLVyCk7Ss7/5FVIjz6h54CjFz5MJ5BuD/vH/fCG+h9d950T2mbFr57NtUSN2Sclb+vvgKrYoggsveBc6/bs3Sy9MbFbMW/KLOdQ6s2miqlfnuUHXEdWmawOXGYi/ficKvhOv0rA=
+Message-ID: <46AE12EE.1070501@googlemail.com>
+Date: Mon, 30 Jul 2007 18:33:50 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-References: <20070705194909.337398431@intel.com> <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-In-Reply-To: <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andre Noll <maan@systemlinux.org>,
+       Wim Van Sebroeck <wim@iguana.be>, Borislav Petkov <bbpetkov@yahoo.de>,
+       Bret Towe <magnade@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jakub Jelinek <jakub@redhat.com>,
+       Eric Sesterhenn <snakebyte@gmx.de>, Sid Boyce <g3vbv@blueyonder.co.uk>
+Subject: [1/3] 2.6.23-rc1: known regressions v3
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> @@ -42,6 +42,16 @@ enum scsi_eh_timer_return {
->  	EH_RESET_TIMER,
->  };
->  
-> +/*
-> + * shost pm policy: If you alter this, you also need to alter scsi_sysfs.c
-> + * (for the ascii descriptions)
-> + */
-> +enum scsi_host_link_pm {
-> +	SHOST_NOT_AVAILABLE,
-> +	SHOST_MIN_POWER,
-> +	SHOST_MAX_PERFORMANCE,
-> +	SHOST_MEDIUM_POWER,
-> +};
->  
->  struct scsi_host_template {
->  	struct module *module;
-> @@ -345,6 +355,12 @@ struct scsi_host_template {
->  	int (*suspend)(struct scsi_device *, pm_message_t state);
->  
->  	/*
-> + 	 * link power management support
-> + 	 */
-> +	int (*set_link_pm_policy)(struct Scsi_Host *, enum scsi_host_link_pm);
-> +	enum scsi_host_link_pm default_link_pm_policy;
-> +
-> +	/*
->  	 * Name of proc directory
->  	 */
->  	char *proc_name;
-> @@ -642,6 +658,7 @@ struct Scsi_Host {
->  	
->  
->  	enum scsi_host_state shost_state;
-> +	enum scsi_host_link_pm shost_link_pm_policy;
->  
->  	/* ldm bits */
->  	struct device		shost_gendev;
+Hi all,
+
+Here is a list of some known regressions in 2.6.23-rc1.
+
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+List of Aces
+
+Name                    Regressions fixed since 21-Jun-2007
+Adrian Bunk                            6
+Andi Kleen                             4
+Andrew Morton                          4
+Linus Torvalds                         4
+Al Viro                                3
+Jens Axboe                             3
+Tejun Heo                              3
+David Woodhouse                        2
+Hugh Dickins                           2
 
 
-Any chance the SCSI peeps could ACK this, and then let me include it in 
-the ALPM patchset in the libata tree?
 
-	Jeff
+Unclassified
+
+Subject         : 2.6.23-rc1-git3 init failure
+References      : http://lkml.org/lkml/2007/7/26/467
+Last known good : 2.6.23-rc1-git1
+Submitter       : Sid Boyce <g3vbv@blueyonder.co.uk>
+Caused-By       : ?
+Handled-By      : ?
+Status          : unknown
+
+Subject         : Time Problems with 2.6.23-rc1-gf695baf2
+References      : http://lkml.org/lkml/2007/7/23/486
+Last known good : ?
+Submitter       : Eric Sesterhenn <snakebyte@gmx.de>
+Caused-By       : ?
+Handled-By      : ?
+Status          : problem is being debugged
+
+Subject         : 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear mappings
+References      : http://lkml.org/lkml/2007/7/24/301
+Last known good : ?
+Submitter       : Bret Towe <magnade@gmail.com>
+Caused-By       : Nick Piggin <npiggin@suse.de>
+                  commit d00806b183152af6d24f46f0c33f14162ca1262a
+Handled-By      : ?
+Status          : unknown
+
+Subject         : no setup signature found...
+References      : http://lkml.org/lkml/2007/7/24/168
+Last known good : ?
+Submitter       : Borislav Petkov <bbpetkov@yahoo.de>
+Caused-By       : H. Peter Anvin <hpa@zytor.com>
+                  commit 4fd06960f120e02e9abc802a09f9511c400042a5
+Handled-By      : H. Peter Anvin <hpa@zytor.com>
+Status          : problem is being debugged
+
+Subject         : /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
+References      : http://lkml.org/lkml/2007/7/22/239
+Last known good : ?
+Submitter       : Andre Noll <maan@systemlinux.org>
+Caused-By       : ?
+Handled-By      : Andi Kleen <ak@suse.de>
+                  Jakub Jelinek <jakub@redhat.com>
+Status          : problem is being debugged
 
 
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
