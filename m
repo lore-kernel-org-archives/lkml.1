@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968744AbXG3V1N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968709AbXG3VeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968744AbXG3V1N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 17:27:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968207AbXG3V03
+	id S968709AbXG3VeX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 17:34:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967760AbXG3Vd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 17:26:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56934 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S967421AbXG3V02 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 17:26:28 -0400
-Date: Mon, 30 Jul 2007 23:26:08 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Richard Hughes <hughsient@gmail.com>, Adrian Bunk <bunk@stusta.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Len Brown <lenb@kernel.org>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND
-Message-ID: <20070730212608.GB22419@elf.ucw.cz>
-References: <200707251238.50218.lenb@kernel.org> <200707292336.55588.rjw@sisk.pl> <1185744640.2295.4.camel@work> <200707300022.54633.rjw@sisk.pl>
+	Mon, 30 Jul 2007 17:33:59 -0400
+Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:57031 "EHLO
+	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S967953AbXG3Vd5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 17:33:57 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=p4zyImtm9GXVqfuQ+1YDqkQf4hUiyDZPRmA95dzWeyDRIT6TDxGzra6VldJYnUrG;
+  h=Received:Message-ID:Reply-To:From:To:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <001201c7d2f1$942d5a60$6501a8c0@earthlink.net>
+Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
+From: "Mitchell Erblich" <erblichs@earthlink.net>
+To: <linux-kernel@vger.kernel.org>
+Subject: schedular : No code : New interactive (ia) sched class : Part 1
+Date: Mon, 30 Jul 2007 14:35:40 -0700
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707300022.54633.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1106
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
+X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec796905f369fa16897d6a859251aff30ecf350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.164.87.8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+- Comments for or against the SCHED_IA class in the generic
+          Linux kernel source tree.
+        - General comments::::
+ 
+        With Ingo Molnar's 2.6.22 latest inclusions into the Linux
+        source base, he has opened an opportunity to add additional
+        task classes.
+ 
+        This informal 1-pager is to try to identify whether their
+        is support for the interactive (ia) task class. Posix explicitly
+        states only three classes. However it states that
+        implementations may define additional schedulars/classes.
+ 
+          This 1-pager is to address the support for an additional
+        schedular class SCHED_IA. 
+        Currently interactive tasks are derived from
+        SCHED_NORMAL based on sleep factors and generate bonuses/credits
+        to alter their scheduling behaviour. However, this developer
+        believes that other tasks with different behaviours exist that
+        COULD also be classified as a ia task.
+ 
+        This developers preconcieved belief is that the ia class could
+        generally be supported with a minimal amount of effort, be a
+        benefit to the Linux kernel, and to generally support the 
+        following rules:
+ 
+        * allow root / SUSER (Super USER) to determine that a task
+          should be classified as a ia (interactive) task without 
+          eviction based on scheduling behaviours,
+ 
+        * allow SCHED_IA priorities be placed between the Real-time
+          schedulars and SCHED_NORMAL/OTHER,
+ 
+        * derive the interactive behaviour based on its nice value
+          and/or  its initial combined priority,
+ 
+        * TBD : identify whether the priority should be fixed or
+          have limited variability within the ia interactive class,
+ 
+        * user level command support to identify that a task is a
+          interactive (ia) task,
+ 
+        * etc (fork behaviours),
+ 
+        Note: this 1-pager is not suggesting the removal or adjustment
+              of interactive support within the SCHED_NORMAL/OTHER
+              Linux, currently supported CFS environment.
+ 
 
-> > > > > Not only.  This also includes "standby".
-> > > > 
-> > > > Whatever it includes - please tell it to the user in the prompt.
-> > > > 
-> > > > Technical issues are important, but it's often forgotten how many 
-> > > > problems people run into because the description of a kconfig option 
-> > > > could have been better.
-> > > 
-> > > Sure.  Please see the updated patch I've just sent. :-)
-> > 
-> > So are you guys using:
-> > 
-> > "standby" = idle state, ~0.5 seconds
-> > "suspend" = sleep to ram, ~10 seconds
-> > "hibernate" = sleep to disk, ~30 seconds
-> 
-> Something like this, but "suspend" is not reserved as a name of specific state.
-> 
-> The second state is usually referred to as "suspend to RAM" or "STR" and is
-> denoted by "mem" in /sys/power/state, if implemented.  Moreover, "standby" and
-> "mem" are both entered using the same code path, so they may generally be
-> referred to as "suspend" states.
-> 
-> The times aren't strictly defined for "mem" and "standby", too.  The general
-> rule is that the times for "mem" are greater then for "standby" and the power
-> drawn in "mem" is smaller than the power drawn in "standby", but the exact
-> values will always depend on the platform.  Apart from this, if the platform
-> supports only one "suspend" state, it decides if that's "mem" or "standby".
-> 
-> On ACPI systems "standby" and "mem" correspond to the S1 and S3 sleep states,
-> respectively.
-
-And I'd expect ~2seconds for both "standby" and "mem" on ACPI
-system. ACPI S1 is just "for windows ME compatibility, do not use" --
-it draws too much power, and is not really faster.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+        - Comments for or against the SCHED_IA class in the generic
+          Linux kernel source tree.
+        - General comments::::
+ 
+        Mitchell Erblich
