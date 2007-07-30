@@ -1,44 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967875AbXG3TEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967987AbXG3TEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967875AbXG3TEa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966506AbXG3TEV
+	id S967987AbXG3TEy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967347AbXG3TEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:04:21 -0400
-Received: from mailhost.nmt.edu ([129.138.4.52]:60457 "EHLO mailhost.nmt.edu"
+	Mon, 30 Jul 2007 15:04:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:41654 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763159AbXG3TEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:04:20 -0400
-Date: Mon, 30 Jul 2007 13:04:13 -0600
-From: Valerie Henson <val@nmt.edu>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       tulip-users@lists.sourceforge.net
-Cc: Grant Grundler <grundler@parisc-linux.org>, Jeff Garzik <jeff@garzik.org>
-Subject: [TULIP] Need new maintainer
-Message-ID: <20070730190412.GA16182@rainbow>
-Mime-Version: 1.0
+	id S966506AbXG3TEn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:04:43 -0400
+To: Glauber de Oliveira Costa <gcosta@redhat.com>
+Cc: =?iso-8859-1?q?Bj=F6rn_Steinbrink?= <B.Steinbrink@gmx.de>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] Fix msr register allocation
+References: <1185809155.4347.20.camel@t60>
+	<20070730153734.GA6921@atjola.homenet> <1185813358.4347.24.camel@t60>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 30 Jul 2007 21:59:20 +0200
+In-Reply-To: <1185813358.4347.24.camel@t60>
+Message-ID: <p737iohr7c7.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Tulip network driver needs a new maintainer!  I no longer have
-time to maintain the Tulip network driver and I'm stepping down.  Jeff
-Garzik would be happy to get volunteers.
+Glauber de Oliveira Costa <gcosta@redhat.com> writes:
 
-The only current major outstanding patch I know of is Grant's shutdown
-race patch, which was incorrectly dropped as obsoleted from -mm (my
-fault, I was moving at the time):
+> > Note that the EAX output constraint is re-used in the input section for
+> > (u32)val, i.e. the lower half of the value to be written. And "wrmsr"
+> > needs that in EAX, so you cannot change the output constraint without
+> > touching the input constraint.
+> Right again. Will send a new patch that also changes the input constraint.
 
-http://www.mail-archive.com/mm-commits@vger.kernel.org/msg12161.html
+Please also "fix" the subject then. You can only fix something that's broken,
+but this isn't.
 
-I have a very much non-working patch to do it with the preferred
-order, ask me for it and I'll see if I can dig it up.  It's unpleasant
-partly because it pointed out a lot of latent bugs (e.g.,
-del_timer_sync() in interrupt context).
-
-Also, someone is working on support for an emulated Tulip card (yes,
-Tulip will _never_ die), so expect possible patches for that.
-
--VAL
+-Andi
