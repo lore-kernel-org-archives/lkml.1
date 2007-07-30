@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939746AbXG3X4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939846AbXG3X5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939746AbXG3X4H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763101AbXG3Xzz
+	id S939846AbXG3X5Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765676AbXG3X5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:55:55 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:12783 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763715AbXG3Xzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:55:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=glfIbfNf8ud9SvzbzyJd5pKZ0eHw8asqoe2hKNZSfNB37vVsdBkHQAWues2G+Ch79t2ZiVduoO175BUSD+gBi4WnWxL0nH8L1FmAIf6f3R7XcUukv5nw21+KJ8TZlKdqRhLq4m5u4RM5KEZRBg9Qrmj+uRwfXVUTuN5eWMCsd+U=
-Subject: Re: [PATCH] Framebuffer: Consolidated cleanup of pvr2fb.c for Sega
-	Dreamcast
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Adrian McMenamin <lkmladrian@gmail.com>, linux-kernel@vger.kernel.org,
-       Ondrej Zajicek <santiago@crfreenet.org>
-In-Reply-To: <20070730194854.GA29181@linux-sh.org>
-References: <8b67d60707281739l6fc544e9k5eb130ab6e426ad2@mail.gmail.com>
-	 <20070730194854.GA29181@linux-sh.org>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 07:55:24 +0800
-Message-Id: <1185839724.9324.19.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 19:57:00 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:47269 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763101AbXG3X47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 19:56:59 -0400
+Date: Mon, 30 Jul 2007 16:56:45 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
+Message-ID: <20070730235645.GN3672@sequoia.sous-sol.org>
+References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 04:48 +0900, Paul Mundt wrote:
-> On Sun, Jul 29, 2007 at 01:39:51AM +0100, Adrian McMenamin wrote:
+* Manfred Spraul (manfred@colorfullife.com) wrote:
+> poll() returns -EINTR if a signal is pending.
+> EINTR is a bad choice: it means that poll returns to user space if the
+> task is stopped by SIGSTOP/SIGCONT or by the freezer.
+> select() and ppoll() both use ERESTARTNOHAND, this avoids a return to
+> user space for signals that are handled by the kernel.
 
-> This looks fine to me in any event. I can either wrap this up in my tree
-> or Tony can include it with his next set of updates if he has any other
-> concerns. Thanks, Adrian.
-> 
-> Acked-by: Paul Mundt <lethal@linux-sh.org>
+This does change user visible behaviour, however, it's already
+inconsistent as you've noted.  I was concerned about that change, but
+wrote some tests and this behaviour does make sense to me.
 
-I'll do the merge and push to mainline. This patch is really composed of
-three changes (one is already in mainline, the second is a resource
-allocation clean-up, and the third is Adrian's change).
-
-Tony
-
+thanks,
+-chris
