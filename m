@@ -1,47 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbXG3PGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbXG3PVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbXG3PGe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 11:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754735AbXG3PGZ
+	id S1760196AbXG3PVi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 11:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755367AbXG3PV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 11:06:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:51622 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754732AbXG3PGZ (ORCPT
+	Mon, 30 Jul 2007 11:21:28 -0400
+Received: from livid.absolutedigital.net ([66.92.46.173]:33320 "EHLO
+	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755238AbXG3PV1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 11:06:25 -0400
-Date: Mon, 30 Jul 2007 16:11:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Midhun A" <midhunagni@gmail.com>
-Cc: "Sriram, Kannan" <ksriram@ti.com>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-mtd@lists.infradead.org
-Subject: Re: Testing of CPRM on SD Card
-Message-ID: <20070730161114.053bef44@the-village.bc.nu>
-In-Reply-To: <e1d5030b0707300753m400e5196w99a4c05430c36572@mail.gmail.com>
-References: <e1d5030b0707280108v236cc522m454c58e1044f1996@mail.gmail.com>
-	<0A50DBE80DD6674E94F7269DC964A7B6440EDA@dbde01.ent.ti.com>
-	<20070730135723.4e5338b4@the-village.bc.nu>
-	<e1d5030b0707300753m400e5196w99a4c05430c36572@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 11:21:27 -0400
+Date: Mon, 30 Jul 2007 11:20:40 -0400 (EDT)
+From: Cal Peake <cp@absolutedigital.net>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Frank Hale <frankhale@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: ACPI on Averatec 2370
+In-Reply-To: <46ACD8DB.2020108@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
+ <46ACD8DB.2020108@googlemail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007 20:23:42 +0530
-"Midhun A" <midhunagni@gmail.com> wrote:
+On Sun, 29 Jul 2007, Gabriel C wrote:
 
-> Hey All,
-> 
->     Thanks a lot for the replies. I have the development keys. But the
-> algorithm and some intellectual property needs to be licenced from the
-> 4C entity guys to implement it. As of now I just want to test the CPRM
-> functionality. So licensing the algo for a prototype testing is a huge
-> cost.
+> Frank Hale wrote:
+> [ added  linux-acpi to CC ]
+> > I have an Averatec 2370 laptop with the nVidia MCP51. With kernel
+> > 2.6.20 I had no issues with ACPI however with 2.6.21 and higher the
+> > kernel will hang on boot until I press the suspend button or the power
+> > button in which case the kernel wakes up and finishes the boot
+> > process. Including the following support only causes the issue:
+> > 
+> >  [*] ACPI Support
+> > 
+> > What I mean by that is every ACPI option has been deactivated and only
+> > ACPI support checked. The boot process with 2.6.21 and higher hangs at
+> > the point where the Scheduler is being registered.
+> > 
+> > io scheduler cfq registered (default)
+> > 
+> > If I allow it to sit there it never comes back to life and finishes
+> > booting. If I press the power or suspend button it will finish booting
+> > as expected.
+> > 
+> > I've scoured google for quite a while but cannot find any relevant
+> > information pertaining to this issue. For now I've disabled ACPI
+> > altogether.
 
-Good good, the higher the better and the less this evil stuff gets used.
+Frank, thanks for the tip about 2.6.20 being good, it gave me a nice place 
+to start bisecting from.
 
+Thomas, Ingo,
+
+Regarding the issue described above that Frank and I are having, I've 
+narrowed it down to commit e9e2cdb4[1]: [PATCH] clockevents: i386 drivers
+
+About our systems:
+  Averatec 2370/2371 Laptop
+    AMD Turion 64 X2 TL-50/TL-52
+    nVidia MCP51 chipset
+
+Here a small matrix of my tests:
+
+2.6.20.15 SMP		: OK
+2.6.21.5 SMP		: hang
+2.6.21.5 UP w/o APIC	: OK
+2.6.22.1 UP		: hang
+2.6.22.1 UP w/o IO-APIC	: hang
+2.6.22.1 UP w/o APIC	: OK
+2.6.22.1 SMP		: hang
+2.6.22.1 SMP w/o ACPI	: OK
+
+Please let me know if there's anything else I can provide to help.
+
+thanks!
+-- 
+Cal Peake
+
+[1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e9e2cdb412412326c4827fc78ba27f410d837e6e
