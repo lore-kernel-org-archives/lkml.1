@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932821AbXG3OLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXG3ORR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932821AbXG3OLU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 10:11:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756634AbXG3OLM
+	id S932701AbXG3ORR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 10:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760620AbXG3ORG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 10:11:12 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:38230 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752320AbXG3OLL (ORCPT
+	Mon, 30 Jul 2007 10:17:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33274 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755692AbXG3ORF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 10:11:11 -0400
-From: Chr <chunkeey@web.de>
-To: Jiri Kosina <jikos@jikos.cz>
-Subject: Re: [PATCH] usbhid: add ASUS LCM to the blacklist
-Date: Mon, 30 Jul 2007 16:11:07 +0200
-User-Agent: KMail/1.9.7
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net,
-       linux-input@atrey.karlin.mff.cuni.cz, Bernd Dau <bernd@daucity.de>,
-       Adilson Oliveira <adilson@linuxembarcado.com.br>
-References: <200707240228.39421.chunkeey@web.de> <200707270110.01135.chunkeey@web.de> <Pine.LNX.4.64.0707301440020.5747@twin.jikos.cz>
-In-Reply-To: <Pine.LNX.4.64.0707301440020.5747@twin.jikos.cz>
+	Mon, 30 Jul 2007 10:17:05 -0400
+Message-ID: <46ADF2CB.4030200@zytor.com>
+Date: Mon, 30 Jul 2007 07:16:43 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Guillaume Chazarain <guichaz@yahoo.fr>
+CC: Gene Heskett <gene.heskett@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.23-rc1, spamassassin vs rpc stuffs, rpc 1, spamassassin 0
+References: <200707300957.39667.gene.heskett@gmail.com> <3d8471ca0707300704wc4119c2iaf865d685324d7c@mail.gmail.com>
+In-Reply-To: <3d8471ca0707300704wc4119c2iaf865d685324d7c@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707301611.08758.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX18J8vqouhKaRFlXHrOmulRztu14lCyGLo0W1399
-	9irEdCGFejr34e5Rvnqq8+JS56XslzKN0cAr/uwPNVDsSBNEOJ
-	ppR/BPwZY=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 30. July 2007, Jiri Kosina wrote:
-> On Fri, 27 Jul 2007, Christian Lamparter wrote:
+Guillaume Chazarain wrote:
+>> Comments anyone?
 > 
-> > Some of ASUS' notebooks (e.g G Series) include a tiny oled display, which is 
-> > attached to an internal USB bus. Unfortunatly the device reports a wrong
-> > DeviceDescriptor and is therefore identified as a HID device...
+> This is not specific to the kernel.
+> It was discussed here: http://lkml.org/lkml/2007/1/24/258
+> http://cyberelk.net/tim/portreserve/ seems to be the solution,
+> it's a pity it is not widely deployed.
 > 
-> Hi Christian,
-> 
-> I have slightly modified your patch (let's keep the hid_blacklist[] 
-> properly sorted) and applied it into my tree.
 
-Ok, found it " hid_blacklist is alphabetically sorted blacklist by quirk type. "
-But is there a Order for the bitfields? e.g
+The better solution probably would have bindresvport() in glibc be aware 
+of a blacklist.
 
-shouldn't: hid-quriks.c (line 439, 440)
-
-{ USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_ANSI, 
-HID_QUIRK_POWERBOOK_HAS_FN | HID_QUIRK_IGNORE_MOUSE } 
-
-be:
-{..., ..., HID_QUIRK_IGNORE_MOUSE | HID_QUIRK_POWERBOOK_HAS_FN }
-
-
-Anyway, thanks for merging! 
-	Chr.
- 
-
+	-hpa
