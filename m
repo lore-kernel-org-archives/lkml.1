@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933791AbXG3LQy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934773AbXG3L0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933791AbXG3LQy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 07:16:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbXG3LQq
+	id S934773AbXG3L0q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 07:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbXG3L0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 07:16:46 -0400
-Received: from qb-out-0506.google.com ([72.14.204.224]:31460 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbXG3LQq (ORCPT
+	Mon, 30 Jul 2007 07:26:37 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:64072 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbXG3L0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 07:16:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:cc:subject:message-id:reply-to:mime-version:content-type:content-disposition:user-agent:from:sender;
-        b=FTgmhZtyuA4e8eBDWiztBxG3uSECgGKUqlqIO30P7fq2cYU4rIy8t7Itl/L/EaVgWonPihFO8eqy5Zduo24Mn8JqK20hlb/C/RZZWk5sa+zzy0ZJAlUv7yW7wdT3ESEPM1OaEDpA+7icm1Q6ZpNtZ7DJw2Yup7sBxx61xuLiohY=
-Date: Mon, 30 Jul 2007 19:16:38 +0800
-To: linux-kernel@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
-Subject: [PATCH] fs/partitions/check.c: add_partition() warning fixes (take
-	3)
-Message-ID: <20070730111638.GA27573@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-From: Eugene Teo <eugeneteo@kernel.sg>
+	Mon, 30 Jul 2007 07:26:36 -0400
+Date: Mon, 30 Jul 2007 13:26:34 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fs/partitions/check.c: add_partition() warning fixes
+ (take 3)
+Message-ID: <20070730132634.6b7f3696@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070730111638.GA27573@kernel.sg>
+References: <20070730111638.GA27573@kernel.sg>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes these warnings:
+On Mon, 30 Jul 2007 19:16:38 +0800,
+Eugene Teo <eugeneteo@kernel.sg> wrote:
 
-fs/partitions/check.c: In function 'add_partition':
-fs/partitions/check.c:391: warning: ignoring return value of 'kobject_add',
-	declared with attribute warn_unused_result
-fs/partitions/check.c:394: warning: ignoring return value of
-	'sysfs_create_link', declared with attribute warn_unused_result
-fs/partitions/check.c:401: warning: ignoring return value of
-	'sysfs_create_file', declared with attribute warn_unused_result
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- fs/partitions/check.c |   22 +++++++++++++++++++---
- 1 files changed, 19 insertions(+), 3 deletions(-)
+> +err_out_del_link:
+> +	sysfs_remove_link(&p->kobj, "subsystem");
+> +err_out_del_uevent:
+> +	if (!disk->part_uevent_suppress)
+> +		kobject_uevent(&p->kobj, KOBJ_REMOVE);
 
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 783c57e..a77b5dd 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -371,6 +371,7 @@ void delete_partition(struct gendisk *disk, int part)
- void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len, int flags)
- {
- 	struct hd_struct *p;
-+	int err;
- 
- 	p = kzalloc(sizeof(*p), GFP_KERNEL);
- 	if (!p)
-@@ -388,20 +389,35 @@ void add_partition(struct gendisk *disk, int part, sector_t start, sector_t len,
- 	p->kobj.parent = &disk->kobj;
- 	p->kobj.ktype = &ktype_part;
- 	kobject_init(&p->kobj);
--	kobject_add(&p->kobj);
-+	err = kobject_add(&p->kobj);
-+	if (err)
-+		goto err_out;
- 	if (!disk->part_uevent_suppress)
- 		kobject_uevent(&p->kobj, KOBJ_ADD);
--	sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
-+	err = sysfs_create_link(&p->kobj, &block_subsys.kobj, "subsystem");
-+	if (err)
-+		goto err_out_del_uevent;
- 	if (flags & ADDPART_FLAG_WHOLEDISK) {
- 		static struct attribute addpartattr = {
- 			.name = "whole_disk",
- 			.mode = S_IRUSR | S_IRGRP | S_IROTH,
- 		};
- 
--		sysfs_create_file(&p->kobj, &addpartattr);
-+		err = sysfs_create_file(&p->kobj, &addpartattr);
-+		if (err)
-+			goto err_out_del_link;
- 	}
- 	partition_sysfs_add_subdir(p);
- 	disk->part[part-1] = p;
-+	return;
-+
-+err_out_del_link:
-+	sysfs_remove_link(&p->kobj, "subsystem");
-+err_out_del_uevent:
-+	if (!disk->part_uevent_suppress)
-+		kobject_uevent(&p->kobj, KOBJ_REMOVE);
-+err_out:
-+	kobject_put(&p->kobj);
- }
- 
- static char *make_block_name(struct gendisk *disk)
+You're missing kobject_del() here...
+
+> +err_out:
+> +	kobject_put(&p->kobj);
+>  }
+> 
+>  static char *make_block_name(struct gendisk *disk)
+> 
 
