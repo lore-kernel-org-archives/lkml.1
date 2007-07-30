@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967875AbXG3TF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967933AbXG3THR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967875AbXG3TF0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:05:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967139AbXG3TFL
+	id S967933AbXG3THR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935591AbXG3TG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:05:11 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:38814
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967415AbXG3TFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:05:09 -0400
-Date: Mon, 30 Jul 2007 12:03:56 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ingo Molnar <mingo@elte.hu>
-cc: John <darknessenvelops@gmail.com>, Kasper Sandberg <lkml@metanurb.dk>,
-       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-In-Reply-To: <20070730190147.GC20901@elte.hu>
-Message-ID: <Pine.LNX.4.64.0707301202260.12232@asgard.lang.hm>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
- <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>
- <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
- <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
- <20070730114649.GB19186@elte.hu> <Pine.LNX.4.64.0707300914160.11330@asgard.lang.hm>
- <20070730190147.GC20901@elte.hu>
+	Mon, 30 Jul 2007 15:06:59 -0400
+Received: from [212.12.190.32] ([212.12.190.32]:33792 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S935071AbXG3TG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:06:58 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on software raid 5
+Date: Mon, 30 Jul 2007 22:07:02 +0300
+User-Agent: KMail/1.5
+Cc: linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com, linux-raid@vger.kernel.org
+References: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
+In-Reply-To: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707302207.02672.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007, Ingo Molnar wrote:
+Justin Piszcz wrote:
+> CONFIG:
+>
+> Software RAID 5 (400GB x 6): Default mkfs parameters for all filesystems.
+> Kernel was 2.6.21 or 2.6.22, did these awhile ago.
+> Hardware was SATA with PCI-e only, nothing on the PCI bus.
+>
+> ZFS was userspace+fuse of course.
 
-> * david@lang.hm <david@lang.hm> wrote:
->
->>> Would you be interested in trying CFS and doing some numers perhaps?
->>> It requires some work: you have to start up your favorite game in a
->>> way that gives a reliable framerate number. (many games allow the
->>> display of FPS in-game) In Quake3 i simply started the game and did
->>> not move the player - that is something easy to reproduce.
->>
->> the one report that I saw said that the FPS numbers were overall the
->> same, but what the reporter was seeing was that CFS was doing it in
->> bursts of activity while SD was smoother. [...]
->
-> which report is that, precisely? I'm not aware of any such report past
-> CFS v14 or so.
->
->> IIRC Linus responded with thoughts on granularity and the fact that
->> changing from Hz 1000 to Hz 100 will increase the timeslices in CFS by
->> 10x (which could be enough to trigger this sort of issue)
->
-> ah, you mean Kasper Sandberg's report? That turned out to be based on an
-> older CFS version, not v2.6.23-rc1. Kasper said he'll redo his tests,
-> and if there's still any regression left we'll fix it.
+Wow! Userspace and still that efficient.
 
-probably. I delete lkml messages pretty agressivly so I don't have them 
-around to refer to.
+> Reiser was V3.
+> EXT4 was created using the recommended options on its project page.
+>
+> RAW:
+>
+> ext2,7760M,56728,96.3333,180505,51,85484,17.3333,50946.7,80.3333,235541,21
+>.3333,373.667,0,16:100000:16/64,2354,27,0,0,8455.67,14.6667,2211.67,26.3333
+>,0,0,9724,22.3333
+> ext3,7760M,52702.7,94.3333,165005,60,82294.7,20.6667,52664,83.6667,258788,
+>33.3333,335.8,0,16:100000:16/64,858.333,10.6667,10250.3,28.6667,4084,15,897
+>,12.6667,4024.33,12.3333,2754,11.3333
+> ext4,7760M,53129.7,95,164515,59.3333,101678,31.6667,62194.3,98.6667,266716
+>,22.3333,405.767,0,16:100000:16/64,1963.67,23.6667,0,0,20859,73.6667,1731,2
+>1.3333,9022,23.6667,16410,65.6667
+> jfs,7760M,54606,92,191997,52,112764,33.6667,63585.3,99,274921,22.3333,383.
+>8,0,16:100000:16/64,344,1,0,0,539.667,0,297.667,1,0,0,340,0
+> reiserfs,7760M,51056.7,96,180607,67,106907,38.3333,61231.3,97.6667,275339,
+>29.3333,441.167,0,16:100000:16/64,2516,60.6667,19174.3,60.6667,8194.33,54.3
+>333,2011,42.6667,6963.67,19.6667,9168.33,68.6667
+> xfs,7760M,52985.7,93,158342,45,79682,14,60547.3,98,239101,20.3333,359.667,
+>0,16:100000:16/64,415,4,0,0,1774.67,10.6667,454,4.66667,14526.3,40,1572,12.
+>6667
 
-David Lang
+> zfs,7760M,
+
+Dissecting some of these numbers:
+
+  speed	%cpu  
+> 25601,43.3333,
+> 32198.7,4,
+> 13266.3, 2,
+> 44145.3,68.6667,
+> 129278,9,
+> 245.167,0,
+
+> 16:100000:16/64,
+
+  speed	%cpu  
+> 218.333,2,
+> 2698.33,11.6667,
+> 7434.67,14.3333,
+> 244,2,
+> 2191.33,11.6667,
+> 5613.33,13.3333
+
+Extrapolating these %cpu number makes ZFS the fastest.
+
+Are you sure these numbers are correct?
+
+
+Thanks!
+
+--
+Al
+
