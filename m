@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969650AbXG3WPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969178AbXG3WWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969650AbXG3WPV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969110AbXG3WMa
+	id S969178AbXG3WWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939577AbXG3WWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:12:30 -0400
-Received: from mx2.suse.de ([195.135.220.15]:53915 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S969013AbXG3WM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:12:28 -0400
-Date: Mon, 30 Jul 2007 15:11:41 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] usb-storage autosuspend bug?
-Message-ID: <20070730221141.GA5410@suse.de>
-References: <Pine.LNX.4.44L0.0707271010320.3428-100000@iolanthe.rowland.org> <alpine.LFD.0.999.0707291956580.4161@woody.linux-foundation.org>
+	Mon, 30 Jul 2007 18:22:03 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:50452 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932801AbXG3WWB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 18:22:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=NU8rFrvtTl55KuJczYlo+f0DbLf4dkfHjbsMl7e91feG7u8McYEgVuP5ZwgZ71/uCJAWMDx3ii7K2S1xG4JXu8GqWNjVZ942PuWZwjZ/yL9D4mUzfRdmuHH0LEGb0LgaoHu9xZbGvKEZlkrTSS1ImbSsf8H2qO/h7Lt1QHGBbQc=
+Message-ID: <46AE6372.20808@googlemail.com>
+Date: Tue, 31 Jul 2007 00:17:22 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707291956580.4161@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Sasa Ostrouska <casaxa@gmail.com>
+CC: Avuton Olrich <avuton@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: forcedeth ?
+References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>	 <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>	 <46AE6029.60308@googlemail.com> <dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
+In-Reply-To: <dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 08:00:01PM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Fri, 27 Jul 2007, Alan Stern wrote:
-> > 
-> > I don't think it's a refcounting problem.  My guess is that the 
-> > underlying cause is the bug in your urb->status removal patch for 
-> > usb_start_wait_urb() -- the one I fixed here:
-> > 
-> > http://marc.info/?l=linux-usb-devel&m=118531582013355&w=2
-> > 
-> > Of course, my guess could be wrong.  I haven't tried to recreate 
-> > Linus's bug with that patch reverted.  But with the patch present I was 
-> > not able to duplicate the bug.
-> 
-> I finally got around to testing this, and while I still have problems with 
-> that reader, I can't reproduce the oops with that patch in place either.
-> 
-> Of course, I only ever saw the oops once, so I really don't know how 
-> reproducible it was. Maybe you have to remove the USB reader at _just_ the 
-> right moment. But I did get
-> 
-> 	...
-> 	usb 2-6: reset high speed USB device using ehci_hcd and address 4
-> 	usb 2-6: USB disconnect, address 4
-> 	sd 6:0:0:1: [sdc] Result: hostbyte=0x07 driverbyte=0x00
-> 	end_request: I/O error, dev sdc, sector 1999855
-> 	...
-> 	scsi 6:0:0:1: rejecting I/O to dead device
-> 
-> so the testing was done with the kind of behaviour that resulted in an 
-> oops and a dead khubd last time around.
-> 
-> So I guess I'll ack the patch for whatever that is worth.
+Sasa Ostrouska wrote:
+> On 7/31/07, Gabriel C <nix.or.die@googlemail.com> wrote:
+>> Sasa Ostrouska wrote:
+>>> On 7/30/07, Avuton Olrich <avuton@gmail.com> wrote:
+>>>> On 7/30/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
+>>>>> Hi people,
+>>>>>
+>>>>> I'm using this on a x86-64 amd machine. During boot of the last
+>>>>> 2.6.22.1 kernel I get this error:
+>>>> Somewhat unrelated, but I had a similar forcedeth problem, I took the
+>>>> latest git forcedeth.c and put it into 2.6.22.1 and it worked for me.
+>>>>
+>>>> Good luck!
+>>>> --
+>>>> avuton
+>>> Ok, maybe I can try that. In any case I noticed another strange thing.
+>>> I have 2 nics in that machine.
+>>> One is a nvidia MPC61 using the forcedeth.c the other one is a Realtec
+>>> RTL8029 using the
+>>> ne2k_pci.
+>>> Now, whenever I compile them both as modules each reboot the cards get
+>>> inversed eth assignement. Suppose first boot, the forcedeth is eth0 ,
+>>> the next boot it is eth1 , this is very anoying as one cant make only
+>>> one boot, probably this is someway related to the bios.
+>>> Now I configured them one in the kernel and the other as a module so
+>>> they get each time assigned the same name. But when powerloss happens
+>>> (unplug the cable) the next boot they do not work. I see them assigned
+>>> the correct name, ifconfig shows the IP's but ping results in a
+>>> destination unreachable.
+>>>
+>>> Any ideas ?
+>> Udev rules ?
+>>
+>>
+> Gabriel, hmm, shouldnt udev be able to autoconfigure that ? But I need
+> to check that, thx for the tip.
 
-Ok, the patch is in the series I just sent to you.
+Yes udev does this based on the MAC address but AFAIK forcedeth is 'special' for some reason 
+( which I can really remember now and gets on each boot a new MAC address or alike )
 
-If you run into that bug again, please let us know.
+You could try to make your rules based on the pci bus id instead of the MAC address. ( at least I think this should work )
 
-thanks,
+> Rgds
+> Sasa
+> 
 
-greg k-h
+Gabriel
