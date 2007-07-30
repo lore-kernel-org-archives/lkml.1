@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969630AbXG3WOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969650AbXG3WPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969630AbXG3WOr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969000AbXG3WLE
+	id S969650AbXG3WPV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969110AbXG3WMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:11:04 -0400
-Received: from ns.suse.de ([195.135.220.2]:40421 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 18:12:30 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53915 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S969365AbXG3WLB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:11:01 -0400
-From: Greg Kroah-Hartman <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 11/11] modules: better error messages when modules fail to load due to a sysfs problem.
-Date: Mon, 30 Jul 2007 15:09:33 -0700
-Message-Id: <1185833416410-git-send-email-gregkh@suse.de>
-X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11858334123619-git-send-email-gregkh@suse.de>
-References: <20070730220829.GB5263@kroah.com>
- <1185833373286-git-send-email-gregkh@suse.de>
- <11858333772499-git-send-email-gregkh@suse.de>
- <11858333823900-git-send-email-gregkh@suse.de>
- <11858333853388-git-send-email-gregkh@suse.de>
- <11858333892232-git-send-email-gregkh@suse.de>
- <11858333931362-git-send-email-gregkh@suse.de>
- <11858334013561-git-send-email-gregkh@suse.de>
- <11858334042248-git-send-email-gregkh@suse.de>
- <1185833408744-git-send-email-gregkh@suse.de>
- <11858334123619-git-send-email-gregkh@suse.de>
+	id S969013AbXG3WM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 18:12:28 -0400
+Date: Mon, 30 Jul 2007 15:11:41 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] usb-storage autosuspend bug?
+Message-ID: <20070730221141.GA5410@suse.de>
+References: <Pine.LNX.4.44L0.0707271010320.3428-100000@iolanthe.rowland.org> <alpine.LFD.0.999.0707291956580.4161@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707291956580.4161@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This helps people when debugging problems like the ones that were in the
-recent -mm releases.
+On Sun, Jul 29, 2007 at 08:00:01PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 27 Jul 2007, Alan Stern wrote:
+> > 
+> > I don't think it's a refcounting problem.  My guess is that the 
+> > underlying cause is the bug in your urb->status removal patch for 
+> > usb_start_wait_urb() -- the one I fixed here:
+> > 
+> > http://marc.info/?l=linux-usb-devel&m=118531582013355&w=2
+> > 
+> > Of course, my guess could be wrong.  I haven't tried to recreate 
+> > Linus's bug with that patch reverted.  But with the patch present I was 
+> > not able to duplicate the bug.
+> 
+> I finally got around to testing this, and while I still have problems with 
+> that reader, I can't reproduce the oops with that patch in place either.
+> 
+> Of course, I only ever saw the oops once, so I really don't know how 
+> reproducible it was. Maybe you have to remove the USB reader at _just_ the 
+> right moment. But I did get
+> 
+> 	...
+> 	usb 2-6: reset high speed USB device using ehci_hcd and address 4
+> 	usb 2-6: USB disconnect, address 4
+> 	sd 6:0:0:1: [sdc] Result: hostbyte=0x07 driverbyte=0x00
+> 	end_request: I/O error, dev sdc, sector 1999855
+> 	...
+> 	scsi 6:0:0:1: rejecting I/O to dead device
+> 
+> so the testing was done with the kind of behaviour that resulted in an 
+> oops and a dead khubd last time around.
+> 
+> So I guess I'll ack the patch for whatever that is worth.
 
+Ok, the patch is in the series I just sent to you.
 
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- kernel/params.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+If you run into that bug again, please let us know.
 
-diff --git a/kernel/params.c b/kernel/params.c
-index effbaae..4e57732 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -567,7 +567,12 @@ static void __init kernel_param_sysfs_setup(const char *name,
- 	kobject_set_name(&mk->kobj, name);
- 	kobject_init(&mk->kobj);
- 	ret = kobject_add(&mk->kobj);
--	BUG_ON(ret < 0);
-+	if (ret) {
-+		printk(KERN_ERR "Module '%s' failed to be added to sysfs, "
-+		      "error number %d\n", name, ret);
-+		printk(KERN_ERR	"The system will be unstable now.\n");
-+		return;
-+	}
- 	param_sysfs_setup(mk, kparam, num_params, name_skip);
- 	kobject_uevent(&mk->kobj, KOBJ_ADD);
- }
--- 
-1.5.2.2
+thanks,
 
+greg k-h
