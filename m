@@ -1,40 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967396AbXG3RLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967536AbXG3RL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967396AbXG3RLf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967098AbXG3RJx
+	id S967536AbXG3RL5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967137AbXG3RJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:09:53 -0400
-Received: from kai.krose.org ([140.186.190.96]:40736 "EHLO kai.krose.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966163AbXG3RJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:09:52 -0400
-Message-ID: <46AE1B5F.8060705@krose.org>
-Date: Mon, 30 Jul 2007 13:09:51 -0400
-From: Kyle Rose <krose@krose.org>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 30 Jul 2007 13:09:56 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:48589
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967112AbXG3RJz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 13:09:55 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Satyam Sharma <satyam@infradead.org>
+Subject: Re: [PATCH 1/5] Use mutex instead of semaphore in the Host AP driver
+Date: Mon, 30 Jul 2007 19:09:38 +0200
+User-Agent: KMail/1.9.6
+Cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>, linville@tuxdriver.com,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20070729212909.GC3432@traven> <200707300006.42397.mb@bu3sch.de> <alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>	 <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>	 <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>	 <20070729204716.GB1578@elte.hu>	 <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>	 <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>	 <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com> <1185814234.16771.1.camel@lappy>
-In-Reply-To: <1185814234.16771.1.camel@lappy>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Disposition: inline
+Message-Id: <200707301909.38602.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 30 July 2007, Satyam Sharma wrote:
+> 
+> On Mon, 30 Jul 2007, Michael Buesch wrote:
+> 
+> > On Sunday 29 July 2007 23:34, Matthias Kaehlcke wrote:
+> > > The Host AP driver uses a semaphore as mutex. Use the mutex API
+> > > instead of the (binary) semaphore.
+> > > 
+> > > Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> 
+> [ Something seems to have gone wrong with your diff / patch / script.
+>   There was no diff header here, which should have been. ]
+> 
+> > > -	res = down_interruptible(&local->rid_bap_sem);
+> > > +	res = mutex_lock_interruptible(&local->rid_bap_mtx);
+> > >  	if (res)
+> > >  		return res;
+> > >  
+> > > @@ -902,7 +902,7 @@ static int hfa384x_set_rid(struct net_device *dev, u16 rid, void *buf, int len)
+> > >  	/* RID len in words and +1 for rec.rid */
+> > >  	rec.len = cpu_to_le16(len / 2 + len % 2 + 1);
+> > >  
+> > > -	res = down_interruptible(&local->rid_bap_sem);
+> > > +	res = mutex_lock_interruptible(&local->rid_bap_mtx);
+> > >  	if (res)
+> > >  		return res;
+> > >  
+> > 
+> > Is res returned to userspace? If yes, that's not right.
+> 
+> Yup, that's not right.
+> 
+> > On a interrupted mutex allocation you should return
+> > -ERESTARTSYS to userspace.
+> 
+> Nope, userspace must not see ERESTARTSYS (I /think/ this is the third
+> time I'm participating in this exact same discussion :-)
+> 
+> If the return would be caught by a previous in-kernel caller in the
+> call chain, ERESTARTSYS is okay and it could try to restart the
+> operation. However, if the return goes unfiltered directly to
+> userspace, EINTR is the correct choice.
 
-> As for breaking binary crap, thats a bonus. Break them hard, break them
-> often.
->   
-I think there's a big difference in philosophy between "break binary
-drivers if you want to make a legitimate change for whatever reason" and
-"break binary drivers just to be a pain in the ass to the developers and
-users of said drivers."  I think most people here agree with the first.
-It's unclear to me how many here agree with the second, but I know it's
-at least one. ;-)
+Last time I submitted a patch which returned EINTR to userspace,
+people came and said it was wrong. It was said that we must
+return ERESTARTSYS to the libc and the libc will convert that
+into either EINTR or automatically restart it immediately.
+(You can set that in the sigaction stuff).
 
-Kyle
+So either the one who told me that last time was wrong, or you. :)
+
+Andrew? I think you were involved in this discussion I mentioned.
+(It was about the HW-RNG chardev, but that doesn't matter here).
