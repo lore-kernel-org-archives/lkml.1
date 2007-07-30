@@ -1,84 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966201AbXG3CiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966193AbXG3Cin@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966201AbXG3CiR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 22:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966034AbXG3CgO
+	id S966193AbXG3Cin (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 22:38:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966112AbXG3CgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 22:36:14 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:43493 "EHLO
+	Sun, 29 Jul 2007 22:36:22 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43500 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966092AbXG3CgL (ORCPT
+	with ESMTP id S965900AbXG3CgU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 22:36:11 -0400
+	Sun, 29 Jul 2007 22:36:20 -0400
 From: Satyam Sharma <satyam@infradead.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
        Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        David Miller <davem@davemloft.net>
-Date: Mon, 30 Jul 2007 08:18:30 +0530
-Message-Id: <20070730024830.10828.34830.sendpatchset@enigma.security.iitk.ac.in>
+Date: Mon, 30 Jul 2007 08:18:40 +0530
+Message-Id: <20070730024840.10828.48069.sendpatchset@enigma.security.iitk.ac.in>
 In-Reply-To: <20070730024741.10828.48209.sendpatchset@enigma.security.iitk.ac.in>
 References: <20070730024741.10828.48209.sendpatchset@enigma.security.iitk.ac.in>
-Subject: [PATCH v3 -mm 5/9] netconsole: Add some useful tips to documentation
+Subject: [PATCH v3 -mm 6/9] netconsole: Introduce netconsole_target
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Satyam Sharma <satyam@infradead.org>
 
-[5/9] netconsole: Add some useful tips to documentation
+[6/9] netconsole: Introduce netconsole_target
 
-Add some useful general-purpose tips. Also suggest solution for the frequent
-problem of console loglevel set too low numerically (i.e. for high priority
-messages only) on the sender.
+Introduce a wrapper structure over netpoll to represent logging targets
+configured in netconsole. This will get extended with other members in
+further patches.
+
+This is done independent of the (to-be-introduced) NETCONSOLE_DYNAMIC
+config option so that we're able to drastically cut down on the #ifdef
+complexity of final netconsole.c. Also, struct netconsole_target would be
+required for multiple targets support also, and not just dynamic
+reconfigurability.
 
 Signed-off-by: Satyam Sharma <satyam@infradead.org>
-Acked-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
-Acked-by: Matt Mackall <mpm@selenic.com>
+Signed-off-by: Keiichi Kii <k-keiichi@bx.jp.nec.com>
 
 ---
 
- Documentation/networking/netconsole.txt |   25 +++++++++++++++++++++++++
- 1 files changed, 25 insertions(+), 0 deletions(-)
+ drivers/net/netconsole.c |   36 +++++++++++++++++++++++++-----------
+ 1 files changed, 25 insertions(+), 11 deletions(-)
 
-diff --git a/Documentation/networking/netconsole.txt b/Documentation/networking/netconsole.txt
-index 1caa6c7..5962f45 100644
---- a/Documentation/networking/netconsole.txt
-+++ b/Documentation/networking/netconsole.txt
-@@ -44,11 +44,36 @@ WARNING: the default target ethernet setting uses the broadcast
- ethernet address to send packets, which can cause increased load on
- other systems on the same ethernet segment.
+diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+index 75cb761..be15ca6 100644
+--- a/drivers/net/netconsole.c
++++ b/drivers/net/netconsole.c
+@@ -62,24 +62,35 @@ static int __init option_setup(char *opt)
+ __setup("netconsole=", option_setup);
+ #endif	/* MODULE */
  
-+TIP: some LAN switches may be configured to suppress ethernet broadcasts
-+so it is advised to explicitly specify the remote agents' MAC addresses
-+from the config parameters passed to netconsole.
+-static struct netpoll np = {
+-	.name		= "netconsole",
+-	.dev_name	= "eth0",
+-	.local_port	= 6665,
+-	.remote_port	= 6666,
+-	.remote_mac	= {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
++/**
++ * struct netconsole_target - Represents a configured netconsole target.
++ * @np:		The netpoll structure for this target.
++ */
++struct netconsole_target {
++	struct netpoll		np;
++};
 +
-+TIP: to find out the MAC address of, say, 10.0.0.2, you may try using:
-+
-+ ping -c 1 10.0.0.2 ; /sbin/arp -n | grep 10.0.0.2
-+
-+TIP: in case the remote logging agent is on a separate LAN subnet than
-+the sender, it is suggested to try specifying the MAC address of the
-+default gateway (you may use /sbin/route -n to find it out) as the
-+remote MAC address instead.
-+
- NOTE: the network device (eth1 in the above case) can run any kind
- of other network traffic, netconsole is not intrusive. Netconsole
- might cause slight delays in other traffic if the volume of kernel
- messages is high, but should have no other impact.
++static struct netconsole_target default_target = {
++	.np		= {
++		.name		= "netconsole",
++		.dev_name	= "eth0",
++		.local_port	= 6665,
++		.remote_port	= 6666,
++		.remote_mac	= {0xff, 0xff, 0xff, 0xff, 0xff, 0xff},
++	},
+ };
  
-+NOTE: if you find that the remote logging agent is not receiving or
-+printing all messages from the sender, it is likely that you have set
-+the "console_loglevel" parameter (on the sender) to only send high
-+priority messages to the console. You can change this at runtime using:
+ static void write_msg(struct console *con, const char *msg, unsigned int len)
+ {
+ 	int frag, left;
+ 	unsigned long flags;
++	struct netconsole_target *nt = &default_target;
+ 
+-	if (netif_running(np.dev)) {
++	if (netif_running(nt->np.dev)) {
+ 		local_irq_save(flags);
+ 		for (left = len; left;) {
+ 			frag = min(left, MAX_PRINT_CHUNK);
+-			netpoll_send_udp(&np, msg, frag);
++			netpoll_send_udp(&nt->np, msg, frag);
+ 			msg += frag;
+ 			left -= frag;
+ 		}
+@@ -96,17 +107,18 @@ static struct console netconsole = {
+ static int __init init_netconsole(void)
+ {
+ 	int err = 0;
++	struct netconsole_target *nt = &default_target;
+ 
+ 	if (!strnlen(config, MAX_PARAM_LENGTH)) {
+ 		printk(KERN_INFO "netconsole: not configured, aborting\n");
+ 		goto out;
+ 	}
+ 
+-	err = netpoll_parse_options(&np, config);
++	err = netpoll_parse_options(&nt->np, config);
+ 	if (err)
+ 		goto out;
+ 
+-	err = netpoll_setup(&np);
++	err = netpoll_setup(&nt->np);
+ 	if (err)
+ 		goto out;
+ 
+@@ -119,8 +131,10 @@ out:
+ 
+ static void __exit cleanup_netconsole(void)
+ {
++	struct netconsole_target *nt = &default_target;
 +
-+ dmesg -n 8
-+
-+or by specifying "debug" on the kernel command line at boot, to send
-+all kernel messages to the console. A specific value for this parameter
-+can also be set using the "loglevel" kernel boot option. See the
-+dmesg(8) man page and Documentation/kernel-parameters.txt for details.
-+
- Netconsole was designed to be as instantaneous as possible, to
- enable the logging of even the most critical kernel bugs. It works
- from IRQ contexts as well, and does not enable interrupts while
+ 	unregister_console(&netconsole);
+-	netpoll_cleanup(&np);
++	netpoll_cleanup(&nt->np);
+ }
+ 
+ module_init(init_netconsole);
