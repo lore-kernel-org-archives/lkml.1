@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967847AbXG3UEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968203AbXG3UK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967847AbXG3UEf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967382AbXG3UEY
+	id S968203AbXG3UK1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763973AbXG3UKL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:04:24 -0400
-Received: from mga09.intel.com ([134.134.136.24]:12002 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763715AbXG3UEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:04:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,200,1183359600"; 
-   d="scan'208";a="111522877"
-Subject: Re: [patch] sched: yield debugging
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Reply-To: tim.c.chen@linux.intel.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070729173735.GA4041@elte.hu>
-References: <1185573687.19777.44.camel@localhost.localdomain>
-	 <20070729173735.GA4041@elte.hu>
-Content-Type: text/plain
-Organization: Intel
-Date: Mon, 30 Jul 2007 11:10:52 -0700
-Message-Id: <1185819052.19777.52.camel@localhost.localdomain>
+	Mon, 30 Jul 2007 16:10:11 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:48789 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763715AbXG3UKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:10:10 -0400
+Date: Mon, 30 Jul 2007 13:13:02 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+       Michael Buesch <mb@bu3sch.de>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 1/5] Use mutex instead of semaphore in the Host AP
+ driver
+Message-Id: <20070730131302.82622b06.randy.dunlap@oracle.com>
+In-Reply-To: <alpine.LFD.0.999.0707310142190.17287@enigma.security.iitk.ac.in>
+References: <20070729212909.GC3432@traven>
+	<20070729213434.GD3432@traven>
+	<200707300006.42397.mb@bu3sch.de>
+	<alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in>
+	<alpine.LFD.0.999.0707300904360.10861@enigma.security.iitk.ac.in>
+	<20070730054004.GI3432@traven>
+	<alpine.LFD.0.999.0707301247100.12730@enigma.security.iitk.ac.in>
+	<20070730145005.GB6586@tuxdriver.com>
+	<alpine.LFD.0.999.0707310142190.17287@enigma.security.iitk.ac.in>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-29 at 19:37 +0200, Ingo Molnar wrote:
-> Tim,
-> 
-> * Tim Chen <tim.c.chen@linux.intel.com> wrote:
-> 
+On Tue, 31 Jul 2007 01:44:37 +0530 (IST) Satyam Sharma wrote:
 
 > 
-> Could you try the patch below? It does not change the default behavior 
-> of yield but introduces 2 other yield strategies which you can activate 
-> runtime (if CONFIG_SCHED_DEBUG=y) via:
 > 
->   # default one:
->   echo 0 > /proc/sys/kernel/sched_yield_bug_workaround
+> On Mon, 30 Jul 2007, John W. Linville wrote:
 > 
->   # always queues the current task next to the next task:
->   echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
+> > On Mon, Jul 30, 2007 at 12:50:31PM +0530, Satyam Sharma wrote:
+> > > On Mon, 30 Jul 2007, Matthias Kaehlcke wrote:
+> > > 
+> > > > [...]
+> > > > The Host AP driver uses a semaphore as mutex. Use the mutex API
+> > > > instead of the (binary) semaphore.
+> > > > 
+> > > > Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> > > 
+> > > Reviewed-by: Satyam Sharma <satyam@infradead.org>
+> > 
+> > Is that the same as Acked-by?  Or do you disagree with the patch?
+> > 
+> > Just checkin'...
 > 
->   # NOP:
->   echo 2 > /proc/sys/kernel/sched_yield_bug_workaround
-> 
-> does variant '1' improve Java's VolanoMark performance perhaps?
-> 
+> Well, I'm not the maintainer, so didn't think correct to give an
+> "Acked-by". "Reviewed-by" generally means I read the patch, and think
+> it is correct. Probably could save time for others ...
 
-Here's a summary of Volanomark performance numbers:
-Variant 0 is 80% down from 2.6.22
-Variant 1 is 20% down from 2.6.22  (this is indeed helped)
-Variant 2 is 89% down from 2.6.22
+You should use Acked-by.  See Documentation/SubmittingPatches.  :)
 
-> i'm also wondering, which JDK is this, and where does Java make use of 
-> sys_sched_yield()? It's a voefully badly defined (and thus unreliable) 
-> system call, IMO Java should stop using it ASAP and use a saner locking 
-> model.
-
-I am using a JRockit JDK.
-
-Thanks.
-Tim
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
