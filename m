@@ -1,203 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938421AbXG3FkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938537AbXG3Foj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938421AbXG3FkZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 01:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbXG3FkM
+	id S938537AbXG3Foj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 01:44:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757844AbXG3Foc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 01:40:12 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:56795
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755290AbXG3FkK (ORCPT
+	Mon, 30 Jul 2007 01:44:32 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:29946 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757651AbXG3Fob (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 01:40:10 -0400
-Date: Mon, 30 Jul 2007 07:40:04 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Michael Buesch <mb@bu3sch.de>, linville@tuxdriver.com,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] Use mutex instead of semaphore in the Host AP driver
-Message-ID: <20070730054004.GI3432@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Satyam Sharma <satyam@infradead.org>, Michael Buesch <mb@bu3sch.de>,
-	linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20070729212909.GC3432@traven> <20070729213434.GD3432@traven> <200707300006.42397.mb@bu3sch.de> <alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in> <alpine.LFD.0.999.0707300904360.10861@enigma.security.iitk.ac.in>
+	Mon, 30 Jul 2007 01:44:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:references;
+	b=HiEIE4U8XZo8boiDk999ZuBAroXRilerTnU64m4vSj22nYHKvEsCEdY2enENFemdR
+	jBSjIiPx7+QK0193g/BlQ==
+Message-ID: <6599ad830707292244x3dbdf662l95de9bf3c1f5614e@mail.gmail.com>
+Date: Sun, 29 Jul 2007 22:44:07 -0700
+From: "Paul Menage" <menage@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc1-mm1 -- INFO: possible recursive locking detected -- (&hashbin->hb_spinlock){....}, at: [<c03d95d3>] irias_seq_show+0xba/0x1a8
+Cc: "Miles Lane" <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       "Dag Brattli" <dagb@cs.uit.no>, samuel@sortiz.org
+In-Reply-To: <20070728013859.5125f685.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707300904360.10861@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_27739_17401820.1185774247576"
+References: <a44ae5cd0707280001o54f479edqf1139c9c79c52ec9@mail.gmail.com>
+	 <20070728013859.5125f685.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Mon, Jul 30, 2007 at 09:17:25AM +0530 Satyam Sharma ha dit:
+------=_Part_27739_17401820.1185774247576
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> Whoops ...
-> 
-> 
-> On Mon, 30 Jul 2007, Satyam Sharma wrote:
-> 
-> > On Mon, 30 Jul 2007, Michael Buesch wrote:
-> > 
-> > > On Sunday 29 July 2007 23:34, Matthias Kaehlcke wrote:
-> > > > The Host AP driver uses a semaphore as mutex. Use the mutex API
-> > > > instead of the (binary) semaphore.
-> > > > 
-> > > > Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-> > 
-> > [ Something seems to have gone wrong with your diff / patch / script.
-> >   There was no diff header here, which should have been. ]
-> > 
-> > > > -	res = down_interruptible(&local->rid_bap_sem);
-> > > > +	res = mutex_lock_interruptible(&local->rid_bap_mtx);
-> > > >  	if (res)
-> > > >  		return res;
-> > > >  
-> > > > @@ -902,7 +902,7 @@ static int hfa384x_set_rid(struct net_device *dev, u16 rid, void *buf, int len)
-> > > >  	/* RID len in words and +1 for rec.rid */
-> > > >  	rec.len = cpu_to_le16(len / 2 + len % 2 + 1);
-> > > >  
-> > > > -	res = down_interruptible(&local->rid_bap_sem);
-> > > > +	res = mutex_lock_interruptible(&local->rid_bap_mtx);
-> > > >  	if (res)
-> > > >  		return res;
-> > > >  
-> > > 
-> > > Is res returned to userspace? If yes, that's not right.
-> > 
-> > Yup, that's not right.
-> > 
-> > > On a interrupted mutex allocation you should return
-> > > -ERESTARTSYS to userspace.
-> > 
-> > Nope, userspace must not see ERESTARTSYS (I /think/ this is the third
-> > time I'm participating in this exact same discussion :-)
-> > 
-> > If the return would be caught by a previous in-kernel caller in the
-> > call chain, ERESTARTSYS is okay and it could try to restart the
-> > operation. However, if the return goes unfiltered directly to
-> > userspace, EINTR is the correct choice.
-> 
-> Eek, and because mutex_lock_interruptible() *does* return -EINTR when
-> interrupted by a signal, and I noticed that hfa384x_set_rid() could be
-> called from an ioctl(2) codepath with no intermediate caller trying to
-> restart it, so the code is perfectly alright, actually.
-> 
-> But the patch doesn't have the diff header anyway, so Matthias would
-> probably have to resend in any case :-)
+On 7/28/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >  [<c0154ad2>] proc_cpuset_show+0x5e/0xb9
+> >  [<c01976b1>] seq_read+0xef/0x266
+> >  [<c0181398>] vfs_read+0x8e/0x117
+> >  [<c01817c9>] sys_read+0x3d/0x61
+> >  [<c010401e>] sysenter_past_esp+0x5f/0x99
+> >  =======================
+> > INFO: lockdep is turned off.
+> > Code: 00 89 d8 83 c4 0c 5b 5e 5f 5d c3 55 89 e5 57 56 53 83 ec 08 89
+> > 45 f0 89 55 ec 89 d3 01 cb 8d 43 ff c6 43 ff 00 8b 55 f0 8b 72 1c <8b>
+> > 56 3c 29 d0 3b 45 ec 72 45 89 d1 c1 e9 02 8b 76 40 89 c7 f3
+> > EIP: [<c01536a7>] container_path+0x20/0x7b SS:ESP 0068:c5ccff00
+>
 
-thanks for reviewing the patch and for your comments, here is the
-patch with the diff header (no idea what when wrong with the other
-one)
+Oops, this is a case of trying to read /proc/self/cpuset when cpusets
+are completely unmounted. It works fine when cpusets is mounted as
+part of any hierarchy, or part of an active but unmounted hierarchy.
+Attached patch fixes it, and should be rolled in to the first patch of
+the series. (basic framework patch).
 
-regards
+Paul
 
-matthias
+------=_Part_27739_17401820.1185774247576
+Content-Type: text/x-patch; name=fix-proc-self-cpuset.patch; 
+	charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f4qj4k0s
+Content-Disposition: attachment; filename="fix-proc-self-cpuset.patch"
 
---
-
-The Host AP driver uses a semaphore as mutex. Use the mutex API
-instead of the (binary) semaphore.
-
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-
---
-
-diff --git a/drivers/net/wireless/hostap/hostap_hw.c b/drivers/net/wireless/hostap/hostap_hw.c
-index 959887b..d3dacbc 100644
---- a/drivers/net/wireless/hostap/hostap_hw.c
-+++ b/drivers/net/wireless/hostap/hostap_hw.c
-@@ -825,7 +825,7 @@ static int hfa384x_get_rid(struct net_device *dev, u16 rid, void *buf, int len,
- 	    local->hw_downloading)
- 		return -ENODEV;
- 
--	res = down_interruptible(&local->rid_bap_sem);
-+	res = mutex_lock_interruptible(&local->rid_bap_mtx);
- 	if (res)
- 		return res;
- 
-@@ -834,7 +834,7 @@ static int hfa384x_get_rid(struct net_device *dev, u16 rid, void *buf, int len,
- 		printk(KERN_DEBUG "%s: hfa384x_get_rid: CMDCODE_ACCESS failed "
- 		       "(res=%d, rid=%04x, len=%d)\n",
- 		       dev->name, res, rid, len);
--		up(&local->rid_bap_sem);
-+		mutex_unlock(&local->rid_bap_mtx);
- 		return res;
- 	}
- 
-@@ -861,7 +861,7 @@ static int hfa384x_get_rid(struct net_device *dev, u16 rid, void *buf, int len,
- 		res = hfa384x_from_bap(dev, BAP0, buf, len);
- 
- 	spin_unlock_bh(&local->baplock);
--	up(&local->rid_bap_sem);
-+	mutex_unlock(&local->rid_bap_mtx);
- 
- 	if (res) {
- 		if (res != -ENODATA)
-@@ -902,7 +902,7 @@ static int hfa384x_set_rid(struct net_device *dev, u16 rid, void *buf, int len)
- 	/* RID len in words and +1 for rec.rid */
- 	rec.len = cpu_to_le16(len / 2 + len % 2 + 1);
- 
--	res = down_interruptible(&local->rid_bap_sem);
-+	res = mutex_lock_interruptible(&local->rid_bap_mtx);
- 	if (res)
- 		return res;
- 
-@@ -917,12 +917,12 @@ static int hfa384x_set_rid(struct net_device *dev, u16 rid, void *buf, int len)
- 	if (res) {
- 		printk(KERN_DEBUG "%s: hfa384x_set_rid (rid=%04x, len=%d) - "
- 		       "failed - res=%d\n", dev->name, rid, len, res);
--		up(&local->rid_bap_sem);
-+		mutex_unlock(&local->rid_bap_mtx);
- 		return res;
- 	}
- 
- 	res = hfa384x_cmd(dev, HFA384X_CMDCODE_ACCESS_WRITE, rid, NULL, NULL);
--	up(&local->rid_bap_sem);
-+	mutex_unlock(&local->rid_bap_mtx);
- 
- 	if (res) {
- 		printk(KERN_DEBUG "%s: hfa384x_set_rid: CMDCODE_ACCESS_WRITE "
-@@ -3171,7 +3171,7 @@ prism2_init_local_data(struct prism2_helper_functions *funcs, int card_idx,
- 	spin_lock_init(&local->cmdlock);
- 	spin_lock_init(&local->baplock);
- 	spin_lock_init(&local->lock);
--	init_MUTEX(&local->rid_bap_sem);
-+	mutex_init(&local->rid_bap_mtx);
- 
- 	if (card_idx < 0 || card_idx >= MAX_PARM_DEVICES)
- 		card_idx = 0;
-diff --git a/drivers/net/wireless/hostap/hostap_wlan.h b/drivers/net/wireless/hostap/hostap_wlan.h
-index 87a54aa..a42325c 100644
---- a/drivers/net/wireless/hostap/hostap_wlan.h
-+++ b/drivers/net/wireless/hostap/hostap_wlan.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/wireless.h>
- #include <linux/netdevice.h>
-+#include <linux/mutex.h>
- #include <net/iw_handler.h>
- 
- #include "hostap_config.h"
-@@ -641,7 +642,7 @@ struct local_info {
- 			      * when removing entries from the list.
- 			      * TX and RX paths can use read lock. */
- 	spinlock_t cmdlock, baplock, lock;
--	struct semaphore rid_bap_sem;
-+	struct mutex rid_bap_mtx;
- 	u16 infofid; /* MAC buffer id for info frame */
- 	/* txfid, intransmitfid, next_txtid, and next_alloc are protected by
- 	 * txfidlock */
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-             You must have a plan. If you don't have a plan,
-               you'll become part of somebody else's plan
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+LS0tCiBrZXJuZWwvY29udGFpbmVyLmMgfCAgICA5ICsrKysrKysrKwogMSBmaWxlIGNoYW5nZWQs
+IDkgaW5zZXJ0aW9ucygrKQoKSW5kZXg6IGNvbnRhaW5lci0yLjYuMjItcmM2LW1tMS9rZXJuZWwv
+Y29udGFpbmVyLmMKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PQotLS0gY29udGFpbmVyLTIuNi4yMi1yYzYtbW0xLm9yaWcv
+a2VybmVsL2NvbnRhaW5lci5jCisrKyBjb250YWluZXItMi42LjIyLXJjNi1tbTEva2VybmVsL2Nv
+bnRhaW5lci5jCkBAIC02ODQsNiArNjg0LDE1IEBAIGludCBjb250YWluZXJfcGF0aChjb25zdCBz
+dHJ1Y3QgY29udGFpbmUKIHsKIAljaGFyICpzdGFydDsKIAorCWlmIChjb250ID09IGR1bW15dG9w
+KSB7CisJCS8qCisJCSAqIEluYWN0aXZlIHN1YnN5c3RlbXMgaGF2ZSBubyBkZW50cnkgZm9yIHRo
+ZWlyIHJvb3QKKwkJICogY29udGFpbmVyCisJCSAqLworCQlzdHJjcHkoYnVmLCAiLyIpOworCQly
+ZXR1cm4gMDsKKwl9CisKIAlzdGFydCA9IGJ1ZiArIGJ1ZmxlbjsKIAogCSotLXN0YXJ0ID0gJ1ww
+JzsK
+------=_Part_27739_17401820.1185774247576--
