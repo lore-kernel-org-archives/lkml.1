@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966919AbXG3Qa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966936AbXG3QcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966919AbXG3Qa6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760353AbXG3Qao
+	id S966936AbXG3QcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760353AbXG3QcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:30:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:41728 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761081AbXG3Qam (ORCPT
+	Mon, 30 Jul 2007 12:32:14 -0400
+Received: from vms040pub.verizon.net ([206.46.252.40]:58799 "EHLO
+	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760111AbXG3QcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:30:42 -0400
-Date: Mon, 30 Jul 2007 17:25:35 +0100
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>, Andrew Gallatin <gallatin@myri.com>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2/4][RFC] lro: Kconfig and Makefile
-Message-ID: <20070730172535.15993806@oldman.hamilton.local>
-In-Reply-To: <200707301724.45781.ossthema@de.ibm.com>
-References: <200707301724.45781.ossthema@de.ibm.com>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 12:32:13 -0400
+Date: Mon, 30 Jul 2007 11:52:44 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: 2.6.23-rc1, spamassassin vs rpc stuffs, rpc 1, spamassassin 0
+In-reply-to: <Pine.LNX.4.64.0707301620210.26373@fbirervta.pbzchgretzou.qr>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Guillaume Chazarain <guichaz@yahoo.fr>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <200707301152.44702.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+References: <200707300957.39667.gene.heskett@gmail.com>
+ <46ADF2CB.4030200@zytor.com>
+ <Pine.LNX.4.64.0707301620210.26373@fbirervta.pbzchgretzou.qr>
+User-Agent: KMail/1.9.7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007 17:24:45 +0200
-Jan-Bernd Themann <ossthema@de.ibm.com> wrote:
+On Monday 30 July 2007, Jan Engelhardt wrote:
+>/etc/bindresvport.blacklist
+[root@coyote rc3.d]# less /etc/bindresvport.blacklist
+/etc/bindresvport.blacklist: No such file or directory
 
-> Kconfig and Makefile for LRO
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-> 
-> ---
->  net/ipv4/Kconfig  |    8 ++++++++
->  net/ipv4/Makefile |    1 +
->  2 files changed, 9 insertions(+), 0 deletions(-)
-> 
-> diff --git a/net/ipv4/Kconfig b/net/ipv4/Kconfig
-> index fb79097..d894f61 100644
-> --- a/net/ipv4/Kconfig
-> +++ b/net/ipv4/Kconfig
-> @@ -394,6 +394,14 @@ config INET_XFRM_MODE_BEET
->  
->  	  If unsure, say Y.
->  
-> +config INET_LRO
-> +	tristate "Large Receive Offload (ipv4/tcp)"
-> +
-> +	---help---
-> +	  Support for Large Receive Offload (ipv4/tcp).
-> +
-> +	  If unsure, say Y.
-> +
+on an FC6 system.
 
-Why make this a user selectable option at all? Unless you want
-to deal with out of tree drivers (not my problem), it should be hidden
-to avoid having to explain an support it.
+Thanks.
+
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+O Lord, grant that we may always be right, for Thou knowest we will
+never change our minds.
