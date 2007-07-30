@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968539AbXG3UDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967847AbXG3UEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968539AbXG3UDp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968404AbXG3UDY
+	id S967847AbXG3UEf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:04:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967382AbXG3UEY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:03:24 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:44049 "EHLO smtp2.it.da.ut.ee"
+	Mon, 30 Jul 2007 16:04:24 -0400
+Received: from mga09.intel.com ([134.134.136.24]:12002 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968396AbXG3UDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:03:20 -0400
-Date: Mon, 30 Jul 2007 23:03:18 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Ismail =?iso-8859-2?q?D=F6nmez?= <ismail@pardus.org.tr>
-cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [2/3] 2.6.23-rc1: known regressions v3
-In-Reply-To: <200707302208.20891.ismail@pardus.org.tr>
-Message-ID: <Pine.SOC.4.64.0707302301290.14147@math.ut.ee>
-References: <46AE0F5D.3000500@googlemail.com> <46AE12F5.4030706@googlemail.com>
- <200707302208.20891.ismail@pardus.org.tr>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-851401618-1185825798=:14147"
+	id S1763715AbXG3UEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:04:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,200,1183359600"; 
+   d="scan'208";a="111522877"
+Subject: Re: [patch] sched: yield debugging
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Reply-To: tim.c.chen@linux.intel.com
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070729173735.GA4041@elte.hu>
+References: <1185573687.19777.44.camel@localhost.localdomain>
+	 <20070729173735.GA4041@elte.hu>
+Content-Type: text/plain
+Organization: Intel
+Date: Mon, 30 Jul 2007 11:10:52 -0700
+Message-Id: <1185819052.19777.52.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----559023410-851401618-1185825798=:14147
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
-
-> > Subject         : New ACPI error/warning with Linus' latest GIT
-> > References      : http://lkml.org/lkml/2007/7/26/395
-> > Last known good : ?
-> > Submitter       : Ismail Dönmez <ismail@pardus.org.tr>
-> > Caused-By       : ?
-> > Handled-By      : ?
-> > Status          : unknown
+On Sun, 2007-07-29 at 19:37 +0200, Ingo Molnar wrote:
+> Tim,
 > 
-> This started to happen after the second ACPI merge which was for 2.6.23-rc2.
+> * Tim Chen <tim.c.chen@linux.intel.com> wrote:
+> 
 
-It appeared after new Embedded Controller code was merged into ACPI. It 
-might as well be just a debug message or a remainder to add support for 
-new queries (whatever these are), but I do not know. The message itself 
-seems harmless.
+> 
+> Could you try the patch below? It does not change the default behavior 
+> of yield but introduces 2 other yield strategies which you can activate 
+> runtime (if CONFIG_SCHED_DEBUG=y) via:
+> 
+>   # default one:
+>   echo 0 > /proc/sys/kernel/sched_yield_bug_workaround
+> 
+>   # always queues the current task next to the next task:
+>   echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
+> 
+>   # NOP:
+>   echo 2 > /proc/sys/kernel/sched_yield_bug_workaround
+> 
+> does variant '1' improve Java's VolanoMark performance perhaps?
+> 
 
--- 
-Meelis Roos (mroos@linux.ee)
----559023410-851401618-1185825798=:14147--
+Here's a summary of Volanomark performance numbers:
+Variant 0 is 80% down from 2.6.22
+Variant 1 is 20% down from 2.6.22  (this is indeed helped)
+Variant 2 is 89% down from 2.6.22
+
+> i'm also wondering, which JDK is this, and where does Java make use of 
+> sys_sched_yield()? It's a voefully badly defined (and thus unreliable) 
+> system call, IMO Java should stop using it ASAP and use a saner locking 
+> model.
+
+I am using a JRockit JDK.
+
+Thanks.
+Tim
