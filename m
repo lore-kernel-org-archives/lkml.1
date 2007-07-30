@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966982AbXG3Rwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967212AbXG3Rw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966982AbXG3Rwm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbXG3Rwd
+	id S967212AbXG3Rw5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:52:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbXG3Rws
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:52:33 -0400
-Received: from dsl.myri.com ([64.172.73.26]:1931 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762704AbXG3Rwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:52:32 -0400
-Message-ID: <46AE232F.3080409@myri.com>
-Date: Mon, 30 Jul 2007 13:43:11 -0400
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+	Mon, 30 Jul 2007 13:52:48 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:61383 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967075AbXG3Rwr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 13:52:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=qPTz8J3DLp1i9Pt+2F1Fa9Z+t/TBtniubQ7oxijV+0c6snwfQAav4hFhbKDfsfH9aJSHpDi7XLyTxZNmURLAOj+rq/mxa8U/H8uPbB0o9NG3qQhazzXBJ8u5yorkfE9llFQ3Hmy3tRyZMpxqz9M4/6Bo6Tyy6h8mEzIIuVxU8BQ=
+Message-ID: <46AE2459.7080905@googlemail.com>
+Date: Mon, 30 Jul 2007 19:48:09 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-CC: Jan-Bernd Themann <ossthema@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>,
-       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP traffic
-References: <200707301724.33865.ossthema@de.ibm.com> <20070730170038.GA4884@austin.ibm.com>
-In-Reply-To: <20070730170038.GA4884@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Sam Ravnborg <sam@ravnborg.org>, J.E.J.Bottomley@HansenPartnership.com
+Subject: Section mismatch warnings
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Sam ,
 
-Here is a quick reply before something more official can
-be written up:
+I get this warnings with a randconfig ( http://194.231.229.228/git-current/randconfig-auto-36 ) :
 
-Linas Vepstas wrote:
 
- > -- what is LRO?
+...
 
-Large Receive Offload
+WARNING: vmlinux.o(.text+0xeaf7): Section mismatch: reference to .init.text:init_gdt (between 'voyager_smp_prepare_boot_cpu' and 'smp_vic_cmn_interrupt')
+WARNING: vmlinux.o(.text+0x104e3): Section mismatch: reference to .init.data:eprom_buf (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x1050a): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10510): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10517): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x1054a): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x1055b): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10765): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10778): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x107b6): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x107c9): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x1090e): Section mismatch: reference to .init.data:eprom_buf (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10935): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10944): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x10951): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x109aa): Section mismatch: reference to .init.data:eprom_buf (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x109b4): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x109ba): Section mismatch: reference to .init.data:eprom_buf (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x109c1): Section mismatch: reference to .init.data:eprom_buf (between 'voyager_cat_init' and 'twofish_enc_blk')
+WARNING: vmlinux.o(.text+0x109e4): Section mismatch: reference to .init.data: (between 'voyager_cat_init' and 'twofish_enc_blk')
 
- > -- Basic principles of operation?
 
-LRO is analogous to a receive side version of TSO.  The NIC (or
-driver) merges several consecutive segments from the same connection,
-fixing up checksums, etc.  Rather than up to 45 separate 1500 byte
-frames (meaning up to 45 trips through the network stack), the driver
-merges them into one 65212 byte frame.  It currently works only
-with TCP over IPv4.
+...
 
-LRO was, AFAIK, first though of by Neterion.  They had a paper about
-it at OLS2005.
-http://www.linuxinsight.com/files/ols2005/grossman-reprint.pdf
+With the same config I see this warnings as well but I think this is a different problem.
 
- > -- Can I use it in my driver?
+...
 
-Yes, it can be used in any driver.
+arch/i386/mach-voyager/voyager_cat.c: In function 'voyager_cat_init':
+arch/i386/mach-voyager/voyager_cat.c:685: warning: comparison is always false due to limited range of data type
+arch/i386/mach-voyager/voyager_cat.c:755: warning: comparison is always false due to limited range of data type
 
- > -- Does my hardware have to have some special feature before I can 
-use it?
+...
 
-No.
 
- > -- What sort of performance improvement does it provide? Throughput?
- >    Latency? CPU usage? How does it affect DMA allocation? Does it
- >    improve only a certain type of traffic (large/small packets, etc.)
+Regards,
 
-The benefit is directly proportional to the packet rate.
-
-See my reply to the previous RFC for performance information.  The
-executive summary is that for the myri10ge 10GbE driver on low end
-hardware with 1500b frames, I've seen it increase throughput by a
-factor of nearly 2.5x, while at the same time reducing CPU utilization
-by 17%.  The affect for jumbo frames is less dramatic, but still
-impressive (1.10x, 14% CPU reduction)
-
-You can achieve better speedups if your driver receives into
-high-order pages.
-
- > -- Example code? What's the API? How should my driver use it?
-
-The 3/4 in this patch showed an example of converting a driver
-to use LRO for skb based receive buffers.   I'm working on
-a patch for myri10ge that shows how you would use it in a driver
-which receives into pages.
-
-Cheers,
-
-Drew
+Gabriel
