@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968068AbXG3THo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968117AbXG3TIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968068AbXG3THo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:07:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967987AbXG3THY
+	id S968117AbXG3TIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967668AbXG3TIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:07:24 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:59575 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967392AbXG3THV (ORCPT
+	Mon, 30 Jul 2007 15:08:12 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:36063 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967593AbXG3TIK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:07:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=TIaiCfigltfknG5xzIJUErKyvEJ49rZI/LJZ4O7JMzSASyWHTn9ym8SNkZ+Y0I6ukAxqHr2tpHdCLWQ3oSZICHZ9YYSLMQI/XEBt7U+v6LoecxmOsp8ToYrOROTypfA21ZdVpOmhCCmO0qvwZtMqjKsqwQxwhucGVLmqgBNQWV4=
-Date: Mon, 30 Jul 2007 23:07:15 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       viro@ftp.linux.org.uk
-Subject: Re: [PATCH] Remove fs.h from mm.h
-Message-ID: <20070730190715.GB5776@martell.zuzino.mipt.ru>
-References: <20070729223613.GA5916@martell.zuzino.mipt.ru> <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org> <swfhcnmhwqo.wl%takata.hirokazu@renesas.com>
+	Mon, 30 Jul 2007 15:08:10 -0400
+From: Ismail =?iso-8859-2?q?D=F6nmez?= <ismail@pardus.org.tr>
+Organization: TUBITAK/UEKAE
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: Re: [2/3] 2.6.23-rc1: known regressions v3
+Date: Mon, 30 Jul 2007 22:08:20 +0300
+User-Agent: KMail/1.9.7
+References: <46AE0F5D.3000500@googlemail.com> <46AE12F5.4030706@googlemail.com>
+In-Reply-To: <46AE12F5.4030706@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org, Meelis Roos <mroos@linux.ee>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <swfhcnmhwqo.wl%takata.hirokazu@renesas.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200707302208.20891.ismail@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 10:00:47PM +0900, Hirokazu Takata wrote:
-> This change breaks m32r, too.
+On Monday 30 July 2007 19:33:57 you wrote:
+> Subject         : New ACPI error/warning with Linus' latest GIT
+> References      : http://lkml.org/lkml/2007/7/26/395
+> Last known good : ?
+> Submitter       : Ismail Dönmez <ismail@pardus.org.tr>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
 
-Apologies. I just finished adding m32r to my cross-build setup, so there
-shouldn't be any more such breakages.
+This started to happen after the second ACPI merge which was for 2.6.23-rc2.
 
+Regards,
+ismail
+
+
+-- 
+Perfect is the enemy of good
