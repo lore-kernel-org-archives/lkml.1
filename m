@@ -1,101 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967519AbXG3R5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967223AbXG3R7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967519AbXG3R5k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965325AbXG3R5d
+	id S967223AbXG3R7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXG3R71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:57:33 -0400
-Received: from ik-out-1112.google.com ([66.249.90.179]:55975 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964825AbXG3R5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:57:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=afYp0rTAXrLc/wzaRsYFWG1o/ox47bTUOwxNq6NrypDvK3rR0qBX9gAASqZVscaldoEYm64fWFXtLh7SeTSNoyCemmJsS+h8w93GB2EFswmRxq/shMYy6hSKY04DSkFRWWZsg8hi1E2fD11nQuf8G/UC4IOxYVmXusgGqWG6dzs=
-Message-ID: <1158166a0707301057w13db2d0ema88892a0091dda87@mail.gmail.com>
-Date: Mon, 30 Jul 2007 18:57:29 +0100
-From: "Denis Vlasenko" <vda.linux@googlemail.com>
-To: "Satyam Sharma" <ssatyam@cse.iitk.ac.in>
-Subject: Re: [PATCH 0/8] i386: bitops: Cleanup, sanitize, optimize
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David Howells" <dhowells@redhat.com>,
-       "Nick Piggin" <nickpiggin@yahoo.com.au>, "Andi Kleen" <ak@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Jul 2007 13:59:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:43657 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965089AbXG3R70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 13:59:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,199,1183359600"; 
+   d="scan'208";a="272317843"
+Date: Mon, 30 Jul 2007 10:53:27 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>, npiggin@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [patch] sched: introduce SD_BALANCE_FORK for ht/mc/smp domains
+Message-ID: <20070730175326.GC10033@linux-os.sc.intel.com>
+References: <20070726183225.GJ3318@linux-os.sc.intel.com> <20070726221830.GA4113@elte.hu> <20070726223455.GK3318@linux-os.sc.intel.com> <20070729211644.GC6808@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070723160528.22137.84144.sendpatchset@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <20070729211644.GC6808@elte.hu>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Satyam,
+On Sun, Jul 29, 2007 at 11:16:44PM +0200, Ingo Molnar wrote:
+> 
+> * Siddha, Suresh B <suresh.b.siddha@intel.com> wrote:
+> 
+> > They might be doing more exec's and probably covered by exec balance.
+> > 
+> > There was a small pthread test case which was calculating the time to 
+> > create all the threads and how much time each thread took to start 
+> > running. It appeared as if the threads ran sequentially one after 
+> > another on a DP system with four cores leading to this SD_BALANCE_FORK 
+> > observation.
+> 
+> would be nice to dig out that testcase i suspect and quantify the 
+> benefits of your patch.
 
-On Monday 23 July 2007 17:05, Satyam Sharma wrote:
-> There was a lot of bogus stuff that include/asm-i386/bitops.h was doing,
-> that was unnecessary and not required for the correctness of those APIs.
-> All that superfluous stuff was also unnecessarily disallowing compiler
-> optimization possibilities, and making gcc generate code that wasn't as
-> beautiful as it could otherwise have been. Hence the following series
-> of cleanups (some trivial, some surprising, in no particular order):
+That test case doesn't do much other than calculating the time taken for each
+thread to start running. With this balance on fork patch, that small pthread
+test case shows that all the threads now start almost at the same time on all
+cores.
 
-[I did read entire thread]
+> Another workload which might perform better 
+> would be linpack: it benefits from fast and immediate 'spreading' of 
+> freshly forked threads.
 
-Welcome to the minefield.
+My understanding is that linkpack doesn't do fork often(as such
+difference might not be visible, but will take a look). We were planning
+to test httperf or some other workloads which probably does fork more often.
 
-This bitops and barrier stuff is complicated. It's very easy to
-introduce bugs which are hard to trigger, or happen only with some
-specific gcc versions, or only on massively parallel SMP boxes.
-
-You can also make technically correct changes which relax needlessly
-strict barrier semantics of some bitops and trigger latent bugs
-in code which was unknowingly depending on it.
-
-How you can proceed:
-
-Make a change which you believe is right. Recompile allyesconfig
-kernel with and without this change. Find a piece of assembly code
-which become different. Check that new code is correct (and smaller
-and/or faster). Post your patch together with example(s) of code
-fragments that got better. Be as verbose as needed.
-
-Repeat for each change separately.
-
-This can be painfully slow, but less likely to be rejected outright
-in fear of introducing difficult bugs.
-
-> * Marking "memory" as clobbered for no good reason
-
-I vaguely remember that "memory" clobbers are needed in some rather
-obscure, non-obvious situations. Google for it - Linus wrote about it
-to lkml (a few years ago IIRC).
-
-> * Volatile-casting of memory addresses
->   (wholly unnecessary, makes gcc generate bad code)
-
-Do you know any code difference resulting from this patch?
-
-> * Unwarranted use of __asm__ __volatile__ even when those semantics
->   are not required
-
-ditto
-
-> * Unnecessarily harsh definitions of smp_mb__{before, after}_clear_bit()
->   (again, this was like *asking* gcc to generate bad code)
-
-ditto
-
-> My testbox boots/works fine with all these patches (uptime half an hour)
-
-For this kind of things, you really need something more stressing.
-Try to find big SMP people who is willing to give it a whirl.
-
-> and the compressed bzImage is smaller by about ~2 KB for my .config --
-
-At least it proves that _something_ changed.
---
-vda
+thanks,
+suresh
