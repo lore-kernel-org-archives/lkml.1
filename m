@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968420AbXG3UDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968539AbXG3UDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968420AbXG3UDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966993AbXG3UDF
+	id S968539AbXG3UDp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968404AbXG3UDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:03:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55768 "EHLO mail.dvmed.net"
+	Mon, 30 Jul 2007 16:03:24 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:44049 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967738AbXG3UDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:03:04 -0400
-Message-ID: <46AE43F5.8070802@garzik.org>
-Date: Mon, 30 Jul 2007 16:03:01 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S968396AbXG3UDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:03:20 -0400
+Date: Mon, 30 Jul 2007 23:03:18 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Ismail =?iso-8859-2?q?D=F6nmez?= <ismail@pardus.org.tr>
+cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [2/3] 2.6.23-rc1: known regressions v3
+In-Reply-To: <200707302208.20891.ismail@pardus.org.tr>
+Message-ID: <Pine.SOC.4.64.0707302301290.14147@math.ut.ee>
+References: <46AE0F5D.3000500@googlemail.com> <46AE12F5.4030706@googlemail.com>
+ <200707302208.20891.ismail@pardus.org.tr>
 MIME-Version: 1.0
-To: Yoann Padioleau <padator@wanadoo.fr>
-CC: kernel-janitors@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] dev->priv to netdev_priv(dev), drivers/net/tokenring/
-References: <87r6mzmf6q.fsf@wanadoo.fr>
-In-Reply-To: <87r6mzmf6q.fsf@wanadoo.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-851401618-1185825798=:14147"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yoann Padioleau wrote:
-> Replacing accesses to dev->priv to netdev_priv(dev). The replacment
-> is safe when netdev_priv is used to access a private structure that is
-> right next to the net_device structure in memory. 
-> Cf http://groups.google.com/group/comp.os.linux.development.system/browse_thread/thread/de19321bcd94dbb8/0d74a4adcd6177bd
-> This is the case when the net_device structure was allocated with
-> a call to alloc_netdev or one of its derivative.
-> 
-> Here is an excerpt of the semantic patch that performs the transformation
-> 
-> @ rule1 @
-> type T;
-> struct net_device *dev;
-> @@
-> 
->  dev = 
-> (
->         alloc_netdev
-> | 
->         alloc_etherdev
-> |
->         alloc_trdev
-> )
->    (sizeof(T), ...)
-> 
-> @ rule1bis @
-> struct net_device *dev;
-> expression E;
-> @@
->  dev->priv = E
-> 
-> @ rule2 depends on rule1 && !rule1bis  @
-> struct net_device *dev;
-> type rule1.T;
-> @@
-> 
-> - (T*) dev->priv
-> + netdev_priv(dev)
-> 
-> 
-> PS: I have performed the same transformation on the whole kernel
-> and it affects around 70 files, most of them in drivers/net/.
-> Should I split my patch for each subnet directories ? (wireless/, wan/, etc)
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-applied.  splitting up by sub-directory would be helpful.
+---559023410-851401618-1185825798=:14147
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 
+> > Subject         : New ACPI error/warning with Linus' latest GIT
+> > References      : http://lkml.org/lkml/2007/7/26/395
+> > Last known good : ?
+> > Submitter       : Ismail Dönmez <ismail@pardus.org.tr>
+> > Caused-By       : ?
+> > Handled-By      : ?
+> > Status          : unknown
+> 
+> This started to happen after the second ACPI merge which was for 2.6.23-rc2.
 
+It appeared after new Embedded Controller code was merged into ACPI. It 
+might as well be just a debug message or a remainder to add support for 
+new queries (whatever these are), but I do not know. The message itself 
+seems harmless.
+
+-- 
+Meelis Roos (mroos@linux.ee)
+---559023410-851401618-1185825798=:14147--
