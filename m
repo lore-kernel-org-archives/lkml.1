@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967953AbXG3T6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939681AbXG3T7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967953AbXG3T6q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:58:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966817AbXG3T6h
+	id S939681AbXG3T7x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938815AbXG3T72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:58:37 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:38152 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S965688AbXG3T6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:58:37 -0400
-Date: Mon, 30 Jul 2007 15:54:30 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] UML - Console should handle spurious IRQS
-Message-ID: <20070730195430.GC9810@c2.user-mode-linux.org>
-References: <20070727152344.GA6776@c2.user-mode-linux.org> <46ABE473.2030507@aladin.ro>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46ABE473.2030507@aladin.ro>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 30 Jul 2007 15:59:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33887 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937744AbXG3T71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:59:27 -0400
+Message-ID: <46AE431D.2000808@garzik.org>
+Date: Mon, 30 Jul 2007 15:59:25 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Micah Gruber <micah.gruber@gmail.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] [2.6.22] Fix a potential NULL pointer dereference in
+ mace_interrupt() in drivers/net/pcmcia/nmclan_cs.c
+References: <46A567A8.6050409@gmail.com>
+In-Reply-To: <46A567A8.6050409@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 03:50:59AM +0300, Eduard-Gabriel Munteanu wrote:
-> Jeff Dike wrote:
-> >The previous DEBUG_SHIRQ patch missed one case.  The console doesn't
-> >set its host descriptors non-blocking.
+Micah Gruber wrote:
+> This patch fixes a potential null dereference bug where we dereference 
+> DEV before a null check. This patch simply moves the dereferencing after 
+> the null check.
 > 
-> Sorry, things looked okay when I tested on my UML environment (Puppy 
-> Linux). Some xterms popped around (because I was using "con=xterm") and 
-> the system was usable, so it gave me no indication something was wrong.
+> Signed-off-by: Micah Gruber <micah.gruber@gmail.com>
 
-NP, I was just cc-ing you because you had an interest in the problem,
-having already fixed most of it.
+applied (git-am worked!)
 
-				Jeff
 
--- 
-Work email - jdike at linux dot intel dot com
