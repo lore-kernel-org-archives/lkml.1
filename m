@@ -1,57 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936932AbXG3Pzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937213AbXG3P4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936932AbXG3Pzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 11:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936407AbXG3PyT
+	id S937213AbXG3P4L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 11:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936844AbXG3Pzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 11:54:19 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:50534 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936307AbXG3PyL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 11:54:11 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH 4/4][RFC] ehea: Kconfig
-Date: Mon, 30 Jul 2007 17:24:55 +0200
-User-Agent: KMail/1.8.2
+	Mon, 30 Jul 2007 11:55:43 -0400
+Received: from people.fsn.hu ([195.228.252.137]:64043 "EHLO people.fsn.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937813AbXG3Pzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 11:55:40 -0400
+X-Greylist: delayed 1480 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 11:55:39 EDT
+Message-ID: <46AE0420.4030900@fsn.hu>
+Date: Mon, 30 Jul 2007 17:30:40 +0200
+From: Attila Nagy <bra@fsn.hu>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Disposition: inline
-To: netdev <netdev@vger.kernel.org>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>, Andrew Gallatin <gallatin@myri.com>,
-       Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Subject: Hangs and reboots under high loads, oops with DEBUG_SHIRQ
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707301724.55804.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kconfig changes for LRO
+Hello,
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+I have four identical machines, based on Supermicro X7DBE motherboards.
+All of the machines have two Xeon 5130 CPUs, 16GB RAM and two add-on
+cards: an Areca 1261 SATA RAID HBA and a Qlogic QLA2342 fibre channel HBA.
 
----
- drivers/net/Kconfig |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+I would like to use these as file servers (via FC), but during the 
+performance and
+reliabilty tests it turned out that the machines are very unreliable, 
+despite that they
+seemed to be OK hardware-wise (memtest and the usual stuff).
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index f8a602c..fec4004 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2399,6 +2399,7 @@ config CHELSIO_T3
- config EHEA
- 	tristate "eHEA Ethernet support"
- 	depends on IBMEBUS
-+	select INET_LRO
- 	---help---
- 	  This driver supports the IBM pSeries eHEA ethernet adapter.
- 
--- 
-1.5.2
+During the debugging of this (seemingly) high IO load related problem, I 
+have
+observed the following:
+- when MSI is enabled (the first iteration), the machines sometimes 
+"hang", but
+not the whole system, just the SCSI target subsystem (SCST), which makes
+heavy IO on the Areca (arcmsr) and the Qlogic (patched qla2xxx) HBAs
+- when MSI is disabled, I couldn't reproduce that hung up state, instead the
+machines sometimes throw an MCE (see below), but I couldn't find its cause
+- when MSI is disabled, and CONFIG_DEBUG_SHIRQ is enabled, the machines
+can't even boot normally, I get an oops instantly during the kernel 
+initialization
+- with MSI disabled sometimes the machines fail to respond, the ssh 
+sessions terminate
+and on the console I can't type for very long seconds. I have nearly all 
+debugging turned on,
+but can't see anything in the logs or on the console. The machine 
+recovers from this hang
+automatically. The whole thing seems like when a high (eg. network) 
+interrupt activity happens
+on a highly loaded machine, but I could observe this even after a fresh 
+boot, without anything
+(of course minus the standard stuff, sshd, and the others) running on 
+the machine.
 
+The kernel is 2.6.21.5 (I've tried 2.6.18, the effects are the same), 
+running in 64 bit mode.
+
+The oops I get with MSI disabled and CONFIG_DEBUG_SHIRQ enabled:
+
+[   92.681320] NET: Registered protocol family 17
+[   93.491658] Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
+[   93.557402]  [<0000000000000000>]
+[   93.626770] PGD 0
+[   93.651106] Oops: 0010 [1] SMP
+[   93.689170] CPU 1
+[   93.713506] Modules linked in:
+[   93.750322] Pid: 1, comm: swapper Not tainted 2.6.21.5 #1
+[   93.815011] RIP: 0010:[<0000000000000000>]  [<0000000000000000>]
+[   93.887187] RSP: 0018:ffff81042fc5dc68  EFLAGS: 00010002
+[   93.950836] RAX: ffff81042fbe6b70 RBX: 0000000000000202 RCX: ffff81042fbe6b70
+[   94.036323] RDX: ffffc20000040000 RSI: ffff81042f51cdf8 RDI: ffff81042fbe6800
+[   94.121812] RBP: ffff81042fc5dd10 R08: 0000000000000000 R09: ffff81042f4c0ea8
+[   94.207298] R10: 0000000000000000 R11: ffff81042fbe6800 R12: 00000000fffffff4
+[   94.292788] R13: ffff81042fbe6000 R14: 0000000000000001 R15: ffffffff80399450
+[   94.378275] FS:  0000000000000000(0000) GS:ffff81042fc694c8(0000) knlGS:0000000000000000
+[   94.475307] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+[   94.544153] CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
+[   94.629643] Process swapper (pid: 1, threadinfo ffff81042fc5c000, task ffff81042fc58040)
+[   94.726673] Stack:  ffffffff80399559 ffff81042fc5dca0 ffffffff802121b2 ffff81042f4c0ea0
+[   94.823603]  ffff81042fc5dca0 ffffffff80221cd7 ffffffff802addb5 ffff81042fbe6800
+[   94.913042]  ffffffff8020c9bc ffff81042fbe6b70 0000000000000246 ffff81042fbe6b70
+[   95.000194] Call Trace:
+[   95.031814]  [<ffffffff80399559>] e1000_intr+0x109/0x590
+[   95.095461]  [<ffffffff802121b2>] poison_obj+0x42/0x60
+[   95.157027]  [<ffffffff80221cd7>] dbg_redzone1+0x17/0x30
+[   95.220676]  [<ffffffff802addb5>] request_irq+0x95/0x150
+[   95.284324]  [<ffffffff8020c9bc>] cache_alloc_debugcheck_after+0x17c/0x1c0
+[   95.366690]  [<ffffffff8020a43d>] kmem_cache_alloc+0xcd/0xf0
+[   95.434500]  [<ffffffff80399450>] e1000_intr+0x0/0x590
+[   95.496067]  [<ffffffff802ade00>] request_irq+0xe0/0x150
+[   95.559716]  [<ffffffff8039558c>] e1000_request_irq+0x3c/0x80
+[   95.628564]  [<ffffffff803985bc>] e1000_open+0x5c/0x100
+[   95.691172]  [<ffffffff8041d937>] dev_open+0x37/0x80
+[   95.750661]  [<ffffffff8041becd>] dev_change_flags+0x6d/0x150
+[   95.819508]  [<ffffffff80616565>] ip_auto_config+0x175/0xea0
+[   95.887317]  [<ffffffff80442f88>] tcp_set_default_congestion_control+0x18/0x70
+[   95.973947]  [<ffffffff80442fcf>] tcp_set_default_congestion_control+0x5f/0x70
+[   96.060582]  [<ffffffff80265236>] _spin_unlock+0x26/0x30
+[   96.124227]  [<ffffffff805f1754>] init+0x1a4/0x2b0
+[   96.181635]  [<ffffffff802a0e7b>] trace_hardirqs_on+0x14b/0x180
+[   96.252563]  [<ffffffff8025ff28>] child_rip+0xa/0x12
+[   96.312051]  [<ffffffff8026563b>] _spin_unlock_irq+0x2b/0x40
+[   96.379859]  [<ffffffff8025f63c>] restore_args+0x0/0x30
+[   96.442467]  [<ffffffff805f15b0>] init+0x0/0x2b0
+[   96.497795]  [<ffffffff8025ff1e>] child_rip+0x0/0x12
+[   96.557282]
+[   96.575170]
+[   96.575171] Code:  Bad RIP value.
+[   96.633203] RIP  [<0000000000000000>]
+[   96.677297]  RSP <ffff81042fc5dc68>
+[   96.719105] CR2: 0000000000000000
+[   96.758835] Kernel panic - not syncing: Attempted to kill init!
+
+
+MCE:
+[153103.918654] HARDWARE ERROR
+[153103.918655] CPU 1: Machine Check Exception:                5 Bank 0: 
+b200004010000400
+[153104.066037] RIP !INEXACT! 10:<ffffffff802569e6> {mwait_idle+0x46/0x60}
+[153104.145699] TSC 1167e915e93ce
+[153104.183554] This is not a software problem!
+[153104.234724] Run through mcelog --ascii to decode and contact your 
+hardware vendor
+[153104.325517]
+[153104.325518] HARDWARE ERROR
+[153104.325519] CPU 1: Machine Check Exception:                5 Bank 5: 
+b200221024080400
+[153104.472883] RIP !INEXACT! 10:<ffffffff802569e6> {mwait_idle+0x46/0x60}
+[153104.552546] TSC 1167e915e9ea8
+[153104.590402] This is not a software problem!
+[153104.641572] Run through mcelog --ascii to decode and contact your 
+hardware vendor
+[153104.732365] Kernel panic - not syncing: Machine check
+
+I've got exactly the same errors (only the TSC and the CPU value 
+changing) on all four machines,
+could this really be a hardware error?
+
+full dmesg: http://people.fsn.hu/~bra/linux/x7dbe-20070730/with_debug_shirq
+dmesg with MSI enabled: 
+http://people.fsn.hu/~bra/linux/x7dbe-20070730/with_msi_and_debug_shirq
+kernel config: http://people.fsn.hu/~bra/linux/x7dbe-20070730/config
+
+I've tried to disable all possible devices which consume interrupts,
+and placed the cards into various slots (the FC HBA is PCI-X, which the 
+Areca
+is PCI-E). Currently the arcmsr and (one of, it's a dual channel
+HBA) qla2xxx are on a shared IRQ.
+
+Could you please help?
+Do you think this is related to the strange hang under high IO load, the
+occasional, complete "blackouts", where all ssh network sessions
+time out, but the machine recovers, and the MCEs?
+
+I'm open for anything, have serial consoles, etc, if needed.
+
+Please keep me on CC, I'm not subscribed.
+
+Thanks,
