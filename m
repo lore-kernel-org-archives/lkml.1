@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967635AbXG3SXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967807AbXG3SXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967635AbXG3SXT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 14:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966466AbXG3SXK
+	id S967807AbXG3SXl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 14:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966735AbXG3SXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 14:23:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59836 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966386AbXG3SXJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 14:23:09 -0400
-Date: Mon, 30 Jul 2007 11:22:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Debug handling of early spurious interrupts
-Message-Id: <20070730112223.7b52cf63.akpm@linux-foundation.org>
-In-Reply-To: <1185789494.9831.107.camel@sebastian.kern.oss.ntt.co.jp>
-References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
-	<20070718154659.c8b5ffea.akpm@linux-foundation.org>
-	<1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
-	<1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
-	<1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
-	<20070720144302.2785e961.akpm@linux-foundation.org>
-	<1185789494.9831.107.camel@sebastian.kern.oss.ntt.co.jp>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Jul 2007 14:23:32 -0400
+Received: from [212.12.190.96] ([212.12.190.96]:33779 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966466AbXG3SXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 14:23:30 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Jan Blunck <jblunck@suse.de>
+Subject: Re: [RFC 00/26] VFS based Union Mount (V2)
+Date: Mon, 30 Jul 2007 21:23:24 +0300
+User-Agent: KMail/1.5
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20070730161323.100048969@weierstrass.suse.de>
+In-Reply-To: <20070730161323.100048969@weierstrass.suse.de>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707302123.24542.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007 18:58:14 +0900
-Fernando Luis V__zquez Cao <fernando@oss.ntt.co.jp> wrote:
+Jan Blunck wrote:
+> Here is another post of the VFS based union mount implementation. Unlike
+> the traditional mount which hides the contents of the mount point, union
+> mounts present the merged view of the mount point and the mounted
+> filesytem.
 
-> > 
-> > So bad things might happen because of this change.  And if they do, they
-> > will take a loooong time to be discovered, because non-shared interrupt
-> > handlers tend to dwell in crufty old drivers which not many people use.
-> > 
-> > So I'm wondering if it would be more prudent to only do all this for shared
-> > handlers?
-> 
-> I have been testing this patches on all my machines, which spans three
-> different architectures: i386, x86_64 (EM64T and Opteron), and ia64.
-> 
-> The good news is that nothing catastrophic happened and, in the process,
-> I managed to find some somewhat buggy interrupt handlers.
-> 
-> I will present a brief summary of my findings here.
+Great!
 
-That's quite a lot of breakage for such a small sample of machines.  I do
-suspect that if we were to merge this lot into mainline, all sorts of bad
-stuff would happen.
+> Recent changes:
+> - brand new union structure no longer tied to the dentryn, now works with
+> bind mounts
+> - generic part of the whiteout patches extracted
+> - introduces MS_WHITEOUT to make the white-out patches independant of the
+>   union-mount stuff
+> - uses a singleton whiteout inode for the tmpfs filesystem (I need to fix
+> this for ext2/3, too)
+> - renaming files on unions uses copyup now
 
-otoh, as you point out, pretty much everthing which goes wrong is due to
-incorrect or dubious driver behaviour, and there is value in weeding these
-things out. 
+I wonder if this copyup functionality could be generalized to induce CoW when 
+modifying hard-linked files.  Does that sound feasible?
 
-But the problem with this process is that we're weeding things out at
-runtime.  Some drivers don't get used by many people and users of some
-architectures (esp embedded) tend to lag kernel.org by a long time.  So it
-could be years before all the fallout from this change is finally wrapped
-up.
+> - rewrote the union mount debugging code: it is now debugfs/relay based.
+> - random cleanups
+>
+> I'm able to compile the kernel with this patches applied on a  3 layer
+> union mount with the seperate layers bind mounted to different locations.
+> I haven't done any performance tests since I think there is a more
+> important topic ahead: better readdir() support.
 
-> 
-> If we find drivers that are not fixable we should probably consider this
-> new behaviour on a per-driver basis, as Andrew suggested.
+What about the umount oops?  Did that get fixed?
 
-We haven't found any such yet, have we?
+> This series is against 2.6.22-rc6-mm1.
 
-> This would
-> probably require passing a new flag into request_irq. Besides, when such
-> a driver is detected we should emit a warning that it may not work
-> properly in a kdump kernel.
-> 
-> I would appreciate your comments on this.
+Things as big and important like this should probably also be diff'd against 
+mainline, to increase testing input.
 
-Oh well, let's just keep maintaining it in -mm for now, gather more
-information so that we can make a more informed decision later on.
+
+Thanks!
+
+--
+Al
+
