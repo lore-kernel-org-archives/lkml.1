@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934026AbXG3IpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935595AbXG3IrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934026AbXG3IpA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 04:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761499AbXG3Iov
+	id S935595AbXG3IrX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 04:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763226AbXG3IrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 04:44:51 -0400
-Received: from cantor.suse.de ([195.135.220.2]:34428 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 04:47:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37350 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760579AbXG3Iou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 04:44:50 -0400
-From: Neil Brown <neilb@suse.de>
-To: Maik Hampel <m.hampel@gmx.de>
-Date: Mon, 30 Jul 2007 18:44:37 +1000
+	id S1763446AbXG3IrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 04:47:06 -0400
+Date: Mon, 30 Jul 2007 10:46:51 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin ??lusarz <marcin.slusarz@gmail.com>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070730084651.GA14146@elte.hu>
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <20070725135718.GB1843@ff.dom.local> <20070725154656.54fd6f13@the-village.bc.nu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18093.42229.134557.618117@notabene.brown>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>
-Subject: Re: md: raid10: fix use-after-free of bio
-In-Reply-To: message from Maik Hampel on Monday July 30
-References: <1185547583.2663.10.camel@c64>
-	<20070728235519.1edc6ccb.akpm@linux-foundation.org>
-	<1185783111.2684.15.camel@c64>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+In-Reply-To: <20070725154656.54fd6f13@the-village.bc.nu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday July 30, m.hampel@gmx.de wrote:
-> > 
-> > Surely we just leaked that bio if (mirror == -1)?
-> > 
-> > better:
-> > 
-> > --- a/drivers/md/raid10.c~md-raid10-fix-use-after-free-of-bio
-> > +++ a/drivers/md/raid10.c
-> > @@ -1534,7 +1534,6 @@ static void raid10d(mddev_t *mddev)
-> >  			bio = r10_bio->devs[r10_bio->read_slot].bio;
-> >  			r10_bio->devs[r10_bio->read_slot].bio =
-> >  				mddev->ro ? IO_BLOCKED : NULL;
-> > -			bio_put(bio);
-> >  			mirror = read_balance(conf, r10_bio);
-> >  			if (mirror == -1) {
-> >  				printk(KERN_ALERT "raid10: %s: unrecoverable I/O"
-> > @@ -1542,8 +1541,10 @@ static void raid10d(mddev_t *mddev)
-> >  				       bdevname(bio->bi_bdev,b),
-> >  				       (unsigned long long)r10_bio->sector);
-> >  				raid_end_bio_io(r10_bio);
-> > +				bio_put(bio);
-> raid_end_bio_io() calls put_all_bios(), which does a bio_put() to
-> corresponding r10_bio->devs[i]. So this looks like redundant code for
-> me.
 
-Yes, but note above that this bio for this slot has been set to
-'NULL', so put_all_bios won't find anything to call bio_put on.
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Thanks,
-NeilBrown
+> Ok the logic behind the 8390 is very simple:
 
+thanks for the explanation Alan! A few comments and a question:
 
-> >  			} else {
-> >  				const int do_sync = bio_sync(r10_bio->master_bio);
-> > +				bio_put(bio);
-> >  				rdev = conf->mirrors[mirror].rdev;
-> >  				if (printk_ratelimit())
-> >  					printk(KERN_ERR "raid10: %s: redirecting sector %llu to"
+> Things to know
+> 	- IRQ delivery is asynchronous to the PCI bus
+> 	- Blocking the local CPU IRQ via spin locks was too slow
+> 	- The chip has register windows needing locking work
 > 
-> Regards, 
-> Maik Hampel
+> So the path was once (I say once as people appear to have changed it 
+> in the mean time and it now looks rather bogus if the changes to use 
+> disable_irq_nosync_irqsave are disabling the local IRQ)
 > 
+> 
+> 	Take the page lock
+> 	Mask the IRQ on chip
+> 	Disable the IRQ (but not mask locally- someone seems to have
+> 		broken this with the lock validator stuff)
+> 		[This must be _nosync as the page lock may otherwise
+> 			deadlock us]
+
+( side-note: you can ignore the lock validator stuff here, the validator
+  changes are supposed to a NOP on the !lockdep case. Local irqs will
+  only be disabled if the validator is running. This could cause dropped
+  serial irqs on very old boxes but i doubt anyone will want to run the
+  validator on those. )
+
+> 	Drop the page lock and turn IRQs back on
+> 	
+> 	At this point an existing IRQ may still be running but we can't
+> 	get a new one
+> 
+> 	Take the lock (so we know the IRQ has terminated) but don't mask
+> the IRQs on the processor
+> 	Set irqlock [for debug]
+> 
+> 	Transmit (slow as ****)
+> 
+> 	re-enable the IRQ
+> 
+> 
+> We have to use disable_irq because otherwise you will get delayed 
+> interrupts on the APIC bus deadlocking the transmit path.
+> 
+> Quite hairy but the chip simply wasn't designed for SMP and you can't 
+> even ACK an interrupt without risking corrupting other parallel 
+> activities on the chip.
+
+So the whole locking is to be able to keep irqs enabled for a long time, 
+without risking entry of the same IRQ handler on this same CPU, correct?
+
+Marcin's test results suggest that if an IRQ is resent right at the 
+enable_irq() point [be that via the hw irq-resend mechanism or the sw 
+irq-resend mechanism], the hang happens.
+
+In the previous 2.6.20 logic we'd not normally generate an IRQ at that 
+point (because we masked the irq and the card itself deasserts the line 
+so any level-triggered irq is now moot).
+
+Once Thomas hacked off this resend mechanism for level-triggered irqs, 
+Marcin saw the hangs go away.
+
+So it seems to me that maybe the driver could be surprised via these 
+spurious interrupts that happen right after the irq_enable(). Does the 
+patch below make any sense in your opinion?
+
+	Ingo
+
+Index: linux/drivers/net/lib8390.c
+===================================================================
+--- linux.orig/drivers/net/lib8390.c
++++ linux/drivers/net/lib8390.c
+@@ -375,6 +375,8 @@ static int ei_start_xmit(struct sk_buff 
+ 	/* Turn 8390 interrupts back on. */
+ 	ei_local->irqlock = 0;
+ 	ei_outb_p(ENISR_ALL, e8390_base + EN0_IMR);
++	/* force POST: */
++	ei_inb_p(e8390_base + EN0_IMR);
+ 
+ 	spin_unlock(&ei_local->page_lock);
+ 	enable_irq_lockdep_irqrestore(dev->irq, &flags);
