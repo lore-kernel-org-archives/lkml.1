@@ -1,55 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939691AbXG3Tts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967232AbXG3Tub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939691AbXG3Tts (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935738AbXG3Ttl
+	id S967232AbXG3Tub (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938665AbXG3TuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:49:41 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:54120 "EHLO smtp.ocgnet.org"
+	Mon, 30 Jul 2007 15:50:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35358 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936753AbXG3Ttj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:49:39 -0400
-Date: Tue, 31 Jul 2007 04:48:54 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Adrian McMenamin <lkmladrian@gmail.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, linux-kernel@vger.kernel.org,
-       Ondrej Zajicek <santiago@crfreenet.org>
-Subject: Re: [PATCH] Framebuffer: Consolidated cleanup of pvr2fb.c for Sega Dreamcast
-Message-ID: <20070730194854.GA29181@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Adrian McMenamin <lkmladrian@gmail.com>,
-	"Antonino A. Daplas" <adaplas@gmail.com>,
-	linux-kernel@vger.kernel.org,
-	Ondrej Zajicek <santiago@crfreenet.org>
-References: <8b67d60707281739l6fc544e9k5eb130ab6e426ad2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8b67d60707281739l6fc544e9k5eb130ab6e426ad2@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S935879AbXG3TuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:50:21 -0400
+Date: Mon, 30 Jul 2007 12:51:54 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: ak@suse.de
+Cc: linux-kernel@vger.kernel.org
+Subject: vdso.lds in arch/x86_64/vdso/.gitignore
+Message-Id: <20070730125154.a7dab7ec.zaitcev@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 01:39:51AM +0100, Adrian McMenamin wrote:
-> This patch consolidates your earlier patch, some cleanup of the
-> documentation and, crucially, some better handling of the pvr2
-> registers based on more up to date information.
-> 
-> Testing shows that it seems to work pretty well at 16bpp, 24bpp and
-> 32bpp - including proper rendering of the boot logo at all levels
-> (previously this was a bit broken even at 16bpp) and giving white
-> against black text. Really detailed testing (eg with X11) requires
-> support for the maple bus - which isn't (currently - next project
-> assuming this is okay) available, but I have no reason to think this
-> is broken.
-> 
-> Incidentally, substituing DIRECTCOLOR for TRUECOLOR appears to break the driver.
-> 
-> Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+Create arch/x86_64/vdso/.gitignore and put vdso.lds into it.
 
+Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
 
-This looks fine to me in any event. I can either wrap this up in my tree
-or Tony can include it with his next set of updates if he has any other
-concerns. Thanks, Adrian.
+---
 
-Acked-by: Paul Mundt <lethal@linux-sh.org>
+Utterly trivial but for some reason missing. V.odd. I must be
+misunderstanding how this works, but just in case here's patch.
+
+--- linux-2.6.23-rc1/arch/x86_64/vdso/.gitignore	1969-12-31 16:00:00.000000000 -0800
++++ linux-2.6.23-rc1-nip/arch/x86_64/vdso/.gitignore	2007-07-30 12:37:46.000000000 -0700
+@@ -0,0 +1 @@
++vdso.lds
