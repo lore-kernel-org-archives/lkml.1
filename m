@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939274AbXG3Tem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939237AbXG3Tf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939274AbXG3Tem (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:34:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938989AbXG3TeU
+	id S939237AbXG3Tf7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934892AbXG3Tfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:34:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35541 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937192AbXG3TeT (ORCPT
+	Mon, 30 Jul 2007 15:35:51 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:3840 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764103AbXG3Tfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:34:19 -0400
-Date: Mon, 30 Jul 2007 12:33:39 -0700
-From: Greg KH <greg@kroah.com>
-To: Adam Kropelin <akropel1@rochester.rr.com>
-Cc: Nick Pasich <NewsLetters@NickAndBarb.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-usb-devel @ lists. sourceforge. net" 
-	<linux-usb-devel@lists.sourceforge.net>,
-       Al Borchers <alborchers@steinerpoint.com>,
-       "linux-kernel @ vger. kernel. org" <linux-kernel@vger.kernel.org>,
-       Peter Berger <pberger@brimson.com>
-Subject: Re: [PATCH] usb-serial: Fix edgeport regression on non-EPiC devices
-Message-ID: <20070730193339.GA31969@kroah.com>
-References: <20070729150329.GA14873@mail.kroptech.com>
+	Mon, 30 Jul 2007 15:35:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=ScB/Wv4MYAe3MaUqD3PPtas4asbW7b2RUHnm1Z/BMFc3cj1LA/+aJBpN1COjCShpfWoVJTQdJDUk7R1FsFlKnXPdcJhRewDrEBev3yO7NYfVKe7GW4TWnAJNdPtZvjzd1KpoDq6hN9Hk7TOn6VSSTkDdyXQCG+JZdXLsdmZUFv0=
+Message-ID: <46AE3C80.7010307@googlemail.com>
+Date: Mon, 30 Jul 2007 21:31:12 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       J.E.J.Bottomley@HansenPartnership.com
+Subject: Re: Section mismatch warnings
+References: <46AE2459.7080905@googlemail.com> <20070730185124.GA29116@uranus.ravnborg.org>
+In-Reply-To: <20070730185124.GA29116@uranus.ravnborg.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070729150329.GA14873@mail.kroptech.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 11:03:29AM -0400, Adam Kropelin wrote:
-> Fix serious regression on non-EPiC edgeport usb-serial devices. Baud 
-> rate and MCR/LCR registers are not being written on these models due 
-> to apparent copy-n-paste errors introduced with EPiC support.
-> 
-> Failure reported by Nick Pasich <Nick@NickAndBarb.net>.
-> 
-> Signed-off-by: Adam Kropelin <akropel1@rochester.rr.com>
+Sam Ravnborg wrote:
+> On Mon, Jul 30, 2007 at 07:48:09PM +0200, Gabriel C wrote:
+>> Hi Sam ,
+>>
+>> I get this warnings with a randconfig ( http://194.231.229.228/git-current/randconfig-auto-36 ) :
+>>
+>>
+>> ...
+>>
+> I only looked at the Section mismatch warnings.
+> They are fixed by following patch.
 
-Ugh, good catch on this one, sorry, it was my fault when I added the
-epic support.
+Wow you are fast :)
 
-I'll apply this to the proper trees now and send it onward...
+Yes all warnings are fixed.
 
-thanks,
 
-greg k-h
+Gabriel
