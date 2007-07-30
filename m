@@ -1,38 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967232AbXG3Tub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967724AbXG3Tux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967232AbXG3Tub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938665AbXG3TuW
+	id S967724AbXG3Tux (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967460AbXG3Tui
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:50:22 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35358 "EHLO mx1.redhat.com"
+	Mon, 30 Jul 2007 15:50:38 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51918 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935879AbXG3TuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:50:21 -0400
-Date: Mon, 30 Jul 2007 12:51:54 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: ak@suse.de
-Cc: linux-kernel@vger.kernel.org
-Subject: vdso.lds in arch/x86_64/vdso/.gitignore
-Message-Id: <20070730125154.a7dab7ec.zaitcev@redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S967465AbXG3Tuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:50:37 -0400
+Message-ID: <46AE410C.2060204@garzik.org>
+Date: Mon, 30 Jul 2007 15:50:36 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Valerie Henson <val@nmt.edu>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tulip-users@lists.sourceforge.net
+Subject: Re: [PATCH] tulip: Remove tulip maintainer
+References: <20070730191052.GB16182@rainbow>
+In-Reply-To: <20070730191052.GB16182@rainbow>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create arch/x86_64/vdso/.gitignore and put vdso.lds into it.
+Valerie Henson wrote:
+> Remove Val Henson as tulip maintainer and let her roam free, FREE!
+> 
+> Signed-off-by: Val Henson <val@nmt.edu>
 
-Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+applied
 
----
 
-Utterly trivial but for some reason missing. V.odd. I must be
-misunderstanding how this works, but just in case here's patch.
-
---- linux-2.6.23-rc1/arch/x86_64/vdso/.gitignore	1969-12-31 16:00:00.000000000 -0800
-+++ linux-2.6.23-rc1-nip/arch/x86_64/vdso/.gitignore	2007-07-30 12:37:46.000000000 -0700
-@@ -0,0 +1 @@
-+vdso.lds
