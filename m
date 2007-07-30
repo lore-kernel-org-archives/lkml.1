@@ -1,526 +1,438 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939518AbXG3QTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939628AbXG3QTa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939518AbXG3QTH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:19:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934545AbXG3QOm
+	id S939628AbXG3QTa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938091AbXG3QOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:14:42 -0400
-Received: from mx2.suse.de ([195.135.220.15]:58741 "EHLO mx2.suse.de"
+	Mon, 30 Jul 2007 12:14:44 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58743 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934132AbXG3QOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S935730AbXG3QOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 12:14:11 -0400
-Message-Id: <20070730161325.092584388@weierstrass.suse.de>
+Message-Id: <20070730161325.445650656@weierstrass.suse.de>
 References: <20070730161323.100048969@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 30 Jul 2007 18:13:44 +0200
+Date: Mon, 30 Jul 2007 18:13:48 +0200
 From: Jan Blunck <jblunck@suse.de>
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC 21/26] union-mount: in-kernel file copy between union mounted filesystems
-Content-Disposition: inline; filename=um/union-mount-copy-on-open.diff
+Subject: [RFC 25/26] union-mount: Debug Infrastructure
+Content-Disposition: inline; filename=um/union-mount-debug-infrastructure.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces in-kernel file copy between union mounted
-filesystems. When a file is opened for writing but resides on a lower (thus
-read-only) layer of the union stack it is copied to the topmost union layer
-first.
+This adds debugfs/relay based debugging infrastructure helpful when doing
+development of the union-mount code itself. The debgging output can be enabled
+during runtime by:
 
-This patch uses the do_splice() for doing the in-kernel file copy.
+ echo 1 > /proc/sys/fs/union-debug
 
-Signed-off-by: Bharata B Rao <bharata@in.ibm.com>
+This registers the relayfs files where the debug code is writing its output
+to. There are different levels of debugging output available which can be ORed
+together. For the valid sysctl values see include/linux/union_debug.h.
+
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- fs/namei.c            |   73 ++++++++++-
- fs/union.c            |  312 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/union.h |    9 +
- 3 files changed, 389 insertions(+), 5 deletions(-)
+ include/linux/union_debug.h |   91 ++++++++++++++
+ lib/Kconfig.debug           |    9 +
+ lib/Makefile                |    2 
+ lib/union_debug.c           |  268 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 370 insertions(+)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -994,7 +994,7 @@ static int __follow_mount(struct path *p
- 	return res;
- }
- 
--static void follow_mount(struct vfsmount **mnt, struct dentry **dentry)
-+void follow_mount(struct vfsmount **mnt, struct dentry **dentry)
- {
- 	while (d_mountpoint(*dentry)) {
- 		struct vfsmount *mounted = lookup_mnt(*mnt, *dentry);
-@@ -1213,6 +1213,21 @@ static fastcall int __link_path_walk(con
- 		if (err)
- 			break;
- 
-+		if ((nd->flags & LOOKUP_TOPMOST) &&
-+		    (nd->um_flags & LAST_LOWLEVEL)) {
-+			struct dentry *dentry;
-+
-+			dentry = union_create_topmost(nd, &this, &next);
-+			if (IS_ERR(dentry)) {
-+				err = PTR_ERR(dentry);
-+				goto out_dput;
-+			}
-+			dput_path(&next, nd);
-+			next.mnt = nd->mnt;
-+			next.dentry = dentry;
-+			nd->um_flags &= ~LAST_LOWLEVEL;
-+		}
-+
- 		err = -ENOENT;
- 		inode = next.dentry->d_inode;
- 		if (!inode || S_ISWHT(inode->i_mode))
-@@ -1267,6 +1282,22 @@ last_component:
- 		err = do_lookup(nd, &this, &next);
- 		if (err)
- 			break;
-+
-+		if ((nd->flags & LOOKUP_TOPMOST) &&
-+		    (nd->um_flags & LAST_LOWLEVEL)) {
-+			struct dentry *dentry;
-+
-+			dentry = union_create_topmost(nd, &this, &next);
-+			if (IS_ERR(dentry)) {
-+				err = PTR_ERR(dentry);
-+				goto out_dput;
-+			}
-+			dput_path(&next, nd);
-+			next.mnt = nd->mnt;
-+			next.dentry = dentry;
-+			nd->um_flags &= ~LAST_LOWLEVEL;
-+		}
-+
- 		inode = next.dentry->d_inode;
- 		if ((lookup_flags & LOOKUP_FOLLOW)
- 		    && inode && inode->i_op && inode->i_op->follow_link) {
-@@ -1755,7 +1786,7 @@ out:
- 	return err;
- }
- 
--static int hash_lookup_union(struct nameidata *nd, struct qstr *name,
-+int hash_lookup_union(struct nameidata *nd, struct qstr *name,
- 			     struct path *path)
- {
- 	struct path safe = { .dentry = nd->dentry, .mnt = nd->mnt };
-@@ -2169,6 +2200,11 @@ int open_namei(int dfd, const char *path
- 					 nd, flag);
- 		if (error)
- 			return error;
-+		if (flag & FMODE_WRITE) {
-+			error = union_copyup(nd, flag);
-+			if (error)
-+				return error;
-+		}
- 		goto ok;
- 	}
- 
-@@ -2188,6 +2224,16 @@ int open_namei(int dfd, const char *path
- 	if (nd->last_type != LAST_NORM || nd->last.name[nd->last.len])
- 		goto exit;
- 
-+	/*
-+	 * If this dentry is on an union mount we need the topmost dentry here.
-+	 * This creates all topmost directories on the path to this dentry too.
-+	 */
-+	if (is_unionized(nd->dentry, nd->mnt)) {
-+		error = union_relookup_topmost(nd, nd->flags & ~LOOKUP_PARENT);
-+		if (error)
-+			goto exit;
-+	}
-+
- 	dir = nd->dentry;
- 	nd->flags &= ~LOOKUP_PARENT;
- 	mutex_lock(&dir->d_inode->i_mutex);
-@@ -2235,10 +2281,21 @@ do_last:
- 	if (path.dentry->d_inode->i_op && path.dentry->d_inode->i_op->follow_link)
- 		goto do_link;
- 
--	path_to_nameidata(&path, nd);
- 	error = -EISDIR;
- 	if (path.dentry->d_inode && S_ISDIR(path.dentry->d_inode->i_mode))
--		goto exit;
-+		goto exit_dput;
-+
-+	/*
-+	 * If this file is on a lower layer of the union stack, copy it to the
-+	 * topmost layer before opening it
-+	 */
-+	if (path.dentry->d_inode && (path.dentry->d_parent != dir)) {
-+		error = __union_copyup(&path, nd, &path);
-+		if (error)
-+			goto exit_dput;
-+	}
-+
-+	path_to_nameidata(&path, nd);
- ok:
- 	error = may_open(nd, acc_mode, flag);
- 	if (error)
-@@ -3437,9 +3494,15 @@ static int do_rename(int olddfd, const c
- 	error = -ENOTEMPTY;
- 	if (new.dentry == trap)
- 		goto exit5;
-+	/* renaming on unions is done by the user-space */
-+	error = -EXDEV;
-+	if (is_unionized(oldnd.dentry, oldnd.mnt))
-+		goto exit5;
-+	if (is_unionized(newnd.dentry, newnd.mnt))
-+		goto exit5;
- 
- 	error = vfs_rename(old_dir->d_inode, old.dentry,
--				   new_dir->d_inode, new.dentry);
-+			   new_dir->d_inode, new.dentry);
- exit5:
- 	dput_path(&new, &newnd);
- exit4:
---- a/fs/union.c
-+++ b/fs/union.c
-@@ -20,6 +20,11 @@
- #include <linux/union.h>
- #include <linux/module.h>
- #include <linux/file.h>
-+#include <linux/mm.h>
-+#include <linux/quotaops.h>
-+#include <linux/dnotify.h>
-+#include <linux/security.h>
-+#include <linux/pipe_fs_i.h>
- 
- /*
-  * This is borrowed from fs/inode.c. The hashtable for lookups. Somebody
-@@ -798,3 +803,310 @@ out:
- 	union_cache_free(&cb.list);
- 	return res;
- }
-+
+--- /dev/null
++++ b/include/linux/union_debug.h
+@@ -0,0 +1,91 @@
 +/*
-+ * Union mount copyup support
-+ */
-+
-+extern int hash_lookup_union(struct nameidata *, struct qstr *, struct path *);
-+extern void follow_mount(struct vfsmount **, struct dentry **);
-+
-+/*
-+ * union_relookup_topmost - lookup and create the topmost path to dentry
-+ * @nd: pointer to nameidata
-+ * @flags: lookup flags
-+ */
-+int union_relookup_topmost(struct nameidata *nd, int flags)
-+{
-+	int err;
-+	char *kbuf, *name;
-+	struct nameidata this;
-+
-+	kbuf = (char *)__get_free_page(GFP_KERNEL);
-+	if (!kbuf)
-+		return -ENOMEM;
-+
-+	name = d_path(nd->dentry, nd->mnt, kbuf, PAGE_SIZE);
-+	err = PTR_ERR(name);
-+	if (IS_ERR(name))
-+		goto free_page;
-+
-+	err = path_lookup(name, flags|LOOKUP_CREATE|LOOKUP_TOPMOST, &this);
-+	if (err)
-+		goto free_page;
-+
-+	path_release(nd);
-+	nd->dentry = this.dentry;
-+	nd->mnt = this.mnt;
-+
-+	/*
-+	 * the nd->flags should be unchanged
-+	 */
-+	BUG_ON(this.um_flags & LAST_LOWLEVEL);
-+	nd->um_flags &= ~LAST_LOWLEVEL;
-+ free_page:
-+	free_page((unsigned long)kbuf);
-+	return err;
-+}
-+
-+static void __update_fs_pwd(struct path *path, struct dentry *dentry,
-+			    struct vfsmount *mnt)
-+{
-+	struct dentry *old_pwd = NULL;
-+	struct vfsmount *old_pwdmnt = NULL;
-+
-+	write_lock(&current->fs->lock);
-+	if (current->fs->pwd == path->dentry) {
-+		old_pwd = current->fs->pwd;
-+		old_pwdmnt = current->fs->pwdmnt;
-+		current->fs->pwdmnt = mntget(mnt);
-+		current->fs->pwd = dget(dentry);
-+	}
-+	write_unlock(&current->fs->lock);
-+
-+	if (old_pwd) {
-+		dput(old_pwd);
-+		mntput(old_pwdmnt);
-+	}
-+
-+	return;
-+}
-+
-+/*
-+ * union_create_topmost - create the topmost path component
-+ * @nd: pointer to nameidata of the base directory
-+ * @name: pointer to file name
-+ * @path: pointer to path of the overlaid file
++ * VFS based union mount for Linux
 + *
-+ * This is called by __link_path_walk() to create the directories on a path
-+ * when it is called with LOOKUP_TOPMOST.
++ * Copyright (C) 2004-2007 IBM Corporation, IBM Deutschland Entwicklung GmbH.
++ * Copyright (C) 2007 Novell Inc.
++ *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ *
 + */
-+struct dentry *union_create_topmost(struct nameidata *nd, struct qstr *name,
-+				    struct path *path)
++#ifndef __LINUX_UNION_DEBUG_H
++#define __LINUX_UNION_DEBUG_H
++
++#ifdef __KERNEL__
++
++#ifdef CONFIG_DEBUG_UNION_MOUNT
++
++#include <linux/sched.h>
++
++/* This is taken from klog debugging facility */
++extern void klog(const void *data, int len);
++extern void klog_printk(const char *fmt, ...);
++extern void klog_printk_dentry(const char *func, struct dentry *dentry);
++
++extern int sysctl_union_debug;
++
++#define UNION_MOUNT_DEBUG		1
++#define UNION_MOUNT_DEBUG_DCACHE	2
++#define UNION_MOUNT_DEBUG_LOCK		4
++#define UNION_MOUNT_DEBUG_READDIR	8
++#define UNION_MOUNT_DEBUG_LOOKUP	16
++
++#define UM_DEBUG(fmt, args...)						\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG)			\
++		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
++} while (0)
++#define UM_DEBUG_DENTRY(dentry)						\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG)			\
++		klog_printk_dentry(__FUNCTION__, (dentry));		\
++} while (0)
++#define UM_DEBUG_DCACHE(fmt, args...)					\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG_DCACHE)		\
++		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
++} while (0)
++#define UM_DEBUG_DCACHE_DENTRY(dentry)					\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG_DCACHE)		\
++		klog_printk_dentry(__FUNCTION__, (dentry));		\
++} while (0)
++#define UM_DEBUG_LOCK(fmt, args...)					\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG_LOCK)		\
++		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
++} while (0)
++#define UM_DEBUG_READDIR(fmt, args...)					\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG_READDIR)		\
++		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
++} while (0)
++#define UM_DEBUG_LOOKUP(fmt, args...)					\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG_LOOKUP)		\
++		klog_printk("%s: " fmt, __FUNCTION__, ## args);		\
++} while (0)
++#define UM_DEBUG_LOOKUP_DENTRY(dentry)					\
++do {									\
++	if (sysctl_union_debug & UNION_MOUNT_DEBUG_LOOKUP)		\
++		klog_printk_dentry(__FUNCTION__, (dentry));		\
++} while (0)
++
++#else	/* CONFIG_DEBUG_UNION_MOUNT */
++
++#define UM_DEBUG(fmt, args...)			do { /* empty */ } while (0)
++#define UM_DEBUG_DENTRY(fmt, args...)		do { /* empty */ } while (0)
++#define UM_DEBUG_DCACHE(fmt, args...)		do { /* empty */ } while (0)
++#define UM_DEBUG_DCACHE_DENTRY(fmt, args...)	do { /* empty */ } while (0)
++#define UM_DEBUG_LOCK(fmt, args...)		do { /* empty */ } while (0)
++#define UM_DEBUG_READDIR(fmt, args...)		do { /* empty */ } while (0)
++#define UM_DEBUG_LOOKUP_DENTRY(fmt, args...)	do { /* empty */ } while (0)
++#define UM_DEBUG_LOOKUP_DENTRY(fmt, args...)	do { /* empty */ } while (0)
++
++#endif	/* CONFIG_DEBUG_UNION_MOUNT */
++
++#endif	/* __KERNEL__ */
++#endif	/*  __LINUX_UNION_DEBUG_H */
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -393,6 +393,15 @@ config DEBUG_LIST
+ 
+ 	  If unsure, say N.
+ 
++config DEBUG_UNION_MOUNT
++	bool "Debug VFS based union mounts"
++	depends on DEBUG_KERNEL && UNION_MOUNT
++	select DEBUG_FS
++	default n
++	help
++	  If you say Y here, the union mount debugging code will be
++	  compiled in.
++
+ config FRAME_POINTER
+ 	bool "Compile the kernel with frame pointers"
+ 	depends on DEBUG_KERNEL && (X86 || CRIS || M68K || M68KNOMMU || FRV || UML || S390 || AVR32 || SUPERH || BFIN)
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -35,6 +35,8 @@ obj-$(CONFIG_PLIST) += plist.o
+ obj-$(CONFIG_DEBUG_PREEMPT) += smp_processor_id.o
+ obj-$(CONFIG_DEBUG_LIST) += list_debug.o
+ 
++obj-$(CONFIG_DEBUG_UNION_MOUNT) += union_debug.o
++
+ ifneq ($(CONFIG_HAVE_DEC_LOCK),y)
+   lib-y += dec_and_lock.o
+ endif
+--- /dev/null
++++ b/lib/union_debug.c
+@@ -0,0 +1,268 @@
++/*
++ * VFS based union mount for Linux
++ *
++ * Copyright (C) 2007 SUSE Linux
++ *   Author(s): Jan Blunck (jblunck@suse.de)
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License as published by the Free
++ * Software Foundation; either version 2 of the License, or (at your option)
++ * any later version.
++ */
++
++#include <linux/module.h>
++#include <linux/sysctl.h>
++#include <linux/init.h>
++#include <linux/relay.h>
++#include <linux/debugfs.h>
++
++int sysctl_union_debug;
++EXPORT_SYMBOL_GPL(sysctl_union_debug);
++
++static struct rchan *debug_rchan;
++static struct dentry *debug_logdir;
++#define SUBBUF_SIZE 262144
++#define N_SUBBUF 4
++
++static struct dentry *create_buf_file(const char *filename,
++				      struct dentry *parent, int mode,
++				      struct rchan_buf *buf, int *is_global)
 +{
-+	struct dentry *dentry, *parent = nd->dentry;
-+	int res, mode = path->dentry->d_inode->i_mode;
-+
-+	if (parent->d_sb == path->dentry->d_sb)
-+		return ERR_PTR(-EEXIST);
-+
-+	mutex_lock(&parent->d_inode->i_mutex);
-+	dentry = lookup_one_len_nd(name->name, nd->dentry, name->len, nd);
-+	if (IS_ERR(dentry))
-+		goto out_unlock;
-+
-+	switch (mode & S_IFMT) {
-+	case S_IFREG:
-+		/*
-+		 * FIXME: Does this make any sense in this case?
-+		 * Special case - lookup gave negative, but... we had foo/bar/
-+		 * From the vfs_mknod() POV we just have a negative dentry -
-+		 * all is fine. Let's be bastards - you had / on the end,you've
-+		 * been asking for (non-existent) directory. -ENOENT for you.
-+		 */
-+		if (name->name[name->len] && !dentry->d_inode) {
-+			dput(dentry);
-+			dentry = ERR_PTR(-ENOENT);
-+			goto out_unlock;
-+		}
-+
-+		res = vfs_create(parent->d_inode, dentry, mode, nd);
-+		if (res) {
-+			dput(dentry);
-+			dentry = ERR_PTR(res);
-+			goto out_unlock;
-+		}
-+		break;
-+	case S_IFDIR:
-+		res = vfs_mkdir(parent->d_inode, dentry, mode);
-+		if (res) {
-+			dput(dentry);
-+			dentry = ERR_PTR(res);
-+			goto out_unlock;
-+		}
-+
-+		res = append_to_union(nd->mnt, dentry, path->mnt,
-+				      path->dentry);
-+		if (res) {
-+			dput(dentry);
-+			dentry = ERR_PTR(res);
-+			goto out_unlock;
-+		}
-+		break;
-+	default:
-+		dput(dentry);
-+		dentry = ERR_PTR(-EINVAL);
-+		goto out_unlock;
-+	}
-+
-+	/* Really necessary ??? */
-+/*	__update_fs_pwd(path, dentry, nd->mnt); */
-+
-+ out_unlock:
-+	mutex_unlock(&parent->d_inode->i_mutex);
-+	return dentry;
++	return debugfs_create_file(filename, mode, parent, buf,
++				   &relay_file_operations);
 +}
 +
-+static int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
-+			   struct dentry *new_dentry, struct vfsmount *new_mnt)
++static int remove_buf_file(struct dentry *dentry)
 +{
-+	int ret;
-+	size_t size;
-+	loff_t offset;
-+	struct file *old_file, *new_file;
++	debugfs_remove(dentry);
++	return 0;
++}
 +
-+	dget(old_dentry);
-+	mntget(old_mnt);
-+	old_file = dentry_open(old_dentry, old_mnt, O_RDONLY);
-+	if (IS_ERR(old_file))
-+		return PTR_ERR(old_file);
++static int subbuf_start(struct rchan_buf *buf, void *subbuf, void *prev_subbuf,
++			unsigned int prev_padding)
++{
++	return 1;
++}
 +
-+	dget(new_dentry);
-+	mntget(new_mnt);
-+	new_file = dentry_open(new_dentry, new_mnt, O_WRONLY);
-+	ret = PTR_ERR(new_file);
-+	if (IS_ERR(new_file))
-+		goto fput_old;
++static struct rchan_callbacks debug_relay_cb = {
++	.create_buf_file = create_buf_file,
++	.remove_buf_file = remove_buf_file,
++	.subbuf_start = subbuf_start,
++};
 +
-+	size = i_size_read(old_file->f_path.dentry->d_inode);
-+	if (((size_t)size != size) || ((ssize_t)size != size)) {
-+		ret = -EFBIG;
-+		goto fput_new;
++static int union_debug_relay_init(void)
++{
++	struct dentry *dentry;
++	struct rchan *rchan;
++
++	if (!debug_logdir) {
++		dentry = debugfs_create_dir("union", NULL);
++		if (IS_ERR(dentry)) {
++			printk(KERN_INFO
++			       "%s: debugfs directory creation failed\n",
++			       __FUNCTION__);
++			return PTR_ERR(dentry);
++		}
++
++		debug_logdir = dentry;
 +	}
 +
-+	offset = 0;
-+	ret = do_splice_direct(old_file, &offset, new_file, size,
-+			       SPLICE_F_MOVE);
-+	if (ret >= 0)
-+		ret = 0;
-+ fput_new:
-+	fput(new_file);
-+ fput_old:
-+	fput(old_file);
-+	return ret;
++	if (!debug_rchan) {
++		rchan = relay_open("logfile", debug_logdir,
++				   SUBBUF_SIZE, N_SUBBUF,
++				   &debug_relay_cb, NULL);
++		if (!rchan) {
++			printk(KERN_INFO "%s: relay channel creation failed\n",
++			       __FUNCTION__);
++			debugfs_remove(debug_logdir);
++			return -ENOMEM;
++		}
++
++		debug_rchan = rchan;
++	}
++
++	return 0;
++}
++
++static void union_debug_relay_exit(void)
++{
++	if (debug_rchan)
++		relay_close(debug_rchan);
++	debug_rchan = NULL;
++	if (debug_logdir)
++		debugfs_remove(debug_logdir);
++	debug_logdir = NULL;
++}
++
++/*
++ * klog operations
++ */
++struct klog_operations
++{
++	/*
++	 * klog - called when klog called, same params
++	 */
++	void (*klog) (const void *data, int len);
++};
++
++/* maximum size of klog formatting buffer beyond which truncation will occur */
++#define KLOG_TMPBUF_SIZE (1024)
++/* per-cpu klog formatting temporary buffer */
++static char klog_buf[NR_CPUS][KLOG_TMPBUF_SIZE];
++
++/*
++ * do-nothing default klog handler, called if nothing registered
++ */
++static void default_klog(const void *data, int len)
++{
++}
++
++/*
++ * default klog operations, used if nothing registered
++ */
++static struct klog_operations default_klog_ops =
++{
++	.klog = default_klog,
++};
++
++static struct klog_operations *cur_klog_ops = &default_klog_ops;
++
++/**
++ *      register_klog_handler - register klog handler
++ *      @klog_ops: klog operations callbacks
++ *
++ *      replaces default klog handler with passed-in version
++ */
++int register_klog_handler(struct klog_operations *klog_ops)
++{
++	if (!klog_ops)
++		return -EINVAL;
++
++	if (!klog_ops->klog)
++		klog_ops->klog = default_klog;
++
++	cur_klog_ops = klog_ops;
++	return 0;
 +}
 +
 +/**
-+ * __union_copyup - copy a file to the topmost directory
-+ * @old: pointer to path of the old file name
-+ * @new_nd: pointer to nameidata of the topmost directory
-+ * @new: pointer to path of the new file name
++ *      unregister_klog_handler - unregister klog handler
 + *
-+ * The topmost directory @new_nd must already be locked. Creates the topmost
-+ * file if it doesn't exist yet.
++ *      default handler will be in effect after this
 + */
-+int __union_copyup(struct path *old, struct nameidata *new_nd, struct path *new)
++void unregister_klog_handler(void)
 +{
-+	struct dentry *dentry;
-+	int error;
-+
-+	/* Maybe this should be -EINVAL */
-+	if (S_ISDIR(old->dentry->d_inode->i_mode))
-+		return -EISDIR;
-+
-+	if (new_nd->dentry != new->dentry->d_parent) {
-+		dentry = lookup_one_len_nd(new->dentry->d_name.name,
-+					   new_nd->dentry,
-+					   new->dentry->d_name.len, new_nd);
-+		if (IS_ERR(dentry))
-+			return PTR_ERR(dentry);
-+		error = -EEXIST;
-+		if (dentry->d_inode && !S_ISWHT(dentry->d_inode->i_mode))
-+			goto out;
-+	} else
-+		dentry = new->dentry;
-+
-+	if (!dentry->d_inode) {
-+		error = vfs_create(new_nd->dentry->d_inode, dentry,
-+				   old->dentry->d_inode->i_mode, new_nd);
-+		if (error)
-+			goto out;
-+	}
-+
-+	error = union_copy_file(old->dentry, old->mnt, dentry, new_nd->mnt);
-+	if (error) {
-+		/* FIXME: are there return value we should not BUG() on ? */
-+		BUG_ON(vfs_unlink(new_nd->dentry->d_inode, dentry));
-+		goto out;
-+	}
-+
-+	dput_path(new, new_nd);
-+	new->dentry = dentry;
-+	new->mnt = new_nd->mnt;
-+out:
-+	if (new->dentry != dentry)
-+		dput(dentry);
-+	return error;
++	cur_klog_ops = &default_klog_ops;
 +}
 +
-+/*
-+ * union_copyup - copy a file to the topmost layer of the union stack
-+ * @nd: nameidata pointer to the file
-+ * @flags: flags given to open_namei
++/**
++ *      klog - send raw data to klog handler
 + */
-+int union_copyup(struct nameidata *nd, int flags)
++void klog(const void *data, int len)
 +{
-+	struct qstr this;
-+	char *name;
-+	struct dentry *dir;
-+	struct path path;
-+	int err;
++	cur_klog_ops->klog(data, len);
++}
 +
-+	if (!is_unionized(nd->dentry, nd->mnt))
++/**
++ *      klog_printk - send a formatted string to the klog handler
++ *      @fmt: format string, same as printk
++ */
++void klog_printk(const char *fmt, ...)
++{
++	va_list args;
++	int len;
++	char *cbuf;
++	unsigned long flags;
++
++	local_irq_save(flags);
++	cbuf = klog_buf[smp_processor_id()];
++	va_start(args, fmt);
++	len = vsnprintf(cbuf, KLOG_TMPBUF_SIZE, fmt, args);
++	va_end(args);
++	klog(cbuf, len);
++	local_irq_restore(flags);
++}
++EXPORT_SYMBOL_GPL(klog_printk);
++
++void klog_printk_dentry(const char *func, struct dentry *dentry)
++{
++	klog_printk("%s: %p{i=%p/%lx,c=%d,n=\"%s\"}\n",
++		    func,
++		    dentry,
++		    dentry->d_inode,
++		    dentry->d_inode ?
++		    dentry->d_inode->i_ino : 0UL,
++		    atomic_read(&dentry->d_count),
++		    dentry->d_name.name);
++}
++EXPORT_SYMBOL_GPL(klog_printk_dentry);
++
++static void log_data(const void *data, int len)
++{
++	relay_write(debug_rchan, data, len);
++}
++
++static struct klog_operations klog_handler =
++{
++	.klog = log_data,
++};
++
++static int union_debug_sysctl_handler(ctl_table *table, int write,
++				      struct file *file,
++				      void __user *buffer, size_t *length,
++				      loff_t *ppos)
++{
++	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
++
++	if (!write)
 +		return 0;
-+	if (!S_ISREG(nd->dentry->d_inode->i_mode))
-+		return 0;
 +
-+	/* safe the name for hash_lookup_union() */
-+	this.len = nd->dentry->d_name.len;
-+	this.hash = nd->dentry->d_name.hash;
-+	name = kmalloc(this.len + 1, GFP_KERNEL);
-+	if (!name)
-+		return -ENOMEM;
-+	this.name = name;
-+	memcpy(name, nd->dentry->d_name.name, nd->dentry->d_name.len);
-+	name[this.len] = 0;
++	printk(KERN_INFO "sysctl.fs.union-debug: %d\n", sysctl_union_debug);
 +
-+	err = union_relookup_topmost(nd, nd->flags|LOOKUP_PARENT);
-+	if (err) {
-+		kfree(name);
-+		return err;
-+	}
-+	nd->flags &= ~LOOKUP_PARENT;
-+
-+	dir = nd->dentry;
-+	mutex_lock(&dir->d_inode->i_mutex);
-+	err = hash_lookup_union(nd, &this, &path);
-+	mutex_unlock(&dir->d_inode->i_mutex);
-+	kfree(name);
-+	if (err)
-+		return err;
-+
-+	err = -ENOENT;
-+	if (!path.dentry->d_inode)
-+		goto exit_dput;
-+
-+	/* Necessary?! I guess not ... */
-+	follow_mount(&path.mnt, &path.dentry);
-+
-+	err = -ENOENT;
-+	if (!path.dentry->d_inode)
-+		goto exit_dput;
-+
-+	err = -EISDIR;
-+	if (!S_ISREG(path.dentry->d_inode->i_mode))
-+		goto exit_dput;
-+
-+	if (path.dentry->d_parent != nd->dentry) {
-+		err = __union_copyup(&path, nd, &path);
-+		if (err)
-+			goto exit_dput;
++	switch (sysctl_union_debug) {
++	case 0:
++		unregister_klog_handler();
++		union_debug_relay_exit();
++		break;
++	default:
++		union_debug_relay_init();
++		if (register_klog_handler(&klog_handler))
++			union_debug_relay_exit();
++		break;
 +	}
 +
-+	path_to_nameidata(&path, nd);
 +	return 0;
-+
-+exit_dput:
-+	dput_path(&path, nd);
-+	return err;
 +}
---- a/include/linux/union.h
-+++ b/include/linux/union.h
-@@ -54,6 +54,11 @@ extern int attach_mnt_union(struct vfsmo
- 			    struct dentry *);
- extern void detach_mnt_union(struct vfsmount *);
- extern int readdir_union(struct file *, void *, filldir_t);
-+extern int union_relookup_topmost(struct nameidata *, int);
-+extern struct dentry *union_create_topmost(struct nameidata *, struct qstr *,
-+					   struct path *);
-+extern int __union_copyup(struct path *, struct nameidata *, struct path *);
-+extern int union_copyup(struct nameidata *, int);
- 
- #else /* CONFIG_UNION_MOUNT */
- 
-@@ -68,6 +73,10 @@ extern int readdir_union(struct file *, 
- #define __shrink_d_unions(x)		do { } while (0)
- #define attach_mnt_union(x, y, z)	do { } while (0)
- #define detach_mnt_union(x)		do { } while (0)
-+#define union_relookup_topmost(x, y)	({ BUG(); (0); })
-+#define union_create_topmost(x, y, z)	({ BUG(); (NULL); })
-+#define __union_copyup(x, y, z)		({ BUG(); (0); })
-+#define union_copyup(x, y)		({ (0); })
- 
- #endif	/* CONFIG_UNION_MOUNT */
- 
++
++static ctl_table union_table[] = {
++	{
++		.ctl_name = CTL_UNNUMBERED,
++		.procname = "union-debug",
++		.data = &sysctl_union_debug,
++		.maxlen = sizeof(int),
++		.mode = 0644,
++		.proc_handler = &union_debug_sysctl_handler,
++	},
++	{.ctl_name = 0}
++};
++
++static ctl_table fs_root[] = {
++	{
++		.ctl_name = CTL_FS,
++		.procname = "fs",
++		.maxlen = 0,
++		.mode = 0555,
++		.child = union_table,
++	},
++	{.ctl_name = 0}
++};
++
++static struct ctl_table_header *sysctl_header;
++
++static int union_debug_init(void)
++{
++	sysctl_header = register_sysctl_table(fs_root);
++	return 0;
++}
++
++late_initcall(union_debug_init);
 
 -- 
 
