@@ -1,112 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935595AbXG3IrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936846AbXG3Itx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935595AbXG3IrX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 04:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763226AbXG3IrJ
+	id S936846AbXG3Itx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 04:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764737AbXG3Itl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 04:47:09 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37350 "EHLO mx3.mail.elte.hu"
+	Mon, 30 Jul 2007 04:49:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44424 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763446AbXG3IrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 04:47:06 -0400
-Date: Mon, 30 Jul 2007 10:46:51 +0200
+	id S1763577AbXG3Itj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 04:49:39 -0400
+Date: Mon, 30 Jul 2007 10:49:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Marcin =?utf-8?Q?=C5=9Alusarz?= <marcin.slusarz@gmail.com>
 Cc: Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Marcin ??lusarz <marcin.slusarz@gmail.com>,
        Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        shemminger <shemminger@linux-foundation.org>,
        linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070730084651.GA14146@elte.hu>
-References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <20070725135718.GB1843@ff.dom.local> <20070725154656.54fd6f13@the-village.bc.nu>
+Message-ID: <20070730084925.GA12695@elte.hu>
+References: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070725154656.54fd6f13@the-village.bc.nu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+* Marcin Ślusarz <marcin.slusarz@gmail.com> wrote:
 
-> Ok the logic behind the 8390 is very simple:
+> > Subject: x86: activate HARDIRQS_SW_RESEND
+> > From: Ingo Molnar <mingo@elte.hu>
+> >
+> > activate the software-triggered IRQ-resend logic.
 
-thanks for the explanation Alan! A few comments and a question:
+> This patch didn't help (tested on 2.6.22.1) - ne2k_pci timed out.
 
-> Things to know
-> 	- IRQ delivery is asynchronous to the PCI bus
-> 	- Blocking the local CPU IRQ via spin locks was too slow
-> 	- The chip has register windows needing locking work
-> 
-> So the path was once (I say once as people appear to have changed it 
-> in the mean time and it now looks rather bogus if the changes to use 
-> disable_irq_nosync_irqsave are disabling the local IRQ)
-> 
-> 
-> 	Take the page lock
-> 	Mask the IRQ on chip
-> 	Disable the IRQ (but not mask locally- someone seems to have
-> 		broken this with the lock validator stuff)
-> 		[This must be _nosync as the page lock may otherwise
-> 			deadlock us]
+ok. This makes it more likely that the driver itself (or the card) gets 
+confused by the resend.
 
-( side-note: you can ignore the lock validator stuff here, the validator
-  changes are supposed to a NOP on the !lockdep case. Local irqs will
-  only be disabled if the validator is running. This could cause dropped
-  serial irqs on very old boxes but i doubt anyone will want to run the
-  validator on those. )
-
-> 	Drop the page lock and turn IRQs back on
-> 	
-> 	At this point an existing IRQ may still be running but we can't
-> 	get a new one
-> 
-> 	Take the lock (so we know the IRQ has terminated) but don't mask
-> the IRQs on the processor
-> 	Set irqlock [for debug]
-> 
-> 	Transmit (slow as ****)
-> 
-> 	re-enable the IRQ
-> 
-> 
-> We have to use disable_irq because otherwise you will get delayed 
-> interrupts on the APIC bus deadlocking the transmit path.
-> 
-> Quite hairy but the chip simply wasn't designed for SMP and you can't 
-> even ACK an interrupt without risking corrupting other parallel 
-> activities on the chip.
-
-So the whole locking is to be able to keep irqs enabled for a long time, 
-without risking entry of the same IRQ handler on this same CPU, correct?
-
-Marcin's test results suggest that if an IRQ is resent right at the 
-enable_irq() point [be that via the hw irq-resend mechanism or the sw 
-irq-resend mechanism], the hang happens.
-
-In the previous 2.6.20 logic we'd not normally generate an IRQ at that 
-point (because we masked the irq and the card itself deasserts the line 
-so any level-triggered irq is now moot).
-
-Once Thomas hacked off this resend mechanism for level-triggered irqs, 
-Marcin saw the hangs go away.
-
-So it seems to me that maybe the driver could be surprised via these 
-spurious interrupts that happen right after the irq_enable(). Does the 
-patch below make any sense in your opinion?
+does the patch below fix those timeouts? It tests the theory whether any 
+POST latency could expose this problem.
 
 	Ingo
 
