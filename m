@@ -1,97 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937884AbXG3XrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939449AbXG3XtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937884AbXG3XrO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759839AbXG3XrB
+	id S939449AbXG3XtD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763089AbXG3Xsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:47:01 -0400
-Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:54776 "EHLO
-	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757722AbXG3XrA (ORCPT
+	Mon, 30 Jul 2007 19:48:54 -0400
+Received: from pfepc.post.tele.dk ([195.41.46.237]:49377 "EHLO
+	pfepc.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762984AbXG3Xsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:47:00 -0400
-Message-ID: <46AE786F.3010208@blueyonder.co.uk>
-Date: Tue, 31 Jul 2007 00:46:55 +0100
-From: Sid Boyce <g3vbv@blueyonder.co.uk>
-Reply-To: g3vbv@blueyonder.co.uk
-Organization: blueyonder.co.uk
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1-git3 init failure
-References: <46ABF0FA.8060301@blueyonder.co.uk> <6bffcb0e0707300725i3bb8b677i75aeec6fed66bee2@mail.gmail.com>
-In-Reply-To: <6bffcb0e0707300725i3bb8b677i75aeec6fed66bee2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 30 Jul 2007 19:48:53 -0400
+Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ck@vds.kolivas.org
+In-Reply-To: <20070729170641.GA26220@elte.hu>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <1185536610.502.8.camel@localhost>  <20070729170641.GA26220@elte.hu>
+Content-Type: text/plain
+Date: Tue, 31 Jul 2007 01:46:04 +0200
+Message-Id: <1185839164.27166.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Hi Sid,
->
-> On 29/07/07, Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
->   
->>  > Boot failure on x86_64 (64X2), says it can't find init, specifically
->>  > /init. 2.6.23-rc1-git1 boots and runs successfully. I haven't tried
->>  > -git2. I shall reboot on 2.6.23-rc1-git3 tomorrow and record the full
->>  > message.
->>  > Strings from vmlinux in both the above:-
->>  >
->>  > Kernel alive
->>  > /dev/console
->>  > <4>Warning: unable to open an initial console.
->>  > <4>Failed to execute %s
->>  > <4>Failed to execute %s.  Attempting defaults...
->>  > /sbin/init
->>  > /etc/init
->>  > /bin/init
->>  > /bin/sh
->>  > No init found.  Try passing init= option to kernel.
->>  >
->>  > Tried option "init=/sbin/init" and got the same failure.
->>  > Regards
->>  > Sid.
->>
->> I see the sam problem with 2.6.23-rc1-git5.
->>
->> Freeing unused kernel memory: 236k freed
->> failed to execute /init
->> kernel panic - not syncing: No init found. Try passing init= option to
->> kernel
->>
->> Copying /sbin/init to / results in the same error.
->> openSUSE 10.3Alpha6plus
->> # rpm -qf /sbin/init
->> sysvinit-2.86-90
->>     
->
-> Please read chapter 4.1 and 4.5
-> http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
->
-> It should be very simple
->
-> git-bisect start
-> git-bisect bad
-> git-bisect good 0de085bb474f64e4fdb2f1ff3268590792648c7b
->
-> and so on and so forth
->
->   
->> Regards
->> Sid.
->>     
->
-> Regards,
-> Michal
->
->   
-Looks like a job for the weekend.
-Regards
-Sid.
+On Sun, 2007-07-29 at 19:06 +0200, Ingo Molnar wrote:
+> * Kasper Sandberg <lkml@metanurb.dk> wrote:
+> 
+> > Im still not so keen about this, Ingo never did get CFS to match SD in 
+> > smoothness for 3d applications, where my test subjects are quake(s), 
+> > world of warcraft via wine, unreal tournament 2004. [...]
+> 
+> here's an update: checking whether Wine could be a factor in your 
+> problem i just tested latest CFS against latest SD with a 3D game 
+> running under Wine: v2.6.22-ck1 versus v2.6.22-cfsv19 (to get the
+> most comparable kernel), using Quake 3 Arena Demo under Wine (0.9.41). 
+> Here are the results in a pretty graph:
+> 
+>    http://people.redhat.com/mingo/misc/cfs-vs-sd-wine-quake.jpg
+> 
+> or, in text:
+> 
+>          2.6.22-ck1                         2.6.22-cfs-v19
+>    ------------------------            ------------------------
+>    quake + 0 loops | 41 fps            quake + 0 loops | 41 fps
+>    quake + 1 loop  |  3 fps            quake + 1 loop  | 41 fps
+>    quake + 2 loops |  2 fps            quake + 2 loops | 32 fps
+>    quake + 3 loops |  1 fps            quake + 3 loops | 24 fps
+>    quake + 4 loops |  0 fps            quake + 4 loops | 20 fps
+>    quake + 5 loops |  0 fps            quake + 5 loops | 16 fps
+> 
+> Quake3-under-Wine behavior under SD/-ck: framerate breaks down massively 
+> during any kind of load. The game is completely unusable with 1 CPU loop 
+> running already!
 
--- 
-Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
-Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
-Microsoft Windows Free Zone - Linux used for all Computing Tasks
+I run quake3 natively, ut2k4 natively, and world of warcraft under wine.
 
+> 
+> Quake3-under-Wine behavior under CFS: framerate goes down gently with 
+> load, gameplay remains smooth. Framerate is still pretty acceptable and 
+> the game is playable even with a 500% CPU overload. The graph looks good 
+> and the framerate reduction goes roughly along the expected 1/n 
+> 'fairness curve' - so it all looks pretty healthy. [Note: quake3 keeps 
+> its fully 41 fps even with 1 competing loop running on the CPU due to 
+> "sleeper fairness".]
+> 
+> [ i've re-tested this using other SD and ck versions and other CFS 
+>   versions such as v2.6.23-rc1 and the results are the same. To get the 
+>   fps result i started a simple game scene: Single Player /
+>   Q3DM1 / I Can Win, turned on the fps display of Quake3, and did not 
+>   move the player at all, just looked at the framerate that is 
+>   displayed. (i also tried other scenes and other gameplay sections and 
+>   they all behave consistently with the above results.) The system was
+>   otherwise completely idle. While i trust these numbers take them with 
+>   a grain of salt, i'm obviously not neutral in this thing :-) ]
+> 
+> so Kasper, i'll definitely need your help in tracking down your 3D 
+> smoothness problem under CFS. I have the feeling that it could be some 
+> odd factor that only hits your system, and once we've tracked that down 
+> there will be a simple solution that does not affect the totality of the 
+> scheduler. So far only you have reported any 3D game smoothness problem 
+> against recent CFS versions. (all 3D feedback has been positive, and 
+> that includes a number of gamers as well. Most of the 3D smoothness 
+> problems were fixed in CFS v13..v15 and it has not been reported to have 
+> regressed since then.)
+
+I believe the responsibility for my situation is both IO and cpu load. i
+dont know why SD does this. my test is to make spamasassin process mails
+while i have these applications running(and wine is most sensitive, the
+difference is almost negligable in the native applications, but very
+much noticable with wine+wow)
+
+could perhaps be filesystem related, i have my maildir(extremely large)
+on reiserfs, and /home on xfs. what my mail client will do is download
+mail, spamasassin it(loading database from home), then it will put to
+imap server placing it on reiserfs, and then a "local" copy in my home.
+
+while i only see the spamasassin thread as hogging cpu, i suspect IO is
+also to blame.
+
+> 
+> 	Ingo
 
