@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965655AbXG3AHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965778AbXG3AIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965655AbXG3AHx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 20:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763826AbXG3AHo
+	id S965778AbXG3AIp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 20:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763826AbXG3AIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 20:07:44 -0400
-Received: from rex.snapgear.com ([203.143.235.140]:39170 "EHLO
-	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751915AbXG3AHn (ORCPT
+	Sun, 29 Jul 2007 20:08:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:39155 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764031AbXG3AIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 20:07:43 -0400
-Message-ID: <46AD2BC5.5050202@snapgear.com>
-Date: Mon, 30 Jul 2007 10:07:33 +1000
-From: Greg Ungerer <gerg@snapgear.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
+	Sun, 29 Jul 2007 20:08:37 -0400
+Date: Sun, 29 Jul 2007 17:08:20 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       viro@ftp.linux.org.uk
+Subject: Re: [PATCH] Remove fs.h from mm.h
+In-Reply-To: <20070729223613.GA5916@martell.zuzino.mipt.ru>
+Message-ID: <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org>
+References: <20070729223613.GA5916@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] m68knommu: Get rid of duplicate include
-References: <200707292353.55129.jesper.juhl@gmail.com>
-In-Reply-To: <200707292353.55129.jesper.juhl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jesper,
-
-Jesper Juhl wrote:
-> This patch removes the duplicate inclusion of asm/irq.h 
-> from arch/m68knommu/platform/5206e/config.c
-
-You can add my acked by:
-
-Acked-by: Greg Ungerer <gerg@uclinux.org>
 
 
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
-> ---
+On Mon, 30 Jul 2007, Alexey Dobriyan wrote:
 > 
->  arch/m68knommu/platform/5206e/config.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+> Cross-compile tested without regressions on my two usual configs and (sigh):
 > 
-> diff --git a/arch/m68knommu/platform/5206e/config.c b/arch/m68knommu/platform/5206e/config.c
-> index 4ab614f..425703f 100644
-> --- a/arch/m68knommu/platform/5206e/config.c
-> +++ b/arch/m68knommu/platform/5206e/config.c
-> @@ -20,7 +20,6 @@
->  #include <asm/mcftimer.h>
->  #include <asm/mcfsim.h>
->  #include <asm/mcfdma.h>
-> -#include <asm/irq.h>
->  
->  /***************************************************************************/
->  
-> 
-> 
-> 
+> alpha              arm-mx1ads        mips-bigsur          powerpc-ebony
+..
 
--- 
-------------------------------------------------------------------------
-Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
-Secure Computing Corporation                PHONE:       +61 7 3435 2888
-825 Stanley St,                             FAX:         +61 7 3891 3630
-Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
+Heh. 
+
+Kudos for going above and beyond.
+
+	"But where is blackfin and frv?"
+
+Thanks,
+
+		Linus
