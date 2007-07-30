@@ -1,72 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761168AbXG3Pub@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934987AbXG3Puz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761168AbXG3Pub (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 11:50:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbXG3PuT
+	id S934987AbXG3Puz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 11:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764775AbXG3Puo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 11:50:19 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:41868 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752077AbXG3PuS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 11:50:18 -0400
-From: Thomas Klein <osstklei@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH 1/3] ehea: Fix workqueue handling
-Date: Mon, 30 Jul 2007 17:50:06 +0200
-User-Agent: KMail/1.8.2
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+	Mon, 30 Jul 2007 11:50:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48664 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762162AbXG3Puc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 11:50:32 -0400
+Message-ID: <46AE08BD.1080400@garzik.org>
+Date: Mon, 30 Jul 2007 11:50:21 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 1548
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, perex@suse.cz,
+       alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       linux-mips@linux-mips.org
+Subject: Re: [PATCH] DDB5477: Remove driver bits of support
+References: <20070730154116.GA25008@linux-mips.org>
+In-Reply-To: <20070730154116.GA25008@linux-mips.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200707301750.06467.osstklei@de.ibm.com>
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix: Workqueue ehea_driver_wq was not destroyed
+Ralf Baechle wrote:
+> From: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> 
+> Signed-off-by: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
+> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+> 
+>  drivers/net/tulip/tulip_core.c |    8 
+>  drivers/serial/8250_pci.c      |   20 
+>  include/linux/pci_ids.h        |    1 
+>  sound/oss/Kconfig              |    8 
+>  sound/oss/Makefile             |    1 
+>  sound/oss/nec_vrc5477.c        | 2060 -----------------------------------------
+>  6 files changed, 2098 deletions(-)
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-
----
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index 8ee2c2c..d67f97b 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -39,7 +39,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0072"
-+#define DRV_VERSION	"EHEA_0073"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 58702f5..d43ab0f 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -3099,6 +3099,7 @@ out:
- 
- static void __exit ehea_module_exit(void)
- {
-+	destroy_workqueue(ehea_driver_wq);
- 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
- 	ibmebus_unregister_driver(&ehea_driver);
- 	ehea_destroy_busmap();
--- 
-1.5.2
+ACK
 
 
