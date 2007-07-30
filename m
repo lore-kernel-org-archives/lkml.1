@@ -1,93 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937884AbXG3Xgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939068AbXG3XjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937884AbXG3Xgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbXG3Xgp
+	id S939068AbXG3XjS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761858AbXG3XjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:36:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:37494 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761226AbXG3Xgo (ORCPT
+	Mon, 30 Jul 2007 19:39:06 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:25876 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761636AbXG3XjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:36:44 -0400
-Date: Mon, 30 Jul 2007 16:35:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Manfred Spraul <manfred@colorfullife.com>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
-Message-Id: <20070730163538.67b256da.akpm@linux-foundation.org>
-In-Reply-To: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com>
-References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Jul 2007 19:39:05 -0400
+In-Reply-To: <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com>
+References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org> <20070727071547.GA25084@joejin-pc.cn.oracle.com> <46A9E6F9.20603@oracle.com> <20070728034719.GA24448@joejin-pc.cn.oracle.com> <20070730135316.2ce21b28.akpm@linux-foundation.org> <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Jin <joe.jin@oracle.com>,
+       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
+       wen.gang.wang@oracle.com
 Content-Transfer-Encoding: 7bit
+From: Zach Brown <zach.brown@oracle.com>
+Subject: Re: [PATCH] add check do_direct_IO() return val
+Date: Mon, 30 Jul 2007 16:38:48 -0700
+To: Badari Pulavarty <pbadari@us.ibm.com>
+X-Mailer: Apple Mail (2.752.3)
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007 19:05:05 +0200
-Manfred Spraul <manfred@colorfullife.com> wrote:
 
-> Hi Andrew,
-> 
-> poll() returns -EINTR if a signal is pending.
-> EINTR is a bad choice: it means that poll returns to user space if the
-> task is stopped by SIGSTOP/SIGCONT or by the freezer.
-> select() and ppoll() both use ERESTARTNOHAND, this avoids a return to
-> user space for signals that are handled by the kernel.
-> 
-> The patch switches poll() to ERESTARTNOHAND.
-> Tested with FC6. Patch against 2.6.23-rc1-mm1.
+On Jul 30, 2007, at 2:58 PM, Badari Pulavarty wrote:
 
-hm.  Is this a fix against
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/broken-out/do_poll-return-eintr-when-signalled.patch
-only, or does mainline also need fixing?
+> On Mon, 2007-07-30 at 14:45 -0700, Zach Brown wrote:
+>>> I am also taking a look at it right now.
+>>
+>> Are we having a race to write a little test app that reproduces the
+>> problem? :)
+>
+> Nope. Feel free to write the test case.
 
-I guess the consequences of the thing-which-this-fixes aren't huge, s I ca
-queue this up for 2.6.24, after Oleg's
-do_poll-return-eintr-when-signalled.patch?
+Well, I'm having a heck of a time getting this to fail.  It looks  
+possible, though.  Joe, were you guys able to narrow it down to a  
+reproducible test case?  Do you have any oops output messages from  
+the crashes?
 
-> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
-> 
-> --- 2.6/fs/select.c	2007-07-28 20:31:51.000000000 +0200
-> +++ build-2.6/fs/select.c	2007-07-28 21:21:52.000000000 +0200
-> @@ -621,7 +621,7 @@ static int do_poll(unsigned int nfds,  s
->  		if (!count) {
->  			count = wait->error;
->  			if (signal_pending(current))
-> -				count = -EINTR;
-> +				count = -ERESTARTNOHAND;
->  		}
->  		if (count || !*timeout)
->  			break;
-> @@ -774,7 +774,7 @@ asmlinkage long sys_ppoll(struct pollfd 
->  	ret = do_sys_poll(ufds, nfds, &timeout);
->  
->  	/* We can restart this syscall, usually */
-> -	if (ret == -EINTR) {
-> +	if (ret == -ERESTARTNOHAND) {
->  		/*
->  		 * Don't restore the signal mask yet. Let do_signal() deliver
->  		 * the signal on the way back to userspace, before the signal
-> @@ -785,7 +785,6 @@ asmlinkage long sys_ppoll(struct pollfd 
->  					sizeof(sigsaved));
->  			set_thread_flag(TIF_RESTORE_SIGMASK);
->  		}
-> -		ret = -ERESTARTNOHAND;
->  	} else if (sigmask)
->  		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
->  
+It looks like it takes a very particular set of circumstances to  
+actually crash after relying on an uninitialized map_bh.  (see the  
+blkfactor, buffer_new(), and this_chunk_blocks tests in dio_zero_block 
+()).
 
-I spied this comment in there:
+> I am just looking at the code
+> to see what needs to be done.
 
-/*
- * We can actually return ERESTARTSYS instead of EINTR, but I'd
- * like to be certain this leads to no problems. So I return
- * EINTR just for safety.
- *
- * Update: ERESTARTSYS breaks at least the xview clock binary, so
- * I'm trying ERESTARTNOHAND which restart only when you want to.
- */
+It looks like the unconditional dio_cleanup() and dio_zero_block()  
+calls outside the nseg loop are relying on state which might not have  
+been built up.  _zero_block() tests map_bh's flags without them being  
+set.  _cleanup could, in some crazy world, get confused if we managed  
+to get here with a 0 nr_segs because dio->head and ->tail wouldn't be  
+initialized.
 
-it is very old and perhaps is no longer relevant?
+So we could initialize some more fields at the start of  
+direct_io_worker for the benefit of these cleanup calls.  Or we could  
+conditionally call them based on some other indicator of progress.   
+Neither really thrills me.
+
+And I don't have a test case to verify changes with.  Meh.
+
+How do you feel about initializing the dio with kzalloc() and only  
+initializing the fields that we rely on being non-zero, and  
+commenting the hell out of it?
+
+- z
