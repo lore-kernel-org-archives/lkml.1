@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939019AbXG3Gso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938900AbXG3HGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939019AbXG3Gso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 02:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935035AbXG3Gsg
+	id S938900AbXG3HGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 03:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937845AbXG3HGG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 02:48:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:56806 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754888AbXG3Gsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 02:48:36 -0400
-Message-ID: <46AD89BD.90204@redhat.com>
-Date: Mon, 30 Jul 2007 14:48:29 +0800
-From: Eugene Teo <eteo@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	Mon, 30 Jul 2007 03:06:06 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:55479 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934212AbXG3HGD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 03:06:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MAOhf8avraMLlCQAxxUkzgQxGrN3HVd5ltfK15G8F+9jruWCp0ytyQlDHaphID4868P+fXf6B2pWp30rO1S2baWvg08DwW6p0NX9Gy+HA8dclNJCswW46oURcUzIdVcqQVZhB4Syl1eTepfsbzxCMwklBCGadJ2P0wnyfWhOrao=
+Message-ID: <a12e280d0707300006l52a695bcy9912ee2689d6f636@mail.gmail.com>
+Date: Mon, 30 Jul 2007 17:06:02 +1000
+From: "George Sescher" <gesacs@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: Linus 2.6.23-rc1
+Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "CK Mailinglist" <ck@vds.kolivas.org>
+In-Reply-To: <20070730064423.GA30505@elte.hu>
 MIME-Version: 1.0
-To: Marcel Holtmann <marcel@holtmann.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/bluetooth/hci_ldisc.c: fix possible	NULL	dereferences
-References: <20070729144736.GA13275@kernel.sg>	 <1185727751.5868.60.camel@violet>  <46AD1A87.8050901@redhat.com> <1185777735.5868.86.camel@violet>
-In-Reply-To: <1185777735.5868.86.camel@violet>
-X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <1185588279.1654.1.camel@localhost> <20070729150436.GA6598@elte.hu>
+	 <a12e280d0707291604s618c0b14lc8572b2f48cd4ca1@mail.gmail.com>
+	 <20070730064423.GA30505@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Marcel,
+> > On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
+> > > i'd encourage you to do it - in fact i already tried to prod Peter
+> > > Williams into doing exactly that ;) The more reality checks a
+> > > scheduler has, the better. [ Btw., after the obvious initial merging
+> > > trouble it should be much easier to keep SD maintained against
+> > > future upstream kernels due to the policy modularity that CFS
+> > > introduces. (and which policy-modularity should also help reduce the
+> > > size and complexity of the SD patch.) ]
 
-Marcel Holtmann wrote:
->>>> Commit 22ad42033b7d2b3d7928fba9f89d1c7f8a3c9581 did not completely fix all 
->>>> the possible NULL dereferences. Besides hci_uart_close(), we also need to 
->>>> make sure that hdev is valid before calling hci_{unregister,free}_dev().
->>> I don't see any issue. Without HCI_UART_PROTO_SET, the hdev will never
->>> be registered. So no need to protect it twice.
->> Correct me if I am wrong. HCI_UART_PROTO_SET bit is only set if hci_uart_tty_ioctl()
->> is called with HCIUARTSETPROTO. Is it possible for the HCI device to be registered
->> and then unregistered without setting the HCI_UART_PROTO_SET bit in hdev->flags?
-> 
-> look at the code. The hci_uart_tty_ioctl() is the only function that can
-> register the HCI device. So besides opening the TTY and set the line
-> discipline, you also have to the set the UART protocol running on top. I
-> don't see any way you can achieve to register a HCI device without
-> setting the HCI_UART_PROTO_SET bit in hu->flags.
+> * George Sescher <gesacs@gmail.com> wrote:
+> > <chuckle>
+> >
+> > You're advocating plugsched now?
 
-Ok. Thanks for the explanation.
+On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
+> hm, the way you posited this question implies that you see an
+> inconsistency in my position or that it surprised you - i cannot explain
+> the '<chuckle>' in any other way :) Which bit do you see as inconsistent
+> and/or which bit surprised you and why?
 
-Eugene
+The idea is not good enough for mainline and has no place in mainline
+yet you say it's very important to maintain it... but out of mainline.
+Place the responsibility of keeping mainline's performance in check
+"reality check as you called it" on to someone who is forced to
+develop out of mainline? I have zero interest one way or the other
+myself, but how can one not chuckle?
+
+Again I have no interest either way but if this is that important a
+reality check that it needs maintaining it should be oh I don't know,
+an -mm only feature or something?
+
+Please don't jump down my throat, your position just needs clarifying.  :-|
