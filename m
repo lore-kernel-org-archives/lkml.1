@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937364AbXG3Rse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966747AbXG3Rt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937364AbXG3Rse (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbXG3RsZ
+	id S966747AbXG3Rt4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbXG3Rts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:48:25 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:26362 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760607AbXG3RsY (ORCPT
+	Mon, 30 Jul 2007 13:49:48 -0400
+Received: from Mnaem01-s3.macomp.com ([204.15.179.236]:1447 "EHLO
+	mnaem01-s3.macomp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761948AbXG3Rtr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:48:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HUR8ablyi5rAz/WNG1YIjADNgTaZTldpOT2MOiasynJZRF2vl4XJSVlSFReGoz9N9K7zXJLgAtsie/KjXpuKooHGx7RoXVSjc4uyTh4F85qpNeuQwArJjxNtx/zfjCq3ZoGSEW5hGmO6pwFlAB0eD1+IqJESn37sU1jT56jcgwE=
-Message-ID: <6bffcb0e0707301048k6aaa9e40ve9f319f3d999713b@mail.gmail.com>
-Date: Mon, 30 Jul 2007 19:48:23 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "david@lang.hm" <david@lang.hm>
-Subject: Re: [1/3] 2.6.23-rc1: known regressions v3
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Andre Noll" <maan@systemlinux.org>, "Wim Van Sebroeck" <wim@iguana.be>,
-       "Borislav Petkov" <bbpetkov@yahoo.de>, "Bret Towe" <magnade@gmail.com>,
-       "Nick Piggin" <npiggin@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Jakub Jelinek" <jakub@redhat.com>,
-       "Eric Sesterhenn" <snakebyte@gmx.de>,
-       "Sid Boyce" <g3vbv@blueyonder.co.uk>
-In-Reply-To: <Pine.LNX.4.64.0707300942460.11330@asgard.lang.hm>
+	Mon, 30 Jul 2007 13:49:47 -0400
+X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 13:49:47 EDT
+X-PMWin-Version: 2.6.1, Antispam-Engine: 2.5.1, Antivirus-Engine: 2.47.0
+thread-index: AcfSz5AOGipZgqqwSw+aW51RnOwW6w==
+Content-Class: urn:content-classes:message
+Importance: normal
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2929
+Subject: Re: k8temp on 2.6.18
+From: "Jeff Garrett" <jgarrett@teamhpc.com>
+To: "Clemens Koller" <clemens.koller@anagramm.de>
+Cc: "shacky" <shacky83@gmail.com>, <linux-kernel@vger.kernel.org>
+In-Reply-To: <46AE1C9C.90907@anagramm.de>
+References: <7fedbc910707300638w4ac174edleb7a6eac2104cb85@mail.gmail.com> <46AE1C9C.90907@anagramm.de>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 30 Jul 2007 12:33:32 -0500
+Message-ID: <1185816812.5876.25.camel@thog>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46AE12EE.1070501@googlemail.com>
-	 <Pine.LNX.4.64.0707300942460.11330@asgard.lang.hm>
+X-OriginalArrivalTime: 30 Jul 2007 17:32:12.0000 (UTC) FILETIME=[900A3600:01C7D2CF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 30/07/07, david@lang.hm <david@lang.hm> wrote:
-> On Mon, 30 Jul 2007, Michal Piotrowski wrote:
->
-> > Subject         : /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
-> > References      : http://lkml.org/lkml/2007/7/22/239
-> > Last known good : ?
-> > Submitter       : Andre Noll <maan@systemlinux.org>
-> > Caused-By       : ?
-> > Handled-By      : Andi Kleen <ak@suse.de>
-> >                  Jakub Jelinek <jakub@redhat.com>
-> > Status          : problem is being debugged
->
-> I'm seeing this on 2.6.22.1 as well.
+On Mon, 2007-07-30 at 19:15 +0200, Clemens Koller wrote:
+> shacky schrieb:
+> > Hi.
+> > I'm using the 2.6.18 kernel (and I cannot upgrade it), but I need the
+> > "k8temp" module which is available only from the 2.6.21 version.
+> > Is there a way to use this module on my 2.6.18?
+> 
+> What is your problem that you cannot upgrade your kernel?
+> 
+> Backporting the k8temp is propably more difficult as installing
+> a newer kernel. Have a look at:
+> http://lists.debian.org/debian-amd64/2007/03/msg00005.html
+> 
+> Regards,
 
-Ok, so it is not a regression.
+Actually k8temp is pretty easy.  I think the only thing necessary is
+adding:
+#define PCI_DEVICE_ID_AMD_K8_NB_MISC 0x1103
 
-> the resulting kernel has seemed to
-> work for me so I was ignoreing it.
->
-> David Lang
->
+Then the module can be compiled out-of-tree as usual and should work.
 
-Regards,
-Michal
+-Jeff Garrett
+TeamHPC
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
