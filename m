@@ -1,105 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968409AbXG3VYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968652AbXG3VZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968409AbXG3VYp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 17:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966928AbXG3VYh
+	id S968652AbXG3VZG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 17:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968517AbXG3VYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 17:24:37 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:56349 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966768AbXG3VYg (ORCPT
+	Mon, 30 Jul 2007 17:24:53 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:13324 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968523AbXG3VYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 17:24:36 -0400
+	Mon, 30 Jul 2007 17:24:51 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=Qrs+0KYLQU9OaZQ0Ojtv4ZEB9/K5usMtSnaGnKJrTEq2xds/NA9Oqq5GhNcVbZRHXQteEobKnh+LbbUrLWrZasfYxY4B4eWvnketsrYq+IBewcvpnfKCkER/YCXgqJYpqqn7stdnSG+0NCaRRebuSHYE4PdrbZ85u9teRSM2ehY=
-Message-ID: <46AE570B.3050802@gmail.com>
-Date: Mon, 30 Jul 2007 17:24:27 -0400
-From: Kenneth Prugh <ken69267@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070729)
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=I0JxS3WVBy1YMZGIQ9Vbkt11PYzN+0p4nHtZcPQHsbrUTvzQGPMqQ/EM8qxYpCb7av3Xj78cjCppDomREv7BKtUJSF33jQFsGKiaq1pI6Ok0teTGVP7XSpqoGqdBcqs8D7Eaw/atC1W6J6AZQk6lxfLb9MNVhcInqNESRqQRuiA=
+Message-ID: <46AE560D.20801@googlemail.com>
+Date: Mon, 30 Jul 2007 23:20:13 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: John <darknessenvelops@gmail.com>, ck@vds.kolivas.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com> <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <46AE25F3.7020904@gmail.com> <20070730191029.GA29327@elte.hu>
-In-Reply-To: <20070730191029.GA29327@elte.hu>
-X-Enigmail-Version: 0.95.2
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig42DDD0AB56AFD57E100CAAB0"
+To: "A. Kalten" <akalten@comcast.net>
+CC: linux-kernel@vger.kernel.org, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: Can't unload uhci_hcd module with 2.6.22 -- also oops
+References: <20070730163642.2d97e31c.akalten@comcast.net>
+In-Reply-To: <20070730163642.2d97e31c.akalten@comcast.net>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig42DDD0AB56AFD57E100CAAB0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-Ingo Molnar wrote:
-> * Kenneth Prugh <ken69267@gmail.com> wrote:
->=20
->> Ingo Molnar wrote:
->>> <large snip>
->> Hello, I have a gaming rig and would love to help benchmark with my=20
->> copy of UT2004(E6600 Core2 and a 7950GTO card). Or if you have=20
->> anything else that would better serve as a benchmark I could grab it=20
->> and try.
->>
->> The only problem is I don't know what 2 kernels I should be using to=20
->> test the schedulers. I assume 2.6.23-rc1 for CFS, but what about SD?
->=20
-> .22-ck1 includes it, so that should be fine:
->=20
->  http://ussg.iu.edu/hypermail/linux/kernel/0707.1/0318.html
->=20
-> 	Ingo
->=20
-
-Alright, Just got done with some testing of UT2004 between 2.6.23-rc1
-CFS and 2.6.22-ck1 SD. This series of tests was run by spawning in a map
-while not moving at all and always facing the same direction, while
-slowing increasing the number of loops.
-
-CFS generally seemed a lot smoother as the load increased, while SD
-broke down to a highly unstable fps count that fluctuated massively
-around the third loop. Seems like I will stick to CFS for gaming now.
-
-Below you will find the results of my test with the average number of FPS=
-=2E
-
-		CFS		|		SD
-UT2004 + 0 loops | 200 FPS		UT2004 + 0 loops | 190 FPS
-UT2004 + 1 loops | 195 FPS		UT2004 + 1 loops | 190 FPS
-UT2004 + 2 loops | 190 FPS		UT2004 + 2 loops | 190 FPS
-UT2004 + 3 loops | 189 FPS		UT2004 + 3 loops | 136 FPS
-UT2004 + 4 loops | 150 FPS		UT2004 + 4 loops | 137 FPS
-UT2004 + 5 loops | 145 FPS		UT2004 + 5 loops | 136 FPS
-UT2004 + 6 loops | 145 FPS		UT2004 + 6 loops | 105 FPS
-UT2004 + 7 loops | 118 FPS		UT2004 + 7 loops | 104 FPS
-UT2004 + 8 loops | 97 FPS		UT2004 + 8 loops | 104 FPS
-UT2004 + 9 loops | 94 FPS		UT2004 + 9 loops | 89 FPS
-UT2004 + 10 loops | 92 FPS		UT2004 + 10 loops | 91 FPS
-
---=20
-Kenneth Prugh
-
-
---------------enig42DDD0AB56AFD57E100CAAB0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGrlcQ0PM4px2/kjgRAiYJAJ0c72onj6fVfGQXar2zeyQ/+SbZhQCdGE1I
-fcwlppIzcldrF8JtuyLr0J8=
-=U5zV
------END PGP SIGNATURE-----
-
---------------enig42DDD0AB56AFD57E100CAAB0--
+A. Kalten wrote:
+[ added usb peoples to CC ]
+> Hello,
+> 
+> To send a fax using an external usb modem, I do the following:
+> 
+> modprobe uhci-hcd
+> modprobe cdc-acm
+> mount -t usbfs none /proc/bus/usb
+> 
+> Then I send the fax.
+> 
+> However, when I attempt to unload the modules by reversing
+> the above steps, then uhci_hcd module will not unload:
+> 
+> [/]# rmmod uhci-hcd
+> ERROR: Removing 'uhci_hcd': Device or resource busy
+> 
+> Using lsof to list all open files gives the following:
+> 
+> ksuspend_  766 root  cwd       DIR                8,1     456          2 /
+> ksuspend_  766 root  rtd       DIR                8,1     456          2 /
+> ksuspend_  766 root  txt   unknown                                       /proc/766/exe
+> khubd      769 root  cwd       DIR                8,1     456          2 /
+> khubd      769 root  rtd       DIR                8,1     456          2 /
+> khubd      769 root  txt   unknown                                       /proc/769/exe
+> 
+> I cannot terminate these processes.
+> 
+> Also, the kernel log shows an oops:
+> 
+> kernel: usbcore: deregistering interface driver cdc_acm
+> kernel: uhci_hcd 0000:00:1d.3: remove, state 1
+> kernel: usb usb4: USB disconnect, address 1
+> kernel: uhci_hcd 0000:00:1d.3: USB bus 4 deregistered
+> kernel: ACPI: PCI interrupt for device 0000:00:1d.3 disabled
+> kernel: uhci_hcd 0000:00:1d.2: remove, state 1
+> kernel: usb usb3: USB disconnect, address 1
+> kernel: uhci_hcd 0000:00:1d.2: USB bus 3 deregistered
+> kernel: ACPI: PCI interrupt for device 0000:00:1d.2 disabled
+> kernel: uhci_hcd 0000:00:1d.1: remove, state 1
+> kernel: usb usb2: USB disconnect, address 1
+> kernel: usb 2-2: USB disconnect, address 2
+> kernel: Unable to handle kernel paging request at ffffffff88040440 RIP: 
+> kernel:  [sysfs_get_name+46/65] sysfs_get_name+0x2e/0x41
+> kernel: PGD 203067 PUD 205063 PMD 7a6b2067 PTE 0
+> kernel: Oops: 0000 [1] SMP 
+> kernel: CPU 1 
+> kernel: Modules linked in: uhci_hcd usbcore af_packet skge bitrev crc32
+> kernel: Pid: 1123, comm: rmmod Not tainted 2.6.22 #3
+> kernel: RIP: 0010:[sysfs_get_name+46/65]  [sysfs_get_name+46/65] sysfs_get_name+0x2e/0x41
+> kernel: RSP: 0018:ffff81006edd5ce0  EFLAGS: 00010246
+> kernel: RAX: ffffffff88040440 RBX: ffff81006fbb68e0 RCX: 0000000000000000
+> kernel: RDX: 0000000000000004 RSI: ffffffff80423b38 RDI: ffff81006fbb6b88
+> kernel: RBP: ffff81006fbb6b88 R08: 0000000000000000 R09: 8000000000000000
+> kernel: R10: 0000000000000080 R11: ffffffff80330606 R12: ffff81006fbb6b90
+> kernel: R13: ffff81006f414c78 R14: ffffffff80423b38 R15: ffffffff8803b940
+> kernel: FS:  00002b93765b76f0(0000) GS:ffff810002f4d140(0000) knlGS:0000000000000000
+> kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> kernel: CR2: ffffffff88040440 CR3: 000000006f5e5000 CR4: 00000000000006e0
+> kernel: Process rmmod (pid: 1123, threadinfo ffff81006edd4000, task ffff81006e48ae40)
+> kernel: Stack:  ffffffff8029b6dd ffff81006fbb0420 ffff81006fbb05a0 ffff8100784a9800
+> kernel:  ffff81006fbb0510 ffff8100784a9888 ffffffff80330986 ffff81006fbb0400
+> kernel:  ffff81006fbb0400 ffff81006fbb0420 ffffffff80330b95 ffff81006fbb0400
+> kernel: Call Trace:
+> kernel:  [sysfs_hash_and_remove+104/295] sysfs_hash_and_remove+0x68/0x127
+> kernel:  [device_remove_file+37/58] device_remove_file+0x25/0x3a
+> kernel:  [device_del+375/704] device_del+0x177/0x2c0
+> kernel:  [_end+129064639/2131730856] :usbcore:usb_disable_device+0x8c/0x106
+> kernel:  [_end+129049073/2131730856] :usbcore:usb_disconnect+0x98/0xee
+> kernel:  [_end+129049053/2131730856] :usbcore:usb_disconnect+0x84/0xee
+> kernel:  [_end+129057037/2131730856] :usbcore:usb_remove_hcd+0x85/0xe1
+> kernel:  [_end+129097874/2131730856] :usbcore:usb_hcd_pci_remove+0x1d/0x89
+> kernel:  [pci_device_remove+36/77] pci_device_remove+0x24/0x4d
+> kernel:  [__device_release_driver+130/184] __device_release_driver+0x82/0xb8
+> kernel:  [driver_detach+252/261] driver_detach+0xfc/0x105
+> kernel:  [bus_remove_driver+122/157] bus_remove_driver+0x7a/0x9d
+> kernel:  [pci_unregister_driver+16/129] pci_unregister_driver+0x10/0x81
+> kernel:  [_end+129186684/2131730856] :uhci_hcd:uhci_hcd_cleanup+0x10/0x2c
+> kernel:  [sys_delete_module+319/444] sys_delete_module+0x13f/0x1bc
+> kernel:  [__up_write+29/318] __up_write+0x1d/0x13e
+> kernel:  [system_call+126/131] system_call+0x7e/0x83
+> kernel: 
+> kernel: 
+> kernel: Code: 48 8b 00 c3 83 fa 20 74 f7 31 c0 0f 1f 00 c3 0f 0b eb fe 41 
+> kernel: RIP  [sysfs_get_name+46/65] sysfs_get_name+0x2e/0x41
+> kernel:  RSP <ffff81006edd5ce0>
+> kernel: CR2: ffffffff88040440
+> 
+> My system is Intel Pentium D dual core with Asus P5WD2 motherboard.
+> 
+> Please CC to my personal address as I am not subscribed to the list.
+> 
+> Andrew Kalten
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
