@@ -1,136 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939719AbXG3QVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939765AbXG3QWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939719AbXG3QVo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938601AbXG3QOz
+	id S939765AbXG3QWT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938679AbXG3QO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:14:55 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40582 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 12:14:57 -0400
+Received: from mail.suse.de ([195.135.220.2]:40570 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764281AbXG3QOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:14:08 -0400
-Message-Id: <20070730161324.160845468@weierstrass.suse.de>
+	id S1765234AbXG3QOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:14:07 -0400
+Message-Id: <20070730161325.272107303@weierstrass.suse.de>
 References: <20070730161323.100048969@weierstrass.suse.de>
 User-Agent: quilt/0.46-62.2
-Date: Mon, 30 Jul 2007 18:13:34 +0200
+Date: Mon, 30 Jul 2007 18:13:46 +0200
 From: Jan Blunck <jblunck@suse.de>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Hugh Dickins <hugh@veritas.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: [RFC 11/26] tmpfs white-out support
-Content-Disposition: inline; filename=um/tmpfs-whiteout.diff
+Subject: [RFC 23/26] union-mount: copyup on rename
+Content-Disposition: inline; filename=um/union-mount-coo-rename.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce white-out support to tmpfs.
+Add copyup renaming of regular files on union mounts. Directories are still
+lazyly copied with the help of user-space.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 ---
- include/linux/shmem_fs.h |    1 
- mm/shmem.c               |   54 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 55 insertions(+)
+ fs/namei.c |  133 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----
+ fs/union.c |    8 ++-
+ 2 files changed, 129 insertions(+), 12 deletions(-)
 
---- a/include/linux/shmem_fs.h
-+++ b/include/linux/shmem_fs.h
-@@ -33,6 +33,7 @@ struct shmem_sb_info {
- 	int policy;		    /* Default NUMA memory alloc policy */
- 	nodemask_t policy_nodes;    /* nodemask for preferred and bind */
- 	spinlock_t    stat_lock;
-+	struct inode *whiteout_inode;
- };
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1491,6 +1491,8 @@ static int fastcall do_path_lookup(int d
+ 		nd->mnt = mntget(fs->pwdmnt);
+ 		nd->dentry = dget(fs->pwd);
+ 		read_unlock(&fs->lock);
++		/* Force a union_relookup() */
++		nd->um_flags = LAST_LOWLEVEL;
+ 	} else {
+ 		struct dentry *dentry;
  
- static inline struct shmem_inode_info *SHMEM_I(struct inode *inode)
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1784,6 +1784,42 @@ static int shmem_create(struct inode *di
+@@ -3478,6 +3480,97 @@ int vfs_rename(struct inode *old_dir, st
+ 	return error;
  }
  
- /*
-+ * This is the whiteout support for tmpfs. It uses one singleton whiteout
-+ * inode per superblock thus it is very similar to shmem_link().
-+ */
-+static int shmem_whiteout(struct inode *dir, struct dentry *dentry)
++int vfs_rename_union(struct nameidata *oldnd, struct path *old,
++		     struct nameidata *newnd, struct path *new)
 +{
-+	struct shmem_sb_info *sbinfo = SHMEM_SB(dir->i_sb);
-+	struct inode *inode = sbinfo->whiteout_inode;
++	struct inode *old_dir = oldnd->dentry->d_inode;
++	struct inode *new_dir = newnd->dentry->d_inode;
++	struct qstr old_name;
++	char *name;
++	struct dentry *dentry;
++	int error;
 +
-+	if (!(dir->i_sb->s_flags & MS_WHITEOUT))
++	if (old->dentry->d_inode == new->dentry->d_inode)
++		return 0;
++
++	error = may_whiteout(old->dentry, 0);
++	if (error)
++		return error;
++	if (!old_dir->i_op || !old_dir->i_op->whiteout)
 +		return -EPERM;
 +
-+	/*
-+	 * No ordinary (disk based) filesystem counts whiteouts as inodes;
-+	 * but each new link needs a new dentry, pinning lowmem, and
-+	 * tmpfs dentries cannot be pruned until they are unlinked.
-+	 */
-+	if (sbinfo->max_inodes) {
-+		spin_lock(&sbinfo->stat_lock);
-+		if (!sbinfo->free_inodes) {
-+			spin_unlock(&sbinfo->stat_lock);
-+			return -ENOSPC;
-+		}
-+		sbinfo->free_inodes--;
-+		spin_unlock(&sbinfo->stat_lock);
++	if (!new->dentry->d_inode)
++		error = may_create(new_dir, new->dentry, NULL);
++	else
++		error = may_delete(new_dir, new->dentry, 0);
++	if (error)
++		return error;
++
++	DQUOT_INIT(old_dir);
++	DQUOT_INIT(new_dir);
++
++	error = security_inode_rename(old_dir, old->dentry,
++				      new_dir, new->dentry);
++	if (error)
++		return error;
++
++	error = -EBUSY;
++	if (d_mountpoint(old->dentry) || d_mountpoint(new->dentry))
++		return error;
++
++	error = -ENOMEM;
++	name = kmalloc(old->dentry->d_name.len, GFP_KERNEL);
++	if (!name)
++		return error;
++	strncpy(name, old->dentry->d_name.name, old->dentry->d_name.len);
++	name[old->dentry->d_name.len] = 0;
++	old_name.len = old->dentry->d_name.len;
++	old_name.hash = old->dentry->d_name.hash;
++	old_name.name = name;
++
++	/* possibly delete the existing new file */
++	if ((newnd->dentry == new->dentry->d_parent) && new->dentry->d_inode) {
++		/* FIXME: inode may be truncated while we hold a lock */
++		error = vfs_unlink(new_dir, new->dentry);
++		if (error)
++			goto freename;
++
++		dentry = __lookup_hash_kern(&new->dentry->d_name,
++					    newnd->dentry, newnd);
++		if (IS_ERR(dentry))
++			goto freename;
++
++		dput(new->dentry);
++		new->dentry = dentry;
 +	}
 +
-+	dir->i_size += BOGO_DIRENT_SIZE;
-+	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
-+	inc_nlink(inode);
-+	atomic_inc(&inode->i_count);	/* New dentry reference */
-+	dget(dentry);		/* Extra pinning count for the created dentry */
-+	d_instantiate(dentry, inode);
-+	return 0;
++	/* copyup to the new file */
++	error = __union_copyup(old, newnd, new);
++	if (error)
++		goto freename;
++
++	/* whiteout the old file */
++	dentry = __lookup_hash_kern(&old_name, oldnd->dentry, oldnd);
++	error = PTR_ERR(dentry);
++	if (IS_ERR(dentry))
++		goto freename;
++	error = vfs_whiteout(old_dir, dentry);
++	dput(dentry);
++
++	/* FIXME: This is acutally unlink() && create() ... */
++/*
++	if (!error) {
++		const char *new_name = old_dentry->d_name.name;
++		fsnotify_move(old_dir, new_dir, old_name.name, new_name, 0,
++			      new_dentry->d_inode, old_dentry->d_inode);
++	}
++*/
++freename:
++	kfree(old_name.name);
++	return error;
 +}
 +
-+/*
-  * Link a file..
-  */
- static int shmem_link(struct dentry *old_dentry, struct inode *dir, struct dentry *dentry)
-@@ -2231,6 +2267,9 @@ out:
- 
- static void shmem_put_super(struct super_block *sb)
++
+ static int do_rename(int olddfd, const char *oldname,
+ 			int newdfd, const char *newname)
  {
-+	struct shmem_sb_info *sbinfo = sb->s_fs_info;
-+
-+	iput(sbinfo->whiteout_inode);
- 	kfree(sb->s_fs_info);
- 	sb->s_fs_info = NULL;
- }
-@@ -2305,6 +2344,19 @@ static int shmem_fill_super(struct super
- 	if (!root)
- 		goto failed_iput;
- 	sb->s_root = root;
-+
-+#ifdef CONFIG_TMPFS
-+	if (!(sb->s_flags & MS_NOUSER)) {
-+		inode = shmem_get_inode(sb, S_IRUGO | S_IWUGO | S_IFWHT, 0);
-+		if (!inode) {
-+			dput(root);
-+			goto failed;
-+		}
-+		sbinfo->whiteout_inode = inode;
-+		sb->s_flags |= MS_WHITEOUT;
+@@ -3495,10 +3588,7 @@ static int do_rename(int olddfd, const c
+ 	if (error)
+ 		goto exit1;
+ 
+-	error = -EXDEV;
+-	if (oldnd.mnt != newnd.mnt)
+-		goto exit2;
+-
++lock:
+ 	old_dir = oldnd.dentry;
+ 	error = -EBUSY;
+ 	if (oldnd.last_type != LAST_NORM)
+@@ -3536,15 +3626,40 @@ static int do_rename(int olddfd, const c
+ 	error = -ENOTEMPTY;
+ 	if (new.dentry == trap)
+ 		goto exit5;
+-	/* renaming on unions is done by the user-space */
++	/* renaming of directories on unions is done by the user-space */
+ 	error = -EXDEV;
+-	if (is_unionized(oldnd.dentry, oldnd.mnt))
++	if (is_unionized(oldnd.dentry, oldnd.mnt) &&
++	    S_ISDIR(old.dentry->d_inode->i_mode))
+ 		goto exit5;
+-	if (is_unionized(newnd.dentry, newnd.mnt))
++	/* renameing of other files on unions is done by copyup */
++	if ((is_unionized(oldnd.dentry, oldnd.mnt) &&
++	     (oldnd.um_flags & LAST_LOWLEVEL)) ||
++	    (is_unionized(newnd.dentry, newnd.mnt) &&
++	     (newnd.um_flags & LAST_LOWLEVEL))) {
++		dput_path(&new, &newnd);
++		dput_path(&old, &oldnd);
++		unlock_rename(new_dir, old_dir);
++		error = union_relookup_topmost(&oldnd,
++					       oldnd.flags & ~LOOKUP_PARENT);
++		if (error)
++			goto exit2;
++		error = union_relookup_topmost(&newnd,
++					       newnd.flags & ~LOOKUP_PARENT);
++		if (error)
++			goto exit2;
++		goto lock;
 +	}
-+#endif
 +
- 	return 0;
++	error = -EXDEV;
++	if (oldnd.mnt != newnd.mnt)
+ 		goto exit5;
  
- failed_iput:
-@@ -2410,6 +2462,7 @@ static const struct inode_operations shm
- 	.rmdir		= shmem_rmdir,
- 	.mknod		= shmem_mknod,
- 	.rename		= shmem_rename,
-+	.whiteout       = shmem_whiteout,
- #endif
- #ifdef CONFIG_TMPFS_POSIX_ACL
- 	.setattr	= shmem_notify_change,
-@@ -2464,6 +2517,7 @@ static struct file_system_type tmpfs_fs_
- 	.name		= "tmpfs",
- 	.get_sb		= shmem_get_sb,
- 	.kill_sb	= kill_litter_super,
-+	.fs_flags	= FS_WHT,
- };
- static struct vfsmount *shm_mnt;
+-	error = vfs_rename(old_dir->d_inode, old.dentry,
+-			   new_dir->d_inode, new.dentry);
++	if (is_unionized(oldnd.dentry, oldnd.mnt) &&
++	    (old.dentry->d_parent != oldnd.dentry))
++		error = vfs_rename_union(&oldnd, &old, &newnd, &new);
++	else
++		error = vfs_rename(old_dir->d_inode, old.dentry,
++				   new_dir->d_inode, new.dentry);
+ exit5:
+ 	dput_path(&new, &newnd);
+ exit4:
+--- a/fs/union.c
++++ b/fs/union.c
+@@ -1030,9 +1030,11 @@ int __union_copyup(struct path *old, str
+ 		goto out;
+ 	}
  
+-	dput_path(new, new_nd);
+-	new->dentry = dentry;
+-	new->mnt = new_nd->mnt;
++	if (new->dentry != dentry) {
++		dput_path(new, new_nd);
++		new->dentry = dentry;
++		new->mnt = new_nd->mnt;
++	}
+ out:
+ 	if (new->dentry != dentry)
+ 		dput(dentry);
 
 -- 
 
