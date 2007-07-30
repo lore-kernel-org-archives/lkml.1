@@ -1,90 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939447AbXG3Xxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939658AbXG3Xyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939447AbXG3Xxj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763689AbXG3Xxb
+	id S939658AbXG3Xyz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763101AbXG3Xys
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:53:31 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:55412 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755451AbXG3Xxa (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:53:30 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Kylene Hall <kjhall@us.ibm.com>,
-       tpm@selhorst.net, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1-mm1 - seems OK on Dell Latitude D820, except for tpm_tis
-In-Reply-To: Your message of "Fri, 27 Jul 2007 16:43:13 MDT."
-             <200707271643.14028.bjorn.helgaas@hp.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <5208.1185508832@turing-police.cc.vt.edu> <23912.1185542889@turing-police.cc.vt.edu>
-            <200707271643.14028.bjorn.helgaas@hp.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1185839599_32560P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 30 Jul 2007 19:53:19 -0400
-Message-ID: <5287.1185839599@turing-police.cc.vt.edu>
+	Mon, 30 Jul 2007 19:54:48 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:54562 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755451AbXG3Xyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 19:54:47 -0400
+Date: Tue, 31 Jul 2007 01:54:02 +0200 (MEST)
+Message-Id: <200707302354.l6UNs222023051@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: buytenh@wantstofly.org, mingo@redhat.com, tglx@linutronix.de
+Subject: Re: handle_futex_death() infinite loop on ARM (fwd)
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1185839599_32560P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 4 Jul 2007 12:23:18 +0200, Lennert Buytenhek wrote:
+>If you're also running into glibc's tst-robust1 test suite test
+>locking up your ARM machine, you're probably running into the fact
+>that asm-arm/futex.h includes asm-generic/futex.h, and
+>asm-generic/futex.h defines futex_atomic_cmpxchg_inatomic() to
+>return -ENOSYS.  This causes handle_futex_death() to loop forever.
 
-On Fri, 27 Jul 2007 16:43:13 MDT, Bjorn Helgaas said:
+Has there been any progress on fixing this yet?
 
-> I don't know why tpm_tis_init() is messing around trying different
-> IRQs between 3 and 16.  That looks suspiciously x86-dependent.
-> 
-> Maybe if you don't have PNP (though I doubt TPMs exist on any
-> pre-PNPBIOS machines) the "check-IRQ" loop would be necessary.
+I've studied the relevant futex code (handle_futex_death()
+and asm-${arch}/futex.h), and it seems that many archs
+are seriously broken now, not just arm. Any arch that wires
+up the set_robust_list() syscall while implementing its
+asm-${arch}/futex.h by including asm-generic/futex.h allows
+its kernels to be hung by unprivileged user-space code.
 
-Well, it's a 6 month old Dell Latitude, and PNP is most certainly there,
-as a number of other things get configured using it as well.
+My concern is arm, but it seems alpha, avr32, h8300, m68k,
+m68knommu, and sh64 are also affected by this bug.
 
-> But you're using the PNP probe, and PNP should just tell you what
-> IRQ the device is configured for (and whether the IRQ can be
-> shared -- see 8250_pnp.c for an example).
-> 
-> The BIOS should have configured the TPM IRQ, and if we go and
-> mess with that IRQ setting without going through the PNP interface,
-> e.g., the ACPI _SRS method, we're liable to mess something up.  The
-> TPM is often behind a few bridges, and if the bridge has any IRQ
-> routing configuration, only the BIOS knows how to keep that in
-> sync with the TPM IRQ configuration.
-> 
-> > Just for the record, I see this in /sys:
-> > 
-> > % cat /sys/bus/pnp/devices/00:0e/id
-> > BCM0102
-> > PNP0c31
-> 
-> What's in /sys/bus/pnp/devices/00:0e/resources?
-
-% cat /sys/bus/pnp/devices/00:0e/resources
-state = active
-io 0x378-0x37f
-io 0x778-0x77b
-irq 7
-dma 1
-
-IRQ 7.  That would certainly explain why I was seeing massive timeouts
-when the driver chose to use IRQ 3. ;)
-
-I'll test-drive your patch from Monday's e-mail when I get home tonight.
-
-
---==_Exmh_1185839599_32560P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGrnnvcC3lWbTT17ARAh7ZAJ4hR4E3vbZQ8tCbJRawcPgM5ca7BgCgog3y
-uRu7loOuWMoS7G/nwcaOaWE=
-=mFNQ
------END PGP SIGNATURE-----
-
---==_Exmh_1185839599_32560P--
+/Mikael
