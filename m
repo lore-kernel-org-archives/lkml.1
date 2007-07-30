@@ -1,147 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967706AbXG3SKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967674AbXG3SLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967706AbXG3SKB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 14:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966949AbXG3SJk
+	id S967674AbXG3SLV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 14:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966654AbXG3SLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 14:09:40 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:37485 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966811AbXG3SJi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 14:09:38 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: 2.6.23-rc1-mm1 - seems OK on Dell Latitude D820, except for tpm_tis
-Date: Mon, 30 Jul 2007 12:09:33 -0600
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, Kylene Hall <kjhall@us.ibm.com>,
-       tpm@selhorst.net, linux-kernel@vger.kernel.org
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <23912.1185542889@turing-police.cc.vt.edu> <200707271643.14028.bjorn.helgaas@hp.com>
-In-Reply-To: <200707271643.14028.bjorn.helgaas@hp.com>
+	Mon, 30 Jul 2007 14:11:11 -0400
+Received: from smtp101.plus.mail.mud.yahoo.com ([68.142.206.234]:23614 "HELO
+	smtp101.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S966696AbXG3SLJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 14:11:09 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 14:11:09 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=IY7J/H8pPvlpWUhwUFrS1I7KRoSx6e+DN/RBxxNDzTDHH0D9aZqDXSAK7Jie3/O4rRi99KO4vPkZ9nBlTNGxOErdZEPFgJ82fyG4TfrwrdoEAkTXP1gweaECwVovHbKxODV6gi9jHCwRvMQmiSBBeZnyBStECynmwM1ShF/VEmk=  ;
+X-YMail-OSG: mKU6vOIVM1nX_SnOFt5F8Un2o38ZrM0ENMYR5Ttvm9sOeMREh60ATxytIIzSEbAa0pOQi80F9sB4q0pRG9ppX_2czTW76Lb.siy5DlOSOG59vB4Uw2Q-
+Date: Mon, 30 Jul 2007 20:03:24 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andre Noll <maan@systemlinux.org>,
+       Wim Van Sebroeck <wim@iguana.be>, Bret Towe <magnade@gmail.com>,
+       Nick Piggin <npiggin@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jakub Jelinek <jakub@redhat.com>, Eric Sesterhenn <snakebyte@gmx.de>,
+       Sid Boyce <g3vbv@blueyonder.co.uk>
+Subject: Re: [1/3] 2.6.23-rc1: known regressions v3
+Message-ID: <20070730180324.GA5163@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <46AE12EE.1070501@googlemail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200707301209.33961.bjorn.helgaas@hp.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46AE12EE.1070501@googlemail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 July 2007 04:43:13 pm Bjorn Helgaas wrote:
-> On Friday 27 July 2007 07:28:09 am Valdis.Kletnieks@vt.edu wrote:
-> > Looks like the problematic code is in tpm_tis.c tpm_tis_init() near here:
-> > 
-> >                 for (i = 3; i < 16 && chip->vendor.irq == 0; i++) {
-> >                         iowrite8(i, chip->vendor.iobase +
-> >                                     TPM_INT_VECTOR(chip->vendor.locality));
-> >                         if (request_irq
-> >                             (i, tis_int_probe, IRQF_SHARED,
-> >                              chip->vendor.miscdev.name, chip) != 0) {
-> >                                 dev_info(chip->dev,
-> >                                          "Unable to request irq: %d for probe\n"
-> > ,           
-> >                                          i);
-> >                                 continue;
-> >                         }
-> > 
-> > This seems to be misbehaving differently for the two different DEBUG_SHIRQ
-> > cases.
-> > 
-> > With DEBUG_SHIRQ=n, it starts at IRQ3, gets to at least 8 (where it complains
-> > it can't request it for probing), and possibly all the way to 15, without ever
-> > actually selecting and assigning an IRQ (to refresh memories, in that range
-> > /proc/interrupts only lists:
-> > 
-> >   8:          0          0   IO-APIC-edge      rtc
-> >   9:          3          0   IO-APIC-fasteoi   acpi
-> >  12:         94          0   IO-APIC-edge      i8042
-> >  14:     148166          0   IO-APIC-edge      libata
-> >  15:         94          0   IO-APIC-edge      libata
-> > 
-> > So there's certainly IRQ's available.  No idea why it doesn't choose one. But
-> > since it never chose one, it never gets into the "wait for the IRQ" protected
-> > by 'if (chip->vendor.irq)' at the end of tpm_tis_send.
-> > 
-> > With DEBUG_SHIRQ=y, It starts at IRQ3, and assigns it (which seems a good thing).
-> > Unfortunately, this then hits the timeouts in tpm_tis_send.
-> > 
-> > Anybody got an idea what *should* be happening here?
-> 
-> I don't know why tpm_tis_init() is messing around trying different
-> IRQs between 3 and 16.  That looks suspiciously x86-dependent.
-> 
-> Maybe if you don't have PNP (though I doubt TPMs exist on any
-> pre-PNPBIOS machines) the "check-IRQ" loop would be necessary.
-> 
-> But you're using the PNP probe, and PNP should just tell you what
-> IRQ the device is configured for (and whether the IRQ can be
-> shared -- see 8250_pnp.c for an example).
+On Mon, Jul 30, 2007 at 06:33:50PM +0200, Michal Piotrowski wrote:
+Hi,
 
-I think tpm_tis should do something like the patch below to discover
-its interrupt.  If ACPI tells us the device's IRQ, we should just use
-it rather than blindly trying a few possibilities.  So the patch below
-might make it work, because it should skip the problematic code you
-identified above.
+> Hi all,
+> 
+> Here is a list of some known regressions in 2.6.23-rc1.
+> 
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+> 
+> List of Aces
+> 
+> Name                    Regressions fixed since 21-Jun-2007
+> Adrian Bunk                            6
+> Andi Kleen                             4
+> Andrew Morton                          4
+> Linus Torvalds                         4
+> Al Viro                                3
+> Jens Axboe                             3
+> Tejun Heo                              3
+> David Woodhouse                        2
+> Hugh Dickins                           2
+> 
+> 
+> 
+> Unclassified
+> 
+> Subject         : 2.6.23-rc1-git3 init failure
+> References      : http://lkml.org/lkml/2007/7/26/467
+> Last known good : 2.6.23-rc1-git1
+> Submitter       : Sid Boyce <g3vbv@blueyonder.co.uk>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
+> 
+> Subject         : Time Problems with 2.6.23-rc1-gf695baf2
+> References      : http://lkml.org/lkml/2007/7/23/486
+> Last known good : ?
+> Submitter       : Eric Sesterhenn <snakebyte@gmx.de>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : problem is being debugged
+> 
+> Subject         : 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear mappings
+> References      : http://lkml.org/lkml/2007/7/24/301
+> Last known good : ?
+> Submitter       : Bret Towe <magnade@gmail.com>
+> Caused-By       : Nick Piggin <npiggin@suse.de>
+>                   commit d00806b183152af6d24f46f0c33f14162ca1262a
+> Handled-By      : ?
+> Status          : unknown
+> 
+> Subject         : no setup signature found...
+> References      : http://lkml.org/lkml/2007/7/24/168
+> Last known good : ?
 
-But there could still be an issue with DEBUG_SHIRQ and the IRQ probe
-loop.  Even if we used the attached patch, we'd probably still want
-the IRQ probe to work when you specify tpm_tis.force=1.
+you can put here 2.6.22
 
-Index: w/drivers/char/tpm/tpm_tis.c
-===================================================================
---- w.orig/drivers/char/tpm/tpm_tis.c	2007-07-30 11:29:31.000000000 -0600
-+++ w/drivers/char/tpm/tpm_tis.c	2007-07-30 11:35:20.000000000 -0600
-@@ -433,17 +433,12 @@
- MODULE_PARM_DESC(interrupts, "Enable interrupts");
- 
- static int tpm_tis_init(struct device *dev, resource_size_t start,
--			resource_size_t len)
-+			resource_size_t len, unsigned int irq)
- {
- 	u32 vendor, intfcaps, intmask;
- 	int rc, i;
- 	struct tpm_chip *chip;
- 
--	if (!start)
--		start = TIS_MEM_BASE;
--	if (!len)
--		len = TIS_MEM_LEN;
--
- 	if (!(chip = tpm_register_hardware(dev, &tpm_tis)))
- 		return -ENODEV;
- 
-@@ -510,7 +505,9 @@
- 	iowrite32(intmask,
- 		  chip->vendor.iobase +
- 		  TPM_INT_ENABLE(chip->vendor.locality));
--	if (interrupts) {
-+	if (interrupts)
-+		chip->vendor.irq = irq;
-+	if (interrupts && !chip->vendor.irq) {
- 		chip->vendor.irq =
- 		    ioread8(chip->vendor.iobase +
- 			    TPM_INT_VECTOR(chip->vendor.locality));
-@@ -595,10 +592,13 @@
- 				      const struct pnp_device_id *pnp_id)
- {
- 	resource_size_t start, len;
-+	unsigned int irq;
-+
- 	start = pnp_mem_start(pnp_dev, 0);
- 	len = pnp_mem_len(pnp_dev, 0);
-+	irq = pnp_irq(pnp_dev, 0);
- 
--	return tpm_tis_init(&pnp_dev->dev, start, len);
-+	return tpm_tis_init(&pnp_dev->dev, start, len, irq);
- }
- 
- static int tpm_tis_pnp_suspend(struct pnp_dev *dev, pm_message_t msg)
-@@ -658,7 +658,7 @@
- 			return rc;
- 		if (IS_ERR(pdev=platform_device_register_simple("tpm_tis", -1, NULL, 0)))
- 			return PTR_ERR(pdev);
--		if((rc=tpm_tis_init(&pdev->dev, 0, 0)) != 0) {
-+		if((rc=tpm_tis_init(&pdev->dev, TIS_MEM_BASE, TIS_MEM_LEN, 0)) != 0) {
- 			platform_device_unregister(pdev);
- 			driver_unregister(&tis_drv);
- 		}
+> Submitter       : Borislav Petkov <bbpetkov@yahoo.de>
+> Caused-By       : H. Peter Anvin <hpa@zytor.com>
+>                   commit 4fd06960f120e02e9abc802a09f9511c400042a5
+> Handled-By      : H. Peter Anvin <hpa@zytor.com>
+> Status          : problem is being debugged
+> 
+> Subject         : /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
+> References      : http://lkml.org/lkml/2007/7/22/239
+> Last known good : ?
+> Submitter       : Andre Noll <maan@systemlinux.org>
+> Caused-By       : ?
+> Handled-By      : Andi Kleen <ak@suse.de>
+>                   Jakub Jelinek <jakub@redhat.com>
+> Status          : problem is being debugged
+> 
+> 
+> 
+> Regards,
+> Michal
+> 
+> --
+> LOG
+> http://www.stardust.webpages.pl/log/
+
+-- 
+Regards/Gruﬂ,
+    Boris.
