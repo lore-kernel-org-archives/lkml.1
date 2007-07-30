@@ -1,70 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969433AbXG3WM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969553AbXG3WMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969433AbXG3WM3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969272AbXG3WKi
+	id S969553AbXG3WMv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969299AbXG3WKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:10:38 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53790 "EHLO mx2.suse.de"
+	Mon, 30 Jul 2007 18:10:43 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53795 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S969249AbXG3WKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:10:37 -0400
+	id S969251AbXG3WKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 18:10:42 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Randy Dunlap <randy.dunlap@oracle.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 05/11] kernel-doc fixes for PCI and drivers/base/
-Date: Mon, 30 Jul 2007 15:09:27 -0700
-Message-Id: <11858333892232-git-send-email-gregkh@suse.de>
+Subject: [PATCH 06/11] Fix Doc/sysfs-rules typos
+Date: Mon, 30 Jul 2007 15:09:28 -0700
+Message-Id: <11858333931362-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <11858333853388-git-send-email-gregkh@suse.de>
+In-Reply-To: <11858333892232-git-send-email-gregkh@suse.de>
 References: <20070730220829.GB5263@kroah.com>
  <1185833373286-git-send-email-gregkh@suse.de>
  <11858333772499-git-send-email-gregkh@suse.de>
  <11858333823900-git-send-email-gregkh@suse.de>
  <11858333853388-git-send-email-gregkh@suse.de>
+ <11858333892232-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Fix undocumented function parameters in PCI and drivers/base.
-
-Warning(linux-2.6.23-rc1//drivers/pci/pci.c:1526): No description found for parameter 'rq'
-Warning(linux-2.6.23-rc1//drivers/base/firmware_class.c:245): No description found for parameter 'bin_attr'
+Fix typos only (spelling, grammar, duplicate words, etc.).
 
 Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Kay Sievers <kay.sievers@vrfy.org
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/firmware_class.c |    1 +
- drivers/pci/pci.c             |    2 +-
- 2 files changed, 2 insertions(+), 1 deletions(-)
+ Documentation/sysfs-rules.txt |   72 ++++++++++++++++++++---------------------
+ 1 files changed, 35 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index 53f0ee6..b24efd4 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -232,6 +232,7 @@ fw_realloc_buffer(struct firmware_priv *fw_priv, int min_size)
- /**
-  * firmware_data_write - write method for firmware
-  * @kobj: kobject for the device
-+ * @bin_attr: bin_attr structure
-  * @buffer: buffer being written
-  * @offset: buffer offset for write in total data store area
-  * @count: buffer size
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index fba319d..1ee9cd9 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1517,7 +1517,7 @@ EXPORT_SYMBOL(pcie_get_readrq);
- /**
-  * pcie_set_readrq - set PCI Express maximum memory read request
-  * @dev: PCI device to query
-- * @count: maximum memory read count in bytes
-+ * @rq: maximum memory read count in bytes
-  *    valid values are 128, 256, 512, 1024, 2048, 4096
-  *
-  * If possible sets maximum read byte count
+diff --git a/Documentation/sysfs-rules.txt b/Documentation/sysfs-rules.txt
+index 42861bb..80ef562 100644
+--- a/Documentation/sysfs-rules.txt
++++ b/Documentation/sysfs-rules.txt
+@@ -1,19 +1,18 @@
+ Rules on how to access information in the Linux kernel sysfs
+ 
+-The kernel exported sysfs exports internal kernel implementation-details
++The kernel-exported sysfs exports internal kernel implementation details
+ and depends on internal kernel structures and layout. It is agreed upon
+ by the kernel developers that the Linux kernel does not provide a stable
+ internal API. As sysfs is a direct export of kernel internal
+-structures, the sysfs interface can not provide a stable interface eighter,
++structures, the sysfs interface cannot provide a stable interface either;
+ it may always change along with internal kernel changes.
+ 
+ To minimize the risk of breaking users of sysfs, which are in most cases
+ low-level userspace applications, with a new kernel release, the users
+-of sysfs must follow some rules to use an as abstract-as-possible way to
++of sysfs must follow some rules to use an as-abstract-as-possible way to
+ access this filesystem. The current udev and HAL programs already
+ implement this and users are encouraged to plug, if possible, into the
+-abstractions these programs provide instead of accessing sysfs
+-directly.
++abstractions these programs provide instead of accessing sysfs directly.
+ 
+ But if you really do want or need to access sysfs directly, please follow
+ the following rules and then your programs should work with future
+@@ -25,22 +24,22 @@ versions of the sysfs interface.
+   implementation details in its own API. Therefore it is not better than
+   reading directories and opening the files yourself.
+   Also, it is not actively maintained, in the sense of reflecting the
+-  current kernel-development. The goal of providing a stable interface
+-  to sysfs has failed, it causes more problems, than it solves. It
++  current kernel development. The goal of providing a stable interface
++  to sysfs has failed; it causes more problems than it solves. It
+   violates many of the rules in this document.
+ 
+ - sysfs is always at /sys
+   Parsing /proc/mounts is a waste of time. Other mount points are a
+   system configuration bug you should not try to solve. For test cases,
+   possibly support a SYSFS_PATH environment variable to overwrite the
+-  applications behavior, but never try to search for sysfs. Never try
++  application's behavior, but never try to search for sysfs. Never try
+   to mount it, if you are not an early boot script.
+ 
+ - devices are only "devices"
+   There is no such thing like class-, bus-, physical devices,
+   interfaces, and such that you can rely on in userspace. Everything is
+   just simply a "device". Class-, bus-, physical, ... types are just
+-  kernel implementation details, which should not be expected by
++  kernel implementation details which should not be expected by
+   applications that look for devices in sysfs.
+ 
+   The properties of a device are:
+@@ -48,11 +47,11 @@ versions of the sysfs interface.
+       - identical to the DEVPATH value in the event sent from the kernel
+         at device creation and removal
+       - the unique key to the device at that point in time
+-      - the kernels path to the device-directory without the leading
++      - the kernel's path to the device directory without the leading
+         /sys, and always starting with with a slash
+       - all elements of a devpath must be real directories. Symlinks
+         pointing to /sys/devices must always be resolved to their real
+-        target, and the target path must be used to access the device.
++        target and the target path must be used to access the device.
+         That way the devpath to the device matches the devpath of the
+         kernel used at event time.
+       - using or exposing symlink values as elements in a devpath string
+@@ -73,17 +72,17 @@ versions of the sysfs interface.
+         link
+       - it is retrieved by reading the "driver"-link and using only the
+         last element of the target path
+-      - devices which do not have "driver"-link, just do not have a
+-        driver; copying the driver value in a child device context, is a
++      - devices which do not have "driver"-link just do not have a
++        driver; copying the driver value in a child device context is a
+         bug in the application
+ 
+     o attributes
+-      - the files in the device directory or files below a subdirectories
++      - the files in the device directory or files below subdirectories
+         of the same device directory
+       - accessing attributes reached by a symlink pointing to another device,
+         like the "device"-link, is a bug in the application
+ 
+-  Everything else is just a kernel driver-core implementation detail,
++  Everything else is just a kernel driver-core implementation detail
+   that should not be assumed to be stable across kernel releases.
+ 
+ - Properties of parent devices never belong into a child device.
+@@ -91,25 +90,25 @@ versions of the sysfs interface.
+   context properties. If the device 'eth0' or 'sda' does not have a
+   "driver"-link, then this device does not have a driver. Its value is empty.
+   Never copy any property of the parent-device into a child-device. Parent
+-  device-properties may change dynamically without any notice to the
++  device properties may change dynamically without any notice to the
+   child device.
+ 
+-- Hierarchy in a single device-tree
++- Hierarchy in a single device tree
+   There is only one valid place in sysfs where hierarchy can be examined
+   and this is below: /sys/devices.
+-  It is planned, that all device directories will end up in the tree
++  It is planned that all device directories will end up in the tree
+   below this directory.
+ 
+ - Classification by subsystem
+   There are currently three places for classification of devices:
+   /sys/block, /sys/class and /sys/bus. It is planned that these will
+-  not contain any device-directories themselves, but only flat lists of
++  not contain any device directories themselves, but only flat lists of
+   symlinks pointing to the unified /sys/devices tree.
+   All three places have completely different rules on how to access
+   device information. It is planned to merge all three
+-  classification-directories into one place at /sys/subsystem,
+-  following the layout of the bus-directories. All buses and
+-  classes, including the converted block-subsystem, will show up
++  classification directories into one place at /sys/subsystem,
++  following the layout of the bus directories. All buses and
++  classes, including the converted block subsystem, will show up
+   there.
+   The devices belonging to a subsystem will create a symlink in the
+   "devices" directory at /sys/subsystem/<name>/devices.
+@@ -121,38 +120,38 @@ versions of the sysfs interface.
+   subsystem name.
+ 
+   Assuming /sys/class/<subsystem> and /sys/bus/<subsystem>, or
+-  /sys/block and /sys/class/block are not interchangeable, is a bug in
++  /sys/block and /sys/class/block are not interchangeable is a bug in
+   the application.
+ 
+ - Block
+-  The converted block-subsystem at /sys/class/block, or
++  The converted block subsystem at /sys/class/block or
+   /sys/subsystem/block will contain the links for disks and partitions
+-  at the same level, never in a hierarchy. Assuming the block-subsytem to
+-  contain only disks and not partition-devices in the same flat list is
++  at the same level, never in a hierarchy. Assuming the block subsytem to
++  contain only disks and not partition devices in the same flat list is
+   a bug in the application.
+ 
+ - "device"-link and <subsystem>:<kernel name>-links
+   Never depend on the "device"-link. The "device"-link is a workaround
+-  for the old layout, where class-devices are not created in
+-  /sys/devices/ like the bus-devices. If the link-resolving of a
+-  device-directory does not end in /sys/devices/, you can use the
++  for the old layout, where class devices are not created in
++  /sys/devices/ like the bus devices. If the link-resolving of a
++  device directory does not end in /sys/devices/, you can use the
+   "device"-link to find the parent devices in /sys/devices/. That is the
+-  single valid use of the "device"-link, it must never appear in any
++  single valid use of the "device"-link; it must never appear in any
+   path as an element. Assuming the existence of the "device"-link for
+   a device in /sys/devices/ is a bug in the application.
+   Accessing /sys/class/net/eth0/device is a bug in the application.
+ 
+   Never depend on the class-specific links back to the /sys/class
+   directory.  These links are also a workaround for the design mistake
+-  that class-devices are not created in /sys/devices. If a device
++  that class devices are not created in /sys/devices. If a device
+   directory does not contain directories for child devices, these links
+   may be used to find the child devices in /sys/class. That is the single
+-  valid use of these links, they must never appear in any path as an
++  valid use of these links; they must never appear in any path as an
+   element. Assuming the existence of these links for devices which are
+-  real child device directories in the /sys/devices tree, is a bug in
++  real child device directories in the /sys/devices tree is a bug in
+   the application.
+ 
+-  It is planned to remove all these links when when all class-device
++  It is planned to remove all these links when all class device
+   directories live in /sys/devices.
+ 
+ - Position of devices along device chain can change.
+@@ -161,6 +160,5 @@ versions of the sysfs interface.
+   the chain. You must always request the parent device you are looking for
+   by its subsystem value. You need to walk up the chain until you find
+   the device that matches the expected subsystem. Depending on a specific
+-  position of a parent device, or exposing relative paths, using "../" to
+-  access the chain of parents, is a bug in the application.
+-
++  position of a parent device or exposing relative paths using "../" to
++  access the chain of parents is a bug in the application.
 -- 
 1.5.2.2
 
