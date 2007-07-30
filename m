@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939068AbXG3XjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937884AbXG3XrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939068AbXG3XjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761858AbXG3XjG
+	id S937884AbXG3XrO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759839AbXG3XrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:39:06 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:25876 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761636AbXG3XjF (ORCPT
+	Mon, 30 Jul 2007 19:47:01 -0400
+Received: from smtp-out2.blueyonder.co.uk ([195.188.213.5]:54776 "EHLO
+	smtp-out2.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757722AbXG3XrA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:39:05 -0400
-In-Reply-To: <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com>
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org> <20070727071547.GA25084@joejin-pc.cn.oracle.com> <46A9E6F9.20603@oracle.com> <20070728034719.GA24448@joejin-pc.cn.oracle.com> <20070730135316.2ce21b28.akpm@linux-foundation.org> <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Jin <joe.jin@oracle.com>,
-       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
-       wen.gang.wang@oracle.com
+	Mon, 30 Jul 2007 19:47:00 -0400
+Message-ID: <46AE786F.3010208@blueyonder.co.uk>
+Date: Tue, 31 Jul 2007 00:46:55 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-git3 init failure
+References: <46ABF0FA.8060301@blueyonder.co.uk> <6bffcb0e0707300725i3bb8b677i75aeec6fed66bee2@mail.gmail.com>
+In-Reply-To: <6bffcb0e0707300725i3bb8b677i75aeec6fed66bee2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] add check do_direct_IO() return val
-Date: Mon, 30 Jul 2007 16:38:48 -0700
-To: Badari Pulavarty <pbadari@us.ibm.com>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Jul 30, 2007, at 2:58 PM, Badari Pulavarty wrote:
-
-> On Mon, 2007-07-30 at 14:45 -0700, Zach Brown wrote:
->>> I am also taking a look at it right now.
->>
->> Are we having a race to write a little test app that reproduces the
->> problem? :)
+Michal Piotrowski wrote:
+> Hi Sid,
 >
-> Nope. Feel free to write the test case.
+> On 29/07/07, Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
+>   
+>>  > Boot failure on x86_64 (64X2), says it can't find init, specifically
+>>  > /init. 2.6.23-rc1-git1 boots and runs successfully. I haven't tried
+>>  > -git2. I shall reboot on 2.6.23-rc1-git3 tomorrow and record the full
+>>  > message.
+>>  > Strings from vmlinux in both the above:-
+>>  >
+>>  > Kernel alive
+>>  > /dev/console
+>>  > <4>Warning: unable to open an initial console.
+>>  > <4>Failed to execute %s
+>>  > <4>Failed to execute %s.  Attempting defaults...
+>>  > /sbin/init
+>>  > /etc/init
+>>  > /bin/init
+>>  > /bin/sh
+>>  > No init found.  Try passing init= option to kernel.
+>>  >
+>>  > Tried option "init=/sbin/init" and got the same failure.
+>>  > Regards
+>>  > Sid.
+>>
+>> I see the sam problem with 2.6.23-rc1-git5.
+>>
+>> Freeing unused kernel memory: 236k freed
+>> failed to execute /init
+>> kernel panic - not syncing: No init found. Try passing init= option to
+>> kernel
+>>
+>> Copying /sbin/init to / results in the same error.
+>> openSUSE 10.3Alpha6plus
+>> # rpm -qf /sbin/init
+>> sysvinit-2.86-90
+>>     
+>
+> Please read chapter 4.1 and 4.5
+> http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
+>
+> It should be very simple
+>
+> git-bisect start
+> git-bisect bad
+> git-bisect good 0de085bb474f64e4fdb2f1ff3268590792648c7b
+>
+> and so on and so forth
+>
+>   
+>> Regards
+>> Sid.
+>>     
+>
+> Regards,
+> Michal
+>
+>   
+Looks like a job for the weekend.
+Regards
+Sid.
 
-Well, I'm having a heck of a time getting this to fail.  It looks  
-possible, though.  Joe, were you guys able to narrow it down to a  
-reproducible test case?  Do you have any oops output messages from  
-the crashes?
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-It looks like it takes a very particular set of circumstances to  
-actually crash after relying on an uninitialized map_bh.  (see the  
-blkfactor, buffer_new(), and this_chunk_blocks tests in dio_zero_block 
-()).
 
-> I am just looking at the code
-> to see what needs to be done.
-
-It looks like the unconditional dio_cleanup() and dio_zero_block()  
-calls outside the nseg loop are relying on state which might not have  
-been built up.  _zero_block() tests map_bh's flags without them being  
-set.  _cleanup could, in some crazy world, get confused if we managed  
-to get here with a 0 nr_segs because dio->head and ->tail wouldn't be  
-initialized.
-
-So we could initialize some more fields at the start of  
-direct_io_worker for the benefit of these cleanup calls.  Or we could  
-conditionally call them based on some other indicator of progress.   
-Neither really thrills me.
-
-And I don't have a test case to verify changes with.  Meh.
-
-How do you feel about initializing the dio with kzalloc() and only  
-initializing the fields that we rely on being non-zero, and  
-commenting the hell out of it?
-
-- z
