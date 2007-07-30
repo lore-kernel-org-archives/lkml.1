@@ -1,73 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbXG3OxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbXG3Oxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757701AbXG3OxV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 10:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXG3OxN
+	id S1760102AbXG3Oxx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 10:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbXG3Oxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 10:53:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52410 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752880AbXG3OxM convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jul 2007 10:53:44 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:20864 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752525AbXG3Oxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 10:53:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] APM support depends on CONFIG_PM_SLEEP
-Date: Mon, 30 Jul 2007 17:01:45 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus <torvalds@linux-foundation.org>
-References: <20070730201237.67f1a64a.sfr@canb.auug.org.au>
-In-Reply-To: <20070730201237.67f1a64a.sfr@canb.auug.org.au>
+	Mon, 30 Jul 2007 10:53:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=X1WichmMXy6iZek2m4Bpbs0qtLGC0SuJvF84dCkF72vmf+V1qSufkXm0L7YNmwVMmTVAHQZ/XT688X3nnL0CwfGliVuaLIZgO8WSIgpNqyYPzpSc5C7CG4dKE3xdyZLh9U7HRhdPZj0HMj62KCruxByCsr0X7ftyJv1OYxjw+7M=
+Message-ID: <e1d5030b0707300753m400e5196w99a4c05430c36572@mail.gmail.com>
+Date: Mon, 30 Jul 2007 20:23:42 +0530
+From: "Midhun A" <midhunagni@gmail.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: Testing of CPRM on SD Card
+Cc: "Sriram, Kannan" <ksriram@ti.com>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-mtd@lists.infradead.org
+In-Reply-To: <20070730135723.4e5338b4@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707301701.45880.rjw@sisk.pl>
+References: <e1d5030b0707280108v236cc522m454c58e1044f1996@mail.gmail.com>
+	 <0A50DBE80DD6674E94F7269DC964A7B6440EDA@dbde01.ent.ti.com>
+	 <20070730135723.4e5338b4@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 30 July 2007 12:12, Stephen Rothwell wrote:
-> Commit 296699de6bdc717189a331ab6bbe90e05c94db06 broke building APM
-> support if CONFIG_PM_SLEEP is not set.
+Hey All,
 
-Sorry for the breakage, my fault.
+    Thanks a lot for the replies. I have the development keys. But the
+algorithm and some intellectual property needs to be licenced from the
+4C entity guys to implement it. As of now I just want to test the CPRM
+functionality. So licensing the algo for a prototype testing is a huge
+cost.
 
-> Reported by Toralf Förster <toralf.foerster@gmx.de>
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/i386/Kconfig |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --git a/arch/i386/Kconfig b/arch/i386/Kconfig
-> index abb582b..7eefa7d 100644
-> --- a/arch/i386/Kconfig
-> +++ b/arch/i386/Kconfig
-> @@ -938,7 +938,7 @@ source "drivers/acpi/Kconfig"
->  
->  menuconfig APM
->  	tristate "APM (Advanced Power Management) BIOS support"
-> -	depends on PM && !X86_VISWS
-> +	depends on PM && !X86_VISWS && PM_SLEEP
+   That is why I was looking for an already implemented solution -
+hardware/software - so that I can just test. If it does not suite our
+needs, then I have just paid for a chip only and not for a whole
+license.
 
-PM_SLEEP depends on PM, so I'd do
+  Seems like there is no other way out than shelling out money for the
+license. :(
 
-+	depends on PM_SLEEP && !X86_VISWS
-
->  	---help---
->  	  APM is a BIOS specification for saving power using several different
->  	  techniques. This is mostly useful for battery powered laptops with
-
-Greetings,
-Rafael
+Thanks anyways,
+Midhun.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
+On 7/30/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Mon, 30 Jul 2007 11:20:58 +0530
+> "Sriram, Kannan" <ksriram@ti.com> wrote:
+>
+> >
+> > Midhun,
+> >
+> >  There is no open-source implementation of CPRM (SD-Audio/ SD-Bind
+> > standards). So first of all, you need to license keys from 4C (device
+> > keys, media keys etc) and do your own implementation.
+>
+> Also remember that if you do your own implementation in the kernel you
+> will be required to publish the source code under the GPL and that will
+> not be permitted with the CPRM licensing. Thus you will need to do all
+> the work in user space.
+>
+>
