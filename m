@@ -1,86 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbXG3HlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbXG3Hzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbXG3HlW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 03:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbXG3HlM
+	id S1758069AbXG3Hzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 03:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754802AbXG3Hzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 03:41:12 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59017 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753546AbXG3HlL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 03:41:11 -0400
-Message-ID: <46AD95E1.6020100@sgi.com>
-Date: Mon, 30 Jul 2007 09:40:17 +0200
-From: Jes Sorensen <jes@sgi.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070719)
+	Mon, 30 Jul 2007 03:55:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32807 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754653AbXG3Hzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 03:55:45 -0400
+Date: Mon, 30 Jul 2007 09:55:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: George Sescher <gesacs@gmail.com>
+Cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       CK Mailinglist <ck@vds.kolivas.org>
+Subject: Re: Linus 2.6.23-rc1
+Message-ID: <20070730075528.GA1806@elte.hu>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185588279.1654.1.camel@localhost> <20070729150436.GA6598@elte.hu> <a12e280d0707291604s618c0b14lc8572b2f48cd4ca1@mail.gmail.com> <20070730064423.GA30505@elte.hu> <a12e280d0707300006l52a695bcy9912ee2689d6f636@mail.gmail.com>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Tony Luck <tony.luck@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-ia64@vger.kernel.org, linux-altix@sgi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ia64: Remove a few duplicate includes
-References: <200707300028.42496.jesper.juhl@gmail.com>
-In-Reply-To: <200707300028.42496.jesper.juhl@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a12e280d0707300006l52a695bcy9912ee2689d6f636@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> (sorry about the duplicate mail, forgot a recipient first time)
-> 
-> Hi,
-> This patch removes a few duplicate includes from arch/ia64/
-> Please consider merging :-)
-> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-sn2/Altix portion is fine with me, so.
+* George Sescher <gesacs@gmail.com> wrote:
 
-Acked-by: Jes Sorensen <jes@sgi.com>
+> > > On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > i'd encourage you to do it - in fact i already tried to prod Peter
+> > > > Williams into doing exactly that ;) The more reality checks a
+> > > > scheduler has, the better. [ Btw., after the obvious initial merging
+> > > > trouble it should be much easier to keep SD maintained against
+> > > > future upstream kernels due to the policy modularity that CFS
+> > > > introduces. (and which policy-modularity should also help reduce the
+> > > > size and complexity of the SD patch.) ]
+> 
+> > * George Sescher <gesacs@gmail.com> wrote:
+> > > <chuckle>
+> > >
+> > > You're advocating plugsched now?
+> 
+> On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
+> > hm, the way you posited this question implies that you see an
+> > inconsistency in my position or that it surprised you - i cannot explain
+> > the '<chuckle>' in any other way :) Which bit do you see as inconsistent
+> > and/or which bit surprised you and why?
+> 
+> The idea is not good enough for mainline and has no place in mainline 
+> yet you say it's very important to maintain it... but out of mainline. 
+> Place the responsibility of keeping mainline's performance in check 
+> "reality check as you called it" on to someone who is forced to 
+> develop out of mainline? I have zero interest one way or the other 
+> myself, but how can one not chuckle?
 
-> ---
-> 
->  arch/ia64/ia32/sys_ia32.c   |    1 -
->  arch/ia64/kernel/setup.c    |    1 -
->  arch/ia64/sn/kernel/setup.c |    1 -
->  3 files changed, 0 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/ia64/ia32/sys_ia32.c b/arch/ia64/ia32/sys_ia32.c
-> index af10462..a3405b3 100644
-> --- a/arch/ia64/ia32/sys_ia32.c
-> +++ b/arch/ia64/ia32/sys_ia32.c
-> @@ -34,7 +34,6 @@
->  #include <linux/uio.h>
->  #include <linux/nfs_fs.h>
->  #include <linux/quota.h>
-> -#include <linux/syscalls.h>
->  #include <linux/sunrpc/svc.h>
->  #include <linux/nfsd/nfsd.h>
->  #include <linux/nfsd/cache.h>
-> diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
-> index 7cecd29..cd9a37a 100644
-> --- a/arch/ia64/kernel/setup.c
-> +++ b/arch/ia64/kernel/setup.c
-> @@ -60,7 +60,6 @@
->  #include <asm/smp.h>
->  #include <asm/system.h>
->  #include <asm/unistd.h>
-> -#include <asm/system.h>
->  
->  #if defined(CONFIG_SMP) && (IA64_CPU_SIZE > PAGE_SIZE)
->  # error "struct cpuinfo_ia64 too big!"
-> diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
-> index 684b1c9..1f38a3a 100644
-> --- a/arch/ia64/sn/kernel/setup.c
-> +++ b/arch/ia64/sn/kernel/setup.c
-> @@ -25,7 +25,6 @@
->  #include <linux/interrupt.h>
->  #include <linux/acpi.h>
->  #include <linux/compiler.h>
-> -#include <linux/sched.h>
->  #include <linux/root_dev.h>
->  #include <linux/nodemask.h>
->  #include <linux/pm.h>
-> 
+What you should realize is that _all_ future code that goes into Linux 
+is 'forced' to be developed 'out of mainline' today. So what you seem to 
+characterise via negative terms like 'forced', and what seems to make 
+you 'chuckle' (not meant as a compliment either i gather ;), is in fact 
+the _very engine_ that keeps Linux running.
 
+And there's no exception: Linus himself creates an "out of mainline" 
+fork of Linux every time he develops something new. "Forks" are _the_ 
+main mechanism to develop Linux, and it always was. External code is the 
+"reality check" of mainline code. It is the 'external pool of genes' 
+that is _competing_ against in-tree code.
+
+Sometimes the decision to include new bits of code is easy and positive 
+(so it is a "fork" only very briefly and nobody actually ever has enough 
+time to think of that code as a "fork"), sometimes it takes some time 
+and the decision is positive, sometimes the decision is immediately 
+negative and the code is rejected, sometimes it's negative after some 
+time. Often code goes through several cycles of rejection before it is 
+merged. The larger the code, the more rejections it will see - and that 
+is natural. Sometimes, very rarely, out of the hundreds of thousands of 
+external changes that went into Linux so far, code seems to be staying 
+'in limbo' forever - such as the kernel debugger. So _every_ color of 
+the spectrum is present: immediate integration, immediate rejection, 
+long-term integration, long-term rejection, ping-pong of rejections 
+until integration, and even decisions that seem to take a near 
+'eternity' in very rare cases.
+
+If a biologist took a look at these gene pool dynamic parameters alone, 
+without knowing a squat about kernel technology, the likely conclusion 
+would be that this is "a healthy, diverse gene pool that is being 
+affected by many many external factors. A true expert at survival, that 
+critter!" ;-)
+
+For example, i'm at the moment maintaining in excess of 400 patches "out 
+of mainline", many of which will never see the "daylight of upstream". 
+Many of those are longer-term "reality checks" that could replace 
+in-tree code in the future or are in the process of replacing in-tree 
+code as we speak. Some are "reality checks" that _failed_ to replace 
+in-tree code but i'm still maintaining them because i find them useful. 
+If the kernel code that these patches modify happens to be modularized 
+then it is sometimes helpful to my out-of-tree patches (and sometimes 
+it's a pain) - but in any case, i dont "require" nor "suggest" upstream 
+maintainers to modularize, just to make my "out of tree" life easier. 
+Are they still useful to Linux in general? I sure hope so.
+
+It was always like this in Linux: modularization is mainly dictated by 
+the needs of the in-tree code - and that's very much on purpose, and 
+always was, to increase the advantages of including good external genes 
+in the kernel gene pool.
+
+	Ingo
