@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXG3OFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933889AbXG3OGG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933317AbXG3OFV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 10:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761226AbXG3OFB
+	id S933889AbXG3OGG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 10:06:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761529AbXG3OFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 10:05:01 -0400
-Received: from wa-out-1112.google.com ([209.85.146.178]:45180 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759941AbXG3OFA (ORCPT
+	Mon, 30 Jul 2007 10:05:54 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:54114 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761226AbXG3OFx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 10:05:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o3g1BsYaaiElE4Mbnx+hZ44YWylwgc2KTJRyKesfLtSBxnXwq9CdaYfwmQo8kj+cE9nyM4qEUykaRkzVqbvCJxLdLHwtRUpKotewcelizCFR37iT0eEVkeFw0OdMrVcyzZw/82aETCYPtuVK/CSP+Rksq4jA9so+B3UA/syGvX8=
-Message-ID: <9a8748490707300704r238e2a1fn7dcc1f597ed7d5db@mail.gmail.com>
-Date: Mon, 30 Jul 2007 16:04:58 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jiri Slaby" <jirislaby@gmail.com>
-Subject: Re: [PATCH][hid] Fix a NULL pointer dereference when we fail to allocate memory
-Cc: "Jiri Kosina" <jkosina@suse.cz>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Michael Haboustak" <mike-@cinci.rr.com>, "Andreas Gal" <gal@uci.edu>,
-       "Vojtech Pavlik" <vojtech@suse.cz>,
-       "Greg Kroah-Hartman" <greg@kroah.com>,
-       linux-input@atrey.karlin.mff.cuni.cz
-In-Reply-To: <46A2EF75.70700@gmail.com>
+	Mon, 30 Jul 2007 10:05:53 -0400
+Message-ID: <46ADF02F.7010800@zytor.com>
+Date: Mon, 30 Jul 2007 07:05:35 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: bbpetkov@yahoo.de
+CC: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: 2.6.23-rc1: no setup signature found...
+References: <20070726150854.GA7034@xguan-laptop> <46A8BB6C.6050903@zytor.com> <20070726163053.GA4570@gollum.tnic> <46A8E3F9.5070809@zytor.com> <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com> <20070729085059.GA10758@gollum.tnic> <20070729092402.GA2272@xguan-laptop> <20070729103706.GA16780@gollum.tnic> <46AC9B28.6060906@zytor.com> <20070729191528.GA5166@gollum.tnic>
+In-Reply-To: <20070729191528.GA5166@gollum.tnic>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707220006.20359.jesper.juhl@gmail.com>
-	 <46A2EF75.70700@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 22/07/07, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Jesper Juhl napsal(a):
-> >  drivers/hid/usbhid/hid-core.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> >
-> > diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-> > index b2baeae..3ff7468 100644
-> > --- a/drivers/hid/usbhid/hid-core.c
-> > +++ b/drivers/hid/usbhid/hid-core.c
-> > @@ -743,7 +743,7 @@ static struct hid_device *usb_hid_configure(struct usb_interface *intf)
-> >       hid->quirks = quirks;
-> >
-> >       if (!(usbhid = kzalloc(sizeof(struct usbhid_device), GFP_KERNEL)))
->
-> Out of curiosity, where is this freed?
->
-Sorry, I didn't notice your email until now.  It's not freed anywhere
-:-(   But I see that Jiri Kosina just queued a fix for that, so now
-all is good :-)
+Borislav Petkov wrote:
+> Breakpoint 4, 0x00040200 in ?? ()
+> 1: x/i ($cs << 4) + $eip  0x40300:      lea    (%si),%dx
+> (gdb) p/x $ds
+> $1 = 0x18
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+
+This isn't the setup code, it's doing something else.
+
+Could you try this again, but when you get to this point, if the 
+instruction displayed isn't a "jmp" instruction, and $ds doesn't have 
+the right value, enter "c" and see if you hit the proper break later.
+
+Sorry,
+
+	-hpa
