@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967362AbXG3Rx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967438AbXG3RyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967362AbXG3Rx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965929AbXG3RxR
+	id S967438AbXG3RyU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966110AbXG3RyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:53:17 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46546
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965837AbXG3RxQ (ORCPT
+	Mon, 30 Jul 2007 13:54:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60891 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966087AbXG3RyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:53:16 -0400
-Date: Mon, 30 Jul 2007 10:51:42 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andre Noll <maan@systemlinux.org>,
-       Wim Van Sebroeck <wim@iguana.be>, Borislav Petkov <bbpetkov@yahoo.de>,
-       Bret Towe <magnade@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jakub Jelinek <jakub@redhat.com>,
-       Eric Sesterhenn <snakebyte@gmx.de>, Andi Kleen <ak@suse.de>,
-       Sid Boyce <g3vbv@blueyonder.co.uk>
-Subject: Re: [1/3] 2.6.23-rc1: known regressions v3
-In-Reply-To: <6bffcb0e0707301048k6aaa9e40ve9f319f3d999713b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707301050330.12232@asgard.lang.hm>
-References: <46AE12EE.1070501@googlemail.com>  <Pine.LNX.4.64.0707300942460.11330@asgard.lang.hm>
- <6bffcb0e0707301048k6aaa9e40ve9f319f3d999713b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 30 Jul 2007 13:54:03 -0400
+Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matthew Hawkins <darthmdh@gmail.com>
+Cc: Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
+       ck@vds.kolivas.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>
+	 <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
+	 <20070729204716.GB1578@elte.hu>
+	 <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
+	 <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>
+	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
+	 <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 30 Jul 2007 10:51:17 -0700
+Message-Id: <1185817877.2739.2.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007, Michal Piotrowski wrote:
+On Tue, 2007-07-31 at 02:25 +1000, Matthew Hawkins wrote:
+> On 7/31/07, Jacob Braun <jwbraun@gmail.com> wrote:
+> > On 7/30/07, kriko <kristjan.ugrin@gmail.com> wrote:
+> > > I would try the new cfs how it performs, but it seems that nvidia drivers
+> > > doesn't compile successfully under 2.6.23-rc1.
+> > > http://files.myopera.com/kriko/files/nvidia-installer.log
+> > >
+> > > If someone has the solution, please share.
+> >
+> > There is a patch for the nvidia drivers here:
+> > http://bugs.gentoo.org/attachment.cgi?id=125959
+> 
+> The ATI drivers (current 8.39.4) were broken by
+> commit e21ea246bce5bb93dd822de420172ec280aed492
+> Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-> On 30/07/07, david@lang.hm <david@lang.hm> wrote:
->> On Mon, 30 Jul 2007, Michal Piotrowski wrote:
->>
->>> Subject         : /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
->>> References      : http://lkml.org/lkml/2007/7/22/239
->>> Last known good : ?
->>> Submitter       : Andre Noll <maan@systemlinux.org>
->>> Caused-By       : ?
->>> Handled-By      : Andi Kleen <ak@suse.de>
->>>                  Jakub Jelinek <jakub@redhat.com>
->>> Status          : problem is being debugged
->>
->> I'm seeing this on 2.6.22.1 as well.
->
-> Ok, so it is not a regression.
 
-not from 2.6.22.1, it may still be a problem worth tracking. I don't 
-remember seeing it prior to 2.6.22.1
+some fo these binary drivers do really really bad stuff (esp the AMD
+ones are infamous for that) and it's no surprise they might throw of a
+new scheduler. In fact, that's a bonus, some of those hacks are
+workarounds for older (often 2.4) scheduler corner cases and should just
+be removed from the driver to get better performance. Holding back linux
+for such hacky junk in binary drivers would be the absolute worst thing
+to do; even for people who insist on using these drivers over the open
+source ones, since the next rev of these drivers can now use the new
+scheduler and actually be faster with all the workarounds removed.
 
-David Lang
+Very likely the best thing to do is to contact the supplier of the
+driver (AMD or Nvidia) and ask them to fix it.....
 
->> the resulting kernel has seemed to
->> work for me so I was ignoreing it.
->>
->> David Lang
->>
->
-> Regards,
-> Michal
->
->
+
+
