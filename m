@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968822AbXG3V4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967264AbXG3V5Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968822AbXG3V4f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 17:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938298AbXG3V42
+	id S967264AbXG3V5Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 17:57:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939307AbXG3V46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 17:56:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49599 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932308AbXG3V41 (ORCPT
+	Mon, 30 Jul 2007 17:56:58 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:45740 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938298AbXG3V45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 17:56:27 -0400
-Date: Tue, 31 Jul 2007 03:38:37 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Adrian Bunk <bunk@stusta.de>
-cc: ian <spyro@f2s.com>, Andrew Morton <akpm@linux-foundation.org>,
-       john@dnsworld.co.uk, linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
-Subject: Re: [2.6 patch] Remove the arm26 port
-In-Reply-To: <20070730114914.GN16817@stusta.de>
-Message-ID: <alpine.LFD.0.999.0707310333050.17287@enigma.security.iitk.ac.in>
-References: <20070707201208.GJ3492@stusta.de> <20070729115040.GD30976@stusta.de>
- <1185749926.2305.16.camel@wirenth> <20070730114914.GN16817@stusta.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 30 Jul 2007 17:56:57 -0400
+Subject: Re: [PATCH] add check do_direct_IO() return val
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: Zach Brown <zach.brown@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Jin <joe.jin@oracle.com>,
+       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
+       wen.gang.wang@oracle.com
+In-Reply-To: <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com>
+References: <20070726090400.GA18640@joejin-pc.cn.oracle.com>
+	 <20070726221307.3d7b3446.akpm@linux-foundation.org>
+	 <20070727071547.GA25084@joejin-pc.cn.oracle.com>
+	 <46A9E6F9.20603@oracle.com>
+	 <20070728034719.GA24448@joejin-pc.cn.oracle.com>
+	 <20070730135316.2ce21b28.akpm@linux-foundation.org>
+	 <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com>
+	 <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com>
+Content-Type: text/plain
+Date: Mon, 30 Jul 2007 14:58:58 -0700
+Message-Id: <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 30 Jul 2007, Adrian Bunk wrote:
-
-> The arm26 port has been in a state where it was far from even compiling 
-> for quite some time.
+On Mon, 2007-07-30 at 14:45 -0700, Zach Brown wrote:
+> > I am also taking a look at it right now.
 > 
-> Ian Molton agreed with the removal.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> Due to its size, the patch is attached compressed.
+> Are we having a race to write a little test app that reproduces the  
+> problem? :)
 
-You could've submitted a git patch. Would've been smaller and easier
-to apply, I think.
+Nope. Feel free to write the test case. I am just looking at the code
+to see what needs to be done.
 
->  248 files changed, 9 insertions(+), 35817 deletions(-)
+Thanks,
+Badari
 
-Amazing :-)
-
-[ Do you realize you were ~36 times more productive than
-  one of Ken Thompson's most productive days, just now? ]
