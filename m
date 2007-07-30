@@ -1,72 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966339AbXG3DQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966463AbXG3DR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966339AbXG3DQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 23:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbXG3DQL
+	id S966463AbXG3DR1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 23:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965804AbXG3DRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 23:16:11 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45018 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965778AbXG3DQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 23:16:10 -0400
-Date: Mon, 30 Jul 2007 05:16:08 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Joachim Deguara <joachim.deguara@amd.com>,
-       Eric Whitney <eric.whitney@hp.com>
-Subject: Re: [patch][rfc] 2.6.23-rc1 mm: NUMA replicated pagecache
-Message-ID: <20070730031608.GB17367@wotan.suse.de>
-References: <20070727084252.GA9347@wotan.suse.de> <1185546647.5069.17.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185546647.5069.17.camel@localhost>
-User-Agent: Mutt/1.5.9i
+	Sun, 29 Jul 2007 23:17:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52580 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759914AbXG3DRR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Jul 2007 23:17:17 -0400
+Date: Mon, 30 Jul 2007 08:59:35 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+cc: Kai.Makisara@kolumbus.fi, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 3/5] Use mutex instead of semaphore in the SCSI Tape
+ driver
+In-Reply-To: <20070729213815.GF3432@traven>
+Message-ID: <alpine.LFD.0.999.0707300858140.10861@enigma.security.iitk.ac.in>
+References: <20070729212909.GC3432@traven> <20070729213815.GF3432@traven>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 10:30:47AM -0400, Lee Schermerhorn wrote:
-> On Fri, 2007-07-27 at 10:42 +0200, Nick Piggin wrote:
-> > Hi,
-> > 
-> > Just got a bit of time to take another look at the replicated pagecache
-> > patch. The nopage vs invalidate race and clear_page_dirty_for_io fixes
-> > gives me more confidence in the locking now; the new ->fault API makes
-> > MAP_SHARED write faults much more efficient; and a few bugs were found
-> > and fixed.
-> > 
-> > More stats were added: *repl* in /proc/vmstat. Survives some kbuilding
-> > tests...
-> > 
-> > --
-> > 
-> > Page-based NUMA pagecache replication.
-> <snip really big patch!>
+
+
+On Sun, 29 Jul 2007, Matthias Kaehlcke wrote:
+
+> The SCSI Tape driver uses a semaphore as mutex. Use the mutex API
+> instead of the (binary) semaphore.
 > 
-> Hi, Nick.
-> 
-> Glad to see you're back on this.  It's been on my list, but delayed by
-> other patch streams...
+> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-Yeah, thought I should keep it alive :) Patch is against 2.6.23-rc1.
-
- 
-> As I mentioned to you in prior mail, I want to try to integrate this
-> atop my "auto/lazy migration" patches, such that when a task moves to a
-> new node, we remove just that task's pte ref's to page cache pages
-> [along with all refs to anon pages, as I do now] so that the task will
-> take a fault on next touch and either use an existing local copy or
-> replicate the page at that time.  Unfortunately, that's in the queue
-> behind the memoryless node patches and my stalled shared policy patches,
-> among other things :-(.
-
-That's OK. It will likely be a long process to get any of this in...
-As you know, replicated currently needs some of your automigration
-infrastructure in order to get ptes pointing to the right places
-after a task migration. I'd like to try some experiments with them on
-a larger system, once you get time to update your patchset...
-
-Thanks,
-Nick
+Reviewed-by: Satyam Sharma <satyam@infradead.org>
