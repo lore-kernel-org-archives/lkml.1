@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968203AbXG3UK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968447AbXG3ULa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968203AbXG3UK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763973AbXG3UKL
+	id S968447AbXG3ULa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966935AbXG3ULU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:10:11 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:48789 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763715AbXG3UKK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:10:10 -0400
-Date: Mon, 30 Jul 2007 13:13:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-       Michael Buesch <mb@bu3sch.de>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] Use mutex instead of semaphore in the Host AP
- driver
-Message-Id: <20070730131302.82622b06.randy.dunlap@oracle.com>
-In-Reply-To: <alpine.LFD.0.999.0707310142190.17287@enigma.security.iitk.ac.in>
-References: <20070729212909.GC3432@traven>
-	<20070729213434.GD3432@traven>
-	<200707300006.42397.mb@bu3sch.de>
-	<alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in>
-	<alpine.LFD.0.999.0707300904360.10861@enigma.security.iitk.ac.in>
-	<20070730054004.GI3432@traven>
-	<alpine.LFD.0.999.0707301247100.12730@enigma.security.iitk.ac.in>
-	<20070730145005.GB6586@tuxdriver.com>
-	<alpine.LFD.0.999.0707310142190.17287@enigma.security.iitk.ac.in>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 30 Jul 2007 16:11:20 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55146 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763973AbXG3ULS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:11:18 -0400
+Subject: Re: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on
+	software raid 5
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       xfs@oss.sgi.com, linux-raid@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
+References: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
+Content-Type: text/plain
+Date: Mon, 30 Jul 2007 15:11:06 -0500
+Message-Id: <1185826266.9448.5.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 01:44:37 +0530 (IST) Satyam Sharma wrote:
+On Mon, 2007-07-30 at 10:29 -0400, Justin Piszcz wrote:
 
-> 
-> 
-> On Mon, 30 Jul 2007, John W. Linville wrote:
-> 
-> > On Mon, Jul 30, 2007 at 12:50:31PM +0530, Satyam Sharma wrote:
-> > > On Mon, 30 Jul 2007, Matthias Kaehlcke wrote:
-> > > 
-> > > > [...]
-> > > > The Host AP driver uses a semaphore as mutex. Use the mutex API
-> > > > instead of the (binary) semaphore.
-> > > > 
-> > > > Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-> > > 
-> > > Reviewed-by: Satyam Sharma <satyam@infradead.org>
-> > 
-> > Is that the same as Acked-by?  Or do you disagree with the patch?
-> > 
-> > Just checkin'...
-> 
-> Well, I'm not the maintainer, so didn't think correct to give an
-> "Acked-by". "Reviewed-by" generally means I read the patch, and think
-> it is correct. Probably could save time for others ...
+> Overall JFS seems the fastest but reviewing the mailing list for JFS it 
+> seems like there a lot of problems, especially when people who use JFS > 1 
+> year, their speed goes to 5 MiB/s over time and the defragfs tool has been 
+> removed(?) from the source/Makefile and on Google it says not to use it 
+> due to corruption.
 
-You should use Acked-by.  See Documentation/SubmittingPatches.  :)
+The defragfs tool was an unported holdover from OS/2, which is why it
+was removed.  There never was a working Linux version.  I have some
+ideas to improve jfs allocation to avoid fragmentation problems, but jfs
+isn't my full-time job anymore, so I can't promise anything.  I'm not
+sure about the corruption claims.  I'd like to hear some specifics on
+that.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Anyway, for enterprise use, I couldn't recommend jfs, since there is no
+full-time maintainer.
+
+Thanks,
+Shaggy
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
