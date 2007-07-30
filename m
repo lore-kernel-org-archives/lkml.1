@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968585AbXG3UMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968669AbXG3UMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968585AbXG3UMT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764057AbXG3UMF
+	id S968669AbXG3UMc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967953AbXG3UMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:12:05 -0400
-Received: from aug.linbit.com ([212.69.162.22]:60596 "EHLO mail.linbit.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965988AbXG3UMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:12:03 -0400
-X-Greylist: delayed 2179 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 16:12:03 EDT
-Date: Mon, 30 Jul 2007 21:35:33 +0200
-From: Lars Ellenberg <lars.ellenberg@linbit.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Jan Engelhardt <jengelh@computergmbh.de>, Jens Axboe <axboe@kernel.dk>,
-       Andrew Morton <akpm@osdl.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [DRIVER SUBMISSION] DRBD wants to go mainline
-Message-ID: <20070730192954.GA7363@localhost>
-Mail-Followup-To: Lars Ellenberg <lars.ellenberg@linbit.com>,
-	Pavel Machek <pavel@ucw.cz>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Jens Axboe <axboe@kernel.dk>, Andrew Morton <akpm@osdl.org>,
-	lkml <linux-kernel@vger.kernel.org>
-References: <20070721203819.GA10706@mail.linbit.com> <Pine.LNX.4.64.0707212316530.21737@fbirervta.pbzchgretzou.qr> <20070721224300.GB18326@mail.linbit.com> <20070727184617.GF11895@ucw.cz>
+	Mon, 30 Jul 2007 16:12:09 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:54170 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967863AbXG3UMH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:12:07 -0400
+Date: Mon, 30 Jul 2007 22:11:43 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Bernhard Kaindl <bk@suse.de>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz,
+       Alois =?utf-8?Q?Ne=C5=A1por?= <alois.nespor@gmail.com>,
+       linux-kernel@vger.kernel.org, gregkh@suse.de
+Subject: Re: Ok, lets kill the 'PCI hidden behind bridge' message (was:
+	pci=assign-busses)
+Message-ID: <20070730201143.GA3972@stusta.de>
+References: <6c9774880707300129if10dbf4n25c5077f02c940e3@mail.gmail.com> <20070730115331.GO16817@stusta.de> <Pine.LNX.4.64.0707301932440.25292@jbgna.fhfr.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070727184617.GF11895@ucw.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <Pine.LNX.4.64.0707301932440.25292@jbgna.fhfr.qr>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jul 27, 2007 at 06:46:17PM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > > >We implement shared-disk semantics in a shared-nothing cluster.
-> > > 
-> > > If nothing is shared, the disk is not shared, but got shared-disk
-> > > semantics? A little confusing.
-> > 
-> > Think of it as RAID1 over TCP.
-> > Typically you have one Node in Primary, the other as Secondary,
-> > replication target only.
-> 
-> I guess TCP means people should not swap over it?
+On Mon, Jul 30, 2007 at 08:35:13PM +0200, Bernhard Kaindl wrote:
+>...
+> --- linux-2.6.22/drivers/pci/probe.c
+> +++ linux-2.6.22/drivers/pci/probe.c
+> @@ -643,23 +643,24 @@ int pci_scan_bridge(struct pci_bus *bus,
+>
+>  	sprintf(child->name, (is_cardbus ? "PCI CardBus #%02x" : "PCI Bus 
+> #%02x"), child->number);
+>
+> +#ifdef DEBUG /* Has only triggered on CardBus, fixup is in yenta_socket */
+>  	while (bus->parent) {
+>  		if ((child->subordinate > bus->subordinate) ||
+>  		    (child->number > bus->subordinate) ||
+>  		    (child->number < bus->number) ||
+>  		    (child->subordinate < bus->number)) {
+> -			printk(KERN_WARNING "PCI: Bus #%02x (-#%02x) is "
+> -			       "hidden behind%s bridge #%02x (-#%02x)%s\n",
+> +		      pr_debug("PCI: Bus #%02x (-#%02x) is %s"
+> +			       "hidden behind%s bridge #%02x (-#%02x)\n",
+>  			       child->number, child->subordinate,
+> +			       (bus->number > child->subordinate &&
+> +			        bus->subordinate < child->number) ?
+> +					"wholly " : " partially",
+>  			       bus->self->transparent ? " transparent" : " ",
+> -			       bus->number, bus->subordinate,
+> -			       pcibios_assign_all_busses() ? " " :
+> -			       " (try 'pci=assign-busses')");
+> -			printk(KERN_WARNING "Please report the result to "
+> -			       "linux-kernel to fix this permanently\n");
+> +			       bus->number, bus->subordinate);
+>  		}
+>  		bus = bus->parent;
+>  	}
+> +#endif
+>
+>  out:
+>  	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, bctl);
 
-people should not swap over DRBD,
-because it would not be useful.
+"#ifdef DEBUG" plus pr_debug() is twoce the same.
 
-DRBD is to have applicaction data available for more than one node,
-without a single point of failure; when the node the app currently runs
-on crashes, the data is there so some other node can take over from there.
+You don't need the #ifdef.
 
-what would you do with the swap of a crashed node, apart from,
-well, crash analysis?
-you don't need it to be highly available for that.
+cu
+Adrian
 
-besides, yes, when you have network io in the block io path,
-with linux (and probably most other OSes),
-there is the posibility of vm starvation or even deadlock.
+-- 
 
-situation is improving, though - iirc, there has been talk to
-have a emergency memory pool very low level in the network stack,
-and some special "I am doing block-io" socket flag;
-what is the status of that, anyone?
-
-I belive DRBD behaves very good even in oom situations.
-we considered these things from the very beginning.
-
-that said,
-I did not see a DRBD cluster hanging hard in OOM, yet.
-and we do operate quite a few busy
-database/mail/web/file/application/iSCSI/whatever clusters.
-
-	Lars
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
