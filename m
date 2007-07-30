@@ -1,131 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967735AbXG3SYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967126AbXG3SaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967735AbXG3SYr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 14:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965763AbXG3SYj
+	id S967126AbXG3SaS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 14:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934097AbXG3SaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 14:24:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35300 "EHLO
+	Mon, 30 Jul 2007 14:30:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42780 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762367AbXG3SYi (ORCPT
+	with ESMTP id S1760522AbXG3SaC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 14:24:38 -0400
-Subject: Re: Problem with saa7134 driver (tuner doesn't tune specific
-	stations)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Khelben Blackstaff <eye.of.the.8eholder@gmail.com>
-Cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070725010621.d0c76468.akpm@linux-foundation.org>
-References: <7b3edae10707240329q651e556eu53f064cf1b102bab@mail.gmail.com>
-	 <20070725010621.d0c76468.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Mon, 30 Jul 2007 15:24:24 -0300
-Message-Id: <1185819864.8997.71.camel@gaivota>
+	Mon, 30 Jul 2007 14:30:02 -0400
+Date: Mon, 30 Jul 2007 19:29:59 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Matthew Hawkins <darthmdh@gmail.com>
+Cc: Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
+       ck@vds.kolivas.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
+Message-ID: <20070730182959.GA29151@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Matthew Hawkins <darthmdh@gmail.com>,
+	Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
+	ck@vds.kolivas.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com> <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site> <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com> <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Khelben,
-
-It seems to be something related to tda8290/8275 tuner. This may be
-standard related. Are those channels analog or digital? If analog,
-what's your video standard?
-
-Can you do a bissect and help us to identify what patch broke it?
-
-You can do a -git bissect or use our Mercurial development tree,
-available at:
-	http://linuxtv.org/hg/v4l-dvb
-
-At /README.patches file at the tree, you will find some basic rules on
-how to do bissect.
-
-Cheers,
-Mauro.
-
-Em Qua, 2007-07-25 às 01:06 -0700, Andrew Morton escreveu:
-> (cc v4l list)
+On Tue, Jul 31, 2007 at 02:25:47AM +1000, Matthew Hawkins wrote:
 > 
-> On Tue, 24 Jul 2007 13:29:31 +0300 "Khelben Blackstaff" <eye.of.the.8eholder@gmail.com> wrote:
+> The ATI drivers (current 8.39.4) were broken by
+> commit e21ea246bce5bb93dd822de420172ec280aed492
+> Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
 > 
-> > Hello.
-> > 
-> > I have a "Terratec Cinergy HT PCI" tuner which works perfectly with
-> > 2.6.21 kernel.
-> > With 2.6.22 kernel it doesn't tune specific stations while it tunes
-> > others fine.
-> > I browsed the lkml from 13/05 (date the 2.6.22-rc1 was released) but
-> > haven't found
-> > anything similar nor in google. I have also tried 2.6.23-rc1 to see if
-> > its fixed.
-> > 
-> > lspci output:
-> > 01:0a.0 Multimedia controller: Philips Semiconductors SAA7133/SAA7135
-> > Video Broadcast Decoder (rev d1)
-> > lspci -n output:
-> > 01:0a.0 0480: 1131:7133 (rev d1)
-> > 
-> > dmesg output (same for 2.6.21/22/23-rc1):
-> > saa7130/34: v4l2 driver version 0.2.14 loaded
-> > ACPI: PCI Interrupt 0000:01:0a.0[A] -> GSI 21 (level, low) -> IRQ 21
-> > saa7133[0]: found at 0000:01:0a.0, rev: 209, irq: 21, latency: 64,
-> > mmio: 0xcdcff800
-> > saa7133[0]: subsystem: 153b:1175, board: Terratec Cinergy HT PCI
-> > [card=108,autodetected]
-> > saa7133[0]: board init: gpio is 0
-> > saa7133[0]: i2c eeprom 00: 3b 15 75 11 54 20 1c 00 43 43 a9 1c 55 d2 b2 92
-> > saa7133[0]: i2c eeprom 10: ff ff ff 0f ff 20 ff 00 01 50 32 79 01 3c ca 50
-> > saa7133[0]: i2c eeprom 20: 01 40 01 02 02 01 01 00 06 ff 00 94 02 51 96 2b
-> > saa7133[0]: i2c eeprom 30: a7 58 7a 1f 03 8e 84 5e da 7a 04 b3 05 87 b2 3c
-> > saa7133[0]: i2c eeprom 40: ff 21 00 c0 96 10 03 32 15 10 fd 79 44 9f c2 8f
-> > saa7133[0]: i2c eeprom 50: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-> > saa7133[0]: i2c eeprom 60: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-> > saa7133[0]: i2c eeprom 70: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff
-> > tuner 0-004b: chip found @ 0x96 (saa7133[0])
-> > tuner 0-004b: setting tuner address to 60
-> > tuner 0-004b: type set to tda8290+75a
-> > tuner 0-004b: setting tuner address to 60
-> > tuner 0-004b: type set to tda8290+75a
-> > saa7133[0]: registered device video0 [v4l2]
-> > saa7133[0]: registered device vbi0
-> > saa7134 ALSA driver for DMA sound loaded
-> > saa7133[0]/alsa: saa7133[0] at 0xcdcff800 irq 21 registered as card -1
-> > 
-> > the .config was copied from 2.6.21 -> 2.6.22 -> 2.6.23-rc1 and no
-> > option regarding
-> > the media/video was changed.
-> > 
-> > the behaviour is the same with xdtv and tvtime programs.
-> > 
-> > I have the following channels stored:
-> > UHF 23, 24, 25, 26, 27, 39, 43, 51, 54, 62, 65
-> > 
-> > With 2.6.21 every station works fine.
-> > With 2.6.22+ i get the following behavior:
-> > 23, 25, 26, 39, 43, 51, 54 work fine while
-> > 24, 27, 62, 65 have sound but no video.
-> > 
-> > The channels that don't work aren't small channels with low signal
-> > quality, they have
-> > the same quality with those that work, so i guess its not something
-> > about antenna quality.
-> > 
-> > Has anyone the same problem ?
-> > If you need any more info, please tell me.
-> > 
-> > Please CC me.
-> > Thank you for your time.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
--- 
-Cheers,
-Mauro
+> Bad call on the "nobody was using these", Martin :(
 
+Sorry to use foul language once again after a while, but:
+
+	Fuck you Martin!
+
+not only is complaining about illegal binary crap totally offtopic
+on this list, and making youself a fool for using that piece of shit
+is annoying enough, but don't even try to badmouth Martin for doing
+important and needed cleanups.  And now get out of here!
