@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938907AbXG3Ghn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938985AbXG3GkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938907AbXG3Ghn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 02:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937850AbXG3Ghg
+	id S938985AbXG3GkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 02:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938246AbXG3GkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 02:37:36 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:43345 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765141AbXG3Ghf (ORCPT
+	Mon, 30 Jul 2007 02:40:08 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:36246 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S938489AbXG3GkH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 02:37:35 -0400
-X-IronPort-AV: i="4.19,197,1183348800"; 
-   d="scan'208"; a="35938503:sNHT24111689"
-Subject: Re: [PATCH] Blackfin: Remove duplicate inclusion of linux/irq.h
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Aidan Williams <aidan@nicta.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>
-In-Reply-To: <8bd0f97a0707292333p7428f1f7l1a4bd41993592826@mail.gmail.com>
-References: <200707292348.25880.jesper.juhl@gmail.com>
-	 <8bd0f97a0707292333p7428f1f7l1a4bd41993592826@mail.gmail.com>
+	Mon, 30 Jul 2007 02:40:07 -0400
+Subject: Re: [PATCH] drivers/bluetooth/hci_ldisc.c: fix possible
+	NULL	dereferences
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Eugene Teo <eteo@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <46AD1A87.8050901@redhat.com>
+References: <20070729144736.GA13275@kernel.sg>
+	 <1185727751.5868.60.camel@violet>  <46AD1A87.8050901@redhat.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Mon, 30 Jul 2007 14:45:13 +0800
-Message-Id: <1185777913.22473.4.camel@roc-desktop>
+Date: Mon, 30 Jul 2007 08:42:15 +0200
+Message-Id: <1185777735.5868.86.camel@violet>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 30 Jul 2007 06:37:34.0077 (UTC) FILETIME=[1C92CAD0:01C7D274]
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 02:33 -0400, Mike Frysinger wrote:
-> On 7/29/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> > arch/blackfin/mach-bf548/boards/ezkit.c includes linux/irq.h twice.
-> > This patch removes the duplicate.
+Hi Eugene,
+
+> >> Commit 22ad42033b7d2b3d7928fba9f89d1c7f8a3c9581 did not completely fix all 
+> >> the possible NULL dereferences. Besides hci_uart_close(), we also need to 
+> >> make sure that hdev is valid before calling hci_{unregister,free}_dev().
+> > 
+> > I don't see any issue. Without HCI_UART_PROTO_SET, the hdev will never
+> > be registered. So no need to protect it twice.
 > 
-> thanks, but we've fixed this in our tree already, we just havent
-> pushed it to linux mainline
-> -mike
+> Correct me if I am wrong. HCI_UART_PROTO_SET bit is only set if hci_uart_tty_ioctl()
+> is called with HCIUARTSETPROTO. Is it possible for the HCI device to be registered
+> and then unregistered without setting the HCI_UART_PROTO_SET bit in hdev->flags?
 
-Yes, Thank you Jesper.
+look at the code. The hci_uart_tty_ioctl() is the only function that can
+register the HCI device. So besides opening the TTY and set the line
+discipline, you also have to the set the UART protocol running on top. I
+don't see any way you can achieve to register a HCI device without
+setting the HCI_UART_PROTO_SET bit in hu->flags.
 
-As Mike said, it will be merged later for mailine.
+Regards
 
--Bryan
+Marcel
+
+
