@@ -1,39 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939143AbXG3Jjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939379AbXG3Jju@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939143AbXG3Jjd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 05:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764122AbXG3JjY
+	id S939379AbXG3Jju (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 05:39:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939270AbXG3Jjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 05:39:24 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1720 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755879AbXG3JjX (ORCPT
+	Mon, 30 Jul 2007 05:39:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33129 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939234AbXG3Jjf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 05:39:23 -0400
-Date: Mon, 30 Jul 2007 10:39:20 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Paul Fulghum <paulkf@microgate.com>
-cc: Robert Hancock <hancockr@shaw.ca>, Lee Howard <faxguy@howardsilvan.com>,
-       linux-serial@vger.kernel.org, tytso@mit.edu, rmk@arm.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-In-Reply-To: <1185563133.23486.5.camel@x2.microgate.com>
-Message-ID: <Pine.LNX.4.64N.0707301037090.12082@blysk.ds.pg.gda.pl>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>  <46A84B4A.6070902@shaw.ca>
- <46A8C6F1.4080309@howardsilvan.com>  <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
-  <46AA2748.80703@howardsilvan.com>  <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
-  <46AA3801.7090204@shaw.ca> <1185563133.23486.5.camel@x2.microgate.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 30 Jul 2007 05:39:35 -0400
+Subject: Re: [PATCH -rt 7/9] introduce PICK_FUNCTION
+From: Peter Zijlstra <peterz@infradead.org>
+To: Daniel Walker <dwalker@mvista.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
+       linux-rt-users@vger.kernel.org
+In-Reply-To: <20070730024720.690642602@mvista.com>
+References: <20070730024534.369897977@mvista.com>
+	 <20070730024720.690642602@mvista.com>
+Content-Type: text/plain
+Date: Mon, 30 Jul 2007 11:39:28 +0200
+Message-Id: <1185788368.7197.2.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Jul 2007, Paul Fulghum wrote:
+On Sun, 2007-07-29 at 19:45 -0700, Daniel Walker wrote:
 
-> I can't see anyplace in serial_core.c or 8250.c that sets TTY_OVERRUN.
+> +#undef TYPE_EQUAL
+> +#define TYPE_EQUAL(var, type) \
+> +		__builtin_types_compatible_p(typeof(var), type *)
+> +
 
- Look for UART_LSR_OE in 8250.c -- the serial core accepts any bit that 
-has been defined by the low-level driver and sets TTY_OVERRUN in 
-uart_insert_char().
+If you're going to touch this code, could you perhaps change TYPE_EQUAL
+to do as it says and read like so:
 
-  Maciej
+	__builtin_types_compatible_p(typeof(var), type)
+
+
+
