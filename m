@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938421AbXG3GCe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938323AbXG3GMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938421AbXG3GCe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 02:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757270AbXG3GCZ
+	id S938323AbXG3GMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 02:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932909AbXG3GL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 02:02:25 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:40011 "EHLO bear.ext.ti.com"
+	Mon, 30 Jul 2007 02:11:57 -0400
+Received: from colo.lackof.org ([198.49.126.79]:48887 "EHLO colo.lackof.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755668AbXG3GCY convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 02:02:24 -0400
-X-Greylist: delayed 452 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 02:02:24 EDT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	id S932720AbXG3GL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 02:11:56 -0400
+X-Greylist: delayed 1960 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 02:11:56 EDT
+Date: Sun, 29 Jul 2007 23:39:09 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Yoann Padioleau <padator@wanadoo.fr>
+Cc: kernel-janitors@vger.kernel.org, matthew@wil.cx, grundler@parisc-linux.org,
+       kyle@parisc-linux.org, parisc-linux@parisc-linux.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 11/68] 0 -> NULL, for arch/parisc
+Message-ID: <20070730053909.GF21206@colo.lackof.org>
+References: <200707270945.LAA17250@ifs.emn.fr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Testing of CPRM on SD Card
-Date: Mon, 30 Jul 2007 11:20:58 +0530
-Message-ID: <0A50DBE80DD6674E94F7269DC964A7B6440EDA@dbde01.ent.ti.com>
-In-Reply-To: <e1d5030b0707280108v236cc522m454c58e1044f1996@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Testing of CPRM on SD Card
-Thread-Index: AcfQ7tmsF38IgwZRSie8/a/besRQdQBfZZDA
-From: "Sriram, Kannan" <ksriram@ti.com>
-To: "Midhun A" <midhunagni@gmail.com>, <linux-kernel@vger.kernel.org>,
-       <linux-arm-kernel@lists.arm.linux.org.uk>,
-       <linux-mtd@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707270945.LAA17250@ifs.emn.fr>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Midhun,
-
- There is no open-source implementation of CPRM (SD-Audio/ SD-Bind
-standards). So first of all, you need to license keys from 4C (device
-keys, media keys etc) and do your own implementation.
-
- The keys that you can download from 4C site are for test purposes only,
-and you can't use them to test on a real COTS SD-card. If you really
-want to try those dummy keys on an SD-card, I suggest you purchase a few
-"development/ test only" SD-cards from popular SD-Card manufacturers
-that have been specifically encrypted using those 4C dummy keys.
-
-Regards,
-Sriram.
-
-> -----Original Message-----
-> From: linux-arm-kernel-bounces@lists.arm.linux.org.uk
-[mailto:linux-arm-
-> kernel-bounces@lists.arm.linux.org.uk] On Behalf Of Midhun A
-> Sent: Saturday, July 28, 2007 5:08 PM
-> To: linux-kernel@vger.kernel.org;
-linux-arm-kernel@lists.arm.linux.org.uk;
-> linux-mtd@lists.infradead.org
-> Subject: Testing of CPRM on SD Card
+On Fri, Jul 27, 2007 at 11:45:05AM +0200, Yoann Padioleau wrote:
 > 
-> Hi All,
-> 
->     Our product development requires that we use the CPRM security
-> feature of SD card for protecting our material. I have been searching
-> the web for a SD host controller / Software which is CPRM capable, so
-> that we can write/read an encrypted SD card with the testing keys
-> provided by the 4C Entity) and test our prototype. But I could find
-> none. There are IP cores but no manufactured chips.
-> 
->    Has anybody of you done similar stuff ? How do I go about testing
-> the CPRM feature of the SD card on our prototype ?
-> 
-> Thanks,
-> Midhun.
-> 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-
-> kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+> When comparing a pointer, it's clearer to compare it to NULL than to 0.
+...
+> diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
+> index 04c7e1d..16fccbe 100644
+> --- a/arch/parisc/kernel/smp.c
+> +++ b/arch/parisc/kernel/smp.c
+> @@ -333,7 +333,7 @@ smp_call_function (void (*func) (void *i
+>  
+>  	if (retry) {
+>  		spin_lock (&lock);
+> -		while (smp_call_function_data != 0)
+> +		while (smp_call_function_data != NULL)
+>  			barrier();
+>  	}
+>  	else {
+
+Yoann,
+Thanks!
+I like comparing pointers to NULL since it makes it explicit we
+are dealing with a pointer and is consistent with the assignment to NULL
+later in the code.
+
+But I'd like the later comparisons of smp_call_function_data to be
+consistent with your suggestion above.
+Patch below adds another "!= NULL".
+
+thanks
+grant
+
+Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
+
+
+diff --git a/arch/parisc/kernel/smp.c b/arch/parisc/kernel/smp.c
+index 04c7e1d..c9ce659 100644
+--- a/arch/parisc/kernel/smp.c
++++ b/arch/parisc/kernel/smp.c
+@@ -333,12 +333,12 @@ smp_call_function (void (*func) (void *info), void *info, int retry, int wait)
+ 
+ 	if (retry) {
+ 		spin_lock (&lock);
+-		while (smp_call_function_data != 0)
++		while (smp_call_function_data != NULL)
+ 			barrier();
+ 	}
+ 	else {
+ 		spin_lock (&lock);
+-		if (smp_call_function_data) {
++		if (smp_call_function_data != NULL) {
+ 			spin_unlock (&lock);
+ 			return -EBUSY;
+ 		}
