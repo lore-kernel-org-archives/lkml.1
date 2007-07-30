@@ -1,82 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969561AbXG3WZX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969466AbXG3W2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969561AbXG3WZX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 18:25:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968927AbXG3WZB
+	id S969466AbXG3W2m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 18:28:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966771AbXG3W2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 18:25:01 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:32996
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968917AbXG3WZA (ORCPT
+	Mon, 30 Jul 2007 18:28:33 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:54336 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S939614AbXG3W2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 18:25:00 -0400
-Date: Mon, 30 Jul 2007 15:24:05 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Sasa Ostrouska <casaxa@gmail.com>, Gabriel C <nix.or.die@googlemail.com>,
-       Avuton Olrich <avuton@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: forcedeth ?
-In-Reply-To: <3ae72650707301522r4241353ld1be5dd7a2322233@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0707301522340.12232@asgard.lang.hm>
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com> 
- <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com> 
- <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com> 
- <46AE6029.60308@googlemail.com>  <dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
- <3ae72650707301522r4241353ld1be5dd7a2322233@mail.gmail.com>
+	Mon, 30 Jul 2007 18:28:32 -0400
+Date: Tue, 31 Jul 2007 00:28:06 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: rth@twiddle.net, ink@jurassic.park.msu.ru, linux-kernel@vger.kernel.org
+Subject: [2.6 patch] cleanup arch/alpha/Makefile
+Message-ID: <20070730222805.GC3972@stusta.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, Kay Sievers wrote:
+This patch contains the following cleanups:
+- binutils 2.7 is far below the current minimum supported version,
+  and there's therefore no longer a need for an extra test
+- since even gcc 3.2 already supports all options used we can use them
+  unconditionally
 
-> On 7/31/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
->> On 7/31/07, Gabriel C <nix.or.die@googlemail.com> wrote:
->>> Sasa Ostrouska wrote:
->>>> On 7/30/07, Avuton Olrich <avuton@gmail.com> wrote:
->>>>> On 7/30/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
->>>>>> Hi people,
->>>>>>
->>>>>> I'm using this on a x86-64 amd machine. During boot of the last
->>>>>> 2.6.22.1 kernel I get this error:
->>>>> Somewhat unrelated, but I had a similar forcedeth problem, I took the
->>>>> latest git forcedeth.c and put it into 2.6.22.1 and it worked for me.
->>>>>
->>>>> Good luck!
->>>>> --
->>>>> avuton
->>>>
->>>> Ok, maybe I can try that. In any case I noticed another strange thing.
->>>> I have 2 nics in that machine.
->>>> One is a nvidia MPC61 using the forcedeth.c the other one is a Realtec
->>>> RTL8029 using the
->>>> ne2k_pci.
->>>> Now, whenever I compile them both as modules each reboot the cards get
->>>> inversed eth assignement. Suppose first boot, the forcedeth is eth0 ,
->>>> the next boot it is eth1 , this is very anoying as one cant make only
->>>> one boot, probably this is someway related to the bios.
->>>> Now I configured them one in the kernel and the other as a module so
->>>> they get each time assigned the same name. But when powerloss happens
->>>> (unplug the cable) the next boot they do not work. I see them assigned
->>>> the correct name, ifconfig shows the IP's but ping results in a
->>>> destination unreachable.
->>>>
->>>> Any ideas ?
->>>
->>> Udev rules ?
->>>
->> Gabriel, hmm, shouldnt udev be able to autoconfigure that ? But I need
->> to check that, thx for the tip.
->
-> Udev does that already, it automatically creates rules and assigns
-> persistent names to newly discovered network hardware. The names will
-> be stable across reboots, regardless of module loading order or
-> anything else. But sure, that's only on distros who take these issues
-> serious. :)
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 
-what do I need to do to disable this 'feature' having a box with 
-interfaces eth0, eth9, eth10 becouse the box once had a couple of quad 
-cards in it is annoying.
+---
 
-David Lang
+This patch has been sent on:
+- 13 Jul 2007
+
+ arch/alpha/Makefile |   79 +++++++-------------------------------------
+ 1 file changed, 14 insertions(+), 65 deletions(-)
+
+--- linux-2.6.22-rc6-mm1/arch/alpha/Makefile.old	2007-07-13 04:44:24.000000000 +0200
++++ linux-2.6.22-rc6-mm1/arch/alpha/Makefile	2007-07-13 05:01:32.000000000 +0200
+@@ -12,73 +12,22 @@
+ 
+ LDFLAGS_vmlinux	:= -static -N #-relax
+ CHECKFLAGS	+= -D__alpha__ -m64
+-cflags-y	:= -pipe -mno-fp-regs -ffixed-8
++cflags-y	:= -pipe -mno-fp-regs -ffixed-8 -msmall-data
+ 
+-# Determine if we can use the BWX instructions with GAS.
+-old_gas := $(shell if $(AS) --version 2>&1 | grep 'version 2.7' > /dev/null; then echo y; else echo n; fi)
++cpuflags-$(CONFIG_ALPHA_EV67)		:= -mcpu=ev67
++cpuflags-$(CONFIG_ALPHA_EV6)		:= -mcpu=ev6
++cpuflags-$(CONFIG_ALPHA_POLARIS)	:= -mcpu=pca56
++cpuflags-$(CONFIG_ALPHA_SX164)		:= -mcpu=pca56
++cpuflags-$(CONFIG_ALPHA_EV56)		:= -mcpu=ev56
++cpuflags-$(CONFIG_ALPHA_EV5)		:= -mcpu=ev5
++cpuflags-$(CONFIG_ALPHA_EV4)		:= -mcpu=ev4
++# If GENERIC, make sure to turn off any instruction set extensions that
++# the host compiler might have on by default.  Given that EV4 and EV5
++# have the same instruction set, prefer EV5 because an EV5 schedule is
++# more likely to keep an EV4 processor busy than vice-versa.
++cpuflags-$(CONFIG_ALPHA_GENERIC)	:= -mcpu=ev5
+ 
+-ifeq ($(old_gas),y)
+-$(error The assembler '$(AS)' does not support the BWX instruction)
+-endif
+-
+-# Determine if GCC understands the -mcpu= option.
+-have_mcpu        := $(call cc-option-yn, -mcpu=ev5)
+-have_mcpu_pca56  := $(call cc-option-yn, -mcpu=pca56)
+-have_mcpu_ev6    := $(call cc-option-yn, -mcpu=ev6)
+-have_mcpu_ev67   := $(call cc-option-yn, -mcpu=ev67)
+-have_msmall_data := $(call cc-option-yn, -msmall-data)
+-
+-cflags-$(have_msmall_data) += -msmall-data
+-
+-# Turn on the proper cpu optimizations.
+-ifeq ($(have_mcpu),y)
+-  mcpu_done := n
+-  # If GENERIC, make sure to turn off any instruction set extensions that
+-  # the host compiler might have on by default.  Given that EV4 and EV5
+-  # have the same instruction set, prefer EV5 because an EV5 schedule is
+-  # more likely to keep an EV4 processor busy than vice-versa.
+-  ifeq ($(CONFIG_ALPHA_GENERIC),y)
+-    mcpu := ev5
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_SX164)$(have_mcpu_pca56),nyy)
+-    mcpu := pca56
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_POLARIS)$(have_mcpu_pca56),nyy)
+-    mcpu := pca56
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_EV4),ny)
+-    mcpu := ev4
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_EV56),ny)
+-    mcpu := ev56
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_EV5),ny)
+-    mcpu := ev5
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_EV67)$(have_mcpu_ev67),nyy)
+-    mcpu := ev67
+-    mcpu_done := y
+-  endif
+-  ifeq ($(mcpu_done)$(CONFIG_ALPHA_EV6),ny)
+-    ifeq ($(have_mcpu_ev6),y)
+-      mcpu := ev6
+-    else
+-      ifeq ($(have_mcpu_pca56),y)
+-        mcpu := pca56
+-      else
+-        mcpu=ev56
+-      endif
+-    endif
+-    mcpu_done := y
+-  endif
+-  cflags-$(mcpu_done) += -mcpu=$(mcpu)
+-endif
++cflags-y				+= $(cpuflags-y)
+ 
+ 
+ # For TSUNAMI, we must have the assembler not emulate our instructions.
+
