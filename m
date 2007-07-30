@@ -1,120 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936286AbXG3Xdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937884AbXG3Xgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936286AbXG3Xdt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760741AbXG3Xdk
+	id S937884AbXG3Xgy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760346AbXG3Xgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:33:40 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:59531 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758783AbXG3Xdj (ORCPT
+	Mon, 30 Jul 2007 19:36:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:37494 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761226AbXG3Xgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:33:39 -0400
-Subject: Re: forcedeth ?
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Sasa Ostrouska <casaxa@gmail.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>, Avuton Olrich <avuton@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <dcf706c60707301610o50809672l622ed3da59670708@mail.gmail.com>
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>
-	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>
-	 <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-	 <46AE6029.60308@googlemail.com>
-	 <dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
-	 <3ae72650707301522r4241353ld1be5dd7a2322233@mail.gmail.com>
-	 <46AE63F6.9060108@googlemail.com>
-	 <1185835218.1911.64.camel@lov.localdomain>
-	 <dcf706c60707301610o50809672l622ed3da59670708@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 01:36:12 +0200
-Message-Id: <1185838572.1911.73.camel@lov.localdomain>
+	Mon, 30 Jul 2007 19:36:44 -0400
+Date: Mon, 30 Jul 2007 16:35:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
+Message-Id: <20070730163538.67b256da.akpm@linux-foundation.org>
+In-Reply-To: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com>
+References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.5 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18mo2Y0wAnfiZAd9Qo/mNmOgzczhIq2wnLvIvO
- Yz2yT6aD1aIg5pjYPskOji/T/7ZiQTOCLLT6coCBZmkYZwEGwp
- 0hO8QCQTfCRowcYe3SAhijSBxyhnvuD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 01:10 +0200, Sasa Ostrouska wrote:
-> On 7/31/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> >
-> > On Tue, 2007-07-31 at 00:19 +0200, Gabriel C wrote:
-> > > Kay Sievers wrote:
-> > > > On 7/31/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
-> > > >> On 7/31/07, Gabriel C <nix.or.die@googlemail.com> wrote:
-> > > >>> Sasa Ostrouska wrote:
-> > > >>>> On 7/30/07, Avuton Olrich <avuton@gmail.com> wrote:
-> > > >>>>> On 7/30/07, Sasa Ostrouska <casaxa@gmail.com> wrote:
-> > > >>>>>> Hi people,
-> > > >>>>>>
-> > > >>>>>> I'm using this on a x86-64 amd machine. During boot of the last
-> > > >>>>>> 2.6.22.1 kernel I get this error:
-> > > >>>>> Somewhat unrelated, but I had a similar forcedeth problem, I took the
-> > > >>>>> latest git forcedeth.c and put it into 2.6.22.1 and it worked for me.
-> > > >>>>>
-> > > >>>>> Good luck!
-> > > >>>>> --
-> > > >>>>> avuton
-> > > >>>> Ok, maybe I can try that. In any case I noticed another strange thing.
-> > > >>>> I have 2 nics in that machine.
-> > > >>>> One is a nvidia MPC61 using the forcedeth.c the other one is a Realtec
-> > > >>>> RTL8029 using the
-> > > >>>> ne2k_pci.
-> > > >>>> Now, whenever I compile them both as modules each reboot the cards get
-> > > >>>> inversed eth assignement. Suppose first boot, the forcedeth is eth0 ,
-> > > >>>> the next boot it is eth1 , this is very anoying as one cant make only
-> > > >>>> one boot, probably this is someway related to the bios.
-> > > >>>> Now I configured them one in the kernel and the other as a module so
-> > > >>>> they get each time assigned the same name. But when powerloss happens
-> > > >>>> (unplug the cable) the next boot they do not work. I see them assigned
-> > > >>>> the correct name, ifconfig shows the IP's but ping results in a
-> > > >>>> destination unreachable.
-> > > >>>>
-> > > >>>> Any ideas ?
-> > > >>> Udev rules ?
-> > > >>>
-> > > >> Gabriel, hmm, shouldnt udev be able to autoconfigure that ? But I need
-> > > >> to check that, thx for the tip.
-> > > >
-> > > > Udev does that already, it automatically creates rules and assigns
-> > > > persistent names to newly discovered network hardware. The names will
-> > > > be stable across reboots, regardless of module loading order or
-> > > > anything else. But sure, that's only on distros who take these issues
-> > > > serious. :)
-> > >
-> > > Yes but the rules are based on the MAC address no ?
-> >
-> > The automatic rule creator, uses MAC addresses by default, yes. There
-> > have been extensions for S/390 support recently, to create other sorts
-> > of matching rules.
-> >
-> > The rules that rename the interface, are not limited in any way, and can
-> > match on any property of the device, they are just not created
-> > automatically today, but can be specified manually.
-> >
-> > Maybe the network susbsytem should let us know in the event environment,
-> > that a random MAC was created, so we can automatically create rules that
-> > uses the path to the hardware as a match instead.
-> >
-> > Thanks,
-> > Kay
-> >
-> And why not just use the PCI ID instead of the MAC address ?
+On Sun, 29 Jul 2007 19:05:05 +0200
+Manfred Spraul <manfred@colorfullife.com> wrote:
 
-PCI ID's? And when you have multiple identical cards like every other
-server has?
+> Hi Andrew,
+> 
+> poll() returns -EINTR if a signal is pending.
+> EINTR is a bad choice: it means that poll returns to user space if the
+> task is stopped by SIGSTOP/SIGCONT or by the freezer.
+> select() and ppoll() both use ERESTARTNOHAND, this avoids a return to
+> user space for signals that are handled by the kernel.
+> 
+> The patch switches poll() to ERESTARTNOHAND.
+> Tested with FC6. Patch against 2.6.23-rc1-mm1.
 
-You could use the slot number and such, but _usually_ the MAC address is
-what you want because it is unique by itself. The MAC is just the best
-default in most cases, because it usually identifies the connector where
-the cable goes in ...
+hm.  Is this a fix against
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/broken-out/do_poll-return-eintr-when-signalled.patch
+only, or does mainline also need fixing?
 
-Udev computes the path to the device, like used in
-the /dev/disk/by-path/ links, that could be used as a stable identifier,
-but still, to use that automatically, the kernel would need to let us
-know, that we shouldn't use the random MAC.
+I guess the consequences of the thing-which-this-fixes aren't huge, s I ca
+queue this up for 2.6.24, after Oleg's
+do_poll-return-eintr-when-signalled.patch?
 
-Kay
+> Signed-off-by: Manfred Spraul <manfred@colorfullife.com>
+> 
+> --- 2.6/fs/select.c	2007-07-28 20:31:51.000000000 +0200
+> +++ build-2.6/fs/select.c	2007-07-28 21:21:52.000000000 +0200
+> @@ -621,7 +621,7 @@ static int do_poll(unsigned int nfds,  s
+>  		if (!count) {
+>  			count = wait->error;
+>  			if (signal_pending(current))
+> -				count = -EINTR;
+> +				count = -ERESTARTNOHAND;
+>  		}
+>  		if (count || !*timeout)
+>  			break;
+> @@ -774,7 +774,7 @@ asmlinkage long sys_ppoll(struct pollfd 
+>  	ret = do_sys_poll(ufds, nfds, &timeout);
+>  
+>  	/* We can restart this syscall, usually */
+> -	if (ret == -EINTR) {
+> +	if (ret == -ERESTARTNOHAND) {
+>  		/*
+>  		 * Don't restore the signal mask yet. Let do_signal() deliver
+>  		 * the signal on the way back to userspace, before the signal
+> @@ -785,7 +785,6 @@ asmlinkage long sys_ppoll(struct pollfd 
+>  					sizeof(sigsaved));
+>  			set_thread_flag(TIF_RESTORE_SIGMASK);
+>  		}
+> -		ret = -ERESTARTNOHAND;
+>  	} else if (sigmask)
+>  		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+>  
 
+I spied this comment in there:
+
+/*
+ * We can actually return ERESTARTSYS instead of EINTR, but I'd
+ * like to be certain this leads to no problems. So I return
+ * EINTR just for safety.
+ *
+ * Update: ERESTARTSYS breaks at least the xview clock binary, so
+ * I'm trying ERESTARTNOHAND which restart only when you want to.
+ */
+
+it is very old and perhaps is no longer relevant?
