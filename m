@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938900AbXG3HGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939057AbXG3HGi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938900AbXG3HGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 03:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937845AbXG3HGG
+	id S939057AbXG3HGi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 03:06:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938814AbXG3HGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 03:06:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:55479 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934212AbXG3HGD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 03:06:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MAOhf8avraMLlCQAxxUkzgQxGrN3HVd5ltfK15G8F+9jruWCp0ytyQlDHaphID4868P+fXf6B2pWp30rO1S2baWvg08DwW6p0NX9Gy+HA8dclNJCswW46oURcUzIdVcqQVZhB4Syl1eTepfsbzxCMwklBCGadJ2P0wnyfWhOrao=
-Message-ID: <a12e280d0707300006l52a695bcy9912ee2689d6f636@mail.gmail.com>
-Date: Mon, 30 Jul 2007 17:06:02 +1000
-From: "George Sescher" <gesacs@gmail.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Subject: Re: Linus 2.6.23-rc1
-Cc: "Kasper Sandberg" <lkml@metanurb.dk>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "CK Mailinglist" <ck@vds.kolivas.org>
-In-Reply-To: <20070730064423.GA30505@elte.hu>
+	Mon, 30 Jul 2007 03:06:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39077 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S938727AbXG3HGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 03:06:16 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX188zV9wfWM8XT1RYT8FxTWQ1scu9N9Pl4MWYWFAIj
+	k7SzcyHjDmzqsu
+Message-ID: <46AD8387.2070706@gmx.net>
+Date: Mon, 30 Jul 2007 08:21:59 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
 MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+CC: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: fallocate() man page
+References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124601.GA22961@amitarora.in.ibm.com> <20070714082342.174830@gmx.net> <20070716053235.GA10945@amitarora.in.ibm.com> <46A44629.3090107@gmx.net> <20070723131039.GA29198@amitarora.in.ibm.com> <20070724070652.GX31489@sgi.com>
+In-Reply-To: <20070724070652.GX31489@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <1185588279.1654.1.camel@localhost> <20070729150436.GA6598@elte.hu>
-	 <a12e280d0707291604s618c0b14lc8572b2f48cd4ca1@mail.gmail.com>
-	 <20070730064423.GA30505@elte.hu>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
-> > > i'd encourage you to do it - in fact i already tried to prod Peter
-> > > Williams into doing exactly that ;) The more reality checks a
-> > > scheduler has, the better. [ Btw., after the obvious initial merging
-> > > trouble it should be much easier to keep SD maintained against
-> > > future upstream kernels due to the policy modularity that CFS
-> > > introduces. (and which policy-modularity should also help reduce the
-> > > size and complexity of the SD patch.) ]
 
-> * George Sescher <gesacs@gmail.com> wrote:
-> > <chuckle>
-> >
-> > You're advocating plugsched now?
 
-On 30/07/07, Ingo Molnar <mingo@elte.hu> wrote:
-> hm, the way you posited this question implies that you see an
-> inconsistency in my position or that it surprised you - i cannot explain
-> the '<chuckle>' in any other way :) Which bit do you see as inconsistent
-> and/or which bit surprised you and why?
+David Chinner wrote:
+> On Mon, Jul 23, 2007 at 06:40:39PM +0530, Amit K. Arora wrote:
+>> On Mon, Jul 23, 2007 at 08:09:45AM +0200, Michael Kerrisk wrote:
+>>> I've taken the page that you sent and made various minor formatting and
+>>> wording fixes.  I've also added various FIXMEs to the page.  Some of these
+>>> ("FIXME .") are things that I need to check up later.  Some others are
+>>> questions for which I need input from you, David, or someone else with the
+>>> relevant info (I've marked these "FIXME Amit:").  Could you please review,
+>>> and send a new draft of the page back to me.
+>> Thanks for going through the manpage and improving it!
+>>
+>> My comments are below in between <Amit> ... </Amit> tags.
+> 
+> Does this Q&A really need to be encoded in nroff comments? ;)
+> 
+>> .\" FIXME Amit: I need author and license information for this page.
+>> .\" <Amit>
+>> .\"    David Chinner is the original author, hence he can help with this.
+>> .\" </Amit>
+> 
+> Patch below.
 
-The idea is not good enough for mainline and has no place in mainline
-yet you say it's very important to maintain it... but out of mainline.
-Place the responsibility of keeping mainline's performance in check
-"reality check as you called it" on to someone who is forced to
-develop out of mainline? I have zero interest one way or the other
-myself, but how can one not chuckle?
+Thanks David.  Applied, but I wrote "GNU General Public License vesion 2".
 
-Again I have no interest either way but if this is that important a
-reality check that it needs maintaining it should be oh I don't know,
-an -mm only feature or something?
+Cheers,
 
-Please don't jump down my throat, your position just needs clarifying.  :-|
+Michael
+
