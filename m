@@ -1,57 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967435AbXG3Qib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937779AbXG3QpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967435AbXG3Qib (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967074AbXG3QiQ
+	id S937779AbXG3QpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760353AbXG3QpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:38:16 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35451 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967008AbXG3QiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:38:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,199,1183359600"; 
-   d="scan'208";a="256490653"
-Message-ID: <46AE13D0.7060902@intel.com>
-Date: Mon, 30 Jul 2007 09:37:36 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+	Mon, 30 Jul 2007 12:45:00 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37293
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759242AbXG3Qo7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 12:44:59 -0400
+Date: Mon, 30 Jul 2007 09:43:44 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andre Noll <maan@systemlinux.org>,
+       Wim Van Sebroeck <wim@iguana.be>, Borislav Petkov <bbpetkov@yahoo.de>,
+       Bret Towe <magnade@gmail.com>, Nick Piggin <npiggin@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jakub Jelinek <jakub@redhat.com>,
+       Eric Sesterhenn <snakebyte@gmx.de>, Sid Boyce <g3vbv@blueyonder.co.uk>
+Subject: Re: [1/3] 2.6.23-rc1: known regressions v3
+In-Reply-To: <46AE12EE.1070501@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0707300942460.11330@asgard.lang.hm>
+References: <46AE12EE.1070501@googlemail.com>
 MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>, David Miller <davem@davemloft.net>,
-       Andrew Gallatin <gallatin@myri.com>
-Subject: Re: [PATCH 3/4][RFC] ehea: LRO support
-References: <200707301724.49829.ossthema@de.ibm.com>
-In-Reply-To: <200707301724.49829.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jul 2007 16:38:11.0215 (UTC) FILETIME=[0461A9F0:01C7D2C8]
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Bernd Themann wrote:
-> Added LRO support using the "SKB aggregate" interface
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-> 
-> ---
->  drivers/net/ehea/ehea.h         |    9 ++++-
->  drivers/net/ehea/ehea_ethtool.c |   15 +++++++
->  drivers/net/ehea/ehea_main.c    |   82 +++++++++++++++++++++++++++++++++++---
->  3 files changed, 98 insertions(+), 8 deletions(-)
+On Mon, 30 Jul 2007, Michal Piotrowski wrote:
 
-<snip>
+> Subject         : /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
+> References      : http://lkml.org/lkml/2007/7/22/239
+> Last known good : ?
+> Submitter       : Andre Noll <maan@systemlinux.org>
+> Caused-By       : ?
+> Handled-By      : Andi Kleen <ak@suse.de>
+>                  Jakub Jelinek <jakub@redhat.com>
+> Status          : problem is being debugged
 
-> +module_param(use_lro, int, 0);
-> +module_param(lro_max_aggr, int, 0);
+I'm seeing this on 2.6.22.1 as well. the resulting kernel has seemed to 
+work for me so I was ignoreing it.
 
-this should obviously (and Stephen H. probably agrees) be implemented in ethtool 
-instead, and opens up the question as to what changes we need to add to ethtool. ..
-
-Auke
+David Lang
