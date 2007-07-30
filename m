@@ -1,55 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968088AbXG3TJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968213AbXG3TJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968088AbXG3TJA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966625AbXG3TIr
+	id S968213AbXG3TJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967945AbXG3TIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:08:47 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33205 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967750AbXG3TIp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:08:45 -0400
-Date: Mon, 30 Jul 2007 21:08:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: david@lang.hm
-Cc: John <darknessenvelops@gmail.com>, Kasper Sandberg <lkml@metanurb.dk>,
-       ck@vds.kolivas.org, Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-Message-ID: <20070730190822.GB28554@elte.hu>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com> <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <Pine.LNX.4.64.0707300914160.11330@asgard.lang.hm> <20070730190147.GC20901@elte.hu> <Pine.LNX.4.64.0707301202260.12232@asgard.lang.hm>
+	Mon, 30 Jul 2007 15:08:50 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:40882 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967786AbXG3TIs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:08:48 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CALvTrUarR7PD/2dsb2JhbAA
+X-IronPort-AV: i="4.19,199,1183359600"; 
+   d="scan'208"; a="191251064:sNHT886878558"
+To: "Mikael Starvik" <mikael.starvik@axis.com>
+Cc: "'Adrian Bunk'" <bunk@stusta.de>, "dev-etrax" <dev-etrax@axis.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: cris port lacks a merge?
+X-Message-Flag: Warning: May contain useful information
+References: <BFECAF9E178F144FAEF2BF4CE739C668030B5C6F@exmail1.se.axis.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 30 Jul 2007 12:08:43 -0700
+In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C668030B5C6F@exmail1.se.axis.com> (Mikael Starvik's message of "Mon, 30 Jul 2007 09:44:19 +0200")
+Message-ID: <aday7gxso90.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707301202260.12232@asgard.lang.hm>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 30 Jul 2007 19:08:44.0011 (UTC) FILETIME=[0C58F3B0:01C7D2DD]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > The problem is that every time I try the following happens:
+ > 
+ > 1. I download the bleeding edge latest stuff that you can get
+ > 2. I prepare and submit patches
+ > 3. I get replies with comments on my patches
+ > 4. I fix the patches.
+ > 5. I get told that the patches are against a too old version
+ > 6. Repeat from 1.
 
-* david@lang.hm <david@lang.hm> wrote:
+One way to reduce your backlog might be to choose a small subset of
+the most urgent out of all your pending patches -- say, the minimum
+required to get cris working if it doesn't build/work in the latest
+kernel, or the most urgent bug fixes if it does still work -- and then
+update just that subset.  By reducing the number of patches, you can
+reduce the amount of time in step 4 and reduce the chance of entering
+step 5.
 
-> > ah, you mean Kasper Sandberg's report? That turned out to be based 
-> > on an older CFS version, not v2.6.23-rc1. Kasper said he'll redo his 
-> > tests, and if there's still any regression left we'll fix it.
-> 
-> probably. I delete lkml messages pretty agressivly so I don't have 
-> them around to refer to.
+Then, once that batch is merged, move on to the next most urgent set
+of patches, etc.
 
-lkml.org is your friend:
+Also, creating a git tree might make the job of rebasing patches
+easier, and also reduces the friction in getting Linus to merge your
+patches.
 
- http://lkml.org/lkml/2007/7/27/423
- http://lkml.org/lkml/2007/7/28/50
- http://lkml.org/lkml/2007/7/30/195
-
-:-)
-
-	Ingo
+ - R.
