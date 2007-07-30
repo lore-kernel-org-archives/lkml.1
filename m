@@ -1,34 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966795AbXG3QeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967024AbXG3Qen@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966795AbXG3QeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764063AbXG3Qd7
+	id S967024AbXG3Qen (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:34:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966281AbXG3QeK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:33:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:6001 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760864AbXG3Qd5 (ORCPT
+	Mon, 30 Jul 2007 12:34:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:29457 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965802AbXG3QeG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:33:57 -0400
+	Mon, 30 Jul 2007 12:34:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=ja5IdCse43XngF/6FGV2a4dqfuugMYUfyaLwrLVyCk7Ss7/5FVIjz6h54CjFz5MJ5BuD/vH/fCG+h9d950T2mbFr57NtUSN2Sclb+vvgKrYoggsveBc6/bs3Sy9MbFbMW/KLOdQ6s2miqlfnuUHXEdWmawOXGYi/ficKvhOv0rA=
-Message-ID: <46AE12EE.1070501@googlemail.com>
-Date: Mon, 30 Jul 2007 18:33:50 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=nWJ42OX7hxzRD5WkFi/dPwLTm+j7f7xfcRgzDiyw7bTKGowbZZGO0Zd7QshTvgsVXsUB5ZQ4awxcLHkPXuO5jhbsX0sogepxYtmxuJTGltudFfxQ/0fF5p+8AceUIiWk4yyhU7t2PwfHKolt6roY1Ewb/3P9QJYkMggdESxyGY4=
+Message-ID: <46AE12F5.4030706@googlemail.com>
+Date: Mon, 30 Jul 2007 18:33:57 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andre Noll <maan@systemlinux.org>,
-       Wim Van Sebroeck <wim@iguana.be>, Borislav Petkov <bbpetkov@yahoo.de>,
-       Bret Towe <magnade@gmail.com>, Nick Piggin <npiggin@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Jakub Jelinek <jakub@redhat.com>,
-       Eric Sesterhenn <snakebyte@gmx.de>, Sid Boyce <g3vbv@blueyonder.co.uk>
-Subject: [1/3] 2.6.23-rc1: known regressions v3
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Denis Sadykov <denis.m.sadykov@intel.com>, dth <dth@dth.net>,
+       Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
+       Florian Lohoff <flo@rfc822.org>,
+       =?ISO-8859-2?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
+       linux-acpi@vger.kernel.org, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       James Smart <James.Smart@emulex.com>, Adrian Bunk <bunk@stusta.de>
+Subject: Re: [2/3] 2.6.23-rc1: known regressions v3
+References: <46AE0F5D.3000500@googlemail.com>
+In-Reply-To: <46AE0F5D.3000500@googlemail.com>
 X-Enigmail-Version: 0.95.2
 Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -55,50 +61,61 @@ Hugh Dickins                           2
 
 
 
-Unclassified
+CPUFREQ/ACPI
 
-Subject         : 2.6.23-rc1-git3 init failure
-References      : http://lkml.org/lkml/2007/7/26/467
-Last known good : 2.6.23-rc1-git1
-Submitter       : Sid Boyce <g3vbv@blueyonder.co.uk>
+Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+References      : http://lkml.org/lkml/2007/7/27/298
+                  http://lkml.org/lkml/2007/7/29/371
+Last known good : ?
+Submitter       : dth <dth@dth.net>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : Time Problems with 2.6.23-rc1-gf695baf2
-References      : http://lkml.org/lkml/2007/7/23/486
-Last known good : ?
-Submitter       : Eric Sesterhenn <snakebyte@gmx.de>
-Caused-By       : ?
-Handled-By      : ?
-Status          : problem is being debugged
 
-Subject         : 2.6.23-rc1 regression: mm: fix fault vs invalidate race for linear mappings
-References      : http://lkml.org/lkml/2007/7/24/301
+
+Networking
+
+Subject         : sky2 boot crash in sky2_mac_intr
+References      : http://lkml.org/lkml/2007/7/24/91
 Last known good : ?
-Submitter       : Bret Towe <magnade@gmail.com>
-Caused-By       : Nick Piggin <npiggin@suse.de>
-                  commit d00806b183152af6d24f46f0c33f14162ca1262a
+Submitter       : Florian Lohoff <flo@rfc822.org>
+Caused-By       : 
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
+Last known good : ?
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+
+
+Power Management
+
+Subject         : New ACPI error/warning with Linus' latest GIT
+References      : http://lkml.org/lkml/2007/7/26/395
+Last known good : ?
+Submitter       : Ismail Dönmez <ismail@pardus.org.tr>
+Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : no setup signature found...
-References      : http://lkml.org/lkml/2007/7/24/168
-Last known good : ?
-Submitter       : Borislav Petkov <bbpetkov@yahoo.de>
-Caused-By       : H. Peter Anvin <hpa@zytor.com>
-                  commit 4fd06960f120e02e9abc802a09f9511c400042a5
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-Status          : problem is being debugged
 
-Subject         : /usr/bin/ld: section .text [ffffffffff700500 -> ffffffffff7007e3] overlaps section .gnu.version_d [ffffffffff7004d8 -> ffffffffff70050f]
-References      : http://lkml.org/lkml/2007/7/22/239
+
+SCSI
+
+Subject         : lpfc_sli.c: off-by-10
+References      : http://lkml.org/lkml/2007/7/22/284
 Last known good : ?
-Submitter       : Andre Noll <maan@systemlinux.org>
+Submitter       : Adrian Bunk <bunk@stusta.de>
 Caused-By       : ?
-Handled-By      : Andi Kleen <ak@suse.de>
-                  Jakub Jelinek <jakub@redhat.com>
-Status          : problem is being debugged
+Handled-By      : ?
+Status          : unknown
 
 
 
