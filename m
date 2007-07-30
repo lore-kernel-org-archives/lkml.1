@@ -1,38 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938274AbXG3DlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbXG3EAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938274AbXG3DlT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 23:41:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763376AbXG3DlM
+	id S1754581AbXG3EAT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 00:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750803AbXG3EAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 23:41:12 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40199 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936981AbXG3DlL (ORCPT
+	Mon, 30 Jul 2007 00:00:04 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:51317 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750906AbXG3EAC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 23:41:11 -0400
-Date: Mon, 30 Jul 2007 09:23:29 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 5/5] Use mutex instead of semaphore in the DVB frontend
- tuning interface
-In-Reply-To: <20070729214341.GH3432@traven>
-Message-ID: <alpine.LFD.0.999.0707300923070.10861@enigma.security.iitk.ac.in>
-References: <20070729212909.GC3432@traven> <20070729214341.GH3432@traven>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 30 Jul 2007 00:00:02 -0400
+To: menage@google.com
+Cc: akpm@linux-foundation.org, dev@sw.ru, xemul@sw.ru, serue@us.ibm.com,
+       vatsa@in.ibm.com, ebiederm@xmission.com, haveblue@us.ibm.com,
+       svaidy@linux.vnet.ibm.com, balbir@in.ibm.com, pj@sgi.com,
+       ckrm-tech@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, rohitseth@google.com
+Subject: Re: [PATCH 01/10] Task Containers(V11): Basic task container
+ framework
+In-Reply-To: Your message of "Fri, 20 Jul 2007 11:31:53 -0700"
+	<20070720191247.388947000@menage.corp.google.com>
+References: <20070720191247.388947000@menage.corp.google.com>
+X-Mailer: Cue version 0.8 (070404-1613/takashi)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Message-Id: <20070730040000.5EF111BF6B4@siro.lan>
+Date: Mon, 30 Jul 2007 13:00:00 +0900 (JST)
+From: yamamoto@valinux.co.jp (YAMAMOTO Takashi)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> +extern void container_init_smp(void);
 
+> +static inline void container_init_smp(void) {}
 
-On Sun, 29 Jul 2007, Matthias Kaehlcke wrote:
+stale prototypes?
 
-> The DVB frontend tuning interface uses a semaphore as mutex. Use the
-> mutex API instead of the (binary) semaphore.
-> 
-> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-
-Reviewed-by: Satyam Sharma <satyam@infradead.org>
+YAMAMOTO Takashi
