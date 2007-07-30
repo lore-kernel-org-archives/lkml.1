@@ -1,44 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939264AbXG3Q6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966146AbXG3RAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939264AbXG3Q6m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936408AbXG3Q6d
+	id S966146AbXG3RAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936408AbXG3RAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:58:33 -0400
-Received: from CPE0050fc332afc-CM00407b861c34.cpe.net.cable.rogers.com ([74.120.60.167]:53454
-	"EHLO nk-1124.localdomain" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1764437AbXG3Q6c (ORCPT
+	Mon, 30 Jul 2007 13:00:44 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:53117 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933851AbXG3RAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:58:32 -0400
-Message-ID: <46AE18AE.50305@tigershaunt.com>
-Date: Mon, 30 Jul 2007 12:58:22 -0400
-From: Rashkae <rashkae@tigershaunt.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20060913)
+	Mon, 30 Jul 2007 13:00:42 -0400
+Date: Mon, 30 Jul 2007 12:00:40 -0500
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Jeff Garzik <jeff@garzik.org>, Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Andrew Gallatin <gallatin@myri.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP traffic
+Message-ID: <20070730170038.GA4884@austin.ibm.com>
+References: <200707301724.33865.ossthema@de.ibm.com>
 MIME-Version: 1.0
-To: schwidefsky@de.ibm.com
-CC: Matthew Hawkins <darthmdh@gmail.com>, ck@vds.kolivas.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>	<1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>	<930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>	<20070729204716.GB1578@elte.hu>	<930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>	<20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>	<d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>	<b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com> <1185814243.7377.2.camel@localhost>
-In-Reply-To: <1185814243.7377.2.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707301724.33865.ossthema@de.ibm.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-
+On Mon, Jul 30, 2007 at 05:24:33PM +0200, Jan-Bernd Themann wrote:
 > 
-> Do we care ? The code should be replaced with ptep_get_and_clear +
-> pte_modify anyway..
+> Changes to http://www.spinics.net/lists/netdev/msg36912.html
 > 
+> 1) A new field called "features" has been added to the net_lro_mgr struct.
+>    It is set by the driver to indicate:
+>    - LRO_F_NAPI:            Use NAPI / netif_rx to pass packets to stack
+> 
+>    - LRO_F_EXTRACT_VLAN_ID: Set by driver if HW extracts VLAN IDs for VLAN
+>         packets but does not modify ETH protocol (ETH_P_8021Q)
+> 
+> 2) Padded frames are not aggregated for now. Bug fixed
+> 
+> 3) Correct header length now used. No minimal header length for aggregated
+>    packets used anymore.
+> 
+> 4) Statistic counters were introduced. They are stored in a new struct in
+>    the net_lro_mgr. This has the advantage that no locking is required in
+>    cases where the driver uses multiple lro_mgrs for different receive queues.
+>    Thus we get the following statistics per lro_mgr / eth device:
+>    - Number of aggregated packets
+>    - Number of flushed packets
+>    - Number of times we run out of lro_desc.
+> 
+>    The ratio of "aggregated packets" and "flushed packets" give you an
+>    idea how well LRO is working.
 
-Since the general direction of this thread was for people to test 3D 
-game performance with the shiny new CFS cpu scheduler, I would say yes, 
-we do care if people with the only 2 types of gaming caliber Video cards 
-can get said video cards working, right now, with said shiny new kernel.
+I'd like to see an edited form of this, together with an introduction to
+LRO, written up in the Documentation subdirectory.  
 
-Yes yes, I know, kernel devs don't care if they break binary drivers... 
-and in principle, I agree with that philosophy.. but it's still damn 
-inconvenient at times :)
+As someone with some driver experience, but not on te bleeding edge,
+some basc newbie questions pop into mind:
+
+-- what is LRO?
+-- Basic principles of operation?
+-- Can I use it in my driver?  
+-- Does my hardware have to have some special feature before I can use it?
+-- What sort of performance improvement does it provide? Throughput?
+   Latency? CPU usage? How does it affect DMA allocation? Does it 
+   improve only a certain type of traffic (large/small packets, etc.)
+-- Example code? What's the API? How should my driver use it?
+
+Right now, I can maybe find answers by doing lots of googling.  I'd like
+to have some quick way of getting a grip on this.
+
+--linas
+   
