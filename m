@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966691AbXG3RC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966890AbXG3RDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966691AbXG3RC7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965513AbXG3RCv
+	id S966890AbXG3RDz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965712AbXG3RDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:02:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:22135 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965025AbXG3RCu convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jul 2007 13:03:47 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:26756 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964789AbXG3RDq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:02:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,199,1183359600"; 
-   d="scan'208";a="111465981"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 30 Jul 2007 13:03:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=d2SBcXJ3sv80LVz2hRbI+Ezx8cqJzM4s1H0H8MC/LNyy27qZRO09w7OpihXQ9k3ZQhH9VWUCFKdqgXwovwOR50tol560Tps67CNVivE1mK+CnkHz6wUr1DMPlgZB0uC0vUzZCTQ0kTSNaTDkl3sW+VGSiJ5l/6HwuzKQ0iye27U=
+Message-ID: <46AE18DE.5010704@googlemail.com>
+Date: Mon, 30 Jul 2007 18:59:10 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] Fix ENOSYS undeclared errors from linux/pm.h
-Date: Mon, 30 Jul 2007 10:02:47 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A0209C217@scsmsx411.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] Fix ENOSYS undeclared errors from linux/pm.h
-Thread-Index: AcfSy3RSY07jDJE7ScO400pQ0g5Ekg==
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "LKML" <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 30 Jul 2007 17:02:48.0942 (UTC) FILETIME=[752CE8E0:01C7D2CB]
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: dbrownell@users.sourceforge.net, linux-usb-devel@lists.sourceforge.net,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: drivers/usb/gadget/dummy_hcd.c - DEBUG redefined warnings 
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With CONFIG_SUSPEND=n I get build errors from at least a couple of
-files because of the use of ENOSYS in the stub for pm_suspend().
-Should those .c files be forced to include errno.h?  Or should we
-have the include in pm.h?  Assuming the latter ...
+Hi,
 
-Signed-off-by: Tony Luck <tony.luck@intel.com>
+I noticed the following warnings with a randconfig ( http://194.231.229.228/git-current/randconfig-auto-34 ):
 
----
+...
 
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index e52f6f8..a90c020 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -23,6 +23,7 @@
- 
- #ifdef __KERNEL__
- 
-+#include <linux/errno.h>
- #include <linux/list.h>
- #include <asm/atomic.h>
- 
+ CC [M]  drivers/usb/gadget/dummy_hcd.o
+drivers/usb/gadget/dummy_hcd.c:37:1: warning: "DEBUG" redefined
+<command-line>: warning: this is the location of the previous definition
+  CC      drivers/scsi/scsi_transport_sas.o
+  CC      drivers/usb/core/notify.o
+  CC      drivers/usb/core/generic.o
+drivers/usb/gadget/dummy_hcd.c:37:1: warning: "DEBUG" redefined
+<command-line>: warning: this is the location of the previous definition
+
+...
+
+
+Line 37 is #define DEBUG , is that really needed ?
+
+
+
+Regards,
+
+Gabriel C
