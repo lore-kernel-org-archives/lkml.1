@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934687AbXG3O0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935003AbXG3O1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934687AbXG3O0b (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 10:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762653AbXG3O0Y
+	id S935003AbXG3O1h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 10:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760645AbXG3O12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 10:26:24 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:59574 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762646AbXG3O0X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 10:26:23 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jan Kratochvil <jan.kratochvil@redhat.com>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, Maxim Levitsky <maximlevitsky@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUG] i386 relocable kernel breakes /proc/kcore debugging
-References: <200707280443.44048.maximlevitsky@gmail.com>
-	<20070730080303.GA6071@in.ibm.com>
-	<20070730084116.GA18263@host0.dyn.jankratochvil.net>
-Date: Mon, 30 Jul 2007 08:23:11 -0600
-In-Reply-To: <20070730084116.GA18263@host0.dyn.jankratochvil.net> (Jan
-	Kratochvil's message of "Mon, 30 Jul 2007 10:41:16 +0200")
-Message-ID: <m11weqvuls.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Mon, 30 Jul 2007 10:27:28 -0400
+Received: from ns1.suse.de ([195.135.220.2]:58395 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760619AbXG3O11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 10:27:27 -0400
+Date: Mon, 30 Jul 2007 16:27:25 +0200
+From: Karsten Keil <kkeil@suse.de>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>, kkeil@suse.de,
+       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 4/5] Use mutex instead of semaphore in ISDN subsystem common functions
+Message-ID: <20070730142725.GA13520@pingi.kke.suse.de>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	kkeil@suse.de, kai.germaschewski@gmx.de,
+	isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
+	akpm@linux-foundation.org
+References: <20070729212909.GC3432@traven> <20070729214105.GG3432@traven>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070729214105.GG3432@traven>
+Organization: SuSE Linux AG
+X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kratochvil <jan.kratochvil@redhat.com> writes:
+On Sun, Jul 29, 2007 at 11:41:05PM +0200, Matthias Kaehlcke wrote:
+> The ISDN subsystem common functions use a semaphore as mutex. Use the
+> mutex API instead of the (binary) semaphore.
+> 
+> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> 
 
-> On Mon, 30 Jul 2007 10:03:03 +0200, Vivek Goyal wrote:
->> On Sat, Jul 28, 2007 at 04:43:43AM +0300, Maxim Levitsky wrote:
-> ...
->> > gdb 'thinks' that all kernel symbols are below 0x80000000 , while they are
-> at
->> > 0xC000....
->> > 
->> > Turning CONFIG_RELOCATABLE off fixes that, so I assume that is the reason
-> for
->> > that.
->> 
->> This is a gdb issue. I had raised it in gdb mailing list some time back.
->> 
->> http://sourceware.org/ml/gdb/2006-08/msg00137.html
->
-> There was the patch post:
-> 	http://sources.redhat.com/ml/gdb/2006-08/msg00182.html
->
->> What version of gdb you are using? I know it got fixed for gdb shipped
->> with RHEL5. I am not sure about what upstream version of gdb it got fixed
->> in.
->
-> It did not make it to the upstream as the patch above is an imperfect one.
-> It is fixed in RH gdb-6.5-5 upwards, therefore Fedora 6 + RHEL-5.
-> 	http://cvs.fedora.redhat.com/viewcvs/*checkout*/devel/gdb/gdb-6.5-bz203661-emit-relocs.patch?root=core
+Acked-by: Karsten Keil <kkeil@suse.de>
 
-Has anyone looked at the filtering by ignoring SHTSYM_TAB?  The other
-approach suggested?  The patch above only works for ET_EXEC because
-we can safely ignore everything.
-
-Eric
+-- 
+Karsten Keil
+SuSE Labs
+ISDN and VOIP development
+SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
