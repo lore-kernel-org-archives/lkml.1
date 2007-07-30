@@ -1,180 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968335AbXG3TUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934214AbXG3TY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968335AbXG3TUb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967219AbXG3TUX
+	id S934214AbXG3TY7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbXG3TYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:20:23 -0400
-Received: from dxa01.wellsfargo.com ([151.151.65.117]:40725 "EHLO
-	dxa01.wellsfargo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967172AbXG3TUW convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jul 2007 15:24:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51356 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753125AbXG3TYu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:20:22 -0400
-X-Greylist: delayed 1090 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 15:20:22 EDT
-content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6619.12
-Subject: ATI driver problems.
-Date: Mon, 30 Jul 2007 14:01:48 -0500
-Message-ID: <1E7A4807A136DF45AD33DB341D93C3BD0BDFF1@msgswbmnmsp46.wellsfargo.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: ATI driver problems.
-Thread-Index: AcfS2pHTEd1w6K/qTpim1T8R00RfDQAAO5BQ
-From: <Greg.Chandler@wellsfargo.com>
-To: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 30 Jul 2007 19:01:51.0032 (UTC) FILETIME=[16315B80:01C7D2DC]
-X-WFMX: 0
+	Mon, 30 Jul 2007 15:24:50 -0400
+Date: Mon, 30 Jul 2007 16:15:14 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB fixes
+Message-Id: <1185823468.8997.91.camel@gaivota>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Just thought I would pass this along, hopefully everyone will stop
-buying the hardware....
-If anyone has contacts at ATI they might want to let them know they are
-pissing off the community every time they send this response out.
-
-I especially liked the part at the bottom where it talks about
-"reporting issues".  
-
-
-
---- Original Message ---
-Date: 7/30/2007
-From: "AMD - Customer Care" <customercare@ati.com>
-Subject: Ticket #737-1250618: Responded (kernel module refuses to load)
-
-
-We have responded to your issue.
-
-Solution:	Dear Greg,
-
-Thank you for contacting AMD Global Customer Care for ATI Products.
-
-In order to address your issue related to LINUX support for ATI Video
-cards, please refer to the following information:
-
-
-
-Although we have drivers for Linux posted on the ATI website, we do not
-provide technical support for driver or multimedia issues in Linux
-directly.
-
-The Linux drivers available from AMD are provided are "as is".
-
-
-
-If you are looking for drivers then go to:
-http://ati.amd.com/support/driver.html
-<http://ati.amd.com/support/driver.html>
-
-For information regarding the ATI Proprietary Linux Driver visit:
-http://www.ati.com/products/catalyst/linux.html
-<http://www.ati.com/products/catalyst/linux.html>
-
-
-
-Our web site offers several links to Linux support websites that may
-help you.
-
-
-
-The link below has information that might be helpful to your case. Our
-Engineers are informal contributors.
-
-
-
-http://wiki.cchtml.com/index.php/Main_Page\
-<http://wiki.cchtml.com/index.php/Main_Page/>
-
-
-
-
-
-There are also very good articles from third parties:
-
-
-
-1.
-http://www.rage3d.com/content/articles/atilinuxhowto/Linux_ATI.html#SECT
-ION000140000000000000000
-<http://www.rage3d.com/content/articles/atilinuxhowto/Linux_ATI.html#SEC
-TION000140000000000000000>
-
-
-
-2.	http://www.linux.org/help/index.html
-<http://www.linux.org/help/index.html>
-
-
-
-3.	http://www.linuxdoc.org/ <http://www.linuxdoc.org/>
-
-
-
-4.	http://www.xfree86.org/ <http://www.xfree86.org/>
-
-
-
-
-
-
-
-To report issues with Linux drivers you can submit an online ticket
-using the "Linux Driver Feedback" category, and your report will be
-received and reviewed/tested by our driver team. Please note that your
-report will only be responded to if we require additional information.
-We do not respond to all support inquires.
-
-
-
-For the Linux Driver Feedback submission page, visit.
-
-
-
-http://support.ati.com/ics/survey/survey.asp?deptID=894&surveyID=508&typ
-e=web
-<http://support.ati.com/ics/survey/survey.asp?deptID=894&surveyID=508&ty
-pe=web>
-
-
-
-Regards,
-
-Russ T.
-
-
-
-Thank you for choosing AMD!
-
-AMD Global Customer Care for ATI products
-
-
-
-
-Ticket Information:
-Ticket #:	737-1250618
-Date Created:	7/25/2007 10:51 PM EDT
-Category:	 Linux Driver Feedback
-
-To update or check the status of this Ticket:
-- Go to:
-http://support.ati.com/ics/support/default.asp?deptID=894&ticketID=12506
-18
-- Log in, and you will be automatically taken to the Ticket page.
-
-
-
-Customer Care
-ATI Technologies Inc.
-ati.com <http://www.ati.com>
-
-
-
-
-
-Powered by Parature <http://www.parature.com>
+Linus,
+
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
+
+For some fixes at V4L/DVB drivers:
+
+   - zr36067: proper standard handling, proper raw capture, fix at 
+     poll(), V4L2 API compliance for image size and video formats;
+   - bttv: fix for Viewcast Osprey 440;
+   - usbvision: fix a regression caused by [sg]_register functions;
+   - ivtv: fix pause/continue/play handling, mailbox responsiveness, 
+     TV-out VBI handling, and reports fw size correcltly;
+   - Af9005: fix tuner module unload and fixes error checking;
+   - dvb-pll: make struct dvb_pll_fcv1236d static
+
+Also, one fix at a DVB API header:
+   - video.h: fix includes for userspace;
+
+Cheers,
+Mauro.
+
+---
+
+ drivers/media/dvb/dvb-usb/af9005-fe.c           |   47 ++---
+ drivers/media/dvb/frontends/dvb-pll.c           |    2 +-
+ drivers/media/video/bt8xx/bttv-cards.c          |  238 +++++++++++++----------
+ drivers/media/video/ivtv/ivtv-driver.h          |    1 +
+ drivers/media/video/ivtv/ivtv-fileops.c         |   10 +
+ drivers/media/video/ivtv/ivtv-firmware.c        |    2 +-
+ drivers/media/video/ivtv/ivtv-ioctl.c           |   11 +-
+ drivers/media/video/ivtv/ivtv-mailbox.c         |   14 +-
+ drivers/media/video/ivtv/ivtv-streams.c         |   11 +-
+ drivers/media/video/usbvision/usbvision-video.c |    5 +-
+ drivers/media/video/zoran.h                     |    5 +
+ drivers/media/video/zoran_device.c              |   50 ++----
+ drivers/media/video/zoran_driver.c              |  233 +++++++++++++----------
+ include/linux/dvb/video.h                       |    1 +
+ sound/pci/bt87x.c                               |    2 +
+ 15 files changed, 343 insertions(+), 289 deletions(-)
+
+Adrian Bunk (2):
+      V4L/DVB (5933): Dvb-usb/af9005-fe.c: error check fixes
+      V4L/DVB (5939): dvb-pll: make struct dvb_pll_fcv1236d static
+
+Anssi Hannula (1):
+      V4L/DVB (5893): DVB: fix includes of video.h when __KERNEL__ is undefined
+
+Hans Verkuil (4):
+      V4L/DVB (5916): ivtv: fix pause/continue/play handling
+      V4L/DVB (5917): ivtv: improve mailbox responsiveness.
+      V4L/DVB (5918): ivtv: fix TV-out VBI handling, only reset on last close.
+      V4L/DVB (5920): ivtv: fix incorrect fw size report.
+
+Luca Olivetti (1):
+      V4L/DVB (5932): Af9005 fix tuner module unload
+
+Trent Piepho (7):
+      V4L/DVB (5886): zr36067: Fix problem setting norms
+      V4L/DVB (5887): zr36067: Fix poll() operation
+      V4L/DVB (5888): zr36067: Driver was not returning correct image size
+      V4L/DVB (5890): zr36067: Add UYVY, RGB555X, RGB565X, and RGB32 formats
+      V4L/DVB (5891): zr36067: Turn off raw capture properly
+      V4L/DVB (5899): bttv: Fix Viewcast Osprey 440 support
+      V4L/DVB (5900): usbvision: fix bugs [sg]_register functions
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
 
