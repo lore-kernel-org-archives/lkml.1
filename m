@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968213AbXG3TJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967966AbXG3TJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968213AbXG3TJX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967945AbXG3TIu
+	id S967966AbXG3TJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968154AbXG3TJA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:08:50 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:40882 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967786AbXG3TIs (ORCPT
+	Mon, 30 Jul 2007 15:09:00 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:7747 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968147AbXG3TI7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:08:48 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CALvTrUarR7PD/2dsb2JhbAA
-X-IronPort-AV: i="4.19,199,1183359600"; 
-   d="scan'208"; a="191251064:sNHT886878558"
-To: "Mikael Starvik" <mikael.starvik@axis.com>
-Cc: "'Adrian Bunk'" <bunk@stusta.de>, "dev-etrax" <dev-etrax@axis.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: cris port lacks a merge?
-X-Message-Flag: Warning: May contain useful information
-References: <BFECAF9E178F144FAEF2BF4CE739C668030B5C6F@exmail1.se.axis.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 30 Jul 2007 12:08:43 -0700
-In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C668030B5C6F@exmail1.se.axis.com> (Mikael Starvik's message of "Mon, 30 Jul 2007 09:44:19 +0200")
-Message-ID: <aday7gxso90.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Mon, 30 Jul 2007 15:08:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ZwQKM6+6WjBbcERIw9u/NuCYL9/+ZOTpW3F+bKxUNha9+7im6cGb6wNvtvlw+yv+mTHP+MxYedhcmxhDk/CIMSs4Vh8KNoBRhqqfvHxtbEaTq83QaeA+46736ZIdmC0/l1+W60WazfeBytysr2QnUgO3+vhlDllahyap9IwPsFw=
+Date: Mon, 30 Jul 2007 23:08:46 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       viro@ftp.linux.org.uk
+Subject: [PATCH] Fallout from "Remove fs.h from mm.h" patch
+Message-ID: <20070730190846.GC5776@martell.zuzino.mipt.ru>
+References: <20070729223613.GA5916@martell.zuzino.mipt.ru> <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 30 Jul 2007 19:08:44.0011 (UTC) FILETIME=[0C58F3B0:01C7D2DD]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > The problem is that every time I try the following happens:
- > 
- > 1. I download the bleeding edge latest stuff that you can get
- > 2. I prepare and submit patches
- > 3. I get replies with comments on my patches
- > 4. I fix the patches.
- > 5. I get told that the patches are against a too old version
- > 6. Repeat from 1.
+While I was busy compile-testing my patch, ENOSYS sneaked into pm.h leading to some
+compile-breakages mostly on ia64 and some mips configs.
 
-One way to reduce your backlog might be to choose a small subset of
-the most urgent out of all your pending patches -- say, the minimum
-required to get cris working if it doesn't build/work in the latest
-kernel, or the most urgent bug fixes if it does still work -- and then
-update just that subset.  By reducing the number of patches, you can
-reduce the amount of time in step 4 and reduce the chance of entering
-step 5.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Then, once that batch is merged, move on to the next most urgent set
-of patches, etc.
+ include/linux/pm.h |    1 +
+ 1 file changed, 1 insertion(+)
 
-Also, creating a git tree might make the job of rebasing patches
-easier, and also reduces the friction in getting Linus to merge your
-patches.
+--- a/include/linux/pm.h
++++ b/include/linux/pm.h
+@@ -25,6 +25,7 @@
+ 
+ #include <linux/list.h>
+ #include <asm/atomic.h>
++#include <asm/errno.h>
+ 
+ /*
+  * Power management requests... these are passed to pm_send_all() and friends.
 
- - R.
