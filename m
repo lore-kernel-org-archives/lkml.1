@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935738AbXG3O2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936056AbXG3O3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935738AbXG3O2a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 10:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761858AbXG3O2W
+	id S936056AbXG3O3h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 10:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761858AbXG3O30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 10:28:22 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:42592 "EHLO e2.ny.us.ibm.com"
+	Mon, 30 Jul 2007 10:29:26 -0400
+Received: from lucidpixels.com ([75.144.35.66]:44465 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760645AbXG3O2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 10:28:21 -0400
-Date: Mon, 30 Jul 2007 19:58:18 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Containers <containers@lists.osdl.org>,
-       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
-       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Linux MM Mailing List <linux-mm@kvack.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Pavel Emelianov <xemul@openvz.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Eric W Biederman <ebiederm@xmission.com>
-Subject: Re: [-mm PATCH 6/9] Memory controller add per container LRU and reclaim (v4)
-Message-ID: <20070730142818.GB22345@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <20070727200937.31565.78623.sendpatchset@balbir-laptop> <20070727201041.31565.14803.sendpatchset@balbir-laptop> <20070730133758.GB22952@linux.vnet.ibm.com>
+	id S1760645AbXG3O3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 10:29:24 -0400
+Date: Mon, 30 Jul 2007 10:29:23 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: linux-kernel@vger.kernel.org
+cc: linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com, linux-raid@vger.kernel.org
+Subject: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on
+ software raid 5
+Message-ID: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070730133758.GB22952@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 07:07:58PM +0530, Dhaval Giani wrote:
-> Hi Balbir,
-> 
-> > diff -puN mm/memcontrol.c~mem-control-lru-and-reclaim mm/memcontrol.c
-> > --- linux-2.6.23-rc1-mm1/mm/memcontrol.c~mem-control-lru-and-reclaim	2007-07-28 01:12:50.000000000 +0530
-> > +++ linux-2.6.23-rc1-mm1-balbir/mm/memcontrol.c	2007-07-28 01:12:50.000000000 +0530
-> 
-> >  /*
-> >   * The memory controller data structure. The memory controller controls both
-> > @@ -51,6 +54,10 @@ struct mem_container {
-> >  	 */
-> >  	struct list_head active_list;
-> >  	struct list_head inactive_list;
-> > +	/*
-> > +	 * spin_lock to protect the per container LRU
-> > +	 */
-> > +	spinlock_t lru_lock;
-> >  };
-> 
-> The spinlock is not annotated by lockdep. The following patch should do
-> it.
-> 
-> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> Signed-off-by: Gautham Shenoy R <ego@in.ibm.com>
-		 ^^^^^^^^^^^^^^^^
-		 Gautham R Shenoy
-> 
-> 
-> Index: linux-2.6.23-rc1/mm/memcontrol.c
-> ===================================================================
-> --- linux-2.6.23-rc1.orig/mm/memcontrol.c	2007-07-30 17:27:24.000000000 +0530
-> +++ linux-2.6.23-rc1/mm/memcontrol.c	2007-07-30 18:43:40.000000000 +0530
-> @@ -501,6 +501,9 @@
-> 
->  static struct mem_container init_mem_container;
-> 
-> +/* lockdep should know about lru_lock */
-> +static struct lock_class_key lru_lock_key;
-> +
->  static struct container_subsys_state *
->  mem_container_create(struct container_subsys *ss, struct container *cont)
->  {
-> @@ -519,6 +522,7 @@
->  	INIT_LIST_HEAD(&mem->active_list);
->  	INIT_LIST_HEAD(&mem->inactive_list);
->  	spin_lock_init(&mem->lru_lock);
-> +	lockdep_set_class(&mem->lru_lock, &lru_lock_key);
->  	mem->control_type = MEM_CONTAINER_TYPE_ALL;
->  	return &mem->css;
->  }
-> -- 
-> regards,
-> Dhaval
-> 
-> I would like to change the world but they don't give me the source code!
+CONFIG:
 
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Software RAID 5 (400GB x 6): Default mkfs parameters for all filesystems.
+Kernel was 2.6.21 or 2.6.22, did these awhile ago.
+Hardware was SATA with PCI-e only, nothing on the PCI bus.
+
+ZFS was userspace+fuse of course.
+Reiser was V3.
+EXT4 was created using the recommended options on its project page.
+
+RAW:
+
+ext2,7760M,56728,96.3333,180505,51,85484,17.3333,50946.7,80.3333,235541,21.3333,373.667,0,16:100000:16/64,2354,27,0,0,8455.67,14.6667,2211.67,26.3333,0,0,9724,22.3333
+ext3,7760M,52702.7,94.3333,165005,60,82294.7,20.6667,52664,83.6667,258788,33.3333,335.8,0,16:100000:16/64,858.333,10.6667,10250.3,28.6667,4084,15,897,12.6667,4024.33,12.3333,2754,11.3333
+ext4,7760M,53129.7,95,164515,59.3333,101678,31.6667,62194.3,98.6667,266716,22.3333,405.767,0,16:100000:16/64,1963.67,23.6667,0,0,20859,73.6667,1731,21.3333,9022,23.6667,16410,65.6667
+jfs,7760M,54606,92,191997,52,112764,33.6667,63585.3,99,274921,22.3333,383.8,0,16:100000:16/64,344,1,0,0,539.667,0,297.667,1,0,0,340,0
+reiserfs,7760M,51056.7,96,180607,67,106907,38.3333,61231.3,97.6667,275339,29.3333,441.167,0,16:100000:16/64,2516,60.6667,19174.3,60.6667,8194.33,54.3333,2011,42.6667,6963.67,19.6667,9168.33,68.6667
+xfs,7760M,52985.7,93,158342,45,79682,14,60547.3,98,239101,20.3333,359.667,0,16:100000:16/64,415,4,0,0,1774.67,10.6667,454,4.66667,14526.3,40,1572,12.6667
+zfs,7760M,25601,43.3333,32198.7,4,13266.3,2,44145.3,68.6667,129278,9,245.167,0,16:100000:16/64,218.333,2,2698.33,11.6667,7434.67,14.3333,244,2,2191.33,11.6667,5613.33,13.3333
+
+HTML
+
+http://home.comcast.net/~jpiszcz/benchmark/allfs.html
+
+THOUGHTS
+
+Overall JFS seems the fastest but reviewing the mailing list for JFS it 
+seems like there a lot of problems, especially when people who use JFS > 1 
+year, their speed goes to 5 MiB/s over time and the defragfs tool has been 
+removed(?) from the source/Makefile and on Google it says not to use it 
+due to corruption.
+
+Justin.
