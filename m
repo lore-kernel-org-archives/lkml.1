@@ -1,193 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939664AbXG3Tp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939543AbXG3Tss@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939664AbXG3Tp4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938401AbXG3Tpj
+	id S939543AbXG3Tss (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:48:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935288AbXG3Tsd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:45:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:38163 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S938970AbXG3Tph (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:45:37 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX18CexNSihQCR33NYuXVyk5LbC+sTgV6BaJqxcUHj1
-	CAWr6kaVIF43at
-Message-ID: <46AE3F8A.6040404@gmx.net>
-Date: Mon, 30 Jul 2007 21:44:10 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Mon, 30 Jul 2007 15:48:33 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51883 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935029AbXG3Tsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:48:31 -0400
+Message-ID: <46AE4060.7020604@garzik.org>
+Date: Mon, 30 Jul 2007 15:47:44 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, dgc@sgi.com
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: fallocate() man page - darft 2
-References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124601.GA22961@amitarora.in.ibm.com> <20070714082342.174830@gmx.net> <20070716053235.GA10945@amitarora.in.ibm.com> <46A44629.3090107@gmx.net> <20070723131039.GA29198@amitarora.in.ibm.com>
-In-Reply-To: <20070723131039.GA29198@amitarora.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jarek Poplawski <jarkao2@o2.pl>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marcin ??lusarz <marcin.slusarz@gmail.com>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Gortmaker <p_gortmaker@yahoo.com>
+Subject: Re: [PATCH][netdrvr] lib8390: comment on locking by Alan Cox Re:
+ 2.6.20->2.6.21 - networking dies after random time
+References: <JKE37W$0126317E099DF36884CC046B6F8A7AA9@xandmail.com> <20070629150759.GC2771@ff.dom.local> <4bacf17f0707222244p664e7a6ap850b3357a57d73c@mail.gmail.com> <20070724080534.GC18740@elte.hu> <20070724094202.GA11610@elte.hu> <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <20070725135718.GB1843@ff.dom.local> <20070725154656.54fd6f13@the-village.bc.nu> <20070726124401.GC3423@ff.dom.local>
+In-Reply-To: <20070726124401.GC3423@ff.dom.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amit, David,
+Jarek Poplawski wrote:
+> Hi,
+> 
+> Very below is my patch proposal with a comment, which in my opinion
+> is precious enough to save it for future help in reading and
+> understanding the code.
+> 
+> I hope Alan will not blame me I've not asked for his permission before
+> sending, and he would ack this patch as it is or at least most of this.
+> 
+> Thanks & regards,
+> Jarek P.
+> 
+> On Wed, Jul 25, 2007 at 03:46:56PM +0100, Alan Cox wrote:
+>>>> The code in question lib8390.c does
+>>>>
+>>>> 	disable_irq();
+>>>> 	fiddle_with_the_network_card_hardware()
+>>>> 	enable_irq();
+>>> ...
+>>>> No idea how this affects the network card, as the code there must be
+>>>> able to handle interrupts, which are not originated from the card due to
+>>>> interrupt sharing.
+>>> I think, in this last yesterday's patch Ingo could be right, yet!
+>>> The comment at the beginnig points this is done like that because
+>>> of chip's slowness. And problems with timing are mysterious.
+>>>
+>>> On the other hand author of this code didn't use spin_lock_irqsave
+>>> for some reason, probably after testing this option too. So, I hope
+>>> this is the right path, but alas, I'm not sure this patch has to
+>>> prove this 100%.
+>> The author (me) didn't use spin_lock_irqsave because the slowness of the
+>> card means that approach caused horrible problems like losing serial data
+>> at 38400 baud on some chips. Rememeber many 8390 nics on PCI were ISA
+>> chips with FPGA front ends.
+>>
+>>> Anyway, in my opinion this situation where interrupts could/have_to
+>>> be used for such strange things should confirm the need of more
+>>> options for handling irqs individually.
+>> Ok the logic behind the 8390 is very simple:
+>>
+>> Things to know
+>> 	- IRQ delivery is asynchronous to the PCI bus
+>> 	- Blocking the local CPU IRQ via spin locks was too slow
+>> 	- The chip has register windows needing locking work
+>>
+>> So the path was once (I say once as people appear to have changed it
+>> in the mean time and it now looks rather bogus if the changes to use
+>> disable_irq_nosync_irqsave are disabling the local IRQ)
+>>
+>>
+>> 	Take the page lock
+>> 	Mask the IRQ on chip
+>> 	Disable the IRQ (but not mask locally- someone seems to have
+>> 		broken this with the lock validator stuff)
+>> 		[This must be _nosync as the page lock may otherwise
+>> 			deadlock us]
+>> 	Drop the page lock and turn IRQs back on
+>> 	
+>> 	At this point an existing IRQ may still be running but we can't
+>> 	get a new one
+>>
+>> 	Take the lock (so we know the IRQ has terminated) but don't mask
+>> the IRQs on the processor
+>> 	Set irqlock [for debug]
+>>
+>> 	Transmit (slow as ****)
+>>
+>> 	re-enable the IRQ
+>>
+>>
+>> We have to use disable_irq because otherwise you will get delayed
+>> interrupts on the APIC bus deadlocking the transmit path.
+>>
+>> Quite hairy but the chip simply wasn't designed for SMP and you can't
+>> even ACK an interrupt without risking corrupting other parallel
+>> activities on the chip.
+>>
+>> Alan
+>>
+> ------>
+> 
+> From: Jarek Poplawski <jarkao2@o2.pl>
+> 
+> Subject: lib8390: comment on locking by Alan Cox
+> 
+> Additional explanation of problems with locking by Alan Cox.
+> 
+> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+> Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+> Cc: Jeff Garzik <jeff@garzik.org>
 
-I've edited the previous version of the page, adding David's license, and
-integrating Amit's comments.  I've also added a few new FIXMES.  ("FIXME
-Amit" again.)
-
-Could you please review the changes, and the FIXMEs.
-
-Cheers,
-
-Michael
+applied
 
 
-
-.\" Copyright (c) 2007 Silicon Graphics, Inc. All Rights Reserved
-.\" Written by Dave Chinner <dgc@sgi.com>
-.\" May be distributed as per GNU General Public License version 2.
-.\"
-.TH FALLOCATE 2 2007-07-20 "Linux" "Linux Programmer's Manual"
-.SH NAME
-fallocate \- manipulate file space
-.SH SYNOPSIS
-.nf
-.\" FIXME . eventually this #include will probably be something
-.\" different when support is added in glibc.
-.B #include <linux/falloc.h>
-.PP
-.BI "long fallocate(int " fd ", int " mode ", loff_t " offset \
-", loff_t " len ");
-.\" FIXME . check later what feature text macros are  required in
-.\" glibc
-.SH DESCRIPTION
-.BR fallocate ()
-allows the caller to directly manipulate the allocated disk space
-for the file referred to by
-.I fd
-for the byte range starting at
-.I offset
-and continuing for
-.I len
-bytes.
-.\" FIXME Amit: in other words the affected byte range
-.\" is the bytes from (offset) to (offset + len - 1), right?
-
-The
-.I mode
-argument determines the operation to be performed on the given range.
-Currently only one flag is supported for
-.IR mode :
-.TP
-.B FALLOC_FL_KEEP_SIZE
-This flag allocates and initializes to zero the disk space
-within the range specified by
-.I offset
-and
-.IR len .
-After a successful call, subsequent writes into this range
-are guaranteed not to fail because of lack of disk space.
-Preallocating zeroed blocks beyond the end of the file
-is useful for optimizing append workloads.
-Preallocating blocks does not change
-the file size (as reported by
-.BR stat (2))
-even if it is less than
-.\" FIXME Amit: "offset + len" is written here.  But should it be
-.\" "offset + len - 1" ?
-.IR offset + len .
-.\"
-.\" Note from Amit Arora:
-.\" There were few more flags which were discussed, but none of
-.\" them have been finalized upon. Here are these flags:
-.\" FA_FL_DEALLOC, FA_FL_DEL_DATA, FA_FL_ERR_FREE, FA_FL_NO_MTIME,
-.\" FA_FL_NO_CTIME
-.\" All of the above flags were debated upon and we can not say
-.\" if any/which one of these flags will make it to the later kernels.
-.PP
-If
-.B FALLOC_FL_KEEP_SIZE
-flag is not specified in
-.IR mode ,
-the default behavior is almost same as when this flag is specified.
-The only difference is that on success,
-the file size will be changed if
-.\" FIXME Amit: "offset + len" is written here.  But should it be
-.\" "offset + len - 1" ?
-.IR offset + len
-is greater than the file size.
-This default behavior closely resembles the behavior of the
-.BR posix_fallocate (3)
-library function,
-and is intended as a method of optimally implementing that function.
-.PP
-Because allocation is done in block size chunks,
-.BR fallocate ()
-may allocate a larger range than that which was specified.
-.SH RETURN VALUE
-.BR fallocate ()
-returns zero on success, or an error number on failure.
-Note that
-.\" FIXME . the library wrapper function will do the right
-.\" thing, returning -1 on error and setting errno.
-.I errno
-is not set.
-.SH ERRORS
-.TP
-.B EBADF
-.I fd
-is not a valid file descriptor, or is not opened for writing.
-.TP
-.B EFBIG
-.IR offset + len
-exceeds the maximum file size.
-.TP
-.B EINVAL
-.I offset
-was less than 0, or
-.I len
-was less than or equal to 0.
-.TP
-.B ENODEV
-.I fd
-does not refer to a regular file or a directory.
-(If
-.I fd
-is a pipe or FIFO, a different error results.)
-.TP
-.B ENOSPC
-There is not enough space left on the device containing the file
-referred to by
-.IR fd .
-.TP
-.B ESPIPE
-.I fd
-refers to a pipe or FIFO.
-.TP
-.B ENOSYS
-The file system containing the file system referred to by
-.I fd
-does not support this operation.
-.TP
-.B EINTR
-A signal was caught during execution.
-.TP
-.B EIO
-An I/O error occurred while reading from or writing to a file system.
-.TP
-.B EOPNOTSUPP
-The
-.I mode
-is not supported by the file system containing the file referred to by
-.IR fd .
-.SH VERSIONS
-.BR fallocate ()
-.\" FIXME . To confirm that this syscall does actually get released
-.\" with 2.6.23.
-is available on Linux since kernel 2.6.23.
-.SH CONFORMING
-.BR fallocate ()
-is Linux specific.
-.SH SEE ALSO
-.BR ftruncate (2),
-.BR posix_fallocate (3),
-.BR posix_fadvise (3)
