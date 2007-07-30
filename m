@@ -1,56 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939098AbXG3TeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939274AbXG3Tem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939098AbXG3TeX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934520AbXG3TeM
+	id S939274AbXG3Tem (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938989AbXG3TeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:34:12 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:5340 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763076AbXG3TeJ (ORCPT
+	Mon, 30 Jul 2007 15:34:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35541 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937192AbXG3TeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:34:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cdxEnZIn7vfgzIyvNNLXi3e1IqgUjzV99PuuERLbezSAJSRfh7uzNceDDqUv2/wHLQJQSxojxtXr2u9E0zr9R7yIL/NDSLHK7epeEEPQ+Sr/yLeFa5mmZ9VSZOIwvkUWQUHoqWOvkKHvUg6Y/0h7lp9VdX6dwLyKY1YZ3l3jUK4=
-Message-ID: <8bd0f97a0707301234y59fef765ke72490298fc94454@mail.gmail.com>
-Date: Mon, 30 Jul 2007 15:34:07 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>
-Subject: Re: [PATCH] Remove fs.h from mm.h
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       viro@ftp.linux.org.uk
-In-Reply-To: <20070730185445.GA5776@martell.zuzino.mipt.ru>
+	Mon, 30 Jul 2007 15:34:19 -0400
+Date: Mon, 30 Jul 2007 12:33:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Adam Kropelin <akropel1@rochester.rr.com>
+Cc: Nick Pasich <NewsLetters@NickAndBarb.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-usb-devel @ lists. sourceforge. net" 
+	<linux-usb-devel@lists.sourceforge.net>,
+       Al Borchers <alborchers@steinerpoint.com>,
+       "linux-kernel @ vger. kernel. org" <linux-kernel@vger.kernel.org>,
+       Peter Berger <pberger@brimson.com>
+Subject: Re: [PATCH] usb-serial: Fix edgeport regression on non-EPiC devices
+Message-ID: <20070730193339.GA31969@kroah.com>
+References: <20070729150329.GA14873@mail.kroptech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070729223613.GA5916@martell.zuzino.mipt.ru>
-	 <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org>
-	 <20070730185445.GA5776@martell.zuzino.mipt.ru>
+In-Reply-To: <20070729150329.GA14873@mail.kroptech.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/30/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> On Sun, Jul 29, 2007 at 05:08:20PM -0700, Linus Torvalds wrote:
-> > On Mon, 30 Jul 2007, Alexey Dobriyan wrote:
-> > >
-> > > Cross-compile tested without regressions on my two usual configs and (sigh):
-> > >
-> > > alpha              arm-mx1ads        mips-bigsur          powerpc-ebony
-> > ..
-> >
-> > Heh.
-> >
-> > Kudos for going above and beyond.
-> >
-> >       "But where is blackfin and frv?"
->
-> Actually frv was tested (and patched), just not glued to cross-build
-> setup, so I forgot to mention it. As for blackfin, ehh, umm, toolchain
-> issues...
+On Sun, Jul 29, 2007 at 11:03:29AM -0400, Adam Kropelin wrote:
+> Fix serious regression on non-EPiC edgeport usb-serial devices. Baud 
+> rate and MCR/LCR registers are not being written on these models due 
+> to apparent copy-n-paste errors introduced with EPiC support.
+> 
+> Failure reported by Nick Pasich <Nick@NickAndBarb.net>.
+> 
+> Signed-off-by: Adam Kropelin <akropel1@rochester.rr.com>
 
-what sort of issues ?
--mike
+Ugh, good catch on this one, sorry, it was my fault when I added the
+epic support.
+
+I'll apply this to the proper trees now and send it onward...
+
+thanks,
+
+greg k-h
