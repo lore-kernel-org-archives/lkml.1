@@ -1,52 +1,263 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966529AbXG3Csu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966532AbXG3CtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966529AbXG3Csu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 22:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966136AbXG3Cr3
+	id S966532AbXG3CtN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 22:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966186AbXG3Crb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 22:47:29 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:41611 "EHLO
+	Sun, 29 Jul 2007 22:47:31 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:41612 "EHLO
 	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S936593AbXG3CrW (ORCPT
+	with ESMTP id S936599AbXG3CrW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Jul 2007 22:47:22 -0400
-Message-Id: <20070730024719.782847315@mvista.com>
+Message-Id: <20070730024720.690642602@mvista.com>
 References: <20070730024534.369897977@mvista.com>
 User-Agent: quilt/0.46-1
-Date: Sun, 29 Jul 2007 19:45:38 -0700
+Date: Sun, 29 Jul 2007 19:45:41 -0700
 From: Daniel Walker <dwalker@mvista.com>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Content-Disposition: inline; filename=softirq-raise-wakeup-fix.patch
-Subject: [PATCH -rt 4/9] ifdef raise_softirq_irqoff wakeup
+Content-Disposition: inline; filename=pickop-rt_lock_h.patch
+Subject: [PATCH -rt 7/9] introduce PICK_FUNCTION
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-raise_softirq is called every timer interrupt in run_local_timers(),
-which causes a thread wakeup to happen every timer interrupt. This
-happens in !CONFIG_PREEMPT_SOFTIRQS, which means the wakeup is most
-likely not needed. In addition it also fouls calc_load() since it's,
-agian, observing at least one thread running on every invocation.
+PICK_FUNCTION() is similar to the other PICK_OP style macros, and was
+created to replace them all. I used variable argument macros to handle
+PICK_FUNC_2ARG/PICK_FUNC_1ARG. Otherwise the marcos are similar to the
+original macros used for semaphores. The entire system is used to do a
+compile time switch between two different locking APIs. For example,
+real spinlocks (raw_spinlock_t) and mutexes (or sleeping spinlocks).
+
+This new macro replaces all the duplication from lock type to lock type.
+The result of this patch, and the next two, is a fairly nice simplification,
+and consolidation. Although the seqlock changes are larger than the originals
+I think over all the patchset is worth while.
 
 Signed-off-by: Daniel Walker <dwalker@mvista.com>
- 
----
- kernel/softirq.c |    2 ++
- 1 file changed, 2 insertions(+)
 
-Index: linux-2.6.22/kernel/softirq.c
+---
+ include/linux/pickop.h  |   32 +++++++++++
+ include/linux/rt_lock.h |  129 +++++++++++++++---------------------------------
+ 2 files changed, 73 insertions(+), 88 deletions(-)
+
+Index: linux-2.6.22/include/linux/pickop.h
 ===================================================================
---- linux-2.6.22.orig/kernel/softirq.c
-+++ linux-2.6.22/kernel/softirq.c
-@@ -508,7 +508,9 @@ inline fastcall void raise_softirq_irqof
- {
- 	__do_raise_softirq_irqoff(nr);
+--- /dev/null
++++ linux-2.6.22/include/linux/pickop.h
+@@ -0,0 +1,32 @@
++#ifndef _LINUX_PICKOP_H
++#define _LINUX_PICKOP_H
++
++#undef TYPE_EQUAL
++#define TYPE_EQUAL(var, type) \
++		__builtin_types_compatible_p(typeof(var), type *)
++
++extern int __bad_func_type(void);
++
++#define PICK_FUNCTION(type1, type2, func1, func2, arg0, ...)		\
++do {									\
++	if (TYPE_EQUAL((arg0), type1))					\
++		func1((type1 *)(arg0), ##__VA_ARGS__);			\
++	else if (TYPE_EQUAL((arg0), type2))				\
++		func2((type2 *)(arg0), ##__VA_ARGS__);			\
++	else __bad_func_type();						\
++} while (0)
++
++#define PICK_FUNCTION_RET(type1, type2, func1, func2, arg0, ...)	\
++({									\
++	unsigned long __ret;						\
++									\
++	if (TYPE_EQUAL((arg0), type1))					\
++		__ret = func1((type1 *)(arg0), ##__VA_ARGS__);		\
++	else if (TYPE_EQUAL((arg0), type2))				\
++		__ret = func2((type2 *)(arg0), ##__VA_ARGS__);		\
++	else __ret = __bad_func_type();					\
++									\
++	__ret;								\
++})
++
++#endif /* _LINUX_PICKOP_H */
+Index: linux-2.6.22/include/linux/rt_lock.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/rt_lock.h
++++ linux-2.6.22/include/linux/rt_lock.h
+@@ -156,76 +156,40 @@ extern void fastcall rt_up(struct semaph
  
-+#ifdef CONFIG_PREEMPT_SOFTIRQS
- 	wakeup_softirqd(nr);
-+#endif
- }
+ extern int __bad_func_type(void);
  
- EXPORT_SYMBOL(raise_softirq_irqoff);
+-#undef TYPE_EQUAL
+-#define TYPE_EQUAL(var, type) \
+-		__builtin_types_compatible_p(typeof(var), type *)
+-
+-#define PICK_FUNC_1ARG(type1, type2, func1, func2, arg)			\
+-do {									\
+-	if (TYPE_EQUAL((arg), type1))					\
+-		func1((type1 *)(arg));					\
+-	else if (TYPE_EQUAL((arg), type2))				\
+-		func2((type2 *)(arg));					\
+-	else __bad_func_type();						\
+-} while (0)
++#include <linux/pickop.h>
+ 
+-#define PICK_FUNC_1ARG_RET(type1, type2, func1, func2, arg)		\
+-({									\
+-	unsigned long __ret;						\
+-									\
+-	if (TYPE_EQUAL((arg), type1))					\
+-		__ret = func1((type1 *)(arg));				\
+-	else if (TYPE_EQUAL((arg), type2))				\
+-		__ret = func2((type2 *)(arg));				\
+-	else __ret = __bad_func_type();					\
+-									\
+-	__ret;								\
+-})
+-
+-#define PICK_FUNC_2ARG(type1, type2, func1, func2, arg0, arg1)		\
+-do {									\
+-	if (TYPE_EQUAL((arg0), type1))					\
+-		func1((type1 *)(arg0), arg1);				\
+-	else if (TYPE_EQUAL((arg0), type2))				\
+-		func2((type2 *)(arg0), arg1);				\
+-	else __bad_func_type();						\
+-} while (0)
++/*
++ * PICK_SEM_OP() is a small redirector to allow less typing of the lock
++ * types struct compat_semaphore, struct semaphore, at the front of the
++ * PICK_FUNCTION macro.
++ */
++#define PICK_SEM_OP(...) PICK_FUNCTION(struct compat_semaphore,	\
++	struct semaphore, ##__VA_ARGS__)
++#define PICK_SEM_OP_RET(...) PICK_FUNCTION_RET(struct compat_semaphore,\
++	struct semaphore, ##__VA_ARGS__)
+ 
+ #define sema_init(sem, val) \
+-	PICK_FUNC_2ARG(struct compat_semaphore, struct semaphore, \
+-		compat_sema_init, rt_sema_init, sem, val)
++	PICK_SEM_OP(compat_sema_init, rt_sema_init, sem, val)
+ 
+-#define init_MUTEX(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_init_MUTEX, rt_init_MUTEX, sem)
++#define init_MUTEX(sem) PICK_SEM_OP(compat_init_MUTEX, rt_init_MUTEX, sem)
+ 
+ #define init_MUTEX_LOCKED(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_init_MUTEX_LOCKED, rt_init_MUTEX_LOCKED, sem)
++	PICK_SEM_OP(compat_init_MUTEX_LOCKED, rt_init_MUTEX_LOCKED, sem)
+ 
+-#define down(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_down, rt_down, sem)
++#define down(sem) PICK_SEM_OP(compat_down, rt_down, sem)
+ 
+ #define down_interruptible(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_down_interruptible, rt_down_interruptible, sem)
++	PICK_SEM_OP_RET(compat_down_interruptible, rt_down_interruptible, sem)
+ 
+ #define down_trylock(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_down_trylock, rt_down_trylock, sem)
++	PICK_SEM_OP_RET(compat_down_trylock, rt_down_trylock, sem)
+ 
+-#define up(sem) \
+-	PICK_FUNC_1ARG(struct compat_semaphore, struct semaphore, \
+-		compat_up, rt_up, sem)
++#define up(sem) PICK_SEM_OP(compat_up, rt_up, sem)
+ 
+ #define sem_is_locked(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_sem_is_locked, rt_sem_is_locked, sem)
++	PICK_SEM_OP_RET(compat_sem_is_locked, rt_sem_is_locked, sem)
+ 
+-#define sema_count(sem) \
+-	PICK_FUNC_1ARG_RET(struct compat_semaphore, struct semaphore, \
+-		compat_sema_count, rt_sema_count, sem)
++#define sema_count(sem) PICK_SEM_OP_RET(compat_sema_count, rt_sema_count, sem)
+ 
+ /*
+  * rwsems:
+@@ -272,58 +236,47 @@ extern void fastcall rt_downgrade_write(
+ 
+ # define rt_rwsem_is_locked(rws)	(rt_mutex_is_locked(&(rws)->lock))
+ 
+-#define init_rwsem(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_init_rwsem, rt_init_rwsem, rwsem)
+-
+-#define down_read(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read, rt_down_read, rwsem)
++#define PICK_RWSEM_OP(...) PICK_FUNCTION(struct compat_rw_semaphore,	\
++	struct rw_semaphore, ##__VA_ARGS__)
++#define PICK_RWSEM_OP_RET(...) PICK_FUNCTION_RET(struct compat_rw_semaphore,\
++	struct rw_semaphore, ##__VA_ARGS__)
++
++#define init_rwsem(rwsem) PICK_RWSEM_OP(compat_init_rwsem, rt_init_rwsem, rwsem)
++
++#define down_read(rwsem) PICK_RWSEM_OP(compat_down_read, rt_down_read, rwsem)
+ 
+ #define down_read_non_owner(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read_non_owner, rt_down_read_non_owner, rwsem)
++	PICK_RWSEM_OP(compat_down_read_non_owner, rt_down_read_non_owner, rwsem)
+ 
+ #define down_read_trylock(rwsem) \
+-	PICK_FUNC_1ARG_RET(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read_trylock, rt_down_read_trylock, rwsem)
++	PICK_RWSEM_OP_RET(compat_down_read_trylock, rt_down_read_trylock, rwsem)
+ 
+-#define down_write(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_write, rt_down_write, rwsem)
++#define down_write(rwsem) PICK_RWSEM_OP(compat_down_write, rt_down_write, rwsem)
+ 
+ #define down_read_nested(rwsem, subclass) \
+-	PICK_FUNC_2ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_read_nested, rt_down_read_nested, rwsem, subclass)
+-
++	PICK_RWSEM_OP(compat_down_read_nested, rt_down_read_nested,	\
++		rwsem, subclass)
+ 
+ #define down_write_nested(rwsem, subclass) \
+-	PICK_FUNC_2ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_write_nested, rt_down_write_nested, rwsem, subclass)
++	PICK_RWSEM_OP(compat_down_write_nested, rt_down_write_nested,	\
++		rwsem, subclass)
+ 
+ #define down_write_trylock(rwsem) \
+-	PICK_FUNC_1ARG_RET(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_down_write_trylock, rt_down_write_trylock, rwsem)
++	PICK_RWSEM_OP_RET(compat_down_write_trylock, rt_down_write_trylock,\
++		rwsem)
+ 
+-#define up_read(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_up_read, rt_up_read, rwsem)
++#define up_read(rwsem) PICK_RWSEM_OP(compat_up_read, rt_up_read, rwsem)
+ 
+ #define up_read_non_owner(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_up_read_non_owner, rt_up_read_non_owner, rwsem)
++	PICK_RWSEM_OP(compat_up_read_non_owner, rt_up_read_non_owner, rwsem)
+ 
+-#define up_write(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_up_write, rt_up_write, rwsem)
++#define up_write(rwsem) PICK_RWSEM_OP(compat_up_write, rt_up_write, rwsem)
+ 
+ #define downgrade_write(rwsem) \
+-	PICK_FUNC_1ARG(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_downgrade_write, rt_downgrade_write, rwsem)
++	PICK_RWSEM_OP(compat_downgrade_write, rt_downgrade_write, rwsem)
+ 
+ #define rwsem_is_locked(rwsem) \
+-	PICK_FUNC_1ARG_RET(struct compat_rw_semaphore, struct rw_semaphore, \
+-		compat_rwsem_is_locked, rt_rwsem_is_locked, rwsem)
++	PICK_RWSEM_OP_RET(compat_rwsem_is_locked, rt_rwsem_is_locked, rwsem)
+ 
+ #endif /* CONFIG_PREEMPT_RT */
+ 
 
 -- 
