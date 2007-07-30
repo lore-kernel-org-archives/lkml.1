@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939961AbXG3VKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940004AbXG3VMb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939961AbXG3VKy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 17:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939274AbXG3VKr
+	id S940004AbXG3VMb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 17:12:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939471AbXG3VMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 17:10:47 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:25872 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764294AbXG3VKq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 17:10:46 -0400
-In-Reply-To: <20070730135316.2ce21b28.akpm@linux-foundation.org>
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org> <20070727071547.GA25084@joejin-pc.cn.oracle.com> <46A9E6F9.20603@oracle.com> <20070728034719.GA24448@joejin-pc.cn.oracle.com> <20070730135316.2ce21b28.akpm@linux-foundation.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B296E94F-E42A-4542-A43D-1C90523DE4C2@oracle.com>
-Cc: Joe Jin <joe.jin@oracle.com>, gurudas pai <gurudas.pai@oracle.com>,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, wen.gang.wang@oracle.com,
-       Badari Pulavarty <pbadari@us.ibm.com>
-Content-Transfer-Encoding: 7bit
-From: Zach Brown <zach.brown@oracle.com>
-Subject: Re: [PATCH] add check do_direct_IO() return val
-Date: Mon, 30 Jul 2007 14:09:37 -0700
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Mailer: Apple Mail (2.752.3)
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
+	Mon, 30 Jul 2007 17:12:20 -0400
+Received: from lucidpixels.com ([75.144.35.66]:60031 "EHLO lucidpixels.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939383AbXG3VMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 17:12:19 -0400
+Date: Mon, 30 Jul 2007 17:12:17 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+X-X-Sender: jpiszcz@p34.internal.lan
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: a1426z@gawab.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com,
+       linux-raid@vger.kernel.org
+Subject: Re: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on
+ software raid 5
+In-Reply-To: <E1IFb5f-00006O-00@dorka.pomaz.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0707301712030.7153@p34.internal.lan>
+References: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
+ <200707302207.02672.a1426z@gawab.com> <E1IFb5f-00006O-00@dorka.pomaz.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
+
+On Mon, 30 Jul 2007, Miklos Szeredi wrote:
+
+>> Extrapolating these %cpu number makes ZFS the fastest.
+>>
+>> Are you sure these numbers are correct?
 >
-> fyi, I dropped the earlier patch and now we have nothing.  Please  
-> let's get all
-> this sorted out in time for 2.6.23.  Which is still many weeks away  
-> so there is
-> plenty of time to prepare something which was carefully reviewed  
-> and well-tested,
-> thanks.
+> Note, that %cpu numbers for fuse filesystems are inherently skewed,
+> because the CPU usage of the filesystem process itself is not taken
+> into account.
+>
+> So the numbers are not all that good, but according to the zfs-fuse
+> author it hasn't been optimized yet, so they may improve.
+>
+> Miklos
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-raid" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-I was distracted by OSCON last week.  I'm working on reproducing this  
-and wrapping my head around it as we speak.  We'll get it sorted out.
+This was performed on an E6300, 1 core was ZFS/FUSE (or quite a bit of it 
+anyway)
 
-- z
