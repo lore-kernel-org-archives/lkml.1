@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939761AbXG3UQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939747AbXG3URT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939761AbXG3UQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935609AbXG3UQD
+	id S939747AbXG3URT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935609AbXG3URJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:16:03 -0400
-Received: from keil-draco.com ([216.193.185.50]:50423 "EHLO
-	mail.keil-draco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763200AbXG3UQA convert rfc822-to-8bit (ORCPT
+	Mon, 30 Jul 2007 16:17:09 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:42155
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935785AbXG3URI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:16:00 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Bernhard Kaindl <bk@suse.de>
-Subject: Re: Ok, lets kill the 'PCI hidden behind bridge' message (was: pci=assign-busses)
-Date: Mon, 30 Jul 2007 16:15:44 -0400
-User-Agent: KMail/1.9.6
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, Adrian Bunk <bunk@stusta.de>,
-       Alois =?utf-8?q?Ne=C5=A1por?= <alois.nespor@gmail.com>,
-       linux-kernel@vger.kernel.org, gregkh@suse.de
-References: <6c9774880707300129if10dbf4n25c5077f02c940e3@mail.gmail.com> <20070730115331.GO16817@stusta.de> <Pine.LNX.4.64.0707301932440.25292@jbgna.fhfr.qr>
-In-Reply-To: <Pine.LNX.4.64.0707301932440.25292@jbgna.fhfr.qr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+	Mon, 30 Jul 2007 16:17:08 -0400
 Content-Disposition: inline
-Message-Id: <200707301615.44992.dhazelton@enter.net>
+From: Michael Buesch <mb@bu3sch.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ssb: Watchdog support
+Date: Mon, 30 Jul 2007 22:16:31 +0200
+User-Agent: KMail/1.9.6
+Cc: Felix Fietkau <nbd@openwrt.org>, Aurelien Jarno <aurelien@aurel32.net>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200707302216.31516.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 July 2007 14:35:13 Bernhard Kaindl wrote:
-<snip>
-> Ok, lets kill the message. As Alois Nešpor also saw, that's fixed up by
-> Yenta, so PCI does not have to warn about it. PCI could still warn about it
-> if is_cardbus is 0 in that instance of pci_scan_bridge(), but so far I have
-> not seen a report where this would have been the case so I think we can
-> spare the kernel of that check (removes ~300 lines of asm) unless debugging
-> is done.
->
-> History: The whole check was added in the days before we had the fixup
-> for this in Yenta and pci=assign-busses was the only way to get CardBus
-> cards detected on many (not all) of the machines which give this warning.
+From: Aurelien Jarno <aurelien@aurel32.net>
 
-The message triggers on systems without Cardbus at all.
+The patch below against 2.6.23-rc1-mm1 adds a new function to control
+the watchdog. It originally comes from the OpenWrt patches.
 
-> In theory, there could be cases when this warning would be triggered and
-> it's not cardbus, then the warning should still apply, but I think this
-> should only be the case when working on a completely broken PCI setup,
-> but one may have already enabled the debug code in drivers/pci and the
-> patched check would then trigger.
+Cc: Felix Fietkau <nbd@openwrt.org>
+Signed-off-by: Aurelien Jarno <aurelien@aurel32.net>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
 
-I wouldn't say totally broken. The last 5 computers I've owned have had this 
-message. On only one could it even *remotely* be related to CardBus (my one 
-year old laptop), and on one of them it does create problems for certain 
-(NVidia) binary drivers. (and then pci=assign-busses doesn't do jack to clear 
-the message)
-
-I'm not saying that binary drivers shouldn't be broken - but...
-<snip>
-
-
-DRH
-
--- 
-Dialup is like pissing through a pipette. Slow and excruciatingly painful.
+--- a/drivers/ssb/driver_chipcommon.c	2007-07-30 19:59:02.000000000 +0200
++++ b/drivers/ssb/driver_chipcommon.c	2007-07-30 20:55:54.000000000 +0200
+@@ -344,6 +344,13 @@
+ 	}
+ }
+ 
++/* Set chip watchdog reset timer to fire in 'ticks' backplane cycles */
++void
++ssb_chipco_watchdog_timer_set(struct ssb_chipcommon *cc, u32 ticks)
++{
++	/* instant NMI */
++	chipco_write32(cc, SSB_CHIPCO_WATCHDOG, ticks);
++}
+ 
+ #ifdef CONFIG_SSB_SERIAL
+ int ssb_chipco_serial_init(struct ssb_chipcommon *cc,
+--- a/include/linux/ssb/ssb_driver_chipcommon.h	2007-07-30 19:59:02.000000000 +0200
++++ b/include/linux/ssb/ssb_driver_chipcommon.h	2007-07-30 20:55:54.000000000 +0200
+@@ -380,6 +380,9 @@
+ extern void ssb_chipco_set_clockmode(struct ssb_chipcommon *cc,
+ 				     enum ssb_clkmode mode);
+ 
++extern void ssb_chipco_watchdog_timer_set(struct ssb_chipcommon *cc, 
++					  u32 ticks);
++
+ #ifdef CONFIG_SSB_SERIAL
+ extern int ssb_chipco_serial_init(struct ssb_chipcommon *cc,
+ 				  struct ssb_serial_port *ports);
