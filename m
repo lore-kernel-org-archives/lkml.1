@@ -1,97 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbXG3IMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761391AbXG3IVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbXG3IMK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 04:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbXG3IL5
+	id S1761391AbXG3IVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 04:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXG3IVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 04:11:57 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45205 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756392AbXG3ILy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 04:11:54 -0400
-X-Authenticated: #402683
-X-Provags-ID: V01U2FsdGVkX19t+4Q4xztt6+s/gD06df6coO082aiPHVYDHyYrhe
-	SkCJrPVXqruYLF
-Subject: Re: md: raid10: fix use-after-free of bio
-From: Maik Hampel <m.hampel@gmx.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Neil Brown <neilb@suse.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>
-In-Reply-To: <20070728235519.1edc6ccb.akpm@linux-foundation.org>
-References: <1185547583.2663.10.camel@c64>
-	 <20070728235519.1edc6ccb.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 30 Jul 2007 10:11:51 +0200
-Message-Id: <1185783111.2684.15.camel@c64>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.3 
+	Mon, 30 Jul 2007 04:21:11 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:37162 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756023AbXG3IVK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 04:21:10 -0400
+X-Greylist: delayed 2196 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 04:21:09 EDT
+From: "Mikael Starvik" <mikael.starvik@axis.com>
+To: "'Adrian Bunk'" <bunk@stusta.de>,
+       "Mikael Starvik" <mikael.starvik@axis.com>
+Cc: "dev-etrax" <dev-etrax@axis.com>, <linux-kernel@vger.kernel.org>
+Subject: RE: cris port lacks a merge?
+Date: Mon, 30 Jul 2007 09:44:19 +0200
+Message-ID: <BFECAF9E178F144FAEF2BF4CE739C668030B5C6F@exmail1.se.axis.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook, Build 10.0.6626
+In-Reply-To: <BFECAF9E178F144FAEF2BF4CE739C66804AE23FB@exmail1.se.axis.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1896
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, den 28.07.2007, 23:55 -0700 schrieb Andrew Morton:
-> On Fri, 27 Jul 2007 16:46:23 +0200 Maik Hampel <m.hampel@gmx.de> wrote:
-> 
-> > In case of read errors raid10d tries to print a nice error message,
-> > unfortunately using data from an already put bio.
-> > 
-> > Signed-off-by: Maik Hampel <m.hampel@gmx.de>
-> > 
-> > diff --git a/drivers/md/raid10.c b/drivers/md/raid10.c
-> > index f730a14..ea1b3e3 100644
-> > --- a/drivers/md/raid10.c
-> > +++ b/drivers/md/raid10.c
-> > @@ -1557,7 +1557,6 @@ static void raid10d(mddev_t *mddev)
-> >  			bio = r10_bio->devs[r10_bio->read_slot].bio;
-> >  			r10_bio->devs[r10_bio->read_slot].bio =
-> >  				mddev->ro ? IO_BLOCKED : NULL;
-> > -			bio_put(bio);
-> >  			mirror = read_balance(conf, r10_bio);
-> >  			if (mirror == -1) {
-> >  				printk(KERN_ALERT "raid10: %s: unrecoverable I/O"
-> > @@ -1567,6 +1566,7 @@ static void raid10d(mddev_t *mddev)
-> >  				raid_end_bio_io(r10_bio);
-> >  			} else {
-> >  				const int do_sync = bio_sync(r10_bio->master_bio);
-> > +				bio_put(bio);
-> >  				rdev = conf->mirrors[mirror].rdev;
-> >  				if (printk_ratelimit())
-> >  					printk(KERN_ERR "raid10: %s: redirecting sector %llu to"
-> > 
-> > 
-> 
-> Surely we just leaked that bio if (mirror == -1)?
-> 
-> better:
-> 
-> --- a/drivers/md/raid10.c~md-raid10-fix-use-after-free-of-bio
-> +++ a/drivers/md/raid10.c
-> @@ -1534,7 +1534,6 @@ static void raid10d(mddev_t *mddev)
->  			bio = r10_bio->devs[r10_bio->read_slot].bio;
->  			r10_bio->devs[r10_bio->read_slot].bio =
->  				mddev->ro ? IO_BLOCKED : NULL;
-> -			bio_put(bio);
->  			mirror = read_balance(conf, r10_bio);
->  			if (mirror == -1) {
->  				printk(KERN_ALERT "raid10: %s: unrecoverable I/O"
-> @@ -1542,8 +1541,10 @@ static void raid10d(mddev_t *mddev)
->  				       bdevname(bio->bi_bdev,b),
->  				       (unsigned long long)r10_bio->sector);
->  				raid_end_bio_io(r10_bio);
-> +				bio_put(bio);
-raid_end_bio_io() calls put_all_bios(), which does a bio_put() to
-corresponding r10_bio->devs[i]. So this looks like redundant code for
-me.
->  			} else {
->  				const int do_sync = bio_sync(r10_bio->master_bio);
-> +				bio_put(bio);
->  				rdev = conf->mirrors[mirror].rdev;
->  				if (printk_ratelimit())
->  					printk(KERN_ERR "raid10: %s: redirecting sector %llu to"
+I will make another try soon.
 
-Regards, 
-Maik Hampel
+The problem is that every time I try the following happens:
 
+1. I download the bleeding edge latest stuff that you can get
+2. I prepare and submit patches
+3. I get replies with comments on my patches
+4. I fix the patches.
+5. I get told that the patches are against a too old version
+6. Repeat from 1.
+
+But I will continue to start making attempts to send patches upstreams
+again.
+
+Patches are also available at http://developer.axis.com
+
+/Mikael
+
+-----Original Message-----
+From: Adrian Bunk [mailto:bunk@stusta.de] 
+Sent: Sunday, July 15, 2007 2:04 PM
+To: Mikael Starvik
+Cc: dev-etrax; linux-kernel@vger.kernel.org
+Subject: cris port lacks a merge?
+
+
+Hi Mikael,
+
+the last maintainer update to arch/cris/ was two years ago and it seems 
+code like e.g. the config variable ETRAX_ARCH_V32 is missing.
+
+I assume there is there some external tree you use that contains updates?
+If yes, can you submit the changes for inclusion into the upstream kernel?
+
+TIA
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
