@@ -1,96 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967149AbXG3QgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967262AbXG3Qgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967149AbXG3QgX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 12:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966990AbXG3Qeg
+	id S967262AbXG3Qgn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 12:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967153AbXG3Qfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 12:34:36 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:6001 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966986AbXG3Qed (ORCPT
+	Mon, 30 Jul 2007 12:35:47 -0400
+Received: from cb2.northrockquote.com ([64.251.14.146]:2939 "EHLO
+	dejavu.debianpt.org" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S967145AbXG3Qfp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 12:34:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=XpQA2mFd7Y/Fbv8JovCiPzAk7BMOsvfCLDYmfS5mmJ6OD2WlTFDQRJzgC5fBQU4auqriAXCOy3qpQMxLeQfNcmYdrSuFZ+7wcYzGr+O3ojiCyvHEN7X2apvgKa3HRR5IbIypoL0tIOG2M9gOG7V3yJP7eez0HcPZj1vbzr/wriQ=
-Message-ID: <46AE1313.2020103@googlemail.com>
-Date: Mon, 30 Jul 2007 18:34:27 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 30 Jul 2007 12:35:45 -0400
+X-Greylist: delayed 1862 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 12:35:45 EDT
+From: Miguel Figueiredo <elmig@debianpt.org>
+Organization: DebianPT.org
+To: ck@vds.kolivas.org
+Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
+Date: Mon, 30 Jul 2007 17:04:29 +0100
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu>
+In-Reply-To: <20070730114649.GB19186@elte.hu>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Tino Keitel <tino.keitel@gmx.de>,
-       Mark Hindley <mark@hindley.org.uk>
-Subject: Re: [3/3] 2.6.23-rc1: known regressions with patches v3
-References: <46AE114F.2010201@googlemail.com>
-In-Reply-To: <46AE114F.2010201@googlemail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Disposition: inline
+Message-Id: <200707301704.29670.elmig@debianpt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-
-Here is a list of some known regressions in 2.6.23-rc1
-with patches available.
-
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
-
-List of Aces
-
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            6
-Andi Kleen                             4
-Andrew Morton                          4
-Linus Torvalds                         4
-Al Viro                                3
-Jens Axboe                             3
-Tejun Heo                              3
-David Woodhouse                        2
-Hugh Dickins                           2
+Em Segunda, 30 de Julho de 2007 12:46, Ingo Molnar escreveu:
+> * John <darknessenvelops@gmail.com> wrote:
+> > On 7/29/07, Ingo Molnar <mingo@elte.hu> wrote:
+> > > * John <darknessenvelops@gmail.com> wrote:
+> > > > Ingo-
+> > > >
+> > > > Why not perform the same test using the native linux Q3 client to
+> > > > compare numbers to wine? [...]
 
 
+[...]
 
-USB
+> and that matches my experience as well (as limited as it may be). In
+> general my impression is that CFS and SD are roughly on par when it
+> comes to 3D smoothness.
+>
+> The Wine+Quake3 numbers i posted yesterday are so bad under SD that they
+> must be some artifact in SD (possibly related to yield - i've strace-ed
+> the tasks under SD today and they are blocking in yield), so they are
+> not really representative of the general quality of SD (unless you are
+> being hit by that particular regression). Still it is kind of ironic
+> that when i tried to find a 3D regression in CFS i found a 3D regression
+> in SD.
 
-Subject         : 2.6.23-rc1: uhci_hcd. irq 4: nobody cared
-References      : http://lkml.org/lkml/2007/7/29/75
-Last known good : ?
-Submitter       : Mark Hindley <mark@hindley.org.uk>
-Caused-By       : ?
-Handled-By      : Alan Stern <stern@rowland.harvard.edu>
-Status          : unknown
+I also tryied Q3A demo and i got similar values to yours:
 
-Subject         : 2.6.23-rc1: USB hard disk broken
-References      : http://lkml.org/lkml/2007/7/25/62
-Last known good : ?
-Submitter       : Tino Keitel <tino.keitel@gmx.de>
-Caused-By       : ?
-Handled-By      : Oliver Neukum <oliver@neukum.org>
-Status          : unknown
+CFS		90
+2.6.22	90
+SD		90
 
-Subject         : BUG: sleeping function called from invalid context at drivers/usb/core/urb.c:524,in_atomic():1, irqs_disabled():0
-References      : http://lkml.org/lkml/2007/7/23/400
-Last known good : ?
-Submitter       : Jeremy Fitzhardinge <jeremy@goop.org>
-Caused-By       : ?
-Handled-By      : Oliver Neukum <oliver@neukum.org>
-Patch           : http://lkml.org/lkml/2007/7/24/203
-Status          : patch available
+while running that endless loop, on 2.6.22 and SD it drops instantly to 4 fps.
+While CFS runs ~70 with 1.9 load. I was able to play the game without noticing 
+much degradation. I written these values while playing under CFS:
+
+load fps
+1.66	81
+1.73	75
+1.97	70s
 
 
+With this patch [1] someone sent me over IRC i get similar values to CFS, 
+maybe a few fps more, but thats insignificant and not very accurate to 
+measure. Anyway with this patch i am playing with a load of 2.2 at ~75 fps, 
+1024x768 windowed. It's enjoyable to frag the dumb 'Major'  as under CFS. 
 
-Regards,
-Michal
 
---
-LOG
-http://www.stardust.webpages.pl/log/
+I think the main difference in performance of CFS and SD it's the 
+implementation of sched_yield (which is used by graphic drivers) and CFS has 
+changed the implementation of sched_yield. You use:
+
+in mainline (2.6.22): 
+/**
+ * sys_sched_yield - yield the current processor to other threads.
+ *
+ * This function yields the current CPU by moving the calling thread
+ * to the expired array. If there are no other threads running on this
+ * CPU then this function will return.
+ */
+
+you changed it to something like:
+
+if (unlikely(rq->nr_running == 1))
+                schedstat_inc(rq, yld_act_empty);
+        else
+                current->sched_class->yield_task(rq, current);
+
+
+wile mainline (2.6.22) and SD use:
+
+dequeue_task(current, array);
+enqueue_task(current, target);
+
+and
+
+requeue_task()
+
+
+Anyway i am going to continue to frag a bit more :)
+
+
+[1] - http://rafb.net/p/Rbpqaz26.html
+There are 2 modes for this hack:
+sysctl kernel.sched_yield = 1 or 2, see patch.
+
+
+[...]
+
+>
+> 	Ingo
+> _______________________________________________
+> http://ck.kolivas.org/faqs/replying-to-mailing-list.txt
+> ck mailing list - mailto: ck@vds.kolivas.org
+> http://vds.kolivas.org/mailman/listinfo/ck
+
+-- 
+
+Com os melhores cumprimentos/Best regards,
+
+Miguel Figueiredo
+http://www.DebianPT.org
