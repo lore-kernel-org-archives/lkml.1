@@ -1,94 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967933AbXG3THR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968068AbXG3THo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967933AbXG3THR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935591AbXG3TG7
+	id S968068AbXG3THo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967987AbXG3THY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:06:59 -0400
-Received: from [212.12.190.32] ([212.12.190.32]:33792 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S935071AbXG3TG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:06:58 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: bonnie++ benchmarks for ext2,ext3,ext4,jfs,reiserfs,xfs,zfs on software raid 5
-Date: Mon, 30 Jul 2007 22:07:02 +0300
-User-Agent: KMail/1.5
-Cc: linux-fsdevel@vger.kernel.org, xfs@oss.sgi.com, linux-raid@vger.kernel.org
-References: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
-In-Reply-To: <Pine.LNX.4.64.0707301021090.12456@p34.internal.lan>
+	Mon, 30 Jul 2007 15:07:24 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:59575 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967392AbXG3THV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:07:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=TIaiCfigltfknG5xzIJUErKyvEJ49rZI/LJZ4O7JMzSASyWHTn9ym8SNkZ+Y0I6ukAxqHr2tpHdCLWQ3oSZICHZ9YYSLMQI/XEBt7U+v6LoecxmOsp8ToYrOROTypfA21ZdVpOmhCCmO0qvwZtMqjKsqwQxwhucGVLmqgBNQWV4=
+Date: Mon, 30 Jul 2007 23:07:15 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Hirokazu Takata <takata@linux-m32r.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       viro@ftp.linux.org.uk
+Subject: Re: [PATCH] Remove fs.h from mm.h
+Message-ID: <20070730190715.GB5776@martell.zuzino.mipt.ru>
+References: <20070729223613.GA5916@martell.zuzino.mipt.ru> <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org> <swfhcnmhwqo.wl%takata.hirokazu@renesas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707302207.02672.a1426z@gawab.com>
+In-Reply-To: <swfhcnmhwqo.wl%takata.hirokazu@renesas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
-> CONFIG:
->
-> Software RAID 5 (400GB x 6): Default mkfs parameters for all filesystems.
-> Kernel was 2.6.21 or 2.6.22, did these awhile ago.
-> Hardware was SATA with PCI-e only, nothing on the PCI bus.
->
-> ZFS was userspace+fuse of course.
+On Mon, Jul 30, 2007 at 10:00:47PM +0900, Hirokazu Takata wrote:
+> This change breaks m32r, too.
 
-Wow! Userspace and still that efficient.
-
-> Reiser was V3.
-> EXT4 was created using the recommended options on its project page.
->
-> RAW:
->
-> ext2,7760M,56728,96.3333,180505,51,85484,17.3333,50946.7,80.3333,235541,21
->.3333,373.667,0,16:100000:16/64,2354,27,0,0,8455.67,14.6667,2211.67,26.3333
->,0,0,9724,22.3333
-> ext3,7760M,52702.7,94.3333,165005,60,82294.7,20.6667,52664,83.6667,258788,
->33.3333,335.8,0,16:100000:16/64,858.333,10.6667,10250.3,28.6667,4084,15,897
->,12.6667,4024.33,12.3333,2754,11.3333
-> ext4,7760M,53129.7,95,164515,59.3333,101678,31.6667,62194.3,98.6667,266716
->,22.3333,405.767,0,16:100000:16/64,1963.67,23.6667,0,0,20859,73.6667,1731,2
->1.3333,9022,23.6667,16410,65.6667
-> jfs,7760M,54606,92,191997,52,112764,33.6667,63585.3,99,274921,22.3333,383.
->8,0,16:100000:16/64,344,1,0,0,539.667,0,297.667,1,0,0,340,0
-> reiserfs,7760M,51056.7,96,180607,67,106907,38.3333,61231.3,97.6667,275339,
->29.3333,441.167,0,16:100000:16/64,2516,60.6667,19174.3,60.6667,8194.33,54.3
->333,2011,42.6667,6963.67,19.6667,9168.33,68.6667
-> xfs,7760M,52985.7,93,158342,45,79682,14,60547.3,98,239101,20.3333,359.667,
->0,16:100000:16/64,415,4,0,0,1774.67,10.6667,454,4.66667,14526.3,40,1572,12.
->6667
-
-> zfs,7760M,
-
-Dissecting some of these numbers:
-
-  speed	%cpu  
-> 25601,43.3333,
-> 32198.7,4,
-> 13266.3, 2,
-> 44145.3,68.6667,
-> 129278,9,
-> 245.167,0,
-
-> 16:100000:16/64,
-
-  speed	%cpu  
-> 218.333,2,
-> 2698.33,11.6667,
-> 7434.67,14.3333,
-> 244,2,
-> 2191.33,11.6667,
-> 5613.33,13.3333
-
-Extrapolating these %cpu number makes ZFS the fastest.
-
-Are you sure these numbers are correct?
-
-
-Thanks!
-
---
-Al
+Apologies. I just finished adding m32r to my cross-build setup, so there
+shouldn't be any more such breakages.
 
