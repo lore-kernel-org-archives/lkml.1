@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763883AbXG3XAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935207AbXG3XCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763883AbXG3XAU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXG3XAH
+	id S935207AbXG3XCU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757132AbXG3XCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:00:07 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35232 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751964AbXG3XAF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:00:05 -0400
-Date: Mon, 30 Jul 2007 15:59:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Christian P. Schmidt" <charlie@digadd.de>
-Cc: linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
-Subject: Re: ttyS1: LSR safety check engaged! - misidentification?
-Message-Id: <20070730155939.9bf43314.akpm@linux-foundation.org>
-In-Reply-To: <46ACB1C2.6030701@digadd.de>
-References: <46ACB1C2.6030701@digadd.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 30 Jul 2007 19:02:07 -0400
+Received: from atlrel8.hp.com ([156.153.255.206]:35413 "EHLO atlrel8.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755960AbXG3XCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 19:02:04 -0400
+Subject: regression on HP zx1 platform from ACPI autoload modules patches
+From: Doug Chapman <doug.chapman@hp.com>
+To: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-ia64@vger.kernel.org, trenn@suse.de
+Content-Type: text/plain
+Date: Mon, 30 Jul 2007 18:57:18 -0400
+Message-Id: <1185836238.31298.36.camel@deimos.americas.hpqcorp.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007 18:26:58 +0300
-"Christian P. Schmidt" <charlie@digadd.de> wrote:
+I am seeing a regression on the HP ia64 zx1 platforms when using
+a .config with CONFIG_IA64_HP_ZX1=y.  Oddly it works OK with
+CONFIG_IA64_GENERIC=y.
 
-> Hi all,
-> 
-> Ever since Kernel 2.6.21(rc) or so I'm plagued with this message,
-> disabling my serial ports that have been working perfectly from 2.6.14
-> till that day (and are still doing so, given that I continuously remove
-> the code from the source).
-> Actually I cannot blame the code, but it seems that on both of my
-> laptops the LSR is actually not readable. So, is there any plan to
-> remove that piece of code again, or at least change it so it can be
-> disabled conditionally?
-> 
 
-afaict this code:
+During bootup it panics with:
 
-	/*
-	 * At this point, there's no way the LSR could still be 0xff;
-	 * if it is, then bail out, because there's likely no UART
-	 * here.
-	 */
-	if (!(up->port.flags & UPF_BUGGY_UART) &&
-	    (serial_inp(up, UART_LSR) == 0xff)) {
-		printk("ttyS%d: LSR safety check engaged!\n", up->port.line);
-		return -ENODEV;
-	}
+Kernel panic - not syncing: Unable to find SBA IOMMU: Try a generic or DIG kernel
 
-is unchanged since 2.6.1, so I'm unsure what change you're proposing here?
+I can provide the full console output if that is helpful.  Also, please let
+me know if there is any other data I can provide that would be helpful.
+
+Using git bisect I have narrowed it down to these 2 commits.  These commits
+cannot be built separately as they appear to have code that depends on each
+other.
+
+
+commit 29b71a1ca74491fab9fed09e9d835d840d042690
+Author: Thomas Renninger <trenn@suse.de>
+Date:   Mon Jul 23 14:43:51 2007 +0200
+
+    ACPI: autoload modules - Create ACPI alias interface
+    
+    Modify modpost (file2alias.c) to add acpi*:XYZ0001: alias in modules.alias
+    like:
+    grep acpi /lib/modules/2.6.22-rc4-default/modules.alias
+    alias acpi*:SNY5001:* sony_laptop
+    alias acpi*:SNY6001:* sony_laptop
+    for e.g. the sony_laptop module.
+    This module matches against all ACPI devices with a HID or CID of SNY5001
+    or SNY6001
+    
+    Export an uevent and modalias sysfs file containing the string:
+    [MODALIAS=]acpi:PNP0C0C:
+    additional CIDs are concatenated at the end.
+    
+    Signed-off-by: Thomas Renninger <trenn@suse.de>
+    Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+
+Author: Thomas Renninger <trenn@suse.de>
+Date:   Mon Jul 23 14:43:32 2007 +0200
+
+    ACPI: autoload modules - ACPICA modifications
+    
+    Define standardized HIDs - Rename current acpi_device_id to acpica_device_id
+    
+    Signed-off-by: Thomas Renninger <trenn@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+
+
+- Doug
+
 
