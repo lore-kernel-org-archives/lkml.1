@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935379AbXG3IvP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938028AbXG3Iv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935379AbXG3IvP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 04:51:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932932AbXG3Iu6
+	id S938028AbXG3Iv6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 04:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933101AbXG3Ivu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 04:50:58 -0400
-Received: from pauline.vellum.cz ([89.250.243.234]:40200 "EHLO
-	pauline.vellum.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933764AbXG3Iu5 (ORCPT
+	Mon, 30 Jul 2007 04:51:50 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:44496 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934026AbXG3Ivt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 04:50:57 -0400
-X-Greylist: delayed 568 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 04:50:57 EDT
-Date: Mon, 30 Jul 2007 10:41:16 +0200
-From: Jan Kratochvil <jan.kratochvil@redhat.com>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-Cc: Maxim Levitsky <maximlevitsky@gmail.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [BUG] i386 relocable kernel breakes /proc/kcore debugging
-Message-ID: <20070730084116.GA18263@host0.dyn.jankratochvil.net>
-References: <200707280443.44048.maximlevitsky@gmail.com> <20070730080303.GA6071@in.ibm.com>
+	Mon, 30 Jul 2007 04:51:49 -0400
+Date: Mon, 30 Jul 2007 10:53:31 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Message-ID: <20070730085331.GF9840@enneenne.com>
+References: <1185288769.14697.339.camel@pmac.infradead.org> <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com> <20070727192848.GW9840@enneenne.com> <46AA4A1E.8040302@nortel.com> <20070727194516.GX9840@enneenne.com> <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com> <a781481a0707271641n20353a12u7467d093346f2f4c@mail.gmail.com> <20070729100007.GB9840@enneenne.com> <alpine.LFD.0.999.0707301034240.10861@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070730080303.GA6071@in.ibm.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <alpine.LFD.0.999.0707301034240.10861@enigma.security.iitk.ac.in>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: LinuxPPS & spinlocks
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007 10:03:03 +0200, Vivek Goyal wrote:
-> On Sat, Jul 28, 2007 at 04:43:43AM +0300, Maxim Levitsky wrote:
-...
-> > gdb 'thinks' that all kernel symbols are below 0x80000000 , while they are at 
-> > 0xC000....
-> > 
-> > Turning CONFIG_RELOCATABLE off fixes that, so I assume that is the reason for 
-> > that.
+On Mon, Jul 30, 2007 at 10:39:38AM +0530, Satyam Sharma wrote:
 > 
-> This is a gdb issue. I had raised it in gdb mailing list some time back.
+> Nopes, this isn't quite correct/safe. I suggest you should read:
 > 
-> http://sourceware.org/ml/gdb/2006-08/msg00137.html
+> http://www.kernel.org/pub/linux/kernel/people/rusty/kernel-locking/
 
-There was the patch post:
-	http://sources.redhat.com/ml/gdb/2006-08/msg00182.html
+I read it but still I don't see why my solution isn't correct/safe. :)
 
-> What version of gdb you are using? I know it got fixed for gdb shipped
-> with RHEL5. I am not sure about what upstream version of gdb it got fixed
-> in.
+Can you please propose to me your solution?
 
-It did not make it to the upstream as the patch above is an imperfect one.
-It is fixed in RH gdb-6.5-5 upwards, therefore Fedora 6 + RHEL-5.
-	http://cvs.fedora.redhat.com/viewcvs/*checkout*/devel/gdb/gdb-6.5-bz203661-emit-relocs.patch?root=core
+Thanks a lot for you time!
 
+Ciao,
 
-Regards,
-Jan
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
