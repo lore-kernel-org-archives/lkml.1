@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939052AbXG3J2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939115AbXG3Jaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939052AbXG3J2S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 05:28:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934937AbXG3J2F
+	id S939115AbXG3Jaf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 05:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935674AbXG3JaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 05:28:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51280 "EHLO mx2.mail.elte.hu"
+	Mon, 30 Jul 2007 05:30:25 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36284 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933839AbXG3J2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 05:28:04 -0400
-Date: Mon, 30 Jul 2007 11:27:51 +0200
+	id S935419AbXG3JaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 05:30:24 -0400
+Date: Mon, 30 Jul 2007 11:30:13 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Daniel Walker <dwalker@mvista.com>
 Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH -rt 4/9] ifdef raise_softirq_irqoff wakeup
-Message-ID: <20070730092751.GD25640@elte.hu>
-References: <20070730024534.369897977@mvista.com> <20070730024719.782847315@mvista.com>
+Subject: Re: [PATCH -rt 5/9] net: fix mis-merge in qdisc_restart
+Message-ID: <20070730093013.GE25640@elte.hu>
+References: <20070730024534.369897977@mvista.com> <20070730024720.116454959@mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070730024719.782847315@mvista.com>
+In-Reply-To: <20070730024720.116454959@mvista.com>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.0
@@ -35,15 +35,10 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Daniel Walker <dwalker@mvista.com> wrote:
 
-> @@ -508,7 +508,9 @@ inline fastcall void raise_softirq_irqof
->  {
->  	__do_raise_softirq_irqoff(nr);
->  
-> +#ifdef CONFIG_PREEMPT_SOFTIRQS
->  	wakeup_softirqd(nr);
-> +#endif
+> This mismerge caused my networking to malfunction. The interface would 
+> come up, but no traffic would make it in/out ..
 
-thanks, applied. People rarely run the -rt kernel just to turn off 
-PREEMPT_RT, that's why this bug was there ;-)
+your patch only affects the !CONFIG_PREEMPT_RT case, so with that 
+qualification indeed that happened, and i've applied your fix.
 
 	Ingo
