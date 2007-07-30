@@ -1,58 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936910AbXG3JTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938576AbXG3JTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936910AbXG3JTY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 05:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761725AbXG3JTR
+	id S938576AbXG3JTi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 05:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765986AbXG3JTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 30 Jul 2007 05:19:19 -0400
+Received: from madara.hpl.hp.com ([192.6.19.124]:60304 "EHLO madara.hpl.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761793AbXG3JTR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 05:19:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33350 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753830AbXG3JTQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 05:19:16 -0400
-Date: Mon, 30 Jul 2007 15:01:28 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Rodolfo Giometti <giometti@enneenne.com>
-cc: Chris Friesen <cfriesen@nortel.com>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: LinuxPPS & spinlocks
-In-Reply-To: <20070730085331.GF9840@enneenne.com>
-Message-ID: <alpine.LFD.0.999.0707301452380.13448@enigma.security.iitk.ac.in>
-References: <1185288769.14697.339.camel@pmac.infradead.org>
- <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com>
- <20070727192848.GW9840@enneenne.com> <46AA4A1E.8040302@nortel.com>
- <20070727194516.GX9840@enneenne.com> <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com>
- <a781481a0707271641n20353a12u7467d093346f2f4c@mail.gmail.com>
- <20070729100007.GB9840@enneenne.com> <alpine.LFD.0.999.0707301034240.10861@enigma.security.iitk.ac.in>
- <20070730085331.GF9840@enneenne.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Date: Mon, 30 Jul 2007 02:18:41 -0700
+From: Stephane Eranian <eranian@hpl.hp.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: mucci@cs.utk.edu, pwatkins@sicortex.com,
+       Ralf Baechle <ralf@linux-mips.org>, linux-kernel@vger.kernel.org,
+       mucci@cs.utk.edu, linux-mips@linux-mips.org, ak@suse.de,
+       akpm@linux-foundation.org, Tony Luck <tony.luck@intel.com>,
+       Avi Kivity <avi@qumranet.com>
+Subject: Re: [PATCH] MIPS: add smp_call_function_single()
+Message-ID: <20070730091841.GC25162@frankl.hpl.hp.com>
+Reply-To: eranian@hpl.hp.com
+References: <20070727124451.GC9828@frankl.hpl.hp.com> <20070727125533.GD5118@linux-mips.org> <20070727135323.GF9828@frankl.hpl.hp.com> <20070728091950.GA4642@osiris.boeblingen.de.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070728091950.GA4642@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.4.1i
+Organisation: HP Labs Palo Alto
+Address: HP Labs, 1U-17, 1501 Page Mill road, Palo Alto, CA 94304, USA.
+E-mail: eranian@hpl.hp.com
+X-HPL-MailScanner: Found to be clean
+X-HPL-MailScanner-From: eranian@hpl.hp.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rodolfo,
+Hello,
 
+Thanks for catching this. We will resubmit an updated version.
 
-On Mon, 30 Jul 2007, Rodolfo Giometti wrote:
+PHil, Peter, would you be able/willing to do this?
 
-> On Mon, Jul 30, 2007 at 10:39:38AM +0530, Satyam Sharma wrote:
+thanks.
+
+On Sat, Jul 28, 2007 at 11:19:50AM +0200, Heiko Carstens wrote:
+> On Fri, Jul 27, 2007 at 06:53:23AM -0700, Stephane Eranian wrote:
+> > Ralf,
 > > 
-> > Nopes, this isn't quite correct/safe. I suggest you should read:
+> > Here is take 2.
 > > 
-> > http://www.kernel.org/pub/linux/kernel/people/rusty/kernel-locking/
+> > [MIPS] add smp_call_function_single (take 2)
+> > 
+> > signed-off-by: Stephane Eranian <eranian@hpl.hp.com>
+> > signed-off-by: Phil Mucci <mucci@cs.utk.edu>
+> > 
+> > diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
+> > index be7362b..d47234c 100644
+> > --- a/arch/mips/kernel/smp.c
+> > +++ b/arch/mips/kernel/smp.c
+> > @@ -193,6 +193,53 @@ void smp_call_function_interrupt(void)
+> >  	}
+> >  }
+> > 
+> > +int smp_call_function_single(int cpu, void (*func) (void *info), void *info, int retry,
+> > +			     int wait)
+> > +{
+> > +	struct call_data_struct data;
+> > +	int me = smp_processor_id();
+> > +
+> > +	/*
+> > +	 * Can die spectacularly if this CPU isn't yet marked online
+> > +	 */
+> > +	BUG_ON(!cpu_online(me));
+> > +	if (cpu == me) {
+> > +		WARN_ON(1);
+> > +		return -EBUSY;
+> > +	}
+> > +
+> > +	/* Can deadlock when called with interrupts disabled */
+> > +	WARN_ON(irqs_disabled());
+> > +
+> > +	data.func = func;
+> > +	data.info = info;
+> > +	atomic_set(&data.started, 0);
+> > +	data.wait = wait;
+> > +	if (wait)
+> > +		atomic_set(&data.finished, 0);
+> > +
+> > +	spin_lock(&smp_call_lock);
+> > +	call_data = &data;
+> > +	mb();
+> > +
+> > +	/* Send a message to the other CPU */
+> > +	core_send_ipi(cpu, SMP_CALL_FUNCTION);
+> > +
+> > +	/* Wait for response */
+> > +	/* FIXME: lock-up detection, backtrace on lock-up */
+> > +	while (atomic_read(&data.started) != 1)
+> > +		barrier();
+> > +
+> > +	if (wait)
+> > +		while (atomic_read(&data.finished) != 1)
+> > +			barrier();
+> > +	call_data = NULL;
+> > +	spin_unlock(&smp_call_lock);
+> > +
+> > +	return 0;
+> > +}
+> > +EXPORT_SYMBOL(smp_call_function_single);
+> > +
+> >  static void stop_this_cpu(void *dummy)
+> >  {
 > 
-> I read it but still I don't see why my solution isn't correct/safe. :)
+> This will not do the right thing. Semantics of smp_call_function_single()
+> changed recently. It now is supposed to call func() locally with irqs
+> disabled if cpu == smp_processor_id(). See i386/x86_64 and powerpc.
+> Unfortunately ia64 hasn't been changed yet, so it will behave differently.
 
-What does the section on locking between hard irq contexts (or between
-user process context and hard irq context) say?
+-- 
 
-> Can you please propose to me your solution?
-
-As I said, you could just use the spin_lock_irqsave/restore() variants ...
-If you want, I can try and implement the other bits that I had suggested
-for the other things as well :-)
-
-
-Ciao,
-Satyam
+-Stephane
