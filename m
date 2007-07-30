@@ -1,47 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935003AbXG3O1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935738AbXG3O2a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935003AbXG3O1h (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 10:27:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760645AbXG3O12
+	id S935738AbXG3O2a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 10:28:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761858AbXG3O2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 10:27:28 -0400
-Received: from ns1.suse.de ([195.135.220.2]:58395 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 10:28:22 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:42592 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760619AbXG3O11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 10:27:27 -0400
-Date: Mon, 30 Jul 2007 16:27:25 +0200
-From: Karsten Keil <kkeil@suse.de>
-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>, kkeil@suse.de,
-       kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 4/5] Use mutex instead of semaphore in ISDN subsystem common functions
-Message-ID: <20070730142725.GA13520@pingi.kke.suse.de>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	kkeil@suse.de, kai.germaschewski@gmx.de,
-	isdn4linux@listserv.isdn4linux.de, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-References: <20070729212909.GC3432@traven> <20070729214105.GG3432@traven>
-Mime-Version: 1.0
+	id S1760645AbXG3O2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 10:28:21 -0400
+Date: Mon, 30 Jul 2007 19:58:18 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Containers <containers@lists.osdl.org>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Paul Menage <menage@google.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Pavel Emelianov <xemul@openvz.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric W Biederman <ebiederm@xmission.com>
+Subject: Re: [-mm PATCH 6/9] Memory controller add per container LRU and reclaim (v4)
+Message-ID: <20070730142818.GB22345@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070727200937.31565.78623.sendpatchset@balbir-laptop> <20070727201041.31565.14803.sendpatchset@balbir-laptop> <20070730133758.GB22952@linux.vnet.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070729214105.GG3432@traven>
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.27-0.6-smp x86_64
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070730133758.GB22952@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jul 29, 2007 at 11:41:05PM +0200, Matthias Kaehlcke wrote:
-> The ISDN subsystem common functions use a semaphore as mutex. Use the
-> mutex API instead of the (binary) semaphore.
+On Mon, Jul 30, 2007 at 07:07:58PM +0530, Dhaval Giani wrote:
+> Hi Balbir,
 > 
-> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> > diff -puN mm/memcontrol.c~mem-control-lru-and-reclaim mm/memcontrol.c
+> > --- linux-2.6.23-rc1-mm1/mm/memcontrol.c~mem-control-lru-and-reclaim	2007-07-28 01:12:50.000000000 +0530
+> > +++ linux-2.6.23-rc1-mm1-balbir/mm/memcontrol.c	2007-07-28 01:12:50.000000000 +0530
 > 
-
-Acked-by: Karsten Keil <kkeil@suse.de>
+> >  /*
+> >   * The memory controller data structure. The memory controller controls both
+> > @@ -51,6 +54,10 @@ struct mem_container {
+> >  	 */
+> >  	struct list_head active_list;
+> >  	struct list_head inactive_list;
+> > +	/*
+> > +	 * spin_lock to protect the per container LRU
+> > +	 */
+> > +	spinlock_t lru_lock;
+> >  };
+> 
+> The spinlock is not annotated by lockdep. The following patch should do
+> it.
+> 
+> Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> Signed-off-by: Gautham Shenoy R <ego@in.ibm.com>
+		 ^^^^^^^^^^^^^^^^
+		 Gautham R Shenoy
+> 
+> 
+> Index: linux-2.6.23-rc1/mm/memcontrol.c
+> ===================================================================
+> --- linux-2.6.23-rc1.orig/mm/memcontrol.c	2007-07-30 17:27:24.000000000 +0530
+> +++ linux-2.6.23-rc1/mm/memcontrol.c	2007-07-30 18:43:40.000000000 +0530
+> @@ -501,6 +501,9 @@
+> 
+>  static struct mem_container init_mem_container;
+> 
+> +/* lockdep should know about lru_lock */
+> +static struct lock_class_key lru_lock_key;
+> +
+>  static struct container_subsys_state *
+>  mem_container_create(struct container_subsys *ss, struct container *cont)
+>  {
+> @@ -519,6 +522,7 @@
+>  	INIT_LIST_HEAD(&mem->active_list);
+>  	INIT_LIST_HEAD(&mem->inactive_list);
+>  	spin_lock_init(&mem->lru_lock);
+> +	lockdep_set_class(&mem->lru_lock, &lru_lock_key);
+>  	mem->control_type = MEM_CONTAINER_TYPE_ALL;
+>  	return &mem->css;
+>  }
+> -- 
+> regards,
+> Dhaval
+> 
+> I would like to change the world but they don't give me the source code!
 
 -- 
-Karsten Keil
-SuSE Labs
-ISDN and VOIP development
-SUSE LINUX Products GmbH, Maxfeldstr.5 90409 Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
