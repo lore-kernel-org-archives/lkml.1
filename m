@@ -1,99 +1,368 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966260AbXG3Dbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937884AbXG3Dcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966260AbXG3Dbs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Jul 2007 23:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936764AbXG3Dbk
+	id S937884AbXG3Dcg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Jul 2007 23:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936802AbXG3Dc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Jul 2007 23:31:40 -0400
-Received: from dilbert.robsims.com ([209.120.158.98]:35863 "EHLO
-	mail.robsims.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753478AbXG3Dbj (ORCPT
+	Sun, 29 Jul 2007 23:32:26 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:44741 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933427AbXG3DcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Jul 2007 23:31:39 -0400
-X-Greylist: delayed 1808 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Jul 2007 23:31:39 EDT
-Date: Sun, 29 Jul 2007 21:01:30 -0600
-From: Rob Sims <lkml-z@robsims.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Kyle Rose <krose@akamai.com>, linux-kernel@vger.kernel.org
-Subject: Re: sk98lin for 2.6.23-rc1
-Message-ID: <20070730030130.GA6893@robsims.com>
-References: <46A8BAD4.8020004@akamai.com> <20070726165701.GM3572@stusta.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="xHFwDpU9dbj6ez1V"
-Content-Disposition: inline
-In-Reply-To: <20070726165701.GM3572@stusta.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 29 Jul 2007 23:32:25 -0400
+Subject: v2.6.23-rc1-rt6-dw1
+From: Daniel Walker <dwalker@mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-rt-users@vger.kernel.org
+Content-Type: text/plain
+Date: Sun, 29 Jul 2007 20:22:20 -0700
+Message-Id: <1185765740.2636.2.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---xHFwDpU9dbj6ez1V
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I've released another version of the real-time tree. It's just a
+slightly more bisectable tree, and it includes the fixes I've just
+released.
 
-On Thu, Jul 26, 2007 at 06:57:01PM +0200, Adrian Bunk wrote:
-> On Thu, Jul 26, 2007 at 11:16:36AM -0400, Kyle Rose wrote:
-> > >From http://www.krose.org/~krose/computing.html:
-> >=20
-> > Since the sky2 driver continues to suck ass (which is a technical
-> > description for "it hangs all the time under load, at least on my
-> > hardware" :-) ), I've fixed the sk98lin driver to compile for
-> > linux-2.6.23-rc1. Those who continue to have problems with sky2 can
-> > still use 2.6.23-rc1, simply by doing the following:
-> >...
-> > Personally, I'd like to see sk98lin remain in the kernel proper until
-> > sky2 goes at least 6 months without reported problems.  The fact that I
-> > am not the only one still seeing issues is a clear indication that sky2
-> > (even with the recent patches in 2.6.23-rc1) is not yet ready to replace
-> > sk98lin.
-> >...
->=20
-> This sounds good in theory.
->=20
-> The practical problem with this approach is that there are always many=20
-> people who use the old driver when the new driver doesn't work for them=
-=20
-> instead of reporting their problems with the new driver.
->=20
-> For these people a new driver will often suck when the old driver gets=20
-> removed, but after the removal of the old driver they are finally forced=
-=20
-> to report their bugs resulting in a better new driver for everyone.
->=20
-> The sky2 driver is since nearly 2 years in the kernel and Stephen is=20
-> usually quite good at handling bugs.
+You can download a combined patch from, 
 
-The driver still (2.6.20/sky2 1.13) hangs for me (more rarely than in
-the past), and cycling the module generally fixes the issues.  I have
-supplied all the information that Stephen has asked for, but still no
-resolution.  I am not complaining about the lack of a fix, but don't
-assume that all it takes to get sky2 working is adequate bug reports.  I
-have been and remain willing to test and assist debug, but after several
-dropped threads, I feel like the desire or ability to fix this issue
-isn't there (and remote debug of an intermittent hardware issue IS
-hard), and I didn't want to be a nuisance to someone that has no
-obligation to me to address the issue in the first place.
+ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.23-rc1-rt6-dw1
 
-Stability has improved, it's just not there yet.
+Or a broken out set from,
 
-I'll switch to 1.16 soon, and respond to Stephen's request on netdev for
-current issues.
---=20
-Rob
+ftp://source.mvista.com/pub/dwalker/rt/patch-2.6.23-rc1-rt6-dw1.tar.gz
 
---xHFwDpU9dbj6ez1V
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Below I've included a per patch delta (as good as interdiff can make).
+In the hopes that it will help integration. The changes are additions to
+preempt-realtime-sched.patch which are extracted from patches later in
+the series. This allow preempt-realtime-sched.patch to compile
+standalone .. There was also a stray hunk in the version.patch which I
+moved to another location. 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+:: start series ::
+--- tmp/patches/series	2007-07-26 14:47:21.000000000 -0700
++++ patches/series	2007-07-29 19:48:07.000000000 -0700
+@@ -670,3 +670,12 @@
+ schedule_on_each_cpu-enhance.patch
+ schedule_on_each_cpu-enhance-rt.patch
+ version.patch
++add-warn-on-rcu-read-unlock-imbalance.patch
++preempt-hardirqs-selects-preempt-softirqs.patch
++initialize-last_tick-in-calc_load.patch
++softirq-raise-wakeup-fix.patch
++preempt-realtime-net-mismerge.patch
++locking-cleanup.patch
++pickop-rt_lock_h.patch
++pickop-spinlock-rwlocks.patch
++pickop-seqlocks.patch
+:: end series ::
+:: start preempt-realtime-i386.patch ::
+--- linux-2.6.22.orig/include/linux/smp.h	2007-07-27 00:20:49.000000000 +0000
++++ linux-2.6.22/include/linux/smp.h	2007-07-27 00:20:50.000000000 +0000
+@@ -33,6 +33,16 @@ extern void smp_send_stop(void);
+  */
+ extern void smp_send_reschedule(int cpu);
+ 
++/*
++ * trigger a reschedule on all other CPUs:
++ */
++extern void smp_send_reschedule_allbutself(void);
++
++/*
++ * trigger a reschedule on all other CPUs:
++ */
++extern void smp_send_reschedule_allbutself(void);
++
+ 
+ /*
+  * Prepare machine for booting other CPUs.
+@@ -97,6 +107,7 @@ static inline int up_smp_call_function(v
+ 		0;				\
+ 	})
+ static inline void smp_send_reschedule(int cpu) { }
++static inline void smp_send_reschedule_allbutself(void) { }
+ #define num_booting_cpus()			1
+ #define smp_prepare_boot_cpu()			do {} while (0)
+ #define smp_call_function_single(cpuid, func, info, retry, wait) \
+:: end preempt-realtime-i386.patch ::
+:: start preempt-realtime-sched.patch ::
+--- linux-2.6.22.orig/include/linux/kernel.h
++++ linux-2.6.22/include/linux/kernel.h
+@@ -88,7 +88,7 @@ extern int cond_resched(void);
+ # define might_resched() do { } while (0)
+ #endif
+ 
+-#ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
++#if defined(CONFIG_DEBUG_SPINLOCK_SLEEP) || defined(CONFIG_DEBUG_PREEMPT)
+   void __might_sleep(char *file, int line);
+ # define might_sleep() \
+ 	do { __might_sleep(__FILE__, __LINE__); might_resched(); } while (0)
+@@ -198,6 +198,7 @@ extern void add_taint(unsigned);
+ /* Values used for system_state */
+ extern enum system_states {
+ 	SYSTEM_BOOTING,
++	SYSTEM_BOOTING_SCHEDULER_OK,
+ 	SYSTEM_RUNNING,
+ 	SYSTEM_HALT,
+ 	SYSTEM_POWER_OFF,
+--- linux-2.6.22.orig/init/main.c
++++ linux-2.6.22/init/main.c
+@@ -438,6 +438,8 @@ static void noinline __init_refok rest_i
+ {
+ 	int pid;
+ 
++	system_state = SYSTEM_BOOTING_SCHEDULER_OK;
++
+ 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+ 	numa_default_policy();
+ 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+--- linux-2.6.22.orig/lib/kernel_lock.c
++++ linux-2.6.22/lib/kernel_lock.c
+@@ -35,22 +35,25 @@ DECLARE_MUTEX(kernel_sem);
+  * about recursion, both due to the down() and due to the enabling of
+  * preemption. schedule() will re-check the preemption flag after
+  * reacquiring the semaphore.
++ *
++ * Called with interrupts disabled.
+  */
+ int __lockfunc __reacquire_kernel_lock(void)
+ {
+ 	struct task_struct *task = current;
+ 	int saved_lock_depth = task->lock_depth;
+ 
++	local_irq_enable();
+ 	BUG_ON(saved_lock_depth < 0);
+ 
+ 	task->lock_depth = -1;
+-	__preempt_enable_no_resched();
+ 
+ 	down(&kernel_sem);
+ 
+-	preempt_disable();
+ 	task->lock_depth = saved_lock_depth;
+ 
++	local_irq_disable();
++
+ 	return 0;
+ }
+ 
+@@ -67,11 +70,15 @@ void __lockfunc lock_kernel(void)
+ 	struct task_struct *task = current;
+ 	int depth = task->lock_depth + 1;
+ 
+-	if (likely(!depth))
++	if (likely(!depth)) {
+ 		/*
+ 		 * No recursion worries - we set up lock_depth _after_
+ 		 */
+ 		down(&kernel_sem);
++#ifdef CONFIG_DEBUG_RT_MUTEXES
++		current->last_kernel_lock = __builtin_return_address(0);
++#endif
++	}
+ 
+ 	task->lock_depth = depth;
+ }
+@@ -82,8 +89,12 @@ void __lockfunc unlock_kernel(void)
+ 
+ 	BUG_ON(task->lock_depth < 0);
+ 
+-	if (likely(--task->lock_depth < 0))
++	if (likely(--task->lock_depth == -1)) {
++#ifdef CONFIG_DEBUG_RT_MUTEXES
++		current->last_kernel_lock = NULL;
++#endif
+ 		up(&kernel_sem);
++	}
+ }
+ 
+ #else
+@@ -116,11 +127,9 @@ static  __cacheline_aligned_in_smp DEFIN
+  */
+ int __lockfunc __reacquire_kernel_lock(void)
+ {
+-	while (!_raw_spin_trylock(&kernel_flag)) {
+-		if (test_thread_flag(TIF_NEED_RESCHED))
+-			return -EAGAIN;
+-		cpu_relax();
+-	}
++	local_irq_enable();
++	_raw_spin_lock(&kernel_flag);
++	local_irq_disable();
+ 	preempt_disable();
+ 	return 0;
+ }
+:: end preempt-realtime-sched.patch ::
+:: start preempt-realtime-core.patch ::
+diff -u linux-rt-rebase.q/include/linux/kernel.h linux-2.6.22/include/linux/kernel.h
+--- linux-rt-rebase.q/include/linux/kernel.h
++++ linux-2.6.22/include/linux/kernel.h	2007-07-27 01:32:15.000000000 +0000
+@@ -88,7 +88,7 @@
+ # define might_resched() do { } while (0)
+ #endif
+ 
+-#if defined(CONFIG_DEBUG_SPINLOCK_SLEEP) || defined(CONFIG_DEBUG_PREEMPT)
++#ifdef CONFIG_DEBUG_SPINLOCK_SLEEP
+   void __might_sleep(char *file, int line);
+ # define might_sleep() \
+ 	do { __might_sleep(__FILE__, __LINE__); might_resched(); } while (0)
+@@ -210,7 +210,6 @@
+ /* Values used for system_state */
+ extern enum system_states {
+ 	SYSTEM_BOOTING,
+-	SYSTEM_BOOTING_SCHEDULER_OK,
+ 	SYSTEM_RUNNING,
+ 	SYSTEM_HALT,
+ 	SYSTEM_POWER_OFF,
+reverted:
+--- linux-rt-rebase.q/include/linux/smp.h
++++ linux-rt-rebase.q.orig/include/linux/smp.h
+@@ -33,16 +33,6 @@
+  */
+ extern void smp_send_reschedule(int cpu);
+ 
+-/*
+- * trigger a reschedule on all other CPUs:
+- */
+-extern void smp_send_reschedule_allbutself(void);
+-
+-/*
+- * trigger a reschedule on all other CPUs:
+- */
+-extern void smp_send_reschedule_allbutself(void);
+-
+ 
+ /*
+  * Prepare machine for booting other CPUs.
+@@ -107,7 +97,6 @@
+ 		0;				\
+ 	})
+ static inline void smp_send_reschedule(int cpu) { }
+-static inline void smp_send_reschedule_allbutself(void) { }
+ #define num_booting_cpus()			1
+ #define smp_prepare_boot_cpu()			do {} while (0)
+ #define smp_call_function_single(cpuid, func, info, retry, wait) \
+reverted:
+--- linux-rt-rebase.q/lib/kernel_lock.c
++++ linux-rt-rebase.q.orig/lib/kernel_lock.c
+@@ -35,25 +35,22 @@
+  * about recursion, both due to the down() and due to the enabling of
+  * preemption. schedule() will re-check the preemption flag after
+  * reacquiring the semaphore.
+- *
+- * Called with interrupts disabled.
+  */
+ int __lockfunc __reacquire_kernel_lock(void)
+ {
+ 	struct task_struct *task = current;
+ 	int saved_lock_depth = task->lock_depth;
+ 
+-	local_irq_enable();
+ 	BUG_ON(saved_lock_depth < 0);
+ 
+ 	task->lock_depth = -1;
++	__preempt_enable_no_resched();
+ 
+ 	down(&kernel_sem);
+ 
++	preempt_disable();
+ 	task->lock_depth = saved_lock_depth;
+ 
+-	local_irq_disable();
+-
+ 	return 0;
+ }
+ 
+@@ -70,15 +67,11 @@
+ 	struct task_struct *task = current;
+ 	int depth = task->lock_depth + 1;
+ 
++	if (likely(!depth))
+-	if (likely(!depth)) {
+ 		/*
+ 		 * No recursion worries - we set up lock_depth _after_
+ 		 */
+ 		down(&kernel_sem);
+-#ifdef CONFIG_DEBUG_RT_MUTEXES
+-		current->last_kernel_lock = __builtin_return_address(0);
+-#endif
+-	}
+ 
+ 	task->lock_depth = depth;
+ }
+@@ -89,12 +82,8 @@
+ 
+ 	BUG_ON(task->lock_depth < 0);
+ 
++	if (likely(--task->lock_depth < 0))
+-	if (likely(--task->lock_depth == -1)) {
+-#ifdef CONFIG_DEBUG_RT_MUTEXES
+-		current->last_kernel_lock = NULL;
+-#endif
+ 		up(&kernel_sem);
+-	}
+ }
+ 
+ #else
+@@ -127,9 +116,11 @@
+  */
+ int __lockfunc __reacquire_kernel_lock(void)
+ {
++	while (!_raw_spin_trylock(&kernel_flag)) {
++		if (test_thread_flag(TIF_NEED_RESCHED))
++			return -EAGAIN;
++		cpu_relax();
++	}
+-	local_irq_enable();
+-	_raw_spin_lock(&kernel_flag);
+-	local_irq_disable();
+ 	preempt_disable();
+ 	return 0;
+ }
+:: end preempt-realtime-core.patch ::
+:: start preempt-realtime-init-show-enabled-debugs.patch ::
+diff -u linux-rt-rebase.q/init/main.c linux-2.6.22/init/main.c
+--- linux-rt-rebase.q/init/main.c
++++ linux-2.6.22/init/main.c	2007-07-27 01:22:46.000000000 +0000
+@@ -438,8 +438,6 @@
+ {
+ 	int pid;
+ 
+-	system_state = SYSTEM_BOOTING_SCHEDULER_OK;
+-
+ 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+ 	numa_default_policy();
+ 	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+:: end preempt-realtime-init-show-enabled-debugs.patch ::
+:: start schedule_on_each_cpu-enhance.patch ::
+diff -u linux-rt-rebase.q/kernel/workqueue.c linux-2.6.22/kernel/workqueue.c
+--- linux-rt-rebase.q/kernel/workqueue.c
++++ linux-2.6.22/kernel/workqueue.c	2007-07-29 00:41:17.000000000 +0000
+@@ -647,6 +647,7 @@
+ 
+ 	return err;
+ }
++EXPORT_SYMBOL(schedule_on_each_cpu);
+ 
+ /**
+  * schedule_on_each_cpu_wq - call a function on each online CPU on a per-CPU wq
+:: end schedule_on_each_cpu-enhance.patch ::
+:: start version.patch ::
+reverted:
+--- linux-rt-rebase.q/kernel/workqueue.c
++++ linux-rt-rebase.q.orig/kernel/workqueue.c
+@@ -647,7 +647,6 @@
+ 
+ 	return err;
+ }
+-EXPORT_SYMBOL(schedule_on_each_cpu);
+ 
+ /**
+  * schedule_on_each_cpu_wq - call a function on each online CPU on a per-CPU wq
+:: end version.patch ::
 
-iD8DBQFGrVSKnvKppSZW8osRAigyAJ9h6WaEiV91tRq79k6skfNyO4bnOgCdGGHf
-kTRgS0Dy6Wwhui8YLmDubAM=
-=hXq9
------END PGP SIGNATURE-----
 
---xHFwDpU9dbj6ez1V--
