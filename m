@@ -1,108 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939449AbXG3XtD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939447AbXG3Xxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939449AbXG3XtD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 19:49:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763089AbXG3Xsy
+	id S939447AbXG3Xxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 19:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763689AbXG3Xxb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 19:48:54 -0400
-Received: from pfepc.post.tele.dk ([195.41.46.237]:49377 "EHLO
-	pfepc.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762984AbXG3Xsx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 19:48:53 -0400
-Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ck@vds.kolivas.org
-In-Reply-To: <20070729170641.GA26220@elte.hu>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <1185536610.502.8.camel@localhost>  <20070729170641.GA26220@elte.hu>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 01:46:04 +0200
-Message-Id: <1185839164.27166.7.camel@localhost>
+	Mon, 30 Jul 2007 19:53:31 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:55412 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755451AbXG3Xxa (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 19:53:30 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kylene Hall <kjhall@us.ibm.com>,
+       tpm@selhorst.net, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-mm1 - seems OK on Dell Latitude D820, except for tpm_tis
+In-Reply-To: Your message of "Fri, 27 Jul 2007 16:43:13 MDT."
+             <200707271643.14028.bjorn.helgaas@hp.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <5208.1185508832@turing-police.cc.vt.edu> <23912.1185542889@turing-police.cc.vt.edu>
+            <200707271643.14028.bjorn.helgaas@hp.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
+Content-Type: multipart/signed; boundary="==_Exmh_1185839599_32560P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 30 Jul 2007 19:53:19 -0400
+Message-ID: <5287.1185839599@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-07-29 at 19:06 +0200, Ingo Molnar wrote:
-> * Kasper Sandberg <lkml@metanurb.dk> wrote:
-> 
-> > Im still not so keen about this, Ingo never did get CFS to match SD in 
-> > smoothness for 3d applications, where my test subjects are quake(s), 
-> > world of warcraft via wine, unreal tournament 2004. [...]
-> 
-> here's an update: checking whether Wine could be a factor in your 
-> problem i just tested latest CFS against latest SD with a 3D game 
-> running under Wine: v2.6.22-ck1 versus v2.6.22-cfsv19 (to get the
-> most comparable kernel), using Quake 3 Arena Demo under Wine (0.9.41). 
-> Here are the results in a pretty graph:
-> 
->    http://people.redhat.com/mingo/misc/cfs-vs-sd-wine-quake.jpg
-> 
-> or, in text:
-> 
->          2.6.22-ck1                         2.6.22-cfs-v19
->    ------------------------            ------------------------
->    quake + 0 loops | 41 fps            quake + 0 loops | 41 fps
->    quake + 1 loop  |  3 fps            quake + 1 loop  | 41 fps
->    quake + 2 loops |  2 fps            quake + 2 loops | 32 fps
->    quake + 3 loops |  1 fps            quake + 3 loops | 24 fps
->    quake + 4 loops |  0 fps            quake + 4 loops | 20 fps
->    quake + 5 loops |  0 fps            quake + 5 loops | 16 fps
-> 
-> Quake3-under-Wine behavior under SD/-ck: framerate breaks down massively 
-> during any kind of load. The game is completely unusable with 1 CPU loop 
-> running already!
+--==_Exmh_1185839599_32560P
+Content-Type: text/plain; charset=us-ascii
 
-I run quake3 natively, ut2k4 natively, and world of warcraft under wine.
+On Fri, 27 Jul 2007 16:43:13 MDT, Bjorn Helgaas said:
 
+> I don't know why tpm_tis_init() is messing around trying different
+> IRQs between 3 and 16.  That looks suspiciously x86-dependent.
 > 
-> Quake3-under-Wine behavior under CFS: framerate goes down gently with 
-> load, gameplay remains smooth. Framerate is still pretty acceptable and 
-> the game is playable even with a 500% CPU overload. The graph looks good 
-> and the framerate reduction goes roughly along the expected 1/n 
-> 'fairness curve' - so it all looks pretty healthy. [Note: quake3 keeps 
-> its fully 41 fps even with 1 competing loop running on the CPU due to 
-> "sleeper fairness".]
+> Maybe if you don't have PNP (though I doubt TPMs exist on any
+> pre-PNPBIOS machines) the "check-IRQ" loop would be necessary.
+
+Well, it's a 6 month old Dell Latitude, and PNP is most certainly there,
+as a number of other things get configured using it as well.
+
+> But you're using the PNP probe, and PNP should just tell you what
+> IRQ the device is configured for (and whether the IRQ can be
+> shared -- see 8250_pnp.c for an example).
 > 
-> [ i've re-tested this using other SD and ck versions and other CFS 
->   versions such as v2.6.23-rc1 and the results are the same. To get the 
->   fps result i started a simple game scene: Single Player /
->   Q3DM1 / I Can Win, turned on the fps display of Quake3, and did not 
->   move the player at all, just looked at the framerate that is 
->   displayed. (i also tried other scenes and other gameplay sections and 
->   they all behave consistently with the above results.) The system was
->   otherwise completely idle. While i trust these numbers take them with 
->   a grain of salt, i'm obviously not neutral in this thing :-) ]
+> The BIOS should have configured the TPM IRQ, and if we go and
+> mess with that IRQ setting without going through the PNP interface,
+> e.g., the ACPI _SRS method, we're liable to mess something up.  The
+> TPM is often behind a few bridges, and if the bridge has any IRQ
+> routing configuration, only the BIOS knows how to keep that in
+> sync with the TPM IRQ configuration.
 > 
-> so Kasper, i'll definitely need your help in tracking down your 3D 
-> smoothness problem under CFS. I have the feeling that it could be some 
-> odd factor that only hits your system, and once we've tracked that down 
-> there will be a simple solution that does not affect the totality of the 
-> scheduler. So far only you have reported any 3D game smoothness problem 
-> against recent CFS versions. (all 3D feedback has been positive, and 
-> that includes a number of gamers as well. Most of the 3D smoothness 
-> problems were fixed in CFS v13..v15 and it has not been reported to have 
-> regressed since then.)
-
-I believe the responsibility for my situation is both IO and cpu load. i
-dont know why SD does this. my test is to make spamasassin process mails
-while i have these applications running(and wine is most sensitive, the
-difference is almost negligable in the native applications, but very
-much noticable with wine+wow)
-
-could perhaps be filesystem related, i have my maildir(extremely large)
-on reiserfs, and /home on xfs. what my mail client will do is download
-mail, spamasassin it(loading database from home), then it will put to
-imap server placing it on reiserfs, and then a "local" copy in my home.
-
-while i only see the spamasassin thread as hogging cpu, i suspect IO is
-also to blame.
-
+> > Just for the record, I see this in /sys:
+> > 
+> > % cat /sys/bus/pnp/devices/00:0e/id
+> > BCM0102
+> > PNP0c31
 > 
-> 	Ingo
+> What's in /sys/bus/pnp/devices/00:0e/resources?
 
+% cat /sys/bus/pnp/devices/00:0e/resources
+state = active
+io 0x378-0x37f
+io 0x778-0x77b
+irq 7
+dma 1
+
+IRQ 7.  That would certainly explain why I was seeing massive timeouts
+when the driver chose to use IRQ 3. ;)
+
+I'll test-drive your patch from Monday's e-mail when I get home tonight.
+
+
+--==_Exmh_1185839599_32560P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGrnnvcC3lWbTT17ARAh7ZAJ4hR4E3vbZQ8tCbJRawcPgM5ca7BgCgog3y
+uRu7loOuWMoS7G/nwcaOaWE=
+=mFNQ
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1185839599_32560P--
