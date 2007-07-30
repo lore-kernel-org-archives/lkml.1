@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939308AbXG3Jeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939286AbXG3JfN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939308AbXG3Jeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 05:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754708AbXG3Jed
+	id S939286AbXG3JfN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 05:35:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939301AbXG3Jeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 05:34:33 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:36338 "EHLO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932157AbXG3Jec (ORCPT
+	Mon, 30 Jul 2007 05:34:44 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:1554 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939288AbXG3Jel (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 05:34:32 -0400
-Message-ID: <46ADB07A.6090209@aitel.hist.no>
-Date: Mon, 30 Jul 2007 11:33:46 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Mon, 30 Jul 2007 05:34:41 -0400
+Date: Mon, 30 Jul 2007 10:34:36 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Robert Hancock <hancockr@shaw.ca>
+cc: Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: serial flow control appears broken
+In-Reply-To: <46AA3801.7090204@shaw.ca>
+Message-ID: <Pine.LNX.4.64N.0707301023150.12082@blysk.ds.pg.gda.pl>
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca>
+ <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
+ <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
+ <46AA3801.7090204@shaw.ca>
 MIME-Version: 1.0
-To: Matthew Hawkins <darthmdh@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Ray Lee <ray-lk@madrabbit.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>, linux-kernel@vger.kernel.org,
-       ck list <ck@vds.kolivas.org>, linux-mm@kvack.org,
-       Paul Jackson <pj@sgi.com>, Andi Kleen <andi@firstfloor.org>,
-       Frank Kingswood <frank@kingswood-consulting.co.uk>
-Subject: Re: [ck] Re: RFT: updatedb "morning after" problem [was: Re: -mm
- merge plans for 2.6.23]
-References: <2c0942db0707232153j3670ef31kae3907dff1a24cb7@mail.gmail.com>	 <2c0942db0707240915h56e007e3l9110e24a065f2e73@mail.gmail.com>	 <46A6CC56.6040307@yahoo.com.au> <p73abtkrz37.fsf@bingen.suse.de>	 <46A85D95.509@kingswood-consulting.co.uk>	 <20070726092025.GA9157@elte.hu>	 <20070726023401.f6a2fbdf.akpm@linux-foundation.org>	 <20070726094024.GA15583@elte.hu>	 <20070726030902.02f5eab0.akpm@linux-foundation.org>	 <20070726102406.GA30165@elte.hu> <b21f8390707261733y19e00ca2w9961463bd60c8553@mail.gmail.com>
-In-Reply-To: <b21f8390707261733y19e00ca2w9961463bd60c8553@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Hawkins wrote:
-> updatedb by itself doesn't really bug me, its just that on occasion
-> its still running at 7am 
-You should start it earlier then - assuming it doesn't
-already start at the earliest opportunity?
+On Fri, 27 Jul 2007, Robert Hancock wrote:
 
+> > The TTY line discipline driver could do that based on the amount of received
+> > data present in its buffer.  And it should if asked to (a brief look at
+> > drivers/char/n_tty.c reveals it does; obviously there may be a bug 
+> 
+> Really, where? In my look through the code I haven't found any mechanism that
+> would result in RTS being lowered based on TTY buffers filling up, at least
+> not in the 8250 case.
 
-Helge Hafting
+ Look for calls to ->throttle() and ->unthrottle().  XON and XOFF might be 
+used instead as a result of these calls though, depending on terminal 
+settings.
+
+> In this situation, though, it appears it's not the TTY buffers that are
+> filling but the UART's own buffer. I would think this must be caused by some
+> kind of interrupt latency that results in not draining the FIFO in time.
+
+ Well, the UART only has its FIFO which is rather small, so automatic flow 
+control would be useful.  Though, admittedly, tty_insert_flip_char() might 
+return some kind of a status related to how much space is left in the 
+receive buffer which would indicate that there is a lag in data stream 
+processing -- which in turn may relate to the system being loaded, so that 
+the receive ISR could decide whether to negate RTS itself for the less 
+capable UARTs (i.e. ones with no autoflow and a tiny or no FIFO).
+
+  Maciej
