@@ -1,41 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938907AbXG3Gdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938907AbXG3Ghn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938907AbXG3Gdj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 02:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938246AbXG3Gdb
+	id S938907AbXG3Ghn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 02:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937850AbXG3Ghg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 02:33:31 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:15213 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937953AbXG3Gdb (ORCPT
+	Mon, 30 Jul 2007 02:37:36 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:43345 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765141AbXG3Ghf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 02:33:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=IcSc7ElXYM1bqZPdMJOivfE2atKjVsHwcUcyWviiVZYVJ9caG5Mgoi+mgjK9vnVeJc5dpZ2XMT8TUiRLo6pyH4DaBE8YVuD6S/07MzItpibbtOut53jh2YobvV+Pikrf+iJqcxJtO5N1nw+fcoB9OXb8SOs1rxOapxcVEolzhCQ=
-Message-ID: <8bd0f97a0707292333p7428f1f7l1a4bd41993592826@mail.gmail.com>
-Date: Mon, 30 Jul 2007 02:33:29 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
+	Mon, 30 Jul 2007 02:37:35 -0400
+X-IronPort-AV: i="4.19,197,1183348800"; 
+   d="scan'208"; a="35938503:sNHT24111689"
 Subject: Re: [PATCH] Blackfin: Remove duplicate inclusion of linux/irq.h
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Aidan Williams" <aidan@nicta.com.au>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Aidan Williams <aidan@nicta.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
        "Wu, Bryan" <Bryan.Wu@analog.com>
-In-Reply-To: <200707292348.25880.jesper.juhl@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+In-Reply-To: <8bd0f97a0707292333p7428f1f7l1a4bd41993592826@mail.gmail.com>
 References: <200707292348.25880.jesper.juhl@gmail.com>
+	 <8bd0f97a0707292333p7428f1f7l1a4bd41993592826@mail.gmail.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Inc.
+Date: Mon, 30 Jul 2007 14:45:13 +0800
+Message-Id: <1185777913.22473.4.camel@roc-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+X-OriginalArrivalTime: 30 Jul 2007 06:37:34.0077 (UTC) FILETIME=[1C92CAD0:01C7D274]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> arch/blackfin/mach-bf548/boards/ezkit.c includes linux/irq.h twice.
-> This patch removes the duplicate.
+On Mon, 2007-07-30 at 02:33 -0400, Mike Frysinger wrote:
+> On 7/29/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> > arch/blackfin/mach-bf548/boards/ezkit.c includes linux/irq.h twice.
+> > This patch removes the duplicate.
+> 
+> thanks, but we've fixed this in our tree already, we just havent
+> pushed it to linux mainline
+> -mike
 
-thanks, but we've fixed this in our tree already, we just havent
-pushed it to linux mainline
--mike
+Yes, Thank you Jesper.
+
+As Mike said, it will be merged later for mailine.
+
+-Bryan
