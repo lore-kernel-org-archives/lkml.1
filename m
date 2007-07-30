@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968350AbXG3UCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968420AbXG3UDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968350AbXG3UCv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 16:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967394AbXG3UCU
+	id S968420AbXG3UDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 16:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966993AbXG3UDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 16:02:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45624 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967257AbXG3UCS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 16:02:18 -0400
-Date: Tue, 31 Jul 2007 01:44:37 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: "John W. Linville" <linville@tuxdriver.com>
-cc: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-       Michael Buesch <mb@bu3sch.de>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 1/5] Use mutex instead of semaphore in the Host AP
- driver
-In-Reply-To: <20070730145005.GB6586@tuxdriver.com>
-Message-ID: <alpine.LFD.0.999.0707310142190.17287@enigma.security.iitk.ac.in>
-References: <20070729212909.GC3432@traven> <20070729213434.GD3432@traven>
- <200707300006.42397.mb@bu3sch.de> <alpine.LFD.0.999.0707300842350.10861@enigma.security.iitk.ac.in>
- <alpine.LFD.0.999.0707300904360.10861@enigma.security.iitk.ac.in>
- <20070730054004.GI3432@traven> <alpine.LFD.0.999.0707301247100.12730@enigma.security.iitk.ac.in>
- <20070730145005.GB6586@tuxdriver.com>
+	Mon, 30 Jul 2007 16:03:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55768 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967738AbXG3UDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 16:03:04 -0400
+Message-ID: <46AE43F5.8070802@garzik.org>
+Date: Mon, 30 Jul 2007 16:03:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Yoann Padioleau <padator@wanadoo.fr>
+CC: kernel-janitors@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dev->priv to netdev_priv(dev), drivers/net/tokenring/
+References: <87r6mzmf6q.fsf@wanadoo.fr>
+In-Reply-To: <87r6mzmf6q.fsf@wanadoo.fr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 30 Jul 2007, John W. Linville wrote:
-
-> On Mon, Jul 30, 2007 at 12:50:31PM +0530, Satyam Sharma wrote:
-> > On Mon, 30 Jul 2007, Matthias Kaehlcke wrote:
-> > 
-> > > [...]
-> > > The Host AP driver uses a semaphore as mutex. Use the mutex API
-> > > instead of the (binary) semaphore.
-> > > 
-> > > Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-> > 
-> > Reviewed-by: Satyam Sharma <satyam@infradead.org>
+Yoann Padioleau wrote:
+> Replacing accesses to dev->priv to netdev_priv(dev). The replacment
+> is safe when netdev_priv is used to access a private structure that is
+> right next to the net_device structure in memory. 
+> Cf http://groups.google.com/group/comp.os.linux.development.system/browse_thread/thread/de19321bcd94dbb8/0d74a4adcd6177bd
+> This is the case when the net_device structure was allocated with
+> a call to alloc_netdev or one of its derivative.
 > 
-> Is that the same as Acked-by?  Or do you disagree with the patch?
+> Here is an excerpt of the semantic patch that performs the transformation
 > 
-> Just checkin'...
+> @ rule1 @
+> type T;
+> struct net_device *dev;
+> @@
+> 
+>  dev = 
+> (
+>         alloc_netdev
+> | 
+>         alloc_etherdev
+> |
+>         alloc_trdev
+> )
+>    (sizeof(T), ...)
+> 
+> @ rule1bis @
+> struct net_device *dev;
+> expression E;
+> @@
+>  dev->priv = E
+> 
+> @ rule2 depends on rule1 && !rule1bis  @
+> struct net_device *dev;
+> type rule1.T;
+> @@
+> 
+> - (T*) dev->priv
+> + netdev_priv(dev)
+> 
+> 
+> PS: I have performed the same transformation on the whole kernel
+> and it affects around 70 files, most of them in drivers/net/.
+> Should I split my patch for each subnet directories ? (wireless/, wan/, etc)
 
-Well, I'm not the maintainer, so didn't think correct to give an
-"Acked-by". "Reviewed-by" generally means I read the patch, and think
-it is correct. Probably could save time for others ...
+applied.  splitting up by sub-directory would be helpful.
 
 
-Satyam
