@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968436AbXG3TNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968499AbXG3TN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968436AbXG3TNh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 15:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968004AbXG3TN1
+	id S968499AbXG3TN4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 15:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968160AbXG3TNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 15:13:27 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:40110 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967853AbXG3TN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 15:13:26 -0400
-Date: Mon, 30 Jul 2007 15:13:22 -0400
-From: Adam Kropelin <akropel1@rochester.rr.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [1/3] 2.6.23-rc1: known regressions with patches v3
-Message-ID: <20070730191322.GA24512@mail.kroptech.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46AE1304.80408@googlemail.com>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 30 Jul 2007 15:13:45 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42438 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967577AbXG3TNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 15:13:44 -0400
+Subject: patch usb-clean-up-duplicate-includes-in-drivers-usb.patch added to gregkh-2.6 tree
+To: jesper.juhl@gmail.com, akpm@linux-foundation.org, greg@kroah.com,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       tony.olech@elandigitalsystems.com
+From: <gregkh@suse.de>
+Date: Mon, 30 Jul 2007 12:13:34 -0700
+In-Reply-To: <200707211702.59265.jesper.juhl@gmail.com>
+Message-Id: <20070730191341.D16E7144586E@imap.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Here is a list of some known regressions in 2.6.23-rc1
-> with patches available.
 
-I don't know which list this belongs in (good: 2.6.20.6, bad 2.6.22.1),
-but here's a clear regression with patch:
+This is a note to let you know that I've just added the patch titled
 
-Subject         : Edgeport UPS Monitoring Problems
-References      : http://lkml.org/lkml/2007/7/27/334
-Last known good : 2.6.20.6
-Submitter       : Nick Pasich <NewsLetters@NickAndBarb.net>
-Caused-By       : 
-Handled-By      : Adam Kropelin <akropel1@rochester.rr.com>
-Patch           : http://lkml.org/lkml/2007/7/29/164
-Status          : patch available
+     Subject: USB: Clean up duplicate includes in drivers/usb/
 
---Adam
+to my gregkh-2.6 tree.  Its filename is
 
+     usb-clean-up-duplicate-includes-in-drivers-usb.patch
+
+This tree can be found at 
+    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+
+
+>From jesper.juhl@gmail.com Sat Jul 21 08:03:57 2007
+From: Jesper Juhl <jesper.juhl@gmail.com>
+Date: Sat, 21 Jul 2007 17:02:59 +0200
+Subject: USB: Clean up duplicate includes in drivers/usb/
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Jesper Juhl <jesper.juhl@gmail.com>, Greg Kroah-Hartman <greg@kroah.com>, gregkh@suse.de, linux-usb-users@lists.sourceforge.net, Tony Olech <tony.olech@elandigitalsystems.com>
+Message-ID: <200707211702.59265.jesper.juhl@gmail.com>
+Content-Disposition: inline
+
+
+This patch cleans up duplicate includes in
+	drivers/usb/
+
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/usb/host/u132-hcd.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+--- a/drivers/usb/host/u132-hcd.c
++++ b/drivers/usb/host/u132-hcd.c
+@@ -51,7 +51,6 @@
+ #include <linux/usb.h>
+ #include <linux/workqueue.h>
+ #include <linux/platform_device.h>
+-#include <linux/pci_ids.h>
+ #include <linux/mutex.h>
+ #include <asm/io.h>
+ #include <asm/irq.h>
+
+
+Patches currently in gregkh-2.6 which might be from jesper.juhl@gmail.com are
+
+bad/speakup-kconfig-fix.patch
+driver/howto-adjust-translation-header-of-japanese-stable_api_nonsense.txt.patch
+usb/usb-clean-up-duplicate-includes-in-drivers-usb.patch
