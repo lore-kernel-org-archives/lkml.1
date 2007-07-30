@@ -1,59 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966747AbXG3Rt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966982AbXG3Rwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966747AbXG3Rt4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 13:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932709AbXG3Rts
+	id S966982AbXG3Rwm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 13:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932601AbXG3Rwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 13:49:48 -0400
-Received: from Mnaem01-s3.macomp.com ([204.15.179.236]:1447 "EHLO
-	mnaem01-s3.macomp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761948AbXG3Rtr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 13:49:47 -0400
-X-Greylist: delayed 975 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Jul 2007 13:49:47 EDT
-X-PMWin-Version: 2.6.1, Antispam-Engine: 2.5.1, Antivirus-Engine: 2.47.0
-thread-index: AcfSz5AOGipZgqqwSw+aW51RnOwW6w==
-Content-Class: urn:content-classes:message
-Importance: normal
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.2929
-Subject: Re: k8temp on 2.6.18
-From: "Jeff Garrett" <jgarrett@teamhpc.com>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Cc: "shacky" <shacky83@gmail.com>, <linux-kernel@vger.kernel.org>
-In-Reply-To: <46AE1C9C.90907@anagramm.de>
-References: <7fedbc910707300638w4ac174edleb7a6eac2104cb85@mail.gmail.com> <46AE1C9C.90907@anagramm.de>
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Date: Mon, 30 Jul 2007 12:33:32 -0500
-Message-ID: <1185816812.5876.25.camel@thog>
+	Mon, 30 Jul 2007 13:52:33 -0400
+Received: from dsl.myri.com ([64.172.73.26]:1931 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762704AbXG3Rwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 13:52:32 -0400
+Message-ID: <46AE232F.3080409@myri.com>
+Date: Mon, 30 Jul 2007 13:43:11 -0400
+From: Andrew Gallatin <gallatin@myri.com>
+User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+To: Linas Vepstas <linas@austin.ibm.com>
+CC: Jan-Bernd Themann <ossthema@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>,
+       Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP traffic
+References: <200707301724.33865.ossthema@de.ibm.com> <20070730170038.GA4884@austin.ibm.com>
+In-Reply-To: <20070730170038.GA4884@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jul 2007 17:32:12.0000 (UTC) FILETIME=[900A3600:01C7D2CF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 19:15 +0200, Clemens Koller wrote:
-> shacky schrieb:
-> > Hi.
-> > I'm using the 2.6.18 kernel (and I cannot upgrade it), but I need the
-> > "k8temp" module which is available only from the 2.6.21 version.
-> > Is there a way to use this module on my 2.6.18?
-> 
-> What is your problem that you cannot upgrade your kernel?
-> 
-> Backporting the k8temp is propably more difficult as installing
-> a newer kernel. Have a look at:
-> http://lists.debian.org/debian-amd64/2007/03/msg00005.html
-> 
-> Regards,
 
-Actually k8temp is pretty easy.  I think the only thing necessary is
-adding:
-#define PCI_DEVICE_ID_AMD_K8_NB_MISC 0x1103
+Here is a quick reply before something more official can
+be written up:
 
-Then the module can be compiled out-of-tree as usual and should work.
+Linas Vepstas wrote:
 
--Jeff Garrett
-TeamHPC
+ > -- what is LRO?
 
+Large Receive Offload
+
+ > -- Basic principles of operation?
+
+LRO is analogous to a receive side version of TSO.  The NIC (or
+driver) merges several consecutive segments from the same connection,
+fixing up checksums, etc.  Rather than up to 45 separate 1500 byte
+frames (meaning up to 45 trips through the network stack), the driver
+merges them into one 65212 byte frame.  It currently works only
+with TCP over IPv4.
+
+LRO was, AFAIK, first though of by Neterion.  They had a paper about
+it at OLS2005.
+http://www.linuxinsight.com/files/ols2005/grossman-reprint.pdf
+
+ > -- Can I use it in my driver?
+
+Yes, it can be used in any driver.
+
+ > -- Does my hardware have to have some special feature before I can 
+use it?
+
+No.
+
+ > -- What sort of performance improvement does it provide? Throughput?
+ >    Latency? CPU usage? How does it affect DMA allocation? Does it
+ >    improve only a certain type of traffic (large/small packets, etc.)
+
+The benefit is directly proportional to the packet rate.
+
+See my reply to the previous RFC for performance information.  The
+executive summary is that for the myri10ge 10GbE driver on low end
+hardware with 1500b frames, I've seen it increase throughput by a
+factor of nearly 2.5x, while at the same time reducing CPU utilization
+by 17%.  The affect for jumbo frames is less dramatic, but still
+impressive (1.10x, 14% CPU reduction)
+
+You can achieve better speedups if your driver receives into
+high-order pages.
+
+ > -- Example code? What's the API? How should my driver use it?
+
+The 3/4 in this patch showed an example of converting a driver
+to use LRO for skb based receive buffers.   I'm working on
+a patch for myri10ge that shows how you would use it in a driver
+which receives into pages.
+
+Cheers,
+
+Drew
