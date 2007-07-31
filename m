@@ -1,111 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936099AbXGaEQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940385AbXGaEQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936099AbXGaEQL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXGaEPz
+	id S940385AbXGaEQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936396AbXGaEQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:15:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:42792 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752166AbXGaEPx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:15:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iEtH/VnLKcAZfxXpuL9hAdi6LJDtDLHCHoYB/kddGJfz3Hy6tdcrtO6DE/aw6NAdMS6SewxEzKxLCOcWQUaI44GKz2w4zbdQy2+0ILki3g6g/g2OkbFtO3IM+cDTsMYinE7AXxcpJnrl9kD6+fTgcRPnjjY7p0LiujfQTkZwgH0=
-Message-ID: <ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>
-Date: Mon, 30 Jul 2007 22:15:50 -0600
-From: "David Mosberger-Tang" <dmosberger@gmail.com>
-To: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization for cpus other than montecito
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "tony.luck@intel.com" <tony.luck@intel.com>,
-       "Zoltan.Menyhart@bull.net" <Zoltan.Menyhart@bull.net>,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 31 Jul 2007 00:16:12 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:39999 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935185AbXGaEQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 00:16:10 -0400
+Date: Tue, 31 Jul 2007 13:15:27 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.23-rc2
+Message-ID: <20070731041527.GB32301@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This seems crazy to me.  Flushing should occur according to the
-*architecture*, not model-by-model.  Even if we happen to get "lucky"
-on pre-Montecito CPUs, that doesn't justify such ugly hacks.  Or you
-really want to debug this *again* come next CPU?
+Please pull from:
 
-  --david
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.23.git
 
-On 7/30/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->
-> Add "L2 cache is separated? check flag" as read_mostly global variable.
->
-> This add one memory reference to global variable to page faults of "executable"
-> map in do_wp_page(page copy case), file-mapped page fault and some system calls
-> which does memory map changes. But not so bad as calling sync_icache_dcache in
-> architectures which doesn't need it.
->
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
->
-> ---
->  arch/ia64/kernel/setup.c   |    7 +++++++
->  include/asm-ia64/pgtable.h |    3 ++-
->  2 files changed, 9 insertions(+), 1 deletion(-)
->
-> Index: linux-2.6.23-rc1.test/arch/ia64/kernel/setup.c
-> ===================================================================
-> --- linux-2.6.23-rc1.test.orig/arch/ia64/kernel/setup.c
-> +++ linux-2.6.23-rc1.test/arch/ia64/kernel/setup.c
-> @@ -106,6 +106,8 @@ struct io_space io_space[MAX_IO_SPACES];
->  EXPORT_SYMBOL(io_space);
->  unsigned int num_io_spaces;
->
-> +int separated_l2_icache_dcache __read_mostly;
-> +
->  /*
->   * "flush_icache_range()" needs to know what processor dependent stride size to use
->   * when it makes i-cache(s) coherent with d-caches.
-> @@ -718,6 +720,11 @@ get_model_name(__u8 family, __u8 model)
->                 printk(KERN_ERR
->                        "%s: Table overflow. Some processor model information will be missing\n",
->                        __FUNCTION__);
-> +       /* Montecito has separated L2 Icache and Dcache. This requires
-> +          synchronize Icache and Dcache before set_pte() */
-> +       if (family == 0x20)
-> +               separated_l2_icache_dcache = 1;
-> +
->         return "Unknown";
->  }
->
-> Index: linux-2.6.23-rc1.test/include/asm-ia64/pgtable.h
-> ===================================================================
-> --- linux-2.6.23-rc1.test.orig/include/asm-ia64/pgtable.h
-> +++ linux-2.6.23-rc1.test/include/asm-ia64/pgtable.h
-> @@ -489,9 +489,10 @@ extern struct page *zero_page_memmap_ptr
->   * as an executable pte.
->   */
->  extern void __sync_icache_dcache(pte_t pte);
-> +extern int separated_l2_icache_dcache;
->  static inline void sync_icache_dcache(pte_t pte)
->  {
-> -       if (pte_exec(pte))
-> +       if (pte_exec(pte) && separated_l2_icache_dcache)
->                 __sync_icache_dcache(pte);
->  }
->  #define __HAVE_ARCH_SYNC_ICACHE_DCACHE
->
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+Which contains:
 
+Adrian McMenamin (1):
+      sh: Fix Dreamcast DMA issues.
 
--- 
-Mosberger Consulting LLC, http://www.mosberger-consulting.com/
+David McCullough (2):
+      sh: arch/sh/boot - fix shell usage
+      sh: fix get_wchan() for SH kernels without framepointers
+
+Magnus Damm (4):
+      sh: remove old broken pint code
+      sh: remove support for sh73180 and solution engine 73180
+      sh: sh-sci - fix SH7708 support
+      sh: remove support for sh7300 and solution engine 7300
+
+Markus Brunner (1):
+      rtc: rtc-sh: Correct sh_rtc_set_time() for some SH-3 parts.
+
+Paul Mundt (8):
+      sh: Add kmap_coherent()/kunmap_coherent() interface for SH-4.
+      sh: Reclaim beginning of P3 space for vmalloc area.
+      sh: Kill the rest of the SE73180 cruft.
+      sh: Silence sq compile warning on sh4 nommu.
+      sh: Restrict DSP support to specific CPUs.
+      sh: Kill off virt_to_bus()/bus_to_virt().
+      sh: Add sh to the CC_OPTIMIZE_FOR_SIZE dependencies.
+      sh: Fix fs.h removal from mm.h regressions.
+
+ arch/sh/Kconfig                                    |   33 +-
+ arch/sh/Makefile                                   |    2 -
+ arch/sh/boards/se/7300/Makefile                    |    5 -
+ arch/sh/boards/se/7300/io.c                        |  268 --------
+ arch/sh/boards/se/7300/irq.c                       |   40 --
+ arch/sh/boards/se/7300/setup.c                     |   74 --
+ arch/sh/boards/se/73180/Makefile                   |    5 -
+ arch/sh/boards/se/73180/io.c                       |  268 --------
+ arch/sh/boards/se/73180/irq.c                      |  136 ----
+ arch/sh/boards/se/73180/setup.c                    |   75 ---
+ arch/sh/boot/Makefile                              |    7 +-
+ arch/sh/boot/compressed/Makefile                   |    7 +-
+ arch/sh/configs/se7300_defconfig                   |  696 --------------------
+ arch/sh/configs/se73180_defconfig                  |  648 ------------------
+ arch/sh/drivers/dma/dma-api.c                      |    7 +-
+ arch/sh/kernel/cpu/irq/Makefile                    |    1 -
+ arch/sh/kernel/cpu/irq/ipr.c                       |    2 +-
+ arch/sh/kernel/cpu/irq/pint.c                      |  220 ------
+ arch/sh/kernel/cpu/sh3/Makefile                    |    4 +-
+ .../cpu/sh3/{clock-sh7300.c => clock-sh7710.c}     |   26 +-
+ arch/sh/kernel/cpu/sh3/setup-sh7300.c              |   43 --
+ arch/sh/kernel/cpu/sh4/probe.c                     |    6 -
+ arch/sh/kernel/cpu/sh4/sq.c                        |   18 +-
+ arch/sh/kernel/cpu/sh4a/Makefile                   |    2 -
+ arch/sh/kernel/cpu/sh4a/clock-sh73180.c            |   81 ---
+ arch/sh/kernel/cpu/sh4a/setup-sh73180.c            |   43 --
+ arch/sh/kernel/init_task.c                         |    2 +-
+ arch/sh/kernel/process.c                           |    7 +-
+ arch/sh/kernel/setup.c                             |    3 +-
+ arch/sh/kernel/sys_sh.c                            |    1 +
+ arch/sh/kernel/timers/timer-tmu.c                  |    3 +-
+ arch/sh/kernel/vsyscall/vsyscall.c                 |    1 +
+ arch/sh/mm/Kconfig                                 |   14 +-
+ arch/sh/mm/cache-sh4.c                             |   14 -
+ arch/sh/mm/pg-sh4.c                                |   76 +--
+ arch/sh/tools/mach-types                           |    2 -
+ drivers/rtc/rtc-sh.c                               |    1 +
+ drivers/serial/sh-sci.c                            |    9 +-
+ drivers/serial/sh-sci.h                            |   66 +--
+ include/asm-sh/bugs.h                              |    4 +-
+ include/asm-sh/cpu-sh3/freq.h                      |    4 -
+ include/asm-sh/cpu-sh3/mmu_context.h               |    1 -
+ include/asm-sh/cpu-sh3/timer.h                     |    3 +-
+ include/asm-sh/cpu-sh4/freq.h                      |    2 +-
+ include/asm-sh/dma-mapping.h                       |    8 +-
+ include/asm-sh/dma.h                               |    1 +
+ include/asm-sh/fixmap.h                            |    8 +-
+ include/asm-sh/floppy.h                            |    4 +-
+ include/asm-sh/io.h                                |    4 -
+ include/asm-sh/pgtable.h                           |    6 +-
+ include/asm-sh/processor.h                         |    4 +-
+ include/asm-sh/se7300.h                            |   64 --
+ include/asm-sh/se73180.h                           |   66 --
+ include/asm-sh/ubc.h                               |    3 +-
+ init/Kconfig                                       |    2 +-
+ sound/sh/aica.h                                    |    2 +-
+ 56 files changed, 138 insertions(+), 2964 deletions(-)
