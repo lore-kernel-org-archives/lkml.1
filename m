@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939709AbXGaFLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940657AbXGaFLd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939709AbXGaFLQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 01:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752492AbXGaFLA
+	id S940657AbXGaFLd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 01:11:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbXGaFLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 31 Jul 2007 01:11:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54353 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751541AbXGaFLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Jul 2007 01:11:00 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:53147 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbXGaFK6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 01:10:58 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=bHp2864Ip58s08W8GkDDD0384OO1Z+L5zVe4XJJaEeAbKw7vt+7GHoKcMFWmhG/d+
-	a3mT6FddcOb0GuyeoWabg==
-Message-ID: <65dd6fd50707302210y5b79a70di58eb2d46f3958025@mail.gmail.com>
-Date: Mon, 30 Jul 2007 22:10:43 -0700
-From: "Ollie Wild" <aaw@google.com>
-To: "Mark Fortescue" <mark@mtfhpc.demon.co.uk>
-Subject: Re: [SPARC32] NULL pointer derefference
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-arch@vger.kernel.org,
-       sparclinux@vger.kernel.org, wli@holomorphy.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, davem@davemloft.net
-In-Reply-To: <Pine.LNX.4.61.0707300301340.32210@mtfhpc.demon.co.uk>
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND (updated)
+Date: Tue, 31 Jul 2007 00:59:49 -0400
+User-Agent: KMail/1.9.5
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Adrian Bunk <bunk@stusta.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org> <200707292323.29601.rjw@sisk.pl> <200707292327.19884.rjw@sisk.pl>
+In-Reply-To: <200707292327.19884.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.61.0707300301340.32210@mtfhpc.demon.co.uk>
+Message-Id: <200707310059.50329.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/29/07, Mark Fortescue <mark@mtfhpc.demon.co.uk> wrote:
-> Hi All,
->
-> Unfortunatly Sparc32 sun4c low level memory management apears to be
-> incompatible with commit b6a2fea39318e43fee84fa7b0b90d68bed92d2ba
-> mm: variable length argument support.
+On Sunday 29 July 2007 17:27, Rafael J. Wysocki wrote:
+> Still, there are many other files in which CONFIG_PM can be replaced
+> with CONFIG_PM_SLEEP or even with CONFIG_SUSPEND, but they can be updated in
+> the future.
 
-I feel like I ought to help out with this since it's my change which
-broke things, but I don't have access to a Sparc32 box.  Does anyone
-have a remotely rebootable machine I can use?
+There is #ifdef CONFIG_PM
+around all the .suspend and .resume methods.
 
-Ollie
+Technically they are PM_DEVICE_STATES or something,
+that could really be under PM, and both SUSPEND and HIBERNATE
+would depend on PM_DEVICE_STATES, but it is also possible to have
+PM_DEVICE_STATES without SUSPEND and HIBERNATE.
+
+oh no, I just suggested more instead of fewer config options:-O
+
+but i agree, this can wait a bit...
+
+-Len
