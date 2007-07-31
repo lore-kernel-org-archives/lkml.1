@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932439AbXGaRrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbXGaRsY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932439AbXGaRrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbXGaRrG
+	id S932518AbXGaRsY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:48:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbXGaRsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:47:06 -0400
-Received: from mail-gw3.adaptec.com ([216.52.22.36]:52666 "EHLO
-	mail-gw3.adaptec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752947AbXGaRrE convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:47:04 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 31 Jul 2007 13:48:13 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1030 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753816AbXGaRsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:48:12 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 27] drivers/input/serio/gscps2.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 19:48:11 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Helge Deller <deller@gmx.de>, linux-input@atrey.karlin.mff.cuni.cz
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 21] drivers/scsi/dpt_i2o.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 13:45:23 -0400
-Message-ID: <AE4F746F2AECFC4DA4AADD66A1DFEF01CB7477@otce2k301.adaptec.com>
-In-Reply-To: <200707311935.13958.m.kozlowski@tuxland.pl>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 21] drivers/scsi/dpt_i2o.c: kmalloc + memset conversion to kzalloc
-Thread-Index: AcfTmSmYUlcO7jneTUuFdqUbpmnHqAAAUrKw
-From: "Salyzyn, Mark" <mark_salyzyn@adaptec.com>
-To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>,
-       <linux-kernel@vger.kernel.org>
-Cc: <kernel-janitors@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-scsi@vger.kernel.org>
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707311948.11520.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Looks good and ultra-light on side effects!
+ drivers/input/serio/gscps2.c | 11696 -> 11607 (-89 bytes)
 
-Sincerely -- Mark Salyzyn
+ drivers/input/serio/gscps2.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-> -----Original Message-----
-> From: Mariusz Kozlowski [mailto:m.kozlowski@tuxland.pl] 
-> Sent: Tuesday, July 31, 2007 1:35 PM
-> To: linux-kernel@vger.kernel.org
-> Cc: kernel-janitors@vger.kernel.org; Andrew Morton; 
-> linux-scsi@vger.kernel.org; AACRAID
-> Subject: [PATCH 21] drivers/scsi/dpt_i2o.c: kmalloc + memset 
-> conversion to kzalloc
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  drivers/scsi/dpt_i2o.c | 87632 -> 87457 (-175 bytes)
->  drivers/scsi/dpt_i2o.o | 213064 -> 212324 (-740 bytes)
-> 
->  drivers/scsi/dpt_i2o.c |   27 +++++++++++----------------
->  1 file changed, 11 insertions(+), 16 deletions(-)
+--- linux-2.6.23-rc1-mm1-a/drivers/input/serio/gscps2.c	2007-07-26 13:07:44.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/input/serio/gscps2.c	2007-07-30 00:12:31.000000000 +0200
+@@ -340,8 +340,8 @@ static int __init gscps2_probe(struct pa
+ 	if (dev->id.sversion == 0x96)
+ 		hpa += GSC_DINO_OFFSET;
+
+-	ps2port = kmalloc(sizeof(struct gscps2port), GFP_KERNEL);
+-	serio = kmalloc(sizeof(struct serio), GFP_KERNEL);
++	ps2port = kzalloc(sizeof(struct gscps2port), GFP_KERNEL);
++	serio = kzalloc(sizeof(struct serio), GFP_KERNEL);
+ 	if (!ps2port || !serio) {
+ 		ret = -ENOMEM;
+ 		goto fail_nomem;
+@@ -349,8 +349,6 @@ static int __init gscps2_probe(struct pa
+
+ 	dev_set_drvdata(&dev->dev, ps2port);
+
+-	memset(ps2port, 0, sizeof(struct gscps2port));
+-	memset(serio, 0, sizeof(struct serio));
+ 	ps2port->port = serio;
+ 	ps2port->padev = dev;
+ 	ps2port->addr = ioremap_nocache(hpa, GSC_STATUS + 4);
