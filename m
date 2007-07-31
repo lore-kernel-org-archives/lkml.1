@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbXGaUXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763383AbXGaUZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763029AbXGaUXV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759585AbXGaUXM
+	id S1763383AbXGaUZg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXGaUZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:23:12 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:59434 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758924AbXGaUXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:23:10 -0400
-To: chuck.lever@oracle.com
-CC: miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kzak@redhat.com, sfrench@samba.org,
-       trond.myklebust@fys.uio.no, mark.fasheh@oracle.com,
-       kurt.hackel@oracle.com
-In-reply-to: <46AF450D.5020106@oracle.com> (message from Chuck Lever on Tue,
-	31 Jul 2007 10:19:57 -0400)
-Subject: Re: request for patches: showing mount options
-References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu> <46AA51CA.7030105@oracle.com> <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu> <46AE01C2.3000008@oracle.com> <E1IFnSa-0002BL-00@dorka.pomaz.szeredi.hu> <46AF450D.5020106@oracle.com>
-Message-Id: <E1IFyEK-00042c-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Tue, 31 Jul 2007 22:22:08 +0200
+	Tue, 31 Jul 2007 16:25:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54932 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755612AbXGaUZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 16:25:17 -0400
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 00/14] Permit filesystem local caching
+To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       trond.myklebust@fys.uio.no
+Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
+       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
+Date: Tue, 31 Jul 2007 21:24:54 +0100
+Message-ID: <20070731202454.6412.88646.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> After a successful mount, the NFS mount command tucks some options into 
-> >> /etc/mtab that reflect which mountd was used for the mount, and what 
-> >> protocol version and port was used for the mount request.  Those options 
-> >> are not passed to the kernel, and do not appear in /proc/mounts today. 
-> >> See nfs(5)'s discussion of the mountport, mounthost, mountprog, and 
-> >> mountvers options.
-> >>
-> >> However, the trend for NFS is to push mount option parsing into the 
-> >> kernel.  Thus all options will be passed to the kernel, and at that 
-> >> point it should be able to reflect the mount* options in /proc/mounts. 
-> >> But it doesn't do that quite yet.
-> > 
-> > Trond, do you have a roadmap for this?
-> 
-> Well I'm actually doing the coding, and Trond is playing more of an 
-> architectural role.
 
-OK, what your estimage for this then?
 
-It would be nice to have all this stuff in 2.6.24, which doesn't leave
-a lot of time.
+These patches add local caching for network filesystems such as NFS and AFS.
+This is a preview, so expect bugs.
 
-But if it's just those four options you mentioned, it should be
-managable.  I do not think there needs to be some generic code to
-hande userspace-only options, it would be perfectly fine just to
-parse, store and show them like all the other options.
+FS-Cache now runs fully asynchronously as required by Trond Myklebust for NFS.
 
-Miklos
+--
+A tarball of the patches is available at:
+
+	http://people.redhat.com/~dhowells/fscache/patches/nfs+fscache-20.tar.bz2
+
+
+To use this version of CacheFiles, the cachefilesd-0.8 is also required.  It
+is available as an SRPM:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.8-15.fc7.src.rpm
+
+Or as individual bits:
+
+	http://people.redhat.com/~dhowells/fscache/cachefilesd-0.8.tar.bz2
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.fc
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.if
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.te
+	http://people.redhat.com/~dhowells/fscache/cachefilesd.spec
+
+The .fc, .if and .te files are for manipulating SELinux.
+
+David
