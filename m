@@ -1,62 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbXGaKx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbXGaK4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbXGaKx2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXGaKxT
+	id S1758021AbXGaK4m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXGaK4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:53:19 -0400
-Received: from THUNK.ORG ([69.25.196.29]:48199 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753816AbXGaKxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:53:18 -0400
-Date: Tue, 31 Jul 2007 06:53:09 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070731105309.GA6980@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Bharata B Rao <bharata@linux.vnet.ibm.com>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731034515.GD25876@thunk.org> <20070731074436.GE5101@hasse.suse.de>
+	Tue, 31 Jul 2007 06:56:35 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58160 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754619AbXGaK4e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 06:56:34 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	<20070731091004.GA2022@elf.ucw.cz>
+	<1185873924.23149.86.camel@caritas-dev.intel.com>
+Date: Tue, 31 Jul 2007 04:52:35 -0600
+In-Reply-To: <1185873924.23149.86.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Tue, 31 Jul 2007 17:25:24 +0800")
+Message-ID: <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731074436.GE5101@hasse.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 09:44:36AM +0200, Jan Blunck wrote:
-> Ok, this is pretty similar to the way I implemented this for tmpfs. The
-> problem is that the union mount code is explicitly checking if the filesystem
-> is supporting whiteout. I used to use a new filesystem flag (FS_WHITEOUT) for
-> this but thought that disk filesystem like ext2/3/4 will have problem with
-> that if you mount an old image. So I guess I still need a feature flag.
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-Without the method I described to you, *any* ext2/3/4 filesystem will
-support whiteouts (as long as you have the support code compiled into
-the kernel :-), so there's no need for a feature flag.
+> On Tue, 2007-07-31 at 11:10 +0200, Pavel Machek wrote:
+>> > Index: kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c
+>> > ===================================================================
+>> > --- kexec-tools-1.101.orig/kexec/arch/i386/crashdump-x86.c 2007-07-08
+> 23:00:25.000000000 +0800
+>> > +++ kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c 2007-07-14
+> 17:06:45.000000000 +0800
+>> > @@ -428,6 +428,29 @@
+>> >  	return 0;
+>> >  }
+>> >  
+>> > +/* Adds the kexec_backup= command line parameter to command line. */
+>> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
+>> > +{
+>> > +	int cmdlen, len, align = 1024;
+>> > +	char str[30], *ptr;
+>> > +
+>> > +	/* Passing in kexec_backup=xxxK format. Saves space required
+>> > +	 * in cmdline. Ensure 1K alignment*/
+>> > +	if (addr%align)
+>> > +		return -1;
+>> > +	addr = addr/align;
+>> > +	ptr = str;
+>> > +	strcpy(str, " kexec_backup=");
+>> > +	ptr += strlen(str);
+>> > +	ultoa(addr, ptr);
+>> > +	strcat(str, "K");
+>> > +	len = strlen(str);
+>> > +	cmdlen = strlen(cmdline) + len;
+>> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+>> > +		die("Command line overflow\n");
+>> > +	strcat(cmdline, str);
+>> > +	return 0;
+>> > +}
+>> 
+>> This part did not apply for me -- it seems crashdump related and I did
+>> not have that applied. Is it critical?
+>
+> This is needed for kexec_jump to work properly. Which version of
+> kexec-tools do you use? This patch is against 1.101. The kdump patch
+> must be applied before this patch is applied.
 
-> > I wouldn't bother with setting the directory type field to be DT_WHT,
-> > given that they will never be returned to userspace anyway.
-> 
-> At the moment I still rely on this for the current readdir implementation.
-> Viro already said that he doesn't want to see this (the readdir changes) in
-> the kernel but in userspace.
+Please work against the kexec-tools-testing tree, if you can.
+All of the outstanding patches should be there.
 
-Life gets very messy if you have to do this in userspace.  Example:
-statically linked programs that were compiled with a version of glibc
-that didn't know about whiteout records.  Unfortunately, the memory
-needed to to collate directories entries so that whiteout records can
-be dropped is painful enough that completely understand why Al doesn't
-want to see this in userspace.  Unfortunately this is going to be one
-of those things that will make union mounts problematic, compared to
-something like unionfs.
-
-						- Ted
+Eric
