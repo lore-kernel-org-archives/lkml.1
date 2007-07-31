@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXGaK1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759177AbXGaK2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbXGaK1d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbXGaK1Z
+	id S1759177AbXGaK2o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:28:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbXGaK2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:27:25 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:3950 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753189AbXGaK1Y (ORCPT
+	Tue, 31 Jul 2007 06:28:37 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:58559 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755012AbXGaK2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:27:24 -0400
-Date: Tue, 31 Jul 2007 11:27:25 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: John Sigler <linux.kernel@free.fr>
-cc: linux-kernel@vger.kernel.org,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: BIOS implementors disabling the LAPIC
-In-Reply-To: <46AEED9E.1050904@free.fr>
-Message-ID: <Pine.LNX.4.64N.0707311119350.16158@blysk.ds.pg.gda.pl>
-References: <46AEED9E.1050904@free.fr>
+	Tue, 31 Jul 2007 06:28:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=F5SF/1FGLuJ9KkmeFFiV0lgR9acpuwUcSeviYLLOzf4YP4ARDn6M515Ib1segy8WWs1kNwiegJ+hB+05xZMS/HUywTxo71bl/ssEmYBPBAaid26gf7LuIZCgWrH5hKQHhCDCsXoxMrfJuIj53A8VaOU0w4qOvVgAkUTAVton/gk=
+Message-ID: <46AF0ECD.9090507@gmail.com>
+Date: Tue, 31 Jul 2007 19:28:29 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Tejun Heo <htejun@gmail.com>
+CC: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu
+Subject: Re: [PATCH 2/7] sysfs: Remove first pass at shadow directory support
+References: <11858769083285-git-send-email-htejun@gmail.com>
+In-Reply-To: <11858769083285-git-send-email-htejun@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, John Sigler wrote:
+Tejun Heo wrote:
+> While shadow directories appear to be a good idea, the current scheme
+> of controlling their creation and destruction outside of sysfs appears
+> to be a locking and maintenance nightmare in the face of sysfs
+> directories dynamically coming and going.  Which can now occur for
+> directories containing network devices when CONFIG_SYSFS_DEPRECATED is
+> not set.
+> 
+> This patch removes everything from the initial shadow directory support
+> that allowed the shadow directory creation to be controlled at a higher
+> level.  So except for a few bits of sysfs_rename_dir everything from
+> commit b592fcfe7f06c15ec11774b5be7ce0de3aa86e73 is now gone.
 
-> As far as I understand, the Local APIC was integrated directly to the CPU
-> 12-15 years ago. Why would a BIOS implementor choose to disable it?
+"From Eric W. Biederman <ebiederm@xmission.com>" line is missing.  I
+thought git scripts would add that automatically.  Sorry about that.
 
- Because they are lazy/incapable/out-of-time/select-your-favourite-excuse.  
-For the chip to work you have to provide some minimal support in the 
-firmware, in particular for the trickier paths of execution in the system 
-management mode.  The system still works with the Local APIC disabled, so 
-why bother?
-
-> (And what does it mean to "disable" the LAPIC?)
-
- The LINT0 and LINT1 inputs of the APIC are routed straight to the INT and 
-NMI inputs of the CPU respectively and the rest of the APIC logic becomes 
-inactive (tri-stated, etc.).
-
-  Maciej
+-- 
+tejun
