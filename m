@@ -1,121 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762796AbXGaQHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761300AbXGaQIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762796AbXGaQHg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758683AbXGaQH2
+	id S1761300AbXGaQIM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758280AbXGaQHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:07:28 -0400
-Received: from ns.suse.de ([195.135.220.2]:50861 "EHLO mx1.suse.de"
+	Tue, 31 Jul 2007 12:07:55 -0400
+Received: from fizeau.zen.co.uk ([212.23.8.67]:58286 "EHLO fizeau.zen.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758655AbXGaQH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:07:26 -0400
-To: Joe Korty <joe.korty@ccur.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jason.baietto@ccur.com
-Subject: Re: [PATCH] expand /proc/interrupts to include missing vectors, v3
-References: <20070726180522.GA1486@tsunami.ccur.com>
-	<46A8EE78.4040702@zytor.com>
-	<1185816797.3170.1.camel@sven.thebigcorporation.com>
-	<20070730123206.abeab890.akpm@linux-foundation.org>
-	<20070731001718.GA14295@tsunami.ccur.com>
-	<20070731141941.GA3112@tsunami.ccur.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 31 Jul 2007 19:02:01 +0200
-In-Reply-To: <20070731141941.GA3112@tsunami.ccur.com>
-Message-ID: <p73wswgpkvq.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1758046AbXGaQHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:07:54 -0400
+From: David Vrabel <david.vrabel@csr.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Vrabel <david.vrabel@csr.com>, Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: sdio: parameterize SDIO FBR register defines
+Date: Tue, 31 Jul 2007 16:36:31 +0100
+Message-Id: <11858961931710-git-send-email-david.vrabel@csr.com>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <11858961933491-git-send-email-david.vrabel@csr.com>
+References: <11858961933491-git-send-email-david.vrabel@csr.com>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: david@pear.davidvrabel.org.uk
+X-SA-Exim-Scanned: No (on pear.davidvrabel.org.uk); SAEximRunCond expanded to false
+X-Originating-Pythagoras-IP: [82.70.146.41]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Korty <joe.korty@ccur.com> writes:
-> 	spurious interrupts
-> 
-> A threshold interrupt occurs when ECC memory correction
-> is occuring at too high a frequency. 
+Signed-off-by: David Vrabel <david.vrabel@csr.com>
 
-It's configurable and the default is off. Also 
-it's only on AMD hardware.
+---
+commit 51755c3d59be1ba778bef45888f9f5e341dc4af4
+tree c7bbb562b2d801197eefb619a17c94467c1299cd
+parent 1cf0b6019aa3916197eecafe058bd2f3d700d24a
+author David Vrabel <david.vrabel@csr.com> Mon, 30 Jul 2007 19:20:59 +0100
+committer David Vrabel <dvrabel@cantab.net> Mon, 30 Jul 2007 19:28:30 +0100
 
-Your description is a little misleading.
+ drivers/mmc/core/sdio.c     |    4 ++--
+ drivers/mmc/core/sdio_cis.c |    2 +-
+ include/linux/mmc/sdio.h    |   16 +++++++++-------
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
-> Thresholds are used
-> by the ECC hardware as occasional ECC failures are part
-> of normal operation,
-
-Not really.
-
-
-> ===================================================================
-> --- 2.6.23-rc1-git7.orig/arch/i386/kernel/apic.c	2007-07-30 19:08:05.000000000 -0400
-> +++ 2.6.23-rc1-git7/arch/i386/kernel/apic.c	2007-07-30 19:08:07.000000000 -0400
-> @@ -1280,6 +1280,7 @@
->  	printk(KERN_INFO "spurious APIC interrupt on CPU#%d, "
->  	       "should never happen.\n", smp_processor_id());
->  	irq_exit();
-> +	__get_cpu_var(irq_stat).irq_spur_counts++;
-
-Wouldn't it be safer on preemptible kernels to have that inside
-the irq_exit? 
-
->  }
->  
->  /*
-> Index: 2.6.23-rc1-git7/arch/i386/kernel/cpu/mcheck/p4.c
-> ===================================================================
-> --- 2.6.23-rc1-git7.orig/arch/i386/kernel/cpu/mcheck/p4.c	2007-07-30 19:08:05.000000000 -0400
-> +++ 2.6.23-rc1-git7/arch/i386/kernel/cpu/mcheck/p4.c	2007-07-30 19:08:07.000000000 -0400
-> @@ -62,6 +62,7 @@
->  	irq_enter();
->  	vendor_thermal_interrupt(regs);
->  	irq_exit();
-> +	__get_cpu_var(irq_stat).irq_thermal_counts++;
->  }
->  
->  /* P4/Xeon Thermal regulation detect and init */
-> Index: 2.6.23-rc1-git7/arch/i386/kernel/irq.c
-> ===================================================================
-> --- 2.6.23-rc1-git7.orig/arch/i386/kernel/irq.c	2007-07-30 19:08:05.000000000 -0400
-> +++ 2.6.23-rc1-git7/arch/i386/kernel/irq.c	2007-07-31 09:40:58.000000000 -0400
-> @@ -284,14 +284,41 @@
->  		seq_printf(p, "NMI: ");
->  		for_each_online_cpu(j)
->  			seq_printf(p, "%10u ", nmi_count(j));
-> -		seq_putc(p, '\n');
-> +		seq_printf(p, "  Non-maskable interrupts\n");
->  #ifdef CONFIG_X86_LOCAL_APIC
->  		seq_printf(p, "LOC: ");
->  		for_each_online_cpu(j)
->  			seq_printf(p, "%10u ",
->  				per_cpu(irq_stat,j).apic_timer_irqs);
-> -		seq_putc(p, '\n');
-> +		seq_printf(p, "  Local interrupts\n");
->  #endif
-> +#ifdef CONFIG_SMP
-> +		seq_printf(p, "RES: ");
-
-I think it would be better to use 5-6 char identifiers even
-when it whacks the columns a bit; otherwise
-nobody will know what it means. e.g. SCHED here. 
-
-Also there you should update proc(5) and send a patch
-to the manpage maintainer.
-
-> Index: 2.6.23-rc1-git7/arch/x86_64/kernel/apic.c
-> ===================================================================
-> --- 2.6.23-rc1-git7.orig/arch/x86_64/kernel/apic.c	2007-07-30 19:08:05.000000000 -0400
-> +++ 2.6.23-rc1-git7/arch/x86_64/kernel/apic.c	2007-07-30 19:08:07.000000000 -0400
-> @@ -1118,6 +1118,7 @@
->  asmlinkage void smp_spurious_interrupt(void)
->  {
->  	unsigned int v;
-> +
-
-Don't add white space.
-
-
--Andi
+diff --git a/drivers/mmc/core/sdio.c b/drivers/mmc/core/sdio.c
+index 6589fd6..08f579c 100644
+--- a/drivers/mmc/core/sdio.c
++++ b/drivers/mmc/core/sdio.c
+@@ -30,7 +30,7 @@ static int sdio_read_fbr(struct sdio_func *func)
+ 	unsigned char data;
+ 
+ 	ret = mmc_io_rw_direct(func->card, 0, 0,
+-		func->num * 0x100 + SDIO_FBR_STD_IF, 0, &data);
++		SDIO_FBR_STD_IF(func->num), 0, &data);
+ 	if (ret != MMC_ERR_NONE)
+ 		goto out;
+ 
+@@ -38,7 +38,7 @@ static int sdio_read_fbr(struct sdio_func *func)
+ 
+ 	if (data == 0x0f) {
+ 		ret = mmc_io_rw_direct(func->card, 0, 0,
+-			func->num * 0x100 + SDIO_FBR_STD_IF_EXT, 0, &data);
++			SDIO_FBR_STD_IF_EXT(func->num), 0, &data);
+ 		if (ret != MMC_ERR_NONE)
+ 			goto out;
+ 	}
+diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
+index b0c6697..8aa4666 100644
+--- a/drivers/mmc/core/sdio_cis.c
++++ b/drivers/mmc/core/sdio_cis.c
+@@ -215,7 +215,7 @@ int sdio_read_cis(struct sdio_func *func, unsigned int fn)
+ 	for (i = 0; i < 3; i++) {
+ 		unsigned char x;
+ 		ret = mmc_io_rw_direct(func->card, 0, 0,
+-				       fn * 0x100 + SDIO_FBR_CIS + i, 0, &x);
++				       SDIO_FBR_CIS(fn) + i, 0, &x);
+ 		if (ret != MMC_ERR_NONE)
+ 			return -EIO;
+ 		ptr |= x << (i * 8);
+diff --git a/include/linux/mmc/sdio.h b/include/linux/mmc/sdio.h
+index 145ce23..e2bda4b 100644
+--- a/include/linux/mmc/sdio.h
++++ b/include/linux/mmc/sdio.h
+@@ -132,26 +132,28 @@
+  * Function Basic Registers (FBR)
+  */
+ 
+-#define SDIO_FBR_STD_IF		0x00
++#define __SDIO_FBR(f, r)	((f) * 0x100 + (r))
++
++#define SDIO_FBR_STD_IF(f)	__SDIO_FBR((f), 0x00)
+ 
+ #define  SDIO_FBR_SUPPORTS_CSA	0x40	/* supports Code Storage Area */
+ #define  SDIO_FBR_ENABLE_CSA	0x80	/* enable Code Storage Area */
+ 
+-#define SDIO_FBR_STD_IF_EXT	0x01
++#define SDIO_FBR_STD_IF_EXT(f)	__SDIO_FBR((f), 0x01)
+ 
+-#define SDIO_FBR_POWER		0x02
++#define SDIO_FBR_POWER(f)	__SDIO_FBR((f), 0x02)
+ 
+ #define  SDIO_FBR_POWER_SPS	0x01	/* Supports Power Selection */
+ #define  SDIO_FBR_POWER_EPS	0x02	/* Enable (low) Power Selection */
+ 
+-#define SDIO_FBR_CIS		0x09	/* CIS pointer (3 bytes) */
++#define SDIO_FBR_CIS(f)		__SDIO_FBR((f), 0x09) /* CIS pointer (3 bytes) */
+ 
+ 
+-#define SDIO_FBR_CSA		0x0C	/* CSA pointer (3 bytes) */
++#define SDIO_FBR_CSA(f)		__SDIO_FBR((f), 0x0C) /* CSA pointer (3 bytes) */
+ 
+-#define SDIO_FBR_CSA_DATA	0x0F
++#define SDIO_FBR_CSA_DATA(f)	__SDIO_FBR((f), 0x0F)
+ 
+-#define SDIO_FBR_BLKSIZE	0x10	/* block size (2 bytes) */
++#define SDIO_FBR_BLKSIZE(f)	__SDIO_FBR((f), 0x10) /* block size (2 bytes) */
+ 
+ #endif
+ 
