@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761710AbXGaWVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbXGaWWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761710AbXGaWVq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 18:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXGaWVg
+	id S1758797AbXGaWWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 18:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758865AbXGaWV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 18:21:36 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1830 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754156AbXGaWVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 18:21:35 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 82] drivers/scsi/zorro7xx.c: kmalloc + memset conversion to kzalloc
-Date: Wed, 1 Aug 2007 00:21:33 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 18:21:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38338 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754334AbXGaWV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 18:21:57 -0400
+Date: Wed, 1 Aug 2007 00:21:41 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Chuck Lever <chuck.lever@oracle.com>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, sfrench@samba.org,
+       trond.myklebust@fys.uio.no, mark.fasheh@oracle.com,
+       kurt.hackel@oracle.com
+Subject: Re: request for patches: showing mount options
+Message-ID: <20070731222141.GB3180@petra.dvoda.cz>
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu> <46AA51CA.7030105@oracle.com> <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu> <46AE01C2.3000008@oracle.com> <E1IFnSa-0002BL-00@dorka.pomaz.szeredi.hu> <46AF450D.5020106@oracle.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708010021.34147.m.kozlowski@tuxland.pl>
+In-Reply-To: <46AF450D.5020106@oracle.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+On Tue, Jul 31, 2007 at 10:19:57AM -0400, Chuck Lever wrote:
+> The removal of /etc/mtab in favor of /proc/mounts is a new requirement, 
+> and is not as trivial as you might hope.  Internally the NFS client 
+> represents the mount options as a binary data structure, and it contains 
+> only the information that has traditionally been passed into the kernel 
+> by the current mount command.  The user-space-only options are not 
+> passed to the kernel nor stored in the data structure.
+> 
+> Adding facilities to store information about every possible mount 
+> option, including the user-space-only ones, will take a bit of time, but 
+> is possible, if not straightforward.  We just have to understand all the 
+> dependencies.
 
- drivers/scsi/zorro7xx.c | 4579 -> 4501 (-78 bytes)
+ I still have doubts. The removal of /etc/mtab is nice, but a little
+ unreal wish. Do we really want to store non-kernel data (options) in
+ kernel? What about options that are not closely related to any
+ filesystem -- for example "loop="?
 
- drivers/scsi/zorro7xx.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ Maybe we can replace /etc/mtab with something more useful
+ (e.g. /var/run/mount/<mntid>.tab) for really user-space-only information.
 
---- linux-2.6.23-rc1-mm1-a/drivers/scsi/zorro7xx.c	2007-07-26 13:07:42.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/scsi/zorro7xx.c	2007-07-31 14:25:58.000000000 +0200
-@@ -69,7 +69,7 @@ static struct zorro_device_id zorro7xx_z
- static int __devinit zorro7xx_init_one(struct zorro_dev *z,
- 				       const struct zorro_device_id *ent)
- {
--	struct Scsi_Host * host = NULL;
-+	struct Scsi_Host *host;
- 	struct NCR_700_Host_Parameters *hostdata;
- 	struct zorro_driver_data *zdd;
- 	unsigned long board, ioaddr;
-@@ -89,14 +89,12 @@ static int __devinit zorro7xx_init_one(s
- 		return -EBUSY;
- 	}
+ It doesn't mean that Miklos's audit of all filesystems and request
+ for patches is bad thing. The /proc/mounts has to provide complete
+ information at least about kernel mount options.
 
--	hostdata = kmalloc(sizeof(struct NCR_700_Host_Parameters), GFP_KERNEL);
--	if (hostdata == NULL) {
-+	hostdata = kzalloc(sizeof(struct NCR_700_Host_Parameters), GFP_KERNEL);
-+	if (!hostdata) {
- 		printk(KERN_ERR "zorro7xx: Failed to allocate host data\n");
- 		goto out_release;
- 	}
+    Karel
 
--	memset(hostdata, 0, sizeof(struct NCR_700_Host_Parameters));
--
- 	/* Fill in the required pieces of hostdata */
- 	if (ioaddr > 0x01000000)
- 		hostdata->base = ioremap(ioaddr, zorro_resource_len(z));
+-- 
+ Karel Zak  <kzak@redhat.com>
