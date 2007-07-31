@@ -1,104 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940685AbXGaDpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940636AbXGaDsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940685AbXGaDpx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 23:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935807AbXGaDp1
+	id S940636AbXGaDsv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935445AbXGaDsn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 23:45:27 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:50485 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933329AbXGaDpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 23:45:25 -0400
-Message-ID: <46AEB055.9050607@us.ibm.com>
-Date: Mon, 30 Jul 2007 20:45:25 -0700
-From: Badari <pbadari@us.ibm.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Mon, 30 Jul 2007 23:48:43 -0400
+Received: from stout.engsoc.carleton.ca ([134.117.69.22]:34229 "EHLO
+	stout.engsoc.carleton.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761350AbXGaDsn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 23:48:43 -0400
+Date: Mon, 30 Jul 2007 23:48:41 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: Joseph Pingenot <trelane@digitasaru.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: inotify and /proc/<pid>
+Message-ID: <20070731034841.GA16495@fattire.cabal.ca>
+References: <20070731021615.GB6812@digitasaru.net> <20070731031720.GF21089@ftp.linux.org.uk> <20070731032521.GD6812@digitasaru.net> <20070731033113.GE6812@digitasaru.net> <20070731033631.GH21089@ftp.linux.org.uk> <20070731034059.GF6812@digitasaru.net>
 MIME-Version: 1.0
-To: Joe Jin <joe.jin@oracle.com>
-CC: Zach Brown <zach.brown@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
-       wen.gang.wang@oracle.com
-Subject: Re: [PATCH] add check do_direct_IO() return val
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com> <20070726221307.3d7b3446.akpm@linux-foundation.org> <20070727071547.GA25084@joejin-pc.cn.oracle.com> <46A9E6F9.20603@oracle.com> <20070728034719.GA24448@joejin-pc.cn.oracle.com> <20070730135316.2ce21b28.akpm@linux-foundation.org> <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com> <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com> <20070731005348.GA8308@joejin-pc.cn.oracle.com>
-In-Reply-To: <20070731005348.GA8308@joejin-pc.cn.oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070731034059.GF6812@digitasaru.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Jin wrote:
->> Well, I'm having a heck of a time getting this to fail.  It looks  
->> possible, though.  Joe, were you guys able to narrow it down to a  
->> reproducible test case?  Do you have any oops output messages from  
->> the crashes?
->>     
+On Mon, Jul 30, 2007 at 10:40:59PM -0500, Joseph Pingenot wrote:
+> From Al Viro on Tuesday, 31 July, 2007:
+> >On Mon, Jul 30, 2007 at 10:31:13PM -0500, Joseph Pingenot wrote:
+> >> >From Joseph Pingenot on Monday, 30 July, 2007:
+> >> >From Al Viro on Tuesday, 31 July, 2007:
+> >> >>On Mon, Jul 30, 2007 at 09:16:16PM -0500, Joseph Pingenot wrote:
+> >> >>> I was trying to use inotify to watch process changes (especially process
+> >> >>>   termination) by watching /proc/<pid>.
+> >> >>> Sadly, although I could see something reading various files, nothing
+> >> >>>   was issued when the process I was watching exited and the directory
+> >> >>>   went away.
+> >> >>> Is this intentional, or a bug?
+> >> >>It's a bug you intend to introduce in your program...  IOW, don't
+> >> >>do that.
+> >> >More background, please?
+> >> >What's the way to check for a process exiting without spinning?
+> >> I should also specify that the process being waited on is not a
+> >>   child process-it's just some other process on the system.
+> >Umm...  Any details on intended use?  IOW, is that "I want to write
+> >an utility that would wait for given PID to exit, just for the hell
+> >of it" or is there something you are trying to implement using that?
+> 
+> I'm trying to implement pwait.  It blocks until a specified PID exits,
+>   and then it exits.
 >
-> Zach, it easy to reproduce through fio with following config file
->
-> # cat jobfile
-> [global]
-> bs=8k
-> iodepth=1024
-> iodepth_batch=60
-> randrepeat=1
-> size=1m
-> directory=/home/oracle
-> numjobs=20
-> [job1]
-> 	ioengine=sync
-> 	bs=1k
-> 	direct=1
-> 	rw=randread
-> 	filename=file1:file2
-> [job2]
-> 	ioengine=libaio
-> 	rw=randwrite
-> 	direct=1
-> 	filename=file1:file2
-> [job3]
-> 	bs=1k
-> 	ioengine=posixaio
-> 	rw=randwrite
-> 	direct=1
-> 	filename=file1:file2
-> [job4]
-> 	ioengine=splice
-> 	direct=1
-> 	rw=randwrite
-> 	filename=file1:file2
-> [job5]
-> 	bs=1k
-> 	ioengine=sync
-> 	rw=randread
-> 	filename=file1:file2
-> [job7]
-> 	ioengine=libaio
-> 	rw=randwrite
-> 	filename=file1:file2
-> [job8]
-> 	ioengine=posixaio
-> 	rw=randwrite
-> 	filename=file1:file2
-> [job9]
-> 	ioengine=splice
-> 	rw=randwrite
-> 	filename=file1:file2
-> [job10]
-> 	ioengine=mmap
-> 	rw=randwrite
-> 	bs=1k
-> 	filename=file1:file2
-> [job11]
-> 	ioengine=mmap
-> 	rw=randwrite
-> 	direct=1
-> 	filename=file1:file2 
->
->   
-Hmm.. in this config file, whats causing DIO to panic ? Which test actually
-passing faulty buffer ?
 
-Thanks,
-Badari
+ptrace with options set to PTRACE_O_TRACEEXIT?
+
+--Kyle
