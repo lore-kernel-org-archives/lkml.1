@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759118AbXGaLDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbXGaLEw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759118AbXGaLDS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbXGaLDD
+	id S1759060AbXGaLEw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:04:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbXGaLEo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:03:03 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:19963 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755150AbXGaLDA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:03:00 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-To: Andrew Gallatin <gallatin@myri.com>
-Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP traffic
-Date: Tue, 31 Jul 2007 12:33:29 +0200
-User-Agent: KMail/1.8.2
-Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>
-References: <200707301724.33865.ossthema@de.ibm.com> <46AE4AC9.6060109@myri.com>
-In-Reply-To: <46AE4AC9.6060109@myri.com>
+	Tue, 31 Jul 2007 07:04:44 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37542 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751701AbXGaLEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 07:04:44 -0400
+Date: Tue, 31 Jul 2007 13:04:58 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
+Message-ID: <20070731110458.GA1777@elf.ucw.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707311233.31227.ossthema@de.ibm.com>
+In-Reply-To: <1184483593.1898.98.camel@caritas-dev.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi!
 
-Thanks for finding these bugs! I'll post an updated version soon (2 patches
-with no separate Kconfig patches, one LRO and one eHEA patch). See comments below.
-
-Thanks,
-Jan-Bernd
-
-On Monday 30 July 2007 22:32, Andrew Gallatin wrote:
-> I was working on testing the myri10ge patch, and I ran into a few
-> problems.  I've attached a patch to inet_lro.c to fix some of them,
-> and a patch to myri10ge.c to show how to use the page based
-> interface.  Both patches are signed off by Andrew Gallatin
-> <gallatin@myri.com>
+> 3. Boot kernel compiled for normal usage, the reserved crash kernel
+>    memory region must be added to kernel command line as following:
 > 
-> First, the LRO_MAX_PG_HLEN is still a problem.  Minimally sized 60
-> byte frames still cause problems in lro_gen_skb due to skb->len
-> going negative.  Fixed in the attached patch.  It may be simpler
-> to just drop LRO_MAX_PG_HLEN to ETH_ZLEN, but I'm not sure if
-> that is enough.  Are there "smart" NICs which might chop off padding
-> themselves?
-
-I'd tend to stick to an explicit check as implemented in your patch
-for now
-
+>    crashkernel=<XX>M@<XX>M
 > 
-> Second, you still need to set skb->ip_summed = CHECKSUM_UNNECESSARY
-> when modified packets are flushed, else the stack will see bad
-> checksums for packets from CHECKSUM_COMPLETE drivers using the
-> skb interface.  Fixed in the attached patch.
+>    Where, <XX> should be replaced by the real memory size and
+> position.
 
-I thought about it... As we do update the TCP checksum for aggregated
-packets we could add a second ip_summed field in the net_lro_mgr struct 
-used for aggregated packets to support HW that does not have any checksum helper
-functionality. These drivers could set this ip_summed field to CHECKSUM_NONE, 
-and thus leave the checksum check to the stack. I'm not sure if these old devices benefit
-a lot from LRO. So what do you think?
+I used crashkernel=64M@64M .
 
+
+> 4. Load kernel compiled for hibernating usage as a crashdump kernel
+>    with kexec, the same kernel as that of 3 can be used if
+>    CONFIG_RELOCATABLE=y is selected. The kernel command line option as
+>    following must be appended to kernel command line.
 > 
-> Fourth, I did some traffic sniffing to try to figure out what's going
-> on above, and saw tcpdump complain about bad checksums.  Have you tried
-> running tcpdump -s 65535 -vvv?  Have you also seen bad checksums?
-> I seem to see this for both page- and skb-based versions of the driver.
+>    kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
 > 
+>    For example, the shell command line can be as follow:
+> 
+>    kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
+>        kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
 
-Hmmm, can't confirm that. For our skb-based version I see
-correct checksums for aggregated packets and for the page-based version as well.
-I used: (tcpdump -i ethX -s 0 -w dump.bin) in combination with ethereal.
-Don't see problems as well with your tcpdump command.
+I think I followed the instructions closely. Now I'm trying to do 
 
+kexec -p /data/l/linux/vmlinux --args-linux --append="init=/bin/bash
+kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+
+but it tells me:
+
+Invalid memory segment 0x100000 - 0x7a0fff
+
+(and nothing in dmesg) 
+
+If I try to load bzImage (corresponding to vmlinux I tried to use),  I
+get:
+
+root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage --append="init=/bin/bash kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+Could not find a free area of memory of 9000 bytes...
+locate_hole failed
+root@amd:~#
+
+What am I doing wrong?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
