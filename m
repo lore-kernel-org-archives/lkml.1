@@ -1,166 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbXGaX1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760378AbXGaXf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761559AbXGaX1f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbXGaXZW
+	id S1760378AbXGaXf2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 19:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751299AbXGaXfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:25:22 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46232 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755089AbXGaXZN (ORCPT
+	Tue, 31 Jul 2007 19:35:20 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:37044 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbXGaXfS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 19:25:13 -0400
-From: Christoph Lameter <clameter@sgi.com>
-To: linux-kernel@vger.kernel.org
-Cc: Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH 7/7] Simple Performance Counters: SLUB instrumentation
-Date: Tue, 31 Jul 2007 16:25:12 -0700
-Message-Id: <1185924312685-git-send-email-clameter@sgi.com>
-X-Mailer: git-send-email 1.5.2.4
-In-Reply-To: simple-perf-counters
-References: simple-perf-counters
+	Tue, 31 Jul 2007 19:35:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:from:cc:content-type:mime-version:references:content-transfer-encoding:message-id:in-reply-to:user-agent;
+        b=CjcE+58fVWtsLPxi81aHpfbyg6W+LVs2lgf9iFkw7V5/o23zMzaLHyVM+qpmc4k8dp/DYI+xurSU9aNQrfRQIAsOldJ7uXLgYJvVMMlh4xvLZauCUYerH8moearBStpNCHhLO8rsiO/vsBfVH1nsYAGJzVxD4WtMVXBZPB32jJ8=
+Date: Wed, 01 Aug 2007 01:35:11 +0200
+To: "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: Reboot hang FIXED
+From: kriko <kristjan.ugrin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+MIME-Version: 1.0
+References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com>
+Content-Transfer-Encoding: 8BIT
+Message-ID: <op.twcrsx1yatcbto@linux.site>
+In-Reply-To: <46AFAF4E.1000605@gmail.com>
+User-Agent: Opera Mail/9.22 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With this patch SLUB will perform tests on bootup and display results.
+On Tue, 31 Jul 2007 23:53:18 +0200, Rene Herman <rene.herman@gmail.com>  
+wrote:
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
----
- mm/slub.c |   97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 92 insertions(+), 5 deletions(-)
+> Seems a fairly safe assumption that the Linux driver leaves your DVD-ROM  
+> in a peculiar state then. If you have both drivers compiled in, I  
+> believe the new PATA driver will "win" (judging by the number of people  
+> that lost their drives on hda...) so I've added its author to the CC.
+>
+> Repeating information from your first post:
+>
+>    Gigabyte gak8nsp (nforce 3)
+>
+>    NEC DVD-RW@nv_pata
+>    1x 80 GB WD@nv_sata, 1x 250 GB WD@nv_sata , IBM (20GB) @ nv_pata
+>
+> Machine hangs at summary screen where it would be trying a boot from DVD  
+> normally on cold boot, or reboot from Windows. reboot=b doesn't help.
+>
+> Rene.
 
-diff --git a/mm/slub.c b/mm/slub.c
-index 6c6d74f..568b16a 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -20,6 +20,7 @@
- #include <linux/mempolicy.h>
- #include <linux/ctype.h>
- #include <linux/kallsyms.h>
-+#include <linux/perf.h>
- 
- /*
-  * Lock order:
-@@ -152,6 +153,7 @@ static inline void ClearSlabDebug(struct page *page)
- 
- /* Enable to test recovery from slab corruption on boot */
- #undef SLUB_RESILIENCY_TEST
-+#undef SLUB_PERFORMANCE_TEST
- 
- #if PAGE_SHIFT <= 12
- 
-@@ -2870,9 +2872,97 @@ static long validate_slab_cache(struct kmem_cache *s)
- 	return count;
- }
- 
--#ifdef SLUB_RESILIENCY_TEST
- static void resiliency_test(void)
- {
-+#ifdef SLUB_PERFORMANCE_TEST
-+#define TEST_COUNT 10000
-+	int size, i;
-+	struct pc x;
-+	void **v = kmalloc(TEST_COUNT * sizeof(void *), GFP_KERNEL);
-+
-+	printk(KERN_INFO "SLUB Performance testing\n");
-+	printk(KERN_INFO "========================\n");
-+	printk(KERN_INFO "1. Kmalloc: Repeatedly allocate then free test\n");
-+	for (size = 8; size <= PAGE_SIZE << 2; size <<= 1) {
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++) {
-+			v[i] = kmalloc(size, GFP_KERNEL);
-+		}
-+		printk(KERN_INFO "%i times kmalloc(%d) = ", i, size);
-+		pc_stop_printk(&x);
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++)
-+			kfree(v[i]);
-+		printk(" kfree() = ");
-+		pc_stop_printk(&x);
-+		printk("\n");
-+	}
-+
-+	printk(KERN_INFO "2. Kmalloc: alloc/free test\n");
-+	for (size = 8; size <= PAGE_SIZE << 2; size <<= 1) {
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++)
-+			kfree(kmalloc(size, GFP_KERNEL));
-+		printk(KERN_INFO "%i times kmalloc(%d)/kfree = ", i, size);
-+		pc_stop_printk(&x);
-+		printk("\n");
-+	}
-+	printk(KERN_INFO "3. kmem_cache_alloc: Repeatedly allocate then free test\n");
-+	for (size = 3; size <= PAGE_SHIFT; size ++) {
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++) {
-+			v[i] = kmem_cache_alloc(kmalloc_caches + size, GFP_KERNEL);
-+		}
-+		printk(KERN_INFO "%d times kmem_cache_alloc(%d) = ", i, 1 << size);
-+		pc_stop_printk(&x);
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++)
-+			kmem_cache_free(kmalloc_caches + size, v[i]);
-+		printk(" kmem_cache_free() = ");
-+		pc_stop_printk(&x);
-+		printk("\n");
-+	}
-+
-+	printk(KERN_INFO "4. kmem_cache_alloc: alloc/free test\n");
-+	for (size = 3; size <= PAGE_SHIFT; size++) {
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++)
-+			kmem_cache_free(kmalloc_caches + size,
-+				kmem_cache_alloc(kmalloc_caches + size,
-+							GFP_KERNEL));
-+		printk(KERN_INFO "%d times kmem_cache_alloc(%d)/kmem_cache_free = ", i, 1 << size);
-+		pc_stop_printk(&x);
-+		printk("\n");
-+	}
-+	printk(KERN_INFO "5. kmem_cache_zalloc: Repeatedly allocate then free test\n");
-+	for (size = 3; size <= PAGE_SHIFT; size ++) {
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++) {
-+			v[i] = kmem_cache_zalloc(kmalloc_caches + size, GFP_KERNEL);
-+		}
-+		printk(KERN_INFO "%d times kmem_cache_zalloc(%d) = ", i, 1 << size);
-+		pc_stop_printk(&x);
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++)
-+			kmem_cache_free(kmalloc_caches + size, v[i]);
-+		printk(" kmem_cache_free() = ");
-+		pc_stop_printk(&x);
-+		printk("\n");
-+	}
-+
-+	printk(KERN_INFO "6. kmem_cache_zalloc: alloc/free test\n");
-+	for (size = 3; size <= PAGE_SHIFT; size++) {
-+		pc_start(&x);
-+		for(i = 0; i < TEST_COUNT; i++)
-+			kmem_cache_free(kmalloc_caches + size,
-+				kmem_cache_zalloc(kmalloc_caches + size,
-+							GFP_KERNEL));
-+		printk(KERN_INFO "%d times kmem_cache_zalloc(%d)/kmem_cache_free = ", i, 1 << size);
-+		pc_stop_printk(&x);
-+		printk("\n");
-+	}
-+#endif
-+#ifdef SLUB_RESILIENCY_TEST
- 	u8 *p;
- 
- 	printk(KERN_ERR "SLUB resiliency testing\n");
-@@ -2920,11 +3010,8 @@ static void resiliency_test(void)
- 	p[512] = 0xab;
- 	printk(KERN_ERR "\n3. kmalloc-512: Clobber redzone 0xab->0x%p\n\n", p);
- 	validate_slab_cache(kmalloc_caches + 9);
--}
--#else
--static void resiliency_test(void) {};
- #endif
--
-+}
- /*
-  * Generate lists of code addresses where slabcache objects are allocated
-  * and freed.
+Sorted out, built 2 kernels, one with old driver, other with only new  
+driver. The one with old driver hangs (it could be because  
+BLK_DEV_OFFBOARD was enabled?),
+using only new drivers works fine.
+
+Thanks for all your help.
+
+
 -- 
-1.5.2.4
-
+kriko
