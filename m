@@ -1,111 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763589AbXGaOpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763064AbXGaOrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763589AbXGaOpw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759684AbXGaOpj
+	id S1763064AbXGaOrR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbXGaOrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:45:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:25937 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762966AbXGaOpg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:45:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=dR3RNn5youkrs2aAhJWqMz19GeCrkce4j2XO8W3hCu0FC+f9waYhQZaRDQNgQIWTQUoPGZfixDMU2QpXj564T7TnCIiEXtx5qJBzNuLNrP/aNzyhGmBhQiaD23o/aSillwGtwznHYEEEDPZBUifB4pw2WnDWKEZb/S529rSnK/8=
-Message-ID: <46AF4B05.4010700@gmail.com>
-Date: Tue, 31 Jul 2007 23:45:25 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Tue, 31 Jul 2007 10:47:00 -0400
+Received: from colo.lackof.org ([198.49.126.79]:40928 "EHLO colo.lackof.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759684AbXGaOq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:46:59 -0400
+Date: Tue, 31 Jul 2007 08:46:51 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Valerie Henson <val@nmt.edu>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, tulip-users@lists.sourceforge.net,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [TULIP] Need new maintainer
+Message-ID: <20070731144651.GA1548@colo.lackof.org>
+References: <20070730190412.GA16182@rainbow> <20070730193158.GA13808@fattire.cabal.ca>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-References: <20070705194909.337398431@intel.com>	 <20070705130518.135e4e3c.kristen.c.accardi@intel.com>	 <46AE12B6.6090408@garzik.org>  <46AED656.8070407@gmail.com> <1185891382.2750.8.camel@laptopd505.fenrus.org>
-In-Reply-To: <1185891382.2750.8.camel@laptopd505.fenrus.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070730193158.GA13808@fattire.cabal.ca>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> On Tue, 2007-07-31 at 15:27 +0900, Tejun Heo wrote:
->> Jeff Garzik wrote:
->>> Any chance the SCSI peeps could ACK this, and then let me include it in
->>> the ALPM patchset in the libata tree?
->> ATA link PS is pretty complex with HIPM, DIPM and AHCI ALPM.  I'm not
->> sure whether this three level knob would be sufficient. 
-> 
-> adding more levels later is easy.
+On Mon, Jul 30, 2007 at 03:31:58PM -0400, Kyle McMartin wrote:
+> On Mon, Jul 30, 2007 at 01:04:13PM -0600, Valerie Henson wrote:
+> > The Tulip network driver needs a new maintainer!  I no longer have
+> > time to maintain the Tulip network driver and I'm stepping down.  Jeff
+> > Garzik would be happy to get volunteers.
 
-Dunno whether they would be linear levels and putting HIPM, DIPM, ALPM
-selection into SCSI sysfs knob doesn't look so appealing.
+Val!
+I'm sorry to see you have to drop this one...C'est la Vie.
 
->>  It might be
->> good enough if we're gonna develop extensive in-kernel black/white list
->> specifying which method works on which combination but my gut tells me
->> that it's best left to userland (probably in the form of per-notebook PS
->> profile).
-> 
-> either sucks. AHCI ALPM ought to work if it's supported; it's what other
-> operating systems also use... 
->> Adding to the fun, there are quite a few broken devices out there which
->> act weirdly when link PS actions are taken.
-> 
-> do you have any specific examples that act funny with the patch in
-> question here? (the patch tries to be careful, previous patches weren't
-> always so please test this patch before claiming the concept as a whole
-> is broken)
+> Since I already take care of a major consumer of these devices (parisc,
+> which pretty much all have tulip) I'm willing to take care of this.
+> Alternately, Grant is probably willing.
 
-They were hardware problems.  I don't think any amount of proper
-implementation can fix them.  I have one DVD RAM somewhere in my pile of
-hardware which locks up solidly if any link PS mode is used and had a
-report of a HDD which had problem with link PS.  Can't remember the
-details tho.  Also, IIRC one of my wendies spins down on SLUMBER.
+Yeah, I am willing and able to maintain tulip as well.
 
->> Also, I generally don't think AHCI ALPM is a good idea.  It doesn't have
->> 'cool down' period before entering PS state
-> 
-> that's a chipset implementation decision.... not part of the
-> spec/technology per se.
+Either way, parisc and some mips64 folks are stuck with tulip since
+that's what is "embedded" on the motherboard. So it would make sense
+for someone from either camp to maintain it.
 
-That's actually something AHCI spec specifically states.  From section
-8.3.1.3.
+Thanks to David Lang for the offer of 4-port Dlink Tulip card.
+HP has two types of 4-port tulip cards (64-bit/33Mhz and 32-bit/33Mhz)
+that I gave to Val...so whoever picks up the maintainership can
+probably (eventually) get those from Val.
 
-When PxCMD.ALPE is set to ‘1’, if the HBA recognizes that there are no
-commands to process, the HBA shall initiate a transition to Partial or
-Slumber interface power management state based upon the setting of
-PxCMD.ASP. The HBA recognizes no commands to transmit as either:
-
-    • PxSACT is set to 0h, and the HBA updates PxCI from a non-zero
-value to 0h.
-    • PxCI is set to 0h, and a Set Device Bits FIS is received that
-updates PxSACT from a non-zero value to 0h.
-
-Have no idea why it's specified this way.  Adding 100ms or 1s cool down
-time wouldn't burn noticeably more power.  Maybe AHCI expects the host
-driver to queue commands even for non-NCQ drives but libata currently
-doesn't do that.
-
-Anyways, I don't really think this attribute belongs to SCSI sysfs
-hierarchy.  There currently isn't any alternative but sysfs is part of
-userland visible interface and putting something into SCSI sysfs
-hierarchy just because libata doesn't have one doesn't look like a good
-idea.
-
-sysfs isn't far from being detached from kobject and driver model.  I
-think it would be best to wait a bit and build proper libata sysfs
-hierarchy which won't have to be changed later when libata departs from
-SCSI.  Well, it isn't really a good way but IMHO it's better than
-sticking ATA power saving node into SCSI sysfs hierarchy.
-
-Thanks.
-
--- 
-tejun
+thanks,
+grant
