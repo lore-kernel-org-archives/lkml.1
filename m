@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbXGaKba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbXGaKbn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759887AbXGaKba (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbXGaKbL
+	id S1758752AbXGaKbn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:31:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759782AbXGaKbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:31:11 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:62250 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757589AbXGaKbK (ORCPT
+	Tue, 31 Jul 2007 06:31:25 -0400
+Received: from qb-out-0506.google.com ([72.14.204.231]:53637 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759719AbXGaKbX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:31:10 -0400
+	Tue, 31 Jul 2007 06:31:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bjKVit1JIti6elDecxd6IiVpmD6AcoPYuyUrzS3Q6jR7/f1hfQoWNO6KxAxBoIiFJ9FsygOk01GMbPn217sf4icURYGCBFcfLFNMN33S34hHU2NNl+ewm03G0YZGG1TSNtdx8dJEAMx3sDNG5e4KsGDYzgUQz4F8j/FO6JBEZtE=
+        b=b0LpLKrfDHjbGeFspMESxbjnWnB1Hpt+iQw6y0DyTIXb309Tlcg5+IRv0gZdmXHtYFNEHbFzNjRJPMXq24OEdkMzlSzKZm9v99qDIW22cKEuC1goVkaroHd3DunKqjhpFLG2XVAfJwclGHAmWd3kN//k5bNmmK2b8wUETVSjdoI=
 From: Denis Cheng <crquan@gmail.com>
 To: Steven Whitehouse <swhiteho@redhat.com>, cluster-devel@redhat.com
 Cc: linux-kernel@vger.kernel.org, chdebra@gmail.com,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/3] fs/gfs2: use the declaration of gfs2_dops in the header file instead
-Date: Tue, 31 Jul 2007 18:31:12 +0800
-Message-Id: <11858778843416-git-send-email-crquan@gmail.com>
+Subject: [PATCH 3/3] fs/gfs2: also mark struct {dentry,vm}_operations const
+Date: Tue, 31 Jul 2007 18:31:13 +0800
+Message-Id: <1185877895769-git-send-email-crquan@gmail.com>
 X-Mailer: git-send-email 1.5.2.2
-In-Reply-To: <1185877873787-git-send-email-crquan@gmail.com>
+In-Reply-To: <11858778843416-git-send-email-crquan@gmail.com>
 References: <1185873464.8765.564.camel@quoit>
  <1185877873787-git-send-email-crquan@gmail.com>
+ <11858778843416-git-send-email-crquan@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+these struct *_operations are all method tables, thus should be const.
+
 Signed-off-by: Denis Cheng <crquan@gmail.com>
 ---
- fs/gfs2/ops_fstype.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+ fs/gfs2/ops_dentry.c   |    3 +--
+ fs/gfs2/ops_dentry.h   |    2 +-
+ fs/gfs2/ops_vm.c       |    4 ++--
+ fs/gfs2/ops_vm.h       |    4 ++--
+ include/linux/dcache.h |    2 +-
+ include/linux/mm.h     |    2 +-
+ 6 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/fs/gfs2/ops_fstype.c b/fs/gfs2/ops_fstype.c
-index cf5aa50..9a5e840 100644
---- a/fs/gfs2/ops_fstype.c
-+++ b/fs/gfs2/ops_fstype.c
-@@ -28,6 +28,7 @@
- #include "lm.h"
- #include "mount.h"
- #include "ops_fstype.h"
-+#include "ops_dentry.h"
- #include "ops_super.h"
- #include "recovery.h"
- #include "rgrp.h"
-@@ -38,8 +39,6 @@
- #define DO 0
- #define UNDO 1
+diff --git a/fs/gfs2/ops_dentry.c b/fs/gfs2/ops_dentry.c
+index 793e334..1bdf016 100644
+--- a/fs/gfs2/ops_dentry.c
++++ b/fs/gfs2/ops_dentry.c
+@@ -108,8 +108,7 @@ static int gfs2_dhash(struct dentry *dentry, struct qstr *str)
+ 	return 0;
+ }
+ 
+-struct dentry_operations gfs2_dops = {
++const struct dentry_operations gfs2_dops = {
+ 	.d_revalidate = gfs2_drevalidate,
+ 	.d_hash = gfs2_dhash,
+ };
+-
+diff --git a/fs/gfs2/ops_dentry.h b/fs/gfs2/ops_dentry.h
+index 5caa3db..668a6bc 100644
+--- a/fs/gfs2/ops_dentry.h
++++ b/fs/gfs2/ops_dentry.h
+@@ -12,6 +12,6 @@
+ 
+ #include <linux/dcache.h>
  
 -extern struct dentry_operations gfs2_dops;
--
- static struct gfs2_sbd *init_sbd(struct super_block *sb)
- {
- 	struct gfs2_sbd *sdp;
++extern const struct dentry_operations gfs2_dops;
+ 
+ #endif /* __OPS_DENTRY_DOT_H__ */
+diff --git a/fs/gfs2/ops_vm.c b/fs/gfs2/ops_vm.c
+index 927d739..baa3b20 100644
+--- a/fs/gfs2/ops_vm.c
++++ b/fs/gfs2/ops_vm.c
+@@ -159,11 +159,11 @@ out:
+ 	return ret;
+ }
+ 
+-struct vm_operations_struct gfs2_vm_ops_private = {
++const struct vm_operations_struct gfs2_vm_ops_private = {
+ 	.fault = gfs2_private_fault,
+ };
+ 
+-struct vm_operations_struct gfs2_vm_ops_sharewrite = {
++const struct vm_operations_struct gfs2_vm_ops_sharewrite = {
+ 	.fault = gfs2_sharewrite_fault,
+ };
+ 
+diff --git a/fs/gfs2/ops_vm.h b/fs/gfs2/ops_vm.h
+index 4ae8f43..cfefd2d 100644
+--- a/fs/gfs2/ops_vm.h
++++ b/fs/gfs2/ops_vm.h
+@@ -12,7 +12,7 @@
+ 
+ #include <linux/mm.h>
+ 
+-extern struct vm_operations_struct gfs2_vm_ops_private;
+-extern struct vm_operations_struct gfs2_vm_ops_sharewrite;
++extern const struct vm_operations_struct gfs2_vm_ops_private;
++extern const struct vm_operations_struct gfs2_vm_ops_sharewrite;
+ 
+ #endif /* __OPS_VM_DOT_H__ */
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index aab53df..9cd948e 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -104,7 +104,7 @@ struct dentry {
+ 	struct list_head d_subdirs;	/* our children */
+ 	struct list_head d_alias;	/* inode alias list */
+ 	unsigned long d_time;		/* used by d_revalidate */
+-	struct dentry_operations *d_op;
++	const struct dentry_operations *d_op;
+ 	struct super_block *d_sb;	/* The root of the dentry tree */
+ 	void *d_fsdata;			/* fs-specific data */
+ #ifdef CONFIG_PROFILING
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 655094d..c91b684 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -96,7 +96,7 @@ struct vm_area_struct {
+ 	struct anon_vma *anon_vma;	/* Serialized by page_table_lock */
+ 
+ 	/* Function pointers to deal with this struct. */
+-	struct vm_operations_struct * vm_ops;
++	const struct vm_operations_struct * vm_ops;
+ 
+ 	/* Information about our backing store: */
+ 	unsigned long vm_pgoff;		/* Offset (within vm_file) in PAGE_SIZE
 -- 
 1.5.2.2
 
