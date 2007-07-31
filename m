@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967386AbXGaDNU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967689AbXGaDNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967386AbXGaDNU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 23:13:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965505AbXGaDNH
+	id S967689AbXGaDNm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966722AbXGaDNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 23:13:07 -0400
-Received: from mga09.intel.com ([134.134.136.24]:6910 "EHLO mga09.intel.com"
+	Mon, 30 Jul 2007 23:13:11 -0400
+Received: from mga03.intel.com ([143.182.124.21]:2753 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759525AbXGaDNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 23:13:05 -0400
+	id S964971AbXGaDNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 23:13:06 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
-   d="scan'208";a="111633733"
-Subject: [PATCH 0/5] x86_64 EFI support -v3
+   d="scan'208";a="256697367"
+Subject: [PATCH 1/5] x86_64 EFI support -v3: EFI base support
 From: "Huang, Ying" <ying.huang@intel.com>
 To: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -21,38 +21,705 @@ To: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 11:12:49 +0800
-Message-Id: <1185851569.23149.25.camel@caritas-dev.intel.com>
+Date: Tue, 31 Jul 2007 11:12:52 +0800
+Message-Id: <1185851572.23149.26.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 03:13:00.0385 (UTC) FILETIME=[B34BC510:01C7D320]
+X-OriginalArrivalTime: 31 Jul 2007 03:13:02.0354 (UTC) FILETIME=[B4783720:01C7D320]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following sets of patches add EFI/UEFI (Unified Extensible Firmware
-Interface) support to x86_64 architecture. The patches have been
-tested against 2.6.23-rc1 kernel on Intel platforms with EFI1.10 and
-UEFI2.0 firmware.
+Changelog between v2 and v3:
 
-UEFI specification can be found here: http://www.uefi.org
+1. The EFI callwrapper is re-implemented in assembler.
 
-For booting the UEFI x86_64 enabled kernel, the machine with EFI/UEFI
-firmware and the support of bootloader is required. Detailed usage
-guide can be found in Documentation/x86_64/uefi.txt, which is added in
-the patch: efi-doc.patch.
+---
 
-Issues _not_ addressed (per feedback from Eric Biederman)
+This patch adds basic support for EFI x86_64 system. The main file of
+the patch is the addition of efi.c for x86_64. This file is modeled
+after the EFI IA32 avatar. EFI initialization are implemented in
+efi.c. Some x86_64 specifics are worth noting here. On x86_64,
+parameters passed to UEFI firmware services need to follow the UEFI
+calling convention. For this purpose, a set of functions named
+lin2win<x> (<x> is the number of parameters) are implemented. EFI
+function calls are wrapped before calling the firmware service.
 
-- Virtual mode support is still retained in this patch. There is at
-  least one EFI call is fast path: efi_set_rtc_mmss, which must
-  complete as soon as possible.
+Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
+Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-- The variable efi_enabled is used throughout across architecutres if
- CONFIG_EFI option is enabled. The i386 code also uses this variable.
- This is something that can be revisited with code consolidation
- across architectures.
+---
 
-Looking forward to your comments,
+ arch/x86_64/Kconfig               |   13 
+ arch/x86_64/kernel/Makefile       |    1 
+ arch/x86_64/kernel/efi.c          |  507 ++++++++++++++++++++++++++++++++++++++
+ arch/x86_64/kernel/efi_callwrap.S |   69 +++++
+ include/asm-x86_64/eficallwrap.h  |   27 ++
+ include/linux/efi.h               |    1 
+ 6 files changed, 618 insertions(+)
 
-Best Regards,
-Huang Ying
+Index: linux-2.6.23-rc1/include/asm-x86_64/eficallwrap.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23-rc1/include/asm-x86_64/eficallwrap.h	2007-07-30 15:35:48.000000000 +0800
+@@ -0,0 +1,27 @@
++/*
++ *  Copyright (C) 2007 Intel Corp
++ *	Bibo Mao <bibo.mao@intel.com>
++ *	Huang Ying <ying.huang@intel.com>
++ *
++ *  Function calling ABI conversion from SYSV to Windows for x86_64
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2 of the License, or
++ *  (at your option) any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
++ *  GNU General Public License for more details.
++ *
++ */
++extern efi_status_t lin2win0(void *fp);
++extern efi_status_t lin2win1(void *fp, u64 arg1);
++extern efi_status_t lin2win2(void *fp, u64 arg1, u64 arg2);
++extern efi_status_t lin2win3(void *fp, u64 arg1, u64 arg2, u64 arg3);
++extern efi_status_t lin2win4(void *fp, u64 arg1, u64 arg2, u64 arg3, u64 arg4);
++extern efi_status_t lin2win5(void *fp, u64 arg1, u64 arg2, u64 arg3,
++			     u64 arg4, u64 arg5);
++extern efi_status_t lin2win6(void *fp, u64 arg1, u64 arg2, u64 arg3,
++			     u64 arg4, u64 arg5, u64 arg6);
+Index: linux-2.6.23-rc1/arch/x86_64/kernel/efi.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23-rc1/arch/x86_64/kernel/efi.c	2007-07-30 15:40:49.000000000 +0800
+@@ -0,0 +1,507 @@
++/*
++ * Extensible Firmware Interface
++ *
++ * Based on Extensible Firmware Interface Specification version 1.0
++ *
++ * Copyright (C) 1999 VA Linux Systems
++ * Copyright (C) 1999 Walt Drummond <drummond@valinux.com>
++ * Copyright (C) 1999-2002 Hewlett-Packard Co.
++ *	David Mosberger-Tang <davidm@hpl.hp.com>
++ *	Stephane Eranian <eranian@hpl.hp.com>
++ * Copyright (C) 2005-2008 Intel Co.
++ *	Fenghua Yu <fenghua.yu@intel.com>
++ *	Bibo Mao <bibo.mao@intel.com>
++ *	Chandramouli Narayanan <mouli@linux.intel.com>
++ *
++ * Code to convert EFI to E820 map has been implemented in elilo bootloader
++ * based on a EFI patch by Edgar Hucek. Based on the E820 map, the page table
++ * is setup appropriately for EFI runtime code.
++ * - mouli 06/14/2007.
++ *
++ * All EFI Runtime Services are not implemented yet as EFI only
++ * supports physical mode addressing on SoftSDV. This is to be fixed
++ * in a future version.  --drummond 1999-07-20
++ *
++ * Implemented EFI runtime services and virtual mode calls.  --davidm
++ *
++ * Goutham Rao: <goutham.rao@intel.com>
++ *	Skip non-WB memory and ignore empty memory ranges.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mm.h>
++#include <linux/types.h>
++#include <linux/time.h>
++#include <linux/spinlock.h>
++#include <linux/bootmem.h>
++#include <linux/ioport.h>
++#include <linux/module.h>
++#include <linux/efi.h>
++#include <linux/uaccess.h>
++#include <linux/io.h>
++#include <linux/reboot.h>
++
++#include <asm/setup.h>
++#include <asm/bootsetup.h>
++#include <asm/page.h>
++#include <asm/e820.h>
++#include <asm/pgtable.h>
++#include <asm/tlbflush.h>
++#include <asm/cacheflush.h>
++#include <asm/proto.h>
++#include <asm-x86_64/eficallwrap.h>
++
++struct efi efi;
++EXPORT_SYMBOL(efi);
++
++struct efi efi_phys __initdata;
++struct efi_memory_map memmap;
++static efi_system_table_t efi_systab __initdata;
++
++static unsigned long efi_rt_eflags;
++/* efi_rt_lock protects efi physical mode call */
++static spinlock_t efi_rt_lock = SPIN_LOCK_UNLOCKED;
++static pgd_t save_pgd;
++
++static efi_status_t _efi_get_time(efi_time_t *tm, efi_time_cap_t *tc)
++{
++	return lin2win2((void *)efi.systab->runtime->get_time,
++			(u64)tm, (u64)tc);
++}
++
++static efi_status_t _efi_set_time(efi_time_t *tm)
++{
++	return lin2win1((void *)efi.systab->runtime->set_time, (u64)tm);
++}
++
++static efi_status_t _efi_get_wakeup_time(efi_bool_t *enabled,
++					 efi_bool_t *pending,
++					 efi_time_t *tm)
++{
++	return lin2win3((void *)efi.systab->runtime->get_wakeup_time,
++			(u64)enabled, (u64)pending, (u64)tm);
++}
++
++static efi_status_t _efi_set_wakeup_time(efi_bool_t enabled, efi_time_t *tm)
++{
++	return lin2win2((void *)efi.systab->runtime->set_wakeup_time,
++			(u64)enabled, (u64)tm);
++}
++
++static efi_status_t _efi_get_variable(efi_char16_t *name,
++				      efi_guid_t *vendor,
++				      u32 *attr,
++				      unsigned long *data_size,
++				      void *data)
++{
++	return lin2win5((void *)efi.systab->runtime->get_variable,
++			(u64)name, (u64)vendor, (u64)attr,
++			(u64)data_size, (u64)data);
++}
++
++static efi_status_t _efi_get_next_variable(unsigned long *name_size,
++					   efi_char16_t *name,
++					   efi_guid_t *vendor)
++{
++	return lin2win3((void *)efi.systab->runtime->get_next_variable,
++			(u64)name_size, (u64)name, (u64)vendor);
++}
++
++static efi_status_t _efi_set_variable(
++			efi_char16_t *name, efi_guid_t *vendor,
++			u64 attr, u64 data_size, void *data)
++{
++	return lin2win5((void *)efi.systab->runtime->set_variable,
++			(u64)name, (u64)vendor, (u64)attr,
++			(u64)data_size, (u64)data);
++}
++
++static efi_status_t _efi_get_next_high_mono_count(u32 *count)
++{
++	return lin2win1((void *)efi.systab->runtime->get_next_high_mono_count,
++			(u64)count);
++}
++
++static efi_status_t _efi_reset_system(int reset_type,
++				      efi_status_t status,
++				      unsigned long data_size,
++				      efi_char16_t *data)
++{
++	return lin2win4((void *)efi.systab->runtime->reset_system,
++			(u64)reset_type, (u64)status,
++			(u64)data_size, (u64)data);
++}
++
++static efi_status_t _efi_set_virtual_address_map(
++	unsigned long memory_map_size,
++	unsigned long descriptor_size,
++	u32 descriptor_version,
++	efi_memory_desc_t *virtual_map)
++{
++	return lin2win4((void *)efi.systab->runtime->set_virtual_address_map,
++			(u64)memory_map_size, (u64)descriptor_size,
++			(u64)descriptor_version, (u64)virtual_map);
++}
++
++static void __init efi_call_phys_prelog(void) __acquires(efi_rt_lock)
++{
++	unsigned long vaddress;
++
++	/*
++	 * Lock sequence is different from normal case because
++	 * efi_rt_eflags is global
++	 */
++	spin_lock(&efi_rt_lock);
++	local_irq_save(efi_rt_eflags);
++	vaddress = (unsigned long)__va(0x0UL);
++	pgd_val(save_pgd) = pgd_val(*pgd_offset_k(0x0UL));
++	set_pgd(pgd_offset_k(0x0UL), *pgd_offset_k(vaddress));
++	global_flush_tlb();
++}
++
++static void __init efi_call_phys_epilog(void) __releases(efi_rt_lock)
++{
++	/*
++	 * After the lock is released, the original page table is restored.
++	 */
++	set_pgd(pgd_offset_k(0x0UL), save_pgd);
++	global_flush_tlb();
++	local_irq_restore(efi_rt_eflags);
++	spin_unlock(&efi_rt_lock);
++}
++
++static efi_status_t __init phys_efi_set_virtual_address_map(
++	unsigned long memory_map_size,
++	unsigned long descriptor_size,
++	u32 descriptor_version,
++	efi_memory_desc_t *virtual_map)
++{
++	efi_status_t status;
++
++	efi_call_phys_prelog();
++	status = lin2win4((void *)efi_phys.set_virtual_address_map,
++			  (u64)memory_map_size, (u64)descriptor_size,
++			  (u64)descriptor_version, (u64)virtual_map);
++	efi_call_phys_epilog();
++	return status;
++}
++
++static efi_status_t __init phys_efi_get_time(efi_time_t *tm,
++					     efi_time_cap_t *tc)
++{
++	efi_status_t status;
++
++	efi_call_phys_prelog();
++	status = lin2win2((void *)efi_phys.get_time, (u64)tm, (u64)tc);
++	efi_call_phys_epilog();
++	return status;
++}
++
++/*
++ * To call this function, the irq must be disabled and rtc_lock in
++ * time.c must be held.
++ */
++int efi_set_rtc_mmss(unsigned long nowtime)
++{
++	int real_seconds, real_minutes;
++	efi_status_t 	status;
++	efi_time_t 	eft;
++	efi_time_cap_t 	cap;
++
++	status = efi.get_time(&eft, &cap);
++	if (status != EFI_SUCCESS) {
++		printk(KERN_ERR "Oops: efitime: can't read time!\n");
++		return -1;
++	}
++
++	real_seconds = nowtime % 60;
++	real_minutes = nowtime / 60;
++	if (((abs(real_minutes - eft.minute) + 15)/30) & 1)
++		real_minutes += 30;
++	real_minutes %= 60;
++	eft.minute = real_minutes;
++	eft.second = real_seconds;
++
++	status = efi.set_time(&eft);
++	if (status != EFI_SUCCESS) {
++		printk(KERN_ERR "Oops: efitime: can't write time!\n");
++		return -1;
++	}
++	return 0;
++}
++
++/*
++ * To call this function, the irq must be disabled and rtc_lock in
++ * time.c must be held.
++ */
++unsigned long efi_get_time(void)
++{
++	efi_status_t status;
++	efi_time_t eft;
++	efi_time_cap_t cap;
++
++	status = efi.get_time(&eft, &cap);
++	if (status != EFI_SUCCESS)
++		printk(KERN_ERR "Oops: efitime: can't read time!\n");
++
++	return mktime(eft.year, eft.month, eft.day, eft.hour,
++		      eft.minute, eft.second);
++}
++
++/*
++ * We need to map the EFI memory map again after paging_init().
++ */
++void __init efi_map_memmap(void)
++{
++	int i;
++
++	memmap.map = __va((unsigned long)memmap.phys_map);
++	memmap.map_end = memmap.map + (memmap.nr_map * memmap.desc_size);
++
++	/* Make EFI runtime code area executable */
++	for (i = 0; i < e820.nr_map; i++) {
++		switch (e820.map[i].type) {
++		case E820_RUNTIME_CODE:
++			init_memory_mapping(
++				e820.map[i].addr,
++				e820.map[i].addr + e820.map[i].size);
++			break;
++		default:
++			break;
++		}
++	}
++}
++
++void efi_emergency_restart(void)
++{
++	efi.reset_system(EFI_RESET_WARM, EFI_SUCCESS, 0, NULL);
++}
++
++void __init efi_init(void)
++{
++	efi_config_table_t *config_tables;
++	efi_runtime_services_t *runtime;
++	efi_char16_t *c16;
++	char vendor[100] = "unknown";
++	int i = 0;
++
++	memset(&efi, 0, sizeof(efi));
++	memset(&efi_phys, 0, sizeof(efi_phys));
++
++	efi_phys.systab = (efi_system_table_t *)EFI_SYSTAB;
++	memmap.phys_map = (void *)EFI_MEMMAP;
++	memmap.nr_map = EFI_MEMMAP_SIZE/EFI_MEMDESC_SIZE;
++	memmap.desc_version = EFI_MEMDESC_VERSION;
++	memmap.desc_size = EFI_MEMDESC_SIZE;
++
++	efi.systab = early_ioremap((unsigned long)efi_phys.systab,
++				   sizeof(efi_system_table_t));
++	memcpy(&efi_systab, efi.systab, sizeof(efi_system_table_t));
++	efi.systab = &efi_systab;
++	/*
++	 * Verify the EFI Table
++	 */
++	if (efi.systab->hdr.signature != EFI_SYSTEM_TABLE_SIGNATURE)
++		printk(KERN_ERR "Woah! EFI system table "
++		       "signature incorrect\n");
++	if ((efi.systab->hdr.revision >> 16) == 0)
++		printk(KERN_ERR "Warning: EFI system table version "
++		       "%d.%02d, expected 1.00 or greater\n",
++		       efi.systab->hdr.revision >> 16,
++		       efi.systab->hdr.revision & 0xffff);
++	/*
++	 * Grab some details from the system table
++	 */
++	config_tables = (efi_config_table_t *)efi.systab->tables;
++	runtime = efi.systab->runtime;
++
++	/*
++	 * Show what we know for posterity
++	 */
++	c16 = early_ioremap(efi.systab->fw_vendor, 2);
++	if (!probe_kernel_address(c16, i)) {
++		for (i = 0; i < sizeof(vendor) && *c16; ++i)
++			vendor[i] = *c16++;
++		vendor[i] = '\0';
++	}
++
++	printk(KERN_INFO "EFI v%u.%.02u by %s \n",
++	       efi.systab->hdr.revision >> 16,
++	       efi.systab->hdr.revision & 0xffff, vendor);
++
++	/*
++	 * Let's see what config tables the firmware passed to us.
++	 */
++	config_tables = early_ioremap(
++		efi.systab->tables,
++		efi.systab->nr_tables * sizeof(efi_config_table_t));
++	if (config_tables == NULL)
++		printk(KERN_ERR "Could not map EFI Configuration Table!\n");
++
++	printk(KERN_INFO);
++	for (i = 0; i < efi.systab->nr_tables; i++) {
++		if (!efi_guidcmp(config_tables[i].guid, MPS_TABLE_GUID)) {
++			efi.mps = config_tables[i].table;
++			printk(" MPS=0x%lx ", config_tables[i].table);
++		} else if (!efi_guidcmp(config_tables[i].guid,
++					ACPI_20_TABLE_GUID)) {
++			efi.acpi20 = config_tables[i].table;
++			printk(" ACPI 2.0=0x%lx ", config_tables[i].table);
++		} else if (!efi_guidcmp(config_tables[i].guid,
++					ACPI_TABLE_GUID)) {
++			efi.acpi = config_tables[i].table;
++			printk(" ACPI=0x%lx ", config_tables[i].table);
++		} else if (!efi_guidcmp(config_tables[i].guid,
++					SMBIOS_TABLE_GUID)) {
++			efi.smbios = config_tables[i].table;
++			printk(" SMBIOS=0x%lx ", config_tables[i].table);
++		} else if (!efi_guidcmp(config_tables[i].guid,
++					HCDP_TABLE_GUID)) {
++			efi.hcdp = config_tables[i].table;
++			printk(" HCDP=0x%lx ", config_tables[i].table);
++		} else if (!efi_guidcmp(config_tables[i].guid,
++					UGA_IO_PROTOCOL_GUID)) {
++			efi.uga = config_tables[i].table;
++			printk(" UGA=0x%lx ", config_tables[i].table);
++		}
++	}
++	printk("\n");
++
++	/*
++	 * Check out the runtime services table. We need to map
++	 * the runtime services table so that we can grab the physical
++	 * address of several of the EFI runtime functions, needed to
++	 * set the firmware into virtual mode.
++	 */
++	runtime = early_ioremap((unsigned long)efi.systab->runtime,
++				sizeof(efi_runtime_services_t));
++	if (runtime != NULL) {
++		/*
++		 * We will only need *early* access to the following
++		 * two EFI runtime services before set_virtual_address_map
++		 * is invoked.
++		 */
++		efi_phys.get_time = (efi_get_time_t *)runtime->get_time;
++		efi_phys.set_virtual_address_map =
++			(efi_set_virtual_address_map_t *)runtime->set_virtual_address_map;
++		/*
++		 * Make efi_get_time can be called before entering
++		 * virtual mode.
++		 */
++		efi.get_time = phys_efi_get_time;
++	} else
++		printk(KERN_ERR "Could not map the EFI runtime service "
++		       "table!\n");
++	/* Map the EFI memory map for use until paging_init() */
++	memmap.map = early_ioremap(EFI_MEMMAP,
++				   EFI_MEMMAP_SIZE);
++	if (memmap.map == NULL)
++		printk(KERN_ERR "Could not map the EFI memory map!\n");
++	if (EFI_MEMDESC_SIZE != sizeof(efi_memory_desc_t))
++		printk(KERN_WARNING "Kernel-defined memdesc"
++		       "doesn't match the one from EFI!\n");
++	memmap.map_end = memmap.map + (memmap.nr_map * memmap.desc_size);
++}
++
++/*
++ * This function will switch the EFI runtime services to virtual mode.
++ * Essentially, look through the EFI memmap and map every region that
++ * has the runtime attribute bit set in its memory descriptor and update
++ * that memory descriptor with the virtual address obtained from ioremap().
++ * This enables the runtime services to be called without having to
++ * thunk back into physical mode for every invocation.
++ */
++void __init efi_enter_virtual_mode(void)
++{
++	efi_memory_desc_t *md;
++	efi_status_t status;
++	unsigned long end;
++	void *p;
++
++	efi.systab = NULL;
++	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
++		md = p;
++		if (!(md->attribute & EFI_MEMORY_RUNTIME))
++			continue;
++		if (md->attribute & EFI_MEMORY_WB)
++			md->virt_addr = (unsigned long)__va(md->phys_addr);
++		else if (md->attribute & (EFI_MEMORY_UC | EFI_MEMORY_WC))
++			md->virt_addr = (unsigned long)ioremap(md->phys_addr,
++					 md->num_pages << EFI_PAGE_SHIFT);
++		end = md->phys_addr + (md->num_pages << EFI_PAGE_SHIFT);
++		if ((md->phys_addr <= (unsigned long)efi_phys.systab) &&
++		    ((unsigned long)efi_phys.systab < end))
++			efi.systab = (efi_system_table_t *)
++				(md->virt_addr - md->phys_addr +
++				 (unsigned long)efi_phys.systab);
++	}
++
++	BUG_ON(!efi.systab);
++
++	status = phys_efi_set_virtual_address_map(
++		memmap.desc_size * memmap.nr_map,
++		memmap.desc_size,
++		memmap.desc_version,
++		memmap.phys_map);
++
++	if (status != EFI_SUCCESS) {
++		printk(KERN_ALERT "You are screwed! "
++		       "Unable to switch EFI into virtual mode "
++		       "(status=%lx)\n", status);
++		panic("EFI call to SetVirtualAddressMap() failed!");
++	}
++	/*
++	 * Now that EFI is in virtual mode, update the function
++	 * pointers in the runtime service table to the new virtual addresses.
++	 *
++	 * Call EFI services through wrapper functions.
++	 */
++
++	efi.get_time = (efi_get_time_t *)_efi_get_time;
++	efi.set_time = (efi_set_time_t *)_efi_set_time;
++	efi.get_wakeup_time = (efi_get_wakeup_time_t *)_efi_get_wakeup_time;
++	efi.set_wakeup_time = (efi_set_wakeup_time_t *)_efi_set_wakeup_time;
++	efi.get_variable = (efi_get_variable_t *)_efi_get_variable;
++	efi.get_next_variable = (efi_get_next_variable_t *)
++		_efi_get_next_variable;
++	efi.set_variable = (efi_set_variable_t *)_efi_set_variable;
++	efi.get_next_high_mono_count = (efi_get_next_high_mono_count_t *)
++		_efi_get_next_high_mono_count;
++	efi.reset_system = (efi_reset_system_t *)_efi_reset_system;
++	efi.set_virtual_address_map = (efi_set_virtual_address_map_t *)
++		_efi_set_virtual_address_map;
++}
++
++/*
++ * Convenience functions to obtain memory types and attributes
++ */
++u32 efi_mem_type(unsigned long phys_addr)
++{
++	efi_memory_desc_t *md;
++	void *p;
++
++	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
++		md = p;
++		if ((md->phys_addr <= phys_addr) &&
++		    (phys_addr < (md->phys_addr +
++				  (md->num_pages << EFI_PAGE_SHIFT))))
++			return md->type;
++	}
++	return 0;
++}
++
++u64 efi_mem_attributes(unsigned long phys_addr)
++{
++	efi_memory_desc_t *md;
++	void *p;
++
++	for (p = memmap.map; p < memmap.map_end; p += memmap.desc_size) {
++		md = p;
++		if ((md->phys_addr <= phys_addr) &&
++		    (phys_addr < (md->phys_addr +
++				  (md->num_pages << EFI_PAGE_SHIFT))))
++			return md->attribute;
++	}
++	return 0;
++}
+Index: linux-2.6.23-rc1/arch/x86_64/kernel/efi_callwrap.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23-rc1/arch/x86_64/kernel/efi_callwrap.S	2007-07-30 15:29:16.000000000 +0800
+@@ -0,0 +1,69 @@
++/*
++ * linux/arch/x86_64/kernel/efi_callwrap.S -- Function calling ABI
++ *	conversion from SYSV to Windows for x86_64
++ *
++ * Copyright (C) 2007 Intel Corp
++ *	Bibo Mao <bibo.mao@intel.com>
++ *	Huang Ying <ying.huang@intel.com>
++ */
++
++#include <linux/linkage.h>
++
++ENTRY(lin2win0)
++	subq $40, %rsp
++	call *%rdi
++	addq $40, %rsp
++	ret
++
++ENTRY(lin2win1)
++	subq $40, %rsp
++	mov  %rsi, %rcx
++	call *%rdi
++	addq $40, %rsp
++	ret
++
++ENTRY(lin2win2)
++	subq $40, %rsp
++	mov  %rsi, %rcx
++	call *%rdi
++	addq $40, %rsp
++	ret
++
++ENTRY(lin2win3)
++	subq $40, %rsp
++	mov  %rcx, %r8
++	mov  %rsi, %rcx
++	call *%rdi
++	addq $40, %rsp
++	ret
++
++ENTRY(lin2win4)
++	subq $40, %rsp
++	mov %r8, %r9
++	mov %rcx, %r8
++	mov %rsi, %rcx
++	call *%rdi
++	addq $40, %rsp
++	ret
++
++ENTRY(lin2win5)
++	subq $40, %rsp
++	mov %r9, 32(%rsp)
++	mov %r8, %r9
++	mov %rcx, %r8
++	mov %rsi, %rcx
++	call *%rdi
++	addq $40, %rsp
++	ret
++
++ENTRY(lin2win6)
++	subq $56, %rsp
++	mov 56+8(%rsp), %rax
++	mov %r9, 32(%rsp)
++	mov %rax, 40(%rsp)
++	mov %r8, %r9
++	mov %rcx, %r8
++	mov %rsi, %rcx
++	call *%rdi
++	addq $56, %rsp
++	ret
+Index: linux-2.6.23-rc1/include/linux/efi.h
+===================================================================
+--- linux-2.6.23-rc1.orig/include/linux/efi.h	2007-07-30 15:29:14.000000000 +0800
++++ linux-2.6.23-rc1/include/linux/efi.h	2007-07-30 15:29:16.000000000 +0800
+@@ -301,6 +301,7 @@
+ 					struct resource *data_resource);
+ extern unsigned long efi_get_time(void);
+ extern int efi_set_rtc_mmss(unsigned long nowtime);
++extern void efi_emergency_restart(void);
+ extern int is_available_memory(efi_memory_desc_t * md);
+ extern struct efi_memory_map memmap;
+ 
+Index: linux-2.6.23-rc1/arch/x86_64/Kconfig
+===================================================================
+--- linux-2.6.23-rc1.orig/arch/x86_64/Kconfig	2007-07-30 15:29:14.000000000 +0800
++++ linux-2.6.23-rc1/arch/x86_64/Kconfig	2007-07-30 15:29:16.000000000 +0800
+@@ -266,6 +266,19 @@
+ 	depends on SMP && !MK8
+ 	default y
+ 
++config EFI
++	bool "Boot from EFI support (EXPERIMENTAL)"
++	---help---
++	  This enables the the kernel to boot on EFI platforms using
++	  system configuration information passed to it from the firmware.
++	  This also enables the kernel to use any EFI runtime services that are
++	  available (such as the EFI variable services).
++	  This option is only useful on systems that have EFI firmware
++	  and will result in a kernel image that is ~8k larger. However,
++	  even with this option, the resultant kernel should continue to
++	  boot on existing non-EFI platforms. For more information on
++	  how to set up [U]EFI64 system, see Documentation/x86_64/uefi.txt.
++
+ config MATH_EMULATION
+ 	bool
+ 
+Index: linux-2.6.23-rc1/arch/x86_64/kernel/Makefile
+===================================================================
+--- linux-2.6.23-rc1.orig/arch/x86_64/kernel/Makefile	2007-07-30 15:29:14.000000000 +0800
++++ linux-2.6.23-rc1/arch/x86_64/kernel/Makefile	2007-07-30 15:29:16.000000000 +0800
+@@ -38,6 +38,7 @@
+ obj-$(CONFIG_X86_VSMP)		+= vsmp.o
+ obj-$(CONFIG_K8_NB)		+= k8.o
+ obj-$(CONFIG_AUDIT)		+= audit.o
++obj-$(CONFIG_EFI)		+= efi.o efi_callwrap.o
+ 
+ obj-$(CONFIG_MODULES)		+= module.o
+ obj-$(CONFIG_PCI)		+= early-quirks.o
