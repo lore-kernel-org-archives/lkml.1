@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbXGaKPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbXGaKP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757871AbXGaKPm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbXGaKPQ
+	id S1758108AbXGaKP6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbXGaKPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:15:16 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:39291 "EHLO
+	Tue, 31 Jul 2007 06:15:18 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:39130 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755198AbXGaKPN (ORCPT
+	with ESMTP id S1755229AbXGaKPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:15:13 -0400
+	Tue, 31 Jul 2007 06:15:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=CUeJAY4c6JKV7gQjmE6TNipSVc+MnZwY2/AgsAzdQA7oLYKJ5Dyqy2ecVu7WVFPvY9Di2wdzDdRIaigZWBoimDLWV8epAb2Ie/uoaHebePvbtFMdcs83HoM62k1R7fNeZbA3GNlwzy7FRENyt1PXquXsybrUyiYhVPIb9ByP7YY=
-Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 3/7] sysfs: cosmetic changes in sysfs_lookup()
-In-Reply-To: <11858769082982-git-send-email-htejun@gmail.com>
+        b=MYfY+MXg5wH1gIeA+tP7EocjMijDmqP+/YkwB7Ih4vKuZpd5aAk9qPtOLX2f1vKbsOnyMN5k0lR88J2FsFRt997GXpr+A6YrQYtkrzBeGqqJOCxBPCRMOK9748zChn5ETeE9wyPi8Izw+4nxbil8/Qbu1G/ZtDvLBw5qQGrmgJY=
+Subject: [PATCHSET 2.6.23-rc1] sysfs: locking fix and cleanups
+In-Reply-To: 
 X-Mailer: git-send-email
 Date: Tue, 31 Jul 2007 19:15:08 +0900
-Message-Id: <11858769083801-git-send-email-htejun@gmail.com>
+Message-Id: <11858769082982-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,52 +30,24 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* remove space between * and symbol name in variable declaration.
+Hello, all.
 
-* kill unnecessary new line.
+This patchset contains a locking fix and cleanup patches for sysfs.
 
-* kill 'found' and test 'sd' instead.
+#01	locking fix
+#02	shadow support removal from Eric adapted to apply after #01
+#03-07	clean up patches
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
----
- fs/sysfs/dir.c |   15 +++++----------
- 1 files changed, 5 insertions(+), 10 deletions(-)
+#01 should go mainline as it fixes a locking regression introduced by
+-rc1 merge.  The rest should stay in -gregkh till 24 merge window
+opens up.
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 1c3a0dd..026ea70 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -756,24 +756,19 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 				struct nameidata *nd)
- {
- 	struct dentry *ret = NULL;
--	struct sysfs_dirent * parent_sd = dentry->d_parent->d_fsdata;
--	struct sysfs_dirent * sd;
-+	struct sysfs_dirent *parent_sd = dentry->d_parent->d_fsdata;
-+	struct sysfs_dirent *sd;
- 	struct bin_attribute *bin_attr;
- 	struct inode *inode;
--	int found = 0;
- 
- 	mutex_lock(&sysfs_mutex);
- 
--	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling) {
--		if (sysfs_type(sd) &&
--		    !strcmp(sd->s_name, dentry->d_name.name)) {
--			found = 1;
-+	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
-+		if (sysfs_type(sd) && !strcmp(sd->s_name, dentry->d_name.name))
- 			break;
--		}
--	}
- 
- 	/* no such entry */
--	if (!found)
-+	if (!sd)
- 		goto out_unlock;
- 
- 	/* attach dentry and inode */
--- 
-1.5.0.3
+Clean up patches don't introduce any noticeable behavior change.  They
+just refactor and simplify codes.
+
+Thanks.
+
+--
+tejun
 
 
