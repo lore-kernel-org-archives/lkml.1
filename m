@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbXGaUOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762080AbXGaUPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760925AbXGaUOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbXGaUNx
+	id S1762080AbXGaUPh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758002AbXGaUPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:13:53 -0400
-Received: from mga05.intel.com ([192.55.52.89]:36320 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754810AbXGaUNv (ORCPT
+	Tue, 31 Jul 2007 16:15:20 -0400
+Received: from livid.absolutedigital.net ([66.92.46.173]:52739 "EHLO
+	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756384AbXGaUPS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:13:51 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
-   d="scan'208";a="274916581"
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Organization: Intel Corporation
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: [-mm patch] USB: make dev_attr_authorized_default static
-Date: Tue, 31 Jul 2007 12:13:46 -0700
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-References: <20070725040304.111550f4.akpm@linux-foundation.org> <20070729145858.GC16817@stusta.de>
-In-Reply-To: <20070729145858.GC16817@stusta.de>
+	Tue, 31 Jul 2007 16:15:18 -0400
+Date: Tue, 31 Jul 2007 16:14:59 -0400 (EDT)
+From: Cal Peake <cp@absolutedigital.net>
+To: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] documentation fixes
+In-Reply-To: <200707311114.09308.philipp.marek@bmlv.gv.at>
+Message-ID: <Pine.LNX.4.64.0707311606350.13917@lancer.cnet.absolutedigital.net>
+References: <200707311114.09308.philipp.marek@bmlv.gv.at>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311213.46915.inaky@linux.intel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 July 2007 07:58, Adrian Bunk wrote:
-> -DEVICE_ATTR(authorized_default, 0644,
-> -	    usb_host_authorized_default_show,
-> -	    usb_host_authorized_default_store);
-> +static DEVICE_ATTR(authorized_default, 0644,
-> > +		   usb_host_authorized_default_show, 
+On Tue, 31 Jul 2007, Ph. Marek wrote:
 
-Ack, patchset updated -- thanks!
+> Hello everybody,
+> 
+> here are some small documentation fixes - mostly typing errors.
+> 
+> Please take a look at the last chunk - I think that klibc.bkbits.net 
+> is no longer the current version, but I'm not sure whether the 
+> other link is better.
+
+git://git.kernel.org/pub/scm/libs/klibc/klibc.git should be a safe 
+replacement
+
+> Whom should I CC for other documentation updates? Is the maintainer 
+> the correct person, or are such small fixes "send and forget"?
+
+For spelling and grammar fixes, sending to trivial@kernel.org is prolly 
+the best bet with a CC to l-k.
+
+Also, please see Documentation/SubmittingPatches, particularly section 12 
+about signing off your work.
+
+cheers,
+-- 
+Cal Peake
+
