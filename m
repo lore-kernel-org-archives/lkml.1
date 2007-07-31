@@ -1,83 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933914AbXGaVoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933519AbXGaVqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933914AbXGaVoc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756904AbXGaVoZ
+	id S933519AbXGaVqy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759035AbXGaVqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:44:25 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:32866 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756954AbXGaVoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:44:23 -0400
-Subject: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
-From: Zan Lynx <zlynx@acm.org>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-uWfYUKRHVqKejPIYKMK8"
-Date: Tue, 31 Jul 2007 15:44:21 -0600
-Message-Id: <1185918261.6981.13.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-Envelope-From: zlynx@acm.org
+	Tue, 31 Jul 2007 17:46:43 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3755 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753396AbXGaVqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:46:42 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 63] drivers/scsi/pluto.c: mostly kmalloc + memset conversion to kcalloc
+Date: Tue, 31 Jul 2007 23:46:40 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707312346.41518.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch does kmalloc + memset conversion to kcalloc. Also the following warning is fixed.
 
---=-uWfYUKRHVqKejPIYKMK8
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+  CC      drivers/scsi/pluto.o
+  drivers/scsi/pluto.c: In function 'pluto_info':
+  drivers/scsi/pluto.c:283: warning: unused variable 'p'
 
-I was playing with huge pages and libhugetlbfs.  Small programs like
-"ls" work fine.  I tried running Evolution through libhugetlbfs and the
-system slowly stops running.  One interesting thing is the "ps" command,
-it gets stuck like this:
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-ps            D ffff81001e57ed40     0 103558 103483
- ffff81001f061dc8 0000000000000096 ffff81003d8586e8 ffff81001cbadc00
- 0000000000000006 ffffffff80537009 0000000000000030 ffffffff807ff700
- ffffffff807ff700 ffffffff807ff700 ffffffff807ff700 ffffffff807ff700
-Call Trace:
- [<ffffffff80537009>] _spin_unlock+0x29/0x50
- [<ffffffff80536425>] __down_read+0x75/0xaf
- [<ffffffff80295f49>] access_process_vm+0x49/0x190
- [<ffffffff802f3003>] proc_pid_cmdline+0xa3/0x130
- [<ffffffff802f4cea>] proc_info_read+0xba/0x100
- [<ffffffff802b0085>] vfs_read+0xc5/0x180
- [<ffffffff802b0583>] sys_read+0x53/0x90
- [<ffffffff8020c1de>] system_call+0x7e/0x83
+ drivers/scsi/pluto.c | 8787 -> 8657 (-130 bytes)
+ drivers/scsi/pluto.o | 125264 -> 124648 (-616 bytes)
 
-and nothing will touch it after that.
+ drivers/scsi/pluto.c |   24 +++++++++++++-----------
+ 1 file changed, 13 insertions(+), 11 deletions(-)
 
-Here's my kernel command line:
-root=3D/dev/sda2 rootfstype=3Dreiser4 rootflags=3Dno_write_barrier ro
-i8042.nomux elevator=3Dcfq resume=3D/dev/sda3 panic=3D5 nmi_watchdog=3D2,pa=
-nic
-debug hugepages=3D32
+--- linux-2.6.23-rc1-mm1-a/drivers/scsi/pluto.c	2007-07-26 13:07:42.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/scsi/pluto.c	2007-07-31 18:18:38.000000000 +0200
+@@ -111,13 +111,12 @@ int __init pluto_detect(struct scsi_host
+ #endif
+ 			return 0;
+ 	}
+-	fcs = kmalloc(sizeof (struct ctrl_inquiry) * fcscount, GFP_DMA);
++	fcs = kcalloc(fcscount, sizeof(struct ctrl_inquiry), GFP_DMA);
+ 	if (!fcs) {
+ 		printk ("PLUTO: Not enough memory to probe\n");
+ 		return 0;
+ 	}
 
-Here's the "huge" script I was using to run programs:
-#!/bin/sh
-export LD_PRELOAD=3Dlibhugetlbfs.so
-export HUGETLB_MORECORE=3Dyes
-export HUGETLB_PATH=3D/mnt/huge
-export HUGETLB_VERBOSE=3D1
-exec "$@"
+-	memset (fcs, 0, sizeof (struct ctrl_inquiry) * fcscount);
+ 	memset (&dev, 0, sizeof(dev));
+ 	atomic_set (&fcss, fcscount);
 
-I don't have any more info than that at the moment but I could reproduce
-it with whatever, on request.
+@@ -211,12 +210,12 @@ int __init pluto_detect(struct scsi_host
+ 				char *p;
+ 				long *ages;
 
---=20
-Zan Lynx <zlynx@acm.org>
+-				ages = kmalloc (((inq->channels + 1) * inq->targets) * sizeof(long), GFP_KERNEL);
+-				if (!ages) continue;
++				ages = kcalloc((inq->channels + 1) * inq->targets, sizeof(long), GFP_KERNEL);
++				if (!ages)
++					continue;
 
---=-uWfYUKRHVqKejPIYKMK8
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+ 				host = scsi_register (tpnt, sizeof (struct pluto));
+-				if(!host)
+-				{
++				if (!host) {
+ 					kfree(ages);
+ 					continue;
+ 				}
+@@ -238,7 +237,6 @@ int __init pluto_detect(struct scsi_host
+ 				fc->channels = inq->channels + 1;
+ 				fc->targets = inq->targets;
+ 				fc->ages = ages;
+-				memset (ages, 0, ((inq->channels + 1) * inq->targets) * sizeof(long));
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
+ 				pluto->fc = fc;
+ 				memcpy (pluto->rev_str, inq->revision, 4);
+@@ -260,7 +258,7 @@ int __init pluto_detect(struct scsi_host
+ 		} else
+ 			fc->fcp_register(fc, TYPE_SCSI_FCP, 1);
+ 	}
+-	kfree((char *)fcs);
++	kfree(fcs);
+ 	if (nplutos)
+ 		printk ("PLUTO: Total of %d SparcSTORAGE Arrays found\n", nplutos);
+ 	return nplutos;
+@@ -282,15 +280,19 @@ int pluto_release(struct Scsi_Host *host
 
-iD8DBQBGr601G8fHaOLTWwgRAn1UAJ9T7oBaTGaPbtAcyi1o4Jz7KQs1/gCdElCH
-NLSeo5RpzLApibWdwEwShB8=
-=fuFD
------END PGP SIGNATURE-----
+ const char *pluto_info(struct Scsi_Host *host)
+ {
+-	static char buf[128], *p;
++	static char buf[128];
+ 	struct pluto *pluto = (struct pluto *) host->hostdata;
 
---=-uWfYUKRHVqKejPIYKMK8--
-
+ 	sprintf(buf, "SUN SparcSTORAGE Array %s fw %s serial %s %dx%d on %s",
+ 		pluto->rev_str, pluto->fw_rev_str, pluto->serial_str,
+ 		host->max_channel, host->max_id, pluto->fc->name);
+ #ifdef __sparc__
+-	p = strchr(buf, 0);
+-	sprintf(p, " PROM node %x", pluto->fc->dev->prom_node);
++	{
++		char *p;
++
++		p = strchr(buf, 0);
++		sprintf(p, " PROM node %x", pluto->fc->dev->prom_node);
++	}
+ #endif
+ 	return buf;
+ }
