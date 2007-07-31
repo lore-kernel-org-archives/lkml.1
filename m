@@ -1,136 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXGaN7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762106AbXGaOBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbXGaN7i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbXGaN7a
+	id S1762106AbXGaOBB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755580AbXGaOAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:59:30 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58145 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751835AbXGaN73 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:59:29 -0400
-Date: Tue, 31 Jul 2007 15:58:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: ecashin@coraid.com, kernel list <linux-kernel@vger.kernel.org>
-Cc: ak@suse.de
-Subject: ATA over ethernet swapping and obfuscated code
-Message-ID: <20070731135831.GA4604@elf.ucw.cz>
+	Tue, 31 Jul 2007 10:00:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49130 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755324AbXGaOAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:00:52 -0400
+Message-ID: <46AF4034.6080507@RedHat.com>
+Date: Tue, 31 Jul 2007 09:59:16 -0400
+From: Steve Dickson <SteveD@redhat.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Stefan Walter <stefan.walter@inf.ethz.ch>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: rpc.mountd crashes when extensively using netgroups
+References: <46ADDFB2.9070709@inf.ethz.ch>
+In-Reply-To: <46ADDFB2.9070709@inf.ethz.ch>
+Content-Type: multipart/mixed;
+ boundary="------------060808090307040103050703"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+This is a multi-part message in MIME format.
+--------------060808090307040103050703
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I wanted to know if it is possible/okay to swap over AOE... 
+Stefan Walter wrote:
+> 
+> We do this on a much larger scale though. The bug we ran into is
+> in line 96 in utils/mountd/auth.c. The strcpy can corrupt
+> memory when it copies the string returned by client_compose() to
+> my_client.m_hostname which has a fixed size of 1024 bytes. 
+> For our example above, client_compose() returns "@joe,@jane"
+> for any machine in the offices_1 netgroup. Unfortunately we have
+> a machine to which roughly 150 netgroups like @joe or @jane
+> export to and client_compose() returns a string over 1300 bytes
+> long and rpc.mountd nicely segfaults.
+>  
+> To prevent the crash is of course trivial: Inserting a simple
+> 'if (strlen(n) > 1024) return NULL;' before line 96 does the job.
+Does the attached patch help?
 
-According to
-http://www.coraid.com/support/linux/EtherDrive-2.6-HOWTO-5.html#ss5.20
-.. it runs OOM even during normal use, so I guess swapping over it is
-no-no?
-
-Can I build both client and server for these using free software?
-
-In the process, I looked at the aoe code, and parts of it look like
-obfuscated C contest. The use of switch() as an if was particulary
-creative; I'm not even sure if I translated it properly... can you
-take a look?
-
-(Patch is 
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-but I did not even compile test it)
-
-diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
-index 05a9719..38ba35d 100644
---- a/drivers/block/aoe/aoedev.c
-+++ b/drivers/block/aoe/aoedev.c
-@@ -64,29 +64,26 @@ aoedev_newdev(ulong nframes)
- 
- 	d = kzalloc(sizeof *d, GFP_ATOMIC);
- 	f = kcalloc(nframes, sizeof *f, GFP_ATOMIC);
-- 	switch (!d || !f) {
-- 	case 0:
-- 		d->nframes = nframes;
-- 		d->frames = f;
-- 		e = f + nframes;
-- 		for (; f<e; f++) {
-- 			f->tag = FREETAG;
-- 			f->skb = new_skb(ETH_ZLEN);
-- 			if (!f->skb)
-- 				break;
-- 		}
-- 		if (f == e)
-- 			break;
-+ 	if (!d || !f) {
-+		kfree(f);
-+		kfree(d);
-+		return NULL;
-+	}
-+
-+	d->nframes = nframes;
-+	d->frames = f;
-+	e = f + nframes;
-+	for (; f<e; f++) {
-+		f->tag = FREETAG;
-+		f->skb = new_skb(ETH_ZLEN);
-+		if (!f->skb)
-+			break;
-+	}
-+	if (f != e) {
-  		while (f > d->frames) {
-  			f--;
-  			dev_kfree_skb(f->skb);
-  		}
-- 	default:
-- 		if (f)
-- 			kfree(f);
-- 		if (d)
-- 			kfree(d);
--		return NULL;
- 	}
- 	INIT_WORK(&d->work, aoecmd_sleepwork);
- 	spin_lock_init(&d->lock);
+> 
+> There are however two issues for which we could not find an easy
+> solution:
+> 
+>  1. For every client rpc.mountd and the kernel seem to exchange
+>     and use lists with _all_ netgroups used in exports that are
+>     relevant for granting permission to some share for a particular
+>     client. We could imagine two optimizations here:
+> 
+>        * Resolve netgroups and only put the (member) netgroups that
+>          contained the host name that would be used to authorize
+>          a mount in the list.
+> 
+>        * Use the list of mounted paths per client and only put the
+>          netgroup(s) used to export paths that are actually mounted
+>          on a client. 
+These sound reasonable...
 
 
-aoedev_by_sysminor_m() returns with spinlock held in error case; I
-guess that's bad.
+>  
+>  2. Using a fixed size for NFSCLNT_IDMAX does not scale. Mounting
+>     shares on a client for which the 'if' clause of the quick fix
+>     becomes true will not be possible. We thought about enlarging
+>     NFSCLNT_IDMAX and using a custom kernel but dropped the idea. 
+True...
 
-struct aoedev *
-aoedev_by_sysminor_m(ulong sysminor, ulong bufcnt)
-{
-	struct aoedev *d;
-	ulong flags;
+> 
+> Our ultimate goal is to get Red Hat fix the code in nfs-utils 1.0.6
+> that is used in RHEL4. A first step would be to get a suitable fix in
+> the current nfs-utils. 
+Please open up bugs on all three of these issues and
+we'll see what can done...
 
-	spin_lock_irqsave(&devlist_lock, flags);
+steved.
 
-	for (d=devlist; d; d=d->next)
-		if (d->sysminor == sysminor)
-			break;
 
-	if (d == NULL) {
-		d = aoedev_newdev(bufcnt);
-	 	if (d == NULL) {
-			spin_unlock_irqrestore(&devlist_lock, flags);
-			printk(KERN_INFO "aoe: aoedev_newdev
-failure.\n");
-			return NULL;
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ here
-		}
-		d->sysminor = sysminor;
-		d->aoemajor = AOEMAJOR(sysminor);
-		d->aoeminor = AOEMINOR(sysminor);
-	}
+--------------060808090307040103050703
+Content-Type: text/x-patch;
+ name="mountd-netgroup.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mountd-netgroup.patch"
 
-	spin_unlock_irqrestore(&devlist_lock, flags);
-	return d;
-}
+commit 851ce1cb766cf295db85900aab804c0f82c12ab3
+Author: Steve Dickson <steved@redhat.com>
+Date:   Tue Jul 31 09:57:19 2007 -0400
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+    Stop rpc.mound from crashing by m_hostname becoming
+    corrupted with very long host names.
+    
+    Signed-off-by: Steve Dickson <steved@redhat.com>
+
+diff --git a/utils/mountd/auth.c b/utils/mountd/auth.c
+index f7fe23d..eff0ba7 100644
+--- a/utils/mountd/auth.c
++++ b/utils/mountd/auth.c
+@@ -93,7 +93,8 @@ auth_authenticate_internal(char *what, struct sockaddr_in *caller,
+ 		*error = unknown_host;
+ 		if (!n)
+ 			return NULL;
+-		strcpy(my_client.m_hostname, *n?n:"DEFAULT");
++		snprintf(my_client.m_hostname, (NFSCLNT_IDMAX+1), 
++			"%s", *n?n:"DEFAULT");
+ 		free(n);
+ 		my_client.m_naddr = 1;
+ 		my_exp.m_client = &my_client;
+
+--------------060808090307040103050703--
