@@ -1,120 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762483AbXGaNNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763391AbXGaNOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762483AbXGaNNy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761896AbXGaNKO
+	id S1763391AbXGaNOS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759730AbXGaNLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:10:14 -0400
-Received: from host86-137-100-191.range86-137.btcentralplus.com ([86.137.100.191]:42959
-	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761677AbXGaNKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:10:11 -0400
-X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 09:09:04 EDT
-From: jack@hawkeye.stone.uk.eu.org
-Message-Id: <20070731125444.707405000@hawkeye.stone.uk.eu.org>
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 31 Jul 2007 13:53:27 +0100
-To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, David Millver <davem@davemloft.net>
-Subject: [Patch 11/16] Remove unnecessary kmalloc casts in drivers/net.
-Content-Disposition: inline; filename=drivers_net_remove_kmalloc_casts.patch
+	Tue, 31 Jul 2007 09:11:15 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:54702 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760391AbXGaNLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 09:11:12 -0400
+Date: Tue, 31 Jul 2007 15:20:38 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070731132037.GC1046@ff.dom.local>
+References: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
+On Mon, Jul 30, 2007 at 09:29:38AM +0200, Marcin ¦lusarz wrote:
+...
+> ps: I retested all patches posted in this thread on top of 2.6.22.1
+> and behavior from 2.6.21.3 didn't changed. My next tests will be on
+> 2.6.22.x only.
 
-CC: David Millver <davem@davemloft.net>
+Marcin,
 
----
- drivers/net/gianfar.c |    6 ++----
- drivers/net/lance.c   |    3 +--
- drivers/net/s2io.c    |    4 ++--
- drivers/net/sgiseeq.c |    4 ++--
- 4 files changed, 7 insertions(+), 10 deletions(-)
+I see you're quite busy, but if after testing this next Ingo's patch
+you are alive yet, maybe you could try one more "idea"? No patch this
+time, but if you could try this after adding boot option "noirqdebug"
+(I'd like to be sure it's not about timinig after all).
 
-Index: b/drivers/net/lance.c
-===================================================================
---- a/drivers/net/lance.c
-+++ b/drivers/net/lance.c
-@@ -539,8 +539,7 @@ static int __init lance_probe1(struct ne
- 	if (lance_debug > 6) printk(" (#0x%05lx)", (unsigned long)lp);
- 	dev->priv = lp;
- 	lp->name = chipname;
--	lp->rx_buffs = (unsigned long)kmalloc(PKT_BUF_SZ*RX_RING_SIZE,
--						  GFP_DMA | GFP_KERNEL);
-+	lp->rx_buffs = kmalloc(PKT_BUF_SZ*RX_RING_SIZE, GFP_DMA | GFP_KERNEL);
- 	if (!lp->rx_buffs)
- 		goto out_lp;
- 	if (lance_need_isa_bounce_buffers) {
-Index: b/drivers/net/gianfar.c
-===================================================================
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -737,8 +737,7 @@ int startup_gfar(struct net_device *dev)
- 	gfar_write(&regs->rbase0, addr);
- 
- 	/* Setup the skbuff rings */
--	priv->tx_skbuff =
--	    (struct sk_buff **) kmalloc(sizeof (struct sk_buff *) *
-+	priv->tx_skbuff = kmalloc(sizeof (struct sk_buff *) *
- 					priv->tx_ring_size, GFP_KERNEL);
- 
- 	if (NULL == priv->tx_skbuff) {
-@@ -752,8 +751,7 @@ int startup_gfar(struct net_device *dev)
- 	for (i = 0; i < priv->tx_ring_size; i++)
- 		priv->tx_skbuff[i] = NULL;
- 
--	priv->rx_skbuff =
--	    (struct sk_buff **) kmalloc(sizeof (struct sk_buff *) *
-+	priv->rx_skbuff = kmalloc(sizeof (struct sk_buff *) *
- 					priv->rx_ring_size, GFP_KERNEL);
- 
- 	if (NULL == priv->rx_skbuff) {
-Index: b/drivers/net/s2io.c
-===================================================================
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -729,7 +729,7 @@ static int init_shared_mem(struct s2io_n
- 				while (k != rxd_count[nic->rxd_mode]) {
- 					ba = &mac_control->rings[i].ba[j][k];
- 
--					ba->ba_0_org = (void *) kmalloc
-+					ba->ba_0_org = kmalloc
- 					    (BUF0_LEN + ALIGN_SIZE, GFP_KERNEL);
- 					if (!ba->ba_0_org)
- 						return -ENOMEM;
-@@ -740,7 +740,7 @@ static int init_shared_mem(struct s2io_n
- 					tmp &= ~((unsigned long) ALIGN_SIZE);
- 					ba->ba_0 = (void *) tmp;
- 
--					ba->ba_1_org = (void *) kmalloc
-+					ba->ba_1_org = kmalloc
- 					    (BUF1_LEN + ALIGN_SIZE, GFP_KERNEL);
- 					if (!ba->ba_1_org)
- 						return -ENOMEM;
-Index: b/drivers/net/sgiseeq.c
-===================================================================
---- a/drivers/net/sgiseeq.c
-+++ b/drivers/net/sgiseeq.c
-@@ -167,7 +167,7 @@ static int seeq_init_ring(struct net_dev
- 		if (!sp->tx_desc[i].tdma.pbuf) {
- 			unsigned long buffer;
- 
--			buffer = (unsigned long) kmalloc(PKT_BUF_SZ, GFP_KERNEL);
-+			buffer = kmalloc(PKT_BUF_SZ, GFP_KERNEL);
- 			if (!buffer)
- 				return -ENOMEM;
- 			sp->tx_desc[i].buf_vaddr = CKSEG1ADDR(buffer);
-@@ -181,7 +181,7 @@ static int seeq_init_ring(struct net_dev
- 		if (!sp->rx_desc[i].rdma.pbuf) {
- 			unsigned long buffer;
- 
--			buffer = (unsigned long) kmalloc(PKT_BUF_SZ, GFP_KERNEL);
-+			buffer = kmalloc(PKT_BUF_SZ, GFP_KERNEL);
- 			if (!buffer)
- 				return -ENOMEM;
- 			sp->rx_desc[i].buf_vaddr = CKSEG1ADDR(buffer);
-
--- 
+Cheers & thanks,
+Jarek P.
