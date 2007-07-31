@@ -1,234 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933544AbXGaUfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934276AbXGaUgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933544AbXGaUfo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:35:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933992AbXGaUeB
+	id S934276AbXGaUgc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:36:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765023AbXGaUgS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:34:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38310 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933965AbXGaUd6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:33:58 -0400
-Date: Tue, 31 Jul 2007 22:33:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tim Chen <tim.c.chen@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] sched: yield debugging
-Message-ID: <20070731203351.GB21667@elte.hu>
-References: <1185573687.19777.44.camel@localhost.localdomain> <20070729173735.GA4041@elte.hu> <1185819052.19777.52.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185819052.19777.52.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 31 Jul 2007 16:36:18 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48434 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759314AbXGaUgQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 16:36:16 -0400
+Subject: /proc/$pid/pagemap troubles
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 31 Jul 2007 13:36:14 -0700
+Message-Id: <1185914174.18414.184.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Since the pagemap code has a little header on it to help describe the
+format, I wrote a little c program to parse its output.  I get some
+strange results.  If I do this:
 
-* Tim Chen <tim.c.chen@linux.intel.com> wrote:
+	fd = open("/proc/1/pagemap", O_RDONLY);
+	count = read(fd, &endianness, 1);
 
-> Here's a summary of Volanomark performance numbers:
-> Variant 0 is 80% down from 2.6.22
-> Variant 1 is 20% down from 2.6.22  (this is indeed helped)
-> Variant 2 is 89% down from 2.6.22
+count will always be 4.  
 
-ok, good! Could you try the updated debug patch below? I've done two 
-changes: made '1' the default, and added the 
-/proc/sys/kernel/sched_yield_granularity_ns tunable. (available if 
-CONFIG_SCHED_DEBUG=y)
+hexdump gets similar, but even worse results:
+        
+        qemu:~# strace hexdump -C /proc/self/pagemap 
+        ...
+        read(0, "\1\f\4\4\377\377\377\377\377\377\377\377\377\377\377\377"..., 16) = 20
+        read(0, 0x804d39c, 4294967292)          = -1 EFAULT (Bad address)
+        --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+        +++ killed by SIGSEGV +++
 
-Could you try to change the yield-granularity tunable and see which 
-value gives the best performance? A value of '100000' should in theory 
-give the current (80% degraded) volanomark performance, the default 
-value should give the above '20% down' result. The question is, is '20% 
-down' the best we can get out of it? Does larger/smaller 
-yield-granularity help perhaps? You can change it to any value between 
-100 usecs and 1 second.
+Note that the kernel returns 20 to the read request of 16.  I think the
+kernel is actually copying over something important in hexdump's memory
+which is adjacent to the buffer and causing it to segfault.
 
-	Ingo
+The code is basically organized not to output the right thing for any
+unaligned access, and it apparently gets confused about exactly what
+userspace has asked for.  I think this is largely due to its overwriting
+of "count" in pagemap_read().
 
------------------------------->
-Subject: sched: yield debugging
-From: Ingo Molnar <mingo@elte.hu>
+So, a couple of questions.  Don't we need to support non-sizeof(unsigned
+long)-aligned reads?
 
-introduce various sched_yield implementations:
+Do we _really_ need that header in each and every file?
 
- # default one:
- echo 0 > /proc/sys/kernel/sched_yield_bug_workaround
+> * first byte:   0 for big endian, 1 for little
 
- # always queues the current task next to the next task:
- echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
+Do we ever have cases where userspace and kernel differ in their
+endianness?  Or, are you hoping to dump these files raw on one
+architecture and parse them on another?  I would think it makes more
+sense to get this from elsewhere.  Or, should we just output in network
+byte order and be done with it?
 
- # NOP:
- echo 2 > /proc/sys/kernel/sched_yield_bug_workaround
+If anything, we could put it in /proc/$pid/status.
 
-tunability depends on CONFIG_SCHED_DEBUG=y.
+> * second byte:  page shift (eg 12 for 4096 byte pages)
 
-Not-yet-signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- include/linux/sched.h |    2 +
- kernel/sched_fair.c   |   72 +++++++++++++++++++++++++++++++++++++++++++++-----
- kernel/sysctl.c       |   19 +++++++++++++
- 3 files changed, 87 insertions(+), 6 deletions(-)
+This might actually (in theory) change on a per-process basis, so it
+makes sense.  But, it seems more global to the process that just pagemap
+output.  Would this always be the same as getpagesize()?   Or, should it
+always map 1:1 with the amount of memory mapped by a kernel pte_t.  I
+_think_ these can be slightly different because we have 64k PAGE_SIZE on
+ppc64, but allow mappings to happen in 4k 
 
-Index: linux/include/linux/sched.h
-===================================================================
---- linux.orig/include/linux/sched.h
-+++ linux/include/linux/sched.h
-@@ -1397,10 +1397,12 @@ static inline void idle_task_exit(void) 
- extern void sched_idle_next(void);
- 
- extern unsigned int sysctl_sched_granularity;
-+extern unsigned int sysctl_sched_yield_granularity;
- extern unsigned int sysctl_sched_wakeup_granularity;
- extern unsigned int sysctl_sched_batch_wakeup_granularity;
- extern unsigned int sysctl_sched_stat_granularity;
- extern unsigned int sysctl_sched_runtime_limit;
-+extern unsigned int sysctl_sched_yield_bug_workaround;
- extern unsigned int sysctl_sched_child_runs_first;
- extern unsigned int sysctl_sched_features;
- 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -32,6 +32,7 @@
-  * systems, 4x on 8-way systems, 5x on 16-way systems, etc.)
-  */
- unsigned int sysctl_sched_granularity __read_mostly = 2000000000ULL/HZ;
-+unsigned int sysctl_sched_yield_granularity __read_mostly = 2000000000ULL/HZ;
- 
- /*
-  * SCHED_BATCH wake-up granularity.
-@@ -62,6 +63,16 @@ unsigned int sysctl_sched_stat_granulari
- unsigned int sysctl_sched_runtime_limit __read_mostly;
- 
- /*
-+ * sys_sched_yield workaround switch.
-+ *
-+ * This option switches the yield implementation of the
-+ * old scheduler back on.
-+ */
-+unsigned int sysctl_sched_yield_bug_workaround __read_mostly = 1;
-+
-+EXPORT_SYMBOL_GPL(sysctl_sched_yield_bug_workaround);
-+
-+/*
-  * Debugging: various feature bits
-  */
- enum {
-@@ -834,14 +845,63 @@ dequeue_task_fair(struct rq *rq, struct 
- static void yield_task_fair(struct rq *rq, struct task_struct *p)
- {
- 	struct cfs_rq *cfs_rq = task_cfs_rq(p);
-+	struct rb_node *curr, *next, *first;
-+	struct task_struct *p_next;
- 	u64 now = __rq_clock(rq);
-+	s64 yield_key;
- 
--	/*
--	 * Dequeue and enqueue the task to update its
--	 * position within the tree:
--	 */
--	dequeue_entity(cfs_rq, &p->se, 0, now);
--	enqueue_entity(cfs_rq, &p->se, 0, now);
-+
-+	switch (sysctl_sched_yield_bug_workaround) {
-+	default:
-+		/*
-+		 * Dequeue and enqueue the task to update its
-+		 * position within the tree:
-+		 */
-+		dequeue_entity(cfs_rq, &p->se, 0, now);
-+		enqueue_entity(cfs_rq, &p->se, 0, now);
-+		break;
-+	case 1:
-+		curr = &p->se.run_node;
-+		first = first_fair(cfs_rq);
-+		/*
-+		 * Move this task to the second place in the tree:
-+		 */
-+		if (unlikely(curr != first)) {
-+			next = first;
-+		} else {
-+			next = rb_next(curr);
-+			/*
-+			 * We were the last one already - nothing to do, return
-+			 * and reschedule:
-+			 */
-+			if (unlikely(!next))
-+				return;
-+		}
-+
-+		p_next = rb_entry(next, struct task_struct, se.run_node);
-+		/*
-+		 * Minimally necessary key value to be the second in the tree:
-+		 */
-+		yield_key = p_next->se.fair_key + (int)sysctl_sched_yield_granularity;
-+
-+		dequeue_entity(cfs_rq, &p->se, 0, now);
-+
-+		/*
-+		 * Only update the key if we need to move more backwards
-+		 * than the minimally necessary position to be the second:
-+		 */
-+		if (p->se.fair_key < yield_key)
-+			p->se.fair_key = yield_key;
-+
-+		__enqueue_entity(cfs_rq, &p->se);
-+		break;
-+	case 2:
-+		/*
-+		 * Just reschedule, do nothing else:
-+		 */
-+		resched_task(p);
-+		break;
-+	}
- }
- 
- /*
-Index: linux/kernel/sysctl.c
-===================================================================
---- linux.orig/kernel/sysctl.c
-+++ linux/kernel/sysctl.c
-@@ -234,6 +234,17 @@ static ctl_table kern_table[] = {
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sched_yield_granularity_ns",
-+		.data		= &sysctl_sched_yield_granularity,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &min_sched_granularity_ns,
-+		.extra2		= &max_sched_granularity_ns,
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "sched_wakeup_granularity_ns",
- 		.data		= &sysctl_sched_wakeup_granularity,
- 		.maxlen		= sizeof(unsigned int),
-@@ -278,6 +289,14 @@ static ctl_table kern_table[] = {
- 	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sched_yield_bug_workaround",
-+		.data		= &sysctl_sched_yield_bug_workaround,
-+		.maxlen		= sizeof(unsigned int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "sched_child_runs_first",
- 		.data		= &sysctl_sched_child_runs_first,
- 		.maxlen		= sizeof(unsigned int),
+> * third byte:   entry size in bytes (currently either 4 or 8)
+
+This one really boils down to "what is the kernel's sizeof(unsigned
+long)" because we'll always store pfns in those.  It seems like we
+should have a better way to go fetch that.
+
+> * fourth byte:  header size
+
+If we can get rid of the other three this, of course, goes away.
+
+-- Dave
+
