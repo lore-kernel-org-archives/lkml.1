@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbXGaLTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757514AbXGaLf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbXGaLTB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXGaLSv
+	id S1757514AbXGaLf6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:35:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752390AbXGaLfu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:18:51 -0400
-Received: from styx.suse.cz ([82.119.242.94]:60771 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750788AbXGaLSu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:18:50 -0400
-Date: Tue, 31 Jul 2007 13:30:00 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Ulrich Kunitz <kune@deine-taler.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, Jan Kratochvil <honza@jikos.cz>,
-       jakub@redhat.com
-Subject: Re: Is PIE randomization breaking klibc binaries?
-In-Reply-To: <20070725063243.GA25148@deine-taler.de>
-Message-ID: <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz>
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
- <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com>
- <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com>
- <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de>
+	Tue, 31 Jul 2007 07:35:50 -0400
+Received: from ns2.suse.de ([195.135.220.15]:38496 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751754AbXGaLft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 07:35:49 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 2/5] x86_64 EFI support -v3: EFI boot support
+Date: Tue, 31 Jul 2007 13:35:40 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+References: <1185851576.23149.27.camel@caritas-dev.intel.com>
+In-Reply-To: <1185851576.23149.27.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Disposition: inline
+Message-Id: <200707311335.40235.ak@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Jul 2007, Ulrich Kunitz wrote:
 
-> The message looks like:
-> sleep[7888]: segfault at 000000000004001C rip 000000000004001C rsp 
-> 00007fff14776468 error 14
-> Repeated calls get the same message with the stack pointer changing. 
-> Other binaries (mount) have a segmentation fault at another addressi 
-> (0x400184). It appears that the instruction pointer fails at the start 
-> address of the klibc binary. Notify that this lies in the binary itself 
-> and not in the /lib/klibc*.so object, so it appears that the klibc 
-> binary sections are loaded at randomized addresses.
+>  static unsigned long dma_reserve __initdata;
+> +/* Flag indicating EFI runtime executable code area */
+> +static int efi_runtime_code_area;
 
-Hi Ulrich,
+We don't normally use globals to modify function behaviour.
 
-I just now quickly tried to with klibc-1.5 on i386 with the 
-PIE-randomization patched kernel, and it seems to load static libraries 
-fine.
+>  
+>  DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+>  
+> @@ -199,7 +202,7 @@
+>  static __meminit void unmap_low_page(void *adr)
+>  { 
+>  
+> -	if (after_bootmem)
+> +	if (after_bootmem || efi_runtime_code_area)
+>  		return;
+>  
+>  	early_iounmap(adr, PAGE_SIZE);
+> @@ -259,16 +262,21 @@
+>  		pmd_t *pmd = pmd_page + pmd_index(address);
+>  
+>  		if (address >= end) {
+> -			if (!after_bootmem)
+> +			if (!after_bootmem && !efi_runtime_code_area)
 
-I just downloaded klibc-1.5, built it, and executed a few of the programs 
-in usr/utils/static, all of them worked. Does this also work for you and 
-you are experiencing the problems solely when the binaries are being run 
-from initramfs during boot?
 
-I will test more shortly (on x86_64, directly from initramfs) in order to 
-reproduce.
+This one seems also weird. Are you sure this doesn't remove _NX from
+more than the intended area? 
 
-Thanks,
+>  				for (; i < PTRS_PER_PMD; i++, pmd++)
+>  					set_pmd(pmd, __pmd(0));
+>  			break;
+>  		}
+>  
+> -		if (pmd_val(*pmd))
+> +		if (pmd_val(*pmd) && !efi_runtime_code_area)
+>  			continue;
+>  
+> -		entry = _PAGE_NX|_PAGE_PSE|_KERNPG_TABLE|_PAGE_GLOBAL|address;
+> +		if (efi_runtime_code_area) {
+> +			entry = pmd_val(*pmd);
+> +			entry &= ~_PAGE_NX;
+> +		} else
+> +			entry = _PAGE_NX | _PAGE_PSE | _KERNPG_TABLE | \
+> +				_PAGE_GLOBAL | address;
 
--- 
-Jiri Kosina
-SUSE Labs
+This doesn't look correct. PSE/KERNPG/GLOBAL/address surely need to be set
+for EFI areas too.
+
+The changes to this file are quite messy.
+Perhaps it would be better if you just use change_page_attr() afterwards.
+This would make it using 4K pages instead of 2MB, but that wouldn't be a catastrophe.
+
+What exactly are you trying to do here? Just remove _NX for some areas?
+
+-Andi
+
