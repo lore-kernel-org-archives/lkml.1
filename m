@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763064AbXGaOrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763963AbXGaOsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763064AbXGaOrR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760321AbXGaOrA
+	id S1763963AbXGaOsg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbXGaOs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:47:00 -0400
-Received: from colo.lackof.org ([198.49.126.79]:40928 "EHLO colo.lackof.org"
+	Tue, 31 Jul 2007 10:48:29 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:36001 "EHLO fieldses.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759684AbXGaOq7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:46:59 -0400
-Date: Tue, 31 Jul 2007 08:46:51 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Valerie Henson <val@nmt.edu>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tulip-users@lists.sourceforge.net,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [TULIP] Need new maintainer
-Message-ID: <20070731144651.GA1548@colo.lackof.org>
-References: <20070730190412.GA16182@rainbow> <20070730193158.GA13808@fattire.cabal.ca>
+	id S1758237AbXGaOs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:48:27 -0400
+Date: Tue, 31 Jul 2007 10:48:24 -0400
+To: Stefan Walter <stefan.walter@inf.ethz.ch>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: Re: rpc.mountd crashes when extensively using netgroups
+Message-ID: <20070731144824.GA15231@fieldses.org>
+References: <46ADDFB2.9070709@inf.ethz.ch>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070730193158.GA13808@fattire.cabal.ca>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.15+20070515 (2007-05-02)
+In-Reply-To: <46ADDFB2.9070709@inf.ethz.ch>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 03:31:58PM -0400, Kyle McMartin wrote:
-> On Mon, Jul 30, 2007 at 01:04:13PM -0600, Valerie Henson wrote:
-> > The Tulip network driver needs a new maintainer!  I no longer have
-> > time to maintain the Tulip network driver and I'm stepping down.  Jeff
-> > Garzik would be happy to get volunteers.
+On Mon, Jul 30, 2007 at 02:55:14PM +0200, Stefan Walter wrote:
+> There are however two issues for which we could not find an easy
+> solution:
+> 
+>  1. For every client rpc.mountd and the kernel seem to exchange
+>     and use lists with _all_ netgroups used in exports that are
+>     relevant for granting permission to some share for a particular
+>     client. We could imagine two optimizations here:
+> 
+>        * Resolve netgroups and only put the (member) netgroups that
+>          contained the host name that would be used to authorize
+>          a mount in the list.
+> 
+>        * Use the list of mounted paths per client and only put the
+>          netgroup(s) used to export paths that are actually mounted
+>          on a client. 
+> 
+>     This also caused us severe performance problems because
+>     rpc.mountd queries all these netgroups. We were initially using
+>     a LDAP and mouting a directory took up to ten seconds
+>     during which rpc.mountd was busily querying the LDAP server.
+>     We got this down to two seconds using file based netgroups.
+>  
+>  2. Using a fixed size for NFSCLNT_IDMAX does not scale. Mounting
+>     shares on a client for which the 'if' clause of the quick fix
+>     becomes true will not be possible. We thought about enlarging
+>     NFSCLNT_IDMAX and using a custom kernel but dropped the idea. 
+> 
+> Our ultimate goal is to get Red Hat fix the code in nfs-utils 1.0.6
+> that is used in RHEL4. A first step would be to get a suitable fix in
+> the current nfs-utils. 
 
-Val!
-I'm sorry to see you have to drop this one...C'est la Vie.
+That's an interesting problem.  Thanks for the report!
 
-> Since I already take care of a major consumer of these devices (parisc,
-> which pretty much all have tulip) I'm willing to take care of this.
-> Alternately, Grant is probably willing.
+I don't believe that long comma-delimited string actually has any
+meaning to the kernel--as far as the kernel is concerned, it's just an
+opaque object that will be passed back to mountd later (along with a
+path name) to get export options.
 
-Yeah, I am willing and able to maintain tulip as well.
+So I suppose that string could be replaced by a hash, or maybe even just
+by the ip address of the particular host--the disadvantage to the latter
+being that it would require the kernel to keep a separate export for
+each client address.
 
-Either way, parisc and some mips64 folks are stuck with tulip since
-that's what is "embedded" on the motherboard. So it would make sense
-for someone from either camp to maintain it.
-
-Thanks to David Lang for the offer of 4-port Dlink Tulip card.
-HP has two types of 4-port tulip cards (64-bit/33Mhz and 32-bit/33Mhz)
-that I gave to Val...so whoever picks up the maintainership can
-probably (eventually) get those from Val.
-
-thanks,
-grant
+--b.
