@@ -1,98 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbXGaLoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbXGaLpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbXGaLoX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:44:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750978AbXGaLoQ
+	id S1757986AbXGaLpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbXGaLpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:44:16 -0400
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:17481 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750864AbXGaLoP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:44:15 -0400
-Message-Id: <46AEE8420200005A0002865A@mcclure.wal.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 31 Jul 2007 07:44:02 -0400
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <mingo@elte.hu>
-Cc: <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 1/2] RT: Preemptible Function-Call-IPI Support
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 31 Jul 2007 07:45:41 -0400
+Received: from mail.windriver.com ([147.11.1.11]:37249 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750847AbXGaLpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 07:45:40 -0400
+Message-ID: <46AF20B4.4050203@windriver.com>
+Date: Tue, 31 Jul 2007 06:44:52 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Gabriel C <nix.or.die@googlemail.com>
+CC: Jarek Poplawski <jarkao2@o2.pl>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       amitkale@linsyssoft.com
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com>
+In-Reply-To: <46AF0B8C.7070006@googlemail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2007 11:44:53.0585 (UTC) FILETIME=[35CA2C10:01C7D368]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 11:21 +0200, Ingo Molnar wrote:
-> [ mail re-sent with lkml Cc:-ed. _Please_ Cc: all patches to lkml too! 
->   Unless you want -rt to suffer the fate of -ck, keep upstream involved 
->   all the time. The recent /proc/interrupts-all discussion with upstream 
->   folks showed the clear benefits of that approach. ]
+Gabriel C wrote:
+> Jarek Poplawski wrote:
+>   
+>> On 28-07-2007 20:42, Gabriel C wrote:
+>>     
+>>> Andrew Morton wrote:
+>>>       
+>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+>>>>
+>>>>         
+>>>>> Hi,
+>>>>>
+>>>>> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
+>>>>>
+>>>>> ...
+>>>>>
+>>>>> net/core/netpoll.c: In function 'netpoll_poll':
+>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+>>>>> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
+>>>>> net/core/netpoll.c: In function 'netpoll_setup':
+>>>>> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
+>>>>> make[2]: *** [net/core/netpoll.o] Error 1
+>>>>> make[1]: *** [net/core] Error 2
+>>>>> make: *** [net] Error 2
+>>>>> make: *** Waiting for unfinished jobs....
+>>>>>
+>>>>> ...
+>>>>>
+>>>>>
+>>>>> I think is because KGDBOE selects just NETPOLL.
+>>>>>
+>>>>>           
+>>>> Looks like it.
+>>>>
+>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+>>>> remains evil.
+>>>>         
+>> ...
+>>     
+>>> I think there may be a logical issue ( again if I got it right ).
+>>> We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
+>>>
+>>> So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
+>>>       
+>> IMHO, the only logical issue here is netpoll.c mustn't use 
+>> CONFIG_NET_POLL_CONTROLLER code without #ifdef if it doesn't
+>> add this dependency itself.
+>>
+>>     
+>
+> Well it does if NETDEVICES && if NET_ETHERNET which booth are N when !NETDEVICES is why KGDBOE uses select and not depends on.
+>
+> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
+>   
 
-My apologies.  I wasn't getting really any responses to my proposal, so
-I shortened the distribution to avoid becoming a pest to people that
-didn't care.  I will CC both from now on.
+kgdboe is completely useless without a network card that has a polling 
+driver.  It seems to me that the simple and easy fix is to set it to 
+depend on NETDEVICES but allow it to use select on NETPOLL.
 
+Would that seem reasonable?
 
-> 
-> why do we need this? 
-
-I wrote this when I discovered that KVM was having problems with
-smp_call_function() on -rt.  It was utilizing spinlock_t which of course
-was transparently converted to rt_mutex.  This blew up in the interrupt
-context of the FUNCTION_CALL whenever the lock was acquired.  I was
-thinking to myself "why is the FCIPI vector being treated any different
-that other IRQs?".  That question drove the design/implementation of
-this series.
-
-
-> It's quite complex 
-
-
-I think if you look closely at the code you will see its actually pretty
-straight forward.  However, for whatever complexity you may perceive,
-note that I made the choices I did (as opposed to something like
-modifying the work-queue infrastructure) because I felt it had the
-minimum impact on other subsystems unrelated to FCIPI.  There are, of
-course, many ways to skin a rabbit. ;)
-
-> and brings little extra AFAICS.
-
-Brings little extra to what?  Do you think the whole concept of "FCIPIs
-in a thread" is a waste of time, or do you just think my implementation
-choices are bad?
-
-> See the "schedule_on_each_cpu-enhance.patch" from Peter Ziljstra that 
-> lets a function to be executed on all CPUs. That should be extended 
-> (trivially) to execute a function on another CPU. That's all we need.
-
-I haven't seen that.  I will take a look.  
-
-The key part of my design is as follows:
-
-1) No new API: smp_call_function_[single]) must just transparently
-switch over to threaded mode (Just like the IRQ handler in
-PREEMPT_HARDIRQs does)
-2) Support priority inheritance:  Unlike normal HARDIRQs which can use a
-relatively static priority assignment, FCIPIs are driven by another
-software entity which may or may not have RT priority.  Therefore, being
-able to execute the call in the same priority as the caller is critical,
-IMO.  Calls are sorted and scheduled by priority.
-3) More robust parallelism:  mainline smp_call_function has a system
-wide serialization point when a call is made.  We should be able to
-support a high degree of parallel access to prevent priority inversion.
-This means more than one call can be in-flight at a time.  
-4) Preemptible/sleepable code on both the caller and callee sides.
-Today, both the caller and callee sides of the link are critical
-sections with preemption disabled.
-5) The API must work from both in_atomic()==1 and in_atomic()==0 modes.
-In addition, it will opportunistically sleep while waiting for replies
-if in_atomic()==0.
-
-If we can make Peter's patch work within this criteria and people like
-it better than what I put forth, that is fine by me.
-
-Regards,
--Greg
-
+Jason.
