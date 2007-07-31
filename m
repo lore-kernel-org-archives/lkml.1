@@ -1,89 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbXGaWLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbXGaWMJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756618AbXGaWLi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 18:11:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbXGaWL3
+	id S1757611AbXGaWMJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 18:12:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbXGaWLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 18:11:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:59482 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752550AbXGaWL2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 18:11:28 -0400
-Date: Tue, 31 Jul 2007 15:16:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pm_trace displays the wrong time from the RTC
-Message-Id: <20070731151623.acff17ea.randy.dunlap@oracle.com>
-In-Reply-To: <20070731215609.GB31045@redhat.com>
-References: <46AFA78A.9010904@redhat.com>
-	<20070731143939.774eb9db.randy.dunlap@oracle.com>
-	<20070731215609.GB31045@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Jul 2007 18:11:53 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3631 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753321AbXGaWLu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 18:11:50 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 76] drivers/net/via-velocity.c: mostly kmalloc + memset conversion to kcalloc
+Date: Wed, 1 Aug 2007 00:11:50 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       romieu@fr.zoreil.com, netdev@vger.kernel.org
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
+Message-Id: <200708010011.50979.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 17:56:09 -0400 Dave Jones wrote:
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-> On Tue, Jul 31, 2007 at 02:39:39PM -0700, Randy Dunlap wrote:
->  > On Tue, 31 Jul 2007 17:20:10 -0400 Chuck Ebbert wrote:
-> 
->  > > include/asm-generic/rtc.h:
->  > > 102         /*
->  > > 103          * Account for differences between how the RTC uses the values
->  > > 104          * and how they are defined in a struct rtc_time;
->  > > 105          */
->  > > 106         if (time->tm_year <= 69)
->  > > 107                 time->tm_year += 100;
->  > > 108 
->  > > 109         time->tm_mon--;
->  > 
->  > 
->  > That's this config option (read all of it):
->  > 
->  > config PM_TRACE
->  > 	bool "Suspend/resume event tracing"
->  > 	depends on PM_DEBUG && X86 && EXPERIMENTAL
->  > 	default n
->  > 	---help---
->  > 	This enables some cheesy code to save the last PM event point in the
->  > 	RTC across reboots, so that you can debug a machine that just hangs
->  > 	during suspend (or more commonly, during resume).
->  > 
->  > 	To use this debugging feature you should attempt to suspend the machine,
->  > 	then reboot it, then run
->  > 
->  > 		dmesg -s 1000000 | grep 'hash matches'
->  > 
->  > 	CAUTION: this option will cause your machine's real-time clock to be
->  > 	set to an invalid time after a resume.
-> 
-> Doesn't this only take effect if you've been poking /sys/power/pm_trace though ?
+ drivers/net/via-velocity.c | 88263 -> 88120 (-143 bytes)
+ drivers/net/via-velocity.o | 254264 -> 253828 (-436 bytes)
 
-Looks like only if /sys/power/pm_trace is enabled, yes.
+ drivers/net/via-velocity.c |   24 ++++++++++--------------
+ 1 file changed, 10 insertions(+), 14 deletions(-)
 
-> Also, look at the date in the output from Chuck. It looks like only the
-> year is wrong.  I'd have expected more than just the century byte to have been
-> corrupted.
+--- linux-2.6.23-rc1-mm1-a/drivers/net/via-velocity.c	2007-07-26 13:07:43.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/net/via-velocity.c	2007-07-31 13:50:28.000000000 +0200
+@@ -1071,14 +1071,12 @@ static int velocity_rx_refill(struct vel
 
-and month, but the code snippet that he posted accounts for that also.
+ static int velocity_init_rd_ring(struct velocity_info *vptr)
+ {
+-	int ret = -ENOMEM;
+-	unsigned int rsize = sizeof(struct velocity_rd_info) *
+-					vptr->options.numrx;
++	int ret;
 
-> That +100 heuristic seems really odd to me.  Possibly it needs to be
-> checking if the century byte is set/unset, or it needs additional
-> clamping to make sure it doesn't overflow.
+-	vptr->rd_info = kmalloc(rsize, GFP_KERNEL);
+-	if(vptr->rd_info == NULL)
+-		goto out;
+-	memset(vptr->rd_info, 0, rsize);
++	vptr->rd_info = kcalloc(vptr->options.numrx,
++				sizeof(struct velocity_rd_info), GFP_KERNEL);
++	if (!vptr->rd_info)
++		return -ENOMEM;
 
-OK, worth looking into...
+ 	vptr->rd_filled = vptr->rd_dirty = vptr->rd_curr = 0;
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+@@ -1088,7 +1086,7 @@ static int velocity_init_rd_ring(struct
+ 			"%s: failed to allocate RX buffer.\n", vptr->dev->name);
+ 		velocity_free_rd_ring(vptr);
+ 	}
+-out:
++
+ 	return ret;
+ }
+
+@@ -1142,21 +1140,19 @@ static int velocity_init_td_ring(struct
+ 	dma_addr_t curr;
+ 	struct tx_desc *td;
+ 	struct velocity_td_info *td_info;
+-	unsigned int tsize = sizeof(struct velocity_td_info) *
+-					vptr->options.numtx;
+
+ 	/* Init the TD ring entries */
+ 	for (j = 0; j < vptr->num_txq; j++) {
+ 		curr = vptr->td_pool_dma[j];
+
+-		vptr->td_infos[j] = kmalloc(tsize, GFP_KERNEL);
+-		if(vptr->td_infos[j] == NULL)
+-		{
++		vptr->td_infos[j] = kcalloc(vptr->options.numtx,
++					    sizeof(struct velocity_td_info),
++					    GFP_KERNEL);
++		if (!vptr->td_infos[j])	{
+ 			while(--j >= 0)
+ 				kfree(vptr->td_infos[j]);
+ 			return -ENOMEM;
+ 		}
+-		memset(vptr->td_infos[j], 0, tsize);
+
+ 		for (i = 0; i < vptr->options.numtx; i++, curr += sizeof(struct tx_desc)) {
+ 			td = &(vptr->td_rings[j][i]);
