@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759062AbXGaPdi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760734AbXGaPiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759062AbXGaPdi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:33:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbXGaPda
+	id S1760734AbXGaPiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751243AbXGaPiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:33:30 -0400
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:21814 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750861AbXGaPd3 convert rfc822-to-8bit (ORCPT
+	Tue, 31 Jul 2007 11:38:12 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55034 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751064AbXGaPiK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:33:29 -0400
-Message-Id: <46AF1DA6.BA47.005A.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 31 Jul 2007 11:33:26 -0400
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Peter Zijlstra" <peterz@infradead.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: [PATCH 0/2][RFC] VFCIPI v3
-References: <20070731132153.4790.37217.stgit@novell1.haskins.net>
- <1185891957.12034.12.camel@twins>
-In-Reply-To: <1185891957.12034.12.camel@twins>
+	Tue, 31 Jul 2007 11:38:10 -0400
+Date: Tue, 31 Jul 2007 16:45:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: akpm@osdl.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata: Correct IORDY handling
+Message-ID: <20070731164511.4d2f81ee@the-village.bc.nu>
+In-Reply-To: <46AF44D3.3090608@ru.mvista.com>
+References: <20070731140148.4cb780de@the-village.bc.nu>
+	<46AF44D3.3090608@ru.mvista.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> On Tue, Jul 31, 2007 at 10:25 AM, in message <1185891957.12034.12.camel@twins>,
-Peter Zijlstra <peterz@infradead.org> wrote: 
-
-> Hi Gregory,
 > 
-> This patch set approaches the problem from the wrong angle (and has a
-> few problems due to that).
+> > +			dev->pio_mode <= XFER_PIO_2)
 > 
-> The idea to use a workqueue (or in your case workqueue-like) solution to
-> the problem is valid, however instead of re-using (and improving) the
-> current workqueue infrastructure, you re-implement it 
-
-This was partially due to my own ignorance of the full workqueue facilities.  I was only familiar with "schedule_work" and I had it banged into my head that you can't guarantee which CPU a workqueue runs on *ever*.  I wasn't familiar with schedule_work_on_cpu() or its ability to direct the desination, which is very cool.  Thanks to you and Ingo for pointing it out to me.
-
-The other side to my decision (and the reason why I didnt actually go dig into the code to see if I could fix the previously mentioned "limitation") was that I was trying to avoid disrupting a primary datapath like workqueue.  I thought I could hang this thing on the side so that it only affected the smp_call facility.
-
-I see now that that was a mistake.  I will tackle the implementation again with this new approach.
-
->(with mistakes).
-
-If there was anything more than what you already mention here, please point them out so I don't "port" them over to the workqueues implemenation ;)
-
+>     Overindented line (to my taste :-). And do we really need to check this?
 > 
-> Your idea that GFP_ATOMIC is broken in -rt is unfortunate, it isn't. The
-> whole allocator is preemptable - that is a feature!
 
-Heh...that may be, and I can see how it is useful to have the allocatorr be generally preemptible.  However, I would have thought that "GFP_ATOMIC" means I can call it from atomic code, which is not the case apparently.  It's probably just my own ignorance again of what that flag should really mean ;)
-
-In any case I abstracted the heap_allocator away so that I could make an in_atomic friendly allocation.  If the GFP_ATOMIC allocator ever supports in_atomic in the future, all we have to do is change vfcipi/heap.h.  I am open to other suggestions to this problem, of course.
-
-Regards,
--Greg
-
+Yes - if it refuses SET_XFER_MODE we really don't want to run any mode
+above PIO2. No hardware *should* do this but then this is IDE...
