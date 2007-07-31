@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXGaXk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXGaXpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760787AbXGaXk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbXGaXkV
+	id S1759980AbXGaXpg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 19:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbXGaXp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:40:21 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54507 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751583AbXGaXkT (ORCPT
+	Tue, 31 Jul 2007 19:45:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44707 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752024AbXGaXpY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 19:40:19 -0400
-Date: Tue, 31 Jul 2007 16:40:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andi Kleen <ak@suse.de>
-cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc] balance-on-fork NUMA placement
-In-Reply-To: <200707311114.09284.ak@suse.de>
-Message-ID: <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
-References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 31 Jul 2007 19:45:24 -0400
+Date: Tue, 31 Jul 2007 16:43:50 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bongani Hlope <bonganilinux@mweb.co.za>
+Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [OOPS] 2.6.23-rc1 Seems to be network related
+Message-Id: <20070731164350.9084f5de.akpm@linux-foundation.org>
+In-Reply-To: <200708010135.23421.bonganilinux@mweb.co.za>
+References: <200708010135.23421.bonganilinux@mweb.co.za>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, Andi Kleen wrote:
+On Wed, 1 Aug 2007 01:35:23 +0200
+Bongani Hlope <bonganilinux@mweb.co.za> wrote:
 
-> On Tuesday 31 July 2007 07:41, Nick Piggin wrote:
+> I got this partial Oops on my work laptop (DELL D800), while using the linux 
+> 2.6.23-rc1 kernel. I've been using this kernel ever since it was released and 
+> this is the first and only time it did not boot. It was around the time it 
+> should have been trying to connect to my linksys wireless router (which has 
+> been working fine everyday since the 2.6.23-rc1 kernel was released).
 > 
-> > I haven't given this idea testing yet, but I just wanted to get some
-> > opinions on it first. NUMA placement still isn't ideal (eg. tasks with
-> > a memory policy will not do any placement, and process migrations of
-> > course will leave the memory behind...), but it does give a bit more
-> > chance for the memory controllers and interconnects to get evenly
-> > loaded.
+> I copied what was on screen by hand, so some info is missing. I don't know how 
+> to reproduce it.
 > 
-> I didn't think slab honored mempolicies by default? 
-> At least you seem to need to set special process flags.
+> Call Trace:
+> [<c0104cbc>] show_trace_log_lvl+0x1a/0x2f
+> [<c0104d6c>] show_stack_log_lvl+0x9b/0xa3
+> [<c0104f36>] show_registers+0x1c2/0x2db
+> [<c0105151>] die+0x02/0x1de
+> [<c01052b6>] do_trap+0x89/0xa2
+> [<c010558e>] do_invalid_op+0x88/0x92
+> [<c035a162>] error_code+0x6a/0x70
+> [<c0114efa>] kmap_atomic+0xe/0x10
+> [<c014a29c>] get_page_from_freelist+0x24c/0x3...
+> [<c015dd06>] __alloc_pages+0x53/0x27d
+> [<c015da60>] kmem_cache_alloc+0x32/0x68
+> [<c02e5065>] dst_alloc+0x28/0x60
+> [<c02f45fe>] ip_route_input+0x9b9/0xbba
+> [<c0314835>] arp_process+0x155/0x4e1
+> [<c0314caa>] arp_rcv+0xe9/0xfd
+> [<c02e1660>] netif_receive_skb+0x16e/0x1eb
+> [<c02e2efa>] process_backlog+0x71/0xda
+> [<c02e2fb9>] net_rx_action+0x56/0xee
+> [<c011f437>] __do_softirq+0x38/0x7a
+> [<c0106145>] do_soft_irq+0x41/0x91
+> [<c011f3c5>] irq_exit+0x2c/0x66
+> [<c010644a>] do_IRQ+0xb7/0xcd
+> [<c01047eb>] common_interrupt+0x23/0x28
+> [<c0151f87>] handle_mm_fault+0x1fe/0x57e
+> [<c035a162>] error_code+0x6a/0x70
+> =======================
+> EIP: [<c0114e87>] kmap_atomic_prot+0x27/0x8..
 
-It does in the sense that slabs are allocated following policies. If you 
-want to place individual objects then you need to use kmalloc_node().
+Thanks.  Commit b8c1c5da1520977cb55a358f20fc09567d40cad9 should
+have fixed this.
