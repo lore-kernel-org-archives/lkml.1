@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933219AbXGaQx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933350AbXGaQyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933219AbXGaQx3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763391AbXGaQxT
+	id S933350AbXGaQyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765429AbXGaQyN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:53:19 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:48415 "EHLO pasmtpB.tele.dk"
+	Tue, 31 Jul 2007 12:54:13 -0400
+Received: from mga09.intel.com ([134.134.136.24]:29404 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763177AbXGaQxS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:53:18 -0400
-Date: Tue, 31 Jul 2007 18:54:33 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Satyam Sharma <satyam@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make headers_check less chatty for success cases
-Message-ID: <20070731165433.GA8180@uranus.ravnborg.org>
-References: <alpine.LFD.0.999.0707312206140.28746@enigma.security.iitk.ac.in> <1185899409.3083.122.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185899409.3083.122.camel@pmac.infradead.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1758817AbXGaQyL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:54:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
+   d="scan'208";a="111843649"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: regression on HP zx1 platform from ACPI autoload modulespatches
+Date: Tue, 31 Jul 2007 09:54:05 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A020E3B4F@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <1185900042.18821.213.camel@queen.suse.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: regression on HP zx1 platform from ACPI autoload modulespatches
+Thread-Index: AcfTkY1QyskEpXUpSyC0ywAHmuFJKAAARiZQ
+From: "Luck, Tony" <tony.luck@intel.com>
+To: <trenn@suse.de>
+Cc: "Doug Chapman" <doug.chapman@hp.com>, "Tony Luck" <tony.luck@gmail.com>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 31 Jul 2007 16:54:05.0843 (UTC) FILETIME=[67CC1630:01C7D393]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 05:30:09PM +0100, David Woodhouse wrote:
-> On Tue, 2007-07-31 at 22:10 +0530, Satyam Sharma wrote:
-> > "make headers_check" is too verbose. It likes to chat even if it has
-> > just _successfully_ checked a header, and not just on seeing errors.
-> > What is worse, even if you touch just one little header in some corner
-> > (or possibly none) and type "make" on an "already-made" tree,
-> > headers_check still feels obliged to check all the headers.
-> 
-> Didn't Sam have a better fix for that?
-In another .git here but not yet quite ready.
-Got sidetracked by even more section mismatch stuff. If I had knew
-how much work that had generated I had not integrated these harmless
-scripts in modpost I think ;-)
+> Tony, it looks like the patch has not hit Linus tree yet:
 
-I will give it a spin soon and post an update.
 
-	Sam
+Huh?  I can see it in his tree via gitweb.  Here's the patch:
+
+	http://tinyurl.com/3csnu6
+
+and the raw "blob" for sba_iommu.c:
+
+	http://tinyurl.com/397cy6
+
+[Scroll down to line 2018 and you'll see the new code in place].
+
+Something very odd is happening.
+
+-Tony
