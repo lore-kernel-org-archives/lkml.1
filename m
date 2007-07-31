@@ -1,90 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764944AbXGaPGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764915AbXGaPJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764944AbXGaPGF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762274AbXGaPFw
+	id S1764915AbXGaPJS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761305AbXGaPJH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:05:52 -0400
-Received: from [212.12.190.233] ([212.12.190.233]:33983 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762831AbXGaPFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:05:51 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: linux-kernel@vger.kernel.org
-Subject: HowTo crashkernel hibernation (was: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation)
-Date: Tue, 31 Jul 2007 18:06:01 +0300
-User-Agent: KMail/1.5
+	Tue, 31 Jul 2007 11:09:07 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:45364 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762004AbXGaPJG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 11:09:06 -0400
+Message-ID: <46AF4FFE.5080202@gmail.com>
+Date: Tue, 31 Jul 2007 17:06:38 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: "<::.. Teresa_II ..::>" <teresa@kvitka.net>
+CC: CK Mailinglist <ck@vds.kolivas.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux Kernel cfs scheduler and xorg kbd
+References: <1185827130.26459.16.camel@xtower.fri>
+In-Reply-To: <1185827130.26459.16.camel@xtower.fri>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311806.02000.a1426z@gawab.com>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> > 3. Boot kernel compiled for normal usage, the reserved crash kernel
-> > memory region must be added to kernel command line as following:
-> >
-> > crashkernel=<XX>M@<XX>M
-> >
-> > Where, <XX> should be replaced by the real memory size and
-> > position.
->
-> I used crashkernel=64M@64M .
+On 07/30/2007 10:25 PM, <::.. Teresa_II ..::> wrote:
 
-It's good to see that people finally try this.
+> first of all i am not sure if its scheduler issue. But i didn't found
+> anything about that in google related to something else.
+> 
+> So i tried 2.6.22.1 kernel with new cfs scheduler v19.1 from Ingo page.
+> Previous i used 2.6.22-ck1.
+> 
+> After 24 hours running i get strange behavior in Xorg. It act slower
+> with my special keys, like SHIFT, or CTRL. So if i hold SHIFT and press
+> ")" and than will press enter, i release SHIIFT and press ENTER it
+> doesn't create new line. Even if i start write a Sentence or word with
+> "SHIFTed" char it makes next char in high case also. 
+> Like this: "HAllo" even if i type "Hallo".
 
-I used crashkernel=16M@16M, which is the absolute minimum I managed to have 
-the crashkernel boot successfully.
+For a few days now I have been experiencing a "stuck delete" key while 
+reading mail -- I run through the mail with "delete" and every once in a 
+while it just keeps on deleting messages while I've already released the 
+delete key and was trying to read the next message.
 
-> > 4. Load kernel compiled for hibernating usage as a crashdump kernel
-> > with kexec, the same kernel as that of 3 can be used if
-> > CONFIG_RELOCATABLE=y is selected.
+Regular unpatched 2.6.22.1 though and I've recently changed too many things 
+to be certain of anything. My X is the modular X.org 1.3.0 since not long, 
+and the mailer showing the problem is Thunderbird 2.0.0.5, recently switched 
+from 1.5.0.12. The problem was on my "I'll get to it" list but seems this 
+could be a good thread to report it into. PS/2 keyboard...
 
-That's not enough.  You have to set the CONFIG_PHYSICAL_START to 1,000,000 
-for a 16M start.  That's because the crashkernel only supports vmlinux, 
-which cannot be relocatable.
+> It's extremely unusable.
+> 
+> It doesn't happen if i am on other kernel.
 
-> > The kernel command line option as
-> > following must be appended to kernel command line.
-> >
-> > kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
-> >
-> > For example, the shell command line can be as follow:
-> >
-> > kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
-> > kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
->
-> I think I followed the instructions closely. Now I'm trying to do
->
-> kexec -p /data/l/linux/vmlinux --args-linux --append="init=/bin/bash
-> kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
->
-> but it tells me:
->
-> Invalid memory segment 0x100000 - 0x7a0fff
->
-> (and nothing in dmesg)
->
-> If I try to load bzImage (corresponding to vmlinux I tried to use),  I
-> get:
->
-> root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage
-> --append="init=/bin/bash \ kexec_jump_buf_pfn=`cat
-> /sys/kernel/kexec_jump_buf_pfn`" Could not find a free area \ of memory of
-> 9000 bytes... locate_hole failed
-> root@amd:~#
->
-> What am I doing wrong?
+Very very sure?
 
-Nothing, but the doc isn't really clear on this, and an update is probably in 
-order.
+> I am ready to provide any requested information to find issue. If its not
+> kernel related thing - i am very sorry, i just don't know where to start
+> to trace whats wrong.
+> 
+> I am on gentoo and use latest xorg server. Keyboard driver is "KBD". 
+> Mouse use "evdev" driver.
 
+Rene.
 
-Thanks!
-
---
-Al
 
