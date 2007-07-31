@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966856AbXGaD4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967266AbXGaD5N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966856AbXGaD4Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 23:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXGaDzr
+	id S967266AbXGaD5N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:57:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965044AbXGaD44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 23:55:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47789 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940514AbXGaDzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 23:55:45 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
-Date: Mon, 30 Jul 2007 23:54:22 -0400
-User-Agent: KMail/1.9.5
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707292323.29601.rjw@sisk.pl> <alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707302354.23237.lenb@kernel.org>
+	Mon, 30 Jul 2007 23:56:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:62815 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760193AbXGaD4z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 23:56:55 -0400
+Date: Mon, 30 Jul 2007 21:01:01 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Chris Holvenstot <saltydog@houston.rr.com>
+Cc: kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel Build Failure
+Message-Id: <20070730210101.d54fe629.randy.dunlap@oracle.com>
+In-Reply-To: <1185852660.30600.35.camel@localhost>
+References: <1185852660.30600.35.camel@localhost>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+On Mon, 30 Jul 2007 22:31:00 -0500 Chris Holvenstot wrote:
 
-Without this change, it is possible to build CONFIG_HIBERNATE
-on all !SMP architectures, but not necessarily their SMP versions.
+> I am having a problem, likely caused by the vacuum between my ears, but
+> I thought that a few of you would find it recreational to tear up an
+> inexperienced user for doing dumb things.  
+> 
+> I have what is quickly becoming a "un-ubuntu" 7.04 system - as time goes
+> on I seem to be replacing the standard distribution with "alternative"
+> components - this past weekend I replaced the kernel because the one
+> shipped with Ubuntu was not cutting it with the new SATA drives I
+> recently purchased.
+> 
+> So I downloaded the 2.6.22.1 kernel sources and set out to build a new
+> kernel.  For the most part I left things pretty much as they shipped
+> when running the menuconfig tool and an hour or so later I had a
+> functioning kernel which did a decent job supporting my new hard drives
+> (I still have a slight problem with soft resets which seems to go away
+> when I turn NCQ down to zero)
+> 
+> While I was researching the SATA issue I noted a comment on the mailing
+> list that having a few more people build and run your RC1 kernels wold
+> be desirable.  So I said, why not?   I may still be new to Linux and C
+> but I was an MVS Sysprog and assembly language programmer for 25 years
+> and if nothing else I have strong troubleshooting skills and a
+> understanding of how an operating system works.
+> 
+> My target system for this activity was my "multi-purpose" AMD64 X2 based
+> home server - in addition to being my desktop, it also functions as the
+> family web server and even runs the sewing machine via an instance of
+> Windows running under VirtualBox.  The box is up 24x7 and gets a good
+> work out on a variety of tasks, but if it goes down so be it.  
+> 
+> However, I think that my process for building an RC1 kernel must be
+> flawed, and as much as I poked around I can not spot what I am doing
+> wrong.  
+> 
+> I take a virgin set of 2.6.22.1 sources.  
+> 
+> To this I added the 2.6.23-rc1 patch set.  The patch verified and
+> applied without generating any error messages.
+> 
+> The only change I made with the menuconfig tool from 2.6.22.1 was to
+> change the generated kernel name.
+> 
+> I ran make and received the following error:
+> 
+> CC [M]  net/netfilter/nf_conntrack_proto_sctp.o
+> net/netfilter/nf_conntrack_proto_sctp.c: In function ‘sctp_new’:
+> net/netfilter/nf_conntrack_proto_sctp.c:436: error: implicit declaration
+> of function ‘DEBUGP’
+> make[2]: *** [net/netfilter/nf_conntrack_proto_sctp.o] Error 1
+> make[1]: *** [net/netfilter] Error 2
+> make: *** [net] Error 
+> 
+> Any suggestions as to what I might be doing wrong would be appreciated.
 
-I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
-is correct.  For now it simply matches the list for SUSPEND_SMP_POSSIBLE.
+Apply 2.6.23-rc1 to 2.6.22, not to 2.6.22.1.  The 2.6.2x.y -stable
+series is a different branch of development.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
 ---
- Kconfig |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-index 412859f..ccf6576 100644
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -72,6 +72,11 @@ config PM_TRACE
- 	CAUTION: this option will cause your machine's real-time clock to be
- 	set to an invalid time after a resume.
- 
-+config SUSPEND_UP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
-+	default y
-+
- config SUSPEND_SMP_POSSIBLE
- 	bool
- 	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
-@@ -92,7 +97,7 @@ config PM_SLEEP
- config SUSPEND
- 	bool "Suspend to RAM and standby"
- 	depends on PM
--	depends on !SMP || SUSPEND_SMP_POSSIBLE
-+	depends on (!SMP && SUSPEND_UP_POSSIBLE) || (SMP && SUSPEND_SMP_POSSIBLE)
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
