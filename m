@@ -1,140 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763732AbXGaQA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765236AbXGaQBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763732AbXGaQA6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:00:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755803AbXGaQAq
+	id S1765236AbXGaQBc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:01:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbXGaQBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:00:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36552 "EHLO mx3.mail.elte.hu"
+	Tue, 31 Jul 2007 12:01:24 -0400
+Received: from fizeau.zen.co.uk ([212.23.8.67]:56797 "EHLO fizeau.zen.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754708AbXGaQAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:00:43 -0400
-Date: Tue, 31 Jul 2007 18:00:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
-Subject: Re: [patch] genirq: temporary fix for level-triggered IRQ resend
-Message-ID: <20070731160008.GA7776@elte.hu>
-References: <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731155843.GA7033@elte.hu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755803AbXGaQBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:01:23 -0400
+X-Greylist: delayed 1236 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 12:01:22 EDT
+From: David Vrabel <david.vrabel@csr.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Vrabel <david.vrabel@csr.com>, Pierre Ossman <drzeus-list@drzeus.cx>
+Subject: sdio: set the functions' block size
+Date: Tue, 31 Jul 2007 16:36:32 +0100
+Message-Id: <1185896193612-git-send-email-david.vrabel@csr.com>
+X-Mailer: git-send-email 1.4.4.4
+In-Reply-To: <11858961933491-git-send-email-david.vrabel@csr.com>
+References: <11858961933491-git-send-email-david.vrabel@csr.com>
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: david@pear.davidvrabel.org.uk
+X-SA-Exim-Scanned: No (on pear.davidvrabel.org.uk); SAEximRunCond expanded to false
+X-Originating-Pythagoras-IP: [82.70.146.41]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Prior to calling the driver's probe(), set the functions' block size to the
+largest that's supported by both the card and the driver.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: David Vrabel <david.vrabel@csr.com>
 
-> Linus,
-> 
-> with -rc2 approaching i think we should apply the minimal fix below to 
-> get Marcin's ne2k-pci networking back in working order. The 
-> WARN_ON_ONCE() will not prevent the system from working and it will be 
-> a reminder.
+---
+commit 6d367fd822cbb2b8089ab7ef83f706f1984ab25b
+tree 8c9cc84b4c8c1c8f959abe540aa02f14aa95c51d
+parent 51755c3d59be1ba778bef45888f9f5e341dc4af4
+author David Vrabel <david.vrabel@csr.com> Mon, 30 Jul 2007 19:58:54 +0100
+committer David Vrabel <dvrabel@cantab.net> Mon, 30 Jul 2007 19:58:54 +0100
 
-there's one more test-patch that Marcin has not tested yet (see below) - 
-perhaps a POST artifact in ne2k could explain this bug.
+ drivers/mmc/core/sdio_bus.c   |   13 +++++++++++++
+ drivers/mmc/core/sdio_cis.c   |    8 ++++----
+ drivers/mmc/core/sdio_io.c    |   23 +++++++++++++++++++++++
+ include/linux/mmc/sdio_func.h |    7 +++++++
+ 4 files changed, 47 insertions(+), 4 deletions(-)
 
-	Ingo
-
-------------------------->
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> Ok the logic behind the 8390 is very simple:
-
-thanks for the explanation Alan! A few comments and a question:
-
-> Things to know
-> 	- IRQ delivery is asynchronous to the PCI bus
-> 	- Blocking the local CPU IRQ via spin locks was too slow
-> 	- The chip has register windows needing locking work
-> 
-> So the path was once (I say once as people appear to have changed it 
-> in the mean time and it now looks rather bogus if the changes to use 
-> disable_irq_nosync_irqsave are disabling the local IRQ)
-> 
-> 
-> 	Take the page lock
-> 	Mask the IRQ on chip
-> 	Disable the IRQ (but not mask locally- someone seems to have
-> 		broken this with the lock validator stuff)
-> 		[This must be _nosync as the page lock may otherwise
-> 			deadlock us]
-
-( side-note: you can ignore the lock validator stuff here, the validator
-  changes are supposed to a NOP on the !lockdep case. Local irqs will
-  only be disabled if the validator is running. This could cause dropped
-  serial irqs on very old boxes but i doubt anyone will want to run the
-  validator on those. )
-
-> 	Drop the page lock and turn IRQs back on
-> 	
-> 	At this point an existing IRQ may still be running but we can't
-> 	get a new one
-> 
-> 	Take the lock (so we know the IRQ has terminated) but don't mask
-> the IRQs on the processor
-> 	Set irqlock [for debug]
-> 
-> 	Transmit (slow as ****)
-> 
-> 	re-enable the IRQ
-> 
-> 
-> We have to use disable_irq because otherwise you will get delayed 
-> interrupts on the APIC bus deadlocking the transmit path.
-> 
-> Quite hairy but the chip simply wasn't designed for SMP and you can't 
-> even ACK an interrupt without risking corrupting other parallel 
-> activities on the chip.
-
-So the whole locking is to be able to keep irqs enabled for a long time, 
-without risking entry of the same IRQ handler on this same CPU, correct?
-
-Marcin's test results suggest that if an IRQ is resent right at the 
-enable_irq() point [be that via the hw irq-resend mechanism or the sw 
-irq-resend mechanism], the hang happens.
-
-In the previous 2.6.20 logic we'd not normally generate an IRQ at that 
-point (because we masked the irq and the card itself deasserts the line 
-so any level-triggered irq is now moot).
-
-Once Thomas hacked off this resend mechanism for level-triggered irqs, 
-Marcin saw the hangs go away.
-
-So it seems to me that maybe the driver could be surprised via these 
-spurious interrupts that happen right after the irq_enable(). Does the 
-patch below make any sense in your opinion?
-
-	Ingo
-
-Index: linux/drivers/net/lib8390.c
-===================================================================
---- linux.orig/drivers/net/lib8390.c
-+++ linux/drivers/net/lib8390.c
-@@ -375,6 +375,8 @@ static int ei_start_xmit(struct sk_buff 
- 	/* Turn 8390 interrupts back on. */
- 	ei_local->irqlock = 0;
- 	ei_outb_p(ENISR_ALL, e8390_base + EN0_IMR);
-+	/* force POST: */
-+	ei_inb_p(e8390_base + EN0_IMR);
+diff --git a/drivers/mmc/core/sdio_bus.c b/drivers/mmc/core/sdio_bus.c
+index a3ac1aa..f4d40c1 100644
+--- a/drivers/mmc/core/sdio_bus.c
++++ b/drivers/mmc/core/sdio_bus.c
+@@ -127,11 +127,24 @@ static int sdio_bus_probe(struct device *dev)
+ 	struct sdio_driver *drv = to_sdio_driver(dev->driver);
+ 	struct sdio_func *func = dev_to_sdio_func(dev);
+ 	const struct sdio_device_id *id;
++	unsigned short block_size;
++	int ret;
  
- 	spin_unlock(&ei_local->page_lock);
- 	enable_irq_lockdep_irqrestore(dev->irq, &flags);
+ 	id = sdio_match_device(func, drv);
+ 	if (!id)
+ 		return -ENODEV;
+ 
++	/*
++	 * Set the function's block size to the largest supported by
++	 * both the function and the driver.
++	 */
++	block_size = min(drv->max_block_size, func->max_block_size);
++	sdio_claim_host(func);
++	ret = sdio_set_block_size(func, block_size);
++	sdio_release_host(func);
++	if (ret)
++		return ret;
++
+ 	return drv->probe(func, id);
+ }
+ 
+diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
+index 8aa4666..c16c536 100644
+--- a/drivers/mmc/core/sdio_cis.c
++++ b/drivers/mmc/core/sdio_cis.c
+@@ -93,9 +93,9 @@ static int cistpl_funce(struct sdio_func *func, unsigned fn,
+ 		if (size < 0x04 || buf[0] != 0)
+ 			goto bad;
+ 		/* TPLFE_FN0_BLK_SIZE */
+-		val = buf[1] | (buf[2] << 8);
++		func->max_block_size = buf[1] | (buf[2] << 8);
+ 		printk(KERN_DEBUG "%s: TPLFE_FN0_BLK_SIZE = %u\n",
+-		       sdio_func_id(func), val);
++		       sdio_func_id(func), func->max_block_size);
+ 		/* TPLFE_MAX_TRAN_SPEED */
+ 		val = speed_val[(buf[3] >> 3) & 15] * speed_unit[buf[3] & 7];
+ 		printk(KERN_DEBUG "%s: max speed = %u kbps\n",
+@@ -126,9 +126,9 @@ static int cistpl_funce(struct sdio_func *func, unsigned fn,
+ 		printk(KERN_DEBUG "%s: TPLFE_CSA_PROPERTY = 0x%02x\n",
+ 		       sdio_func_id(func), val);
+ 		/* TPLFE_MAX_BLK_SIZE */
+-		val = buf[12] | (buf[13] << 8);
++		func->max_block_size = buf[12] | (buf[13] << 8);
+ 		printk(KERN_DEBUG "%s: TPLFE_MAX_BLK_SIZE = %u\n",
+-		       sdio_func_id(func), val);
++		       sdio_func_id(func), func->max_block_size);
+ 		/* TPLFE_OCR */
+ 		val = buf[14] | (buf[15] << 8) | (buf[16] << 16) | (buf[17] << 24);
+ 		printk(KERN_DEBUG "%s: TPLFE_OCR = 0x%08x\n",
+diff --git a/drivers/mmc/core/sdio_io.c b/drivers/mmc/core/sdio_io.c
+index cc62ff7..e74e605 100644
+--- a/drivers/mmc/core/sdio_io.c
++++ b/drivers/mmc/core/sdio_io.c
+@@ -148,6 +148,29 @@ err:
+ EXPORT_SYMBOL_GPL(sdio_disable_func);
+ 
+ /**
++ *	sdio_set_block_size - set the block size of an SDIO function
++ *	@func: SDIO function to change
++ *	@blksz: new block size
++ */
++int sdio_set_block_size(struct sdio_func *func, unsigned short blksz)
++{
++	int ret;
++
++	ret = mmc_io_rw_direct(func->card, 1, 0, SDIO_FBR_BLKSIZE(func->num),
++			       blksz & 0xff, NULL);
++	if (ret)
++		return ret;
++	ret = mmc_io_rw_direct(func->card, 1, 0, SDIO_FBR_BLKSIZE(func->num) + 1,
++			       (blksz >> 8) & 0xff, NULL);
++	if (ret)
++		return ret;
++	func->block_size = blksz;
++	return 0;
++}
++
++EXPORT_SYMBOL_GPL(sdio_set_block_size);
++
++/**
+  *	sdio_readb - read a single byte from a SDIO function
+  *	@func: SDIO function to access
+  *	@addr: address to read
+diff --git a/include/linux/mmc/sdio_func.h b/include/linux/mmc/sdio_func.h
+index e34bc96..bfb0432 100644
+--- a/include/linux/mmc/sdio_func.h
++++ b/include/linux/mmc/sdio_func.h
+@@ -43,6 +43,9 @@ struct sdio_func {
+ 	unsigned short		vendor;		/* vendor id */
+ 	unsigned short		device;		/* device id */
+ 
++	unsigned short		max_block_size; /* max block size supported */
++	unsigned short		block_size;	/* current block size */
++
+ 	unsigned int		state;		/* function state */
+ #define SDIO_STATE_PRESENT	(1<<0)		/* present in sysfs */
+ 
+@@ -68,6 +71,8 @@ struct sdio_driver {
+ 	int (*probe)(struct sdio_func *, const struct sdio_device_id *);
+ 	void (*remove)(struct sdio_func *);
+ 
++	unsigned short max_block_size; /* max block size supported by driver */
++
+ 	struct device_driver drv;
+ };
+ 
+@@ -107,6 +112,8 @@ extern void sdio_release_host(struct sdio_func *func);
+ extern int sdio_enable_func(struct sdio_func *func);
+ extern int sdio_disable_func(struct sdio_func *func);
+ 
++extern int sdio_set_block_size(struct sdio_func *func, unsigned short blksz);
++
+ extern int sdio_claim_irq(struct sdio_func *func, sdio_irq_handler_t *handler);
+ extern int sdio_release_irq(struct sdio_func *func);
+ 
