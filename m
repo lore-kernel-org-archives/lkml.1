@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbXGaNvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbXGaNwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbXGaNvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbXGaNvH
+	id S1760300AbXGaNwk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXGaNwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:51:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52676 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753611AbXGaNvF (ORCPT
+	Tue, 31 Jul 2007 09:52:33 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:30091 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbXGaNwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:51:05 -0400
-Date: Tue, 31 Jul 2007 19:33:23 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Felipe Balbi <felipebalbi@users.sourceforge.net>
-cc: Akinobu Mita <akinobu.mita@gmail.com>, linux-kernel@vger.kernel.org,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       dm-devel@redhat.com
-Subject: Re: Crypto API Weirdnesses
-In-Reply-To: <31e679430707310643h670ffb1bg852f0e14eafa11a9@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0707311930340.26032@enigma.security.iitk.ac.in>
-References: <31e679430707301336v37bc7433jed09451ab60ad89a@mail.gmail.com> 
- <alpine.LFD.0.999.0707311837470.26032@enigma.security.iitk.ac.in> 
- <961aa3350707310626l24d1d910u75ed703d8d422082@mail.gmail.com> 
- <31e679430707310632u52f43fefg8313143953ccb9b3@mail.gmail.com> 
- <alpine.LFD.0.999.0707311916150.26032@enigma.security.iitk.ac.in>
- <31e679430707310643h670ffb1bg852f0e14eafa11a9@mail.gmail.com>
+	Tue, 31 Jul 2007 09:52:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eY9o/OAVlH2PLbwo2F6c2rGuJZqvnkFM3XKk1hz43/gPMSMRNPCAdKmBiKGW9mENE9cWqRUUOFIukTflFpYmx7tusaKheBN9z4G4sVA/GXfLtJbjXzWVLfJ3rucNmWYZD3+fNbeAjh5hCt7Mo7/HWzIw8zk9nMTzwTWR19xVIcw=
+Message-ID: <9a8748490707310652i27406292yf3e93ca78ef3bf32@mail.gmail.com>
+Date: Tue, 31 Jul 2007 15:52:30 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "2004 ruffneck" <ruffneck2004@yandex.ru>
+Subject: Re: How to enable XEN in 2.6.23-rcS kernel?
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <39811185887611@webmail12.yandex.ru>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <39811185887611@webmail12.yandex.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 31/07/07, 2004 ruffneck <ruffneck2004@yandex.ru> wrote:
+> Hello to everybody!
+>
+> I did read, that Lguest and Xen was merged to upstream and must be in 2.6.23-rc1 kernel, but I can't see it in "make menuconfig". So, what's the deal? Can anybody explain me, how to enable XEN support? Thanks.
 
+Go to "Processor type and features" - then enable "Paravirtualization
+support (EXPERIMENTAL)", you'll get a new option called "Enable
+support for Xen hypervisor".
 
-On Tue, 31 Jul 2007, Felipe Balbi wrote:
-
-> On 7/31/07, Satyam Sharma <satyam@infradead.org> wrote:
-> > [...]
-> > Ugh, you should at least be checking if you've built the kernel with the
-> > same config options :-) Of course, if you did a simple "make oldconfig"
-> > but still lost some config options, then that's definitely a regression...
-> > (was that the case here, btw?)
-> 
-> yeah... I was make oldconfig'ing :-p
-
-Hmm, can you send the 2.6.22-rc7 .config too? I'll try and reproduce
-this so we can see what went wrong ...
-
-
-Satyam
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
