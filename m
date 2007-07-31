@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940223AbXGaBxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940453AbXGaB5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940223AbXGaBxX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 21:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933642AbXGaBxL
+	id S940453AbXGaB5Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 21:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763623AbXGaB5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 21:53:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40957 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933578AbXGaBxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 21:53:10 -0400
-Date: Tue, 31 Jul 2007 11:53:00 +1000
-From: David Chinner <dgc@sgi.com>
-To: Ryan Bair <ryandbair@gmail.com>
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Repeated XFS corruption -Corruption of in-memory data detected
-Message-ID: <20070731015300.GM31489@sgi.com>
-References: <1b0b1fc90707300910va417055mb1e64126c1519c9f@mail.gmail.com>
+	Mon, 30 Jul 2007 21:57:14 -0400
+Received: from mailhost.nmt.edu ([129.138.4.52]:49322 "EHLO mailhost.nmt.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761554AbXGaB5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 21:57:13 -0400
+Date: Mon, 30 Jul 2007 19:57:10 -0600
+From: Valerie Henson <val@nmt.edu>
+To: Kyle McMartin <kyle@mcmartin.ca>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tulip-users@lists.sourceforge.net,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [TULIP] Need new maintainer
+Message-ID: <20070731015710.GA4196@rainbow>
+References: <20070730190412.GA16182@rainbow> <20070730193158.GA13808@fattire.cabal.ca>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1b0b1fc90707300910va417055mb1e64126c1519c9f@mail.gmail.com>
+In-Reply-To: <20070730193158.GA13808@fattire.cabal.ca>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[cc xfs@oss.sgi.com]
-
-On Mon, Jul 30, 2007 at 12:10:52PM -0400, Ryan Bair wrote:
-> Kernel: 2.6.18-4-amd64 (Debian 2.6.18.dfsg.1-12etch2) Debian Etch
-> System: Dell PowerEdge 1850
-> Processor: 3.2 GHz Intel Xeon w/ microcode v1.14a, Hyperthreading disabled.
-> RAM: 2x1GB ECC DDR-400
-> RAID Controller: Dell PERC5/E using megaraid driver
+On Mon, Jul 30, 2007 at 03:31:58PM -0400, Kyle McMartin wrote:
+> On Mon, Jul 30, 2007 at 01:04:13PM -0600, Valerie Henson wrote:
+> > The Tulip network driver needs a new maintainer!  I no longer have
+> > time to maintain the Tulip network driver and I'm stepping down.  Jeff
+> > Garzik would be happy to get volunteers.
+> > 
 > 
-> I got another unexpected error on my XFS partition today. I was able
-> to reboot the system normally and the journal recovered on the
-> following mount. Shortly thereafter, the error occurred again. After
-> this the filesystem was no longer able to be mounted as the error
-> would occur immediately.
-> 
-> The volume is on a 9.5TB LVM2 volume on a Dell MD1000 loaded with 15
-> 750GB drives in a RAID5 set. Writeback is disabled. Memtest86+ was run
-> on this system for 48 hours without fault. The system is otherwise
-> stable.
+> Since I already take care of a major consumer of these devices (parisc,
+> which pretty much all have tulip) I'm willing to take care of this.
+> Alternately, Grant is probably willing.
 
-<sigh>
+And I coulda handed you a suitcase full of cards and I missed my
+chance!
 
-You're the second person today to report a software RAID5+XFS corruption on
-the 2.6.18-4 Debian kernel. Almost the same signature as well - that is a
-corrupted free space btree.
+It's fine by me, although Jeff is the final arbiter.
 
-> XFS was able to repair the damage, but previously the drive returned
-> to its corrupted state within a few hours of heavy I/O.
+Thanks!
 
-The other report was a shutdown before corruption got to disk,
-so maybe they are different problems.
-
-Can you post the repair output so we can see what the damage was?
-Also, can you post your md/dm config so I can see if I can recreate
-a similar config?
-
-Also, seeing as the previous report was caught before corruption
-got to disk, I suspected memory corruption of some kind. Can
-you enable slab, vm and filesystem debugging for you kernel and
-run with that?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-VAL
