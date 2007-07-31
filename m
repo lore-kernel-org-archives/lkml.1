@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967622AbXGaDOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967810AbXGaDP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967622AbXGaDOt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 23:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967391AbXGaDNU
+	id S967810AbXGaDP0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967412AbXGaDNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 23:13:20 -0400
-Received: from mga03.intel.com ([143.182.124.21]:24523 "EHLO mga03.intel.com"
+	Mon, 30 Jul 2007 23:13:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:38983 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967277AbXGaDNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S967315AbXGaDNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 23:13:19 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
-   d="scan'208";a="256697417"
-Subject: [PATCH 3/5] x86_64 EFI support -v3: EFI runtime support
+   d="scan'208";a="256697420"
+Subject: [PATCH 5/5] x86_64 EFI support -v3: EFI document
 From: "Huang, Ying" <ying.huang@intel.com>
 To: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
@@ -21,165 +21,106 @@ To: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
 Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 11:12:59 +0800
-Message-Id: <1185851579.23149.28.camel@caritas-dev.intel.com>
+Date: Tue, 31 Jul 2007 11:13:03 +0800
+Message-Id: <1185851583.23149.30.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 03:13:10.0641 (UTC) FILETIME=[B968B610:01C7D320]
+X-OriginalArrivalTime: 31 Jul 2007 03:13:14.0385 (UTC) FILETIME=[BBA40010:01C7D320]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds runtime service support for EFI x86_64 system.
-
-The EFI support for emergency_restart and RTC clock is added. The EFI
-based implementation and legacy BIOS or CMOS based implementation are
-put in separate functions and are chosen based on the value of
-efi_enabled.
+This patch adds document for EFI x86_64 support. The boot parameters
+added are documented in Documentation/i386/zero-page.txt. The setup
+and operation guide of EFI based system is documented in
+Documentation/x86_64/uefi.txt.
 
 Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
 Signed-off-by: Huang Ying <ying.huang@intel.com>
 
 ---
 
- reboot.c |   11 ++++++++++-
- time.c   |   47 +++++++++++++++++++++++++++++++----------------
- 2 files changed, 41 insertions(+), 17 deletions(-)
+ i386/zero-page.txt |   18 ++++++++++++++----
+ x86_64/uefi.txt    |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 56 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.23-rc1/arch/x86_64/kernel/reboot.c
+Index: linux-2.6.23-rc1/Documentation/i386/zero-page.txt
 ===================================================================
---- linux-2.6.23-rc1.orig/arch/x86_64/kernel/reboot.c	2007-07-23 04:41:00.000000000 +0800
-+++ linux-2.6.23-rc1/arch/x86_64/kernel/reboot.c	2007-07-30 09:26:56.000000000 +0800
-@@ -9,6 +9,7 @@
- #include <linux/pm.h>
- #include <linux/kdebug.h>
- #include <linux/sched.h>
-+#include <linux/efi.h>
- #include <asm/io.h>
- #include <asm/delay.h>
- #include <asm/hw_irq.h>
-@@ -117,7 +118,7 @@
- 	pci_iommu_shutdown();
- }
+--- linux-2.6.23-rc1.orig/Documentation/i386/zero-page.txt	2007-07-30 11:28:45.000000000 +0800
++++ linux-2.6.23-rc1/Documentation/i386/zero-page.txt	2007-07-30 11:29:28.000000000 +0800
+@@ -31,11 +31,11 @@
+  0xb0 - 0x13f		Free. Add more parameters here if you really need them.
+  0x140- 0x1be		EDID_INFO Video mode setup
  
--void machine_emergency_restart(void)
-+static inline void bios_emergency_restart(void)
- {
- 	int i;
- 
-@@ -145,6 +146,14 @@
- 	}      
- }
- 
-+void machine_emergency_restart(void)
-+{
-+	if (efi_enabled)
-+		efi_emergency_restart();
-+	else
-+		bios_emergency_restart();
-+}
+-0x1c4	unsigned long	EFI system table pointer
+-0x1c8	unsigned long	EFI memory descriptor size
+-0x1cc	unsigned long	EFI memory descriptor version
++0x1c4	unsigned long	EFI system table pointer*
++0x1c8	unsigned long	EFI memory descriptor size*
++0x1cc	unsigned long	EFI memory descriptor version*
+ 0x1d0	unsigned long	EFI memory descriptor map pointer
+-0x1d4	unsigned long	EFI memory descriptor map size
++0x1d4	unsigned long	EFI memory descriptor map size*
+ 0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
+ 0x1e4	unsigned long	Scratch field for the kernel setup code
+ 0x1e8	char		number of entries in E820MAP (below)
+@@ -87,3 +87,13 @@
+ 0x2d0 - 0xd00		E820MAP
+ 0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
+ 0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
 +
- void machine_restart(char * __unused)
- {
- 	printk("machine restart\n");
-Index: linux-2.6.23-rc1/arch/x86_64/kernel/time.c
++Changes for x86_64 implementation:
++---------------------------------
++For alignment purposes, the following parameters are rearranged.
++
++0x1b8	unsigned long	EFI system table pointer
++0x1c0	unsigned long	EFI Loader signature
++0x1c4	unsigned long	EFI memory descriptor size
++0x1c8	unsigned long	EFI memory descriptor version
++0x1cc	unsigned long	EFI memory descriptor map size
+Index: linux-2.6.23-rc1/Documentation/x86_64/uefi.txt
 ===================================================================
---- linux-2.6.23-rc1.orig/arch/x86_64/kernel/time.c	2007-07-23 04:41:00.000000000 +0800
-+++ linux-2.6.23-rc1/arch/x86_64/kernel/time.c	2007-07-30 09:42:12.000000000 +0800
-@@ -27,6 +27,7 @@
- #include <linux/notifier.h>
- #include <linux/cpu.h>
- #include <linux/kallsyms.h>
-+#include <linux/efi.h>
- #include <linux/acpi.h>
- #ifdef CONFIG_ACPI
- #include <acpi/achware.h>	/* for PM timer frequency */
-@@ -89,13 +90,6 @@
- 	unsigned char control, freq_select;
- 
- /*
-- * IRQs are disabled when we're called from the timer interrupt,
-- * no need for spin_lock_irqsave()
-- */
--
--	spin_lock(&rtc_lock);
--
--/*
-  * Tell the clock it's being set and stop it.
-  */
- 
-@@ -143,14 +137,26 @@
- 	CMOS_WRITE(control, RTC_CONTROL);
- 	CMOS_WRITE(freq_select, RTC_FREQ_SELECT);
- 
--	spin_unlock(&rtc_lock);
--
- 	return retval;
- }
- 
- int update_persistent_clock(struct timespec now)
- {
--	return set_rtc_mmss(now.tv_sec);
-+	int retval;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.23-rc1/Documentation/x86_64/uefi.txt	2007-07-30 11:29:28.000000000 +0800
+@@ -0,0 +1,42 @@
++General note on [U]EFI x86_64 support
++-------------------------------------
 +
-+/*
-+ * IRQs are disabled when we're called from the timer interrupt,
-+ * no need for spin_lock_irqsave()
-+ */
++This provides documentation on [U]EFI support for x86_64 architecture.
++The nomenclature EFI and UEFI are used intechangeably in this document.
 +
-+	spin_lock(&rtc_lock);
-+	if (efi_enabled)
-+		retval = efi_set_rtc_mmss(now.tv_sec);
-+	else
-+		retval = set_rtc_mmss(now.tv_sec);
-+	spin_unlock(&rtc_lock);
++Although the tools below are _not_ needed for building the kernel,
++the needed bootloader support and associated tools for x86_64 platforms
++with EFI firmware and specifications are listed below.
 +
-+	return retval;
- }
- 
- void main_timer_handler(void)
-@@ -195,14 +201,11 @@
- 	return IRQ_HANDLED;
- }
- 
--unsigned long read_persistent_clock(void)
-+unsigned long read_cmos_clock(void)
- {
- 	unsigned int year, mon, day, hour, min, sec;
--	unsigned long flags;
- 	unsigned century = 0;
- 
--	spin_lock_irqsave(&rtc_lock, flags);
--
- 	do {
- 		sec = CMOS_READ(RTC_SECONDS);
- 		min = CMOS_READ(RTC_MINUTES);
-@@ -217,8 +220,6 @@
- #endif
- 	} while (sec != CMOS_READ(RTC_SECONDS));
- 
--	spin_unlock_irqrestore(&rtc_lock, flags);
--
- 	/*
- 	 * We know that x86-64 always uses BCD format, no need to check the
- 	 * config register.
-@@ -246,6 +247,20 @@
- 	return mktime(year, mon, day, hour, min, sec);
- }
- 
-+unsigned long read_persistent_clock(void)
-+{
-+	unsigned long flags, retval;
++1. UEFI specification:  http://www.uefi.org
 +
-+	spin_lock_irqsave(&rtc_lock, flags);
-+	if (efi_enabled)
-+		retval = efi_get_time();
-+	else
-+		retval = read_cmos_clock();
-+	spin_unlock_irqrestore(&rtc_lock, flags);
++2. Booting EFI64 enabled kernel requires boot loader support.
++Patches to elilo and gnu-efi library with x86_64 support and documentation
++have been submitted to respective project maintainers.
++	elilo: http://sourceforge.net/projects/elilo
++	gnu-efi library: http://sourceforge.net/projects/gnu-efi/
++	gnu-efi-3.0d release now supports [U]EFI x86_64.
 +
-+	return retval;
-+}
++3. The tool to convert ELF to PE-COFF image:
++	binutils-2.17.50.0.14 supports Intel64 EFI.
++	see http://www.kernel.org/pub/linux/devel/binutils/
++	[ elilo/gnu-efi with x86_64 support need this binutils support ]
 +
- /* calibrate_cpu is used on systems with fixed rate TSCs to determine
-  * processor frequency */
- #define TICK_COUNT 100000000
++4. x86_64 platform with EFI/UEFI firmware.
++
++Mechanics:
++---------
++- Apply the EFI64 kernel patches and build with the following configuration.
++	CONFIG_EFI=y
++	EFI_FB=y
++	CONFIG_FRAMEBUFFER_CONSOLE=y
++	CONFIG_EFI_VARS=y
++
++- Create a VFAT partition on the disk
++- Copy the following to the VFAT partition:
++	elilo bootloader with x86_64 support and elilo configuration file
++	efi64 kernel image and initrd. Instructions on building elilo
++	and its dependencies can be found in the elilo sourceforge project.
++- Boot to EFI shell and invoke elilo choosing efi64 kernel image
++- On UEFI2.0 firmware systems, pass vga=normal for boot messages to show up
++  console. You can pass along the 'resume' boot option to test suspend/resume.
