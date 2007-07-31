@@ -1,52 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763039AbXGaNdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762613AbXGaNfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763039AbXGaNdc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbXGaNdO
+	id S1762613AbXGaNfQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759892AbXGaNe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:33:14 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:7560 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761125AbXGaNdM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:33:12 -0400
-Date: Tue, 31 Jul 2007 15:33:32 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, stern@rowland.harvard.edu
-Subject: Re: [PATCH 7/7] sysfs: make sysfs_addrm_finish() return void
-Message-ID: <20070731153332.36debdd6@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11858769093479-git-send-email-htejun@gmail.com>
-References: <11858769082982-git-send-email-htejun@gmail.com>
-	<11858769093479-git-send-email-htejun@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Jul 2007 09:34:59 -0400
+Received: from dsl.myri.com ([64.172.73.26]:1937 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759457AbXGaNe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 09:34:57 -0400
+Message-ID: <46AF3A6B.2040006@myri.com>
+Date: Tue, 31 Jul 2007 09:34:35 -0400
+From: Andrew Gallatin <gallatin@myri.com>
+User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+MIME-Version: 1.0
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP traffic
+References: <200707301724.33865.ossthema@de.ibm.com> <46AE4AC9.6060109@myri.com> <200707311233.31227.ossthema@de.ibm.com>
+In-Reply-To: <200707311233.31227.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 19:15:09 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+Jan-Bernd Themann wrote:
+> On Monday 30 July 2007 22:32, Andrew Gallatin wrote:
 
-> With the previous sysfs_add_one() update, there is only one user of
-> the return value of sysfs_addrm_finish() and the user can switch to
-> testing @sd easily.  Make sysfs_addrm_finish() return void for cleaner
-> semantics as suggested by Satyam Sharma.
+>> Second, you still need to set skb->ip_summed = CHECKSUM_UNNECESSARY
+>> when modified packets are flushed, else the stack will see bad
+>> checksums for packets from CHECKSUM_COMPLETE drivers using the
+>> skb interface.  Fixed in the attached patch.
 > 
-> This patch doesn't introduce any noticeable behavior change.
+> I thought about it... As we do update the TCP checksum for aggregated
+> packets we could add a second ip_summed field in the net_lro_mgr struct 
+> used for aggregated packets to support HW that does not have any checksum helper
+> functionality. These drivers could set this ip_summed field to CHECKSUM_NONE, 
+> and thus leave the checksum check to the stack. I'm not sure if these old devices benefit
+> a lot from LRO. So what do you think?
+
+This might be handy, and it would also fix the problem with
+CHECKSUM_PARTIAL drivers using the skb interface by allowing them
+to set it to CHECKSUM_UNNECESSARY.
+
+
+>> Fourth, I did some traffic sniffing to try to figure out what's going
+>> on above, and saw tcpdump complain about bad checksums.  Have you tried
+>> running tcpdump -s 65535 -vvv?  Have you also seen bad checksums?
+>> I seem to see this for both page- and skb-based versions of the driver.
+>>
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Satyam Sharma <satyam.sharma@gmail.com>
-> ---
->  fs/sysfs/dir.c   |    7 +------
->  fs/sysfs/inode.c |    7 +++++--
->  fs/sysfs/sysfs.h |    2 +-
->  3 files changed, 7 insertions(+), 9 deletions(-)
-> 
-Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+> Hmmm, can't confirm that. For our skb-based version I see
+> correct checksums for aggregated packets and for the page-based version as well.
+> I used: (tcpdump -i ethX -s 0 -w dump.bin) in combination with ethereal.
+> Don't see problems as well with your tcpdump command.
+
+I'm still trying to get a handle on this.  It happens both with
+page based and skb based receive for me..  I would not be
+surprised if I was doing something wrong in myri10ge.  But
+I don't see it without LRO, or with my LRO.  I'll let you
+know when I figure it out..
+
+In the meantime, in case you have any insight, I've left a
+capture of a small "netcat" transfer of a 64KB file full
+of zeros at http://www.myri.com/staff/gallatin/lro/netcat_dump.bz2
+
+Drew
+
