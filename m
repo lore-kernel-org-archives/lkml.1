@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932842AbXGaRyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbXGaRyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932842AbXGaRyA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbXGaRxu
+	id S932476AbXGaRyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765280AbXGaRxz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:53:50 -0400
-Received: from ppsw-4.csi.cam.ac.uk ([131.111.8.134]:39594 "EHLO
-	ppsw-4.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbXGaRxs (ORCPT
+	Tue, 31 Jul 2007 13:53:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49644 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762472AbXGaRxy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:53:48 -0400
-X-Greylist: delayed 3020 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 13:53:48 EDT
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-From: Mark Williamson <mark.williamson@cl.cam.ac.uk>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Date: Tue, 31 Jul 2007 18:03:06 +0100
-User-Agent: KMail/1.9.6
-Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu>
-In-Reply-To: <20070731163656.GC22350@filer.fsl.cs.sunysb.edu>
+	Tue, 31 Jul 2007 13:53:54 -0400
+Date: Tue, 31 Jul 2007 23:36:10 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Greg KH <gregkh@suse.de>
+cc: Andreas Schwab <schwab@suse.de>, WANG Cong <xiyou.wangcong@gmail.com>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci
+ subsystem.
+In-Reply-To: <20070731174755.GA8592@suse.de>
+Message-ID: <alpine.LFD.0.999.0707312334260.28746@enigma.security.iitk.ac.in>
+References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
+ <20070731125443.880871000@hawkeye.stone.uk.eu.org> <200707311553.29090.borntraeger@de.ibm.com>
+ <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in>
+ <20070731144619.GA8183@localhost.localdomain> <20070731161051.GA7490@suse.de>
+ <jeir80y27m.fsf@sykes.suse.de> <20070731174755.GA8592@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311803.08698.mark.williamson@cl.cam.ac.uk>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Really the only sane way of keeping track of whiteouts seems some external
-> store. We did an experiment with Unionfs, and moving the whiteout handling
-> to effectively a "library" that did all the dirty work cleaned up the code
-> considerably [2,3].
 
-What about keeping track of whiteouts in a special file (or files) in the top 
-level filesystem of the union?  For instance, having a /.whiteouts file at 
-the root of the top FS in the stack, instead of storing union-specific data 
-in the flags / inode numbers of the lower levels.
 
-This file could also e.g. store the UUID of the lower level FS (if 
-appropriate) so that in subsequent mounts (which might attempt a union with a 
-different lower level branch) you can tell if the whiteouts have meaning.  
-The whiteout history could be flushed by directly mounting the FS and doing 
-rm .whiteouts.
+On Tue, 31 Jul 2007, Greg KH wrote:
 
-This might avoid requiring a store external to the stack of filesystems and I 
-believe it would solve the problem with shared branches and arbitrary 
-stacking that you described?
+> On Tue, Jul 31, 2007 at 06:20:29PM +0200, Andreas Schwab wrote:
+> > Greg KH <gregkh@suse.de> writes:
+> > 
+> > > On Tue, Jul 31, 2007 at 10:46:19PM +0800, WANG Cong wrote:
+> > >> However, I think using resource_size_t is a bit better than unsigned long,
+> > >> so that we don't need to check the defination of it.
+> > >> 
+> > >> - res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
+> > >> + res->start = (resource_size_t)kmalloc(*size, GFP_KERNEL);
+> > >> 
+> > >> Is this change OK?
+> > >
+> > > Yes, that is the proper cast to have here.
+> > 
+> > It will generate a warning when resoure_size_t is 64bit on a 32bit arch.
+> 
+> How?
 
-I guess a rather similar effect could be had by somehow storing loopback 
-mountable ODF filesystems in the top layer of a union somewhere (e.g. with 
-the default path /.odf) and allowing the user to specify an alternate 
-location at mount time if necessary.  So maybe these approaches are quite 
-similar after all...
+warning: cast from pointer to integer of different size
 
-Cheers,
-Mark
+(it's from smaller to larger size, so not really truncation,
+but gcc does barf)
 
--- 
-Dave: Just a question. What use is a unicyle with no seat?  And no pedals!
-Mark: To answer a question with a question: What use is a skateboard?
-Dave: Skateboards have wheels.
-Mark: My wheel has a wheel!
+> And if so, what should the proper cast be?
+
+sizeof(unsigned long) == sizeof(void *) should always be true.
+
+
+Satyam
