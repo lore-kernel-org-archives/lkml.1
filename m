@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXGaXpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762471AbXGaXpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759980AbXGaXpg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbXGaXp0
+	id S1762471AbXGaXpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 19:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbXGaXp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:45:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44707 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752024AbXGaXpY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 19:45:24 -0400
-Date: Tue, 31 Jul 2007 16:43:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bongani Hlope <bonganilinux@mweb.co.za>
-Cc: jgarzik@pobox.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [OOPS] 2.6.23-rc1 Seems to be network related
-Message-Id: <20070731164350.9084f5de.akpm@linux-foundation.org>
-In-Reply-To: <200708010135.23421.bonganilinux@mweb.co.za>
-References: <200708010135.23421.bonganilinux@mweb.co.za>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Jul 2007 19:45:27 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:49084 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753326AbXGaXpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 19:45:25 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch] clean Modules.symvers in external module dirs
+Date: Tue, 31 Jul 2007 19:45:34 -0400
+User-Agent: KMail/1.9.7
+Cc: LKML <linux-kernel@vger.kernel.org>
+References: <200707311938.45116.vapier@gentoo.org>
+In-Reply-To: <200707311938.45116.vapier@gentoo.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart53936386.PZOYp0yayc";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200707311945.34672.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 01:35:23 +0200
-Bongani Hlope <bonganilinux@mweb.co.za> wrote:
+--nextPart53936386.PZOYp0yayc
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I got this partial Oops on my work laptop (DELL D800), while using the linux 
-> 2.6.23-rc1 kernel. I've been using this kernel ever since it was released and 
-> this is the first and only time it did not boot. It was around the time it 
-> should have been trying to connect to my linksys wireless router (which has 
-> been working fine everyday since the 2.6.23-rc1 kernel was released).
-> 
-> I copied what was on screen by hand, so some info is missing. I don't know how 
-> to reproduce it.
-> 
-> Call Trace:
-> [<c0104cbc>] show_trace_log_lvl+0x1a/0x2f
-> [<c0104d6c>] show_stack_log_lvl+0x9b/0xa3
-> [<c0104f36>] show_registers+0x1c2/0x2db
-> [<c0105151>] die+0x02/0x1de
-> [<c01052b6>] do_trap+0x89/0xa2
-> [<c010558e>] do_invalid_op+0x88/0x92
-> [<c035a162>] error_code+0x6a/0x70
-> [<c0114efa>] kmap_atomic+0xe/0x10
-> [<c014a29c>] get_page_from_freelist+0x24c/0x3...
-> [<c015dd06>] __alloc_pages+0x53/0x27d
-> [<c015da60>] kmem_cache_alloc+0x32/0x68
-> [<c02e5065>] dst_alloc+0x28/0x60
-> [<c02f45fe>] ip_route_input+0x9b9/0xbba
-> [<c0314835>] arp_process+0x155/0x4e1
-> [<c0314caa>] arp_rcv+0xe9/0xfd
-> [<c02e1660>] netif_receive_skb+0x16e/0x1eb
-> [<c02e2efa>] process_backlog+0x71/0xda
-> [<c02e2fb9>] net_rx_action+0x56/0xee
-> [<c011f437>] __do_softirq+0x38/0x7a
-> [<c0106145>] do_soft_irq+0x41/0x91
-> [<c011f3c5>] irq_exit+0x2c/0x66
-> [<c010644a>] do_IRQ+0xb7/0xcd
-> [<c01047eb>] common_interrupt+0x23/0x28
-> [<c0151f87>] handle_mm_fault+0x1fe/0x57e
-> [<c035a162>] error_code+0x6a/0x70
-> =======================
-> EIP: [<c0114e87>] kmap_atomic_prot+0x27/0x8..
+At the moment, running `make clean` in an external module directory does a
+nice job of cleaning up with one exception: it leaves behind Modules.symver=
+s.=20
+Attached patch adds this file to the clean list for external modules.
 
-Thanks.  Commit b8c1c5da1520977cb55a358f20fc09567d40cad9 should
-have fixed this.
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+=2D--
+err it'd help if i actually prefixed the external directory
+
+diff --git a/Makefile b/Makefile
+index dfe3d16..1db97d6 100644
+=2D-- a/Makefile
++++ b/Makefile
+@@ -1253,8 +1253,10 @@ $(clean-dirs):
+ 	$(Q)$(MAKE) $(clean)=3D$(patsubst _clean_%,%,$@)
+=20
+ clean:	rm-dirs :=3D $(MODVERDIR)
++clean: rm-files :=3D $(KBUILD_EXTMOD)/Module.symvers
+ clean: $(clean-dirs)
+ 	$(call cmd,rmdirs)
++	$(call cmd,rmfiles)
+ 	@find $(KBUILD_EXTMOD) $(RCS_FIND_IGNORE) \
+ 		\( -name '*.[oas]' -o -name '*.ko' -o -name '.*.cmd' \
+ 		-o -name '.*.d' -o -name '.*.tmp' -o -name '*.mod.c' \) \
+
+--nextPart53936386.PZOYp0yayc
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.5 (GNU/Linux)
+
+iQIVAwUARq/JnkFjO5/oN/WBAQKNoRAAsjrYUP3zXXFMhrUSRhNP/LdRe/TlICFz
+tb2hRzZuznpuczyurrLSJJI4IOPJ1YdLjntUvzoARStrfXKPouCNvM0P5hYdcLOS
+trljh7/DEYZEmNz4M+EDEYvVkrfzFpxorp430AP3pc5iUcbVN/fuRwSvyqFgv1k6
+IlP1UZ5L9ZlCksPQyKwtZs9NZY85YB6IQXvGNvJ5NdIJ8aZ0d1kuV3K7l0ZYDEkL
+kDMz6DAtokZGhCdqO3Q81xxKfCoocdPIOfrkzbwPpbXgYag5OycCHwT9kBcc+gSE
+TlG4Uo7tk0EtA1aTx8Xkel+ynEnMaEZqoAngH65E/LYDa1KZaLzXIis5ZGsWxrq6
+w2b+VTyGHj2Besy80Nn/vHpnpnCQ/QovMVu5qz7AgDA4dtyBQXVC7wTrii3iHCaa
+2Jeaq7Gg9TaaCyyTB+JRbMKKNez59RX2/pxBkSghYBRvBT6Fkfc9IPmHGS3AnFEA
+/Sf0hg1nKY4ZZf9g0W5RtR4oZhiBJxTC005RHuMflyb9qbZRDtGhuBKcNHKrIKpW
+weDxVQXEOSBbChUojitYNjtS3xbP8bEL3ItPmTPoGugr4M47fWjABhDYlflEGMmo
+UMm93Kz1EiRj2swNE9s/yy9jASWpGiTb2pX0fV+sp2Bx4VdB4PRVu70BAU3FKKIg
+jWjGwjNe/vo=
+=pf/5
+-----END PGP SIGNATURE-----
+
+--nextPart53936386.PZOYp0yayc--
