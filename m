@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbXGaLEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758079AbXGaLML@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbXGaLEw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755878AbXGaLEo
+	id S1758079AbXGaLML (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:12:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXGaLL6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:04:44 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37542 "EHLO amd.ucw.cz"
+	Tue, 31 Jul 2007 07:11:58 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:35705 "EHLO amd.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751701AbXGaLEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:04:44 -0400
-Date: Tue, 31 Jul 2007 13:04:58 +0200
+	id S1755365AbXGaLL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 07:11:57 -0400
+Date: Tue, 31 Jul 2007 13:12:08 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "Huang, Ying" <ying.huang@intel.com>, nigel@nigel.suspend2.net,
        "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
        Alan Stern <stern@rowland.harvard.edu>,
        Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
        linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
        Kexec Mailing List <kexec@lists.infradead.org>
 Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
-Message-ID: <20070731110458.GA1777@elf.ucw.cz>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+Message-ID: <20070731111208.GA1778@elf.ucw.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com> <20070731091004.GA2022@elf.ucw.cz> <1185873924.23149.86.camel@caritas-dev.intel.com> <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1184483593.1898.98.camel@caritas-dev.intel.com>
+In-Reply-To: <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
@@ -32,50 +32,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> 3. Boot kernel compiled for normal usage, the reserved crash kernel
->    memory region must be added to kernel command line as following:
+> >> >  
+> >> > +/* Adds the kexec_backup= command line parameter to command line. */
+> >> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
+> >> > +{
+> >> > +	int cmdlen, len, align = 1024;
+> >> > +	char str[30], *ptr;
+> >> > +
+> >> > +	/* Passing in kexec_backup=xxxK format. Saves space required
+> >> > +	 * in cmdline. Ensure 1K alignment*/
+> >> > +	if (addr%align)
+> >> > +		return -1;
+> >> > +	addr = addr/align;
+> >> > +	ptr = str;
+> >> > +	strcpy(str, " kexec_backup=");
+> >> > +	ptr += strlen(str);
+> >> > +	ultoa(addr, ptr);
+> >> > +	strcat(str, "K");
+> >> > +	len = strlen(str);
+> >> > +	cmdlen = strlen(cmdline) + len;
+> >> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+> >> > +		die("Command line overflow\n");
+> >> > +	strcat(cmdline, str);
+> >> > +	return 0;
+> >> > +}
+> >> 
+> >> This part did not apply for me -- it seems crashdump related and I did
+> >> not have that applied. Is it critical?
+> >
+> > This is needed for kexec_jump to work properly. Which version of
+> > kexec-tools do you use? This patch is against 1.101. The kdump patch
+> > must be applied before this patch is applied.
 > 
->    crashkernel=<XX>M@<XX>M
-> 
->    Where, <XX> should be replaced by the real memory size and
-> position.
+> Please work against the kexec-tools-testing tree, if you can.
+> All of the outstanding patches should be there.
 
-I used crashkernel=64M@64M .
+So
+git://git.kernel.org/pub/scm/linux/kernel/git/horms/kexec-tools-testing.git
+is the right tree to use?
 
-
-> 4. Load kernel compiled for hibernating usage as a crashdump kernel
->    with kexec, the same kernel as that of 3 can be used if
->    CONFIG_RELOCATABLE=y is selected. The kernel command line option as
->    following must be appended to kernel command line.
-> 
->    kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
-> 
->    For example, the shell command line can be as follow:
-> 
->    kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
->        kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-
-I think I followed the instructions closely. Now I'm trying to do 
-
-kexec -p /data/l/linux/vmlinux --args-linux --append="init=/bin/bash
-kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-
-but it tells me:
-
-Invalid memory segment 0x100000 - 0x7a0fff
-
-(and nothing in dmesg) 
-
-If I try to load bzImage (corresponding to vmlinux I tried to use),  I
-get:
-
-root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage --append="init=/bin/bash kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-Could not find a free area of memory of 9000 bytes...
-locate_hole failed
-root@amd:~#
-
-What am I doing wrong?
-								Pavel
+									Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
