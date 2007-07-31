@@ -1,40 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939817AbXGaA1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940242AbXGaA2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939817AbXGaA1T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 20:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbXGaA1K
+	id S940242AbXGaA2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 20:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936407AbXGaA2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 20:27:10 -0400
-Received: from khc.piap.pl ([195.187.100.11]:34926 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762681AbXGaA1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 20:27:09 -0400
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Sasa Ostrouska <casaxa@gmail.com>, Avuton Olrich <avuton@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: forcedeth ?
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>
-	<3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>
-	<dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-	<46AE6029.60308@googlemail.com>
-	<dcf706c60707301510n6c2b649p447396fc042c25e5@mail.gmail.com>
-	<46AE6372.20808@googlemail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 31 Jul 2007 02:27:07 +0200
-In-Reply-To: <46AE6372.20808@googlemail.com> (Gabriel C.'s message of "Tue, 31 Jul 2007 00:17:22 +0200")
-Message-ID: <m3fy35mn8k.fsf@maximus.localdomain>
+	Mon, 30 Jul 2007 20:28:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33394 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755079AbXGaA2B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 20:28:01 -0400
+Date: Tue, 31 Jul 2007 06:10:21 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v3 -mm 9/9] netconsole: Support dynamic reconfiguration
+ using configfs
+In-Reply-To: <20070730171306.49b49818.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707310603570.17287@enigma.security.iitk.ac.in>
+References: <20070730024741.10828.48209.sendpatchset@enigma.security.iitk.ac.in>
+ <20070730024910.10828.44721.sendpatchset@enigma.security.iitk.ac.in>
+ <20070730171306.49b49818.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabriel C <nix.or.die@googlemail.com> writes:
 
-> Yes udev does this based on the MAC address but AFAIK forcedeth is
-> 'special' for some reason 
-> ( which I can really remember now and gets on each boot a new MAC
-> address or alike )
 
-Must be a bug.
--- 
-Krzysztof Halasa
+On Mon, 30 Jul 2007, Andrew Morton wrote:
+
+> On Mon, 30 Jul 2007 08:19:10 +0530
+> Satyam Sharma <satyam@infradead.org> wrote:
+> 
+> > +/*
+> > + * Wrapper over simple_strtol (base 10) with sanity and range checking.
+> > + * We return (signed) long only because we may want to return errors.
+> > + * Do not use this to convert numbers that are allowed to be negative.
+> > + */
+> > +static long strtol10_check_range(const char *cp, long min, long max)
+> > +{
+> > +	long ret;
+> > +	char *p = (char *) cp;
+> > +
+> > +	WARN_ON(min < 0);
+> > +	WARN_ON(max < min);
+> > +
+> > +	ret = simple_strtol(p, &p, 10);
+> > +
+> > +	if (*p && (*p != '\n')) {
+> > +		printk(KERN_ERR "netconsole: invalid input\n");
+> > +		return -EINVAL;
+> > +	}
+> > +	if ((ret < min) || (ret > max)) {
+> > +		printk(KERN_ERR "netconsole: input %ld must be between "
+> > +				"%ld and %ld\n", ret, min, max);
+> > +		return -EINVAL;
+> > +	}
+> > +
+> > +	return ret;
+> > +}
+> 
+> There's probably other code around the place which does this.  It might
+> be worth making this function a general-purpose thing.
+
+Probably, yes, I thought along similar lines.
+
+[ BTW somewhere in the 9/9 patch I remember having to define a
+  __U16_MAX as well. That could be pushed out to some generic
+  or appropriate header as well, possibly. ]
+
+
+Satyam
