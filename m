@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764034AbXGaPrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764239AbXGaPun@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764034AbXGaPrK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbXGaPq5
+	id S1764239AbXGaPun (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:50:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbXGaPud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:46:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54210 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754825AbXGaPq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:46:56 -0400
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Cc: "2004 ruffneck" <ruffneck2004@yandex.ru>, linux-kernel@vger.kernel.org,
-       virtualization@osdl.org
-Subject: Re: How to enable XEN in 2.6.23-rcS kernel?
-References: <39811185887611@webmail12.yandex.ru>
-	<9a8748490707310652i27406292yf3e93ca78ef3bf32@mail.gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 31 Jul 2007 18:41:29 +0200
-In-Reply-To: <9a8748490707310652i27406292yf3e93ca78ef3bf32@mail.gmail.com>
-Message-ID: <p731weor0ee.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Tue, 31 Jul 2007 11:50:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:2381 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754726AbXGaPuc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 11:50:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=TXiXqMa2h55vV5nK/LbMTGP6OCYJmFQeHJSDE46F2afIo4KH2cpcHpOMKvUrgSE78DJaWikaSAdZ2BrS4Zr2HrYKf//lxCuzfT122o48IpIlUC3rWYaUzSN4EhRZSdwnzFNH7WagT6TuV5yxw8BnjRAeOBd+M+xz4vy8G4hrK1g=
+Message-ID: <2c0942db0707310850n5b30987di5fe9c9c91eb525d6@mail.gmail.com>
+Date: Tue, 31 Jul 2007 08:50:31 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: trelane@digitasaru.net, "Al Viro" <viro@ftp.linux.org.uk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: inotify and /proc/<pid>
+In-Reply-To: <20070731032521.GD6812@digitasaru.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070731021615.GB6812@digitasaru.net>
+	 <20070731031720.GF21089@ftp.linux.org.uk>
+	 <20070731032521.GD6812@digitasaru.net>
+X-Google-Sender-Auth: 161aecf9669600f8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jesper Juhl" <jesper.juhl@gmail.com> writes:
+On 7/30/07, Joseph Pingenot <trelane@digitasaru.net> wrote:
+> What's the way to check for a process exiting without spinning?
 
-> On 31/07/07, 2004 ruffneck <ruffneck2004@yandex.ru> wrote:
-> > Hello to everybody!
-> >
-> > I did read, that Lguest and Xen was merged to upstream and must be in 2.6.23-rc1 kernel, but I can't see it in "make menuconfig". So, what's the deal? Can anybody explain me, how to enable XEN support? Thanks.
-> 
-> Go to "Processor type and features" - then enable "Paravirtualization
-> support (EXPERIMENTAL)", you'll get a new option called "Enable
-> support for Xen hypervisor".
+I think you can get it from the taskstats interface, though I haven't
+tried it. See Documentation/accounting/ for details.
 
-Perhaps it would be clearer to make CONFIG_PARAVIRT implicit.
-As in Xen/vmi/lguest being one level higher and selecting paravirt 
-implicitely. Unless someone has a good reason against that i'll
-do that.
-
--Andi
+Ray
