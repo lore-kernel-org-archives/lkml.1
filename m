@@ -1,127 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbXGaIcZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbXGaIcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753347AbXGaIcZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:32:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXGaIcQ
+	id S1754722AbXGaIcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbXGaIc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:32:16 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:59676 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbXGaIcP (ORCPT
+	Tue, 31 Jul 2007 04:32:28 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:37849 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753465AbXGaIcZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:32:15 -0400
-Message-ID: <46AEF347.9030007@netcom.eu>
-Date: Tue, 31 Jul 2007 10:31:03 +0200
-From: David Engraf <david.engraf@netcom.eu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de,
-       linux-usb-devel@lists.sourceforge.net, david.engraf@netcom.eu
-Subject: [PATCH] USB BIOS early handoff only when the we the driver is configured
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX18FgYzthcLMtSCorDBeBwW0LVfn2LMF8llidOB
- o4NZvS0XV4z06z//auM2UwvH8yAJvdBSgQFkI6As1/JaRUjURz
- 4dMLSgJQuvslgTNYIJkAw==
+	Tue, 31 Jul 2007 04:32:25 -0400
+Date: Tue, 31 Jul 2007 03:32:23 -0500
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070731083223.GE5469@schatzie.adilger.int>
+Mail-Followup-To: Jan Blunck <jblunck@suse.de>,
+	Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bharata B Rao <bharata@linux.vnet.ibm.com>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731034515.GD25876@thunk.org> <20070731074436.GE5101@hasse.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070731074436.GE5101@hasse.suse.de>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When CONFIG_USB_UHCI_HCD, CONFIG_USB_OHCI_HCD or CONFIG_USB_EHCI_HCD is
-not configured we don't need to call the quirk_usb_handoff_xxxx function
-in driver/usb/host/pci_quiks.c.
+On Jul 31, 2007  09:44 +0200, Jan Blunck wrote:
+> Ok, this is pretty similar to the way I implemented this for tmpfs. The
+> problem is that the union mount code is explicitly checking if the filesystem
+> is supporting whiteout. I used to use a new filesystem flag (FS_WHITEOUT) for
+> this but thought that disk filesystem like ext2/3/4 will have problem with
+> that if you mount an old image. So I guess I still need a feature flag.
 
-I think the kernel shouldn't take the control over the usb controller
-when we don't have the driver for it,
-so with this patch the kernel takes the control only when the driver is
-configured.
+You also need whiteout support for extents.  This could be done with
+unwritten extents potentially, or as I previously proposed (RFC) in
+linux-ext4.
 
-
-linux-2.6.22.1
-
-diff -puN drivers/usb/host/pci-quirks_orig.c drivers/usb/host/pci-quirks.c
---- drivers/usb/host/pci-quirks_orig.c    2007-07-10 20:56:30.000000000
-+0200
-+++ drivers/usb/host/pci-quirks.c    2007-07-31 09:55:28.000000000 +0200
-@@ -142,6 +142,7 @@ static inline int io_type_enabled(struct
- #define pio_enabled(dev) io_type_enabled(dev, PCI_COMMAND_IO)
- #define mmio_enabled(dev) io_type_enabled(dev, PCI_COMMAND_MEMORY)
- 
-+#ifdef CONFIG_USB_UHCI_HCD
- static void __devinit quirk_usb_handoff_uhci(struct pci_dev *pdev)
- {
-     unsigned long base = 0;
-@@ -159,12 +160,14 @@ static void __devinit quirk_usb_handoff_
-     if (base)
-         uhci_check_and_reset_hc(pdev, base);
- }
-+#endif
- 
- static int __devinit mmio_resource_enabled(struct pci_dev *pdev, int idx)
- {
-     return pci_resource_start(pdev, idx) && mmio_enabled(pdev);
- }
- 
-+#ifdef CONFIG_USB_OHCI_HCD
- static void __devinit quirk_usb_handoff_ohci(struct pci_dev *pdev)
- {
-     void __iomem *base;
-@@ -209,7 +212,9 @@ static void __devinit quirk_usb_handoff_
- 
-     iounmap(base);
- }
-+#endif
- 
-+#ifdef CONFIG_USB_EHCI_HCD
- static void __devinit quirk_usb_disable_ehci(struct pci_dev *pdev)
- {
-     int wait_time, delta;
-@@ -346,16 +351,24 @@ static void __devinit quirk_usb_disable_
- 
-     return;
- }
--
-+#endif
- 
- 
- static void __devinit quirk_usb_early_handoff(struct pci_dev *pdev)
- {
-+#ifdef CONFIG_USB_UHCI_HCD
-     if (pdev->class == PCI_CLASS_SERIAL_USB_UHCI)
-         quirk_usb_handoff_uhci(pdev);
--    else if (pdev->class == PCI_CLASS_SERIAL_USB_OHCI)
-+#endif
-+
-+#ifdef CONFIG_USB_OHCI_HCD
-+    if (pdev->class == PCI_CLASS_SERIAL_USB_OHCI)
-         quirk_usb_handoff_ohci(pdev);
--    else if (pdev->class == PCI_CLASS_SERIAL_USB_EHCI)
-+#endif
-+
-+#ifdef CONFIG_USB_EHCI_HCD
-+    if (pdev->class == PCI_CLASS_SERIAL_USB_EHCI)
-         quirk_usb_disable_ehci(pdev);
-+#endif
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, quirk_usb_early_handoff);
-
-
-Thanks
-
-David Engraf
-
- 
-
- 
-Netcom Sicherheitstechnik GmbH
-Rheinallee 189
-55120 Mainz
-Tel: 	+49 6131 6305 0
-Fax: 	+49 6131 6305 40
-Email: 	david.engraf@netcom.eu
-
- 
-Sitz der Gesellschaft: Mainz
-Registergericht: Amtsgericht Mainz, 14HRB3411
-Geschäftsführer: Peter Otto
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
