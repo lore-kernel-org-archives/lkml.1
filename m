@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXGaR5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932965AbXGaR6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932244AbXGaR5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760506AbXGaR5L
+	id S932965AbXGaR6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761653AbXGaR6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:57:11 -0400
-Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:46451 "EHLO
-	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759722AbXGaR5J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:57:09 -0400
-Message-ID: <46AF77F4.2000003@opengridcomputing.com>
-Date: Tue, 31 Jul 2007 12:57:08 -0500
-From: Steve Wise <swise@opengridcomputing.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 31 Jul 2007 13:58:22 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4488 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760506AbXGaR6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:58:21 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 30] drivers/ide/arm/icside.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 19:58:20 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       rmk@arm.linux.org.uk
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.23 1/2] Make the iw_cxgb3 module parameters writable.
-References: <20070729201226.31659.85900.stgit@dell3.ogc.int> <adad4y9skxm.fsf@cisco.com>
-In-Reply-To: <adad4y9skxm.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707311958.20683.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
-> ugh, missed these before my last merge...
-> 
-> anyway:
-> 
-> why do we want to parameters writable?  a good changelog tells me
-> what, why and how, and this changelog just covered the "what".  Also,
-> I assume you've checked that it's OK for these variables to change at
-> any time?
+Is this a bug? In original verison memset cleared sizeof(state) bytes
+instead of sizeof(*state). If it was intentional then this patch is invalid.
+If not intentional -> valid :) Please review.
 
-I want to be able to changes these parameters at run time.  Eventually, 
-if we might want these parameters as rdma connection setup parameters. 
-For now, its useful to be able to set them without reloading.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Also, it is safe to change them at any time.  All of these are read once 
-and utilized at connection setup.  So changing them is safe in that 
-existing connections aren't affected, and only subsequent connections 
-will utilize the new values.
+ drivers/ide/arm/icside.c | 18883 -> 18849 (-34 bytes)
 
-Sorry for the terse changelog...
+ drivers/ide/arm/icside.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+--- linux-2.6.23-rc1-mm1-a/drivers/ide/arm/icside.c	2007-07-26 13:07:41.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/ide/arm/icside.c	2007-07-31 11:32:27.000000000 +0200
+@@ -682,13 +682,12 @@ icside_probe(struct expansion_card *ec,
+ 	if (ret)
+ 		goto out;
 
-Steve.
+-	state = kmalloc(sizeof(struct icside_state), GFP_KERNEL);
++	state = kzalloc(sizeof(struct icside_state), GFP_KERNEL);
+ 	if (!state) {
+ 		ret = -ENOMEM;
+ 		goto release;
+ 	}
 
-
+-	memset(state, 0, sizeof(state));
+ 	state->type	= ICS_TYPE_NOTYPE;
+ 	state->dev	= &ec->dev;
 
