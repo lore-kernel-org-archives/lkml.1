@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764298AbXGaVfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932858AbXGaVfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764298AbXGaVfH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:35:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbXGaVew
+	id S932858AbXGaVfg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbXGaVez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:34:52 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4710 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751659AbXGaVev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:34:51 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 60] drivers/net/wireless/prism54/oid_mgt.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 23:34:50 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       mcgrof@gmail.com, linux-wireless@vger.kernel.org
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Tue, 31 Jul 2007 17:34:55 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:44616 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753277AbXGaVex (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:34:53 -0400
+Date: Tue, 31 Jul 2007 14:39:39 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pm_trace displays the wrong time from the RTC
+Message-Id: <20070731143939.774eb9db.randy.dunlap@oracle.com>
+In-Reply-To: <46AFA78A.9010904@redhat.com>
+References: <46AFA78A.9010904@redhat.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707312334.51067.m.kozlowski@tuxland.pl>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+On Tue, 31 Jul 2007 17:20:10 -0400 Chuck Ebbert wrote:
 
- drivers/net/wireless/prism54/oid_mgt.c | 25377 -> 25297 (-80 bytes)
- drivers/net/wireless/prism54/oid_mgt.o | 128460 -> 128284 (-176 bytes)
+> When resuming, systems print this when booted on 07/31/07:
+> 
+> Date: 06/31/107
+> 
+> /drivers/base/power/trace.c::read_magic_time():
+> 114	get_rtc_time(&time);
+> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
+> 116		time.tm_hour, time.tm_min, time.tm_sec,
+> 117		time.tm_mon, time.tm_mday, time.tm_year);
+> 
+> include/asm-generic/rtc.h:
+> 102         /*
+> 103          * Account for differences between how the RTC uses the values
+> 104          * and how they are defined in a struct rtc_time;
+> 105          */
+> 106         if (time->tm_year <= 69)
+> 107                 time->tm_year += 100;
+> 108 
+> 109         time->tm_mon--;
 
- drivers/net/wireless/prism54/oid_mgt.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/drivers/net/wireless/prism54/oid_mgt.c	2007-07-26 13:07:43.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/net/wireless/prism54/oid_mgt.c	2007-07-30 00:27:44.000000000 +0200
-@@ -244,13 +244,11 @@ mgt_init(islpci_private *priv)
- 	/* Alloc the cache */
- 	for (i = 0; i < OID_NUM_LAST; i++) {
- 		if (isl_oid[i].flags & OID_FLAG_CACHED) {
--			priv->mib[i] = kmalloc(isl_oid[i].size *
-+			priv->mib[i] = kzalloc(isl_oid[i].size *
- 					       (isl_oid[i].range + 1),
- 					       GFP_KERNEL);
- 			if (!priv->mib[i])
- 				return -ENOMEM;
--			memset(priv->mib[i], 0,
--			       isl_oid[i].size * (isl_oid[i].range + 1));
- 		} else
- 			priv->mib[i] = NULL;
- 	}
+That's this config option (read all of it):
+
+config PM_TRACE
+	bool "Suspend/resume event tracing"
+	depends on PM_DEBUG && X86 && EXPERIMENTAL
+	default n
+	---help---
+	This enables some cheesy code to save the last PM event point in the
+	RTC across reboots, so that you can debug a machine that just hangs
+	during suspend (or more commonly, during resume).
+
+	To use this debugging feature you should attempt to suspend the machine,
+	then reboot it, then run
+
+		dmesg -s 1000000 | grep 'hash matches'
+
+	CAUTION: this option will cause your machine's real-time clock to be
+	set to an invalid time after a resume.
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
