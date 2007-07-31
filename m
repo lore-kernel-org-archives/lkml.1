@@ -1,121 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbXGaI3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbXGaIcZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753521AbXGaI3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXGaI3o
+	id S1753347AbXGaIcZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:32:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751835AbXGaIcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:29:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:55203 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750908AbXGaI3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:29:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,202,1183359600"; 
-   d="scan'208";a="256779523"
-Subject: Re: [PATCH 3/5] x86_64 EFI support -v3: EFI runtime support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m14pjluref.fsf@ebiederm.dsl.xmission.com>
-References: <1185851579.23149.28.camel@caritas-dev.intel.com>
-	 <m14pjluref.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 16:29:26 +0800
-Message-Id: <1185870566.23149.63.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 08:29:37.0028 (UTC) FILETIME=[EE2D7440:01C7D34C]
+	Tue, 31 Jul 2007 04:32:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:59676 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbXGaIcP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:32:15 -0400
+Message-ID: <46AEF347.9030007@netcom.eu>
+Date: Tue, 31 Jul 2007 10:31:03 +0200
+From: David Engraf <david.engraf@netcom.eu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: linux-pci@atrey.karlin.mff.cuni.cz, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net, david.engraf@netcom.eu
+Subject: [PATCH] USB BIOS early handoff only when the we the driver is configured
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX18FgYzthcLMtSCorDBeBwW0LVfn2LMF8llidOB
+ o4NZvS0XV4z06z//auM2UwvH8yAJvdBSgQFkI6As1/JaRUjURz
+ 4dMLSgJQuvslgTNYIJkAw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 22:30 -0600, Eric W. Biederman wrote:
-> > This patch adds runtime service support for EFI x86_64 system.
-> >
-> > The EFI support for emergency_restart and RTC clock is added. The EFI
-> > based implementation and legacy BIOS or CMOS based implementation are
-> > put in separate functions and are chosen based on the value of
-> > efi_enabled.
-> 
-> The patches to the reboot path are wrong (see below).
-> 
-> Why do we need to do this anyway?  Why do we need any EFI runtime
-> support?  We already have ACPI.  Isn't that good enough to abstract
-> out the runtime parts of the hardware?
-> 
-> Why do we need to replace working code that directly talks to the
-> architecturally defined hardware, with firmware calls?
-> 
-> What is the point?  What is the advantage?
-> 
-> The disadvantage of having more code to maintain and having
-> to deal with more BIOS bugs should be obvious.
+When CONFIG_USB_UHCI_HCD, CONFIG_USB_OHCI_HCD or CONFIG_USB_EHCI_HCD is
+not configured we don't need to call the quirk_usb_handoff_xxxx function
+in driver/usb/host/pci_quiks.c.
 
-The reboot EFI runtime service is needed because otherwise we have no
-way to tell firmware whether a warm or cold reboot is requested. The
-"0x472" protocol is used by legacy BIOS, but not by EFI based firmware.
-For EFI based firmware, the parameter to runtime service call is the
-only way to tell firmware whether a warm or cold reboot is requested.
+I think the kernel shouldn't take the control over the usb controller
+when we don't have the driver for it,
+so with this patch the kernel takes the control only when the driver is
+configured.
 
-That is not implemented by current EFI support patch yet, but we will
-add it in the next version.
 
-> > Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> >
-> > ---
-> >
-> >  reboot.c |   11 ++++++++++-
-> >  time.c   |   47 +++++++++++++++++++++++++++++++----------------
-> >  2 files changed, 41 insertions(+), 17 deletions(-)
-> >
-> > Index: linux-2.6.23-rc1/arch/x86_64/kernel/reboot.c
-> > ===================================================================
-> > --- linux-2.6.23-rc1.orig/arch/x86_64/kernel/reboot.c 2007-07-23
-> > 04:41:00.000000000 +0800
-> > +++ linux-2.6.23-rc1/arch/x86_64/kernel/reboot.c 2007-07-30 09:26:56.000000000
-> > +0800
-> > @@ -9,6 +9,7 @@
-> >  #include <linux/pm.h>
-> >  #include <linux/kdebug.h>
-> >  #include <linux/sched.h>
-> > +#include <linux/efi.h>
-> >  #include <asm/io.h>
-> >  #include <asm/delay.h>
-> >  #include <asm/hw_irq.h>
-> > @@ -117,7 +118,7 @@
-> >  	pci_iommu_shutdown();
-> >  }
-> >  
-> > -void machine_emergency_restart(void)
-> > +static inline void bios_emergency_restart(void)
-> >  {
-> >  	int i;
-> >  
-> > @@ -145,6 +146,14 @@
-> >  	}      
-> >  }
-> >  
-> > +void machine_emergency_restart(void)
-> > +{
-> > +	if (efi_enabled)
-> > +		efi_emergency_restart();
-> > +	else
-> > +		bios_emergency_restart();
-> > +}
-> > +
-> 
-> A EFI is a bios so naming the current machine_emergency_restart bios_emergency_restart is
-> a misnomer, especially since pounds the hardware not the firmware.
-> Second we already have a perfectly capable mechanism in the
-> reboot_type variable so you should just need to add one more type and
-> handle this properly. 
+linux-2.6.22.1
 
-Yes. Reboot via EFI should be implemented as a new type of
-"reboot_type".
+diff -puN drivers/usb/host/pci-quirks_orig.c drivers/usb/host/pci-quirks.c
+--- drivers/usb/host/pci-quirks_orig.c    2007-07-10 20:56:30.000000000
++0200
++++ drivers/usb/host/pci-quirks.c    2007-07-31 09:55:28.000000000 +0200
+@@ -142,6 +142,7 @@ static inline int io_type_enabled(struct
+ #define pio_enabled(dev) io_type_enabled(dev, PCI_COMMAND_IO)
+ #define mmio_enabled(dev) io_type_enabled(dev, PCI_COMMAND_MEMORY)
+ 
++#ifdef CONFIG_USB_UHCI_HCD
+ static void __devinit quirk_usb_handoff_uhci(struct pci_dev *pdev)
+ {
+     unsigned long base = 0;
+@@ -159,12 +160,14 @@ static void __devinit quirk_usb_handoff_
+     if (base)
+         uhci_check_and_reset_hc(pdev, base);
+ }
++#endif
+ 
+ static int __devinit mmio_resource_enabled(struct pci_dev *pdev, int idx)
+ {
+     return pci_resource_start(pdev, idx) && mmio_enabled(pdev);
+ }
+ 
++#ifdef CONFIG_USB_OHCI_HCD
+ static void __devinit quirk_usb_handoff_ohci(struct pci_dev *pdev)
+ {
+     void __iomem *base;
+@@ -209,7 +212,9 @@ static void __devinit quirk_usb_handoff_
+ 
+     iounmap(base);
+ }
++#endif
+ 
++#ifdef CONFIG_USB_EHCI_HCD
+ static void __devinit quirk_usb_disable_ehci(struct pci_dev *pdev)
+ {
+     int wait_time, delta;
+@@ -346,16 +351,24 @@ static void __devinit quirk_usb_disable_
+ 
+     return;
+ }
+-
++#endif
+ 
+ 
+ static void __devinit quirk_usb_early_handoff(struct pci_dev *pdev)
+ {
++#ifdef CONFIG_USB_UHCI_HCD
+     if (pdev->class == PCI_CLASS_SERIAL_USB_UHCI)
+         quirk_usb_handoff_uhci(pdev);
+-    else if (pdev->class == PCI_CLASS_SERIAL_USB_OHCI)
++#endif
++
++#ifdef CONFIG_USB_OHCI_HCD
++    if (pdev->class == PCI_CLASS_SERIAL_USB_OHCI)
+         quirk_usb_handoff_ohci(pdev);
+-    else if (pdev->class == PCI_CLASS_SERIAL_USB_EHCI)
++#endif
++
++#ifdef CONFIG_USB_EHCI_HCD
++    if (pdev->class == PCI_CLASS_SERIAL_USB_EHCI)
+         quirk_usb_disable_ehci(pdev);
++#endif
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, quirk_usb_early_handoff);
 
-Best Regards,
-Huang Ying
+
+Thanks
+
+David Engraf
+
+ 
+
+ 
+Netcom Sicherheitstechnik GmbH
+Rheinallee 189
+55120 Mainz
+Tel: 	+49 6131 6305 0
+Fax: 	+49 6131 6305 40
+Email: 	david.engraf@netcom.eu
+
+ 
+Sitz der Gesellschaft: Mainz
+Registergericht: Amtsgericht Mainz, 14HRB3411
+Geschäftsführer: Peter Otto
+
