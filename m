@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937524AbXGaASo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939712AbXGaAVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937524AbXGaASo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 20:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763298AbXGaASU
+	id S939712AbXGaAVX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 20:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765101AbXGaAVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 20:18:20 -0400
-Received: from mail.screens.ru ([213.234.233.54]:50767 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756131AbXGaAST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 20:18:19 -0400
-Date: Tue, 31 Jul 2007 04:18:47 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
-Message-ID: <20070731001847.GA623@tv-sign.ru>
-References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com> <20070730163538.67b256da.akpm@linux-foundation.org> <20070731001117.GA583@tv-sign.ru>
+	Mon, 30 Jul 2007 20:21:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45543
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761278AbXGaAVG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 20:21:06 -0400
+Date: Mon, 30 Jul 2007 17:21:05 -0700 (PDT)
+Message-Id: <20070730.172105.35015509.davem@davemloft.net>
+To: yoshfuji@linux-ipv6.org
+Cc: djohnson+linux-kernel@sw.starentnetworks.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
+       sakkiped@starentnetworks.com
+Subject: Re: [PATCH] IPv6: ipv6_addr_type() doesn't know about RFC4193
+ addresses
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070726.133452.78498553.yoshfuji@linux-ipv6.org>
+References: <18087.57717.495366.413571@zeus.sw.starentnetworks.com>
+	<20070726.133452.78498553.yoshfuji@linux-ipv6.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731001117.GA583@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=iso-2022-jp
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31, Oleg Nesterov wrote:
->
-> > Manfred Spraul <manfred@colorfullife.com> wrote:
-> > 
-> > > poll() returns -EINTR if a signal is pending.
-> > > EINTR is a bad choice: it means that poll returns to user space if the
-> > > task is stopped by SIGSTOP/SIGCONT or by the freezer.
-> > > select() and ppoll() both use ERESTARTNOHAND, this avoids a return to
-> > > user space for signals that are handled by the kernel.
-> > > 
-> > > The patch switches poll() to ERESTARTNOHAND.
-> > > Tested with FC6. Patch against 2.6.23-rc1-mm1.
-> > 
-> > > --- 2.6/fs/select.c	2007-07-28 20:31:51.000000000 +0200
-> > > +++ build-2.6/fs/select.c	2007-07-28 21:21:52.000000000 +0200
-> > > @@ -621,7 +621,7 @@ static int do_poll(unsigned int nfds,  s
-> > >  		if (!count) {
-> > >  			count = wait->error;
-> > >  			if (signal_pending(current))
-> > > -				count = -EINTR;
-> > > +				count = -ERESTARTNOHAND;
+From: YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
+Date: Thu, 26 Jul 2007 13:34:52 -0500 (CDT)
+
+> In article <18087.57717.495366.413571@zeus.sw.starentnetworks.com> (at Wed, 25 Jul 2007 19:49:09 -0400), Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com> says:
 > 
-> I am not sure. This means we restart sys_poll() with the same timeout
-> if there is no pending signal. I think we need ERESTART_RESTARTBLOCK
-> logic.
+> > ipv6_addr_type() doesn't check for 'Unique Local IPv6 Unicast
+> > Addresses' (RFC4193) and returns IPV6_ADDR_RESERVED for that range.
+> 
+> Acked-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
 
-Forgot to mention, sys_select() can use ERESTARTNOHAND because it
-modifies "struct timeval __user *tvp" before return, but sys_poll()
-gets timeout_msecs by value.
+Ok, I've applied Dave's patch.
 
-Oleg.
+Dave, although it's customary and fine to use "+foo-list" email
+addresses for mailing list subscriptions and discussions, I
+ask that you don't add that cookie to your signoff lines in
+patch submissions and I've removed it from your's in this patch.
 
+Thanks a lot.
