@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763991AbXGaWhO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764245AbXGaWi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763991AbXGaWhO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 18:37:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758426AbXGaWg7
+	id S1764245AbXGaWi4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 18:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXGaWis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 18:36:59 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39850 "EHLO gate.crashing.org"
+	Tue, 31 Jul 2007 18:38:48 -0400
+Received: from mga02.intel.com ([134.134.136.20]:65528 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758636AbXGaWg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 18:36:58 -0400
-In-Reply-To: <46A78E3F.1030904@ru.mvista.com>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>	<20070725165326.5331.19920.stgit@localhost.localdomain> <46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Vitaly Bordug <vitb@kernel.crashing.org>, linux-ide@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver for CF	interface
-Date: Wed, 1 Aug 2007 00:36:14 +0200
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-X-Mailer: Apple Mail (2.623)
+	id S1756093AbXGaWiq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 18:38:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,205,1183359600"; 
+   d="scan'208";a="272849843"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: "Add support for vector domain" breaks boot on x355
+Date: Tue, 31 Jul 2007 15:38:39 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A020E40A6@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070731221356.GA31324@us.ibm.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: "Add support for vector domain" breaks boot on x355
+Thread-Index: AcfTwBgNKWrLCAB0RCu1v4cgpwPsgwAAx1iA
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Nishanth Aravamudan" <nacc@us.ibm.com>, <isimatu.yasuaki@jp.fujitsu.com>
+Cc: <kaneshige.kenji@jp.fujitsu.com>, <torvalds@linux-foundation.org>,
+       <ryhodges@us.ibm.com>, <linux-ia64@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 31 Jul 2007 22:38:40.0900 (UTC) FILETIME=[8B176C40:01C7D3C3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> +	ide@f0000000 {
->>> +		compatible = "mmio-ide";
->>> +		device_type = "ide";
->
->>     Why not "ata"?
+> The following commit (4994be1b3fe9120c88022ff5c0c33f6312b17adb) broke
+> Linus' Tree between 2.6.22-git15 and 2.6.22-git16 on a 2-node 8-way x455
+> (Madison procs). Thanks to Ryan Hodges for bisecting down to this
+> commit.
 
-The hardware is called (E)IDE, the protocol is called ATA.
-Or that's what I was told -- I think there's some historic
-revisionism involved, too.
+Thanks for taking the time to do the git bisect to identify the problem commit.
 
->     Also, what mmio-ide in the compat properly means in the context of
-> ide_platform which is able to handle both port and memory mapped IDE. 
-> I think
-> we must get rid with this crap, and since this IDE register mapping is 
-> pretty
-> much board specific, call it something like "mpc8349emitx-ide" instead.
+Can you give some more details on the breakage please?  Does the system
+hang or panic?  How far does it get through the boot process?  Are there
+any suspicious looking differences in the console output before getting
+to the failure point?
 
-"mmio-ide" simply is not specific enough.  The device_type
-should go, too.
-
-If this IDE interface is board-specific, thee "compatible"
-property should include the board vendor name and board
-name.  Oh, that's what "emitx" tries to do -- it could be
-a bit clearer perhaps ;-)
-
-
-Segher
-
+-Tony
