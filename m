@@ -1,109 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbXGaMG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbXGaMIM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756500AbXGaMG5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759255AbXGaMGp
+	id S1759521AbXGaMIM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:08:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXGaMH6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:06:45 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:10483 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757516AbXGaMGn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:06:43 -0400
-Date: Tue, 31 Jul 2007 16:05:26 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org, devel@openvz.org,
-       mingo@elte.hu
-Subject: [PATCH] single_open/seq_release leak diagnostics
-Message-ID: <20070731120526.GA6883@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Tue, 31 Jul 2007 08:07:58 -0400
+Received: from styx.suse.cz ([82.119.242.94]:36072 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751598AbXGaMH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 08:07:57 -0400
+Date: Tue, 31 Jul 2007 14:19:06 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ulrich Kunitz <kune@deine-taler.de>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, Jan Kratochvil <honza@jikos.cz>,
+       jakub@redhat.com
+Subject: Re: Is PIE randomization breaking klibc binaries?
+In-Reply-To: <46AF24B2.8070900@zytor.com>
+Message-ID: <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz>
+References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
+ <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com>
+ <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com>
+ <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de>
+ <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz> <46AF24B2.8070900@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"[PATCH] Fix leaks on /proc/{*/sched,sched_debug,timer_list,timer_stats}" and
-"[PATCH] Fix leak on /proc/lockdep_stats" fixed 5 leaks which happen if one
-uses single_open() as .open function and seq_release() as .release function.
+On Tue, 31 Jul 2007, H. Peter Anvin wrote:
 
-Let's add small amount of runtime checking.
+> > I just now quickly tried to with klibc-1.5 on i386 with the 
+> > PIE-randomization patched kernel, and it seems to load static 
+> > libraries fine. I just downloaded klibc-1.5, built it, and executed a 
+> > few of the programs in usr/utils/static, all of them worked. Does this 
+> > also work for you and you are experiencing the problems solely when 
+> > the binaries are being run from initramfs during boot? I will test 
+> > more shortly (on x86_64, directly from initramfs) in order to 
+> > reproduce.
+> What about shared binaries?
 
-Sample output is:
+Works for me too on the pie-randomization patched kernel.
 
-	memory leak: 'timer_list'
-	WARNING: at fs/seq_file.c:289 seq_release()
-	 [<c015e311>] seq_release+0x53/0x68
-	 [<c0171bd8>] proc_reg_release+0x63/0x74
-	 [<c0149877>] __fput+0x28/0xd3
-	 [<c0147681>] filp_close+0x48/0x4f
-	 [<c014876a>] sys_close+0x74/0xbe
-	 [<c010248e>] sysenter_past_esp+0x5f/0x85
-	 =======================
+So it seems to me that either it is something x86_64 specific or 
+initramfs-specific. Will try to reproduce it.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
----
-
- fs/seq_file.c            |   25 ++++++++++++++++++++-----
- include/linux/seq_file.h |    1 +
- 2 files changed, 21 insertions(+), 5 deletions(-)
-
---- a/fs/seq_file.c
-+++ b/fs/seq_file.c
-@@ -281,6 +281,13 @@ EXPORT_SYMBOL(seq_lseek);
- int seq_release(struct inode *inode, struct file *file)
- {
- 	struct seq_file *m = (struct seq_file *)file->private_data;
-+
-+	if (m->seq_ops_allocated) {
-+		struct dentry *dentry = file->f_dentry;
-+		printk("memory leak: '%.*s'\n",
-+			dentry->d_name.len, dentry->d_name.name);
-+		WARN_ON(1);
-+	}
- 	kfree(m->buf);
- 	kfree(m);
- 	return 0;
-@@ -401,9 +408,12 @@ int single_open(struct file *file, int (*show)(struct seq_file *, void *),
- 		op->stop = single_stop;
- 		op->show = show;
- 		res = seq_open(file, op);
--		if (!res)
--			((struct seq_file *)file->private_data)->private = data;
--		else
-+		if (!res) {
-+			struct seq_file *seq = file->private_data;
-+
-+			seq->private = data;
-+			seq->seq_ops_allocated = 1;
-+		} else
- 			kfree(op);
- 	}
- 	return res;
-@@ -412,8 +422,13 @@ EXPORT_SYMBOL(single_open);
- 
- int single_release(struct inode *inode, struct file *file)
- {
--	const struct seq_operations *op = ((struct seq_file *)file->private_data)->op;
--	int res = seq_release(inode, file);
-+	struct seq_file *seq = file->private_data;
-+	const struct seq_operations *op = seq->op;
-+	int res;
-+
-+	/* All roads lead to seq_release(), so... */
-+	seq->seq_ops_allocated = 0;
-+	res = seq_release(inode, file);
- 	kfree(op);
- 	return res;
- }
---- a/include/linux/seq_file.h
-+++ b/include/linux/seq_file.h
-@@ -22,6 +22,7 @@ struct seq_file {
- 	struct mutex lock;
- 	const struct seq_operations *op;
- 	void *private;
-+	unsigned int seq_ops_allocated:1;
- };
- 
- struct seq_operations {
-
+-- 
+Jiri Kosina
+SUSE Labs
