@@ -1,43 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764051AbXGaPSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbXGaP2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764051AbXGaPSb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760715AbXGaPSY
+	id S1761041AbXGaP2v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXGaP2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:18:24 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:34270 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761258AbXGaPSX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:18:23 -0400
-Message-ID: <46AF522B.3000606@gmail.com>
-Date: Tue, 31 Jul 2007 17:15:55 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Tue, 31 Jul 2007 11:28:43 -0400
+Received: from il.qumranet.com ([82.166.9.18]:35898 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753727AbXGaP2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 11:28:42 -0400
+Message-ID: <46AF5534.3010902@argo.co.il>
+Date: Tue, 31 Jul 2007 18:28:52 +0300
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: jack@hawkeye.stone.uk.eu.org
-CC: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [Patch 02/16] Remove unnecessary kmalloc casts from the mips
- arch.
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125438.662563000@hawkeye.stone.uk.eu.org>
-In-Reply-To: <20070731125438.662563000@hawkeye.stone.uk.eu.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: NeilBrown <neilb@suse.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 000 of 35] Refactor block layer to improve support for
+ stacked devices.
+References: <20070731112539.22428.patches@notabene>
+In-Reply-To: <20070731112539.22428.patches@notabene>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31/2007 02:53 PM, jack@hawkeye.stone.uk.eu.org wrote:
+NeilBrown wrote:
+> To achieve this, the "for_each" macros are now somewhat more complex.
+> For example, rq_for_each_segment is:
+>
+> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size)		\
+> 	for (_i.i = 0, _i.offset = (bio)->bi_offset + offs,		\
+> 		 _i.size = min_t(int, _size, (bio)->bi_size - offs);   	\
+> 	     _i.i < (bio)->bi_vcnt && _i.size > 0;			\
+> 	     _i.i++)							\
+> 		if (bv = *bio_iovec_idx((bio), _i.i),			\
+> 		    bv.bv_offset += _i.offset,				\
+> 		    bv.bv_len <= _i.offset				\
+> 		    ? (_i.offset -= bv.bv_len, 0)			\
+> 		    : (bv.bv_len -= _i.offset,				\
+> 		       _i.offset = 0,					\
+> 		       bv.bv_len < _i.size				\
+> 		       ? (_i.size -= bv.bv_len, 1)			\
+> 		       : (bv.bv_len = _i.size,				\
+> 			  _i.size = 0,					\
+> 			  bv.bv_len > 0)))
+>
+> #define bio_for_each_segment(bv, bio, __i)				\
+> 		bio_for_each_segment_offset(bv, bio, __i, 0, (bio)->bi_size)
+>
+> It does some with some explanatory text in a comment, but it is still
+> a bit daunting.  Any suggestions on making this more approachable
+> would be very welcome.
+>
+>   
 
-> -	desc_base = (u32)kmalloc(entries * sizeof(au1x_ddma_desc_t),
-> +	desc_base = kmalloc(entries * sizeof(au1x_ddma_desc_t),
+Well, I hesitate to state the obvious, but how about:
 
-The unnessary bit in kmalloc casts is due to void pointers being assignment 
-compatible to other pointer types but in these patches you are also removing 
-casts to unsigned long's and they should stay.
+#define bio_for_each_segment_offset(bv, bio, _i, offs, _size) \
+    for (bio_iterator_init(&_i, ...); bio_iterator_cont(&_i, ...); 
+bio_iterator_advance(&_i, ...)) \
+         if (bio_iterator_want_segment(&_i, ...))
 
-I noticed the same in patch 2, 4, 6, 8, 9 and 11 (cursory glance...)
+While this doesn't remove the complexity, at least it's readable.
 
-Rene.
+-- 
+error compiling committee.c: too many arguments to function
+
