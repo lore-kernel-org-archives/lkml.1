@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbXGaMeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759106AbXGaMfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758491AbXGaMeJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbXGaMd4
+	id S1759106AbXGaMfk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbXGaMfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:33:56 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:55502 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751121AbXGaMdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:33:55 -0400
-Message-ID: <46AF2BF8.3000601@free.fr>
-Date: Tue, 31 Jul 2007 14:32:56 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Tue, 31 Jul 2007 08:35:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:46088 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753091AbXGaMfc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 08:35:32 -0400
+Date: Tue, 31 Jul 2007 18:17:51 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Tejun Heo <htejun@gmail.com>
+cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu
+Subject: Re: [PATCH 2/7] sysfs: Remove first pass at shadow directory
+ support
+In-Reply-To: <46AF0ECD.9090507@gmail.com>
+Message-ID: <alpine.LFD.0.999.0707311815400.26032@enigma.security.iitk.ac.in>
+References: <11858769083285-git-send-email-htejun@gmail.com>
+ <46AF0ECD.9090507@gmail.com>
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: linux-kernel@vger.kernel.org,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: BIOS implementors disabling the LAPIC
-References: <46AEED9E.1050904@free.fr> <Pine.LNX.4.64N.0707311119350.16158@blysk.ds.pg.gda.pl>
-In-Reply-To: <Pine.LNX.4.64N.0707311119350.16158@blysk.ds.pg.gda.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
+Hi Tejun,
 
-> John Sigler wrote:
+On Tue, 31 Jul 2007, Tejun Heo wrote:
+
+> Tejun Heo wrote:
+> > While shadow directories appear to be a good idea, the current scheme
+> > of controlling their creation and destruction outside of sysfs appears
+> > to be a locking and maintenance nightmare in the face of sysfs
+> > directories dynamically coming and going.  Which can now occur for
+> > directories containing network devices when CONFIG_SYSFS_DEPRECATED is
+> > not set.
+> > 
+> > This patch removes everything from the initial shadow directory support
+> > that allowed the shadow directory creation to be controlled at a higher
+> > level.  So except for a few bits of sysfs_rename_dir everything from
+> > commit b592fcfe7f06c15ec11774b5be7ce0de3aa86e73 is now gone.
 > 
->> As far as I understand, the Local APIC was integrated directly to the CPU
->> 12-15 years ago. Why would a BIOS implementor choose to disable it?
-> 
-> Because they are lazy/incapable/out-of-time/select-your-favourite-excuse.
-> For the chip to work you have to provide some minimal support in the
-> firmware, in particular for the trickier paths of execution in the system
-> management mode.  The system still works with the Local APIC disabled, so
-> why bother?
+> "From Eric W. Biederman <ebiederm@xmission.com>" line is missing.  I
+> thought git scripts would add that automatically.  Sorry about that.
 
-The motherboard manufacturer (well, their level 1 support, anyway) told 
-me I could "safely enable the LAPIC". If it is safe to enable the LAPIC, 
-then why are they disabling it in the BIOS? (They weren't able to tell 
-me whether their BIOS triggers SMIs or not...)
-
-Is this a "either works or doesn't" situation where hell should break 
-loose if I try to enable the LAPIC and it's not supported by the 
-motherboard, or is this a "you will silently lose data at the worst 
-possible time" situation?
-
->> (And what does it mean to "disable" the LAPIC?)
-> 
-> The LINT0 and LINT1 inputs of the APIC are routed straight to the INT and
-> NMI inputs of the CPU respectively and the rest of the APIC logic becomes
-> inactive (tri-stated, etc.).
-
-If that were the case, then I could not enable the LAPIC and have NMIs 
-work, right?
-
-Regards.
+I couldn't find this patch in the patchset you just posted ...
