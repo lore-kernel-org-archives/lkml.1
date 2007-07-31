@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760817AbXGaM5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbXGaM7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760817AbXGaM5S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbXGaM5A
+	id S1760628AbXGaM7X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbXGaM7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:57:00 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:2427 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758524AbXGaM47 (ORCPT
+	Tue, 31 Jul 2007 08:59:15 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:51236 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757976AbXGaM7O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:56:59 -0400
-Date: Tue, 31 Jul 2007 14:57:40 +0200
+	Tue, 31 Jul 2007 08:59:14 -0400
+Date: Tue, 31 Jul 2007 14:59:35 +0200
 From: Cornelia Huck <cornelia.huck@de.ibm.com>
 To: Tejun Heo <htejun@gmail.com>
 Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
        satyam@infradead.org, stern@rowland.harvard.edu
-Subject: Re: [PATCH 3/7] sysfs: cosmetic changes in sysfs_lookup()
-Message-ID: <20070731145740.7c0b22c8@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <11858769083801-git-send-email-htejun@gmail.com>
+Subject: Re: [PATCH 4/7] sysfs: simplify sysfs_remove_dir()
+Message-ID: <20070731145935.3398cfba@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <11858769083860-git-send-email-htejun@gmail.com>
 References: <11858769082982-git-send-email-htejun@gmail.com>
-	<11858769083801-git-send-email-htejun@gmail.com>
+	<11858769083860-git-send-email-htejun@gmail.com>
 Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
  Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
  Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
@@ -34,15 +34,22 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 On Tue, 31 Jul 2007 19:15:08 +0900,
 Tejun Heo <htejun@gmail.com> wrote:
 
-> * remove space between * and symbol name in variable declaration.
+> With the shadow directories gone, sysfs_remove_dir() can be simplified.
 > 
-> * kill unnecessary new line.
+> * parent doesn't need to be grabbed separately.  Just access
+>   old_dentry->d_parent.
 > 
-> * kill 'found' and test 'sd' instead.
+> * parent sd can never change.  Remove code to move under the new
+>   parent.
+> 
+> * Massage comments a bit.
 > 
 > Signed-off-by: Tejun Heo <htejun@gmail.com>
 > ---
->  fs/sysfs/dir.c |   15 +++++----------
->  1 files changed, 5 insertions(+), 10 deletions(-)
+>  fs/sysfs/dir.c |   26 ++++----------------------
+>  1 files changed, 4 insertions(+), 22 deletions(-)
 > 
+It's not sysfs_remove_dir(), but sysfs_rename_dir() :) Otherwise this
+looks good.
+
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
