@@ -1,135 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762517AbXGaQN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764937AbXGaQPC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762517AbXGaQN6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbXGaQNu
+	id S1764937AbXGaQPC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:15:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759683AbXGaQOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:13:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48129 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbXGaQNt (ORCPT
+	Tue, 31 Jul 2007 12:14:52 -0400
+Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:22607 "EHLO
+	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753039AbXGaQOv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:13:49 -0400
-Date: Tue, 31 Jul 2007 21:56:12 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH -mm] Introduce U16_MAX and U32_MAX
-Message-ID: <alpine.LFD.0.999.0707312153500.28746@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 31 Jul 2007 12:14:51 -0400
+Message-Id: <46AF2752.BA47.005A.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Tue, 31 Jul 2007 12:14:42 -0400
+From: "Gregory Haskins" <ghaskins@novell.com>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>,
+       <linux-rt-users@vger.kernel.org>
+Subject: Re: [PATCH 0/2][RFC] VFCIPI v3
+References: <20070731132153.4790.37217.stgit@novell1.haskins.net>
+ <1185891957.12034.12.camel@twins> <46AF1DA6.BA47.005A.0@novell.com>
+ <1185896412.12034.17.camel@twins>
+In-Reply-To: <1185896412.12034.17.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>>> On Tue, Jul 31, 2007 at 11:40 AM, in message <1185896412.12034.17.camel@twins>,
+Peter Zijlstra <peterz@infradead.org> wrote: 
+> On Tue, 2007-07-31 at 11:33 -0400, Gregory Haskins wrote:
+>> 
+>> If there was anything more than what you already mention here, please
+>> point them out so I don't "port" them over to the workqueues
+>> implemenation ;)
+> 
+> The two that jumped out at me while skimming over the code were:
+> 
+>  - use of raw_spinlock_t (while not always a bug, it does need _very_
+>    good justification)
 
-... in kernel.h and clean up home-grown macros elsewhere in the tree.
+Ah, yes.  This was done on purpose based on the design parameters.  I needed the calls to work from atomic context (which smp_call_function() often is called under).  However, note that I am sensitive to the impact this decision causes and you will see that the lock scopes are all very tight and light (at least, IMHO).
 
-Leave out the one in reiserfs_fs.h as it is in the userspace-visible part
-of that header. Still, #undef the (equivalent) kernel version there to
-avoid seeing "redefined, previous definition was here" gcc warnings.
+>  - not cpu hotplug safe
 
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
+Yeah, agreed.  I was aware of this potential race against the "for_each_online_cpu()".   However, I am not knowledgeable enough (yet) to have even attempted a cursory stab at how to support the notification mechanism, so I just left the gaping hole.   It will definitely need to be addressed before any serious merge consideration for whatever final form this thing takes.  I should have commented that.
 
----
 
-[ On top of previously posted netconsole patches. ]
+> 
+> The thing is, we should never need to allocate from a real atomic
+> context
 
- drivers/net/netconsole.c    |    7 +++----
- include/linux/kernel.h      |    3 +++
- include/linux/reiserfs_fs.h |    1 +
- net/ipv4/tcp_illinois.c     |    2 +-
- 4 files changed, 8 insertions(+), 5 deletions(-)
+I agree with you on principle.  Making unnecessary external calls within a lock scope should always be avoided when possible.  However, in this case I had the following design parameters:
 
-diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
-index 69ef1eb..47a8094 100644
---- a/drivers/net/netconsole.c
-+++ b/drivers/net/netconsole.c
-@@ -34,6 +34,7 @@
-  *
-  ****************************************************************/
- 
-+#include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/init.h>
- #include <linux/module.h>
-@@ -389,7 +390,6 @@ static ssize_t store_local_port(struct netconsole_target *nt,
- 				size_t count)
- {
- 	long local_port;
--#define __U16_MAX	((__u16) ~0U)
- 
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
-@@ -398,7 +398,7 @@ static ssize_t store_local_port(struct netconsole_target *nt,
- 		return -EINVAL;
- 	}
- 
--	local_port = strtol10_check_range(buf, 0, __U16_MAX);
-+	local_port = strtol10_check_range(buf, 0, U16_MAX);
- 	if (local_port < 0)
- 		return local_port;
- 
-@@ -412,7 +412,6 @@ static ssize_t store_remote_port(struct netconsole_target *nt,
- 				 size_t count)
- {
- 	long remote_port;
--#define __U16_MAX	((__u16) ~0U)
- 
- 	if (nt->enabled) {
- 		printk(KERN_ERR "netconsole: target (%s) is enabled, "
-@@ -421,7 +420,7 @@ static ssize_t store_remote_port(struct netconsole_target *nt,
- 		return -EINVAL;
- 	}
- 
--	remote_port = strtol10_check_range(buf, 0, __U16_MAX);
-+	remote_port = strtol10_check_range(buf, 0, U16_MAX);
- 	if (remote_port < 0)
- 		return remote_port;
- 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 4300bb4..e9221de 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -30,6 +30,9 @@ extern const char linux_proc_banner[];
- #define LLONG_MIN	(-LLONG_MAX - 1)
- #define ULLONG_MAX	(~0ULL)
- 
-+#define U16_MAX		((u16) ~0U)
-+#define U32_MAX		((u32) ~0U)
-+
- #define STACK_MAGIC	0xdeadbeef
- 
- #define ALIGN(x,a)		__ALIGN_MASK(x,(typeof(x))(a)-1)
-diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
-index 180a9d8..e452c69 100644
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -1225,6 +1225,7 @@ struct treepath var = {.path_length = ILLEGAL_PATH_ELEMENT_OFFSET, .reada = 0,}
- #define MAX_US_INT 0xffff
- 
- // reiserfs version 2 has max offset 60 bits. Version 1 - 32 bit offset
-+#undef	U32_MAX
- #define U32_MAX (~(__u32)0)
- 
- static inline loff_t max_reiserfs_offset(struct inode *inode)
-diff --git a/net/ipv4/tcp_illinois.c b/net/ipv4/tcp_illinois.c
-index cc5de6f..227abcd 100644
---- a/net/ipv4/tcp_illinois.c
-+++ b/net/ipv4/tcp_illinois.c
-@@ -12,6 +12,7 @@
-  * Copyright (C) 2007 Stephen Hemminger <shemminger@linux-foundation.org>
-  */
- 
-+#include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/skbuff.h>
- #include <linux/inet_diag.h>
-@@ -23,7 +24,6 @@
- #define ALPHA_MIN	((3*ALPHA_SCALE)/10)	/* ~0.3 */
- #define ALPHA_MAX	(10*ALPHA_SCALE)	/* 10.0 */
- #define ALPHA_BASE	ALPHA_SCALE		/* 1.0 */
--#define U32_MAX		((u32)~0U)
- #define RTT_MAX		(U32_MAX / ALPHA_MAX)	/* 3.3 secs */
- 
- #define BETA_SHIFT	6
+1) "heap" allocations over something like static/stack allocations allowed a higher degree of parallelization while supporting asynchronous calls, which was an existing feature of smp_call().
+
+2) The context in which the function could be invoked is beyond my control, and is often atomic.
+
+> every time you end up in that situation, ask yourself if the
+> problem can be solved differently. 
+
+Ah, but it was.  I wrote my own cheeseball heap manager ;)  And it was nicely abstracted and conditionally compiled in case GFP_ATOMIC (or equivalent) ever popped up on the radar.
+
+The fact is, when deciding between finer grained parallelism and managing a simple heap myself....the heap code really isn't rocket science ;)
+
+Out of curiosity and for my own edification:  What *is* GFP_ATOMIC meant for?
+
+Regards,
+-Greg
+
+
