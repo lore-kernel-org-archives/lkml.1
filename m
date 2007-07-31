@@ -1,121 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762477AbXGaX1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761559AbXGaX1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762477AbXGaX1T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757667AbXGaXZV
+	id S1761559AbXGaX1f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 19:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757934AbXGaXZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:25:21 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53900 "EHLO
+	Tue, 31 Jul 2007 19:25:22 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46232 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754857AbXGaXZN (ORCPT
+	with ESMTP id S1755089AbXGaXZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Jul 2007 19:25:13 -0400
 From: Christoph Lameter <clameter@sgi.com>
 To: linux-kernel@vger.kernel.org
 Cc: Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH 6/7] Simple Performance Counters: Reclaim instrumentation
-Date: Tue, 31 Jul 2007 16:25:11 -0700
-Message-Id: <1185924312396-git-send-email-clameter@sgi.com>
+Subject: [PATCH 7/7] Simple Performance Counters: SLUB instrumentation
+Date: Tue, 31 Jul 2007 16:25:12 -0700
+Message-Id: <1185924312685-git-send-email-clameter@sgi.com>
 X-Mailer: git-send-email 1.5.2.4
 In-Reply-To: simple-perf-counters
 References: simple-perf-counters
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add some performance counters that display the performance
-of memory reclaim (both direct and background)
+With this patch SLUB will perform tests on bootup and display results.
 
 Signed-off-by: Christoph Lameter <clameter@sgi.com>
 ---
- include/linux/perf.h |    4 ++++
- kernel/perf.c        |    6 +++++-
- mm/vmscan.c          |   13 +++++++++++++
- 3 files changed, 22 insertions(+), 1 deletions(-)
+ mm/slub.c |   97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++---
+ 1 files changed, 92 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/perf.h b/include/linux/perf.h
-index 795b7ec..2dfc497 100644
---- a/include/linux/perf.h
-+++ b/include/linux/perf.h
-@@ -16,6 +16,10 @@
- enum pc_item {
- 	PC_UPDATE_PROCESS_TIMES,
- 	PC_ALLOC_PAGES,
-+	PC_DIRECT_RECLAIM_SCANNED,
-+	PC_DIRECT_RECLAIM_RECLAIMED,
-+	PC_RECLAIM_SCANNED,
-+	PC_RECLAIM_RECLAIMED,
- 	NR_PC_ITEMS
- };
- 
-diff --git a/kernel/perf.c b/kernel/perf.c
-index dd4e850..ecb768b 100644
---- a/kernel/perf.c
-+++ b/kernel/perf.c
-@@ -22,7 +22,11 @@ static int unsynced_get_cycles = 1;
- 
- const char *var_id[NR_PC_ITEMS] = {
- 	"update_process_times",
--	"__alloc_pages"
-+	"__alloc_pages",
-+	"direct_reclaim_scanned",
-+	"direct_reclaim_reclaimed",
-+	"reclaim_scanned",
-+	"reclaim_reclaimed",
- };
- 
- struct perf_counter {
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index d419e10..2836317 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -37,6 +37,7 @@
- #include <linux/delay.h>
- #include <linux/kthread.h>
- #include <linux/freezer.h>
+diff --git a/mm/slub.c b/mm/slub.c
+index 6c6d74f..568b16a 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -20,6 +20,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/ctype.h>
+ #include <linux/kallsyms.h>
 +#include <linux/perf.h>
  
- #include <asm/tlbflush.h>
- #include <asm/div64.h>
-@@ -1118,6 +1119,8 @@ static unsigned long shrink_zones(int priority, struct zone **zones,
-  */
- unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
- {
-+	INIT_PC(pc_scanned);
-+	INIT_PC(pc_reclaimed);
- 	int priority;
- 	int ret = 0;
- 	unsigned long total_scanned = 0;
-@@ -1200,6 +1203,10 @@ out:
+ /*
+  * Lock order:
+@@ -152,6 +153,7 @@ static inline void ClearSlabDebug(struct page *page)
  
- 		zone->prev_priority = priority;
- 	}
-+	pc_bytes(&pc_scanned, PAGE_SIZE * sc.nr_scanned,
-+				PC_DIRECT_RECLAIM_SCANNED);
-+	pc_bytes(&pc_reclaimed, PAGE_SIZE * nr_reclaimed,
-+				PC_DIRECT_RECLAIM_RECLAIMED);
- 	return ret;
+ /* Enable to test recovery from slab corruption on boot */
+ #undef SLUB_RESILIENCY_TEST
++#undef SLUB_PERFORMANCE_TEST
+ 
+ #if PAGE_SHIFT <= 12
+ 
+@@ -2870,9 +2872,97 @@ static long validate_slab_cache(struct kmem_cache *s)
+ 	return count;
  }
  
-@@ -1226,6 +1233,8 @@ out:
-  */
- static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+-#ifdef SLUB_RESILIENCY_TEST
+ static void resiliency_test(void)
  {
-+	INIT_PC(pc_reclaim_scanned);
-+	INIT_PC(pc_reclaim_reclaimed);
- 	int all_zones_ok;
- 	int priority;
- 	int i;
-@@ -1376,6 +1385,10 @@ out:
- 		goto loop_again;
- 	}
++#ifdef SLUB_PERFORMANCE_TEST
++#define TEST_COUNT 10000
++	int size, i;
++	struct pc x;
++	void **v = kmalloc(TEST_COUNT * sizeof(void *), GFP_KERNEL);
++
++	printk(KERN_INFO "SLUB Performance testing\n");
++	printk(KERN_INFO "========================\n");
++	printk(KERN_INFO "1. Kmalloc: Repeatedly allocate then free test\n");
++	for (size = 8; size <= PAGE_SIZE << 2; size <<= 1) {
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++) {
++			v[i] = kmalloc(size, GFP_KERNEL);
++		}
++		printk(KERN_INFO "%i times kmalloc(%d) = ", i, size);
++		pc_stop_printk(&x);
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++)
++			kfree(v[i]);
++		printk(" kfree() = ");
++		pc_stop_printk(&x);
++		printk("\n");
++	}
++
++	printk(KERN_INFO "2. Kmalloc: alloc/free test\n");
++	for (size = 8; size <= PAGE_SIZE << 2; size <<= 1) {
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++)
++			kfree(kmalloc(size, GFP_KERNEL));
++		printk(KERN_INFO "%i times kmalloc(%d)/kfree = ", i, size);
++		pc_stop_printk(&x);
++		printk("\n");
++	}
++	printk(KERN_INFO "3. kmem_cache_alloc: Repeatedly allocate then free test\n");
++	for (size = 3; size <= PAGE_SHIFT; size ++) {
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++) {
++			v[i] = kmem_cache_alloc(kmalloc_caches + size, GFP_KERNEL);
++		}
++		printk(KERN_INFO "%d times kmem_cache_alloc(%d) = ", i, 1 << size);
++		pc_stop_printk(&x);
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++)
++			kmem_cache_free(kmalloc_caches + size, v[i]);
++		printk(" kmem_cache_free() = ");
++		pc_stop_printk(&x);
++		printk("\n");
++	}
++
++	printk(KERN_INFO "4. kmem_cache_alloc: alloc/free test\n");
++	for (size = 3; size <= PAGE_SHIFT; size++) {
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++)
++			kmem_cache_free(kmalloc_caches + size,
++				kmem_cache_alloc(kmalloc_caches + size,
++							GFP_KERNEL));
++		printk(KERN_INFO "%d times kmem_cache_alloc(%d)/kmem_cache_free = ", i, 1 << size);
++		pc_stop_printk(&x);
++		printk("\n");
++	}
++	printk(KERN_INFO "5. kmem_cache_zalloc: Repeatedly allocate then free test\n");
++	for (size = 3; size <= PAGE_SHIFT; size ++) {
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++) {
++			v[i] = kmem_cache_zalloc(kmalloc_caches + size, GFP_KERNEL);
++		}
++		printk(KERN_INFO "%d times kmem_cache_zalloc(%d) = ", i, 1 << size);
++		pc_stop_printk(&x);
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++)
++			kmem_cache_free(kmalloc_caches + size, v[i]);
++		printk(" kmem_cache_free() = ");
++		pc_stop_printk(&x);
++		printk("\n");
++	}
++
++	printk(KERN_INFO "6. kmem_cache_zalloc: alloc/free test\n");
++	for (size = 3; size <= PAGE_SHIFT; size++) {
++		pc_start(&x);
++		for(i = 0; i < TEST_COUNT; i++)
++			kmem_cache_free(kmalloc_caches + size,
++				kmem_cache_zalloc(kmalloc_caches + size,
++							GFP_KERNEL));
++		printk(KERN_INFO "%d times kmem_cache_zalloc(%d)/kmem_cache_free = ", i, 1 << size);
++		pc_stop_printk(&x);
++		printk("\n");
++	}
++#endif
++#ifdef SLUB_RESILIENCY_TEST
+ 	u8 *p;
  
-+	pc_bytes(&pc_reclaim_scanned, total_scanned * PAGE_SIZE,
-+						PC_RECLAIM_SCANNED);
-+	pc_bytes(&pc_reclaim_reclaimed, nr_reclaimed * PAGE_SIZE,
-+						PC_RECLAIM_RECLAIMED);
- 	return nr_reclaimed;
- }
- 
+ 	printk(KERN_ERR "SLUB resiliency testing\n");
+@@ -2920,11 +3010,8 @@ static void resiliency_test(void)
+ 	p[512] = 0xab;
+ 	printk(KERN_ERR "\n3. kmalloc-512: Clobber redzone 0xab->0x%p\n\n", p);
+ 	validate_slab_cache(kmalloc_caches + 9);
+-}
+-#else
+-static void resiliency_test(void) {};
+ #endif
+-
++}
+ /*
+  * Generate lists of code addresses where slabcache objects are allocated
+  * and freed.
 -- 
 1.5.2.4
 
