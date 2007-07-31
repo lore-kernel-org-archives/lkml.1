@@ -1,97 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbXGaHos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbXGaHsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbXGaHos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 03:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXGaHoj
+	id S1753922AbXGaHsT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 03:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXGaHsE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 03:44:39 -0400
-Received: from mail.suse.de ([195.135.220.2]:43070 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751569AbXGaHoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 03:44:38 -0400
-Date: Tue, 31 Jul 2007 09:44:36 +0200
-From: Jan Blunck <jblunck@suse.de>
-To: Theodore Tso <tytso@mit.edu>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070731074436.GE5101@hasse.suse.de>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731034515.GD25876@thunk.org>
+	Tue, 31 Jul 2007 03:48:04 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:24434 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751616AbXGaHsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 03:48:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=doUkkrS6rBLzxjL8DUIZTU2S5OL6NrytpD/AvSaqejAbzVTQTWeTVtQXjSV0o/g7A7QsROG7JQ7KEEHkhPezou/tuv3YxJjmvbrqfIMyJpV8WwzGMLmXVe1UvZJ5iflaHJv18zVcNTKBxiqUFhVYhMcOuarZoHgVe/hTh+dfvI0=
+Message-ID: <8bd0f97a0707310047u51c6e46l7e57e8f7bfc4e858@mail.gmail.com>
+Date: Tue, 31 Jul 2007 03:47:59 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: early_printk accessing __log_buf
+Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org,
+       "Greg Ungerer" <gerg@snapgear.com>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "Paul Mundt" <lethal@linux-sh.org>, "Tim Bird" <tim.bird@am.sony.com>,
+       bryan.wu@analog.com
+In-Reply-To: <20070724143004.6325a511.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731034515.GD25876@thunk.org>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_44164_32817865.1185868079863"
+References: <200707181756.44074.rgetz@blackfin.uclinux.org>
+	 <200707241350.45086.rgetz@blackfin.uclinux.org>
+	 <20070724111215.8d91dc7c.akpm@linux-foundation.org>
+	 <200707241612.56509.rgetz@blackfin.uclinux.org>
+	 <20070724143004.6325a511.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, Theodore Tso wrote:
+------=_Part_44164_32817865.1185868079863
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> On Mon, Jul 30, 2007 at 06:13:35PM +0200, Jan Blunck wrote:
-> > Introduce white-out support to ext2.
-> > 
-> > Known Bugs:
-> > - Needs a reserved inode number for white-outs
-> 
-> You picked different reserved inodes for the ext2 and ext3
-> filesystems.  That's good for a NACK right there.  The codepoints
-> (i.e., reserved inode numbers, feature bit masks, etc.) for ext2,
-> ext3, and ext4 MUST not overlap.  After all, someone might use tune2fs
-> -j to convert an ext2 filesystem to ext3, and is it's REALLY BAD that
-> you're using a reserved inode of 7 for ext2, and 9 for ext3.
+On 7/24/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 24 Jul 2007 16:12:56 -0400 Robin Getz wrote:
+> > On Tue 24 Jul 2007 14:12, Andrew Morton pondered:
+> > > Oh well, it sounds like we need the super-duper fast version.  Keep it
+> > > as simple as possible, please.
+> >
+> > What about:
+> >
+> > int log_buf_copy(void *dest, int idx, size_t n);
+> >
+> > starting at index idx - copy n bytes to dest, return the number of bytes
+> > copied (in case there are not n bytes in the log_buf yet).
+>
+> Sounds sensible.  I'd make it return size_t and take a char* arg though.
+> Or just use `int' - size_t is a bit of a pain and this is all kernel-internal
+> anwyay.
 
-Ouch, right.
+attached
+-mike
 
-> Also, I note that you have created a new INCOMPAT feature flag support
-> for whiteouts.  That's really unfortunate; we try to avoid introducing
-> incompatible feature flags unless absolutely necessary; note that even
-> adding a COMPAT feature flag means that you need a new version of
-> e2fsprogs if you want e2fsck to be willing to touch that filesystem.
-> 
-> So --- if you're looking for a way to add whiteout support to
-> ext2/ext3 without needing a feature bit, here's how.  We allocate a
-> new inode flag in struct ext3_inode.i_flags:
-> 
-> #define EXT2_WHTOUT_FL	 0x00040000
-> 
-> We also allocate a new field in the ext2 superblock to store the
-> "whiteout inode".  (Please coordinate with me so it's a superblock
-> field not in use by ext3/ext4, and so it's reserved so that no one
-> else uses it.)  The superblock field, call it s_whtout_ino, stores the
-> inode number for the "white out inode".
-> 
-> When you create a new whiteout file, the code checks sb->s_whtout_ino,
-> and if it is zero, it allocates a new inode, and creates it as a
-> zero-length regular file (i_mode |= S_IFREG) with the EXT2_WHTOUT_FL
-> flag set in the inode, and then store the inode number in
-> sb->s_whtout_ino.  If sb->s_whtout_ino is non-zero, you must read in
-> the inode and make sure that the EXT2_WHTOUT_FL is set.  If it is not,
-> then allocate a new whiteout inode as described previously.  Then link
-> the inode into the directory as before.
-> 
-> When reading an inode, if the EXT2_WHTOUT_FL flag is set, then set the
-> in-memory mode of the inode to be S_IFWHT.  
-> 
-> That's pretty much about it.  For cleanliness sake, it would be good
-> if ext2_delete_inode clears sb->s_whtout_ino if the last whiteout link
-> has been deleted, but it's strictly speaking not necessary.  If you do
-> it this way, the filesystem is completely backwards compatible; the
-> whiteout files will just appear to links to a normal zero-lenth file.
+------=_Part_44164_32817865.1185868079863
+Content-Type: application/octet-stream; name="linux-log_buf_read.patch"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="linux-log_buf_read.patch"
+X-Attachment-Id: f_f4s36fc9
 
-Ok, this is pretty similar to the way I implemented this for tmpfs. The
-problem is that the union mount code is explicitly checking if the filesystem
-is supporting whiteout. I used to use a new filesystem flag (FS_WHITEOUT) for
-this but thought that disk filesystem like ext2/3/4 will have problem with
-that if you mount an old image. So I guess I still need a feature flag.
+QWRkIHR3byBuZXcgZnVuY3Rpb25zIGZvciByZWFkaW5nIHRoZSBrZXJuZWwgbG9nIGJ1ZmZlci4g
+IFRoZWlyIGludGVudGlvbgppcyB0byBiZSB1c2VkIGJ5IHJlY292ZXJ5L2R1bXAvZGVidWcgY29k
+ZSBzbyB0aGUga2VybmVsIGxvZyBjYW4gYmUgZWFzaWx5CnJldHJpZXZlZC9wYXJzZWQgaW4gYSBj
+cmFzaCBzY2VuYXJpbywgYnV0IHRoZXkgYXJlIGdlbmVyaWMgZW5vdWdoIGZvciBvdGhlcgpwZW9w
+bGUgdG8gZHJlYW0gdXAgb3RoZXIgZnVuIHVzZXMuCgpTaWduZWQtb2ZmLWJ5OiBNaWtlIEZyeXNp
+bmdlciA8dmFwaWVyQGdlbnRvby5vcmc+Ci0tLQpkaWZmIC0tZ2l0IGEvaW5jbHVkZS9saW51eC9r
+ZXJuZWwuaCBiL2luY2x1ZGUvbGludXgva2VybmVsLmgKaW5kZXggNDMwMGJiNC4uOGQ1YjZjNyAx
+MDA2NDQKLS0tIGEvaW5jbHVkZS9saW51eC9rZXJuZWwuaAorKysgYi9pbmNsdWRlL2xpbnV4L2tl
+cm5lbC5oCkBAIC0xNTYsNiArMTU2LDkgQEAgYXNtbGlua2FnZSBpbnQgdnByaW50ayhjb25zdCBj
+aGFyICpmbXQsIHZhX2xpc3QgYXJncykKIAlfX2F0dHJpYnV0ZV9fICgoZm9ybWF0IChwcmludGYs
+IDEsIDApKSk7CiBhc21saW5rYWdlIGludCBwcmludGsoY29uc3QgY2hhciAqIGZtdCwgLi4uKQog
+CV9fYXR0cmlidXRlX18gKChmb3JtYXQgKHByaW50ZiwgMSwgMikpKSBfX2NvbGQ7CitleHRlcm4g
+aW50IGxvZ19idWZfZ2V0X2xlbih2b2lkKTsKK2V4dGVybiBpbnQgbG9nX2J1Zl9yZWFkKGludCBp
+ZHgpOworZXh0ZXJuIGludCBsb2dfYnVmX2NvcHkoY2hhciAqZGVzdCwgaW50IGlkeCwgaW50IGxl
+bik7CiAjZWxzZQogc3RhdGljIGlubGluZSBpbnQgdnByaW50ayhjb25zdCBjaGFyICpzLCB2YV9s
+aXN0IGFyZ3MpCiAJX19hdHRyaWJ1dGVfXyAoKGZvcm1hdCAocHJpbnRmLCAxLCAwKSkpOwpAQCAt
+MTYzLDYgKzE2Niw5IEBAIHN0YXRpYyBpbmxpbmUgaW50IHZwcmludGsoY29uc3QgY2hhciAqcywg
+dmFfbGlzdCBhcmdzKSB7IHJldHVybiAwOyB9CiBzdGF0aWMgaW5saW5lIGludCBwcmludGsoY29u
+c3QgY2hhciAqcywgLi4uKQogCV9fYXR0cmlidXRlX18gKChmb3JtYXQgKHByaW50ZiwgMSwgMikp
+KTsKIHN0YXRpYyBpbmxpbmUgaW50IF9fY29sZCBwcmludGsoY29uc3QgY2hhciAqcywgLi4uKSB7
+IHJldHVybiAwOyB9CitzdGF0aWMgaW5saW5lIGludCBsb2dfYnVmX2dldF9sZW4odm9pZCkgeyBy
+ZXR1cm4gMDsgfQorc3RhdGljIGlubGluZSBpbnQgbG9nX2J1Zl9yZWFkKGludCBpZHgpOyB7IHJl
+dHVybiAwOyB9CitzdGF0aWMgaW5saW5lIGludCBsb2dfYnVmX2NvcHkoY2hhciAqZGVzdCwgaW50
+IGlkeCwgaW50IGxlbikgeyByZXR1cm4gMDsgfQogI2VuZGlmCiAKIHVuc2lnbmVkIGxvbmcgaW50
+X3NxcnQodW5zaWduZWQgbG9uZyk7CmRpZmYgLS1naXQgYS9rZXJuZWwvcHJpbnRrLmMgYi9rZXJu
+ZWwvcHJpbnRrLmMKaW5kZXggMDUxZDI3ZS4uMzViMjMxYSAxMDA2NDQKLS0tIGEva2VybmVsL3By
+aW50ay5jCisrKyBiL2tlcm5lbC9wcmludGsuYwpAQCAtMTYzLDYgKzE2Myw1NSBAQCBvdXQ6CiBf
+X3NldHVwKCJsb2dfYnVmX2xlbj0iLCBsb2dfYnVmX2xlbl9zZXR1cCk7CiAKIC8qCisgKiBSZXR1
+cm4gdGhlIG51bWJlciBvZiB1bnJlYWQgY2hhcmFjdGVycyBpbiB0aGUgbG9nIGJ1ZmZlci4KKyAq
+LworaW50IGxvZ19idWZfZ2V0X2xlbih2b2lkKQoreworCXJldHVybiBsb2dfZW5kIC0gbG9nX3N0
+YXJ0OworfQorCisvKgorICogQ29weSBhIHJhbmdlIG9mIGNoYXJhY3RlcnMgZnJvbSB0aGUgbG9n
+IGJ1ZmZlci4KKyAqLworaW50IGxvZ19idWZfY29weShjaGFyICpkZXN0LCBpbnQgaWR4LCBpbnQg
+bGVuKQoreworCWludCByZXQsIG1heDsKKworCWlmICghb29wc19pbl9wcm9ncmVzcykKKwkJc3Bp
+bl9sb2NrX2lycSgmbG9nYnVmX2xvY2spOworCisJbWF4ID0gbG9nX2J1Zl9nZXRfbGVuKCk7CisJ
+aWYgKGlkeCA8IDAgfHwgaWR4ID49IG1heCkKKwkJcmV0ID0gLTE7CisJZWxzZSB7CisJCWlmIChs
+ZW4gPiBtYXgpCisJCQlsZW4gPSBtYXg7CisJCXJldCA9IGxlbjsKKwkJd2hpbGUgKGxlbi0tID4g
+MCkgeworCQkJKmRlc3QgPSBMT0dfQlVGKGlkeCsrKTsKKwkJCSsrZGVzdDsKKwkJfQorCX0KKwor
+CWlmICghb29wc19pbl9wcm9ncmVzcykKKwkJc3Bpbl91bmxvY2tfaXJxKCZsb2didWZfbG9jayk7
+CisKKwlyZXR1cm4gcmV0OworfQorCisvKgorICogRXh0cmFjdCBhIHNpbmdsZSBjaGFyYWN0ZXIg
+ZnJvbSB0aGUgbG9nIGJ1ZmZlci4KKyAqLworaW50IGxvZ19idWZfcmVhZChpbnQgaWR4KQorewor
+CWNoYXIgcmV0OworCWlmIChsb2dfYnVmX2NvcHkoJnJldCwgaWR4LCAxKSA9PSAxKQorCQlyZXR1
+cm4gcmV0OworCWVsc2UKKwkJcmV0dXJuIC0xOworfQorCisvKgogICogQ29tbWFuZHMgdG8gZG9f
+c3lzbG9nOgogICoKICAqIAkwIC0tIENsb3NlIHRoZSBsb2cuICBDdXJyZW50bHkgYSBOT1AuCg==
 
-> I wouldn't bother with setting the directory type field to be DT_WHT,
-> given that they will never be returned to userspace anyway.
-
-At the moment I still rely on this for the current readdir implementation.
-Viro already said that he doesn't want to see this (the readdir changes) in
-the kernel but in userspace.
-
-Thanks,
-Jan
+------=_Part_44164_32817865.1185868079863--
