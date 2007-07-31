@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764551AbXGaROu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763690AbXGaRQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764551AbXGaROu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763994AbXGaROc
+	id S1763690AbXGaRQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbXGaRQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:14:32 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1806 "EHLO
+	Tue, 31 Jul 2007 13:16:15 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1832 "EHLO
 	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763874AbXGaROa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:14:30 -0400
+	id S1751299AbXGaRQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:16:14 -0400
 From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 11] drivers/pci/hotplug/cpqphp_ctrl.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 19:14:28 +0200
+Subject: [PATCH 12] fs/reiser4/plugin/file/cryptcompress.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 19:16:13 +0200
 User-Agent: KMail/1.9.5
 Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       greg@kroah.com
+       reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org
 References: <200707311845.48807.m.kozlowski@tuxland.pl>
 In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
@@ -23,37 +23,34 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707311914.29201.m.kozlowski@tuxland.pl>
+Message-Id: <200707311916.13506.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- drivers/pci/hotplug/cpqphp_ctrl.c | 79698 -> 79638 (-60 bytes)
- drivers/pci/hotplug/cpqphp_ctrl.o | 192896 -> 192736 (-160 bytes)
+ fs/reiser4/plugin/file/cryptcompress.c | 101386 -> 101352 (-34 bytes)
+ fs/reiser4/plugin/file/cryptcompress.o | 456784 -> 456644 (-140 bytes)
 
- drivers/pci/hotplug/cpqphp_ctrl.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ fs/reiser4/plugin/file/cryptcompress.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/drivers/pci/hotplug/cpqphp_ctrl.c	2007-07-26 13:07:43.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/pci/hotplug/cpqphp_ctrl.c	2007-07-31 13:56:47.000000000 +0200
-@@ -973,16 +973,13 @@ struct pci_func *cpqhp_slot_create(u8 bu
- 	struct pci_func *new_slot;
- 	struct pci_func *next;
+--- linux-2.6.23-rc1-mm1-a/fs/reiser4/plugin/file/cryptcompress.c	2007-07-26 13:07:46.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/fs/reiser4/plugin/file/cryptcompress.c	2007-07-31 15:00:24.000000000 +0200
+@@ -74,13 +74,13 @@ static void set_inode_crypto_info (struc
+ /* allocate a cipher key info */
+ struct reiser4_crypto_info * reiser4_alloc_crypto_info (struct inode * inode)
+ {
+-	struct reiser4_crypto_info * info;
++	struct reiser4_crypto_info *info;
+ 	int fipsize;
 
--	new_slot = kmalloc(sizeof(*new_slot), GFP_KERNEL);
--
--	if (new_slot == NULL) {
-+	new_slot = kzalloc(sizeof(*new_slot), GFP_KERNEL);
-+	if (!new_slot) {
- 		/* I'm not dead yet!
- 		 * You will be. */
--		return new_slot;
-+		return NULL;
- 	}
-
--	memset(new_slot, 0, sizeof(struct pci_func));
--
- 	new_slot->next = NULL;
- 	new_slot->configured = 1;
-
+-	info = kmalloc(sizeof(*info), reiser4_ctx_gfp_mask_get());
++	info = kzalloc(sizeof(*info), reiser4_ctx_gfp_mask_get());
+ 	if (!info)
+ 		return ERR_PTR(-ENOMEM);
+-	memset(info, 0, sizeof (*info));
++
+ 	fipsize = inode_digest_plugin(inode)->fipsize;
+ 	info->keyid = kmalloc(fipsize, reiser4_ctx_gfp_mask_get());
+ 	if (!info->keyid) {
