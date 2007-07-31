@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbXGaGdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbXGaGff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbXGaGdz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 02:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXGaGdq
+	id S1756580AbXGaGff (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 02:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXGaGf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 02:33:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58686 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751770AbXGaGdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 02:33:45 -0400
-Date: Tue, 31 Jul 2007 08:33:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: david@lang.hm
-Cc: Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: CONFIG_SUSPEND? (was: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1)
-Message-ID: <20070731063310.GC22419@elf.ucw.cz>
-References: <200707251238.50218.lenb@kernel.org> <alpine.LFD.0.999.0707280921150.3442@woody.linux-foundation.org> <alpine.LFD.0.999.0707280932470.3442@woody.linux-foundation.org> <200707302353.19217.lenb@kernel.org> <Pine.LNX.4.64.0707302102160.6478@asgard.lang.hm>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0707302102160.6478@asgard.lang.hm>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 31 Jul 2007 02:35:27 -0400
+Received: from mga03.intel.com ([143.182.124.21]:21944 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751342AbXGaGf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 02:35:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
+   d="scan'208";a="256747911"
+Subject: Re: [PATCH 4/5] x86_64 EFI support -v3: EFI framebuffer driver
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       "Antonino A. Daplas" <adaplas@pol.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <m1zm1dtcmz.fsf@ebiederm.dsl.xmission.com>
+References: <1185851582.23149.29.camel@caritas-dev.intel.com>
+	 <m1zm1dtcmz.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 31 Jul 2007 14:35:08 +0800
+Message-Id: <1185863708.23149.46.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 31 Jul 2007 06:35:19.0172 (UTC) FILETIME=[F693AC40:01C7D33C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-07-30 21:09:33, david@lang.hm wrote:
-> On Mon, 30 Jul 2007, Len Brown wrote:
+On Mon, 2007-07-30 at 22:34 -0600, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
 > 
-> >On Saturday 28 July 2007 12:55, Linus Torvalds wrote:
+> > This patch adds Graphics Output Protocol support to the kernel.
+> > UEFI2.0 spec deprecates Universal Graphics Adapter (UGA) protocol and
+> > only Graphics Output Protocol (GOP) is produced. Therefore, the boot
+> > loader needs to query the UEFI firmware with appropriate Output
+> > Protocol and pass the video information to the kernel. As a result of
+> > GOP protocol, an EFI framebuffer driver is needed for displaying
+> > console messages. The patch adds a EFI framebuffer driver. The EFI
+> > frame buffer driver in this patch is based on the Intel Mac
+> > framebuffer driver.
 > >
-> >>So I think the real issue is that we allow that
-> >>"suspend_devices_and_enter()" code to be compiled without HOTPLUG_CPU in
-> >>the first place. It's not supposed to work that way.
-> >
-> >I don't see how CONFIG_HOTPLUG_CPU justifies its own existence.
-> >This e-mail thread would have never happened if it were simply included
-> >in CONFIG_SMP, always.
-> >
-> >I agree, of course, that ACPI should never have had to work-around
-> >this by selecting HOTPLUG_CPU.  But even though it is now done at
-> >the right layer, I don't see why PM should have to
-> >be bothered with selecting HOTPLUG_CPU either --
-> >it should just come with SMP.
+> > The ELILO bootloader takes care of passing the video information as
+> > appropriate for EFI firmware.
 > 
-> why do you need hotplug just becouse you have muliple cpus? if you never 
-> have any intention of useing suspend and your hardware doesn't support 
-> hotplugging, why should you have to include the code for it?
+> Am I correct in understanding that you are not using any of the efi
+> runtime service infrastructure you have built up in other patches?
 
-Because otherwise we have way too many config options, and there are
-basically no downsides? Too many options => too little testing of each
-permutation...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Yes. The EFI runtime service is not needed for this patch.
+
+Best Regards,
+Huang Ying
