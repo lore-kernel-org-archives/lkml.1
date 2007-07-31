@@ -1,74 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759505AbXGaMxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbXGaMyo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759505AbXGaMxZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbXGaMxQ
+	id S1760174AbXGaMyo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:54:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757847AbXGaMyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:53:16 -0400
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:18685 "EHLO
-	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750978AbXGaMxP convert rfc822-to-8bit (ORCPT
+	Tue, 31 Jul 2007 08:54:36 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:23424 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752154AbXGaMyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:53:15 -0400
-Message-Id: <46AEF8760200005A00028671@mcclure.wal.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 31 Jul 2007 08:53:10 -0400
-From: "Gregory Haskins" <ghaskins@novell.com>
-To: <linux.kernel@free.fr>
-Cc: <macro@linux-mips.org>, <linux-kernel@vger.kernel.org>,
-       <linux-rt-users@vger.kernel.org>
-Subject: Re: BIOS implementors disabling the LAPIC
+	Tue, 31 Jul 2007 08:54:35 -0400
+Date: Tue, 31 Jul 2007 14:55:06 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, stern@rowland.harvard.edu
+Subject: Re: [PATCHSET 2.6.23-rc1] sysfs: locking fix and cleanups
+Message-ID: <20070731145506.3c7d4a40@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <11858769082982-git-send-email-htejun@gmail.com>
+References: <11858769082982-git-send-email-htejun@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 14:32 +0200, John Sigler wrote:
+On Tue, 31 Jul 2007 19:15:08 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-> The motherboard manufacturer (well, their level 1 support, anyway) told 
-> me I could "safely enable the LAPIC". If it is safe to enable the LAPIC, 
-> then why are they disabling it in the BIOS?
-
-I would guess that because they don't have an IOAPIC, they figured they
-don't need the APIC and didn't bother to write support for it.  In
-reality, other features of the APIC are useful other than IOAPIC routing
-(e.g. LVTT) so as you have discovered, you end up with reduced
-functionality for probably no good reason. 
-
-
-
-
-> Is this a "either works or doesn't" situation where hell should break 
-> loose if I try to enable the LAPIC and it's not supported by the 
-> motherboard, or is this a "you will silently lose data at the worst 
-> possible time" situation?
-
-You will most likely be fine.
-
-
+> Hello, all.
 > 
-> >> (And what does it mean to "disable" the LAPIC?)
-> > 
-> > The LINT0 and LINT1 inputs of the APIC are routed straight to the INT and
-> > NMI inputs of the CPU respectively and the rest of the APIC logic becomes
-> > inactive (tri-stated, etc.).
+> This patchset contains a locking fix and cleanup patches for sysfs.
 > 
-> If that were the case, then I could not enable the LAPIC and have NMIs 
-> work, right?
+> #01	locking fix
+> #02	shadow support removal from Eric adapted to apply after #01
+> #03-07	clean up patches
+> 
+> #01 should go mainline as it fixes a locking regression introduced by
+> -rc1 merge.  The rest should stay in -gregkh till 24 merge window
+> opens up.
+> 
+> Clean up patches don't introduce any noticeable behavior change.  They
+> just refactor and simplify codes.
+> 
+> Thanks.
 
-No, again you should be fine.  All this means is that LINT0/1 go to
-defaults of "EXTINT" and "NMI" when the APIC is disabled.  When they are
-enabled, the programming of the LVT for LINT0/1 defines what they are.
-When you enable it, linux will start programming the LVT and should
-continue to use NMI in whatever way it sees fit.
-
-The one way you will get screwed is if there is some routing information
-that *should* be in the ACPI tables that is missing due to the lack of
-support.  I don't think you will have an issue, but I figured it should
-mention its not guaranteed you wont either.  So don't sue me... ;)
-
-Regards,
--Greg
-
+FYI: This seems to work well on s390 so far, when attaching/detaching
+and moving devices (my standard test cases ;)
