@@ -1,134 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbXGaPmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763676AbXGaPpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbXGaPmU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbXGaPmM
+	id S1763676AbXGaPpe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbXGaPp1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:42:12 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:45547 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751116AbXGaPmK (ORCPT
+	Tue, 31 Jul 2007 11:45:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:47525 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751417AbXGaPp0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:42:10 -0400
-Date: Tue, 31 Jul 2007 11:42:10 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Gabriel C <nix.or.die@googlemail.com>, "A. Kalten" <akalten@comcast.net>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Can't unload uhci_hcd module with 2.6.22 -- also oops
-In-Reply-To: <46AE560D.20801@googlemail.com>
-Message-ID: <Pine.LNX.4.44L0.0707311139120.3520-100000@iolanthe.rowland.org>
+	Tue, 31 Jul 2007 11:45:26 -0400
+Date: Tue, 31 Jul 2007 08:44:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Bill Huey <billh@gnuppy.monkey.org>
+cc: George Sescher <gesacs@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       CK Mailinglist <ck@vds.kolivas.org>
+Subject: Re: Linus 2.6.23-rc1
+In-Reply-To: <20070731100511.GI32582@gnuppy.monkey.org>
+Message-ID: <alpine.LFD.0.999.0707310842520.4161@woody.linux-foundation.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <1185588279.1654.1.camel@localhost> <20070729150436.GA6598@elte.hu>
+ <a12e280d0707291604s618c0b14lc8572b2f48cd4ca1@mail.gmail.com>
+ <alpine.LFD.0.999.0707291612410.3442@woody.linux-foundation.org>
+ <20070731100511.GI32582@gnuppy.monkey.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun:
-
-Can you look at this oops message please?  It appears similar to the
-sysfs bug in 2.6.23-rc1, but it occurred under 2.6.22.  Is a similar 
-fix needed for the 2.6.22-stable series?
-
-Thanks,
-
-Alan Stern
 
 
-On Mon, 30 Jul 2007, Gabriel C wrote:
+On Tue, 31 Jul 2007, Bill Huey wrote:
+> 
+> Here's the problem, *a lot* of folks can do scheduler development in and
+> outside community, so what's with exclusive-only attitude towards the
+> scheduler ?
 
-> A. Kalten wrote:
-> [ added usb peoples to CC ]
-> > Hello,
-> > 
-> > To send a fax using an external usb modem, I do the following:
-> > 
-> > modprobe uhci-hcd
-> > modprobe cdc-acm
-> > mount -t usbfs none /proc/bus/usb
-> > 
-> > Then I send the fax.
-> > 
-> > However, when I attempt to unload the modules by reversing
-> > the above steps, then uhci_hcd module will not unload:
-> > 
-> > [/]# rmmod uhci-hcd
-> > ERROR: Removing 'uhci_hcd': Device or resource busy
-> > 
-> > Using lsof to list all open files gives the following:
-> > 
-> > ksuspend_  766 root  cwd       DIR                8,1     456          2 /
-> > ksuspend_  766 root  rtd       DIR                8,1     456          2 /
-> > ksuspend_  766 root  txt   unknown                                       /proc/766/exe
-> > khubd      769 root  cwd       DIR                8,1     456          2 /
-> > khubd      769 root  rtd       DIR                8,1     456          2 /
-> > khubd      769 root  txt   unknown                                       /proc/769/exe
-> > 
-> > I cannot terminate these processes.
-> > 
-> > Also, the kernel log shows an oops:
-> > 
-> > kernel: usbcore: deregistering interface driver cdc_acm
-> > kernel: uhci_hcd 0000:00:1d.3: remove, state 1
-> > kernel: usb usb4: USB disconnect, address 1
-> > kernel: uhci_hcd 0000:00:1d.3: USB bus 4 deregistered
-> > kernel: ACPI: PCI interrupt for device 0000:00:1d.3 disabled
-> > kernel: uhci_hcd 0000:00:1d.2: remove, state 1
-> > kernel: usb usb3: USB disconnect, address 1
-> > kernel: uhci_hcd 0000:00:1d.2: USB bus 3 deregistered
-> > kernel: ACPI: PCI interrupt for device 0000:00:1d.2 disabled
-> > kernel: uhci_hcd 0000:00:1d.1: remove, state 1
-> > kernel: usb usb2: USB disconnect, address 1
-> > kernel: usb 2-2: USB disconnect, address 2
-> > kernel: Unable to handle kernel paging request at ffffffff88040440 RIP: 
-> > kernel:  [sysfs_get_name+46/65] sysfs_get_name+0x2e/0x41
-> > kernel: PGD 203067 PUD 205063 PMD 7a6b2067 PTE 0
-> > kernel: Oops: 0000 [1] SMP 
-> > kernel: CPU 1 
-> > kernel: Modules linked in: uhci_hcd usbcore af_packet skge bitrev crc32
-> > kernel: Pid: 1123, comm: rmmod Not tainted 2.6.22 #3
-> > kernel: RIP: 0010:[sysfs_get_name+46/65]  [sysfs_get_name+46/65] sysfs_get_name+0x2e/0x41
-> > kernel: RSP: 0018:ffff81006edd5ce0  EFLAGS: 00010246
-> > kernel: RAX: ffffffff88040440 RBX: ffff81006fbb68e0 RCX: 0000000000000000
-> > kernel: RDX: 0000000000000004 RSI: ffffffff80423b38 RDI: ffff81006fbb6b88
-> > kernel: RBP: ffff81006fbb6b88 R08: 0000000000000000 R09: 8000000000000000
-> > kernel: R10: 0000000000000080 R11: ffffffff80330606 R12: ffff81006fbb6b90
-> > kernel: R13: ffff81006f414c78 R14: ffffffff80423b38 R15: ffffffff8803b940
-> > kernel: FS:  00002b93765b76f0(0000) GS:ffff810002f4d140(0000) knlGS:0000000000000000
-> > kernel: CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > kernel: CR2: ffffffff88040440 CR3: 000000006f5e5000 CR4: 00000000000006e0
-> > kernel: Process rmmod (pid: 1123, threadinfo ffff81006edd4000, task ffff81006e48ae40)
-> > kernel: Stack:  ffffffff8029b6dd ffff81006fbb0420 ffff81006fbb05a0 ffff8100784a9800
-> > kernel:  ffff81006fbb0510 ffff8100784a9888 ffffffff80330986 ffff81006fbb0400
-> > kernel:  ffff81006fbb0400 ffff81006fbb0420 ffffffff80330b95 ffff81006fbb0400
-> > kernel: Call Trace:
-> > kernel:  [sysfs_hash_and_remove+104/295] sysfs_hash_and_remove+0x68/0x127
-> > kernel:  [device_remove_file+37/58] device_remove_file+0x25/0x3a
-> > kernel:  [device_del+375/704] device_del+0x177/0x2c0
-> > kernel:  [_end+129064639/2131730856] :usbcore:usb_disable_device+0x8c/0x106
-> > kernel:  [_end+129049073/2131730856] :usbcore:usb_disconnect+0x98/0xee
-> > kernel:  [_end+129049053/2131730856] :usbcore:usb_disconnect+0x84/0xee
-> > kernel:  [_end+129057037/2131730856] :usbcore:usb_remove_hcd+0x85/0xe1
-> > kernel:  [_end+129097874/2131730856] :usbcore:usb_hcd_pci_remove+0x1d/0x89
-> > kernel:  [pci_device_remove+36/77] pci_device_remove+0x24/0x4d
-> > kernel:  [__device_release_driver+130/184] __device_release_driver+0x82/0xb8
-> > kernel:  [driver_detach+252/261] driver_detach+0xfc/0x105
-> > kernel:  [bus_remove_driver+122/157] bus_remove_driver+0x7a/0x9d
-> > kernel:  [pci_unregister_driver+16/129] pci_unregister_driver+0x10/0x81
-> > kernel:  [_end+129186684/2131730856] :uhci_hcd:uhci_hcd_cleanup+0x10/0x2c
-> > kernel:  [sys_delete_module+319/444] sys_delete_module+0x13f/0x1bc
-> > kernel:  [__up_write+29/318] __up_write+0x1d/0x13e
-> > kernel:  [system_call+126/131] system_call+0x7e/0x83
-> > kernel: 
-> > kernel: 
-> > kernel: Code: 48 8b 00 c3 83 fa 20 74 f7 31 c0 0f 1f 00 c3 0f 0b eb fe 41 
-> > kernel: RIP  [sysfs_get_name+46/65] sysfs_get_name+0x2e/0x41
-> > kernel:  RSP <ffff81006edd5ce0>
-> > kernel: CR2: ffffffff88040440
-> > 
-> > My system is Intel Pentium D dual core with Asus P5WD2 motherboard.
-> > 
-> > Please CC to my personal address as I am not subscribed to the list.
-> > 
-> > Andrew Kalten
+There is no exclusive-only attitude towards the scheduler.
 
+If you send me small and obvious improvements, they'll get applied to the 
+scheduler, exactly the same way they get applied to anything else.
+
+And if you try to rewrite everything, and do it on your own, and then 
+don't even send me a patch, it also won't get applied. 
+
+Surprise?
+
+			Linus
