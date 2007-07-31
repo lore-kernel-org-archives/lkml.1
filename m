@@ -1,78 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932858AbXGaVfg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbXGaVf5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932858AbXGaVfg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:35:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbXGaVez
+	id S1762045AbXGaVf5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:35:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXGaVfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:34:55 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:44616 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbXGaVex (ORCPT
+	Tue, 31 Jul 2007 17:35:08 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:47749 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759839AbXGaVfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:34:53 -0400
-Date: Tue, 31 Jul 2007 14:39:39 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: pm_trace displays the wrong time from the RTC
-Message-Id: <20070731143939.774eb9db.randy.dunlap@oracle.com>
-In-Reply-To: <46AFA78A.9010904@redhat.com>
-References: <46AFA78A.9010904@redhat.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Tue, 31 Jul 2007 17:35:06 -0400
+X-Greylist: delayed 538 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 17:35:06 EDT
+Date: Tue, 31 Jul 2007 23:26:06 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Daniel Mierswa <impulze@impulze.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Gericom Webboy Laptop Mouse/Touchpad
+Message-ID: <20070731212606.GA3643@rhlx01.hs-esslingen.de>
+References: <46AF935B.9020403@impulze.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46AF935B.9020403@impulze.org>
+X-Priority: none
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 17:20:10 -0400 Chuck Ebbert wrote:
+Hi,
 
-> When resuming, systems print this when booted on 07/31/07:
+On Tue, Jul 31, 2007 at 09:54:03PM +0200, Daniel Mierswa wrote:
 > 
-> Date: 06/31/107
-> 
-> /drivers/base/power/trace.c::read_magic_time():
-> 114	get_rtc_time(&time);
-> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
-> 116		time.tm_hour, time.tm_min, time.tm_sec,
-> 117		time.tm_mon, time.tm_mday, time.tm_year);
-> 
-> include/asm-generic/rtc.h:
-> 102         /*
-> 103          * Account for differences between how the RTC uses the values
-> 104          * and how they are defined in a struct rtc_time;
-> 105          */
-> 106         if (time->tm_year <= 69)
-> 107                 time->tm_year += 100;
-> 108 
-> 109         time->tm_mon--;
+> Hi there,
+> i'm having troubles getting my mouse and/or touchpad to work with 
+> 2.6.21.5 (and older ones). It's putting the following line into dmesg 
+> everytime the laptop gets lots of I/O or cpu load.
+> "psmouse.c: Wheel Mouse at isa0060/serio4/input0 lost synchronization, 
+> throwing 2 bytes away."
 
+This message is a wee bit too familiar to me as well, albeit for reasons
+different to that, I believe. :-$
 
-That's this config option (read all of it):
+> The problem still exists and seems to occur as i've mentioned on lots of 
+> disk i/o and/or cpu load.
+> This is a laptop which is not supported by the manufactur anymore (seems 
+> to be a Gericom Webboy). I would appreciate any tips to debug this further.
+> Please post back for any additional information you need.
 
-config PM_TRACE
-	bool "Suspend/resume event tracing"
-	depends on PM_DEBUG && X86 && EXPERIMENTAL
-	default n
-	---help---
-	This enables some cheesy code to save the last PM event point in the
-	RTC across reboots, so that you can debug a machine that just hangs
-	during suspend (or more commonly, during resume).
+Hmm, I'm pondering what I'd do here...
+Could it be that you're using the "old" IDE layer (not libata yet) and
+hdparm -u or -d or -c is inconveniently set up?
 
-	To use this debugging feature you should attempt to suspend the machine,
-	then reboot it, then run
+Maybe run powertop to identify timer anomalies?
+Try configuring a different CONFIG_HZ?
+Or maybe run oprofile to try to figure out any abnormal system load?
+And did you try running a "barebone"-only configuration? Possibly some
+certain driver is causing this misbehaviour...
+vmstat may provide some initial information as to what kind of activity
+exactly causes this issue.
 
-		dmesg -s 1000000 | grep 'hash matches'
+Or maybe it's a simple X.org scheduling issue again?
+What nice value do you run X.org at?
+If it's too low, then maybe this causes the psmouse.c driver to have its
+mouse queue(?) processing get stuck and makes it have a hickup?
+In this context it would be good to ask about possible memory pressure on
+this system, too, since recently some people indicated more fluid X.org mouse
+pointer operation when mlocking the pointer handling code to avoid
+paging this code.
 
-	CAUTION: this option will cause your machine's real-time clock to be
-	set to an invalid time after a resume.
+Oh, given that IIRC the Webboy is a slightly older Gericom model which
+thus may easily be a (somewhat hotter) P4 *desktop* CPU: could it be that
+you're hitting thermal emergency throttling on increased system activity?
+cat /proc/acpi/processor/*/throttling or something there might indicate
+this.
 
+HTH,
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Andreas Mohr
