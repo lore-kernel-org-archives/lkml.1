@@ -1,42 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760135AbXGaMOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbXGaMQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760135AbXGaMOK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbXGaMN6
+	id S1760190AbXGaMQa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757152AbXGaMQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:13:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44046 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756065AbXGaMN5 (ORCPT
+	Tue, 31 Jul 2007 08:16:23 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:43671 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbXGaMQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:13:57 -0400
-Date: Tue, 31 Jul 2007 13:13:52 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Matthew Hawkins <darthmdh@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Christoph Hellwig <hch@infradead.org>,
-       Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
-       ck@vds.kolivas.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?
-Message-ID: <20070731121352.GA11380@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Matthew Hawkins <darthmdh@gmail.com>,
-	Roland Dreier <rdreier@cisco.com>, Jacob Braun <jwbraun@gmail.com>,
-	kriko <kristjan.ugrin@gmail.com>, ck@vds.kolivas.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com> <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site> <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com> <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com> <20070730182959.GA29151@infradead.org> <adaps29sm62.fsf@cisco.com> <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 31 Jul 2007 08:16:23 -0400
+Message-ID: <46AF27E6.5080008@zytor.com>
+Date: Tue, 31 Jul 2007 08:15:34 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Ulrich Kunitz <kune@deine-taler.de>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, Jan Kratochvil <honza@jikos.cz>,
+       jakub@redhat.com
+Subject: Re: Is PIE randomization breaking klibc binaries?
+References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com> <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com> <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com> <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de> <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz> <46AF24B2.8070900@zytor.com> <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz>
+In-Reply-To: <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew, odd off.  ait binary crap is totally offtopic here on the list,
-and beeing prude for beeing a fuckhead and holding development back doesn't
-exactly helpe either.  Go back to your -ck fanboy land and shut up now.
+Jiri Kosina wrote:
+> On Tue, 31 Jul 2007, H. Peter Anvin wrote:
+> 
+>>> I just now quickly tried to with klibc-1.5 on i386 with the 
+>>> PIE-randomization patched kernel, and it seems to load static 
+>>> libraries fine. I just downloaded klibc-1.5, built it, and executed a 
+>>> few of the programs in usr/utils/static, all of them worked. Does this 
+>>> also work for you and you are experiencing the problems solely when 
+>>> the binaries are being run from initramfs during boot? I will test 
+>>> more shortly (on x86_64, directly from initramfs) in order to 
+>>> reproduce.
+>> What about shared binaries?
+> 
+> Works for me too on the pie-randomization patched kernel.
+> 
+> So it seems to me that either it is something x86_64 specific or 
+> initramfs-specific. Will try to reproduce it.
+> 
+
+My guess would be the former, rather than the latter.  I haven't had a 
+chance to reproduce it myself yet (I'm on the road), but I will try to 
+get the time tomorrow.
