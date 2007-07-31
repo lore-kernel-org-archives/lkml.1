@@ -1,81 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939990AbXGaETb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939743AbXGaE2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939990AbXGaETb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbXGaETX
+	id S939743AbXGaE2d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755176AbXGaE2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:19:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:59089 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752938AbXGaETW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:19:22 -0400
-Date: Tue, 31 Jul 2007 06:19:17 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       arjan@linux.intel.com, mingo@elte.hu, ak@suse.de, jens.axboe@oracle.com,
-       James.Bottomley@SteelEye.com, andrea@suse.de, akpm@linux-foundation.org,
-       andrew.vasquez@qlogic.com
-Subject: Re: [rfc] direct IO submission and completion scalability issues
-Message-ID: <20070731041917.GA25874@wotan.suse.de>
-References: <20070728012128.GB10033@linux-os.sc.intel.com> <Pine.LNX.4.64.0707301114060.743@schroedinger.engr.sgi.com> <20070730203519.GD10033@linux-os.sc.intel.com>
+	Tue, 31 Jul 2007 00:28:23 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60818 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbXGaE2U (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 00:28:20 -0400
+Date: Tue, 31 Jul 2007 13:29:32 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "David Mosberger-Tang" <dmosberger@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "Zoltan.Menyhart@bull.net" <Zoltan.Menyhart@bull.net>,
+       "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization
+ for cpus other than montecito
+Message-Id: <20070731132932.8e21d48c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>
+References: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com>
+	<ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070730203519.GD10033@linux-os.sc.intel.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 01:35:19PM -0700, Suresh B wrote:
-> On Mon, Jul 30, 2007 at 11:20:04AM -0700, Christoph Lameter wrote:
-> > On Fri, 27 Jul 2007, Siddha, Suresh B wrote:
+On Mon, 30 Jul 2007 22:15:50 -0600
+"David Mosberger-Tang" <dmosberger@gmail.com> wrote:
+
+> This seems crazy to me.  Flushing should occur according to the
+> *architecture*, not model-by-model.  Even if we happen to get "lucky"
+> on pre-Montecito CPUs, that doesn't justify such ugly hacks.  
+
+I'm not sure this can happen before Montecito because L1 was write-through
+and L2 was mixed. 
+
+> Or you really want to debug this *again* come next CPU?
+
+No. 
+I should add RFC to this patch. I just want to hear opinions.
+This is why I separated this patch. I can drop this.
+
+Thanks,
+-Kame
+
+
+
+
+
+ 
+>   --david
 > 
-> > > Observation #2: This introduces some migration overhead during IO submission.
-> > > With the current prototype, every incoming IO request results in an IPI and
-> > > context switch(to kblockd thread) on the interrupt processing cpu.
-> > > This issue needs to be addressed and main challenge to address is
-> > > the efficient mechanism of doing this IO migration(how much batching to do and
-> > > when to send the migrate request?), so that we don't delay the IO much and at
-> > > the same point, don't cause much overhead during migration.
-> > 
-> > Right.
+> On 7/30/07, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> >
+> > Add "L2 cache is separated? check flag" as read_mostly global variable.
+> >
+> > This add one memory reference to global variable to page faults of "executable"
+> > map in do_wp_page(page copy case), file-mapped page fault and some system calls
+> > which does memory map changes. But not so bad as calling sync_icache_dcache in
+> > architectures which doesn't need it.
+> >
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> >
+> >
+> > ---
+> >  arch/ia64/kernel/setup.c   |    7 +++++++
+> >  include/asm-ia64/pgtable.h |    3 ++-
+> >  2 files changed, 9 insertions(+), 1 deletion(-)
+> >
+> > Index: linux-2.6.23-rc1.test/arch/ia64/kernel/setup.c
+> > ===================================================================
+> > --- linux-2.6.23-rc1.test.orig/arch/ia64/kernel/setup.c
+> > +++ linux-2.6.23-rc1.test/arch/ia64/kernel/setup.c
+> > @@ -106,6 +106,8 @@ struct io_space io_space[MAX_IO_SPACES];
+> >  EXPORT_SYMBOL(io_space);
+> >  unsigned int num_io_spaces;
+> >
+> > +int separated_l2_icache_dcache __read_mostly;
+> > +
+> >  /*
+> >   * "flush_icache_range()" needs to know what processor dependent stride size to use
+> >   * when it makes i-cache(s) coherent with d-caches.
+> > @@ -718,6 +720,11 @@ get_model_name(__u8 family, __u8 model)
+> >                 printk(KERN_ERR
+> >                        "%s: Table overflow. Some processor model information will be missing\n",
+> >                        __FUNCTION__);
+> > +       /* Montecito has separated L2 Icache and Dcache. This requires
+> > +          synchronize Icache and Dcache before set_pte() */
+> > +       if (family == 0x20)
+> > +               separated_l2_icache_dcache = 1;
+> > +
+> >         return "Unknown";
+> >  }
+> >
+> > Index: linux-2.6.23-rc1.test/include/asm-ia64/pgtable.h
+> > ===================================================================
+> > --- linux-2.6.23-rc1.test.orig/include/asm-ia64/pgtable.h
+> > +++ linux-2.6.23-rc1.test/include/asm-ia64/pgtable.h
+> > @@ -489,9 +489,10 @@ extern struct page *zero_page_memmap_ptr
+> >   * as an executable pte.
+> >   */
+> >  extern void __sync_icache_dcache(pte_t pte);
+> > +extern int separated_l2_icache_dcache;
+> >  static inline void sync_icache_dcache(pte_t pte)
+> >  {
+> > -       if (pte_exec(pte))
+> > +       if (pte_exec(pte) && separated_l2_icache_dcache)
+> >                 __sync_icache_dcache(pte);
+> >  }
+> >  #define __HAVE_ARCH_SYNC_ICACHE_DCACHE
+> >
+> > -
+> > To unsubscribe from this list: send the line "unsubscribe linux-ia64" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> >
 > 
-> So any suggestions for making this clean and acceptable to everyone?
-
-It is obviously a good idea to hand over the IO at the point which
-requires the least number of cachelines to be moved, and I think doing
-it in the block layer is right. Mostly you have to convince the block
-and driver maintainers I guess.
-
-The scheduler really should be made interrupt-load aware anyway, so I
-don't have a problem with changing that; or scheduling kblockd at a
-higher priority, but I don't know if SCHED_FIFO is a good idea. Couldn't
-it be done in a softirq instead?
-
-Latency for IO migration could be the most difficult problem to solve
-really. You don't give much details of the workload, profiles, etc... I
-hope this is for a real world test? Can the locking be improved in simpler
-ways first?
-
-Just some random questions...
-
-It looks like the main source of cacheline bouncing you're eliminating
-is from the initial starting of IO from an empty queue (ie. unplug).
->From then on, the submission is driven by completion, right?
-
-Why is the queue allowed to go empty in the first place in an IO critical
-workload?
-
-Are you loading up each CPU with as many disks as it can possibly handle
-plus a few more? If so, is that realistic? (I honestly don't know).
-
-You say that you'd like to do this for direct IO only, but if it is more
-efficient, why not for buffered IO as well? (or is it not more efficient
-for buffered IO? if not, why?)
-
-AFAIKS, you'd still have significant queue_lock contention from other
-CPUs inserting requests into the list? What IO scheduler are you using?
-I assume noop... as a crazy experiment, what happens if you create per-cpu
-request queues?
+> 
+> -- 
+> Mosberger Consulting LLC, http://www.mosberger-consulting.com/
+> 
 
