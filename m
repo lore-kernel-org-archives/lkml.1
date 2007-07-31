@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933318AbXGaSDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933244AbXGaSEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933318AbXGaSDh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 14:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765153AbXGaSDR
+	id S933244AbXGaSEk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 14:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763183AbXGaSEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 14:03:17 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3454 "EHLO
+	Tue, 31 Jul 2007 14:04:32 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3467 "EHLO
 	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764865AbXGaSDP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 14:03:15 -0400
+	id S1761307AbXGaSEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 14:04:30 -0400
 From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 To: linux-kernel@vger.kernel.org
-Subject: PATCH 32] drivers/mtd/inftlmount.c: kmalloc + memset conversion to kcalloc
-Date: Tue, 31 Jul 2007 20:03:14 +0200
+Subject: [PATCH 33] fs/reiser4/init_super.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 20:04:29 +0200
 User-Agent: KMail/1.9.5
 Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       dwmw2@infradead.org, linux-mtd@lists.infradead.org
+       reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org
 References: <200707311845.48807.m.kozlowski@tuxland.pl>
 In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
@@ -23,33 +23,33 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707312003.15009.m.kozlowski@tuxland.pl>
+Message-Id: <200707312004.29404.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- drivers/mtd/inftlmount.c | 23841 -> 23803 (-38 bytes)
- drivers/mtd/inftlmount.o | 47196 -> 46956 (-240 bytes)
+ fs/reiser4/init_super.c | 19283 -> 19246 (-37 bytes)
+ fs/reiser4/init_super.o | 155348 -> 155152 (-196 bytes)
 
- drivers/mtd/inftlmount.c |    3 +--
+ fs/reiser4/init_super.c |    3 +--
  1 file changed, 1 insertion(+), 2 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/drivers/mtd/inftlmount.c	2007-07-26 13:07:41.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/mtd/inftlmount.c	2007-07-31 11:40:20.000000000 +0200
-@@ -580,14 +580,13 @@ int INFTL_mount(struct INFTLrecord *s)
- 	logical_block = block = BLOCK_NIL;
+--- linux-2.6.23-rc1-mm1-a/fs/reiser4/init_super.c	2007-07-26 13:07:46.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/fs/reiser4/init_super.c	2007-07-30 00:00:32.000000000 +0200
+@@ -17,14 +17,13 @@ int reiser4_init_fs_info(struct super_bl
+ {
+ 	reiser4_super_info_data *sbinfo;
 
- 	/* Temporary buffer to store ANAC numbers. */
--	ANACtable = kmalloc(s->nb_blocks * sizeof(u8), GFP_KERNEL);
-+	ANACtable = kcalloc(s->nb_blocks, sizeof(u8), GFP_KERNEL);
- 	if (!ANACtable) {
- 		printk(KERN_WARNING "INFTL: allocation of ANACtable "
- 				"failed (%zd bytes)\n",
- 				s->nb_blocks * sizeof(u8));
- 		return -ENOMEM;
- 	}
--	memset(ANACtable, 0, s->nb_blocks);
+-	sbinfo = kmalloc(sizeof(reiser4_super_info_data),
++	sbinfo = kzalloc(sizeof(reiser4_super_info_data),
+ 			 reiser4_ctx_gfp_mask_get());
+ 	if (!sbinfo)
+ 		return RETERR(-ENOMEM);
 
- 	/*
- 	 * First pass is to explore each physical unit, and construct the
+ 	super->s_fs_info = sbinfo;
+ 	super->s_op = NULL;
+-	memset(sbinfo, 0, sizeof(*sbinfo));
+
+ 	ON_DEBUG(INIT_LIST_HEAD(&sbinfo->all_jnodes));
+ 	ON_DEBUG(spin_lock_init(&sbinfo->all_guard));
