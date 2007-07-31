@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932518AbXGaRsY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbXGaRtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932518AbXGaRsY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:48:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbXGaRsN
+	id S932649AbXGaRtB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761256AbXGaRsr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:48:13 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1030 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753816AbXGaRsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:48:12 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 27] drivers/input/serio/gscps2.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 19:48:11 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Helge Deller <deller@gmx.de>, linux-input@atrey.karlin.mff.cuni.cz
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+	Tue, 31 Jul 2007 13:48:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57983 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754376AbXGaRsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:48:46 -0400
+Date: Tue, 31 Jul 2007 10:47:55 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andreas Schwab <schwab@suse.de>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Satyam Sharma <satyam@infradead.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci
+	subsystem.
+Message-ID: <20070731174755.GA8592@suse.de>
+References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125443.880871000@hawkeye.stone.uk.eu.org> <200707311553.29090.borntraeger@de.ibm.com> <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in> <20070731144619.GA8183@localhost.localdomain> <20070731161051.GA7490@suse.de> <jeir80y27m.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707311948.11520.m.kozlowski@tuxland.pl>
+In-Reply-To: <jeir80y27m.fsf@sykes.suse.de>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+On Tue, Jul 31, 2007 at 06:20:29PM +0200, Andreas Schwab wrote:
+> Greg KH <gregkh@suse.de> writes:
+> 
+> > On Tue, Jul 31, 2007 at 10:46:19PM +0800, WANG Cong wrote:
+> >> However, I think using resource_size_t is a bit better than unsigned long,
+> >> so that we don't need to check the defination of it.
+> >> 
+> >> - res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
+> >> + res->start = (resource_size_t)kmalloc(*size, GFP_KERNEL);
+> >> 
+> >> Is this change OK?
+> >
+> > Yes, that is the proper cast to have here.
+> 
+> It will generate a warning when resoure_size_t is 64bit on a 32bit arch.
 
- drivers/input/serio/gscps2.c | 11696 -> 11607 (-89 bytes)
+How?  And if so, what should the proper cast be?
 
- drivers/input/serio/gscps2.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+thanks,
 
---- linux-2.6.23-rc1-mm1-a/drivers/input/serio/gscps2.c	2007-07-26 13:07:44.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/input/serio/gscps2.c	2007-07-30 00:12:31.000000000 +0200
-@@ -340,8 +340,8 @@ static int __init gscps2_probe(struct pa
- 	if (dev->id.sversion == 0x96)
- 		hpa += GSC_DINO_OFFSET;
-
--	ps2port = kmalloc(sizeof(struct gscps2port), GFP_KERNEL);
--	serio = kmalloc(sizeof(struct serio), GFP_KERNEL);
-+	ps2port = kzalloc(sizeof(struct gscps2port), GFP_KERNEL);
-+	serio = kzalloc(sizeof(struct serio), GFP_KERNEL);
- 	if (!ps2port || !serio) {
- 		ret = -ENOMEM;
- 		goto fail_nomem;
-@@ -349,8 +349,6 @@ static int __init gscps2_probe(struct pa
-
- 	dev_set_drvdata(&dev->dev, ps2port);
-
--	memset(ps2port, 0, sizeof(struct gscps2port));
--	memset(serio, 0, sizeof(struct serio));
- 	ps2port->port = serio;
- 	ps2port->padev = dev;
- 	ps2port->addr = ioremap_nocache(hpa, GSC_STATUS + 4);
+greg k-h
