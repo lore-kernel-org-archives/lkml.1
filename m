@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940266AbXGaDll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940534AbXGaDpe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940266AbXGaDll (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 23:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXGaDle
+	id S940534AbXGaDpe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:45:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933560AbXGaDpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 23:41:34 -0400
-Received: from kludge.physics.uiowa.edu ([128.255.33.129]:47136 "EHLO
-	kludge.physics.uiowa.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbXGaDld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 23:41:33 -0400
-Date: Mon, 30 Jul 2007 22:40:59 -0500
-From: Joseph Pingenot <trelane@digitasaru.net>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20070731034059.GF6812@digitasaru.net>
-Reply-To: trelane@digitasaru.net
-Mail-Followup-To: Al Viro <viro@ftp.linux.org.uk>,
-	linux-kernel@vger.kernel.org
-References: <20070731021615.GB6812@digitasaru.net> <20070731031720.GF21089@ftp.linux.org.uk> <20070731032521.GD6812@digitasaru.net> <20070731033113.GE6812@digitasaru.net> <20070731033631.GH21089@ftp.linux.org.uk>
+	Mon, 30 Jul 2007 23:45:25 -0400
+Received: from thunk.org ([69.25.196.29]:50064 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759829AbXGaDpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 23:45:23 -0400
+Date: Mon, 30 Jul 2007 23:45:15 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070731034515.GD25876@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bharata B Rao <bharata@linux.vnet.ibm.com>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070731033631.GH21089@ftp.linux.org.uk>
-X-School: University of Iowa
-X-vi-or-emacs: vi *and* emacs!
-X-MS-TNEF-Correlator: <AFJAUFHRUOGRESULWAOIHFEAUIOFBVHSHNRAIU.monkey@spamcentral.invalid>
-X-MimeOLE: Not Produced By Microsoft MimeOLE V5.50.4522.1200
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-Subject: Re: inotify and /proc/<pid>
-X-SA-Exim-Version: 4.2.1 (built Thu, 26 Apr 2007 18:30:04 +0000)
+In-Reply-To: <20070730161324.261652101@weierstrass.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From Al Viro on Tuesday, 31 July, 2007:
->On Mon, Jul 30, 2007 at 10:31:13PM -0500, Joseph Pingenot wrote:
->> >From Joseph Pingenot on Monday, 30 July, 2007:
->> >From Al Viro on Tuesday, 31 July, 2007:
->> >>On Mon, Jul 30, 2007 at 09:16:16PM -0500, Joseph Pingenot wrote:
->> >>> I was trying to use inotify to watch process changes (especially process
->> >>>   termination) by watching /proc/<pid>.
->> >>> Sadly, although I could see something reading various files, nothing
->> >>>   was issued when the process I was watching exited and the directory
->> >>>   went away.
->> >>> Is this intentional, or a bug?
->> >>It's a bug you intend to introduce in your program...  IOW, don't
->> >>do that.
->> >More background, please?
->> >What's the way to check for a process exiting without spinning?
->> I should also specify that the process being waited on is not a
->>   child process-it's just some other process on the system.
->Umm...  Any details on intended use?  IOW, is that "I want to write
->an utility that would wait for given PID to exit, just for the hell
->of it" or is there something you are trying to implement using that?
+On Mon, Jul 30, 2007 at 06:13:35PM +0200, Jan Blunck wrote:
+> Introduce white-out support to ext2.
+> 
+> Known Bugs:
+> - Needs a reserved inode number for white-outs
 
-I'm trying to implement pwait.  It blocks until a specified PID exits,
-  and then it exits.
+You picked different reserved inodes for the ext2 and ext3
+filesystems.  That's good for a NACK right there.  The codepoints
+(i.e., reserved inode numbers, feature bit masks, etc.) for ext2,
+ext3, and ext4 MUST not overlap.  After all, someone might use tune2fs
+-j to convert an ext2 filesystem to ext3, and is it's REALLY BAD that
+you're using a reserved inode of 7 for ext2, and 9 for ext3.
 
-You can use it to do other stuff after a program finishes.
+Also, I note that you have created a new INCOMPAT feature flag support
+for whiteouts.  That's really unfortunate; we try to avoid introducing
+incompatible feature flags unless absolutely necessary; note that even
+adding a COMPAT feature flag means that you need a new version of
+e2fsprogs if you want e2fsck to be willing to touch that filesystem.
 
-While we're on the subject, is there some way to receive notification
-  that some aspect of a process changes (in this case, stopping using
-  CPU, but not exiting).
+So --- if you're looking for a way to add whiteout support to
+ext2/ext3 without needing a feature bit, here's how.  We allocate a
+new inode flag in struct ext3_inode.i_flags:
 
-Thanks for the time to help me figure this out.
+#define EXT2_WHTOUT_FL	 0x00040000
 
--Joseph
+We also allocate a new field in the ext2 superblock to store the
+"whiteout inode".  (Please coordinate with me so it's a superblock
+field not in use by ext3/ext4, and so it's reserved so that no one
+else uses it.)  The superblock field, call it s_whtout_ino, stores the
+inode number for the "white out inode".
 
--- 
-trelane@digitasaru.net.///////////////////////////////////////////////
-"There is also an entire branch in the physical therapy field dedicated
- to the treatment of little-finger injuries caused by excessive Emacs
- use."  --Linux Weekly News editor (http://lwn.net/Articles/206916/)
-///////260 IATL / The University of Iowa / Iowa City, IA  52242///////
+When you create a new whiteout file, the code checks sb->s_whtout_ino,
+and if it is zero, it allocates a new inode, and creates it as a
+zero-length regular file (i_mode |= S_IFREG) with the EXT2_WHTOUT_FL
+flag set in the inode, and then store the inode number in
+sb->s_whtout_ino.  If sb->s_whtout_ino is non-zero, you must read in
+the inode and make sure that the EXT2_WHTOUT_FL is set.  If it is not,
+then allocate a new whiteout inode as described previously.  Then link
+the inode into the directory as before.
+
+When reading an inode, if the EXT2_WHTOUT_FL flag is set, then set the
+in-memory mode of the inode to be S_IFWHT.  
+
+That's pretty much about it.  For cleanliness sake, it would be good
+if ext2_delete_inode clears sb->s_whtout_ino if the last whiteout link
+has been deleted, but it's strictly speaking not necessary.  If you do
+it this way, the filesystem is completely backwards compatible; the
+whiteout files will just appear to links to a normal zero-lenth file.
+
+I wouldn't bother with setting the directory type field to be DT_WHT,
+given that they will never be returned to userspace anyway.
+
+Regards,
+
+						- Ted
