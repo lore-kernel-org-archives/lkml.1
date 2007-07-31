@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbXGaKP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757624AbXGaKQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108AbXGaKP6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbXGaKPS
+	id S1757624AbXGaKQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbXGaKPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:15:18 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:39130 "EHLO
+	Tue, 31 Jul 2007 06:15:20 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:39291 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755229AbXGaKPO (ORCPT
+	with ESMTP id S1755548AbXGaKPP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:15:14 -0400
+	Tue, 31 Jul 2007 06:15:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=MYfY+MXg5wH1gIeA+tP7EocjMijDmqP+/YkwB7Ih4vKuZpd5aAk9qPtOLX2f1vKbsOnyMN5k0lR88J2FsFRt997GXpr+A6YrQYtkrzBeGqqJOCxBPCRMOK9748zChn5ETeE9wyPi8Izw+4nxbil8/Qbu1G/ZtDvLBw5qQGrmgJY=
-Subject: [PATCHSET 2.6.23-rc1] sysfs: locking fix and cleanups
-In-Reply-To: 
+        b=uHfc7T+WyoGDMrqZRkwDggwF1ELVKus8FuOgs4U58CCpfyYxWN/YUn8qYlCMPBevCvaI9sH6mh0F0+YGtRXRmETwLISETD8G8Nq2UvUK6BXdsCyH4knIOke2FNK20X5XS5N596GlW1nVHdYqwA8uIfeBkamM5fb3bFgWjcv3vAA=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 4/7] sysfs: simplify sysfs_remove_dir()
+In-Reply-To: <11858769082982-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Tue, 31 Jul 2007 19:15:08 +0900
-Message-Id: <11858769082982-git-send-email-htejun@gmail.com>
+Message-Id: <11858769083860-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -30,24 +31,89 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, all.
+With the shadow directories gone, sysfs_remove_dir() can be simplified.
 
-This patchset contains a locking fix and cleanup patches for sysfs.
+* parent doesn't need to be grabbed separately.  Just access
+  old_dentry->d_parent.
 
-#01	locking fix
-#02	shadow support removal from Eric adapted to apply after #01
-#03-07	clean up patches
+* parent sd can never change.  Remove code to move under the new
+  parent.
 
-#01 should go mainline as it fixes a locking regression introduced by
--rc1 merge.  The rest should stay in -gregkh till 24 merge window
-opens up.
+* Massage comments a bit.
 
-Clean up patches don't introduce any noticeable behavior change.  They
-just refactor and simplify codes.
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+---
+ fs/sysfs/dir.c |   26 ++++----------------------
+ 1 files changed, 4 insertions(+), 22 deletions(-)
 
-Thanks.
-
---
-tejun
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 026ea70..0fe6aa3 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -883,14 +883,10 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 	struct sysfs_dirent *sd;
+ 	struct dentry *parent = NULL;
+ 	struct dentry *old_dentry = NULL, *new_dentry = NULL;
+-	struct sysfs_dirent *parent_sd;
+ 	const char *dup_name = NULL;
+ 	int error;
+ 
+-	if (!kobj->parent)
+-		return -EINVAL;
+-
+-	/* get dentries */
++	/* get the original dentry */
+ 	sd = kobj->sd;
+ 	old_dentry = sysfs_get_dentry(sd);
+ 	if (IS_ERR(old_dentry)) {
+@@ -898,12 +894,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 		goto out_dput;
+ 	}
+ 
+-	parent_sd = kobj->parent->sd;
+-	parent = sysfs_get_dentry(parent_sd);
+-	if (IS_ERR(parent)) {
+-		error = PTR_ERR(parent);
+-		goto out_dput;
+-	}
++	parent = old_dentry->d_parent;
+ 
+ 	/* lock parent and get dentry for new name */
+ 	mutex_lock(&parent->d_inode->i_mutex);
+@@ -933,22 +924,14 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 		goto out_drop;
+ 
+ 	mutex_lock(&sysfs_mutex);
+-
+ 	dup_name = sd->s_name;
+ 	sd->s_name = new_name;
++	mutex_unlock(&sysfs_mutex);
+ 
+-	/* move under the new parent */
++	/* rename */
+ 	d_add(new_dentry, NULL);
+ 	d_move(sd->s_dentry, new_dentry);
+ 
+-	sysfs_unlink_sibling(sd);
+-	sysfs_get(parent_sd);
+-	sysfs_put(sd->s_parent);
+-	sd->s_parent = parent_sd;
+-	sysfs_link_sibling(sd);
+-
+-	mutex_unlock(&sysfs_mutex);
+-
+ 	error = 0;
+ 	goto out_unlock;
+ 
+@@ -958,7 +941,6 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 	mutex_unlock(&parent->d_inode->i_mutex);
+  out_dput:
+ 	kfree(dup_name);
+-	dput(parent);
+ 	dput(old_dentry);
+ 	dput(new_dentry);
+ 	return error;
+-- 
+1.5.0.3
 
 
