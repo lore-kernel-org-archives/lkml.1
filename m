@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765920AbXGaQ2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXGaQ3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765920AbXGaQ2M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759866AbXGaQ16
+	id S932290AbXGaQ3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761911AbXGaQ3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:27:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56196 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757588AbXGaQ15 (ORCPT
+	Tue, 31 Jul 2007 12:29:36 -0400
+Received: from mga02.intel.com ([134.134.136.20]:43487 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757705AbXGaQ3e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:27:57 -0400
-Date: Tue, 31 Jul 2007 22:10:16 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: David Woodhouse <dwmw2@infradead.org>
-cc: Sam Ravnborg <sam@ravnborg.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Make headers_check less chatty for success cases
-Message-ID: <alpine.LFD.0.999.0707312206140.28746@enigma.security.iitk.ac.in>
+	Tue, 31 Jul 2007 12:29:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
+   d="scan'208";a="272722976"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: regression on HP zx1 platform from ACPI autoload modulespatches
+Date: Tue, 31 Jul 2007 09:29:31 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A020E3AD2@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <1185882604.14987.2.camel@athlon>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: regression on HP zx1 platform from ACPI autoload modulespatches
+Thread-Index: AcfTa1rXkCz2kBl5Suua6kqzCHv9xgAIqXXg
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Doug Chapman" <doug.chapman@hp.com>, "Tony Luck" <tony.luck@gmail.com>
+Cc: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       <linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+       <linux-ia64@vger.kernel.org>, <trenn@suse.de>
+X-OriginalArrivalTime: 31 Jul 2007 16:29:32.0691 (UTC) FILETIME=[F9BAEE30:01C7D38F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David, Sam,
+> commit 8c8eb78f673c07b60f31751e1e47ac367c60c6b7
 
-"make headers_check" is too verbose. It likes to chat even if it has
-just _successfully_ checked a header, and not just on seeing errors.
-What is worse, even if you touch just one little header in some corner
-(or possibly none) and type "make" on an "already-made" tree,
-headers_check still feels obliged to check all the headers.
+Oops.  I cut & pasted the wrong commit id.  The fix went in as
+commit 7091138fb762aed22317b4ff91eb211e7da3865c.
 
-Both the above things combined mean that when you're working on your own
-little subsystem, and simply "make" an already-made tree, and turn around
-to speak to a colleague, then by the time you look back at the screen, it
-does not contain any useful warnings from the actual compilation stage.
-If you're unlucky, the entire scroll-back history of the xterm would have
-also got polluted with headers_check's "CHECK include/linux/foo.h" spam.
+> FYI, I did a git pull yesterday just before I hit this issue so I should
+> have had the latest stuff.
 
-As a result I've been totally put off by it and have CONFIG_HEADERS_CHECK=n
-set in my .config -- but that could lead to breakages. Hence:
+So this confuses me.  Linus pulled this into his tree on Friday (IIRC), but
+at the very latest on Saturday (as there is a commit *after* this one that
+is dated 2007-07-28 19:29:37).
 
+The patch that is in the tree appears to be identical to the one that
+Thomas Renninger posted to this thread, and you confirmed as working.
 
-[PATCH] Make headers_check less chatty for success cases
+So when you have a moment, please pull latest Linus tree.  Confirm that
+this patch is present:
+ $ grep hp_ioc_iommu_device_ids arch/ia64/hp/common/sba_iommu.c
+ static const struct acpi_device_id hp_ioc_iommu_device_ids[] = {
+ 	.ids		= hp_ioc_iommu_device_ids,
+ $
 
-We still echo verbosely (and fail, obviously) for any errors encountered.
+and that it builds and boots for you.
 
-Signed-off-by: Satyam Sharma <satyam@infradead.org>
+Thanks
 
----
-
-[ just removing that line also works, but that loses symmetry with others ]
-
- scripts/Makefile.headersinst |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/Makefile.headersinst b/scripts/Makefile.headersinst
-index 53dae3e..0a23dd9 100644
---- a/scripts/Makefile.headersinst
-+++ b/scripts/Makefile.headersinst
-@@ -96,7 +96,7 @@ quiet_cmd_unifdef	  = UNIFDEF $(patsubst $(INSTALL_HDR_PATH)/%,%,$@)
-       cmd_unifdef	  = $(UNIFDEF) $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/%,$(srctree)/$(obj)/%,$@) \
- 				   | $(HDRSED) > $@ || :
- 
--quiet_cmd_check		  = CHECK   $(patsubst $(INSTALL_HDR_PATH)/$(_dst)/.check.%,$(_dst)/%,$@)
-+quiet_cmd_check		  =
-       cmd_check		  = $(CONFIG_SHELL) $(srctree)/scripts/hdrcheck.sh \
-                               $(INSTALL_HDR_PATH)/include $(subst /.check.,/,$@) $@
+-Tony
  
