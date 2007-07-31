@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbXGaI6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbXGaJCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbXGaI6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:58:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXGaI6f
+	id S1754962AbXGaJCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 05:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752709AbXGaJCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:58:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53646 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752301AbXGaI6e (ORCPT
+	Tue, 31 Jul 2007 05:02:21 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46862
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752474AbXGaJCU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:58:34 -0400
-Date: Tue, 31 Jul 2007 01:57:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+	Tue, 31 Jul 2007 05:02:20 -0400
+Date: Tue, 31 Jul 2007 02:02:19 -0700 (PDT)
+Message-Id: <20070731.020219.78708972.davem@davemloft.net>
+To: mark@mtfhpc.demon.co.uk
+Cc: aaw@google.com, akpm@linux-foundation.org, linux-arch@vger.kernel.org,
+       sparclinux@vger.kernel.org, wli@holomorphy.com, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/5] Use mutex instead of semaphore in ISDN subsystem
- common functions
-Message-Id: <20070731015749.ac549e71.akpm@linux-foundation.org>
-In-Reply-To: <20070729214105.GG3432@traven>
-References: <20070729212909.GC3432@traven>
-	<20070729214105.GG3432@traven>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Subject: Re: [PATCH] Re: [SPARC32] NULL pointer derefference
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.61.0707310831080.4116@mtfhpc.demon.co.uk>
+References: <Pine.LNX.4.61.0707310557470.3926@mtfhpc.demon.co.uk>
+	<20070730.234252.74747206.davem@davemloft.net>
+	<Pine.LNX.4.61.0707310831080.4116@mtfhpc.demon.co.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Jul 2007 23:41:05 +0200 Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Date: Tue, 31 Jul 2007 08:55:20 +0100 (BST)
 
-> --- a/include/linux/isdn.h
-> +++ b/include/linux/isdn.h
-> @@ -15,6 +15,7 @@
->  #define __ISDN_H__
->  
->  #include <linux/ioctl.h>
-> +#include <linux/mutex.h>
+> I have formulated a patch that prevents the update_mmu_cache from doing 
+> enything if there is no context available. This apears to have no 
+> immediate, undesirable side effects.
+> 
+> This worked better than the alternative of setting up a context to work with.
+> 
+> Can you for see any issues in doing this?
+> 
+> If not, can you check+apply the attached (un-mangled) patch.
 
-Breaks `make headers_check'.
+Thanks for tracking this down Mark.
 
-That was covered in sections 2 and 20 of Documentation/SubmitChecklist,
-which nobody reads.
+The issue is that, when exec()'ing to userspace from a kernel thread,
+we need activate_context() to be invoked before we try to touch
+userspace at all.  This new argument handling is invoking
+get_user_pages() before that happens.
+
+activate_context() happens via flush_old_exec(), but that occurs via
+load_elf_binary() et al. which is long after the argument fetching
+code runs in fs/exec.c that is using get_user_pages().
+
+(Mark, hint: activate_context() is defined to switch_mm() on
+ sparc32, which is sun4c_switch_mm() which you thought was only
+ invoked from context switches :-))
+
+Touching userspace before activate_context() is questionable at best,
+in my opinion.  But I can't come up with a good way to fix this right
+now other than Mark's sparc patch, so I will apply it.
+
+Thanks again Mark!
+
