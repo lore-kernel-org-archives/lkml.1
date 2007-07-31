@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969517AbXGaEmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbXGaEml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969517AbXGaEmP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968915AbXGaEg0
+	id S1760055AbXGaEml (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969376AbXGaEiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:36:26 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:44342 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968762AbXGaEgZ (ORCPT
+	Tue, 31 Jul 2007 00:38:55 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41181 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S969185AbXGaEiy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:36:25 -0400
-Date: Tue, 31 Jul 2007 12:35:54 +0800
-From: Joe Jin <joe.jin@oracle.com>
-To: Badari <pbadari@us.ibm.com>
-Cc: Joe Jin <joe.jin@oracle.com>, Zach Brown <zach.brown@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
-       wen.gang.wang@oracle.com
-Subject: Re: [PATCH] add check do_direct_IO() return val
-Message-ID: <20070731043554.GA3393@joejin-pc.cn.oracle.com>
-References: <20070727071547.GA25084@joejin-pc.cn.oracle.com> <46A9E6F9.20603@oracle.com> <20070728034719.GA24448@joejin-pc.cn.oracle.com> <20070730135316.2ce21b28.akpm@linux-foundation.org> <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com> <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com> <20070731005348.GA8308@joejin-pc.cn.oracle.com> <46AEB055.9050607@us.ibm.com>
-Mime-Version: 1.0
+	Tue, 31 Jul 2007 00:38:54 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] x86_64 EFI support -v3: EFI base support
+References: <1185851572.23149.26.camel@caritas-dev.intel.com>
+Date: Mon, 30 Jul 2007 22:37:33 -0600
+In-Reply-To: <1185851572.23149.26.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Tue, 31 Jul 2007 11:12:52 +0800")
+Message-ID: <m1vec1tche.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46AEB055.9050607@us.ibm.com>
-User-Agent: Mutt/1.4.2.2i
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm.. in this config file, whats causing DIO to panic ? Which test actually
-> passing faulty buffer ?
-> 
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-By my testing, just defined job3 and job10 will also get the panic, but if
-only have one of them, panic will not appear. the faulty buffer maybe passed
-by mmap.
+> Changelog between v2 and v3:
+>
+> 1. The EFI callwrapper is re-implemented in assembler.
+>
+> ---
+>
+> This patch adds basic support for EFI x86_64 system. The main file of
+> the patch is the addition of efi.c for x86_64. This file is modeled
+> after the EFI IA32 avatar. EFI initialization are implemented in
+> efi.c. Some x86_64 specifics are worth noting here. On x86_64,
+> parameters passed to UEFI firmware services need to follow the UEFI
+> calling convention. For this purpose, a set of functions named
+> lin2win<x> (<x> is the number of parameters) are implemented. EFI
+> function calls are wrapped before calling the firmware service.
 
-Thanks,
-Joe
+
+Since the code to generate the e820 map from the efi memory map has
+been added to elilo (odd but ok) why does this patch continue to
+have code for playing with the efi memory map?
+
+Eric
