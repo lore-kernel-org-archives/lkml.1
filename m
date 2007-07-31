@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766009AbXG0TeB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935116AbXGaV7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766009AbXG0TeB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Jul 2007 15:34:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbXG0Tdw
+	id S935116AbXGaV7c (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764606AbXGaV7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Jul 2007 15:33:52 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:57241
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758338AbXG0Tdv (ORCPT
+	Tue, 31 Jul 2007 17:59:10 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:54204 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762417AbXGaV7I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Jul 2007 15:33:51 -0400
-Message-ID: <46D33636.7070200@microgate.com>
-Date: Mon, 27 Aug 2007 14:38:14 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Tilman Schmidt <tilman@imap.cc>
-CC: Lee Howard <faxguy@howardsilvan.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Robert Hancock <hancockr@shaw.ca>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, rmk@arm.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>	<46A84B4A.6070902@shaw.ca>	<46A8C6F1.4080309@howardsilvan.com> <20070726173121.70088a92@the-village.bc.nu> <46A98845.8010806@howardsilvan.com> <46A9F712.70706@imap.cc>
-In-Reply-To: <46A9F712.70706@imap.cc>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 31 Jul 2007 17:59:08 -0400
+Date: Tue, 31 Jul 2007 15:02:45 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Zan Lynx <zlynx@acm.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
+Message-Id: <20070731150245.5932b763.randy.dunlap@oracle.com>
+In-Reply-To: <1185918261.6981.13.camel@localhost>
+References: <1185918261.6981.13.camel@localhost>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tilman Schmidt wrote:
-> Could this be related?
+On Tue, 31 Jul 2007 15:44:21 -0600 Zan Lynx wrote:
+
+> I was playing with huge pages and libhugetlbfs.  Small programs like
+> "ls" work fine.  I tried running Evolution through libhugetlbfs and the
+> system slowly stops running.  One interesting thing is the "ps" command,
+> it gets stuck like this:
+
+Do you mean 2.6.22-rc1-mm1 or 2.6.23-rc1-mm1?
+
+There was a hugepage problem fixed very recently, in 2.6.23-rc1 IIRC.
+
+
+> ps            D ffff81001e57ed40     0 103558 103483
+>  ffff81001f061dc8 0000000000000096 ffff81003d8586e8 ffff81001cbadc00
+>  0000000000000006 ffffffff80537009 0000000000000030 ffffffff807ff700
+>  ffffffff807ff700 ffffffff807ff700 ffffffff807ff700 ffffffff807ff700
+> Call Trace:
+>  [<ffffffff80537009>] _spin_unlock+0x29/0x50
+>  [<ffffffff80536425>] __down_read+0x75/0xaf
+>  [<ffffffff80295f49>] access_process_vm+0x49/0x190
+>  [<ffffffff802f3003>] proc_pid_cmdline+0xa3/0x130
+>  [<ffffffff802f4cea>] proc_info_read+0xba/0x100
+>  [<ffffffff802b0085>] vfs_read+0xc5/0x180
+>  [<ffffffff802b0583>] sys_read+0x53/0x90
+>  [<ffffffff8020c1de>] system_call+0x7e/0x83
 > 
-> http://lkml.org/lkml/2007/7/18/245
+> and nothing will touch it after that.
 > 
-> Quote:
-> "I've recently found (using 2.6.21.4) that configuring a serial ports
-> (ST16654) which use the 8250 driver using setserial results in the
-> UART's FIFOs being disabled (unless you specify autoconfig)."
+> Here's my kernel command line:
+> root=/dev/sda2 rootfstype=reiser4 rootflags=no_write_barrier ro
+> i8042.nomux elevator=cfq resume=/dev/sda3 panic=5 nmi_watchdog=2,panic
+> debug hugepages=32
+> 
+> Here's the "huge" script I was using to run programs:
+> #!/bin/sh
+> export LD_PRELOAD=libhugetlbfs.so
+> export HUGETLB_MORECORE=yes
+> export HUGETLB_PATH=/mnt/huge
+> export HUGETLB_VERBOSE=1
+> exec "$@"
+> 
+> I don't have any more info than that at the moment but I could reproduce
+> it with whatever, on request.
 
-That would make sense.
-
-Lee's error is a hardware FIFO overrun which could occur
-if the FIFO is being disabled as described in your
-link (by trying to set the uart type with setserial).
-
-Since the tty flow control is only triggered
-by the line discipline in response to ldisc
-buffer levels and not hardware FIFO overruns,
-you would never see any flow control action
-as reported by Lee.
-
-
--- 
-Paul Fulghum
-Microgate Systems, Ltd.
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
