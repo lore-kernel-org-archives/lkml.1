@@ -1,71 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763963AbXGaOsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764164AbXGaOty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763963AbXGaOsg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbXGaOs3
+	id S1764164AbXGaOty (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbXGaOtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:48:29 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:36001 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758237AbXGaOs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:48:27 -0400
-Date: Tue, 31 Jul 2007 10:48:24 -0400
-To: Stefan Walter <stefan.walter@inf.ethz.ch>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: rpc.mountd crashes when extensively using netgroups
-Message-ID: <20070731144824.GA15231@fieldses.org>
-References: <46ADDFB2.9070709@inf.ethz.ch>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46ADDFB2.9070709@inf.ethz.ch>
-User-Agent: Mutt/1.5.16 (2007-06-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+	Tue, 31 Jul 2007 10:49:47 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46990 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760766AbXGaOtq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:49:46 -0400
+Date: Tue, 31 Jul 2007 16:46:57 +0200
+From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ecashin@coraid.com, kernel list <linux-kernel@vger.kernel.org>, ak@suse.de
+Subject: Re: ATA over ethernet swapping and obfuscated code
+Message-ID: <20070731164657.74c3b0c2@frecb000686.frec.bull.fr>
+In-Reply-To: <20070731135831.GA4604@elf.ucw.cz>
+References: <20070731135831.GA4604@elf.ucw.cz>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/07/2007 16:54:30,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/07/2007 16:54:31,
+	Serialize complete at 31/07/2007 16:54:31
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 02:55:14PM +0200, Stefan Walter wrote:
-> There are however two issues for which we could not find an easy
-> solution:
+  Hi Pavel,
+
+On Tue, 31 Jul 2007 15:58:31 +0200 Pavel Machek <pavel@ucw.cz> wrote:
+
+> Hi!
 > 
->  1. For every client rpc.mountd and the kernel seem to exchange
->     and use lists with _all_ netgroups used in exports that are
->     relevant for granting permission to some share for a particular
->     client. We could imagine two optimizations here:
+> I wanted to know if it is possible/okay to swap over AOE... 
 > 
->        * Resolve netgroups and only put the (member) netgroups that
->          contained the host name that would be used to authorize
->          a mount in the list.
+> According to
+> http://www.coraid.com/support/linux/EtherDrive-2.6-HOWTO-5.html#ss5.20
+> .. it runs OOM even during normal use, so I guess swapping over it is
+> no-no?
 > 
->        * Use the list of mounted paths per client and only put the
->          netgroup(s) used to export paths that are actually mounted
->          on a client. 
+> Can I build both client and server for these using free software?
 > 
->     This also caused us severe performance problems because
->     rpc.mountd queries all these netgroups. We were initially using
->     a LDAP and mouting a directory took up to ten seconds
->     during which rpc.mountd was busily querying the LDAP server.
->     We got this down to two seconds using file based netgroups.
+> In the process, I looked at the aoe code, and parts of it look like
+> obfuscated C contest. The use of switch() as an if was particulary
+> creative; I'm not even sure if I translated it properly... can you
+> take a look?
+> 
+> (Patch is 
+> 
+> Signed-off-by: Pavel Machek <pavel@suse.cz>
+> 
+> but I did not even compile test it)
+> 
+> diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
+> index 05a9719..38ba35d 100644
+> --- a/drivers/block/aoe/aoedev.c
+> +++ b/drivers/block/aoe/aoedev.c
+> @@ -64,29 +64,26 @@ aoedev_newdev(ulong nframes)
 >  
->  2. Using a fixed size for NFSCLNT_IDMAX does not scale. Mounting
->     shares on a client for which the 'if' clause of the quick fix
->     becomes true will not be possible. We thought about enlarging
->     NFSCLNT_IDMAX and using a custom kernel but dropped the idea. 
+>  	d = kzalloc(sizeof *d, GFP_ATOMIC);
+>  	f = kcalloc(nframes, sizeof *f, GFP_ATOMIC);
+> - 	switch (!d || !f) {
+> - 	case 0:
+> - 		d->nframes = nframes;
+> - 		d->frames = f;
+> - 		e = f + nframes;
+> - 		for (; f<e; f++) {
+> - 			f->tag = FREETAG;
+> - 			f->skb = new_skb(ETH_ZLEN);
+> - 			if (!f->skb)
+> - 				break;
+> - 		}
+> - 		if (f == e)
+> - 			break;
+> + 	if (!d || !f) {
+> +		kfree(f);
+> +		kfree(d);
+> +		return NULL;
+> +	}
+> +
+> +	d->nframes = nframes;
+> +	d->frames = f;
+> +	e = f + nframes;
+> +	for (; f<e; f++) {
+> +		f->tag = FREETAG;
+> +		f->skb = new_skb(ETH_ZLEN);
+> +		if (!f->skb)
+> +			break;
+> +	}
+> +	if (f != e) {
+>   		while (f > d->frames) {
+>   			f--;
+>   			dev_kfree_skb(f->skb);
+>   		}
+> - 	default:
+> - 		if (f)
+> - 			kfree(f);
+> - 		if (d)
+> - 			kfree(d);
+> -		return NULL;
+>  	}
+>  	INIT_WORK(&d->work, aoecmd_sleepwork);
+>  	spin_lock_init(&d->lock);
+
+  Creative it is.
+
 > 
-> Our ultimate goal is to get Red Hat fix the code in nfs-utils 1.0.6
-> that is used in RHEL4. A first step would be to get a suitable fix in
-> the current nfs-utils. 
+> 
+> aoedev_by_sysminor_m() returns with spinlock held in error case; I
+> guess that's bad.
+> 
+> struct aoedev *
+> aoedev_by_sysminor_m(ulong sysminor, ulong bufcnt)
+> {
+> 	struct aoedev *d;
+> 	ulong flags;
+> 
+> 	spin_lock_irqsave(&devlist_lock, flags);
+> 
+> 	for (d=devlist; d; d=d->next)
+> 		if (d->sysminor == sysminor)
+> 			break;
+> 
+> 	if (d == NULL) {
+> 		d = aoedev_newdev(bufcnt);
+> 	 	if (d == NULL) {
+> 			spin_unlock_irqrestore(&devlist_lock, flags);
 
-That's an interesting problem.  Thanks for the report!
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ what about here
 
-I don't believe that long comma-delimited string actually has any
-meaning to the kernel--as far as the kernel is concerned, it's just an
-opaque object that will be passed back to mountd later (along with a
-path name) to get export options.
+> 			printk(KERN_INFO "aoe: aoedev_newdev
+> failure.\n");
+> 			return NULL;
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ here
+> 		}
+> 		d->sysminor = sysminor;
+> 		d->aoemajor = AOEMAJOR(sysminor);
+> 		d->aoeminor = AOEMINOR(sysminor);
+> 	}
+> 
+> 	spin_unlock_irqrestore(&devlist_lock, flags);
+> 	return d;
+> }
+> 
 
-So I suppose that string could be replaced by a hash, or maybe even just
-by the ip address of the particular host--the disadvantage to the latter
-being that it would require the kernel to keep a separate export for
-each client address.
-
---b.
+  Sébastien.
