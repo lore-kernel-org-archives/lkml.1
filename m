@@ -1,69 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754993AbXGaIXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbXGaI3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754993AbXGaIXF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbXGaIWr
+	id S1753521AbXGaI3x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXGaI3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:22:47 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:52748 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752154AbXGaIWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:22:45 -0400
-Date: Tue, 31 Jul 2007 10:32:10 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jason.wessel@windriver.com,
-       amitkale@linsyssoft.com
-Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
-Message-ID: <20070731083210.GA1797@ff.dom.local>
+	Tue, 31 Jul 2007 04:29:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:55203 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750908AbXGaI3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:29:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,202,1183359600"; 
+   d="scan'208";a="256779523"
+Subject: Re: [PATCH 3/5] x86_64 EFI support -v3: EFI runtime support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <m14pjluref.fsf@ebiederm.dsl.xmission.com>
+References: <1185851579.23149.28.camel@caritas-dev.intel.com>
+	 <m14pjluref.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 31 Jul 2007 16:29:26 +0800
+Message-Id: <1185870566.23149.63.camel@caritas-dev.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46AB8DF9.8060903@googlemail.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 31 Jul 2007 08:29:37.0028 (UTC) FILETIME=[EE2D7440:01C7D34C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 28-07-2007 20:42, Gabriel C wrote:
-> Andrew Morton wrote:
->> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
->>
->>> Hi,
->>>
->>> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
->>>
->>> ...
->>>
->>> net/core/netpoll.c: In function 'netpoll_poll':
->>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
->>> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
->>> net/core/netpoll.c: In function 'netpoll_setup':
->>> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
->>> make[2]: *** [net/core/netpoll.o] Error 1
->>> make[1]: *** [net/core] Error 2
->>> make: *** [net] Error 2
->>> make: *** Waiting for unfinished jobs....
->>>
->>> ...
->>>
->>>
->>> I think is because KGDBOE selects just NETPOLL.
->>>
->> Looks like it.
->>
->> Select went and selected NETPOLL and NETPOLL_TRAP but things like
->> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
->> remains evil.
-...
-> I think there may be a logical issue ( again if I got it right ).
-> We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
+On Mon, 2007-07-30 at 22:30 -0600, Eric W. Biederman wrote:
+> > This patch adds runtime service support for EFI x86_64 system.
+> >
+> > The EFI support for emergency_restart and RTC clock is added. The EFI
+> > based implementation and legacy BIOS or CMOS based implementation are
+> > put in separate functions and are chosen based on the value of
+> > efi_enabled.
 > 
-> So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
+> The patches to the reboot path are wrong (see below).
+> 
+> Why do we need to do this anyway?  Why do we need any EFI runtime
+> support?  We already have ACPI.  Isn't that good enough to abstract
+> out the runtime parts of the hardware?
+> 
+> Why do we need to replace working code that directly talks to the
+> architecturally defined hardware, with firmware calls?
+> 
+> What is the point?  What is the advantage?
+> 
+> The disadvantage of having more code to maintain and having
+> to deal with more BIOS bugs should be obvious.
 
-IMHO, the only logical issue here is netpoll.c mustn't use 
-CONFIG_NET_POLL_CONTROLLER code without #ifdef if it doesn't
-add this dependency itself.
+The reboot EFI runtime service is needed because otherwise we have no
+way to tell firmware whether a warm or cold reboot is requested. The
+"0x472" protocol is used by legacy BIOS, but not by EFI based firmware.
+For EFI based firmware, the parameter to runtime service call is the
+only way to tell firmware whether a warm or cold reboot is requested.
 
-Cheers,
-Jarek P. 
+That is not implemented by current EFI support patch yet, but we will
+add it in the next version.
+
+> > Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
+> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+> >
+> > ---
+> >
+> >  reboot.c |   11 ++++++++++-
+> >  time.c   |   47 +++++++++++++++++++++++++++++++----------------
+> >  2 files changed, 41 insertions(+), 17 deletions(-)
+> >
+> > Index: linux-2.6.23-rc1/arch/x86_64/kernel/reboot.c
+> > ===================================================================
+> > --- linux-2.6.23-rc1.orig/arch/x86_64/kernel/reboot.c 2007-07-23
+> > 04:41:00.000000000 +0800
+> > +++ linux-2.6.23-rc1/arch/x86_64/kernel/reboot.c 2007-07-30 09:26:56.000000000
+> > +0800
+> > @@ -9,6 +9,7 @@
+> >  #include <linux/pm.h>
+> >  #include <linux/kdebug.h>
+> >  #include <linux/sched.h>
+> > +#include <linux/efi.h>
+> >  #include <asm/io.h>
+> >  #include <asm/delay.h>
+> >  #include <asm/hw_irq.h>
+> > @@ -117,7 +118,7 @@
+> >  	pci_iommu_shutdown();
+> >  }
+> >  
+> > -void machine_emergency_restart(void)
+> > +static inline void bios_emergency_restart(void)
+> >  {
+> >  	int i;
+> >  
+> > @@ -145,6 +146,14 @@
+> >  	}      
+> >  }
+> >  
+> > +void machine_emergency_restart(void)
+> > +{
+> > +	if (efi_enabled)
+> > +		efi_emergency_restart();
+> > +	else
+> > +		bios_emergency_restart();
+> > +}
+> > +
+> 
+> A EFI is a bios so naming the current machine_emergency_restart bios_emergency_restart is
+> a misnomer, especially since pounds the hardware not the firmware.
+> Second we already have a perfectly capable mechanism in the
+> reboot_type variable so you should just need to add one more type and
+> handle this properly. 
+
+Yes. Reboot via EFI should be implemented as a new type of
+"reboot_type".
+
+Best Regards,
+Huang Ying
