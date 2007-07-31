@@ -1,116 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940385AbXGaEQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965963AbXGaESR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940385AbXGaEQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936396AbXGaEQM
+	id S965963AbXGaESR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXGaESI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:16:12 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:39999 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935185AbXGaEQK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:16:10 -0400
-Date: Tue, 31 Jul 2007 13:15:27 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.23-rc2
-Message-ID: <20070731041527.GB32301@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+	Tue, 31 Jul 2007 00:18:08 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40038 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752421AbXGaESH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 00:18:07 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
+References: <1185851569.23149.25.camel@caritas-dev.intel.com>
+Date: Mon, 30 Jul 2007 22:16:31 -0600
+In-Reply-To: <1185851569.23149.25.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Tue, 31 Jul 2007 11:12:49 +0800")
+Message-ID: <m1bqdtus0w.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.23.git
+> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
+> Interface) support to x86_64 architecture. The patches have been
+> tested against 2.6.23-rc1 kernel on Intel platforms with EFI1.10 and
+> UEFI2.0 firmware.
+>
+> UEFI specification can be found here: http://www.uefi.org
 
-Which contains:
+Is it still the case you must sign a license you won't implement
+it if you read the specification?
 
-Adrian McMenamin (1):
-      sh: Fix Dreamcast DMA issues.
+> For booting the UEFI x86_64 enabled kernel, the machine with EFI/UEFI
+> firmware and the support of bootloader is required. Detailed usage
+> guide can be found in Documentation/x86_64/uefi.txt, which is added in
+> the patch: efi-doc.patch.
+>
+> Issues _not_ addressed (per feedback from Eric Biederman)
 
-David McCullough (2):
-      sh: arch/sh/boot - fix shell usage
-      sh: fix get_wchan() for SH kernels without framepointers
+Thank you for acknowledging them.
 
-Magnus Damm (4):
-      sh: remove old broken pint code
-      sh: remove support for sh73180 and solution engine 73180
-      sh: sh-sci - fix SH7708 support
-      sh: remove support for sh7300 and solution engine 7300
+I would really prefer to see something start simple and obviously
+correct and grow (typical unix/linux development) rather then
+attempt to use all of the cool efi features at once.
 
-Markus Brunner (1):
-      rtc: rtc-sh: Correct sh_rtc_set_time() for some SH-3 parts.
+> - Virtual mode support is still retained in this patch. There is at
+>   least one EFI call is fast path: efi_set_rtc_mmss, which must
+>   complete as soon as possible.
 
-Paul Mundt (8):
-      sh: Add kmap_coherent()/kunmap_coherent() interface for SH-4.
-      sh: Reclaim beginning of P3 space for vmalloc area.
-      sh: Kill the rest of the SE73180 cruft.
-      sh: Silence sq compile warning on sh4 nommu.
-      sh: Restrict DSP support to specific CPUs.
-      sh: Kill off virt_to_bus()/bus_to_virt().
-      sh: Add sh to the CC_OPTIMIZE_FOR_SIZE dependencies.
-      sh: Fix fs.h removal from mm.h regressions.
+Bogus.  You are setting the wall clock time in the granularity
+of a second.  Yes we can achieve high accuracy by setting things
+as soon after the change as we can.  I don't see a couple of
+extra micro second being a bit deal here.  If a couple of
+extra micro seconds are a big deal we shouldn't be going through
+efi to perform this logic in the first place.  This is x86 
+and we know the hardware programming interface.
 
- arch/sh/Kconfig                                    |   33 +-
- arch/sh/Makefile                                   |    2 -
- arch/sh/boards/se/7300/Makefile                    |    5 -
- arch/sh/boards/se/7300/io.c                        |  268 --------
- arch/sh/boards/se/7300/irq.c                       |   40 --
- arch/sh/boards/se/7300/setup.c                     |   74 --
- arch/sh/boards/se/73180/Makefile                   |    5 -
- arch/sh/boards/se/73180/io.c                       |  268 --------
- arch/sh/boards/se/73180/irq.c                      |  136 ----
- arch/sh/boards/se/73180/setup.c                    |   75 ---
- arch/sh/boot/Makefile                              |    7 +-
- arch/sh/boot/compressed/Makefile                   |    7 +-
- arch/sh/configs/se7300_defconfig                   |  696 --------------------
- arch/sh/configs/se73180_defconfig                  |  648 ------------------
- arch/sh/drivers/dma/dma-api.c                      |    7 +-
- arch/sh/kernel/cpu/irq/Makefile                    |    1 -
- arch/sh/kernel/cpu/irq/ipr.c                       |    2 +-
- arch/sh/kernel/cpu/irq/pint.c                      |  220 ------
- arch/sh/kernel/cpu/sh3/Makefile                    |    4 +-
- .../cpu/sh3/{clock-sh7300.c => clock-sh7710.c}     |   26 +-
- arch/sh/kernel/cpu/sh3/setup-sh7300.c              |   43 --
- arch/sh/kernel/cpu/sh4/probe.c                     |    6 -
- arch/sh/kernel/cpu/sh4/sq.c                        |   18 +-
- arch/sh/kernel/cpu/sh4a/Makefile                   |    2 -
- arch/sh/kernel/cpu/sh4a/clock-sh73180.c            |   81 ---
- arch/sh/kernel/cpu/sh4a/setup-sh73180.c            |   43 --
- arch/sh/kernel/init_task.c                         |    2 +-
- arch/sh/kernel/process.c                           |    7 +-
- arch/sh/kernel/setup.c                             |    3 +-
- arch/sh/kernel/sys_sh.c                            |    1 +
- arch/sh/kernel/timers/timer-tmu.c                  |    3 +-
- arch/sh/kernel/vsyscall/vsyscall.c                 |    1 +
- arch/sh/mm/Kconfig                                 |   14 +-
- arch/sh/mm/cache-sh4.c                             |   14 -
- arch/sh/mm/pg-sh4.c                                |   76 +--
- arch/sh/tools/mach-types                           |    2 -
- drivers/rtc/rtc-sh.c                               |    1 +
- drivers/serial/sh-sci.c                            |    9 +-
- drivers/serial/sh-sci.h                            |   66 +--
- include/asm-sh/bugs.h                              |    4 +-
- include/asm-sh/cpu-sh3/freq.h                      |    4 -
- include/asm-sh/cpu-sh3/mmu_context.h               |    1 -
- include/asm-sh/cpu-sh3/timer.h                     |    3 +-
- include/asm-sh/cpu-sh4/freq.h                      |    2 +-
- include/asm-sh/dma-mapping.h                       |    8 +-
- include/asm-sh/dma.h                               |    1 +
- include/asm-sh/fixmap.h                            |    8 +-
- include/asm-sh/floppy.h                            |    4 +-
- include/asm-sh/io.h                                |    4 -
- include/asm-sh/pgtable.h                           |    6 +-
- include/asm-sh/processor.h                         |    4 +-
- include/asm-sh/se7300.h                            |   64 --
- include/asm-sh/se73180.h                           |   66 --
- include/asm-sh/ubc.h                               |    3 +-
- init/Kconfig                                       |    2 +-
- sound/sh/aica.h                                    |    2 +-
- 56 files changed, 138 insertions(+), 2964 deletions(-)
+Why in the world are we going through efi for real time clock
+operations anyway.  That seems completely silly.
+
+> - The variable efi_enabled is used throughout across architecutres if
+>  CONFIG_EFI option is enabled. The i386 code also uses this variable.
+>  This is something that can be revisited with code consolidation
+>  across architectures.
+
+Fix it first. arch/i386/ efi support is horrible, and show what happens
+when things are not done properly the first time.  Later doesn't happen.
+With the partvirt logic we have a lot of operations properly split out
+already.  Figure out how to use them. 
+
+Ok. Looking what more I can tear into.
+
+Eric
