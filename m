@@ -1,71 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763956AbXGaO6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764682AbXGaO6r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763956AbXGaO6T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:58:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761153AbXGaO6M
+	id S1764682AbXGaO6r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:58:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761721AbXGaO6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:58:12 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44060 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760890AbXGaO6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:58:10 -0400
-Date: Tue, 31 Jul 2007 16:58:21 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Stefan Seyfried <seife@suse.de>, suspend-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [rft] Kill junk from s2ram resume paths
-Message-ID: <20070731145821.GL2087@elf.ucw.cz>
-References: <20070731121246.GF2087@elf.ucw.cz> <20070731140140.GJ2087@elf.ucw.cz> <20070731144334.GC6973@suse.de> <200707311703.44096.rjw@sisk.pl>
+	Tue, 31 Jul 2007 10:58:35 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:2533 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760501AbXGaO6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:58:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=BGb8Qiiha9hS/6hGgv6PvHsnw3m+IhtTENYuWa0Bq0OH+s5/xVFJuCQ2pvtwUAXIBofkzdIEht4s2duXfICHoGiuUG6W4A1wCTiw5shsbwBsKzJX8/50pQ7s1iBNjFq4qojHi9eK9gEgdO/2jImljcrCD1rgiPPswNHoWvX0ucg=
+Message-ID: <46AF4E12.8060204@gmail.com>
+Date: Tue, 31 Jul 2007 23:58:26 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707311703.44096.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+References: <20070705194909.337398431@intel.com>	 <20070705130518.135e4e3c.kristen.c.accardi@intel.com>	 <46AE12B6.6090408@garzik.org>  <46AED656.8070407@gmail.com> <1185891382.2750.8.camel@laptopd505.fenrus.org>
+In-Reply-To: <1185891382.2750.8.camel@laptopd505.fenrus.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Arjan van de Ven wrote:
+> either sucks. AHCI ALPM ought to work if it's supported; it's what other
+> operating systems also use... 
 
-
-> > > diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
-> > > index 1415da1..9cebef7 100644
-> > > --- a/arch/i386/kernel/acpi/wakeup.S
-> > > +++ b/arch/i386/kernel/acpi/wakeup.S
-> > > @@ -28,21 +28,6 @@ #define BEEP \
-> > >  	movb	$15, %al; 	\
-> > >  	outb	%al, $66;
-> > >  
-> > > -#define BEEP \
-> > > -	inb	$97, %al; 	\
-> > > -	outb	%al, $0x80; 	\
-> > > -	movb	$3, %al; 	\
-> > > -	outb	%al, $97; 	\
-> > > -	outb	%al, $0x80; 	\
-> > > -	movb	$-74, %al; 	\
-> > > -	outb	%al, $67; 	\
-> > > -	outb	%al, $0x80; 	\
-> > > -	movb	$-119, %al; 	\
-> > > -	outb	%al, $66; 	\
-> > > -	outb	%al, $0x80; 	\
-> > > -	movb	$15, %al; 	\
-> > > -	outb	%al, $66;
-> > > -
-> > >  ALIGN
-> > >  	.align	4096
-> > >  ENTRY(wakeup_start)
-> > 
-> > This hunk rejected for me (against 2.6.23-rc1), but i'm testing x86_64, so
-> > it did not matter ;-)
-> 
-> I think it's gone in favor of the more sophisticated beeping
-> > > support.
-
-No. It was merge problem on my side, I actually had _two_ times the
-beeping macro.
-									Pavel
+A question.  Does the other OS enable ALPM without checking against
+white/black list?  Or is it enabled only on certain configurations -
+e.g. specific notebooks, etc?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+tejun
