@@ -1,53 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940657AbXGaFLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940502AbXGaFNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940657AbXGaFLd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 01:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755320AbXGaFLD
+	id S940502AbXGaFNI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 01:13:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755971AbXGaFMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 01:11:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54353 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751541AbXGaFLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 01:11:00 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [PATCH 2/2] Introduce CONFIG_SUSPEND (updated)
-Date: Tue, 31 Jul 2007 00:59:49 -0400
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707292323.29601.rjw@sisk.pl> <200707292327.19884.rjw@sisk.pl>
-In-Reply-To: <200707292327.19884.rjw@sisk.pl>
+	Tue, 31 Jul 2007 01:12:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:17125 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755320AbXGaFMx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 01:12:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bozvx2cYw1dRRYdGnLMztLA14Vm0P61+GB6FTL2rM+5/5xWCdwuM4reg4y0veHojzioWUf4hpZy7PHR2J3dPjsAxlQ5HOFb4FK/P6DDTvD5T1Ows2fFyJ4pPAOAXzme7KhMO/EQ1a5dPjv1sEfkW040cerDVEKdR0TBBwCkteRM=
+Message-ID: <12c511ca0707302212o3702789bt8d597ec53a389e0a@mail.gmail.com>
+Date: Mon, 30 Jul 2007 22:12:51 -0700
+From: "Tony Luck" <tony.luck@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: regression on HP zx1 platform from ACPI autoload modules patches
+Cc: "Doug Chapman" <doug.chapman@hp.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, linux-ia64@vger.kernel.org, trenn@suse.de
+In-Reply-To: <6bffcb0e0707301607x5484f114q9117007d131f7118@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707310059.50329.lenb@kernel.org>
+References: <1185836238.31298.36.camel@deimos.americas.hpqcorp.net>
+	 <6bffcb0e0707301607x5484f114q9117007d131f7118@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 29 July 2007 17:27, Rafael J. Wysocki wrote:
-> Still, there are many other files in which CONFIG_PM can be replaced
-> with CONFIG_PM_SLEEP or even with CONFIG_SUSPEND, but they can be updated in
-> the future.
+> > During bootup it panics with:
+> >
+> > Kernel panic - not syncing: Unable to find SBA IOMMU: Try a generic or DIG kernel
 
-There is #ifdef CONFIG_PM
-around all the .suspend and .resume methods.
+I think that the fix for this has already gone into Linus's tree (on
+Friday).  Commit SHA1
+for the patch that should fix this is:
+8c8eb78f673c07b60f31751e1e47ac367c60c6b7
 
-Technically they are PM_DEVICE_STATES or something,
-that could really be under PM, and both SUSPEND and HIBERNATE
-would depend on PM_DEVICE_STATES, but it is also possible to have
-PM_DEVICE_STATES without SUSPEND and HIBERNATE.
+If latest GIT tree still has this problem, then please let us know.
 
-oh no, I just suggested more instead of fewer config options:-O
-
-but i agree, this can wait a bit...
-
--Len
+-Tony
