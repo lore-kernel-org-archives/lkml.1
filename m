@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbXGaHdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753072AbXGaHj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbXGaHdq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 03:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXGaHdi
+	id S1753072AbXGaHj0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 03:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbXGaHjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 03:33:38 -0400
-Received: from mga03.intel.com ([143.182.124.21]:28354 "EHLO mga03.intel.com"
+	Tue, 31 Jul 2007 03:39:18 -0400
+Received: from ozlabs.org ([203.10.76.45]:37329 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750978AbXGaHdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 03:33:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
-   d="scan'208";a="256764416"
-Subject: Re: [PATCH 1/5] x86_64 EFI support -v3: EFI base support
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1vec1tche.fsf@ebiederm.dsl.xmission.com>
-References: <1185851572.23149.26.camel@caritas-dev.intel.com>
-	 <m1vec1tche.fsf@ebiederm.dsl.xmission.com>
+	id S1751116AbXGaHjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 03:39:17 -0400
+Subject: Re: [PATCH] CPU online file permission
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+In-Reply-To: <20070730165720.37780cc6.akpm@linux-foundation.org>
+References: <200707300056.l6U0ukUe021931@devserv.devel.redhat.com>
+	 <20070730165720.37780cc6.akpm@linux-foundation.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 15:33:11 +0800
-Message-Id: <1185867191.23149.61.camel@caritas-dev.intel.com>
+Date: Tue, 31 Jul 2007 17:38:55 +1000
+Message-Id: <1185867535.6131.56.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 07:33:21.0474 (UTC) FILETIME=[1230CA20:01C7D345]
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 22:37 -0600, Eric W. Biederman wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
+On Mon, 2007-07-30 at 16:57 -0700, Andrew Morton wrote:
+> On Sun, 29 Jul 2007 20:56:46 -0400
+> Ulrich Drepper <drepper@redhat.com> wrote:
 > 
-> > Changelog between v2 and v3:
-> >
-> > 1. The EFI callwrapper is re-implemented in assembler.
-> >
-> > ---
-> >
-> > This patch adds basic support for EFI x86_64 system. The main file of
-> > the patch is the addition of efi.c for x86_64. This file is modeled
-> > after the EFI IA32 avatar. EFI initialization are implemented in
-> > efi.c. Some x86_64 specifics are worth noting here. On x86_64,
-> > parameters passed to UEFI firmware services need to follow the UEFI
-> > calling convention. For this purpose, a set of functions named
-> > lin2win<x> (<x> is the number of parameters) are implemented. EFI
-> > function calls are wrapped before calling the firmware service.
+> > Is there a reason why the "online" file in the subdirectories for the CPUs
+> > in /sys/devices/system isn't world-readable?
 > 
-> 
-> Since the code to generate the e820 map from the efi memory map has
-> been added to elilo (odd but ok) why does this patch continue to
-> have code for playing with the efi memory map?
+> No sane one which I can think of.  It seems that it originally sprang forth
+> from Rusty's keyboard in that form.
 
-EFI memory map is used as the parameter to EFI runtime service call:
-set_virtual_address_map. It conveys some information not suitable to be
-described in E820 map, such as, memory region that is memory mapped IO
-and is used by EFI runtime service.
+Hmm, that seems possible but unlikely.  My original version used proc,
+after all.
 
-Best Regards,
-Huang Ying
+But either way, fix is good.
+
+Rusty.
+
