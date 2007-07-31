@@ -1,107 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941634AbXGaCc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940834AbXGaCfA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941634AbXGaCc3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 22:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940551AbXGaCZc
+	id S940834AbXGaCfA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 22:35:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764693AbXGaCeu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 22:25:32 -0400
-Received: from ns.oss.ntt.co.jp ([222.151.198.98]:56467 "EHLO
-	serv1.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S941042AbXGaCZa (ORCPT
+	Mon, 30 Jul 2007 22:34:50 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53861 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763743AbXGaCes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 22:25:30 -0400
-Subject: Re: [PATCH 2/2] Debug handling of early spurious interrupts
-From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: kexec@lists.infradead.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070730112223.7b52cf63.akpm@linux-foundation.org>
-References: <1184666997.5271.5.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20070718154659.c8b5ffea.akpm@linux-foundation.org>
-	 <1184896459.27369.36.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1184896944.27369.50.camel@sebastian.kern.oss.ntt.co.jp>
-	 <1184898043.28418.3.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20070720144302.2785e961.akpm@linux-foundation.org>
-	 <1185789494.9831.107.camel@sebastian.kern.oss.ntt.co.jp>
-	 <20070730112223.7b52cf63.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: NTT Open Source Software Center
-Date: Tue, 31 Jul 2007 11:25:26 +0900
-Message-Id: <1185848726.23316.50.camel@sebastian.kern.oss.ntt.co.jp>
+	Mon, 30 Jul 2007 22:34:48 -0400
+Date: Tue, 31 Jul 2007 11:35:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       "Zoltan.Menyhart@bull.net" <Zoltan.Menyhart@bull.net>,
+       Christoph Lameter <clameter@sgi.com>,
+       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH] flush icache before set_pte take6. [0/4]
+Message-Id: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 11:22 -0700, Andrew Morton wrote: 
-> On Mon, 30 Jul 2007 18:58:14 +0900
-> Fernando Luis V__zquez Cao <fernando@oss.ntt.co.jp> wrote:
-> 
-> > > 
-> > > So bad things might happen because of this change.  And if they do, they
-> > > will take a loooong time to be discovered, because non-shared interrupt
-> > > handlers tend to dwell in crufty old drivers which not many people use.
-> > > 
-> > > So I'm wondering if it would be more prudent to only do all this for shared
-> > > handlers?
-> > 
-> > I have been testing this patches on all my machines, which spans three
-> > different architectures: i386, x86_64 (EM64T and Opteron), and ia64.
-> > 
-> > The good news is that nothing catastrophic happened and, in the process,
-> > I managed to find some somewhat buggy interrupt handlers.
-> > 
-> > I will present a brief summary of my findings here.
-> 
-> That's quite a lot of breakage for such a small sample of machines.  I do
-> suspect that if we were to merge this lot into mainline, all sorts of bad
-> stuff would happen.
-Yup.
+flush icache before set_pte() for ia64 patch set.
 
-> otoh, as you point out, pretty much everthing which goes wrong is due to
-> incorrect or dubious driver behaviour, and there is value in weeding these
-> things out. 
-> 
-> But the problem with this process is that we're weeding things out at
-> runtime.  Some drivers don't get used by many people and users of some
-> architectures (esp embedded) tend to lag kernel.org by a long time.  So it
-> could be years before all the fallout from this change is finally wrapped
-> up.
-Yes, that is a big concern. However, the same embedded people is
-starting to use both kexec and kdump, so they may suffer the issues we
-are trying to weed out anyway, even if these patches are not applied.
-The difference is that with this new functionality it is possible to
-catch potential problems relatively easily, because any incorrect
-behaviour this may cause will be easily reproducible and, in most cases,
-will reveal itself early at boot time.
+patches are against 2.6.23-rc1.
 
-As things stand now, I guess we will keep seeing occasional crashes and
-strange behaviour in kexec-booted kernels, which in some cases will be
-due to incorrect handling of spurious interrupts. Besides, such problems
-are really difficult to reproduce because, commonly, we would need to
-hit an obscure corner case.
+Changes:
+  - Added "Is Montecito?" check for optimization.
 
-> > If we find drivers that are not fixable we should probably consider this
-> > new behaviour on a per-driver basis, as Andrew suggested.
-> 
-> We haven't found any such yet, have we?
-Not yet, fortunately.
-
-> > This would
-> > probably require passing a new flag into request_irq. Besides, when such
-> > a driver is detected we should emit a warning that it may not work
-> > properly in a kdump kernel.
-> > 
-> > I would appreciate your comments on this.
-> 
-> Oh well, let's just keep maintaining it in -mm for now, gather more
-> information so that we can make a more informed decision later on.
-Makes sense. I will look into all the issues I have found so far, do
-some more testing (I think a new approach is needed to speed up testing
-of these issues...), and get back to you.
-
-Thank you.
-
-Fernando
+Thanks,
+-Kame
 
