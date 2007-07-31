@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932476AbXGaRyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932244AbXGaR5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932476AbXGaRyX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765280AbXGaRxz
+	id S932244AbXGaR5V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760506AbXGaR5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:53:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49644 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762472AbXGaRxy (ORCPT
+	Tue, 31 Jul 2007 13:57:11 -0400
+Received: from rrcs-71-42-183-126.sw.biz.rr.com ([71.42.183.126]:46451 "EHLO
+	smtp.opengridcomputing.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759722AbXGaR5J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:53:54 -0400
-Date: Tue, 31 Jul 2007 23:36:10 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Greg KH <gregkh@suse.de>
-cc: Andreas Schwab <schwab@suse.de>, WANG Cong <xiyou.wangcong@gmail.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci
- subsystem.
-In-Reply-To: <20070731174755.GA8592@suse.de>
-Message-ID: <alpine.LFD.0.999.0707312334260.28746@enigma.security.iitk.ac.in>
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
- <20070731125443.880871000@hawkeye.stone.uk.eu.org> <200707311553.29090.borntraeger@de.ibm.com>
- <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in>
- <20070731144619.GA8183@localhost.localdomain> <20070731161051.GA7490@suse.de>
- <jeir80y27m.fsf@sykes.suse.de> <20070731174755.GA8592@suse.de>
+	Tue, 31 Jul 2007 13:57:09 -0400
+Message-ID: <46AF77F4.2000003@opengridcomputing.com>
+Date: Tue, 31 Jul 2007 12:57:08 -0500
+From: Steve Wise <swise@opengridcomputing.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Roland Dreier <rdreier@cisco.com>
+CC: general@lists.openfabrics.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.23 1/2] Make the iw_cxgb3 module parameters writable.
+References: <20070729201226.31659.85900.stgit@dell3.ogc.int> <adad4y9skxm.fsf@cisco.com>
+In-Reply-To: <adad4y9skxm.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 31 Jul 2007, Greg KH wrote:
-
-> On Tue, Jul 31, 2007 at 06:20:29PM +0200, Andreas Schwab wrote:
-> > Greg KH <gregkh@suse.de> writes:
-> > 
-> > > On Tue, Jul 31, 2007 at 10:46:19PM +0800, WANG Cong wrote:
-> > >> However, I think using resource_size_t is a bit better than unsigned long,
-> > >> so that we don't need to check the defination of it.
-> > >> 
-> > >> - res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
-> > >> + res->start = (resource_size_t)kmalloc(*size, GFP_KERNEL);
-> > >> 
-> > >> Is this change OK?
-> > >
-> > > Yes, that is the proper cast to have here.
-> > 
-> > It will generate a warning when resoure_size_t is 64bit on a 32bit arch.
+Roland Dreier wrote:
+> ugh, missed these before my last merge...
 > 
-> How?
+> anyway:
+> 
+> why do we want to parameters writable?  a good changelog tells me
+> what, why and how, and this changelog just covered the "what".  Also,
+> I assume you've checked that it's OK for these variables to change at
+> any time?
 
-warning: cast from pointer to integer of different size
+I want to be able to changes these parameters at run time.  Eventually, 
+if we might want these parameters as rdma connection setup parameters. 
+For now, its useful to be able to set them without reloading.
 
-(it's from smaller to larger size, so not really truncation,
-but gcc does barf)
+Also, it is safe to change them at any time.  All of these are read once 
+and utilized at connection setup.  So changing them is safe in that 
+existing connections aren't affected, and only subsequent connections 
+will utilize the new values.
 
-> And if so, what should the proper cast be?
-
-sizeof(unsigned long) == sizeof(void *) should always be true.
+Sorry for the terse changelog...
 
 
-Satyam
+Steve.
+
+
+
