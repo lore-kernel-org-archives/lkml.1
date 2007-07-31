@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965131AbXGaEdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968445AbXGaEeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965131AbXGaEdx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965963AbXGaEbY
+	id S968445AbXGaEeW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967533AbXGaEb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:31:24 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34523 "EHLO
+	Tue, 31 Jul 2007 00:31:29 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:34529 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967452AbXGaEbU (ORCPT
+	with ESMTP id S966275AbXGaEbZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:31:20 -0400
-Date: Mon, 30 Jul 2007 21:32:09 -0700
+	Tue, 31 Jul 2007 00:31:25 -0400
+Date: Mon, 30 Jul 2007 21:32:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, agk@redhat.com,
-       Milan Broz <mbroz@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 09/26] dm crypt: disable barriers
-Message-ID: <20070731043209.GJ3975@kroah.com>
+       Olaf Kirch <olaf.kirch@oracle.com>, Chris Wright <chrisw@sous-sol.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 10/26] dm crypt: fix call to clone_init
+Message-ID: <20070731043214.GK3975@kroah.com>
 References: <20070731042108.546594256@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dm-crypt-disable-barriers.patch"
+Content-Disposition: inline; filename="dm-crypt-fix-call-to-clone_init.patch"
 In-Reply-To: <20070731043047.GA3975@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,38 +39,90 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Milan Broz <mbroz@redhat.com>
+From: Olaf Kirch <olaf.kirch@oracle.com>
 
-Disable barriers in dm-crypt because of current workqueue processing can
-reorder requests.
+Call clone_init early
 
-This must be addresed later but for now disabling barriers is needed to
-prevent data corruption.
+We need to call clone_init as early as possible - at least before call
+bio_put(clone) in any error path.  Otherwise, the destructor will try to
+dereference bi_private, which may still be NULL.
 
-Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Olaf Kirch <olaf.kirch@oracle.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
-Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=9c89f8be1a7d14aad9d2c3f7d90d7d88f82c61e2
+Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=027581f3515b5ec2218847dab578afa439a9d6b9
 
- drivers/md/dm-crypt.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/md/dm-crypt.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
 --- linux-2.6.21.6.orig/drivers/md/dm-crypt.c
 +++ linux-2.6.21.6/drivers/md/dm-crypt.c
-@@ -954,6 +954,9 @@ static int crypt_map(struct dm_target *t
- 	struct crypt_config *cc = ti->private;
- 	struct crypt_io *io;
+@@ -107,6 +107,8 @@ struct crypt_config {
  
-+	if (bio_barrier(bio))
-+		return -EOPNOTSUPP;
+ static struct kmem_cache *_crypt_io_pool;
+ 
++static void clone_init(struct crypt_io *, struct bio *);
 +
- 	io = mempool_alloc(cc->io_pool, GFP_NOIO);
- 	io->target = ti;
- 	io->base_bio = bio;
+ /*
+  * Different IV generation algorithms:
+  *
+@@ -379,9 +381,10 @@ static int crypt_convert(struct crypt_co
+  * May return a smaller bio when running out of pages
+  */
+ static struct bio *
+-crypt_alloc_buffer(struct crypt_config *cc, unsigned int size,
++crypt_alloc_buffer(struct crypt_io *io, unsigned int size,
+                    struct bio *base_bio, unsigned int *bio_vec_idx)
+ {
++	struct crypt_config *cc = io->target->private;
+ 	struct bio *clone;
+ 	unsigned int nr_iovecs = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	gfp_t gfp_mask = GFP_NOIO | __GFP_HIGHMEM;
+@@ -396,7 +399,7 @@ crypt_alloc_buffer(struct crypt_config *
+ 	if (!clone)
+ 		return NULL;
+ 
+-	clone->bi_destructor = dm_crypt_bio_destructor;
++	clone_init(io, clone);
+ 
+ 	/* if the last bio was not complete, continue where that one ended */
+ 	clone->bi_idx = *bio_vec_idx;
+@@ -562,6 +565,7 @@ static void clone_init(struct crypt_io *
+ 	clone->bi_end_io  = crypt_endio;
+ 	clone->bi_bdev    = cc->dev->bdev;
+ 	clone->bi_rw      = io->base_bio->bi_rw;
++	clone->bi_destructor = dm_crypt_bio_destructor;
+ }
+ 
+ static void process_read(struct crypt_io *io)
+@@ -585,7 +589,6 @@ static void process_read(struct crypt_io
+ 	}
+ 
+ 	clone_init(io, clone);
+-	clone->bi_destructor = dm_crypt_bio_destructor;
+ 	clone->bi_idx = 0;
+ 	clone->bi_vcnt = bio_segments(base_bio);
+ 	clone->bi_size = base_bio->bi_size;
+@@ -615,7 +618,7 @@ static void process_write(struct crypt_i
+ 	 * so repeat the whole process until all the data can be handled.
+ 	 */
+ 	while (remaining) {
+-		clone = crypt_alloc_buffer(cc, base_bio->bi_size,
++		clone = crypt_alloc_buffer(io, base_bio->bi_size,
+ 					   io->first_clone, &bvec_idx);
+ 		if (unlikely(!clone)) {
+ 			dec_pending(io, -ENOMEM);
+@@ -631,7 +634,6 @@ static void process_write(struct crypt_i
+ 			return;
+ 		}
+ 
+-		clone_init(io, clone);
+ 		clone->bi_sector = cc->start + sector;
+ 
+ 		if (!io->first_clone) {
 
 -- 
