@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXGaHtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbXGaHuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbXGaHtp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 03:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750810AbXGaHtj
+	id S1755221AbXGaHuP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 03:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbXGaHuA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 03:49:39 -0400
-Received: from il.qumranet.com ([82.166.9.18]:45048 "EHLO il.qumranet.com"
+	Tue, 31 Jul 2007 03:50:00 -0400
+Received: from il.qumranet.com ([82.166.9.18]:45072 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbXGaHti (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 03:49:38 -0400
-Message-ID: <46AEE99A.20804@qumranet.com>
-Date: Tue, 31 Jul 2007 10:49:46 +0300
+	id S1750810AbXGaHuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 03:50:00 -0400
 From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Avi Kivity <avi@qumranet.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: Re: commit 80917728e43e248155c019f743655806b582b099
-References: <118586624088-git-send-email-avi@qumranet.com>
-In-Reply-To: <118586624088-git-send-email-avi@qumranet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net,
+       Alistair John Strachan <alistair@devzero.co.uk>,
+       Avi Kivity <avi@qumranet.com>
+Subject: [PATCH] KVM: x86 emulator: fix debug reg mov instructions
+Date: Tue, 31 Jul 2007 10:50:11 +0300
+Message-Id: <11858682112876-git-send-email-avi@qumranet.com>
+X-Mailer: git-send-email 1.5.2.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
->     KVM: x86 emulator: disable writeback for debug register instructions
->     
->     These are handled internally by the instruction.
->     
->     Signed-off-by: Avi Kivity <avi@qumranet.com>
->
->   
+More fallout from the writeback fixes: debug register transfer instructions
+do their own writeback and thus need to disable the general writeback
+mechanism.  This fixes oopses and some guest failures on AMD machines (the
+Intel variant decodes the instruction in hardware and thus does not need
+emulation).
 
-Sorry, junk that.  Fingers (or brain) slipped.  Better one coming up.
+Cc: Alistair John Strachan <alistair@devzero.co.uk>
+Signed-off-by: Avi Kivity <avi@qumranet.com>
 
--- 
-error compiling committee.c: too many arguments to function
-
+diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
+index 1f979cb..4b8a0cc 100644
+--- a/drivers/kvm/x86_emulate.c
++++ b/drivers/kvm/x86_emulate.c
+@@ -1217,11 +1217,13 @@ twobyte_insn:
+ 		}
+ 		break;
+ 	case 0x21: /* mov from dr to reg */
++		no_wb = 1;
+ 		if (modrm_mod != 3)
+ 			goto cannot_emulate;
+ 		rc = emulator_get_dr(ctxt, modrm_reg, &_regs[modrm_rm]);
+ 		break;
+ 	case 0x23: /* mov from reg to dr */
++		no_wb = 1;
+ 		if (modrm_mod != 3)
+ 			goto cannot_emulate;
+ 		rc = emulator_set_dr(ctxt, modrm_reg, _regs[modrm_rm]);
