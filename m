@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbXGaLO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757473AbXGaLSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbXGaLO2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXGaLOW
+	id S1757473AbXGaLSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbXGaLSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:14:22 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:37544 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752759AbXGaLOV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:14:21 -0400
-Date: Tue, 31 Jul 2007 13:14:35 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
-Message-ID: <20070731111435.GB1778@elf.ucw.cz>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com> <20070731091004.GA2022@elf.ucw.cz> <1185873924.23149.86.camel@caritas-dev.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185873924.23149.86.camel@caritas-dev.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 31 Jul 2007 07:18:24 -0400
+Received: from compulypse.net ([212.227.20.180]:19048 "EHLO compulypse.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751385AbXGaLSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 07:18:23 -0400
+Subject: Re: [ck] Linux Kernel cfs scheduler and xorg kbd
+From: "<::.. Teresa_II ..::>" <teresa@kvitka.net>
+To: CK Mailinglist <ck@vds.kolivas.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1185827130.26459.16.camel@xtower.fri>
+References: <1185827130.26459.16.camel@xtower.fri>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 31 Jul 2007 13:18:02 +0200
+Message-Id: <1185880682.26459.26.camel@xtower.fri>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+У пн, 2007-07-30 у 22:25 +0200, <::.. Teresa_II ..::> пише:
 
-> > This part did not apply for me -- it seems crashdump related and I did
-> > not have that applied. Is it critical?
-> 
-> This is needed for kexec_jump to work properly. Which version of
-> kexec-tools do you use? This patch is against 1.101. The kdump patch
-> must be applied before this patch is applied.
 
-Ok, did that, got a clean compile, but still could not get it to work.
-									Pavel
+> I am ready to provide any requested information to find issue.
+
+Interesting Thing is that this seems to happen only on system idle. If
+system is under load it behave correct.
+And sometimes it doesn't appear even if system is idle.
+Now as i write this email it works mostly like it should. Yesterday i
+was much worse. I didn't rebooted since this time. Application set i run
+is mostly the same for whole time.
+So any idea where to start to look ?
+
+Also how long SHIFT, or CTRL was pressed have matter. Long pressed
+special button cause longer release time.
+Sorry if its little bit bad described. I don't know how better to
+explain how it looks.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Teresa Kalitowska
+jid: teresa@kvitka.net
+
