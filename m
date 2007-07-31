@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761880AbXGaNL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbXGaNM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761880AbXGaNL6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761792AbXGaNJ6
+	id S1762185AbXGaNM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761803AbXGaNKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:09:58 -0400
+	Tue, 31 Jul 2007 09:10:00 -0400
 Received: from host86-137-100-191.range86-137.btcentralplus.com ([86.137.100.191]:42959
 	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761766AbXGaNJ4 (ORCPT
+	by vger.kernel.org with ESMTP id S1761799AbXGaNJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:09:56 -0400
+	Tue, 31 Jul 2007 09:09:58 -0400
 X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 09:09:04 EDT
 From: jack@hawkeye.stone.uk.eu.org
-Message-Id: <20070731125448.190135000@hawkeye.stone.uk.eu.org>
+Message-Id: <20070731125440.794755000@hawkeye.stone.uk.eu.org>
 References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 31 Jul 2007 13:53:32 +0100
+Date: Tue, 31 Jul 2007 13:53:22 +0100
 To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, David Kleikamp <shaggy@austin.ibm.com>
-Subject: [Patch 16/16] Remove unnecessary kmalloc casts in the jfs filesystem.
-Content-Disposition: inline; filename=fs_jfs_remove_kmalloc_casts.patch
+Cc: trivial@kernel.org, Ronald Bultje <rbultje@ronald.bitfreak.net>
+Subject: [Patch 06/16] This removes unnecessary kmalloc casts and corrects a test for kmalloc failure.
+Content-Disposition: inline; filename=drivers_media_remove_kmalloc_casts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
 
-CC: David Kleikamp <shaggy@austin.ibm.com>
+CC: Ronald Bultje <rbultje@ronald.bitfreak.net>
 
 ---
- fs/jfs/jfs_dtree.c |    8 ++------
- 1 file changed, 2 insertions(+), 6 deletions(-)
+ drivers/media/video/zoran_driver.c |   12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-Index: b/fs/jfs/jfs_dtree.c
+Index: b/drivers/media/video/zoran_driver.c
 ===================================================================
---- a/fs/jfs/jfs_dtree.c
-+++ b/fs/jfs/jfs_dtree.c
-@@ -592,9 +592,7 @@ int dtSearch(struct inode *ip, struct co
- 	struct component_name ciKey;
- 	struct super_block *sb = ip->i_sb;
+--- a/drivers/media/video/zoran_driver.c
++++ b/drivers/media/video/zoran_driver.c
+@@ -347,11 +347,8 @@ v4l_fbuffer_alloc (struct file *file)
+ 		if (fh->v4l_buffers.buffer_size <= MAX_KMALLOC_MEM) {
+ 			/* Use kmalloc */
  
--	ciKey.name =
--	    (wchar_t *) kmalloc((JFS_NAME_MAX + 1) * sizeof(wchar_t),
--				GFP_NOFS);
-+	ciKey.name = kmalloc((JFS_NAME_MAX + 1) * sizeof(wchar_t), GFP_NOFS);
- 	if (ciKey.name == 0) {
- 		rc = -ENOMEM;
- 		goto dtSearch_Exit2;
-@@ -957,9 +955,7 @@ static int dtSplitUp(tid_t tid,
- 	smp = split->mp;
- 	sp = DT_PAGE(ip, smp);
+-			mem =
+-			    (unsigned char *) kmalloc(fh->v4l_buffers.
+-						      buffer_size,
+-						      GFP_KERNEL);
+-			if (mem == 0) {
++			mem = kmalloc(fh->v4l_buffers.buffer_size, GFP_KERNEL);
++			if (!mem) {
+ 				dprintk(1,
+ 					KERN_ERR
+ 					"%s: v4l_fbuffer_alloc() - kmalloc for V4L buf %d failed\n",
+@@ -520,10 +517,7 @@ jpg_fbuffer_alloc (struct file *file)
  
--	key.name =
--	    (wchar_t *) kmalloc((JFS_NAME_MAX + 2) * sizeof(wchar_t),
--				GFP_NOFS);
-+	key.name = kmalloc((JFS_NAME_MAX + 2) * sizeof(wchar_t), GFP_NOFS);
- 	if (key.name == 0) {
- 		DT_PUTPAGE(smp);
- 		rc = -ENOMEM;
+ 		//if (alloc_contig) {
+ 		if (fh->jpg_buffers.need_contiguous) {
+-			mem =
+-			    (unsigned long) kmalloc(fh->jpg_buffers.
+-						    buffer_size,
+-						    GFP_KERNEL);
++			mem = kmalloc(fh->jpg_buffers.buffer_size, GFP_KERNEL);
+ 			if (mem == 0) {
+ 				dprintk(1,
+ 					KERN_ERR
 
 -- 
