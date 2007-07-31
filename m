@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969271AbXGaEjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941241AbXGaEjx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969271AbXGaEjZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:39:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S941077AbXGaEci
+	id S941241AbXGaEjx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:39:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940749AbXGaEct
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:32:38 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:34686 "EHLO
+	Tue, 31 Jul 2007 00:32:49 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:34731 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S941046AbXGaEcf (ORCPT
+	with ESMTP id S940631AbXGaEcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:32:35 -0400
-Date: Mon, 30 Jul 2007 21:33:43 -0700
+	Tue, 31 Jul 2007 00:32:47 -0400
+Date: Mon, 30 Jul 2007 21:33:48 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, torvalds@osdl.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -20,17 +20,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jason Wessel <jason.wessel@windriver.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, akpm@osdl.org,
+       johnstul@us.ibm.com, mingo@elte.hu, Vincent.Fortier1@EC.GC.CA,
+       Thomas Gleixner <tglx@linutronix.de>,
        Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 22/26] i386: fix infinite loop with singlestep int80
-	syscalls
-Message-ID: <20070731043343.GW3975@kroah.com>
+Subject: [patch 23/26] NTP: remove clock_was_set() call to prevent deadlock
+Message-ID: <20070731043348.GX3975@kroah.com>
 References: <20070731042108.546594256@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="i386-fix-infinite-loop-with-singlestep-int80-syscalls.patch"
+Content-Disposition: inline; filename="ntp-remove-clock_was_set-call-to-prevent-deadlock.patch"
 In-Reply-To: <20070731043047.GA3975@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,110 +40,52 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-The commit 635cf99a80f4ebee59d70eb64bb85ce829e4591f introduced a
-regression.  Executing a ptrace single step after certain int80
-accesses will infinitely loop and never advance the PC.
+The clock_was_set() call in seconds_overflow() which happens only when
+leap seconds are inserted / deleted is wrong in two aspects:
 
-The TIF_SINGLESTEP check should be done on the return from the syscall
-and not before it.
+1. it results in a call to on_each_cpu() with interrupts disabled
+2. it is potential deadlock source vs. call_lock in smp_call_function()
 
-The new test case is below:
+The only possible side effect of the removal might be, that an absolute
+CLOCK_REALTIME timer fires 1 second too late, in the rare case of leap
+second deletion and an absolute CLOCK_REALTIME timer which expires in
+the affected time frame. It will never fire too early.
 
-/* Test whether singlestep through an int80 syscall works.
- */
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
-#include <sys/mman.h>
-#include <asm/user.h>
-#include <string.h>
+This was probably observed by the reporter of a June 30th -> July 1st
+hang: http://lkml.org/lkml/2007/7/3/
 
-static int child, status;
-static struct user_regs_struct regs;
+A similar problem was observed by Dave Jones, who provided a screen shot
+with a lockdep back trace, which allowed to analyse the problem.
 
-static void do_child()
-{
-	char str[80] = "child: int80 test\n";
-
-	ptrace(PTRACE_TRACEME, 0, 0, 0);
-	kill(getpid(), SIGUSR1);
-	write(fileno(stdout),str,strlen(str));
-	asm ("int $0x80" : : "a" (20)); /* getpid */
-}
-    
-static void do_parent()
-{
-	unsigned long eip, expected = 0;
-again:
-	waitpid(child, &status, 0);
-	if (WIFEXITED(status) || WIFSIGNALED(status))
-		return;
-    
-	if (WIFSTOPPED(status)) {
-		ptrace(PTRACE_GETREGS, child, 0, &regs);
-		eip = regs.eip;
-		if (expected)
-			fprintf(stderr, "child stop @ %08lx, expected %08lx %s\n",
-					eip, expected,
-					eip == expected ? "" : " <== ERROR");
-    
-		if (*(unsigned short *)eip == 0x80cd) {
-			fprintf(stderr, "int 0x80 at %08x\n", (unsigned int)eip);
-			expected = eip + 2;
-		} else
-			expected = 0;
-    
-		ptrace(PTRACE_SINGLESTEP, child, NULL, NULL);
-	}
-	goto again;
-}
-    
-int main(int argc, char * const argv[])
-{
-	child = fork();
-	if (child)
-		do_parent();
-	else
-		do_child();
-	return 0;
-}
-
-
-Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: john stultz <johnstul@us.ibm.com>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Vincent Fortier <Vincent.Fortier1@EC.GC.CA>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
----
- arch/i386/kernel/entry.S |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.21.6.orig/arch/i386/kernel/entry.S
-+++ linux-2.6.21.6/arch/i386/kernel/entry.S
-@@ -371,10 +371,6 @@ ENTRY(system_call)
- 	CFI_ADJUST_CFA_OFFSET 4
- 	SAVE_ALL
- 	GET_THREAD_INFO(%ebp)
--	testl $TF_MASK,PT_EFLAGS(%esp)
--	jz no_singlestep
--	orl $_TIF_SINGLESTEP,TI_flags(%ebp)
--no_singlestep:
- 					# system call tracing in operation / emulation
- 	/* Note, _TIF_SECCOMP is bit number 8, and so it needs testw and not testb */
- 	testw $(_TIF_SYSCALL_EMU|_TIF_SYSCALL_TRACE|_TIF_SECCOMP|_TIF_SYSCALL_AUDIT),TI_flags(%ebp)
-@@ -389,6 +385,10 @@ syscall_exit:
- 					# setting need_resched or sigpending
- 					# between sampling and the iret
- 	TRACE_IRQS_OFF
-+	testl $TF_MASK,PT_EFLAGS(%esp)	# If tracing set singlestep flag on exit
-+	jz no_singlestep
-+	orl $_TIF_SINGLESTEP,TI_flags(%ebp)
-+no_singlestep:
- 	movl TI_flags(%ebp), %ecx
- 	testw $_TIF_ALLWORK_MASK, %cx	# current->work
- 	jne syscall_exit_work
+---
+ kernel/time/ntp.c |    2 --
+ 1 file changed, 2 deletions(-)
+
+--- linux-2.6.21.6.orig/kernel/time/ntp.c
++++ linux-2.6.21.6/kernel/time/ntp.c
+@@ -120,7 +120,6 @@ void second_overflow(void)
+ 			 */
+ 			time_interpolator_update(-NSEC_PER_SEC);
+ 			time_state = TIME_OOP;
+-			clock_was_set();
+ 			printk(KERN_NOTICE "Clock: inserting leap second "
+ 					"23:59:60 UTC\n");
+ 		}
+@@ -135,7 +134,6 @@ void second_overflow(void)
+ 			 */
+ 			time_interpolator_update(NSEC_PER_SEC);
+ 			time_state = TIME_WAIT;
+-			clock_was_set();
+ 			printk(KERN_NOTICE "Clock: deleting leap second "
+ 					"23:59:59 UTC\n");
+ 		}
 
 -- 
