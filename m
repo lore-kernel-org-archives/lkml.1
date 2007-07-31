@@ -1,59 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbXGaNWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760742AbXGaNYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760780AbXGaNWW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXGaNWO
+	id S1760742AbXGaNYb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757945AbXGaNYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:22:14 -0400
-Received: from qb-out-0506.google.com ([72.14.204.234]:13015 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753760AbXGaNWM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:22:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=XDSvdVbSChGMHQlCpPqpREJyvCKDYlGbCxjuFZXzTONcqcOrOYnXwUkK8wVoKEQIHyfKVcBryhmFkFipHDhobKM608tL9YLp1GHmZUwZi/xOKSQ6mh70TVujgPMwLBzI+3wnzVz+CLiWg8M5m0HObWF5wvvwOgq65w5h6BvJNQU=
-Message-ID: <46AF377D.4020103@gmail.com>
-Date: Tue, 31 Jul 2007 22:22:05 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, stern@rowland.harvard.edu
-Subject: Re: [PATCH 4/7] sysfs: simplify sysfs_remove_dir()
-References: <11858769082982-git-send-email-htejun@gmail.com>	<11858769083860-git-send-email-htejun@gmail.com> <20070731145935.3398cfba@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070731145935.3398cfba@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 31 Jul 2007 09:24:20 -0400
+Received: from mail.suse.de ([195.135.220.2]:39161 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758189AbXGaNYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 09:24:18 -0400
+Subject: Re: regression on HP zx1 platform from ACPI autoload modules
+	patches - PATCH that fixes it
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Doug Chapman <doug.chapman@hp.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-ia64@vger.kernel.org, Len Brown <lenb@kernel.org>,
+       "Luck, Tony" <tony.luck@intel.com>
+In-Reply-To: <1185886862.18821.168.camel@queen.suse.de>
+References: <1185836238.31298.36.camel@deimos.americas.hpqcorp.net>
+	 <6bffcb0e0707301607x5484f114q9117007d131f7118@mail.gmail.com>
+	 <1185883574.14987.6.camel@athlon>
+	 <1185886862.18821.168.camel@queen.suse.de>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Tue, 31 Jul 2007 15:24:14 +0200
+Message-Id: <1185888255.18821.178.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Tue, 31 Jul 2007 19:15:08 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
+On Tue, 2007-07-31 at 15:01 +0200, Thomas Renninger wrote:
+> On Tue, 2007-07-31 at 08:06 -0400, Doug Chapman wrote:
+> > On Tue, 2007-07-31 at 01:07 +0200, Michal Piotrowski wrote:
+> > > Hi Doug,
+> > > 
+> > > On 31/07/07, Doug Chapman <doug.chapman@hp.com> wrote:
+> > > > I am seeing a regression on the HP ia64 zx1 platforms when using
+> > > > a .config with CONFIG_IA64_HP_ZX1=y.  Oddly it works OK with
+> > > > CONFIG_IA64_GENERIC=y.
+> > > >
+> > > >
+> > > > During bootup it panics with:
+> > > >
+> > > > Kernel panic - not syncing: Unable to find SBA IOMMU: Try a generic or DIG kernel
+> > > >
+> > > > I can provide the full console output if that is helpful.
+> > > 
+> > > Yes, it is very useful.
+> > > 
+> > > >  Also, please let
+> > > > me know if there is any other data I can provide that would be helpful.
+> > > 
+> > > Kernel .config file.
+> > 
+> > 
+> > Michal,
+> > 
+> > Attached are the full console output up to the panic and the .config
+> > file I used to build the kernel.  Let me know if there is anything else
+> > you need or if you would like me to try a patch.
 > 
->> With the shadow directories gone, sysfs_remove_dir() can be simplified.
->>
->> * parent doesn't need to be grabbed separately.  Just access
->>   old_dentry->d_parent.
->>
->> * parent sd can never change.  Remove code to move under the new
->>   parent.
->>
->> * Massage comments a bit.
->>
->> Signed-off-by: Tejun Heo <htejun@gmail.com>
->> ---
->>  fs/sysfs/dir.c |   26 ++++----------------------
->>  1 files changed, 4 insertions(+), 22 deletions(-)
->>
-> It's not sysfs_remove_dir(), but sysfs_rename_dir() :) Otherwise this
-> looks good.
+> This patch should fix it.
+> It's already sent to Len. Bjorn/Myron already tested this one and gave
+> an acked-by, but it has not hit Len's git tree yet.
+> Len?
+> Or should it be picked up by an IA64 tree?
 
-Yeah, what was I thinking.  :-)
+We should have included the IA64 list on the other thread..., Tony
+wanted to take it (already has?):
+-------------------------
+I have a few other ia64 cleanup bits from the vector-domain change, so
+I can drop this in with them for a pull from ia64 later today.
+--------------------------
+> 
+>    Thomas
+> 
+> -----------------
+> 
+> Use new acpi_device_id struct for HID init in ia64/hp/common/sba_iommu.c
+> 
+> Forgot to adjust this one with the acpi autoloading patches.
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+> Acked-by: Myron Stowe <myron.stowe@hp.com>
+> 
+> ---
+>  arch/ia64/hp/common/sba_iommu.c |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23-rc1/arch/ia64/hp/common/sba_iommu.c
+> ===================================================================
+> --- linux-2.6.23-rc1.orig/arch/ia64/hp/common/sba_iommu.c
+> +++ linux-2.6.23-rc1/arch/ia64/hp/common/sba_iommu.c
+> @@ -2015,9 +2015,14 @@ acpi_sba_ioc_add(struct acpi_device *dev
+>  	return 0;
+>  }
+>  
+> +static const struct acpi_device_id hp_ioc_iommu_device_ids[] = {
+> +	{"HWP0001", 0},
+> +	{"HWP0004", 0},
+> +	{"", 0},
+> +};
+>  static struct acpi_driver acpi_sba_ioc_driver = {
+>  	.name		= "IOC IOMMU Driver",
+> -	.ids		= "HWP0001,HWP0004",
+> +	.ids		= hp_ioc_iommu_device_ids,
+>  	.ops		= {
+>  		.add	= acpi_sba_ioc_add,
+>  	},
+> 
+> 
 
--- 
-tejun
