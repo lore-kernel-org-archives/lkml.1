@@ -1,48 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759633AbXGaNKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbXGaNLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759633AbXGaNKy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbXGaNJ0
+	id S1760391AbXGaNLR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbXGaNJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:09:26 -0400
+	Tue, 31 Jul 2007 09:09:28 -0400
 Received: from host86-137-100-191.range86-137.btcentralplus.com ([86.137.100.191]:42959
 	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761350AbXGaNJZ (ORCPT
+	by vger.kernel.org with ESMTP id S1760888AbXGaNJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:09:25 -0400
+	Tue, 31 Jul 2007 09:09:27 -0400
 X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 09:09:04 EDT
 From: jack@hawkeye.stone.uk.eu.org
-Message-Id: <20070731125442.568820000@hawkeye.stone.uk.eu.org>
+Message-Id: <20070731125438.132063000@hawkeye.stone.uk.eu.org>
 References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 31 Jul 2007 13:53:24 +0100
+Date: Tue, 31 Jul 2007 13:53:17 +0100
 To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, Matthew Wilcox <matthew@will.cx>
-Subject: [Patch 08/16] Remove unnecessary kmalloc casts in the parisc drivers.
-Content-Disposition: inline; filename=drivers_parisc_remove_kmalloc_casts.patch
+Cc: trivial@kernel.org, Mikael Starvik <starvik@axis.com>
+Subject: [Patch 01/16] Remove unnecessary kmalloc casts from the cris arch.
+Content-Disposition: inline; filename=arch_cris_remove_kmalloc_casts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
 
-CC: Matthew Wilcox <matthew@will.cx>
+CC: Mikael Starvik <starvik@axis.com>
 
 ---
- drivers/parisc/iosapic.c |    2 +-
+ arch/cris/arch-v32/mm/intmem.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: b/drivers/parisc/iosapic.c
+Index: b/arch/cris/arch-v32/mm/intmem.c
 ===================================================================
---- a/drivers/parisc/iosapic.c
-+++ b/drivers/parisc/iosapic.c
-@@ -243,7 +243,7 @@ static struct irt_entry *iosapic_alloc_i
- 	 * if CONFIG_DEBUG_SLAB is enabled, then we can get only
- 	 * 4-byte alignment on 32-bit kernels
- 	 */
--	a = (unsigned long)kmalloc(sizeof(struct irt_entry) * num_entries + 8, GFP_KERNEL);
-+	a = kmalloc(sizeof(struct irt_entry) * num_entries + 8, GFP_KERNEL);
- 	a = (a + 7UL) & ~7UL;
- 	return (struct irt_entry *)a;
- }
+--- a/arch/cris/arch-v32/mm/intmem.c
++++ b/arch/cris/arch-v32/mm/intmem.c
+@@ -28,7 +28,7 @@ static void crisv32_intmem_init(void)
+ 	static int initiated = 0;
+ 	if (!initiated) {
+ 		struct intmem_allocation* alloc =
+-		  (struct intmem_allocation*)kmalloc(sizeof *alloc, GFP_KERNEL);
++		  kmalloc(sizeof *alloc, GFP_KERNEL);
+ 		INIT_LIST_HEAD(&intmem_allocations);
+ 		intmem_virtual = ioremap(MEM_INTMEM_START, MEM_INTMEM_SIZE);
+ 		initiated = 1;
 
 -- 
