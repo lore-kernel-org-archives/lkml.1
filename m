@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753938AbXGaGbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbXGaGdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753938AbXGaGbY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 02:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbXGaGbR
+	id S1754746AbXGaGdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 02:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751232AbXGaGc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 02:31:17 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:41764 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751216AbXGaGbQ (ORCPT
+	Tue, 31 Jul 2007 02:32:57 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:50509 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751227AbXGaGc4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 02:31:16 -0400
-Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Kasper Sandberg <lkml@metanurb.dk>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ck@vds.kolivas.org
-In-Reply-To: <1185839164.27166.7.camel@localhost>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
-	 <1185536610.502.8.camel@localhost>  <20070729170641.GA26220@elte.hu>
-	 <1185839164.27166.7.camel@localhost>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 08:31:01 +0200
-Message-Id: <1185863461.3092.4.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Tue, 31 Jul 2007 02:32:56 -0400
+Message-ID: <46AED70B.8040602@gmail.com>
+Date: Tue, 31 Jul 2007 08:30:35 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: dean gaudet <dean@arctic.org>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: TLB sizes among x86 CPUs?
+References: <469E0F50.6000508@gmail.com> <Pine.LNX.4.64.0707302305420.8176@twinlark.arctic.org>
+In-Reply-To: <Pine.LNX.4.64.0707302305420.8176@twinlark.arctic.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 01:46 +0200, Kasper Sandberg wrote:
+On 07/31/2007 08:06 AM, dean gaudet wrote:
 
-> could perhaps be filesystem related, i have my maildir(extremely large)
-> on reiserfs, and /home on xfs. what my mail client will do is download
-> mail, spamasassin it(loading database from home), then it will put to
-> imap server placing it on reiserfs, and then a "local" copy in my home.
+> On Wed, 18 Jul 2007, Rene Herman wrote:
 
-Ooh, do you perchance have PREEMPT_BKL=y? 
+>> Would anyone happen to have a list of TLB sizes for some selected
+>> x86{,-64} CPUs? I know it goes from a few entries on a 386 to a lot on
+>> Opteron but I have a real hard time finding specific data.
 
-If so, try on another filesystem than reiserfs (or disable PREEMPT_BKL,
-but that is obviously the lesser of the two choices).
+> http://sandpile.org/
 
-Ingo traced a 1+ second latency at my end to BKL priority inversion
-between tty and reiserfs.
+Now that you mention it, I even had that site in my bookmaarks...
 
+Thanks!
+
+Rene.
