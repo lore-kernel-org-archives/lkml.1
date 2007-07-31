@@ -1,85 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbXGaOzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764473AbXGaO4N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764153AbXGaOzk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762647AbXGaOzS
+	id S1764473AbXGaO4N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:56:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761188AbXGaOz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:55:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58360 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762444AbXGaOzP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:55:15 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Stefan Seyfried <seife@suse.de>
-Subject: Re: [rft] Kill junk from s2ram resume paths
-Date: Tue, 31 Jul 2007 17:03:43 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, suspend-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>
-References: <20070731121246.GF2087@elf.ucw.cz> <20070731140140.GJ2087@elf.ucw.cz> <20070731144334.GC6973@suse.de>
-In-Reply-To: <20070731144334.GC6973@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 31 Jul 2007 10:55:57 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:50382 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760972AbXGaOzy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:55:54 -0400
+Subject: Re: [PATCH respin, was PATCH for review] During VM oom condition,
+	kill all threads in process group
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Reply-To: will_schmidt@vnet.ibm.com
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <20070731093132.GA5778@elf.ucw.cz>
+References: <20070719348.540885000@suse.de>
+	 <20070719134840.47B5114E6E@wotan.suse.de>
+	 <20070719140411.GD16279@infradead.org>
+	 <Pine.LNX.4.64.0707191614180.7377@anakin>
+	 <1185214185.22237.30.camel@farscape.rchland.ibm.com>
+	 <20070731093132.GA5778@elf.ucw.cz>
+Content-Type: text/plain
+Organization: IBM
+Date: Tue, 31 Jul 2007 09:55:51 -0500
+Message-Id: <1185893751.22717.36.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311703.44096.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 31 July 2007 16:43, Stefan Seyfried wrote:
-> On Tue, Jul 31, 2007 at 04:01:40PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > >  # Running in *copy* of this code, somewhere in low 1MB.
-> > > > > >  
-> > > > > > -	movb	$0xa1, %al	;  outb %al, $0x80
-> > > > > 
-> > > > > Well, what was this for?
-> > > > 
-> > > > Debugging leds on port 80. I still have that card somewhere
-> > > > :-). Interesting parties can reinsert it.
-> > > 
-> > > Ah, I see.
-> > > 
-> > > Hmm, can you please write about that in the chanelog more explicitly?
-> > > Or just comment it out with a "uncomment this to get ..." text?
-> > 
-> > I still need someone with x86-64 to test it for me before I submit it
-> > properly ;-). Updated patch follows.
+On Tue, 2007-07-31 at 11:31 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Compiling right now.
-> 
-> > 								Pavel
 > > 
-> > diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
-> > index 1415da1..9cebef7 100644
-> > --- a/arch/i386/kernel/acpi/wakeup.S
-> > +++ b/arch/i386/kernel/acpi/wakeup.S
-> > @@ -28,21 +28,6 @@ #define BEEP \
-> >  	movb	$15, %al; 	\
-> >  	outb	%al, $66;
+> > During VM oom condition, kill all threads in process group.
+> > 
+> > We have had complaints where a threaded application is left in a bad
+> > state after one of it's threads is killed when we hit a VM: out_of_memory
+> > condition.
+> > Killing just one of the process threads can leave the application in a
+> > bad state, whereas killing the entire process group would allow for
+> > the application to restart, or be otherwise handled, and makes it very
+> > obvious that something has gone wrong.
+> > 
+> > This change allows the entire process group to be taken down, rather
+> > than just the one thread.
+> > 
+> > Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+> 
+> > diff --git a/arch/sparc64/mm/fault.c b/arch/sparc64/mm/fault.c
+> > index 17123e9..13fdfa3 100644
+> > --- a/arch/sparc64/mm/fault.c
+> > +++ b/arch/sparc64/mm/fault.c
+> > @@ -466,7 +466,7 @@ out_of_memory:
+> >  	up_read(&mm->mmap_sem);
+> >  	printk("VM: killing process %s\n", current->comm);
+> >  	if (!(regs->tstate & TSTATE_PRIV))
+> > -		do_exit(SIGKILL);
+> > +		do_group_exit(SIGKILL);
+> >  	goto handle_kernel_fault;
 > >  
-> > -#define BEEP \
-> > -	inb	$97, %al; 	\
-> > -	outb	%al, $0x80; 	\
-> > -	movb	$3, %al; 	\
-> > -	outb	%al, $97; 	\
-> > -	outb	%al, $0x80; 	\
-> > -	movb	$-74, %al; 	\
-> > -	outb	%al, $67; 	\
-> > -	outb	%al, $0x80; 	\
-> > -	movb	$-119, %al; 	\
-> > -	outb	%al, $66; 	\
-> > -	outb	%al, $0x80; 	\
-> > -	movb	$15, %al; 	\
-> > -	outb	%al, $66;
-> > -
-> >  ALIGN
-> >  	.align	4096
-> >  ENTRY(wakeup_start)
+> >  intr_or_no_mm:
 > 
-> This hunk rejected for me (against 2.6.23-rc1), but i'm testing x86_64, so
-> it did not matter ;-)
+> is the printk still accurate (does it kill more than one process now)?
 
-I think it's gone in favor of the more sophisticated beeping support.
+I was going to double-check this morning.. but don't see where
+current->comm is copied into a new task_struct.  I thought that all
+processes within the group had the same current->comm value, so figure
+this is OK.  
+
+> Why does it print when it will not really kill the process?
+no idea..  
+
+> I see similar code across all the archs... would it make sense to
+> create common helper... or is the helper too trivial?
+
+The checks blocking flow into do_group_exit, like (regs->tstate &
+TSTATE_PRIV) for sparc64, or (user_mode(regs)) for powerpc, do vary
+across the arch's.    The code could be rearranged to have a helper
+containing just the printk and the do_group_exit() call; but I'm not
+sure that would be an improvement. 
+
+maybe a    do_group_sigkill_if(condition); helper    :-)
+
+
+-Will 
+
+> 									Pavel
+
