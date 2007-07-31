@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbXGaI4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbXGaI5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752967AbXGaI4B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbXGaIzy
+	id S1755154AbXGaI5g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbXGaI53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:55:54 -0400
-Received: from mga01.intel.com ([192.55.52.88]:50214 "EHLO mga01.intel.com"
+	Tue, 31 Jul 2007 04:57:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35491 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751860AbXGaIzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:55:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,202,1183359600"; 
-   d="scan'208";a="274696129"
-Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1bqdtus0w.fsf@ebiederm.dsl.xmission.com>
-References: <1185851569.23149.25.camel@caritas-dev.intel.com>
-	 <m1bqdtus0w.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 16:55:27 +0800
-Message-Id: <1185872127.23149.81.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 08:55:38.0164 (UTC) FILETIME=[90AFE740:01C7D350]
+	id S1752343AbXGaI52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:57:28 -0400
+Date: Tue, 31 Jul 2007 10:57:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Kasper Sandberg <lkml@metanurb.dk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ck@vds.kolivas.org
+Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
+Message-ID: <20070731085713.GA15136@elte.hu>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <1185839164.27166.7.camel@localhost> <1185863461.3092.4.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185863461.3092.4.camel@twins>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 22:16 -0600, Eric W. Biederman wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
-> > - The variable efi_enabled is used throughout across architecutres if
-> >  CONFIG_EFI option is enabled. The i386 code also uses this variable.
-> >  This is something that can be revisited with code consolidation
-> >  across architectures.
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Tue, 2007-07-31 at 01:46 +0200, Kasper Sandberg wrote:
 > 
-> Fix it first. arch/i386/ efi support is horrible, and show what happens
-> when things are not done properly the first time.  Later doesn't happen.
-> With the partvirt logic we have a lot of operations properly split out
-> already.  Figure out how to use them.
+> > could perhaps be filesystem related, i have my maildir(extremely 
+> > large) on reiserfs, and /home on xfs. what my mail client will do is 
+> > download mail, spamasassin it(loading database from home), then it 
+> > will put to imap server placing it on reiserfs, and then a "local" 
+> > copy in my home.
+> 
+> Ooh, do you perchance have PREEMPT_BKL=y?
+> 
+> If so, try on another filesystem than reiserfs (or disable 
+> PREEMPT_BKL, but that is obviously the lesser of the two choices).
+> 
+> Ingo traced a 1+ second latency at my end to BKL priority inversion 
+> between tty and reiserfs.
 
-What do you suggest to use instead of efi_enabled?
+ah, indeed, that makes quite a bit of sense. Almost all of the Reiser3 
+code runs under the BKL, and the only other major kernel infrastructure 
+that has BKL dependencies is the TTY code. Kasper, as a debugging 
+matter, could you try to move that spamassassin workload off into a 
+non-Reiser3 filesystem and/or disable PREEMPT_BKL? If that makes a 
+noticeable difference (for the better ;) then we can continue figuring 
+out what's happening exactly.
 
-Current method is (efi_enabled based):
-
-(1) Encapsulate EFI based implementation and legacy BIOS based
-implementation into separate functions.
-(2) Define a wrapper function for each interface in (1), efi_enabled is
-used to choose implementation between EFI and legacy BIOS.
-
-Another possible method is (function pointer based):
-
-1. Encapsulate EFI based implementation and legacy BIOS based
-implementation into separate functions.
-2. Define a function pointer for each interface in (1), the function
-pointer is set to legacy BIOS based implementation by default and
-changed to EFI based implementation if appropriate.
-
-Because there are only two possible choice, I think the function pointer
-based method has no big advantages over the efi_enabled based method.
-
-Best Regards,
-Huang Ying
+	Ingo
