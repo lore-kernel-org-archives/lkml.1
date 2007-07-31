@@ -1,67 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763342AbXGaRRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765072AbXGaRRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763342AbXGaRRN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbXGaRQ6
+	id S1765072AbXGaRRi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758659AbXGaRR3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:16:58 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46861 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754210AbXGaRQ4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:16:56 -0400
-Date: Tue, 31 Jul 2007 13:16:44 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Mark Williamson <mark.williamson@cl.cam.ac.uk>
-Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070731171644.GB27234@filer.fsl.cs.sunysb.edu>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <200707311803.08698.mark.williamson@cl.cam.ac.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 31 Jul 2007 13:17:29 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3460 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751299AbXGaRR2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:17:28 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 13] kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 19:17:27 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200707311803.08698.mark.williamson@cl.cam.ac.uk>
-User-Agent: Mutt/1.4.1i
+Message-Id: <200707311917.27783.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 06:03:06PM +0100, Mark Williamson wrote:
-> > Really the only sane way of keeping track of whiteouts seems some external
-> > store. We did an experiment with Unionfs, and moving the whiteout handling
-> > to effectively a "library" that did all the dirty work cleaned up the code
-> > considerably [2,3].
-> 
-> What about keeping track of whiteouts in a special file (or files) in the top 
-> level filesystem of the union?  For instance, having a /.whiteouts file at 
-> the root of the top FS in the stack, instead of storing union-specific data 
-> in the flags / inode numbers of the lower levels.
- 
-What is needed is a "filesystem" that has all the directory bits only. For
-ODF, we opted to "abuse" existing filesystems to see if it actually helped
-Unionfs, and I think it did help. Really, now what we (unionfs) need is a
-cleanup of the ODF code, with a bit better defined interface.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-...
-> This might avoid requiring a store external to the stack of filesystems and I 
-> believe it would solve the problem with shared branches and arbitrary 
-> stacking that you described?
+ fs/reiser4/plugin/file/cryptcompress.h |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-We generally did a loopback mount on a file. Very similar to your idea.
+--- linux-2.6.23-rc1-mm1-a/fs/reiser4/plugin/file/cryptcompress.h	2007-07-26 13:07:46.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/fs/reiser4/plugin/file/cryptcompress.h	2007-07-31 15:01:29.000000000 +0200
+@@ -83,10 +83,9 @@ static inline int alloc_ts(struct tfm_st
+ 	assert("edward-931", stm);
+ 	assert("edward-932", *stm == NULL);
 
-> I guess a rather similar effect could be had by somehow storing loopback 
-> mountable ODF filesystems in the top layer of a union somewhere (e.g. with 
-> the default path /.odf) and allowing the user to specify an alternate 
-> location at mount time if necessary.  So maybe these approaches are quite 
-> similar after all...
+-	*stm = kmalloc(sizeof **stm, reiser4_ctx_gfp_mask_get());
+-	if (*stm == NULL)
++	*stm = kzalloc(sizeof(**stm), reiser4_ctx_gfp_mask_get());
++	if (!*stm)
+ 		return -ENOMEM;
+-	memset(*stm, 0, sizeof **stm);
+ 	return 0;
+ }
 
-Very :) We forced the user to mount the fs in the odf loopback manually, but
-there's no reason why we couldn't do an in-kernel mount on unionfs mount
-time.
-
-Josef 'Jeff' Sipek.
-
--- 
-Once you have their hardware. Never give it back.
-(The First Rule of Hardware Acquisition)
