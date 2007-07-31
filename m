@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934849AbXGaVtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934571AbXGaVup@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934849AbXGaVtZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934673AbXGaVtJ
+	id S934571AbXGaVup (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:50:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761872AbXGaVue
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:49:09 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2476 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934533AbXGaVtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:49:06 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 65] drivers/mtd/maps/pmcmsp-flash.c: kmalloc + memset conversion to k[cz]alloc
-Date: Tue, 31 Jul 2007 23:49:06 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       dwmw2@infradead.org, linux-mtd@lists.infradead.org
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+	Tue, 31 Jul 2007 17:50:34 -0400
+Received: from mailgw.cvut.cz ([147.32.3.235]:47536 "EHLO mailgw.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760556AbXGaVud (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:50:33 -0400
+Message-ID: <46AFAE3D.7000109@vandrovec.name>
+Date: Tue, 31 Jul 2007 14:48:45 -0700
+From: Petr Vandrovec <petr@vandrovec.name>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.5) Gecko/20070715 Iceape/1.1.3 (Debian-1.1.3-1)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: Maarten Bressers <info@mbressers.speedlinq.nl>, dsd@gentoo.org,
+       mpt_linux_developer@lsi.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Inclusion of vmware mptbase regression fix
+References: <20070731202402.63f55ae5@localhost> <1185914967.3468.45.camel@localhost.localdomain>
+In-Reply-To: <1185914967.3468.45.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707312349.07329.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+James Bottomley wrote:
+> On Tue, 2007-07-31 at 20:24 +0200, Maarten Bressers wrote:
+>> Hi Petr,
+>>
+>> The patch you posted for the MPT Fusion driver regression with VMware 
+>> 5.5.4 (http://lkml.org/lkml/2007/3/23/345) was used to fix a Gentoo 
+>> kernel bug (http://bugs.gentoo.org/show_bug.cgi?id=185272).
+>>
+>> Have you received word from upstream (kernel devs) yet as to whether 
+>> your patch will be included? Or if it will be included at all?
+> 
+> That's a slightly worse version of this patch.
+> 
+> http://marc.info/?l=linux-scsi&m=117432237404247
+> 
+> And the answer's still the same: fix the vmware fusion emulation ...
+> it's a software thing too.
 
- drivers/mtd/maps/pmcmsp-flash.c | 5540 -> 5454 (-86 bytes)
+It is already fixed in WS6.0, and I latest Fusion beta has fixed this as 
+well.
+							Petr
 
- drivers/mtd/maps/pmcmsp-flash.c |   22 ++++++++++++----------
- 1 file changed, 12 insertions(+), 10 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/drivers/mtd/maps/pmcmsp-flash.c	2007-07-26 13:07:41.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/mtd/maps/pmcmsp-flash.c	2007-07-31 11:37:49.000000000 +0200
-@@ -73,13 +73,16 @@ int __init init_msp_flash(void)
- 		return -ENXIO;
-
- 	printk(KERN_NOTICE "Found %d PMC flash devices\n", fcnt);
--	msp_flash = (struct mtd_info **)kmalloc(
--			fcnt * sizeof(struct map_info *), GFP_KERNEL);
--	msp_parts = (struct mtd_partition **)kmalloc(
--			fcnt * sizeof(struct mtd_partition *), GFP_KERNEL);
--	msp_maps = (struct map_info *)kmalloc(
--			fcnt * sizeof(struct mtd_info), GFP_KERNEL);
--	memset(msp_maps, 0, fcnt * sizeof(struct mtd_info));
-+
-+	msp_flash = kmalloc(fcnt * sizeof(struct map_info *), GFP_KERNEL);
-+	msp_parts = kmalloc(fcnt * sizeof(struct mtd_partition *), GFP_KERNEL);
-+	msp_maps = kcalloc(fcnt, sizeof(struct mtd_info), GFP_KERNEL);
-+	if (!msp_flash || !msp_parts || !msp_maps) {
-+		kfree(msp_maps);
-+		kfree(msp_parts);
-+		kfree(msp_flash);
-+		return -ENOMEM;
-+	}
-
- 	/* loop over the flash devices, initializing each */
- 	for (i = 0; i < fcnt; i++) {
-@@ -95,9 +98,8 @@ int __init init_msp_flash(void)
- 			continue;
- 		}
-
--		msp_parts[i] = (struct mtd_partition *)kmalloc(
--			pcnt * sizeof(struct mtd_partition), GFP_KERNEL);
--		memset(msp_parts[i], 0, pcnt * sizeof(struct mtd_partition));
-+		msp_parts[i] = kcalloc(pcnt, sizeof(struct mtd_partition),
-+				       GFP_KERNEL);
-
- 		/* now initialize the devices proper */
- 		flash_name[5] = '0' + i;
