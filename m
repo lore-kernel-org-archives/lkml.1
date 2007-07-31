@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763299AbXGaOSP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXGaOSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763299AbXGaOSP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:18:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760467AbXGaOR5
+	id S1763666AbXGaOSf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:18:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762745AbXGaOSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:17:57 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57521 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759952AbXGaOR4 (ORCPT
+	Tue, 31 Jul 2007 10:18:14 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:35778 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763497AbXGaOSL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:17:56 -0400
-Date: Tue, 31 Jul 2007 20:00:12 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-cc: jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci
- subsystem.
-In-Reply-To: <200707311553.29090.borntraeger@de.ibm.com>
-Message-ID: <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in>
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
- <20070731125443.880871000@hawkeye.stone.uk.eu.org>
- <200707311553.29090.borntraeger@de.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 31 Jul 2007 10:18:11 -0400
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       edwintorok@gmail.com, axboe@kernel.dk
+In-Reply-To: <46AED656.8070407@gmail.com>
+References: <20070705194909.337398431@intel.com>
+	 <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+	 <46AE12B6.6090408@garzik.org>  <46AED656.8070407@gmail.com>
+Content-Type: text/plain
+Date: Tue, 31 Jul 2007 09:18:08 -0500
+Message-Id: <1185891488.3468.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 31 Jul 2007, Christian Borntraeger wrote:
-
-> Am Dienstag, 31. Juli 2007 schrieb jack@hawkeye.stone.uk.eu.org:
-> > --- a/drivers/pci/rom.c
-> > +++ b/drivers/pci/rom.c
-> > @@ -185,7 +185,7 @@ void __iomem *pci_map_rom_copy(struct pc
-> >  			  IORESOURCE_ROM_BIOS_COPY))
-> >  		return rom;
-> > 
-> > -	res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
-> > +	res->start = kmalloc(*size, GFP_KERNEL);
+On Tue, 2007-07-31 at 15:27 +0900, Tejun Heo wrote:
+> Jeff Garzik wrote:
+> > Any chance the SCSI peeps could ACK this, and then let me include it in
+> > the ALPM patchset in the libata tree?
 > 
-> This looks wrong.
+> ATA link PS is pretty complex with HIPM, DIPM and AHCI ALPM.  I'm not
+> sure whether this three level knob would be sufficient.  It might be
+> good enough if we're gonna develop extensive in-kernel black/white list
+> specifying which method works on which combination but my gut tells me
+> that it's best left to userland (probably in the form of per-notebook PS
+> profile).
+> 
+> Adding to the fun, there are quite a few broken devices out there which
+> act weirdly when link PS actions are taken.
+> 
+> Also, I generally don't think AHCI ALPM is a good idea.  It doesn't have
+> 'cool down' period before entering PS state which unnecessarily hampers
+> performance and might increase chance of device malfunction.
+> 
+> So, mild NACK from me.
 
-Yup, a warning at the very least.
+The other comment is that power saving seems to be a property of the
+transport rather than the host.  If you do it in the transport classes,
+then you can expose all the knobs the actual transport possesses (which
+is, unfortunately, none for quite a few SCSI transports).
 
-> void * doesnt need a cast to a pointer, but res->start is an 
-> integer u32 type,
-
-It better not be, else we have a bug already anyway. Pointers are 64-bit
-on 64-bit archs. [ it turns out res->start is resource_size_t which is
-set properly as per CONFIG_RESOURCES_64BIT which itself is set properly
-as per CONFIG_64BIT, so everything is healthy and fine :-) ]
-
-> and therefore we need a cast, no?
-
-Yes, void * -> unsigned long cast is always ok, and what we need here.
+James
 
 
-Satyam
