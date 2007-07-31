@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbXGaNwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760756AbXGaNyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760300AbXGaNwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754839AbXGaNwd
+	id S1760756AbXGaNyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754256AbXGaNyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:52:33 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:30091 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754780AbXGaNwc (ORCPT
+	Tue, 31 Jul 2007 09:54:06 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:34452 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753026AbXGaNyF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:52:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eY9o/OAVlH2PLbwo2F6c2rGuJZqvnkFM3XKk1hz43/gPMSMRNPCAdKmBiKGW9mENE9cWqRUUOFIukTflFpYmx7tusaKheBN9z4G4sVA/GXfLtJbjXzWVLfJ3rucNmWYZD3+fNbeAjh5hCt7Mo7/HWzIw8zk9nMTzwTWR19xVIcw=
-Message-ID: <9a8748490707310652i27406292yf3e93ca78ef3bf32@mail.gmail.com>
-Date: Tue, 31 Jul 2007 15:52:30 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "2004 ruffneck" <ruffneck2004@yandex.ru>
-Subject: Re: How to enable XEN in 2.6.23-rcS kernel?
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <39811185887611@webmail12.yandex.ru>
+	Tue, 31 Jul 2007 09:54:05 -0400
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: jack@hawkeye.stone.uk.eu.org
+Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci subsystem.
+Date: Tue, 31 Jul 2007 15:53:28 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       Greg Kroah-Hartman <gregkh@suse.de>
+References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125443.880871000@hawkeye.stone.uk.eu.org>
+In-Reply-To: <20070731125443.880871000@hawkeye.stone.uk.eu.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <39811185887611@webmail12.yandex.ru>
+Message-Id: <200707311553.29090.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31/07/07, 2004 ruffneck <ruffneck2004@yandex.ru> wrote:
-> Hello to everybody!
->
-> I did read, that Lguest and Xen was merged to upstream and must be in 2.6.23-rc1 kernel, but I can't see it in "make menuconfig". So, what's the deal? Can anybody explain me, how to enable XEN support? Thanks.
+Am Dienstag, 31. Juli 2007 schrieb jack@hawkeye.stone.uk.eu.org:
+> --- a/drivers/pci/rom.c
+> +++ b/drivers/pci/rom.c
+> @@ -185,7 +185,7 @@ void __iomem *pci_map_rom_copy(struct pc
+>  			  IORESOURCE_ROM_BIOS_COPY))
+>  		return rom;
+> 
+> -	res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
+> +	res->start = kmalloc(*size, GFP_KERNEL);
 
-Go to "Processor type and features" - then enable "Paravirtualization
-support (EXPERIMENTAL)", you'll get a new option called "Enable
-support for Xen hypervisor".
+This looks wrong. void * doesnt need a cast to a pointer, but res->start is an 
+integer u32 type, and therefore we need a cast, no?
+
+
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+IBM Deutschland Entwicklung GmbH
+Vorsitzender des Aufsichtsrats: Martin Jetter
+Geschäftsführung: Herbert Kircher 
+Sitz der Gesellschaft: Böblingen
+Registergericht: Amtsgericht Stuttgart, HRB 243294
+
