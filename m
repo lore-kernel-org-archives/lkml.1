@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbXGaI5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbXGaI6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755154AbXGaI5g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbXGaI53
+	id S1755410AbXGaI6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbXGaI6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:57:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35491 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752343AbXGaI52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:57:28 -0400
-Date: Tue, 31 Jul 2007 10:57:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Kasper Sandberg <lkml@metanurb.dk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ck@vds.kolivas.org
-Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
-Message-ID: <20070731085713.GA15136@elte.hu>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <1185839164.27166.7.camel@localhost> <1185863461.3092.4.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185863461.3092.4.camel@twins>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+	Tue, 31 Jul 2007 04:58:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53646 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752301AbXGaI6e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:58:34 -0400
+Date: Tue, 31 Jul 2007 01:57:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Cc: kkeil@suse.de, kai.germaschewski@gmx.de, isdn4linux@listserv.isdn4linux.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] Use mutex instead of semaphore in ISDN subsystem
+ common functions
+Message-Id: <20070731015749.ac549e71.akpm@linux-foundation.org>
+In-Reply-To: <20070729214105.GG3432@traven>
+References: <20070729212909.GC3432@traven>
+	<20070729214105.GG3432@traven>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 29 Jul 2007 23:41:05 +0200 Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+> --- a/include/linux/isdn.h
+> +++ b/include/linux/isdn.h
+> @@ -15,6 +15,7 @@
+>  #define __ISDN_H__
+>  
+>  #include <linux/ioctl.h>
+> +#include <linux/mutex.h>
 
-> On Tue, 2007-07-31 at 01:46 +0200, Kasper Sandberg wrote:
-> 
-> > could perhaps be filesystem related, i have my maildir(extremely 
-> > large) on reiserfs, and /home on xfs. what my mail client will do is 
-> > download mail, spamasassin it(loading database from home), then it 
-> > will put to imap server placing it on reiserfs, and then a "local" 
-> > copy in my home.
-> 
-> Ooh, do you perchance have PREEMPT_BKL=y?
-> 
-> If so, try on another filesystem than reiserfs (or disable 
-> PREEMPT_BKL, but that is obviously the lesser of the two choices).
-> 
-> Ingo traced a 1+ second latency at my end to BKL priority inversion 
-> between tty and reiserfs.
+Breaks `make headers_check'.
 
-ah, indeed, that makes quite a bit of sense. Almost all of the Reiser3 
-code runs under the BKL, and the only other major kernel infrastructure 
-that has BKL dependencies is the TTY code. Kasper, as a debugging 
-matter, could you try to move that spamassassin workload off into a 
-non-Reiser3 filesystem and/or disable PREEMPT_BKL? If that makes a 
-noticeable difference (for the better ;) then we can continue figuring 
-out what's happening exactly.
-
-	Ingo
+That was covered in sections 2 and 20 of Documentation/SubmitChecklist,
+which nobody reads.
