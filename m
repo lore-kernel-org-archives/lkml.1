@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765956AbXGaQUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932170AbXGaQUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765956AbXGaQUa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765631AbXGaQUI
+	id S932170AbXGaQUs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764664AbXGaQUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:20:08 -0400
-Received: from ns1.coraid.com ([65.14.39.133]:14163 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765543AbXGaQUH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:20:07 -0400
-Date: Tue, 31 Jul 2007 12:21:40 -0400
-From: "Ed L. Cashin" <ecashin@coraid.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, ak@suse.de
-Subject: Re: ATA over ethernet swapping and obfuscated code
-Message-ID: <20070731162140.GI3206@coraid.com>
-References: <20070731135831.GA4604@elf.ucw.cz> <20070731150324.GE3206@coraid.com> <20070731152924.GM2087@elf.ucw.cz>
+	Tue, 31 Jul 2007 12:20:39 -0400
+Received: from ns.suse.de ([195.135.220.2]:51739 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764072AbXGaQUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:20:37 -0400
+From: Andreas Schwab <schwab@suse.de>
+To: Greg KH <gregkh@suse.de>
+Cc: WANG Cong <xiyou.wangcong@gmail.com>, Satyam Sharma <satyam@infradead.org>,
+       Christian Borntraeger <borntraeger@de.ibm.com>,
+       jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci subsystem.
+References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
+	<20070731125443.880871000@hawkeye.stone.uk.eu.org>
+	<200707311553.29090.borntraeger@de.ibm.com>
+	<alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in>
+	<20070731144619.GA8183@localhost.localdomain>
+	<20070731161051.GA7490@suse.de>
+X-Yow: YOW!!  Everybody out of the GENETIC POOL!
+Date: Tue, 31 Jul 2007 18:20:29 +0200
+In-Reply-To: <20070731161051.GA7490@suse.de> (Greg KH's message of "Tue\, 31
+	Jul 2007 09\:10\:51 -0700")
+Message-ID: <jeir80y27m.fsf@sykes.suse.de>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731152924.GM2087@elf.ucw.cz>
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 05:29:24PM +0200, Pavel Machek wrote:
-...
-> Is the protocol documented somewhere? aoe.txt only points at
-> HOWTO... aha, protocol is linked from wikipedia.
-> http://www.coraid.com/documents/AoEr10.txt ... perhaps that should be
-> linked from aoe.txt, too?
+Greg KH <gregkh@suse.de> writes:
 
-Perhaps.  Most people reading the aoe.txt file won't need to refer to
-the protocol itself, though.
+> On Tue, Jul 31, 2007 at 10:46:19PM +0800, WANG Cong wrote:
+>> However, I think using resource_size_t is a bit better than unsigned long,
+>> so that we don't need to check the defination of it.
+>> 
+>> - res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
+>> + res->start = (resource_size_t)kmalloc(*size, GFP_KERNEL);
+>> 
+>> Is this change OK?
+>
+> Yes, that is the proper cast to have here.
 
-> Hmm, aoe protocol is really trivial. Perhaps netpoll/netconsole
-> infrastructure could be used to create driver good enough for
-> swapping? (Ok, it would not neccessarily perform too well, but... we'd
-> simply wait for the reply synchronously. It should be pretty simple).
+It will generate a warning when resoure_size_t is 64bit on a 32bit arch.
 
-I think that in general you still need a way to receive write
-confirmations without allocating memory, and the driver can't provide
-that mechanism.  The problem is that when memory is scarce, writes of
-dirty data must be able to complete, but because memory is scarce,
-there might not be enough to receive and process packets write-reponse
-packets, and the driver has no way of affecting the situation.  That's
-why I think a callback could work: The network layer could allow
-storage drivers to register a callback that recognizes write
-responses.
-
-Usually the callback would not be used, but if free pages became so
-scarce that network receives could not take place in a normal fashion,
-the (zero or few) registered callbacks would be used to quickly
-determine whether each packet was a write response.  The distinction
-is important, because write responses can result in the freeing of
-pages.
-
-When a storage driver's callback identified a write response, then a
-reserved skb could be used to process the receive without allocating
-memory.  During the memory crunch packets that were not write
-responses would be dropped just as they are already, but dirty pages
-would be flushed.  The mechanism would only take effect when free
-pages were scarce.
-
-It is easy to chat, though.  Maybe someday I will test and submit a
-patch that implements this mechanism, but I'm hoping that somebody
-beats me to it.  :)
+Andreas.
 
 -- 
-  Ed L Cashin <ecashin@coraid.com>
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
