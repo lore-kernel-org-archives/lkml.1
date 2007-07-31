@@ -1,72 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764915AbXGaPJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764561AbXGaPKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764915AbXGaPJS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761305AbXGaPJH
+	id S1764561AbXGaPKE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762279AbXGaPJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:09:07 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:45364 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762004AbXGaPJG (ORCPT
+	Tue, 31 Jul 2007 11:09:52 -0400
+Received: from nf-out-0910.google.com ([64.233.182.184]:23811 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762720AbXGaPJu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:09:06 -0400
-Message-ID: <46AF4FFE.5080202@gmail.com>
-Date: Tue, 31 Jul 2007 17:06:38 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Tue, 31 Jul 2007 11:09:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=uILgsSojk80VmunsZ+uAgoR2zqetL0wXBfvICteqKgvEFYqjgLHkpKjhWgsPi0otd530mFoa58CKSljz5yKczavBT9O40Hx7OwEt0nySdfkaQzx2FS+6qydJc8k6hEYyeSnrAKSaFHxPEmQBgP7HJk2rf0gwzaIW+aiF53++C0o=
+Message-ID: <46AF4F9C.5060000@googlemail.com>
+Date: Tue, 31 Jul 2007 17:05:00 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-To: "<::.. Teresa_II ..::>" <teresa@kvitka.net>
-CC: CK Mailinglist <ck@vds.kolivas.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-References: <1185827130.26459.16.camel@xtower.fri>
-In-Reply-To: <1185827130.26459.16.camel@xtower.fri>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jarek Poplawski <jarkao2@o2.pl>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local>
+In-Reply-To: <20070731121735.GA1046@ff.dom.local>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/30/2007 10:25 PM, <::.. Teresa_II ..::> wrote:
-
-> first of all i am not sure if its scheduler issue. But i didn't found
-> anything about that in google related to something else.
+Jarek Poplawski wrote:
+> On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
+>> Jarek Poplawski wrote:
+>>> On 28-07-2007 20:42, Gabriel C wrote:
+>>>> Andrew Morton wrote:
+>>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+>>>>>
+>>>>>> Hi,
+>>>>>>
+>>>>>> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
+>>>>>>
+>>>>>> ...
+>>>>>>
+>>>>>> net/core/netpoll.c: In function 'netpoll_poll':
+>>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+>>>>>> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
+>>>>>> net/core/netpoll.c: In function 'netpoll_setup':
+>>>>>> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
+>>>>>> make[2]: *** [net/core/netpoll.o] Error 1
+>>>>>> make[1]: *** [net/core] Error 2
+>>>>>> make: *** [net] Error 2
+>>>>>> make: *** Waiting for unfinished jobs....
+>>>>>>
+>>>>>> ...
+>>>>>>
+>>>>>>
+>>>>>> I think is because KGDBOE selects just NETPOLL.
+>>>>>>
+>>>>> Looks like it.
+>>>>>
+>>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+>>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+>>>>> remains evil.
+>>> ...
+>>>> I think there may be a logical issue ( again if I got it right ).
+>>>> We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
+>>>>
+>>>> So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
+>>> IMHO, the only logical issue here is netpoll.c mustn't use 
+>>> CONFIG_NET_POLL_CONTROLLER code without #ifdef if it doesn't
+>>> add this dependency itself.
+>>>
+>> Well it does if NETDEVICES && if NET_ETHERNET which booth are N when !NETDEVICES is why KGDBOE uses select and not depends on.
 > 
-> So i tried 2.6.22.1 kernel with new cfs scheduler v19.1 from Ingo page.
-> Previous i used 2.6.22-ck1.
+> "does if XXX" means may "use if XXX".
+
+>From what I know means only use "if xxx" on !xxx everything inside the "if xxx" is n and "depends on <something inside the if xxx> 
+does not work.
+
+...
+
+menuconfig FOO
+	bool "FOO"
+	depends on BAR
+	default y 
+	-- help --
+	something
+if FOO
+
+config BAZ
+	depends on WHATEVR && !NOT_THIS
+
+menuconfig SOMETHING_ELSE
+	....
+if SOMETHING_ELSE
+
+config BLUBB
+	depends on PCI && WHATNOT
+
+endif # SOMETHING_ELSE
+
+config NETPOLL
+        def_bool NETCONSOLE
+        
+config NETPOLL_TRAP
+        bool "Netpoll traffic trapping"
+        default n
+        depends on NETPOLL
+          
+config NET_POLL_CONTROLLER
+        def_bool NETPOLL
+
+endif # FOO
+
+Now if you set FOO=n all is gone and your driver have to select whatever it needs from there.
+
 > 
-> After 24 hours running i get strange behavior in Xorg. It act slower
-> with my special keys, like SHIFT, or CTRL. So if i hold SHIFT and press
-> ")" and than will press enter, i release SHIIFT and press ENTER it
-> doesn't create new line. Even if i start write a Sentence or word with
-> "SHIFTed" char it makes next char in high case also. 
-> Like this: "HAllo" even if i type "Hallo".
-
-For a few days now I have been experiencing a "stuck delete" key while 
-reading mail -- I run through the mail with "delete" and every once in a 
-while it just keeps on deleting messages while I've already released the 
-delete key and was trying to read the next message.
-
-Regular unpatched 2.6.22.1 though and I've recently changed too many things 
-to be certain of anything. My X is the modular X.org 1.3.0 since not long, 
-and the mailer showing the problem is Thunderbird 2.0.0.5, recently switched 
-from 1.5.0.12. The problem was on my "I'll get to it" list but seems this 
-could be a good thread to report it into. PS/2 keyboard...
-
-> It's extremely unusable.
+>> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+>> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
 > 
-> It doesn't happen if i am on other kernel.
+> Why kgdboe should care what netpoll needs? So, I hope, you are adding
+> this select under config NETPOLL. On the other hand, if NETPOLL should
+> depend on NET_POLL_CONTROLLER there is probably no reason to have them
+> both.
 
-Very very sure?
+NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
 
-> I am ready to provide any requested information to find issue. If its not
-> kernel related thing - i am very sorry, i just don't know where to start
-> to trace whats wrong.
+Net peoples ping ?:)
+
 > 
-> I am on gentoo and use latest xorg server. Keyboard driver is "KBD". 
-> Mouse use "evdev" driver.
+> The "does it work" question isn't logical issue, so it's irrelevant
+> here...
 
-Rene.
+Right irrelevant for the compile error but relevant for the fix in my opinion.
 
+> 
+> Jarek P.
+> 
 
+Gabriel
