@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764420AbXGaUtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763235AbXGaVDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764420AbXGaUtl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759423AbXGaUtb
+	id S1763235AbXGaVDa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:03:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758937AbXGaVDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:49:31 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:39151 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756202AbXGaUta (ORCPT
+	Tue, 31 Jul 2007 17:03:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56709 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754607AbXGaVDU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:49:30 -0400
-Subject: Re: Inclusion of vmware mptbase regression fix
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Maarten Bressers <info@mbressers.speedlinq.nl>
-Cc: petr@vandrovec.name, dsd@gentoo.org, mpt_linux_developer@lsi.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070731202402.63f55ae5@localhost>
-References: <20070731202402.63f55ae5@localhost>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 15:49:27 -0500
-Message-Id: <1185914967.3468.45.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 17:03:20 -0400
+Date: Wed, 1 Aug 2007 02:45:39 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Rodolfo Giometti <giometti@enneenne.com>
+cc: Chris Friesen <cfriesen@nortel.com>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: LinuxPPS & spinlocks
+In-Reply-To: <20070731194457.GB9840@enneenne.com>
+Message-ID: <alpine.LFD.0.999.0708010217000.28746@enigma.security.iitk.ac.in>
+References: <20070727194516.GX9840@enneenne.com>
+ <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com>
+ <20070729091709.GY9840@enneenne.com> <alpine.LFD.0.999.0707300943550.10861@enigma.security.iitk.ac.in>
+ <20070730083259.GD9840@enneenne.com> <alpine.LFD.0.999.0707301425540.13448@enigma.security.iitk.ac.in>
+ <20070730145542.GG9840@enneenne.com> <alpine.LFD.0.999.0707310153110.17287@enigma.security.iitk.ac.in>
+ <20070731082057.GM9840@enneenne.com> <alpine.LFD.0.999.0707312351020.28746@enigma.security.iitk.ac.in>
+ <20070731194457.GB9840@enneenne.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 20:24 +0200, Maarten Bressers wrote:
-> Hi Petr,
-> 
-> The patch you posted for the MPT Fusion driver regression with VMware 
-> 5.5.4 (http://lkml.org/lkml/2007/3/23/345) was used to fix a Gentoo 
-> kernel bug (http://bugs.gentoo.org/show_bug.cgi?id=185272).
-> 
-> Have you received word from upstream (kernel devs) yet as to whether 
-> your patch will be included? Or if it will be included at all?
-
-That's a slightly worse version of this patch.
-
-http://marc.info/?l=linux-scsi&m=117432237404247
-
-And the answer's still the same: fix the vmware fusion emulation ...
-it's a software thing too.
-
-James
+Hi,
 
 
+On Tue, 31 Jul 2007, Rodolfo Giometti wrote:
+
+> Sorry for wasting your time. :'( Maybe you can provide your solution
+> for PPS support and get it included into kernel tree so we can use it
+> and live happy!  :)
+
+Please stop embarrassing me (and yourself).
+
+Sorry, I did lose my patience (others you mention did not) but then
+that's precisely because of my own _less_ experience, if anything.
+
+No, it's not like I "want to provide my solution for PPS support and
+get it included into kernel tree" like you wrote above -- I simply
+identified 4 problem areas in your implementation and wanted them to
+be addressed. [If you can do so yourself, good enough, otherwise I'm
+happy to send patch based on your earlier one too -- the modifications
+I have in mind are few and simple.] I have no personal stake in this
+PPS stuff anyway, this is just a normal peer review of submissions
+that should always happen.
+
+
+Thanks,
+
+Satyam
