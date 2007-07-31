@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966171AbXGaCxn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967261AbXGaDHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966171AbXGaCxn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 22:53:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759448AbXGaCxa
+	id S967261AbXGaDHp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965949AbXGaDHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 22:53:30 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:34281
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933126AbXGaCx3 (ORCPT
+	Mon, 30 Jul 2007 23:07:33 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:19914 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965745AbXGaDHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 22:53:29 -0400
-Date: Mon, 30 Jul 2007 19:52:17 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Valerie Henson <val@nmt.edu>
-cc: Kyle McMartin <kyle@mcmartin.ca>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, tulip-users@lists.sourceforge.net,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [TULIP] Need new maintainer
-In-Reply-To: <20070731015710.GA4196@rainbow>
-Message-ID: <Pine.LNX.4.64.0707301951211.6478@asgard.lang.hm>
-References: <20070730190412.GA16182@rainbow> <20070730193158.GA13808@fattire.cabal.ca>
- <20070731015710.GA4196@rainbow>
+	Mon, 30 Jul 2007 23:07:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=EW5Olgn+NnRVPzZc/+WZkJWSte2Z2Htg18xC+4eXWtt2ESn/B8XoMlvgJqrPMk9lBlqIoXqsmea3W8Gl1ABU9cBAmYgUIm99pxDYDoX3z7g2uSD8MZ6BmWHpQ3Y3/RYCZRTspkTG1tGK9uNe2lN1CWHMwFBF11oJT9Lj+0rbcgY=
+Message-ID: <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
+Date: Tue, 31 Jul 2007 13:07:30 +1000
+From: "Matthew Hawkins" <darthmdh@gmail.com>
+To: "Roland Dreier" <rdreier@cisco.com>
+Subject: Re: [ck] Re: SD still better than CFS for 3d ?
+Cc: "Christoph Hellwig" <hch@infradead.org>, "Jacob Braun" <jwbraun@gmail.com>,
+       kriko <kristjan.ugrin@gmail.com>, ck@vds.kolivas.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, "Martin Schwidefsky" <schwidefsky@de.ibm.com>
+In-Reply-To: <adaps29sm62.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
+	 <20070729204716.GB1578@elte.hu>
+	 <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
+	 <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>
+	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
+	 <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
+	 <20070730182959.GA29151@infradead.org> <adaps29sm62.fsf@cisco.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Jul 2007, Valerie Henson wrote:
+On 7/31/07, Roland Dreier <rdreier@cisco.com> wrote:
+>  >      Fuck you Martin!
+>
+> I think you meant to yell at Matthew, not Martin ;)
 
-> On Mon, Jul 30, 2007 at 03:31:58PM -0400, Kyle McMartin wrote:
->> On Mon, Jul 30, 2007 at 01:04:13PM -0600, Valerie Henson wrote:
->>> The Tulip network driver needs a new maintainer!  I no longer have
->>> time to maintain the Tulip network driver and I'm stepping down.  Jeff
->>> Garzik would be happy to get volunteers.
->>>
->>
->> Since I already take care of a major consumer of these devices (parisc,
->> which pretty much all have tulip) I'm willing to take care of this.
->> Alternately, Grant is probably willing.
->
-> And I coulda handed you a suitcase full of cards and I missed my
-> chance!
->
-> It's fine by me, although Jeff is the final arbiter.
->
-> Thanks!
->
-> -VAL
+What's amusing about this is he's yelling at me for something I didn't
+do, can't even get my name right, and has the audacity to claim that
+*I* am the one looking like a fool!  While we're descending into
+primary school theatrics, may I just say "takes one to know one" ;-)
 
-when the maintainership gets settled send me a message and I can send you 
-a couple of different cards (including a d-link 4-port card)
+I took the time to track down what caused a breakage - in an "illegal
+binary driver" (not against the law here, though defamation certainly
+is...) no less.  And contacted the vendor (separately).  Other people
+on desktop machines with an ATI card using the fglrx driver may have
+been interested to know that they can't do the benchmarking some
+people here on lkml and -mm are asking for with a current 2.6.23 git
+kernel, hence my post.
 
-David Lang
+Martin's cleanup patch is good and I never claimed otherwise, I just
+said the comment on the commit was a bad call (as there are users of
+that interface).  Certainly ATI should fix their dodgy drivers.
+That's been the cry of the community for a long time...
+
+-- 
+Matt
