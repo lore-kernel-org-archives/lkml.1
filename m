@@ -1,42 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbXGaK5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbXGaLCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbXGaK5l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXGaK5e
+	id S1758004AbXGaLCh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:02:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXGaLC3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:57:34 -0400
-Received: from mail.bmlv.gv.at ([193.171.152.37]:58263 "EHLO mail.bmlv.gv.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754825AbXGaK5d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:57:33 -0400
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: Gabriel C <nix.or.die@googlemail.com>
-Subject: Re: acpi=off vs. blacklist
-Date: Tue, 31 Jul 2007 12:57:16 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <200707311235.53302.philipp.marek@bmlv.gv.at> <46AF10BF.2090303@googlemail.com>
-In-Reply-To: <46AF10BF.2090303@googlemail.com>
+	Tue, 31 Jul 2007 07:02:29 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54295 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754320AbXGaLC2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 07:02:28 -0400
+Message-ID: <46AF16CA.4020103@bull.net>
+Date: Tue, 31 Jul 2007 13:02:34 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: David Mosberger-Tang <dmosberger@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization
+ for cpus other than montecito
+References: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com>	<20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com>	<ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>	<46AEF518.4000002@bull.net> <20070731191749.0709c56e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070731191749.0709c56e.kamezawa.hiroyu@jp.fujitsu.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/07/2007 13:07:14,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/07/2007 13:07:16,
+	Serialize complete at 31/07/2007 13:07:16
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311257.16983.philipp.marek@bmlv.gv.at>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Dienstag, 31. Juli 2007, Gabriel C wrote:
-> [ added linux-acpi to CC ]
+KAMEZAWA Hiroyuki wrote:
 
-Sorry, forgot to mention:
-I'd like to use 2.6.20.1, but I already tested with 2.6.22.1.
+> Could we discuss this in other thread as "optimization for some cpus" and
+> push bug-fix patches first ?
+> 
+> If take5 or part of take6(patch 1,2) are not acceptable, I'll continue this
+> work on -rc2.
+> 
+> Thanks,
+> -Kame
 
-IIUC if there's a problem with the ACPI tables, the blacklist won't help, 
-because to know whether the ACPI blacklist applies ACPI tables must be 
-parsed :-/ ?
+Sure.
 
+Thanks,
 
-Regards,
-
-Phil
+Zoltan
