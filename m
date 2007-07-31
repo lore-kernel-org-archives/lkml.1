@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763774AbXGaXz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbXHAAAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763774AbXGaXz5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759337AbXGaXzt
+	id S1762240AbXHAAAe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 20:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760053AbXHAAAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:55:49 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56833 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759188AbXGaXzs (ORCPT
+	Tue, 31 Jul 2007 20:00:20 -0400
+Received: from smtp131.iad.emailsrvr.com ([207.97.245.131]:35123 "EHLO
+	smtp131.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757505AbXHAAAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 19:55:48 -0400
-Date: Wed, 1 Aug 2007 01:03:04 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Haifeng He" <hehaifeng2nd@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Load interrupt code dynamically
-Message-ID: <20070801010304.757f4963@the-village.bc.nu>
-In-Reply-To: <ab08258e0707311426r32dc15cexb6867648bc6a45a4@mail.gmail.com>
-References: <ab08258e0707311426r32dc15cexb6867648bc6a45a4@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Jul 2007 20:00:18 -0400
+Message-ID: <46AFCCBB.70307@gentoo.org>
+Date: Tue, 31 Jul 2007 19:58:51 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       zwane@infradead.org, Andi Kleen <ak@suse.de>,
+       "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com>	<4686D85B.6090803@gentoo.org>	<20070630154230.4ad373fa.akpm@linux-foundation.org>	<4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org> <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org> <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org> <4693CCC6.7050400@zytor.com>
+In-Reply-To: <4693CCC6.7050400@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> dealing with the concurrency in the kernel. Interrupt is one of them.
+Hi,
 
-Its extremely hard as you've probably noticed by now.
+H. Peter Anvin wrote:
+>> So, 2.6.22-rc6-mm1 should work fine with CONFIG_FIRMWARE_EDID=y, or are
+>> further patches needed?
+>>
+> 
+> It should, yes.
 
-> My first question is, what are other interrupts in the kernel that can
-> allow other interrupts
-> to be issued? Second question is, how does the kernel switch between
+It didn't work, and the bug still exists in 2.6.23-rc1: the resolution 
+is wrong by 6 pixels. The user does have CONFIG_FIRMWARE_EDID enabled.
 
-The kernel IRQ handling is pretty flexible. A concious decision was made
-many years ago not to try and limit it to do a pageable kernel as RAM was
-far cheaper than the pain, and getting cheaper by the day.
+So far the only known working setups since 2.6.20.11 are:
+  1. Zwane's patch reverted
+  2. Jan's patch applied (to 2.6.22 or lower, I guess it no longer works 
+for 2.6.23)
 
-> different interrupts? Last, any suggestion on how to change my current
-> implementation to enable loading interrupt code dynamically?
+Here is dmesg output from 2.6.23:
+http://bugs.gentoo.org/attachment.cgi?id=126203&action=view
 
-Realistically - the one case it is done right now is by the mainframe
-people, simply because the underlying hypervisor does it. You probably
-have much more chance that way using a microkernel (real one not MACH)
-underneath. Still a huge task.
+Let me know how we can help diagnose this further.
+
+Thanks,
+Daniel
