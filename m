@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939425AbXGaD0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967537AbXGaDbH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939425AbXGaD0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 23:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXGaDZy
+	id S967537AbXGaDbH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 23:31:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbXGaDaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 23:25:54 -0400
-Received: from kludge.physics.uiowa.edu ([128.255.33.129]:34563 "EHLO
-	kludge.physics.uiowa.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752102AbXGaDZx (ORCPT
+	Mon, 30 Jul 2007 23:30:55 -0400
+Received: from ms-smtp-06.texas.rr.com ([24.93.47.45]:37206 "EHLO
+	ms-smtp-06.texas.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752784AbXGaDay (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 23:25:53 -0400
-Date: Mon, 30 Jul 2007 22:25:21 -0500
-From: Joseph Pingenot <trelane@digitasaru.net>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20070731032521.GD6812@digitasaru.net>
-Reply-To: trelane@digitasaru.net
-Mail-Followup-To: Al Viro <viro@ftp.linux.org.uk>,
-	linux-kernel@vger.kernel.org
-References: <20070731021615.GB6812@digitasaru.net> <20070731031720.GF21089@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731031720.GF21089@ftp.linux.org.uk>
-X-School: University of Iowa
-X-vi-or-emacs: vi *and* emacs!
-X-MS-TNEF-Correlator: <AFJAUFHRUOGRESULWAOIHFEAUIOFBVHSHNRAIU.monkey@spamcentral.invalid>
-X-MimeOLE: Not Produced By Microsoft MimeOLE V5.50.4522.1200
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-Subject: Re: inotify and /proc/<pid>
-X-SA-Exim-Version: 4.2.1 (built Thu, 26 Apr 2007 18:30:04 +0000)
+	Mon, 30 Jul 2007 23:30:54 -0400
+Subject: Kernel Build Failure
+From: Chris Holvenstot <saltydog@houston.rr.com>
+To: kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 30 Jul 2007 22:31:00 -0500
+Message-Id: <1185852660.30600.35.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From Al Viro on Tuesday, 31 July, 2007:
->On Mon, Jul 30, 2007 at 09:16:16PM -0500, Joseph Pingenot wrote:
->> I was trying to use inotify to watch process changes (especially process
->>   termination) by watching /proc/<pid>.
->> Sadly, although I could see something reading various files, nothing
->>   was issued when the process I was watching exited and the directory
->>   went away.
->> Is this intentional, or a bug?
->It's a bug you intend to introduce in your program...  IOW, don't
->do that.
+I am having a problem, likely caused by the vacuum between my ears, but
+I thought that a few of you would find it recreational to tear up an
+inexperienced user for doing dumb things.  
 
-More background, please?
+I have what is quickly becoming a "un-ubuntu" 7.04 system - as time goes
+on I seem to be replacing the standard distribution with "alternative"
+components - this past weekend I replaced the kernel because the one
+shipped with Ubuntu was not cutting it with the new SATA drives I
+recently purchased.
 
-What's the way to check for a process exiting without spinning?
+So I downloaded the 2.6.22.1 kernel sources and set out to build a new
+kernel.  For the most part I left things pretty much as they shipped
+when running the menuconfig tool and an hour or so later I had a
+functioning kernel which did a decent job supporting my new hard drives
+(I still have a slight problem with soft resets which seems to go away
+when I turn NCQ down to zero)
 
--Joseph
+While I was researching the SATA issue I noted a comment on the mailing
+list that having a few more people build and run your RC1 kernels wold
+be desirable.  So I said, why not?   I may still be new to Linux and C
+but I was an MVS Sysprog and assembly language programmer for 25 years
+and if nothing else I have strong troubleshooting skills and a
+understanding of how an operating system works.
 
--- 
-trelane@digitasaru.net.///////////////////////////////////////////////
-"There is also an entire branch in the physical therapy field dedicated
- to the treatment of little-finger injuries caused by excessive Emacs
- use."  --Linux Weekly News editor (http://lwn.net/Articles/206916/)
-///////260 IATL / The University of Iowa / Iowa City, IA  52242///////
+My target system for this activity was my "multi-purpose" AMD64 X2 based
+home server - in addition to being my desktop, it also functions as the
+family web server and even runs the sewing machine via an instance of
+Windows running under VirtualBox.  The box is up 24x7 and gets a good
+work out on a variety of tasks, but if it goes down so be it.  
+
+However, I think that my process for building an RC1 kernel must be
+flawed, and as much as I poked around I can not spot what I am doing
+wrong.  
+
+I take a virgin set of 2.6.22.1 sources.  
+
+To this I added the 2.6.23-rc1 patch set.  The patch verified and
+applied without generating any error messages.
+
+The only change I made with the menuconfig tool from 2.6.22.1 was to
+change the generated kernel name.
+
+I ran make and received the following error:
+
+CC [M]  net/netfilter/nf_conntrack_proto_sctp.o
+net/netfilter/nf_conntrack_proto_sctp.c: In function ‘sctp_new’:
+net/netfilter/nf_conntrack_proto_sctp.c:436: error: implicit declaration
+of function ‘DEBUGP’
+make[2]: *** [net/netfilter/nf_conntrack_proto_sctp.o] Error 1
+make[1]: *** [net/netfilter] Error 2
+make: *** [net] Error 
+
+Any suggestions as to what I might be doing wrong would be appreciated.
+
+Thanks
+
+Chris
+
+
+
+
+
+
