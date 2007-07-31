@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbXGaM4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758227AbXGaM4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760697AbXGaM4Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbXGaM4M
+	id S1758227AbXGaM4j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760750AbXGaM41
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:56:12 -0400
-Received: from ausmtp05.au.ibm.com ([202.81.18.154]:52727 "EHLO
-	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758491AbXGaM4K (ORCPT
+	Tue, 31 Jul 2007 08:56:27 -0400
+Received: from mtagate2.de.ibm.com ([195.212.29.151]:2411 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760729AbXGaM4Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:56:10 -0400
-Message-ID: <46AF314C.7030404@linux.vnet.ibm.com>
-Date: Tue, 31 Jul 2007 18:25:40 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Organization: IBM
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
-CC: balbir@linux.vnet.ibm.com, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, ebiederm@xmission.com,
-       containers@lists.osdl.org, akpm@linux-foundation.org, xemul@openvz.org,
-       menage@google.com, dhaval@linux.vnet.ibm.com
-Subject: Re: [-mm PATCH 6/9] Memory controller add per container LRU and reclaim
- (v4)
-References: <20070727201041.31565.14803.sendpatchset@balbir-laptop> <20070731051459.E827E1BF77B@siro.lan>
-In-Reply-To: <20070731051459.E827E1BF77B@siro.lan>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 31 Jul 2007 08:56:25 -0400
+Date: Tue, 31 Jul 2007 14:56:28 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, stern@rowland.harvard.edu
+Subject: Re: [PATCH 1/7] sysfs: fix locking in sysfs_lookup() and
+ sysfs_rename_dir()
+Message-ID: <20070731145628.6989f255@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1185876908509-git-send-email-htejun@gmail.com>
+References: <11858769082982-git-send-email-htejun@gmail.com>
+	<1185876908509-git-send-email-htejun@gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 31 Jul 2007 19:15:08 +0900,
+Tejun Heo <htejun@gmail.com> wrote:
 
-
-YAMAMOTO Takashi wrote:
->> +unsigned long mem_container_isolate_pages(unsigned long nr_to_scan,
->> +					struct list_head *dst,
->> +					unsigned long *scanned, int order,
->> +					int mode, struct zone *z,
->> +					struct mem_container *mem_cont,
->> +					int active)
->> +{
->> +	unsigned long nr_taken = 0;
->> +	struct page *page;
->> +	unsigned long scan;
->> +	LIST_HEAD(mp_list);
->> +	struct list_head *src;
->> +	struct meta_page *mp;
->> +
->> +	if (active)
->> +		src = &mem_cont->active_list;
->> +	else
->> +		src = &mem_cont->inactive_list;
->> +
->> +	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
->> +		mp = list_entry(src->prev, struct meta_page, lru);
+> sd children list walking in sysfs_lookup() and sd renaming in
+> sysfs_rename_dir() were left out during i_mutex -> sysfs_mutex
+> conversion.  Fix them.
 > 
-> what prevents another thread from freeing mp here?
+> Signed-off-by: Tejun Heo <htejun@gmail.com>
+> ---
+>  fs/sysfs/dir.c |   21 ++++++++++++---------
+>  1 files changed, 12 insertions(+), 9 deletions(-)
 
-mem_cont->lru_lock protects the list and validity of mp.  If we hold
-mem_cont->lru_lock for this entire loop, then we preserve the validity
-of mp.  However that will be holding up container charge and uncharge.
+Looks sane.
 
-This entire routing is called with zone->lru_lock held by the caller.
- So within a zone, this routine is serialized.
-
-However page uncharge may race with isolate page.  But will that lead
-to any corruption of the list?  We may be holding the lock for too
-much time just to be on the safe side.
-
-Please allow us some time to verify whether this is indeed inadequate
-locking that will lead to corruption of the list.
-
-Thanks for pointing out this situation.
---Vaidy
-
->> +		spin_lock(&mem_cont->lru_lock);
->> +		if (mp)
->> +			page = mp->page;
->> +		spin_unlock(&mem_cont->lru_lock);
->> +		if (!mp)
->> +			continue;
-> 
-> YAMAMOTO Takashi
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
-> 
+Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
