@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765987AbXGaVXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765940AbXGaVYJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765987AbXGaVXs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758486AbXGaVXh
+	id S1765940AbXGaVYJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:24:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbXGaVXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:23:37 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3248 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756286AbXGaVXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:23:36 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 54] drivers/scsi/mvme16x_scsi.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 23:23:36 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi@vger.kernel.org, jongk@linux-m68k.org
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Tue, 31 Jul 2007 17:23:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51764 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757147AbXGaVXx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:23:53 -0400
+Subject: Re: [BUG] ISIC + 2.6.22 (via-rhine)
+From: Arjan van de Ven <arjan@infradead.org>
+To: Xose Vazquez Perez <xose.vazquez@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <46AFA576.1060902@gmail.com>
+References: <46AFA576.1060902@gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 31 Jul 2007 14:23:33 -0700
+Message-Id: <1185917013.2766.12.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707312323.36541.m.kozlowski@tuxland.pl>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- drivers/scsi/mvme16x_scsi.c | 3740 -> 3678 (-62 bytes)
+> =================================
+> [ INFO: inconsistent lock state ]
+> 2.6.22 #1
+> ---------------------------------
+> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+> swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+>   (&rp->lock){++..}, at: [<f8c890db>] rhine_tx_timeout+0x6f/0xf4 [via_rhine]
 
- drivers/scsi/mvme16x_scsi.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/drivers/scsi/mvme16x_scsi.c	2007-07-26 13:07:42.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/scsi/mvme16x_scsi.c	2007-07-31 11:02:11.000000000 +0200
-@@ -48,13 +48,12 @@ mvme16x_probe(struct device *dev)
- 		goto out;
- 	}
 
--	hostdata = kmalloc(sizeof(struct NCR_700_Host_Parameters), GFP_KERNEL);
-+	hostdata = kzalloc(sizeof(struct NCR_700_Host_Parameters), GFP_KERNEL);
- 	if (hostdata == NULL) {
- 		printk(KERN_ERR "mvme16x-scsi: "
- 				"Failed to allocate host data\n");
- 		goto out;
- 	}
--	memset(hostdata, 0, sizeof(struct NCR_700_Host_Parameters));
+this is a case of homegrown locking: the via-rhine driver does
 
- 	/* Fill in the required pieces of hostdata */
- 	hostdata->base = (void __iomem *)0xfff47000UL;
+        /* protect against concurrent rx interrupts */
+        disable_irq(rp->pdev->irq);
+
+        spin_lock(&rp->lock);
+
+        /* clear all descriptors */
+        free_tbufs(dev);
+        free_rbufs(dev);
+        alloc_tbufs(dev);
+        alloc_rbufs(dev);
+
+        /* Reinitialize the hardware. */
+        rhine_chip_reset(dev);
+        init_registers(dev);  
+
+        spin_unlock(&rp->lock);
+        enable_irq(rp->pdev->irq);
+
+
+as a way to protect code against interrupts... rather than using the
+normal mechanism.
+
+
+the annotation is pretty simple (untested, not even compiled):
+
+--- linux-2.6.22/drivers/net/via-rhine.c.org	2007-07-31 14:22:06.000000000 -0700
++++ linux-2.6.22/drivers/net/via-rhine.c	2007-07-31 14:22:26.000000000 -0700
+@@ -1191,7 +1191,7 @@
+ 	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
+ 
+ 	/* protect against concurrent rx interrupts */
+-	disable_irq(rp->pdev->irq);
++	disable_irq_lockdep(rp->pdev->irq);
+ 
+ 	spin_lock(&rp->lock);
+ 
+@@ -1206,7 +1206,7 @@
+ 	init_registers(dev);
+ 
+ 	spin_unlock(&rp->lock);
+-	enable_irq(rp->pdev->irq);
++	enable_irq_lockdep(rp->pdev->irq);
+ 
+ 	dev->trans_start = jiffies;
+ 	rp->stats.tx_errors++;
+
+
