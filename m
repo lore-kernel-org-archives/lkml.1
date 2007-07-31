@@ -1,51 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932649AbXGaRtB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbXGaRtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932649AbXGaRtB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:49:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761256AbXGaRsr
+	id S932809AbXGaRtZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932143AbXGaRsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:48:47 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57983 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754376AbXGaRsq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:48:46 -0400
-Date: Tue, 31 Jul 2007 10:47:55 -0700
-From: Greg KH <gregkh@suse.de>
-To: Andreas Schwab <schwab@suse.de>
-Cc: WANG Cong <xiyou.wangcong@gmail.com>, Satyam Sharma <satyam@infradead.org>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
-       trivial@kernel.org
-Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci
-	subsystem.
-Message-ID: <20070731174755.GA8592@suse.de>
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125443.880871000@hawkeye.stone.uk.eu.org> <200707311553.29090.borntraeger@de.ibm.com> <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in> <20070731144619.GA8183@localhost.localdomain> <20070731161051.GA7490@suse.de> <jeir80y27m.fsf@sykes.suse.de>
+	Tue, 31 Jul 2007 13:48:54 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:3803 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762466AbXGaRsu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:48:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=X/HTH2rbJJc73K6VUNeeQRAm1QrZTu/40M0rEwnbWyv3U3jX5AO/MD1/cYaVqgz5Pt/z9zyRXaQG0WaJDAbx4Eu5on3ZTN/qhiSQH5mO6Yp6bGbMT5qfjH553Wjdc66IjSA/5XSEpBiGct0195WC+AvGlN/2dDcy2cfVQaFwhgQ=
+Message-ID: <46AF75FA.5080502@gmail.com>
+Date: Wed, 01 Aug 2007 02:48:42 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <jeir80y27m.fsf@sykes.suse.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+References: <20070705194909.337398431@intel.com>	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>	<46AE12B6.6090408@garzik.org>	<46AED656.8070407@gmail.com>	<1185891382.2750.8.camel@laptopd505.fenrus.org>	<46AF4B05.4010700@gmail.com> <20070731091841.857d22bb.kristen.c.accardi@intel.com>
+In-Reply-To: <20070731091841.857d22bb.kristen.c.accardi@intel.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 06:20:29PM +0200, Andreas Schwab wrote:
-> Greg KH <gregkh@suse.de> writes:
+Hello, Kristen.
+
+Kristen Carlson Accardi wrote:
+> On Tue, 31 Jul 2007 23:45:25 +0900
+> Tejun Heo <htejun@gmail.com> wrote:
 > 
-> > On Tue, Jul 31, 2007 at 10:46:19PM +0800, WANG Cong wrote:
-> >> However, I think using resource_size_t is a bit better than unsigned long,
-> >> so that we don't need to check the defination of it.
-> >> 
-> >> - res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
-> >> + res->start = (resource_size_t)kmalloc(*size, GFP_KERNEL);
-> >> 
-> >> Is this change OK?
-> >
-> > Yes, that is the proper cast to have here.
+>> Anyways, I don't really think this attribute belongs to SCSI sysfs
+>> hierarchy.  There currently isn't any alternative but sysfs is part of
+>> userland visible interface and putting something into SCSI sysfs
+>> hierarchy just because libata doesn't have one doesn't look like a good
+>> idea.
+>>
+>> sysfs isn't far from being detached from kobject and driver model.  I
+>> think it would be best to wait a bit and build proper libata sysfs
+>> hierarchy which won't have to be changed later when libata departs from
+>> SCSI.  Well, it isn't really a good way but IMHO it's better than
+>> sticking ATA power saving node into SCSI sysfs hierarchy.
 > 
-> It will generate a warning when resoure_size_t is 64bit on a 32bit arch.
+> "Wait a bit" could be a very long time.  Who is working on building this
+> new libata sysfs support now?
 
-How?  And if so, what should the proper cast be?
+I happen to be working on sysfs these days and guess why I started
+working on sysfs. :-)
 
-thanks,
+Disassociating sysfs from driver model is probably one or two patchsets
+away.  It could have happened earlier but I wanted to pace things a bit
+so that the changes receive some testing through release cycles.  Check
+how many sysfs related changes went through .23-rc1 merge window and
+expect about the same influx during the next cycle; with some luck, it
+can be complete before .24-rc1 window.
 
-greg k-h
+> If the answer is "no one", which I think it 
+> may be, do you want to hold up a feature that actually helps many people
+> for possibly 6 months or more just because we have to go through scsi
+> right now for our sysfs interface?
+
+I don't necessarily want to but delaying it might be the right thing to
+do.  Anyways, if we're going to do an interim solution, I don't think
+mainline SCSI sysfs hierarchy is the right place.  Do it with module
+parameter which carries large "to be deprecated sign" or maintain out of
+tree patches.
+
+> on top of that, the last mail I 
+> got from James on this subject indicated that if we kept our granularity
+> large with the power savings levels, SCSI can actually take advantage of
+> this as well.  Sure, we may have to tweak things around later, but isn't
+> this what we do routinely?  Holding up valuable features from the kernel 
+> because things aren't perfect yet seems really broken.
+>
+> As far as your complaints about broken hardware go, keep in mind that
+> the patch set does provide a method of adding these disks to a blacklist,
+> so I don't see that as a problem.  And, the default for this feature is
+> "off", and user space would have to explicitly enable it.
+
+This is gonna be a bit long.  Please be patient.
+
+Due to the generosity of the ATA committee, we have, by default, at
+least two ways to achieve link PS - HIPS and DIPS.  I dunno why but
+someone thought we needed two.  And then, ahci people thought automatic
+HIPS would be nice, which I fully agree, and added ALPM.  Unfortunately,
+they mandated ALPM to kick in the moment command engine becomes idle, so
+most current implementations suffer unnecessary performance hit when
+ALPM is active.
+
+We have this crazy number of combinations.  HIPS, DIPS,
+not-so-hot-looking ALPM and probably some number of broken devices which
+may be happy with some method but not with others.  Some might be happy
+with PARTIAL but vomit on SLUMBER.  I might be being too pessimistic but
+my last two years in IDE/ATA land taught me to be pessimistic about
+hardware quality.  Heck, I bet you some of non-intel ahci
+implementations which claim to support ALPM will crap themselves when
+actually told to do so.
+
+If we're gonna do this like NCQ and gonna put knowledge about all the
+combinations into the driver.  The suggested interface is good enough.
+Heck, we probably don't even need three levels.  On and off should be
+enough if things are done right as link PS doesn't have to incur
+noticeable performance degradation.  But to do that, we'll need to test
+a lot of combinations and it's gonna be much harder than NCQ (some ahci
+implementations don't seem to actually enter PS mode when instructed to
+do so via SControl but turning off the controller saves a lot of power.
+ Maybe ALPM works better on such cases) and the blacklist will probably
+be longer.
+
+The alternate way is to export flexible interface to userland and let
+userland decide and if we're gonna do that.  SCSI sysfs just isn't the
+place.
+
+Thanks.
+
+-- 
+tejun
