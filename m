@@ -1,90 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765940AbXGaVYJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbXGaVY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765940AbXGaVYJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:24:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbXGaVXy
+	id S933043AbXGaVY3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932729AbXGaVYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:23:54 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51764 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757147AbXGaVXx (ORCPT
+	Tue, 31 Jul 2007 17:24:11 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:55696 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762110AbXGaVYI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:23:53 -0400
-Subject: Re: [BUG] ISIC + 2.6.22 (via-rhine)
-From: Arjan van de Ven <arjan@infradead.org>
-To: Xose Vazquez Perez <xose.vazquez@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <46AFA576.1060902@gmail.com>
-References: <46AFA576.1060902@gmail.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Tue, 31 Jul 2007 14:23:33 -0700
-Message-Id: <1185917013.2766.12.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Tue, 31 Jul 2007 17:24:08 -0400
+From: Chr <chunkeey@web.de>
+To: Jiri Kosina <jikos@jikos.cz>
+Subject: Cleaning up the USBHID's blacklist.
+Date: Tue, 31 Jul 2007 23:24:05 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+References: <200707240228.39421.chunkeey@web.de> <200707301611.08758.chunkeey@web.de> <Pine.LNX.4.64.0707311038400.5747@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0707311038400.5747@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200707312324.06116.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX1+TGkN7ZAAhKGomK+znWQtF2chK9LNJuITdQ8YV
+	LRMW0rNC2DlKih5+qxyzriOobKmSKR4GiIULlUr4tzptjc6a/m
+	fAHgudLBo=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday, 31. July 2007, Jiri Kosina wrote:
+> On Mon, 30 Jul 2007, Chr wrote:
+> 
+> > Ok, found it " hid_blacklist is alphabetically sorted blacklist by quirk 
+> > type. " But is there a Order for the bitfields? e.g
+> > shouldn't: hid-quriks.c (line 439, 440)
+> > { USB_VENDOR_ID_APPLE, USB_DEVICE_ID_APPLE_FOUNTAIN_ANSI, 
+> > HID_QUIRK_POWERBOOK_HAS_FN | HID_QUIRK_IGNORE_MOUSE } 
+> > be:
+> > {..., ..., HID_QUIRK_IGNORE_MOUSE | HID_QUIRK_POWERBOOK_HAS_FN }
+> 
+> This could be a possible cleanup for hid_blacklist[], if you are going to 
+> make a patch I will happily accept it.
+> 
+> Thanks,
+> 
+Ok! I'll make a patch..
 
-> =================================
-> [ INFO: inconsistent lock state ]
-> 2.6.22 #1
-> ---------------------------------
-> inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-> swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
->   (&rp->lock){++..}, at: [<f8c890db>] rhine_tx_timeout+0x6f/0xf4 [via_rhine]
+But I have one (final?) question. Since I am sometimes stuck to 80x25 console...
+ can we alphabetically sort the blacklist by the Vendor (the first field), instead of the quirk field(last field)?
+Or is there a technical/theoretical reason behind it?   
 
-
-
-this is a case of homegrown locking: the via-rhine driver does
-
-        /* protect against concurrent rx interrupts */
-        disable_irq(rp->pdev->irq);
-
-        spin_lock(&rp->lock);
-
-        /* clear all descriptors */
-        free_tbufs(dev);
-        free_rbufs(dev);
-        alloc_tbufs(dev);
-        alloc_rbufs(dev);
-
-        /* Reinitialize the hardware. */
-        rhine_chip_reset(dev);
-        init_registers(dev);  
-
-        spin_unlock(&rp->lock);
-        enable_irq(rp->pdev->irq);
-
-
-as a way to protect code against interrupts... rather than using the
-normal mechanism.
-
-
-the annotation is pretty simple (untested, not even compiled):
-
---- linux-2.6.22/drivers/net/via-rhine.c.org	2007-07-31 14:22:06.000000000 -0700
-+++ linux-2.6.22/drivers/net/via-rhine.c	2007-07-31 14:22:26.000000000 -0700
-@@ -1191,7 +1191,7 @@
- 	       mdio_read(dev, rp->mii_if.phy_id, MII_BMSR));
- 
- 	/* protect against concurrent rx interrupts */
--	disable_irq(rp->pdev->irq);
-+	disable_irq_lockdep(rp->pdev->irq);
- 
- 	spin_lock(&rp->lock);
- 
-@@ -1206,7 +1206,7 @@
- 	init_registers(dev);
- 
- 	spin_unlock(&rp->lock);
--	enable_irq(rp->pdev->irq);
-+	enable_irq_lockdep(rp->pdev->irq);
- 
- 	dev->trans_start = jiffies;
- 	rp->stats.tx_errors++;
-
-
+Thanks,
+	Chr.
