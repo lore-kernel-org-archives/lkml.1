@@ -1,89 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761240AbXGaOnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbXGaOpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761240AbXGaOnt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXGaOnk
+	id S1762023AbXGaOpD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbXGaOoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:43:40 -0400
-Received: from ns1.suse.de ([195.135.220.2]:45104 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752683AbXGaOnj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:43:39 -0400
-Date: Tue, 31 Jul 2007 16:43:34 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, suspend-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [rft] Kill junk from s2ram resume paths
-Message-ID: <20070731144334.GC6973@suse.de>
-References: <20070731121246.GF2087@elf.ucw.cz> <200707311520.28003.rjw@sisk.pl> <20070731131814.GI2087@elf.ucw.cz> <200707311549.54863.rjw@sisk.pl> <20070731140140.GJ2087@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 31 Jul 2007 10:44:55 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:45640 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754768AbXGaOoy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:44:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=fQvfsQNQSizJBgcIgiwtjaSBhSD2zNQYVpUcuWjNebO5EsTmN3mZmqAoVsee+tznqJduOM1EAJsPQWSxDwCOborqp1xPVewqGuPZqA1rkzVyFJHI8cW4yDmNVhhpWAJFB1HFnCzaSs6BEBHrf38IVzzc3ro3K+7gq4woK2ztn8E=
+Date: Tue, 31 Jul 2007 22:46:19 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Christian Borntraeger <borntraeger@de.ibm.com>,
+       jack@hawkeye.stone.uk.eu.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [Patch 09/16] Remove unnecessary kmalloc casts in the pci subsystem.
+Message-ID: <20070731144619.GA8183@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125443.880871000@hawkeye.stone.uk.eu.org> <200707311553.29090.borntraeger@de.ibm.com> <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070731140140.GJ2087@elf.ucw.cz>
-X-Operating-System: openSUSE 10.3 (i586) Alpha7, Kernel 2.6.22.1-10-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+In-Reply-To: <alpine.LFD.0.999.0707311956170.26032@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 04:01:40PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > > > >  # Running in *copy* of this code, somewhere in low 1MB.
-> > > > >  
-> > > > > -	movb	$0xa1, %al	;  outb %al, $0x80
-> > > > 
-> > > > Well, what was this for?
-> > > 
-> > > Debugging leds on port 80. I still have that card somewhere
-> > > :-). Interesting parties can reinsert it.
-> > 
-> > Ah, I see.
-> > 
-> > Hmm, can you please write about that in the chanelog more explicitly?
-> > Or just comment it out with a "uncomment this to get ..." text?
-> 
-> I still need someone with x86-64 to test it for me before I submit it
-> properly ;-). Updated patch follows.
+On Tue, Jul 31, 2007 at 08:00:12PM +0530, Satyam Sharma wrote:
+>
+>
+>On Tue, 31 Jul 2007, Christian Borntraeger wrote:
+>
+>> Am Dienstag, 31. Juli 2007 schrieb jack@hawkeye.stone.uk.eu.org:
+>> > --- a/drivers/pci/rom.c
+>> > +++ b/drivers/pci/rom.c
+>> > @@ -185,7 +185,7 @@ void __iomem *pci_map_rom_copy(struct pc
+>> >  			  IORESOURCE_ROM_BIOS_COPY))
+>> >  		return rom;
+>> > 
+>> > -	res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
+>> > +	res->start = kmalloc(*size, GFP_KERNEL);
+>> 
+>> This looks wrong.
+>
+>Yup, a warning at the very least.
+>
+>> void * doesnt need a cast to a pointer, but res->start is an 
+>> integer u32 type,
+>
+>It better not be, else we have a bug already anyway. Pointers are 64-bit
+>on 64-bit archs. [ it turns out res->start is resource_size_t which is
+>set properly as per CONFIG_RESOURCES_64BIT which itself is set properly
+>as per CONFIG_64BIT, so everything is healthy and fine :-) ]
+>
 
-Compiling right now.
+I agree.
 
-> 								Pavel
-> 
-> diff --git a/arch/i386/kernel/acpi/wakeup.S b/arch/i386/kernel/acpi/wakeup.S
-> index 1415da1..9cebef7 100644
-> --- a/arch/i386/kernel/acpi/wakeup.S
-> +++ b/arch/i386/kernel/acpi/wakeup.S
-> @@ -28,21 +28,6 @@ #define BEEP \
->  	movb	$15, %al; 	\
->  	outb	%al, $66;
->  
-> -#define BEEP \
-> -	inb	$97, %al; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$3, %al; 	\
-> -	outb	%al, $97; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$-74, %al; 	\
-> -	outb	%al, $67; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$-119, %al; 	\
-> -	outb	%al, $66; 	\
-> -	outb	%al, $0x80; 	\
-> -	movb	$15, %al; 	\
-> -	outb	%al, $66;
-> -
->  ALIGN
->  	.align	4096
->  ENTRY(wakeup_start)
+However, I think using resource_size_t is a bit better than unsigned long,
+so that we don't need to check the defination of it.
 
-This hunk rejected for me (against 2.6.23-rc1), but i'm testing x86_64, so
-it did not matter ;-)
+- res->start = (unsigned long)kmalloc(*size, GFP_KERNEL);
++ res->start = (resource_size_t)kmalloc(*size, GFP_KERNEL);
+
+Is this change OK?
+
 -- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+To do great work, you have to have a pure mind. You can think only about the
+mathematics. Everything else is human weakness. Accepting prizes is showing
+weakness.
 
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
