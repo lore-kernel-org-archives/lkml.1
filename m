@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934181AbXGaWBu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935192AbXGaWCZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934181AbXGaWBu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 18:01:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760848AbXGaWBk
+	id S935192AbXGaWCZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 18:02:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761468AbXGaWCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 18:01:40 -0400
-Received: from threatwall.zlynx.org ([199.45.143.218]:32868 "EHLO zlynx.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756336AbXGaWBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 18:01:39 -0400
-Subject: Re: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
-From: Zan Lynx <zlynx@acm.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070731150245.5932b763.randy.dunlap@oracle.com>
-References: <1185918261.6981.13.camel@localhost>
-	 <20070731150245.5932b763.randy.dunlap@oracle.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-F2MZa7p2jUXTTq9ijCPl"
-Date: Tue, 31 Jul 2007 16:01:37 -0600
-Message-Id: <1185919297.6981.16.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-Envelope-From: zlynx@acm.org
+	Tue, 31 Jul 2007 18:02:13 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2144 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762977AbXGaWCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 18:02:11 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 70] drivers/mtd/ubi/scan.c: kmalloc + memset conversion to kzalloc
+Date: Wed, 1 Aug 2007 00:02:10 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       dwmw2@infradead.org, linux-mtd@lists.infradead.org,
+       dedekind@infradead.org
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708010002.11418.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+To be able to convert kmalloc + memset(..., 1, ...) to kzalloc this patch
+reverses the logic around 'buf'.
 
---=-F2MZa7p2jUXTTq9ijCPl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-On Tue, 2007-07-31 at 15:02 -0700, Randy Dunlap wrote:
-> On Tue, 31 Jul 2007 15:44:21 -0600 Zan Lynx wrote:
->=20
-> > I was playing with huge pages and libhugetlbfs.  Small programs like
-> > "ls" work fine.  I tried running Evolution through libhugetlbfs and the
-> > system slowly stops running.  One interesting thing is the "ps" command=
-,
-> > it gets stuck like this:
->=20
-> Do you mean 2.6.22-rc1-mm1 or 2.6.23-rc1-mm1?
+ drivers/mtd/ubi/scan.c | 35563 -> 35531 (-32 bytes)
+ drivers/mtd/ubi/scan.o | 125124 -> 124564 (-560 bytes)
 
-D'oh!  I mean 2.6.23-rc1-mm1, the 22 was a typo.  Cut & paste to be
-sure:
-Linux zephyr 2.6.23-rc1-mm1 #1 SMP PREEMPT Wed Jul 25 17:33:04 MDT 2007
-x86_64 AMD Athlon(tm) 64 Processor 3400+ AuthenticAMD GNU/Linux
+ drivers/mtd/ubi/scan.c |   17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
---=20
-Zan Lynx <zlynx@acm.org>
+--- linux-2.6.23-rc1-mm1-a/drivers/mtd/ubi/scan.c	2007-07-26 13:07:41.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/mtd/ubi/scan.c	2007-07-31 11:42:42.000000000 +0200
+@@ -1314,11 +1314,10 @@ static int paranoid_check_si(const struc
+ 	 * Make sure that all the physical eraseblocks are in one of the lists
+ 	 * or trees.
+ 	 */
+-	buf = kmalloc(ubi->peb_count, GFP_KERNEL);
++	buf = kzalloc(ubi->peb_count, GFP_KERNEL);
+ 	if (!buf)
+ 		return -ENOMEM;
 
---=-F2MZa7p2jUXTTq9ijCPl
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+-	memset(buf, 1, ubi->peb_count);
+ 	for (pnum = 0; pnum < ubi->peb_count; pnum++) {
+ 		err = ubi_io_is_bad(ubi, pnum);
+ 		if (err < 0) {
+@@ -1326,28 +1325,28 @@ static int paranoid_check_si(const struc
+ 			return err;
+ 		}
+ 		else if (err)
+-			buf[pnum] = 0;
++			buf[pnum] = 1;
+ 	}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
+ 	ubi_rb_for_each_entry(rb1, sv, &si->volumes, rb)
+ 		ubi_rb_for_each_entry(rb2, seb, &sv->root, u.rb)
+-			buf[seb->pnum] = 0;
++			buf[seb->pnum] = 1;
 
-iD8DBQBGr7FBG8fHaOLTWwgRApisAJ9egVX/t3Il4BJ3/LGttGNlNMQPHQCcDEn4
-jeqIDDEsfrYqrmDHpFea898=
-=Wr/h
------END PGP SIGNATURE-----
+ 	list_for_each_entry(seb, &si->free, u.list)
+-		buf[seb->pnum] = 0;
++		buf[seb->pnum] = 1;
 
---=-F2MZa7p2jUXTTq9ijCPl--
+ 	list_for_each_entry(seb, &si->corr, u.list)
+-		buf[seb->pnum] = 0;
++		buf[seb->pnum] = 1;
 
+ 	list_for_each_entry(seb, &si->erase, u.list)
+-		buf[seb->pnum] = 0;
++		buf[seb->pnum] = 1;
+
+ 	list_for_each_entry(seb, &si->alien, u.list)
+-		buf[seb->pnum] = 0;
++		buf[seb->pnum] = 1;
+
+ 	err = 0;
+ 	for (pnum = 0; pnum < ubi->peb_count; pnum++)
+-		if (buf[pnum]) {
++		if (!buf[pnum]) {
+ 			ubi_err("PEB %d is not referred", pnum);
+ 			err = 1;
+ 		}
