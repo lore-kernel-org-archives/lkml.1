@@ -1,71 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759109AbXGaLv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758607AbXGaMBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759109AbXGaLv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbXGaLvL
+	id S1758607AbXGaMBR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbXGaMBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:51:11 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46621 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751805AbXGaLvJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:51:09 -0400
-Date: Tue, 31 Jul 2007 13:48:24 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: Josh Triplett <josht@linux.vnet.ibm.com>
-Cc: Linux RT Users <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jean Pierre Dion <jean-pierre.dion@bull.net>,
-       Darren Hart <dvhltc@us.ibm.com>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH RT] Fix RT balancing tasks pulling
-Message-ID: <20070731134824.6ec78447@frecb000686.frec.bull.fr>
-In-Reply-To: <1185832234.3334.35.camel@josh-work.beaverton.ibm.com>
-References: <20070724154202.224f12e8@frecb000686.frec.bull.fr>
-	<1185832234.3334.35.camel@josh-work.beaverton.ibm.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Tue, 31 Jul 2007 08:01:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55865 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751243AbXGaMBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 08:01:03 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+t/Oo1QMCtkDbnknsWuU3WngLdV4n2NGyCKRQPcu
+	VcwTp+ZiaMLgqa
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+From: Mike Galbraith <efault@gmx.de>
+To: Bill Huey <billh@gnuppy.monkey.org>
+Cc: Carlo Florendo <subscribermail@gmail.com>,
+       Martin Steigerwald <Martin@lichtvoll.de>, ck@vds.kolivas.org,
+       Satyam Sharma <satyam@infradead.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070731095723.GH32582@gnuppy.monkey.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <200707292023.36555.Martin@lichtvoll.de>
+	 <alpine.LFD.0.999.0707300008230.30928@enigma.security.iitk.ac.in>
+	 <200707292118.45484.Martin@lichtvoll.de> <46AE8D25.20602@gmail.com>
+	 <20070731095723.GH32582@gnuppy.monkey.org>
+Content-Type: text/plain
+Date: Tue, 31 Jul 2007 14:00:59 +0200
+Message-Id: <1185883259.7445.8.camel@Homer.simpson.net>
 Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/07/2007 13:55:56,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/07/2007 13:55:57,
-	Serialize complete at 31/07/2007 13:55:57
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-  Hi Josh,
-
-On Mon, 30 Jul 2007 14:50:34 -0700 Josh Triplett <josht@linux.vnet.ibm.com> wrote:
-
-> On Tue, 2007-07-24 at 15:42 +0200, Sébastien Dugué wrote:
-> >   this one-liner fixes a bug in balance_rt_tasks() which sometimes manifests by
-> > having a lower prio task being scheduled while a higher prio task is sitting
-> > waiting on another runqueue.
-> > 
-> >   This is pretty hard to reproduce on low cpu count machines, for example, I
-> > had to have sched_football run in a loop for ~38h before it failed on a dual HT
-> > Xeon box.
+On Tue, 2007-07-31 at 02:57 -0700, Bill Huey wrote:
+> On Tue, Jul 31, 2007 at 09:15:17AM +0800, Carlo Florendo wrote:
+> >
+> > We obviously all saw how the particular authors tried to address the 
+> > issues.  Ingo tried to address all concerns while Con simply ranted about 
+> > his scheduler being better.  If this is what you think about being a bit 
+> > more human, then I think that this has no place in the lkml.
 > 
-> Very impressive find, and this does seem to improve things in some
-> cases.
-> 
-> However, with 2.6.22.1-rt8, which includes this patch, I still managed
-> to get some failures after a few hours on an 8-way (quad dual-core) box.
-> Preliminary results so far:
->     420 Final ball position: 0
->       2 Final ball position: 1
-> 
+> That's highly inaccurate and rather disrespect of Con's experience.
+> There as a policy decision made with SD that one person basically didn't
+> like, this person whined like a baby for the a formula bottle and didn't
+> understand how to use "nice" to control this inherent behavior of this
+> scheduler.
 
-  Darn, I thought it was it :(
+Chuckle.  You are really desperate for entertainment.
 
-  I had a ~60h run on my box with the very same kernel without a single
-failure.
+	-Mike
 
-  Do you have any other user RT load running when those failures pop up?
-
-  Anyway, back to scheduler code dissection now.
-
-  Sébastien.
