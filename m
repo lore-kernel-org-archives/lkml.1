@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933241AbXGaSXG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933560AbXGaSYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933241AbXGaSXG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 14:23:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764960AbXGaSW4
+	id S933560AbXGaSYS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 14:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbXGaSYI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 14:22:56 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1669 "EHLO
+	Tue, 31 Jul 2007 14:24:08 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1675 "EHLO
 	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759725AbXGaSWz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 14:22:55 -0400
+	id S1764318AbXGaSYG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 14:24:06 -0400
 From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 42] fs/jbd2/journal.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 20:22:54 +0200
+Subject: [PATCH 43] fs/reiser4/ktxnmgrd.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 20:24:05 +0200
 User-Agent: KMail/1.9.5
 Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       sct@redhat.com
+       reiserfs-dev@namesys.com, reiserfs-devel@vger.kernel.org
 References: <200707311845.48807.m.kozlowski@tuxland.pl>
 In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
@@ -23,38 +23,33 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707312022.54957.m.kozlowski@tuxland.pl>
+Message-Id: <200707312024.06110.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- fs/jbd2/journal.c | 66771 -> 66719 (-52 bytes)
- fs/jbd2/journal.o | 199193 -> 199049 (-144 bytes)
+ fs/reiser4/ktxnmgrd.c | 5314 -> 5277 (-37 bytes)
+ fs/reiser4/ktxnmgrd.o | 131624 -> 131496 (-128 bytes)
 
- fs/jbd2/journal.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
+ fs/reiser4/ktxnmgrd.c |    5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/fs/jbd2/journal.c	2007-07-26 13:07:46.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/fs/jbd2/journal.c	2007-07-31 14:55:12.000000000 +0200
-@@ -929,17 +929,16 @@ static void journal_init_stats(journal_t
- {
- 	int size;
+--- linux-2.6.23-rc1-mm1-a/fs/reiser4/ktxnmgrd.c	2007-07-26 13:07:46.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/fs/reiser4/ktxnmgrd.c	2007-07-31 14:58:09.000000000 +0200
+@@ -130,13 +130,12 @@ int reiser4_init_ktxnmgrd(struct super_b
 
--	if (proc_jbd2_stats == NULL)
-+	if (!proc_jbd2_stats)
- 		return;
+ 	assert("zam-1014", mgr->daemon == NULL);
 
- 	journal->j_history_max = 100;
- 	size = sizeof(struct transaction_stats_s) * journal->j_history_max;
--	journal->j_history = kmalloc(size, GFP_KERNEL);
--	if (journal->j_history == NULL) {
-+	journal->j_history = kzalloc(size, GFP_KERNEL);
-+	if (!journal->j_history) {
- 		journal->j_history_max = 0;
- 		return;
- 	}
--	memset(journal->j_history, 0, size);
- 	spin_lock_init(&journal->j_history_lock);
- }
+-	ctx = kmalloc(sizeof(ktxnmgrd_context), reiser4_ctx_gfp_mask_get());
+-	if (ctx == NULL)
++	ctx = kzalloc(sizeof(ktxnmgrd_context), reiser4_ctx_gfp_mask_get());
++	if (!ctx)
+ 		return RETERR(-ENOMEM);
 
+ 	assert("nikita-2442", ctx != NULL);
+
+-	memset(ctx, 0, sizeof *ctx);
+ 	init_waitqueue_head(&ctx->wait);
+
+ 	/*kcond_init(&ctx->startup);*/
