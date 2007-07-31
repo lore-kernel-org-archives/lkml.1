@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939712AbXGaAVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935875AbXGaAVi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939712AbXGaAVX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 20:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765101AbXGaAVH
+	id S935875AbXGaAVi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 20:21:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934259AbXGaAVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 20:21:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45543
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761278AbXGaAVG (ORCPT
+	Mon, 30 Jul 2007 20:21:09 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47387 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755079AbXGaAVG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Jul 2007 20:21:06 -0400
-Date: Mon, 30 Jul 2007 17:21:05 -0700 (PDT)
-Message-Id: <20070730.172105.35015509.davem@davemloft.net>
-To: yoshfuji@linux-ipv6.org
-Cc: djohnson+linux-kernel@sw.starentnetworks.com, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, lksctp-developers@lists.sourceforge.net,
-       sakkiped@starentnetworks.com
-Subject: Re: [PATCH] IPv6: ipv6_addr_type() doesn't know about RFC4193
- addresses
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070726.133452.78498553.yoshfuji@linux-ipv6.org>
-References: <18087.57717.495366.413571@zeus.sw.starentnetworks.com>
-	<20070726.133452.78498553.yoshfuji@linux-ipv6.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
+Date: Tue, 31 Jul 2007 06:03:20 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Keiichi Kii <k-keiichi@bx.jp.nec.com>, Netdev <netdev@vger.kernel.org>,
+       Joel Becker <joel.becker@oracle.com>, Matt Mackall <mpm@selenic.com>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH v3 -mm 0/9] netconsole: Multiple targets and dynamic
+ reconfigurability
+In-Reply-To: <20070730171211.97e2f8f0.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.0.999.0707310559380.17287@enigma.security.iitk.ac.in>
+References: <20070730024741.10828.48209.sendpatchset@enigma.security.iitk.ac.in>
+ <20070730171211.97e2f8f0.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: YOSHIFUJI Hideaki / 吉藤英明 <yoshfuji@linux-ipv6.org>
-Date: Thu, 26 Jul 2007 13:34:52 -0500 (CDT)
 
-> In article <18087.57717.495366.413571@zeus.sw.starentnetworks.com> (at Wed, 25 Jul 2007 19:49:09 -0400), Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com> says:
+
+On Mon, 30 Jul 2007, Andrew Morton wrote:
+
+> On Mon, 30 Jul 2007 08:17:41 +0530
+> Satyam Sharma <satyam@infradead.org> wrote:
 > 
-> > ipv6_addr_type() doesn't check for 'Unique Local IPv6 Unicast
-> > Addresses' (RFC4193) and returns IPV6_ADDR_RESERVED for that range.
+> > [0/9] netconsole: Multiple targets and dynamic reconfigurability
+> > 
+> > This is v3 of the patchset
 > 
-> Acked-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+> That all looks pretty reasonable, thanks.
+> 
+> Are we all comfortable with the attributions?  As I have it now, everything
+> will go in as having been authored by yourself.  There is no formal (ie:
+> understood-by-git) way of recording joint authorship, unfortunately.  But one
+> can make a record of such things in the changelog.
 
-Ok, I've applied Dave's patch.
+Ok, making such a record would be good, if possible. I did see that the
+"author" field for git commits can have only one entry, unfortunately,
+and it turns out "Signed-off-by" and "Acked-by" have other meanings
+attached that have to do with the patch-journey-from-author-to-you chain.
+But I'd like these to be somehow marked as jointly authored, definitely.
 
-Dave, although it's customary and fine to use "+foo-list" email
-addresses for mailing list subscriptions and discussions, I
-ask that you don't add that cookie to your signoff lines in
-patch submissions and I've removed it from your's in this patch.
+> I'll queue this material up in the to-be-sent-to-davem queue.
 
-Thanks a lot.
+Ok, thanks.
+
+
+Satyam
