@@ -1,68 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933844AbXGaUdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933984AbXGaUeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933844AbXGaUdh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932403AbXGaU27
+	id S933984AbXGaUeA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763772AbXGaUat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:28:59 -0400
-Received: from nf-out-0910.google.com ([64.233.182.187]:25105 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762423AbXGaU24 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:28:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:from:content-type:mime-version:content-transfer-encoding:message-id:user-agent;
-        b=JuSPl3idaMmAbHEf/9jthqugtUNHrSB/m7zqL6GKtNOjQC7YqZR9+XrJNGDrwhqv3APRj+yq/rTYsgWmY83XDs1tqaqIow/ksPNdXn6g4mj15/J+nVkZrV0QRs9xXwv5QkfvHPvHND8WFiLz5fOfKvcznbibYozWq/oocIJ72sc=
-Date: Tue, 31 Jul 2007 22:28:49 +0200
-To: linux-kernel@vger.kernel.org
-Subject: Reboot hang
-From: kriko <kristjan.ugrin@gmail.com>
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Message-ID: <op.twci6be2atcbto@linux.site>
-User-Agent: Opera Mail/9.22 (Linux)
+	Tue, 31 Jul 2007 16:30:49 -0400
+Received: from flvpn.ccur.com ([66.10.65.2]:55213 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765908AbXGaUaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 16:30:46 -0400
+Date: Tue, 31 Jul 2007 16:29:43 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jason.baietto@ccur.com
+Subject: Re: [PATCH] expand /proc/interrupts to include missing vectors, v3
+Message-ID: <20070731202943.GA30789@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20070726180522.GA1486@tsunami.ccur.com> <46A8EE78.4040702@zytor.com> <1185816797.3170.1.camel@sven.thebigcorporation.com> <20070730123206.abeab890.akpm@linux-foundation.org> <20070731001718.GA14295@tsunami.ccur.com> <20070731141941.GA3112@tsunami.ccur.com> <p73wswgpkvq.fsf@bingen.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73wswgpkvq.fsf@bingen.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a problem that I cannot solve by myself.
+On Tue, Jul 31, 2007 at 07:02:01PM +0200, Andi Kleen wrote:
 
-I experience hangs on reboot. Precisely hang occurs when I reboot from  
-linux.
-Bios show up its screen normally, but after it is done initializing  
-devices it wont start booting from them (boot prio: dvd-rom, hd).
-It just sits there on summary screen with blinking cursor (at this point  
-normally a message appears up like booting from CD/DVD).
-The only solution is to do a reboot (press ctrl+alt+del - it does respond  
-to that) or to do a hard reset.
-This doesn't happen if I shut down the system and then boot it up, or if I  
-do a reset from win.
+Hi Andi,
+Thanks for the review.  I implemented many of your suggestions and for
+the rest, here mention why not, in case you want to respond further.
 
-I already tried to boot with apm=off, but it doesn't help, my boot  
-parameters are:
----
-title openSUSE 10.2 - 2.6.22-custom
-     root (hd0,0)
-     kernel /boot/vmlinuz-2.6.22 root=/dev/sda1 vga=0x31A resume=/dev/sdb1  
-splash=verbose showopts elevator=cfq
-     initrd /boot/initrd-2.6.22
----
+Regards,
+Joe
 
-Bios is up-to-date. I tried reseting bios (and clearing cmos), but it  
-doesn't solve the problem.
+> Joe Korty <joe.korty@ccur.com> writes:
+> > A threshold interrupt occurs when ECC memory correction
+> > is occuring at too high a frequency. 
+> 
+> It's configurable and the default is off. Also 
+> it's only on AMD hardware.
 
-Here I included lsmod, dmesg and config:
-http://files.myopera.com/kriko/files/sys.tar.gz
-
-Computer specs:
-Athlon 64 2800+ (S 754)
-Gigabyte gak8nsp (nforce 3)
-Geforce 7600GT
-NEC DVD-RW@nv_pata
-1x 80 GB WD@nv_sata, 1x 250 GB WD@nv_sata , IBM (20GB) @ nv_pata
-SB Live! 5.1
+v4 now has a comment to the Documentation section noting
+this.
 
 
--- 
-kriko
+> > Thresholds are used
+> > by the ECC hardware as occasional ECC failures are part
+> > of normal operation,
+
+Occasional ECC _corrections_ are normal (due to stray alpha particles)
+but ECC _failures_ are not.  Document corrected.
+
+> >  	irq_exit();
+> > +	__get_cpu_var(irq_stat).irq_spur_counts++;
+> 
+> Wouldn't it be safer on preemptible kernels to have that inside
+> the irq_exit? 
+
+Although irq_exit() releases the preemption block, it doesn't seem to
+release the APIC interrupt block, at least for i386.  And as an interrupt
+block also blocks preemption and process migration, it seems that it would
+be safe to do the increments after the irq_exit().  But I've moved them
+all inside in v4, just in case I am wrong, or this changes in the future
+(eg, PREEMPT_RT).
+
+> > +		seq_printf(p, "RES: ");
+> 
+> I think it would be better to use 5-6 char identifiers
+> even when it whacks the columns a bit; otherwise nobody
+> will know what it means. e.g. SCHED here.
+
+v3 addresses this.  The normally empty 'description' column at the end of
+each line now holds a description of each vector.  The three-character
+line-prefix names are there only to make the new lines match the syntax
+and format of the other lines in /proc/interrupts.
+
+> Also there you should update proc(5) and send a patch
+> to the manpage maintainer.
+
+Will do.
+
+Thanks,
+Joe
+
+PS: also fixed up the whitespace.
