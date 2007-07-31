@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765327AbXGaQdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765622AbXGaQhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765327AbXGaQdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbXGaQdL
+	id S1765622AbXGaQhS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763981AbXGaQhD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:33:11 -0400
-Received: from mga02.intel.com ([134.134.136.20]:47088 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757722AbXGaQdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:33:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
-   d="scan'208";a="272724235"
-Date: Tue, 31 Jul 2007 09:30:14 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, James.Bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-Message-Id: <20070731093014.db9e0734.kristen.c.accardi@intel.com>
-In-Reply-To: <46AED656.8070407@gmail.com>
-References: <20070705194909.337398431@intel.com>
-	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-	<46AE12B6.6090408@garzik.org>
-	<46AED656.8070407@gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+	Tue, 31 Jul 2007 12:37:03 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:45190 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762682AbXGaQhA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:37:00 -0400
+Date: Tue, 31 Jul 2007 12:36:56 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070731163656.GC22350@filer.fsl.cs.sunysb.edu>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070730161324.261652101@weierstrass.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 15:27:34 +0900
-Tejun Heo <htejun@gmail.com> wrote:
+On Mon, Jul 30, 2007 at 06:13:35PM +0200, Jan Blunck wrote:
+> Introduce white-out support to ext2.
 
-> Jeff Garzik wrote:
-> > Any chance the SCSI peeps could ACK this, and then let me include it in
-> > the ALPM patchset in the libata tree?
-> 
-> ATA link PS is pretty complex with HIPM, DIPM and AHCI ALPM.  I'm not
-> sure whether this three level knob would be sufficient.  It might be
-> good enough if we're gonna develop extensive in-kernel black/white list
-> specifying which method works on which combination but my gut tells me
-> that it's best left to userland (probably in the form of per-notebook PS
-> profile).
+I think storing whiteouts on the branches is wrong. It creates all sort of
+nasty cases when people actually try to use unioning. Imagine a (no-so
+unlikely) scenario where you have 2 unions, and they share a branch. If you
+create a whiteout in one union on that shared branch, the whiteout magically
+affects the other union as well! Whiteouts are a union-level construct, and
+therefore storing them at the branch level is wrong.
 
-I think what you are saying is that you'd like a way to use your HIPM
-and DIPM without ALPM on the AHCI driver.  Fine - it's really easy
-to add these levels later - if they don't make sense at the sysfs interface
-we can add module params to specify the definition of "min_power" as 
-being performed via HIPM and DIPM instead of ALPM - although as of yet we
-have no evidence what so ever that this method actually adds value over
-ALPM.
+If you store whiteouts on the branches, you'll probably want readdir to not
+include them. That's relatively cheap if you have a whiteout bit in the
+inode, but I don't think filesystems should be forced to use up rather
+prescious inode bits for whiteouts/opaqueness [1].
 
-> 
-> Adding to the fun, there are quite a few broken devices out there which
-> act weirdly when link PS actions are taken.
+Really the only sane way of keeping track of whiteouts seems some external
+store. We did an experiment with Unionfs, and moving the whiteout handling
+to effectively a "library" that did all the dirty work cleaned up the code
+considerably [2,3].
 
-OK - this is why I added the blacklist for this feature.
+> Known Bugs:
+> - Needs a reserved inode number for white-outs
+> - S_OPAQUE isn't persistently stored
 
-> 
-> Also, I generally don't think AHCI ALPM is a good idea.  It doesn't have
-> 'cool down' period before entering PS state which unnecessarily hampers
-> performance and might increase chance of device malfunction.
+Out of curiosity, how do you keep track of opaqueness while the fs is
+mounted?
 
-"might increase"?  How about some actual examples of where you've shown
-this to be a problem?  I can assert that I think ALPM is a good idea,
-because I've never had a report of it causing problems.  Windows has 
-been using this feature for a very long time - and you have to admit that
-they have a pretty large market share.  Nobody is complaining about ALPM
-increasing device malfunction, so unless you have proof it seems insane
-to nak due to this. 
+Josef 'Jeff' Sipek.
+
+[1] http://www.mail-archive.com/linux-fsdevel@vger.kernel.org/msg02904.html
+[2] http://www.filesystems.org/unionfs-odf.txt
+[3] http://download.filesystems.org/unionfs/unionfs-2.0-odf/linux-2.6.20-rc6-odf1.diff.gz
+
+-- 
+UNIX is user-friendly ... it's just selective about who it's friends are
