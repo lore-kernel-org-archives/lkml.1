@@ -1,95 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbXGaH2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbXGaHdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbXGaH2r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 03:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbXGaH2i
+	id S1752591AbXGaHdq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 03:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbXGaHdi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 03:28:38 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:19363 "EHLO kernel.dk"
+	Tue, 31 Jul 2007 03:33:38 -0400
+Received: from mga03.intel.com ([143.182.124.21]:28354 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751157AbXGaH2i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 03:28:38 -0400
-Date: Tue, 31 Jul 2007 09:29:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: bi_end_io question
-Message-ID: <20070731072953.GB20351@kernel.dk>
-References: <20070731071043.GA19019@dnb.sw.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731071043.GA19019@dnb.sw.ru>
+	id S1750978AbXGaHdi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 03:33:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
+   d="scan'208";a="256764416"
+Subject: Re: [PATCH 1/5] x86_64 EFI support -v3: EFI base support
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <m1vec1tche.fsf@ebiederm.dsl.xmission.com>
+References: <1185851572.23149.26.camel@caritas-dev.intel.com>
+	 <m1vec1tche.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 31 Jul 2007 15:33:11 +0800
+Message-Id: <1185867191.23149.61.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 31 Jul 2007 07:33:21.0474 (UTC) FILETIME=[1230CA20:01C7D345]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31 2007, Dmitry Monakhov wrote:
-> I want implement some sort of snapshot dev.
-> In order to do this i've replaced original q->make_request_fn
-> with specific one which cowed all write requests.
-> My first attempt looks like this:
-> static int mysnap_make_request(request_queue_t *q, struct bio *bio)
-> {
-> 	struct bio cl_bio;
-> 	make_request_fn *fn = get_original_make_fn(q);
-> 	if(bio->bi_rw & (1 << BIO_RW){
-> 	/* This is write request, so we have to cow it first*/
-> 		cl_bio = clone_bio(bio);
-> 		submit_bio(READ, &cl_bio);
-> 		wait_for_completion(&complete); 
-> 		save_cowed_bio(&cl_bio);
-> 		/* At this time old data has successfully saved in cow
-> 		 * area so we may safely perform original request */
-> 	}
-> 	/* call original make_request_fn function for bio*/
-> 	return fn(q, bio);
-> }
-> But this implementation has significance performance drawback because
-> of waiting for read request completion.
+On Mon, 2007-07-30 at 22:37 -0600, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
 > 
-> So i want use a-sync implementation:
-> static int my_make_original_request(struct bio *bio, unsigned int bytes_done,
->                                int err)
-> {
-> 	if(bio->bi_size == 0) {
-> 		/* restore original request info */
-> 		struct pending_request*  pr = bio->bi_private;
-> 		/* make original write request */
-> 		ret = pr->fn(pr->q, pr->bio);
-> 		/* error handling logic here*/
-> 	}
-> }
-> static int mysnap_make_request_v2(request_queue_t *q, struct bio *bio)
-> {
-> 	struct bio cl_bio;
-> 	make_request_fn *fn = get_original_make_fn(q);
-> 	if(bio->bi_rw & (1 << BIO_RW){
-> 	/* This is write request, so we have to cow it first*/
-> 		cl_bio = clone_bio(bio);
-> 		cl_bio->bi_private = store_request(fn, q, bio)
-> 		cl_bio->bi_end_io = my_make_original_request;
-> 		/* after read request ended original write request 
-> 		 * will be queued */
-> 		submit_bio(READ, &cl_bio, q);
-> 		/* We dont have to wait submitted bio here any more,
-> 		 * because write request will be automaticaly queued
-> 		 * by cl_bio->bi_end_io callcack.
-> 		 * All job has been done at this moment.
-> 		 */
-> 		return 0;
-> 	}
-> 	/* call original make_request_fn function for bio*/
-> 	return fn(q, bio);
-> }
-> My question is following:
-> 1)Can i safely call make_request_fn from ->bi_end_io callback 
->   (as it done in my_make_original_request function)
+> > Changelog between v2 and v3:
+> >
+> > 1. The EFI callwrapper is re-implemented in assembler.
+> >
+> > ---
+> >
+> > This patch adds basic support for EFI x86_64 system. The main file of
+> > the patch is the addition of efi.c for x86_64. This file is modeled
+> > after the EFI IA32 avatar. EFI initialization are implemented in
+> > efi.c. Some x86_64 specifics are worth noting here. On x86_64,
+> > parameters passed to UEFI firmware services need to follow the UEFI
+> > calling convention. For this purpose, a set of functions named
+> > lin2win<x> (<x> is the number of parameters) are implemented. EFI
+> > function calls are wrapped before calling the firmware service.
+> 
+> 
+> Since the code to generate the e820 map from the efi memory map has
+> been added to elilo (odd but ok) why does this patch continue to
+> have code for playing with the efi memory map?
 
-No, make_request_fn must be called from process context.
+EFI memory map is used as the parameter to EFI runtime service call:
+set_virtual_address_map. It conveys some information not suitable to be
+described in E820 map, such as, memory region that is memory mapped IO
+and is used by EFI runtime service.
 
-> 2)May be you have any other sound idea?
-
-Allocate a real clone, if you want to do handle it async.
-
--- 
-Jens Axboe
-
+Best Regards,
+Huang Ying
