@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbXGaKJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbXGaKMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbXGaKJR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbXGaKJE
+	id S1756912AbXGaKMw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbXGaKMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:09:04 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58899 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753911AbXGaKJC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:09:02 -0400
-Date: Tue, 31 Jul 2007 12:09:08 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: vgoyal@in.ibm.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       kernel list <linux-kernel@vger.kernel.org>, ebiederm@xmission.com
-Subject: kexec/kdump: docs fix, stale urls?
-Message-ID: <20070731100908.GD3462@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Tue, 31 Jul 2007 06:12:45 -0400
+Received: from ozlabs.org ([203.10.76.45]:55922 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754249AbXGaKMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 06:12:44 -0400
+Subject: [PATCH] Fix lguest driver config options
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       lguest <lguest@ozlabs.org>
+In-Reply-To: <46ADB8BD.6010600@googlemail.com>
+References: <46ACAFBF.6060609@googlemail.com>
+	 <1185755123.12151.102.camel@localhost.localdomain>
+	 <a781481a0707291748x5a70c2d3i83ef54d7f2336b33@mail.gmail.com>
+	 <1185757669.12151.108.camel@localhost.localdomain>
+	 <46ADB8BD.6010600@googlemail.com>
+Content-Type: text/plain
+Date: Tue, 31 Jul 2007 20:11:59 +1000
+Message-Id: <1185876719.6131.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon, 2007-07-30 at 12:09 +0200, Gabriel C wrote:
+> BTW the wrong patch without the default y got merged.
 
-This fixes few typos in kdump.txt. (Please check, I'm not native
-speaker). 
+Thanks.  Linus, please apply.
 
-Also, the urls pointed out in kdump.txt seem a bit old, are there
-better pointers these days?
+Lguest drivers need to default to "Y" otherwise they're never selected
+for new builds.  We don't bother prompting, because they're less than
+4k combined.
 
-								Pavel
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
---- 
-
-This fixes few typos in kdump.txt.
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/Documentation/kdump/kdump.txt b/Documentation/kdump/kdump.txt
-index eb60087..faf0e27 100644
---- a/Documentation/kdump/kdump.txt
-+++ b/Documentation/kdump/kdump.txt
-@@ -69,7 +69,7 @@ http://www.kernel.org/pub/linux/kernel/p
+diff -r e6b25e5473dc drivers/lguest/Kconfig
+--- a/drivers/lguest/Kconfig	Tue Jul 31 20:04:51 2007 +1000
++++ b/drivers/lguest/Kconfig	Tue Jul 31 20:06:00 2007 +1000
+@@ -21,8 +21,10 @@ config LGUEST_GUEST
  
- This is a symlink to the latest version, which at the time of writing is
- 20061214, the only release of kexec-tools-testing so far. As other versions
--are made released, the older onese will remain available at
-+are released, the older ones will remain available at
- http://www.kernel.org/pub/linux/kernel/people/horms/kexec-tools/
+ config LGUEST_NET
+ 	tristate
++	default y
+ 	depends on LGUEST_GUEST && NET
  
- Note: Latest kexec-tools-testing git tree is available at
+ config LGUEST_BLOCK
+ 	tristate
++	default y
+ 	depends on LGUEST_GUEST && BLOCK
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
