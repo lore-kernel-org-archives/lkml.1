@@ -1,61 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbXGaJp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbXGaJu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbXGaJp4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 05:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbXGaJps
+	id S1756259AbXGaJu6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 05:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXGaJuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 05:45:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53220 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752957AbXGaJpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 05:45:47 -0400
-Date: Tue, 31 Jul 2007 11:45:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Kenneth Prugh <ken69267@gmail.com>
-Cc: John <darknessenvelops@gmail.com>, ck@vds.kolivas.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
-Message-ID: <20070731094526.GA16300@elte.hu>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com> <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <46AE25F3.7020904@gmail.com> <20070730191029.GA29327@elte.hu> <46AE570B.3050802@gmail.com>
+	Tue, 31 Jul 2007 05:50:51 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42078 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752631AbXGaJuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 05:50:50 -0400
+Date: Tue, 31 Jul 2007 11:51:01 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
+Message-ID: <20070731095101.GA1774@elf.ucw.cz>
+References: <1184483639.1898.99.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46AE570B.3050802@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1184483639.1898.99.camel@caritas-dev.intel.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-* Kenneth Prugh <ken69267@gmail.com> wrote:
-
-> Alright, Just got done with some testing of UT2004 between 2.6.23-rc1 
-> CFS and 2.6.22-ck1 SD. This series of tests was run by spawning in a 
-> map while not moving at all and always facing the same direction, 
-> while slowing increasing the number of loops.
+> This patch implement the functionality of jumping from kexeced kernel
+> to original kernel.
 > 
-> CFS generally seemed a lot smoother as the load increased, while SD 
-> broke down to a highly unstable fps count that fluctuated massively 
-> around the third loop. Seems like I will stick to CFS for gaming now.
-> 
-> Below you will find the results of my test with the average number of 
-> FPS.
+> A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
+> trigger the jumping to (executing) the new kernel or jumping back to
+> the original kernel.
 
-Thanks Kenneth for the testing! I've created a graph out of your 
-numbers:
+Could we get two reboot commands? Exec loaded kernel seems to be quite
+different operation than "jump back".
 
-  http://people.redhat.com/mingo/misc/cfs-sd-ut2004-perf.jpg
+How do I test these patches? kexec -p <bzImage>, then kexec -j?
 
-(it also includes the SD numbers you got with the turn-yield-into-NOP 
-hack applied.)
 
-	Ingo
+> +static unsigned long kexec_backup_addr = ~0UL;
+> +
+> +/* kexec_backup= specifies the location of backuped 0~640k memory of
+> + * crashed kernel.
+> + */
+> +static int __init parse_kexec_backup(char *arg)
+> +{
+> +	if (!arg)
+> +		return -EINVAL;
+> +
+> +	kexec_backup_addr = memparse(arg, &arg);
+> +	return 0;
+> +}
+> +early_param("kexec_backup", parse_kexec_backup);
+
+New kernel parameters should be documented. (Plus I do not know how to
+use this one, please help :-).
+
+
+> +int kexec_flags;
+> +
+> +static unsigned long kexec_jump_buf_pfn;
+> +
+> +static int __init parse_kexec_jump_buf_pfn(char *arg)
+> +{
+> +	if (!arg)
+> +		return -EINVAL;
+> +
+> +	kexec_jump_buf_pfn = memparse(arg, &arg);
+> +	kexec_flags |= KEXEC_FLAGS_IS_KEXECED_KERNEL;
+> +	return 0;
+> +}
+> +early_param("kexec_jump_buf_pfn", parse_kexec_jump_buf_pfn);
+
+This one should be documented, too, I'd guess. (Is that internal,
+kernel-to-kernel communication?)
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
