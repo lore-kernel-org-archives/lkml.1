@@ -1,117 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933519AbXGaVqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbXGaVtD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933519AbXGaVqy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759035AbXGaVqn
+	id S934106AbXGaVtD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:49:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759035AbXGaVsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:46:43 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3755 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753396AbXGaVqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:46:42 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 63] drivers/scsi/pluto.c: mostly kmalloc + memset conversion to kcalloc
-Date: Tue, 31 Jul 2007 23:46:40 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+	Tue, 31 Jul 2007 17:48:54 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:22384 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756795AbXGaVsx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:48:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:subject:from:cc:content-type:mime-version:references:content-transfer-encoding:message-id:in-reply-to:user-agent;
+        b=SaOOkeFGQRqgXVos4JMtg6jMPm/q4/XTx5+wSLf2MAhfrvtKtrbqqqQ4uy4lfacSNbrorVcwsMkNgohlzkXjmOtKHqffdZxecYnV06vTdJbLVaX4f8YfgeImvePJbCSKk+YJ3uqPnv+rAsElfiRs2UHPuKy+sB1sQno+VQSeKRQ=
+Date: Tue, 31 Jul 2007 23:48:47 +0200
+To: "Rene Herman" <rene.herman@gmail.com>
+Subject: Re: Reboot hang
+From: kriko <kristjan.ugrin@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707312346.41518.m.kozlowski@tuxland.pl>
+Message-ID: <op.twcmvlvcatcbto@linux.site>
+In-Reply-To: <46AFABE8.7050107@gmail.com>
+User-Agent: Opera Mail/9.22 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch does kmalloc + memset conversion to kcalloc. Also the following warning is fixed.
+> "Summary screen" will do, but yes, I understood. Perhaps your BIOS isn't  
+> fond of the state the Linux drivers leaves your DVD-ROM at. Judging by  
+> your "nv_pata", you are probebly usiing the pata (pata_amd) driver, not  
+> the old IDE driver?
+>
+> Does it boot through if you disable booting from the DVD-ROM?
+>
+> Rene.
 
-  CC      drivers/scsi/pluto.o
-  drivers/scsi/pluto.c: In function 'pluto_info':
-  drivers/scsi/pluto.c:283: warning: unused variable 'p'
+Mentioning the dvd-rom state, it comes to my mind, when rebooting from  
+win, the dvd rom will close tray and  / or LED will blink on reboot.
+None of that happens if I reboot from linux, so it could be a driver  
+problem. I see that I have both (old and new enable in kernel), I don't  
+know which is being used,
+but I'll recompile kernel with just one driver and retest.
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-
- drivers/scsi/pluto.c | 8787 -> 8657 (-130 bytes)
- drivers/scsi/pluto.o | 125264 -> 124648 (-616 bytes)
-
- drivers/scsi/pluto.c |   24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
-
---- linux-2.6.23-rc1-mm1-a/drivers/scsi/pluto.c	2007-07-26 13:07:42.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/scsi/pluto.c	2007-07-31 18:18:38.000000000 +0200
-@@ -111,13 +111,12 @@ int __init pluto_detect(struct scsi_host
- #endif
- 			return 0;
- 	}
--	fcs = kmalloc(sizeof (struct ctrl_inquiry) * fcscount, GFP_DMA);
-+	fcs = kcalloc(fcscount, sizeof(struct ctrl_inquiry), GFP_DMA);
- 	if (!fcs) {
- 		printk ("PLUTO: Not enough memory to probe\n");
- 		return 0;
- 	}
-
--	memset (fcs, 0, sizeof (struct ctrl_inquiry) * fcscount);
- 	memset (&dev, 0, sizeof(dev));
- 	atomic_set (&fcss, fcscount);
-
-@@ -211,12 +210,12 @@ int __init pluto_detect(struct scsi_host
- 				char *p;
- 				long *ages;
-
--				ages = kmalloc (((inq->channels + 1) * inq->targets) * sizeof(long), GFP_KERNEL);
--				if (!ages) continue;
-+				ages = kcalloc((inq->channels + 1) * inq->targets, sizeof(long), GFP_KERNEL);
-+				if (!ages)
-+					continue;
-
- 				host = scsi_register (tpnt, sizeof (struct pluto));
--				if(!host)
--				{
-+				if (!host) {
- 					kfree(ages);
- 					continue;
- 				}
-@@ -238,7 +237,6 @@ int __init pluto_detect(struct scsi_host
- 				fc->channels = inq->channels + 1;
- 				fc->targets = inq->targets;
- 				fc->ages = ages;
--				memset (ages, 0, ((inq->channels + 1) * inq->targets) * sizeof(long));
-
- 				pluto->fc = fc;
- 				memcpy (pluto->rev_str, inq->revision, 4);
-@@ -260,7 +258,7 @@ int __init pluto_detect(struct scsi_host
- 		} else
- 			fc->fcp_register(fc, TYPE_SCSI_FCP, 1);
- 	}
--	kfree((char *)fcs);
-+	kfree(fcs);
- 	if (nplutos)
- 		printk ("PLUTO: Total of %d SparcSTORAGE Arrays found\n", nplutos);
- 	return nplutos;
-@@ -282,15 +280,19 @@ int pluto_release(struct Scsi_Host *host
-
- const char *pluto_info(struct Scsi_Host *host)
- {
--	static char buf[128], *p;
-+	static char buf[128];
- 	struct pluto *pluto = (struct pluto *) host->hostdata;
-
- 	sprintf(buf, "SUN SparcSTORAGE Array %s fw %s serial %s %dx%d on %s",
- 		pluto->rev_str, pluto->fw_rev_str, pluto->serial_str,
- 		host->max_channel, host->max_id, pluto->fc->name);
- #ifdef __sparc__
--	p = strchr(buf, 0);
--	sprintf(p, " PROM node %x", pluto->fc->dev->prom_node);
-+	{
-+		char *p;
-+
-+		p = strchr(buf, 0);
-+		sprintf(p, " PROM node %x", pluto->fc->dev->prom_node);
-+	}
- #endif
- 	return buf;
- }
+-- 
+kriko
