@@ -1,54 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXGaTyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbXGaUB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbXGaTyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 15:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbXGaTyK
+	id S1758918AbXGaUB5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbXGaUBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 15:54:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:65272 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752610AbXGaTyJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 15:54:09 -0400
-Message-ID: <46AF935B.9020403@impulze.org>
-Date: Tue, 31 Jul 2007 21:54:03 +0200
-From: Daniel Mierswa <impulze@impulze.org>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Gericom Webboy Laptop Mouse/Touchpad
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Tue, 31 Jul 2007 16:01:46 -0400
+Received: from mga09.intel.com ([134.134.136.24]:64983 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751064AbXGaUBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 16:01:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
+   d="scan'208";a="111902152"
+Date: Tue, 31 Jul 2007 12:58:49 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, James.Bottomley@steeleye.com,
+       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+Message-Id: <20070731125849.501443c1.kristen.c.accardi@intel.com>
+In-Reply-To: <46AF794F.1020107@gmail.com>
+References: <20070705194909.337398431@intel.com>
+	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+	<46AE12B6.6090408@garzik.org>
+	<46AED656.8070407@gmail.com>
+	<20070731093014.db9e0734.kristen.c.accardi@intel.com>
+	<46AF794F.1020107@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/zh36ly3RUM8NcmfUS7oQr8//InOwr+PByzFh
- cjgaaDPtuvlACuXUGh8c3dEx6I/C2WBpI7pdBDTsmoB5J999gH
- SgFOtpHEjUNeGq4hhyMDw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 01 Aug 2007 03:02:55 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
-Hi there,
-i'm having troubles getting my mouse and/or touchpad to work with 
-2.6.21.5 (and older ones). It's putting the following line into dmesg 
-everytime the laptop gets lots of I/O or cpu load.
-"psmouse.c: Wheel Mouse at isa0060/serio4/input0 lost synchronization, 
-throwing 2 bytes away."
-This happens for the touchpad and a newly brought PS/2 mouse. The cursor 
-(be it gpm or X11) acts weird as in jumping around and clicking around 
-without doing anything to it. As i searched about the string on google i 
-found various tipps by removing ACPI (or even PM) from the kernel and retry.
-I've tried following setups:
-  No Power Management
-  ACPI
-  APM
-  other clocksources (pit, tsc, acpi_pm)
-The problem still exists and seems to occur as i've mentioned on lots of 
-disk i/o and/or cpu load.
-This is a laptop which is not supported by the manufactur anymore (seems 
-to be a Gericom Webboy). I would appreciate any tips to debug this further.
-Please post back for any additional information you need.
+> Kristen Carlson Accardi wrote:
+> > I think what you are saying is that you'd like a way to use your HIPM
+> > and DIPM without ALPM on the AHCI driver.  Fine - it's really easy
+> > to add these levels later - if they don't make sense at the sysfs interface
+> > we can add module params to specify the definition of "min_power" as 
+> > being performed via HIPM and DIPM instead of ALPM - although as of yet we
+> > have no evidence what so ever that this method actually adds value over
+> > ALPM.
+> 
+> I don't really care whose PS implementation goes in.  Believe me.  I try
+> to stay away from that.  I don't even like my previous implementation.
+> 
+> ALPM has unnecessary performance penalty && is not applicable to
+> non-ahci controller.  Have you tested ALPM on non-intel ahcis?  There
+> are a lot out there these days.
 
-Thanks in advance.
+I have not personally, however there has been a lot of testing of this
+hardware feature both on other OS and for this particular implementation
+by the powertop community, which is composed of community members running
+all sorts of hardware.  So far I've not received any bug reports
+wrt non-intel AHCI.  As I mentioned several times, the default for ALPM
+is to be off anyway.
 
--- 
-MfG
-Mierswa, Daniel
+> 
+> I don't think the interface you're suggesting is a good one.  Do you?
+
+I think if it's applicable to SCSI at all it is fine.  If it is not, then
+I think we need to make do with the interface we are given.  I do not think
+we should hold up a feature for libata sysfs integration.
+
+> 
+> >> Also, I generally don't think AHCI ALPM is a good idea.  It doesn't have
+> >> 'cool down' period before entering PS state which unnecessarily hampers
+> >> performance and might increase chance of device malfunction.
+> > 
+> > "might increase"?  How about some actual examples of where you've shown
+> > this to be a problem?
+> 
+> I wouldn't have used "might" if I had actual examples.  Well, feel free
+> to disregard anything following the "might".  I just feel uneasy about
+> jumping back and forth between PS and active states between consecutive
+> commands.
+
+I want us to be careful about spreading a lot of unease without data to
+back it up.
+
+> 
+> > I can assert that I think ALPM is a good idea,
+> > because I've never had a report of it causing problems.  Windows has 
+> > been using this feature for a very long time - and you have to admit that
+> > they have a pretty large market share.  Nobody is complaining about ALPM
+> > increasing device malfunction, so unless you have proof it seems insane
+> > to nak due to this. 
+> 
+> Is ALPM enabled by default?  How do they deal with the performance
+> degradation?
+
+I believe so, but I'm obviously not privvy to their implementation details.
