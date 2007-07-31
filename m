@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967930AbXGaEbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968262AbXGaEcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967930AbXGaEbp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940762AbXGaEaO
+	id S968262AbXGaEcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932268AbXGaEaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:30:14 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:42290 "EHLO
+	Tue, 31 Jul 2007 00:30:19 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42299 "EHLO
 	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936187AbXGaEaJ (ORCPT
+	with ESMTP id S936189AbXGaEaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:30:09 -0400
-Date: Mon, 30 Jul 2007 21:31:36 -0700
+	Tue, 31 Jul 2007 00:30:15 -0400
+Date: Mon, 30 Jul 2007 21:31:44 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,15 +21,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       kuznet@ms2.inr.ac.ru, mingo@elte.hu,
-       Thomas Gleixner <tglx@linutronix.de>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Geller Sandor <wildy@petra.hos.u-szeged.hu>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 05/26] pi-futex: Fix exit races and locking problems
-Message-ID: <20070731043136.GF3975@kroah.com>
+Subject: [patch 06/26] hpt366: disallow Ultra133 for HPT374
+Message-ID: <20070731043144.GG3975@kroah.com>
 References: <20070731042108.546594256@blue.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pi-futex-fix-exit-races-and-locking-problems.patch"
+Content-Disposition: inline; filename="hpt366-disallow-ultra133-for-hpt374.patch"
 In-Reply-To: <20070731043047.GA3975@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -41,442 +42,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-1. New entries can be added to tsk->pi_state_list after task completed
-   exit_pi_state_list(). The result is memory leakage and deadlocks.
+Eliminate UltraATA/133 support for HPT374 -- the chip isn't capable of this mode
+according to the manual, and doesn't even seem to tolerate 66 MHz DPLL clock...
 
-2. handle_mm_fault() is called under spinlock. The result is obvious.
-
-3. results in self-inflicted deadlock inside glibc.
-   Sometimes futex_lock_pi returns -ESRCH, when it is not expected
-   and glibc enters to for(;;) sleep() to simulate deadlock. This problem
-   is quite obvious and I think the patch is right. Though it looks like
-   each "if" in futex_lock_pi() got some stupid special case "else if". :-)
-
-4. sometimes futex_lock_pi() returns -EDEADLK,
-   when nobody has the lock. The reason is also obvious (see comment
-   in the patch), but correct fix is far beyond my comprehension.
-   I guess someone already saw this, the chunk:
-
-                        if (rt_mutex_trylock(&q.pi_state->pi_mutex))
-                                ret = 0;
-
-   is obviously from the same opera. But it does not work, because the
-   rtmutex is really taken at this point: wake_futex_pi() of previous
-   owner reassigned it to us. My fix works. But it looks very stupid.
-   I would think about removal of shift of ownership in wake_futex_pi()
-   and making all the work in context of process taking lock.
-
-From: Thomas Gleixner <tglx@linutronix.de>
-
-Fix 1) Avoid the tasklist lock variant of the exit race fix by adding
-    an additional state transition to the exit code.
-
-    This fixes also the issue, when a task with recursive segfaults
-    is not able to release the futexes.
-
-Fix 2) Cleanup the lookup_pi_state() failure path and solve the -ESRCH
-    problem finally.
-
-Fix 3) Solve the fixup_pi_state_owner() problem which needs to do the fixup
-    in the lock protected section by using the in_atomic userspace access
-    functions.
-	
-    This removes also the ugly lock drop / unqueue inside of fixup_pi_state()
-
-Fix 4) Fix a stale lock in the error path of futex_wake_pi()
-
-Added some error checks for verification.
-
-The -EDEADLK problem is solved by the rtmutex fixups.
-
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Geller Sandor <wildy@petra.hos.u-szeged.hu>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- include/linux/sched.h |    1 
- kernel/exit.c         |   22 +++++
- kernel/futex.c        |  191 +++++++++++++++++++++++++++++++++-----------------
- 3 files changed, 150 insertions(+), 64 deletions(-)
+ drivers/ide/pci/hpt366.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6.21.6.orig/kernel/futex.c
-+++ linux-2.6.21.6/kernel/futex.c
-@@ -396,10 +396,6 @@ static struct task_struct * futex_find_g
- 		p = NULL;
- 		goto out_unlock;
- 	}
--	if (p->exit_state != 0) {
--		p = NULL;
--		goto out_unlock;
--	}
- 	get_task_struct(p);
- out_unlock:
- 	rcu_read_unlock();
-@@ -467,7 +463,7 @@ lookup_pi_state(u32 uval, struct futex_h
- 	struct futex_q *this, *next;
- 	struct list_head *head;
- 	struct task_struct *p;
--	pid_t pid;
-+	pid_t pid = uval & FUTEX_TID_MASK;
+--- linux-2.6.21.6.orig/drivers/ide/pci/hpt366.c
++++ linux-2.6.21.6/drivers/ide/pci/hpt366.c
+@@ -1,5 +1,5 @@
+ /*
+- * linux/drivers/ide/pci/hpt366.c		Version 1.03	May 4, 2007
++ * linux/drivers/ide/pci/hpt366.c		Version 1.04	Jun 4, 2007
+  *
+  * Copyright (C) 1999-2003		Andre Hedrick <andre@linux-ide.org>
+  * Portions Copyright (C) 2001	        Sun Microsystems, Inc.
+@@ -106,7 +106,8 @@
+  *   switch  to calculating  PCI clock frequency based on the chip's base DPLL
+  *   frequency
+  * - switch to using the  DPLL clock and enable UltraATA/133 mode by default on
+- *   anything  newer than HPT370/A
++ *   anything  newer than HPT370/A (except HPT374 that is not capable of this
++ *   mode according to the manual)
+  * - fold PCI clock detection and DPLL setup code into init_chipset_hpt366(),
+  *   also fixing the interchanged 25/40 MHz PCI clock cases for HPT36x chips;
+  *   unify HPT36x/37x timing setup code and the speedproc handlers by joining
+@@ -365,7 +366,6 @@ static u32 sixty_six_base_hpt37x[] = {
+ };
  
- 	head = &hb->chain;
+ #define HPT366_DEBUG_DRIVE_INFO		0
+-#define HPT374_ALLOW_ATA133_6		1
+ #define HPT371_ALLOW_ATA133_6		1
+ #define HPT302_ALLOW_ATA133_6		1
+ #define HPT372_ALLOW_ATA133_6		1
+@@ -450,7 +450,7 @@ static struct hpt_info hpt370a __devinit
  
-@@ -485,6 +481,8 @@ lookup_pi_state(u32 uval, struct futex_h
- 				return -EINVAL;
- 
- 			WARN_ON(!atomic_read(&pi_state->refcount));
-+			WARN_ON(pid && pi_state->owner &&
-+				pi_state->owner->pid != pid);
- 
- 			atomic_inc(&pi_state->refcount);
- 			me->pi_state = pi_state;
-@@ -495,15 +493,33 @@ lookup_pi_state(u32 uval, struct futex_h
- 
- 	/*
- 	 * We are the first waiter - try to look up the real owner and attach
--	 * the new pi_state to it, but bail out when the owner died bit is set
--	 * and TID = 0:
-+	 * the new pi_state to it, but bail out when TID = 0
- 	 */
--	pid = uval & FUTEX_TID_MASK;
--	if (!pid && (uval & FUTEX_OWNER_DIED))
-+	if (!pid)
- 		return -ESRCH;
- 	p = futex_find_get_task(pid);
--	if (!p)
--		return -ESRCH;
-+	if (IS_ERR(p))
-+		return PTR_ERR(p);
-+
-+	/*
-+	 * We need to look at the task state flags to figure out,
-+	 * whether the task is exiting. To protect against the do_exit
-+	 * change of the task flags, we do this protected by
-+	 * p->pi_lock:
-+	 */
-+	spin_lock_irq(&p->pi_lock);
-+	if (unlikely(p->flags & PF_EXITING)) {
-+		/*
-+		 * The task is on the way out. When PF_EXITPIDONE is
-+		 * set, we know that the task has finished the
-+		 * cleanup:
-+		 */
-+		int ret = (p->flags & PF_EXITPIDONE) ? -ESRCH : -EAGAIN;
-+
-+		spin_unlock_irq(&p->pi_lock);
-+		put_task_struct(p);
-+		return ret;
-+	}
- 
- 	pi_state = alloc_pi_state();
- 
-@@ -516,7 +532,6 @@ lookup_pi_state(u32 uval, struct futex_h
- 	/* Store the key for possible exit cleanups: */
- 	pi_state->key = me->key;
- 
--	spin_lock_irq(&p->pi_lock);
- 	WARN_ON(!list_empty(&pi_state->list));
- 	list_add(&pi_state->list, &p->pi_state_list);
- 	pi_state->owner = p;
-@@ -583,15 +598,22 @@ static int wake_futex_pi(u32 __user *uad
- 	 * preserve the owner died bit.)
- 	 */
- 	if (!(uval & FUTEX_OWNER_DIED)) {
-+		int ret = 0;
-+
- 		newval = FUTEX_WAITERS | new_owner->pid;
- 
- 		pagefault_disable();
- 		curval = futex_atomic_cmpxchg_inatomic(uaddr, uval, newval);
- 		pagefault_enable();
-+
- 		if (curval == -EFAULT)
--			return -EFAULT;
-+			ret = -EFAULT;
- 		if (curval != uval)
--			return -EINVAL;
-+			ret = -EINVAL;
-+		if (ret) {
-+			spin_unlock(&pi_state->pi_mutex.wait_lock);
-+			return ret;
-+		}
- 	}
- 
- 	spin_lock_irq(&pi_state->owner->pi_lock);
-@@ -1149,6 +1171,7 @@ static int futex_lock_pi(u32 __user *uad
- 	if (unlikely(ret != 0))
- 		goto out_release_sem;
- 
-+ retry_unlocked:
- 	hb = queue_lock(&q, -1, NULL);
- 
-  retry_locked:
-@@ -1200,34 +1223,58 @@ static int futex_lock_pi(u32 __user *uad
- 	ret = lookup_pi_state(uval, hb, &q);
- 
- 	if (unlikely(ret)) {
--		/*
--		 * There were no waiters and the owner task lookup
--		 * failed. When the OWNER_DIED bit is set, then we
--		 * know that this is a robust futex and we actually
--		 * take the lock. This is safe as we are protected by
--		 * the hash bucket lock. We also set the waiters bit
--		 * unconditionally here, to simplify glibc handling of
--		 * multiple tasks racing to acquire the lock and
--		 * cleanup the problems which were left by the dead
--		 * owner.
--		 */
--		if (curval & FUTEX_OWNER_DIED) {
--			uval = newval;
--			newval = current->pid |
--				FUTEX_OWNER_DIED | FUTEX_WAITERS;
-+		switch (ret) {
- 
--			pagefault_disable();
--			curval = futex_atomic_cmpxchg_inatomic(uaddr,
--							       uval, newval);
--			pagefault_enable();
-+		case -EAGAIN:
-+			/*
-+			 * Task is exiting and we just wait for the
-+			 * exit to complete.
-+			 */
-+			queue_unlock(&q, hb);
-+			up_read(&curr->mm->mmap_sem);
-+			cond_resched();
-+			goto retry;
- 
--			if (unlikely(curval == -EFAULT))
-+		case -ESRCH:
-+			/*
-+			 * No owner found for this futex. Check if the
-+			 * OWNER_DIED bit is set to figure out whether
-+			 * this is a robust futex or not.
-+			 */
-+			if (get_futex_value_locked(&curval, uaddr))
- 				goto uaddr_faulted;
--			if (unlikely(curval != uval))
--				goto retry_locked;
--			ret = 0;
-+
-+			/*
-+			 * There were no waiters and the owner task lookup
-+			 * failed. When the OWNER_DIED bit is set, then we
-+			 * know that this is a robust futex and we actually
-+			 * take the lock. This is safe as we are protected by
-+			 * the hash bucket lock. We also set the waiters bit
-+			 * unconditionally here, to simplify glibc handling of
-+			 * multiple tasks racing to acquire the lock and
-+			 * cleanup the problems which were left by the dead
-+			 * owner.
-+			 */
-+			if (curval & FUTEX_OWNER_DIED) {
-+				uval = newval;
-+				newval = current->pid |
-+					FUTEX_OWNER_DIED | FUTEX_WAITERS;
-+
-+				pagefault_disable();
-+				curval = futex_atomic_cmpxchg_inatomic(uaddr,
-+								       uval,
-+								       newval);
-+				pagefault_enable();
-+
-+				if (unlikely(curval == -EFAULT))
-+					goto uaddr_faulted;
-+				if (unlikely(curval != uval))
-+					goto retry_locked;
-+				ret = 0;
-+			}
-+		default:
-+			goto out_unlock_release_sem;
- 		}
--		goto out_unlock_release_sem;
- 	}
- 
- 	/*
-@@ -1279,39 +1326,52 @@ static int futex_lock_pi(u32 __user *uad
- 		list_add(&q.pi_state->list, &current->pi_state_list);
- 		spin_unlock_irq(&current->pi_lock);
- 
--		/* Unqueue and drop the lock */
--		unqueue_me_pi(&q, hb);
--		up_read(&curr->mm->mmap_sem);
- 		/*
- 		 * We own it, so we have to replace the pending owner
--		 * TID. This must be atomic as we have preserve the
-+		 * TID. This must be atomic as we have to preserve the
- 		 * owner died bit here.
- 		 */
--		ret = get_user(uval, uaddr);
-+		ret = get_futex_value_locked(&uval, uaddr);
- 		while (!ret) {
- 			newval = (uval & FUTEX_OWNER_DIED) | newtid;
-+
-+			pagefault_disable();
- 			curval = futex_atomic_cmpxchg_inatomic(uaddr,
- 							       uval, newval);
-+			pagefault_enable();
-+
- 			if (curval == -EFAULT)
- 				ret = -EFAULT;
- 			if (curval == uval)
- 				break;
- 			uval = curval;
- 		}
--	} else {
-+	} else if (ret) {
- 		/*
- 		 * Catch the rare case, where the lock was released
- 		 * when we were on the way back before we locked
- 		 * the hash bucket.
- 		 */
--		if (ret && q.pi_state->owner == curr) {
--			if (rt_mutex_trylock(&q.pi_state->pi_mutex))
--				ret = 0;
-+		if (q.pi_state->owner == curr &&
-+		    rt_mutex_trylock(&q.pi_state->pi_mutex)) {
-+			ret = 0;
-+		} else {
-+			/*
-+			 * Paranoia check. If we did not take the lock
-+			 * in the trylock above, then we should not be
-+			 * the owner of the rtmutex, neither the real
-+			 * nor the pending one:
-+			 */
-+			if (rt_mutex_owner(&q.pi_state->pi_mutex) == curr)
-+				printk(KERN_ERR "futex_lock_pi: ret = %d "
-+				       "pi-mutex: %p pi-state %p\n", ret,
-+				       q.pi_state->pi_mutex.owner,
-+				       q.pi_state->owner);
- 		}
--		/* Unqueue and drop the lock */
--		unqueue_me_pi(&q, hb);
--		up_read(&curr->mm->mmap_sem);
- 	}
-+	/* Unqueue and drop the lock */
-+	unqueue_me_pi(&q, hb);
-+	up_read(&curr->mm->mmap_sem);
- 
- 	if (!detect && ret == -EDEADLK && 0)
- 		force_sig(SIGKILL, current);
-@@ -1331,16 +1391,18 @@ static int futex_lock_pi(u32 __user *uad
- 	 * non-atomically.  Therefore, if get_user below is not
- 	 * enough, we need to handle the fault ourselves, while
- 	 * still holding the mmap_sem.
-+	 *
-+	 * ... and hb->lock. :-) --ANK
- 	 */
-+	queue_unlock(&q, hb);
-+
- 	if (attempt++) {
--		if (futex_handle_fault((unsigned long)uaddr, attempt)) {
--			ret = -EFAULT;
--			goto out_unlock_release_sem;
--		}
--		goto retry_locked;
-+		ret = futex_handle_fault((unsigned long)uaddr, attempt);
-+		if (ret)
-+			goto out_release_sem;
-+		goto retry_unlocked;
- 	}
- 
--	queue_unlock(&q, hb);
- 	up_read(&curr->mm->mmap_sem);
- 
- 	ret = get_user(uval, uaddr);
-@@ -1382,9 +1444,9 @@ retry:
- 		goto out;
- 
- 	hb = hash_futex(&key);
-+retry_unlocked:
- 	spin_lock(&hb->lock);
- 
--retry_locked:
- 	/*
- 	 * To avoid races, try to do the TID -> 0 atomic transition
- 	 * again. If it succeeds then we can return without waking
-@@ -1446,16 +1508,17 @@ pi_faulted:
- 	 * non-atomically.  Therefore, if get_user below is not
- 	 * enough, we need to handle the fault ourselves, while
- 	 * still holding the mmap_sem.
-+	 *
-+	 * ... and hb->lock. :-) --ANK
- 	 */
-+	spin_unlock(&hb->lock);
-+
- 	if (attempt++) {
--		if (futex_handle_fault((unsigned long)uaddr, attempt)) {
--			ret = -EFAULT;
--			goto out_unlock;
--		}
--		goto retry_locked;
-+		ret = futex_handle_fault((unsigned long)uaddr, attempt);
-+		if (ret)
-+			goto out;
-+		goto retry_unlocked;
- 	}
--
--	spin_unlock(&hb->lock);
- 	up_read(&current->mm->mmap_sem);
- 
- 	ret = get_user(uval, uaddr);
---- linux-2.6.21.6.orig/include/linux/sched.h
-+++ linux-2.6.21.6/include/linux/sched.h
-@@ -1138,6 +1138,7 @@ static inline void put_task_struct(struc
- 					/* Not implemented yet, only for 486*/
- #define PF_STARTING	0x00000002	/* being created */
- #define PF_EXITING	0x00000004	/* getting shut down */
-+#define PF_EXITPIDONE	0x00000008	/* pi exit done on shut down */
- #define PF_FORKNOEXEC	0x00000040	/* forked but didn't exec */
- #define PF_SUPERPRIV	0x00000100	/* used super-user privileges */
- #define PF_DUMPCORE	0x00000200	/* dumped core */
---- linux-2.6.21.6.orig/kernel/exit.c
-+++ linux-2.6.21.6/kernel/exit.c
-@@ -884,13 +884,29 @@ fastcall NORET_TYPE void do_exit(long co
- 	if (unlikely(tsk->flags & PF_EXITING)) {
- 		printk(KERN_ALERT
- 			"Fixing recursive fault but reboot is needed!\n");
-+		/*
-+		 * We can do this unlocked here. The futex code uses
-+		 * this flag just to verify whether the pi state
-+		 * cleanup has been done or not. In the worst case it
-+		 * loops once more. We pretend that the cleanup was
-+		 * done as there is no way to return. Either the
-+		 * OWNER_DIED bit is set by now or we push the blocked
-+		 * task into the wait for ever nirwana as well.
-+		 */
-+		tsk->flags |= PF_EXITPIDONE;
- 		if (tsk->io_context)
- 			exit_io_context();
- 		set_current_state(TASK_UNINTERRUPTIBLE);
- 		schedule();
- 	}
- 
-+	/*
-+	 * tsk->flags are checked in the futex code to protect against
-+	 * an exiting task cleaning up the robust pi futexes.
-+	 */
-+	spin_lock_irq(&tsk->pi_lock);
- 	tsk->flags |= PF_EXITING;
-+	spin_unlock_irq(&tsk->pi_lock);
- 
- 	if (unlikely(in_atomic()))
- 		printk(KERN_INFO "note: %s[%d] exited with preempt_count %d\n",
-@@ -957,6 +973,12 @@ fastcall NORET_TYPE void do_exit(long co
- 	 * Make sure we are holding no locks:
- 	 */
- 	debug_check_no_locks_held(tsk);
-+	/*
-+	 * We can do this unlocked here. The futex code uses this flag
-+	 * just to verify whether the pi state cleanup has been done
-+	 * or not. In the worst case it loops once more.
-+	 */
-+	tsk->flags |= PF_EXITPIDONE;
- 
- 	if (tsk->io_context)
- 		exit_io_context();
+ static struct hpt_info hpt374 __devinitdata = {
+ 	.chip_type	= HPT374,
+-	.max_mode	= HPT374_ALLOW_ATA133_6 ? 4 : 3,
++	.max_mode	= 3,
+ 	.dpll_clk	= 48,
+ 	.settings	= hpt37x_settings
+ };
 
 -- 
