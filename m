@@ -1,61 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933469AbXGaSPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932937AbXGaSTJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933469AbXGaSPv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 14:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761451AbXGaSPo
+	id S932937AbXGaSTJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 14:19:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757405AbXGaSS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 14:15:44 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4480 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755056AbXGaSPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 14:15:43 -0400
-Date: Tue, 31 Jul 2007 14:14:31 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: akpm@linux-foundation.org, jeremy@goop.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] argv_split: allow argv_split to handle NULL pointer in argcp parameter gracefully
-Message-ID: <20070731181431.GE28333@hmsreliant.homelinux.net>
-References: <20070731164608.GB28333@hmsreliant.homelinux.net> <alpine.LFD.0.999.0707312303490.28746@enigma.security.iitk.ac.in>
+	Tue, 31 Jul 2007 14:18:57 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1539 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759233AbXGaSS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 14:18:56 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 40] drivers/atm/iphase.c: mostly kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 20:18:55 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       chas@cmf.nrl.navy.mil, pwang@iphase.com
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0707312303490.28746@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.5.12-2006-07-14
+Message-Id: <200707312018.55797.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 11:06:52PM +0530, Satyam Sharma wrote:
-> 
-> 
-> On Tue, 31 Jul 2007, Neil Horman wrote:
-> 
-> > As Jeremy and I had discussed in a previous thread, it would be nice if the
-> > argv_split library function could gracefully handle a NULL pointer in the argcp
-> > parameter, so as to allow functions using it that did not care about the value
-> > of argc to not have to declare a useless variable.  This patch accomplishes
-> > that.  Tested by me, with successful results.
-> 
-> The patch itself looks simple and straightforward enough, but having done
-> this, now you'd also want to cleanup the use of the dummy variable in the
-> callsites you mentioned above, correct? (Unless that's what Jeremy meant
-> in his reply already)
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-yes, and as I've already replied, I have this patch ready.  however, I've got
-some other work that I'm doing in one of the callsites, and since there are only
-currently two sites, one of which already has some pending changesets in -mm,
-I'm waiting for those to get some testing first. Once there are no
-issues/requests with my current changesets, I'll be submitting a patch with the
-cleanup of the callsites, along with some other changes.
+ drivers/atm/iphase.c | 111508 -> 111431 (-77 bytes)
+ drivers/atm/iphase.o | 254740 -> 254260 (-480 bytes)
 
-regards
-Neil
+ drivers/atm/iphase.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
--- 
-/***************************************************
- *Neil Horman
- *Software Engineer
- *Red Hat, Inc.
- *nhorman@tuxdriver.com
- *gpg keyid: 1024D / 0x92A74FA1
- *http://pgp.mit.edu
- ***************************************************/
+--- linux-2.6.23-rc1-mm1-a/drivers/atm/iphase.c	2007-07-26 13:07:41.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/atm/iphase.c	2007-07-31 11:55:17.000000000 +0200
+@@ -1601,14 +1601,14 @@ static int rx_init(struct atm_dev *dev)
+
+ 	skb_queue_head_init(&iadev->rx_dma_q);
+ 	iadev->rx_free_desc_qhead = NULL;
+-	iadev->rx_open = kmalloc(4*iadev->num_vc,GFP_KERNEL);
+-	if (!iadev->rx_open)
+-	{
++
++	iadev->rx_open = kzalloc(4 * iadev->num_vc, GFP_KERNEL);
++	if (!iadev->rx_open) {
+ 		printk(KERN_ERR DEV_LABEL "itf %d couldn't get free page\n",
+ 		dev->number);
+ 		goto err_free_dle;
+ 	}
+-	memset(iadev->rx_open, 0, 4*iadev->num_vc);
++
+         iadev->rxing = 1;
+         iadev->rx_pkt_cnt = 0;
+ 	/* Mode Register */
+@@ -3171,12 +3171,12 @@ static int __devinit ia_init_one(struct
+         unsigned long flags;
+ 	int ret;
+
+-	iadev = kmalloc(sizeof(*iadev), GFP_KERNEL);
++	iadev = kzalloc(sizeof(*iadev), GFP_KERNEL);
+ 	if (!iadev) {
+ 		ret = -ENOMEM;
+ 		goto err_out;
+ 	}
+-	memset(iadev, 0, sizeof(*iadev));
++
+ 	iadev->pci = pdev;
+
+ 	IF_INIT(printk("ia detected at bus:%d dev: %d function:%d\n",
