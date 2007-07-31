@@ -1,190 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S941471AbXGaCak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S941532AbXGaCbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S941471AbXGaCak (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 22:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940575AbXGaCS5
+	id S941532AbXGaCbA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 22:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940091AbXGaCTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 22:18:57 -0400
-Received: from ns.suse.de ([195.135.220.2]:52867 "EHLO mx1.suse.de"
+	Mon, 30 Jul 2007 22:19:04 -0400
+Received: from mail.suse.de ([195.135.220.2]:52876 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S940569AbXGaCSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 22:18:55 -0400
+	id S1764299AbXGaCTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 22:19:00 -0400
 From: NeilBrown <neilb@suse.de>
 To: linux-kernel@vger.kernel.org
-Date: Tue, 31 Jul 2007 12:18:42 +1000
-Message-Id: <1070731021842.25606@suse.de>
+Date: Tue, 31 Jul 2007 12:18:47 +1000
+Message-Id: <1070731021847.25620@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Subject: [PATCH 033 of 35] Simplify stacking of IO restrictions
+Subject: [PATCH 034 of 35] Simplify bio_add_page and raid1/raid10 resync which use it.
 References: <20070731112539.22428.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Stacking device drives (dm/md) no longer need to worry about
-most queue limits as they are handled at a lower level.  The
-only limit of any interest at the top level now is the hard
-sector size.
+__bio_add_page no longer needs 'max_sectors' and can now
+only fail when the bio is full.
+So raid1/raid10 do not need to cope with unpredictable failure of
+bio_add_page, and can be simplified.  Infact they get simplified so
+much that they don't use bio_add_page at all (they we only using
+before to check when the bio got too big).
 
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./block/ll_rw_blk.c             |   14 ---------
- ./drivers/md/dm-table.c         |   61 ----------------------------------------
- ./include/linux/device-mapper.h |    6 ---
- 3 files changed, 81 deletions(-)
+ ./drivers/md/raid1.c  |   41 +++++++++++++++--------------------------
+ ./drivers/md/raid10.c |   42 +++++++++++++-----------------------------
+ ./fs/bio.c            |   33 +++++++++------------------------
+ 3 files changed, 37 insertions(+), 79 deletions(-)
 
-diff .prev/block/ll_rw_blk.c ./block/ll_rw_blk.c
---- .prev/block/ll_rw_blk.c	2007-07-31 11:21:27.000000000 +1000
-+++ ./block/ll_rw_blk.c	2007-07-31 11:21:28.000000000 +1000
-@@ -690,11 +690,6 @@ void blk_queue_hardsect_size(struct requ
+diff .prev/drivers/md/raid10.c ./drivers/md/raid10.c
+--- .prev/drivers/md/raid10.c	2007-07-31 11:21:27.000000000 +1000
++++ ./drivers/md/raid10.c	2007-07-31 11:21:29.000000000 +1000
+@@ -129,6 +129,8 @@ static void * r10buf_pool_alloc(gfp_t gf
+ 			if (unlikely(!page))
+ 				goto out_free_pages;
  
- EXPORT_SYMBOL(blk_queue_hardsect_size);
++			bio->bi_io_vec[i].bv_offset = 0;
++			bio->bi_io_vec[i].bv_len = PAGE_SIZE;
+ 			bio->bi_io_vec[i].bv_page = page;
+ 		}
+ 	}
+@@ -1576,7 +1578,6 @@ static sector_t sync_request(mddev_t *md
+ 	r10bio_t *r10_bio;
+ 	struct bio *biolist = NULL, *bio;
+ 	sector_t max_sector, nr_sectors;
+-	int disk;
+ 	int i;
+ 	int max_sync;
+ 	int sync_blocks;
+@@ -1828,51 +1829,34 @@ static sector_t sync_request(mddev_t *md
+ 		}
+ 	}
  
--/*
-- * Returns the minimum that is _not_ zero, unless both are zero.
-- */
--#define min_not_zero(l, r) (l == 0) ? r : ((r == 0) ? l : min(l, r))
+-	for (bio = biolist; bio ; bio=bio->bi_next) {
 -
- /**
-  * blk_queue_stack_limits - inherit underlying queue limits for stacked drivers
-  * @t:	the stacking driver (top)
-@@ -702,16 +697,7 @@ EXPORT_SYMBOL(blk_queue_hardsect_size);
-  **/
- void blk_queue_stack_limits(struct request_queue *t, struct request_queue *b)
+-		bio->bi_flags &= ~(BIO_POOL_MASK - 1);
+-		if (bio->bi_end_io)
+-			bio->bi_flags |= 1 << BIO_UPTODATE;
+-		bio->bi_vcnt = 0;
+-		bio->bi_size = 0;
+-	}
+-
+ 	nr_sectors = 0;
+ 	if (sector_nr + max_sync < max_sector)
+ 		max_sector = sector_nr + max_sync;
+ 	do {
+-		struct page *page;
+ 		int len = PAGE_SIZE;
+-		disk = 0;
++
+ 		if (sector_nr + (len>>9) > max_sector)
+ 			len = (max_sector - sector_nr) << 9;
+ 		if (len == 0)
+ 			break;
+-		for (bio= biolist ; bio ; bio=bio->bi_next) {
+-			page = bio->bi_io_vec[bio->bi_vcnt].bv_page;
+-			if (bio_add_page(bio, page, len, 0) == 0) {
+-				/* stop here */
+-				struct bio *bio2;
+-				bio->bi_io_vec[bio->bi_vcnt].bv_page = page;
+-				for (bio2 = biolist; bio2 && bio2 != bio; bio2 = bio2->bi_next) {
+-					/* remove last page from this bio */
+-					bio2->bi_vcnt--;
+-					bio2->bi_size -= len;
+-				}
+-				goto bio_full;
+-			}
+-			disk = i;
+-		}
++
+ 		nr_sectors += len>>9;
+ 		sector_nr += len>>9;
+-	} while (biolist->bi_vcnt < RESYNC_PAGES);
+- bio_full:
++	} while (nr_sectors < (RESYNC_PAGES << (PAGE_SHIFT-9)));
++
+ 	r10_bio->sectors = nr_sectors;
+ 
+ 	while (biolist) {
+ 		bio = biolist;
+ 		biolist = biolist->bi_next;
+ 
++		bio->bi_flags &= ~(BIO_POOL_MASK - 1);
++		if (bio->bi_end_io)
++			bio->bi_flags |= 1 << BIO_UPTODATE;
++		bio->bi_size = nr_sectors << 9;
++		bio->bi_offset = 0;
++		bio->bi_vcnt = DIV_ROUND_UP(bio->bi_size, PAGE_SIZE);
++
+ 		bio->bi_next = NULL;
+ 		r10_bio = bio->bi_private;
+ 		r10_bio->sectors = nr_sectors;
+
+diff .prev/drivers/md/raid1.c ./drivers/md/raid1.c
+--- .prev/drivers/md/raid1.c	2007-07-31 11:21:27.000000000 +1000
++++ ./drivers/md/raid1.c	2007-07-31 11:21:29.000000000 +1000
+@@ -119,14 +119,19 @@ static void * r1buf_pool_alloc(gfp_t gfp
+ 				goto out_free_pages;
+ 
+ 			bio->bi_io_vec[i].bv_page = page;
++			bio->bi_io_vec[i].bv_offset = 0;
++			bio->bi_io_vec[i].bv_len = PAGE_SIZE;
+ 		}
+ 	}
+ 	/* If not user-requests, copy the page pointers to all bios */
+ 	if (!test_bit(MD_RECOVERY_REQUESTED, &pi->mddev->recovery)) {
+ 		for (i=0; i<RESYNC_PAGES ; i++)
+-			for (j=1; j<pi->raid_disks; j++)
++			for (j = 1; j < pi->raid_disks; j++) {
++				r1_bio->bios[j]->bi_io_vec[i].bv_offset = 0;
++				r1_bio->bios[j]->bi_io_vec[i].bv_len = PAGE_SIZE;
+ 				r1_bio->bios[j]->bi_io_vec[i].bv_page =
+ 					r1_bio->bios[0]->bi_io_vec[i].bv_page;
++			}
+ 	}
+ 
+ 	r1_bio->master_bio = NULL;
+@@ -1780,7 +1785,6 @@ static sector_t sync_request(mddev_t *md
+ 	nr_sectors = 0;
+ 	sync_blocks = 0;
+ 	do {
+-		struct page *page;
+ 		int len = PAGE_SIZE;
+ 		if (sector_nr + (len>>9) > max_sector)
+ 			len = (max_sector - sector_nr) << 9;
+@@ -1796,32 +1800,18 @@ static sector_t sync_request(mddev_t *md
+ 			if (len > (sync_blocks<<9))
+ 				len = sync_blocks<<9;
+ 		}
+-
+-		for (i=0 ; i < conf->raid_disks; i++) {
+-			bio = r1_bio->bios[i];
+-			if (bio->bi_end_io) {
+-				page = bio->bi_io_vec[bio->bi_vcnt].bv_page;
+-				if (bio_add_page(bio, page, len, 0) == 0) {
+-					/* stop here */
+-					bio->bi_io_vec[bio->bi_vcnt].bv_page = page;
+-					while (i > 0) {
+-						i--;
+-						bio = r1_bio->bios[i];
+-						if (bio->bi_end_io==NULL)
+-							continue;
+-						/* remove last page from this bio */
+-						bio->bi_vcnt--;
+-						bio->bi_size -= len;
+-					}
+-					goto bio_full;
+-				}
+-			}
+-		}
+ 		nr_sectors += len>>9;
+ 		sector_nr += len>>9;
+ 		sync_blocks -= (len>>9);
+-	} while (r1_bio->bios[disk]->bi_vcnt < RESYNC_PAGES);
+- bio_full:
++	} while (nr_sectors < (RESYNC_PAGES << (PAGE_SHIFT-9)));
++
++	for (i = 0; i < conf->raid_disks ; i++) {
++		bio = r1_bio->bios[i];
++		bio->bi_size = nr_sectors << 9;
++		bio->bi_offset = 0;
++		bio->bi_vcnt = DIV_ROUND_UP(bio->bi_size, PAGE_SIZE);
++	}
++
+ 	r1_bio->sectors = nr_sectors;
+ 
+ 	/* For a user-requested sync, we read all readable devices and do a
+@@ -1841,7 +1831,6 @@ static sector_t sync_request(mddev_t *md
+ 		bio = r1_bio->bios[r1_bio->read_disk];
+ 		md_sync_acct(bio->bi_bdev, nr_sectors);
+ 		generic_make_request(bio);
+-
+ 	}
+ 	return nr_sectors;
+ }
+
+diff .prev/fs/bio.c ./fs/bio.c
+--- .prev/fs/bio.c	2007-07-31 11:21:27.000000000 +1000
++++ ./fs/bio.c	2007-07-31 11:21:29.000000000 +1000
+@@ -290,19 +290,14 @@ int bio_get_nr_vecs(struct block_device 
+ }
+ 
+ static int __bio_add_page(struct request_queue *q, struct bio *bio, struct page
+-			  *page, unsigned int len, unsigned int offset,
+-			  unsigned short max_sectors)
++			  *page, unsigned int len, unsigned int offset)
  {
--	/* zero is "infinity" */
--	t->max_sectors = min_not_zero(t->max_sectors,b->max_sectors);
--	t->max_hw_sectors = min_not_zero(t->max_hw_sectors,b->max_hw_sectors);
--
--	t->max_phys_segments = min(t->max_phys_segments,b->max_phys_segments);
--	t->max_hw_segments = min(t->max_hw_segments,b->max_hw_segments);
--	t->max_segment_size = min(t->max_segment_size,b->max_segment_size);
- 	t->hardsect_size = max(t->hardsect_size,b->hardsect_size);
--	if (!test_bit(QUEUE_FLAG_CLUSTER, &b->queue_flags))
--		clear_bit(QUEUE_FLAG_CLUSTER, &t->queue_flags);
- }
+ 	struct bio_vec *bvec;
  
- EXPORT_SYMBOL(blk_queue_stack_limits);
-
-diff .prev/drivers/md/dm-table.c ./drivers/md/dm-table.c
---- .prev/drivers/md/dm-table.c	2007-07-31 11:21:27.000000000 +1000
-+++ ./drivers/md/dm-table.c	2007-07-31 11:21:28.000000000 +1000
-@@ -75,34 +75,12 @@ static unsigned int int_log(unsigned int
- }
- 
- /*
-- * Returns the minimum that is _not_ zero, unless both are zero.
-- */
--#define min_not_zero(l, r) (l == 0) ? r : ((r == 0) ? l : min(l, r))
+ 	/*
+-	 * cloned bio must not modify vec list
++	 * cloned bio must never try to modify vec list
+ 	 */
+-	if (unlikely(bio_flagged(bio, BIO_CLONED)))
+-		return 0;
 -
--/*
-  * Combine two io_restrictions, always taking the lower value.
+-	if (((bio->bi_size + len) >> 9) > max_sectors)
+-		return 0;
++	BUG_ON(bio_flagged(bio, BIO_CLONED));
+ 
+ 	/*
+ 	 * For filesystems with a blocksize smaller than the pagesize
+@@ -323,10 +318,6 @@ static int __bio_add_page(struct request
+ 	if (bio->bi_vcnt >= bio->bi_max_vecs)
+ 		return 0;
+ 
+-	/*
+-	 * setup the new entry, we might clear it again later if we
+-	 * cannot add the page
+-	 */
+ 	bvec = &bio->bi_io_vec[bio->bi_vcnt];
+ 	bvec->bv_page = page;
+ 	bvec->bv_len = len;
+@@ -346,16 +337,13 @@ static int __bio_add_page(struct request
+  *	@len: vec entry length
+  *	@offset: vec entry offset
+  *
+- *	Attempt to add a page to the bio_vec maplist. This can fail for a
+- *	number of reasons, such as the bio being full or target block
+- *	device limitations. The target block device must allow bio's
+- *      smaller than PAGE_SIZE, so it is always possible to add a single
+- *      page to an empty bio. This should only be used by REQ_PC bios.
++ *	Attempt to add a page to the bio_vec maplist. This can fail only
++ *	if the bio is full. This should only be used by REQ_PC bios.
   */
- static void combine_restrictions_low(struct io_restrictions *lhs,
- 				     struct io_restrictions *rhs)
+ int bio_add_pc_page(struct request_queue *q, struct bio *bio, struct page *page,
+ 		    unsigned int len, unsigned int offset)
  {
--	lhs->max_sectors =
--		min_not_zero(lhs->max_sectors, rhs->max_sectors);
--
--	lhs->max_phys_segments =
--		min_not_zero(lhs->max_phys_segments, rhs->max_phys_segments);
--
--	lhs->max_hw_segments =
--		min_not_zero(lhs->max_hw_segments, rhs->max_hw_segments);
--
- 	lhs->hardsect_size = max(lhs->hardsect_size, rhs->hardsect_size);
--
--	lhs->max_segment_size =
--		min_not_zero(lhs->max_segment_size, rhs->max_segment_size);
--
--	lhs->seg_boundary_mask =
--		min_not_zero(lhs->seg_boundary_mask, rhs->seg_boundary_mask);
--
--	lhs->no_cluster |= rhs->no_cluster;
+-	return __bio_add_page(q, bio, page, len, offset, q->max_hw_sectors);
++	return __bio_add_page(q, bio, page, len, offset);
  }
  
- /*
-@@ -536,26 +514,7 @@ void dm_set_device_limits(struct dm_targ
- 	 *        into q this would just be a call to
- 	 *        combine_restrictions_low()
- 	 */
--	rs->max_sectors =
--		min_not_zero(rs->max_sectors, q->max_sectors);
--
--	rs->max_phys_segments =
--		min_not_zero(rs->max_phys_segments,
--			     q->max_phys_segments);
--
--	rs->max_hw_segments =
--		min_not_zero(rs->max_hw_segments, q->max_hw_segments);
--
- 	rs->hardsect_size = max(rs->hardsect_size, q->hardsect_size);
--
--	rs->max_segment_size =
--		min_not_zero(rs->max_segment_size, q->max_segment_size);
--
--	rs->seg_boundary_mask =
--		min_not_zero(rs->seg_boundary_mask,
--			     q->seg_boundary_mask);
--
--	rs->no_cluster |= !test_bit(QUEUE_FLAG_CLUSTER, &q->queue_flags);
- }
- EXPORT_SYMBOL_GPL(dm_set_device_limits);
- 
-@@ -684,18 +643,8 @@ int dm_split_args(int *argc, char ***arg
- 
- static void check_for_valid_limits(struct io_restrictions *rs)
+ /**
+@@ -365,17 +353,14 @@ int bio_add_pc_page(struct request_queue
+  *	@len: vec entry length
+  *	@offset: vec entry offset
+  *
+- *	Attempt to add a page to the bio_vec maplist. This can fail for a
+- *	number of reasons, such as the bio being full or target block
+- *	device limitations. The target block device must allow bio's
+- *      smaller than PAGE_SIZE, so it is always possible to add a single
+- *      page to an empty bio.
++ *	Attempt to add a page to the bio_vec maplist. This can fail only
++ *	if the bio is full.
+  */
+ int bio_add_page(struct bio *bio, struct page *page, unsigned int len,
+ 		 unsigned int offset)
  {
--	if (!rs->max_sectors)
--		rs->max_sectors = SAFE_MAX_SECTORS;
--	if (!rs->max_phys_segments)
--		rs->max_phys_segments = MAX_PHYS_SEGMENTS;
--	if (!rs->max_hw_segments)
--		rs->max_hw_segments = MAX_HW_SEGMENTS;
- 	if (!rs->hardsect_size)
- 		rs->hardsect_size = 1 << SECTOR_SHIFT;
--	if (!rs->max_segment_size)
--		rs->max_segment_size = MAX_SEGMENT_SIZE;
--	if (!rs->seg_boundary_mask)
--		rs->seg_boundary_mask = -1;
+ 	struct request_queue *q = bdev_get_queue(bio->bi_bdev);
+-	return __bio_add_page(q, bio, page, len, offset, q->max_sectors);
++	return __bio_add_page(q, bio, page, len, offset);
  }
  
- int dm_table_add_target(struct dm_table *t, const char *type,
-@@ -874,17 +823,7 @@ void dm_table_set_restrictions(struct dm
- 	 * Make sure we obey the optimistic sub devices
- 	 * restrictions.
- 	 */
--	blk_queue_max_sectors(q, t->limits.max_sectors);
--	q->max_phys_segments = t->limits.max_phys_segments;
--	q->max_hw_segments = t->limits.max_hw_segments;
- 	q->hardsect_size = t->limits.hardsect_size;
--	q->max_segment_size = t->limits.max_segment_size;
--	q->seg_boundary_mask = t->limits.seg_boundary_mask;
--	if (t->limits.no_cluster)
--		q->queue_flags &= ~(1 << QUEUE_FLAG_CLUSTER);
--	else
--		q->queue_flags |= (1 << QUEUE_FLAG_CLUSTER);
--
- }
- 
- unsigned int dm_table_get_num_targets(struct dm_table *t)
-
-diff .prev/include/linux/device-mapper.h ./include/linux/device-mapper.h
---- .prev/include/linux/device-mapper.h	2007-07-31 11:19:51.000000000 +1000
-+++ ./include/linux/device-mapper.h	2007-07-31 11:21:28.000000000 +1000
-@@ -110,13 +110,7 @@ struct target_type {
- };
- 
- struct io_restrictions {
--	unsigned int		max_sectors;
--	unsigned short		max_phys_segments;
--	unsigned short		max_hw_segments;
- 	unsigned short		hardsect_size;
--	unsigned int		max_segment_size;
--	unsigned long		seg_boundary_mask;
--	unsigned char		no_cluster; /* inverted so that 0 is default */
- };
- 
- struct dm_target {
+ struct bio_map_data {
