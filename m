@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933415AbXGaS2M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933306AbXGaS3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933415AbXGaS2M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 14:28:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763690AbXGaS15
+	id S933306AbXGaS3k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 14:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbXGaS3a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 14:27:57 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1362 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756708AbXGaS1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 14:27:55 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 46] drivers/scsi/lpfc/lpfc_scsi.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 20:27:54 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       james.smart@emulex.com, linux-scsi@vger.kernel.org
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+	Tue, 31 Jul 2007 14:29:30 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:62581 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762996AbXGaS32 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 14:29:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=BR6UnZcZGTCgzMiCeH5EwwC6M3/iiHOLOcWM62Ov35r/lyvD8Hk4cfqwOahuvlphsoXhdvaDKthmK8HvwVw+iv1LYViqcLSZw7sfU1a/GfTDpkotInQIJcOboA6eYvOi8KoFXIFcOJ2hOP5vFM9VOEBhb2OnQN+4jzHTN1aOp34=
+Message-ID: <46AF7F7E.6060300@gmail.com>
+Date: Wed, 01 Aug 2007 03:29:18 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+References: <20070705194909.337398431@intel.com>	 <20070705130518.135e4e3c.kristen.c.accardi@intel.com>	 <46AE12B6.6090408@garzik.org>  <46AED656.8070407@gmail.com>	 <1185891382.2750.8.camel@laptopd505.fenrus.org>	 <46AF4B05.4010700@gmail.com> <1185898532.2766.2.camel@laptopd505.fenrus.org>
+In-Reply-To: <1185898532.2766.2.camel@laptopd505.fenrus.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707312027.55149.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Arjan van de Ven wrote:
+>> They were hardware problems.  I don't think any amount of proper
+>> implementation can fix them.  I have one DVD RAM somewhere in my pile of
+>> hardware which locks up solidly if any link PS mode is used and had a
+> 
+> and the AHCI ALPM code decides to use power savings on this device? if
+> so, please give us the idents so that we can add it to the blacklist as
+> the first entry... (or can buy it to check it in detail first)
 
- drivers/scsi/lpfc/lpfc_scsi.c | 42769 -> 42721 (-48 bytes)
- drivers/scsi/lpfc/lpfc_scsi.o | 191332 -> 191240 (-92 bytes)
+Yeap, lemme check.
 
- drivers/scsi/lpfc/lpfc_scsi.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+It's "TSSTcorpCD/DVDW SH-S183A" with firmware revision "SB01".  Wanna
+check ID capability bits but 'hdparm -I /dev/sr0' is still broken and
+it's already past 3 am here.  I'll report back tomorrow.
 
---- linux-2.6.23-rc1-mm1-a/drivers/scsi/lpfc/lpfc_scsi.c	2007-07-26 13:07:42.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/scsi/lpfc/lpfc_scsi.c	2007-07-31 11:08:46.000000000 +0200
-@@ -208,10 +208,9 @@ lpfc_new_scsi_buf(struct lpfc_vport *vpo
- 	dma_addr_t pdma_phys;
- 	uint16_t iotag;
+Thanks.
 
--	psb = kmalloc(sizeof(struct lpfc_scsi_buf), GFP_KERNEL);
-+	psb = kzalloc(sizeof(struct lpfc_scsi_buf), GFP_KERNEL);
- 	if (!psb)
- 		return NULL;
--	memset(psb, 0, sizeof (struct lpfc_scsi_buf));
-
- 	/*
- 	 * Get memory from the pci pool to map the virt space to pci bus space
+-- 
+tejun
