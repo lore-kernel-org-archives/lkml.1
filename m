@@ -1,82 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762558AbXGaRNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763342AbXGaROK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762558AbXGaRNs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbXGaRNi
+	id S1763342AbXGaROK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758810AbXGaRNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:13:38 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:46713 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754265AbXGaRNh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:13:37 -0400
-Date: Tue, 31 Jul 2007 13:11:59 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070731171159.GA27234@filer.fsl.cs.sunysb.edu>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <20070731170012.GN5101@hasse.suse.de>
-Mime-Version: 1.0
+	Tue, 31 Jul 2007 13:13:43 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:4051 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758474AbXGaRNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:13:42 -0400
+Date: Tue, 31 Jul 2007 13:12:55 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] argv_split: allow argv_split to handle NULL pointer in argcp parameter gracefully
+Message-ID: <20070731171255.GD28333@hmsreliant.homelinux.net>
+References: <20070731164608.GB28333@hmsreliant.homelinux.net> <46AF69C3.1040900@goop.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070731170012.GN5101@hasse.suse.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <46AF69C3.1040900@goop.org>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 07:00:12PM +0200, Jan Blunck wrote:
-> On Tue, Jul 31, Josef Sipek wrote:
+On Tue, Jul 31, 2007 at 09:56:35AM -0700, Jeremy Fitzhardinge wrote:
+> Neil Horman wrote:
+> > As Jeremy and I had discussed in a previous thread, it would be nice if the
+> > argv_split library function could gracefully handle a NULL pointer in the argcp
+> > parameter, so as to allow functions using it that did not care about the value
+> > of argc to not have to declare a useless variable.  This patch accomplishes
+> > that.  Tested by me, with successful results.
+> >   
 > 
-> > On Mon, Jul 30, 2007 at 06:13:35PM +0200, Jan Blunck wrote:
-> > > Introduce white-out support to ext2.
-> > 
-> > I think storing whiteouts on the branches is wrong. It creates all sort of
-> > nasty cases when people actually try to use unioning. Imagine a (no-so
-> > unlikely) scenario where you have 2 unions, and they share a branch. If you
-> > create a whiteout in one union on that shared branch, the whiteout magically
-> > affects the other union as well! Whiteouts are a union-level construct, and
-> > therefore storing them at the branch level is wrong.
+> Oh, one other thing.  Could you do a patch to clean up the use in the
+> usermodehelper code?
 > 
-> So you think that just because you mounted the filesystem somewhere else it
-> should look different? This is what sharing is all about. If you share a
-> filesystem you also share the removal of objects.
+I have a patch for it already, which is rolled into some other work I'm doing in
+there.  Since I had a bit of a false start with the recent coredump work, now
+that its in -mm I want to give that a chance to settle out and get some testing.
+Once its gotten a few weeks of testing and no one else pops up with some other
+requests/additions/etc, I'll post my cleanups, which will include your request
+above.
 
-The removal happens at the union level, not the branch level. Say you have:
+Regards
+Neil
 
-/a/
-/b/foo
-/c/foo
-
-And you mount /u1 as a union of {a,b}, and /u2 as union of {a,c}.
-
-$ find /u*
-/u1
-/u1/foo
-/u2
-/u2/foo
-$ rm /u1/foo # this creates whiteout for "foo" in /a
-$ find /u*
-/u1
-/u2
-
-Is that what you'd expect as a user? I don't think so.
-
-...
-> > Really the only sane way of keeping track of whiteouts seems some external
-> > store. We did an experiment with Unionfs, and moving the whiteout handling
-> > to effectively a "library" that did all the dirty work cleaned up the code
-> > considerably [2,3].
-> 
-> Haven't checked if you could use ODF for a generic store for filesystems that
-> couldn't support whiteouts. This might be an interesting idea.
- 
-Yes, since the ODF is completely separate, you can use _any_ filesystem and
-regardless of whether or not they support whiteouts.
-
-Josef 'Jeff' Sipek.
+>     J
+> > Thanks & Regards
+> > Neil
+> >
+> > Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> >
+> >
+> >  argv_split.c |    4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> >
+> >
+> > diff --git a/lib/argv_split.c b/lib/argv_split.c
+> > index 4096ed4..fad6ce4 100644
+> > --- a/lib/argv_split.c
+> > +++ b/lib/argv_split.c
+> > @@ -75,7 +75,9 @@ char **argv_split(gfp_t gfp, const char *str, int *argcp)
+> >  	if (argv == NULL)
+> >  		goto out;
+> >  
+> > -	*argcp = argc;
+> > +	if (argcp)
+> > +		*argcp = argc;
+> > +
+> >  	argvp = argv;
+> >  
+> >  	while (*str) {
+> >   
 
 -- 
-Once you have their hardware. Never give it back.
-(The First Rule of Hardware Acquisition)
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
