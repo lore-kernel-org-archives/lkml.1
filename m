@@ -1,122 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbXGaM7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760992AbXGaNBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbXGaM7g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760161AbXGaM7T
+	id S1760992AbXGaNBV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbXGaNBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:59:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51399 "EHLO mx1.redhat.com"
+	Tue, 31 Jul 2007 09:01:08 -0400
+Received: from mx2.suse.de ([195.135.220.15]:43648 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759823AbXGaM7S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:59:18 -0400
-Message-ID: <46AF3176.6080106@redhat.com>
-Date: Tue, 31 Jul 2007 08:56:22 -0400
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
-MIME-Version: 1.0
-To: Markus Armbruster <armbru@pond.sub.org>
-CC: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] input: Fix interrupt enable in i8042_ctr when enabling
- interrupt fails
-References: <87fy3sxvit.fsf@pike.pond.sub.org>
-In-Reply-To: <87fy3sxvit.fsf@pike.pond.sub.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756898AbXGaNBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 09:01:05 -0400
+Subject: Re: regression on HP zx1 platform from ACPI autoload modules
+	patches - PATCH that fixes it
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Doug Chapman <doug.chapman@hp.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+       linux-ia64@vger.kernel.org, Len Brown <lenb@kernel.org>
+In-Reply-To: <1185883574.14987.6.camel@athlon>
+References: <1185836238.31298.36.camel@deimos.americas.hpqcorp.net>
+	 <6bffcb0e0707301607x5484f114q9117007d131f7118@mail.gmail.com>
+	 <1185883574.14987.6.camel@athlon>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Tue, 31 Jul 2007 15:01:02 +0200
+Message-Id: <1185886862.18821.168.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Markus Armbruster wrote:
-> When enabling interrupts fails, the interrupt enable bit remains set
-> in i8042_ctr.  Later writes of i8042_ctr to the hardware could
-> accidentally retry enabling interrupts.  Clear the bit on failure.
+On Tue, 2007-07-31 at 08:06 -0400, Doug Chapman wrote:
+> On Tue, 2007-07-31 at 01:07 +0200, Michal Piotrowski wrote:
+> > Hi Doug,
+> > 
+> > On 31/07/07, Doug Chapman <doug.chapman@hp.com> wrote:
+> > > I am seeing a regression on the HP ia64 zx1 platforms when using
+> > > a .config with CONFIG_IA64_HP_ZX1=y.  Oddly it works OK with
+> > > CONFIG_IA64_GENERIC=y.
+> > >
+> > >
+> > > During bootup it panics with:
+> > >
+> > > Kernel panic - not syncing: Unable to find SBA IOMMU: Try a generic or DIG kernel
+> > >
+> > > I can provide the full console output if that is helpful.
+> > 
+> > Yes, it is very useful.
+> > 
+> > >  Also, please let
+> > > me know if there is any other data I can provide that would be helpful.
+> > 
+> > Kernel .config file.
 > 
-> Signed-off-by: Markus Armbruster <armbru@redhat.com>
+> 
+> Michal,
+> 
+> Attached are the full console output up to the panic and the .config
+> file I used to build the kernel.  Let me know if there is anything else
+> you need or if you would like me to try a patch.
 
-This patch is more of a "make it right" than a fix, since the problem is 
-highly unlikely to happen (but perhaps not so unlikely on virtual machines).
+This patch should fix it.
+It's already sent to Len. Bjorn/Myron already tested this one and gave
+an acked-by, but it has not hit Len's git tree yet.
+Len?
+Or should it be picked up by an IA64 tree?
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+   Thomas
 
-> 
-> ---
-> 
-> Some time ago Steven Rostedt and I went over this changeset:
-> 
->     commit de9ce703c6b807b1dfef5942df4f2fadd0fdb67a
->     Author: Dmitry Torokhov <dtor@insightbb.com>
->     Date:   Sun Sep 10 21:57:21 2006 -0400
-> 
->         Input: i8042 - get rid of polling timer
-> 
->         Remove polling timer that was used to detect keybord/mice hotplug and
->         register both IRQs right away instead of waiting for a driver to
->         attach to a port.
-> 
->         Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> 
-> Steven pointed out to me that it changes behavior when enabling IRQ
-> fails.
-> 
-> The old code enabled IRQs this way:
-> 
-> 	i8042_ctr |= port->irqen;
-> 
-> 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-> 		i8042_ctr &= ~port->irqen;
-> 		return -1;
-> 	}
-> 
-> i8042_ctr shadows the 8042's CTR.  So, when enabling fails, the bit is
-> cleared in the shadow.
-> 
-> The new code does not clear the bit on the error path:
-> 
-> static int i8042_enable_kbd_port(void)
-> {
-> 	i8042_ctr &= ~I8042_CTR_KBDDIS;
-> 	i8042_ctr |= I8042_CTR_KBDINT;
-> 
-> 	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-> 		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
-> 		return -EIO;
-> 	}
-> 
-> 	return 0;
-> }
-> 
-> Same for i8042_enable_aux_port().
-> 
-> This leads to the question whether there are later writes of i8042_ctr
-> (possibly with other bits altered) to the hardware, which could
-> accidentally retry enabling interrupts.
-> 
-> I believe this possible, but unlikely.  Scenarios involve enable
-> succeeding the first time, failing the second time, and succeeding the
-> third time.  I can provide details, but the point I'd like to make is
-> not that this is broken (although it is, strictly speaking), but that
-> it is not obviously correct where it easily could be: just clear the
-> interrupt enable bits when writing them to the hardware failed, like
-> the old code did.
-> 
-> diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-> index db9cca3..71a7e39 100644
-> --- a/drivers/input/serio/i8042.c
-> +++ b/drivers/input/serio/i8042.c
-> @@ -385,6 +385,7 @@ static int i8042_enable_kbd_port(void)
->  	i8042_ctr |= I8042_CTR_KBDINT;
->  
->  	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-> +		i8042_ctr &= ~I8042_CTR_KBDINT;
->  		printk(KERN_ERR "i8042.c: Failed to enable KBD port.\n");
->  		return -EIO;
->  	}
-> @@ -402,6 +403,7 @@ static int i8042_enable_aux_port(void)
->  	i8042_ctr |= I8042_CTR_AUXINT;
->  
->  	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR)) {
-> +		i8042_ctr &= ~I8042_CTR_AUXINT;
->  		printk(KERN_ERR "i8042.c: Failed to enable AUX port.\n");
->  		return -EIO;
->  	}
+-----------------
+
+Use new acpi_device_id struct for HID init in ia64/hp/common/sba_iommu.c
+
+Forgot to adjust this one with the acpi autoloading patches.
+
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+Acked-by: Myron Stowe <myron.stowe@hp.com>
+
+---
+ arch/ia64/hp/common/sba_iommu.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.23-rc1/arch/ia64/hp/common/sba_iommu.c
+===================================================================
+--- linux-2.6.23-rc1.orig/arch/ia64/hp/common/sba_iommu.c
++++ linux-2.6.23-rc1/arch/ia64/hp/common/sba_iommu.c
+@@ -2015,9 +2015,14 @@ acpi_sba_ioc_add(struct acpi_device *dev
+ 	return 0;
+ }
+ 
++static const struct acpi_device_id hp_ioc_iommu_device_ids[] = {
++	{"HWP0001", 0},
++	{"HWP0004", 0},
++	{"", 0},
++};
+ static struct acpi_driver acpi_sba_ioc_driver = {
+ 	.name		= "IOC IOMMU Driver",
+-	.ids		= "HWP0001,HWP0004",
++	.ids		= hp_ioc_iommu_device_ids,
+ 	.ops		= {
+ 		.add	= acpi_sba_ioc_add,
+ 	},
+
+
+
 
