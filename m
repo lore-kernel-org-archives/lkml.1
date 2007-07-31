@@ -1,99 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbXGaHzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752967AbXGaH4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbXGaHzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 03:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbXGaHz1
+	id S1752967AbXGaH4W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 03:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751785AbXGaH4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 03:55:27 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:2044 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750825AbXGaHz0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 03:55:26 -0400
-Date: Tue, 31 Jul 2007 08:55:20 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: David Miller <davem@davemloft.net>
-cc: aaw@google.com, akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       sparclinux@vger.kernel.org, wli@holomorphy.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Re: [SPARC32] NULL pointer derefference
-In-Reply-To: <20070730.234252.74747206.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.61.0707310831080.4116@mtfhpc.demon.co.uk>
-References: <Pine.LNX.4.61.0707300301340.32210@mtfhpc.demon.co.uk>
- <20070729.211929.78713482.davem@davemloft.net> <Pine.LNX.4.61.0707310557470.3926@mtfhpc.demon.co.uk>
- <20070730.234252.74747206.davem@davemloft.net>
+	Tue, 31 Jul 2007 03:56:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:59077 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751934AbXGaH4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 03:56:13 -0400
+Date: Tue, 31 Jul 2007 09:55:52 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Manfred Spraul <manfred@colorfullife.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       "Agarwal, Lomesh" <lomesh.agarwal@intel.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>
+Subject: Re: which signal is sent to freeze process?
+Message-ID: <20070731075551.GE22419@elf.ucw.cz>
+References: <46A506F8.2020206@colorfullife.com> <200707232211.15543.rjw@sisk.pl> <46A50AF0.70305@colorfullife.com> <46A64984.1070808@colorfullife.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1750305931-1514056767-1185868520=:4116"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46A64984.1070808@colorfullife.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi!
 
---1750305931-1514056767-1185868520=:4116
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+> >Can you generate small testcase that demonstrates the problem?
+> >
+> >> Then what would be the correct way to handle resume process. The other
+> >> way of course is to make all the applications check the errno in case of
+> >> failure. But that seems more more problematic then system call checking.
+> >> What do you say?
+> >
+> >Hmm, does that testcase behave correctly over SIGSTOP/SIGCONT? I'm not
+> >saying kernel behaves nicely here, but perhaps fixing the apps to
+> >check errno properly is the right thing to do? :-)
+> Perhaps the kernel should use ERESTARTNOHAND instead of EINTR?
+> The current code is more than odd:
+> - select() and sys_ppoll() both use ERESTARTNOHAND (i.e.: 
+> the functions do not return to user space with SIGSTOP/SIGCONT or freezer())
+> 
+> - sys_poll() uses EINTR (i.e.: SIGSTOP/SIGCONT/freezer() return to user 
+> space)
+> 
+> Attached is a patch that switches sys_poll to ERESTARTNOHAND and a poll 
+> test app.
+> Boot tested with FC6.
+> 
+> What do you think? With ERESTARTNOHAND, poll would only return to user 
+> space if the app has a SIGCONT handler installed.
 
-Hi David,
+I think the patch looks okay... but I expected some discussoin here
+and it did not happen :-(. Can you try to send it to andrew?
 
-I have formulated a patch that prevents the update_mmu_cache from doing 
-enything if there is no context available. This apears to have no 
-immediate, undesirable side effects.
+> --- 2.6/fs/select.c	2007-05-20 09:52:32.000000000 +0200
+> +++ build-2.6/fs/select.c	2007-07-23 22:10:21.000000000 +0200
+> @@ -723,7 +723,7 @@
+>    	}
+>  	err = fdcount;
+>  	if (!fdcount && signal_pending(current))
+> -		err = -EINTR;
+> +		err = -ERESTARTNOHAND;
+>  out_fds:
+>  	walk = head;
+>  	while(walk!=NULL) {
+> @@ -794,7 +794,7 @@
+>  	ret = do_sys_poll(ufds, nfds, &timeout);
+>  
+>  	/* We can restart this syscall, usually */
+> -	if (ret == -EINTR) {
+> +	if (ret == -ERESTARTNOHAND) {
+>  		/*
+>  		 * Don't restore the signal mask yet. Let do_signal() deliver
+>  		 * the signal on the way back to userspace, before the signal
+> @@ -805,7 +805,6 @@
+>  					sizeof(sigsaved));
+>  			set_thread_flag(TIF_RESTORE_SIGMASK);
+>  		}
+> -		ret = -ERESTARTNOHAND;
+>  	} else if (sigmask)
+>  		sigprocmask(SIG_SETMASK, &sigsaved, NULL);
+>  
 
-This worked better than the alternative of setting up a context to work with.
-
-Can you for see any issues in doing this?
-
-If not, can you check+apply the attached (un-mangled) patch.
-
-diff -ruNpd linux-2.6/arch/sparc/mm/sun4c.c linux-test/arch/sparc/mm/sun4c.c
---- linux-2.6/arch/sparc/mm/sun4c.c	2007-07-30 03:19:15.000000000 +0100
-+++ linux-test/arch/sparc/mm/sun4c.c	2007-07-31 08:28:13.000000000 +0100
-@@ -1999,6 +2029,9 @@ void sun4c_update_mmu_cache(struct vm_ar
-  	unsigned long flags;
-  	int pseg;
-
-+	if (vma->vm_mm->context == NO_CONTEXT)
-+		return;
-+
-  	local_irq_save(flags);
-  	address &= PAGE_MASK;
-  	if ((pseg = sun4c_get_segmap(address)) == invalid_segment) {
-
-Regards
- 	Mark Fortescue.
---1750305931-1514056767-1185868520=:4116
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="mmu-cache-fix.patch"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.LNX.4.61.0707310855190.4116@mtfhpc.demon.co.uk>
-Content-Description: 
-Content-Disposition: attachment; filename="mmu-cache-fix.patch"
-
-RnJvbTogTWFyayBGb3J0ZXNjdWUgPG1hcmtAbXRmaHBjLmRlbW9uLmNvLnVr
-Pg0KDQpUaGlzIGRlYWxzIHdpdGggYSBzdW40YyBpc3N1ZSBjYXVzZWQgYnkg
-Y29tbWl0IGI2YTJmZWEzOTMxOGU0M2ZlZTg0ZmE3YjBiOTBkNjhiZWQ5MmQy
-YmE6DQptbTogdmFyaWFibGUgbGVuZ3RoIGFyZ3VtZW50IHN1cHBvcnQuDQpU
-aGUgbmV3IHdheSB0aGUgY29kZSB3b3JrcyBtZWFucyB0aGF0IHN1bjRjX3Vw
-ZGF0ZV9tbXVfY2FjaGUgZ2V0cyBjYWxsZWQgYmVmb3JlIGEgY29udGV4dA0K
-aGFzIGJlZW4gc2VsZWN0ZWQsIHdoaWNoIHJlc3VsdHMgaW4gaW52YWxpZCBv
-cGVyYXRpb24gb2YgdGhlIHVuZGVybGluZyBtbSBjb2RlLg0KDQpTaW1wbHkg
-aWdub3JpbmcgdXBkYXRlIHJlcXVlc3RzIHdoZW4gdGhlcmUgaXMgbm8gdmFs
-aWQgY29udGV4dCBzb2x2ZXMgdGhlIHByb2JsZW0uDQoNClNpZ25lZC1vZmYt
-YnkgTWFyayBGb3J0ZXNjdWUgPG1hcmtAbXRmaHBjLmRlbW9uLmNvLnVrPg0K
-LS0tDQpUaGlzIHdvcmtlZCBiZXR0ZXIgdGhhbiB0aGUgYWx0ZXJuYXRpdmUg
-b2Ygc2V0dGluZyB1cCBhIGNvbnRleHQgdG8gd29yayB3aXRoLg0KSSBkZWZp
-bmF0bHkgbmVlZCB0byBzcGVuZCBzb21lIHRpbWUgd3JpdHRpbmcgdXAgdGhl
-IHN1bjRjIE1NVSBhbmQgaG93IExpbnV4IGNvZGUgdXNlcyBpdC4NCmRpZmYg
-LXJ1TnBkIC14ICcuW2Etel0qJyBsaW51eC0yLjYvYXJjaC9zcGFyYy9tbS9z
-dW40Yy5jIGxpbnV4LXRlc3QvYXJjaC9zcGFyYy9tbS9zdW40Yy5jDQotLS0g
-bGludXgtMi42L2FyY2gvc3BhcmMvbW0vc3VuNGMuYwkyMDA3LTA3LTMwIDAz
-OjE5OjE1LjAwMDAwMDAwMCArMDEwMA0KKysrIGxpbnV4LXRlc3QvYXJjaC9z
-cGFyYy9tbS9zdW40Yy5jCTIwMDctMDctMzEgMDg6Mjg6MTMuMDAwMDAwMDAw
-ICswMTAwDQpAQCAtMTk5OSw2ICsyMDI5LDkgQEAgdm9pZCBzdW40Y191cGRh
-dGVfbW11X2NhY2hlKHN0cnVjdCB2bV9hcg0KIAl1bnNpZ25lZCBsb25nIGZs
-YWdzOw0KIAlpbnQgcHNlZzsNCiANCisJaWYgKHZtYS0+dm1fbW0tPmNvbnRl
-eHQgPT0gTk9fQ09OVEVYVCkNCisJCXJldHVybjsNCisNCiAJbG9jYWxfaXJx
-X3NhdmUoZmxhZ3MpOw0KIAlhZGRyZXNzICY9IFBBR0VfTUFTSzsNCiAJaWYg
-KChwc2VnID0gc3VuNGNfZ2V0X3NlZ21hcChhZGRyZXNzKSkgPT0gaW52YWxp
-ZF9zZWdtZW50KSB7DQo=
-
---1750305931-1514056767-1185868520=:4116--
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
