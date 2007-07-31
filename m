@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbXGaIdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbXGaIix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbXGaIdA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754448AbXGaIck
+	id S1753367AbXGaIix (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXGaIim
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:32:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53689 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752512AbXGaIci (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:32:38 -0400
-Date: Tue, 31 Jul 2007 10:32:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: kriko <kristjan.ugrin@gmail.com>
-Cc: ck@vds.kolivas.org, linux-kernel@vger.kernel.org
-Subject: Re: [ck] Re: SD still better than CFS for 3d   ?(was Re:
-	2.6.23-rc1)
-Message-ID: <20070731083230.GA14039@elte.hu>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <1185839164.27166.7.camel@localhost> <op.twbll7ugatcbto@linux.site>
+	Tue, 31 Jul 2007 04:38:42 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:41897 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbXGaIil (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:38:41 -0400
+Message-ID: <46AEF518.4000002@bull.net>
+Date: Tue, 31 Jul 2007 10:38:48 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <op.twbll7ugatcbto@linux.site>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+To: David Mosberger-Tang <dmosberger@gmail.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "tony.luck@intel.com" <tony.luck@intel.com>,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization
+ for cpus other than montecito
+References: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com>	 <20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com> <ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>
+In-Reply-To: <ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/07/2007 10:43:28,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 31/07/2007 10:43:29,
+	Serialize complete at 31/07/2007 10:43:29
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+David Mosberger-Tang wrote:
+> This seems crazy to me.  Flushing should occur according to the
+> *architecture*, not model-by-model.  Even if we happen to get "lucky"
+> on pre-Montecito CPUs, that doesn't justify such ugly hacks.  Or you
+> really want to debug this *again* come next CPU?
+> 
+>   --david
 
-* kriko <kristjan.ugrin@gmail.com> wrote:
+O.K. let's say we flush by default: the global flag is set.
 
-> I'm trying to get kernel 2.6.22-ck and 2.6.23-rc1 work to test the new 
-> cfs scheduler, but I get broken system. Networking is totally broken 
-> (cannot find module for my marvell yukon gigabit ethernet in kconfig), 
-> firewall / routing doesn't work (a bunch of error messages when 
-> firewall script starts). Were there drastic changes in networking 
-> support? Currently I'm running 2.6.21-ck1 on opensuse 10.2 and it 
-> works fine.
+We can have a (short) list of the CPU models which do not require
+this flush.
 
-pick up 2.6.22-cfsv19 from:
+If all of the CPUs are on the list then clear the global flag. And:
 
-   http://people.redhat.com/mingo/cfs-scheduler/
+static inline void sync_icache_dcache(pte_t pte) {
+       if (pte_exec(pte) && global_flag)
+               __sync_icache_dcache(pte);
+}
 
-2.6.23-rc1 is indeed a bit experimental.
+Thanks,
 
-	Ingo
+Zoltan
