@@ -1,67 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933458AbXGaQ4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932573AbXGaQ6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933458AbXGaQ4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765429AbXGaQ4i
+	id S932573AbXGaQ6T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759589AbXGaQ6H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:56:38 -0400
-Received: from gw.goop.org ([64.81.55.164]:38323 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761181AbXGaQ4h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:56:37 -0400
-Message-ID: <46AF69C3.1040900@goop.org>
-Date: Tue, 31 Jul 2007 09:56:35 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Tue, 31 Jul 2007 12:58:07 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2246 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761469AbXGaQ6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:58:06 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 04] drivers/sbus/char/bbc_i2c.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 18:58:05 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       davem@davemloft.net
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-To: Neil Horman <nhorman@tuxdriver.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] argv_split: allow argv_split to handle NULL pointer in
- argcp parameter gracefully
-References: <20070731164608.GB28333@hmsreliant.homelinux.net>
-In-Reply-To: <20070731164608.GB28333@hmsreliant.homelinux.net>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707311858.05485.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Neil Horman wrote:
-> As Jeremy and I had discussed in a previous thread, it would be nice if the
-> argv_split library function could gracefully handle a NULL pointer in the argcp
-> parameter, so as to allow functions using it that did not care about the value
-> of argc to not have to declare a useless variable.  This patch accomplishes
-> that.  Tested by me, with successful results.
->   
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Oh, one other thing.  Could you do a patch to clean up the use in the
-usermodehelper code?
+ drivers/sbus/char/bbc_i2c.c | 10847 -> 10823 (-24 bytes)
 
-    J
-> Thanks & Regards
-> Neil
->
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
->
->
->  argv_split.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
->
->
-> diff --git a/lib/argv_split.c b/lib/argv_split.c
-> index 4096ed4..fad6ce4 100644
-> --- a/lib/argv_split.c
-> +++ b/lib/argv_split.c
-> @@ -75,7 +75,9 @@ char **argv_split(gfp_t gfp, const char *str, int *argcp)
->  	if (argv == NULL)
->  		goto out;
->  
-> -	*argcp = argc;
-> +	if (argcp)
-> +		*argcp = argc;
-> +
->  	argvp = argv;
->  
->  	while (*str) {
->   
+ drivers/sbus/char/bbc_i2c.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
+--- linux-2.6.23-rc1-mm1-a/drivers/sbus/char/bbc_i2c.c	2007-07-26 13:07:43.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/sbus/char/bbc_i2c.c	2007-07-31 18:12:13.000000000 +0200
+@@ -357,13 +357,13 @@ static void __init reset_one_i2c(struct
+
+ static int __init attach_one_i2c(struct linux_ebus_device *edev, int index)
+ {
+-	struct bbc_i2c_bus *bp = kmalloc(sizeof(*bp), GFP_KERNEL);
++	struct bbc_i2c_bus *bp;
+ 	struct linux_ebus_child *echild;
+ 	int entry;
+
++	bp = kzalloc(sizeof(*bp), GFP_KERNEL);
+ 	if (!bp)
+ 		return -ENOMEM;
+-	memset(bp, 0, sizeof(*bp));
+
+ 	bp->i2c_control_regs = ioremap(edev->resource[0].start, 0x2);
+ 	if (!bp->i2c_control_regs)
