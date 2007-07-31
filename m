@@ -1,91 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933984AbXGaUeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbXGaUeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933984AbXGaUeA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763772AbXGaUat
+	id S934032AbXGaUeg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXGaUdU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:30:49 -0400
-Received: from flvpn.ccur.com ([66.10.65.2]:55213 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765908AbXGaUaq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:30:46 -0400
-Date: Tue, 31 Jul 2007 16:29:43 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       jason.baietto@ccur.com
-Subject: Re: [PATCH] expand /proc/interrupts to include missing vectors, v3
-Message-ID: <20070731202943.GA30789@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <20070726180522.GA1486@tsunami.ccur.com> <46A8EE78.4040702@zytor.com> <1185816797.3170.1.camel@sven.thebigcorporation.com> <20070730123206.abeab890.akpm@linux-foundation.org> <20070731001718.GA14295@tsunami.ccur.com> <20070731141941.GA3112@tsunami.ccur.com> <p73wswgpkvq.fsf@bingen.suse.de>
-Mime-Version: 1.0
+	Tue, 31 Jul 2007 16:33:20 -0400
+Received: from hu-out-0506.google.com ([72.14.214.234]:17231 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764774AbXGaUdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 16:33:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=V8wNBDzwG8VlEKeSsx8Ftzw3PRsk8lYsGF4ahbw1VBUdrt1avVmUPwgMHYhSdE0yMBntQ9ZfigdwNW4YU/MqdxSqPqgXpgL5hvWQ50wa4e3a+0rydCGzTD80OHxMTOQShdMhmLbxCVU1WgdmjO2GI7KQHTzGwbe7oQ3RNc0niqE=
+Date: Tue, 31 Jul 2007 22:33:12 +0200
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: John Keller <jpk@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH] - SN: Add support for CPU disable
+Message-ID: <20070731203312.GA19588@dreamland.darkstar.lan>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <p73wswgpkvq.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070731194505.24177.41215.89690@attica.americas.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 07:02:01PM +0200, Andi Kleen wrote:
+Hi,
+I've a couple of comments on the patch:
 
-Hi Andi,
-Thanks for the review.  I implemented many of your suggestions and for
-the rest, here mention why not, in case you want to respond further.
+John Keller <jpk@sgi.com> ha scritto:
+> Index: linux-2.6/arch/ia64/sn/kernel/huberror.c
+> ===================================================================
+> --- linux-2.6.orig/arch/ia64/sn/kernel/huberror.c       2007-07-31 09:09:55.414522005 -0500
+> +++ linux-2.6/arch/ia64/sn/kernel/huberror.c    2007-07-31 09:38:14.634045360 -0500
+> @@ -14,6 +14,7 @@
+> #include <asm/sn/addrs.h>
+> #include <asm/sn/shubio.h>
+> #include <asm/sn/geo.h>
+> +#include <asm/sn/sn_feature_sets.h>
+> #include "xtalk/xwidgetdev.h"
+> #include "xtalk/hubdev.h"
+> #include <asm/sn/bte.h>
+> @@ -185,11 +186,22 @@ void hubiio_crb_error_handler(struct hub
+>  */
+> void hub_error_init(struct hubdev_info *hubdev_info)
+> {
+> +
+>        if (request_irq(SGI_II_ERROR, hub_eint_handler, IRQF_SHARED,
+> -                       "SN_hub_error", (void *)hubdev_info))
+> +                       "SN_hub_error", (void *)hubdev_info)) {
+>                printk("hub_error_init: Failed to request_irq for 0x%p\n",
+>                    hubdev_info);
+> -       return;
+> +               return;
+> +       }
+> +
+> +#ifdef CONFIG_SMP
+> +       /*
+> +        * On systems which support CPU disabling (SHub2), all error interrupts
+> +        * are targetted at the boot CPU.
+> +        */
+> +       if (is_shub2() && sn_prom_feature_available(PRF_CPU_DISABLE_SUPPORT))
+> +               set_irq_affinity_info(SGI_II_ERROR, 0, 0);
+> +#endif
 
-Regards,
-Joe
+This snippet is repeated many times. You may want to use an inline
+helper (defined as no-op for !CONFIG_SMP), something like this:
 
-> Joe Korty <joe.korty@ccur.com> writes:
-> > A threshold interrupt occurs when ECC memory correction
-> > is occuring at too high a frequency. 
+#ifdef CONFIG_SMP
+static inline void migrate_error_int(void)
+{
+        /*
+         * On systems which support CPU disabling (SHub2), all error interrupts
+         * are targetted at the boot CPU.
+         */
+         if (is_shub2() && sn_prom_feature_available(PRF_CPU_DISABLE_SUPPORT))
+                set_irq_affinity_info(SGI_II_ERROR, 0, 0);
+}
+#else
+static inline void migrate_error_int(void) { }
+#endif
+
+As as bonus you remove the #ifdef from the main code.
+
+> --- linux-2.6.orig/arch/ia64/sn/kernel/sn2/sn2_smp.c    2007-07-31 09:09:55.418522496 -0500
+> +++ linux-2.6/arch/ia64/sn/kernel/sn2/sn2_smp.c 2007-07-31 09:38:14.782063615 -0500
+> @@ -40,6 +40,7 @@
+> #include <asm/sn/shub_mmr.h>
+> #include <asm/sn/nodepda.h>
+> #include <asm/sn/rw_mmr.h>
+> +#include <asm/sn/sn_feature_sets.h>
 > 
-> It's configurable and the default is off. Also 
-> it's only on AMD hardware.
-
-v4 now has a comment to the Documentation section noting
-this.
-
-
-> > Thresholds are used
-> > by the ECC hardware as occasional ECC failures are part
-> > of normal operation,
-
-Occasional ECC _corrections_ are normal (due to stray alpha particles)
-but ECC _failures_ are not.  Document corrected.
-
-> >  	irq_exit();
-> > +	__get_cpu_var(irq_stat).irq_spur_counts++;
+> DEFINE_PER_CPU(struct ptc_stats, ptcstats);
+> DECLARE_PER_CPU(struct ptc_stats, ptcstats);
+> @@ -429,6 +430,29 @@ void sn2_send_IPI(int cpuid, int vector,
+>        sn_send_IPI_phys(nasid, physid, vector, delivery_mode);
+> }
 > 
-> Wouldn't it be safer on preemptible kernels to have that inside
-> the irq_exit? 
+> +#ifdef CONFIG_HOTPLUG_CPU
+> +/**
+> + * sn_cpu_disable_allowed - Determine if a CPU can be disabled.
+> + * @cpu - CPU that is requested to be disabled.
+> + *
+> + * CPU disable is only allowed on SHub2 systems running with a PROM
+> + * that supports CPU disable. It is not permitted to disable the boot processor.
+> + */
+> +bool sn_cpu_disable_allowed(int cpu)
+> +{
+> +       if (is_shub2() && sn_prom_feature_available(PRF_CPU_DISABLE_SUPPORT))
+> +               if (cpu != 0)
+> +                       return true;
+> +               else
+> +                       printk("Disabling the boot processor is not allowed.\n");
+> +
+> +       else
 
-Although irq_exit() releases the preemption block, it doesn't seem to
-release the APIC interrupt block, at least for i386.  And as an interrupt
-block also blocks preemption and process migration, it seems that it would
-be safe to do the increments after the irq_exit().  But I've moved them
-all inside in v4, just in case I am wrong, or this changes in the future
-(eg, PREEMPT_RT).
+Hum, brackets around the inner if statement?
 
-> > +		seq_printf(p, "RES: ");
-> 
-> I think it would be better to use 5-6 char identifiers
-> even when it whacks the columns a bit; otherwise nobody
-> will know what it means. e.g. SCHED here.
-
-v3 addresses this.  The normally empty 'description' column at the end of
-each line now holds a description of each vector.  The three-character
-line-prefix names are there only to make the new lines match the syntax
-and format of the other lines in /proc/interrupts.
-
-> Also there you should update proc(5) and send a patch
-> to the manpage maintainer.
-
-Will do.
-
-Thanks,
-Joe
-
-PS: also fixed up the whitespace.
+Luca
+-- 
+Let me make your mind, leave yourself behind
+Be not afraid
