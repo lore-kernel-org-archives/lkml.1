@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940343AbXGaBHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940354AbXGaBKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940343AbXGaBHa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 21:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937828AbXGaBHX
+	id S940354AbXGaBKX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 21:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939167AbXGaBKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 21:07:23 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:1486 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763381AbXGaBHV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 21:07:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=dNxJ/+uSu7gjcfKaGo30n1/C1b5WJRX2UgmINX+zFTNRauLQar6ilgH/8GcL5j4ly6ULyEL4iT5DwC9k1CcdhmbWOV/vO7gYIZpfMgXrtrj3f/vLwCqYiF6NppsqM8pEG043/UEA70tm5KwcIJc7JHzcGrqqHwiWqprna7dUTlU=
-Message-ID: <1f1b08da0707301807h62a24b3o786beed607ae5fcd@mail.gmail.com>
-Date: Mon, 30 Jul 2007 18:07:19 -0700
-From: "john stultz" <johnstul@us.ibm.com>
-To: "Vasily Averin" <vvs@sw.ru>
-Subject: Re: [2.6.22] negative time jump
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1f1b08da0707301113r173adba0yd2585263e89fd8@mail.gmail.com>
+	Mon, 30 Jul 2007 21:10:09 -0400
+Received: from zaphod.dth.net ([85.159.112.68]:34380 "EHLO zaphod.dth.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939039AbXGaBKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 21:10:08 -0400
+Date: Tue, 31 Jul 2007 03:10:05 +0200
+From: Danny ter Haar <dth@dth.net>
+To: Len Brown <lenb@kernel.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Update: ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not:
+Message-ID: <20070731011005.GA22245@dth.net>
+References: <20070727193832.GA20289@dth.net> <46AC0F6E.2000008@googlemail.com> <20070730025412.GA22888@dth.net> <200707301330.54640.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46AD57BF.8090106@sw.ru>
-	 <1f1b08da0707301113r173adba0yd2585263e89fd8@mail.gmail.com>
-X-Google-Sender-Auth: be8cda38f6a08725
+In-Reply-To: <200707301330.54640.lenb@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Whoops, forgot to CC lkml.
+Quoting Len Brown (lenb@kernel.org):
+> Please attach the output from acpidump to 
+> http://bugzilla.kernel.org/show_bug.cgi?id=7880
 
----------- Forwarded message ----------
-From: john stultz <johnstul@us.ibm.com>
-Date: Jul 30, 2007 11:13 AM
-Subject: Re: [2.6.22] negative time jump
-To: Vasily Averin <vvs@sw.ru>
+done
+also on : http://www.dth.net/kernel/acpidump_output_via_c3_5000
 
+> We'll likely be able to tell from it if that patch
+> has any real effect on your system, or if you test
+> result was from some unrelated event.
 
-On 7/29/07, Vasily Averin <vvs@sw.ru> wrote:
-> I've investigated why my testnode freezes. When I found that node is freezed
-> again I've started to press Sysrq keys and noticed the following negative time jump.
->
-> Could anybody please help me to understand the reasons of this issue?
->
-> --- VvS comment: some pre-history: node boot
-> Jul 27 13:58:10 ts28 Linux version 2.6.22 (vvs@vvs.work.ve) (gcc version 3.4.6
-> 20060404 (Red Hat 3.4.6-3)) #11 SMP Fri Jul 27 12:47:45 MSD 2007
-> Jul 27 13:58:10 ts28 Command line: ro root=LABEL=/1 console=ttyS0,115200
-> console=tty debug silencelevel=8 crashkernel=128M@128M acpc=noirq clocksource=tsc
+Reverting the patch didn't make a real difference, it only took
+longer (eg 16 minutes before lockup in stead of 2-3 minutes)
 
-clocksource=tsc?
+> Also, please test with CONFIG_X86_ACPI_CPUFREQ=n
+> to remove the acpi-cpufreq driver (and thus this patch)
+> from your kernel.  If it still fails, then we know
+> that this driver (and this patch) are not related
+> to the failure.
 
-I suspect you're forcing the clocksource as its not selected by
-default. Could you provide dmesg output without that option. It might
-shed some light as to why the clocksource isn't chosen.
+Will do.
+This machine(firewall) is solar powered so i tried to let it
+consume as less power as possible 
+This is in my startup script at the moment:
 
-It may very well be your TSCs are not synched or are otherwise not
-reliable for timekeeping , and thus time is not consistent between
-cpus.
+echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
 
--john
+> Hmmm, okay, the "big hammer" works.  Please see
+> if any of these smaller hammers work:
+> 
+> pnpacpi=off
+> acpi=noirq
+> notsc
 
-PS: also, you might want to check that acpc=noirq bit as well.. i
-think you mean "acpi=noirq"
+More testing to do, however, sunday i'm going abroad for a while,
+all stuff will be in storage. If i cant find in the next few days
+(packing everything in moving boxes) it might take a while before
+i can test again. Sorry for that.
+
+Danny
+
+-- 
