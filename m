@@ -1,39 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764371AbXGaQqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932901AbXGaQrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764371AbXGaQqR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765373AbXGaQpx
+	id S932901AbXGaQrN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760630AbXGaQq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:45:53 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2673 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764811AbXGaQpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:45:50 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-Subject: [KJ PATCHES] mostly kmalloc + memset conversion to k[cz]alloc
-Date: Tue, 31 Jul 2007 18:45:48 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+	Tue, 31 Jul 2007 12:46:57 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3395 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751799AbXGaQq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:46:56 -0400
+Date: Tue, 31 Jul 2007 12:46:08 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: akpm@linux-foundation.org, jeremy@goop.org, linux-kernel@vger.kernel.org
+Cc: nhorman@tuxdriver.com
+Subject: [PATCH] argv_split: allow argv_split to handle NULL pointer in argcp parameter gracefully
+Message-ID: <20070731164608.GB28333@hmsreliant.homelinux.net>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200707311845.48807.m.kozlowski@tuxland.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+As Jeremy and I had discussed in a previous thread, it would be nice if the
+argv_split library function could gracefully handle a NULL pointer in the argcp
+parameter, so as to allow functions using it that did not care about the value
+of argc to not have to declare a useless variable.  This patch accomplishes
+that.  Tested by me, with successful results.
 
-	This kj patch series does kmalloc + memset conversion to k[cz]alloc. Some
-of them also remove redundant argument checks to functions that already do that
-internally. Also some minor style things are fixed like redundant k[mcz]alloc casts.
-Most of this patches shrink object size by several hundred bytes (you'll find stats
-below signed-off line) so this is a good thing. Almost all of them were compile tested.
+Thanks & Regards
+Neil
 
-Please review and apply.
+Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
 
-Regards,
 
-	Mariusz
+ argv_split.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+
+diff --git a/lib/argv_split.c b/lib/argv_split.c
+index 4096ed4..fad6ce4 100644
+--- a/lib/argv_split.c
++++ b/lib/argv_split.c
+@@ -75,7 +75,9 @@ char **argv_split(gfp_t gfp, const char *str, int *argcp)
+ 	if (argv == NULL)
+ 		goto out;
+ 
+-	*argcp = argc;
++	if (argcp)
++		*argcp = argc;
++
+ 	argvp = argv;
+ 
+ 	while (*str) {
+-- 
+/***************************************************
+ *Neil Horman
+ *Software Engineer
+ *Red Hat, Inc.
+ *nhorman@tuxdriver.com
+ *gpg keyid: 1024D / 0x92A74FA1
+ *http://pgp.mit.edu
+ ***************************************************/
