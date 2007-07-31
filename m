@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbXGaLCh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759118AbXGaLDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbXGaLCh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 07:02:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXGaLC3
+	id S1759118AbXGaLDS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 07:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbXGaLDD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 07:02:29 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:54295 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754320AbXGaLC2 (ORCPT
+	Tue, 31 Jul 2007 07:03:03 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:19963 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755150AbXGaLDA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 07:02:28 -0400
-Message-ID: <46AF16CA.4020103@bull.net>
-Date: Tue, 31 Jul 2007 13:02:34 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
+	Tue, 31 Jul 2007 07:03:00 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Andrew Gallatin <gallatin@myri.com>
+Subject: Re: [PATCH 0/4][RFC] lro: Generic Large Receive Offload for TCP traffic
+Date: Tue, 31 Jul 2007 12:33:29 +0200
+User-Agent: KMail/1.8.2
+Cc: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       David Miller <davem@davemloft.net>, Jeff Garzik <jeff@garzik.org>
+References: <200707301724.33865.ossthema@de.ibm.com> <46AE4AC9.6060109@myri.com>
+In-Reply-To: <46AE4AC9.6060109@myri.com>
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: David Mosberger-Tang <dmosberger@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "tony.luck@intel.com" <tony.luck@intel.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization
- for cpus other than montecito
-References: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com>	<20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com>	<ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com>	<46AEF518.4000002@bull.net> <20070731191749.0709c56e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070731191749.0709c56e.kamezawa.hiroyu@jp.fujitsu.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/07/2007 13:07:14,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/07/2007 13:07:16,
-	Serialize complete at 31/07/2007 13:07:16
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Disposition: inline
+Message-Id: <200707311233.31227.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
+Hi,
 
-> Could we discuss this in other thread as "optimization for some cpus" and
-> push bug-fix patches first ?
-> 
-> If take5 or part of take6(patch 1,2) are not acceptable, I'll continue this
-> work on -rc2.
-> 
-> Thanks,
-> -Kame
-
-Sure.
+Thanks for finding these bugs! I'll post an updated version soon (2 patches
+with no separate Kconfig patches, one LRO and one eHEA patch). See comments below.
 
 Thanks,
+Jan-Bernd
 
-Zoltan
+On Monday 30 July 2007 22:32, Andrew Gallatin wrote:
+> I was working on testing the myri10ge patch, and I ran into a few
+> problems.  I've attached a patch to inet_lro.c to fix some of them,
+> and a patch to myri10ge.c to show how to use the page based
+> interface.  Both patches are signed off by Andrew Gallatin
+> <gallatin@myri.com>
+> 
+> First, the LRO_MAX_PG_HLEN is still a problem.  Minimally sized 60
+> byte frames still cause problems in lro_gen_skb due to skb->len
+> going negative.  Fixed in the attached patch.  It may be simpler
+> to just drop LRO_MAX_PG_HLEN to ETH_ZLEN, but I'm not sure if
+> that is enough.  Are there "smart" NICs which might chop off padding
+> themselves?
+
+I'd tend to stick to an explicit check as implemented in your patch
+for now
+
+> 
+> Second, you still need to set skb->ip_summed = CHECKSUM_UNNECESSARY
+> when modified packets are flushed, else the stack will see bad
+> checksums for packets from CHECKSUM_COMPLETE drivers using the
+> skb interface.  Fixed in the attached patch.
+
+I thought about it... As we do update the TCP checksum for aggregated
+packets we could add a second ip_summed field in the net_lro_mgr struct 
+used for aggregated packets to support HW that does not have any checksum helper
+functionality. These drivers could set this ip_summed field to CHECKSUM_NONE, 
+and thus leave the checksum check to the stack. I'm not sure if these old devices benefit
+a lot from LRO. So what do you think?
+
+> 
+> Fourth, I did some traffic sniffing to try to figure out what's going
+> on above, and saw tcpdump complain about bad checksums.  Have you tried
+> running tcpdump -s 65535 -vvv?  Have you also seen bad checksums?
+> I seem to see this for both page- and skb-based versions of the driver.
+> 
+
+Hmmm, can't confirm that. For our skb-based version I see
+correct checksums for aggregated packets and for the page-based version as well.
+I used: (tcpdump -i ethX -s 0 -w dump.bin) in combination with ethereal.
+Don't see problems as well with your tcpdump command.
+
