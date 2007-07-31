@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932525AbXGaV2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934297AbXGaV3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932525AbXGaV2k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933950AbXGaV1z
+	id S934297AbXGaV3a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbXGaV3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:27:55 -0400
-Received: from nf-out-0910.google.com ([64.233.182.184]:6077 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765202AbXGaV1y convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:27:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:from:cc:content-type:mime-version:references:content-transfer-encoding:message-id:in-reply-to:user-agent;
-        b=ij2u423yv+8YpCNCjMqEi33M3QGDUInwM0KqBqQKBkIA0zUlgDzYhKbBeJRJ2e2CeOKM8TTfCBIBt8cWFxZNs40Cxthq39furesBddItpIycjXIAHDb7/a8SeSpZtA1V3ygHsP71OiKVAaaf+LbQmLInZGpjH3munPIrvHrVyRY=
-Date: Tue, 31 Jul 2007 23:27:47 +0200
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: Reboot hang
-From: kriko <kristjan.ugrin@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+	Tue, 31 Jul 2007 17:29:17 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2199 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753647AbXGaV3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:29:15 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 56] drivers/scsi/NCR_D700.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 23:29:15 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi@vger.kernel.org, James.Bottomley@steeleye.com
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com>
-Content-Transfer-Encoding: 8BIT
-Message-ID: <op.twclwllkatcbto@linux.site>
-In-Reply-To: <46AF9DC8.7080103@gmail.com>
-User-Agent: Opera Mail/9.22 (Linux)
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707312329.15766.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 22:38:32 +0200, Rene Herman <rene.herman@gmail.com>  
-wrote:
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-> Does it matter at all if you add "reboot=b" (other options w, c, h) as a  
-> comand line parameter?
->
-> Rene.
+ drivers/scsi/NCR_D700.c | 10643 -> 10615 (-28 bytes)
+ drivers/scsi/NCR_D700.o | 118400 -> 118196 (-204 bytes)
 
-None of that parameters worked for me. It seems they do have some effects  
-(judging by bios information screen), but they don't fix the problem.
-I hope you understood where exactly it hangs (I don't know how is this  
-screen called), so here is a quick shot of screen:
-http://files.myopera.com/kriko/files/Photo0003.jpg
+ drivers/scsi/NCR_D700.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-After "Verifying DMI Pool data" message it should start booting, but it  
-doesn't.
+--- linux-2.6.23-rc1-mm1-a/drivers/scsi/NCR_D700.c	2007-07-26 13:07:42.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/scsi/NCR_D700.c	2007-07-31 11:13:37.000000000 +0200
+@@ -313,10 +313,10 @@ NCR_D700_probe(struct device *dev)
+ 		break;
+ 	}
 
-
--- 
-kriko
+-	p = kmalloc(sizeof(*p), GFP_KERNEL);
++	p = kzalloc(sizeof(*p), GFP_KERNEL);
+ 	if (!p)
+ 		return -ENOMEM;
+-	memset(p, '\0', sizeof(*p));
++
+ 	p->dev = dev;
+ 	snprintf(p->name, sizeof(p->name), "D700(%s)", dev->bus_id);
+ 	if (request_irq(irq, NCR_D700_intr, IRQF_SHARED, p->name, p)) {
