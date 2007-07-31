@@ -1,162 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764837AbXGaPF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764944AbXGaPGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764837AbXGaPF2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762202AbXGaPFT
+	id S1764944AbXGaPGF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:06:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762274AbXGaPFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:05:19 -0400
-Received: from ns1.coraid.com ([65.14.39.133]:14154 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762199AbXGaPFS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:05:18 -0400
-Date: Tue, 31 Jul 2007 11:03:24 -0400
-From: "Ed L. Cashin" <ecashin@coraid.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: kernel list <linux-kernel@vger.kernel.org>, ak@suse.de
-Subject: Re: ATA over ethernet swapping and obfuscated code
-Message-ID: <20070731150324.GE3206@coraid.com>
-References: <20070731135831.GA4604@elf.ucw.cz>
+	Tue, 31 Jul 2007 11:05:52 -0400
+Received: from [212.12.190.233] ([212.12.190.233]:33983 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762831AbXGaPFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 11:05:51 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-kernel@vger.kernel.org
+Subject: HowTo crashkernel hibernation (was: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation)
+Date: Tue, 31 Jul 2007 18:06:01 +0300
+User-Agent: KMail/1.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070731135831.GA4604@elf.ucw.cz>
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200707311806.02000.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 03:58:31PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> I wanted to know if it is possible/okay to swap over AOE... 
-> 
-> According to
-> http://www.coraid.com/support/linux/EtherDrive-2.6-HOWTO-5.html#ss5.20
-> .. it runs OOM even during normal use, so I guess swapping over it is
-> no-no?
-
-It can be done (e.g., to create virtual memory for running xfs_check
-on a diskless machine as a temporary measure), but it probably won't
-be a good idea until there is a mechanism that allows write responses
-to be (quickly recognized and then) received without allocating memory
-when there are no free pages.
-
-I think if we could register a very fast function to recognize write
-responses, which would be called only when free memory was very low,
-and then use a pre-allocated receive skb for receiving write
-responses, then we'd be OK, and the common case wouldn't be affected.
-
-> Can I build both client and server for these using free software?
-
-Yes.  A popular free target is the vblade (aoetools.sourceforge.net),
-and there are others.  The most popular free software initiator is the
-aoe driver in Linux.
-
-> In the process, I looked at the aoe code, and parts of it look like
-> obfuscated C contest. The use of switch() as an if was particulary
-> creative; I'm not even sure if I translated it properly... can you
-> take a look?
-
-I recently submitted a set of patches, and Andrew Morton asked me to
-avoid the switch statement you are talking about, so thanks for the
-patch, but that code is going to be patched soon anyway.
-
-More below.
-
-> (Patch is 
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> but I did not even compile test it)
+Pavel Machek wrote:
+> > 3. Boot kernel compiled for normal usage, the reserved crash kernel
+> > memory region must be added to kernel command line as following:
+> >
+> > crashkernel=<XX>M@<XX>M
+> >
+> > Where, <XX> should be replaced by the real memory size and
+> > position.
 >
-> diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
-> index 05a9719..38ba35d 100644
-> --- a/drivers/block/aoe/aoedev.c
-> +++ b/drivers/block/aoe/aoedev.c
-> @@ -64,29 +64,26 @@ aoedev_newdev(ulong nframes)
->  
->  	d = kzalloc(sizeof *d, GFP_ATOMIC);
->  	f = kcalloc(nframes, sizeof *f, GFP_ATOMIC);
-> - 	switch (!d || !f) {
-> - 	case 0:
-> - 		d->nframes = nframes;
-> - 		d->frames = f;
-> - 		e = f + nframes;
-> - 		for (; f<e; f++) {
-> - 			f->tag = FREETAG;
-> - 			f->skb = new_skb(ETH_ZLEN);
-> - 			if (!f->skb)
-> - 				break;
-> - 		}
-> - 		if (f == e)
-> - 			break;
-> + 	if (!d || !f) {
-> +		kfree(f);
-> +		kfree(d);
-> +		return NULL;
-> +	}
-> +
-> +	d->nframes = nframes;
-> +	d->frames = f;
-> +	e = f + nframes;
-> +	for (; f<e; f++) {
-> +		f->tag = FREETAG;
-> +		f->skb = new_skb(ETH_ZLEN);
-> +		if (!f->skb)
-> +			break;
-> +	}
-> +	if (f != e) {
->   		while (f > d->frames) {
->   			f--;
->   			dev_kfree_skb(f->skb);
->   		}
-> - 	default:
-> - 		if (f)
-> - 			kfree(f);
-> - 		if (d)
-> - 			kfree(d);
-> -		return NULL;
->  	}
->  	INIT_WORK(&d->work, aoecmd_sleepwork);
->  	spin_lock_init(&d->lock);
-> 
-> 
-> aoedev_by_sysminor_m() returns with spinlock held in error case; I
-> guess that's bad.
-> 
-> struct aoedev *
-> aoedev_by_sysminor_m(ulong sysminor, ulong bufcnt)
-> {
-> 	struct aoedev *d;
-> 	ulong flags;
-> 
-> 	spin_lock_irqsave(&devlist_lock, flags);
-> 
-> 	for (d=devlist; d; d=d->next)
-> 		if (d->sysminor == sysminor)
-> 			break;
-> 
-> 	if (d == NULL) {
-> 		d = aoedev_newdev(bufcnt);
-> 	 	if (d == NULL) {
-> 			spin_unlock_irqrestore(&devlist_lock, flags);
-> 			printk(KERN_INFO "aoe: aoedev_newdev
-> failure.\n");
-> 			return NULL;
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ here
+> I used crashkernel=64M@64M .
 
-I don't see what you mean.  There's an unlock two lines before the
-return.
+It's good to see that people finally try this.
 
-> 		}
-> 		d->sysminor = sysminor;
-> 		d->aoemajor = AOEMAJOR(sysminor);
-> 		d->aoeminor = AOEMINOR(sysminor);
-> 	}
-> 
-> 	spin_unlock_irqrestore(&devlist_lock, flags);
-> 	return d;
-> }
-> 
+I used crashkernel=16M@16M, which is the absolute minimum I managed to have 
+the crashkernel boot successfully.
 
--- 
-  Ed L Cashin <ecashin@coraid.com>
+> > 4. Load kernel compiled for hibernating usage as a crashdump kernel
+> > with kexec, the same kernel as that of 3 can be used if
+> > CONFIG_RELOCATABLE=y is selected.
+
+That's not enough.  You have to set the CONFIG_PHYSICAL_START to 1,000,000 
+for a 16M start.  That's because the crashkernel only supports vmlinux, 
+which cannot be relocatable.
+
+> > The kernel command line option as
+> > following must be appended to kernel command line.
+> >
+> > kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
+> >
+> > For example, the shell command line can be as follow:
+> >
+> > kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
+> > kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+>
+> I think I followed the instructions closely. Now I'm trying to do
+>
+> kexec -p /data/l/linux/vmlinux --args-linux --append="init=/bin/bash
+> kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+>
+> but it tells me:
+>
+> Invalid memory segment 0x100000 - 0x7a0fff
+>
+> (and nothing in dmesg)
+>
+> If I try to load bzImage (corresponding to vmlinux I tried to use),  I
+> get:
+>
+> root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage
+> --append="init=/bin/bash \ kexec_jump_buf_pfn=`cat
+> /sys/kernel/kexec_jump_buf_pfn`" Could not find a free area \ of memory of
+> 9000 bytes... locate_hole failed
+> root@amd:~#
+>
+> What am I doing wrong?
+
+Nothing, but the doc isn't really clear on this, and an update is probably in 
+order.
+
+
+Thanks!
+
+--
+Al
+
