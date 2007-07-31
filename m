@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934535AbXGaVbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934402AbXGaVcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934535AbXGaVbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761944AbXGaVbG
+	id S934402AbXGaVcU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759991AbXGaVcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:31:06 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2223 "EHLO
+	Tue, 31 Jul 2007 17:32:07 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2246 "EHLO
 	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756811AbXGaVbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:31:03 -0400
+	id S1757028AbXGaVcF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:32:05 -0400
 From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 57] net/netfilter/nf_conntrack_expect.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 23:31:02 +0200
+Subject: [PATCH 58] net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 23:32:04 +0200
 User-Agent: KMail/1.9.5
 Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        netfilter-devel@lists.netfilter.org, coreteam@netfilter.org
@@ -23,21 +23,21 @@ Content-Type: text/plain;
   charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200707312331.02887.m.kozlowski@tuxland.pl>
+Message-Id: <200707312332.05176.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
- net/netfilter/nf_conntrack_expect.c | 14786 -> 14726 (-60 bytes)
- net/netfilter/nf_conntrack_expect.o | 137990 -> 138154 (+164 bytes)
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c | 10333 -> 10273 (-60 bytes)
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.o | 116092 -> 115996 (-96 bytes)
 
- net/netfilter/nf_conntrack_expect.c |    5 ++---
+ net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c |    5 ++---
  1 file changed, 2 insertions(+), 3 deletions(-)
 
---- linux-2.6.23-rc1-mm1-a/net/netfilter/nf_conntrack_expect.c	2007-07-26 13:07:44.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/net/netfilter/nf_conntrack_expect.c	2007-07-31 15:22:45.000000000 +0200
-@@ -477,15 +477,14 @@ static int exp_open(struct inode *inode,
+--- linux-2.6.23-rc1-mm1-a/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c	2007-07-26 13:07:44.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/net/ipv4/netfilter/nf_conntrack_l3proto_ipv4_compat.c	2007-07-31 15:18:28.000000000 +0200
+@@ -294,15 +294,14 @@ static int exp_open(struct inode *inode,
  	struct ct_expect_iter_state *st;
  	int ret;
 
