@@ -1,144 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940754AbXGaCUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940599AbXGaCVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940754AbXGaCUn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 22:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966566AbXGaCQu
+	id S940599AbXGaCVD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 22:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966677AbXGaCQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 22:16:50 -0400
-Received: from ns2.suse.de ([195.135.220.15]:35999 "EHLO mx2.suse.de"
+	Mon, 30 Jul 2007 22:16:54 -0400
+Received: from mx2.suse.de ([195.135.220.15]:36004 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966580AbXGaCQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 22:16:48 -0400
+	id S966638AbXGaCQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 22:16:53 -0400
 From: NeilBrown <neilb@suse.de>
 To: linux-kernel@vger.kernel.org
-Date: Tue, 31 Jul 2007 12:16:34 +1000
-Message-Id: <1070731021634.25210@suse.de>
+Date: Tue, 31 Jul 2007 12:16:40 +1000
+Message-Id: <1070731021640.25225@suse.de>
 X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
 	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
 	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Subject: [PATCH 009 of 35] Remove overloading of bi_hw_segments in raid5.
+Subject: [PATCH 010 of 35] New function blk_req_append_bio
 References: <20070731112539.22428.patches@notabene>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-When a read request that bypassed the cache needs to be retried
-(due to device failure) we need to process it one stripe_head at a time,
-and record where we were up to.
-We were recording this in bi_hw_segments.  But as there is only
-ever one such request that is being resubmitted, this info can
-be stored in ->conf thus not misusing a field in the bio.
+ll_back_merge_fn is currently exported to SCSI where is it used,
+together with blk_rq_bio_prep, in exactly the same way these
+functions are used in __blk_rq_map_user.
+
+So move the common code into a new function (blk_rq_append_bio), and
+don't export ll_back_merge_fn any longer.
 
 Signed-off-by: Neil Brown <neilb@suse.de>
 
 ### Diffstat output
- ./drivers/md/raid5.c         |   21 ++++++++++++---------
- ./include/linux/raid/raid5.h |    1 +
- 2 files changed, 13 insertions(+), 9 deletions(-)
+ ./block/ll_rw_blk.c       |   38 ++++++++++++++++++++++----------------
+ ./drivers/scsi/scsi_lib.c |   11 +----------
+ ./include/linux/blkdev.h  |    6 +++---
+ 3 files changed, 26 insertions(+), 29 deletions(-)
 
-diff .prev/drivers/md/raid5.c ./drivers/md/raid5.c
---- .prev/drivers/md/raid5.c	2007-07-31 11:20:52.000000000 +1000
-+++ ./drivers/md/raid5.c	2007-07-31 11:20:53.000000000 +1000
-@@ -3857,13 +3857,14 @@ static void add_bio_to_retry(struct bio 
+diff .prev/block/ll_rw_blk.c ./block/ll_rw_blk.c
+--- .prev/block/ll_rw_blk.c	2007-07-31 11:20:52.000000000 +1000
++++ ./block/ll_rw_blk.c	2007-07-31 11:20:55.000000000 +1000
+@@ -1405,7 +1405,8 @@ static inline int ll_new_hw_segment(stru
+ 	return 1;
  }
  
- 
--static struct bio *remove_bio_from_retry(raid5_conf_t *conf)
-+static struct bio *remove_bio_from_retry(raid5_conf_t *conf, int *already_done)
+-int ll_back_merge_fn(struct request_queue *q, struct request *req, struct bio *bio)
++static int ll_back_merge_fn(struct request_queue *q, struct request *req,
++			    struct bio *bio)
  {
- 	struct bio *bi;
+ 	unsigned short max_sectors;
+ 	int len;
+@@ -1441,7 +1442,6 @@ int ll_back_merge_fn(struct request_queu
  
- 	bi = conf->retry_read_aligned;
- 	if (bi) {
- 		conf->retry_read_aligned = NULL;
-+		*already_done = conf->retry_read_aligned_scnt;
- 		return bi;
- 	}
- 	bi = conf->retry_read_aligned_list;
-@@ -3871,7 +3872,7 @@ static struct bio *remove_bio_from_retry
- 		conf->retry_read_aligned_list = bi->bi_next;
- 		bi->bi_next = NULL;
- 		atomic_set(&bi->bi_iocnt, 1);
--		bi->bi_hw_segments = 0; /* count of processed stripes */
-+		*already_done = 0;
- 	}
+ 	return ll_new_hw_segment(q, req, bio);
+ }
+-EXPORT_SYMBOL(ll_back_merge_fn);
  
- 	return bi;
-@@ -4388,14 +4389,15 @@ static inline sector_t sync_request(mdde
- 	return STRIPE_SECTORS;
+ static int ll_front_merge_fn(struct request_queue *q, struct request *req, 
+ 			     struct bio *bio)
+@@ -2331,6 +2331,23 @@ static int __blk_rq_unmap_user(struct bi
+ 	return ret;
  }
  
--static int  retry_aligned_read(raid5_conf_t *conf, struct bio *raid_bio)
-+static int  retry_aligned_read(raid5_conf_t *conf, struct bio *raid_bio,
-+			       int start_scnt)
++int blk_rq_append_bio(struct request_queue *q, struct request *rq,
++		      struct bio *bio)
++{
++	if (!rq->bio)
++		blk_rq_bio_prep(q, rq, bio);
++	else if (!ll_back_merge_fn(q, rq, bio))
++		return -EINVAL;
++	else {
++		rq->biotail->bi_next = bio;
++		rq->biotail = bio;
++
++		rq->data_len += bio->bi_size;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(blk_rq_append_bio);
++
+ static int __blk_rq_map_user(struct request_queue *q, struct request *rq,
+ 			     void __user *ubuf, unsigned int len)
  {
- 	/* We may not be able to submit a whole bio at once as there
- 	 * may not be enough stripe_heads available.
- 	 * We cannot pre-allocate enough stripe_heads as we may need
- 	 * more than exist in the cache (if we allow ever large chunks).
- 	 * So we do one stripe head at a time and record in
--	 * ->bi_hw_segments how many have been done.
-+	 * conf->retry_read_aligned_scnt how many have been done.
- 	 *
- 	 * We *know* that this entire raid_bio is in one chunk, so
- 	 * it will be only one 'dd_idx' and only need one call to raid5_compute_sector.
-@@ -4423,7 +4425,7 @@ static int  retry_aligned_read(raid5_con
- 		     scnt++) {
- 		struct stripe_head *sh;
+@@ -2362,21 +2379,10 @@ static int __blk_rq_map_user(struct requ
+ 	 */
+ 	bio_get(bio);
  
--		if (scnt < raid_bio->bi_hw_segments)
-+		if (scnt < start_scnt )
- 			/* already done this stripe */
- 			continue;
+-	if (!rq->bio)
+-		blk_rq_bio_prep(q, rq, bio);
+-	else if (!ll_back_merge_fn(q, rq, bio)) {
+-		ret = -EINVAL;
+-		goto unmap_bio;
+-	} else {
+-		rq->biotail->bi_next = bio;
+-		rq->biotail = bio;
+-
+-		rq->data_len += bio->bi_size;
+-	}
+-
+-	return bio->bi_size;
++	ret = blk_rq_append_bio(q, rq, bio);
++	if (!ret)
++		return bio->bi_size;
  
-@@ -4431,7 +4433,7 @@ static int  retry_aligned_read(raid5_con
- 		sh = get_active_stripe(sq, disks, 1);
- 		if (!(sq && sh)) {
- 			/* failed to get a queue/stripe - must wait */
--			raid_bio->bi_hw_segments = scnt;
-+			conf->retry_read_aligned_scnt = scnt;
- 			conf->retry_read_aligned = raid_bio;
- 			if (sq)
- 				release_queue(sq);
-@@ -4442,7 +4444,7 @@ static int  retry_aligned_read(raid5_con
- 		if (!add_queue_bio(sq, raid_bio, dd_idx, 0)) {
- 			release_queue(sq);
- 			release_stripe(sh);
--			raid_bio->bi_hw_segments = scnt;
-+			conf->retry_read_aligned_scnt = scnt;
- 			conf->retry_read_aligned = raid_bio;
- 			return handled;
- 		}
-@@ -4538,6 +4540,7 @@ static void raid5d (mddev_t *mddev)
- 	while (1) {
- 		struct list_head *first;
- 		struct bio *bio;
-+		int scnt;
- 
- 		if (conf->seq_flush != conf->seq_write) {
- 			int seq = conf->seq_flush;
-@@ -4548,10 +4551,10 @@ static void raid5d (mddev_t *mddev)
- 			activate_bit_delay(conf);
- 		}
- 
--		while ((bio = remove_bio_from_retry(conf))) {
-+		while ((bio = remove_bio_from_retry(conf, &scnt))) {
- 			int ok;
- 			spin_unlock_irq(&conf->device_lock);
--			ok = retry_aligned_read(conf, bio);
-+			ok = retry_aligned_read(conf, bio, scnt);
- 			spin_lock_irq(&conf->device_lock);
- 			if (!ok)
- 				break;
+-unmap_bio:
+ 	/* if it was boucned we must call the end io function */
+ 	bio_endio(bio, 0);
+ 	__blk_rq_unmap_user(orig_bio);
 
-diff .prev/include/linux/raid/raid5.h ./include/linux/raid/raid5.h
---- .prev/include/linux/raid/raid5.h	2007-07-31 11:20:15.000000000 +1000
-+++ ./include/linux/raid/raid5.h	2007-07-31 11:20:53.000000000 +1000
-@@ -362,6 +362,7 @@ struct raid5_private_data {
- 	char 			workqueue_name[20];
+diff .prev/drivers/scsi/scsi_lib.c ./drivers/scsi/scsi_lib.c
+--- .prev/drivers/scsi/scsi_lib.c	2007-07-31 11:20:51.000000000 +1000
++++ ./drivers/scsi/scsi_lib.c	2007-07-31 11:20:55.000000000 +1000
+@@ -263,16 +263,7 @@ static int scsi_merge_bio(struct request
+ 		bio->bi_rw |= (1 << BIO_RW);
+ 	blk_queue_bounce(q, &bio);
  
- 	struct bio		*retry_read_aligned; /* currently retrying aligned bios   */
-+	int			retry_read_aligned_scnt; /* how far through */
- 	struct bio		*retry_read_aligned_list; /* aligned bios retry list  */
- 	atomic_t		active_aligned_reads;
- 	atomic_t		preread_active_queues; /* queues with scheduled
+-	if (!rq->bio)
+-		blk_rq_bio_prep(q, rq, bio);
+-	else if (!ll_back_merge_fn(q, rq, bio))
+-		return -EINVAL;
+-	else {
+-		rq->biotail->bi_next = bio;
+-		rq->biotail = bio;
+-	}
+-
+-	return 0;
++	return blk_rq_append_bio(q, rq, bio);
+ }
+ 
+ static void scsi_bi_endio(struct bio *bio, int error)
+
+diff .prev/include/linux/blkdev.h ./include/linux/blkdev.h
+--- .prev/include/linux/blkdev.h	2007-07-31 11:20:47.000000000 +1000
++++ ./include/linux/blkdev.h	2007-07-31 11:20:55.000000000 +1000
+@@ -681,10 +681,10 @@ extern int sg_scsi_ioctl(struct file *, 
+ 		struct gendisk *, struct scsi_ioctl_command __user *);
+ 
+ /*
+- * Temporary export, until SCSI gets fixed up.
++ * Temporary(?) export, until SCSI gets fixed up.
+  */
+-extern int ll_back_merge_fn(struct request_queue *, struct request *,
+-		struct bio *);
++extern int blk_rq_append_bio(struct request_queue *q, struct request *rq,
++			     struct bio *bio);
+ 
+ /*
+  * A queue has just exitted congestion.  Note this in the global counter of
