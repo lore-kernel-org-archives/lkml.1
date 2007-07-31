@@ -1,108 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765287AbXGaRf3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764660AbXGaRgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765287AbXGaRf3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:35:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758109AbXGaRfQ
+	id S1764660AbXGaRgs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbXGaRgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:35:16 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2444 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757720AbXGaRfO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:35:14 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 21] drivers/scsi/dpt_i2o.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 19:35:13 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi@vger.kernel.org, aacraid@adaptec.com
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+	Tue, 31 Jul 2007 13:36:40 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:41965 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751935AbXGaRgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:36:39 -0400
+Date: Tue, 31 Jul 2007 10:36:11 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Manfred Spraul <manfred@colorfullife.com>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
+Message-ID: <20070731173611.GF3673@sequoia.sous-sol.org>
+References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com> <20070730163538.67b256da.akpm@linux-foundation.org> <20070731001117.GA583@tv-sign.ru> <20070731001847.GA623@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200707311935.13958.m.kozlowski@tuxland.pl>
+In-Reply-To: <20070731001847.GA623@tv-sign.ru>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+* Oleg Nesterov (oleg@tv-sign.ru) wrote:
+> > I am not sure. This means we restart sys_poll() with the same timeout
+> > if there is no pending signal. I think we need ERESTART_RESTARTBLOCK
+> > logic.
+> 
+> Forgot to mention, sys_select() can use ERESTARTNOHAND because it
+> modifies "struct timeval __user *tvp" before return, but sys_poll()
+> gets timeout_msecs by value.
 
- drivers/scsi/dpt_i2o.c | 87632 -> 87457 (-175 bytes)
- drivers/scsi/dpt_i2o.o | 213064 -> 212324 (-740 bytes)
-
- drivers/scsi/dpt_i2o.c |   27 +++++++++++----------------
- 1 file changed, 11 insertions(+), 16 deletions(-)
-
---- linux-2.6.23-rc1-mm1-a/drivers/scsi/dpt_i2o.c	2007-07-26 13:07:42.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/scsi/dpt_i2o.c	2007-07-31 11:17:32.000000000 +0200
-@@ -950,16 +950,14 @@ static int adpt_install_hba(struct scsi_
- 	}
-
- 	// Allocate and zero the data structure
--	pHba = kmalloc(sizeof(adpt_hba), GFP_KERNEL);
--	if( pHba == NULL) {
--		if(msg_addr_virt != base_addr_virt){
-+	pHba = kzalloc(sizeof(adpt_hba), GFP_KERNEL);
-+	if (!pHba) {
-+		if (msg_addr_virt != base_addr_virt)
- 			iounmap(msg_addr_virt);
--		}
- 		iounmap(base_addr_virt);
- 		pci_release_regions(pDev);
- 		return -ENOMEM;
- 	}
--	memset(pHba, 0, sizeof(adpt_hba));
-
- 	mutex_lock(&adpt_configuration_lock);
-
-@@ -2667,14 +2665,13 @@ static s32 adpt_i2o_init_outbound_q(adpt
-
- 	msg=(u32 __iomem *)(pHba->msg_addr_virt+m);
-
--	status = kmalloc(4,GFP_KERNEL|ADDR32);
--	if (status==NULL) {
-+	status = kzalloc(4, GFP_KERNEL|ADDR32);
-+	if (!status) {
- 		adpt_send_nop(pHba, m);
- 		printk(KERN_WARNING"%s: IOP reset failed - no free memory.\n",
- 			pHba->name);
- 		return -ENOMEM;
- 	}
--	memset(status, 0, 4);
-
- 	writel(EIGHT_WORD_MSG_SIZE| SGL_OFFSET_6, &msg[0]);
- 	writel(I2O_CMD_OUTBOUND_INIT<<24 | HOST_TID<<12 | ADAPTER_TID, &msg[1]);
-@@ -2713,12 +2710,11 @@ static s32 adpt_i2o_init_outbound_q(adpt
-
- 	kfree(pHba->reply_pool);
-
--	pHba->reply_pool = kmalloc(pHba->reply_fifo_size * REPLY_FRAME_SIZE * 4, GFP_KERNEL|ADDR32);
--	if(!pHba->reply_pool){
--		printk(KERN_ERR"%s: Could not allocate reply pool\n",pHba->name);
--		return -1;
-+	pHba->reply_pool = kzalloc(pHba->reply_fifo_size * REPLY_FRAME_SIZE * 4, GFP_KERNEL|ADDR32);
-+	if (!pHba->reply_pool) {
-+		printk(KERN_ERR "%s: Could not allocate reply pool\n", pHba->name);
-+		return -ENOMEM;
- 	}
--	memset(pHba->reply_pool, 0 , pHba->reply_fifo_size * REPLY_FRAME_SIZE * 4);
-
- 	ptr = pHba->reply_pool;
- 	for(i = 0; i < pHba->reply_fifo_size; i++) {
-@@ -2929,12 +2925,11 @@ static int adpt_i2o_build_sys_table(void
-
- 	kfree(sys_tbl);
-
--	sys_tbl = kmalloc(sys_tbl_len, GFP_KERNEL|ADDR32);
--	if(!sys_tbl) {
-+	sys_tbl = kzalloc(sys_tbl_len, GFP_KERNEL|ADDR32);
-+	if (!sys_tbl) {
- 		printk(KERN_WARNING "SysTab Set failed. Out of memory.\n");
- 		return -ENOMEM;
- 	}
--	memset(sys_tbl, 0, sys_tbl_len);
-
- 	sys_tbl->num_entries = hba_count;
- 	sys_tbl->version = I2OVERSION;
+Yeah, you're right.  Means sys_poll with STOP/CONT cycles going in
+background (and no fds ready) would never return.
