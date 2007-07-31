@@ -1,151 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764164AbXGaOty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762444AbXGaOzS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764164AbXGaOty (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760835AbXGaOtr
+	id S1762444AbXGaOzS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:55:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760392AbXGaOzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:49:47 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:46990 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760766AbXGaOtq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:49:46 -0400
-Date: Tue, 31 Jul 2007 16:46:57 +0200
-From: =?UTF-8?B?U8OpYmFzdGllbiBEdWd1w6k=?= <sebastien.dugue@bull.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: ecashin@coraid.com, kernel list <linux-kernel@vger.kernel.org>, ak@suse.de
-Subject: Re: ATA over ethernet swapping and obfuscated code
-Message-ID: <20070731164657.74c3b0c2@frecb000686.frec.bull.fr>
-In-Reply-To: <20070731135831.GA4604@elf.ucw.cz>
-References: <20070731135831.GA4604@elf.ucw.cz>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/07/2007 16:54:30,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 31/07/2007 16:54:31,
-	Serialize complete at 31/07/2007 16:54:31
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset=UTF-8
+	Tue, 31 Jul 2007 10:55:03 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35290 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1759698AbXGaOzA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 10:55:00 -0400
+X-Authenticated: #704063
+X-Provags-ID: V01U2FsdGVkX19udj031IJulqYyuSV8F5LtzVutpTa++3JtleF4oc
+	dsvtq6V6d929oQ
+Date: Tue, 31 Jul 2007 16:54:57 +0200
+From: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Eric Sesterhenn / Snakebyte <snakebyte@gmx.de>,
+       Len Brown <lenb@kernel.org>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-acpi@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, venkatesh.pallipadi@intel.com
+Subject: Re: Time Problems with 2.6.23-rc1-gf695baf2
+Message-ID: <20070731145456.GB25175@alice>
+References: <20070723221630.GA28951@alice> <6bffcb0e0707241614s7b563b5bu114d2ecb227b1557@mail.gmail.com> <20070725113349.GB5469@alice> <200707251250.22469.lenb@kernel.org> <20070725231714.GA24867@alice> <6bffcb0e0707300732s6a63e63g4622ebfbbe26e479@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <6bffcb0e0707300732s6a63e63g4622ebfbbe26e479@mail.gmail.com>
+X-Editor: Vim http://www.vim.org/
+X-Info: http://www.snake-basket.de
+X-Operating-System: Linux/2.6.22.1 (x86_64)
+X-Uptime: 16:51:59 up  5:19,  5 users,  load average: 0.40, 0.22, 0.13
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Pavel,
+* Michal Piotrowski (michal.k.k.piotrowski@gmail.com) wrote:
+> Hi Eric,
+> 
+> On 26/07/07, Eric Sesterhenn / Snakebyte <snakebyte@gmx.de> wrote:
+> > * Len Brown (lenb@kernel.org) wrote:
+> > > > > > > [   13.506890] ACPI Exception (processor_throttling-0084): AE_NOT_FOUND, Evaluating _PTC [20070126]
+> > > > > > > [   13.507101] ACPI Exception (processor_throttling-0147): AE_NOT_FOUND, Evaluating _TSS [20070126]
+> > >
+> > > Note that these are just noise -- new code being verbose when looking for an optional feature.
+> > >
+> > > The fact that hitting the power button a bunch of times
+> > > to make the system move along suggests some sort of missing interrupt problem --
+> > > most likely the timer itself.
+> > >
+> > > [   13.868574] Probing IDE interface ide0...
+> > > [  387.279576] Clocksource tsc unstable (delta = 370195339890 ns)
+> > >
+> > > 5-minutes -- a long probe:-)
+> > >
+> > > > CONFIG_NO_HZ=y
+> > >
+> > > does CONFIG_NO_HZ=n make a difference?
+> >
+> > [   41.007654] EXT3 FS on hda1, internal journal
+> > [  322.133656] Clocksource tsc unstable (delta = 276476174785 ns)
+> > Boot went fine but the system got pretty unresponsive later, 2-3 seconds
+> > delay after keypresses on an idle system and a hang during shutdown which i had to resolve by
+> > pressing the power button (not to switch it of the hard way, but to keep it rebooting)
+> >
+> > > > CONFIG_HIGH_RES_TIMERS=y
+> > >
+> > > does CONFIG_HIGH_RES_TIMERS=n make a difference?
+> >
+> > doesnt change anything
+> >
+> > > does "irqpoll" make any difference?
+> > > does "notsc" make any difference?
+> > > does "idle=poll" make any difference?
+> >
+> > I tried these with the HIGH_RES_TIMERS=n, irqpoll and notsc dont change
+> > a thing, idle=poll makes it boot normally
+> 
+> Please use git-bisect
+> 
+> git-bisect start
+> git-bisect bad
+> git-bisect good 7dcca30a32aadb0520417521b0c44f42d09fe05c
 
-On Tue, 31 Jul 2007 15:58:31 +0200 Pavel Machek <pavel@ucw.cz> wrote:
 
-> Hi!
-> 
-> I wanted to know if it is possible/okay to swap over AOE... 
-> 
-> According to
-> http://www.coraid.com/support/linux/EtherDrive-2.6-HOWTO-5.html#ss5.20
-> .. it runs OOM even during normal use, so I guess swapping over it is
-> no-no?
-> 
-> Can I build both client and server for these using free software?
-> 
-> In the process, I looked at the aoe code, and parts of it look like
-> obfuscated C contest. The use of switch() as an if was particulary
-> creative; I'm not even sure if I translated it properly... can you
-> take a look?
-> 
-> (Patch is 
-> 
-> Signed-off-by: Pavel Machek <pavel@suse.cz>
-> 
-> but I did not even compile test it)
-> 
-> diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
-> index 05a9719..38ba35d 100644
-> --- a/drivers/block/aoe/aoedev.c
-> +++ b/drivers/block/aoe/aoedev.c
-> @@ -64,29 +64,26 @@ aoedev_newdev(ulong nframes)
->  
->  	d = kzalloc(sizeof *d, GFP_ATOMIC);
->  	f = kcalloc(nframes, sizeof *f, GFP_ATOMIC);
-> - 	switch (!d || !f) {
-> - 	case 0:
-> - 		d->nframes = nframes;
-> - 		d->frames = f;
-> - 		e = f + nframes;
-> - 		for (; f<e; f++) {
-> - 			f->tag = FREETAG;
-> - 			f->skb = new_skb(ETH_ZLEN);
-> - 			if (!f->skb)
-> - 				break;
-> - 		}
-> - 		if (f == e)
-> - 			break;
-> + 	if (!d || !f) {
-> +		kfree(f);
-> +		kfree(d);
-> +		return NULL;
-> +	}
-> +
-> +	d->nframes = nframes;
-> +	d->frames = f;
-> +	e = f + nframes;
-> +	for (; f<e; f++) {
-> +		f->tag = FREETAG;
-> +		f->skb = new_skb(ETH_ZLEN);
-> +		if (!f->skb)
-> +			break;
-> +	}
-> +	if (f != e) {
->   		while (f > d->frames) {
->   			f--;
->   			dev_kfree_skb(f->skb);
->   		}
-> - 	default:
-> - 		if (f)
-> - 			kfree(f);
-> - 		if (d)
-> - 			kfree(d);
-> -		return NULL;
->  	}
->  	INIT_WORK(&d->work, aoecmd_sleepwork);
->  	spin_lock_init(&d->lock);
+took some time, but i got a scape goat, added venkatesh to the CC list,
 
-  Creative it is.
+greetings, Eric
 
-> 
-> 
-> aoedev_by_sysminor_m() returns with spinlock held in error case; I
-> guess that's bad.
-> 
-> struct aoedev *
-> aoedev_by_sysminor_m(ulong sysminor, ulong bufcnt)
-> {
-> 	struct aoedev *d;
-> 	ulong flags;
-> 
-> 	spin_lock_irqsave(&devlist_lock, flags);
-> 
-> 	for (d=devlist; d; d=d->next)
-> 		if (d->sysminor == sysminor)
-> 			break;
-> 
-> 	if (d == NULL) {
-> 		d = aoedev_newdev(bufcnt);
-> 	 	if (d == NULL) {
-> 			spin_unlock_irqrestore(&devlist_lock, flags);
+b8550397f1f3d4b8b2c5257c88dae25d58ed is first bad commit
+commit 18eab8550397f1f3d4b8b2c5257c88dae25d58ed
+Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Date:   Fri Jun 15 19:37:00 2007 -0400
 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ what about here
+    ACPI: Enable C3 even when PM2_control is zero
+    
+    On systems that do not have pm2_control_block, we cannot really use
+    ARB_DISABLE before C3. We used to disable C3 totally on such systems.
+    
+    To be compatible with Windows, we need to enable C3 on such systems now.
+    We just skip ARB_DISABLE step before entering the C3-state and assume
+    hardware is handling things correctly. Also, ACPI spec is not clear
+    about pm2_control is _needed_ for C3 or not.
+    
+    We have atleast one system that need this to enable C3.
+    
+    Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+    Signed-off-by: Len Brown <len.brown@intel.com>
 
-> 			printk(KERN_INFO "aoe: aoedev_newdev
-> failure.\n");
-> 			return NULL;
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ here
-> 		}
-> 		d->sysminor = sysminor;
-> 		d->aoemajor = AOEMAJOR(sysminor);
-> 		d->aoeminor = AOEMINOR(sysminor);
-> 	}
-> 
-> 	spin_unlock_irqrestore(&devlist_lock, flags);
-> 	return d;
-> }
-> 
-
-  Sébastien.
