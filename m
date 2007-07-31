@@ -1,73 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759229AbXGaRDj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761306AbXGaREK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759229AbXGaRDj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:03:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbXGaRD3
+	id S1761306AbXGaREK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:04:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbXGaRDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:03:29 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:38540 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753193AbXGaRD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:03:27 -0400
-Subject: RE: regression on HP zx1 platform from ACPI autoload modulespatches
-From: Doug Chapman <doug.chapman@hp.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Tony Luck <tony.luck@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
-       linux-ia64@vger.kernel.org, trenn@suse.de
-In-Reply-To: <617E1C2C70743745A92448908E030B2A020E3AD2@scsmsx411.amr.corp.intel.com>
-References: <617E1C2C70743745A92448908E030B2A020E3AD2@scsmsx411.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 12:59:56 -0400
-Message-Id: <1185901196.4478.16.camel@deimos.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Tue, 31 Jul 2007 13:03:54 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4310 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754105AbXGaRDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:03:53 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 07] drivers/block/cciss.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 19:03:51 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       iss_storagedev@hp.com, axboe@kernel.dk
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707311903.52301.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 09:29 -0700, Luck, Tony wrote:
-> > commit 8c8eb78f673c07b60f31751e1e47ac367c60c6b7
-> 
-> Oops.  I cut & pasted the wrong commit id.  The fix went in as
-> commit 7091138fb762aed22317b4ff91eb211e7da3865c.
-> 
-> > FYI, I did a git pull yesterday just before I hit this issue so I should
-> > have had the latest stuff.
-> 
-> So this confuses me.  Linus pulled this into his tree on Friday (IIRC), but
-> at the very latest on Saturday (as there is a commit *after* this one that
-> is dated 2007-07-28 19:29:37).
-> 
-> The patch that is in the tree appears to be identical to the one that
-> Thomas Renninger posted to this thread, and you confirmed as working.
-> 
-> So when you have a moment, please pull latest Linus tree.  Confirm that
-> this patch is present:
->  $ grep hp_ioc_iommu_device_ids arch/ia64/hp/common/sba_iommu.c
->  static const struct acpi_device_id hp_ioc_iommu_device_ids[] = {
->  	.ids		= hp_ioc_iommu_device_ids,
->  $
-> 
-> and that it builds and boots for you.
-> 
-> Thanks
-> 
-> -Tony
->  
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Tony, all,
+ drivers/block/cciss.c | 104285 -> 104168 (-117 bytes)
+ drivers/block/cciss.o | 277400 -> 277124 (-276 bytes)
 
-I think I have solved the mystery.  I have my git tree pointing to
-git.frob.com to try to lessen the load on kernel.org.  I am guessing
-that the last time I pulled linus's tree from there they had not pulled
-since the commit was made so I was still a little out of date.
+ drivers/block/cciss.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-The latest git pull now does indeed grab this commit.
+--- linux-2.6.23-rc1-mm1-a/drivers/block/cciss.c	2007-07-26 13:07:41.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/block/cciss.c	2007-07-31 12:57:50.000000000 +0200
+@@ -1977,12 +1977,13 @@ cciss_read_capacity(int ctlr, int logvol
+ {
+ 	ReadCapdata_struct *buf;
+ 	int return_code;
+-	buf = kmalloc(sizeof(ReadCapdata_struct), GFP_KERNEL);
+-	if (buf == NULL) {
++
++	buf = kzalloc(sizeof(ReadCapdata_struct), GFP_KERNEL);
++	if (!buf) {
+ 		printk(KERN_WARNING "cciss: out of memory\n");
+ 		return;
+ 	}
+-	memset(buf, 0, sizeof(ReadCapdata_struct));
++
+ 	if (withirq)
+ 		return_code = sendcmd_withirq(CCISS_READ_CAPACITY,
+ 				ctlr, buf, sizeof(ReadCapdata_struct),
+@@ -2003,7 +2004,6 @@ cciss_read_capacity(int ctlr, int logvol
+ 		printk(KERN_INFO "      blocks= %llu block_size= %d\n",
+ 		(unsigned long long)*total_size+1, *block_size);
+ 	kfree(buf);
+-	return;
+ }
 
-sorry for any confusion I may have caused.
+ static void
+@@ -2011,12 +2011,13 @@ cciss_read_capacity_16(int ctlr, int log
+ {
+ 	ReadCapdata_struct_16 *buf;
+ 	int return_code;
+-	buf = kmalloc(sizeof(ReadCapdata_struct_16), GFP_KERNEL);
+-	if (buf == NULL) {
++
++	buf = kzalloc(sizeof(ReadCapdata_struct_16), GFP_KERNEL);
++	if (!buf) {
+ 		printk(KERN_WARNING "cciss: out of memory\n");
+ 		return;
+ 	}
+-	memset(buf, 0, sizeof(ReadCapdata_struct_16));
++
+ 	if (withirq) {
+ 		return_code = sendcmd_withirq(CCISS_READ_CAPACITY_16,
+ 			ctlr, buf, sizeof(ReadCapdata_struct_16),
+@@ -2038,7 +2039,6 @@ cciss_read_capacity_16(int ctlr, int log
+ 	printk(KERN_INFO "      blocks= %llu block_size= %d\n",
+ 	       (unsigned long long)*total_size+1, *block_size);
+ 	kfree(buf);
+-	return;
+ }
 
-- Doug
-
-
+ static int cciss_revalidate(struct gendisk *disk)
