@@ -1,62 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765582AbXGaR0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932125AbXGaR05@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765582AbXGaR0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbXGaR0e
+	id S932125AbXGaR05 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:26:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761031AbXGaR0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 31 Jul 2007 13:26:37 -0400
+Received: from palrel12.hp.com ([156.153.255.237]:33928 "EHLO palrel12.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758979AbXGaR0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Jul 2007 13:26:34 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1759 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758979AbXGaR0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:26:33 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 18] drivers/md/dm-table.c: kmalloc + memset conversion to kzalloc
-Date: Tue, 31 Jul 2007 19:26:32 +0200
-User-Agent: KMail/1.9.5
-Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
+X-Greylist: delayed 1145 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 13:26:34 EDT
+From: "Jim Hull" <jim.hull@hp.com>
+To: "'KAMEZAWA Hiroyuki'" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "'David Mosberger-Tang'" <dmosberger@gmail.com>
+Cc: "'LKML'" <linux-kernel@vger.kernel.org>, <linux-ia64@vger.kernel.org>,
+       <tony.luck@intel.com>, <Zoltan.Menyhart@bull.net>,
+       "'Christoph Lameter'" <clameter@sgi.com>
+References: <20070731113543.93ffd964.kamezawa.hiroyu@jp.fujitsu.com><20070731114155.5785123c.kamezawa.hiroyu@jp.fujitsu.com><ed5aea430707302115h484620f1le51fc054436b273a@mail.gmail.com> <20070731132932.8e21d48c.kamezawa.hiroyu@jp.fujitsu.com>
+Subject: RE: [PATCH] flush icache before set_pte take6. [4/4] optimization for cpus other than montecito
+Date: Tue, 31 Jul 2007 10:06:36 -0700
+Message-ID: <019b01c7d395$27d692b0$3e3af40f@americas.hpqcorp.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-2"
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311926.33125.m.kozlowski@tuxland.pl>
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <20070731132932.8e21d48c.kamezawa.hiroyu@jp.fujitsu.com>
+X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+Thread-index: AcfTKz1eRIxgSdihSLW2H2KZKWccjQAaBGYw
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+Not just crazy, but wrong - this *can* happen on pre-Montecito.  Even though
+L1D is write-through and L2 was mixed I/D, the L1 I-cache could contain
+stale instrutions if there are missing flushes. I think the only reason this
+has never been observed is that the L1I is so small (32K) that it's likely
+that any stale data has been displaced.
 
- drivers/md/dm-table.c | 21698 -> 21664 (-34 bytes)
- drivers/md/dm-table.o | 132153 -> 132093 (-60 bytes)
+ -- Jim
 
- drivers/md/dm-table.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
---- linux-2.6.23-rc1-mm1-a/drivers/md/dm-table.c	2007-07-26 13:07:41.000000000 +0200
-+++ linux-2.6.23-rc1-mm1-b/drivers/md/dm-table.c	2007-07-31 13:19:43.000000000 +0200
-@@ -213,12 +213,12 @@ static int alloc_targets(struct dm_table
- int dm_table_create(struct dm_table **result, int mode,
- 		    unsigned num_targets, struct mapped_device *md)
- {
--	struct dm_table *t = kmalloc(sizeof(*t), GFP_KERNEL);
--
-+	struct dm_table *t;
-+
-+	t = kzalloc(sizeof(*t), GFP_KERNEL);
- 	if (!t)
- 		return -ENOMEM;
-
--	memset(t, 0, sizeof(*t));
- 	INIT_LIST_HEAD(&t->devices);
- 	atomic_set(&t->holders, 1);
-
-@@ -229,7 +229,6 @@ int dm_table_create(struct dm_table **re
-
- 	if (alloc_targets(t, num_targets)) {
- 		kfree(t);
--		t = NULL;
- 		return -ENOMEM;
- 	}
+> -----Original Message-----
+> From: linux-ia64-owner@vger.kernel.org 
+> [mailto:linux-ia64-owner@vger.kernel.org] On Behalf Of 
+> KAMEZAWA Hiroyuki
+> Sent: Monday, July 30, 2007 9:30 PM
+> To: David Mosberger-Tang
+> Cc: LKML; linux-ia64@vger.kernel.org; tony.luck@intel.com; 
+> Zoltan.Menyhart@bull.net; Christoph Lameter
+> Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] 
+> optimization for cpus other than montecito
+> 
+> On Mon, 30 Jul 2007 22:15:50 -0600
+> "David Mosberger-Tang" <dmosberger@gmail.com> wrote:
+> 
+> > This seems crazy to me.  Flushing should occur according to the
+> > *architecture*, not model-by-model.  Even if we happen to 
+> get "lucky"
+> > on pre-Montecito CPUs, that doesn't justify such ugly hacks.  
+> 
+> I'm not sure this can happen before Montecito because L1 was 
+> write-through
+> and L2 was mixed. 
+> 
+> > Or you really want to debug this *again* come next CPU?
+> 
+> No. 
+> I should add RFC to this patch. I just want to hear opinions.
+> This is why I separated this patch. I can drop this.
+> 
+> Thanks,
+> -Kame
+> 
+> 
+> 
+> 
+> 
+>  
+> >   --david
+> > 
+> > On 7/30/07, KAMEZAWA Hiroyuki 
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > >
+> > > Add "L2 cache is separated? check flag" as read_mostly 
+> global variable.
+> > >
+> > > This add one memory reference to global variable to page 
+> faults of "executable"
+> > > map in do_wp_page(page copy case), file-mapped page fault 
+> and some system calls
+> > > which does memory map changes. But not so bad as calling 
+> sync_icache_dcache in
+> > > architectures which doesn't need it.
+> > >
+> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > >
+> > >
+> > > ---
+> > >  arch/ia64/kernel/setup.c   |    7 +++++++
+> > >  include/asm-ia64/pgtable.h |    3 ++-
+> > >  2 files changed, 9 insertions(+), 1 deletion(-)
+> > >
+> > > Index: linux-2.6.23-rc1.test/arch/ia64/kernel/setup.c
+> > > 
+> ===================================================================
+> > > --- linux-2.6.23-rc1.test.orig/arch/ia64/kernel/setup.c
+> > > +++ linux-2.6.23-rc1.test/arch/ia64/kernel/setup.c
+> > > @@ -106,6 +106,8 @@ struct io_space io_space[MAX_IO_SPACES];
+> > >  EXPORT_SYMBOL(io_space);
+> > >  unsigned int num_io_spaces;
+> > >
+> > > +int separated_l2_icache_dcache __read_mostly;
+> > > +
+> > >  /*
+> > >   * "flush_icache_range()" needs to know what processor 
+> dependent stride size to use
+> > >   * when it makes i-cache(s) coherent with d-caches.
+> > > @@ -718,6 +720,11 @@ get_model_name(__u8 family, __u8 model)
+> > >                 printk(KERN_ERR
+> > >                        "%s: Table overflow. Some 
+> processor model information will be missing\n",
+> > >                        __FUNCTION__);
+> > > +       /* Montecito has separated L2 Icache and Dcache. 
+> This requires
+> > > +          synchronize Icache and Dcache before set_pte() */
+> > > +       if (family == 0x20)
+> > > +               separated_l2_icache_dcache = 1;
+> > > +
+> > >         return "Unknown";
+> > >  }
+> > >
+> > > Index: linux-2.6.23-rc1.test/include/asm-ia64/pgtable.h
+> > > 
+> ===================================================================
+> > > --- linux-2.6.23-rc1.test.orig/include/asm-ia64/pgtable.h
+> > > +++ linux-2.6.23-rc1.test/include/asm-ia64/pgtable.h
+> > > @@ -489,9 +489,10 @@ extern struct page *zero_page_memmap_ptr
+> > >   * as an executable pte.
+> > >   */
+> > >  extern void __sync_icache_dcache(pte_t pte);
+> > > +extern int separated_l2_icache_dcache;
+> > >  static inline void sync_icache_dcache(pte_t pte)
+> > >  {
+> > > -       if (pte_exec(pte))
+> > > +       if (pte_exec(pte) && separated_l2_icache_dcache)
+> > >                 __sync_icache_dcache(pte);
+> > >  }
+> > >  #define __HAVE_ARCH_SYNC_ICACHE_DCACHE
+> > >
+> > > -
+> > > To unsubscribe from this list: send the line "unsubscribe 
+> linux-ia64" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > >
+> > 
+> > 
+> > -- 
+> > Mosberger Consulting LLC, http://www.mosberger-consulting.com/
+> > 
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-ia64" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
