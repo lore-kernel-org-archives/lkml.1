@@ -1,46 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbXGaXt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXGaXwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763256AbXGaXt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbXGaXtr
+	id S1762171AbXGaXwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 19:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbXGaXwm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:49:47 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34190 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753760AbXGaXtq (ORCPT
+	Tue, 31 Jul 2007 19:52:42 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:32174 "EHLO
+	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755586AbXGaXwm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 19:49:46 -0400
-Date: Wed, 1 Aug 2007 00:56:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Vitaly Bordug <vitb@kernel.crashing.org>,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
- for CF	interface
-Message-ID: <20070801005640.327226db@the-village.bc.nu>
-In-Reply-To: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
-References: <20070725165318.5331.23795.stgit@localhost.localdomain>
-	<20070725165326.5331.19920.stgit@localhost.localdomain>
-	<46A78322.3080607@ru.mvista.com>
-	<46A78E3F.1030904@ru.mvista.com>
-	<a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Jul 2007 19:52:42 -0400
+X-Greylist: delayed 451 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 19:52:41 EDT
+Message-ID: <46AFC93F.6010104@chelsio.com>
+Date: Tue, 31 Jul 2007 16:43:59 -0700
+From: Divy Le Ray <divy@chelsio.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@stusta.de>
+CC: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [2.6 patch] drivers/net/cxgb3/xgmac.c: remove dead code
+References: <20070729145544.GA16817@stusta.de>
+In-Reply-To: <20070729145544.GA16817@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 31 Jul 2007 23:42:47.0653 (UTC) FILETIME=[7FEF5950:01C7D3CC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The hardware is called (E)IDE, the protocol is called ATA.
-> Or that's what I was told -- I think there's some historic
-> revisionism involved, too.
+Adrian Bunk wrote:
+>
+> This patch removes dead code ("tx_xcnt" can never be != 0 at this place)
+> spotted by the Coverity checker.
+>
+> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+>
+Acked-by: Divy Le Ray <divy@chelsio.com>
+>
+>
+> ---
+>
+>  drivers/net/cxgb3/xgmac.c |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+>
+> --- linux-2.6.22-rc6-mm1/drivers/net/cxgb3/xgmac.c.old  2007-07-24 
+> 13:55:33.000000000 +0200
+> +++ linux-2.6.22-rc6-mm1/drivers/net/cxgb3/xgmac.c      2007-07-24 
+> 13:57:06.000000000 +0200
+> @@ -510,38 +510,35 @@ int t3b2_mac_watchdog_task(struct cmac *
+>         if (tx_mcnt == mac->tx_mcnt) {
+>                 tx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+>                                                 
+> A_XGM_TX_SPI4_SOP_EOP_CNT +
+>                                                 mac->offset)));
+>                 if (tx_xcnt == 0) {
+>                         t3_write_reg(adap, A_TP_PIO_ADDR,
+>                                      A_TP_TX_DROP_CNT_CH0 + macidx(mac));
+>                         tx_tcnt = (G_TXDROPCNTCH0RCVD(t3_read_reg(adap,
+>                                                       A_TP_PIO_DATA)));
+>                 } else {
+>                         goto rxcheck;
+>                 }
+>         } else {
+>                 mac->toggle_cnt = 0;
+>                 goto rxcheck;
+>         }
+>
+> -       if (((tx_tcnt != mac->tx_tcnt) &&
+> -            (tx_xcnt == 0) && (mac->tx_xcnt == 0)) ||
+> -           ((mac->tx_mcnt == tx_mcnt) &&
+> -            (tx_xcnt != 0) && (mac->tx_xcnt != 0))) {
+> +       if ((tx_tcnt != mac->tx_tcnt) && (mac->tx_xcnt == 0))  {
+>                 if (mac->toggle_cnt > 4) {
+>                         status = 2;
+>                         goto out;
+>                 } else {
+>                         status = 1;
+>                         goto out;
+>                 }
+>         } else {
+>                 mac->toggle_cnt = 0;
+>                 goto rxcheck;
+>         }
+>
+>  rxcheck:
+>         if (rx_mcnt != mac->rx_mcnt)
+>                 rx_xcnt = (G_TXSPI4SOPCNT(t3_read_reg(adap,
+>                                                 
+> A_XGM_RX_SPI4_SOP_EOP_CNT +
+>                                                 mac->offset)));
+>
 
-ATA is the interface and standards for the ANSI standards based disk
-attachment. IDE "Integrated Drive Electronics" is a marketing name used
-to cover all sorts of ST412 compatible-ish early interfaces that moved
-the brains onto the disk. IDE doesn't really mean much but "brains on
-disk", ATA is a real standard.
