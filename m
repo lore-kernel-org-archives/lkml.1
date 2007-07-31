@@ -1,67 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932075AbXGaQVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXGaQWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932075AbXGaQVu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 12:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758736AbXGaQVj
+	id S932290AbXGaQWK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 12:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbXGaQVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 12:21:39 -0400
-Received: from mga03.intel.com ([143.182.124.21]:24873 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761262AbXGaQVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 12:21:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
-   d="scan'208";a="256935490"
-Date: Tue, 31 Jul 2007 09:18:41 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-Message-Id: <20070731091841.857d22bb.kristen.c.accardi@intel.com>
-In-Reply-To: <46AF4B05.4010700@gmail.com>
-References: <20070705194909.337398431@intel.com>
-	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-	<46AE12B6.6090408@garzik.org>
-	<46AED656.8070407@gmail.com>
-	<1185891382.2750.8.camel@laptopd505.fenrus.org>
-	<46AF4B05.4010700@gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 12:21:53 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58378 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932089AbXGaQVv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 12:21:51 -0400
+Date: Tue, 31 Jul 2007 22:04:10 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH -mm] Introduce strtol_check_range()
+Message-ID: <alpine.LFD.0.999.0707312203150.28746@enigma.security.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 23:45:25 +0900
-Tejun Heo <htejun@gmail.com> wrote:
 
-> Anyways, I don't really think this attribute belongs to SCSI sysfs
-> hierarchy.  There currently isn't any alternative but sysfs is part of
-> userland visible interface and putting something into SCSI sysfs
-> hierarchy just because libata doesn't have one doesn't look like a good
-> idea.
-> 
-> sysfs isn't far from being detached from kobject and driver model.  I
-> think it would be best to wait a bit and build proper libata sysfs
-> hierarchy which won't have to be changed later when libata departs from
-> SCSI.  Well, it isn't really a good way but IMHO it's better than
-> sticking ATA power saving node into SCSI sysfs hierarchy.
+Callers (especially "store" functions for sysfs or configfs attributes)
+that want to convert an input string to a number may often also want to
+check for simple input sanity or allowable range. strtol10_check_range()
+of netconsole does this, so extract it out into lib/vsprintf.c, make it
+generic w.r.t. base, and export it to the rest of the kernel and modules.
 
-"Wait a bit" could be a very long time.  Who is working on building this
-new libata sysfs support now?  If the answer is "no one", which I think it 
-may be, do you want to hold up a feature that actually helps many people
-for possibly 6 months or more just because we have to go through scsi
-right now for our sysfs interface?  on top of that, the last mail I 
-got from James on this subject indicated that if we kept our granularity
-large with the power savings levels, SCSI can actually take advantage of
-this as well.  Sure, we may have to tweak things around later, but isn't
-this what we do routinely?  Holding up valuable features from the kernel 
-because things aren't perfect yet seems really broken. 
+Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-As far as your complaints about broken hardware go, keep in mind that
-the patch set does provide a method of adding these disks to a blacklist,
-so I don't see that as a problem.  And, the default for this feature is
-"off", and user space would have to explicitly enable it.
+---
+
+[ On top of previously posted netconsole patches, and
+  the just-posted "Introduce U16_MAX and U32_MAX" patch. ]
+
+[ checkpatch.pl doesn't particularly like this patch, but I wanted to be
+  consistent with the rest of lib/vsprintf.c and include/linux/kernel.h. ]
+
+ drivers/net/netconsole.c |   46 ++++++++++++----------------------------------
+ include/linux/kernel.h   |    1 +
+ lib/vsprintf.c           |   30 ++++++++++++++++++++++++++++++
+ 3 files changed, 43 insertions(+), 34 deletions(-)
+
+diff --git a/drivers/net/netconsole.c b/drivers/net/netconsole.c
+index 47a8094..0992a16 100644
+--- a/drivers/net/netconsole.c
++++ b/drivers/net/netconsole.c
+@@ -242,34 +242,6 @@ static struct netconsole_target *to_target(struct config_item *item)
+ }
+ 
+ /*
+- * Wrapper over simple_strtol (base 10) with sanity and range checking.
+- * We return (signed) long only because we may want to return errors.
+- * Do not use this to convert numbers that are allowed to be negative.
+- */
+-static long strtol10_check_range(const char *cp, long min, long max)
+-{
+-	long ret;
+-	char *p = (char *) cp;
+-
+-	WARN_ON(min < 0);
+-	WARN_ON(max < min);
+-
+-	ret = simple_strtol(p, &p, 10);
+-
+-	if (*p && (*p != '\n')) {
+-		printk(KERN_ERR "netconsole: invalid input\n");
+-		return -EINVAL;
+-	}
+-	if ((ret < min) || (ret > max)) {
+-		printk(KERN_ERR "netconsole: input %ld must be between "
+-				"%ld and %ld\n", ret, min, max);
+-		return -EINVAL;
+-	}
+-
+-	return ret;
+-}
+-
+-/*
+  * Attribute operations for netconsole_target.
+  */
+ 
+@@ -335,9 +307,11 @@ static ssize_t store_enabled(struct netconsole_target *nt,
+ 	int err;
+ 	long enabled;
+ 
+-	enabled = strtol10_check_range(buf, 0, 1);
+-	if (enabled < 0)
++	enabled = strtol_check_range(buf, 0, 1, 10);
++	if (enabled < 0) {
++		printk(KERN_ERR "netconsole: invalid input\n");
+ 		return enabled;
++	}
+ 
+ 	if (enabled) {	/* 1 */
+ 
+@@ -398,9 +372,11 @@ static ssize_t store_local_port(struct netconsole_target *nt,
+ 		return -EINVAL;
+ 	}
+ 
+-	local_port = strtol10_check_range(buf, 0, U16_MAX);
+-	if (local_port < 0)
++	local_port = strtol_check_range(buf, 0, U16_MAX, 10);
++	if (local_port < 0) {
++		printk(KERN_ERR "netconsole: invalid input\n");
+ 		return local_port;
++	}
+ 
+ 	nt->np.local_port = local_port;
+ 
+@@ -420,9 +396,11 @@ static ssize_t store_remote_port(struct netconsole_target *nt,
+ 		return -EINVAL;
+ 	}
+ 
+-	remote_port = strtol10_check_range(buf, 0, U16_MAX);
+-	if (remote_port < 0)
++	remote_port = strtol_check_range(buf, 0, U16_MAX, 10);
++	if (remote_port < 0) {
++		printk(KERN_ERR "netconsole: invalid input\n");
+ 		return remote_port;
++	}
+ 
+ 	nt->np.remote_port = remote_port;
+ 
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index e9221de..ced5c1b 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -121,6 +121,7 @@ extern unsigned long simple_strtoul(const char *,char **,unsigned int);
+ extern long simple_strtol(const char *,char **,unsigned int);
+ extern unsigned long long simple_strtoull(const char *,char **,unsigned int);
+ extern long long simple_strtoll(const char *,char **,unsigned int);
++extern long strtol_check_range(const char *,long,long,unsigned int);
+ extern int sprintf(char * buf, const char * fmt, ...)
+ 	__attribute__ ((format (printf, 2, 3)));
+ extern int vsprintf(char *buf, const char *, va_list)
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 6b6734d..7ce8736 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -126,6 +126,36 @@ long long simple_strtoll(const char *cp,char **endp,unsigned int base)
+ 	return simple_strtoull(cp,endp,base);
+ }
+ 
++/**
++ * strtol_check_range - wrapper over simple_strtol with input and range checking
++ * @cp: The start of the string
++ * @min: Minimum value allowed
++ * @max: Maximum value allowed
++ * @base: The number base to use
++ *
++ * We return (signed) long only because we may want to return errors.
++ * Do not use this to convert numbers that are allowed to be negative.
++ */
++long strtol_check_range(const char *cp, long min, long max, unsigned int base)
++{
++	long ret;
++	char *p = (char *) cp;
++
++	WARN_ON(min < 0);
++	WARN_ON(max < min);
++
++	ret = simple_strtol(p, &p, base);
++
++	if (*p && (*p != '\n'))
++		return -EINVAL;
++	if ((ret < min) || (ret > max))
++		return -EINVAL;
++
++	return ret;
++}
++
++EXPORT_SYMBOL(strtol_check_range);
++
+ static int skip_atoi(const char **s)
+ {
+ 	int i=0;
