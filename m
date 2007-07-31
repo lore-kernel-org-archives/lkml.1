@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940160AbXGaBgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940194AbXGaBlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940160AbXGaBgf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 21:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761588AbXGaBg0
+	id S940194AbXGaBlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 21:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761588AbXGaBlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 21:36:26 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34524 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760682AbXGaBgZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 21:36:25 -0400
-X-Authenticated: #31060655
-X-Provags-ID: V01U2FsdGVkX1/1lBdaIlb1qE6Xdbc+zFzVYr52qAOKkL8uqlVzGC
-	2vXiqStC7DCIxe
-Message-ID: <46AE9221.70302@gmx.net>
-Date: Tue, 31 Jul 2007 03:36:33 +0200
-From: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070301 SUSE/1.0.8-0.1 SeaMonkey/1.0.8
+	Mon, 30 Jul 2007 21:41:12 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:49505 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757344AbXGaBlL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 21:41:11 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-To: Gabriel C <nix.or.die@googlemail.com>
-CC: Sasa Ostrouska <casaxa@gmail.com>, Avuton Olrich <avuton@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: forcedeth ?
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>	 <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>	 <46AE6029.60308@googlemail.com> <dcf706c60707301510n6c2b649p44739 <46AE6372.20808@googlemail.com>
-In-Reply-To: <46AE6372.20808@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Testing of CPRM on SD Card
+Date: Tue, 31 Jul 2007 07:10:14 +0530
+Message-ID: <0A50DBE80DD6674E94F7269DC964A7B6441418@dbde01.ent.ti.com>
+In-Reply-To: <20070730161114.053bef44@the-village.bc.nu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Testing of CPRM on SD Card
+Thread-Index: AcfSuzHsRKveNMdVTQOKX4/kTZc/qQAV2tPQ
+From: "Sriram, Kannan" <ksriram@ti.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>, "Midhun A" <midhunagni@gmail.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.arm.linux.org.uk>,
+       <linux-mtd@lists.infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31.07.2007 00:17, Gabriel C wrote:
-> Sasa Ostrouska wrote:
->
->> Gabriel, hmm, shouldnt udev be able to autoconfigure that ? But I need
->> to check that, thx for the tip.
+
+
+> -----Original Message-----
+> From: Alan Cox [mailto:alan@lxorguk.ukuu.org.uk]
+> Sent: Tuesday, July 31, 2007 12:11 AM
+> To: Midhun A
+> Cc: Sriram, Kannan; linux-kernel@vger.kernel.org; linux-arm-
+> kernel@lists.arm.linux.org.uk; linux-mtd@lists.infradead.org
+> Subject: Re: Testing of CPRM on SD Card
 > 
-> Yes udev does this based on the MAC address but AFAIK forcedeth is 'special' for some reason 
-> ( which I can really remember now and gets on each boot a new MAC address or alike )
+> On Mon, 30 Jul 2007 20:23:42 +0530
+> "Midhun A" <midhunagni@gmail.com> wrote:
+> 
+> > Hey All,
+> >
+> >     Thanks a lot for the replies. I have the development keys. But
+the
+> > algorithm and some intellectual property needs to be licenced from
+the
+> > 4C entity guys to implement it. As of now I just want to test the
+CPRM
+> > functionality. So licensing the algo for a prototype testing is a
+huge
+> > cost.
+>
 
-Ah yes, that's a workaround for certain buggy boards to make sure you're
-not left without networking even if the MAC address stored on the board
-is bogus.
+If you have the development keys, then you should typically have the
+dummy "secret constant" used in the C2 algorithm as well. Contrary to
+popular belief, the C2 algorithm by itself is not proprietary, just the
+256 byte secret constant used inside the C2 algorithm. Also, if you want
+to just "test" CPRM, you have all the stuff you need (not the real
+stuff, but stuff that you can validate using your development keys) in
+the name of dummy keys. Some sample input/ output data as well as
+related dummy keys and the C2 algorithms are all available at the 4C
+website for free download.
 
-Basically, forcedeth checks if the MAC address supplied by your
-mainboard is bogus and autogenerates a random MAC address from a private
-range (prefix 00:00:6c) as workaround. However, it will complain loudly
-if it has to do that.
+I had once (long ago) validated CPRM purely using stuff downloaded from
+4C (free download). But my setup was not Linux; rather on a DSP
+simulator platform, and was "low level".
 
-Quoting from forcedeth.c:
-> if (!is_valid_ether_addr(dev->perm_addr)) {
-> 	/*
-> 	 * Bad mac address. At least one bios sets the mac address
-> 	 * to 01:23:45:67:89:ab
-> 	 */
-> 	printk(KERN_ERR "%s: Invalid Mac address detected: %02x:%02x:%02x:%02x:%02x:%02x\n",
-> 		pci_name(pci_dev),
-> 		dev->dev_addr[0], dev->dev_addr[1], dev->dev_addr[2],
-> 		dev->dev_addr[3], dev->dev_addr[4], dev->dev_addr[5]);
-> 	printk(KERN_ERR "Please complain to your hardware vendor. Switching to a random MAC.\n");
-> 	dev->dev_addr[0] = 0x00;
-> 	dev->dev_addr[1] = 0x00;
-> 	dev->dev_addr[2] = 0x6c;
-> 	get_random_bytes(&dev->dev_addr[3], 3);
-> }
+But if you are looking for a quick test using a real SD-card, then like
+I said, your development keys won't help. You need a real set of valid
+"production keys" and these I bet are very hard to get!
+ 
+> Good good, the higher the better and the less this evil stuff gets
+used.
 
-Sometimes it helps to update the BIOS and/or set the MAC address which
-is printed on the board as MAC address in the BIOS.
-
-Regards,
-Carl-Daniel
