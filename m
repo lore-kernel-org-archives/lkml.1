@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934949AbXGaV4A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934335AbXGaV5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934949AbXGaV4A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:56:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762348AbXGaVzt
+	id S934335AbXGaV5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758292AbXGaV5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:55:49 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:41521 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757944AbXGaVzs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:55:48 -0400
-Message-ID: <46AFAF4E.1000605@gmail.com>
-Date: Tue, 31 Jul 2007 23:53:18 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Tue, 31 Jul 2007 17:57:00 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1032 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757211AbXGaV46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:56:58 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 68] drivers/net/s2io.c: kmalloc + memset conversion to k[cz]alloc
+Date: Tue, 31 Jul 2007 23:56:58 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       netdev@vger.kernel.org, jgarzik@pobox.com
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-To: kriko <kristjan.ugrin@gmail.com>
-CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Reboot hang
-References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site>
-In-Reply-To: <op.twcmvlvcatcbto@linux.site>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+Message-Id: <200707312356.58934.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31/2007 11:48 PM, kriko wrote:
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
->> "Summary screen" will do, but yes, I understood. Perhaps your BIOS 
->> isn't fond of the state the Linux drivers leaves your DVD-ROM at. 
->> Judging by your "nv_pata", you are probebly usiing the pata (pata_amd) 
->> driver, not the old IDE driver?
->>
->> Does it boot through if you disable booting from the DVD-ROM?
-> 
-> Mentioning the dvd-rom state, it comes to my mind, when rebooting from 
-> win, the dvd rom will close tray and  / or LED will blink on reboot.
-> None of that happens if I reboot from linux, so it could be a driver 
-> problem. I see that I have both (old and new enable in kernel), I don't 
-> know which is being used,
-> but I'll recompile kernel with just one driver and retest.
+ drivers/net/s2io.c | 235587 -> 235340 (-247 bytes)
+ drivers/net/s2io.o | 460768 -> 460120 (-648 bytes)
 
-Seems a fairly safe assumption that the Linux driver leaves your DVD-ROM in 
-a peculiar state then. If you have both drivers compiled in, I believe the 
-new PATA driver will "win" (judging by the number of people that lost their 
-drives on hda...) so I've added its author to the CC.
+ drivers/net/s2io.c |   14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
-Repeating information from your first post:
+--- linux-2.6.23-rc1-mm1-a/drivers/net/s2io.c	2007-07-26 13:07:42.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/net/s2io.c	2007-07-31 13:44:02.000000000 +0200
+@@ -531,7 +531,7 @@ static int init_shared_mem(struct s2io_n
+ 	for (i = 0; i < config->tx_fifo_num; i++) {
+ 		int fifo_len = config->tx_cfg[i].fifo_len;
+ 		int list_holder_size = fifo_len * sizeof(struct list_info_hold);
+-		mac_control->fifos[i].list_info = kmalloc(list_holder_size,
++		mac_control->fifos[i].list_info = kzalloc(list_holder_size,
+ 							  GFP_KERNEL);
+ 		if (!mac_control->fifos[i].list_info) {
+ 			DBG_PRINT(INFO_DBG,
+@@ -539,7 +539,6 @@ static int init_shared_mem(struct s2io_n
+ 			return -ENOMEM;
+ 		}
+ 		mem_allocated += list_holder_size;
+-		memset(mac_control->fifos[i].list_info, 0, list_holder_size);
+ 	}
+ 	for (i = 0; i < config->tx_fifo_num; i++) {
+ 		int page_num = TXD_MEM_PAGE_CNT(config->tx_cfg[i].fifo_len,
+@@ -3788,9 +3787,9 @@ static int s2io_enable_msi_x(struct s2io
+ 	u16 msi_control; /* Temp variable */
+ 	int ret, i, j, msix_indx = 1;
 
-   Gigabyte gak8nsp (nforce 3)
+-	nic->entries = kmalloc(MAX_REQUESTED_MSI_X * sizeof(struct msix_entry),
++	nic->entries = kcalloc(MAX_REQUESTED_MSI_X, sizeof(struct msix_entry),
+ 			       GFP_KERNEL);
+-	if (nic->entries == NULL) {
++	if (!nic->entries) {
+ 		DBG_PRINT(INFO_DBG, "%s: Memory allocation failed\n", \
+ 			__FUNCTION__);
+ 		nic->mac_control.stats_info->sw_stat.mem_alloc_fail_cnt++;
+@@ -3798,12 +3797,11 @@ static int s2io_enable_msi_x(struct s2io
+ 	}
+ 	nic->mac_control.stats_info->sw_stat.mem_allocated
+ 		+= (MAX_REQUESTED_MSI_X * sizeof(struct msix_entry));
+-	memset(nic->entries, 0,MAX_REQUESTED_MSI_X * sizeof(struct msix_entry));
 
-   NEC DVD-RW@nv_pata
-   1x 80 GB WD@nv_sata, 1x 250 GB WD@nv_sata , IBM (20GB) @ nv_pata
+ 	nic->s2io_entries =
+-		kmalloc(MAX_REQUESTED_MSI_X * sizeof(struct s2io_msix_entry),
++		kcalloc(MAX_REQUESTED_MSI_X, sizeof(struct s2io_msix_entry),
+ 				   GFP_KERNEL);
+-	if (nic->s2io_entries == NULL) {
++	if (!nic->s2io_entries) {
+ 		DBG_PRINT(INFO_DBG, "%s: Memory allocation failed\n",
+ 			__FUNCTION__);
+ 		nic->mac_control.stats_info->sw_stat.mem_alloc_fail_cnt++;
+@@ -3814,8 +3812,6 @@ static int s2io_enable_msi_x(struct s2io
+ 	}
+ 	 nic->mac_control.stats_info->sw_stat.mem_allocated
+ 		+= (MAX_REQUESTED_MSI_X * sizeof(struct s2io_msix_entry));
+-	memset(nic->s2io_entries, 0,
+-	       MAX_REQUESTED_MSI_X * sizeof(struct s2io_msix_entry));
 
-Machine hangs at summary screen where it would be trying a boot from DVD 
-normally on cold boot, or reboot from Windows. reboot=b doesn't help.
-
-Rene.
+ 	for (i=0; i< MAX_REQUESTED_MSI_X; i++) {
+ 		nic->entries[i].entry = i;
