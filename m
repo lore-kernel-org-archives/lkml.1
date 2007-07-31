@@ -1,83 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965963AbXGaESR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939990AbXGaETb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965963AbXGaESR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 00:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbXGaESI
+	id S939990AbXGaETb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 00:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbXGaETX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 00:18:08 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:40038 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752421AbXGaESH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 00:18:07 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
-References: <1185851569.23149.25.camel@caritas-dev.intel.com>
-Date: Mon, 30 Jul 2007 22:16:31 -0600
-In-Reply-To: <1185851569.23149.25.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Tue, 31 Jul 2007 11:12:49 +0800")
-Message-ID: <m1bqdtus0w.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Tue, 31 Jul 2007 00:19:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:59089 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752938AbXGaETW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 00:19:22 -0400
+Date: Tue, 31 Jul 2007 06:19:17 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, mingo@elte.hu, ak@suse.de, jens.axboe@oracle.com,
+       James.Bottomley@SteelEye.com, andrea@suse.de, akpm@linux-foundation.org,
+       andrew.vasquez@qlogic.com
+Subject: Re: [rfc] direct IO submission and completion scalability issues
+Message-ID: <20070731041917.GA25874@wotan.suse.de>
+References: <20070728012128.GB10033@linux-os.sc.intel.com> <Pine.LNX.4.64.0707301114060.743@schroedinger.engr.sgi.com> <20070730203519.GD10033@linux-os.sc.intel.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070730203519.GD10033@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+On Mon, Jul 30, 2007 at 01:35:19PM -0700, Suresh B wrote:
+> On Mon, Jul 30, 2007 at 11:20:04AM -0700, Christoph Lameter wrote:
+> > On Fri, 27 Jul 2007, Siddha, Suresh B wrote:
+> 
+> > > Observation #2: This introduces some migration overhead during IO submission.
+> > > With the current prototype, every incoming IO request results in an IPI and
+> > > context switch(to kblockd thread) on the interrupt processing cpu.
+> > > This issue needs to be addressed and main challenge to address is
+> > > the efficient mechanism of doing this IO migration(how much batching to do and
+> > > when to send the migrate request?), so that we don't delay the IO much and at
+> > > the same point, don't cause much overhead during migration.
+> > 
+> > Right.
+> 
+> So any suggestions for making this clean and acceptable to everyone?
 
-> Following sets of patches add EFI/UEFI (Unified Extensible Firmware
-> Interface) support to x86_64 architecture. The patches have been
-> tested against 2.6.23-rc1 kernel on Intel platforms with EFI1.10 and
-> UEFI2.0 firmware.
->
-> UEFI specification can be found here: http://www.uefi.org
+It is obviously a good idea to hand over the IO at the point which
+requires the least number of cachelines to be moved, and I think doing
+it in the block layer is right. Mostly you have to convince the block
+and driver maintainers I guess.
 
-Is it still the case you must sign a license you won't implement
-it if you read the specification?
+The scheduler really should be made interrupt-load aware anyway, so I
+don't have a problem with changing that; or scheduling kblockd at a
+higher priority, but I don't know if SCHED_FIFO is a good idea. Couldn't
+it be done in a softirq instead?
 
-> For booting the UEFI x86_64 enabled kernel, the machine with EFI/UEFI
-> firmware and the support of bootloader is required. Detailed usage
-> guide can be found in Documentation/x86_64/uefi.txt, which is added in
-> the patch: efi-doc.patch.
->
-> Issues _not_ addressed (per feedback from Eric Biederman)
+Latency for IO migration could be the most difficult problem to solve
+really. You don't give much details of the workload, profiles, etc... I
+hope this is for a real world test? Can the locking be improved in simpler
+ways first?
 
-Thank you for acknowledging them.
+Just some random questions...
 
-I would really prefer to see something start simple and obviously
-correct and grow (typical unix/linux development) rather then
-attempt to use all of the cool efi features at once.
+It looks like the main source of cacheline bouncing you're eliminating
+is from the initial starting of IO from an empty queue (ie. unplug).
+>From then on, the submission is driven by completion, right?
 
-> - Virtual mode support is still retained in this patch. There is at
->   least one EFI call is fast path: efi_set_rtc_mmss, which must
->   complete as soon as possible.
+Why is the queue allowed to go empty in the first place in an IO critical
+workload?
 
-Bogus.  You are setting the wall clock time in the granularity
-of a second.  Yes we can achieve high accuracy by setting things
-as soon after the change as we can.  I don't see a couple of
-extra micro second being a bit deal here.  If a couple of
-extra micro seconds are a big deal we shouldn't be going through
-efi to perform this logic in the first place.  This is x86 
-and we know the hardware programming interface.
+Are you loading up each CPU with as many disks as it can possibly handle
+plus a few more? If so, is that realistic? (I honestly don't know).
 
-Why in the world are we going through efi for real time clock
-operations anyway.  That seems completely silly.
+You say that you'd like to do this for direct IO only, but if it is more
+efficient, why not for buffered IO as well? (or is it not more efficient
+for buffered IO? if not, why?)
 
-> - The variable efi_enabled is used throughout across architecutres if
->  CONFIG_EFI option is enabled. The i386 code also uses this variable.
->  This is something that can be revisited with code consolidation
->  across architectures.
+AFAIKS, you'd still have significant queue_lock contention from other
+CPUs inserting requests into the list? What IO scheduler are you using?
+I assume noop... as a crazy experiment, what happens if you create per-cpu
+request queues?
 
-Fix it first. arch/i386/ efi support is horrible, and show what happens
-when things are not done properly the first time.  Later doesn't happen.
-With the partvirt logic we have a lot of operations properly split out
-already.  Figure out how to use them. 
-
-Ok. Looking what more I can tear into.
-
-Eric
