@@ -1,200 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940187AbXGaAP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939258AbXGaAS2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940187AbXGaAP2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 20:15:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938560AbXGaAPO
+	id S939258AbXGaAS2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 20:18:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbXGaAST
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 20:15:14 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:58844 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934132AbXGaAPL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 20:15:11 -0400
-Subject: Re: [PATCH] add check do_direct_IO() return val
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: Zach Brown <zach.brown@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Joe Jin <joe.jin@oracle.com>,
-       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
-       wen.gang.wang@oracle.com
-In-Reply-To: <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com>
-References: <20070726090400.GA18640@joejin-pc.cn.oracle.com>
-	 <20070726221307.3d7b3446.akpm@linux-foundation.org>
-	 <20070727071547.GA25084@joejin-pc.cn.oracle.com>
-	 <46A9E6F9.20603@oracle.com>
-	 <20070728034719.GA24448@joejin-pc.cn.oracle.com>
-	 <20070730135316.2ce21b28.akpm@linux-foundation.org>
-	 <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com>
-	 <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com>
-	 <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com>
-	 <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com>
-Content-Type: text/plain
-Date: Mon, 30 Jul 2007 17:17:12 -0700
-Message-Id: <1185841032.24525.14.camel@dyn9047017100.beaverton.ibm.com>
+	Mon, 30 Jul 2007 20:18:19 -0400
+Received: from users.ccur.com ([66.10.65.2]:40833 "EHLO gamx.iccur.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754611AbXGaASR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 20:18:17 -0400
+Date: Mon, 30 Jul 2007 20:17:18 -0400
+From: Joe Korty <joe.korty@ccur.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, mingo@elte.hu, tglx@linutronix.de,
+       linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jason.baietto@ccur.com
+Subject: [PATCH] expand /proc/interrupts to include missing vectors, v2
+Message-ID: <20070731001718.GA14295@tsunami.ccur.com>
+Reply-To: Joe Korty <joe.korty@ccur.com>
+References: <20070726180522.GA1486@tsunami.ccur.com> <46A8EE78.4040702@zytor.com> <1185816797.3170.1.camel@sven.thebigcorporation.com> <20070730123206.abeab890.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070730123206.abeab890.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 16:38 -0700, Zach Brown wrote:
-> On Jul 30, 2007, at 2:58 PM, Badari Pulavarty wrote:
-> 
-> > On Mon, 2007-07-30 at 14:45 -0700, Zach Brown wrote:
-> >>> I am also taking a look at it right now.
-> >>
-> >> Are we having a race to write a little test app that reproduces the
-> >> problem? :)
-> >
-> > Nope. Feel free to write the test case.
-> 
-> Well, I'm having a heck of a time getting this to fail.  It looks  
-> possible, though.  Joe, were you guys able to narrow it down to a  
-> reproducible test case?  Do you have any oops output messages from  
-> the crashes?
+Add missing IRQs and IRQ descriptions to /proc/interrupts.
 
-Here is what I got earlier..
+/proc/interrupts is most useful when it displays every
+IRQ vector in use by the system, not just those somebody
+thought would be interesting.
 
-Thanks,
-Badari
+This patch inserts the following vector displays to the
+i386 and x86_64 platforms, as appropriate:
+	
+	rescheduling interrupts
+	TLB flush interrupts
+	function call interrupts
+	thermal event interrupts
+	threshold interrupts
+	spurious interrupts
 
+A threshold interrupt occurs when ECC memory correction
+is occuring at too high a frequency.  Thresholds are used
+by the ECC hardware as occasional ECC failures are part
+of normal operation, but long sequences of ECC failures
+usually indicate a memory chip that is about to fail.
 
-Hi all,
-Add some backgrounds:
+Thermal event interrupts occur when a temperature threshold
+has been exceeded for some CPU chip.  IIRC, a thermal
+interrupt is also generated when the temperature drops
+back to a normal level.
 
-When doing fio test on kernel 2.6.22,  we got oops,
---------------------------------------------------------------
-BUG: unable to handle kernel paging request at virtual address 23c070bf
- printing eip:
-c04a07fd
-*pdpt = 000000001ff88001
-*pde = 0000000000000000
-Oops: 0000 [#1]
-SMP
-Modules linked in: netconsole autofs4 hidp nfs lockd nfs_acl rfcomm l2cap
-bluetooth sunrpc ib_iser rdma_cm ib_cm iw_cm ib_sa ib_mad ib_core ib_addr
-/@ iscsi_tcp libiscsi scsi_transport_iscsi dm_mirror dm_multipath dm_mod 
-video /
-sbs button battery ac ipv6 parport_pc lp parport i2c_piix4 i2c_core 
-cfi_probe
-gen_probe floppy scb2_flash sg mtdcore chipreg tg3 e1000 serio_raw ide_cd
-/@ cdrom aic7xxx scsi_transport_spi sd_mod scsi_mod ext3 jbd ehci_hcd 
-ohci_hcd /
-uhci_hcd
-CPU:    0
-EIP:    0060:[<c04a07fd>]    Not tainted VLI
-EFLAGS: 00010293   (2.6.22 #2)
-EIP is at bio_get_nr_vecs+0x0/0x30
-eax: 23c07063   ebx: 00000003   ecx: ffffffff   edx: 00000000
-esi: de5cef74   edi: f54a9600   ebp: 00000000   esp: de5ceca8
-ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-Process fio (pid: 17820, ti=de5ce000 task=de6570e0 task.ti=de5ce000)
-Stack: c04a1c9d ffffffff ffffffff 00000009 f54a9600 de5cef74 00000000
-f54a9600
-       c04a1f43 00000000 c04a2b46 c0460466 c2c5baa0 c0812500 c0462c0a
-00000001
-       00000001 df4b90d4 de5ceee4 00000011 00000001 00000009 00000009
-00000000
-Call Trace:
- [<c04a1c9d>] dio_new_bio+0x82/0xfe
- [<c04a1f43>] dio_send_cur_page+0x4a/0x92
- [<c04a2b46>] __blockdev_direct_IO+0xa09/0xc83
- [<c0460466>] __pagevec_free+0x14/0x1a
- [<c0462c0a>] release_pages+0x137/0x13f
- [<f8856f30>] journal_start+0xaf/0xdd [jbd]
- [<f8890fec>] ext3_direct_IO+0xfd/0x190 [ext3]
- [<f888f6af>] ext3_get_block+0x0/0xd0 [ext3]
- [<c045d803>] generic_file_direct_IO+0xe5/0x116
- [<c045d890>] generic_file_direct_write+0x5c/0x137
- [<c045e285>] __generic_file_aio_write_nolock+0x37b/0x4df
- [<c045e43e>] generic_file_aio_write+0x55/0xb3
- [<f888cfdc>] ext3_file_write+0x24/0x8f [ext3]
- [<c0481af9>] do_sync_write+0xc7/0x10a
- [<c04347d2>] check_kill_permission+0xec/0xf5
- [<c043c557>] autoremove_wake_function+0x0/0x35
- [<c0481a32>] do_sync_write+0x0/0x10a
- [<c048233e>] vfs_write+0xa8/0x154
-/@  [<c0482a1a>] sys_pwrite64+0x48/0x5f/
- [<c0404e12>] syscall_call+0x7/0xb
- [<c0620000>] xfrm_replay_timer_handler+0x3e/0x44
- =======================
-Code: 89 c5 c7 44 24 14 f4 ff ff ff 74 d2 e9 b3 fe ff ff 83 7c 24 34 00 
-0f 84
-0b ff ff ff e9 51 ff ff ff 83 c4 20 89 e8 5b 5e 5f 5d c3 <8b> 40 5c 8b 
-48 38
-8b 81 20 01 00 00 0f b7 91 2a 01 00 00 0f b7
-EIP: [<c04a07fd>] bio_get_nr_vecs+0x0/0x30 SS:ESP 0068:de5ceca8
+A spurious interrupt is an interrupt that was raised then
+lowered by the device before it could be fully processed
+by the APIC.  Hence the apic sees the interrupt but does
+not know what device it came from.  For this case the APIC
+hardware will assume a vector of 0xff.
 
------------------------------------------------------------
+Rescheduling, call, and TLB flush interrupts are sent from
+one CPU to another per the needs of the OS.  Typically,
+their statistics would be used to discover if an
+interrupt flood of the given type has been occuring.
 
-jobfile is
--------------------------------
-/@ [global]/
-/@ bs=8k/
-/@ iodepth=1024/
-/@ iodepth_batch=60/
-/@ randrepeat=1/
-/@ size=1m/
-/@ directory=/home/oracle/
-/@ numjobs=20/
-/@ [job1]/
-/@ ioengine=sync/
-/@ bs=1k/
-/@ direct=1/
-/@ rw=randread/
-/@ filename=file1:file2/
-/@ [job2]/
-/@ ioengine=libaio/
-/@ rw=randwrite/
-/@ direct=1/
-/@ filename=file1:file2/
-/@ [job3]/
-/@ bs=1k/
-/@ ioengine=posixaio/
-/@ rw=randwrite/
-/@ direct=1/
-/@ filename=file1:file2/
-/@ [job4]/
-/@ ioengine=splice/
-/@ direct=1/
-/@ rw=randwrite/
-/@ filename=file1:file2/
-/@ [job5]/
-/@ bs=1k/
-/@ ioengine=sync/
-/@ rw=randread/
-/@ filename=file1:file2/
-/@ [job7]/
-/@ ioengine=libaio/
-/@ rw=randwrite/
-/@ filename=file1:file2/
-/@ [job8]/
-/@ ioengine=posixaio/
-/@ rw=randwrite/
-/@ filename=file1:file2/
-/@ [job9]/
-/@ ioengine=splice/
-/@ rw=randwrite/
-/@ filename=file1:file2/
-/@ [job10]/
-/@ ioengine=mmap/
-/@ rw=randwrite/
-/@ bs=1k/
-/@ filename=file1:file2/
-/@ [job11]/
-/@ ioengine=mmap/
-/@ rw=randwrite/
-/@ direct=1/
-/@ filename=file1:file2/
--------------------------------
-ignore the @ please.
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
 
-
-With Joe's patch, seems the oops solved.
-So, please give a review to see if there is any problem for that patch.
-
-thanks,
-wengang.
-
-
+Index: 2.6.23-rc1-git7/arch/i386/kernel/apic.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/i386/kernel/apic.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/i386/kernel/apic.c	2007-07-30 19:08:07.000000000 -0400
+@@ -1280,6 +1280,7 @@
+ 	printk(KERN_INFO "spurious APIC interrupt on CPU#%d, "
+ 	       "should never happen.\n", smp_processor_id());
+ 	irq_exit();
++	__get_cpu_var(irq_stat).irq_spur_counts++;
+ }
+ 
+ /*
+Index: 2.6.23-rc1-git7/arch/i386/kernel/cpu/mcheck/p4.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/i386/kernel/cpu/mcheck/p4.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/i386/kernel/cpu/mcheck/p4.c	2007-07-30 19:08:07.000000000 -0400
+@@ -62,6 +62,7 @@
+ 	irq_enter();
+ 	vendor_thermal_interrupt(regs);
+ 	irq_exit();
++	__get_cpu_var(irq_stat).irq_thermal_counts++;
+ }
+ 
+ /* P4/Xeon Thermal regulation detect and init */
+Index: 2.6.23-rc1-git7/arch/i386/kernel/irq.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/i386/kernel/irq.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/i386/kernel/irq.c	2007-07-30 19:08:07.000000000 -0400
+@@ -284,14 +284,45 @@
+ 		seq_printf(p, "NMI: ");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "%10u ", nmi_count(j));
+-		seq_putc(p, '\n');
++		seq_printf(p, "  Non-maskable interrupts\n");
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 		seq_printf(p, "LOC: ");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "%10u ",
+ 				per_cpu(irq_stat,j).apic_timer_irqs);
+-		seq_putc(p, '\n');
++		seq_printf(p, "  Local interrupts\n");
+ #endif
++#ifdef CONFIG_SMP
++		seq_printf(p, "RES: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ",
++				per_cpu(irq_stat,j).irq_resched_counts);
++		seq_printf(p, "  Rescheduling interrupts\n");
++#endif
++#ifdef CONFIG_SMP
++		seq_printf(p, "CAL: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ",
++				per_cpu(irq_stat,j).irq_call_counts);
++		seq_printf(p, "  function call interrupts\n");
++#endif
++#ifdef CONFIG_SMP
++		seq_printf(p, "TLB: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ",
++				per_cpu(irq_stat,j).irq_tlb_counts);
++		seq_printf(p, "  TLB shootdowns\n");
++#endif
++		seq_printf(p, "TRM: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ",
++				per_cpu(irq_stat,j).irq_thermal_counts);
++		seq_printf(p, "  Thermal event interrupts\n");
++		seq_printf(p, "SPU: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ",
++				per_cpu(irq_stat,j).irq_spur_counts);
++		seq_printf(p, "  Spurious interrupts\n");
+ 		seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
+ #if defined(CONFIG_X86_IO_APIC)
+ 		seq_printf(p, "MIS: %10u\n", atomic_read(&irq_mis_count));
+Index: 2.6.23-rc1-git7/arch/i386/kernel/smp.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/i386/kernel/smp.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/i386/kernel/smp.c	2007-07-30 19:08:07.000000000 -0400
+@@ -342,6 +342,7 @@
+ 	smp_mb__after_clear_bit();
+ out:
+ 	put_cpu_no_resched();
++	__get_cpu_var(irq_stat).irq_tlb_counts++;
+ }
+ 
+ void native_flush_tlb_others(const cpumask_t *cpumaskp, struct mm_struct *mm,
+@@ -640,6 +641,7 @@
+ fastcall void smp_reschedule_interrupt(struct pt_regs *regs)
+ {
+ 	ack_APIC_irq();
++	__get_cpu_var(irq_stat).irq_resched_counts++;
+ }
+ 
+ fastcall void smp_call_function_interrupt(struct pt_regs *regs)
+@@ -666,6 +668,7 @@
+ 		mb();
+ 		atomic_inc(&call_data->finished);
+ 	}
++	__get_cpu_var(irq_stat).irq_call_counts++;
+ }
+ 
+ static int convert_apicid_to_cpu(int apic_id)
+Index: 2.6.23-rc1-git7/arch/x86_64/kernel/apic.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/x86_64/kernel/apic.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/x86_64/kernel/apic.c	2007-07-30 19:08:07.000000000 -0400
+@@ -1118,6 +1118,7 @@
+ asmlinkage void smp_spurious_interrupt(void)
+ {
+ 	unsigned int v;
++
+ 	exit_idle();
+ 	irq_enter();
+ 	/*
+@@ -1130,6 +1131,7 @@
+ 		ack_APIC_irq();
+ 
+ 	irq_exit();
++	add_pda(irq_spur_counts, 1);
+ }
+ 
+ /*
+Index: 2.6.23-rc1-git7/arch/x86_64/kernel/irq.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/x86_64/kernel/irq.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/x86_64/kernel/irq.c	2007-07-30 19:10:22.000000000 -0400
+@@ -88,11 +88,41 @@
+ 		seq_printf(p, "NMI: ");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "%10u ", cpu_pda(j)->__nmi_count);
+-		seq_putc(p, '\n');
++		seq_printf(p, "  Non-maskable interrupts\n");
+ 		seq_printf(p, "LOC: ");
+ 		for_each_online_cpu(j)
+ 			seq_printf(p, "%10u ", cpu_pda(j)->apic_timer_irqs);
+-		seq_putc(p, '\n');
++		seq_printf(p, "  Local interrupts\n");
++#ifdef CONFIG_SMP
++		seq_printf(p, "RES: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", cpu_pda(j)->irq_resched_counts);
++		seq_printf(p, "  Rescheduling interrupts\n");
++#endif
++#ifdef CONFIG_SMP
++		seq_printf(p, "CAL: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", cpu_pda(j)->irq_call_counts);
++		seq_printf(p, "  function call interrupts\n");
++#endif
++#ifdef CONFIG_SMP
++		seq_printf(p, "TLB: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", cpu_pda(j)->irq_tlb_counts);
++		seq_printf(p, "  TLB shootdowns\n");
++#endif
++		seq_printf(p, "TRM: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", cpu_pda(j)->irq_thermal_counts);
++		seq_printf(p, "  Thermal event interrupts\n");
++		seq_printf(p, "THR: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", cpu_pda(j)->irq_threshold_counts);
++		seq_printf(p, "  Threshold APIC interrupts\n");
++		seq_printf(p, "SPU: ");
++		for_each_online_cpu(j)
++			seq_printf(p, "%10u ", cpu_pda(j)->irq_spur_counts);
++		seq_printf(p, "  Spurious interrupts\n");
+ 		seq_printf(p, "ERR: %10u\n", atomic_read(&irq_err_count));
+ 	}
+ 	return 0;
+Index: 2.6.23-rc1-git7/arch/x86_64/kernel/mce_amd.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/x86_64/kernel/mce_amd.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/x86_64/kernel/mce_amd.c	2007-07-30 19:08:07.000000000 -0400
+@@ -238,6 +238,7 @@
+ 	}
+ out:
+ 	irq_exit();
++	add_pda(irq_threshold_counts, 1);
+ }
+ 
+ /*
+Index: 2.6.23-rc1-git7/arch/x86_64/kernel/mce_intel.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/x86_64/kernel/mce_intel.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/x86_64/kernel/mce_intel.c	2007-07-30 19:08:07.000000000 -0400
+@@ -27,6 +27,7 @@
+ 		mce_log_therm_throt_event(smp_processor_id(), msr_val);
+ 
+ 	irq_exit();
++	add_pda(irq_thermal_counts, 1);
+ }
+ 
+ static void __cpuinit intel_init_thermal(struct cpuinfo_x86 *c)
+Index: 2.6.23-rc1-git7/arch/x86_64/kernel/smp.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/x86_64/kernel/smp.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/x86_64/kernel/smp.c	2007-07-30 19:08:07.000000000 -0400
+@@ -163,6 +163,7 @@
+ out:
+ 	ack_APIC_irq();
+ 	cpu_clear(cpu, f->flush_cpumask);
++	add_pda(irq_tlb_counts, 1);
+ }
+ 
+ static void flush_tlb_others(cpumask_t cpumask, struct mm_struct *mm,
+@@ -493,6 +494,7 @@
+ asmlinkage void smp_reschedule_interrupt(void)
+ {
+ 	ack_APIC_irq();
++	add_pda(irq_resched_counts, 1);
+ }
+ 
+ asmlinkage void smp_call_function_interrupt(void)
+@@ -519,5 +521,6 @@
+ 		mb();
+ 		atomic_inc(&call_data->finished);
+ 	}
++	add_pda(irq_call_counts, 1);
+ }
+ 
+Index: 2.6.23-rc1-git7/include/asm-i386/hardirq.h
+===================================================================
+--- 2.6.23-rc1-git7.orig/include/asm-i386/hardirq.h	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/include/asm-i386/hardirq.h	2007-07-30 19:08:07.000000000 -0400
+@@ -9,6 +9,11 @@
+ 	unsigned long idle_timestamp;
+ 	unsigned int __nmi_count;	/* arch dependent */
+ 	unsigned int apic_timer_irqs;	/* arch dependent */
++	unsigned int irq_resched_counts;
++	unsigned int irq_call_counts;
++	unsigned int irq_tlb_counts;
++	unsigned int irq_thermal_counts;
++	unsigned int irq_spur_counts;
+ } ____cacheline_aligned irq_cpustat_t;
+ 
+ DECLARE_PER_CPU(irq_cpustat_t, irq_stat);
+Index: 2.6.23-rc1-git7/include/asm-x86_64/pda.h
+===================================================================
+--- 2.6.23-rc1-git7.orig/include/asm-x86_64/pda.h	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/include/asm-x86_64/pda.h	2007-07-30 19:08:07.000000000 -0400
+@@ -29,6 +29,12 @@
+ 	short isidle;
+ 	struct mm_struct *active_mm;
+ 	unsigned apic_timer_irqs;
++	unsigned irq_resched_counts;
++	unsigned irq_call_counts;
++	unsigned irq_tlb_counts;
++	unsigned irq_thermal_counts;
++	unsigned irq_threshold_counts;
++	unsigned irq_spur_counts;
+ } ____cacheline_aligned_in_smp;
+ 
+ extern struct x8664_pda *_cpu_pda[];
+Index: 2.6.23-rc1-git7/arch/i386/mach-voyager/voyager_smp.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/i386/mach-voyager/voyager_smp.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/i386/mach-voyager/voyager_smp.c	2007-07-30 19:08:07.000000000 -0400
+@@ -1042,6 +1042,7 @@
+ 		mb();
+ 		clear_bit(cpu, &call_data->finished);
+ 	}
++	__get_cpu_var(irq_stat).irq_call_counts++;
+ }
+ 
+ static int
+Index: 2.6.23-rc1-git7/arch/i386/xen/smp.c
+===================================================================
+--- 2.6.23-rc1-git7.orig/arch/i386/xen/smp.c	2007-07-30 19:08:05.000000000 -0400
++++ 2.6.23-rc1-git7/arch/i386/xen/smp.c	2007-07-30 19:08:07.000000000 -0400
+@@ -352,6 +352,7 @@
+ 		mb();		/* commit everything before setting finished */
+ 		atomic_inc(&call_data->finished);
+ 	}
++	__get_cpu_var(irq_stat).irq_call_counts++;
+ 
+ 	return IRQ_HANDLED;
+ }
 
