@@ -1,46 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763509AbXGaXqg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763256AbXGaXt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763509AbXGaXqg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 19:46:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762013AbXGaXqM
+	id S1763256AbXGaXt4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 19:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbXGaXtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 19:46:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47207 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758828AbXGaXqI (ORCPT
+	Tue, 31 Jul 2007 19:49:47 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34190 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753760AbXGaXtq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 19:46:08 -0400
-Date: Tue, 31 Jul 2007 16:46:06 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       tony.olech@elandigitalsystems.com,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [PATCH 25] drivers/usb/misc/ftdi-elan.c: kmalloc + memset
- conversion to kzalloc
-In-Reply-To: <200707311942.10127.m.kozlowski@tuxland.pl>
-Message-ID: <Pine.LNX.4.64.0707311645340.31337@schroedinger.engr.sgi.com>
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
- <200707311942.10127.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 31 Jul 2007 19:49:46 -0400
+Date: Wed, 1 Aug 2007 00:56:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Vitaly Bordug <vitb@kernel.crashing.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver
+ for CF	interface
+Message-ID: <20070801005640.327226db@the-village.bc.nu>
+In-Reply-To: <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain>
+	<20070725165326.5331.19920.stgit@localhost.localdomain>
+	<46A78322.3080607@ru.mvista.com>
+	<46A78E3F.1030904@ru.mvista.com>
+	<a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, Mariusz Kozlowski wrote:
+> The hardware is called (E)IDE, the protocol is called ATA.
+> Or that's what I was told -- I think there's some historic
+> revisionism involved, too.
 
-> @@ -2777,12 +2777,14 @@ static int ftdi_elan_probe(struct usb_in
->          size_t buffer_size;
->          int i;
->          int retval = -ENOMEM;
-> -        struct usb_ftdi *ftdi = kmalloc(sizeof(struct usb_ftdi), GFP_KERNEL);
-> -        if (ftdi == NULL) {
-> +        struct usb_ftdi *ftdi;
-> +
-> +	ftdi = kzalloc(sizeof(struct usb_ftdi), GFP_KERNEL);
-> +	if (!ftdi) {
-
-Whitespace damage soewhere?
-
+ATA is the interface and standards for the ANSI standards based disk
+attachment. IDE "Integrated Drive Electronics" is a marketing name used
+to cover all sorts of ST412 compatible-ish early interfaces that moved
+the brains onto the disk. IDE doesn't really mean much but "brains on
+disk", ATA is a real standard.
