@@ -1,89 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbXGaJu6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbXGaJwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756259AbXGaJu6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 05:50:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbXGaJuv
+	id S1757118AbXGaJwn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 05:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbXGaJwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 05:50:51 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:42078 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752631AbXGaJuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 05:50:50 -0400
-Date: Tue, 31 Jul 2007 11:51:01 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
-Message-ID: <20070731095101.GA1774@elf.ucw.cz>
-References: <1184483639.1898.99.camel@caritas-dev.intel.com>
+	Tue, 31 Jul 2007 05:52:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57014 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752717AbXGaJwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 05:52:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: [linux-pm] Re: [PATCH 2/2] Introduce CONFIG_SUSPEND (updated)
+Date: Tue, 31 Jul 2007 12:01:07 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-pm@lists.linux-foundation.org, Len Brown <lenb@kernel.org>,
+       david@lang.hm, Nigel Cunningham <nigel@nigel.suspend2.net>,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
+       linux-acpi@vger.kernel.org, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <200707251238.50218.lenb@kernel.org> <200707311115.29057.rjw@sisk.pl> <200707311116.39857.oliver@neukum.org>
+In-Reply-To: <200707311116.39857.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1184483639.1898.99.camel@caritas-dev.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Message-Id: <200707311201.09384.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> This patch implement the functionality of jumping from kexeced kernel
-> to original kernel.
+On Tuesday, 31 July 2007 11:16, Oliver Neukum wrote:
+> Am Dienstag 31 Juli 2007 schrieb Rafael J. Wysocki:
 > 
-> A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
-> trigger the jumping to (executing) the new kernel or jumping back to
-> the original kernel.
+> > Well, the people on linux-pm seem to agree that the .suspend() and .resume()
+> > callbacks are not suitable for runtime power management, so having them
+> > built without SUSPEND or HIBERNATION wouldn't be very useful. ;-)
+> 
+> These are what USB runtime power management uses.
 
-Could we get two reboot commands? Exec loaded kernel seems to be quite
-different operation than "jump back".
+To be precise, I think the rule should be that if some code is needed for
+anything else than suspend/hibernation, it should be under plain CONFIG_PM.
+Still, if something is only needed for suspend/hibernation, it should go under
+CONFIG_PM_SLEEP or CONFIG_SUSPEND/HIBERNATION, depending on what it's needed
+for.
 
-How do I test these patches? kexec -p <bzImage>, then kexec -j?
+Now, AFAICS, for the majority of drivers .suspend() and .resume() are only
+needed for suspend/hibernation and really should be used for suspending
+only (some other callbacks are needed for hibernation).
 
+> How many code paths for power management do you want to introduce?
 
-> +static unsigned long kexec_backup_addr = ~0UL;
-> +
-> +/* kexec_backup= specifies the location of backuped 0~640k memory of
-> + * crashed kernel.
-> + */
-> +static int __init parse_kexec_backup(char *arg)
-> +{
-> +	if (!arg)
-> +		return -EINVAL;
-> +
-> +	kexec_backup_addr = memparse(arg, &arg);
-> +	return 0;
-> +}
-> +early_param("kexec_backup", parse_kexec_backup);
+At least one more, for hibernation.
 
-New kernel parameters should be documented. (Plus I do not know how to
-use this one, please help :-).
+That also depends on what approach to the runtime power management is widely
+accepted.  For now, USB is in the vanguard. :-)
 
+Greetings,
+Rafael
 
-> +int kexec_flags;
-> +
-> +static unsigned long kexec_jump_buf_pfn;
-> +
-> +static int __init parse_kexec_jump_buf_pfn(char *arg)
-> +{
-> +	if (!arg)
-> +		return -EINVAL;
-> +
-> +	kexec_jump_buf_pfn = memparse(arg, &arg);
-> +	kexec_flags |= KEXEC_FLAGS_IS_KEXECED_KERNEL;
-> +	return 0;
-> +}
-> +early_param("kexec_jump_buf_pfn", parse_kexec_jump_buf_pfn);
-
-This one should be documented, too, I'd guess. (Is that internal,
-kernel-to-kernel communication?)
-
-									Pavel
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+"Premature optimization is the root of all evil." - Donald Knuth
