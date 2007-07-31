@@ -1,126 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934032AbXGaUeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933102AbXGaUex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934032AbXGaUeg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:34:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932873AbXGaUdU
+	id S933102AbXGaUex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933900AbXGaUdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:33:20 -0400
-Received: from hu-out-0506.google.com ([72.14.214.234]:17231 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764774AbXGaUdQ (ORCPT
+	Tue, 31 Jul 2007 16:33:44 -0400
+Received: from [83.222.144.183] ([83.222.144.183]:38690 "EHLO
+	colorfullife.mysite.adiungo.com" rhost-flags-FAIL-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S933885AbXGaUdm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:33:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=V8wNBDzwG8VlEKeSsx8Ftzw3PRsk8lYsGF4ahbw1VBUdrt1avVmUPwgMHYhSdE0yMBntQ9ZfigdwNW4YU/MqdxSqPqgXpgL5hvWQ50wa4e3a+0rydCGzTD80OHxMTOQShdMhmLbxCVU1WgdmjO2GI7KQHTzGwbe7oQ3RNc0niqE=
-Date: Tue, 31 Jul 2007 22:33:12 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: John Keller <jpk@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH] - SN: Add support for CPU disable
-Message-ID: <20070731203312.GA19588@dreamland.darkstar.lan>
+	Tue, 31 Jul 2007 16:33:42 -0400
+Message-ID: <46AF9C2D.70808@colorfullife.com>
+Date: Tue, 31 Jul 2007 22:31:41 +0200
+From: Manfred Spraul <manfred@colorfullife.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731194505.24177.41215.89690@attica.americas.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] Use ERESTARTNOHAND if poll() is interrupted by a signal
+References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com> <20070730163538.67b256da.akpm@linux-foundation.org>
+In-Reply-To: <20070730163538.67b256da.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I've a couple of comments on the patch:
+Andrew Morton wrote:
+> On Sun, 29 Jul 2007 19:05:05 +0200
+> Manfred Spraul <manfred@colorfullife.com> wrote:
+>
+>   
+>> Hi Andrew,
+>>
+>> poll() returns -EINTR if a signal is pending.
+>> EINTR is a bad choice: it means that poll returns to user space if the
+>> task is stopped by SIGSTOP/SIGCONT or by the freezer.
+>> select() and ppoll() both use ERESTARTNOHAND, this avoids a return to
+>> user space for signals that are handled by the kernel.
+>>
+>> The patch switches poll() to ERESTARTNOHAND.
+>> Tested with FC6. Patch against 2.6.23-rc1-mm1.
+>>     
+>
+> hm.  Is this a fix against
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm1/broken-out/do_poll-return-eintr-when-signalled.patch
+> only, or does mainline also need fixing?
+>
+>   
+Mainline has the same problem: poll() returns to user space if it's 
+interrupted by SIGSTOP/SIGCONT.
+> I guess the consequences of the thing-which-this-fixes aren't huge, s I ca
+> queue this up for 2.6.24, after Oleg's
+> do_poll-return-eintr-when-signalled.patch?
+>
+>   
+Yes, please queue it: most/all linux versions show this behavior. 
+Additionally, poll() is usually called in a loop and a spurious wakeup 
+has no consequences.
 
-John Keller <jpk@sgi.com> ha scritto:
-> Index: linux-2.6/arch/ia64/sn/kernel/huberror.c
-> ===================================================================
-> --- linux-2.6.orig/arch/ia64/sn/kernel/huberror.c       2007-07-31 09:09:55.414522005 -0500
-> +++ linux-2.6/arch/ia64/sn/kernel/huberror.c    2007-07-31 09:38:14.634045360 -0500
-> @@ -14,6 +14,7 @@
-> #include <asm/sn/addrs.h>
-> #include <asm/sn/shubio.h>
-> #include <asm/sn/geo.h>
-> +#include <asm/sn/sn_feature_sets.h>
-> #include "xtalk/xwidgetdev.h"
-> #include "xtalk/hubdev.h"
-> #include <asm/sn/bte.h>
-> @@ -185,11 +186,22 @@ void hubiio_crb_error_handler(struct hub
->  */
-> void hub_error_init(struct hubdev_info *hubdev_info)
-> {
-> +
->        if (request_irq(SGI_II_ERROR, hub_eint_handler, IRQF_SHARED,
-> -                       "SN_hub_error", (void *)hubdev_info))
-> +                       "SN_hub_error", (void *)hubdev_info)) {
->                printk("hub_error_init: Failed to request_irq for 0x%p\n",
->                    hubdev_info);
-> -       return;
-> +               return;
-> +       }
-> +
-> +#ifdef CONFIG_SMP
-> +       /*
-> +        * On systems which support CPU disabling (SHub2), all error interrupts
-> +        * are targetted at the boot CPU.
-> +        */
-> +       if (is_shub2() && sn_prom_feature_available(PRF_CPU_DISABLE_SUPPORT))
-> +               set_irq_affinity_info(SGI_II_ERROR, 0, 0);
-> +#endif
-
-This snippet is repeated many times. You may want to use an inline
-helper (defined as no-op for !CONFIG_SMP), something like this:
-
-#ifdef CONFIG_SMP
-static inline void migrate_error_int(void)
-{
-        /*
-         * On systems which support CPU disabling (SHub2), all error interrupts
-         * are targetted at the boot CPU.
-         */
-         if (is_shub2() && sn_prom_feature_available(PRF_CPU_DISABLE_SUPPORT))
-                set_irq_affinity_info(SGI_II_ERROR, 0, 0);
-}
-#else
-static inline void migrate_error_int(void) { }
-#endif
-
-As as bonus you remove the #ifdef from the main code.
-
-> --- linux-2.6.orig/arch/ia64/sn/kernel/sn2/sn2_smp.c    2007-07-31 09:09:55.418522496 -0500
-> +++ linux-2.6/arch/ia64/sn/kernel/sn2/sn2_smp.c 2007-07-31 09:38:14.782063615 -0500
-> @@ -40,6 +40,7 @@
-> #include <asm/sn/shub_mmr.h>
-> #include <asm/sn/nodepda.h>
-> #include <asm/sn/rw_mmr.h>
-> +#include <asm/sn/sn_feature_sets.h>
-> 
-> DEFINE_PER_CPU(struct ptc_stats, ptcstats);
-> DECLARE_PER_CPU(struct ptc_stats, ptcstats);
-> @@ -429,6 +430,29 @@ void sn2_send_IPI(int cpuid, int vector,
->        sn_send_IPI_phys(nasid, physid, vector, delivery_mode);
-> }
-> 
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +/**
-> + * sn_cpu_disable_allowed - Determine if a CPU can be disabled.
-> + * @cpu - CPU that is requested to be disabled.
-> + *
-> + * CPU disable is only allowed on SHub2 systems running with a PROM
-> + * that supports CPU disable. It is not permitted to disable the boot processor.
-> + */
-> +bool sn_cpu_disable_allowed(int cpu)
-> +{
-> +       if (is_shub2() && sn_prom_feature_available(PRF_CPU_DISABLE_SUPPORT))
-> +               if (cpu != 0)
-> +                       return true;
-> +               else
-> +                       printk("Disabling the boot processor is not allowed.\n");
-> +
-> +       else
-
-Hum, brackets around the inner if statement?
-
-Luca
--- 
-Let me make your mind, leave yourself behind
-Be not afraid
+--
+    Manfred
