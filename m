@@ -1,127 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932809AbXGaRtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932780AbXGaRuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932809AbXGaRtZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 13:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932143AbXGaRsy
+	id S932780AbXGaRuI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 13:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762305AbXGaRtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 13:48:54 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:3803 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762466AbXGaRsu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 13:48:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=X/HTH2rbJJc73K6VUNeeQRAm1QrZTu/40M0rEwnbWyv3U3jX5AO/MD1/cYaVqgz5Pt/z9zyRXaQG0WaJDAbx4Eu5on3ZTN/qhiSQH5mO6Yp6bGbMT5qfjH553Wjdc66IjSA/5XSEpBiGct0195WC+AvGlN/2dDcy2cfVQaFwhgQ=
-Message-ID: <46AF75FA.5080502@gmail.com>
-Date: Wed, 01 Aug 2007 02:48:42 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Tue, 31 Jul 2007 13:49:53 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1040 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762440AbXGaRtw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 13:49:52 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 28] drivers/net/wan/hdlc_fr.c: kmalloc + memset conversion to kzalloc
+Date: Tue, 31 Jul 2007 19:49:52 +0200
+User-Agent: KMail/1.9.5
+Cc: kernel-janitors@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Krzysztof Halasa <khc@pm.waw.pl>
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+In-Reply-To: <200707311845.48807.m.kozlowski@tuxland.pl>
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-References: <20070705194909.337398431@intel.com>	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>	<46AE12B6.6090408@garzik.org>	<46AED656.8070407@gmail.com>	<1185891382.2750.8.camel@laptopd505.fenrus.org>	<46AF4B05.4010700@gmail.com> <20070731091841.857d22bb.kristen.c.accardi@intel.com>
-In-Reply-To: <20070731091841.857d22bb.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707311949.52337.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Kristen.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Kristen Carlson Accardi wrote:
-> On Tue, 31 Jul 2007 23:45:25 +0900
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> Anyways, I don't really think this attribute belongs to SCSI sysfs
->> hierarchy.  There currently isn't any alternative but sysfs is part of
->> userland visible interface and putting something into SCSI sysfs
->> hierarchy just because libata doesn't have one doesn't look like a good
->> idea.
->>
->> sysfs isn't far from being detached from kobject and driver model.  I
->> think it would be best to wait a bit and build proper libata sysfs
->> hierarchy which won't have to be changed later when libata departs from
->> SCSI.  Well, it isn't really a good way but IMHO it's better than
->> sticking ATA power saving node into SCSI sysfs hierarchy.
-> 
-> "Wait a bit" could be a very long time.  Who is working on building this
-> new libata sysfs support now?
+ drivers/net/wan/hdlc_fr.c | 31260 -> 31223 (-37 bytes)
+ drivers/net/wan/hdlc_fr.o | 144872 -> 144728 (-144 bytes)
 
-I happen to be working on sysfs these days and guess why I started
-working on sysfs. :-)
+ drivers/net/wan/hdlc_fr.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Disassociating sysfs from driver model is probably one or two patchsets
-away.  It could have happened earlier but I wanted to pace things a bit
-so that the changes receive some testing through release cycles.  Check
-how many sysfs related changes went through .23-rc1 merge window and
-expect about the same influx during the next cycle; with some luck, it
-can be complete before .24-rc1 window.
+--- linux-2.6.23-rc1-mm1-a/drivers/net/wan/hdlc_fr.c	2007-07-26 13:07:43.000000000 +0200
++++ linux-2.6.23-rc1-mm1-b/drivers/net/wan/hdlc_fr.c	2007-07-30 00:25:40.000000000 +0200
+@@ -212,14 +212,13 @@ static pvc_device* add_pvc(struct net_de
+ 		pvc_p = &(*pvc_p)->next;
+ 	}
 
-> If the answer is "no one", which I think it 
-> may be, do you want to hold up a feature that actually helps many people
-> for possibly 6 months or more just because we have to go through scsi
-> right now for our sysfs interface?
+-	pvc = kmalloc(sizeof(pvc_device), GFP_ATOMIC);
++	pvc = kzalloc(sizeof(pvc_device), GFP_ATOMIC);
+ #ifdef DEBUG_PVC
+ 	printk(KERN_DEBUG "add_pvc: allocated pvc %p, frad %p\n", pvc, dev);
+ #endif
+ 	if (!pvc)
+ 		return NULL;
 
-I don't necessarily want to but delaying it might be the right thing to
-do.  Anyways, if we're going to do an interim solution, I don't think
-mainline SCSI sysfs hierarchy is the right place.  Do it with module
-parameter which carries large "to be deprecated sign" or maintain out of
-tree patches.
-
-> on top of that, the last mail I 
-> got from James on this subject indicated that if we kept our granularity
-> large with the power savings levels, SCSI can actually take advantage of
-> this as well.  Sure, we may have to tweak things around later, but isn't
-> this what we do routinely?  Holding up valuable features from the kernel 
-> because things aren't perfect yet seems really broken.
->
-> As far as your complaints about broken hardware go, keep in mind that
-> the patch set does provide a method of adding these disks to a blacklist,
-> so I don't see that as a problem.  And, the default for this feature is
-> "off", and user space would have to explicitly enable it.
-
-This is gonna be a bit long.  Please be patient.
-
-Due to the generosity of the ATA committee, we have, by default, at
-least two ways to achieve link PS - HIPS and DIPS.  I dunno why but
-someone thought we needed two.  And then, ahci people thought automatic
-HIPS would be nice, which I fully agree, and added ALPM.  Unfortunately,
-they mandated ALPM to kick in the moment command engine becomes idle, so
-most current implementations suffer unnecessary performance hit when
-ALPM is active.
-
-We have this crazy number of combinations.  HIPS, DIPS,
-not-so-hot-looking ALPM and probably some number of broken devices which
-may be happy with some method but not with others.  Some might be happy
-with PARTIAL but vomit on SLUMBER.  I might be being too pessimistic but
-my last two years in IDE/ATA land taught me to be pessimistic about
-hardware quality.  Heck, I bet you some of non-intel ahci
-implementations which claim to support ALPM will crap themselves when
-actually told to do so.
-
-If we're gonna do this like NCQ and gonna put knowledge about all the
-combinations into the driver.  The suggested interface is good enough.
-Heck, we probably don't even need three levels.  On and off should be
-enough if things are done right as link PS doesn't have to incur
-noticeable performance degradation.  But to do that, we'll need to test
-a lot of combinations and it's gonna be much harder than NCQ (some ahci
-implementations don't seem to actually enter PS mode when instructed to
-do so via SControl but turning off the controller saves a lot of power.
- Maybe ALPM works better on such cases) and the blacklist will probably
-be longer.
-
-The alternate way is to export flexible interface to userland and let
-userland decide and if we're gonna do that.  SCSI sysfs just isn't the
-place.
-
-Thanks.
-
--- 
-tejun
+-	memset(pvc, 0, sizeof(pvc_device));
+ 	pvc->dlci = dlci;
+ 	pvc->frad = dev;
+ 	pvc->next = *pvc_p;	/* Put it in the chain */
