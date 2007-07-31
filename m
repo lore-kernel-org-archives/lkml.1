@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbXGaGff@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbXGaGjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbXGaGff (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 02:35:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbXGaGf1
+	id S1754874AbXGaGjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 02:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbXGaGjH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 02:35:27 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21944 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751342AbXGaGf0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 02:35:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
-   d="scan'208";a="256747911"
-Subject: Re: [PATCH 4/5] x86_64 EFI support -v3: EFI framebuffer driver
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       "Antonino A. Daplas" <adaplas@pol.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <m1zm1dtcmz.fsf@ebiederm.dsl.xmission.com>
-References: <1185851582.23149.29.camel@caritas-dev.intel.com>
-	 <m1zm1dtcmz.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 14:35:08 +0800
-Message-Id: <1185863708.23149.46.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 06:35:19.0172 (UTC) FILETIME=[F693AC40:01C7D33C]
+	Tue, 31 Jul 2007 02:39:07 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:51172 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751002AbXGaGjE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 02:39:04 -0400
+Date: Tue, 31 Jul 2007 08:38:33 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
+Message-ID: <20070731063833.GD22419@elf.ucw.cz>
+References: <200707251238.50218.lenb@kernel.org> <200707292323.29601.rjw@sisk.pl> <alpine.LFD.0.999.0707291717410.3442@woody.linux-foundation.org> <200707302354.23237.lenb@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200707302354.23237.lenb@kernel.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 22:34 -0600, Eric W. Biederman wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
-> 
-> > This patch adds Graphics Output Protocol support to the kernel.
-> > UEFI2.0 spec deprecates Universal Graphics Adapter (UGA) protocol and
-> > only Graphics Output Protocol (GOP) is produced. Therefore, the boot
-> > loader needs to query the UEFI firmware with appropriate Output
-> > Protocol and pass the video information to the kernel. As a result of
-> > GOP protocol, an EFI framebuffer driver is needed for displaying
-> > console messages. The patch adds a EFI framebuffer driver. The EFI
-> > frame buffer driver in this patch is based on the Intel Mac
-> > framebuffer driver.
-> >
-> > The ELILO bootloader takes care of passing the video information as
-> > appropriate for EFI firmware.
-> 
-> Am I correct in understanding that you are not using any of the efi
-> runtime service infrastructure you have built up in other patches?
+Hi!
 
-Yes. The EFI runtime service is not needed for this patch.
+> Without this change, it is possible to build CONFIG_HIBERNATE
+> on all !SMP architectures, but not necessarily their SMP versions.
 
-Best Regards,
-Huang Ying
+Did you want to say "CONFIG_SUSPEND"?
+
+> I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
+> is correct.  For now it simply matches the list for
+> SUSPEND_SMP_POSSIBLE.
+
+I do not think it is.
+
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+>  Kconfig |    7 ++++++-
+>  1 file changed, 6 insertions(+), 1 deletion(-)
+> 
+> diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+> index 412859f..ccf6576 100644
+> --- a/kernel/power/Kconfig
+> +++ b/kernel/power/Kconfig
+> @@ -72,6 +72,11 @@ config PM_TRACE
+>  	CAUTION: this option will cause your machine's real-time clock to be
+>  	set to an invalid time after a resume.
+>  
+> +config SUSPEND_UP_POSSIBLE
+> +	bool
+> +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
+
+At least ARM can do suspend, too... probably others. I was under
+impression that SUSPEND is "supported" by all the architectures, just
+some of them veto it at runtime (using pm_ops or how was it renamed).
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
