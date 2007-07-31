@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762045AbXGaVf5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765150AbXGaVhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762045AbXGaVf5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 17:35:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755387AbXGaVfI
+	id S1765150AbXGaVhU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 17:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXGaVhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 17:35:08 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:47749 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759839AbXGaVfG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 17:35:06 -0400
-X-Greylist: delayed 538 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 17:35:06 EDT
-Date: Tue, 31 Jul 2007 23:26:06 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Daniel Mierswa <impulze@impulze.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Gericom Webboy Laptop Mouse/Touchpad
-Message-ID: <20070731212606.GA3643@rhlx01.hs-esslingen.de>
-References: <46AF935B.9020403@impulze.org>
+	Tue, 31 Jul 2007 17:37:06 -0400
+Received: from waste.org ([66.93.16.53]:35394 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752272AbXGaVhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 17:37:04 -0400
+Date: Tue, 31 Jul 2007 16:37:18 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Hansen <haveblue@us.ibm.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: /proc/$pid/pagemap troubles
+Message-ID: <20070731213718.GW11115@waste.org>
+References: <1185914174.18414.184.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46AF935B.9020403@impulze.org>
-X-Priority: none
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <1185914174.18414.184.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Tue, Jul 31, 2007 at 09:54:03PM +0200, Daniel Mierswa wrote:
+On Tue, Jul 31, 2007 at 01:36:14PM -0700, Dave Hansen wrote:
+> Since the pagemap code has a little header on it to help describe the
+> format, I wrote a little c program to parse its output.  I get some
+> strange results.  If I do this:
 > 
-> Hi there,
-> i'm having troubles getting my mouse and/or touchpad to work with 
-> 2.6.21.5 (and older ones). It's putting the following line into dmesg 
-> everytime the laptop gets lots of I/O or cpu load.
-> "psmouse.c: Wheel Mouse at isa0060/serio4/input0 lost synchronization, 
-> throwing 2 bytes away."
+> 	fd = open("/proc/1/pagemap", O_RDONLY);
+> 	count = read(fd, &endianness, 1);
+> 
+> count will always be 4.  
 
-This message is a wee bit too familiar to me as well, albeit for reasons
-different to that, I believe. :-$
+Known bug, fixed in my pending and not-currently-working update. It
+ought to return 0 for short reads.
+ 
+> hexdump gets similar, but even worse results:
+>         
+>         qemu:~# strace hexdump -C /proc/self/pagemap 
+>         ...
+>         read(0, "\1\f\4\4\377\377\377\377\377\377\377\377\377\377\377\377"..., 16) = 20
+>         read(0, 0x804d39c, 4294967292)          = -1 EFAULT (Bad address)
+>         --- SIGSEGV (Segmentation fault) @ 0 (0) ---
+>         +++ killed by SIGSEGV +++
+> 
+> Note that the kernel returns 20 to the read request of 16.  I think the
+> kernel is actually copying over something important in hexdump's memory
+> which is adjacent to the buffer and causing it to segfault.
 
-> The problem still exists and seems to occur as i've mentioned on lots of 
-> disk i/o and/or cpu load.
-> This is a laptop which is not supported by the manufactur anymore (seems 
-> to be a Gericom Webboy). I would appreciate any tips to debug this further.
-> Please post back for any additional information you need.
+Also fixed.
 
-Hmm, I'm pondering what I'd do here...
-Could it be that you're using the "old" IDE layer (not libata yet) and
-hdparm -u or -d or -c is inconveniently set up?
+> The code is basically organized not to output the right thing for any
+> unaligned access, and it apparently gets confused about exactly what
+> userspace has asked for.  I think this is largely due to its overwriting
+> of "count" in pagemap_read().
+> 
+> So, a couple of questions.  Don't we need to support non-sizeof(unsigned
+> long)-aligned reads?
 
-Maybe run powertop to identify timer anomalies?
-Try configuring a different CONFIG_HZ?
-Or maybe run oprofile to try to figure out any abnormal system load?
-And did you try running a "barebone"-only configuration? Possibly some
-certain driver is causing this misbehaviour...
-vmstat may provide some initial information as to what kind of activity
-exactly causes this issue.
+Why? We should obviously never return more data than we were asked for
+(that's clearly a bug), but lots of things refuse to read or write
+stuff that isn't well sized and aligned.
 
-Or maybe it's a simple X.org scheduling issue again?
-What nice value do you run X.org at?
-If it's too low, then maybe this causes the psmouse.c driver to have its
-mouse queue(?) processing get stuck and makes it have a hickup?
-In this context it would be good to ask about possible memory pressure on
-this system, too, since recently some people indicated more fluid X.org mouse
-pointer operation when mlocking the pointer handling code to avoid
-paging this code.
+> Do we _really_ need that header in each and every file?
 
-Oh, given that IIRC the Webboy is a slightly older Gericom model which
-thus may easily be a (somewhat hotter) P4 *desktop* CPU: could it be that
-you're hitting thermal emergency throttling on increased system activity?
-cat /proc/acpi/processor/*/throttling or something there might indicate
-this.
+Well there's either a header or there isn't.
 
-HTH,
+> > * first byte:   0 for big endian, 1 for little
+> 
+> Do we ever have cases where userspace and kernel differ in their
+> endianness?  Or, are you hoping to dump these files raw on one
+> architecture and parse them on another?
 
-Andreas Mohr
+Potentially, yes.
+
+> > * second byte:  page shift (eg 12 for 4096 byte pages)
+> 
+> This might actually (in theory) change on a per-process basis, so it
+> makes sense.  But, it seems more global to the process that just pagemap
+> output.  Would this always be the same as getpagesize()?   Or, should it
+> always map 1:1 with the amount of memory mapped by a kernel pte_t.  I
+> _think_ these can be slightly different because we have 64k PAGE_SIZE on
+> ppc64, but allow mappings to happen in 4k 
+> 
+> > * third byte:   entry size in bytes (currently either 4 or 8)
+> 
+> This one really boils down to "what is the kernel's sizeof(unsigned
+> long)" because we'll always store pfns in those.  It seems like we
+> should have a better way to go fetch that.
+> 
+> > * fourth byte:  header size
+> 
+> If we can get rid of the other three this, of course, goes away.
+
+True. But the variable-sized header lets us add other stuff later.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
