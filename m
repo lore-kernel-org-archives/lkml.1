@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759521AbXGaMIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759980AbXGaMI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759521AbXGaMIM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbXGaMH6
+	id S1759980AbXGaMI3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbXGaMIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:07:58 -0400
-Received: from styx.suse.cz ([82.119.242.94]:36072 "EHLO mail.suse.cz"
+	Tue, 31 Jul 2007 08:08:13 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:34402 "EHLO poczta.o2.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751598AbXGaMH5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:07:57 -0400
-Date: Tue, 31 Jul 2007 14:19:06 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ulrich Kunitz <kune@deine-taler.de>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, Jan Kratochvil <honza@jikos.cz>,
-       jakub@redhat.com
-Subject: Re: Is PIE randomization breaking klibc binaries?
-In-Reply-To: <46AF24B2.8070900@zytor.com>
-Message-ID: <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz>
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
- <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com>
- <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com>
- <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de>
- <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz> <46AF24B2.8070900@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1759502AbXGaMIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 08:08:11 -0400
+Date: Tue, 31 Jul 2007 14:17:35 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+Message-ID: <20070731121735.GA1046@ff.dom.local>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46AF0B8C.7070006@googlemail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, H. Peter Anvin wrote:
+On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
+> Jarek Poplawski wrote:
+> > On 28-07-2007 20:42, Gabriel C wrote:
+> >> Andrew Morton wrote:
+> >>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> >>>
+> >>>> Hi,
+> >>>>
+> >>>> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
+> >>>>
+> >>>> ...
+> >>>>
+> >>>> net/core/netpoll.c: In function 'netpoll_poll':
+> >>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+> >>>> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
+> >>>> net/core/netpoll.c: In function 'netpoll_setup':
+> >>>> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
+> >>>> make[2]: *** [net/core/netpoll.o] Error 1
+> >>>> make[1]: *** [net/core] Error 2
+> >>>> make: *** [net] Error 2
+> >>>> make: *** Waiting for unfinished jobs....
+> >>>>
+> >>>> ...
+> >>>>
+> >>>>
+> >>>> I think is because KGDBOE selects just NETPOLL.
+> >>>>
+> >>> Looks like it.
+> >>>
+> >>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+> >>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+> >>> remains evil.
+> > ...
+> >> I think there may be a logical issue ( again if I got it right ).
+> >> We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
+> >>
+> >> So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
+> > 
+> > IMHO, the only logical issue here is netpoll.c mustn't use 
+> > CONFIG_NET_POLL_CONTROLLER code without #ifdef if it doesn't
+> > add this dependency itself.
+> > 
+> 
+> Well it does if NETDEVICES && if NET_ETHERNET which booth are N when !NETDEVICES is why KGDBOE uses select and not depends on.
 
-> > I just now quickly tried to with klibc-1.5 on i386 with the 
-> > PIE-randomization patched kernel, and it seems to load static 
-> > libraries fine. I just downloaded klibc-1.5, built it, and executed a 
-> > few of the programs in usr/utils/static, all of them worked. Does this 
-> > also work for you and you are experiencing the problems solely when 
-> > the binaries are being run from initramfs during boot? I will test 
-> > more shortly (on x86_64, directly from initramfs) in order to 
-> > reproduce.
-> What about shared binaries?
+"does if XXX" means may "use if XXX".
 
-Works for me too on the pie-randomization patched kernel.
+> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
 
-So it seems to me that either it is something x86_64 specific or 
-initramfs-specific. Will try to reproduce it.
+Why kgdboe should care what netpoll needs? So, I hope, you are adding
+this select under config NETPOLL. On the other hand, if NETPOLL should
+depend on NET_POLL_CONTROLLER there is probably no reason to have them
+both.
 
--- 
-Jiri Kosina
-SUSE Labs
+The "does it work" question isn't logical issue, so it's irrelevant
+here...
+
+Jarek P.
