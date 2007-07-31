@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762327AbXGaORM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761279AbXGaOQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762327AbXGaORM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:17:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759328AbXGaOQp
+	id S1761279AbXGaOQw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756727AbXGaOQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:16:45 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:35716 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757149AbXGaOQn (ORCPT
+	Tue, 31 Jul 2007 10:16:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57496 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbXGaOQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 10:16:43 -0400
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: jack@hawkeye.stone.uk.eu.org
-Subject: Re: [Patch 11/16] Remove unnecessary kmalloc casts in drivers/net.
-Date: Tue, 31 Jul 2007 16:16:07 +0200
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       David Miller <davem@davemloft.net>
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125444.707405000@hawkeye.stone.uk.eu.org>
-In-Reply-To: <20070731125444.707405000@hawkeye.stone.uk.eu.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Tue, 31 Jul 2007 10:16:39 -0400
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+From: Arjan van de Ven <arjan@infradead.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+In-Reply-To: <46AED656.8070407@gmail.com>
+References: <20070705194909.337398431@intel.com>
+	 <20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+	 <46AE12B6.6090408@garzik.org>  <46AED656.8070407@gmail.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Tue, 31 Jul 2007 07:16:22 -0700
+Message-Id: <1185891382.2750.8.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200707311616.07364.borntraeger@de.ibm.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 31. Juli 2007 schrieb jack@hawkeye.stone.uk.eu.org:
-> --- a/drivers/net/lance.c
-> +++ b/drivers/net/lance.c
-[...]
-> -	lp->rx_buffs = (unsigned long)kmalloc(PKT_BUF_SZ*RX_RING_SIZE,
-> -						  GFP_DMA | GFP_KERNEL);
-> +	lp->rx_buffs = kmalloc(PKT_BUF_SZ*RX_RING_SIZE, GFP_DMA | GFP_KERNEL);
-[...]
-> --- a/drivers/net/sgiseeq.c
-> +++ b/drivers/net/sgiseeq.c
-[...]
-> -			buffer = (unsigned long) kmalloc(PKT_BUF_SZ, GFP_KERNEL);
-> +			buffer = kmalloc(PKT_BUF_SZ, GFP_KERNEL);
-[...]
-> -			buffer = (unsigned long) kmalloc(PKT_BUF_SZ, GFP_KERNEL);
-> +			buffer = kmalloc(PKT_BUF_SZ, GFP_KERNEL);
+On Tue, 2007-07-31 at 15:27 +0900, Tejun Heo wrote:
+> Jeff Garzik wrote:
+> > Any chance the SCSI peeps could ACK this, and then let me include it in
+> > the ALPM patchset in the libata tree?
+> 
+> ATA link PS is pretty complex with HIPM, DIPM and AHCI ALPM.  I'm not
+> sure whether this three level knob would be sufficient. 
 
-See the comments to the other patches. The cast is necessary.
+adding more levels later is easy.
+
+>  It might be
+> good enough if we're gonna develop extensive in-kernel black/white list
+> specifying which method works on which combination but my gut tells me
+> that it's best left to userland (probably in the form of per-notebook PS
+> profile).
+
+either sucks. AHCI ALPM ought to work if it's supported; it's what other
+operating systems also use... 
+> 
+> Adding to the fun, there are quite a few broken devices out there which
+> act weirdly when link PS actions are taken.
+
+do you have any specific examples that act funny with the patch in
+question here? (the patch tries to be careful, previous patches weren't
+always so please test this patch before claiming the concept as a whole
+is broken)
+> 
+> Also, I generally don't think AHCI ALPM is a good idea.  It doesn't have
+> 'cool down' period before entering PS state
+
+that's a chipset implementation decision.... not part of the
+spec/technology per se.
+
+
