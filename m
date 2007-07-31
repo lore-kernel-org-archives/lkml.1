@@ -1,93 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764443AbXGaP4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764637AbXGaP5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764443AbXGaP4T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 11:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbXGaP4K
+	id S1764637AbXGaP5n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 11:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757779AbXGaP5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 11:56:10 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:29495 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757090AbXGaP4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 11:56:09 -0400
-Date: Tue, 31 Jul 2007 19:55:27 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org, torvalds@osdl.org
-Cc: linux-kernel@vger.kernel.org, herbert@gondor.apana.org.au
-Subject: WARN_ON() which sometimes sucks
-Message-ID: <20070731155527.GB7253@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 31 Jul 2007 11:57:35 -0400
+Received: from el-out-1112.google.com ([209.85.162.176]:31548 "EHLO
+	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751982AbXGaP5e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 11:57:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MCFc9Mg8RJ/vu9xAg+L4MV6rTdlGmviEkhQecaEpYFPY1noSx9GWGdZzOI0r7MG5Bzb/Qp9NeuiyRbqTNidJmN1qblKeVZFymzVlUagLAmk0sTpelT5pR8mAPL1jYdWKda8EM3vIitXHk6G8TxtsMON6DNgw9MJgpY0iI8Akch0=
+Message-ID: <b21f8390707310857q7d878fe1yc5351cce2cc74248@mail.gmail.com>
+Date: Wed, 1 Aug 2007 01:57:33 +1000
+From: "Matthew Hawkins" <darthmdh@gmail.com>
+To: "Miguel Figueiredo" <elmig@debianpt.org>
+Subject: Re: [ck] Re: SD still better than CFS for 3d ?(was Re: 2.6.23-rc1)
+Cc: ck@vds.kolivas.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Kasper Sandberg" <lkml@metanurb.dk>
+In-Reply-To: <200707311432.45214.elmig@debianpt.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.11
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <20070731094526.GA16300@elte.hu>
+	 <b21f8390707310616o1ac04f15r7f84023ca773008e@mail.gmail.com>
+	 <200707311432.45214.elmig@debianpt.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It started when I tried to write
+On 7/31/07, Miguel Figueiredo <elmig@debianpt.org> wrote:
+> CFS does not requeue_task() on SCHED_YIELD (used by graphic drivers) as until
+> 2.6.22 and -ck. Please try this hack [1] that makes -ck to behave like CFS
+> then you are comparing apples to apples.
 
-	WARN_ON(m->seq_ops_allocated);
+Hi Miguel,
 
-in today's "[PATCH] single_open/seq_release leak diagnostics¹.
-Suprisingly compiler told me piss off with:
+I tested with sched_yield_ctl set to 1
 
-	  CC      fs/seq_file.o
-	fs/seq_file.c: In function 'seq_release':
-	fs/seq_file.c:285: error: 'typeof' applied to a bit-field
+2.6.22.1-ck+sched_yield_hack
+0   51
+1   51
+2   51
+3   46
+4   38
+5   38
+6   38
+7   30
+8   27
+9   22
+10   20
 
-Well, duh! Earlier versions of WARN_ON allowed that until commit
-684f978347deb42d180373ac4c427f82ef963171² which added typeof().
+After getting the numbers on all setups with the 10 loops still
+running I went for a run around the map (I used the "aggressor" map,
+if anyone cares).  CFS was noticeably smoother (despite the small
+framerate differences).  ie CFS was bordering on barely playable,
+whereas the above test it wasn't really playable (felt like playing on
+a lagged server).  Even plain -ck was better (going for a run, the FPS
+jumped from ~2 to 15).  I've noticed messing with sched_yield tends to
+cause strange defects in the past...
 
-OK, nobody noticed that WARN_ON(bitfield) stopped working. But I
-question the rationale of that commit:
-
-	Letting WARN_ON/WARN_ON_ONCE return the condition means that you could
-	do
-
-	if (WARN_ON(blah)) {
-	        handle_impossible_case
-	}
-
-	Rather than
-
-	if (unlikely(blah)) {
-	        WARN_ON(1)
-	        handle_impossible_case
-	}
-
-I think that second case is more clear and immediately understandable.
-If folks agree, I'll send revert so that WARN_ON(var), WARN_ON(ptr),
-WARN_ON(bitfield) and WARN_ON(condition) work as expected.
-
-¹ http://marc.info/?l=linux-kernel&m=118588389612083&w=2
-²
-
-tree db9025d8c6b267565c7110e09b16193957186a48
-parent 6299a2dec89d22940e36832f15c0addfb77e6910
-author Herbert Xu <herbert@gondor.apana.org.au> 1159520346 -0700
-committer Linus Torvalds <torvalds@g5.osdl.org> 1159546686 -0700
-
-[PATCH] Let WARN_ON/WARN_ON_ONCE return the condition
-
-Letting WARN_ON/WARN_ON_ONCE return the condition means that you could do
-
-if (WARN_ON(blah)) {
-	handle_impossible_case
-}
-
-Rather than
-
-if (unlikely(blah)) {
-	WARN_ON(1)
-	handle_impossible_case
-}
-
-I checked all the newly added WARN_ON_ONCE users and none of them test the
-return status so we can still change it.
-
-[akpm@osdl.org: warning fix]
-[akpm@osdl.org: build fix]
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@osdl.org>
-Signed-off-by: Linus Torvalds <torvalds@osdl.org>
-
+-- 
+Matt
