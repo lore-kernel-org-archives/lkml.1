@@ -1,99 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752196AbXGaG6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751933AbXGaG6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752196AbXGaG6e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 02:58:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750982AbXGaG60
+	id S1751933AbXGaG6t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 02:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbXGaG6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 02:58:26 -0400
-Received: from mga01.intel.com ([192.55.52.88]:42641 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750962AbXGaG6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 02:58:25 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,201,1183359600"; 
-   d="scan'208";a="274665362"
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <m1r6mptcc8.fsf@ebiederm.dsl.xmission.com>
-References: <1185851583.23149.30.camel@caritas-dev.intel.com>
-	 <m1r6mptcc8.fsf@ebiederm.dsl.xmission.com>
+	Tue, 31 Jul 2007 02:58:39 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:7683 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378AbXGaG6h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 02:58:37 -0400
+Subject: Re: [ck] Re: SD still better than CFS for 3d ?
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Matthew Hawkins <darthmdh@gmail.com>
+Cc: Roland Dreier <rdreier@cisco.com>, Christoph Hellwig <hch@infradead.org>,
+       Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
+       ck@vds.kolivas.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org
+In-Reply-To: <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
+	 <20070729204716.GB1578@elte.hu>
+	 <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
+	 <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>
+	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
+	 <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
+	 <20070730182959.GA29151@infradead.org> <adaps29sm62.fsf@cisco.com>
+	 <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 14:58:07 +0800
-Message-Id: <1185865087.23149.50.camel@caritas-dev.intel.com>
+Organization: IBM Corporation
+Date: Tue, 31 Jul 2007 09:01:48 +0200
+Message-Id: <1185865308.4561.8.camel@localhost>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 31 Jul 2007 06:58:17.0904 (UTC) FILETIME=[2C5D7B00:01C7D340]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 22:40 -0600, Eric W. Biederman wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
+On Tue, 2007-07-31 at 13:07 +1000, Matthew Hawkins wrote:
+> On 7/31/07, Roland Dreier <rdreier@cisco.com> wrote:
+> >  >      Fuck you Martin!
+> >
+> > I think you meant to yell at Matthew, not Martin ;)
 > 
-> > This patch adds document for EFI x86_64 support. The boot parameters
-> > added are documented in Documentation/i386/zero-page.txt. The setup
-> > and operation guide of EFI based system is documented in
-> > Documentation/x86_64/uefi.txt.
-> >
-> > Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
-> > Signed-off-by: Huang Ying <ying.huang@intel.com>
-> >
-> > ---
-> >
-> >  i386/zero-page.txt |   18 ++++++++++++++----
-> >  x86_64/uefi.txt    |   42 ++++++++++++++++++++++++++++++++++++++++++
-> >  2 files changed, 56 insertions(+), 4 deletions(-)
-> >
-> > Index: linux-2.6.23-rc1/Documentation/i386/zero-page.txt
-> > ===================================================================
-> > --- linux-2.6.23-rc1.orig/Documentation/i386/zero-page.txt 2007-07-30
-> > 11:28:45.000000000 +0800
-> > +++ linux-2.6.23-rc1/Documentation/i386/zero-page.txt 2007-07-30
-> > 11:29:28.000000000 +0800
-> > @@ -31,11 +31,11 @@
-> >   0xb0 - 0x13f		Free. Add more parameters here if you really need them.
-> >   0x140- 0x1be		EDID_INFO Video mode setup
-> >  
-> > -0x1c4	unsigned long	EFI system table pointer
-> > -0x1c8	unsigned long	EFI memory descriptor size
-> > -0x1cc	unsigned long	EFI memory descriptor version
-> > +0x1c4	unsigned long	EFI system table pointer*
-> > +0x1c8	unsigned long	EFI memory descriptor size*
-> > +0x1cc	unsigned long	EFI memory descriptor version*
-> >  0x1d0	unsigned long	EFI memory descriptor map pointer
-> > -0x1d4	unsigned long	EFI memory descriptor map size
-> > +0x1d4	unsigned long	EFI memory descriptor map size*
-> >  0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
-> >  0x1e4	unsigned long	Scratch field for the kernel setup code
-> >  0x1e8	char		number of entries in E820MAP (below)
-> > @@ -87,3 +87,13 @@
-> >  0x2d0 - 0xd00		E820MAP
-> >  0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
-> >  0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
-> > +
-> > +Changes for x86_64 implementation:
-> > +---------------------------------
-> > +For alignment purposes, the following parameters are rearranged.
-> > +
-> > +0x1b8	unsigned long	EFI system table pointer
-> > +0x1c0	unsigned long	EFI Loader signature
-> > +0x1c4	unsigned long	EFI memory descriptor size
-> > +0x1c8	unsigned long	EFI memory descriptor version
-> > +0x1cc	unsigned long	EFI memory descriptor map size
-> 
-> Huh?  It is the same protocol.  Unless there are specific issues such
-> as pointers being to small we should remain 100% the same for both
-> arch/i386 and arch/x86_64   This variation looks like a serious
-> bug.
+> What's amusing about this is he's yelling at me for something I didn't
+> do, can't even get my name right, and has the audacity to claim that
+> *I* am the one looking like a fool!  While we're descending into
+> primary school theatrics, may I just say "takes one to know one" ;-)
 
-The parameters are rearranged, because the pointer is too small. For
-example, the EFI system table pointer is 8 bytes in x86_64, while it is
-4 bytes in i386.
+Pouring oil into the fire ?
 
-Best Regards,
-Huang Ying
+> I took the time to track down what caused a breakage - in an "illegal
+> binary driver" (not against the law here, though defamation certainly
+> is...) no less.  And contacted the vendor (separately).  Other people
+> on desktop machines with an ATI card using the fglrx driver may have
+> been interested to know that they can't do the benchmarking some
+> people here on lkml and -mm are asking for with a current 2.6.23 git
+> kernel, hence my post.
+
+To inform the vendor and to post a warning about the issue on lkml was
+the right thing to do. It is the wording of your post that obviously
+irked some people.
+
+> Martin's cleanup patch is good and I never claimed otherwise, I just
+> said the comment on the commit was a bad call (as there are users of
+> that interface).  Certainly ATI should fix their dodgy drivers.
+> That's been the cry of the community for a long time...
+
+The commit message could have been better. The correct thing to say
+would have been "Nobody in the official kernel is using
+ptep_test_and_clear_dirty and ptep_clear_flush_dirty."
+nvidia will have to adapt their binary driver. This is not the first
+time it breaks and it won't be the last time. We do not really have a
+problem and we should all calm down and put that issue to rest.
+
+-- 
+blue skies,
+  Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
+
