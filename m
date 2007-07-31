@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbXGaM4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbXGaM4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760362AbXGaM4B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 08:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbXGaMzx
+	id S1760697AbXGaM4Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 08:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbXGaM4M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 08:55:53 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4864 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751167AbXGaMzw (ORCPT
+	Tue, 31 Jul 2007 08:56:12 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:52727 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758491AbXGaM4K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 08:55:52 -0400
-Date: Tue, 31 Jul 2007 13:55:51 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: John Sigler <linux.kernel@free.fr>
-cc: linux-kernel@vger.kernel.org,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: Re: BIOS implementors disabling the LAPIC
-In-Reply-To: <46AF2BF8.3000601@free.fr>
-Message-ID: <Pine.LNX.4.64N.0707311343410.16158@blysk.ds.pg.gda.pl>
-References: <46AEED9E.1050904@free.fr> <Pine.LNX.4.64N.0707311119350.16158@blysk.ds.pg.gda.pl>
- <46AF2BF8.3000601@free.fr>
+	Tue, 31 Jul 2007 08:56:10 -0400
+Message-ID: <46AF314C.7030404@linux.vnet.ibm.com>
+Date: Tue, 31 Jul 2007 18:25:40 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: YAMAMOTO Takashi <yamamoto@valinux.co.jp>
+CC: balbir@linux.vnet.ibm.com, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org, ebiederm@xmission.com,
+       containers@lists.osdl.org, akpm@linux-foundation.org, xemul@openvz.org,
+       menage@google.com, dhaval@linux.vnet.ibm.com
+Subject: Re: [-mm PATCH 6/9] Memory controller add per container LRU and reclaim
+ (v4)
+References: <20070727201041.31565.14803.sendpatchset@balbir-laptop> <20070731051459.E827E1BF77B@siro.lan>
+In-Reply-To: <20070731051459.E827E1BF77B@siro.lan>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, John Sigler wrote:
 
-> The motherboard manufacturer (well, their level 1 support, anyway) told me I
-> could "safely enable the LAPIC". If it is safe to enable the LAPIC, then why
-> are they disabling it in the BIOS? (They weren't able to tell me whether
-> their BIOS triggers SMIs or not...)
 
- Ask them.
+YAMAMOTO Takashi wrote:
+>> +unsigned long mem_container_isolate_pages(unsigned long nr_to_scan,
+>> +					struct list_head *dst,
+>> +					unsigned long *scanned, int order,
+>> +					int mode, struct zone *z,
+>> +					struct mem_container *mem_cont,
+>> +					int active)
+>> +{
+>> +	unsigned long nr_taken = 0;
+>> +	struct page *page;
+>> +	unsigned long scan;
+>> +	LIST_HEAD(mp_list);
+>> +	struct list_head *src;
+>> +	struct meta_page *mp;
+>> +
+>> +	if (active)
+>> +		src = &mem_cont->active_list;
+>> +	else
+>> +		src = &mem_cont->inactive_list;
+>> +
+>> +	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
+>> +		mp = list_entry(src->prev, struct meta_page, lru);
+> 
+> what prevents another thread from freeing mp here?
 
-> Is this a "either works or doesn't" situation where hell should break loose if
-> I try to enable the LAPIC and it's not supported by the motherboard, or is
-> this a "you will silently lose data at the worst possible time" situation?
+mem_cont->lru_lock protects the list and validity of mp.  If we hold
+mem_cont->lru_lock for this entire loop, then we preserve the validity
+of mp.  However that will be holding up container charge and uncharge.
 
- It could be either.  For example some IBM hardware used to be known to 
-have problems, like the 8254 timer freezing occasionally, when the APIC 
-was used and the NMI watchdog enabled.  On some laptops you would get an 
-instant hard lockup if you enabled the APIC and used one of the special 
-key combinations (whether on purpose or by chance) used to adjust display 
-brightness, etc..
+This entire routing is called with zone->lru_lock held by the caller.
+ So within a zone, this routine is serialized.
 
-> If that were the case, then I could not enable the LAPIC and have NMIs work,
-> right?
+However page uncharge may race with isolate page.  But will that lead
+to any corruption of the list?  We may be holding the lock for too
+much time just to be on the safe side.
 
- It depends on what you want to use NMIs for.  For their PC/AT compatible 
-purpose, that is reporting of memory parity/ECC and bus errors, it works 
-in either mode.  For any other purpose you need an APIC.
+Please allow us some time to verify whether this is indeed inadequate
+locking that will lead to corruption of the list.
 
-  Maciej
+Thanks for pointing out this situation.
+--Vaidy
+
+>> +		spin_lock(&mem_cont->lru_lock);
+>> +		if (mp)
+>> +			page = mp->page;
+>> +		spin_unlock(&mem_cont->lru_lock);
+>> +		if (!mp)
+>> +			continue;
+> 
+> YAMAMOTO Takashi
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+> 
