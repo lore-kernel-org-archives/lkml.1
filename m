@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763890AbXGaO04@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764609AbXGaO1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763890AbXGaO04 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 10:26:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758132AbXGaO0s
+	id S1764609AbXGaO1R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 10:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760357AbXGaO0t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 10:26:48 -0400
-Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:20486 "EHLO
+	Tue, 31 Jul 2007 10:26:49 -0400
+Received: from mcclure-nat.wal.novell.com ([130.57.22.22]:20487 "EHLO
 	mcclure.wal.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757475AbXGaO0r convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1758189AbXGaO0r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Jul 2007 10:26:47 -0400
-Message-Id: <46AF0DFC.BA47.005A.0@novell.com>
+Message-Id: <46AF0DF9.BA47.005A.0@novell.com>
 X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Tue, 31 Jul 2007 10:26:37 -0400
+Date: Tue, 31 Jul 2007 10:26:36 -0400
 From: "Gregory Haskins" <ghaskins@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
 Cc: <linux-kernel@vger.kernel.org>, <linux-rt-users@vger.kernel.org>
 Subject: Re: [PATCH 1/2] RT: Preemptible Function-Call-IPI Support
 References: <20070730211350.5162.99143.stgit@novell1.haskins.net>
@@ -26,6 +25,7 @@ Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
