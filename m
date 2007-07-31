@@ -1,42 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbXGaIIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbXGaIIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbXGaIIH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbXGaIHs
+	id S1753807AbXGaIIf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbXGaIH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:07:48 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57853 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751964AbXGaIHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:07:46 -0400
-Date: Tue, 31 Jul 2007 09:14:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Eugene Teo <eugeneteo@kernel.sg>
-Cc: linux-kernel@vger.kernel.org,
-       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Neil Horman <nhorman@tuxdriver.com>, Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH 2/3] coredump: remove suidsafe mode related dead code
-Message-ID: <20070731091425.04fb865b@the-village.bc.nu>
-In-Reply-To: <20070731070458.GC2412@kernel.sg>
-References: <20070731070238.GA2412@kernel.sg>
-	<20070731070458.GC2412@kernel.sg>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Jul 2007 04:07:56 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:37345 "EHLO smtp4-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752327AbXGaIHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:07:51 -0400
+Message-ID: <46AEED9E.1050904@free.fr>
+Date: Tue, 31 Jul 2007 10:06:54 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: BIOS implementors disabling the LAPIC
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 15:04:58 +0800
-Eugene Teo <eugeneteo@kernel.sg> wrote:
+I have several systems here where Linux tells me:
+Local APIC disabled by BIOS -- you can enable it with "lapic"
 
-> This patch removes suidsafe core dump mode related dead code.
-> 
-> Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+As far as I understand, the Local APIC was integrated directly to the 
+CPU 12-15 years ago. Why would a BIOS implementor choose to disable it?
 
-NAK: This feature is used by end users and people debugging complex
-system problems.
+(And what does it mean to "disable" the LAPIC?)
+
+Note: the motherboard does not provide an IO-APIC.
+
+I've ask the kernel to re-enable the LAPIC, and was able to use OProfile 
+in hardware counter mode, i.e. it seems to work fine.
+
+Regards.
