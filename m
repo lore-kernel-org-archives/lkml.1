@@ -1,78 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762586AbXGaNNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762483AbXGaNNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762586AbXGaNNj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761851AbXGaNKL
+	id S1762483AbXGaNNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761896AbXGaNKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:10:11 -0400
+	Tue, 31 Jul 2007 09:10:14 -0400
 Received: from host86-137-100-191.range86-137.btcentralplus.com ([86.137.100.191]:42959
 	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761834AbXGaNKJ (ORCPT
+	by vger.kernel.org with ESMTP id S1761677AbXGaNKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:10:09 -0400
+	Tue, 31 Jul 2007 09:10:11 -0400
 X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 09:09:04 EDT
 From: jack@hawkeye.stone.uk.eu.org
-Message-Id: <20070731125442.002407000@hawkeye.stone.uk.eu.org>
+Message-Id: <20070731125444.707405000@hawkeye.stone.uk.eu.org>
 References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 31 Jul 2007 13:53:23 +0100
+Date: Tue, 31 Jul 2007 13:53:27 +0100
 To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, David Woodhouse <dwmw2@infradead.org>
-Subject: [Patch 07/16] Remove unnecessary kmalloc casts in the mtd drivers.
-Content-Disposition: inline; filename=drivers_mtd_remove_kmalloc_casts.patch
+Cc: trivial@kernel.org, David Millver <davem@davemloft.net>
+Subject: [Patch 11/16] Remove unnecessary kmalloc casts in drivers/net.
+Content-Disposition: inline; filename=drivers_net_remove_kmalloc_casts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
 
-CC: David Woodhouse <dwmw2@infradead.org>
+CC: David Millver <davem@davemloft.net>
 
 ---
- drivers/mtd/maps/pmcmsp-flash.c |   11 ++++-------
- drivers/mtd/maps/tqm8xxl.c      |    2 +-
- 2 files changed, 5 insertions(+), 8 deletions(-)
+ drivers/net/gianfar.c |    6 ++----
+ drivers/net/lance.c   |    3 +--
+ drivers/net/s2io.c    |    4 ++--
+ drivers/net/sgiseeq.c |    4 ++--
+ 4 files changed, 7 insertions(+), 10 deletions(-)
 
-Index: b/drivers/mtd/maps/pmcmsp-flash.c
+Index: b/drivers/net/lance.c
 ===================================================================
---- a/drivers/mtd/maps/pmcmsp-flash.c
-+++ b/drivers/mtd/maps/pmcmsp-flash.c
-@@ -73,12 +73,9 @@ int __init init_msp_flash(void)
- 		return -ENXIO;
- 
- 	printk(KERN_NOTICE "Found %d PMC flash devices\n", fcnt);
--	msp_flash = (struct mtd_info **)kmalloc(
--			fcnt * sizeof(struct map_info *), GFP_KERNEL);
--	msp_parts = (struct mtd_partition **)kmalloc(
--			fcnt * sizeof(struct mtd_partition *), GFP_KERNEL);
--	msp_maps = (struct map_info *)kmalloc(
--			fcnt * sizeof(struct mtd_info), GFP_KERNEL);
-+	msp_flash = kmalloc(fcnt * sizeof(struct map_info *), GFP_KERNEL);
-+	msp_parts = kmalloc(fcnt * sizeof(struct mtd_partition *), GFP_KERNEL);
-+	msp_maps  = kmalloc(fcnt * sizeof(struct mtd_info), GFP_KERNEL);
- 	memset(msp_maps, 0, fcnt * sizeof(struct mtd_info));
- 
- 	/* loop over the flash devices, initializing each */
-@@ -95,7 +92,7 @@ int __init init_msp_flash(void)
- 			continue;
- 		}
- 
--		msp_parts[i] = (struct mtd_partition *)kmalloc(
-+		msp_parts[i] = kmalloc(
- 			pcnt * sizeof(struct mtd_partition), GFP_KERNEL);
- 		memset(msp_parts[i], 0, pcnt * sizeof(struct mtd_partition));
- 
-Index: b/drivers/mtd/maps/tqm8xxl.c
+--- a/drivers/net/lance.c
++++ b/drivers/net/lance.c
+@@ -539,8 +539,7 @@ static int __init lance_probe1(struct ne
+ 	if (lance_debug > 6) printk(" (#0x%05lx)", (unsigned long)lp);
+ 	dev->priv = lp;
+ 	lp->name = chipname;
+-	lp->rx_buffs = (unsigned long)kmalloc(PKT_BUF_SZ*RX_RING_SIZE,
+-						  GFP_DMA | GFP_KERNEL);
++	lp->rx_buffs = kmalloc(PKT_BUF_SZ*RX_RING_SIZE, GFP_DMA | GFP_KERNEL);
+ 	if (!lp->rx_buffs)
+ 		goto out_lp;
+ 	if (lance_need_isa_bounce_buffers) {
+Index: b/drivers/net/gianfar.c
 ===================================================================
---- a/drivers/mtd/maps/tqm8xxl.c
-+++ b/drivers/mtd/maps/tqm8xxl.c
-@@ -141,7 +141,7 @@ int __init init_tqm_mtd(void)
- 			goto error_mem;
- 		}
+--- a/drivers/net/gianfar.c
++++ b/drivers/net/gianfar.c
+@@ -737,8 +737,7 @@ int startup_gfar(struct net_device *dev)
+ 	gfar_write(&regs->rbase0, addr);
  
--		map_banks[idx]->name = (char *)kmalloc(16, GFP_KERNEL);
-+		map_banks[idx]->name = kmalloc(16, GFP_KERNEL);
+ 	/* Setup the skbuff rings */
+-	priv->tx_skbuff =
+-	    (struct sk_buff **) kmalloc(sizeof (struct sk_buff *) *
++	priv->tx_skbuff = kmalloc(sizeof (struct sk_buff *) *
+ 					priv->tx_ring_size, GFP_KERNEL);
  
- 		if (!map_banks[idx]->name) {
- 			ret = -ENOMEM;
+ 	if (NULL == priv->tx_skbuff) {
+@@ -752,8 +751,7 @@ int startup_gfar(struct net_device *dev)
+ 	for (i = 0; i < priv->tx_ring_size; i++)
+ 		priv->tx_skbuff[i] = NULL;
+ 
+-	priv->rx_skbuff =
+-	    (struct sk_buff **) kmalloc(sizeof (struct sk_buff *) *
++	priv->rx_skbuff = kmalloc(sizeof (struct sk_buff *) *
+ 					priv->rx_ring_size, GFP_KERNEL);
+ 
+ 	if (NULL == priv->rx_skbuff) {
+Index: b/drivers/net/s2io.c
+===================================================================
+--- a/drivers/net/s2io.c
++++ b/drivers/net/s2io.c
+@@ -729,7 +729,7 @@ static int init_shared_mem(struct s2io_n
+ 				while (k != rxd_count[nic->rxd_mode]) {
+ 					ba = &mac_control->rings[i].ba[j][k];
+ 
+-					ba->ba_0_org = (void *) kmalloc
++					ba->ba_0_org = kmalloc
+ 					    (BUF0_LEN + ALIGN_SIZE, GFP_KERNEL);
+ 					if (!ba->ba_0_org)
+ 						return -ENOMEM;
+@@ -740,7 +740,7 @@ static int init_shared_mem(struct s2io_n
+ 					tmp &= ~((unsigned long) ALIGN_SIZE);
+ 					ba->ba_0 = (void *) tmp;
+ 
+-					ba->ba_1_org = (void *) kmalloc
++					ba->ba_1_org = kmalloc
+ 					    (BUF1_LEN + ALIGN_SIZE, GFP_KERNEL);
+ 					if (!ba->ba_1_org)
+ 						return -ENOMEM;
+Index: b/drivers/net/sgiseeq.c
+===================================================================
+--- a/drivers/net/sgiseeq.c
++++ b/drivers/net/sgiseeq.c
+@@ -167,7 +167,7 @@ static int seeq_init_ring(struct net_dev
+ 		if (!sp->tx_desc[i].tdma.pbuf) {
+ 			unsigned long buffer;
+ 
+-			buffer = (unsigned long) kmalloc(PKT_BUF_SZ, GFP_KERNEL);
++			buffer = kmalloc(PKT_BUF_SZ, GFP_KERNEL);
+ 			if (!buffer)
+ 				return -ENOMEM;
+ 			sp->tx_desc[i].buf_vaddr = CKSEG1ADDR(buffer);
+@@ -181,7 +181,7 @@ static int seeq_init_ring(struct net_dev
+ 		if (!sp->rx_desc[i].rdma.pbuf) {
+ 			unsigned long buffer;
+ 
+-			buffer = (unsigned long) kmalloc(PKT_BUF_SZ, GFP_KERNEL);
++			buffer = kmalloc(PKT_BUF_SZ, GFP_KERNEL);
+ 			if (!buffer)
+ 				return -ENOMEM;
+ 			sp->rx_desc[i].buf_vaddr = CKSEG1ADDR(buffer);
 
 -- 
