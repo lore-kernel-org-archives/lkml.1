@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbXGaIvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753892AbXGaIxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752944AbXGaIvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 04:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbXGaIvb
+	id S1753892AbXGaIxP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 04:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbXGaIw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 04:51:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38600 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750825AbXGaIva (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 04:51:30 -0400
-Date: Tue, 31 Jul 2007 10:51:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Matt Barber <brbrofsvl@gmail.com>
-Subject: Re: [Fwd: [PlanetCCRMA] atl1 driver; sleeping function]
-Message-ID: <20070731085122.GC14758@elte.hu>
-References: <1185852942.32478.3.camel@cmn3.stanford.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185852942.32478.3.camel@cmn3.stanford.edu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 31 Jul 2007 04:52:59 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:54685 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750861AbXGaIw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 04:52:58 -0400
+To: chuck.lever@oracle.com
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kzak@redhat.com, sfrench@samba.org, trond.myklebust@fys.uio.no,
+       mark.fasheh@oracle.com, kurt.hackel@oracle.com
+In-reply-to: <46AE01C2.3000008@oracle.com> (message from Chuck Lever on Mon,
+	30 Jul 2007 11:20:34 -0400)
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu> <46AA51CA.7030105@oracle.com> <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu> <46AE01C2.3000008@oracle.com>
+Message-Id: <E1IFnSa-0002BL-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 31 Jul 2007 10:52:08 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> After a successful mount, the NFS mount command tucks some options into 
+> /etc/mtab that reflect which mountd was used for the mount, and what 
+> protocol version and port was used for the mount request.  Those options 
+> are not passed to the kernel, and do not appear in /proc/mounts today. 
+> See nfs(5)'s discussion of the mountport, mounthost, mountprog, and 
+> mountvers options.
+> 
+> However, the trend for NFS is to push mount option parsing into the 
+> kernel.  Thus all options will be passed to the kernel, and at that 
+> point it should be able to reflect the mount* options in /proc/mounts. 
+> But it doesn't do that quite yet.
 
-* Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
+Trond, do you have a roadmap for this?
 
-> Hi Ingo, I'm forwading this report from a Planet CCRMA user, this is 
-> happening to him with 2.6.21.6-rt21...
+> I'm wondering if there are other such cases in other file systems.
 
-thanks!
+Anything that has /sbin/mount.XXX could be doing this.  According to
+Karel, those are nfs, cifs and ocfs2.
 
-> BUG: sleeping function called from invalid context IRQ-219(2243) at
-> kernel/rtmutex.c:613
-> in_atomic():0 [00000000], irqs_disabled():1
->  [<c0405f88>] dump_trace+0x64/0x105
->  [<c0406041>] show_trace_log_lvl+0x18/0x2c
->  [<c040664e>] show_trace+0xf/0x11
->  [<c04066cf>] dump_stack+0x12/0x14
->  [<c060511d>] __rt_spin_lock+0x21/0x3d
->  [<f8a20e0c>] atl1_xmit_frame+0x66f/0x6c6 [atl1]
->  [<c05a3d96>] dev_hard_start_xmit+0x1c6/0x225
->  [<c05b29bd>] __qdisc_run+0xb7/0x1cf
-
-could you try the patch below, does it fix the problem? The atl1 driver 
-uses raw irq flags in combination with a spinlock that is a sleeping 
-lock on -rt. (this is valid code on upstream, fortunately the -rt fix is 
-also a cleanup and a small code reduction enhancement on upstream, so 
-there's no problem pushing such fixes upstream.)
-
-	Ingo
-
---------------------------->
-Subject: [patch] drivers/net/atl1/atl1_main.c: use spin_trylock_irqsave()
-From: Ingo Molnar <mingo@elte.hu>
-
-use the simpler spin_trylock_irqsave() API to get the adapter lock.
-
-[ this is also a fix for -rt where adapter->lock is a sleeping lock. ]
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- drivers/net/atl1/atl1_main.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-Index: linux-rt-rebase.q/drivers/net/atl1/atl1_main.c
-===================================================================
---- linux-rt-rebase.q.orig/drivers/net/atl1/atl1_main.c
-+++ linux-rt-rebase.q/drivers/net/atl1/atl1_main.c
-@@ -1704,10 +1704,8 @@ static int atl1_xmit_frame(struct sk_buf
- 		}
- 	}
- 
--	local_irq_save(flags);
--	if (!spin_trylock(&adapter->lock)) {
-+	if (!spin_trylock_irqsave(&adapter->lock, flags)) {
- 		/* Can't get lock - tell upper layer to requeue */
--		local_irq_restore(flags);
- 		dev_printk(KERN_DEBUG, &adapter->pdev->dev, "tx locked\n");
- 		return NETDEV_TX_LOCKED;
- 	}
+Miklos
