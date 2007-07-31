@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762787AbXGaNMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762688AbXGaNM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762787AbXGaNMm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 09:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761359AbXGaNKC
+	id S1762688AbXGaNM6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 09:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761298AbXGaNKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 09:10:02 -0400
+	Tue, 31 Jul 2007 09:10:06 -0400
 Received: from host86-137-100-191.range86-137.btcentralplus.com ([86.137.100.191]:42959
 	"EHLO hawkeye.stone.uk.eu.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761766AbXGaNKA (ORCPT
+	by vger.kernel.org with ESMTP id S1761817AbXGaNKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 09:10:00 -0400
+	Tue, 31 Jul 2007 09:10:04 -0400
 X-Greylist: delayed 903 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Jul 2007 09:09:04 EDT
 From: jack@hawkeye.stone.uk.eu.org
-Message-Id: <20070731125447.639642000@hawkeye.stone.uk.eu.org>
+Message-Id: <20070731125445.063594000@hawkeye.stone.uk.eu.org>
 References: <20070731125316.860150000@hawkeye.stone.uk.eu.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 31 Jul 2007 13:53:31 +0100
+Date: Tue, 31 Jul 2007 13:53:28 +0100
 To: linux-kernel@vger.kernel.org
-Cc: trivial@kernel.org, James Bottomley <james.bottomley@steeleye.com>
-Subject: [Patch 15/16] Remove unnecesary kmalloc casts in the scsi drivers.
-Content-Disposition: inline; filename=drivers_scsi_remove_kmalloc_casts.patch
+Cc: trivial@kernel.org, John Linville <linville@tuxdriver.com>
+Subject: [Patch 12/16] Remove unnecessary kmalloc casts in the libertas drivers.
+Content-Disposition: inline; filename=drivers_net_wireless_libertas_remove_kmalloc_casts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jack Stone <jack@hawkeye.stone.uk.eu.org>
 
-CC: James Bottomley <james.bottomley@steeleye.com>
+CC: John Linville <linville@tuxdriver.com>
 
 ---
- drivers/scsi/advansys.c |    2 +-
- drivers/scsi/osst.c     |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/wireless/libertas/debugfs.c |    2 +-
+ drivers/net/wireless/libertas/ethtool.c |    3 +--
+ 2 files changed, 2 insertions(+), 3 deletions(-)
 
-Index: b/drivers/scsi/advansys.c
+Index: b/drivers/net/wireless/libertas/debugfs.c
 ===================================================================
---- a/drivers/scsi/advansys.c
-+++ b/drivers/scsi/advansys.c
-@@ -18513,7 +18513,7 @@ advansys_board_found(int iop, struct dev
- 		 * Allocate buffer carrier structures. The total size
- 		 * is about 4 KB, so allocate all at once.
- 		 */
--		carrp = (ADV_CARR_T *) kmalloc(ADV_CARRIER_BUFSIZE, GFP_ATOMIC);
-+		carrp = kmalloc(ADV_CARRIER_BUFSIZE, GFP_ATOMIC);
- 		ASC_DBG1(1, "advansys_board_found: carrp 0x%lx\n", (ulong)carrp);
+--- a/drivers/net/wireless/libertas/debugfs.c
++++ b/drivers/net/wireless/libertas/debugfs.c
+@@ -1839,7 +1839,7 @@ static ssize_t wlan_debugfs_write(struct
+ 	char *p2;
+ 	struct debug_data *d = (struct debug_data *)f->private_data;
  
- 		if (carrp == NULL) {
-Index: b/drivers/scsi/osst.c
+-	pdata = (char *)kmalloc(cnt, GFP_KERNEL);
++	pdata = kmalloc(cnt, GFP_KERNEL);
+ 	if (pdata == NULL)
+ 		return 0;
+ 
+Index: b/drivers/net/wireless/libertas/ethtool.c
 ===================================================================
---- a/drivers/scsi/osst.c
-+++ b/drivers/scsi/osst.c
-@@ -5756,7 +5756,7 @@ static int osst_probe(struct device *dev
- 	write_lock(&os_scsi_tapes_lock);
- 	if (os_scsi_tapes == NULL) {
- 		os_scsi_tapes =
--			(struct osst_tape **)kmalloc(osst_max_dev * sizeof(struct osst_tape *),
-+			kmalloc(osst_max_dev * sizeof(struct osst_tape *),
- 				   GFP_ATOMIC);
- 		if (os_scsi_tapes == NULL) {
- 			write_unlock(&os_scsi_tapes_lock);
+--- a/drivers/net/wireless/libertas/ethtool.c
++++ b/drivers/net/wireless/libertas/ethtool.c
+@@ -60,8 +60,7 @@ static int libertas_ethtool_get_eeprom(s
+ 
+ //      mutex_lock(&priv->mutex);
+ 
+-	adapter->prdeeprom =
+-		    (char *)kmalloc(eeprom->len+sizeof(regctrl), GFP_KERNEL);
++	adapter->prdeeprom = kmalloc(eeprom->len+sizeof(regctrl), GFP_KERNEL);
+ 	if (!adapter->prdeeprom)
+ 		return -ENOMEM;
+ 	memcpy(adapter->prdeeprom, &regctrl, sizeof(regctrl));
 
 -- 
