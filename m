@@ -1,94 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbXGaKUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXGaK1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbXGaKUr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 06:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbXGaKUj
+	id S1758135AbXGaK1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 06:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbXGaK1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 06:20:39 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:10494 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752291AbXGaKUi (ORCPT
+	Tue, 31 Jul 2007 06:27:25 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:3950 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbXGaK1Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 06:20:38 -0400
-X-IronPort-AV: i="4.19,203,1183348800"; 
-   d="scan'208"; a="46973901:sNHT24091501"
-Subject: [PATCH] Blackfin arch: after removing fs.h from mm.h, fix the
-	broken on Blackfin arch
-From: Bryan Wu <bryan.wu@analog.com>
-Reply-To: bryan.wu@analog.com
-To: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       akpm@linux-foundation.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Analog Devices, Inc.
-Date: Tue, 31 Jul 2007 18:25:29 +0800
-Message-Id: <1185877529.32124.2.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-X-OriginalArrivalTime: 31 Jul 2007 10:20:34.0598 (UTC) FILETIME=[6E660460:01C7D35C]
+	Tue, 31 Jul 2007 06:27:24 -0400
+Date: Tue, 31 Jul 2007 11:27:25 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: John Sigler <linux.kernel@free.fr>
+cc: linux-kernel@vger.kernel.org,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: BIOS implementors disabling the LAPIC
+In-Reply-To: <46AEED9E.1050904@free.fr>
+Message-ID: <Pine.LNX.4.64N.0707311119350.16158@blysk.ds.pg.gda.pl>
+References: <46AEED9E.1050904@free.fr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 31 Jul 2007, John Sigler wrote:
 
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Signed-off-by: Bryan Wu <bryan.wu@analog.com>
----
- arch/blackfin/kernel/init_task.c |    1 +
- arch/blackfin/kernel/process.c   |    2 ++
- arch/blackfin/kernel/sys_bfin.c  |    1 +
- arch/blackfin/kernel/traps.c     |    1 +
- 4 files changed, 5 insertions(+), 0 deletions(-)
+> As far as I understand, the Local APIC was integrated directly to the CPU
+> 12-15 years ago. Why would a BIOS implementor choose to disable it?
 
-diff --git a/arch/blackfin/kernel/init_task.c b/arch/blackfin/kernel/init_task.c
-index b45188f..673c860 100644
---- a/arch/blackfin/kernel/init_task.c
-+++ b/arch/blackfin/kernel/init_task.c
-@@ -31,6 +31,7 @@
- #include <linux/module.h>
- #include <linux/init_task.h>
- #include <linux/mqueue.h>
-+#include <linux/fs.h>
- 
- static struct fs_struct init_fs = INIT_FS;
- static struct files_struct init_files = INIT_FILES;
-diff --git a/arch/blackfin/kernel/process.c b/arch/blackfin/kernel/process.c
-index 5a51dd6..6a7aefe 100644
---- a/arch/blackfin/kernel/process.c
-+++ b/arch/blackfin/kernel/process.c
-@@ -33,6 +33,8 @@
- #include <linux/user.h>
- #include <linux/a.out.h>
- #include <linux/uaccess.h>
-+#include <linux/fs.h>
-+#include <linux/err.h>
- 
- #include <asm/blackfin.h>
- #include <asm/fixed_code.h>
-diff --git a/arch/blackfin/kernel/sys_bfin.c b/arch/blackfin/kernel/sys_bfin.c
-index f5e1ae3..abcd148 100644
---- a/arch/blackfin/kernel/sys_bfin.c
-+++ b/arch/blackfin/kernel/sys_bfin.c
-@@ -37,6 +37,7 @@
- #include <linux/syscalls.h>
- #include <linux/mman.h>
- #include <linux/file.h>
-+#include <linux/fs.h>
- #include <linux/uaccess.h>
- #include <linux/ipc.h>
- #include <linux/unistd.h>
-diff --git a/arch/blackfin/kernel/traps.c b/arch/blackfin/kernel/traps.c
-index 8766bd6..792a841 100644
---- a/arch/blackfin/kernel/traps.c
-+++ b/arch/blackfin/kernel/traps.c
-@@ -31,6 +31,7 @@
- #include <linux/interrupt.h>
- #include <linux/module.h>
- #include <linux/kallsyms.h>
-+#include <linux/fs.h>
- #include <asm/traps.h>
- #include <asm/cacheflush.h>
- #include <asm/blackfin.h>
--- 
-1.5.2.2
+ Because they are lazy/incapable/out-of-time/select-your-favourite-excuse.  
+For the chip to work you have to provide some minimal support in the 
+firmware, in particular for the trickier paths of execution in the system 
+management mode.  The system still works with the Local APIC disabled, so 
+why bother?
 
+> (And what does it mean to "disable" the LAPIC?)
+
+ The LINT0 and LINT1 inputs of the APIC are routed straight to the INT and 
+NMI inputs of the CPU respectively and the rest of the APIC logic becomes 
+inactive (tri-stated, etc.).
+
+  Maciej
