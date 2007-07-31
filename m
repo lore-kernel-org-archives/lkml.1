@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940354AbXGaBKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940354AbXGaBPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940354AbXGaBKX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Jul 2007 21:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939167AbXGaBKJ
+	id S940354AbXGaBPT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Jul 2007 21:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937347AbXGaBPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Jul 2007 21:10:09 -0400
-Received: from zaphod.dth.net ([85.159.112.68]:34380 "EHLO zaphod.dth.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S939039AbXGaBKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Jul 2007 21:10:08 -0400
-Date: Tue, 31 Jul 2007 03:10:05 +0200
-From: Danny ter Haar <dth@dth.net>
-To: Len Brown <lenb@kernel.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: Update: ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not:
-Message-ID: <20070731011005.GA22245@dth.net>
-References: <20070727193832.GA20289@dth.net> <46AC0F6E.2000008@googlemail.com> <20070730025412.GA22888@dth.net> <200707301330.54640.lenb@kernel.org>
+	Mon, 30 Jul 2007 21:15:07 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:55165 "EHLO mx1.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S937524AbXGaBPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Jul 2007 21:15:05 -0400
+Message-ID: <46AE8D25.20602@gmail.com>
+Date: Tue, 31 Jul 2007 09:15:17 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200707301330.54640.lenb@kernel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Martin Steigerwald <Martin@lichtvoll.de>
+Cc: ck@vds.kolivas.org, Satyam Sharma <satyam@infradead.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>, linux-kernel@vger.kernel.org,
+       lkml@metanurb.dk
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <200707292023.36555.Martin@lichtvoll.de> <alpine.LFD.0.999.0707300008230.30928@enigma.security.iitk.ac.in> (sfid-20070729_204823_774350_03921303) <200707292118.45484.Martin@lichtvoll.de>
+In-Reply-To: <200707292118.45484.Martin@lichtvoll.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Len Brown (lenb@kernel.org):
-> Please attach the output from acpidump to 
-> http://bugzilla.kernel.org/show_bug.cgi?id=7880
+Martin Steigerwald wrote:
+> The current kernel development process tries to pretend that there is no 
+> human involvement. Which is plain inaccurate: It is *all* human 
+> involvement, without a human not a single bit of kernel code would 
+> change.
 
-done
-also on : http://www.dth.net/kernel/acpidump_output_via_c3_5000
+IMHO, the above statements are all plain conjectures. How could you assert 
+that the kernel development process is without human development?
 
-> We'll likely be able to tell from it if that patch
-> has any real effect on your system, or if you test
-> result was from some unrelated event.
+If you've followed the list for a while, you'd realize that the list is 
+very human.  The fact that flames fly and abound, and the fact that 
+individual persons tend to be very strong with respect to their opinions 
+indicate that there is a rather high level of human dealings that happen on 
+the list.
 
-Reverting the patch didn't make a real difference, it only took
-longer (eg 16 minutes before lockup in stead of 2-3 minutes)
+And I think you are digressing from the main issue, which is the empirical 
+comparison of SD vs. CFS and to determine which is best.   The root of all 
+the scheduler fuss was the emotional reaction of SD's author on why his 
+scheduler began to be compared with CFS.
 
-> Also, please test with CONFIG_X86_ACPI_CPUFREQ=n
-> to remove the acpi-cpufreq driver (and thus this patch)
-> from your kernel.  If it still fails, then we know
-> that this driver (and this patch) are not related
-> to the failure.
+We obviously all saw how the particular authors tried to address the 
+issues.  Ingo tried to address all concerns while Con simply ranted about 
+his scheduler being better.  If this is what you think about being a bit 
+more human, then I think that this has no place in the lkml.
 
-Will do.
-This machine(firewall) is solar powered so i tried to let it
-consume as less power as possible 
-This is in my startup script at the moment:
+We've all heard the "show me the numbers" argument, and as far as I can 
+see, CFS now fairs much better than SD.
 
-echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+That's the issue.  The best one will emerge to be at the top.  From several 
+months of tests and improvements, it seems CFS is emerging to be the better 
+scheduler.
 
-> Hmmm, okay, the "big hammer" works.  Please see
-> if any of these smaller hammers work:
-> 
-> pnpacpi=off
-> acpi=noirq
-> notsc
+Best Regards,
 
-More testing to do, however, sunday i'm going abroad for a while,
-all stuff will be in storage. If i cant find in the next few days
-(packing everything in moving boxes) it might take a while before
-i can test again. Sorry for that.
-
-Danny
+Carlo
 
 -- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, Diliman 1101, Quezon City
+Philippines
+http://www.astra.ph
+
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
