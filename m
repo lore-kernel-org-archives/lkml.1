@@ -1,98 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758918AbXGaUB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbXGaUDc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758918AbXGaUB5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 16:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbXGaUBq
+	id S1759901AbXGaUDc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 16:03:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbXGaUDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 16:01:46 -0400
-Received: from mga09.intel.com ([134.134.136.24]:64983 "EHLO mga09.intel.com"
+	Tue, 31 Jul 2007 16:03:20 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:34742 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbXGaUBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 16:01:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,204,1183359600"; 
-   d="scan'208";a="111902152"
-Date: Tue, 31 Jul 2007 12:58:49 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>, James.Bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-Message-Id: <20070731125849.501443c1.kristen.c.accardi@intel.com>
-In-Reply-To: <46AF794F.1020107@gmail.com>
-References: <20070705194909.337398431@intel.com>
-	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
-	<46AE12B6.6090408@garzik.org>
-	<46AED656.8070407@gmail.com>
-	<20070731093014.db9e0734.kristen.c.accardi@intel.com>
-	<46AF794F.1020107@gmail.com>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754802AbXGaUDT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 16:03:19 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Valdis.Kletnieks@vt.edu
+Subject: Re: 2.6.23-rc1-mm1 - seems OK on Dell Latitude D820, except for tpm_tis
+Date: Tue, 31 Jul 2007 14:01:21 -0600
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>, Kylene Hall <kjhall@us.ibm.com>,
+       tpm@selhorst.net, linux-kernel@vger.kernel.org
+References: <20070725040304.111550f4.akpm@linux-foundation.org> <5287.1185839599@turing-police.cc.vt.edu> <17955.1185907709@turing-police.cc.vt.edu>
+In-Reply-To: <17955.1185907709@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200707311401.22158.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Aug 2007 03:02:55 +0900
-Tejun Heo <htejun@gmail.com> wrote:
-
-> Kristen Carlson Accardi wrote:
-> > I think what you are saying is that you'd like a way to use your HIPM
-> > and DIPM without ALPM on the AHCI driver.  Fine - it's really easy
-> > to add these levels later - if they don't make sense at the sysfs interface
-> > we can add module params to specify the definition of "min_power" as 
-> > being performed via HIPM and DIPM instead of ALPM - although as of yet we
-> > have no evidence what so ever that this method actually adds value over
-> > ALPM.
+On Tuesday 31 July 2007 12:48:29 pm Valdis.Kletnieks@vt.edu wrote:
+> Scratch that.  When I wrote the first note, I was at home, and the TPM chip
+> did its PNP thing and became 00:0e.  I failed to notice that in my reply,
+> I was at work, and the printer port on the docking station became 00:0e and
+> the TPM became 00:0f.
 > 
-> I don't really care whose PS implementation goes in.  Believe me.  I try
-> to stay away from that.  I don't even like my previous implementation.
+> % cat /sys/devices/pnp0/00:0f/id
+> BCM0102
+> PNP0c31
+> % cat /sys/devices/pnp0/00:0f/resources 
+> state = active
+> io 0xcb0-0xcbb
+> mem 0xfed40000-0xfed44fff
 > 
-> ALPM has unnecessary performance penalty && is not applicable to
-> non-ahci controller.  Have you tested ALPM on non-intel ahcis?  There
-> are a lot out there these days.
+> So there *isn't* an IRQ assigned.
 
-I have not personally, however there has been a lot of testing of this
-hardware feature both on other OS and for this particular implementation
-by the powertop community, which is composed of community members running
-all sorts of hardware.  So far I've not received any bug reports
-wrt non-intel AHCI.  As I mentioned several times, the default for ALPM
-is to be off anyway.
+Interesting.  I should have noticed that the first resources looked like
+a parallel port.  I've been looking at those recently because they're
+also broken :-)
 
+So, the BIOS is telling us that at least as currently configured, the
+TPM can't use interrupts.  /sys/devices/pnp0/00:0f/options should have
+all the *possible* TPM configurations.  I would guess that none of them
+shows an IRQ either.
+
+In general, if the BIOS says there's no interrupt, we should not poke
+around looking for one unless we think there's a BIOS defect.  I think
+you said that under 2.6.22-rc6-mm1, the TPM didn't find a working
+interrupt either.
+
+> Or am I wrong in thinking chip->vendor.irq == -1 means "Pick me an IRQ",
+> but instead means "I don't do that IRQ thing"? If so, maybe what we need
+> to be doing is something like:
 > 
-> I don't think the interface you're suggesting is a good one.  Do you?
-
-I think if it's applicable to SCSI at all it is fine.  If it is not, then
-I think we need to make do with the interface we are given.  I do not think
-we should hold up a feature for libata sysfs integration.
-
+> 	if (chip->vendor.irq == -1)
+> 		interrupts = 0;
 > 
-> >> Also, I generally don't think AHCI ALPM is a good idea.  It doesn't have
-> >> 'cool down' period before entering PS state which unnecessarily hampers
-> >> performance and might increase chance of device malfunction.
-> > 
-> > "might increase"?  How about some actual examples of where you've shown
-> > this to be a problem?
-> 
-> I wouldn't have used "might" if I had actual examples.  Well, feel free
-> to disregard anything following the "might".  I just feel uneasy about
-> jumping back and forth between PS and active states between consecutive
-> commands.
+> and force the use of interrupts off and do polling only?
 
-I want us to be careful about spreading a lot of unease without data to
-back it up.
+Yup, I hadn't considered the case of BIOS not telling us an interrupt
+for the device.  In that case, I think we should force interrupts off
+as you suggest.  Here's the patch I would propose:
 
-> 
-> > I can assert that I think ALPM is a good idea,
-> > because I've never had a report of it causing problems.  Windows has 
-> > been using this feature for a very long time - and you have to admit that
-> > they have a pretty large market share.  Nobody is complaining about ALPM
-> > increasing device malfunction, so unless you have proof it seems insane
-> > to nak due to this. 
-> 
-> Is ALPM enabled by default?  How do they deal with the performance
-> degradation?
+Index: w/drivers/char/tpm/tpm_tis.c
+===================================================================
+--- w.orig/drivers/char/tpm/tpm_tis.c	2007-07-31 09:15:43.000000000 -0600
++++ w/drivers/char/tpm/tpm_tis.c	2007-07-31 13:58:55.000000000 -0600
+@@ -433,17 +433,12 @@
+ MODULE_PARM_DESC(interrupts, "Enable interrupts");
+ 
+ static int tpm_tis_init(struct device *dev, resource_size_t start,
+-			resource_size_t len)
++			resource_size_t len, unsigned int irq)
+ {
+ 	u32 vendor, intfcaps, intmask;
+ 	int rc, i;
+ 	struct tpm_chip *chip;
+ 
+-	if (!start)
+-		start = TIS_MEM_BASE;
+-	if (!len)
+-		len = TIS_MEM_LEN;
+-
+ 	if (!(chip = tpm_register_hardware(dev, &tpm_tis)))
+ 		return -ENODEV;
+ 
+@@ -510,7 +505,9 @@
+ 	iowrite32(intmask,
+ 		  chip->vendor.iobase +
+ 		  TPM_INT_ENABLE(chip->vendor.locality));
+-	if (interrupts) {
++	if (interrupts)
++		chip->vendor.irq = irq;
++	if (interrupts && !chip->vendor.irq) {
+ 		chip->vendor.irq =
+ 		    ioread8(chip->vendor.iobase +
+ 			    TPM_INT_VECTOR(chip->vendor.locality));
+@@ -595,10 +592,17 @@
+ 				      const struct pnp_device_id *pnp_id)
+ {
+ 	resource_size_t start, len;
++	unsigned int irq = 0;
++
+ 	start = pnp_mem_start(pnp_dev, 0);
+ 	len = pnp_mem_len(pnp_dev, 0);
+ 
+-	return tpm_tis_init(&pnp_dev->dev, start, len);
++	if (pnp_irq_valid(pnp_dev, 0))
++		irq = pnp_irq(pnp_dev, 0);
++	else
++		interrupts = 0;
++
++	return tpm_tis_init(&pnp_dev->dev, start, len, irq);
+ }
+ 
+ static int tpm_tis_pnp_suspend(struct pnp_dev *dev, pm_message_t msg)
+@@ -658,7 +662,7 @@
+ 			return rc;
+ 		if (IS_ERR(pdev=platform_device_register_simple("tpm_tis", -1, NULL, 0)))
+ 			return PTR_ERR(pdev);
+-		if((rc=tpm_tis_init(&pdev->dev, 0, 0)) != 0) {
++		if((rc=tpm_tis_init(&pdev->dev, TIS_MEM_BASE, TIS_MEM_LEN, 0)) != 0) {
+ 			platform_device_unregister(pdev);
+ 			driver_unregister(&tis_drv);
+ 		}
 
-I believe so, but I'm obviously not privvy to their implementation details.
