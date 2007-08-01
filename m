@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932486AbXHAN5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932635AbXHAN6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932486AbXHAN5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 09:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932092AbXHAN5M
+	id S932635AbXHAN6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 09:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932208AbXHAN6D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 09:57:12 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:47150 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932066AbXHAN5L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 09:57:11 -0400
-Subject: Re: [PATCH] FRV: Make BSG declarations dependent on CONFIG_BLOCK
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: David Howells <dhowells@redhat.com>
-Cc: torvalds@osdl.org, akpm@osdl.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070801091353.10608.32356.stgit@warthog.cambridge.redhat.com>
-References: <20070801091353.10608.32356.stgit@warthog.cambridge.redhat.com>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 08:57:09 -0500
-Message-Id: <1185976630.3468.73.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+	Wed, 1 Aug 2007 09:58:03 -0400
+Received: from mail.windriver.com ([147.11.1.11]:52096 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932178AbXHAN6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 09:58:01 -0400
+Message-ID: <46B09158.7010902@windriver.com>
+Date: Wed, 01 Aug 2007 08:57:44 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: 2.6.23-rc1-mm2
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <20070801062501.GB7581@linux-sh.org> <8bd0f97a0708010058v76f13361q62e79fe39c1f0589@mail.gmail.com> <20070801011033.51679dd5.akpm@linux-foundation.org> <20070801134529.GB12456@infradead.org>
+In-Reply-To: <20070801134529.GB12456@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Aug 2007 13:57:43.0566 (UTC) FILETIME=[EEAE82E0:01C7D443]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 10:13 +0100, David Howells wrote:
-> From: David Howells <dhowells@redhat.com>
-> 
-> Make BSG function declarations dependent on CONFIG_BLOCK as they are not
-> compilable if the block layer is compiled out.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
-> ---
-> 
->  include/linux/bsg.h |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/bsg.h b/include/linux/bsg.h
-> index 102dc09..e917c41 100644
-> --- a/include/linux/bsg.h
-> +++ b/include/linux/bsg.h
-> @@ -47,6 +47,7 @@ struct sg_io_v4 {
->  };
->  
->  #ifdef __KERNEL__
-> +#ifdef CONFIG_BLOCK
->  
->  #if defined(CONFIG_BLK_DEV_BSG)
->  struct bsg_class_device {
-> @@ -68,6 +69,7 @@ static inline void bsg_unregister_queue(struct request_queue *rq)
->  }
->  #endif
->  
-> +#endif /* CONFIG_BLOCK */
->  #endif /* __KERNEL__ */
+Christoph Hellwig wrote:
+> On Wed, Aug 01, 2007 at 01:10:33AM -0700, Andrew Morton wrote:
+>   
+>> I was hoping for a 2.6.24 merge.  But I haven't actually looked at it yet. 
+>> Hopefully Jason is planning to get it all out for review soonish.
+>>     
+>
+> The current version is quite messy.  I'd be much happier if we could
+> start with a light version that doesn't have all the intrusions to random
+> code outside the kgdb core.
+>
+>   
+I would disagree on at least one level. The KGDB tree is broken up into 
+incremental units each layer adding more functionality and or arch 
+specific pieces.
 
-Are you sure you're testing with git head?  CONFIG_BLK_DEV_BSG cannot be
-set unless CONFIG_BLOCK is (which was a bug in previous releases now
-fixed in git head ... unless the fix has gone wrong?).
+As an example, the KGDB core itself is:
+http://git.kernel.org/?p=linux/kernel/git/jwessel/linux-2.6-kgdb.git;a=commit;h=53956620b1b293300c5ae99a783cf6a7ce8175f9
 
-James
+If you can point to some specific examples vs a blanket statement "is 
+quite messy" perhaps I can explain what the changes are for and why they 
+are needed.
 
-
+Jason.
