@@ -1,46 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763904AbXHAJ5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762866AbXHAJ7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763904AbXHAJ5n (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXHAJ5g
+	id S1762866AbXHAJ7T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbXHAJ7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:57:36 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:36027 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752769AbXHAJ5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:57:35 -0400
-To: andi@firstfloor.org
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <p73myxbpm8r.fsf@bingen.suse.de> (message from Andi Kleen on 01
-	Aug 2007 12:44:52 +0200)
-Subject: Re: [RFC PATCH] type safe allocator
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> <p73myxbpm8r.fsf@bingen.suse.de>
-Message-Id: <E1IGAx0-0006TK-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 01 Aug 2007 11:57:06 +0200
+	Wed, 1 Aug 2007 05:59:12 -0400
+Received: from ns.suse.de ([195.135.220.2]:56325 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbXHAJ7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 05:59:11 -0400
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] Simple Performance Counters: x86_64 support
+References: <11859243121617-git-send-email-clameter@sgi.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 01 Aug 2007 12:53:45 +0200
+In-Reply-To: <11859243121617-git-send-email-clameter@sgi.com>
+Message-ID: <p73ir7zplty.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I wonder why we don't have type safe object allocators a-la new() in
-> > C++ or g_new() in glib?
-> > 
-> >   fooptr = k_new(struct foo, GFP_KERNEL);
-> > 
-> > is nicer and more descriptive than
-> > 
-> >   fooptr = kmalloc(sizeof(*fooptr), GFP_KERNEL);
-> > 
-> > and more safe than
-> > 
-> >   fooptr = kmalloc(sizeof(struct foo), GFP_KERNEL);
-> 
-> How is it more safe? It seems 100% equivalent to me,
-> just a different syntax.
+Christoph Lameter <clameter@sgi.com> writes:
 
-Note the (type *) cast:
+> Export cycles_to_ns (after renaming the cycles_2_ns to cycles_to_ns to be
+> conforming to other arches).
 
-#define k_new(type, flags) ((type *) kmalloc(sizeof(type), flags))
+This function is broken in some cases (e.g Opteron with powernow or
+AMD dual core or older Intel systems) and going away.  The TSCs tick
+with different frequencies on different CPU there. In general i would
+recommend to only report cycles.
 
-Miklos
+-Andi
