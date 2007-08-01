@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764608AbXHAPjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765599AbXHAPkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764608AbXHAPjJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755692AbXHAPiz
+	id S1765599AbXHAPkP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbXHAPkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:38:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35784 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755729AbXHAPiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:38:54 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: pm_trace displays the wrong time from the RTC
-Date: Wed, 1 Aug 2007 17:47:37 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <46AFA78A.9010904@redhat.com>
-In-Reply-To: <46AFA78A.9010904@redhat.com>
+	Wed, 1 Aug 2007 11:40:00 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:53661 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756102AbXHAPj7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:39:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=GiQhY21K86B4lkYluQtS35zyy2Rq0GebIyf/loHRI3dqkMdX0XlQZLDO+vZCzo9AXfFdevPbW1cJ5cJwojuRtIPhD21I7ffSPne6H6TtJIm8kgD33xwDf4OTZWakNFtEb/cfZvMrZOsgooAvtgeMVkgs+oBnlH/SFuMdp/ixk3A=
+Message-ID: <46B0A931.9070209@googlemail.com>
+Date: Wed, 01 Aug 2007 17:39:29 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] Remove stat.h from drivers/scsi/gvp11.c
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708011747.37932.rjw@sisk.pl>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for slow response, I've just noticed this thread.
+Hi,
 
-On Tuesday, 31 July 2007 23:20, Chuck Ebbert wrote:
-> When resuming, systems print this when booted on 07/31/07:
-> 
-> Date: 06/31/107
-> 
-> /drivers/base/power/trace.c::read_magic_time():
-> 114	get_rtc_time(&time);
-> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
-> 116		time.tm_hour, time.tm_min, time.tm_sec,
-> 117		time.tm_mon, time.tm_mday, time.tm_year);
-> 
-> include/asm-generic/rtc.h:
-> 102         /*
-> 103          * Account for differences between how the RTC uses the values
-> 104          * and how they are defined in a struct rtc_time;
-> 105          */
-> 106         if (time->tm_year <= 69)
-> 107                 time->tm_year += 100;
-> 108 
-> 109         time->tm_mon--;
+"There is no reason at all for a scsi driver to include stat.h"
+-- Christoph Hellwig
 
-Do you mean that systems display bad date after resuming if PM_TRACE is set,
-even if /sys/power/pm_trace contains 1 ?
+Regards,
+Michal
 
-If that's the case, are they i386 or x86_64?
+--
+LOG
+http://www.stardust.webpages.pl/log/
 
-Greetings,
-Rafael
+Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+--- linux-mm-clean/drivers/scsi/gvp11.c	2007-07-09 01:32:17.000000000 +0200
++++ linux-mm/drivers/scsi/gvp11.c	2007-08-01 17:36:45.000000000 +0200
+@@ -18,8 +18,6 @@
+ #include "wd33c93.h"
+ #include "gvp11.h"
+ 
+-#include<linux/stat.h>
+-
+ #define DMA(ptr) ((gvp11_scsiregs *)((ptr)->base))
+ #define HDATA(ptr) ((struct WD33C93_hostdata *)((ptr)->hostdata))
+ 
