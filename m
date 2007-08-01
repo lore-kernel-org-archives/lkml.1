@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762413AbXHAS0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762829AbXHAS2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762413AbXHAS0y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760097AbXHAS0o
+	id S1762829AbXHAS2L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbXHAS15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:26:44 -0400
-Received: from mail.screens.ru ([213.234.233.54]:54555 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760065AbXHAS0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:26:42 -0400
-Date: Wed, 1 Aug 2007 22:26:58 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
-Message-ID: <20070801182658.GB90@tv-sign.ru>
-References: <20070801002407.4973.54778.stgit@novell1.haskins.net> <1185940340.2636.97.camel@imap.mvista.com> <1185987663.12034.99.camel@twins> <1185988243.2636.126.camel@imap.mvista.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185988243.2636.126.camel@imap.mvista.com>
-User-Agent: Mutt/1.5.11
+	Wed, 1 Aug 2007 14:27:57 -0400
+Received: from iriserv.iradimed.com ([72.242.190.170]:47229 "EHLO iradimed.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753374AbXHAS14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:27:56 -0400
+Message-ID: <46B0D0B6.50208@cfl.rr.com>
+Date: Wed, 01 Aug 2007 14:28:06 -0400
+From: Phillip Susi <psusi@cfl.rr.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: "Hendrik ." <chasake@yahoo.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Reading a bad sector does not report failure as 'read error'
+ but hangs PC with 'Machine Check Exception'
+References: <324190.80672.qm@web52009.mail.re2.yahoo.com>
+In-Reply-To: <324190.80672.qm@web52009.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Aug 2007 18:28:08.0823 (UTC) FILETIME=[B5B04070:01C7D469]
+X-TM-AS-Product-Ver: SMEX-7.5.0.1243-5.0.1021-15336.000
+X-TM-AS-Result: No--7.444300-5.000000-4
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01, Daniel Walker wrote:
->
-> On Wed, 2007-08-01 at 19:01 +0200, Peter Zijlstra wrote:
-> > >  static void insert_work(struct cpu_workqueue_struct *cwq,
-> > >  				struct work_struct *work, int tail)
-> > >  {
-> > > +	int prio = current->normal_prio;
-> > > +
-> > >  	set_wq_data(work, cwq);
-> > >  	/*
-> > >  	 * Ensure that we get the right work->data if we see the
-> > >  	 * result of list_add() below, see try_to_grab_pending().
-> > >  	 */
-> > >  	smp_wmb();
-> > > -	if (tail)
-> > > -		list_add_tail(&work->entry, &cwq->worklist);
-> > > -	else
-> > > -		list_add(&work->entry, &cwq->worklist);
-> > > +	plist_node_init(&work->entry, prio);
-> > > +	plist_add(&work->entry, &cwq->worklist);
-> > 
-> > perhaps we ought to handle tail, perhaps not, not sure what the
-> > consequences are.
-> 
-> The plist doesn't distinguish since it's a sorted list. There is no way
-> to force something to the back of the list ..
-> 
-> It seems like the "tail" option was the old way to prioritize..  I think
-> It could be removed since we're always priority ordering now anyway..
+Hendrik . wrote:
+> So I think there is a problem with this specific CK804
+> ATA controller causing the MCE... Any clues?
 
-No, the "tail" option has nothing to do with prioritize, we can't remove
-it. Please look at the code.
-
-Also, flush_workqueue() must not be delayed by the new incoming work_struct's,
-the change like this breaks this assumption.
-
-Oleg.
+Yes, the SATA chip is broken.  Probably time to check the known errata 
+on the chip, and if it isn't known, bring nvidia in to debug their 
+silicon.
 
