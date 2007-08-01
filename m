@@ -1,105 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbXHAA6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761211AbXHABB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758991AbXHAA6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 20:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbXHAA6K
+	id S1761211AbXHABB0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:01:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXHABBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 20:58:10 -0400
-Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:10988 "EHLO
-	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752456AbXHAA6I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 20:58:08 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CAP52r0bEHh/E/2dsb2JhbAA
-From: Bongani Hlope <bonganilinux@mweb.co.za>
-To: akpm@linux-foundation.org, jgarzik@pobox.com
-Subject: [OOPS] 2.6.23-rc1 Seems to be network related
-User-Agent: KMail/1.9.7
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Date: Wed, 1 Aug 2007 02:57:48 +0200
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 21:01:17 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50772 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752558AbXHABBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 21:01:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,206,1183359600"; 
+   d="scan'208";a="257113541"
+Date: Tue, 31 Jul 2007 17:55:13 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, mingo@elte.hu, ak@suse.de, jens.axboe@oracle.com,
+       James.Bottomley@SteelEye.com, andrea@suse.de, akpm@linux-foundation.org,
+       andrew.vasquez@qlogic.com
+Subject: Re: [rfc] direct IO submission and completion scalability issues
+Message-ID: <20070801005513.GE10033@linux-os.sc.intel.com>
+References: <20070728012128.GB10033@linux-os.sc.intel.com> <Pine.LNX.4.64.0707301114060.743@schroedinger.engr.sgi.com> <20070730203519.GD10033@linux-os.sc.intel.com> <20070731041917.GA25874@wotan.suse.de> <20070731171403.GL3318@linux-os.sc.intel.com> <20070801004117.GE31006@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708010257.48417.bonganilinux@mweb.co.za>
-X-Original-Subject: [OOPS] 2.6.23-rc1 Seems to be network related
-X-Scan-Signature: 285f1aba1bc7b5ef13b89a61b0374160
+In-Reply-To: <20070801004117.GE31006@wotan.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Wed, Aug 01, 2007 at 02:41:18AM +0200, Nick Piggin wrote:
+> On Tue, Jul 31, 2007 at 10:14:03AM -0700, Suresh B wrote:
+> > Yes, softirq context is one way. But just didn't want to penalize the running
+> > task by taking away some of its cpu time. With CFS micro accounting, perhaps
+> > we can track irq, softirq time and avoid penalizing the running task's cpu
+> > time.
+> 
+> But you "penalize" the running task in the completion handler as well
+> anyway.
 
-I'm not sure if the first email went through, resending without .config 
-attachment.
+Yes.
 
-I got this partial Oops on my work laptop (DELL D800), while using the linux 
-2.6.23-rc1 kernel. I've been using this kernel ever since it was released and 
-this is the first and only time it did not boot. It was around the time it 
-should have been trying to connect to my linksys wireless router (which has 
-been working fine everyday since the 2.6.23-rc1 kernel was released).
+Ingo, in general with CFS micro accounting, we should be able to avoid
+penalizing the running task by tracking irq/softirq time. Isn't it?
 
-I copied what was on screen by hand, so some info is missing. I don't know how 
-to reproduce it.
+> Doing this with a SCHED_FIFO task is sort of like doing interrupt
+> threading which AFAIK has not been accepted (yet).
 
-Call Trace:
-[<c0104cbc>] show_trace_log_lvl+0x1a/0x2f
-[<c0104d6c>] show_stack_log_lvl+0x9b/0xa3
-[<c0104f36>] show_registers+0x1c2/0x2db
-[<c0105151>] die+0x02/0x1de
-[<c01052b6>] do_trap+0x89/0xa2
-[<c010558e>] do_invalid_op+0x88/0x92
-[<c035a162>] error_code+0x6a/0x70
-[<c0114efa>] kmap_atomic+0xe/0x10
-[<c014a29c>] get_page_from_freelist+0x24c/0x3...
-[<c015dd06>] __alloc_pages+0x53/0x27d
-[<c015da60>] kmem_cache_alloc+0x32/0x68
-[<c02e5065>] dst_alloc+0x28/0x60
-[<c02f45fe>] ip_route_input+0x9b9/0xbba
-[<c0314835>] arp_process+0x155/0x4e1
-[<c0314caa>] arp_rcv+0xe9/0xfd
-[<c02e1660>] netif_receive_skb+0x16e/0x1eb
-[<c02e2efa>] process_backlog+0x71/0xda
-[<c02e2fb9>] net_rx_action+0x56/0xee
-[<c011f437>] __do_softirq+0x38/0x7a
-[<c0106145>] do_soft_irq+0x41/0x91
-[<c011f3c5>] irq_exit+0x2c/0x66
-[<c010644a>] do_IRQ+0xb7/0xcd
-[<c01047eb>] common_interrupt+0x23/0x28
-[<c0151f87>] handle_mm_fault+0x1fe/0x57e
-[<c035a162>] error_code+0x6a/0x70
-=======================
-EIP: [<c0114e87>] kmap_atomic_prot+0x27/0x8..
+I am not recommending SCHED_FIFO. I will take a look at softirq
+infrastructure for this.
 
+> > This workload is using direct IO and there is no batching at the block layer
+> > for direct IO. IO is submitted to the HW as it arrives.
+> 
+> So you aren't putting concurrent requests into the queue? Sounds like
+> userspace should be improved.
 
-Linux bongani_nb 2.6.23-rc1 #4 PREEMPT Mon Jul 23 12:11:40 SAST 2007 i686 
-Intel(R) Pentium(R) M processor 1600MHz GNU/Linux
+Nick remember that there are hundreds of disks in this setup and at
+an instance, there will be max 1 or 2 requests per disk.
 
-Gnu C                  4.1.2
-Gnu make               3.81
-binutils               2.17.50.0.9
-util-linux             2.12r
-mount                  2.12r
-module-init-tools      3.3-pre2
-e2fsprogs              1.39
-pcmciautils            014
-PPP                    2.4.4
-Linux C Library        > libc.2.4
-Dynamic linker (ldd)   2.4
-Procps                 3.2.7
-Net-tools              1.60
-Console-tools          0.2.3
-Sh-utils               5.97
-udev                   106
-wireless-tools         28
-Modules Loaded         tg3 snd_seq_dummy snd_seq_oss snd_seq_midi_event 
-snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_intel8x0 snd_ac97_codec 
-ac97_bus snd_pcm snd_timer snd_page_alloc snd soundcore video output thermal 
-sbs processor fan container button battery ac pcmcia yenta_socket 
-rsrc_nonstatic pcmcia_core intel_agp hidp nvram rfcomm l2cap ipw2100 
-ieee80211 ieee80211_crypt usbhid hci_usb bluetooth ohci1394 ieee1394 ehci_hcd 
-uhci_hcd joydev evdev
+> > It is applicable for both direct IO and buffered IO. But the implementations
+> > will differ. For example in buffered IO, we can setup in such a way that the
+> > block plug timeout function runs on the IO completion cpu.
+> 
+> It would be nice to be doing that anyway. But unplug via request submission
+> rather than timeout is fairly common in buffered loads too.
 
-I'm sorry I can't provide more info, this is completely random and it's the 
-first time it ever happened.
+Ok. Currently the patch handles both direct and buffered IO. While making
+improvements to this patch I will make sure that both the paths take
+advantage of this.
+
+thanks,
+suresh
