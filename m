@@ -1,104 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932477AbXHAT0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbXHATdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932477AbXHAT0h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbXHAT02
+	id S1763857AbXHATdu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbXHATdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:26:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:61536 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbXHAT01 (ORCPT
+	Wed, 1 Aug 2007 15:33:40 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34290 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760112AbXHATdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:26:27 -0400
-Message-ID: <46B0DE5D.7040503@impulze.org>
-Date: Wed, 01 Aug 2007 21:26:21 +0200
-From: Daniel Mierswa <impulze@impulze.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070801)
+	Wed, 1 Aug 2007 15:33:38 -0400
+Date: Wed, 1 Aug 2007 15:33:30 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <20070731170012.GN5101@hasse.suse.de> <20070731171159.GA27234@filer.fsl.cs.sunysb.edu> <1185981810.18007.14.camel@kleikamp.austin.ibm.com> <20070801184405.GA18405@filer.fsl.cs.sunysb.edu> <1185995431.18007.24.camel@kleikamp.austin.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Gericom Webboy Laptop Mouse/Touchpad
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1887Xg0W/Oer6J2ZtAwWZ+8+ScOil9Oa2yeLGM
- +TAIRSVWZSkbF9U6PIprDbrN/pehCK9Pql7ufqIrLr+rEEiRUn
- pDeoWLun3kzKlXAOWFu9w==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185995431.18007.24.camel@kleikamp.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all, thanks for the quick response.
+On Wed, Aug 01, 2007 at 02:10:31PM -0500, Dave Kleikamp wrote:
+> On Wed, 2007-08-01 at 14:44 -0400, Josef Sipek wrote:
+> > Alright not the greatest of examples, there is something to be said about
+> > symmetry, so...let me try again :)
+> > 
+> > /a/
+> > /b/bar		(whiteout for bar)
+> > /c/foo/qwerty
+> > 
+> > Now, let's mount a union of {a,b,c}, and we'll see:
+> > 
+> > $ find /u
+> > /u
+> > /u/foo
+> > /u/foo/qwerty
+> > $ mv /u/foo /u/bar
+> > 
+> > Now what? How do you rename? Do you rename in the same branch (assuming it
+> > is rw)?
+> 
+> Er, no.  According to Documentation/filesystems/union-mounts.txt, "only
+> the topmost layer of the mount stack can be altered".
+ 
+This brings up an very interesting (but painful) question...which makes more
+sense? Allowing the modifications in only the top-most branch, or any branch
+(given the user allows it at mount-time)?
 
-> Or maybe run oprofile to try to figure out any abnormal system load?
+This is really question to the community at large, not just you, Dave :)
 
-> vmstat may provide some initial information as to what kind of activity
-> exactly causes this issue.
-I'm sorry. I'm not familar with those applications to get any useful 
-information out of them. Any quick information on what i should be doing 
-with it would be appreciated.
+> > 1) "cp -r" the entire subtree being renamed to highest-priority branch, and
+> > rename there (you might have to recreate a series of directories to have a
+> > place to "cp" to...so you got "cp -r" _AND_ "mkdir -p"-like code in the VFS!
+> > 1/2 a :) )
+> 
+> I think this is the only alternative, given the design.
+ 
+Right. Doing something like this at the filesystem level (as we do in
+unionfs) seems less painful - filesystems are places full of all sorts of
+nefarious activities to begin with. Having it in the VFS seems...even
+uglier.
 
-
-> Hmm, I'm pondering what I'd do here...
-> Could it be that you're using the "old" IDE layer (not libata yet) and
-> hdparm -u or -d or -c is inconveniently set up?
-
-> Try configuring a different CONFIG_HZ?
-
-> And did you try running a "barebone"-only configuration? Possibly some
-> certain driver is causing this misbehaviour...
-I'm already keeping the config as clean and minimal as i can imagine.
-
-Anyway... I recompiled the kernel (2.6.22.2 now) with pure libata, 
-CONFIG_HZ to 1000 (instead of 250). No effect yet.
-
-
-> Or maybe it's a simple X.org scheduling issue again?
-> What nice value do you run X.org at?
-I'm using the default niceness which should be 10 no? I'm not re-nicing 
-X if that was the question.
-
-
-> In this context it would be good to ask about possible memory pressure on
-> this system, too, since recently some people indicated more fluid X.org mouse
-> pointer operation when mlocking the pointer handling code to avoid
-> paging this code.
-Well the system is low on memory (312M) but that was the last thing i 
-would've been looking for since it somehow got the win32 gui and some 
-games to render and work properly on it.
-
-
-> Maybe run powertop to identify timer anomalies?
-This shows two interesting lines:
-   56.5% ( 21.6)       <interrupt> : extra timer interrupt
-   11.0% (  4.2)       <interrupt> : libata
-
-
-> Oh, given that IIRC the Webboy is a slightly older Gericom model which
-> thus may easily be a (somewhat hotter) P4 *desktop* CPU
-It's a pentium-3.
-   model name      : Pentium III (Coppermine)
-   stepping        : 10
-   cpu MHz         : 1097.269
-
-
-> could it be that
-> you're hitting thermal emergency throttling on increased system activity?
-> cat /proc/acpi/processor/*/throttling or something there might indicate
-> this.
-When am I supposed to check this? During idle it's like the following:
-   state count:             8
-   active state:            T0
-   states:
-      *T0:                  00%
-       T1:                  12%
-       T2:                  25%
-       T3:                  37%
-       T4:                  50%
-       T5:                  62%
-       T6:                  75%
-       T7:                  87%
-
-Any additional comments on this? :)
-Thanks a lot.
+Josef 'Jeff' Sipek.
 
 -- 
-MfG
-Mierswa, Daniel
+*NOTE: This message is ROT-13 encrypted twice for extra protection*
