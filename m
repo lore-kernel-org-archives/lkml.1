@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755227AbXHAVZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752687AbXHAVbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755227AbXHAVZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXHAVZe
+	id S1752687AbXHAVbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751828AbXHAVbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:25:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51727 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752015AbXHAVZd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:25:33 -0400
-Date: Thu, 2 Aug 2007 03:07:58 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Chris Rankin <rankincj@yahoo.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [BUG] Linux 2.6.22 - Atomic counter underflow in NFS
-In-Reply-To: <699754.45152.qm@web52901.mail.re2.yahoo.com>
-Message-ID: <alpine.LFD.0.999.0708020302570.8258@enigma.security.iitk.ac.in>
-References: <699754.45152.qm@web52901.mail.re2.yahoo.com>
+	Wed, 1 Aug 2007 17:31:03 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37190 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751547AbXHAVbB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 17:31:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm 0/3] Freezer: Use wait queue instead of busy looping
+Date: Wed, 1 Aug 2007 23:28:23 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Disposition: inline
+Message-Id: <200708012328.23939.rjw@sisk.pl>
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+The patches in the next three messages do the following:
+* make the freezer a bit more verbose
+* make try_to_freeze_tasks() go to sleep while waiting for tasks to enter
+  the refrigerator instead of busy looping
+* make try_to_freeze_tasks() measure the time of freezing, regardless of
+  whether or not it is successful
+
+Greetings,
+Rafael
 
 
-On Wed, 1 Aug 2007, Chris Rankin wrote:
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
 
-> --- Satyam Sharma <satyam@infradead.org> wrote:
-> > I expect this is easy to reproduce at will (when shutting down nfs
-> > services, probably), right?
-> 
-> I'm not sure about the "at will" part because this is the first time I've seen it since 2.6.22 was
-> released. However, I was upgrading my Fedora 7 nfs-utils package at the time so it probably did
-> happen when the NFS service was being shut down.
-
-Hmm, the backtrace suggests it should be reproducible fairly frequently.
-
-> > Please try the latest mainline -git kernel (say 2.6.23-rc1-git10 from
-> > kernel.org) and let us know if this still occurs? There were some fixes
-> > regarding sysfs symlink refcounting that went in recently, and this looks
-> > like one of those cases to me.
-> 
-> Do you have the actual patches instead?
-
-I was thinking maybe this one: http://lkml.org/lkml/diff/2007/7/18/48/1
-
-The kref_put() there happens on the sysfs_remove_link() path, and the
-patch above fixed an extra put() during create_link(), which lead to
-the final put() during remove_link() being what causes this underflow.
-However, a lot changed in sysfs in the past few months, and I'm not
-really sure that patch would apply cleanly. Hence, if you can try with
-the latest -git ...
-
-
-Thanks,
-Satyam
