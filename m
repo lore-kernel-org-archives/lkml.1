@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764045AbXHAAA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760449AbXHAAHW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764045AbXHAAA4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 20:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757706AbXHAAAr
+	id S1760449AbXHAAHW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 20:07:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbXHAAHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 20:00:47 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:34114 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758554AbXHAAAq (ORCPT
+	Tue, 31 Jul 2007 20:07:06 -0400
+Received: from imf23aec.mail.bellsouth.net ([205.152.59.71]:49296 "EHLO
+	imf23aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751558AbXHAAHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 20:00:46 -0400
-Date: Tue, 31 Jul 2007 20:00:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: john stultz <johnstul@us.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sripathi Kodi <sripathik@in.ibm.com>
-Subject: Re: [RESEND] [BUG] futex_unlock_pi() hurts my brain and may cause
- application deadlock
-In-Reply-To: <1185926019.8850.198.camel@localhost>
-Message-ID: <Pine.LNX.4.58.0707311957530.7904@gandalf.stny.rr.com>
-References: <1180572567.6126.44.camel@localhost.localdomain>
- <1185926019.8850.198.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 31 Jul 2007 20:07:04 -0400
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: jeff@garzik.org
+Cc: mingo@elte.hu, csnook@redhat.com, atl1-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       nando@ccrma.Stanford.EDU, tglx@linutronix.de, brbrofsvl@gmail.com,
+       Jay Cliburn <jacliburn@bellsouth.net>
+Subject: [PATCH] atl1: use spin_trylock_irqsave()
+Date: Tue, 31 Jul 2007 19:07:02 -0500
+Message-Id: <11859268222715-git-send-email-jacliburn@bellsouth.net>
+X-Mailer: git-send-email 1.5.2.2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Ingo Molnar <mingo@elte.hu>
 
+use the simpler spin_trylock_irqsave() API to get the adapter lock.
 
---
-On Tue, 31 Jul 2007, john stultz wrote:
+[ this is also a fix for -rt where adapter->lock is a sleeping lock. ]
 
-> On Wed, 2007-05-30 at 17:49 -0700, john stultz wrote:
->
-> Hey Ingo,
-> 	I sent this fix for this back in the 2.6.21-rt9 era, and I thought to
-> picked it up, but I think it arrived amid some futex churn and
-> apparently has been dropped or was just lost.
->
-> Some of our testers have been reporting futex deadlocks and this fix
-> resolves it, so I believe it to still be needed.
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
+---
+ drivers/net/atl1/atl1_main.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
 
-Heh, I remember this bug.  Wasn't there another patch that modified this.
-I almost definitly remember this getting into the patch queue, but it must
-have been dropped later.
+diff --git a/drivers/net/atl1/atl1_main.c b/drivers/net/atl1/atl1_main.c
+index 56f6389..3c1984e 100644
+--- a/drivers/net/atl1/atl1_main.c
++++ b/drivers/net/atl1/atl1_main.c
+@@ -1704,10 +1704,8 @@ static int atl1_xmit_frame(struct sk_buff *skb, struct net_device *netdev)
+ 		}
+ 	}
+ 
+-	local_irq_save(flags);
+-	if (!spin_trylock(&adapter->lock)) {
++	if (!spin_trylock_irqsave(&adapter->lock, flags)) {
+ 		/* Can't get lock - tell upper layer to requeue */
+-		local_irq_restore(flags);
+ 		dev_printk(KERN_DEBUG, &adapter->pdev->dev, "tx locked\n");
+ 		return NETDEV_TX_LOCKED;
+ 	}
+-- 
+1.5.2.2
 
-John, thanks for looking into this deeper!
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
->
-> thanks
-> -john
->
-> Avoid futex_unlock_pi returning -EFAULT (which results in deadlock), by
-> clearing uval before jumping to retry_locked.
->
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> Index: 2.6-rt/kernel/futex.c
-> ===================================================================
-> --- 2.6-rt.orig/kernel/futex.c	2007-07-31 16:48:41.000000000 -0700
-> +++ 2.6-rt/kernel/futex.c	2007-07-31 16:48:48.000000000 -0700
-> @@ -1673,6 +1673,7 @@ pi_faulted:
->  					 attempt);
->  		if (ret)
->  			goto out;
-> +		uval = 0;
->  		goto retry_unlocked;
->  	}
->
->
->
->
->
