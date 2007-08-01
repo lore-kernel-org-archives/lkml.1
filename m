@@ -1,63 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764546AbXHABNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764005AbXHABQh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764546AbXHABNG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762074AbXHABMw
+	id S1764005AbXHABQh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:16:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759013AbXHABQa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:12:52 -0400
-Received: from py-out-1112.google.com ([64.233.166.183]:14700 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761306AbXHABMu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:12:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=bUEvThMN+cH/kF9Y0Ih6lb5t+3jwdtF+wosXhEJ6YjjjptAtcQBN6uH9Lcg7rmLdgu4arSHZp8XVLUZbY7n6dLSzOzYoH7QlVe1gIFB1nMpm6BJpYHSsB2bFEkhiG41Ruul6urQXCR7TuZ/GZLAdGUEUD0wDIRJ1ZLTHYNxx3xw=
-Message-ID: <43e72e890707311812t3bf67684p6af4d0c21d44608e@mail.gmail.com>
-Date: Tue, 31 Jul 2007 21:12:49 -0400
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
-Subject: Re: [PATCH 60] drivers/net/wireless/prism54/oid_mgt.c: kmalloc + memset conversion to kzalloc
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-wireless@vger.kernel.org
-In-Reply-To: <200707312334.51067.m.kozlowski@tuxland.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 31 Jul 2007 21:16:30 -0400
+Received: from mga09.intel.com ([134.134.136.24]:41671 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758394AbXHABQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 21:16:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,206,1183359600"; 
+   d="scan'208";a="111998890"
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
+	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	 <20070731091004.GA2022@elf.ucw.cz>
+	 <1185873924.23149.86.camel@caritas-dev.intel.com>
+	 <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707311845.48807.m.kozlowski@tuxland.pl>
-	 <200707312334.51067.m.kozlowski@tuxland.pl>
+Date: Wed, 01 Aug 2007 09:16:13 +0800
+Message-Id: <1185930973.1363.1.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 01 Aug 2007 01:16:21.0993 (UTC) FILETIME=[9257A590:01C7D3D9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+On Tue, 2007-07-31 at 04:52 -0600, Eric W. Biederman wrote:
+> "Huang, Ying" <ying.huang@intel.com> writes:
+> 
+> > On Tue, 2007-07-31 at 11:10 +0200, Pavel Machek wrote:
+> >> > Index: kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c
+> >> > ===================================================================
+> >> > --- kexec-tools-1.101.orig/kexec/arch/i386/crashdump-x86.c 2007-07-08
+> > 23:00:25.000000000 +0800
+> >> > +++ kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c 2007-07-14
+> > 17:06:45.000000000 +0800
+> >> > @@ -428,6 +428,29 @@
+> >> >  	return 0;
+> >> >  }
+> >> >  
+> >> > +/* Adds the kexec_backup= command line parameter to command line. */
+> >> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
+> >> > +{
+> >> > +	int cmdlen, len, align = 1024;
+> >> > +	char str[30], *ptr;
+> >> > +
+> >> > +	/* Passing in kexec_backup=xxxK format. Saves space required
+> >> > +	 * in cmdline. Ensure 1K alignment*/
+> >> > +	if (addr%align)
+> >> > +		return -1;
+> >> > +	addr = addr/align;
+> >> > +	ptr = str;
+> >> > +	strcpy(str, " kexec_backup=");
+> >> > +	ptr += strlen(str);
+> >> > +	ultoa(addr, ptr);
+> >> > +	strcat(str, "K");
+> >> > +	len = strlen(str);
+> >> > +	cmdlen = strlen(cmdline) + len;
+> >> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
+> >> > +		die("Command line overflow\n");
+> >> > +	strcat(cmdline, str);
+> >> > +	return 0;
+> >> > +}
+> >> 
+> >> This part did not apply for me -- it seems crashdump related and I did
+> >> not have that applied. Is it critical?
+> >
+> > This is needed for kexec_jump to work properly. Which version of
+> > kexec-tools do you use? This patch is against 1.101. The kdump patch
+> > must be applied before this patch is applied.
+> 
+> Please work against the kexec-tools-testing tree, if you can.
+> All of the outstanding patches should be there.
 
-Acked-by: Luis R. Rodriguez <mcgrof@gmail.com>
+OK, I will work against the kexec-tools-testing tree in the next
+version.
 
->  drivers/net/wireless/prism54/oid_mgt.c | 25377 -> 25297 (-80 bytes)
->  drivers/net/wireless/prism54/oid_mgt.o | 128460 -> 128284 (-176 bytes)
->
->  drivers/net/wireless/prism54/oid_mgt.c |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
->
-> --- linux-2.6.23-rc1-mm1-a/drivers/net/wireless/prism54/oid_mgt.c       2007-07-26 13:07:43.000000000 +0200
-> +++ linux-2.6.23-rc1-mm1-b/drivers/net/wireless/prism54/oid_mgt.c       2007-07-30 00:27:44.000000000 +0200
-> @@ -244,13 +244,11 @@ mgt_init(islpci_private *priv)
->         /* Alloc the cache */
->         for (i = 0; i < OID_NUM_LAST; i++) {
->                 if (isl_oid[i].flags & OID_FLAG_CACHED) {
-> -                       priv->mib[i] = kmalloc(isl_oid[i].size *
-> +                       priv->mib[i] = kzalloc(isl_oid[i].size *
->                                                (isl_oid[i].range + 1),
->                                                GFP_KERNEL);
->                         if (!priv->mib[i])
->                                 return -ENOMEM;
-> -                       memset(priv->mib[i], 0,
-> -                              isl_oid[i].size * (isl_oid[i].range + 1));
->                 } else
->                         priv->mib[i] = NULL;
->         }
->
+Best Regards,
+Huang Ying
