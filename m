@@ -1,52 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760894AbXHAAyb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758991AbXHAA6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760894AbXHAAyb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 20:54:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbXHAAyY
+	id S1758991AbXHAA6V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 20:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbXHAA6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 20:54:24 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57061 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbXHAAyX (ORCPT
+	Tue, 31 Jul 2007 20:58:10 -0400
+Received: from mail-04.jhb.wbs.co.za ([196.2.97.3]:10988 "EHLO
+	mail-04.jhb.wbs.co.za" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752456AbXHAA6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 20:54:23 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46AFD99D.7040007@s5r6.in-berlin.de>
-Date: Wed, 01 Aug 2007 02:53:49 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Tue, 31 Jul 2007 20:58:08 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CAP52r0bEHh/E/2dsb2JhbAA
+From: Bongani Hlope <bonganilinux@mweb.co.za>
+To: akpm@linux-foundation.org, jgarzik@pobox.com
+Subject: [OOPS] 2.6.23-rc1 Seems to be network related
+User-Agent: KMail/1.9.7
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: jack@hawkeye.stone.uk.eu.org
-CC: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [Patch 05/16] Remove unnecessary kmalloc casts in the drivers
- subdirectory.
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125440.305176000@hawkeye.stone.uk.eu.org>
-In-Reply-To: <20070731125440.305176000@hawkeye.stone.uk.eu.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Wed, 1 Aug 2007 02:57:48 +0200
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708010257.48417.bonganilinux@mweb.co.za>
+X-Original-Subject: [OOPS] 2.6.23-rc1 Seems to be network related
+X-Scan-Signature: 285f1aba1bc7b5ef13b89a61b0374160
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jack@hawkeye.stone.uk.eu.org wrote:
-> --- a/drivers/char/tty_io.c
-> +++ b/drivers/char/tty_io.c
-> @@ -2034,7 +2034,7 @@ static int init_dev(struct tty_driver *d
->  	}
->  
->  	if (!*tp_loc) {
-> -		tp = (struct ktermios *) kmalloc(sizeof(struct ktermios),
-> +		tp = kmalloc(sizeof(struct ktermios),
->  						GFP_KERNEL);
->  		if (!tp)
->  			goto free_mem_out;
-> 
+Hi
 
-Looks like you can pull the "GFP_KERNEL);" into the same line as the
-kmalloc.  IMO a cleanup patch shouldn't leave inexplicable linebreaks
-and other whitespace strangeness behind.
--- 
-Stefan Richter
--=====-=-=== =--- ----=
-http://arcgraph.de/sr/
+I'm not sure if the first email went through, resending without .config 
+attachment.
+
+I got this partial Oops on my work laptop (DELL D800), while using the linux 
+2.6.23-rc1 kernel. I've been using this kernel ever since it was released and 
+this is the first and only time it did not boot. It was around the time it 
+should have been trying to connect to my linksys wireless router (which has 
+been working fine everyday since the 2.6.23-rc1 kernel was released).
+
+I copied what was on screen by hand, so some info is missing. I don't know how 
+to reproduce it.
+
+Call Trace:
+[<c0104cbc>] show_trace_log_lvl+0x1a/0x2f
+[<c0104d6c>] show_stack_log_lvl+0x9b/0xa3
+[<c0104f36>] show_registers+0x1c2/0x2db
+[<c0105151>] die+0x02/0x1de
+[<c01052b6>] do_trap+0x89/0xa2
+[<c010558e>] do_invalid_op+0x88/0x92
+[<c035a162>] error_code+0x6a/0x70
+[<c0114efa>] kmap_atomic+0xe/0x10
+[<c014a29c>] get_page_from_freelist+0x24c/0x3...
+[<c015dd06>] __alloc_pages+0x53/0x27d
+[<c015da60>] kmem_cache_alloc+0x32/0x68
+[<c02e5065>] dst_alloc+0x28/0x60
+[<c02f45fe>] ip_route_input+0x9b9/0xbba
+[<c0314835>] arp_process+0x155/0x4e1
+[<c0314caa>] arp_rcv+0xe9/0xfd
+[<c02e1660>] netif_receive_skb+0x16e/0x1eb
+[<c02e2efa>] process_backlog+0x71/0xda
+[<c02e2fb9>] net_rx_action+0x56/0xee
+[<c011f437>] __do_softirq+0x38/0x7a
+[<c0106145>] do_soft_irq+0x41/0x91
+[<c011f3c5>] irq_exit+0x2c/0x66
+[<c010644a>] do_IRQ+0xb7/0xcd
+[<c01047eb>] common_interrupt+0x23/0x28
+[<c0151f87>] handle_mm_fault+0x1fe/0x57e
+[<c035a162>] error_code+0x6a/0x70
+=======================
+EIP: [<c0114e87>] kmap_atomic_prot+0x27/0x8..
+
+
+Linux bongani_nb 2.6.23-rc1 #4 PREEMPT Mon Jul 23 12:11:40 SAST 2007 i686 
+Intel(R) Pentium(R) M processor 1600MHz GNU/Linux
+
+Gnu C                  4.1.2
+Gnu make               3.81
+binutils               2.17.50.0.9
+util-linux             2.12r
+mount                  2.12r
+module-init-tools      3.3-pre2
+e2fsprogs              1.39
+pcmciautils            014
+PPP                    2.4.4
+Linux C Library        > libc.2.4
+Dynamic linker (ldd)   2.4
+Procps                 3.2.7
+Net-tools              1.60
+Console-tools          0.2.3
+Sh-utils               5.97
+udev                   106
+wireless-tools         28
+Modules Loaded         tg3 snd_seq_dummy snd_seq_oss snd_seq_midi_event 
+snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_intel8x0 snd_ac97_codec 
+ac97_bus snd_pcm snd_timer snd_page_alloc snd soundcore video output thermal 
+sbs processor fan container button battery ac pcmcia yenta_socket 
+rsrc_nonstatic pcmcia_core intel_agp hidp nvram rfcomm l2cap ipw2100 
+ieee80211 ieee80211_crypt usbhid hci_usb bluetooth ohci1394 ieee1394 ehci_hcd 
+uhci_hcd joydev evdev
+
+I'm sorry I can't provide more info, this is completely random and it's the 
+first time it ever happened.
