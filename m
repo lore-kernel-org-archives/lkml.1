@@ -1,95 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbXHAQAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXHAQBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761038AbXHAQAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756971AbXHAP75
+	id S932779AbXHAQBZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761310AbXHAQBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:59:57 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:3527 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756482AbXHAP74 (ORCPT
+	Wed, 1 Aug 2007 12:01:17 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:48618 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758898AbXHAQBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:59:56 -0400
+	Wed, 1 Aug 2007 12:01:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=XHBeUb7XmxXY/Ml60u2tLv6snnBZnGMIYBbOa77n9kxYNC9UTUM2Yr/Kk9xBoG3oBd+KzQfcC+Nl8soleIi1LEte/D5T/K7BlFwEjuGPJwtr0uZ+38OF2mPUSqTaCeIlTDEDVkvutZ3UmX+ibwF2TnXvEhFugTR+Q3KNt49Kmvc=
-Date: Thu, 2 Aug 2007 00:59:47 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: John Stoffel <john@stoffel.org>
-Cc: Tejun Heo <teheo@suse.de>, Avi Kivity <avi@argo.co.il>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 000 of 35] Refactor block layer to improve support for stacked devices.
-Message-ID: <20070801155947.GG13674@htj.dyndns.org>
-References: <20070731112539.22428.patches@notabene> <46AF5534.3010902@argo.co.il> <46B09A92.9090409@suse.de> <18096.44099.826200.638485@stoffel.org>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BYUBUZ4Z2t7jAszuVKZCkEuX5BFr7sqtOCAPEBuKM378PwVlVLlZBZw46MRvEBvHO8B4yFzRGl1Q1kHCpfVfcc3VCH81BDgE9zf8L4Q+IOj0HyxZwKn242JuoG2gDtXImvqpr+kjE4Zzo3BWNtdustCEGWHVy8WC/CIRe6/3+hY=
+Message-ID: <ef8c225f0708010901j79daba71y694271f354a8ad4f@mail.gmail.com>
+Date: Wed, 1 Aug 2007 21:31:14 +0530
+From: "Andev Debi" <andev.debi@gmail.com>
+To: "debian developer" <debiandev@gmail.com>
+Subject: Re: Problem - disabling IRQ #20 and others
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <18096.44099.826200.638485@stoffel.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <ef8c225f0708010347l2a0a8e4cj4f47a243bba88989@mail.gmail.com>
+	 <f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 11:52:35AM -0400, John Stoffel wrote:
-> 
-> Tejun> Avi Kivity wrote:
-> >> NeilBrown wrote:
-> >>> To achieve this, the "for_each" macros are now somewhat more complex.
-> >>> For example, rq_for_each_segment is:
-> >>> 
-> >>> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size)        \
-> >>> for (_i.i = 0, _i.offset = (bio)->bi_offset + offs,        \
-> >>> _i.size = min_t(int, _size, (bio)->bi_size - offs);       \
-> >>> _i.i < (bio)->bi_vcnt && _i.size > 0;            \
-> >>> _i.i++)                            \
-> >>> if (bv = *bio_iovec_idx((bio), _i.i),            \
-> >>> bv.bv_offset += _i.offset,                \
-> >>> bv.bv_len <= _i.offset                \
-> >>> ? (_i.offset -= bv.bv_len, 0)            \
-> >>> : (bv.bv_len -= _i.offset,                \
-> >>> _i.offset = 0,                    \
-> >>> bv.bv_len < _i.size                \
-> >>> ? (_i.size -= bv.bv_len, 1)            \
-> >>> : (bv.bv_len = _i.size,                \
-> >>> _i.size = 0,                    \
-> >>> bv.bv_len > 0)))
-> >>> 
-> >>> #define bio_for_each_segment(bv, bio, __i)                \
-> >>> bio_for_each_segment_offset(bv, bio, __i, 0, (bio)->bi_size)
-> >>> 
-> >>> It does some with some explanatory text in a comment, but it is still
-> >>> a bit daunting.  Any suggestions on making this more approachable
-> >>> would be very welcome.
-> >>> 
-> >>> 
-> >> 
-> >> Well, I hesitate to state the obvious, but how about:
-> >> 
-> >> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size) \
-> >> for (bio_iterator_init(&_i, ...); bio_iterator_cont(&_i, ...);
-> >> bio_iterator_advance(&_i, ...)) \
-> >> if (bio_iterator_want_segment(&_i, ...))
-> >> 
-> >> While this doesn't remove the complexity, at least it's readable.
-> 
-> Tejun> Violently seconded.
-> 
-> How about it be made into a real function instead?  I was reading
-> through the patch, but got timed out yesterday, so take this with a
-> grain of salt.  
-> 
-> I thought I saw a couple of macros defined to use this macro yet
-> again.  Which I figured might be a problem is the passed in variables
-> get munged.
-> 
-> In any case, why does something so complicated need to be a macro, why
-> not a function instead?
+On 8/1/07, debian developer <debiandev@gmail.com> wrote:
+> On 8/1/07, Andev Debi <andev.debi@gmail.com> wrote:
+> > Hello,
+> > Im getting the following error while booting the kernel 2.6.22.1-cfs
+> >
+> > Aug  1 09:14:09 localhost kernel: [   30.272161] EXT3 FS on hda8, internal
+> > journal
+> > Aug  1 09:14:09 localhost kernel: [   33.572083] device-mapper: ioctl:
+> > 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
+> > Aug  1 09:14:09 localhost kernel: [   35.965198] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.965278] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.966396] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.966465] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.967555] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.967625] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.968693] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.968762] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.969822] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.969906] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.970980] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.971049] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.972166] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.972235] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.973365] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.973435] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.974552] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.974622] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.975480] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.975548] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.975872] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.975954] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.977964] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.978034] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.978552] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.978620] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.978901] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.978967] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.981040] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.981109] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.981433] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.981499] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.981764] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.981831] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.984417] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.984486] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.985575] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.985644] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.986116] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.986183] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.986475] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.986542] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.986814] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.986885] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.989342] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.989412] device-mapper: ioctl: error
+> > adding target to table
+> > Aug  1 09:14:09 localhost kernel: [   35.989692] device-mapper: table:
+> > 253:0: linear: dm-linear: Device lookup failed
+> > Aug  1 09:14:09 localhost kernel: [   35.989758] device-mapper: ioctl: error
+> > adding target to table
+> > .......................
+> > .......................
+> > Aug  1 09:14:17 localhost kernel: [   63.106550] irq 20: nobody cared (try
+> > booting with the "irqpoll" option)
+> > Aug  1 09:14:17 localhost kernel: [   63.106574]  [__report_bad_irq+36/128]
+> > __report_bad_irq+0x24/0x80
+> > Aug  1 09:14:17 localhost kernel: [   63.106596]  [note_interrupt+485/560]
+> > note_interrupt+0x1e5/0x230
+> > Aug  1 09:14:17 localhost kernel: [   63.106619]  [handle_IRQ_event+37/80]
+> > handle_IRQ_event+0x25/0x50
+> > Aug  1 09:14:17 localhost kernel: [   63.106634]
+> > [handle_fasteoi_irq+141/160] handle_fasteoi_irq+0x8d/0xa0
+> > Aug  1 09:14:17 localhost kernel: [   63.106643]  [do_IRQ+62/128]
+> > do_IRQ+0x3e/0x80
+> > Aug  1 09:14:17 localhost kernel: [   63.106665]  [common_interrupt+35/40]
+> > common_interrupt+0x23/0x28
+> > Aug  1 09:14:17 localhost kernel: [   63.106674]  [default_idle+0/64]
+> > default_idle+0x0/0x40
+> > Aug  1 09:14:17 localhost kernel: [   63.106696]  [default_idle+42/64]
+> > default_idle+0x2a/0x40
+> > Aug  1 09:14:17 localhost kernel: [   63.106704]  [cpu_idle+72/112]
+> > cpu_idle+0x48/0x70
+> > Aug  1 09:14:17 localhost kernel: [   63.106707]  [start_kernel+559/704]
+> > start_kernel+0x22f/0x2c0
+> > Aug  1 09:14:17 localhost kernel: [   63.106715]  [unknown_bootoption+0/592]
+> > unknown_bootoption+0x0/0x250
+> > Aug  1 09:14:17 localhost kernel: [   63.106735]  =======================
+> > Aug  1 09:14:17 localhost kernel: [   63.106736] handlers:
+> > Aug  1 09:14:17 localhost kernel: [   63.106738] [<dcc13080>]
+> > (via_driver_irq_handler+0x0/0x1b0 [via])
+> > Aug  1 09:14:17 localhost kernel: [   63.106747] Disabling IRQ #20
+> >
+>
+> Are there any non-working devices on your system?
+>
+> > Later I repeated the booting with "irqpoll" option, then it was showing both
+> > the above errors and another error as
+>
 
-I agree and actually wrote about the same opinion in one of the
-replies.  It might even be benefitial performance-wise due to smaller
-cache foot print.
+none that im aware of...
 
-Thanks.
-
--- 
-tejun
+thanks.
