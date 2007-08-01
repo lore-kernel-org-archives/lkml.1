@@ -1,47 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760071AbXHAKds@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761213AbXHAKhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760071AbXHAKds (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 06:33:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbXHAKdk
+	id S1761213AbXHAKhG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 06:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbXHAKgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 06:33:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:5106 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750774AbXHAKdj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 06:33:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=X7kp2T2m3I/JkSfvuMcivd9H11TTq3fqzte3HM0nKggcDuTrn3ZH3wyZUOT0PepFvvVbNc6bkdVy9jH6q2DCO5JetH0KHBSqsvk+UYo2Lpb0KCk+iyXqrTP6UJZhkW7Pc30ROhyTzZPupheLKr2sGuJJdfV3uD9ku0PwuNRcFww=
-Message-ID: <46B0616E.5000704@googlemail.com>
-Date: Wed, 01 Aug 2007 12:33:18 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Wed, 1 Aug 2007 06:36:53 -0400
+Received: from mail.bmlv.gv.at ([193.171.152.37]:58093 "EHLO mail.bmlv.gv.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751060AbXHAKgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 06:36:52 -0400
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: acpi=off vs. blacklist (HP DC 7700)
+Date: Wed, 1 Aug 2007 12:34:47 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+References: <200707311235.53302.philipp.marek@bmlv.gv.at> <200707311218.23154.lenb@kernel.org>
+In-Reply-To: <200707311218.23154.lenb@kernel.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, ezk@cs.sunysb.edu, jsipek@cs.sunysb.edu
-Subject: unionfs compile error ( Re: 2.6.23-rc1-mm2 )
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708011234.48586.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-....
-
-fs/unionfs/file.c:147: error: 'file_fsync' undeclared here (not in a function)
-make[2]: *** [fs/unionfs/file.o] Error 1
-make[1]: *** [fs/unionfs] Error 2
-make: *** [fs] Error 2
-make: *** Waiting for unfinished jobs....
-
+On Dienstag, 31. Juli 2007, Len Brown wrote:
+> Please get Linux up and running on the two boxes
+> using whatever means are at your disposal 
 ...
+> Then open two a bug report for each machine here: 
+> http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+Done, see
+  http://bugzilla.kernel.org/show_bug.cgi?id=8833
+for the HP DC 7700 and
+  http://bugzilla.kernel.org/show_bug.cgi?id=8834
+for the Rocky notebook.
 
-Config can be found there -> http://194.231.229.228/MM/config-auto-3
+
+> Lets see if we can find out what the problem is before we
+> blacklist the machines.
+Ok, suits me fine.
 
 
 Regards,
 
-Gabriel
+Phil
