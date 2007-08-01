@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763923AbXHAMZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764866AbXHAM07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763923AbXHAMZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761842AbXHAMZk
+	id S1764866AbXHAM07 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762158AbXHAM0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:25:40 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40275 "EHLO mx1.suse.de"
+	Wed, 1 Aug 2007 08:26:51 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4193 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761195AbXHAMZj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:25:39 -0400
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Mike Galbraith <efault@gmx.de>,
+	id S1761195AbXHAM0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:26:50 -0400
+Date: Wed, 1 Aug 2007 14:27:03 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mike Galbraith <efault@gmx.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: CFS review
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
-	<p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
-	<20070711211638.GE18767@one.firstfloor.org>
-	<20070711214649.GK14435@v2.random>
-	<alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
-	<Pine.LNX.4.64.0707130415520.1818@scrub.home>
-	<1184302024.6709.11.camel@Homer.simpson.net>
-	<Pine.LNX.4.64.0707131728070.1817@scrub.home>
-	<1184389456.6632.13.camel@Homer.simpson.net>
-	<Pine.LNX.4.64.0708010439050.1817@scrub.home>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 01 Aug 2007 15:20:12 +0200
-In-Reply-To: <Pine.LNX.4.64.0708010439050.1817@scrub.home>
-Message-ID: <p73wswfo0hf.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+In-Reply-To: <20070801113759.GA12523@elte.hu>
+Message-ID: <Pine.LNX.4.64.0708011422000.1817@scrub.home>
+References: <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
+ <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
+ <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801113759.GA12523@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel <zippel@linux-m68k.org> writes:
+Hi,
 
-> especially if one already knows that
-> scheduler clock has only limited resolution (because it's based on
-> jiffies), it becomes possible to use mostly 32bit values.
+On Wed, 1 Aug 2007, Ingo Molnar wrote:
 
-jiffies based sched_clock should be soon very rare. It's probably
-not worth optimizing for it.
+> * Roman Zippel <zippel@linux-m68k.org> wrote:
+> 
+> > [...] the increase in code size:
+> > 
+> > 2.6.22:
+> >    text    data     bss     dec     hex filename
+> >   10150      24    3344   13518    34ce kernel/sched.o
+> > 
+> > recent git:
+> >    text    data     bss     dec     hex filename
+> >   14724     228    2020   16972    424c kernel/sched.o
+> > 
+> > That's i386 without stats/debug. [...]
+> 
+> that's without CONFIG_SMP, right? :-) On SMP they are about net break 
+> even:
+> 
+>      text    data     bss     dec     hex filename
+>     26535    4173      24   30732    780c kernel/sched.o-2.6.22
+>     28378    2574      16   30968    78f8 kernel/sched.o-2.6.23-git
 
--Andi
+That's still quite an increase in some rather important code paths and 
+it's not just the code size, but also code complexity which is important 
+- a major point I tried to address in my review.
+
+> (plus a further ~1.5K per CPU data reduction which is not visible here) 
+
+That's why I mentioned the increased runtime memory usage...
+
+bye, Roman
