@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763871AbXHAMxN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXHAM4i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763871AbXHAMxN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:53:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757767AbXHAMw7
+	id S1764248AbXHAM4i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:56:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbXHAM4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:52:59 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:39562 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756900AbXHAMw6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:52:58 -0400
-Message-ID: <46B0818F.10204@gmail.com>
-Date: Wed, 01 Aug 2007 14:50:23 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Wed, 1 Aug 2007 08:56:31 -0400
+Received: from mail.suse.de ([195.135.220.2]:42861 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757767AbXHAM4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:56:31 -0400
+From: Andi Kleen <ak@novell.com>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Huang, Ying" <ying.huang@intel.com>
+Subject: Re: [PATCH 2/5] x86_64 EFI support -v3: EFI boot support
+Date: Wed, 1 Aug 2007 14:56:21 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+References: <1185851576.23149.27.camel@caritas-dev.intel.com> <200707311335.40235.ak@suse.de> <1185958748.1363.40.camel@caritas-dev.intel.com>
+In-Reply-To: <1185958748.1363.40.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-To: Indan Zupancic <indan@nul.nu>
-CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       CK Mailinglist <ck@vds.kolivas.org>, teresa@kvitka.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-References: <1185827130.26459.16.camel@xtower.fri>    <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>    <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>    <46B06815.10200@gmail.com> <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>
-In-Reply-To: <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
+Message-Id: <200708011456.21768.ak@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01/2007 02:34 PM, Indan Zupancic wrote:
 
-> On Wed, August 1, 2007 13:01, Rene Herman wrote:
-
->> Teresa was already using 2.6.22.1, with CFS (v19.1) patched in, so reverting
->> that would be a matter of patching it out again. She said she wasn't seeing
->> trouble on other kernels though.
->>
->> I was the one who also saw keyboard trouble on 2.6.22.1 without CFS by the
->> way -- and haven't (yet) seen any anymore since patching _in_ CFS v19.1...
 > 
-> Could the people who had or have keyboard problems try out Dmitry's
-> input locking patches, and see if those help: http://lkml.org/lkml/2007/7/24/17
-> And if it does, report it to him, either there or here after CCing him.
+> Should I change "change_page_attr" to make it work before "mem_init"? Or
+> Should I change "init_memory_mapping" to make it can be used to change
+> mapping attributes? Which one is better?
 
-I'm having trouble reproducing this at will -- it sounded as though Teresa 
-had less trouble at least originally. Teresa?
+It's probably better to change init_memory_mapping. Just do it cleanly 
+and correctly please. As in only change the pages that straddle the 
+EFI areas and don't use globals.
 
-Rene.
+BTW i don't see any such code on i386. How does the EFI support
+there handle it?
+
+-Andi
