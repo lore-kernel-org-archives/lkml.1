@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbXHAXBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXHAXER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755815AbXHAXBo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 19:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbXHAXBg
+	id S1754929AbXHAXER (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 19:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbXHAXEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 19:01:36 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:39180 "EHLO aun.it.uu.se"
+	Wed, 1 Aug 2007 19:04:05 -0400
+Received: from mx1.aecom.yu.edu ([129.98.1.51]:60298 "EHLO mx1.aecom.yu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751608AbXHAXBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 19:01:36 -0400
-Date: Thu, 2 Aug 2007 01:00:21 +0200 (MEST)
-Message-Id: <200708012300.l71N0LRX008930@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH][RFC] unbreak generic futex_atomic_cmpxchg_inatomic() on UP
-Cc: Lennert Buytenhek <buytenh@wantstofly.org>, mingo@redhat.com,
-       rmk@arm.linux.org.uk, tglx@linutronix.de
+	id S1752301AbXHAXEE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 19:04:04 -0400
+X-AuditID: 816201a0-9b39cbb000007c32-de-46b10ee6d8d0 
+Mime-Version: 1.0
+Message-Id: <a06240463c2d6bfa92746@[129.98.90.227]>
+In-Reply-To: <20070801223440.GS3972@stusta.de>
+References: <a0624045cc2d691fb7294@[129.98.90.227]>
+ <20070801223440.GS3972@stusta.de>
+Date: Wed, 1 Aug 2007 19:02:14 -0400
+To: Adrian Bunk <bunk@stusta.de>
+From: Maurice Volaski <mvolaski@aecom.yu.edu>
+Subject: Re: drbd 8.0.2/3 doesn't load under kernel 2.6.21
+Cc: jheffner@psc.edu, discussion@web100.org, linux-kernel@vger.kernel.org,
+       drbd-user@linbit.com
+Content-Type: text/plain; charset="us-ascii" ; format="flowed"
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Resend. I messed up the To: line the first time]
+First, did you confirm this behavior? Can you please explain that? 
+How could they possibly interact with one another?
 
-As has been reported recently by Lennert Buytenhek, robust futexes
-are broken on ARM:
 
->If you're also running into glibc's tst-robust1 test suite test
->locking up your ARM machine, you're probably running into the fact
->that asm-arm/futex.h includes asm-generic/futex.h, and
->asm-generic/futex.h defines futex_atomic_cmpxchg_inatomic() to
->return -ENOSYS.  This causes handle_futex_death() to loop forever.
+>On Wed, Aug 01, 2007 at 04:21:29PM -0400, Maurice Volaski wrote:
+>>  I'm making an assumption that depmod is somehow to blame and have logged
+>>  this as a kernel bug, http://bugzilla.kernel.org/show_bug.cgi?id=8829
+>
+>depmod is working fine.
+>
+>It's the interaction between your two patches that breaks it for you.
+>
+>>>>  It turns out I was adding the web100 patch (http://www.web100.org) to
+>>>>  the 2.6.21 kernel and that's what causes the symbol resolving problem
+>>>>  below. Adding the corresponding version of the web100 patch to the
+>>>>  2.6.20 kernel makes this problem appear there as well. On fresh
+>>>>  versions of the kernel, this problem does not occur. At the moment,
+>>>>  it's not possible to have a current kernel that contains both drbd
+>>>>  and web100.
+>>>>
+>>>>>  On a 64-bit Gentoo system with Gentoo's 2.6.21 kernel, drbd 8.0.2/3
+>>>>>  complains when I try to load the module:
+>>>>>
+>>>>>  [  134.141363] drbd: Unknown symbol cn_fini
+>>>>>  [  134.141399] drbd: Unknown symbol cn_init
+>>>>>
+>>>>>  It works fine when I compile it and load in the previous kernel
+>>>>>  version, 2.6.20 and the symbols are present in the map file
+>>>>>
+>>>>>  ./System.map-genkernel-x86_64-2.6.21-gentoo-r2:ffffffff802935aa t
+>>>>>  cn_fini
+>>>>>  ./System.map-genkernel-x86_64-2.6.21-gentoo-r2:ffffffff8029362a t
+>>>>>  cn_init
+>>>>>
+>>>>>  I am c'cing the kernel mailing list because this appears to be a
+>>>>>  problem with how any module accesses symbols in the kernel, not just
+>>>>   >drbd. Source was compiled with Gentoo gcc-4.1.2, glibc-2.5-r3
+>
+>cu
+>Adrian
 
-I can confirm this statement: building glibc-2.4 with NPTL on
-ARM hangs the kernel when the test suite reaches tst-robust1.
+-- 
 
-The problem is that kernel/futex.c expects futex_atomic_cmpxchg_inatomic()
-to return -EFAULT or the new value. It doesn't expect -ENOSYS at all, and
-generally -ENOSYS causes the futex code to loop, hanging the kernel.
-
-The higher-end archs (x86, sparc64, ppc64, etc) provide fully-functional
-asm/futex.h implementations, but a number of archs (alpha, arm, arm26,
-avr32, blackfin, cris, h8300, m32r, m68k, mk68knommu, sh64, sparc, um,
-v850, and xtensa) use asm-generic/futex.h, which makes robust futexes
-horribly broken on them. There have also been reports recently that PI
-futexes are broken due to the generic futex_atomic_cmpxchg_inatomic()
-just being an -ENOSYS stub.
-
-The patch below implements the generic futex_atomic_cmpxchg_inatomic() in
-terms of __copy_{from,to}_user_inatomic() and preempt_{disable,enable}().
-It obviously doesn't support SMP, but UP-only support should go a long
-way for users of the affected archs.
-
-I'm using this patch now and it has allowed me to build and use glibc-2.4
-with NPTL on ARM (glibc-2.4-11.src.rpm from FC5 + ARM fixes).
-(Finally I can ditch LinuxThreads :->)
-
-Comments?
-
-/Mikael
-
---- linux-2.6.22/include/asm-generic/futex.h.~1~	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.22/include/asm-generic/futex.h	2007-08-01 19:03:43.000000000 +0200
-@@ -4,6 +4,7 @@
- #ifdef __KERNEL__
- 
- #include <linux/futex.h>
-+#include <linux/preempt.h>
- #include <asm/errno.h>
- #include <asm/uaccess.h>
- 
-@@ -52,7 +53,34 @@ futex_atomic_op_inuser (int encoded_op, 
- static inline int
- futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
- {
-+#ifdef CONFIG_SMP
- 	return -ENOSYS;
-+#else
-+	int curval, ret;
-+
-+	if (!access_ok(VERIFY_WRITE, uaddr, sizeof(int)))
-+		return -EFAULT;
-+
-+	preempt_disable();
-+
-+	ret = -EFAULT;
-+	if (__copy_from_user_inatomic(&curval, uaddr, sizeof(int)))
-+		goto out;
-+
-+	ret = curval;
-+	if (curval != oldval)
-+		goto out;
-+
-+	ret = -EFAULT;
-+	if (__copy_to_user_inatomic(uaddr, &newval, sizeof(int)))
-+		goto out;
-+
-+	ret = newval;
-+
-+ out:
-+	preempt_enable();
-+	return ret;
-+#endif
- }
- 
- #endif
+Maurice Volaski, mvolaski@aecom.yu.edu
+Computing Support, Rose F. Kennedy Center
+Albert Einstein College of Medicine of Yeshiva University
