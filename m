@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765427AbXHAP0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765628AbXHAP1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765427AbXHAP0u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763667AbXHAP0l
+	id S1765628AbXHAP1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765494AbXHAP0y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:26:41 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:42482 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763031AbXHAP0j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:26:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=nCksmkSDaLsi3Dnpmo0PI9dkYqJL8r3zou+jzs8gWhatNogCgeY06GI+L9iMBSuaqpHb6DcxTxCpHHrdvvID4t8S5Joa08El0wMy1SrE7P7QSX4xEAjWFYA7owObPJmfCgnaWPFXnb0Y003kvZelHCkafDwJ/78azgJVXXE4ogo=
-Message-ID: <46B0A611.3070009@googlemail.com>
-Date: Wed, 01 Aug 2007 17:26:09 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 1 Aug 2007 11:26:54 -0400
+Received: from neon.samage.net ([85.17.153.66]:35090 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765459AbXHAP0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:26:51 -0400
+Message-ID: <52091.81.207.0.53.1185982005.squirrel@secure.samage.net>
+In-Reply-To: <20070801150939.GA24710@elte.hu>
+References: <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>
+    <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>
+    <46B06815.10200@gmail.com>
+    <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>
+    <46B0818F.10204@gmail.com>
+    <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>
+    <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com>
+    <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>
+    <20070801150939.GA24710@elte.hu>
+Date: Wed, 1 Aug 2007 17:26:45 +0200 (CEST)
+Subject: Re: Linux Kernel cfs scheduler and xorg kbd
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Rene Herman" <rene.herman@gmail.com>, teresa@kvitka.net,
+       "Andi Kleen" <andi@firstfloor.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "CK Mailinglist" <ck@vds.kolivas.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Coding style fix drivers/scsi/mvme147.c
-References: <46B0A3FB.2080701@googlemail.com>
-In-Reply-To: <46B0A3FB.2080701@googlemail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: 51a43cd7ff6838d9e9bce89dbcde6c26
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski pisze:
-> Hi,
-> 
-> Coding style fix
-> 
+On Wed, August 1, 2007 17:09, Ingo Molnar wrote:
+>
+> * Indan Zupancic <indan@nul.nu> wrote:
+>
+>> We could have independent problems with more or less the same
+>> symptoms, at least Teresa's problem seems much worse than ours, and if
+>> you and Ingo only experience a stuck delete key, it might be something
+>> else.
+>
+> i experienced nothing in this area so far - if i experienced anything of
+> the likes it would be long fixed! =B-)
 
-Christoph Hellwig:
-"There is no reason at all for a scsi driver to include stat.h"
+Ah, indeed, you appended Rene's email without too many new lines,
+so I thought your wrote it (http://lkml.org/lkml/2007/8/1/4).
 
-Regards,
-Michal
+All right, how would you debug it? Give us some insight in how to solve
+hard to trigger, happens at most only a few times a day, annoying input
+bug? I thought the mouse warping was fixed after 23-rc1 and that input
+locking patch, but alas, the third day it happened again.
 
---
-LOG
-http://www.stardust.webpages.pl/log/
+I would be happy just to know if it's bad hardware or a software bug,
+I don't ask for too much, do I?
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Greetings,
 
---- linux-mm-clean/drivers/scsi/mvme147.c	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/drivers/scsi/mvme147.c	2007-08-01 17:24:22.000000000 +0200
-@@ -13,8 +13,6 @@
- #include "wd33c93.h"
- #include "mvme147.h"
- 
--#include<linux/stat.h>
--
- #define HDATA(ptr) ((struct WD33C93_hostdata *)((ptr)->hostdata))
- 
- static struct Scsi_Host *mvme147_host = NULL;
+Indan
 
 
