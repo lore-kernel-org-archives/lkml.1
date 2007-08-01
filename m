@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758353AbXHAFZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756686AbXHAFfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758353AbXHAFZp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 01:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbXHAFZf
+	id S1756686AbXHAFfk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 01:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbXHAFfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 01:25:35 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56111 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751449AbXHAFZf (ORCPT
+	Wed, 1 Aug 2007 01:35:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:40910 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752617AbXHAFfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 01:25:35 -0400
-Date: Wed, 1 Aug 2007 07:25:14 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Matthew Hawkins <darthmdh@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Christoph Hellwig <hch@infradead.org>,
-       Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
-       ck@vds.kolivas.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?
-Message-ID: <20070801052513.GL3972@stusta.de>
-References: <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com> <20070729204716.GB1578@elte.hu> <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site> <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com> <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com> <20070730182959.GA29151@infradead.org> <adaps29sm62.fsf@cisco.com> <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
+	Wed, 1 Aug 2007 01:35:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=Wo9celmE0ADM36Ee7HfK/KEeVi5dHdFGabOH6utIpEbY9vJ6upaUCvvc8hREuyi/FvU5YLMmpySKhvUKvdmVDArkAwNjcKZCSy6NhzXHdfaksPigHi1aNoNzAAehQXhyjRoOvMF44aDMy6bS8Nof4k5frIImjDxLOfQvvbjaC2Y=
+Date: Wed, 1 Aug 2007 09:35:09 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Satyam Sharma <satyam@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm] Introduce strtol_check_range()
+Message-ID: <20070801053509.GA5905@martell.zuzino.mipt.ru>
+References: <alpine.LFD.0.999.0707312203150.28746@enigma.security.iitk.ac.in>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <alpine.LFD.0.999.0707312203150.28746@enigma.security.iitk.ac.in>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 01:07:30PM +1000, Matthew Hawkins wrote:
->...
-> I took the time to track down what caused a breakage - in an "illegal
-> binary driver" (not against the law here, though defamation certainly
-> is...) no less.  And contacted the vendor (separately).  Other people
-> on desktop machines with an ATI card using the fglrx driver may have
-> been interested to know that they can't do the benchmarking some
-> people here on lkml and -mm are asking for with a current 2.6.23 git
-> kernel, hence my post.
->...
+On Tue, Jul 31, 2007 at 10:04:10PM +0530, Satyam Sharma wrote:
+> Callers (especially "store" functions for sysfs or configfs attributes)
+> that want to convert an input string to a number may often also want to
+> check for simple input sanity or allowable range. strtol10_check_range()
+> of netconsole does this, so extract it out into lib/vsprintf.c, make it
+> generic w.r.t. base, and export it to the rest of the kernel and modules.
 
-But there's not much value in benchmarking if an important part of the 
-performance critical code is in some undebuggable driver...
+> --- a/drivers/net/netconsole.c
+> +++ b/drivers/net/netconsole.c
+> @@ -335,9 +307,11 @@ static ssize_t store_enabled(struct netconsole_target *nt,
+>  	int err;
+>  	long enabled;
+>  
+> -	enabled = strtol10_check_range(buf, 0, 1);
+> -	if (enabled < 0)
+> +	enabled = strtol_check_range(buf, 0, 1, 10);
+> +	if (enabled < 0) {
+> +		printk(KERN_ERR "netconsole: invalid input\n");
+>  		return enabled;
+> +	}
 
-> Matt
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Please, copy strtonum() from BSD instead. Nobody needs another
+home-grown converter.
 
