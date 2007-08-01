@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765027AbXHANon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765313AbXHANpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765027AbXHANon (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 09:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762863AbXHANof
+	id S1765313AbXHANpp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 09:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762975AbXHANpi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 09:44:35 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:18966 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756285AbXHANod (ORCPT
+	Wed, 1 Aug 2007 09:45:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48645 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762897AbXHANph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 09:44:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=i+Pl5YBoPUqvb4LEcH9d/6knKEnAnfk273F1q8LWpj20k7Aw9t2tXAkf+EbWPpvqmLy1R194GADDwy9sQ7K9PP8yUrPtXCfvjPcCRxWiMQMqNpUk4Lis3iz9sWUKG3iSvS9P8mfREB+1dHXvNuijdQnrzNXo71xG+joNyYQ+Na4=
-Message-ID: <ed5aea430708010644t5eb961f3nb133354ee5cb071a@mail.gmail.com>
-Date: Wed, 1 Aug 2007 07:44:31 -0600
-From: "David Mosberger-Tang" <dmosberger@gmail.com>
-To: "Zoltan Menyhart" <Zoltan.Menyhart@bull.net>
-Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization for cpus other than montecito
-Cc: "Luck, Tony" <tony.luck@intel.com>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       "Christoph Lameter" <clameter@sgi.com>
-In-Reply-To: <46B0549A.1010308@bull.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 09:45:37 -0400
+Date: Wed, 1 Aug 2007 14:45:29 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       linux-kernel@vger.kernel.org, Jason Wessel <jason.wessel@windriver.com>
+Subject: Re: 2.6.23-rc1-mm2
+Message-ID: <20070801134529.GB12456@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Mike Frysinger <vapier.adi@gmail.com>,
+	Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
+	Jason Wessel <jason.wessel@windriver.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <20070801062501.GB7581@linux-sh.org> <8bd0f97a0708010058v76f13361q62e79fe39c1f0589@mail.gmail.com> <20070801011033.51679dd5.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <617E1C2C70743745A92448908E030B2A020E3B1C@scsmsx411.amr.corp.intel.com>
-	 <46B0549A.1010308@bull.net>
+In-Reply-To: <20070801011033.51679dd5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, Zoltan Menyhart <Zoltan.Menyhart@bull.net> wrote:
+On Wed, Aug 01, 2007 at 01:10:33AM -0700, Andrew Morton wrote:
+> I was hoping for a 2.6.24 merge.  But I haven't actually looked at it yet. 
+> Hopefully Jason is planning to get it all out for review soonish.
 
-> You do have model specific I cache semantics.
-> Not taking it into account will oblige you to flush in vain for the models
-> which do not require it. Why do you want to take this option?
+The current version is quite messy.  I'd be much happier if we could
+start with a light version that doesn't have all the intrusions to random
+code outside the kgdb core.
 
-Given unlimited resources, your proposal makes perfect sense.  We
-could have a Linux version for Merced, one for McKinley, one for
-Madison, etc., etc.
-
-(Un)fortunately, resources are limited and with that constraint in
-place, rather than spending lots of time optimizing the kernel for
-particular idiosyncrasies of a CPU model, it is generally much better
-to optimize it for the things the hardware designers promised us would
-stay the same across CPU models (i.e., the "architecture").  Sure, it
-may mean that on occasion certain things are slightly slower than they
-could be but it does have the decided advantage of letting the
-maintainers sleep at night... ;-)  Moreover, higher-level
-optimizations usually have much higher payoff, so even though you may
-do things a bit more slowly at the lowest level, you may end up with a
-faster system overall because you were able to spend more time
-optimizing at a higher level.
-
-  --david
