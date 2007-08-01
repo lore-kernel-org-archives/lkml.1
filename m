@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763547AbXHAJij@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbXHAJix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763547AbXHAJij (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:38:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXHAJib
+	id S1760709AbXHAJix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:38:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761288AbXHAJie
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:38:31 -0400
-Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47995 "EHLO
-	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbXHAJi3 (ORCPT
+	Wed, 1 Aug 2007 05:38:34 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:52214 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760257AbXHAJid (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:38:29 -0400
-Message-ID: <46B0549A.1010308@bull.net>
-Date: Wed, 01 Aug 2007 11:38:34 +0200
-From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
-X-Accept-Language: en-us, en, fr, hu
+	Wed, 1 Aug 2007 05:38:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=E4fi2JvV9vMsafe7qtCmWoiJEFX8QzVwxQEYpQdcA93cR+tfEwWfMKcZu7itTCSxRnT/Enffffo3PdtuFOMcNL6Y5yS8H/2Ge2yRsT0a9Cd6SSCMWZgbFkshZIACjZT/FPxx8vHLLpXLcuMR2vGvAkCJcvtC6XRIoII/RYAKdyk=
+Message-ID: <46B05484.8080701@googlemail.com>
+Date: Wed, 01 Aug 2007 11:38:12 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: David Mosberger-Tang <dmosberger@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization
- for cpus other than montecito
-References: <617E1C2C70743745A92448908E030B2A020E3B1C@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A020E3B1C@scsmsx411.amr.corp.intel.com>
-X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 01/08/2007 11:43:16,
-	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
- 01/08/2007 11:43:18,
-	Serialize complete at 01/08/2007 11:43:18
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] Typo fixes interrrupt -> interrupt
+References: <46AFFB0B.102@googlemail.com> <20070801144318.f81fd988.sfr@canb.auug.org.au>
+In-Reply-To: <20070801144318.f81fd988.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luck, Tony wrote:
->>This seems crazy to me.  Flushing should occur according to the
->>*architecture*, not model-by-model.  Even if we happen to get "lucky"
->>on pre-Montecito CPUs, that doesn't justify such ugly hacks.  Or you
->>really want to debug this *again* come next CPU?
+Stephen Rothwell wrote:
+> On Wed, 01 Aug 2007 05:16:27 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+>>  arch/powerpc/platforms/iseries/it_lp_naca.h       |   87 +++++++++++----------
 > 
-> 
-> Ditto.  The only reason we should ever have model specific checks should
-> be to work around model specific errata (e.g. the McKinley Errata #9 code
-> in patch.c).
+> NAK this part as it just makes a lot of the lines more than 80 characters
+> for no real gain on a platform that is moving on ...
 
-You do have model specific I cache semantics.
-Not taking it into account will oblige you to flush in vain for the models
-which do not require it. Why do you want to take this option?
+Well some were there before but with the wrong comment style.
+
+I'll send an new patch in a bit without the comments fixes.
 
 
-Thanks,
-
-Zoltan
+Gabriel
