@@ -1,179 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932779AbXHAQBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763339AbXHAQGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932779AbXHAQBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761310AbXHAQBR
+	id S1763339AbXHAQGn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXHAQGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 12:01:17 -0400
-Received: from qb-out-0506.google.com ([72.14.204.233]:48618 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758898AbXHAQBP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 12:01:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BYUBUZ4Z2t7jAszuVKZCkEuX5BFr7sqtOCAPEBuKM378PwVlVLlZBZw46MRvEBvHO8B4yFzRGl1Q1kHCpfVfcc3VCH81BDgE9zf8L4Q+IOj0HyxZwKn242JuoG2gDtXImvqpr+kjE4Zzo3BWNtdustCEGWHVy8WC/CIRe6/3+hY=
-Message-ID: <ef8c225f0708010901j79daba71y694271f354a8ad4f@mail.gmail.com>
-Date: Wed, 1 Aug 2007 21:31:14 +0530
-From: "Andev Debi" <andev.debi@gmail.com>
-To: "debian developer" <debiandev@gmail.com>
-Subject: Re: Problem - disabling IRQ #20 and others
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Aug 2007 12:06:35 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:36864 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752461AbXHAQGe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 12:06:34 -0400
+Subject: Re: /proc/$pid/pagemap troubles
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070801001404.GY11115@waste.org>
+References: <1185914174.18414.184.camel@localhost>
+	 <20070731213718.GW11115@waste.org> <1185921790.18414.223.camel@localhost>
+	 <20070801001404.GY11115@waste.org>
+Content-Type: text/plain
+Date: Wed, 01 Aug 2007 09:06:30 -0700
+Message-Id: <1185984390.18414.241.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <ef8c225f0708010347l2a0a8e4cj4f47a243bba88989@mail.gmail.com>
-	 <f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, debian developer <debiandev@gmail.com> wrote:
-> On 8/1/07, Andev Debi <andev.debi@gmail.com> wrote:
-> > Hello,
-> > Im getting the following error while booting the kernel 2.6.22.1-cfs
-> >
-> > Aug  1 09:14:09 localhost kernel: [   30.272161] EXT3 FS on hda8, internal
-> > journal
-> > Aug  1 09:14:09 localhost kernel: [   33.572083] device-mapper: ioctl:
-> > 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
-> > Aug  1 09:14:09 localhost kernel: [   35.965198] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.965278] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.966396] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.966465] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.967555] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.967625] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.968693] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.968762] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.969822] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.969906] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.970980] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.971049] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.972166] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.972235] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.973365] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.973435] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.974552] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.974622] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.975480] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.975548] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.975872] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.975954] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.977964] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.978034] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.978552] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.978620] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.978901] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.978967] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.981040] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.981109] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.981433] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.981499] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.981764] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.981831] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.984417] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.984486] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.985575] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.985644] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.986116] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.986183] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.986475] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.986542] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.986814] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.986885] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.989342] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.989412] device-mapper: ioctl: error
-> > adding target to table
-> > Aug  1 09:14:09 localhost kernel: [   35.989692] device-mapper: table:
-> > 253:0: linear: dm-linear: Device lookup failed
-> > Aug  1 09:14:09 localhost kernel: [   35.989758] device-mapper: ioctl: error
-> > adding target to table
-> > .......................
-> > .......................
-> > Aug  1 09:14:17 localhost kernel: [   63.106550] irq 20: nobody cared (try
-> > booting with the "irqpoll" option)
-> > Aug  1 09:14:17 localhost kernel: [   63.106574]  [__report_bad_irq+36/128]
-> > __report_bad_irq+0x24/0x80
-> > Aug  1 09:14:17 localhost kernel: [   63.106596]  [note_interrupt+485/560]
-> > note_interrupt+0x1e5/0x230
-> > Aug  1 09:14:17 localhost kernel: [   63.106619]  [handle_IRQ_event+37/80]
-> > handle_IRQ_event+0x25/0x50
-> > Aug  1 09:14:17 localhost kernel: [   63.106634]
-> > [handle_fasteoi_irq+141/160] handle_fasteoi_irq+0x8d/0xa0
-> > Aug  1 09:14:17 localhost kernel: [   63.106643]  [do_IRQ+62/128]
-> > do_IRQ+0x3e/0x80
-> > Aug  1 09:14:17 localhost kernel: [   63.106665]  [common_interrupt+35/40]
-> > common_interrupt+0x23/0x28
-> > Aug  1 09:14:17 localhost kernel: [   63.106674]  [default_idle+0/64]
-> > default_idle+0x0/0x40
-> > Aug  1 09:14:17 localhost kernel: [   63.106696]  [default_idle+42/64]
-> > default_idle+0x2a/0x40
-> > Aug  1 09:14:17 localhost kernel: [   63.106704]  [cpu_idle+72/112]
-> > cpu_idle+0x48/0x70
-> > Aug  1 09:14:17 localhost kernel: [   63.106707]  [start_kernel+559/704]
-> > start_kernel+0x22f/0x2c0
-> > Aug  1 09:14:17 localhost kernel: [   63.106715]  [unknown_bootoption+0/592]
-> > unknown_bootoption+0x0/0x250
-> > Aug  1 09:14:17 localhost kernel: [   63.106735]  =======================
-> > Aug  1 09:14:17 localhost kernel: [   63.106736] handlers:
-> > Aug  1 09:14:17 localhost kernel: [   63.106738] [<dcc13080>]
-> > (via_driver_irq_handler+0x0/0x1b0 [via])
-> > Aug  1 09:14:17 localhost kernel: [   63.106747] Disabling IRQ #20
-> >
->
-> Are there any non-working devices on your system?
->
-> > Later I repeated the booting with "irqpoll" option, then it was showing both
-> > the above errors and another error as
->
+On Tue, 2007-07-31 at 19:14 -0500, Matt Mackall wrote:
+> On Tue, Jul 31, 2007 at 03:43:10PM -0700, Dave Hansen wrote:
+> > +       evpfn = min((src + count) / sizeof(unsigned long),
+> > +                   ((~0UL) >> PAGE_SHIFT) + 1);
+> > 
+> > Should that hunk of code be any different for 32-bit processes on a
+> > 64-bit kernel?  Do we want to use TASK_SIZE_OF() or restrict these to
+> > actual virtual address space (which is only 48 bits on x86_64).
+> 
+> No. A page for a 32-bit task can line anywhere in the >32-bit physical
+> address space.
 
-none that im aware of...
+An evpfn is an ending _virtual_ pfn right?  A virtual pfn is a vaddr >>
+PAGE_SHIFT, right?  We're not calculating anything having to do with
+physical addresses.  Having 64-bit physical addresses would be a reason
+to use 64-bits as the entry size, but not to round down this "evpfn".
 
-thanks.
+"src" in this case is "*ppos", which is the offset into the file.
+Divide that by the entry size (sizeof(unsigned long)) and you get the
+number of pages offset into the vaddr space that the user is attempting
+to read.  There might be a bug here with it forgetting to offset the
+header size, but oh well.
+
+In any case, what _is_ the ((~0UL) >> PAGE_SHIFT)  operation there for?
+Is it to make sure that a user reading at the end of the virtual address
+space doesn't ask to read 10 pages starting at 0xfffffff0?
+
+> Most of those go away with the get_user_pages approach.
+
+Are you working on this actively?  If not, I'd be happy to take whatever
+you have and fix it up.  Care to post it, even in a slightly unpolished
+state?
+
+-- Dave
+
