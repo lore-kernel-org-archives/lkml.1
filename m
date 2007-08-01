@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762185AbXHAR2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbXHAR2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762185AbXHAR2R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 13:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbXHAR2G
+	id S1758804AbXHAR2b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 13:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758225AbXHAR2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 13:28:06 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:57286 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754648AbXHAR2E (ORCPT
+	Wed, 1 Aug 2007 13:28:07 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:46291 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755918AbXHAR2F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 13:28:04 -0400
-Date: Wed, 1 Aug 2007 13:27:51 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
-       ezk@cs.sunysb.edu, jsipek@cs.sunysb.edu
-Subject: Re: unionfs compile error ( Re: 2.6.23-rc1-mm2 )
-Message-ID: <20070801172751.GA8565@filer.fsl.cs.sunysb.edu>
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <46B0616E.5000704@googlemail.com> <20070801102207.f427a17f.akpm@linux-foundation.org>
+	Wed, 1 Aug 2007 13:28:05 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
+References: <1185851569.23149.25.camel@caritas-dev.intel.com>
+	<m1bqdtus0w.fsf@ebiederm.dsl.xmission.com>
+	<1185872127.23149.81.camel@caritas-dev.intel.com>
+Date: Wed, 01 Aug 2007 11:21:59 -0600
+In-Reply-To: <1185872127.23149.81.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Tue, 31 Jul 2007 16:55:27 +0800")
+Message-ID: <m1myxbnpag.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070801102207.f427a17f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 10:22:07AM -0700, Andrew Morton wrote:
-> On Wed, 01 Aug 2007 12:33:18 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-> 
-> > ....
-> > 
-> > fs/unionfs/file.c:147: error: 'file_fsync' undeclared here (not in a function)
-> > make[2]: *** [fs/unionfs/file.o] Error 1
-> > make[1]: *** [fs/unionfs] Error 2
-> > make: *** [fs] Error 2
-> > make: *** Waiting for unfinished jobs....
-> > 
-> > ...
-> > 
-> > Config can be found there -> http://194.231.229.228/MM/config-auto-3
-> > 
-> 
-> This, I assume:
-> 
-> --- a/fs/unionfs/file.c~git-unionfs-fix-2
-> +++ a/fs/unionfs/file.c
-> @@ -17,6 +17,7 @@
->   */
->  
->  #include "union.h"
-> +#include <linux/buffer_head.h>
->  
->  /*******************
->   * File Operations *
-> _
-> 
-> (and no, sorry, I will not be complicit in that
-> single-header-file-which-includes-the-whole-world junk).
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-Ouch. I had a fix for this, and it managed to get lost in the pile of
-patches.
+> On Mon, 2007-07-30 at 22:16 -0600, Eric W. Biederman wrote:
+>> "Huang, Ying" <ying.huang@intel.com> writes:
+>> > - The variable efi_enabled is used throughout across architecutres if
+>> >  CONFIG_EFI option is enabled. The i386 code also uses this variable.
+>> >  This is something that can be revisited with code consolidation
+>> >  across architectures.
+>> 
+>> Fix it first. arch/i386/ efi support is horrible, and show what happens
+>> when things are not done properly the first time.  Later doesn't happen.
+>> With the partvirt logic we have a lot of operations properly split out
+>> already.  Figure out how to use them.
+>
+> What do you suggest to use instead of efi_enabled?
+>
+> Current method is (efi_enabled based):
+>
+> (1) Encapsulate EFI based implementation and legacy BIOS based
+> implementation into separate functions.
+> (2) Define a wrapper function for each interface in (1), efi_enabled is
+> used to choose implementation between EFI and legacy BIOS.
+>
+> Another possible method is (function pointer based):
 
-I'll fix it up and push fix to kernel.org.
+Exactly.  Which is what everything else in the kernel does and is
+extensible.
 
-Jeff.
+> 1. Encapsulate EFI based implementation and legacy BIOS based
+> implementation into separate functions.
 
--- 
-I abhor a system designed for the "user", if that word is a coded pejorative
-meaning "stupid and unsophisticated."
-		- Ken Thompson
+> 2. Define a function pointer for each interface in (1), the function
+> pointer is set to legacy BIOS based implementation by default and
+> changed to EFI based implementation if appropriate.
+>
+> Because there are only two possible choice, I think the function pointer
+> based method has no big advantages over the efi_enabled based method.
+
+Not at all every hypervisor does these things differently as well,
+so in the real world there are a lot of choices. 
+
+Eric
