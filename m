@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764229AbXHABHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbXHABLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764229AbXHABHB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:07:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759558AbXHABGu
+	id S1762975AbXHABLt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbXHABLl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:06:50 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57309 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753240AbXHABGt (ORCPT
+	Tue, 31 Jul 2007 21:11:41 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:17517 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753286AbXHABLl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:06:49 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46AFDC9A.1050901@s5r6.in-berlin.de>
-Date: Wed, 01 Aug 2007 03:06:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: jack@hawkeye.stone.uk.eu.org
-CC: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Mikael Starvik <starvik@axis.com>
-Subject: Re: [Patch 01/16] Remove unnecessary kmalloc casts from the cris
- arch.
-References: <20070731125316.860150000@hawkeye.stone.uk.eu.org> <20070731125438.132063000@hawkeye.stone.uk.eu.org>
-In-Reply-To: <20070731125438.132063000@hawkeye.stone.uk.eu.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 21:11:41 -0400
+Date: Wed, 1 Aug 2007 09:11:05 +0800
+From: Joe Jin <joe.jin@oracle.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: Joe Jin <joe.jin@oracle.com>, Zach Brown <zach.brown@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       gurudas pai <gurudas.pai@oracle.com>, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, lkml <linux-kernel@vger.kernel.org>,
+       wen.gang.wang@oracle.com
+Subject: Re: [PATCH] add check do_direct_IO() return val
+Message-ID: <20070801011105.GA10449@joejin-pc.cn.oracle.com>
+References: <20070728034719.GA24448@joejin-pc.cn.oracle.com> <20070730135316.2ce21b28.akpm@linux-foundation.org> <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com> <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com> <20070731005348.GA8308@joejin-pc.cn.oracle.com> <46AEB055.9050607@us.ibm.com> <20070731043554.GA3393@joejin-pc.cn.oracle.com> <1185920712.31134.21.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185920712.31134.21.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jack@hawkeye.stone.uk.eu.org wrote:
-> --- a/arch/cris/arch-v32/mm/intmem.c
-> +++ b/arch/cris/arch-v32/mm/intmem.c
-> @@ -28,7 +28,7 @@ static void crisv32_intmem_init(void)
->  	static int initiated = 0;
->  	if (!initiated) {
->  		struct intmem_allocation* alloc =
-> -		  (struct intmem_allocation*)kmalloc(sizeof *alloc, GFP_KERNEL);
-> +				kmalloc(sizeof *alloc, GFP_KERNEL);
->  		INIT_LIST_HEAD(&intmem_allocations);
->  		intmem_virtual = ioremap(MEM_INTMEM_START, MEM_INTMEM_SIZE);
->  		initiated = 1;
-> 
+> Okay. Here is the fix for the problem.
 
-Would be nice if you increased the indentation of the kmalloc line for
-better readability, now that the expression is shorter.
+It work fine, thanks.
 
-In the rest of arch/cris/arch-v32/mm/intmem.c, one tab is typically used
-for such continuation indentations.  However, intmem.c is not a prime
-example for good whitespace usage, so you could as well use two tabs.
-
-Also note that there are two more kmallocs with unnecessary cast in the
-same file, at least in 2.6.23-rc1.  Would be nice if you cleaned up the
-whole file at once.
-
-There is also a shadowing of a local variable (tmp) by another local
-variable of the same name.  Maybe you could submit another cleanup patch
-for that too while you are at it?
--- 
-Stefan Richter
--=====-=-=== =--- ----=
-http://arcgraph.de/sr/
+> Signed-off-by: Badari Pulavarty <pbadari@us.ibm.com>
+  
+  Acked-by:  Joe Jin <joe.jin@oracle.com>
