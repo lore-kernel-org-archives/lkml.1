@@ -1,58 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbXHAI2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbXHAI22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759696AbXHAI2H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXHAI1q
+	id S1763269AbXHAI22 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:28:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760870AbXHAI1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:27:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60485 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756897AbXHAI1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:27:44 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1185949055.12034.31.camel@twins>
-References: <1185949055.12034.31.camel@twins> <20070731202454.6412.88646.stgit@warthog.cambridge.redhat.com> <20070731202505.6412.37918.stgit@warthog.cambridge.redhat.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
-       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 02/14] FS-Cache: Recruit a couple of page flags for cache management
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Wed, 01 Aug 2007 09:27:13 +0100
-Message-ID: <17631.1185956833@redhat.com>
+	Wed, 1 Aug 2007 04:27:55 -0400
+Received: from qb-out-0506.google.com ([72.14.204.233]:28717 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759498AbXHAI1s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 04:27:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=n7nVIemq+WDkjvH4KjRcrw/KqNgmqpuq+hFGwvk49jTJ5gooLN+lyNUHpcBKsaCrudh7GBbXaY7Q/P4ZuCbbFmD9kgBMDD0fPnXxUANhiJ2IOrL+hbbK1eUuz5bRUiFoKuI35kWd4AV+tb5xdO9xJlHu0vRacPKxOd1XwDCMqT4=
+Message-ID: <46B043FB.5090005@gmail.com>
+Date: Wed, 01 Aug 2007 17:27:39 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
+       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
+Subject: Re: [patch 3/4] Enable link power management for ata drivers
+References: <20070705194909.337398431@intel.com> <20070705130530.5873afeb.kristen.c.accardi@intel.com>
+In-Reply-To: <20070705130530.5873afeb.kristen.c.accardi@intel.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> wrote:
+Kristen Carlson Accardi wrote:
+> libata drivers can define a function (enable_pm) that will
+> perform hardware specific actions to enable whatever power
+> management policy the user set up from the scsi sysfs 
+> interface if the driver supports it.  This power management 
+> policy will be activated after all disks have been 
+> enumerated and intialized.  Drivers should also define
+> disable_pm, which will turn off link power management, but
+> not change link power management policy.
+> 
+> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-> Not sure its a good idea to overload page_has_private() with an
-> overloadable page-flag. What if some future FS wants to use
-> PG_owner_priv_2 for other purposes?
+Please update the patch against the current libata-dev#upstream and
+there are several lines where tab follows space and git-applymbox isn't
+happy about it.  Those lines are in other patches too.
 
-All that it means is that releasepage() and co will get called if a page is to
-be released or invalidated that has that bit set.  I think that's something a
-future FS could probably live with.
+> +int ata_scsi_set_link_pm_policy(struct Scsi_Host *shost,
+> +		enum scsi_host_link_pm policy)
+> +{
+> +	struct ata_port *ap = ata_shost_to_port(shost);
+> +	int rc = -EINVAL;
+> +	int i;
+> +
+> +	/*
+> + 	 * make sure no broken devices are on this port,
+> + 	 * and that all devices support interface power
+> + 	 * management
+> + 	 */
+> +	for (i = 0; i < ATA_MAX_DEVICES; i++) {
+> +		struct ata_device *dev = &ap->device[i];
+> +
+> +		/* only check drives which exist */
+> +		if (!ata_dev_enabled(dev))
+> +			continue;
+> +
+> +		/*
+> + 		 * do we need to handle the case where we've hotplugged
+> + 		 * a broken drive (since hotplug and ALPM are mutually
+> + 		 * exclusive) ?
+> + 		 *
+> + 		 * If so, if we detect a broken drive on a port with
+> + 		 * alpm already enabled, then we should reset the policy
+> + 		 * to off for the entire port.
+> + 		 */
+> +		if ((dev->horkage & ATA_HORKAGE_ALPM) ||
+> +			!(dev->flags & ATA_DFLAG_IPM)) {
+> +			ata_dev_printk(dev, KERN_ERR,
+> +				"Unable to set Link PM policy\n");
+> +			ap->pm_policy = SHOST_MAX_PERFORMANCE;
+> +		}
+> +	}
+> +
+> +	if (ap->ops->enable_pm)
+> +		rc = ap->ops->enable_pm(ap, policy);
+> +
+> +	if (!rc)
+> +		shost->shost_link_pm_policy = ap->pm_policy;
+> +	return rc;
+> +}
+> +EXPORT_SYMBOL_GPL(ata_scsi_set_link_pm_policy);
 
-However, I do have to trigger a call to releasepage() and co *somehow*.
+This function is directly called from SCSI sysfs write, right?  You
+can't do this without synchronizing with EH.  The best way is to define
+an EH action and ask EH to transit between powersave states.
 
-> Obviously filesystems cannot use these two page-flags if they want to be
-> compatible with FS-cache, but need all filesystems be?
+> @@ -2021,6 +2021,9 @@ int ata_dev_configure(struct ata_device 
+>  	if (dev->flags & ATA_DFLAG_LBA48)
+>  		dev->max_sectors = ATA_MAX_SECTORS_LBA48;
+>  
+> +	if (ata_id_has_hipm(dev->id) || ata_id_has_dipm(dev->id))
+> +		dev->flags |= ATA_DFLAG_IPM;
 
-What do you mean?  That's why I went for the PG_owner_priv_* approach rather
-than just naming the bits unto FS-Cache directly.
+Is it safe to use ALPM on a device which only claims to support DIPM?
 
-> (also, ouch! - 2 pageflags)
+> @@ -2046,6 +2049,13 @@ int ata_dev_configure(struct ata_device 
+>  		dev->max_sectors = min_t(unsigned int, ATA_MAX_SECTORS_128,
+>  					 dev->max_sectors);
+>  
+> +	if (ata_device_blacklisted(dev) & ATA_HORKAGE_ALPM) {
+> +		dev->horkage |= ATA_HORKAGE_ALPM;
 
-Yeah.  The consequence of having things asynchronous is that you have to find
-signalling mechanisms to synchronise around the asynchronicity:-/
+I think this should be ATA_HORKAGE_IPM.
 
-Furthermore, it occurs to me that I can't use PG_private or page->private to
-store this information because I want to make isofs use caching, and those two
-pieces of information are owned by the buffering code.
+> @@ -6385,6 +6426,8 @@ int ata_host_register(struct ata_host *h
+>  		struct ata_port *ap = host->ports[i];
+>  
+>  		ata_scsi_scan_host(ap);
+> +		ata_scsi_set_link_pm_policy(ap->scsi_host,
+> +				ap->pm_policy);
 
-David
+Again, this should be done from EH.
+
+> @@ -321,6 +321,8 @@ struct ata_taskfile {
+>  	  ((u64) (id)[(n) + 0]) )
+>  
+>  #define ata_id_cdb_intr(id)	(((id)[0] & 0x60) == 0x20)
+> +#define ata_id_has_hipm(id)	((id)[76] & (1 << 9))
+> +#define ata_id_has_dipm(id)	((id)[78] & (1 << 3))
+
+We probably need !0xffff test here.
+
+-- 
+tejun
