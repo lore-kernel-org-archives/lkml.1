@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbXHASvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762186AbXHAS5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765610AbXHASvf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbXHASv1
+	id S1762186AbXHAS5w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXHAS5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:51:27 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:45089 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753807AbXHASv0 (ORCPT
+	Wed, 1 Aug 2007 14:57:43 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51436 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbXHAS5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:51:26 -0400
-Message-ID: <46B0D628.3050409@interia.pl>
-Date: Wed, 01 Aug 2007 20:51:20 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
-MIME-Version: 1.0
-To: Ash Willis <ashwillis@programmer.net>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, tiwai@suse.de
-Subject: Re: CS5530 Alsa driver fails
-References: <20070801174103.D03341F50B1@ws1-2.us4.outblaze.com>
-In-Reply-To: <20070801174103.D03341F50B1@ws1-2.us4.outblaze.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: dc28eacc
+	Wed, 1 Aug 2007 14:57:43 -0400
+Date: Wed, 1 Aug 2007 20:57:41 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] Simple Performance Counters: x86_64 support
+Message-ID: <20070801185741.GD20713@one.firstfloor.org>
+References: <11859243121617-git-send-email-clameter@sgi.com> <p73ir7zplty.fsf@bingen.suse.de> <Pine.LNX.4.64.0708011052080.20795@schroedinger.engr.sgi.com> <20070801182611.GB20713@one.firstfloor.org> <Pine.LNX.4.64.0708011127490.22867@schroedinger.engr.sgi.com> <20070801184026.GC20713@one.firstfloor.org> <Pine.LNX.4.64.0708011144450.22867@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011144450.22867@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi Rafał,
-> It seems that you're already using irq 9 for another device, and as Alan says
-> the cs5530 audio device doesn't seem to do irq sharing. It seems to me that you
-> need to go into your BIOS settings at startup and tell the device to use an irq
-> line that's not already in use by some other device. Can you please let me know
-> if this works?
-Sorry, I should mention earlier that this is Wyse 3360SE. I don't know how to 
-enter BIOS (if there is any).
-> The ALSA CS5530 driver is one that I ported from Alan's OSS Kahlua driver, so
-> there may be some things that I've missed. If the above advice doesn't work,
-> please confirm whether or not the device is functioning correctly in your
-> current set up with Alan's original OSS driver.
-I will give up. I didn't checked code earlier. This driver is using SMM. Probably  
-firmware isn't what it should be, or I have overwritten it when I was flashing 
-Linux. I see in datasheet that it isn't possible to write driver in other way. 
-Sadly sound card is generating SMI only.
-
-> Thanks,
+On Wed, Aug 01, 2007 at 11:45:39AM -0700, Christoph Lameter wrote:
+> On Wed, 1 Aug 2007, Andi Kleen wrote:
 > 
-> Ash
+> > > It is certainly interesting to compare alternative ways of handling the 
+> > > instruction streams by various processors or models of processors.
+> > 
+> > Well you have to do a lot more work then to handle instable TSCs then.
+> 
+> I have been using this for 2 years. It works fine for my purposes.
 
-Thank You
-Rafał
+That might be on your systems, but for a mainline submission the
+standards are higher.
 
+> 
+> > In particular the frequencies can be different between CPUs, they 
+> > change (which you can catch with cpufreq notifiers) and during the
+> > cpufreq change period they're instable (as in you can't tell for
+> > some time which frequency they're currently running at and they
+> > might be running immediate frequencies) 
+> 
+> Well then simply make sure that they do not change while you measure.
 
-----------------------------------------------------------------------
-Dowiedz sie, co naprawde podnieca kobiety. Wiecej wiesz, latwiej je
-oczarujesz 
+That would be a merge blocker in my opinion. Suitable for local
+hacks, but nothing we want in tree.
 
->>>http://link.interia.pl/f1b17
+-Andi
 
