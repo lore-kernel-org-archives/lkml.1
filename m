@@ -1,91 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbXHAVVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbXHAVVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbXHAVVZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXHAVVN
+	id S1754006AbXHAVVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753727AbXHAVVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:21:13 -0400
-Received: from mga02.intel.com ([134.134.136.20]:16114 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752262AbXHAVVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:21:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,210,1183359600"; 
-   d="scan'208";a="273282892"
-Date: Wed, 1 Aug 2007 14:18:16 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
-Subject: Re: [patch 1/4] Store interrupt value
-Message-Id: <20070801141816.5a78940d.kristen.c.accardi@intel.com>
-In-Reply-To: <46B0923B.4040707@garzik.org>
-References: <20070705194909.337398431@intel.com>
-	<20070705130500.ad5f7739.kristen.c.accardi@intel.com>
-	<46B0923B.4040707@garzik.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Aug 2007 17:21:18 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:45466 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753446AbXHAVVR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 17:21:17 -0400
+Message-ID: <46B0F8AF.9000000@gmail.com>
+Date: Wed, 01 Aug 2007 23:18:39 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] Deprecate a.out ELF interpreters
+References: <200708011433.09433.ak@novell.com> <Pine.LNX.4.64.0708012029130.26668@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708012029130.26668@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Store interrupt value
+On 08/01/2007 08:30 PM, Jan Engelhardt wrote:
 
-Use a stored value for which interrupts to enable.  Changing this allows
-us to selectively turn off certain interrupts later and have them 
-stay off.
+> On Aug 1 2007 14:33, Andi Kleen wrote:
+>> Comments?
+> 
+> A kconfig entry "(OBSOLETE)"/"(DEPRECATED)" would be nice. (And if you
+> want to test people, 'depends on EMBEDDED' for CONFIG_BINFMT_AOUT)
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Or just remove that junk.
 
-Index: 2.6-git/drivers/ata/ahci.c
-===================================================================
---- 2.6-git.orig/drivers/ata/ahci.c
-+++ 2.6-git/drivers/ata/ahci.c
-@@ -175,6 +175,7 @@ enum {
- 	AHCI_FLAG_32BIT_ONLY		= (1 << 28), /* force 32bit */
- 	AHCI_FLAG_MV_PATA		= (1 << 29), /* PATA port */
- 	AHCI_FLAG_NO_MSI		= (1 << 30), /* no PCI MSI */
-+	AHCI_FLAG_NO_HOTPLUG		= (1 << 31), /* ignore PxSERR.DIAG.N */
- 
- 	AHCI_FLAG_COMMON		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
- 					  ATA_FLAG_MMIO | ATA_FLAG_PIO_DMA |
-@@ -215,6 +216,7 @@ struct ahci_port_priv {
- 	unsigned int		ncq_saw_d2h:1;
- 	unsigned int		ncq_saw_dmas:1;
- 	unsigned int		ncq_saw_sdb:1;
-+	u32 			intr_mask;	/* interrupts to enable */
- };
- 
- static int ahci_scr_read(struct ata_port *ap, unsigned int sc_reg, u32 *val);
-@@ -1518,6 +1520,7 @@ static void ahci_thaw(struct ata_port *a
- 	void __iomem *mmio = ap->host->iomap[AHCI_PCI_BAR];
- 	void __iomem *port_mmio = ahci_port_base(ap);
- 	u32 tmp;
-+	struct ahci_port_priv *pp = ap->private_data;
- 
- 	/* clear IRQ */
- 	tmp = readl(port_mmio + PORT_IRQ_STAT);
-@@ -1525,7 +1528,7 @@ static void ahci_thaw(struct ata_port *a
- 	writel(1 << ap->port_no, mmio + HOST_IRQ_STAT);
- 
- 	/* turn IRQ back on */
--	writel(DEF_PORT_IRQ, port_mmio + PORT_IRQ_MASK);
-+	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
- }
- 
- static void ahci_error_handler(struct ata_port *ap)
-@@ -1679,6 +1682,12 @@ static int ahci_port_start(struct ata_po
- 	pp->cmd_tbl = mem;
- 	pp->cmd_tbl_dma = mem_dma;
- 
-+	/*
-+ 	 * Save off initial list of interrupts to be enabled.
-+ 	 * This could be changed later
-+ 	 */
-+	pp->intr_mask = DEF_PORT_IRQ;
-+
- 	ap->private_data = pp;
- 
- 	/* engage engines, captain */
+Rene.
