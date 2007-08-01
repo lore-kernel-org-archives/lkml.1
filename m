@@ -1,95 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbXHABey@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761691AbXHABf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932082AbXHABey (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:34:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbXHABep
+	id S1761691AbXHABf1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761683AbXHABew
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:34:45 -0400
-Received: from mga01.intel.com ([192.55.52.88]:59816 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751286AbXHABeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:34:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,206,1183359600"; 
-   d="scan'208";a="275019479"
-Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
-	hibernation
-From: "Huang, Ying" <ying.huang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <20070731110458.GA1777@elf.ucw.cz>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com>
-	 <20070731110458.GA1777@elf.ucw.cz>
-Content-Type: text/plain
+	Tue, 31 Jul 2007 21:34:52 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:54911 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761181AbXHABeu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 21:34:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CJ3laGeLmFk8o0HaGwn+WchYoCv6dRhcHALIMNwQ6W0cRqHM9Slq+qhUHGZWiRpZoJogeDKctqgXpqSgDlrTE0sfOtN2yJzPJOkubYX2i1bpDBUK2RIWuulX91sBHvTua0PrPGoBXFRe/HVzRaIUosuJrBVVOHoHsx1PYlljM8s=
+Message-ID: <6b01c6170707311834o27a72f8cpebf65cb65c2f2d1f@mail.gmail.com>
+Date: Tue, 31 Jul 2007 18:34:49 -0700
+From: "Yasha Okshtein" <flyashi@gmail.com>
+Reply-To: flyashi@gmail.com
+To: "Jan Dittmer" <jdi@l4x.org>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
+Cc: "Andreas Schwab" <schwab@suse.de>, "Len Brown" <lenb@kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>
+In-Reply-To: <46AAF709.9060407@l4x.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Wed, 01 Aug 2007 09:34:31 +0800
-Message-Id: <1185932071.1363.13.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 01 Aug 2007 01:34:40.0264 (UTC) FILETIME=[20F68080:01C7D3DC]
+Content-Disposition: inline
+References: <200707251238.50218.lenb@kernel.org> <46A98FF9.8060801@l4x.org>
+	 <je8x91flu9.fsf@sykes.suse.de> <46AAF709.9060407@l4x.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 13:04 +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > 3. Boot kernel compiled for normal usage, the reserved crash kernel
-> >    memory region must be added to kernel command line as following:
-> > 
-> >    crashkernel=<XX>M@<XX>M
-> > 
-> >    Where, <XX> should be replaced by the real memory size and
-> > position.
-> 
-> I used crashkernel=64M@64M .
-> 
-> 
-> > 4. Load kernel compiled for hibernating usage as a crashdump kernel
-> >    with kexec, the same kernel as that of 3 can be used if
-> >    CONFIG_RELOCATABLE=y is selected. The kernel command line option as
-> >    following must be appended to kernel command line.
-> > 
-> >    kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
-> > 
-> >    For example, the shell command line can be as follow:
-> > 
-> >    kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
-> >        kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-> 
-> I think I followed the instructions closely. Now I'm trying to do 
-> 
-> kexec -p /data/l/linux/vmlinux --args-linux --append="init=/bin/bash
-> kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-> 
-> but it tells me:
-> 
-> Invalid memory segment 0x100000 - 0x7a0fff
-> 
-> (and nothing in dmesg) 
-> 
-> If I try to load bzImage (corresponding to vmlinux I tried to use),  I
-> get:
-> 
-> root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage --append="init=/bin/bash kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
-> Could not find a free area of memory of 9000 bytes...
-> locate_hole failed
-> root@amd:~#
-> 
-> What am I doing wrong?
+On 7/28/07, Jan Dittmer <jdi@l4x.org> wrote:
+> Andreas Schwab wrote:
+> > Jan Dittmer <jdi@l4x.org> writes:
+> >> Len Brown wrote:
+> >> FATAL: drivers/acpi/button: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=144.
+> > Are you cross-compiling?  The definition of kernel_ulong_t won't work on
+> > x86.
+> Yes, sorry, should have mentioned that. Build system is x86. Still,
+> it didn't happen before the recent acpi merge.
 
-The kexec-tools version 1.101 does not work perfectly with relocatable
-kernel. This would have been solved if I worked against kexec-tools
-testing tree. I will work against testing tree in the next version.
+I also have the same error, which I didn't have in 2.6.22:
 
-But, with some trick, it can work. When configure kernel, make sure the
-following option is set:
+FATAL: drivers/acpi/ac: sizeof(struct acpi_device_id)=20 is not a
+modulo of the size of section __mod_acpi_device_table=48.
+Fix definition of struct acpi_device_id in mod_devicetable.h
+make[1]: *** [__modpost] Error 1
 
-CONFIG_PHYSICAL_START=0x4000000 # if crashkernel=<XX>M@64M
+Build system is x86_64. I'm not cross-compiling, as the target machine
+(not the build machine) is also x86_64.
 
-Best Regards,
-Huang Ying
+ - Yasha
