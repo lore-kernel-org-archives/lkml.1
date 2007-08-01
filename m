@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXHAVcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756764AbXHAVcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbXHAVcj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754594AbXHAVb0
+	id S1756764AbXHAVcw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXHAVbf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:31:26 -0400
-Received: from mx2.suse.de ([195.135.220.15]:40141 "EHLO mx2.suse.de"
+	Wed, 1 Aug 2007 17:31:35 -0400
+Received: from mga01.intel.com ([192.55.52.88]:4897 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754501AbXHAVbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:31:24 -0400
-Date: Wed, 1 Aug 2007 23:10:07 +0200
-From: Stefan Seyfried <seife@suse.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, suspend-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [rft] Kill junk from s2ram resume paths
-Message-ID: <20070801211007.GA21015@suse.de>
-References: <20070731121246.GF2087@elf.ucw.cz> <200707311520.28003.rjw@sisk.pl> <20070731131814.GI2087@elf.ucw.cz> <200707311549.54863.rjw@sisk.pl> <20070731140140.GJ2087@elf.ucw.cz> <20070731144334.GC6973@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070731144334.GC6973@suse.de>
-X-Operating-System: openSUSE 10.3 (i586) Alpha7, Kernel 2.6.22.1-10-default
-User-Agent: mutt-ng/devel-r804 (Linux)
+	id S1755117AbXHAVbd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 17:31:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,210,1183359600"; 
+   d="scan'208";a="275383927"
+Date: Wed, 1 Aug 2007 14:28:37 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: jeff@garzik.org
+Cc: james.bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, arjan@linux.intel.com
+Subject: [patch 0/3] Updated ALPM patches
+Message-Id: <20070801142837.2dabed87.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jul 31, 2007 at 04:43:34PM +0200, Stefan Seyfried wrote:
-> On Tue, Jul 31, 2007 at 04:01:40PM +0200, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > > > >  # Running in *copy* of this code, somewhere in low 1MB.
-> > > > > >  
-> > > > > > -	movb	$0xa1, %al	;  outb %al, $0x80
-> > > > > 
-> > > > > Well, what was this for?
-> > > > 
-> > > > Debugging leds on port 80. I still have that card somewhere
-> > > > :-). Interesting parties can reinsert it.
-> > > 
-> > > Ah, I see.
-> > > 
-> > > Hmm, can you please write about that in the chanelog more explicitly?
-> > > Or just comment it out with a "uncomment this to get ..." text?
-> > 
-> > I still need someone with x86-64 to test it for me before I submit it
-> > properly ;-). Updated patch follows.
-> 
-> Compiling right now.
+Hi,
+This is an updated series of ALPM patches.  I moved all link power management
+stuff out of scsi sysfs and just use the shost_addr pointer in the host
+template to create the sysfs files.  This provides the same interface
+as before, without requiring any scsi changes.  I also fixed a bug in
+the handling of the interrupts for some devices (mostly ATAPI it seems)
+which will need some bits out of Serror cleared on power state changes,
+and I also modified the code slightly based on feedback from tejun.
 
-Worked well on my x86_64 testmachine (a 64bit Thinkpad), worked before and
-after the patch with 2.6.23-rc1.
+please review,
+Thanks,
+Kristen
+
 -- 
-Stefan Seyfried
-QA / R&D Team Mobile Devices        |              "Any ideas, John?"
-SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
-
-This footer brought to you by insane German lawmakers:
-SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
