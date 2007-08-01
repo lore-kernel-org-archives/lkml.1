@@ -1,51 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbXHAIVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761435AbXHAIWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbXHAIVN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXHAIUy
+	id S1761435AbXHAIWf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbXHAIWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:20:54 -0400
-Received: from main.gmane.org ([80.91.229.2]:33721 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753490AbXHAIUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:20:52 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-Subject: Re: Fwd: request_module() fails
-Date: Wed, 1 Aug 2007 09:20:23 +0100
-Organization: Linux Foundation
-Message-ID: <20070801092023.10655b4c@oldman.hamilton.local>
-References: <a307c1910708010011l57dbee87hb0d9a725ac259966@mail.gmail.com>
-	<a307c1910708010059l6c2c9df0n4ad9d0197eaba0f@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 149.157.192.252
-In-Reply-To: <a307c1910708010059l6c2c9df0n4ad9d0197eaba0f@mail.gmail.com>
-X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+	Wed, 1 Aug 2007 04:22:17 -0400
+Received: from ausmtp05.au.ibm.com ([202.81.18.154]:56953 "EHLO
+	ausmtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753753AbXHAIWM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 04:22:12 -0400
+Subject: build error on powerpc for 2.6.23-rc1-mm2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+X-Mailer: Lotus Notes Build V80_M5_05202007 May 20, 2007
+Message-ID: <OFFC0F3DEC.2DEDE1A8-ON6525732A.002DB5E7-6525732A.002DEF2C@in.ibm.com>
+From: Rishikesh K Rajak <risrajak@in.ibm.com>
+Date: Wed, 1 Aug 2007 13:52:05 +0530
+X-MIMETrack: Serialize by Router on d23ml063/23/M/IBM(Release 7.0.2HF32 | October 17, 2006) at
+ 01/08/2007 13:52:06
+MIME-Version: 1.0
+Content-type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 13:29:18 +0530
-"Gireesh Kumar M" <gireesh.mnair@gmail.com> wrote:
 
-> Hi,
-> 
-> I'm trying to load some modules upon occurance of a GPIO interrupt.
-> The ISR checks some register and then schedules a tasklet to act
-> further on the interrupt.
-> Inside the tasklet, I call request_module to load a driver. But, here
-> it's failing. Please see the error log pasted below.
-> When I tried to load the same module using modprobe and it works fine. I
-> have edited modules.dep with an entry for my module.
+Hi Andrew,
 
-You can't sucessfully load a module from tasklet because tasklet's run
-in softirq. You need to use a work queue (or other mechanism) that runs
-in process context. Loading a module will require accessing disk, and that
-can only be done from process context.
+I am getting following error on powerpc almost for allyesconfig,
+allmodconfig.
 
-Your whole scheme is pretty daft, because it will be slow and you might
-as well have the module already loaded.
+Error produced:
+
+PowerPC: allmodconfig,allyesconfig
+
+  CC      arch/powerpc/mm/tlb_64.o
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:
+ Assembler messages:
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:27:
+ Error: Unrecognized opcode: `mtocrf'
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:138:
+ Error: Unrecognized opcode: `mtocrf'
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:153:
+ Error: Unrecognized opcode: `mtocrf'
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:
+ Assembler messages:
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:15:
+ Error: Unrecognized opcode: `mtocrf'
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:131:
+ Error: Unrecognized opcode: `mtocrf'
+/home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:146:
+ Error: Unrecognized opcode: `mtocrf'
+make[2]: *** [arch/powerpc/lib/memcpy_64.o] Error 1
+make[2]: *** Waiting for unfinished jobs....
+  CC      arch/powerpc/sysdev/mpic_u3msi.o
+make[2]: *** [arch/powerpc/lib/copyuser_64.o] Error 1
+make[1]: *** [arch/powerpc/lib] Error 2
+
+
+Thanks
+Rishi Kesh K Rajak
+
+IBM-ISL,Manyata Embassy Business Park,
+Block D2, Nagawara Ring Road,
+Nagawara, bangalore-560045
++91-80-40255044
+Mob: +91-9986019642
+FAX: +91-80-25436902
 
