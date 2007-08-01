@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762701AbXHAIt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761429AbXHAJAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762701AbXHAIt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756837AbXHAIts
+	id S1761429AbXHAJAr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756629AbXHAJAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:49:48 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:43130 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754476AbXHAItr (ORCPT
+	Wed, 1 Aug 2007 05:00:39 -0400
+Received: from plasma-gate.weizmann.ac.il ([132.77.150.54]:60447 "EHLO
+	plasma-gate.weizmann.ac.il" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756473AbXHAJAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:49:47 -0400
-Message-ID: <46B04896.5020606@gmail.com>
-Date: Wed, 01 Aug 2007 10:47:18 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Wed, 1 Aug 2007 05:00:38 -0400
+X-Greylist: delayed 513 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 05:00:37 EDT
+Message-ID: <46B049AE.1020607@stambulchik.net>
+Date: Wed, 01 Aug 2007 11:51:58 +0300
+From: Evgeny Stambulchik <evgeny@stambulchik.net>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070704)
 MIME-Version: 1.0
-To: kriko <kristjan.ugrin@gmail.com>
-CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: Reboot hang FIXED
-References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com> <op.twcrsx1yatcbto@linux.site> <46B038B5.2030702@gmail.com> <op.twdgw4xiatcbto@linux.site>
-In-Reply-To: <op.twdgw4xiatcbto@linux.site>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: linux-kernel@vger.kernel.org, r.gerlach@snafu.de
+Subject: Re: [RFC] tablet buttons driver for fujitsu siemens laptops
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01/2007 10:37 AM, kriko wrote:
+Hello,
 
->>> using only new drivers works fine.
->>
->> ... oh well. I suppose it's not really worth it to try and debug that. 
->> Cheers.
-> 
-> I just want to add that my DVD drive is not detected when using new 
-> driver. So back to old one....
+Just wanted to mention that the driver by Robert Gerlach also works[1] 
+with a Fujitsu P1610 convertible, after a trivial modification:
 
-You shouldn't have dropped Alan from CC then... pata_amd, right?
+static struct keymap_entry keymap_t1610[] = {
+     { 0x0010, KEY_SCROLLDOWN },
+     { 0x0020, KEY_SCROLLUP },
+     { 0x0040, KEY_DIRECTION },
+     { 0x0080, KEY_FN },
+     { 0x8000, KEY_MENU },
+     { 0x0400, KEY_KBDILLUMTOGGLE },
+     { 0x0000, 0},
+};
 
-Rene.
+[1] evtest reports all events correctly and I can access them from user 
+space, however, acpi_listen seems to be not getting those... Perhaps 
+something trivial?
+
+Regards,
+
+Evgeny
