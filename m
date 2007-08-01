@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763315AbXHAIS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbXHAIVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763315AbXHAIS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760783AbXHAISM
+	id S1758022AbXHAIVN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbXHAIUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:18:12 -0400
-Received: from qb-out-0506.google.com ([72.14.204.237]:23828 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760378AbXHAISJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:18:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=owQ6C6pGXdjIKV7bpSPLjg/BA5Al5Jwfaq5JnBY3it27/aLWIpuyE7CItI9s9PxB33F0E2IWmTAO1/xQ3ySH2joHWujdNIJzrve25HjURvE+MlK3VbmtfaVrQgKnndAO3KiiBdPv2yqApRUkwqL+tLRHo0/rL/obCmGhPcTK1F0=
-Message-ID: <46B041B9.7050508@gmail.com>
-Date: Wed, 01 Aug 2007 17:18:01 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
-Subject: Re: [patch 1/4] Store interrupt value
-References: <20070705194909.337398431@intel.com> <20070705130500.ad5f7739.kristen.c.accardi@intel.com>
-In-Reply-To: <20070705130500.ad5f7739.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Aug 2007 04:20:54 -0400
+Received: from main.gmane.org ([80.91.229.2]:33721 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753490AbXHAIUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 04:20:52 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: Fwd: request_module() fails
+Date: Wed, 1 Aug 2007 09:20:23 +0100
+Organization: Linux Foundation
+Message-ID: <20070801092023.10655b4c@oldman.hamilton.local>
+References: <a307c1910708010011l57dbee87hb0d9a725ac259966@mail.gmail.com>
+	<a307c1910708010059l6c2c9df0n4ad9d0197eaba0f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 149.157.192.252
+In-Reply-To: <a307c1910708010059l6c2c9df0n4ad9d0197eaba0f@mail.gmail.com>
+X-Newsreader: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> Use a stored value for which interrupts to enable.  Changing this allows
-> us to selectively turn off certain interrupts later and have them 
-> stay off.
+On Wed, 1 Aug 2007 13:29:18 +0530
+"Gireesh Kumar M" <gireesh.mnair@gmail.com> wrote:
+
+> Hi,
 > 
-> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> I'm trying to load some modules upon occurance of a GPIO interrupt.
+> The ISR checks some register and then schedules a tasklet to act
+> further on the interrupt.
+> Inside the tasklet, I call request_module to load a driver. But, here
+> it's failing. Please see the error log pasted below.
+> When I tried to load the same module using modprobe and it works fine. I
+> have edited modules.dep with an entry for my module.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+You can't sucessfully load a module from tasklet because tasklet's run
+in softirq. You need to use a work queue (or other mechanism) that runs
+in process context. Loading a module will require accessing disk, and that
+can only be done from process context.
 
--- 
-tejun
+Your whole scheme is pretty daft, because it will be slow and you might
+as well have the module already loaded.
+
