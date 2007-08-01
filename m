@@ -1,137 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763269AbXHAI22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbXHAIb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763269AbXHAI22 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760870AbXHAI1z
+	id S1757186AbXHAIb2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759016AbXHAIbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:27:55 -0400
-Received: from qb-out-0506.google.com ([72.14.204.233]:28717 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759498AbXHAI1s (ORCPT
+	Wed, 1 Aug 2007 04:31:16 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58790 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758992AbXHAIbN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:27:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=n7nVIemq+WDkjvH4KjRcrw/KqNgmqpuq+hFGwvk49jTJ5gooLN+lyNUHpcBKsaCrudh7GBbXaY7Q/P4ZuCbbFmD9kgBMDD0fPnXxUANhiJ2IOrL+hbbK1eUuz5bRUiFoKuI35kWd4AV+tb5xdO9xJlHu0vRacPKxOd1XwDCMqT4=
-Message-ID: <46B043FB.5090005@gmail.com>
-Date: Wed, 01 Aug 2007 17:27:39 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
-Subject: Re: [patch 3/4] Enable link power management for ata drivers
-References: <20070705194909.337398431@intel.com> <20070705130530.5873afeb.kristen.c.accardi@intel.com>
-In-Reply-To: <20070705130530.5873afeb.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 1 Aug 2007 04:31:13 -0400
+Date: Wed, 1 Aug 2007 01:30:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric St-Laurent <ericstl34@sympatico.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-mm2
+ (vm-dont-run-touch_buffer-during-buffercache-lookups.patch)
+Message-Id: <20070801013055.5662c498.akpm@linux-foundation.org>
+In-Reply-To: <1185955446.7393.11.camel@perkele>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<1185953790.6393.20.camel@perkele>
+	<20070801004625.46a24a26.akpm@linux-foundation.org>
+	<1185955446.7393.11.camel@perkele>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> libata drivers can define a function (enable_pm) that will
-> perform hardware specific actions to enable whatever power
-> management policy the user set up from the scsi sysfs 
-> interface if the driver supports it.  This power management 
-> policy will be activated after all disks have been 
-> enumerated and intialized.  Drivers should also define
-> disable_pm, which will turn off link power management, but
-> not change link power management policy.
+On Wed, 01 Aug 2007 04:04:06 -0400 Eric St-Laurent <ericstl34@sympatico.ca> wrote:
+
+> I intend to try only this specific patch not the full -mm, is there any
+> other patch I need to apply too?
 > 
-> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-Please update the patch against the current libata-dev#upstream and
-there are several lines where tab follows space and git-applymbox isn't
-happy about it.  Those lines are in other patches too.
-
-> +int ata_scsi_set_link_pm_policy(struct Scsi_Host *shost,
-> +		enum scsi_host_link_pm policy)
-> +{
-> +	struct ata_port *ap = ata_shost_to_port(shost);
-> +	int rc = -EINVAL;
-> +	int i;
-> +
-> +	/*
-> + 	 * make sure no broken devices are on this port,
-> + 	 * and that all devices support interface power
-> + 	 * management
-> + 	 */
-> +	for (i = 0; i < ATA_MAX_DEVICES; i++) {
-> +		struct ata_device *dev = &ap->device[i];
-> +
-> +		/* only check drives which exist */
-> +		if (!ata_dev_enabled(dev))
-> +			continue;
-> +
-> +		/*
-> + 		 * do we need to handle the case where we've hotplugged
-> + 		 * a broken drive (since hotplug and ALPM are mutually
-> + 		 * exclusive) ?
-> + 		 *
-> + 		 * If so, if we detect a broken drive on a port with
-> + 		 * alpm already enabled, then we should reset the policy
-> + 		 * to off for the entire port.
-> + 		 */
-> +		if ((dev->horkage & ATA_HORKAGE_ALPM) ||
-> +			!(dev->flags & ATA_DFLAG_IPM)) {
-> +			ata_dev_printk(dev, KERN_ERR,
-> +				"Unable to set Link PM policy\n");
-> +			ap->pm_policy = SHOST_MAX_PERFORMANCE;
-> +		}
-> +	}
-> +
-> +	if (ap->ops->enable_pm)
-> +		rc = ap->ops->enable_pm(ap, policy);
-> +
-> +	if (!rc)
-> +		shost->shost_link_pm_policy = ap->pm_policy;
-> +	return rc;
-> +}
-> +EXPORT_SYMBOL_GPL(ata_scsi_set_link_pm_policy);
-
-This function is directly called from SCSI sysfs write, right?  You
-can't do this without synchronizing with EH.  The best way is to define
-an EH action and ask EH to transit between powersave states.
-
-> @@ -2021,6 +2021,9 @@ int ata_dev_configure(struct ata_device 
->  	if (dev->flags & ATA_DFLAG_LBA48)
->  		dev->max_sectors = ATA_MAX_SECTORS_LBA48;
->  
-> +	if (ata_id_has_hipm(dev->id) || ata_id_has_dipm(dev->id))
-> +		dev->flags |= ATA_DFLAG_IPM;
-
-Is it safe to use ALPM on a device which only claims to support DIPM?
-
-> @@ -2046,6 +2049,13 @@ int ata_dev_configure(struct ata_device 
->  		dev->max_sectors = min_t(unsigned int, ATA_MAX_SECTORS_128,
->  					 dev->max_sectors);
->  
-> +	if (ata_device_blacklisted(dev) & ATA_HORKAGE_ALPM) {
-> +		dev->horkage |= ATA_HORKAGE_ALPM;
-
-I think this should be ATA_HORKAGE_IPM.
-
-> @@ -6385,6 +6426,8 @@ int ata_host_register(struct ata_host *h
->  		struct ata_port *ap = host->ports[i];
->  
->  		ata_scsi_scan_host(ap);
-> +		ata_scsi_set_link_pm_policy(ap->scsi_host,
-> +				ap->pm_policy);
-
-Again, this should be done from EH.
-
-> @@ -321,6 +321,8 @@ struct ata_taskfile {
->  	  ((u64) (id)[(n) + 0]) )
->  
->  #define ata_id_cdb_intr(id)	(((id)[0] & 0x60) == 0x20)
-> +#define ata_id_has_hipm(id)	((id)[76] & (1 << 9))
-> +#define ata_id_has_dipm(id)	((id)[78] & (1 << 3))
-
-We probably need !0xffff test here.
-
--- 
-tejun
+no, it is standalone.
