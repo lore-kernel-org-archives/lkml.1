@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932403AbXHAO1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbXHAO3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932403AbXHAO1t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbXHAO1k
+	id S932130AbXHAO3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXHAO3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:27:40 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:56899 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754187AbXHAO1j (ORCPT
+	Wed, 1 Aug 2007 10:29:08 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33998 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754961AbXHAO3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:27:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=utaqg7Nd1III5nl/ShABynO3w3O25NcNUheBuBzCEQS9tjoO7dUkXkyuAd5JyFsjcYstYAYidje0FjxRelZIl7/5hGixf9CJ2Z0hXZ5QQ5IR0u9smLfP2z3jCxcsrFnybDcKhc8e9kHSrqrQQuz9XylXhCfFJu/HgRX+/b7CEsg=
-Message-ID: <46B09843.7010701@googlemail.com>
-Date: Wed, 01 Aug 2007 16:27:15 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+	Wed, 1 Aug 2007 10:29:06 -0400
+From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Organization: IBM Deutschland Entwicklung GmbH, Vorsitzender des Aufsichtsrats: Johann Weihen, Geschaeftssfuehrung: Herbert Kircher, Sitz der Gesellschaft: Boeblingen, Registergericht: Amtsgericht Stuttgart, HRB 243294
+To: Bob Nelson <rrnelson@linux.vnet.ibm.com>
+Subject: Re: 2.6.22 new perfmon code base + libpfm + pfmon
+Date: Wed, 1 Aug 2007 16:29:03 +0200
+User-Agent: KMail/1.9.6
+Cc: eranian@hpl.hp.com, linux kernel <linux-kernel@vger.kernel.org>,
+       oprofile <oprofile-list@lists.sourceforge.net>
+References: <20070726140222.GA7852@frankl.hpl.hp.com> <200708010922.41551.rrnelson@linux.vnet.ibm.com>
+In-Reply-To: <200708010922.41551.rrnelson@linux.vnet.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Eugene Teo <eugeneteo@kernel.sg>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/advansys.c: fix advansys_board_found compile
- error
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <46B0842D.3060703@googlemail.com> <20070801133912.GA11027@kernel.sg> <20070801135515.GV21219@parisc-linux.org>
-In-Reply-To: <20070801135515.GV21219@parisc-linux.org>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708011629.03828.arnd.bergmann@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Wed, Aug 01, 2007 at 09:39:12PM +0800, Eugene Teo wrote:
->> This patch fixes the following compile error:
->>
->> drivers/scsi/advansys.c: In function 'advansys_board_found':
->> drivers/scsi/advansys.c:17781: error: implicit declaration of function
->> 'to_pci_dev'
-> 
-> Or just remove the ifdefs around the include ... which is done in this
-> patch:
-> 
-> http://www.kernel.org/pub/linux/kernel/people/willy/advansys-2007-07-30/0001-advansys-version-copyright-etc.txt
-> 
-> I'd be interested in seeing the results of the randconfig trials on the
-> driver with those 23 patches applied, but not particularly interested in
-> the intermediate result.
-> 
+On Wednesday 01 August 2007, Bob Nelson wrote:
+> It looks to me like you were saying you would remove this extension to the
+> OProfile file system (/dev/oprofile/implementation).
+> However, it looks like it has made it into the mainline kernel code. 
 
-I can do that on weekend.
+Just to be clear, this problem showed up in my own kernel patch set
+from http://www.kernel.org/pub/linux/kernel/people/arnd/patches/2.6.22-arnd1/,
+not in mainline.
 
-Are the patches meant for -mm or git head ?
+	Arnd <><
