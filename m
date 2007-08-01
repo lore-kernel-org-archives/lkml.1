@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbXHAWfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbXHAWfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755451AbXHAWfR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 18:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753434AbXHAWfD
+	id S1756437AbXHAWfh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 18:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbXHAWfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 18:35:03 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57434 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753371AbXHAWfB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 18:35:01 -0400
-Date: Thu, 2 Aug 2007 00:34:40 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Maurice Volaski <mvolaski@aecom.yu.edu>
-Cc: jheffner@psc.edu, discussion@web100.org, linux-kernel@vger.kernel.org,
-       drbd-user@linbit.com
-Subject: Re: drbd 8.0.2/3 doesn't load under kernel 2.6.21
-Message-ID: <20070801223440.GS3972@stusta.de>
-References: <a0624045cc2d691fb7294@[129.98.90.227]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <a0624045cc2d691fb7294@[129.98.90.227]>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 1 Aug 2007 18:35:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:37517 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754058AbXHAWfG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 18:35:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Christopher Hoover <ch@murgatroid.com>
+Subject: Re: LinuxPPS & spinlocks
+Date: Wed, 1 Aug 2007 22:14:54 +0000 (UTC)
+Message-ID: <loom.20070802T000504-963@post.gmane.org>
+References: <1185288769.14697.339.camel@pmac.infradead.org> <20070727184418.GV9840@enneenne.com> <46AA42CA.4060004@nortel.com> <20070727192848.GW9840@enneenne.com> <46AA4A1E.8040302@nortel.com> <20070727194516.GX9840@enneenne.com> <a781481a0707271347w53dd9755j87e7762cfe953777@mail.gmail.com> <a781481a0707271641n20353a12u7467d093346f2f4c@mail.gmail.com> <20070729095040.GZ9840@enneenne.com> <alpine.LFD.0.999.0707301033180.10861@enigma.security.iitk.ac.in> <20070730085157.GE9840@enneenne.com> <alpine.LFD.0.999.0707301438190.13448@enigma.security.iitk.ac.in>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 69.17.55.116 (Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0; WOW64; SLCC1; .NET CLR 2.0.50727; .NET CLR 3.0.04506))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 04:21:29PM -0400, Maurice Volaski wrote:
-> I'm making an assumption that depmod is somehow to blame and have logged 
-> this as a kernel bug, http://bugzilla.kernel.org/show_bug.cgi?id=8829
+Satyam Sharma <satyam <at> infradead.org> writes:
+> On Mon, 30 Jul 2007, Rodolfo Giometti wrote:
+> 
+> > On Mon, Jul 30, 2007 at 10:33:35AM +0530, Satyam Sharma wrote:
+> > Currently the RFC says to you that you should open the serial port:
+> > 
+> > 	fd = open("/dev/ttyS0", ...);
+> 
+> No, it does *NOT*. All it says is:
+> 
+>     The time_pps_create() is used to convert an already-open UNIX file
+>     descriptor, for an appropriate special file, into a PPS handle.
+> 
+> See? What I said is precisely the implementation the RFC envisages
+> (and the only sane way to implement it too).
 
-depmod is working fine.
+If we were totally rigurous about representing each device as a device node, 
+your solution would be fine.  But we don't.
 
-It's the interaction between your two patches that breaks it for you.
+The clocksource model (/sys/devices/system/clocksource) is a better way to 
+go.  One sysfs file is used to enumerate the possible sources and another is 
+used to read or set the current source.   No new system calls; no new ioctls.
 
->>> It turns out I was adding the web100 patch (http://www.web100.org) to
->>> the 2.6.21 kernel and that's what causes the symbol resolving problem
->>> below. Adding the corresponding version of the web100 patch to the
->>> 2.6.20 kernel makes this problem appear there as well. On fresh
->>> versions of the kernel, this problem does not occur. At the moment,
->>> it's not possible to have a current kernel that contains both drbd
->>> and web100.
->>>
->>>> On a 64-bit Gentoo system with Gentoo's 2.6.21 kernel, drbd 8.0.2/3
->>>> complains when I try to load the module:
->>>>
->>>> [  134.141363] drbd: Unknown symbol cn_fini
->>>> [  134.141399] drbd: Unknown symbol cn_init
->>>>
->>>> It works fine when I compile it and load in the previous kernel
->>>> version, 2.6.20 and the symbols are present in the map file
->>>>
->>>> ./System.map-genkernel-x86_64-2.6.21-gentoo-r2:ffffffff802935aa t 
->>>> cn_fini
->>>> ./System.map-genkernel-x86_64-2.6.21-gentoo-r2:ffffffff8029362a t 
->>>> cn_init
->>>>
->>>> I am c'cing the kernel mailing list because this appears to be a
->>>> problem with how any module accesses symbols in the kernel, not just
->>>  >drbd. Source was compiled with Gentoo gcc-4.1.2, glibc-2.5-r3
+-ch
 
-cu
-Adrian
+ch (at) murgatroid (dot) com
+ch (at) hpl (dot) hp (dot) com
 
--- 
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+
 
