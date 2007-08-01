@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934347AbXHAPKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933423AbXHAPMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934347AbXHAPKV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932641AbXHAPKH
+	id S933423AbXHAPMR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932713AbXHAPMB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:10:07 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52346 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932195AbXHAPKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:10:05 -0400
-Date: Wed, 1 Aug 2007 17:09:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Indan Zupancic <indan@nul.nu>
-Cc: Rene Herman <rene.herman@gmail.com>, teresa@kvitka.net,
-       Andi Kleen <andi@firstfloor.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       CK Mailinglist <ck@vds.kolivas.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-Message-ID: <20070801150939.GA24710@elte.hu>
-References: <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com> <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de> <46B06815.10200@gmail.com> <46470.81.207.0.53.1185971693.squirrel@secure.samage.net> <46B0818F.10204@gmail.com> <49653.81.207.0.53.1185973640.squirrel@secure.samage.net> <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com> <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 1 Aug 2007 11:12:01 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:15407 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757637AbXHAPMA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:12:00 -0400
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
+	workqueue infrastructure
+From: Daniel Walker <dwalker@mvista.com>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1185969554.9513.106.camel@ghaskins-t60p.haskins.net>
+References: <20070801002407.4973.54778.stgit@novell1.haskins.net>
+	 <1185940340.2636.97.camel@imap.mvista.com>
+	 <1185969554.9513.106.camel@ghaskins-t60p.haskins.net>
+Content-Type: text/plain
+Date: Wed, 01 Aug 2007 08:10:25 -0700
+Message-Id: <1185981025.2636.102.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-08-01 at 07:59 -0400, Gregory Haskins wrote:
+> On Tue, 2007-07-31 at 20:52 -0700, Daniel Walker wrote:
+> 
+> > 
+> > Here's a simpler version .. uses the plist data structure instead of the
+> > 100 queues, which makes for a cleaner patch ..
+> 
+> Hi Daniel,
+> 
+> I like your idea on the plist simplification a lot.  I will definitely
+> roll that into my series.
+> 
+> I am not too psyched about using the rt_mutex_setprio() API directly,
+> however.  It seems broken to be calling that directly from non rt_mutex
+> code, IMHO.  Perhaps the PI subsystem should be broken out from the
+> rt_mutex code so it can be used generally?  There are other areas where
+> PI could potentially be used besides rt_mutex (this patch as a prime
+> example), so this might make sense.
 
-* Indan Zupancic <indan@nul.nu> wrote:
+rt_mutex_setprio() is just a function. It was also designed specifically
+for PI , so it seems fairly sane to use it in other PI type
+situations ..
 
-> We could have independent problems with more or less the same 
-> symptoms, at least Teresa's problem seems much worse than ours, and if 
-> you and Ingo only experience a stuck delete key, it might be something 
-> else.
+Daniel
 
-i experienced nothing in this area so far - if i experienced anything of 
-the likes it would be long fixed! =B-)
-
-	Ingo
