@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758634AbXHAEty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbXHAEws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758634AbXHAEty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 00:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbXHAEto
+	id S1756440AbXHAEws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 00:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXHAEwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 00:49:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53599 "EHLO
+	Wed, 1 Aug 2007 00:52:37 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58071 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752478AbXHAEtn (ORCPT
+	by vger.kernel.org with ESMTP id S1751365AbXHAEwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 00:49:43 -0400
-Date: Tue, 31 Jul 2007 21:49:31 -0700
+	Wed, 1 Aug 2007 00:52:36 -0400
+Date: Tue, 31 Jul 2007 21:52:26 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Frank Benkstein <frank-lkml@benkstein.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: VT_PROCESS, VT_LOCKSWITCH capabilities
-Message-Id: <20070731214931.8d05f367.akpm@linux-foundation.org>
-In-Reply-To: <46AFB62E.2080303@benkstein.net>
-References: <46AFB62E.2080303@benkstein.net>
+To: postfail@hushmail.com
+Cc: <kernel-janitors@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+       <linux-sound@vger.kernel.org>
+Subject: Re: [PATCH]:  sound: ioremap/iounmap function balancing audit
+Message-Id: <20070731215226.e456560d.akpm@linux-foundation.org>
+In-Reply-To: <20070801040601.009F3DA820@mailserver8.hushmail.com>
+References: <20070801040601.009F3DA820@mailserver8.hushmail.com>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,25 +26,49 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Aug 2007 00:22:38 +0200 Frank Benkstein <frank-lkml@benkstein.net> wrote:
+On Wed, 01 Aug 2007 00:05:59 -0400 "Scott Thompson" <postfail@hushmail.com> wrote:
 
-> I wonder why there are different permissions needed for VT_PROCESS
-> (access to the current virtual console) and VT_LOCKSWITCH
-> (CAP_SYS_TTY_CONFIG).
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+
+You might want to consider losing that stuff when sending patches - it just
+makes things harder.
+
+> This patch, along with previously submitted dmasound_awacs.c patch,
+> completes an audit of the 'sound' tree for ioremap/iounmap
+> balancing and return code checking on ioremap calls.  ioremap()
+> must be balanced by an iounmap() (else this causes a memory leak).
 > 
-> The first one lets the calling process decide if console switching is
-> allowed, the second one simply disables it.  If a program wants to
-> forbid console switching the only technical difference I can see is that
-> switching is automatically reenabled when the program exits when using
-> VT_PROCESS.  When using VT_LOCKSWITCH it must be manually reenabled.
-> When the program uses the first method and disables terminal signals and
-> SysRQ is disabled, too, I see no practical difference between the two.
+> i810_audio.c had a 'fixme' issue regarding ioremap fail that was
+> addressed as well.
+> 
+> Signed-off-by: Scott Thompson <postfail <at> hushmail.com>
+> - ---
+> 
+> diff --git a/sound/oss/i810_audio.c b/sound/oss/i810_audio.c
+> index f5e31f1..407958c 100644
+> - --- a/sound/oss/i810_audio.c
+> +++ b/sound/oss/i810_audio.c
+> @@ -3362,7 +3362,7 @@ static int __devinit i810_probe(struct
+> pci_dev *pci_dev, const struct pci_device
+> 
+>  	if (card->use_mmio) {
+>  		if (request_mem_region(card->ac97base_mmio_phys, 512, "ich_audio
+> MMBAR")) {
+> - -			if ((card->ac97base_mmio = ioremap(card->ac97base_mmio_phys,
+> 512))) { /*@FIXME can ioremap fail? don't know (jsaw) */
+> +			if ((card->ac97base_mmio = ioremap(card->ac97base_mmio_phys,
+> 512))) {
+>  				if (request_mem_region(card->iobase_mmio_phys, 256, "ich_audio
+> MBBAR")) {
+>  					if ((card->iobase_mmio = ioremap(card->iobase_mmio_phys,
+> 256))) {
+>  						printk(KERN_INFO "i810: %s mmio at 0x%04lx and 0x%04lx\n",
 
-It'd take some kernel archaeology to work out how things got the way they
-are.
+The patch is terribly wordwrapped.
 
-Perhaps the issue with VT_LOCKSWITCH is that its effects will persist after
-the user has logged out?  So user A is effectively altering user B's
-console, hence suitable capabilities are needed?
+I suspect a lot of the code which you're fixing is about to be removed. 
+But I suppose we should fix it before removing it anwyay.  Still, please
+split this patch into at least one for sound/oss and one for sound/soc and
+sound/pci, thanks.
 
-Is the current code actually causing any observable problem?
