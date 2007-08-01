@@ -1,75 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765055AbXHATmA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbXHATuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765055AbXHATmA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:42:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761632AbXHATlw
+	id S1764225AbXHATuc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762011AbXHATuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:41:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36769 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753538AbXHATlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:41:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: pm_trace displays the wrong time from the RTC
-Date: Wed, 1 Aug 2007 21:50:32 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <46AFA78A.9010904@redhat.com> <200708011747.37932.rjw@sisk.pl> <46B0CDB3.8060505@redhat.com>
-In-Reply-To: <46B0CDB3.8060505@redhat.com>
+	Wed, 1 Aug 2007 15:50:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:38798 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761682AbXHATuU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 15:50:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=C9aS9+6eyWmM5DBXuyP4mTiKitrk1IVdNp599/KHrl1smvkv/gCaqixaLbBmi0/5c+KLfyVqI2NJN8CNrz4pOU0ItiA93BJF13kyzTVmpyFQSBRvFykB2mSo5PcXsvVxC6PO00OkWPR+bJJDi8q0FBuG1WTGMu8iNCqyfNx7QjU=
+Date: Wed, 1 Aug 2007 23:50:10 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove unused struct proc_dir_entry::set
+Message-ID: <20070801195010.GC5763@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708012150.32715.rjw@sisk.pl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 1 August 2007 20:15, Chuck Ebbert wrote:
-> On 08/01/2007 11:47 AM, Rafael J. Wysocki wrote:
-> > Sorry for slow response, I've just noticed this thread.
-> > 
-> > On Tuesday, 31 July 2007 23:20, Chuck Ebbert wrote:
-> >> When resuming, systems print this when booted on 07/31/07:
-> >>
-> >> Date: 06/31/107
-> >>
-> >> /drivers/base/power/trace.c::read_magic_time():
-> >> 114	get_rtc_time(&time);
-> >> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
-> >> 116		time.tm_hour, time.tm_min, time.tm_sec,
-> >> 117		time.tm_mon, time.tm_mday, time.tm_year);
-> >>
-> >> include/asm-generic/rtc.h:
-> >> 102         /*
-> >> 103          * Account for differences between how the RTC uses the values
-> >> 104          * and how they are defined in a struct rtc_time;
-> >> 105          */
-> >> 106         if (time->tm_year <= 69)
-> >> 107                 time->tm_year += 100;
-> >> 108 
-> >> 109         time->tm_mon--;
-> > 
-> > Do you mean that systems display bad date after resuming if PM_TRACE is set,
-> > even if /sys/power/pm_trace contains 1 ?
-> > 
-> > If that's the case, are they i386 or x86_64?
-> > 
-> 
-> i386:
-> 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250238
+After /proc/sys rewrite it was left unused.
 
-OK, I now see what you mean.
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-On my x86_64 test box this also happens after a fresh boot without
-suspending/resuming, so I think the problem is that we just shouldn't add 100
-to the year and decrease the month in get_rtc_time().
+ include/linux/proc_fs.h |    1 -
+ 1 file changed, 1 deletion(-)
 
-Greetings,
-Rafael
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -75,7 +75,6 @@ struct proc_dir_entry {
+ 	write_proc_t *write_proc;
+ 	atomic_t count;		/* use count */
+ 	int deleted;		/* delete flag */
+-	void *set;
+ 	int pde_users;	/* number of callers into module in progress */
+ 	spinlock_t pde_unload_lock; /* proc_fops checks and pde_users bumps */
+ 	struct completion *pde_unload_completion;
 
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
