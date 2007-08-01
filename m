@@ -1,49 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbXHAWBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbXHAWBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755507AbXHAWBS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 18:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXHAWBI
+	id S1756030AbXHAWBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 18:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXHAWBl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 18:01:08 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54465 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751486AbXHAWBH (ORCPT
+	Wed, 1 Aug 2007 18:01:41 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:41447 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752390AbXHAWBj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 18:01:07 -0400
-Date: Wed, 1 Aug 2007 23:08:12 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?UTF-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>
-Cc: Ash Willis <ashwillis@programmer.net>, linux-kernel@vger.kernel.org,
-       tiwai@suse.de
-Subject: Re: CS5530 Alsa driver fails
-Message-ID: <20070801230812.6f28bad0@the-village.bc.nu>
-In-Reply-To: <46B0D628.3050409@interia.pl>
-References: <20070801174103.D03341F50B1@ws1-2.us4.outblaze.com>
-	<46B0D628.3050409@interia.pl>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 1 Aug 2007 18:01:39 -0400
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
+	workqueue infrastructure
+From: Gregory Haskins <ghaskins@novell.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070801213422.GA280@tv-sign.ru>
+References: <20070801002407.4973.54778.stgit@novell1.haskins.net>
+	 <1185940340.2636.97.camel@imap.mvista.com>
+	 <1185987663.12034.99.camel@twins> <20070801181253.GA90@tv-sign.ru>
+	 <1185992994.2636.142.camel@imap.mvista.com>
+	 <20070801201802.GA225@tv-sign.ru>
+	 <1186000468.2636.168.camel@imap.mvista.com>
+	 <20070801205053.GA263@tv-sign.ru>
+	 <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
+	 <20070801213422.GA280@tv-sign.ru>
+Content-Type: text/plain
+Date: Wed, 01 Aug 2007 17:59:58 -0400
+Message-Id: <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I will give up. I didn't checked code earlier. This driver is using SMM. Probably  
-> firmware isn't what it should be, or I have overwritten it when I was flashing 
-> Linux. I see in datasheet that it isn't possible to write driver in other way. 
-> Sadly sound card is generating SMI only.
+On Thu, 2007-08-02 at 01:34 +0400, Oleg Nesterov wrote:
+> On 08/01, Gregory Haskins wrote:
+> >
+> > On Thu, 2007-08-02 at 00:50 +0400, Oleg Nesterov wrote:
+> > > On 08/01, Daniel Walker wrote:
+> > > >
+> > > > It's translating priorities through the work queues, which doesn't seem
+> > > > to happen with the current implementation. A high priority, say
+> > > > SCHED_FIFO priority 99, task may have to wait for a nice -5 work queue
+> > > > to finish..
+> > > 
+> > > Why should that task wait?
+> > 
+> > I assume "that task" = the RT99 task?  If so, that is precisely the
+> > question.  It shouldn't wait.  ;)  With mainline, it is simply queued
+> > with every other request.  There could be an RT40, and a SCHED_NORMAL in
+> > front of it in the queue that will get processed first.  In addition,
+> > the system could suffer from a priority inversion if some unrelated but
+> > lower priority task (say RT98) was blocking the workqueue thread from
+> > making forward progress on the nice -5 job. 
+> > 
+> > To clarify: when a design utilizes a singlethread per workqueue (such as
+> > in both mainline and this patch), the RT99 will always have to wait
+> > behind any already dispatched jobs.
+> 
+> It is not that "RT99 will always have to wait". But yes, the work_struct
+> queued by RT99 has to wait.
 
-The 5530 in native mode only generates SMI. I've always felt however that
-if you make the buffers big enough you ought to be able to drive it off
-the 1KHz timer tick by polling. Interesting project.
+Agreed.  We are talking only within the scope of workqueues here.
 
-You btw won't have removed the SMM firmware or the box wouldn't boot. The
-5530 uses SMM to emulate some of the most basic PC components including
-the VGA video. If your box has VSA2 then VSA2 firmware has some kind of
-hooks to allow a native sound driver to take over and to reroute the
-interrupts without SB emulation. I don't have the docs for VSA2 but the
-horribly big natsemi provided audio driver does show how to do it.
 
-Alan
+> > 1) The RT99 task would move ahead in the queue of anything else that was
+> > also scheduled on the workqueue that is < RT99.
+> 
+> this itself is wrong, breaks flush_workqueue() semantics
+
+Perhaps in Daniels patch.  I am not familiar enough with plist to be
+able to tell you if it has a problem there or not.  However, I think
+this works in the original patch I submitted with had a different
+queuing mechanism.  Daniels patch was derived from that so he may have
+inadvertently picked up something from mine which was no longer true in
+the new design.  I'll defer to Daniel for clarification there.
+
+However, IIUC the point of flush_workqueue() is a barrier only relative
+to your own submissions, correct?.  E.g. to make sure *your* requests
+are finished, not necessarily the entire queue.
+
+If thats true, the flush would be injected at the same priority(*) as
+your other pending tasks at the tail of that priority level.  Then you
+would still block until all of your tasks complete.
+
+If flush_workqueue is supposed to behave differently than I describe,
+then I agree its broken even in my original patch.
+
+(*) We would probably have to protect against somebody else PI-boosting
+*us* ;)
+
+> 
+> > 2) The priority of the workqueue task would be temporarily elevated to
+> > RT99 so that the currently dispatched task will complete at the same
+> > priority as the waiter.
+> 
+> _Which_ waiter?
+
+The RT99 task that submitted the request.
+
+>  I can't understand at all why work_struct should "inherit"
+> the priority of the task which queued it. 
+
+Think about it:  If you are an RT99 task and you have work to do,
+shouldn't *all* of the work you need be done at RT99 if possible.  Why
+should something like a measly RT98 task block you from completing your
+work. ;) The fact that you need to do some work via a workqueue (perhaps
+because you need specific cpu routing) is inconsequential, IMHO.
+
+Regards,
+-Greg
+
