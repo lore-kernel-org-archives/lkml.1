@@ -1,38 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752680AbXHAUme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752952AbXHAUpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752680AbXHAUme (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 16:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751265AbXHAUm0
+	id S1752952AbXHAUpx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 16:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751316AbXHAUpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 16:42:26 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:36699 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239AbXHAUmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 16:42:25 -0400
-Date: Wed, 1 Aug 2007 22:42:00 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Deprecate a.out ELF interpreters
-In-Reply-To: <Pine.LNX.4.64.0708012125290.26668@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.64.0708012240210.26230@twin.jikos.cz>
-References: <200708011433.09433.ak@novell.com>
- <Pine.LNX.4.64.0708012029130.26668@fbirervta.pbzchgretzou.qr>
- <200708012035.52863.ak@novell.com> <Pine.LNX.4.64.0708012125290.26668@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 1 Aug 2007 16:45:43 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:32820 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbXHAUpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 16:45:42 -0400
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org
+Subject: kupdate weirdness
+Message-Id: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 01 Aug 2007 22:45:16 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007, Jan Engelhardt wrote:
+The following strange behavior can be observed:
 
->  config BINFMT_AOUT
-> -	tristate "Kernel support for a.out and ECOFF binaries"
-> +	tristate "Kernel support for a.out and ECOFF binaries (OBSOLETE)"
+1. large file is written
+2. after 30 seconds, nr_dirty goes down by 1024
+3. then for some time (< 30 sec) nothing happens (disk idle)
+4. then nr_dirty again goes down by 1024
+5. repeat from 3. until whole file is written
 
-I beg your pardon?! This definitely is not what Andi meant, right? We want 
-to remove the legacy support for a.out ELF-interpreters, not a.out 
-binaries.
+So basically a 4Mbyte chunk of the file is written every 30 seconds.
+I'm quite sure this is not the intended behavior.
 
--- 
-Jiri Kosina
+The reason seems to be that __sync_single_inode() will move the
+partially written inode from s_io onto s_dirty, and sync_sb_inode()
+will not splice it back onto s_io until the rest of the inodes on s_io
+has been processed.
+
+Since there will probably be a recently dirtied inode on s_io, this
+will take some of time, but always less than 30 sec.
+
+I don't know what's the easiest solution.
+
+Any ideas?
+
+Miklos
