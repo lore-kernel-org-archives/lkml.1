@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764074AbXHAN0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXHAN1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764074AbXHAN0N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 09:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761867AbXHANZ5
+	id S932154AbXHAN1i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 09:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761867AbXHAN1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 09:25:57 -0400
-Received: from smtp3.hushmail.com ([65.39.178.135]:55816 "EHLO
-	smtp3.hushmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761233AbXHANZ4 (ORCPT
+	Wed, 1 Aug 2007 09:27:30 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:37653 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761376AbXHAN13 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 09:25:56 -0400
-Date: Wed, 01 Aug 2007 09:25:51 -0400
-To: <tiwai@suse.de>
-Cc: <kernel-janitors@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-sound@vger.kernel.org>
-Subject: Re: [PATCH 2/3] sound/pci ioremap/iounmap balancing
-Reply-to: postfail@hushmail.com
-From: "Scott Thompson" <postfail@hushmail.com>
-Content-type: text/plain; charset="UTF-8"
-Message-Id: <20070801132551.5A8132281F@mailserver9.hushmail.com>
+	Wed, 1 Aug 2007 09:27:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hZ5tGJb+fk3QlvxBT/NlX4IfXNIJTS0ve1LijIrLFphY29JR/1TnNElYXxkL9hxQQBJBsUlFaUdziXb2i6DJlcwbsEVEsirrXh71258tRfT7IO4pA1AXnkSU0gEQChbCRcEp0KOxQjnLSsBSLC6xkafzye8Hi8Vj7o0puJj1PDI=
+Message-ID: <38b2ab8a0708010627n7b7d2bbbicc7dc5f212faf016@mail.gmail.com>
+Date: Wed, 1 Aug 2007 15:27:23 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Search for x86_64 documentation.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+I'm used to hack Linux on a ARM based board and would like to be
+involved in x86_64 architecture but I don't know where I should
+start...
 
-On Wed, 01 Aug 2007 06:38:16 -0400 Takashi Iwai <tiwai@suse.de> 
-wrote:
->This would be rater a lacking check of returned errors.
->
->The other changes look incorrect.  All these drivers use
->card->private_free callback to release the resources even for the
->error exit.  Thus, you don't need iounmap in each place.
->
->
->thanks,
->
->Takashi
+Could anyone point out some nice documentations/books describing this
+architecture ?
 
-
-Missed the callback on the audit, will repost this patch 
-(sound/pci) with just the unchecked returns...
-
----------------------------------------
-Scott Thompson / postfail@hushmail.com
----------------------------------------
-
---
-Click for free information on attaining an equity line of credit.
-http://tagline.hushmail.com/fc/Ioyw6h4d9K1rpVNolPplpaj6Tmr87LwpU4yqszBO6uxXkrRlUIHweI/
-
+thanks
+-- 
+Francis
