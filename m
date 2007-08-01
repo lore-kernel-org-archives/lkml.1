@@ -1,40 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932154AbXHAN1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764442AbXHAN2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932154AbXHAN1i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 09:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761867AbXHAN1a
+	id S1764442AbXHAN2v (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 09:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762270AbXHAN2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 09:27:30 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:37653 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761376AbXHAN13 (ORCPT
+	Wed, 1 Aug 2007 09:28:43 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:60190 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761201AbXHAN2n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 09:27:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=hZ5tGJb+fk3QlvxBT/NlX4IfXNIJTS0ve1LijIrLFphY29JR/1TnNElYXxkL9hxQQBJBsUlFaUdziXb2i6DJlcwbsEVEsirrXh71258tRfT7IO4pA1AXnkSU0gEQChbCRcEp0KOxQjnLSsBSLC6xkafzye8Hi8Vj7o0puJj1PDI=
-Message-ID: <38b2ab8a0708010627n7b7d2bbbicc7dc5f212faf016@mail.gmail.com>
-Date: Wed, 1 Aug 2007 15:27:23 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Search for x86_64 documentation.
+	Wed, 1 Aug 2007 09:28:43 -0400
+Message-ID: <46B089EA.4080600@gmail.com>
+Date: Wed, 01 Aug 2007 15:26:02 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Indan Zupancic <indan@nul.nu>
+CC: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       CK Mailinglist <ck@vds.kolivas.org>, teresa@kvitka.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux Kernel cfs scheduler and xorg kbd
+References: <1185827130.26459.16.camel@xtower.fri>    <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>    <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>    <46B06815.10200@gmail.com>    <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>    <46B0818F.10204@gmail.com> <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>
+In-Reply-To: <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On 08/01/2007 03:07 PM, Indan Zupancic wrote:
 
-I'm used to hack Linux on a ARM based board and would like to be
-involved in x86_64 architecture but I don't know where I should
-start...
+> On Wed, August 1, 2007 14:50, Rene Herman wrote:
 
-Could anyone point out some nice documentations/books describing this
-architecture ?
+>> On 08/01/2007 02:34 PM, Indan Zupancic wrote:
+>>
+>>> On Wed, August 1, 2007 13:01, Rene Herman wrote:
+>>>> Teresa was already using 2.6.22.1, with CFS (v19.1) patched in, so reverting
+>>>> that would be a matter of patching it out again. She said she wasn't seeing
+>>>> trouble on other kernels though.
+>>>>
+>>>> I was the one who also saw keyboard trouble on 2.6.22.1 without CFS by the
+>>>> way -- and haven't (yet) seen any anymore since patching _in_ CFS v19.1...
+>>> Could the people who had or have keyboard problems try out Dmitry's
+>>> input locking patches, and see if those help: http://lkml.org/lkml/2007/7/24/17
+>>> And if it does, report it to him, either there or here after CCing him.
+>> I'm having trouble reproducing this at will -- it sounded as though Teresa
+>> had less trouble at least originally. Teresa?
+> 
+> Same here, so testing is a pain. I was more thinking about running a patched
+> version for a day or longer and see if it happened or not. For me it happened
+> irregularly, but definitely a few times a day.
+> 
+> (It might help if people report what they're using. So, for what it's worth, I'm
+> using a PS/2 keyboard with xorg 1.2.0 with the "keyboard" driver.)
 
-thanks
--- 
-Francis
+PS/2 keyboard, X.org 1.3.0 (version is at the top of /var/log/Xorg.0.log, or 
+wherever your distribution puts that log), and this xkb config (in 
+/etc/X11/xorg.conf):
+
+Section "InputDevice"
+         Identifier      "Keyboard0"
+         Driver          "kbd"
+         Option          "XkbModel"      "pc104"
+         Option          "XkbLayout"     "us"
+         Option          "XkbVariant"    "euro"
+         Option          "XkbOptions"    "compose:rctrl"
+EndSection
+
+(you can forget that XkbVariant -- it's not yet in most distributions).
+
+Problem as observed here consists of a sporadically stuck delete key in 
+Thunderbird 2.0.0.5, using kernel 2.6.22.1 vanilla -- not yet observed using 
+2.6.22.1-cfs-v19.1
+
+Rene.
+
