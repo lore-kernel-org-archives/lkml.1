@@ -1,60 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXHATIQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932468AbXHATKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932456AbXHATIQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:08:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759494AbXHATH7
+	id S932468AbXHATKq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbXHATKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:07:59 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:5570 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751606AbXHATH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:07:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=IJXnRMnOFkb0zJHQPcBNO6UC01Tc06BlW2NwK6pS+fB4G5CatfI/hsW/WfXrOcNMXj/9eVd7rTQfCFhqvXYk+njzuqanQgAhyqNtBSQyVYrqKfYmnWFpxU3UPjmOkiTwL6J13P07ihZq1Y//X15JTGsrR5blLWIrACdi/0861pM=
-Date: Wed, 1 Aug 2007 23:07:53 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] update .gitignore
-Message-ID: <20070801190753.GB5763@martell.zuzino.mipt.ru>
-References: <20070801131051.GO3972@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070801131051.GO3972@stusta.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 1 Aug 2007 15:10:36 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:33282 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755511AbXHATKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 15:10:34 -0400
+Subject: Re: [RFC 12/26] ext2 white-out support
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
+In-Reply-To: <20070801184405.GA18405@filer.fsl.cs.sunysb.edu>
+References: <20070730161323.100048969@weierstrass.suse.de>
+	 <20070730161324.261652101@weierstrass.suse.de>
+	 <20070731163656.GC22350@filer.fsl.cs.sunysb.edu>
+	 <20070731170012.GN5101@hasse.suse.de>
+	 <20070731171159.GA27234@filer.fsl.cs.sunysb.edu>
+	 <1185981810.18007.14.camel@kleikamp.austin.ibm.com>
+	 <20070801184405.GA18405@filer.fsl.cs.sunysb.edu>
+Content-Type: text/plain
+Date: Wed, 01 Aug 2007 14:10:31 -0500
+Message-Id: <1185995431.18007.24.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 03:10:51PM +0200, Adrian Bunk wrote:
-> --- linux-2.6.23-rc1-mm2/.gitignore.old
-> +++ linux-2.6.23-rc1-mm2/.gitignore
-> @@ -14,18 +14,25 @@
->  *.so
->  *.mod.c
->  *.i
-> +!include/asm-*/*.i
+On Wed, 2007-08-01 at 14:44 -0400, Josef Sipek wrote:
+> Alright not the greatest of examples, there is something to be said about
+> symmetry, so...let me try again :)
+> 
+> /a/
+> /b/bar		(whiteout for bar)
+> /c/foo/qwerty
+> 
+> Now, let's mount a union of {a,b,c}, and we'll see:
+> 
+> $ find /u
+> /u
+> /u/foo
+> /u/foo/qwerty
+> $ mv /u/foo /u/bar
+> 
+> Now what? How do you rename? Do you rename in the same branch (assuming it
+> is rw)?
 
-I think these should be renamed to .S and let .i alone for preprocessed
-stuff.
+Er, no.  According to Documentation/filesystems/union-mounts.txt, "only
+the topmost layer of the mount stack can be altered".
 
-> +# .gitignore files
-> +!.gitignore
-> +
->  #
->  # Top-level generic files
->  #
->  tags
->  TAGS
->  vmlinux*
-> -!vmlinux.lds.S
-> +!vmlinux*.lds*
-> +!vmlinux*.scr
->  System.map
->  Module.symvers
-> +!.mailmap
-> +!.mm
+> If you do, you'll get:
+> 
+> $ find /u
+> /u
+> 
+> Oops! There's a whiteout in /b that hides the directory in /c -- rename(2)
+> shouldn't make directory subtrees disappear.
+> 
+> There are two ways to solve this:
+> 
+> 1) "cp -r" the entire subtree being renamed to highest-priority branch, and
+> rename there (you might have to recreate a series of directories to have a
+> place to "cp" to...so you got "cp -r" _AND_ "mkdir -p"-like code in the VFS!
+> 1/2 a :) )
+
+I think this is the only alternative, given the design.
+
+> 2) Don't store whiteouts within branches. This makes it really easy to
+> rename and remove the whiteout.
+> 
+> Sure, you could try to rename in-place and remove the whiteout, but what if
+> you have:
+> 
+> /a/
+> /b/bar		(whiteout)
+> /c/bar/blah
+> /d/foo/qwerty
+> 
+> $ mv /u/foo /u/bar
+> 
+> You can't just remove the whiteout, because that'd uncover the whited-out
+> directory bar in /c.
+> 
+> Josef 'Jeff' Sipek.
+> 
+-- 
+David Kleikamp
+IBM Linux Technology Center
 
