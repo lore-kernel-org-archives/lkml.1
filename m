@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbXHAJEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762139AbXHAJHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762079AbXHAJEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbXHAJEa
+	id S1762139AbXHAJHZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755462AbXHAJHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:04:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:2295 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757186AbXHAJE3 (ORCPT
+	Wed, 1 Aug 2007 05:07:13 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:50691 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754879AbXHAJHL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:04:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=a7GJosvEbHHixFKQ7+Y6cDuj5lKoTyGTXbzbZtuwtHnm/kakQI5/zuaMkbQAyzjfJRM1HbBUvQTD0EpyYgrkFf22p3jbZgJGJCK51bvKooReXaOUOiC72TUl65VePpWS57Qpy/Bwqvsuxoo/Znzt5qIoVC6xir3b0v2P/DyIsuU=
-Message-ID: <8bd0f97a0708010204u28caa203qf08452c1bc33a0cb@mail.gmail.com>
-Date: Wed, 1 Aug 2007 05:04:28 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Paul Mundt" <lethal@linux-sh.org>,
-       "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1-mm2
-In-Reply-To: <20070801081500.GA8723@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	 <20070801062501.GB7581@linux-sh.org>
-	 <8bd0f97a0708010058v76f13361q62e79fe39c1f0589@mail.gmail.com>
-	 <20070801081500.GA8723@linux-sh.org>
+	Wed, 1 Aug 2007 05:07:11 -0400
+To: linux-kernel@vger.kernel.org
+CC: linux-mm@kvack.org, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org
+Subject: [RFC PATCH] type safe allocator
+Message-Id: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 01 Aug 2007 11:06:46 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> The generic code has a better chance of being merged if it actually works
-> at least and doesn't break every platform out there that has an existing
-> stub. It offers quite a bit of new functionality and does clean things up
-> a bit, so it would certainly be nice to get things to use that, rather
-> than having to duplicate all of this crap in the architectures. If it's
-> not going to be merged, everyone will of course continue using the
-> existing in-tree stubs (sh, ppc, etc.).
+I wonder why we don't have type safe object allocators a-la new() in
+C++ or g_new() in glib?
 
-ok, ive opened a tracker on our site for this
+  fooptr = k_new(struct foo, GFP_KERNEL);
 
-> It's generally advantageous to get these things working on your
-> architecture _before_ things are merged however, as it's one less thing
-> to catch up on after the fact. It also helps to figure out if there are
-> issues with the current implementation by trying it out on your platform
-> in advance, it's a lot more work to push back against it once it's
-> already merged.
+is nicer and more descriptive than
 
-of course ... but if there isnt a serious chance of this being merged,
-then it isnt in our (Blackfin's) interest to investigate it since our
-current solution seems to be chugging alone fine
--mike
+  fooptr = kmalloc(sizeof(*fooptr), GFP_KERNEL);
+
+and more safe than
+
+  fooptr = kmalloc(sizeof(struct foo), GFP_KERNEL);
+
+And we have zillions of both variants.
+
+Note, I'm not advocating mass replacement, but using this in new code,
+and gradually converting old ones whenever they need touching anyway.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux-2.6.22/include/linux/slab.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/slab.h	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.22/include/linux/slab.h	2007-08-01 10:42:45.000000000 +0200
+@@ -110,6 +110,38 @@ static inline void *kcalloc(size_t n, si
+ 	return __kzalloc(n * size, flags);
+ }
+ 
++/**
++ * k_new - allocate given type object
++ * @type: the type of the object to allocate
++ * @flags: the type of memory to allocate.
++ */
++#define k_new(type, flags) ((type *) kmalloc(sizeof(type), flags))
++
++/**
++ * k_new0 - allocate given type object, zero out allocated space
++ * @type: the type of the object to allocate
++ * @flags: the type of memory to allocate.
++ */
++#define k_new0(type, flags) ((type *) kzalloc(sizeof(type), flags))
++
++/**
++ * k_new_array - allocate array of given type object
++ * @type: the type of the object to allocate
++ * @len: the length of the array
++ * @flags: the type of memory to allocate.
++ */
++#define k_new_array(type, len, flags) \
++	((type *) kmalloc(sizeof(type) * (len), flags))
++
++/**
++ * k_new0_array - allocate array of given type object, zero out allocated space
++ * @type: the type of the object to allocate
++ * @len: the length of the array
++ * @flags: the type of memory to allocate.
++ */
++#define k_new0_array(type, len, flags) \
++	((type *) kzalloc(sizeof(type) * (len), flags))
++
+ /*
+  * Allocator specific definitions. These are mainly used to establish optimized
+  * ways to convert kmalloc() calls to kmem_cache_alloc() invocations by selecting
