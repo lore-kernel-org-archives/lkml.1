@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764146AbXHAPyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765930AbXHAPzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764146AbXHAPyn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbXHAPyc
+	id S1765930AbXHAPzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757455AbXHAPyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:54:32 -0400
-Received: from compulypse.net ([212.227.20.180]:1064 "EHLO compulypse.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756790AbXHAPyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:54:31 -0400
-Subject: Re: [ck] Re: Linux Kernel cfs scheduler and xorg kbd
-From: "<::.. Teresa_II ..::>" <teresa@kvitka.net>
-To: Matthew Hawkins <darthmdh@gmail.com>
-Cc: Rene Herman <rene.herman@gmail.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       CK Mailinglist <ck@vds.kolivas.org>, Andi Kleen <andi@firstfloor.org>,
-       Indan Zupancic <indan@nul.nu>
-In-Reply-To: <b21f8390708010800i40b0281dv77c82f3c75fb0a89@mail.gmail.com>
-References: <1185827130.26459.16.camel@xtower.fri>
-	 <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>
-	 <46B06815.10200@gmail.com>
-	 <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>
-	 <46B0818F.10204@gmail.com>
-	 <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>
-	 <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com>
-	 <1185979460.16632.9.camel@xtower.fri>
-	 <b21f8390708010800i40b0281dv77c82f3c75fb0a89@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 01 Aug 2007 17:53:32 +0200
-Message-Id: <1185983612.16632.14.camel@xtower.fri>
+	Wed, 1 Aug 2007 11:54:50 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:32943 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756205AbXHAPyt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:54:49 -0400
+Date: Wed, 1 Aug 2007 16:54:48 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: NeilBrown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 010 of 35] New function blk_req_append_bio
+Message-ID: <20070801155448.GA19216@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org
+References: <20070731112539.22428.patches@notabene> <1070731021640.25225@suse.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1070731021640.25225@suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-У чт, 2007-08-02 у 01:00 +1000, Matthew Hawkins пише:
+On Tue, Jul 31, 2007 at 12:16:40PM +1000, NeilBrown wrote:
+>  /*
+> - * Temporary export, until SCSI gets fixed up.
+> + * Temporary(?) export, until SCSI gets fixed up.
+>   */
 
-> Are you sure its not just a setting in Gnome/KDE for accessibility?
-> That tends to do crazy things like making control keys sticky...
-
-Yes, i use gnome, and all keyboard layouts are set in gnome, also group
-switching for layouts. But accessibility is switched completely off.
-
--- 
-Teresa Kalitowska
-jid: teresa@kvitka.net
+This abuse is still scheduled to go away, even if it didn't happen as
+part of the bsg introduction as I had hoped.
 
