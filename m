@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761691AbXHABf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764367AbXHABhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761691AbXHABf1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761683AbXHABew
+	id S1764367AbXHABhe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbXHABh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:34:52 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:54911 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761181AbXHABeu (ORCPT
+	Tue, 31 Jul 2007 21:37:26 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:21362 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752683AbXHABh0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:34:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=CJ3laGeLmFk8o0HaGwn+WchYoCv6dRhcHALIMNwQ6W0cRqHM9Slq+qhUHGZWiRpZoJogeDKctqgXpqSgDlrTE0sfOtN2yJzPJOkubYX2i1bpDBUK2RIWuulX91sBHvTua0PrPGoBXFRe/HVzRaIUosuJrBVVOHoHsx1PYlljM8s=
-Message-ID: <6b01c6170707311834o27a72f8cpebf65cb65c2f2d1f@mail.gmail.com>
-Date: Tue, 31 Jul 2007 18:34:49 -0700
-From: "Yasha Okshtein" <flyashi@gmail.com>
-Reply-To: flyashi@gmail.com
-To: "Jan Dittmer" <jdi@l4x.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.23-rc1
-Cc: "Andreas Schwab" <schwab@suse.de>, "Len Brown" <lenb@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Thomas Renninger" <trenn@suse.de>
-In-Reply-To: <46AAF709.9060407@l4x.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 21:37:26 -0400
+Date: Wed, 1 Aug 2007 09:36:32 +0800
+From: Joe Jin <joe.jin@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Badari Pulavarty <pbadari@us.ibm.com>, Joe Jin <joe.jin@oracle.com>,
+       Zach Brown <zach.brown@oracle.com>,
+       gurudas pai <gurudas.pai@oracle.com>, jens.axboe@oracle.com,
+       lkml <linux-kernel@vger.kernel.org>, wen.gang.wang@oracle.com
+Subject: Re: [PATCH] add check do_direct_IO() return val
+Message-ID: <20070801013632.GB10449@joejin-pc.cn.oracle.com>
+References: <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com> <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com> <20070731005348.GA8308@joejin-pc.cn.oracle.com> <46AEB055.9050607@us.ibm.com> <20070731043554.GA3393@joejin-pc.cn.oracle.com> <1185920712.31134.21.camel@dyn9047017100.beaverton.ibm.com> <20070731153410.fcbf9a1b.akpm@linux-foundation.org> <alpine.LFD.0.999.0707311555410.4161@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200707251238.50218.lenb@kernel.org> <46A98FF9.8060801@l4x.org>
-	 <je8x91flu9.fsf@sykes.suse.de> <46AAF709.9060407@l4x.org>
+In-Reply-To: <alpine.LFD.0.999.0707311555410.4161@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/28/07, Jan Dittmer <jdi@l4x.org> wrote:
-> Andreas Schwab wrote:
-> > Jan Dittmer <jdi@l4x.org> writes:
-> >> Len Brown wrote:
-> >> FATAL: drivers/acpi/button: sizeof(struct acpi_device_id)=20 is not a modulo of the size of section __mod_acpi_device_table=144.
-> > Are you cross-compiling?  The definition of kernel_ulong_t won't work on
-> > x86.
-> Yes, sorry, should have mentioned that. Build system is x86. Still,
-> it didn't happen before the recent acpi merge.
+> Does a patch like this work? I don't have any test-cases, but it would be 
+> good to have something like this tested and passed back with proper 
+> explanations and sign-offs.
 
-I also have the same error, which I didn't have in 2.6.22:
+Yes it work find after apply the patch, thanks.
 
-FATAL: drivers/acpi/ac: sizeof(struct acpi_device_id)=20 is not a
-modulo of the size of section __mod_acpi_device_table=48.
-Fix definition of struct acpi_device_id in mod_devicetable.h
-make[1]: *** [__modpost] Error 1
-
-Build system is x86_64. I'm not cross-compiling, as the target machine
-(not the build machine) is also x86_64.
-
- - Yasha
+Joe
