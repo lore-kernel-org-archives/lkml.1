@@ -1,98 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbXHAHW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXHAHYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758180AbXHAHW2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbXHAHWT
+	id S1759960AbXHAHYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbXHAHYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:22:19 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:56487 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753056AbXHAHWS (ORCPT
+	Wed, 1 Aug 2007 03:24:05 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:27121 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753784AbXHAHYC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:22:18 -0400
-Message-ID: <46B03468.3010307@netcom.eu>
-Date: Wed, 01 Aug 2007 09:21:12 +0200
-From: David Engraf <david.engraf@netcom.eu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Wed, 1 Aug 2007 03:24:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mU5/Sq4mXpdSucZB1+RP3yHPjV0XIRj/SzhmRPbvvxBvpKQHbgOE6qjHOyG7k3YPMhKacfR/qMKIQqg8ixM7+NpePDCEiCLKLt7NJx8aSM/bRoKM03+7tptgqULTxq3CiMc5VoDcLrbyRw0pDbgZ2Ef2OmauEWMi0gznPCJEg7c=
+Message-ID: <4bacf17f0708010024r3abc196dv4d6924e314536b17@mail.gmail.com>
+Date: Wed, 1 Aug 2007 09:24:01 +0200
+From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Cc: "Jarek Poplawski" <jarkao2@o2.pl>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070730084925.GA12695@elte.hu>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       gregkh@suse.de, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
- we the driver is configured
-References: <Pine.LNX.4.44L0.0707311058470.3520-100000@iolanthe.rowland.org> <46B03078.5040305@netcom.eu>
-In-Reply-To: <46B03078.5040305@netcom.eu>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX19lghxdU8OtVpxBwt8/oJVJ2OwFXEA/Yfs4ous
- +An0l4aEnc39sCw+aLvuFhU92lUXiHiJkiBOGq5uOsDnIZCFqp
- LXBsd3FXPDgch6dvV87RQ==
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
+	 <1185322771.4175.102.camel@chaos>
+	 <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
+	 <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos>
+	 <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local>
+	 <20070726091254.GA8063@elte.hu>
+	 <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
+	 <20070730084925.GA12695@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At the moment I have a Jetway/VIA Mainboard which seems to have a
-problem with the handoff.
-Evenwhen I wait about 20 seconds the EHCI_USBLEGSUP_BIOS flag is not
-cleared. I think this is a BIOS
-bug and I will have to talk to Jetway/VIA.
-On the other hand, I don't need the EHCI controller in my kernel, so I
-think the kernel shouldn't take the
-handover for the EHCI controller like other OS which do not have an usb
-driver and so don't know that
-there is a EHCI_USBLEGSUP_BIOS flag which should be cleared.
-
-David Engraf
-
-
-Alan Stern schrieb:
-> On Tue, 31 Jul 2007, David Engraf wrote:
+2007/7/30, Ingo Molnar <mingo@elte.hu>:
+> (..)
+> does the patch below fix those timeouts? It tests the theory whether any
+> POST latency could expose this problem.
 >
->   
->> When CONFIG_USB_UHCI_HCD, CONFIG_USB_OHCI_HCD or CONFIG_USB_EHCI_HCD is
->> not configured we don't need to call the quirk_usb_handoff_xxxx function
->> in driver/usb/host/pci_quiks.c.
->>
->> I think the kernel shouldn't take the control over the usb controller
->> when we don't have the driver for it,
->> so with this patch the kernel takes the control only when the driver is
->> configured.
->>     
+>         Ingo
 >
-> Have you found a system where this really improves behavior or is it 
-> just theoretical?
+> Index: linux/drivers/net/lib8390.c
+> ===================================================================
+> --- linux.orig/drivers/net/lib8390.c
+> +++ linux/drivers/net/lib8390.c
+> @@ -375,6 +375,8 @@ static int ei_start_xmit(struct sk_buff
+>         /* Turn 8390 interrupts back on. */
+>         ei_local->irqlock = 0;
+>         ei_outb_p(ENISR_ALL, e8390_base + EN0_IMR);
+> +       /* force POST: */
+> +       ei_inb_p(e8390_base + EN0_IMR);
 >
-> There _is_ a theoretical reason for running the handoff routines even 
-> when the corresponding driver isn't configured.  Namely, at startup the 
-> controller will be in some undetermined state as a result of usage by 
-> the firmware.  Resetting it to a known idle state is a good idea.
->
-> Bear in mind that on some systems, not performing the handoff has
-> caused interrupt storms during startup.
->
-> Alan Stern
->
->   
+>         spin_unlock(&ei_local->page_lock);
+>         enable_irq_lockdep_irqrestore(dev->irq, &flags);
 >
 
--- 
-Mit freundlichen Grüßen
+Bad news. It doesn't fix the problem.
 
- 
-
-David Engraf
-
- 
-
- 
-Netcom Sicherheitstechnik GmbH
-Rheinallee 189
-55120 Mainz
-Tel: 	+49 6131 6305 0
-Fax: 	+49 6131 6305 40
-Email: 	david.engraf@netcom.eu
-
- 
-Sitz der Gesellschaft: Mainz
-Registergericht: Amtsgericht Mainz, 14HRB3411
-Geschäftsführer: Peter Otto
-
+Marcin
