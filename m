@@ -1,48 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763768AbXHAMgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764544AbXHAMgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763768AbXHAMgh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbXHAMg1
+	id S1764544AbXHAMgx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763090AbXHAMgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:36:27 -0400
-Received: from [80.75.67.54] ([80.75.67.54]:57215 "EHLO
-	opensource.wolfsonmicro.com" rhost-flags-FAIL-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756509AbXHAMg0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:36:26 -0400
-X-Greylist: delayed 1289 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 08:36:26 EDT
-Subject: Re: [alsa-devel] [RFC][PATCH] Get rid of dead code in
-	sound/pci/ac97/ac97_patch.c
-From: Liam Girdwood <lg@opensource.wolfsonmicro.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Jaroslav Kysela <perex@suse.cz>,
-       alsa-devel@alsa-project.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <46AF9D47.5090302@googlemail.com>
-References: <46AF9D47.5090302@googlemail.com>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 13:14:56 +0100
-Message-Id: <1185970496.3078.181.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 08:36:33 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:2610 "EHLO ra.tuxdriver.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762607AbXHAMgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:36:31 -0400
+Date: Wed, 1 Aug 2007 08:24:09 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, Michael Buesch <mb@bu3sch.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] prevent SSB compilation on s390 part 2
+Message-ID: <20070801122409.GC5474@tuxdriver.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <20070801093404.GA12124@osiris.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070801093404.GA12124@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'd prefer we keep this code in atm. The WM97xx touch driver needs it to
-eliminate any audio noise from the touchscreen ADC.
-
-I'll post the remaining touch driver patches in time for the next merge
-window. 
-
-Liam 
-
-On Tue, 2007-07-31 at 22:36 +0200, Michal Piotrowski wrote:
-> Hi,
+On Wed, Aug 01, 2007 at 11:34:04AM +0200, Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> File /home/devel/linux-rdc/sound/pci/ac97/ac97_patch.c line 484
-> Unknown CONFIG option! CONFIG_TOUCHSCREEN_WM9705
+> drivers/ssb/Kconfig has already a depends on HAS_IOMEM which should
+> prevent SSB from being selected. But appearantly it looks like this
+> doesn't matter at all if it gets selected from somewhere else.
+> So add an explicit depends on HAS_IOMEM to the Broadcom driver to
+> prevent selection on s390.
 > 
-> Regards,
-> Michal
-> 
+> Cc: "John W. Linville" <linville@tuxdriver.com>
+> Cc: Michael Buesch <mb@bu3sch.de>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
 
+Note to reviewers: this is only relevant to -mm and wireless-dev at
+the moment, AFAIK...
+
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
