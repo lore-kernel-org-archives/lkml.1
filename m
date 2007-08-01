@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759785AbXHAQ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760174AbXHAQ6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759785AbXHAQ5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755596AbXHAQ5K
+	id S1760174AbXHAQ6z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbXHAQ6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 12:57:10 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:50553 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754653AbXHAQ5G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 12:57:06 -0400
-Date: Wed, 1 Aug 2007 09:55:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
-       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>,
-       John Linville <linville@tuxdriver.com>
-Subject: Re: [PATCH FINAL] Merge the Sonics Silicon Backplane subsystem
-Message-Id: <20070801095523.458e00c1.akpm@linux-foundation.org>
-In-Reply-To: <200708011133.37214.mb@bu3sch.de>
-References: <200707291324.58691.mb@bu3sch.de>
-	<20070731202648.e1a8c45f.akpm@linux-foundation.org>
-	<200708011133.37214.mb@bu3sch.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 12:58:46 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51934 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753430AbXHAQ6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 12:58:45 -0400
+Date: Wed, 1 Aug 2007 18:58:15 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: david@lang.hm
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, LKML <linux-kernel@vger.kernel.org>,
+       Kyle Moffett <mrmacman_g4@mac.com>, Al Boldi <a1426z@gawab.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Pavel Machek <pavel@ucw.cz>, "Huang, Ying" <ying.huang@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Jeremy Maitin-Shepard <jbms@cmu.edu>
+Subject: Re: Hibernation considerations
+Message-ID: <20070801165815.GA19065@suse.de>
+References: <Pine.LNX.4.44L0.0707171010490.3551-100000@iolanthe.rowland.org> <200707171802.30903.rjw@sisk.pl> <Pine.LNX.4.64.0707170959160.2467@asgard.lang.hm> <200707172150.44417.rjw@sisk.pl> <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0707171302430.2467@asgard.lang.hm>
+X-Operating-System: openSUSE 10.3 (i586) Alpha7, Kernel 2.6.22.1-10-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 11:33:36 +0200 Michael Buesch <mb@bu3sch.de> wrote:
+Hi,
 
-> > 
-> > yup, it's `select':
-> > 
-> > Selected by: B44 && NETDEVICES && NET_ETHERNET || BCM43XX_MAC80211 && NETDEVICES && !S390 && MAC80211 && WLAN_80211 && EXPERIMENTAL
-> > 
-> > 
-> > Look.  Kconfig's `select' Just.  Does.  Not.  Work.  If you find yourself
-> > contemplating using it, please, don sackcloth, take a cold shower and
-> > several analgesics, then have another go, OK?
-> > 
-> > ho hum.
+Sorry for joining late, just a small annotation:
+
+On Tue, Jul 17, 2007 at 01:18:13PM -0700, david@lang.hm wrote:
+ 
+> non-ACPI hibernate
 > 
-> Ah, yeah. Crap select not caring about dependencies...
-> The problem is that people will kill me, if they don't find
-> bcm43xx in the kconfig anymore, as they have to enable ssb
-> before that. Ya know the flame with Uwe Bugla going crazy
-> about that? :D
-> Same goes for b44. It was always there in kconfig without
-> additional deps, but now (when we merge the b44 port) we would
-> need ssb selected before we see b44.
+>   since the box powers off
+>     it uses zero power while suspended
+>     another OS could be run before a resume
+>     hardware can be swapped, suspend image could be sent around the world to be restored on another system.
+>     restore makes no assumptions about the state of the hardware when it is restored
+>     restore is slower (full BIOS boot is required)
+>   should be able to work on just about any hardware (the limit is the ability to initialize the devices)
+> 
+> 
+> ACPI suspends
+> 
+>   since the box never completely powers off:A
 
-We just don't have a good solution to this.
+wrong
 
-`select' is bust and it's unobvious how it can _not_ be bust.  If you're
-selecting something whose dependencies aren't met, what can we do?  Maybe
-select the thing it depends on as well?  What if it depends on (A||B)? 
-Which one do we force on?  Screwed.
+>     a complete power failure breaks the suspend
 
-And hiding options from the users until theyve gone elsewher and selected
-something else is most user-hostile.
+wrong
 
-At least we have menuconfig's "/" command, so if you know the option's name
-you can work out why it isn't appearing.
+>     the OS must remain in control so other uses must be prevented.
+>     hardware must remain in the ACPI state from suspend until restore.
+>     restore can be faster (some initialization may be able to be skipped)
+>   requires ACPI hardware support
+> 
+> under the catagory of ACPI suspends you have
 
-I think what we should do is to continue to offer the unselectable option
-in manuconfig and friends, only "greyed out" in some fashion.  So the user
-can still navigate to it and select the "what do you depend on" button.
+ACPI S4 turns off the machine completely and you can remove the battery (this
+is even required somewhere in the spec). Any state saving is done in CMOS RAM
+or flash.
 
-> Maybe default SSB to M?
+But for example many Notebooks resume much faster if they go through the
+ACPI S4 hooks during suspend (less than one second from "lid open" to "grub"
+while they need ~10 seconds through the BIOS on a "normal" boot.
+My Toughbook resumes on "Lid Opened" after S4, it doesn't after a shutdown.
 
-People would complain about that too.  I don't know what to do, sorry. 
-Muddle through :(
+So there will be differences.
+I'm not saying that they are too important, but 20% faster resume still is
+a good saving for me.
+
+No need to restart this thread btw ;-)
+
+Have fun,
+
+    Stefan
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
