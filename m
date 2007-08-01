@@ -1,81 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932890AbXHAPsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762284AbXHAPtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932890AbXHAPsW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXHAPr5
+	id S1762284AbXHAPtZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXHAPtN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:47:57 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:49903 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760348AbXHAPrz (ORCPT
+	Wed, 1 Aug 2007 11:49:13 -0400
+Received: from qb-out-0506.google.com ([72.14.204.225]:27591 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbXHAPtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:47:55 -0400
-X-Sasl-enc: e7bhwwyYFonyvUrrapvjEhdxAPjj30grDYeqrIF451d0 1185983273
-Date: Wed, 1 Aug 2007 12:47:49 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       linux-pm@linux-foundation.org, ibm-acpi-devel@lists.sourceforge.net
-Subject: Re: 2.6.21-rc1: T60 ACPI issues
-Message-ID: <20070801154749.GK23111@khazad-dum.debian.net>
-References: <20070801135820.GA8266@mellanox.co.il> <Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com> <20070801145607.GB8480@mellanox.co.il>
+	Wed, 1 Aug 2007 11:49:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=i6gRoeq/f8OgL07OEXTZ9I6vm7PUichxiOFRJ9yBWGFgN8LFGgAXLOEiuCbYndhjz8M9b8lK9Yl/6R2vfxKJ40LzQ2UePh3TZD7+zCfn9adwVtD0XMoQQ1idN1ApJ4Jf6mGMNcFRz9WZ/5vIgv6PRJtGq8e42sPnAxng2cqRXYU=
+Date: Thu, 2 Aug 2007 00:49:04 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: NeilBrown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 008 of 35] Introduce bi_iocnt to count requests sharing the one bio.
+Message-ID: <20070801154904.GE13674@htj.dyndns.org>
+References: <20070731112539.22428.patches@notabene> <1070731021629.25195@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070801145607.GB8480@mellanox.co.il>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <1070731021629.25195@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CC changed from Borislav to ibm-acpi-devel).
+Hello,
 
-On Wed, 01 Aug 2007, Michael S. Tsirkin wrote:
-> > > 2. Pressing Fn/F4 does not trigger suspend to ram
-> > >    This normally triigers ACPI event which triggers suspend to RAM on Ubuntu
-> > >    (echo mem > /sys/power/state works)
-> > 
-> > I'll bet this is your CONFIG_THINKPAD_ACPI_INPUT_ENABLED=y.
-> > I got the same, see my "THINKPAD_ACPI_INPUT_ENABLED seems regressive"
-> > mail to Henrique and lkml an hour ago.
+On Tue, Jul 31, 2007 at 12:16:29PM +1000, NeilBrown wrote:
+>  static int ordered_bio_endio(struct request *rq, struct bio *bio,
+>  			     int error)
+>  {
+>  	struct request_queue *q = rq->q;
+> -	bio_end_io_t *endio;
+> -	void *private;
+>  
+>  	if (&q->bar_rq != rq)
+>  		return 0;
+>  
+>  	/*
+>  	 * Okay, this is the barrier request in progress, dry finish it.
+> +	 *
+> +	 * We'll finish this request again with the original
+> +	 * bi_end_io after an error occurs or post flush is complete.
+>  	 */
+> +
+>  	if (error && !q->orderr)
+>  		q->orderr = error;
+>  
+> -	endio = bio->bi_end_io;
+> -	private = bio->bi_private;
+> -	bio->bi_end_io = flush_dry_bio_endio;
+> -	bio->bi_private = q;
+> -
+> -	bio_endio(bio, error);
+> -
+> -	bio->bi_end_io = endio;
+> -	bio->bi_private = private;
+> +	set_bit(BIO_UPTODATE, &bio->bi_flags);
+>  
+>  	return 1;
+>  }
 
-[...]
+The only reason bio_endio() was called from ordered_bio_endio() was to
+get the same side effect (bio update) as real io completions, which
+should be reversed by flush_dry_bio_endio() to re-finish it later.
+This was done this way under the assumption that somebody might depend
+on bio updates after partial bio completion.
 
-> > > 3. After suspend to RAM, system wakes up but laptop's screen is blank,
-> > >    switching VTs etc does not help.
-> > >    External screen wakes up OK though.
-> > >    dmesg output from boot attached.
-> > 
-> > (I've not had that.)
-> 
-> Bingo.
-> sudo rmmod thinkpad_acpi cures both 2 and 3.
-> Thanks for pointing this out.
+Now that it's guaranteed that there's no partial bio completion, none
+of the dancing is needed.  Setting BIO_UPTODATE can be removed too.
 
-I can see how it would help with (2), as that prompty tells the firmware to
-issue its default ACPI events for Fn+F4 upon removal.  But I have *NO* idea
-what thinkpad_acpi might be doing that is causing issues with the wake up
-after a resume.
-
-Please open a bug in bugzilla.kernel.org about it, and attach the full debug
-output of a suspend+resume cycle with and without thinkpad-acpi loaded.
-
-Also, please try the same with thinkpad-acpi loaded, but
-CONFIG_THINKPAD_ACPI_INPUT_ENABLED set to N.  If the problem goes away,
-please retest, but set hotkey_enable to 1 and do an "cat
-/sys/bus/platform/devices/thinkpad_acpi/hotkey_recommended_mask >
-/sys/bus/platform/devices/thinkpad_acpi/hotkey_mask" before the sleep.
-
-You will probably need to enable a bunch of debug options in ACPI and
-thinkpad-acpi to get good enough logs.  It is probably worth posting the
-acpid logs too: the real difference might be there.
+Nice clean up.  Thanks.
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+tejun
