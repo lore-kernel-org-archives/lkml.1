@@ -1,70 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933275AbXHAOy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933517AbXHAOzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933275AbXHAOy7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932232AbXHAOyr
+	id S933517AbXHAOzj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932420AbXHAOzb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:54:47 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:47943
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932218AbXHAOyq (ORCPT
+	Wed, 1 Aug 2007 10:55:31 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:15664 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932409AbXHAOz3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:54:46 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: Re: [PATCH] prevent SSB compilation on s390 part 2
-Date: Wed, 1 Aug 2007 16:54:36 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, "John W. Linville" <linville@tuxdriver.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Jeff Garzik <jeff@garzik.org>
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <20070801093404.GA12124@osiris.boeblingen.de.ibm.com> <20070801144308.GC12124@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20070801144308.GC12124@osiris.boeblingen.de.ibm.com>
+	Wed, 1 Aug 2007 10:55:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=ZgaXBYNRVDoCsurJZ0EVsoI1zeFVSrsQy5lhf2fAXrvVmUTSOpJy1G82k7NeZYoCNswlCLyBXOzuLaG2lIdq/bIFf7NNKUcAOb26XHQ+JNowDz+QSQe4sKm6zez1t2ej1O0BrYVMTTOefGJXewbEjKla+63jESKljkyIZwpCc+E=
+Message-ID: <46B09EC4.2010704@googlemail.com>
+Date: Wed, 01 Aug 2007 16:55:00 +0200
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@parisc-linux.org>, parisc-linux@parisc-linux.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] Coding style fix include/asm-parisc/compat_rt_sigframe.h
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708011654.37588.mb@bu3sch.de>
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 August 2007, Heiko Carstens wrote:
-> On Wed, Aug 01, 2007 at 11:34:04AM +0200, Heiko Carstens wrote:
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > drivers/ssb/Kconfig has already a depends on HAS_IOMEM which should
-> > prevent SSB from being selected. But appearantly it looks like this
-> > doesn't matter at all if it gets selected from somewhere else.
-> > So add an explicit depends on HAS_IOMEM to the Broadcom driver to
-> > prevent selection on s390.
-> > 
-> > Cc: "John W. Linville" <linville@tuxdriver.com>
-> > Cc: Michael Buesch <mb@bu3sch.de>
-> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > ---
-> >  drivers/net/Kconfig |    1 +
-> >  1 files changed, 1 insertion(+)
-> > 
-> > Index: linux-2.6.22/drivers/net/Kconfig
-> > ===================================================================
-> > --- linux-2.6.22.orig/drivers/net/Kconfig
-> > +++ linux-2.6.22/drivers/net/Kconfig
-> > @@ -1434,6 +1434,7 @@ config APRICOT
-> > 
-> >  config B44
-> >  	tristate "Broadcom 440x/47xx ethernet support"
-> > +	depends on HAS_IOMEM
-> >  	select SSB
-> >  	select MII
-> >  	help
-> 
-> By the way.. wouldn't something like depends on NET_PCI or something
-> similar more correct for this driver? Just wondering...
-> 
-> 
+Hi,
 
-No, B44 does not depend on PCI. It does depend on the SSB bus.
-(Of course the SSB PCI parts do depend on PCI)
+Coding style fix
+
+Regards,
+Michal
+
+--
+LOG
+http://www.stardust.webpages.pl/log/
+
+Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+
+--- linux-mm-clean/include/asm-parisc/compat_rt_sigframe.h	2007-07-09 01:32:17.000000000 +0200
++++ linux-mm/include/asm-parisc/compat_rt_sigframe.h	2007-08-01 16:51:57.000000000 +0200
+@@ -1,6 +1,6 @@
+-#include<linux/compat.h>
+-#include<linux/compat_siginfo.h>
+-#include<asm/compat_ucontext.h>
++#include <linux/compat.h>
++#include <linux/compat_siginfo.h>
++#include <asm/compat_ucontext.h>
+ 
+ #ifndef _ASM_PARISC_COMPAT_RT_SIGFRAME_H
+ #define _ASM_PARISC_COMPAT_RT_SIGFRAME_H
