@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932869AbXHASFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933205AbXHASGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932869AbXHASFc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756465AbXHASFY
+	id S933205AbXHASGd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762390AbXHASGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:05:24 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40973 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757214AbXHASFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:05:22 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] FRV: Enable the MB86943 PCI arbiter correctly
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Wed, 01 Aug 2007 19:04:51 +0100
-Message-ID: <20070801180451.25087.54239.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Wed, 1 Aug 2007 14:06:21 -0400
+Received: from fallback.us4.outblaze.com ([205.158.62.120]:60154 "EHLO
+	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763455AbXHASGU convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:06:20 -0400
+X-OB-Received: from unknown (205.158.62.81)
+  by wfilter2.us4.outblaze.com; 1 Aug 2007 17:41:03 -0000
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
+Content-Type: text/plain; charset=US-ASCII
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+From: "Ash Willis" <ashwillis@programmer.net>
+To: rafalbilski@interia.pl
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, tiwai@suse.de
+Date: Wed, 1 Aug 2007 12:41:03 -0500
+Subject: Re: CS5530 Alsa driver fails
+X-Originating-Ip: 79.65.38.5
+X-Originating-Server: ws1-2.us4.outblaze.com
+Message-Id: <20070801174103.D03341F50B1@ws1-2.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
+>Hello,
+>
+>Linux: 2.6.23-rc1-git3
+>Hardware: CX5530
+>
+>After "modprobe snd-cs5530" I have:
+>CS5530: XpressAudio at 0x220
+>CS5530: MPU at 0x330
+>CS5530: IRQ: 9 DMA8: 0 DMA16: 5
+>sb: can't grab irq 9
+>CS5530: Could not create SoundBlaster
+>CS5530_Audio: probe of 0000:00:12.3 failed with error -16
+>Thank You
+>Rafa&#322;
+>
+>~ $ cat /proc/interrupts
+>           CPU0
+>  0:      26624    XT-PIC-XT        timer
+>  2:          0    XT-PIC-XT        cascade
+>  4:        428    XT-PIC-XT        serial
+>  8:          0    XT-PIC-XT        rtc
+>  9:      10793    XT-PIC-XT        ohci_hcd:usb1
+> 10:       1326    XT-PIC-XT        eth0
+>NMI:          0
+>ERR:          0
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+Hi Rafa&#322;,
+It seems that you're already using irq 9 for another device, and as Alan says
+the cs5530 audio device doesn't seem to do irq sharing. It seems to me that you
+need to go into your BIOS settings at startup and tell the device to use an irq
+line that's not already in use by some other device. Can you please let me know
+if this works?
 
-Enable the MB93090 motherboard's MB86943 PCI arbiter correctly by assigning to
-the register rather than comparing against it.  This is required to support
-bus mastering.
+The ALSA CS5530 driver is one that I ported from Alan's OSS Kahlua driver, so
+there may be some things that I've missed. If the above advice doesn't work,
+please confirm whether or not the device is functioning correctly in your
+current set up with Alan's original OSS driver.
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+Thanks,
 
- arch/frv/mb93090-mb00/pci-vdk.c |    3 ++-
- include/asm-frv/mb86943a.h      |    3 +++
- 2 files changed, 5 insertions(+), 1 deletions(-)
+Ash
 
-diff --git a/arch/frv/mb93090-mb00/pci-vdk.c b/arch/frv/mb93090-mb00/pci-vdk.c
-index 0b581e3..6d51f13 100644
---- a/arch/frv/mb93090-mb00/pci-vdk.c
-+++ b/arch/frv/mb93090-mb00/pci-vdk.c
-@@ -400,7 +400,8 @@ int __init pcibios_init(void)
- 	__reg_MB86943_pci_sl_mem_base	= __region_CS2 + 0x08000000;
- 	mb();
- 
--	*(volatile unsigned long *)(__region_CS2+0x01300014) == 1;
-+	/* enable PCI arbitration */
-+	__reg_MB86943_pci_arbiter	= MB86943_PCIARB_EN;
- 
- 	ioport_resource.start	= (__reg_MB86943_sl_pci_io_base << 9) & 0xfffffc00;
- 	ioport_resource.end	= (__reg_MB86943_sl_pci_io_range << 9) | 0x3ff;
-diff --git a/include/asm-frv/mb86943a.h b/include/asm-frv/mb86943a.h
-index b89fd0b..e87ef92 100644
---- a/include/asm-frv/mb86943a.h
-+++ b/include/asm-frv/mb86943a.h
-@@ -36,4 +36,7 @@
- #define __reg_MB86943_pci_sl_io_base	*(volatile uint32_t *) (__region_CS1 + 0x70)
- #define __reg_MB86943_pci_sl_mem_base	*(volatile uint32_t *) (__region_CS1 + 0x78)
- 
-+#define __reg_MB86943_pci_arbiter	*(volatile uint32_t *) (__region_CS2 + 0x01300014)
-+#define MB86943_PCIARB_EN		0x00000001
-+
- #endif /* _ASM_MB86943A_H */
+
+-- 
+We've Got Your Name at http://www.mail.com!
+Get a FREE E-mail Account Today - Choose From 100+ Domains
 
