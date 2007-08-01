@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXHAOHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbXHAOJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbXHAOHm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932264AbXHAOHe
+	id S932861AbXHAOJj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932146AbXHAOJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:07:34 -0400
-Received: from styx.suse.cz ([82.119.242.94]:40576 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932164AbXHAOHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:07:33 -0400
-Date: Wed, 1 Aug 2007 16:07:33 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>, Ulrich Kunitz <kune@deine-taler.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Jan Kratochvil <honza@jikos.cz>, jakub@redhat.com
-Subject: Re: Is PIE randomization breaking klibc binaries?
-In-Reply-To: <46AF27E6.5080008@zytor.com>
-Message-ID: <Pine.LNX.4.64.0708011604570.6311@jikos.suse.cz>
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
- <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com>
- <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com>
- <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de>
- <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz> <46AF24B2.8070900@zytor.com>
- <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz> <46AF27E6.5080008@zytor.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 1 Aug 2007 10:09:31 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:1330 "EHLO Perches.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932107AbXHAOJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 10:09:30 -0400
+Subject: Re: [PATCH] - Remove current defines and uses of pr_err, add
+	pr_emerg, pr_alert, pr_crit, pr_err, pr_warn, pr_notice to
+	include/linux/kernel.h
+From: Joe Perches <joe@perches.com>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
+In-Reply-To: <46B04348.1060907@kernel.sg>
+References: <1185941363.14777.34.camel@localhost>
+	 <46B04348.1060907@kernel.sg>
+Content-Type: text/plain
+Date: Wed, 01 Aug 2007 07:09:26 -0700
+Message-Id: <1185977366.14777.44.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, H. Peter Anvin wrote:
+On Wed, 2007-08-01 at 16:24 +0800, Eugene Teo wrote:
+> But why are you replacing the existing pr_*() with printk(KERN_*?
 
-> > So it seems to me that either it is something x86_64 specific or 
-> > initramfs-specific. Will try to reproduce it.
-> My guess would be the former, rather than the latter.  I haven't had a 
-> chance to reproduce it myself yet (I'm on the road), but I will try to 
-> get the time tomorrow.
+Order of compilation if bisected?
 
-I still wasn't successful reproducing it with 2.6.23-rc1 + 
-pie-randomization.patch with klibc-1.5 on x86_64 system -- all programs 
-from 'shared' and 'static' seem to be running well. 
+The idea is to eventually convert all single line
+printk(KERN_<level> fmt "\n",...) to pr_<level>
+tree wide.  This leaves only the multiline
+printk(foo); printk(bar "\n") code which might
+possibly be fixed to eliminate messages that are
+interleaved by thread/cpu.
 
-Ulrich, could you please send me your .config? Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
