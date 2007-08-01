@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbXHAVLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753102AbXHAVPD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbXHAVLW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbXHAVLM
+	id S1753102AbXHAVPD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:15:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXHAVOw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:11:12 -0400
-Received: from web52901.mail.re2.yahoo.com ([206.190.49.11]:47699 "HELO
-	web52901.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751529AbXHAVLL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:11:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=HU5bGMiQbL5oyCcWzv/UepMNejUMP1J4W6eeluQCWh14tDOYCwn/RNnn920NXckpkMynOUjI2SQY2eUuYwDxwrTtRSj2JLZvFe5IjIHJhQRji3AImdUbhLsibH4G7FLN6jaPZX4gwYeOEpuSxRGWx9uCXaf/OQcAN/xpqGGaZf0=;
-X-YMail-OSG: BXYCKhcVM1lB4ya9TA2hY4qm7LRnjtafO0YAHG40UO8DwF3aWaqnWbRCGvPHYErQeg--
-Date: Wed, 1 Aug 2007 22:11:09 +0100 (BST)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [BUG] Linux 2.6.22 - Atomic counter underflow in NFS
-To: Satyam Sharma <satyam@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LFD.0.999.0708020237090.8258@enigma.security.iitk.ac.in>
-MIME-Version: 1.0
+	Wed, 1 Aug 2007 17:14:52 -0400
+Received: from mga02.intel.com ([134.134.136.20]:17468 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751273AbXHAVOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 17:14:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,210,1183359600"; 
+   d="scan'208";a="273280847"
+Date: Wed, 1 Aug 2007 14:11:54 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
+       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
+Subject: Re: [patch 3/4] Enable link power management for ata drivers
+Message-Id: <20070801141154.3246a20d.kristen.c.accardi@intel.com>
+In-Reply-To: <46B043FB.5090005@gmail.com>
+References: <20070705194909.337398431@intel.com>
+	<20070705130530.5873afeb.kristen.c.accardi@intel.com>
+	<46B043FB.5090005@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <699754.45152.qm@web52901.mail.re2.yahoo.com>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Satyam Sharma <satyam@infradead.org> wrote:
-> I expect this is easy to reproduce at will (when shutting down nfs
-> services, probably), right?
+On Wed, 01 Aug 2007 17:27:39 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
-I'm not sure about the "at will" part because this is the first time I've seen it since 2.6.22 was
-released. However, I was upgrading my Fedora 7 nfs-utils package at the time so it probably did
-happen when the NFS service was being shut down.
+> Kristen Carlson Accardi wrote:
+<snippy>
+> Is it safe to use ALPM on a device which only claims to support DIPM?
 
-> Please try the latest mainline -git kernel (say 2.6.23-rc1-git10 from
-> kernel.org) and let us know if this still occurs? There were some fixes
-> regarding sysfs symlink refcounting that went in recently, and this looks
-> like one of those cases to me.
+Yes - I doubled checked this with the AHCI people - and of course you
+have Edvin's testing to prove it does fine.
 
-Do you have the actual patches instead?
+> I think this should be ATA_HORKAGE_IPM.
 
-Cheers,
-Chris
+OK - I changed it.
 
+> > @@ -321,6 +321,8 @@ struct ata_taskfile {
+> >  	  ((u64) (id)[(n) + 0]) )
+> >  
+> >  #define ata_id_cdb_intr(id)	(((id)[0] & 0x60) == 0x20)
+> > +#define ata_id_has_hipm(id)	((id)[76] & (1 << 9))
+> > +#define ata_id_has_dipm(id)	((id)[78] & (1 << 3))
+> 
+> We probably need !0xffff test here.
 
+Thanks, I fixed that too.
 
-      ___________________________________________________________
-Yahoo! Answers - Got a question? Someone out there knows the answer. Try it
-now.
-http://uk.answers.yahoo.com/ 
+As far as moving the enable/disable_pm calls to EH - can you take
+a look at the other patch I sent which implements the shost_attrs
+to see if I still need to do this?  I really don't know much about
+the EH stuff - can you explain why we need to use it to set the
+link pm?
+
+thanks for your review, 
+Kristen
