@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763250AbXHASOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764909AbXHASPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763250AbXHASOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXHASOh
+	id S1764909AbXHASPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753557AbXHASPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:14:37 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4336 "EHLO scrub.xs4all.nl"
+	Wed, 1 Aug 2007 14:15:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44625 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752947AbXHASOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:14:36 -0400
-Date: Wed, 1 Aug 2007 20:14:44 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-In-Reply-To: <20070801174119.GA9152@elte.hu>
-Message-ID: <Pine.LNX.4.64.0708012001280.1817@scrub.home>
-References: <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801112229.GA11710@elte.hu>
- <Pine.LNX.4.64.0708011346510.1817@scrub.home> <20070801135949.GA10839@elte.hu>
- <Pine.LNX.4.64.0708011622400.1817@scrub.home> <20070801174119.GA9152@elte.hu>
+	id S1753507AbXHASPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:15:35 -0400
+Message-ID: <46B0CDB3.8060505@redhat.com>
+Date: Wed, 01 Aug 2007 14:15:15 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: pm_trace displays the wrong time from the RTC
+References: <46AFA78A.9010904@redhat.com> <200708011747.37932.rjw@sisk.pl>
+In-Reply-To: <200708011747.37932.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Wed, 1 Aug 2007, Ingo Molnar wrote:
-
-> > [...] I didn't say 'sleeper starvation' or 'rounding error', these are 
-> > your words and it's your perception of what I said.
+On 08/01/2007 11:47 AM, Rafael J. Wysocki wrote:
+> Sorry for slow response, I've just noticed this thread.
 > 
-> Oh dear :-) It was indeed my preception that yesterday you said:
+> On Tuesday, 31 July 2007 23:20, Chuck Ebbert wrote:
+>> When resuming, systems print this when booted on 07/31/07:
+>>
+>> Date: 06/31/107
+>>
+>> /drivers/base/power/trace.c::read_magic_time():
+>> 114	get_rtc_time(&time);
+>> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
+>> 116		time.tm_hour, time.tm_min, time.tm_sec,
+>> 117		time.tm_mon, time.tm_mday, time.tm_year);
+>>
+>> include/asm-generic/rtc.h:
+>> 102         /*
+>> 103          * Account for differences between how the RTC uses the values
+>> 104          * and how they are defined in a struct rtc_time;
+>> 105          */
+>> 106         if (time->tm_year <= 69)
+>> 107                 time->tm_year += 100;
+>> 108 
+>> 109         time->tm_mon--;
+> 
+> Do you mean that systems display bad date after resuming if PM_TRACE is set,
+> even if /sys/power/pm_trace contains 1 ?
+> 
+> If that's the case, are they i386 or x86_64?
+> 
 
-*sigh* and here you go off again nitpicking on a minor issue just to prove 
-your point...
-When I wrote the earlier stuff I hadn't realized it was resolution 
-related, so things have to be put into proper context and you make it 
-yourself a little easy by equating them.
-Yippi, you found another small error I made, can we drop this now? Please?
+i386:
 
-bye, Roman
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250238
