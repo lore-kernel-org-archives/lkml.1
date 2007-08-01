@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934937AbXHAPTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933474AbXHAPUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934937AbXHAPTb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933695AbXHAPTL
+	id S933474AbXHAPUe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbXHAPUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:19:11 -0400
-Received: from flvpn.ccur.com ([66.10.65.2]:57300 "EHLO gamx.iccur.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932926AbXHAPTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:19:09 -0400
-Date: Wed, 1 Aug 2007 11:17:15 -0400
-From: Joe Korty <joe.korty@ccur.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Al Viro <viro@ftp.linux.org.uk>, Alexey Dobriyan <adobriyan@sw.ru>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       herbert@gondor.apana.org.au
-Subject: Re: WARN_ON() which sometimes sucks
-Message-ID: <20070801151715.GA22431@tsunami.ccur.com>
-Reply-To: Joe Korty <joe.korty@ccur.com>
-References: <20070731155527.GB7253@localhost.sw.ru> <20070731160248.GK21089@ftp.linux.org.uk> <18096.949.934194.648312@cargo.ozlabs.ibm.com> <alpine.LFD.0.999.0707312101410.3582@woody.linux-foundation.org> <18096.2592.877510.221163@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18096.2592.877510.221163@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 1 Aug 2007 11:20:06 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:36653 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758491AbXHAPUD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:20:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=l017+Kxc3Sy4CCW3DfdUDzu2+uV5U/AAQGQQNvrLL5Py063P4kJlFnjZ6O+mHel6TEpdYPpfA+BsVnucIYS1ZPuaQHLPBZ0x67QJIlKkrRUiLPyjrZ5NH3jpFmqRzO3lpp9WMS6NRJWalfps09W475hvzJl5SL2JabcqQXA8B0Q=
+Message-ID: <46B0A48B.3090606@googlemail.com>
+Date: Wed, 01 Aug 2007 17:19:39 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Subject: [PATCH -mm] Fix a section mismatch warning
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 02:20:48PM +1000, Paul Mackerras wrote:
-> Linus Torvalds writes:
-> 
-> > Umm. The WARN_ON() might actually get a "long long" value for all we know. 
-> > Ie it's perfectly possible that the WARN_ON might look like
-> > 
-> > 	/* Must not have high bits on */
-> > 	WARN_ON(offset & 0xffffffff00000000);
-> > 
-> > which on a 32-bit pcc would apparently do the wrong thing entirely as it 
-> > stands now. No?
-> 
-> Actually, because of the typeof in the powerpc WARN_ON, I think it
-> would fail to build since we'd be passing a long long value to an
-> inline asm, or at least I hope it would fail to build. :)
+...
+
+WARNING: vmlinux.o(.text+0x8b9f): Section mismatch: reference to .init.text:cache_remove_shared_cpu_map (between 'cpuid4_cache_sysfs_exit' and 'unexpected_machine_check')
 
 
-Turning the condition into an integer should work ...
+...
 
-	#define NEW_WARN_ON(x) OLD_WARN_ON(!!(x))
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
-Regards,
-Joe
+---
 
+--- linux-2.6.23-rc1-mm/arch/i386/kernel/cpu/intel_cacheinfo.c.orig	2007-08-01 17:10:27.000000000 +0200
++++ linux-2.6.23-rc1-mm/arch/i386/kernel/cpu/intel_cacheinfo.c	2007-08-01 17:11:37.000000000 +0200
+@@ -681,7 +681,7 @@ static struct kobj_type ktype_percpu_ent
+ 	.sysfs_ops	= &sysfs_ops,
+ };
+ 
+-static void cpuid4_cache_sysfs_exit(unsigned int cpu)
++static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
+ {
+ 	kfree(cache_kobject[cpu]);
+ 	kfree(index_kobject[cpu]);
