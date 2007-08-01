@@ -1,107 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbXHARS1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbXHARXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761053AbXHARS1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 13:18:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbXHARSQ
+	id S1760839AbXHARXA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 13:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbXHARWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 13:18:16 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55758 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755817AbXHARSP (ORCPT
+	Wed, 1 Aug 2007 13:22:52 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53494 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753307AbXHARWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 13:18:15 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-References: <1185851583.23149.30.camel@caritas-dev.intel.com>
-	<m1r6mptcc8.fsf@ebiederm.dsl.xmission.com>
-	<1185865087.23149.50.camel@caritas-dev.intel.com>
-Date: Wed, 01 Aug 2007 11:16:43 -0600
-In-Reply-To: <1185865087.23149.50.camel@caritas-dev.intel.com> (Ying Huang's
-	message of "Tue, 31 Jul 2007 14:58:07 +0800")
-Message-ID: <m1r6mnnpj8.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Aug 2007 13:22:52 -0400
+Date: Wed, 1 Aug 2007 10:22:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: linux-kernel@vger.kernel.org, ezk@cs.sunysb.edu, jsipek@cs.sunysb.edu
+Subject: Re: unionfs compile error ( Re: 2.6.23-rc1-mm2 )
+Message-Id: <20070801102207.f427a17f.akpm@linux-foundation.org>
+In-Reply-To: <46B0616E.5000704@googlemail.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<46B0616E.5000704@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Huang, Ying" <ying.huang@intel.com> writes:
+On Wed, 01 Aug 2007 12:33:18 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
 
-> On Mon, 2007-07-30 at 22:40 -0600, Eric W. Biederman wrote:
->> "Huang, Ying" <ying.huang@intel.com> writes:
->> 
->> > This patch adds document for EFI x86_64 support. The boot parameters
->> > added are documented in Documentation/i386/zero-page.txt. The setup
->> > and operation guide of EFI based system is documented in
->> > Documentation/x86_64/uefi.txt.
->> >
->> > Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
->> > Signed-off-by: Huang Ying <ying.huang@intel.com>
->> >
->> > ---
->> >
->> >  i386/zero-page.txt |   18 ++++++++++++++----
->> >  x86_64/uefi.txt    |   42 ++++++++++++++++++++++++++++++++++++++++++
->> >  2 files changed, 56 insertions(+), 4 deletions(-)
->> >
->> > Index: linux-2.6.23-rc1/Documentation/i386/zero-page.txt
->> > ===================================================================
->> > --- linux-2.6.23-rc1.orig/Documentation/i386/zero-page.txt 2007-07-30
->> > 11:28:45.000000000 +0800
->> > +++ linux-2.6.23-rc1/Documentation/i386/zero-page.txt 2007-07-30
->> > 11:29:28.000000000 +0800
->> > @@ -31,11 +31,11 @@
->> > 0xb0 - 0x13f Free. Add more parameters here if you really need them.
->> >   0x140- 0x1be		EDID_INFO Video mode setup
->> >  
->> > -0x1c4	unsigned long	EFI system table pointer
->> > -0x1c8	unsigned long	EFI memory descriptor size
->> > -0x1cc	unsigned long	EFI memory descriptor version
->> > +0x1c4	unsigned long	EFI system table pointer*
->> > +0x1c8	unsigned long	EFI memory descriptor size*
->> > +0x1cc	unsigned long	EFI memory descriptor version*
->> >  0x1d0	unsigned long	EFI memory descriptor map pointer
->> > -0x1d4	unsigned long	EFI memory descriptor map size
->> > +0x1d4	unsigned long	EFI memory descriptor map size*
->> >  0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
->> >  0x1e4	unsigned long	Scratch field for the kernel setup code
->> >  0x1e8	char		number of entries in E820MAP (below)
->> > @@ -87,3 +87,13 @@
->> >  0x2d0 - 0xd00		E820MAP
->> >  0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
->> >  0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
->> > +
->> > +Changes for x86_64 implementation:
->> > +---------------------------------
->> > +For alignment purposes, the following parameters are rearranged.
->> > +
->> > +0x1b8	unsigned long	EFI system table pointer
->> > +0x1c0	unsigned long	EFI Loader signature
->> > +0x1c4	unsigned long	EFI memory descriptor size
->> > +0x1c8	unsigned long	EFI memory descriptor version
->> > +0x1cc	unsigned long	EFI memory descriptor map size
->> 
->> Huh?  It is the same protocol.  Unless there are specific issues such
->> as pointers being to small we should remain 100% the same for both
->> arch/i386 and arch/x86_64   This variation looks like a serious
->> bug.
->
-> The parameters are rearranged, because the pointer is too small. For
-> example, the EFI system table pointer is 8 bytes in x86_64, while it is
-> 4 bytes in i386.
+> ....
+> 
+> fs/unionfs/file.c:147: error: 'file_fsync' undeclared here (not in a function)
+> make[2]: *** [fs/unionfs/file.o] Error 1
+> make[1]: *** [fs/unionfs] Error 2
+> make: *** [fs] Error 2
+> make: *** Waiting for unfinished jobs....
+> 
+> ...
+> 
+> Config can be found there -> http://194.231.229.228/MM/config-auto-3
+> 
 
-Ok.  I see what is happening.  When the documentation is for arch/i386
-unsigned long is 4 bytes, and you are using unsigned long to mean 8
-bytes.  For an 8 byte fields please just spell out the size as 8
-bytes.
+This, I assume:
 
-How does EFI handle 32bit/64bit compatibility?  In particular
-how do I load a 32bit kernel on machine with a 64bit EFI?  Can
-it be done?
+--- a/fs/unionfs/file.c~git-unionfs-fix-2
++++ a/fs/unionfs/file.c
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include "union.h"
++#include <linux/buffer_head.h>
+ 
+ /*******************
+  * File Operations *
+_
 
-Eric
+(and no, sorry, I will not be complicit in that
+single-header-file-which-includes-the-whole-world junk).
+
