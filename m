@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933165AbXHAOFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXHAOHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933165AbXHAOFZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbXHAOFL
+	id S933232AbXHAOHm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932264AbXHAOHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:05:11 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35349 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932187AbXHAOFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:05:09 -0400
-Subject: Re: CFS review
-From: Arjan van de Ven <arjan@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070801135949.GA10839@elte.hu>
-References: <20070711211638.GE18767@one.firstfloor.org>
-	 <20070711214649.GK14435@v2.random>
-	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
-	 <1184302024.6709.11.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
-	 <1184389456.6632.13.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0708010439050.1817@scrub.home>
-	 <20070801112229.GA11710@elte.hu>
-	 <Pine.LNX.4.64.0708011346510.1817@scrub.home>
-	 <20070801135949.GA10839@elte.hu>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Wed, 01 Aug 2007 07:04:34 -0700
-Message-Id: <1185977074.2754.23.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Wed, 1 Aug 2007 10:07:34 -0400
+Received: from styx.suse.cz ([82.119.242.94]:40576 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932164AbXHAOHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 10:07:33 -0400
+Date: Wed, 1 Aug 2007 16:07:33 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: "H. Peter Anvin" <hpa@zytor.com>, Ulrich Kunitz <kune@deine-taler.de>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Jan Kratochvil <honza@jikos.cz>, jakub@redhat.com
+Subject: Re: Is PIE randomization breaking klibc binaries?
+In-Reply-To: <46AF27E6.5080008@zytor.com>
+Message-ID: <Pine.LNX.4.64.0708011604570.6311@jikos.suse.cz>
+References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
+ <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com>
+ <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com>
+ <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de>
+ <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz> <46AF24B2.8070900@zytor.com>
+ <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz> <46AF27E6.5080008@zytor.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 31 Jul 2007, H. Peter Anvin wrote:
 
-> but that's nothing new. CFS cannot conjure up time measurement methods 
-> that do not exist. If you have a low-res clock and if you create an app 
-> that syncs precisely to the tick of that clock via timers that run off 
-> that exact tick then there's nothing the scheduler can do about it. It 
-> is false to charachterise this as 'sleeper starvation' or 'rounding 
-> error' like you did. No amount of rounding logic can create a 
-> high-resolution clock out of thin air.
+> > So it seems to me that either it is something x86_64 specific or 
+> > initramfs-specific. Will try to reproduce it.
+> My guess would be the former, rather than the latter.  I haven't had a 
+> chance to reproduce it myself yet (I'm on the road), but I will try to 
+> get the time tomorrow.
 
+I still wasn't successful reproducing it with 2.6.23-rc1 + 
+pie-randomization.patch with klibc-1.5 on x86_64 system -- all programs 
+from 'shared' and 'static' seem to be running well. 
 
-CFS is only as fair as your clock is good.
+Ulrich, could you please send me your .config? Thanks,
 
-
+-- 
+Jiri Kosina
+SUSE Labs
