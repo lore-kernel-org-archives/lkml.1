@@ -1,43 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763677AbXHABTW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762416AbXHABYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763677AbXHABTW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:19:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000AbXHABTO
+	id S1762416AbXHABYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHABYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:19:14 -0400
-Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:51191 "EHLO
-	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757501AbXHABTO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:19:14 -0400
-Message-ID: <46AFDF3A.6080300@gentoo.org>
-Date: Tue, 31 Jul 2007 21:17:46 -0400
-From: Daniel Drake <dsd@gentoo.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
-MIME-Version: 1.0
-To: Zwane Mwaikambo <zwane@infradead.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>, "Antonino A. Daplas" <adaplas@pol.net>
-Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
- mode
-References: <4678191D.76E4.0078.0@novell.com> <4686D85B.6090803@gentoo.org> <20070630154230.4ad373fa.akpm@linux-foundation.org> <4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org> <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org> <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org> <4693CCC6.7050400@zytor.com> <46AFCCBB.70307@gentoo.org> <Pine.LNX.4.64.0707311719540.5207@montezuma.windriver.com>
-In-Reply-To: <Pine.LNX.4.64.0707311719540.5207@montezuma.windriver.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Jul 2007 21:24:25 -0400
+Received: from mx2.suse.de ([195.135.220.15]:55708 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754857AbXHABYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 21:24:24 -0400
+Date: Wed, 1 Aug 2007 03:24:21 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       arjan@linux.intel.com, mingo@elte.hu, ak@suse.de, jens.axboe@oracle.com,
+       James.Bottomley@SteelEye.com, andrea@suse.de, akpm@linux-foundation.org,
+       andrew.vasquez@qlogic.com
+Subject: Re: [rfc] direct IO submission and completion scalability issues
+Message-ID: <20070801012421.GF31006@wotan.suse.de>
+References: <20070728012128.GB10033@linux-os.sc.intel.com> <Pine.LNX.4.64.0707301114060.743@schroedinger.engr.sgi.com> <20070730203519.GD10033@linux-os.sc.intel.com> <20070731041917.GA25874@wotan.suse.de> <20070731171403.GL3318@linux-os.sc.intel.com> <20070801004117.GE31006@wotan.suse.de> <20070801005513.GE10033@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070801005513.GE10033@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zwane Mwaikambo wrote:
-> Sorry if this has been hashed out before, but could you point me towards 
-> the gentoo bugzilla entry? I'm trying to understand how your setup broke. 
-> Which version VBE does your system have?
+On Tue, Jul 31, 2007 at 05:55:13PM -0700, Suresh B wrote:
+> On Wed, Aug 01, 2007 at 02:41:18AM +0200, Nick Piggin wrote:
+> > On Tue, Jul 31, 2007 at 10:14:03AM -0700, Suresh B wrote:
+> > > task by taking away some of its cpu time. With CFS micro accounting, perhaps
+> > > we can track irq, softirq time and avoid penalizing the running task's cpu
+> > > time.
+> > 
+> > But you "penalize" the running task in the completion handler as well
+> > anyway.
+> 
+> Yes.
+> 
+> Ingo, in general with CFS micro accounting, we should be able to avoid
+> penalizing the running task by tracking irq/softirq time. Isn't it?
+> 
+> > Doing this with a SCHED_FIFO task is sort of like doing interrupt
+> > threading which AFAIK has not been accepted (yet).
+> 
+> I am not recommending SCHED_FIFO. I will take a look at softirq
+> infrastructure for this.
 
-Here's the bug:
-http://bugs.gentoo.org/show_bug.cgi?id=181067
+I think that would be a fine way to go.
 
-How can we identify the VBE version?
 
-Thanks,
-Daniel
+> > > This workload is using direct IO and there is no batching at the block layer
+> > > for direct IO. IO is submitted to the HW as it arrives.
+> > 
+> > So you aren't putting concurrent requests into the queue? Sounds like
+> > userspace should be improved.
+> 
+> Nick remember that there are hundreds of disks in this setup and at
+> an instance, there will be max 1 or 2 requests per disk.
+
+Well if there is 2 requests per disk, that's a good thing; you won't
+need to unplug. If there is only 1, then as well as the plugging cost,
+the hardeware loses some ability to pipeline things effectively.
+
+I'm not saying the kernel shouldn't be improved in the latter case, but
+if you're looking for performance, it is nice to ensure you have at
+least 2 requests. Presumably you're using some pretty well tuned db
+software though, so I guess this is not always possible.
+
+Do you have stats for these things (queue empty vs not empty events,
+unplugs, etc)? 
+
+
+> > > It is applicable for both direct IO and buffered IO. But the implementations
+> > > will differ. For example in buffered IO, we can setup in such a way that the
+> > > block plug timeout function runs on the IO completion cpu.
+> > 
+> > It would be nice to be doing that anyway. But unplug via request submission
+> > rather than timeout is fairly common in buffered loads too.
+> 
+> Ok. Currently the patch handles both direct and buffered IO. While making
+> improvements to this patch I will make sure that both the paths take
+> advantage of this.
+
+Sounds good!
+
