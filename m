@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763177AbXHABdd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932082AbXHABey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763177AbXHABdd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:33:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755165AbXHABd0
+	id S932082AbXHABey (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbXHABep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:33:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:52836 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753775AbXHABdZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:33:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: trelane@digitasaru.net
-Cc: Al Viro <viro@ftp.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: inotify and /proc/<pid>
-In-Reply-To: Your message of "Mon, 30 Jul 2007 22:56:27 CDT."
-             <20070731035626.GG6812@digitasaru.net>
-From: Valdis.Kletnieks@vt.edu
-References: <20070731021615.GB6812@digitasaru.net> <20070731031720.GF21089@ftp.linux.org.uk> <20070731032521.GD6812@digitasaru.net> <20070731033113.GE6812@digitasaru.net> <20070731033631.GH21089@ftp.linux.org.uk> <20070731034059.GF6812@digitasaru.net> <20070731035023.GI21089@ftp.linux.org.uk>
-            <20070731035626.GG6812@digitasaru.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1185931991_12501P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Tue, 31 Jul 2007 21:34:45 -0400
+Received: from mga01.intel.com ([192.55.52.88]:59816 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751286AbXHABeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 21:34:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,206,1183359600"; 
+   d="scan'208";a="275019479"
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
+	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20070731110458.GA1777@elf.ucw.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	 <20070731110458.GA1777@elf.ucw.cz>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Jul 2007 21:33:11 -0400
-Message-ID: <13954.1185931991@turing-police.cc.vt.edu>
+Date: Wed, 01 Aug 2007 09:34:31 +0800
+Message-Id: <1185932071.1363.13.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 01 Aug 2007 01:34:40.0264 (UTC) FILETIME=[20F68080:01C7D3DC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1185931991_12501P
-Content-Type: text/plain; charset=us-ascii
-
-On Mon, 30 Jul 2007 22:56:27 CDT, Joseph Pingenot said:
-> From Al Viro on Tuesday, 31 July, 2007:
-> >On Mon, Jul 30, 2007 at 10:40:59PM -0500, Joseph Pingenot wrote:
-> >> I'm trying to implement pwait.  It blocks until a specified PID exits,
-> >>   and then it exits.
-> >er... ptrace(2)?
+On Tue, 2007-07-31 at 13:04 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> Should work for most common usage scenarios, although will suspect that it
->   won't for for processes owned by another user (at least, I hope
->   it wouldn't).
+> > 3. Boot kernel compiled for normal usage, the reserved crash kernel
+> >    memory region must be added to kernel command line as following:
+> > 
+> >    crashkernel=<XX>M@<XX>M
+> > 
+> >    Where, <XX> should be replaced by the real memory size and
+> > position.
 > 
-> What is dangerous about inotify on a proc file?
+> I used crashkernel=64M@64M .
+> 
+> 
+> > 4. Load kernel compiled for hibernating usage as a crashdump kernel
+> >    with kexec, the same kernel as that of 3 can be used if
+> >    CONFIG_RELOCATABLE=y is selected. The kernel command line option as
+> >    following must be appended to kernel command line.
+> > 
+> >    kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`
+> > 
+> >    For example, the shell command line can be as follow:
+> > 
+> >    kexec -p /boot/vmlinux --args-linux --append="root=/dev/hdb signal
+> >        kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+> 
+> I think I followed the instructions closely. Now I'm trying to do 
+> 
+> kexec -p /data/l/linux/vmlinux --args-linux --append="init=/bin/bash
+> kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+> 
+> but it tells me:
+> 
+> Invalid memory segment 0x100000 - 0x7a0fff
+> 
+> (and nothing in dmesg) 
+> 
+> If I try to load bzImage (corresponding to vmlinux I tried to use),  I
+> get:
+> 
+> root@amd:~# kexec -p /data/l/linux/arch/i386/boot/bzImage --append="init=/bin/bash kexec_jump_buf_pfn=`cat /sys/kernel/kexec_jump_buf_pfn`"
+> Could not find a free area of memory of 9000 bytes...
+> locate_hole failed
+> root@amd:~#
+> 
+> What am I doing wrong?
 
-And if it's dangerous, should the inotify system call fail when trying to
-set the watch?  Bailout with a -EBADIDEA or something?
+The kexec-tools version 1.101 does not work perfectly with relocatable
+kernel. This would have been solved if I worked against kexec-tools
+testing tree. I will work against testing tree in the next version.
 
+But, with some trick, it can work. When configure kernel, make sure the
+following option is set:
 
---==_Exmh_1185931991_12501P
-Content-Type: application/pgp-signature
+CONFIG_PHYSICAL_START=0x4000000 # if crashkernel=<XX>M@64M
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGr+LXcC3lWbTT17ARAtqbAJ94kSIa8Xy8ZizU1edU13gDI3UOiwCcDLy6
-m7T3X2f0pOrQbIhZ6qKaKQY=
-=VMHn
------END PGP SIGNATURE-----
-
---==_Exmh_1185931991_12501P--
+Best Regards,
+Huang Ying
