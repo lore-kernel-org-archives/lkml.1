@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765576AbXHATwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763390AbXHAUCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765576AbXHATwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761020AbXHATwZ
+	id S1763390AbXHAUCq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 16:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbXHAUCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:52:25 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:45757 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757599AbXHATwX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:52:23 -0400
-Subject: Re: [RFC 12/26] ext2 white-out support
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
-In-Reply-To: <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
-References: <20070730161323.100048969@weierstrass.suse.de>
-	 <20070730161324.261652101@weierstrass.suse.de>
-	 <20070731163656.GC22350@filer.fsl.cs.sunysb.edu>
-	 <20070731170012.GN5101@hasse.suse.de>
-	 <20070731171159.GA27234@filer.fsl.cs.sunysb.edu>
-	 <1185981810.18007.14.camel@kleikamp.austin.ibm.com>
-	 <20070801184405.GA18405@filer.fsl.cs.sunysb.edu>
-	 <1185995431.18007.24.camel@kleikamp.austin.ibm.com>
-	 <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 14:52:21 -0500
-Message-Id: <1185997941.18007.30.camel@kleikamp.austin.ibm.com>
+	Wed, 1 Aug 2007 16:02:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52320 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbXHAUCg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 16:02:36 -0400
+Date: Wed, 1 Aug 2007 21:02:33 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] [PATCH] Deprecate a.out ELF interpreters
+Message-ID: <20070801200233.GA30240@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jan Engelhardt <jengelh@computergmbh.de>,
+	Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org
+References: <200708011433.09433.ak@novell.com> <Pine.LNX.4.64.0708012029130.26668@fbirervta.pbzchgretzou.qr> <200708012035.52863.ak@novell.com> <Pine.LNX.4.64.0708012125290.26668@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708012125290.26668@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 15:33 -0400, Josef Sipek wrote:
-> On Wed, Aug 01, 2007 at 02:10:31PM -0500, Dave Kleikamp wrote:
-> > On Wed, 2007-08-01 at 14:44 -0400, Josef Sipek wrote:
-> > > Now what? How do you rename? Do you rename in the same branch (assuming it
-> > > is rw)?
-> > 
-> > Er, no.  According to Documentation/filesystems/union-mounts.txt, "only
-> > the topmost layer of the mount stack can be altered".
+On Wed, Aug 01, 2007 at 09:26:10PM +0200, Jan Engelhardt wrote:
 > 
-> This brings up an very interesting (but painful) question...which makes more
-> sense? Allowing the modifications in only the top-most branch, or any branch
-> (given the user allows it at mount-time)?
-
-Your examples point out the complexity of trying to allow modifications
-at lower levels.  It seems to me to be simpler (even if recursive copies
-are needed) to leave it as proposed.
-
-> This is really question to the community at large, not just you, Dave :)
-
-I agree, but I have to add my $.02.
-
-> > > 1) "cp -r" the entire subtree being renamed to highest-priority branch, and
-> > > rename there (you might have to recreate a series of directories to have a
-> > > place to "cp" to...so you got "cp -r" _AND_ "mkdir -p"-like code in the VFS!
-> > > 1/2 a :) )
-> > 
-> > I think this is the only alternative, given the design.
+> On Aug 1 2007 20:35, Andi Kleen wrote:
+> >> On Aug 1 2007 14:33, Andi Kleen wrote:
+> >> >Comments?
+> >> 
+> >> A kconfig entry "(OBSOLETE)"/"(DEPRECATED)" would be nice.
+> >> (And if you want to test people, 'depends on EMBEDDED' for CONFIG_BINFMT_AOUT)
+> >
+> >The point is to have less clutter in binfmt_elf.c (which really
+> >could need a rewrite btw or at least a lot of cleanup) not add more in form 
+> >of ifdefs.
 > 
-> Right. Doing something like this at the filesystem level (as we do in
-> unionfs) seems less painful - filesystems are places full of all sorts of
-> nefarious activities to begin with. Having it in the VFS seems...even
-> uglier.
-
-I haven't looked at either implementation close enough to offer an
-opinion here that I would be able to defend.  I'm sure others have their
-opinions.
-
-> Josef 'Jeff' Sipek.
 > 
+> ---
+>  fs/Kconfig.binfmt |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.23/fs/Kconfig.binfmt
+> ===================================================================
+> --- linux-2.6.23.orig/fs/Kconfig.binfmt
+> +++ linux-2.6.23/fs/Kconfig.binfmt
+> @@ -56,7 +56,7 @@ config BINFMT_SHARED_FLAT
+>  	  Support FLAT shared libraries
+>  
+>  config BINFMT_AOUT
+> -	tristate "Kernel support for a.out and ECOFF binaries"
+> +	tristate "Kernel support for a.out and ECOFF binaries (OBSOLETE)"
 
-Thanks,
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+NAK, binfmt a.out support is something entirely different from what
+we're talking about here.
