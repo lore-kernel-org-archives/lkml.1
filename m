@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbXHAH0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761503AbXHAH1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760807AbXHAH0s (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbXHAH0l
+	id S1761503AbXHAH1j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756712AbXHAH1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:26:41 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37397 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751742AbXHAH0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:26:40 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/7Imo/5eP7Po9BxeskW4NZI5sVlzW1l2xibLfaVL
-	SeKmXheDprs/QU
-Subject: Re: CFS review
-From: Mike Galbraith <efault@gmx.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Roman Zippel <zippel@linux-m68k.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070801071230.GA16375@elte.hu>
-References: <p734pkbyuu4.fsf@bingen.suse.de>
-	 <20070711174252.GA16793@elte.hu>
-	 <20070711211638.GE18767@one.firstfloor.org>
-	 <20070711214649.GK14435@v2.random>
-	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
-	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
-	 <1184302024.6709.11.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
-	 <1184389456.6632.13.camel@Homer.simpson.net>
-	 <Pine.LNX.4.64.0708010439050.1817@scrub.home>
-	 <20070801071230.GA16375@elte.hu>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 09:26:35 +0200
-Message-Id: <1185953195.6388.21.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 1 Aug 2007 03:27:32 -0400
+Received: from mithrandir.softwarenexus.net ([66.98.186.96]:4701 "EHLO
+	mail.genesi-usa.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756775AbXHAH1b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 03:27:31 -0400
+Message-ID: <46B0361C.2060709@genesi-usa.com>
+Date: Wed, 01 Aug 2007 08:28:28 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+CC: linuxppc-dev@ozlabs.org, Alan Curry <pacman@theworld.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
+References: <200707250128.l6P1SWSF1336935@shell01.TheWorld.com>	<3a538bd3f5db759abb55a661e6e94c7a@kernel.crashing.org> <46B03561.9090800@genesi-usa.com>
+In-Reply-To: <46B03561.9090800@genesi-usa.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 09:12 +0200, Ingo Molnar wrote:
-> Roman,
-> 
-> Thanks for the testing and the feedback, it's much appreciated! :-) On
-> what platform did you do your tests, and what .config did you use (and
-> could you please send me your .config)?
-> 
-> Please also send me the output of this script:
-> 
->   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
-> 
-> (if the output is too large send it to me privately, or bzip2 -9 it.)
-> 
-> Could you also please send the source code for the "l.c" and "lt.c" apps
-> you used for your testing so i can have a look. Thanks!
 
-I haven't been able to reproduce this with any combination of features,
-and massive_intr tweaked to his work/sleep cycle.  I notice he's
-collecting stats though, and they look funky.  Recompiling.
+Just so you guys have it all in one pretty little package, these will remove
+the need for the Pegasos IDE and ISA fixups in the prom_init.c too.
 
-	-Mike
+s" /pci@80000000/ide@C,1" find-device
+d# 14 encode-int 0 encode-int
+d# 15 encode-int 0 encode-int
+encode+ encode+ encode+ s" interrupts" property
+0x1018a encode-int s" class-code" property
+device-end
 
+s" /pci@80000000/isa@C" find-device
+0x1 encode-int 0x0 encode-int 0x1006000 encode-int
+0x0 encode-int 0x0 encode-int 0x1000 encode-int
+encode+ encode+ encode+ encode+ encode+ s" ranges" property
+device-end
+
+If anyone wants to test and confirm the 8042 fix and then we can add
+it to the end here.. we can unclutter the kernel.
+
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
+
+Matt Sealey wrote:
+> Yeah please do a fixup for the boot wrapper.
+> 
+> Or, if you have trouble, go into the firmware and type "nvedit", add
+> these lines;
+> 
+> " /isa/8042" find-device
+> " 8042" encode-string device-type
+> 
+> (then ctrl-c to exit and nvstore to run it on next reboot. Try it without
+> the patch first, on the firmware console, just to be sure I got it right,
+> because I can't test it here)
+> 
+> You don't need to patch Linux at all. In fact for silly things like this
+> I would recommend against it :)
+> 
