@@ -1,127 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765642AbXHASoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933383AbXHASor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765642AbXHASoc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759334AbXHASoU
+	id S933383AbXHASor (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:44:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbXHASoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:44:20 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:2799 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757094AbXHASoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:44:17 -0400
-X-Server-Uuid: 20144BB6-FB76-4F11-80B6-E6B2900CA0D7
-Subject: Re: [REGRESSION] tg3 dead after s2ram
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Joachim Deguara" <joachim.deguara@amd.com>
-cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "lkml List" <linux-kernel@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "netdev" <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
-In-Reply-To: <200708011001.24384.joachim.deguara@amd.com>
-References: <20070731174522.b141178a.akpm@linux-foundation.org>
- <1185954811.5552.7.camel@dell>
- <200708011001.24384.joachim.deguara@amd.com>
-Date: Wed, 01 Aug 2007 10:47:46 -0700
-Message-ID: <1185990466.5552.34.camel@dell>
+	Wed, 1 Aug 2007 14:44:23 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:60483 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757760AbXHASoS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:44:18 -0400
+Date: Wed, 1 Aug 2007 14:44:05 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070801184405.GA18405@filer.fsl.cs.sunysb.edu>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <20070731170012.GN5101@hasse.suse.de> <20070731171159.GA27234@filer.fsl.cs.sunysb.edu> <1185981810.18007.14.camel@kleikamp.austin.ibm.com>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AAE0BF339C6285-07-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185981810.18007.14.camel@kleikamp.austin.ibm.com>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 10:01 +0200, Joachim Deguara wrote:
-
-> Here are the lspci outputs for the tg3
-
-You have 2 Broadcom devices in your system.  07:00.0 is a wireless
-device, I think.  8:4.0 is the tg3 device.
-
-It's clear that the tg3 device is still in D3 state after resume and
-that explains why all register accesses fail.  tg3_resume() should put
-the device back in D0 state in a very straight forward way and I don't
-see how that can fail.  It worked for me when I tested it last night.
-Can you add some printk() to tg3_resume() to see what's happening?  Let
-me know if you want me to send you some debug patches to do that.
-
-Thanks.
-
-Here's the before and after for 8:4.0:
-
+On Wed, Aug 01, 2007 at 10:23:29AM -0500, Dave Kleikamp wrote:
+> On Tue, 2007-07-31 at 13:11 -0400, Josef Sipek wrote:
+> > On Tue, Jul 31, 2007 at 07:00:12PM +0200, Jan Blunck wrote:
+> > > On Tue, Jul 31, Josef Sipek wrote:
+> > > 
+> > > > On Mon, Jul 30, 2007 at 06:13:35PM +0200, Jan Blunck wrote:
+> > > > > Introduce white-out support to ext2.
+> > > > 
+> > > > I think storing whiteouts on the branches is wrong. It creates all sort of
+> > > > nasty cases when people actually try to use unioning. Imagine a (no-so
+> > > > unlikely) scenario where you have 2 unions, and they share a branch. If you
+> > > > create a whiteout in one union on that shared branch, the whiteout magically
+> > > > affects the other union as well! Whiteouts are a union-level construct, and
+> > > > therefore storing them at the branch level is wrong.
+> > > 
+> > > So you think that just because you mounted the filesystem somewhere else it
+> > > should look different? This is what sharing is all about. If you share a
+> > > filesystem you also share the removal of objects.
+> > 
+> > The removal happens at the union level, not the branch level. Say you have:
+> > 
+> > /a/
+> > /b/foo
+> > /c/foo
+> > 
+> > And you mount /u1 as a union of {a,b}, and /u2 as union of {a,c}.
 > 
-> Before
->
-> 08:04.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5788 Gigabit 
-> Ethernet (rev 03)
-> 	Subsystem: Acer Incorporated [ALI] Unknown device 010e
-> 	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- 
-> SERR- FastB2B-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- 
-> <MAbort- >SERR- <PERR-
-> 	Latency: 0 (16000ns min)
-> 	Interrupt: pin A routed to IRQ 22
-> 	Region 0: Memory at d0300000 (32-bit, non-prefetchable) [size=64K]
-> 	Expansion ROM at <ignored> [disabled]
-> 	Capabilities: [48] Power Management version 2
-> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
-> 	Capabilities: [50] Vital Product Data
-> 	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 
-> Enable-
-> 		Address: ffff6bfe7fffffb8  Data: fec7
-> 00: e4 14 9c 16 06 00 b0 02 03 00 00 02 00 00 00 00
-> 10: 00 00 30 d0 00 00 00 00 00 00 00 00 00 00 00 00
-> 20: 00 00 00 00 00 00 00 00 07 00 00 00 25 10 0e 01
-> 30: 00 00 ff ff 48 00 00 00 00 00 00 00 0a 01 40 00
-> 40: 00 00 00 00 00 00 00 00 01 50 02 c0 00 20 00 00
-> 50: 03 58 fc 00 6f bf be 7f 05 00 86 00 b8 ff ff 7f
-> 60: fe 6b ff ff c7 fe 00 00 98 00 03 30 00 00 3f 76
-> 70: f6 10 00 00 20 00 00 80 14 04 00 00 00 00 00 00
-> 80: 85 6b d0 36 03 40 00 0c 34 00 13 04 82 90 09 04
-> 90: 09 97 00 01 00 00 00 00 00 00 00 00 eb 01 00 00
-> a0: 00 00 00 00 23 01 00 00 00 00 00 00 cb 00 00 00
-> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 
-> After
-> 
-> 08:04.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5788 Gigabit 
-> Ethernet (rev 03)
-> 	Subsystem: Acer Incorporated [ALI] Unknown device 010e
-> 	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- 
-> SERR- FastB2B-
-> 	Status: Cap+ 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- 
-> <MAbort- >SERR- <PERR-
-> 	Interrupt: pin A routed to IRQ 22
-> 	Region 0: Memory at d0300000 (32-bit, non-prefetchable) [disabled] [size=64K]
-> 	Expansion ROM at <ignored> [disabled]
-> 	Capabilities: [48] Power Management version 2
-> 		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot+,D3cold+)
-> 		Status: D0 PME-Enable+ DSel=0 DScale=1 PME-
-> 	Capabilities: [50] Vital Product Data
-> 	Capabilities: [58] Message Signalled Interrupts: Mask- 64bit+ Queue=0/3 
-> Enable-
-> 		Address: ffff6bfe7fffffb8  Data: fec7
-> 00: e4 14 9c 16 00 00 b0 02 03 00 00 02 00 00 00 00
-> 10: 00 00 30 d0 00 00 00 00 00 00 00 00 00 00 00 00
-> 20: 00 00 00 00 00 00 00 00 07 00 00 00 25 10 0e 01
-> 30: 00 00 ff ff 48 00 00 00 00 00 00 00 0a 01 40 00
-> 40: 00 00 00 00 00 00 00 00 01 50 02 c0 00 21 00 64
-> 50: 03 58 fc 00 6f bf be 7f 05 00 86 00 b8 ff ff 7f
-> 60: fe 6b ff ff c7 fe 00 00 9a 00 03 30 00 00 00 00
-> 70: 76 10 00 00 40 00 00 00 50 00 00 00 00 00 00 00
-> 80: 03 58 fc 00 00 00 00 00 00 00 00 00 fe 90 09 04
-> 90: 01 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-> 
+> Who does this?  I'm assuming that a is the "top" layer.  Aren't union
+> mounts typically about sharing lower layers and having a separate rw
+> layer for each union mount?
+ 
+Alright not the greatest of examples, there is something to be said about
+symmetry, so...let me try again :)
 
+/a/
+/b/bar		(whiteout for bar)
+/c/foo/qwerty
 
+Now, let's mount a union of {a,b,c}, and we'll see:
+
+$ find /u
+/u
+/u/foo
+/u/foo/qwerty
+$ mv /u/foo /u/bar
+
+Now what? How do you rename? Do you rename in the same branch (assuming it
+is rw)? If you do, you'll get:
+
+$ find /u
+/u
+
+Oops! There's a whiteout in /b that hides the directory in /c -- rename(2)
+shouldn't make directory subtrees disappear.
+
+There are two ways to solve this:
+
+1) "cp -r" the entire subtree being renamed to highest-priority branch, and
+rename there (you might have to recreate a series of directories to have a
+place to "cp" to...so you got "cp -r" _AND_ "mkdir -p"-like code in the VFS!
+1/2 a :) )
+
+2) Don't store whiteouts within branches. This makes it really easy to
+rename and remove the whiteout.
+
+Sure, you could try to rename in-place and remove the whiteout, but what if
+you have:
+
+/a/
+/b/bar		(whiteout)
+/c/bar/blah
+/d/foo/qwerty
+
+$ mv /u/foo /u/bar
+
+You can't just remove the whiteout, because that'd uncover the whited-out
+directory bar in /c.
+
+Josef 'Jeff' Sipek.
+
+-- 
+Bad pun of the week: The formula 1 control computer suffered from a race
+condition
