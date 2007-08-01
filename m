@@ -1,110 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbXHAEN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbXHAERh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756535AbXHAEN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 00:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbXHAENT
+	id S1756897AbXHAERh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 00:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbXHAERa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 00:13:19 -0400
-Received: from smtp3.Stanford.EDU ([171.67.20.26]:37663 "EHLO
-	smtp3.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbXHAENS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 00:13:18 -0400
-Subject: Re: [Fwd: [PlanetCCRMA] atl1 driver; sleeping function]
-From: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Matt Barber <brbrofsvl@gmail.com>, nando@ccrma.Stanford.EDU
-In-Reply-To: <20070731085122.GC14758@elte.hu>
-References: <1185852942.32478.3.camel@cmn3.stanford.edu>
-	 <20070731085122.GC14758@elte.hu>
-Content-Type: text/plain
-Date: Tue, 31 Jul 2007 21:13:14 -0700
-Message-Id: <1185941594.8994.13.camel@cmn3.stanford.edu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 00:17:30 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2379 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751258AbXHAER3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 00:17:29 -0400
+Date: Wed, 1 Aug 2007 06:17:29 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: jos poortvliet <jos@mijnkamer.nl>, ck@vds.kolivas.org,
+       Michael Chang <thenewme91@gmail.com>,
+       Kasper Sandberg <lkml@metanurb.dk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1
+In-Reply-To: <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708010539230.1818@scrub.home>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+ <200707282003.45142.jos@mijnkamer.nl> <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>
+ <200707282128.39906.jos@mijnkamer.nl> <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 10:51 +0200, Ingo Molnar wrote:
-> * Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU> wrote:
-> 
-> > Hi Ingo, I'm forwading this report from a Planet CCRMA user, this is 
-> > happening to him with 2.6.21.6-rt21...
-> 
-> thanks!
+Hi,
 
-Thanks for the patch!
-Looks like it fixed the problem Matt was having...
--- Fernando
+On Sat, 28 Jul 2007, Linus Torvalds wrote:
 
--------- Forwarded Message --------
-From: Matt Barbe
-To: Fernando Lopez-Lezcano
-Cc: planetccrma@ccrma.Stanford.EDU
-Subject: Re: [PlanetCCRMA] atl1 driver; sleeping function
-Date: Tue, 31 Jul 2007 22:50:28 -0400
+> We've had people go with a splash before. Quite frankly, the current 
+> scheduler situation looks very much like the CML2 situation. Anybody 
+> remember that? The developer there also got rejected, the improvement was 
+> made differently (and much more in line with existing practices and 
+> maintainership), and life went on. Eric Raymond, however, left with a 
+> splash.
 
-The newly patched atl1 driver seems to be working fine.  I tried it
-also in rt21.3 (that's the latest src.rpm in
-http://ccrma.stanford.edu/planetccrma/mirror/all/linux/SRPMS/), and it
-also worked fine -- I need kernel-rt-devel because I do use apps that
-need nvidia drivers, and those are working fine in rt21.3 as well.  I
-can keep you up to date if anything negative happens.
+Since I was directly involved I'd like to point out a key difference.
 
-Thanks again,
+http://lkml.org/lkml/2002/2/21/57 was the very first start of Kconfig and 
+initially I didn't plan on writing a new config system. At the beginning 
+there was only the converter, which I did to address the issue that Eric 
+created a complete new and different config database, so the converter was 
+meant to create a more acceptable transition path. What happened next is 
+that I haven't got a single response from Eric, so I continued hacking on 
+it until was complete.
 
-Matt
+The key difference is now that Eric refused the offered help, while Con 
+was refused the help he needed to get his work integrated.
 
-> 
-> > BUG: sleeping function called from invalid context IRQ-219(2243) at
-> > kernel/rtmutex.c:613
-> > in_atomic():0 [00000000], irqs_disabled():1
-> >  [<c0405f88>] dump_trace+0x64/0x105
-> >  [<c0406041>] show_trace_log_lvl+0x18/0x2c
-> >  [<c040664e>] show_trace+0xf/0x11
-> >  [<c04066cf>] dump_stack+0x12/0x14
-> >  [<c060511d>] __rt_spin_lock+0x21/0x3d
-> >  [<f8a20e0c>] atl1_xmit_frame+0x66f/0x6c6 [atl1]
-> >  [<c05a3d96>] dev_hard_start_xmit+0x1c6/0x225
-> >  [<c05b29bd>] __qdisc_run+0xb7/0x1cf
-> 
-> could you try the patch below, does it fix the problem? The atl1 driver 
-> uses raw irq flags in combination with a spinlock that is a sleeping 
-> lock on -rt. (this is valid code on upstream, fortunately the -rt fix is 
-> also a cleanup and a small code reduction enhancement on upstream, so 
-> there's no problem pushing such fixes upstream.)
-> 
-> 	Ingo
-> 
-> --------------------------->
-> Subject: [patch] drivers/net/atl1/atl1_main.c: use spin_trylock_irqsave()
-> From: Ingo Molnar <mingo@elte.hu>
-> 
-> use the simpler spin_trylock_irqsave() API to get the adapter lock.
-> 
-> [ this is also a fix for -rt where adapter->lock is a sleeping lock. ]
-> 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/net/atl1/atl1_main.c |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> Index: linux-rt-rebase.q/drivers/net/atl1/atl1_main.c
-> ===================================================================
-> --- linux-rt-rebase.q.orig/drivers/net/atl1/atl1_main.c
-> +++ linux-rt-rebase.q/drivers/net/atl1/atl1_main.c
-> @@ -1704,10 +1704,8 @@ static int atl1_xmit_frame(struct sk_buf
->  		}
->  	}
->  
-> -	local_irq_save(flags);
-> -	if (!spin_trylock(&adapter->lock)) {
-> +	if (!spin_trylock_irqsave(&adapter->lock, flags)) {
->  		/* Can't get lock - tell upper layer to requeue */
-> -		local_irq_restore(flags);
->  		dev_printk(KERN_DEBUG, &adapter->pdev->dev, "tx locked\n");
->  		return NETDEV_TX_LOCKED;
->  	}
+When Ingo posted his rewrite http://lkml.org/lkml/2007/4/13/180, Con had 
+already pretty much lost. I have no doubt that Ingo can quickly transform 
+an idea into working code and I would've been very surprised if he 
+wouldn't be able to turn it into something technically superior. When Ingo 
+figured out how to implement fair scheduling in a better way, he didn't 
+use this idea to help Con to improve his work. He decided instead to 
+work against Con and started his own rewrite, this is of course his right 
+to do, but then he should also accept the responsibility that Con felt his 
+years of work ripped apart and in vain and we have now lost a developer 
+who tried to address things from a different perspective.
 
+bye, Roman
