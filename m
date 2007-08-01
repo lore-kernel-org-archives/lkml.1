@@ -1,55 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbXHAPez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbXHAPgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbXHAPez (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXHAPep
+	id S1758098AbXHAPgT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbXHAPgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:34:45 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:49055 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656AbXHAPeo (ORCPT
+	Wed, 1 Aug 2007 11:36:09 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:50170 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751301AbXHAPgH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:34:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=bMxuV6ajp6GiT4Am4kzC/BpyTYFojZSSrx9iVhXEOW6Xj1ZifflHhmpb8FV09KPV7Ef0b8ExsUhVYbpQE4Alt1hKlI//FU4s4KIfbq8QNE1UBYGbvjqWx+UF5AC3CfPc4UETH7vdwGOLJrbGQybYWRce/Rym3exW3RHktAylvu4=
-Message-ID: <46B0A7F7.3050301@googlemail.com>
-Date: Wed, 01 Aug 2007 17:34:15 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 1 Aug 2007 11:36:07 -0400
+X-Sasl-enc: U8LgaHh1AX103SUCDFJdR7xR4i5Q80bDNwZhHvZhQ/fb 1185982566
+Date: Wed, 1 Aug 2007 12:36:02 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Len Brown <len.brown@intel.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net,
+       Richard Hughes <hughsient@gmail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: THINKPAD_ACPI_INPUT_ENABLED seems regressive
+Message-ID: <20070801153602.GJ23111@khazad-dum.debian.net>
+References: <Pine.LNX.4.64.0708011327200.4615@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Remove stat.h from drivers/scsi/a3000.c
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011327200.4615@blonde.wat.veritas.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Cc's added.
 
-"There is no reason at all for a scsi driver to include stat.h"
--- Christoph Hellwig
+On Wed, 01 Aug 2007, Hugh Dickins wrote:
+> When updating this IBM ThinkPad T43p from 2.6.22 to 2.6.23-rc1
+> using make oldconfig, the text and default Y of
+> 
+> config THINKPAD_ACPI_INPUT_ENABLED
+> 	bool "Enable input layer support by default"
+> 	depends on THINKPAD_ACPI
+> 	default y
+> 	---help---
+> 	  Enables hot key handling over the input layer by default.  If unset,
+> 	  the driver does not enable any hot key handling by default, and also
+> 	  starts up with a mostly empty keymap.
+> 
+> 	  If you are not sure, say Y here.  Say N to retain the deprecated
+> 	  behavior of ibm-acpi, and thinkpad-acpi for kernels up to 2.6.21.
+> 
+> made it sound like a good thing, so I configured it Y.  But its only
+> effect seems to be to disable the key I use most, Fn+F4 to suspend to
+> RAM.  It also disables Fn+F3 to blank the screen, though I don't use
+> that one; but does not disable the brightness and ThinkLight keys,
+> presumably because they just get mapped to KEY_RESERVED.
 
-Regards,
-Michal
+Actually, it doesn't disable the keys, but it routes them differently, so it
+will work well only if you have very up-to-date HAL, etc.
 
---
-LOG
-http://www.stardust.webpages.pl/log/
+Richard, Matthew, would the HAL crowd be unhappy if I switch that default?
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Distros with new enough userland would be expected to compile the kernel
+with THINKPAD_ACPI_INPUT_ENABLED, though.
 
---- linux-mm-clean/drivers/scsi/a3000.c	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/drivers/scsi/a3000.c	2007-08-01 17:32:34.000000000 +0200
-@@ -18,8 +18,6 @@
- #include "wd33c93.h"
- #include "a3000.h"
- 
--#include<linux/stat.h>
--
- #define DMA(ptr) ((a3000_scsiregs *)((ptr)->base))
- #define HDATA(ptr) ((struct WD33C93_hostdata *)((ptr)->hostdata))
- 
+> I get along fine now with THINKPAD_ACPI_INPUT_ENABLED disabled; but
+> suggest that its text is misleading, and default Y questionable.
+> Or perhaps there's a bug, and I can help try patches.
+
+No bug in he code.  The help text should clearly be improved, and the
+default could be switched to N.  I will send in a patch, after I get a few
+comments.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
