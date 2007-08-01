@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758490AbXHASN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763250AbXHASOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758490AbXHASN2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbXHASNS
+	id S1763250AbXHASOp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXHASOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:13:18 -0400
-Received: from mail.screens.ru ([213.234.233.54]:52802 "EHLO mail.screens.ru"
+	Wed, 1 Aug 2007 14:14:37 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4336 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750811AbXHASNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:13:17 -0400
-Date: Wed, 1 Aug 2007 22:12:53 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Daniel Walker <dwalker@mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       Gregory Haskins <ghaskins@novell.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
-Message-ID: <20070801181253.GA90@tv-sign.ru>
-References: <20070801002407.4973.54778.stgit@novell1.haskins.net> <1185940340.2636.97.camel@imap.mvista.com> <1185987663.12034.99.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1185987663.12034.99.camel@twins>
-User-Agent: Mutt/1.5.11
+	id S1752947AbXHASOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:14:36 -0400
+Date: Wed, 1 Aug 2007 20:14:44 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+In-Reply-To: <20070801174119.GA9152@elte.hu>
+Message-ID: <Pine.LNX.4.64.0708012001280.1817@scrub.home>
+References: <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801112229.GA11710@elte.hu>
+ <Pine.LNX.4.64.0708011346510.1817@scrub.home> <20070801135949.GA10839@elte.hu>
+ <Pine.LNX.4.64.0708011622400.1817@scrub.home> <20070801174119.GA9152@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01, Peter Zijlstra wrote:
->
-> On Tue, 2007-07-31 at 20:52 -0700, Daniel Walker wrote:
+Hi,
+
+On Wed, 1 Aug 2007, Ingo Molnar wrote:
+
+> > [...] I didn't say 'sleeper starvation' or 'rounding error', these are 
+> > your words and it's your perception of what I said.
 > 
-> >  static void insert_work(struct cpu_workqueue_struct *cwq,
-> >  				struct work_struct *work, int tail)
-> >  {
-> > +	int prio = current->normal_prio;
-> > +
-> >  	set_wq_data(work, cwq);
-> >  	/*
-> >  	 * Ensure that we get the right work->data if we see the
-> >  	 * result of list_add() below, see try_to_grab_pending().
-> >  	 */
-> >  	smp_wmb();
-> > -	if (tail)
-> > -		list_add_tail(&work->entry, &cwq->worklist);
-> > -	else
-> > -		list_add(&work->entry, &cwq->worklist);
-> > +	plist_node_init(&work->entry, prio);
-> > +	plist_add(&work->entry, &cwq->worklist);
+> Oh dear :-) It was indeed my preception that yesterday you said:
 
-Sorry, this patch is completely wrong. It immediately breaks
-flush_workqueue/cancel_workqueue functions.
+*sigh* and here you go off again nitpicking on a minor issue just to prove 
+your point...
+When I wrote the earlier stuff I hadn't realized it was resolution 
+related, so things have to be put into proper context and you make it 
+yourself a little easy by equating them.
+Yippi, you found another small error I made, can we drop this now? Please?
 
-And I personally think it is not very useful, even if it was correct.
-You can create your own workqueue and change the priority of cwq->thread.
-
-> > @@ -168,7 +171,7 @@ int fastcall queue_work(struct workqueue
-> >  	int ret = 0, cpu = raw_smp_processor_id();
-> >  
-> >  	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
-> > -		BUG_ON(!list_empty(&work->entry));
-> > +		BUG_ON(!plist_node_empty(&work->entry));
-> >  		__queue_work(wq_per_cpu(wq, cpu), work);
-> >  		ret = 1;
-
-Side note, looks like you use some strange kernel. This raw_smp_processor_id()
-above is wrong.
-
-Oleg.
-
+bye, Roman
