@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXHAGxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbXHAG7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbXHAGxU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 02:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbXHAGxL
+	id S1759466AbXHAG7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 02:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbXHAG7d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 02:53:11 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:47158 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbXHAGxK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 02:53:10 -0400
-To: kzak@redhat.com
-CC: chuck.lever@oracle.com, miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, sfrench@samba.org,
-       trond.myklebust@fys.uio.no, mark.fasheh@oracle.com,
-       kurt.hackel@oracle.com
-In-reply-to: <20070731222141.GB3180@petra.dvoda.cz> (message from Karel Zak on
-	Wed, 1 Aug 2007 00:21:41 +0200)
-Subject: Re: request for patches: showing mount options
-References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu> <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu> <46AA51CA.7030105@oracle.com> <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu> <46AE01C2.3000008@oracle.com> <E1IFnSa-0002BL-00@dorka.pomaz.szeredi.hu> <46AF450D.5020106@oracle.com> <20070731222141.GB3180@petra.dvoda.cz>
-Message-Id: <E1IG84S-00064z-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 01 Aug 2007 08:52:36 +0200
+	Wed, 1 Aug 2007 02:59:33 -0400
+Received: from mms2.broadcom.com ([216.31.210.18]:4972 "EHLO mms2.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbXHAG7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 02:59:31 -0400
+X-Server-Uuid: A6C4E0AE-A7F0-449F-BAE7-7FA0D737AC76
+Subject: Re: [REGRESSION] tg3 dead after s2ram
+From: "Michael Chan" <mchan@broadcom.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+cc: "Joachim Deguara" <joachim.deguara@amd.com>,
+       "lkml List" <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "netdev" <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
+In-Reply-To: <20070731174522.b141178a.akpm@linux-foundation.org>
+References: <20070731174522.b141178a.akpm@linux-foundation.org>
+Date: Wed, 01 Aug 2007 00:53:31 -0700
+Message-ID: <1185954811.5552.7.camel@dell>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8)
+X-WSS-ID: 6AAEF0C23A0418944-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > The removal of /etc/mtab in favor of /proc/mounts is a new requirement, 
-> > and is not as trivial as you might hope.  Internally the NFS client 
-> > represents the mount options as a binary data structure, and it contains 
-> > only the information that has traditionally been passed into the kernel 
-> > by the current mount command.  The user-space-only options are not 
-> > passed to the kernel nor stored in the data structure.
-> > 
-> > Adding facilities to store information about every possible mount 
-> > option, including the user-space-only ones, will take a bit of time, but 
-> > is possible, if not straightforward.  We just have to understand all the 
-> > dependencies.
+On Tue, 2007-07-31 at 17:45 -0700, Andrew Morton wrote:
+> On Tue, 31 Jul 2007 11:28:32 +0200 "Joachim Deguara"
+> <joachim.deguara@amd.com> wrote:
 > 
->  I still have doubts. The removal of /etc/mtab is nice, but a little
->  unreal wish. Do we really want to store non-kernel data (options) in
->  kernel? What about options that are not closely related to any
->  filesystem -- for example "loop="?
+> > On my Acer Ferrari 1000 the tg3 ethernet no longer is available
+> after a
+> > suspend to ram with the latet 2.6.23-rc1-git9.
 
-"loop=DEV" is special, we've already talked about that.
+It seems to work for me on the same 2.6.23-rc1-git9 kernel with the same
+tg3 hardware.  Can you narrow down the problem some more?  It seems that
+in your case, the chip registers are returning 0xffffffff after resume.
+Can you do lspci -xxxvvv on the tg3 adapter after resume?
 
-For example if we have an mtab entry like this:
+Here's my log:
 
-  /dir/foo.iso /mnt/image ext3 rw,loop=/dev/loop/0 0 0
+tg3.c:v3.79 (July 18, 2007)
+ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
+eth0: Tigon3 [partno(BCM95755m) rev a002 PHY(5755)] (PCI Express) 10/100/1000Ba1eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
+eth0: dma_rwctrl[76180000] dma_mask[64-bit]
+ACPI: PCI Interrupt 0000:40:00.0[A] -> GSI 17 (level, low) -> IRQ 17
+eth1: Tigon3 [partno(BCM95751) rev 4001 PHY(5750)] (PCI Express) 10/100/1000Bas5eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
+eth1: dma_rwctrl[76180000] dma_mask[64-bit]
+ACPI: PCI Interrupt 0000:05:09.0[A] -> GSI 18 (level, low) -> IRQ 19
+eth2: Tigon3 [partno(BCM95788A50) rev 3003 PHY(5705)] (PCI:33MHz:32-bit) 10/1008eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
+eth2: dma_rwctrl[763f0000] dma_mask[32-bit]
+ADDRCONF(NETDEV_UP): eth0: link is not ready
+ADDRCONF(NETDEV_UP): eth1: link is not ready
+ADDRCONF(NETDEV_UP): eth2: link is not ready
+tg3: eth2: Link is up at 1000 Mbps, full duplex.
+tg3: eth2: Flow control is on for TX and on for RX.
+ADDRCONF(NETDEV_CHANGE): eth2: link becomes ready
+Stopping tasks ... done.
+Suspending console(s)
+ACPI handle has no context!
+pnp: Device 00:08 disabled.
+ACPI handle has no context!
+Intel machine check architecture supported.
+Intel machine check reporting enabled on CPU#0.
+CPU0: Intel P4/Xeon Extended MCE MSRs (12) available
+ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 18
+tg3: eth2: Link is down.
+pnp: Device 00:08 activated.
+Restarting tasks ... hda: status error: status=0x51 { DriveReady SeekComplete E}hda: status error: error=0x04 { DriveStatusError }
+ide: failed opcode was: unknown
+hda: no DRQ after issuing MULTWRITE_EXT
+hda: status error: status=0x51 { DriveReady SeekComplete Error }
+hda: status error: error=0x04 { DriveStatusError }
+ide: failed opcode was: unknown
+hda: no DRQ after issuing MULTWRITE_EXT
+hda: status error: status=0x51 { DriveReady SeekComplete Error }
+hda: status error: error=0x04 { DriveStatusError }
+ide: failed opcode was: unknown
+hda: no DRQ after issuing MULTWRITE_EXT
+hda: status error: status=0x51 { DriveReady SeekComplete Error }
+hda: status error: error=0x04 { DriveStatusError }
+ide: failed opcode was: unknown
+hda: no DRQ after issuing MULTWRITE_EXT
+done.
+ide0: reset: success
+tg3: eth2: Link is up at 1000 Mbps, full duplex.
+tg3: eth2: Flow control is on for TX and on for RX.
 
-It says: /dev/loop/0 has been automatically set up by mount(8) from
-/dir/foo.iso and so needs to be torn down by umount(8).  It is not a
-property of the mount, rather the property of the device.
 
-So what we really want is a file to store this, and only this info:
 
-/var/lib/mount/loop:
-
-/dev/loop/0 /dir/foo.iso
-/dev/loop/2 /dir/bar.img
-...
-
-Notice, there's nothing about the _mountpoint_ in this file.
-
->  Maybe we can replace /etc/mtab with something more useful
->  (e.g. /var/run/mount/<mntid>.tab) for really user-space-only information.
-
-The problem with storing mount options in userspace is that
-unprivileged mounts/umounts won't work in the presense of those, we
-cannot _force_ an unprivileged user to update a file.
-
-So we want to avoid storing options in userspace as long as possible.
-
-Miklos
