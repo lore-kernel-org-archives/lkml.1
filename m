@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763390AbXHAUCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764326AbXHAUDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763390AbXHAUCq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 16:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757511AbXHAUCh
+	id S1764326AbXHAUDe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 16:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757643AbXHAUDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 16:02:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52320 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751042AbXHAUCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 16:02:36 -0400
-Date: Wed, 1 Aug 2007 21:02:33 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Deprecate a.out ELF interpreters
-Message-ID: <20070801200233.GA30240@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jan Engelhardt <jengelh@computergmbh.de>,
-	Andi Kleen <ak@novell.com>, linux-kernel@vger.kernel.org
-References: <200708011433.09433.ak@novell.com> <Pine.LNX.4.64.0708012029130.26668@fbirervta.pbzchgretzou.qr> <200708012035.52863.ak@novell.com> <Pine.LNX.4.64.0708012125290.26668@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
+	Wed, 1 Aug 2007 16:03:24 -0400
+Received: from zaphod.dth.net ([85.159.112.68]:41281 "EHLO zaphod.dth.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757511AbXHAUDW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 16:03:22 -0400
+Date: Wed, 1 Aug 2007 22:03:20 +0200
+From: Danny ter Haar <dth@dth.net>
+To: Len Brown <lenb@kernel.org>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Update: ACPI problems: 2.6.22-git17 working, 2.6.23-rc1* is not: (was ide not working)
+Message-ID: <20070801200319.GA31205@dth.net>
+References: <20070727193832.GA20289@dth.net> <46AC0F6E.2000008@googlemail.com> <20070730025412.GA22888@dth.net> <200707301330.54640.lenb@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708012125290.26668@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200707301330.54640.lenb@kernel.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 09:26:10PM +0200, Jan Engelhardt wrote:
-> 
-> On Aug 1 2007 20:35, Andi Kleen wrote:
-> >> On Aug 1 2007 14:33, Andi Kleen wrote:
-> >> >Comments?
-> >> 
-> >> A kconfig entry "(OBSOLETE)"/"(DEPRECATED)" would be nice.
-> >> (And if you want to test people, 'depends on EMBEDDED' for CONFIG_BINFMT_AOUT)
-> >
-> >The point is to have less clutter in binfmt_elf.c (which really
-> >could need a rewrite btw or at least a lot of cleanup) not add more in form 
-> >of ifdefs.
-> 
-> 
-> ---
->  fs/Kconfig.binfmt |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6.23/fs/Kconfig.binfmt
-> ===================================================================
-> --- linux-2.6.23.orig/fs/Kconfig.binfmt
-> +++ linux-2.6.23/fs/Kconfig.binfmt
-> @@ -56,7 +56,7 @@ config BINFMT_SHARED_FLAT
->  	  Support FLAT shared libraries
->  
->  config BINFMT_AOUT
-> -	tristate "Kernel support for a.out and ECOFF binaries"
-> +	tristate "Kernel support for a.out and ECOFF binaries (OBSOLETE)"
 
-NAK, binfmt a.out support is something entirely different from what
-we're talking about here.
+Okay
+
+Redid git bisect from start:
+
+git bisect log
+git-bisect start
+# good: [098fd16f00005f665d3baa7e682d8cb3d7c0fe6f] Linux 2.6.22
+git-bisect good 098fd16f00005f665d3baa7e682d8cb3d7c0fe6f
+# good: [098fd16f00005f665d3baa7e682d8cb3d7c0fe6f] Linux 2.6.22
+git-bisect good 098fd16f00005f665d3baa7e682d8cb3d7c0fe6f
+# bad: [7d57c74238cdf570bca20b711b2c0b31a553c1e5] Linux 2.6.23-rc1
+git-bisect bad 7d57c74238cdf570bca20b711b2c0b31a553c1e5
+# good: [1f1c2881f673671539b25686df463518d69c4649] Merge branch
+# 'upstream-linus' of
+# master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6
+git-bisect good 1f1c2881f673671539b25686df463518d69c4649
+# good: [5b7f13bd26a0c1d394a1a1f2bb6de5130c3a3843] coda: update module
+# information
+git-bisect good 5b7f13bd26a0c1d394a1a1f2bb6de5130c3a3843
+# good: [74889e41d9a1f80928130a02af9b010673bc5ba7] [CELL] cbe_cpufreq:
+# reorganize code
+git-bisect good 74889e41d9a1f80928130a02af9b010673bc5ba7
+# good: [bdda1561ffda764583a295229db66d94cf6038a3] x86_64: x86_64 - Use
+# non locked version for local_cmpxchg()
+git-bisect good bdda1561ffda764583a295229db66d94cf6038a3
+# bad: [d7f5e3df3574c6e38b99f5fe22f15540b2b9811d] Merge branch
+# 'for-linus' of git://git.o-hand.com/linux-rpurdie-leds
+git-bisect bad d7f5e3df3574c6e38b99f5fe22f15540b2b9811d
+# bad: [08e31686d6d119ba26bf0690f5f872f6f5bd1a97] Pull thinkpad into
+# release branch
+git-bisect bad 08e31686d6d119ba26bf0690f5f872f6f5bd1a97
+# bad: [f79e3185dd0f8650022518d7624c876d8929061b] Pull misc into release
+# branch
+git-bisect bad f79e3185dd0f8650022518d7624c876d8929061b
+# good: [22aadf8a07067644e101267ed5003043f2ad05bf] Pull bugzilla-7880
+# into release branch
+git-bisect good 22aadf8a07067644e101267ed5003043f2ad05bf
+# good: [e8b495fe09bc793ae26774e7b2667f7f658d56e2] Pull dock-bay into
+# release branch
+git-bisect good e8b495fe09bc793ae26774e7b2667f7f658d56e2
+# good: [18eab8550397f1f3d4b8b2c5257c88dae25d58ed] ACPI: Enable C3 even
+# when PM2_control is zero
+git-bisect good 18eab8550397f1f3d4b8b2c5257c88dae25d58ed
+# good: [7a9b9068b8c7b526894904c0b9b90354825b8fbd] ACPI: update
+# feature-removal-schedule.txt, /sys/firmware/acpi/namespace is gone
+git-bisect good 7a9b9068b8c7b526894904c0b9b90354825b8fbd
+# good: [8b8eb7d8cfc6cd95ed00cd58754e8493322505bd] ACPI: update ACPI
+# proc I/F removal schedule
+git-bisect good 8b8eb7d8cfc6cd95ed00cd58754e8493322505bd
+
+
+f79e3185dd0f8650022518d7624c876d8929061b is first bad commit
+
+I will store this particular firewall setup friday (will go into storage
+for 2 months), if somebody would like more info, me to try something,
+please send it to me asap.
+
+Thanks for looking at this.
+
+Danny
+-- 
