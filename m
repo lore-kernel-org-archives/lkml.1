@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbXHAHMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbXHAHMt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbXHAHMY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbXHAHMR
+	id S1761092AbXHAHMt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:12:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbXHAHMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:12:17 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:35201 "EHLO mx1.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754896AbXHAHMQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:12:16 -0400
-Message-ID: <46B0325F.5050608@gmail.com>
-Date: Wed, 01 Aug 2007 15:12:31 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Wed, 1 Aug 2007 03:12:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53978 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756358AbXHAHMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 03:12:39 -0400
+Date: Wed, 1 Aug 2007 09:12:30 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070801071230.GA16375@elte.hu>
+References: <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random> <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home>
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Hua Zhong <hzhong@gmail.com>, "'Roman Zippel'" <zippel@linux-m68k.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'jos poortvliet'" <jos@mijnkamer.nl>,
-       "'Michael Chang'" <thenewme91@gmail.com>,
-       "'Kasper Sandberg'" <lkml@metanurb.dk>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-Subject: Re: [ck] Re: Linus 2.6.23-rc1 -- It does not matter who's code	gets
- merged!
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>	 <200707282003.45142.jos@mijnkamer.nl>	 <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>	 <200707282128.39906.jos@mijnkamer.nl>	 <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>	 <Pine.LNX.4.64.0708010539230.1818@scrub.home> <46B01E3F.6050401@gmail.com>	 <005001c7d403$8d7601a0$a86204e0$@com> <1185951901.2754.12.camel@laptopd505.fenrus.org>
-In-Reply-To: <1185951901.2754.12.camel@laptopd505.fenrus.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
-> Let me repeat the key message:
-> 
-> It does not matter who's code gets merged.
-> It does not matter who's code gets merged.
-> It does not matter who's code gets merged.
-> It does not matter who's code gets merged.
-> 
-> What matters is that the problem gets solved and that the Linux kernel
-> innovates forward.
 
-This, I think, is what really really matters in the end.
+Roman,
 
-> I've had several cases myself where I spent quite some time solving a
-> problem, just to get some random remark from someone smart on lkml
-> saying "if you had done <this simple thing> you would have had <this
-> simple and superior solution>". Was I pissed off that my patch didn't
-> get merged but that this better approach got picked? NO! The problem
-> that I needed to solve got solved in a really good way. Mission
-> accomplished.
-> 
-> (and merging the code that is cleaning up/smallest is a reasonable one
-> to pick for someone like Linus, likewise for the "which is likely to be
-> maintained best" arguments)
+Thanks for the testing and the feedback, it's much appreciated! :-) On
+what platform did you do your tests, and what .config did you use (and
+could you please send me your .config)?
 
-Very rational.  I would now have to contend that CFS didn't lose and 
-neither did SD.  Linux won.
+Please also send me the output of this script:
 
-Thank you very much.
+  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
 
-Best Regards,
+(if the output is too large send it to me privately, or bzip2 -9 it.)
 
-Carlo
+Could you also please send the source code for the "l.c" and "lt.c" apps
+you used for your testing so i can have a look. Thanks!
 
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, UP Campus Diliman
-1101 Quezon City, Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
+	Ingo
