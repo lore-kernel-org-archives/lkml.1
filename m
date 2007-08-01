@@ -1,47 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764248AbXHAM4i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764659AbXHAM5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764248AbXHAM4i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:56:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760821AbXHAM4b
+	id S1764659AbXHAM5q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761920AbXHAM5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:56:31 -0400
-Received: from mail.suse.de ([195.135.220.2]:42861 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757767AbXHAM4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:56:31 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 2/5] x86_64 EFI support -v3: EFI boot support
-Date: Wed, 1 Aug 2007 14:56:21 +0200
-User-Agent: KMail/1.9.6
-Cc: akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-References: <1185851576.23149.27.camel@caritas-dev.intel.com> <200707311335.40235.ak@suse.de> <1185958748.1363.40.camel@caritas-dev.intel.com>
-In-Reply-To: <1185958748.1363.40.camel@caritas-dev.intel.com>
+	Wed, 1 Aug 2007 08:57:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:41803 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761605AbXHAM5i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:57:38 -0400
+Message-ID: <fa686aa40708010557k5e72932l7f0d05b83c09878b@mail.gmail.com>
+Date: Wed, 1 Aug 2007 06:57:36 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+To: "Christoph Hellwig" <hch@lst.de>
+Subject: Re: [PATCH] sysace: HDIO_GETGEO has it's own method for ages
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070730220029.GA28003@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708011456.21768.ak@novell.com>
+References: <20070730220029.GA28003@lst.de>
+X-Google-Sender-Auth: 84058daf984e0d2c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 7/30/07, Christoph Hellwig <hch@lst.de> wrote:
+> The way this driver triesto implement HDIO_GETGEO it'll never be
+> called.  Then again on ppc it probably will never be called anyway
+> because it's utterly pointless.
+>
+>
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-> 
-> Should I change "change_page_attr" to make it work before "mem_init"? Or
-> Should I change "init_memory_mapping" to make it can be used to change
-> mapping attributes? Which one is better?
+Heh, that's what I get for following LDD3 exactly for writing my block
+dev, and not keeping up with API changes.
 
-It's probably better to change init_memory_mapping. Just do it cleanly 
-and correctly please. As in only change the pages that straddle the 
-EFI areas and don't use globals.
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-BTW i don't see any such code on i386. How does the EFI support
-there handle it?
+>
+> Index: linux-2.6/drivers/block/xsysace.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/block/xsysace.c      2007-07-30 22:53:11.000000000 +0200
+> +++ linux-2.6/drivers/block/xsysace.c   2007-07-30 22:54:43.000000000 +0200
+> @@ -902,26 +902,17 @@ static int ace_release(struct inode *ino
+>         return 0;
+>  }
+>
+> -static int ace_ioctl(struct inode *inode, struct file *filp,
+> -                    unsigned int cmd, unsigned long arg)
+> +static int ace_getgeo(struct block_device *bdev, struct hd_geometry *geo)
+>  {
+> -       struct ace_device *ace = inode->i_bdev->bd_disk->private_data;
+> -       struct hd_geometry __user *geo = (struct hd_geometry __user *)arg;
+> -       struct hd_geometry g;
+> -       dev_dbg(ace->dev, "ace_ioctl()\n");
+> -
+> -       switch (cmd) {
+> -       case HDIO_GETGEO:
+> -               g.heads = ace->cf_id.heads;
+> -               g.sectors = ace->cf_id.sectors;
+> -               g.cylinders = ace->cf_id.cyls;
+> -               g.start = 0;
+> -               return copy_to_user(geo, &g, sizeof(g)) ? -EFAULT : 0;
+> +       struct ace_device *ace = bdev->bd_disk->private_data;
+>
+> -       default:
+> -               return -ENOTTY;
+> -       }
+> -       return -ENOTTY;
+> +       dev_dbg(ace->dev, "ace_getgeo()\n");
+> +
+> +       geo->heads = ace->cf_id.heads;
+> +       geo->sectors = ace->cf_id.sectors;
+> +       geo->cylinders = ace->cf_id.cyls;
+> +
+> +       return 0;
+>  }
+>
+>  static struct block_device_operations ace_fops = {
+> @@ -930,7 +921,7 @@ static struct block_device_operations ac
+>         .release = ace_release,
+>         .media_changed = ace_media_changed,
+>         .revalidate_disk = ace_revalidate_disk,
+> -       .ioctl = ace_ioctl,
+> +       .getgeo = ace_getgeo,
+>  };
+>
+>  /* --------------------------------------------------------------------
+>
 
--Andi
+
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
