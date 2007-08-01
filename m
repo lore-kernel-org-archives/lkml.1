@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbXHAKDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764694AbXHAKEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764616AbXHAKDz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 06:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761232AbXHAKDq
+	id S1764694AbXHAKEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 06:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761365AbXHAKE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 06:03:46 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:39445 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759734AbXHAKDp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 06:03:45 -0400
-Message-ID: <46B059EB.7060003@gmail.com>
-Date: Wed, 01 Aug 2007 12:01:15 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Wed, 1 Aug 2007 06:04:29 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50461 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752158AbXHAKE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 06:04:28 -0400
+From: Neil Brown <neilb@suse.de>
+To: "Dan Merillat" <dan.merillat@gmail.com>
+Date: Wed, 1 Aug 2007 20:04:03 +1000
 MIME-Version: 1.0
-To: kriko <kristjan.ugrin@gmail.com>
-CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: Reboot hang FIXED
-References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com> <op.twcrsx1yatcbto@linux.site> <46B038B5.2030702@gmail.com> <op.twdgw4xiatcbto@linux.site> <46B04896.5020606@gmail.com> <op.twdjn41aatcbto@linux.site>
-In-Reply-To: <op.twdjn41aatcbto@linux.site>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Message-ID: <18096.23187.887075.943181@notabene.brown>
+Cc: "Eric Sandeen" <sandeen@sandeen.net>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Andrea Arcangeli" <andrea@suse.de>, "Matt Mackall" <mpm@selenic.com>,
+       "Rene Herman" <rene.herman@gmail.com>, "Ray Lee" <ray-lk@madrabbit.org>,
+       "Bodo Eggert" <7eggert@gmx.de>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+In-Reply-To: message from Dan Merillat on Wednesday August 1
+References: <469BF104.1040703@gmail.com>
+	<20070719013955.1bedc423@the-village.bc.nu>
+	<20070719013358.GD29728@v2.random>
+	<20070719013725.GP11115@waste.org>
+	<20070719112436.GG29728@v2.random>
+	<20070719124419.48c3d610@the-village.bc.nu>
+	<46A9ECD5.3050801@sandeen.net>
+	<20070727183807.2d7dbe7b@the-village.bc.nu>
+	<a781481a0707271131j3ab89470o4dea2fe2624fca32@mail.gmail.com>
+	<46B003A3.1090507@sandeen.net>
+	<a56dfcf00708010111n4b862a11wf91fe9677ee46143@mail.gmail.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01/2007 11:37 AM, kriko wrote:
-
->>>  I just want to add that my DVD drive is not detected when using new 
->>> driver. So back to old one....
->>
->> You shouldn't have dropped Alan from CC then... pata_amd, right?
->>
->> Rene.
+On Wednesday August 1, dan.merillat@gmail.com wrote:
 > 
-> Sorry, yes its pata_amd.
-> 
-> IBM drive is on Primary master (detected as /dev/sdc)
-> DVD-ROM is on Secondary master (not detected)
+> The other issue is with the layered IO design - no matter what we
+> configure the stack size to, it is still possible to create a set of
+> translation layers that will cause it to crash regularly:  XFS on
+> dm_crypt on loop on XFS on dm_crypt on loop on ad infinitum.
 
-It's probably a timing issue (and might be related to why the old driver 
-makes the BIOS hang at reboot) but pata_amd should I believe be one of the 
-best tested pata drivers. Using it myself as well, on amd756. I haven't 
-observed any problems with (a few) various CD/DVD drives attached and am not 
-actually sure how to go about debugging the thing -- over to Alan.
+No, this does not use indefinite stack.
 
-The DVD-ROM is jumpered for master? Or for cable-select and using the master 
-cable-slot? Using an 80-ribbon cable for it?
+loop will schedule each request to be handled by a kernel thread, so
+requests to 'loop' are serialised, never stacked.
 
-Rene.
+In 2.6.22, generic_make_request detects and serialises recursive calls,
+so unlimited recursion is not possible there either.
 
+It is still possible to do
+  dm on dm on dm on dm on md on md on md on md
+
+and calls to ->issue_flush_fn or ->unplug_fn could use an arbitrarily
+large amount of stack.  But the stack usage of each stage is very
+small so it is unlikely to be a problem (though it should still be
+fixed).
+
+NeilBrown
