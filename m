@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764022AbXHAJp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764250AbXHAJps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764022AbXHAJp1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbXHAJpQ
+	id S1764250AbXHAJps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761175AbXHAJpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:45:16 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:21127 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755102AbXHAJpP (ORCPT
+	Wed, 1 Aug 2007 05:45:36 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:20095 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760903AbXHAJpe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:45:15 -0400
-Date: Wed, 01 Aug 2007 03:42:50 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Reading a bad sector does not report failure as 'read error' but
- hangs PC with 'Machine Check Exception'
-In-reply-to: <fa.iA7ClD7fNtxdfJ9YhG0lqougi/0@ifi.uio.no>
-To: "Hendrik ." <chasake@yahoo.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46B0559A.5050708@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.tKSW2T164UTRMvntkUO/fGg0UlM@ifi.uio.no>
- <fa.iA7ClD7fNtxdfJ9YhG0lqougi/0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 1 Aug 2007 05:45:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BvQTeabzrarkPjFgcuHOeBuS/s+AMeb6We3G1CyXbChGWF4d4/9H8kD4J65nWCkREXJnisxcW2WuJoqRt50iSxgH2crw6Q33SZdEfr++VlRYFSHJtLiArTNG0fHQU6v3Kzzds0rGRfHAQoj390JZvuzgY1I2RgxapGIWgt9B3/E=
+Message-ID: <4354d3270708010245v5831610fw10ab2ff74d90ccae@mail.gmail.com>
+Date: Wed, 1 Aug 2007 12:45:33 +0300
+From: edwintorok@gmail.com
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [patch 3/4] Enable link power management for ata drivers
+Cc: "Kristen Carlson Accardi" <kristen.c.accardi@intel.com>, jeff@garzik.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
+       axboe@kernel.dk, linux-scsi@vger.kernel.org
+In-Reply-To: <46B043FB.5090005@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070705194909.337398431@intel.com>
+	 <20070705130530.5873afeb.kristen.c.accardi@intel.com>
+	 <46B043FB.5090005@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hendrik . wrote:
-> Ok, I did actually not copy the coreret code in the
-> mcelog, leaving me some errors about the Northbridge.
-> If I do it again it gives me something else. I made 2
-> digital photo's of 2 lockups when it happened and this
-> is the result of the tool, the TSC is different in
-> both errors, the rest is the same:
-> 
-> --------------------
-> CPU 0 4 northbridge TSC b7d4a144d0 
->   Northbridge Watchdog error
->        bit57 = processor context corrupt
->        bit61 = error uncorrected
->   bus error 'generic participation, request timed out
->       generic error mem transaction
->       generic access, level generic'
-> STATUS b200000000070f0f MCGSTATUS 4
-> This is not a software problem!
+On 8/1/07, Tejun Heo <htejun@gmail.com> wrote:
+> >
+> > +	if (ata_id_has_hipm(dev->id) || ata_id_has_dipm(dev->id))
+> > +		dev->flags |= ATA_DFLAG_IPM;
+>
+> Is it safe to use ALPM on a device which only claims to support DIPM?
 
-Presumably some access that the CPU is doing to the controller has timed 
-out and caused the MCE. It might be useful if we could get a stack trace 
-from where the MCE was triggered - does anyone know if it's possible to 
-do this?
+I have tested on a Dell Inspiron 6400, it has ICH7-M (82801GBM) chipset.
+The harddisk claims to support only DIPM, and the ALPM patches work with it.
+Kristen said either DIPM or HIPM will work with ALPM accord to the
+spec, see this email:
+http://www.bughost.org/pipermail/power/2007-June/000691.html
 
-It's possible that only NVidia really could tell why this error would 
-result from a disk problem, though.
-
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+--Edwin
