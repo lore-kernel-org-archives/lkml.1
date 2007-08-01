@@ -1,99 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753816AbXHAU4F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbXHAU7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753816AbXHAU4F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 16:56:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbXHAUzy
+	id S1753301AbXHAU7Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 16:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbXHAU7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 16:55:54 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:37000 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751207AbXHAUzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 16:55:53 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: pm_trace displays the wrong time from the RTC
-Date: Wed, 1 Aug 2007 23:04:34 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>
-References: <46AFA78A.9010904@redhat.com> <200708011747.37932.rjw@sisk.pl> <46B0CDB3.8060505@redhat.com>
-In-Reply-To: <46B0CDB3.8060505@redhat.com>
+	Wed, 1 Aug 2007 16:59:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44712 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbXHAU7C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 16:59:02 -0400
+Date: Thu, 2 Aug 2007 02:41:26 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Chris Rankin <rankincj@yahoo.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [BUG] Linux 2.6.22 - Atomic counter underflow in NFS
+In-Reply-To: <272608.90315.qm@web52904.mail.re2.yahoo.com>
+Message-ID: <alpine.LFD.0.999.0708020237090.8258@enigma.security.iitk.ac.in>
+References: <272608.90315.qm@web52904.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708012304.35105.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 1 August 2007 20:15, Chuck Ebbert wrote:
-> On 08/01/2007 11:47 AM, Rafael J. Wysocki wrote:
-> > Sorry for slow response, I've just noticed this thread.
-> > 
-> > On Tuesday, 31 July 2007 23:20, Chuck Ebbert wrote:
-> >> When resuming, systems print this when booted on 07/31/07:
-> >>
-> >> Date: 06/31/107
-> >>
-> >> /drivers/base/power/trace.c::read_magic_time():
-> >> 114	get_rtc_time(&time);
-> >> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
-> >> 116		time.tm_hour, time.tm_min, time.tm_sec,
-> >> 117		time.tm_mon, time.tm_mday, time.tm_year);
-> >>
-> >> include/asm-generic/rtc.h:
-> >> 102         /*
-> >> 103          * Account for differences between how the RTC uses the values
-> >> 104          * and how they are defined in a struct rtc_time;
-> >> 105          */
-> >> 106         if (time->tm_year <= 69)
-> >> 107                 time->tm_year += 100;
-> >> 108 
-> >> 109         time->tm_mon--;
-> > 
-> > Do you mean that systems display bad date after resuming if PM_TRACE is set,
-> > even if /sys/power/pm_trace contains 1 ?
+Hi Chris,
 
-s/1/0/
 
-> > If that's the case, are they i386 or x86_64?
-> > 
+On Wed, 1 Aug 2007, Chris Rankin wrote:
+
+> I am running a 2.6.22 kernel on a dual P4 Xeon (HT enabled) with 2 GB RAM, and I have just found
+> this BUG in my dmesg log:
 > 
-> i386:
-> 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250238
+> nfsd: last server has exited
+> nfsd: unexporting all filesystems
+> BUG: atomic counter underflow at:
+>  [<c01a382a>] kref_put+0x66/0x84
+>  [<c0188bc2>] sysfs_hash_and_remove+0xb8/0x12d
+>  [<c0188bca>] sysfs_hash_and_remove+0xc0/0x12d
+>  [<c01522e2>] sysfs_slab_alias+0x19/0x5c
+>  [<c0152438>] sysfs_slab_add+0x113/0x124
+>  [<c01527de>] kmem_cache_create+0x12d/0x1d3
+>  [<f8d9df1b>] nfs4_state_start+0x3b/0x1a7 [nfsd]
+>  [<f8d8a485>] nfsd_svc+0x51/0x10d [nfsd]
+>  [<f8d8ae76>] write_threads+0x65/0x96 [nfsd]
+>  [<c016c279>] simple_transaction_get+0x70/0x82
+>  [<f8d8ae11>] write_threads+0x0/0x96 [nfsd]
+>  [<f8d8ab9f>] nfsctl_transaction_write+0x36/0x5c [nfsd]
+>  [<f8d8ab69>] nfsctl_transaction_write+0x0/0x5c [nfsd]
+>  [<c0155392>] vfs_write+0x8a/0x10c
+>  [<c0155901>] sys_write+0x41/0x67
+>  [<c010266e>] sysenter_past_esp+0x5f/0x85
+>  =======================
+> NFSD: Using /var/lib/nfs/v4recovery as the NFSv4 state recovery directory
+> NFSD: starting 90-second grace period
 
-OK, I think the appended patch is needed.
+I expect this is easy to reproduce at will (when shutting down nfs
+services, probably), right?
 
-Greetings,
-Rafael
+Please try the latest mainline -git kernel (say 2.6.23-rc1-git10 from
+kernel.org) and let us know if this still occurs? There were some fixes
+regarding sysfs symlink refcounting that went in recently, and this looks
+like one of those cases to me.
 
 
----
-The way in which read_magic_time() displays the date read from the RTC is
-apparently confusing to the users
-(cf. https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250238).  Make it
-print dates in the standard way.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- drivers/base/power/trace.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: linux-2.6.23-rc1/drivers/base/power/trace.c
-===================================================================
---- linux-2.6.23-rc1.orig/drivers/base/power/trace.c	2007-07-23 22:06:42.000000000 +0200
-+++ linux-2.6.23-rc1/drivers/base/power/trace.c	2007-08-01 22:51:16.000000000 +0200
-@@ -114,7 +114,7 @@ static unsigned int read_magic_time(void
- 	get_rtc_time(&time);
- 	printk("Time: %2d:%02d:%02d  Date: %02d/%02d/%02d\n",
- 		time.tm_hour, time.tm_min, time.tm_sec,
--		time.tm_mon, time.tm_mday, time.tm_year);
-+		time.tm_mon + 1, time.tm_mday, time.tm_year % 100);
- 	val = time.tm_year;				/* 100 years */
- 	if (val > 100)
- 		val -= 100;
+Thanks,
+Satyam
