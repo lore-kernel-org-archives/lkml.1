@@ -1,284 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbXHAHDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbXHAHFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbXHAHDX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXHAHDO
+	id S1759901AbXHAHFo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754896AbXHAHFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:03:14 -0400
-Received: from mail.clusterfs.com ([74.0.229.162]:44611 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752642AbXHAHDM (ORCPT
+	Wed, 1 Aug 2007 03:05:36 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41350 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752914AbXHAHFf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:03:12 -0400
-Subject: Re: [EXT4 set 8][PATCH 1/1]Add journal checksums
-From: Girish Shilamkar <girish@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Mingming Cao <cmm@us.ibm.com>
-Cc: Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-In-Reply-To: <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
-References: <1183275505.4010.136.camel@localhost.localdomain>
-	 <20070710231601.798304e0.akpm@linux-foundation.org>
-	 <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
-Content-Type: multipart/mixed; boundary="=-kakK77po6F6ah0VxkqG2"
-Date: Wed, 01 Aug 2007 12:34:17 +0530
-Message-Id: <1185951857.3875.6.camel@dhcp4.linsyssoft.com>
+	Wed, 1 Aug 2007 03:05:35 -0400
+Subject: RE: [ck] Re: Linus 2.6.23-rc1 -- It does not matter who's code
+	gets merged!
+From: Arjan van de Ven <arjan@infradead.org>
+To: Hua Zhong <hzhong@gmail.com>
+Cc: "'Carlo Florendo'" <subscribermail@gmail.com>,
+       "'Roman Zippel'" <zippel@linux-m68k.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'jos poortvliet'" <jos@mijnkamer.nl>,
+       "'Michael Chang'" <thenewme91@gmail.com>,
+       "'Kasper Sandberg'" <lkml@metanurb.dk>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+In-Reply-To: <005001c7d403$8d7601a0$a86204e0$@com>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <200707282003.45142.jos@mijnkamer.nl>
+	 <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>
+	 <200707282128.39906.jos@mijnkamer.nl>
+	 <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0708010539230.1818@scrub.home> <46B01E3F.6050401@gmail.com>
+	 <005001c7d403$8d7601a0$a86204e0$@com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Wed, 01 Aug 2007 00:05:01 -0700
+Message-Id: <1185951901.2754.12.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-X-SystemSpamProbe: GOOD 0.0000684 a84a172f69e1620db65dff070f29a3c7
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-kakK77po6F6ah0VxkqG2
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Wed, 2007-07-11 at 17:16 +0530, Girish Shilamkar wrote:
-
-> I will make the changes and send an incremental patch.
+On Tue, 2007-07-31 at 23:16 -0700, Hua Zhong wrote:
+> > Did Ingo have the obligation to improve Con's work? Definitely not.
+> > Did Con have a right to get Ingo's improvements or
+> > suggestions? Definitely not.
 > 
-Hi,
-	I have made the changes and attached the incremental patch as per the
-review.
-
-This is the actual changelog which was missing in the original patch.
-
-------
-The journal checksum feature adds two new flags i.e 
-JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT and JBD2_FEATURE_COMPAT_CHECKSUM.
-
-JBD2_FEATURE_CHECKSUM flag indicates that the commit block contains the
-checksum for the blocks described by the descriptor blocks.
-Due to checksums, writing of the commit record no longer needs to be
-synchronous. Now commit record can be sent to disk without waiting for
-descriptor blocks to be written to disk. This behavior is controlled
-using JBD2_FEATURE_ASYNC_COMMIT flag. Older kernels/e2fsck should not be
-able to recover the journal with _ASYNC_COMMIT hence it is made
-incompat.
-The commit header has been extended to hold the checksum along with the
-type of the checksum.
-
-For recovery in pass scan checksums are verified to ensure the sanity
-and completeness(in case of _ASYNC_COMMIT) of every transaction.
------
-
-Thanks & Regards,
-Girish. 
+> Yes, and that's where the inequality is.
+> 
+> Unless the maintainer does a really bad job or pisses off Linus,
+> anyone who wants to merge his code into mainline pretty much
+> has to get the blessing of the maintainer. On the other hand,
+> as you just said, the maintainer has no such obligation.
 
 
---=-kakK77po6F6ah0VxkqG2
-Content-Disposition: attachment; filename=jrnl-chksum-fix-review.patch
-Content-Type: text/x-patch; name=jrnl-chksum-fix-review.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+I think a lot of people are missing some key things here:
 
-Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
-Signed-off-by: Girish Shilamkar <girish@clusterfs.com>
+It does not matter who's code gets merged.
 
-Index: linux-2.6.22/Documentation/filesystems/ext4.txt
-===================================================================
---- linux-2.6.22.orig/Documentation/filesystems/ext4.txt
-+++ linux-2.6.22/Documentation/filesystems/ext4.txt
-@@ -89,6 +89,16 @@ When mounting an ext4 filesystem, the fo
- extents			ext4 will use extents to address file data.  The
- 			file system will no longer be mountable by ext3.
- 
-+journal_checksum	Enable checksumming of the journal transactions.
-+			This will allow the recovery code in e2fsck and the
-+			kernel to detect corruption in the kernel.  It is a 
-+			compatible change and will be ignored by older kernels.
-+
-+journal_async_commit	Commit block can be written to disk without waiting 
-+			for descriptor blocks. If enabled older kernels cannot
-+			mount the device. This will enable 'journal_checksum'
-+			internally.
-+
- journal=update		Update the ext4 file system's journal to the current
- 			format.
- 
-Index: linux-2.6.22/fs/Kconfig
-===================================================================
---- linux-2.6.22.orig/fs/Kconfig
-+++ linux-2.6.22/fs/Kconfig
-@@ -235,6 +235,7 @@ config JBD_DEBUG
- 
- config JBD2
- 	tristate
-+	select CRC32
- 	help
- 	  This is a generic journaling layer for block devices that support
- 	  both 32-bit and 64-bit block numbers.  It is currently used by
-Index: linux-2.6.22/fs/jbd2/commit.c
-===================================================================
---- linux-2.6.22.orig/fs/jbd2/commit.c
-+++ linux-2.6.22/fs/jbd2/commit.c
-@@ -108,8 +108,9 @@ static int journal_submit_commit_record(
- 					__u32 crc32_sum)
- {
- 	struct journal_head *descriptor;
-+	struct commit_header *tmp;
- 	struct buffer_head *bh;
--	int i, ret;
-+	int ret;
- 	int barrier_done = 0;
- 
- 	if (is_journal_aborted(journal))
-@@ -121,19 +122,16 @@ static int journal_submit_commit_record(
- 
- 	bh = jh2bh(descriptor);
- 
--	for (i = 0; i < bh->b_size; i += 512) {
--		struct commit_header *tmp =
--			(struct commit_header *)(bh->b_data + i);
--		tmp->h_magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
--		tmp->h_blocktype = cpu_to_be32(JBD2_COMMIT_BLOCK);
--		tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
--
--		if (JBD2_HAS_COMPAT_FEATURE(journal,
--					    JBD2_FEATURE_COMPAT_CHECKSUM)) {
--			tmp->h_chksum_type 	= JBD2_CRC32_CHKSUM;
--			tmp->h_chksum_size 	= JBD2_CRC32_CHKSUM_SIZE;
--			tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
--		}
-+	tmp = (struct commit_header *)bh->b_data;
-+	tmp->h_magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
-+	tmp->h_blocktype = cpu_to_be32(JBD2_COMMIT_BLOCK);
-+	tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
-+
-+	if (JBD2_HAS_COMPAT_FEATURE(journal,
-+				    JBD2_FEATURE_COMPAT_CHECKSUM)) {
-+		tmp->h_chksum_type 	= JBD2_CRC32_CHKSUM;
-+		tmp->h_chksum_size 	= JBD2_CRC32_CHKSUM_SIZE;
-+		tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
- 	}
- 
- 	JBUFFER_TRACE(descriptor, "submit commit block");
-@@ -185,8 +183,8 @@ static int journal_wait_on_commit_record
- {
- 	int ret = 0;
- 
--	if (buffer_locked(bh))
--		wait_on_buffer(bh);
-+	clear_buffer_dirty(bh);
-+	wait_on_buffer(bh);
- 
- 	if (unlikely(!buffer_uptodate(bh)))
- 		ret = -EIO;
-Index: linux-2.6.22/fs/jbd2/recovery.c
-===================================================================
---- linux-2.6.22.orig/fs/jbd2/recovery.c
-+++ linux-2.6.22/fs/jbd2/recovery.c
-@@ -318,14 +318,14 @@ static inline unsigned long long read_ta
- }
- 
- /*
-- * cal_chksums calculates the checksums for the blocks described in the
-+ * calc_chksums calculates the checksums for the blocks described in the
-  * descriptor block.
-  */
--static int cal_chksums(journal_t *journal, struct buffer_head *bh,
--		       unsigned long *next_log_block, __u32 *crc32_sum)
-+static int calc_chksums(journal_t *journal, struct buffer_head *bh,
-+			unsigned long *next_log_block, __u32 *crc32_sum)
- {
- 	int i, num_blks, err;
--	unsigned long io_block;
-+	unsigned io_block;
- 	struct buffer_head *obh;
- 
- 	num_blks = count_tags(journal, bh);
-@@ -338,7 +338,7 @@ static int cal_chksums(journal_t *journa
- 		err = jread(&obh, journal, io_block);
- 		if (err) {
- 			printk(KERN_ERR "JBD: IO error %d recovering block "
--				"%ld in log\n", err, io_block);
-+				"%u in log\n", err, io_block);
- 			return 1;
- 		} else {
- 			*crc32_sum = crc32_be(*crc32_sum, (void *)obh->b_data,
-@@ -460,7 +460,7 @@ static int do_one_pass(journal_t *journa
- 				    JBD2_HAS_COMPAT_FEATURE(journal,
- 					    JBD2_FEATURE_COMPAT_CHECKSUM) &&
- 				    !info->end_transaction) {
--					if (cal_chksums(journal, bh,
-+					if (calc_chksums(journal, bh,
- 							&next_log_block,
- 							&crc32_sum)) {
- 						brelse(bh);
-@@ -601,11 +601,14 @@ static int do_one_pass(journal_t *journa
- 			if (pass == PASS_SCAN &&
- 			    JBD2_HAS_COMPAT_FEATURE(journal,
- 				    JBD2_FEATURE_COMPAT_CHECKSUM)) {
-+				int chksum_err, chksum_seen;
- 				struct commit_header *cbh =
- 					(struct commit_header *)bh->b_data;
- 				unsigned found_chksum =
- 					be32_to_cpu(cbh->h_chksum[0]);
- 
-+				chksum_err = chksum_seen = 0;
-+
- 				if (info->end_transaction) {
- 					printk(KERN_ERR "JBD: Transaction %u "
- 						"found to be corrupt.\n",
-@@ -614,7 +617,29 @@ static int do_one_pass(journal_t *journa
- 					break;
- 				}
- 
--				if (crc32_sum != found_chksum) {
-+				if (crc32_sum == found_chksum &&
-+				    cbh->h_chksum_type == JBD2_CRC32_CHKSUM &&
-+				    cbh->h_chksum_size ==
-+						JBD2_CRC32_CHKSUM_SIZE) {
-+				       chksum_seen = 1;
-+				} else if (!(cbh->h_chksum_type == 0 &&
-+					     cbh->h_chksum_size == 0 &&
-+					     found_chksum == 0 &&
-+					     !chksum_seen)) {
-+				/*
-+				 * If fs is mounted using an old kernel and then
-+				 * kernel with journal_chksum is used then we
-+				 * get a situation where the journal flag has
-+				 * checksum flag set but checksums are not
-+				 * present i.e chksum = 0, in the individual
-+				 * commit blocks.
-+				 * Hence to avoid checksum failures, in this
-+				 * situation, this extra check is added.
-+				 */
-+						chksum_err = 1;
-+				}
-+
-+				if (chksum_err) {
- 					info->end_transaction = next_commit_ID;
- 
- 					if (!JBD2_HAS_COMPAT_FEATURE(journal,
-Index: linux-2.6.22/fs/jbd2/journal.c
-===================================================================
---- linux-2.6.22.orig/fs/jbd2/journal.c
-+++ linux-2.6.22/fs/jbd2/journal.c
-@@ -1582,8 +1582,9 @@ int jbd2_journal_set_features (journal_t
- 	return 1;
- }
- 
--/**
-- * int jbd2_journal_clear_features () - Clear a given journal feature in the superblock
-+/*
-+ * jbd2_journal_clear_features () - Clear a given journal feature in the
-+ * 				    superblock
-  * @journal: Journal to act on.
-  * @compat: bitmask of compatible features
-  * @ro: bitmask of features that force read-only mount
-@@ -1591,10 +1592,9 @@ int jbd2_journal_set_features (journal_t
-  *
-  * Clear a given journal feature as present on the
-  * superblock.  Returns true if the requested features could be reset.
-- *
-  */
--int jbd2_journal_clear_features (journal_t *journal, unsigned long compat,
--			  unsigned long ro, unsigned long incompat)
-+int jbd2_journal_clear_features(journal_t *journal, unsigned long compat,
-+				unsigned long ro, unsigned long incompat)
- {
- 	journal_superblock_t *sb;
- 
+The CFS-SD competition was a GOOD THING. Both sides were in heavy, fast
+improvement mode, and competed on all fronts and borrowed heavily from
+eachother in terms of ideas that worked, and innovated to stay ahead.
+The end result is that both were good schedulers, and Linux won by
+getting the fruit of this competition. Think of it as a mini-evolution
+of scheduler ideas compressed into a short time period.
 
---=-kakK77po6F6ah0VxkqG2--
+Now compare this to a single patch without competition/the need to
+survive in the habitat, say the first SD or the first CFS patch....
+whatever your poison is. If there had been no competition element, we
+would have ended up with either one of those, and it would have been not
+nearly as good as they both ended up as in the end.
+
+Who wrote the code is not relevant in the large picture, the fact that
+the problem at hand (2.6 scheduler behavior) got solved is. 
+
+I wish people would focus less on who wrote the actual code that got
+merged in the end, and more on the problem that got solved.... People
+who care about the desktop should be happy that the scheduler improved a
+lot due to the competition where the two new schedulers were hair-close
+in most aspects. Again.. think about the problem being solved. Not who
+wrote the code or which of the competitive patches got merged in the
+end.
+
+Let me repeat the key message:
+
+It does not matter who's code gets merged.
+It does not matter who's code gets merged.
+It does not matter who's code gets merged.
+It does not matter who's code gets merged.
+
+What matters is that the problem gets solved and that the Linux kernel
+innovates forward.
+
+
+I've had several cases myself where I spent quite some time solving a
+problem, just to get some random remark from someone smart on lkml
+saying "if you had done <this simple thing> you would have had <this
+simple and superior solution>". Was I pissed off that my patch didn't
+get merged but that this better approach got picked? NO! The problem
+that I needed to solve got solved in a really good way. Mission
+accomplished.
+
+(and merging the code that is cleaning up/smallest is a reasonable one
+to pick for someone like Linus, likewise for the "which is likely to be
+maintained best" arguments)
+
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
