@@ -1,67 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761788AbXHAI0K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759696AbXHAI2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761788AbXHAI0K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:26:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758631AbXHAIZ5
+	id S1759696AbXHAI2H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbXHAI1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:25:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60177 "EHLO mx1.redhat.com"
+	Wed, 1 Aug 2007 04:27:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60485 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758490AbXHAIZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:25:56 -0400
-Message-ID: <46B04348.1060907@kernel.sg>
-Date: Wed, 01 Aug 2007 16:24:40 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-CC: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] - Remove current defines and uses of pr_err, add pr_emerg,
- pr_alert, pr_crit, pr_err, pr_warn, pr_notice to include/linux/kernel.h
-References: <1185941363.14777.34.camel@localhost>
-In-Reply-To: <1185941363.14777.34.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1756897AbXHAI1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 04:27:44 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <1185949055.12034.31.camel@twins>
+References: <1185949055.12034.31.camel@twins> <20070731202454.6412.88646.stgit@warthog.cambridge.redhat.com> <20070731202505.6412.37918.stgit@warthog.cambridge.redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
+       trond.myklebust@fys.uio.no, linux-fsdevel@vger.kernel.org,
+       linux-cachefs@redhat.com, nfsv4@linux-nfs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 02/14] FS-Cache: Recruit a couple of page flags for cache management
+X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
+Date: Wed, 01 Aug 2007 09:27:13 +0100
+Message-ID: <17631.1185956833@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Joe,
+Peter Zijlstra <peterz@infradead.org> wrote:
 
-Joe Perches wrote:
-> Remove current #define and uses of pr_err
-> Add pr_emerg, pr_alert, pr_crit, pr_err, pr_warn, pr_notice
-> 	to include/linux/kernel.h
-> 
-> Signed-off-by:  Joe Perches <joe@perches.com>
-> 
-> diff --git a/drivers/i2c/chips/menelaus.c b/drivers/i2c/chips/menelaus.c
-> index 48a7e2f..3ee323a 100644
-> --- a/drivers/i2c/chips/menelaus.c
-> +++ b/drivers/i2c/chips/menelaus.c
-> @@ -49,8 +49,7 @@
->  #include <asm/arch/menelaus.h>
->  
->  #define DRIVER_NAME			"menelaus"
-> -
-> -#define pr_err(fmt, arg...)	printk(KERN_ERR DRIVER_NAME ": ", ## arg);
+> Not sure its a good idea to overload page_has_private() with an
+> overloadable page-flag. What if some future FS wants to use
+> PG_owner_priv_2 for other purposes?
 
-Makes sense to remove the duplicated pr_* functions, and have it declared in
-include/linux/kernel.h.
+All that it means is that releasepage() and co will get called if a page is to
+be released or invalidated that has that bit set.  I think that's something a
+future FS could probably live with.
 
-> +#define PFX                             DRIVER_NAME ": "
->  
->  #define MENELAUS_I2C_ADDRESS		0x72
->  
-> @@ -156,7 +155,7 @@ static int menelaus_write_reg(int reg, u8 value)
->  	int val = i2c_smbus_write_byte_data(the_menelaus->client, reg, value);
->  
->  	if (val < 0) {
-> -		pr_err("write error");
-> +		printk(KERN_ERR PFX "write error\n");
->  		return val;
->  	}
-[...]
+However, I do have to trigger a call to releasepage() and co *somehow*.
 
-But why are you replacing the existing pr_*() with printk(KERN_*?
+> Obviously filesystems cannot use these two page-flags if they want to be
+> compatible with FS-cache, but need all filesystems be?
 
-Eugene
+What do you mean?  That's why I went for the PG_owner_priv_* approach rather
+than just naming the bits unto FS-Cache directly.
+
+> (also, ouch! - 2 pageflags)
+
+Yeah.  The consequence of having things asynchronous is that you have to find
+signalling mechanisms to synchronise around the asynchronicity:-/
+
+Furthermore, it occurs to me that I can't use PG_private or page->private to
+store this information because I want to make isofs use caching, and those two
+pieces of information are owned by the buffering code.
+
+David
