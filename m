@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932560AbXHAR7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932163AbXHASB7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932560AbXHAR7i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 13:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764660AbXHAR71
+	id S932163AbXHASB7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:01:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754944AbXHASBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 13:59:27 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:40400 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763052AbXHAR7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 13:59:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=S8qMTqs324w8xqvM8aAh0OmCF/iUDZGZVC4gAKz37kj8kwGfEnGv/MD46MqA5anfL9F9+SfbSB0dB8gKsjqbwC0zPxGDOgydHQ0N/eImcdmCESctP32JqV7xnhbGfOl9VHjB4qs91OMaxwSc7/n3z6Mu70NkOGONFDOOvT3kUv4=
-Message-ID: <46B0C9DD.8040701@googlemail.com>
-Date: Wed, 01 Aug 2007 19:58:53 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 1 Aug 2007 14:01:50 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:4335 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754789AbXHASBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:01:49 -0400
+Date: Wed, 1 Aug 2007 20:01:21 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+In-Reply-To: <20070801175004.GA17936@elte.hu>
+Message-ID: <Pine.LNX.4.64.0708011955430.1817@scrub.home>
+References: <Pine.LNX.4.64.0707130415520.1818@scrub.home>
+ <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+ <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+ <20070801071230.GA16375@elte.hu> <Pine.LNX.4.64.0708011511530.1817@scrub.home>
+ <20070801150742.GA23670@elte.hu> <p73ps27npu0.fsf@bingen.suse.de>
+ <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+ <20070801175004.GA17936@elte.hu>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Removal of duplicated include net/wanrouter/wanmain.c
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-There is no need to include linux/init.h twice
+On Wed, 1 Aug 2007, Ingo Molnar wrote:
 
-Regards,
-Michal
+> Andi's theory cannot be true either, Roman's debug info also shows this 
+> /proc/<PID>/sched data:
+> 
+>   clock-delta              :                  95
+> 
+> that means that sched_clock() is in high-res mode, the TSC is alive and 
+> kicking and a sched_clock() call took 95 nanoseconds.
+> 
+> Roman, could you please help us with this mystery?
 
---
-LOG
-http://www.stardust.webpages.pl/log/
+Actually, Andi is right. What I sent you was generated directly after 
+boot, as I had to reboot for the right kernel, so a little later appeared 
+this:
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Aug  1 14:54:30 spit kernel: eth0: link up, 100Mbps, full-duplex, lpa 0x45E1
+Aug  1 15:09:56 spit kernel: Clocksource tsc unstable (delta = 656747233 ns)
+Aug  1 15:09:56 spit kernel: Time: pit clocksource has been installed.
 
---- linux-mm-clean/net/wanrouter/wanmain.c	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/net/wanrouter/wanmain.c	2007-08-01 18:14:22.000000000 +0200
-@@ -46,7 +46,6 @@
- #include <linux/capability.h>
- #include <linux/errno.h>	/* return codes */
- #include <linux/kernel.h>
--#include <linux/init.h>
- #include <linux/module.h>	/* support for loadable modules */
- #include <linux/slab.h>		/* kmalloc(), kfree() */
- #include <linux/mm.h>
+bye, Roman
