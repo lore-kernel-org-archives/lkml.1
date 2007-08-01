@@ -1,110 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbXHAD1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760879AbXHAD2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbXHAD1e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 23:27:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXHAD10
+	id S1760879AbXHAD2X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 23:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbXHAD2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 23:27:26 -0400
-Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:35883 "EHLO
-	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752467AbXHAD1Z (ORCPT
+	Tue, 31 Jul 2007 23:28:11 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:35736 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754208AbXHAD2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 23:27:25 -0400
-Date: Tue, 31 Jul 2007 23:26:40 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>
-Subject: [PATCH RT] Move RECURSION_LIMIT define up for more global use (take
- 2)
-Message-ID: <Pine.LNX.4.58.0707312315210.10742@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 31 Jul 2007 23:28:08 -0400
+Date: Tue, 31 Jul 2007 20:26:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>,
+       John Linville <linville@tuxdriver.com>
+Subject: Re: [PATCH FINAL] Merge the Sonics Silicon Backplane subsystem
+Message-Id: <20070731202648.e1a8c45f.akpm@linux-foundation.org>
+In-Reply-To: <200707291324.58691.mb@bu3sch.de>
+References: <200707291324.58691.mb@bu3sch.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 29 Jul 2007 13:24:54 +0200 Michael Buesch <mb@bu3sch.de> wrote:
 
-OK, I sent this out once before but it must have slipped under the radar.
-http://lkml.org/lkml/2007/6/28/325
+> The Sonics Silicon Backplane is a mini-bus used on
+> various Broadcom chips and embedded devices.
 
-My config fails miserably with lockdep:
+Sigh.
 
-kernel/lockdep.c: In function 'find_usage_forwards':
-kernel/lockdep.c:814: error: 'RECURSION_LIMIT' undeclared (first use in
-this function)
-kernel/lockdep.c:814: error: (Each undeclared identifier is reported only
-once
-kernel/lockdep.c:814: error: for each function it appears in.)
-kernel/lockdep.c:815: warning: implicit declaration of function
-'print_infinite_recursion_bug'
-kernel/lockdep.c: In function 'find_usage_backwards':
-kernel/lockdep.c:856: error: 'RECURSION_LIMIT' undeclared (first use in
-this function)
-make[1]: *** [kernel/lockdep.o] Error 1
+s390:
 
-But this patch fixes it nicely.
+drivers/ssb/main.c: In function 'ssb_ssb_read16':
+drivers/ssb/main.c:489: error: implicit declaration of function 'readw'
+drivers/ssb/main.c: In function 'ssb_ssb_read32':
+drivers/ssb/main.c:497: error: implicit declaration of function 'readl'
+drivers/ssb/main.c: In function 'ssb_ssb_write16':
+drivers/ssb/main.c:505: error: implicit declaration of function 'writew'
+drivers/ssb/main.c: In function 'ssb_ssb_write32':
+drivers/ssb/main.c:513: error: implicit declaration of function 'writel'        
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+we shouldn't be compiling SSB on s390, because:
 
-Index: linux-2.6.22.1-rt9/kernel/lockdep.c
-===================================================================
---- linux-2.6.22.1-rt9.orig/kernel/lockdep.c	2007-07-31 23:14:12.000000000 -0400
-+++ linux-2.6.22.1-rt9/kernel/lockdep.c	2007-07-31 23:25:04.000000000 -0400
-@@ -683,6 +683,21 @@ static void print_kernel_version(void)
- 		init_utsname()->version);
- }
+config SSB
+        tristate "Sonics Silicon Backplane support"
+        depends on EXPERIMENTAL && HAS_IOMEM
 
-+#if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_TRACE_IRQFLAGS)
-+
-+#define RECURSION_LIMIT 40
-+
-+static int noinline print_infinite_recursion_bug(void)
-+{
-+	if (!debug_locks_off_graph_unlock())
-+		return 0;
-+
-+	WARN_ON(1);
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PROVE_LOCKING || CONFIG_TRACE_IRQFLAGS */
-+
- #ifdef CONFIG_PROVE_LOCKING
- /*
-  * When a circular dependency is detected, print the
-@@ -736,18 +751,6 @@ static noinline int print_circular_bug_t
- 	return 0;
- }
+and
 
--#define RECURSION_LIMIT 40
--
--static int noinline print_infinite_recursion_bug(void)
--{
--	if (!debug_locks_off_graph_unlock())
--		return 0;
--
--	WARN_ON(1);
--
--	return 0;
--}
--
- /*
-  * Prove that the dependency graph starting at <entry> can not
-  * lead to <target>. Print an error and return 0 if it does.
-@@ -874,6 +877,7 @@ find_usage_backwards(struct lock_class *
- 	return 1;
- }
+akpm2:/usr/src/25> grep IOMEM .config 
+CONFIG_NO_IOMEM=y
+akpm2:/usr/src/25> 
 
-+#ifdef CONFIG_PROVE_LOCKING
- static int
- print_bad_irq_dependency(struct task_struct *curr,
- 			 struct held_lock *prev,
-@@ -956,6 +960,7 @@ check_usage(struct task_struct *curr, st
- 	return print_bad_irq_dependency(curr, prev, next,
- 			bit_backwards, bit_forwards, irqclass);
- }
-+#endif /* CONFIG_PROVE_LOCKING */
+but
 
- #endif
+akpm2:/usr/src/25> grep SSB .config 
+CONFIG_DCSSBLK=m
+CONFIG_SSB=m
+CONFIG_SSB_SILENT=y
+
+well, how did that come about?
+
+It _has_ to be `select'.  It's _always_ `select'.
+
+yup, it's `select':
+
+Selected by: B44 && NETDEVICES && NET_ETHERNET || BCM43XX_MAC80211 && NETDEVICES && !S390 && MAC80211 && WLAN_80211 && EXPERIMENTAL
+
+
+Look.  Kconfig's `select' Just.  Does.  Not.  Work.  If you find yourself
+contemplating using it, please, don sackcloth, take a cold shower and
+several analgesics, then have another go, OK?
+
+ho hum.
 
