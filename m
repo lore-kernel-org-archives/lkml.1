@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762707AbXHALly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763018AbXHALoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762707AbXHALly (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 07:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759002AbXHALlr
+	id S1763018AbXHALoV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 07:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759002AbXHALoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 07:41:47 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:30419 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758761AbXHALlq (ORCPT
+	Wed, 1 Aug 2007 07:44:15 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:42503 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758495AbXHALoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 07:41:46 -0400
-Message-ID: <46B0713E.5010700@oracle.com>
-Date: Wed, 01 Aug 2007 17:10:46 +0530
-From: gurudas pai <gurudas.pai@oracle.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 1 Aug 2007 07:44:14 -0400
+Date: Wed, 1 Aug 2007 13:44:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: andi@firstfloor.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] type safe allocator
+In-Reply-To: <E1IGBiG-0006fv-00@dorka.pomaz.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0708011341160.26668@fbirervta.pbzchgretzou.qr>
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> <p73myxbpm8r.fsf@bingen.suse.de>
+ <E1IGAx0-0006TK-00@dorka.pomaz.szeredi.hu> <p73643zpjy8.fsf@bingen.suse.de>
+ <E1IGBiG-0006fv-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Joe Jin <joe.jin@oracle.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>,
-       Zach Brown <zach.brown@oracle.com>, jens.axboe@oracle.com,
-       lkml <linux-kernel@vger.kernel.org>, wen.gang.wang@oracle.com
-Subject: Re: [PATCH] add check do_direct_IO() return val
-References: <1185830683.24525.2.camel@dyn9047017100.beaverton.ibm.com> <6C87D322-FB28-4DA8-A130-327FE35C2DCC@oracle.com> <1185832738.24525.4.camel@dyn9047017100.beaverton.ibm.com> <05506FB8-1164-4E62-8C02-3AC3681E7D89@oracle.com> <20070731005348.GA8308@joejin-pc.cn.oracle.com> <46AEB055.9050607@us.ibm.com> <20070731043554.GA3393@joejin-pc.cn.oracle.com> <1185920712.31134.21.camel@dyn9047017100.beaverton.ibm.com> <20070731153410.fcbf9a1b.akpm@linux-foundation.org> <alpine.LFD.0.999.0707311555410.4161@woody.linux-foundation.org> <20070801013632.GB10449@joejin-pc.cn.oracle.com>
-In-Reply-To: <20070801013632.GB10449@joejin-pc.cn.oracle.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-Joe Jin wrote:
->> Does a patch like this work? I don't have any test-cases, but it would be 
->> good to have something like this tested and passed back with proper 
->> explanations and sign-offs.
+On Aug 1 2007 12:45, Miklos Szeredi wrote:
+>> > 
+>> > #define k_new(type, flags) ((type *) kmalloc(sizeof(type), flags))
+>> 
+>> The cast doesn't make it more safe in any way
 >
-> Yes it work find after apply the patch, thanks.
+>I does, since a warning will be issued, if the type of the assigned
+>pointer doesn't match the requested allocation.
 >
-> Joe
-I tried with Badari's and Linus's patch using same fio jobfile which 
-earlier produced this oops.
-And it works for me.
+>And yes, warnings are _very_ useful in C for enforcing type safety.
 
-Thanks,
--Guru
+	void *p;
+	p = (struct foo *)kmalloc(sizeof(struct foo), GFP_KERNEL);
+
+
+
+	Jan
+-- 
