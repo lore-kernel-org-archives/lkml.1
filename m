@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763824AbXHAJnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764022AbXHAJp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763824AbXHAJnn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760381AbXHAJng
+	id S1764022AbXHAJp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757222AbXHAJpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:43:36 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:38365 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759431AbXHAJnf (ORCPT
+	Wed, 1 Aug 2007 05:45:16 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:21127 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755102AbXHAJpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:43:35 -0400
-To: bunk@stusta.de
-CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <20070801092909.GN3972@stusta.de> (message from Adrian Bunk on
-	Wed, 1 Aug 2007 11:29:09 +0200)
-Subject: Re: [RFC PATCH] type safe allocator
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> <20070801092909.GN3972@stusta.de>
-Message-Id: <E1IGAiD-0006Qf-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 01 Aug 2007 11:41:49 +0200
+	Wed, 1 Aug 2007 05:45:15 -0400
+Date: Wed, 01 Aug 2007 03:42:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Reading a bad sector does not report failure as 'read error' but
+ hangs PC with 'Machine Check Exception'
+In-reply-to: <fa.iA7ClD7fNtxdfJ9YhG0lqougi/0@ifi.uio.no>
+To: "Hendrik ." <chasake@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <46B0559A.5050708@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.tKSW2T164UTRMvntkUO/fGg0UlM@ifi.uio.no>
+ <fa.iA7ClD7fNtxdfJ9YhG0lqougi/0@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I wonder why we don't have type safe object allocators a-la new() in
-> > C++ or g_new() in glib?
-> > 
-> >   fooptr = k_new(struct foo, GFP_KERNEL);
-> > 
-> > is nicer and more descriptive than
-> > 
-> >   fooptr = kmalloc(sizeof(*fooptr), GFP_KERNEL);
-> >...
+Hendrik . wrote:
+> Ok, I did actually not copy the coreret code in the
+> mcelog, leaving me some errors about the Northbridge.
+> If I do it again it gives me something else. I made 2
+> digital photo's of 2 lockups when it happened and this
+> is the result of the tool, the TSC is different in
+> both errors, the rest is the same:
 > 
-> But it's much more likely to break when someone converts fooptr to a 
-> different struct.
-> 
-> It might not be a common case but it sometimes happens - and your type 
-> safe variant introduces the possibility for really nasty bugs.
+> --------------------
+> CPU 0 4 northbridge TSC b7d4a144d0 
+>   Northbridge Watchdog error
+>        bit57 = processor context corrupt
+>        bit61 = error uncorrected
+>   bus error 'generic participation, request timed out
+>       generic error mem transaction
+>       generic access, level generic'
+> STATUS b200000000070f0f MCGSTATUS 4
+> This is not a software problem!
 
-The compiler would emit a warning about assigning to a pointer of
-different type.  That's a fairly strong hint that something just
-broke.
+Presumably some access that the CPU is doing to the controller has timed 
+out and caused the MCE. It might be useful if we could get a stack trace 
+from where the MCE was triggered - does anyone know if it's possible to 
+do this?
 
-Miklos
+It's possible that only NVidia really could tell why this error would 
+result from a disk problem, though.
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
