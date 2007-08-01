@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbXHAVPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbXHAVSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbXHAVPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXHAVP0
+	id S1755165AbXHAVSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751643AbXHAVSi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:15:26 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55975 "EHLO
+	Wed, 1 Aug 2007 17:18:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36520 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755188AbXHAVPX (ORCPT
+	by vger.kernel.org with ESMTP id S1751558AbXHAVSh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:15:23 -0400
-Date: Wed, 1 Aug 2007 14:14:39 -0700
+	Wed, 1 Aug 2007 17:18:37 -0400
+Date: Wed, 1 Aug 2007 14:17:49 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: kupdate weirdness
-Message-Id: <20070801141439.ff1c29f9.akpm@linux-foundation.org>
-In-Reply-To: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
-References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
+To: "Torsten Kaiser" <just.for.lkml@googlemail.com>
+Cc: Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.23-rc1-mm2
+Message-Id: <20070801141749.ecfe6803.akpm@linux-foundation.org>
+In-Reply-To: <64bb37e0708011352q33053acdxa753cd198fb4233c@mail.gmail.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<12639.1186000208@turing-police.cc.vt.edu>
+	<20070801134055.7862b95e.akpm@linux-foundation.org>
+	<64bb37e0708011352q33053acdxa753cd198fb4233c@mail.gmail.com>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,32 +29,70 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Aug 2007 22:45:16 +0200
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Wed, 1 Aug 2007 22:52:44 +0200
+"Torsten Kaiser" <just.for.lkml@googlemail.com> wrote:
 
-> The following strange behavior can be observed:
+> On 8/1/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Wed, 01 Aug 2007 16:30:08 -0400
+> > Valdis.Kletnieks@vt.edu wrote:
+> >
+> > > As an aside, it looks like bits&pieces of dynticks-for-x86_64 are in there.
+> > > In particular, x86_64-enable-high-resolution-timers-and-dynticks.patch is in
+> > > there, adding a menu that depends on GENERIC_CLOCKEVENTS, but then nothing
+> > > in the x86_64 tree actually *sets* it.  There's a few other dynticks-related
+> > > prep patches in there as well.  Does this mean it's back to "coming soon to
+> > > a CPU near you" status? :)
+> >
+> > I've lost the plot on that stuff: I'm just leaving things as-is for now,
+> > wait for Thomas to return from vacation so we can have another run at it.
 > 
-> 1. large file is written
-> 2. after 30 seconds, nr_dirty goes down by 1024
-> 3. then for some time (< 30 sec) nothing happens (disk idle)
-> 4. then nr_dirty again goes down by 1024
-> 5. repeat from 3. until whole file is written
+> For what its worth: 2.6.22-rc6-mm1 with NO_HZ works for me on an AMD
+> SMP system without trouble.
 > 
-> So basically a 4Mbyte chunk of the file is written every 30 seconds.
-> I'm quite sure this is not the intended behavior.
-> 
-> The reason seems to be that __sync_single_inode() will move the
-> partially written inode from s_io onto s_dirty, and sync_sb_inode()
-> will not splice it back onto s_io until the rest of the inodes on s_io
-> has been processed.
+> Next try with 2.6.23-rc1-mm2 and SPARSEMEM:
+> Probably the same exception, but this time with Call Trace:
+> [    0.000000] Bootmem setup node 0 0000000000000000-0000000080000000
+> [    0.000000] Bootmem setup node 1 0000000080000000-0000000120000000
+> [    0.000000] Zone PFN ranges:
+> [    0.000000]   DMA             0 ->     4096
+> [    0.000000]   DMA32        4096 ->  1048576
+> [    0.000000]   Normal    1048576 ->  1179648
+> [    0.000000] Movable zone start PFN for each node
+> [    0.000000] early_node_map[4] active PFN ranges
+> [    0.000000]     0:        0 ->      159
+> [    0.000000]     0:      256 ->   524288
+> [    0.000000]     1:   524288 ->   917488
+> [    0.000000]     1:  1048576 ->  1179648
+> PANIC: early exception rip ffffffff807cddb5 error 2 cr2 ffffe20003000010
 
-It does all sorts of weird crap.
+It's cryptically telling us that the code tried to access 0xffffe20003000010
 
-> Since there will probably be a recently dirtied inode on s_io, this
-> will take some of time, but always less than 30 sec.
+> [    0.000000]
+> [    0.000000] Call Trace:
+> [    0.000000]  [<ffffffff807cddb5>] memmap_init_zone+0xb5/0x130
+> [    0.000000]  [<ffffffff807ce874>] init_currently_empty_zone+0x84/0x110
+> [    0.000000]  [<ffffffff807cec93>] free_area_init_node+0x393/0x3e0
+> [    0.000000]  [<ffffffff807cefea>] free_area_init_nodes+0x2da/0x320
+> [    0.000000]  [<ffffffff807c9c97>] paging_init+0x87/0x90
+> [    0.000000]  [<ffffffff807c0f85>] setup_arch+0x355/0x470
+> [    0.000000]  [<ffffffff807bc967>] start_kernel+0x57/0x330
+> [    0.000000]  [<ffffffff807bc12d>] _sinittext+0x12d/0x140
+> [    0.000000]
+> [    0.000000] RIP memmap_init_zone+0xb5/0x130
 > 
-> I don't know what's the easiest solution.
-> 
-> Any ideas?
+> (gdb) list *0xffffffff807cddb5
+> 0xffffffff807cddb5 is in memmap_init_zone (include/linux/list.h:32).
+> 27      #define LIST_HEAD(name) \
+> 28              struct list_head name = LIST_HEAD_INIT(name)
+> 29
+> 30      static inline void INIT_LIST_HEAD(struct list_head *list)
+> 31      {
+> 32              list->next = list;
+> 33              list->prev = list;
+> 34      }
+> 35
+> 36      /*
+>
+> I will test more tomorrow...
 
-Try 2.6.23-rc1-mm2.
+Thanks.  Please send the .config?
