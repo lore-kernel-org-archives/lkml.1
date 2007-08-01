@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbXHAXlj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbXHAXqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbXHAXlj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 19:41:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752865AbXHAXl2
+	id S1755181AbXHAXqr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 19:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXHAXqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 19:41:28 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:40236 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755234AbXHAXlX (ORCPT
+	Wed, 1 Aug 2007 19:46:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:57171 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751596AbXHAXqi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 19:41:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=P+2FkIalRKXooRZ6TT5ttvhJFiHvNZrqSu8V+SV2XRB9jtRjLGXOUGgrkN89fokoNtMqFqIl4CqKZXtjMc/9xtqGARiU2XWDlOw77WvVCygu+q0StnLrDqHTrW2eKnd1BtRapsEU21pnp5EHJ2fTweiEpSieSKUcu1VVvd6wmTY=
-Message-ID: <46B11A05.9070001@googlemail.com>
-Date: Thu, 02 Aug 2007 01:40:53 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>,
-       linux-audit@redhat.com, Al Viro <viro@zeniv.linux.org.uk>
-Subject: INOTIFY=n , AUDIT*=y compile error
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
+	Wed, 1 Aug 2007 19:46:38 -0400
+Date: Wed, 1 Aug 2007 16:45:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Andi K <ak@suse.de>, arjan <arjan@linux.intel.com>,
+       Ashok Raj <ashok.raj@intel.com>, Suresh B <suresh.b.siddha@intel.com>
+Subject: Re: [patch -mm][Intel-IOMMU] Optimize sg map/unmap calls
+Message-Id: <20070801164554.5d2d157a.akpm@linux-foundation.org>
+In-Reply-To: <20070801200623.GA20780@linux-os.sc.intel.com>
+References: <20070801200623.GA20780@linux-os.sc.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 1 Aug 2007 13:06:23 -0700
+"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
 
-> Changes since 2.6.23-rc1-mm1:
-> 
-...
+> +/* Computes the padding size required, to make the
+> + * the start address naturally aligned on its size
+> + */
+> +static int
+> +iova_get_pad_size(int size, unsigned int limit_pfn)
+> +{
+> +	unsigned int pad_size = 0;
+> +	unsigned int order = ilog2(size);
+> +
+> +	if (order)
+> +		pad_size = (limit_pfn + 1) % (1 << order);
+> +
+> +	return pad_size;
+> +}
 
->  git-audit-master.patch
+This isn't obviously doing the right thing for non-power-of-2 inputs.
+ilog2() rounds down...
 
-...
-
-kernel/auditsc.c: In function 'handle_one':
-kernel/auditsc.c:1411: error: 'const struct inode' has no member named 'inotify_watches'
-kernel/auditsc.c:1411: error: 'const struct inode' has no member named 'inotify_watches'
-kernel/auditsc.c:1411: error: 'const struct inode' has no member named 'inotify_watches'
-kernel/auditsc.c: In function 'handle_path':
-kernel/auditsc.c:1452: error: 'struct inode' has no member named 'inotify_watches'
-kernel/auditsc.c:1452: error: 'struct inode' has no member named 'inotify_watches'
-kernel/auditsc.c:1452: error: 'struct inode' has no member named 'inotify_watches'
-make[1]: *** [kernel/auditsc.o] Error 1
-make: *** [kernel] Error 2
-make: *** Waiting for unfinished jobs....
-
-...
-
-
-Got that with a randconfig ( http://194.231.229.228/MM/randconfig-auto-34 )
-
-
-Regards,
-
-Gabriel
+Please check that this, and all the other ilog2()s which have been added
+are doing the right thing if they can be presented with non-power-of-2
+inputs?
