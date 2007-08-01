@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933944AbXHAPBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934048AbXHAPBg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933944AbXHAPBQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933689AbXHAPAq
+	id S934048AbXHAPBg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:01:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933856AbXHAPAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:00:46 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:20079 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933472AbXHAPAo (ORCPT
+	Wed, 1 Aug 2007 11:00:55 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:43262 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933843AbXHAPAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:00:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=J6QqIDMGT4244eqJo+4YH595o28yHAQqR6oM6+M53VqBHht60ybdtfT4gZIvxeJq04Bf0vBktB8HHUdHWxlBvMhNyP0XGgk48yXyeyomNepVWmHCjIjSmGyYeUEaK+dhx0IUXbISs5q9JqEuM6LWKIRJfu0nrbYAcJ2To0xALK4=
-Message-ID: <46B09FFF.1040308@googlemail.com>
-Date: Wed, 01 Aug 2007 17:00:15 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 1 Aug 2007 11:00:53 -0400
+X-Sasl-enc: arNQ8B4b+Qw4ftVROYSdWcZ2+0wHQQxGqIIedhzaPSyS 1185980452
+Date: Wed, 1 Aug 2007 12:00:49 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       len.brown@intel.com, linux-acpi@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-pm@linux-foundation.org,
+       Borislav Deianov <borislav@users.sourceforge.net>
+Subject: Re: 2.6.21-rc1: T60 ACPI issues
+Message-ID: <20070801150049.GH23111@khazad-dum.debian.net>
+References: <20070801135820.GA8266@mellanox.co.il> <Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com> <20070801145607.GB8480@mellanox.co.il>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Coding style fix drivers/media/video/zr36060.c
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070801145607.GB8480@mellanox.co.il>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 01 Aug 2007, Michael S. Tsirkin wrote:
+> Henrique, if there's a patch to test, pls let me know.
+> Or maybe CONFIG_THINKPAD_ACPI_INPUT_ENABLED should be N by default.
 
-Coding style fix
+I will hunt down the LKML mail and reply to it.
 
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
-
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-mm-clean/drivers/media/video/zr36060.c	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/drivers/media/video/zr36060.c	2007-08-01 16:57:48.000000000 +0200
-@@ -38,14 +38,14 @@
-    #include<linux/videodev.h> */
- 
- /* I/O commands, error codes */
--#include<asm/io.h>
-+#include <asm/io.h>
- //#include<errno.h>
- 
- /* headerfile of this module */
--#include"zr36060.h"
-+#include "zr36060.h"
- 
- /* codec io API */
--#include"videocodec.h"
-+#include "videocodec.h"
- 
- /* it doesn't make sense to have more than 20 or so,
-   just to prevent some unwanted loops */
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
