@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755150AbXHAPtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757621AbXHAPv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755150AbXHAPtl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbXHAPta
+	id S1757621AbXHAPv5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:51:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbXHAPvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:49:30 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:14373 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932777AbXHAPt3 (ORCPT
+	Wed, 1 Aug 2007 11:51:50 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:64722 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbXHAPvt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:49:29 -0400
-Message-ID: <46B0ACC5.6010904@oracle.com>
-Date: Wed, 01 Aug 2007 08:54:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Wed, 1 Aug 2007 11:51:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=hha0FyLcfaIMcsDrsipktIVWEOncBysMgQCpgIdX+hjMswUmdJe2QrgDtfsUfzzHWwym+s0+zfpYLe4HWUX6jEq+NmVt5eCOoKqIKj7YmqTiWkrLuc/oxkYb7qBGKqQZTt/8vmiPwx9RNKCLnPNYuwPSMDUuo5Q5dc5Zy7f2DDc=
+Message-ID: <40378e40708010851q48d73e36v3b1d468aa7712284@mail.gmail.com>
+Date: Wed, 1 Aug 2007 17:51:45 +0200
+From: "Mohamed Bamakhrama" <bamakhrama@gmail.com>
+Reply-To: bamakhrama@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: Profiling the Kernel
 MIME-Version: 1.0
-To: Nish Aravamudan <nish.aravamudan@gmail.com>
-CC: Zan Lynx <zlynx@acm.org>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
-References: <1185918261.6981.13.camel@localhost>	 <20070731150245.5932b763.randy.dunlap@oracle.com> <29495f1d0708010845x446f7823qcfe2c5244b604078@mail.gmail.com>
-In-Reply-To: <29495f1d0708010845x446f7823qcfe2c5244b604078@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nish Aravamudan wrote:
-> On 7/31/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
->> On Tue, 31 Jul 2007 15:44:21 -0600 Zan Lynx wrote:
->>
->>> I was playing with huge pages and libhugetlbfs.  Small programs like
->>> "ls" work fine.  I tried running Evolution through libhugetlbfs and the
->>> system slowly stops running.  One interesting thing is the "ps" command,
->>> it gets stuck like this:
->> Do you mean 2.6.22-rc1-mm1 or 2.6.23-rc1-mm1?
->>
->> There was a hugepage problem fixed very recently, in 2.6.23-rc1 IIRC.
-> 
-> Actually fixed just after 2.6.23-rc1:
-> 
-> git describe 5ab3ee7b1cd5c91eb2272764f9d7d1fe4749681e
-> v2.6.23-rc1-14-g5ab3ee7
+Hi *,
+I have a question regarding profiling the Linux kernel code during
+runtime (by "profile", I mean the usage of each function/module within
+the kernel itself). I googled and found many "system-wide" profiler
+such as sysprof, Oprofile, etc... I am working on an embedded system
+project and currently we are using an on-chip debugger which
+interfaces with the system through EJTAG port. All what it can provide
+is just a "uniform sampling" of the kernel code usage and according to
+the manufacturer, it is not a safe way to determine the "hot spots"
+within the kernel. Does anyone know about any hardware/software tool
+that can provide a "good" profile of the kernel code usage?
 
-Looks to me like Andrew included Ken's patch in his rc1-mm1 anyway,
-so that shouldn't be the issue.  Or did I not read mm/hugetlb.c correctly?
+Thanks in advance.
+
+Best regards,
 
 -- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Mohamed A. Bamakhrama
+Web: http://home.cs.tum.edu/~bamakhra/
