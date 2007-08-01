@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbXHACdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761737AbXHACkM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760759AbXHACdK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 22:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbXHACc7
+	id S1761737AbXHACkM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 22:40:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbXHACj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 22:32:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49868 "EHLO mx1.redhat.com"
+	Tue, 31 Jul 2007 22:39:58 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:58718 "EHLO e2.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbXHACc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 22:32:58 -0400
-Message-ID: <46AFF092.6050802@kernel.sg>
-Date: Wed, 01 Aug 2007 10:31:46 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070615)
+	id S1756046AbXHACj5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 22:39:57 -0400
+Date: Tue, 31 Jul 2007 19:39:54 -0700
+From: Nishanth Aravamudan <nacc@us.ibm.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: isimatu.yasuaki@jp.fujitsu.com, tony.luck@intel.com,
+       torvalds@linux-foundation.org, ryhodges@us.ibm.com,
+       linux-ia64@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: "Add support for vector domain" breaks boot on x355
+Message-ID: <20070801023954.GE31324@us.ibm.com>
+References: <20070731221356.GA31324@us.ibm.com> <1185932623.3920.5.camel@kane-linux>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org,
-       "Kawai, Hidehiro" <hidehiro.kawai.ez@hitachi.com>,
-       Neil Horman <nhorman@tuxdriver.com>, Bryan Wu <bryan.wu@analog.com>
-Subject: Re: [PATCH 1/3] coredump: cleanup documentation for suid_dumpable
-References: <20070731070238.GA2412@kernel.sg>	<20070731070340.GB2412@kernel.sg> <20070731091337.5f3cb923@the-village.bc.nu>
-In-Reply-To: <20070731091337.5f3cb923@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1185932623.3920.5.camel@kane-linux>
+X-Operating-System: Linux 2.6.22-rc6-gaee87db2 (x86_64)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan,
-
-Alan Cox wrote:
-> On Tue, 31 Jul 2007 15:03:40 +0800
-> Eugene Teo <eugeneteo@kernel.sg> wrote:
+On 01.08.2007 [10:43:43 +0900], Kenji Kaneshige wrote:
+> 2007-07-31 (?$B2P) ?$B$N 15:13 -0700 ?$B$K Nishanth Aravamudan ?$B$5$s$O=q$-$^$7$?:
+> > The following commit (4994be1b3fe9120c88022ff5c0c33f6312b17adb) broke
+> > Linus' Tree between 2.6.22-git15 and 2.6.22-git16 on a 2-node 8-way x455
+> > (Madison procs). Thanks to Ryan Hodges for bisecting down to this
+> > commit.
 > 
->> This patch removes documentation that is related to suidsafe core dump
->> mode.
->>
->> Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+> Thank you for reporting.
 > 
-> NAK - this feature is actively used and can be set by the sysctl
-> interface. The PRCTL fixup was just a bug being fixed. The sysctl
-> interface is still relevant.
+> I think this problem might be fixed by the commit
+> 6ffbc82351c62eeeeaeb9e817ddf93049353493d. Could you try that?
 
-Thank you for correcting me. Appreciated. I am not aware that it is still
-being actively used. May I know who or which program is using this feature?
+Ah you might be right. Our testing harness is missing that the kernel
+came up further, at least. (2.6.23-rc1-git9 works fine, mostly, it looks
+like)
 
-Thanks,
-Eugene
+Thanks!
+Nish
+
+-- 
+Nishanth Aravamudan <nacc@us.ibm.com>
+IBM Linux Technology Center
