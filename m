@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbXHAU2a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbXHAUa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbXHAU2a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 16:28:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbXHAU2W
+	id S1755255AbXHAUa3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 16:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbXHAUaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 16:28:22 -0400
-Received: from waste.org ([66.93.16.53]:44789 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751167AbXHAU2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 16:28:21 -0400
-Date: Wed, 1 Aug 2007 15:28:15 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>,
-       Yoann Padioleau <padator@wanadoo.fr>,
-       David Howells <dhowells@redhat.com>, kernel-janitors@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/68] 0 -> NULL, for arch/frv
-Message-ID: <20070801202815.GL11166@waste.org>
-References: <200707270944.LAA17167@ifs.emn.fr> <22618.1185531297@redhat.com> <87lkd29mk9.fsf@wanadoo.fr> <200707272138.23323.rgetz@blackfin.uclinux.org> <8bd0f97a0707271837q5d5f31d9pe342e72ebf9368c1@mail.gmail.com> <46AF255A.4050106@student.ltu.se> <8bd0f97a0708010303j7f443b06lf9d77f6d36816237@mail.gmail.com> <46B062AF.1040907@student.ltu.se>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B062AF.1040907@student.ltu.se>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 1 Aug 2007 16:30:13 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:35918 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751501AbXHAUaM (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 16:30:12 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-mm2
+In-Reply-To: Your message of "Tue, 31 Jul 2007 23:09:32 PDT."
+             <20070731230932.a9459617.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1186000208_3775P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Wed, 01 Aug 2007 16:30:08 -0400
+Message-ID: <12639.1186000208@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 12:38:39PM +0200, Richard Knutsson wrote:
-> Mike Frysinger wrote:
-> >On 7/31/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
-> >  
-> >>Mike Frysinger wrote:
-> >>    
-> >>>On 7/27/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> >>>      
-> >>>>If there is a definite style or semantic preference that everyone 
-> >>>>should live
-> >>>>with - does it make sense to put checks in checkpatch.pl to enforce it?
-> >>>>        
-> >>>checkpatch.pl does not have enough semantic knowledge to know if the
-> >>>thing being tested is a pointer ... dont know if the sparse utility
-> >>>would be able to pick it out as i'm not familiar with what level that
-> >>>thing runs at
-> >>>      
-> >>Didn't he mean "x == NULL" > "!x"?
-> >>    
-> >
-> >i'm sure i understand your meaning of ">" ... are you saying that "x
-> >== NULL" is greater (preferred) to "!x" or are you saying that "x ==
-> >NULL" should be changed to "!x" ?
-> >  
-> If I understood Robin correctly, he suggested that checkpatch.pl would 
-> tell to convert "x == NULL" to "!x", if that would be the preferred way.
-> >i dont think the former case can be checked by checkpatch.pl, but the
-> >latter certainly can ... but i'd be very skeptical you could get the
-> >wider LKML audience to sign off one way or the other wrt to "x ==
-> >NULL" vs "!x".  you can certainly get people to sign off on "x == 0"
-> >being wrong when x is a pointer.
-> >  
-> I agree!
-> BTW, too bad checkpatch.pl does not know the types, since it otherwise 
-> could check for the "x [=!]= 0"-thing.
+--==_Exmh_1186000208_3775P
+Content-Type: text/plain; charset=us-ascii
 
-About the only place that if (x != 0) is preferred to if (x) is cases
-where the 0 value doesn't semantically correspond to false/off/disabled.
-And that's basically thing that return 0 for success and negative errors.
+On Tue, 31 Jul 2007 23:09:32 PDT, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Builds, boots, runs here. Dell Latitude D820, Core2 Duo T7200, x86_64 kernel.
+
+> -loop-use-unlocked_ioctl.patch
+> 
+>  Dropped, broken.
+
+Fixes one issue I had in -mm1 (I'm assuming somebody else spotting this one
+as well, you dropped it before I reported it.. :)
+
+> +tpm_tis-fix-interrupt-probing.patch
+
+And the other...
+
+As an aside, it looks like bits&pieces of dynticks-for-x86_64 are in there.
+In particular, x86_64-enable-high-resolution-timers-and-dynticks.patch is in
+there, adding a menu that depends on GENERIC_CLOCKEVENTS, but then nothing
+in the x86_64 tree actually *sets* it.  There's a few other dynticks-related
+prep patches in there as well.  Does this mean it's back to "coming soon to
+a CPU near you" status? :)
+
+--==_Exmh_1186000208_3775P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGsO1QcC3lWbTT17ARAjchAJ9d3ovh3T+AlndvORSp5BpHjt+NRgCgqon4
+ekLqCo0gZDe7tH84U/LJ00E=
+=BdDF
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1186000208_3775P--
