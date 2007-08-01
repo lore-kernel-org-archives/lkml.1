@@ -1,45 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbXHAO3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764853AbXHAO3k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbXHAO3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXHAO3I
+	id S1764853AbXHAO3k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:29:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbXHAO30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:29:08 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:33998 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754961AbXHAO3G (ORCPT
+	Wed, 1 Aug 2007 10:29:26 -0400
+Received: from outbound-fra.frontbridge.com ([62.209.45.174]:48626 "EHLO
+	outbound2-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751008AbXHAO3Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:29:06 -0400
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH, Vorsitzender des Aufsichtsrats: Johann Weihen, Geschaeftssfuehrung: Herbert Kircher, Sitz der Gesellschaft: Boeblingen, Registergericht: Amtsgericht Stuttgart, HRB 243294
-To: Bob Nelson <rrnelson@linux.vnet.ibm.com>
-Subject: Re: 2.6.22 new perfmon code base + libpfm + pfmon
-Date: Wed, 1 Aug 2007 16:29:03 +0200
-User-Agent: KMail/1.9.6
-Cc: eranian@hpl.hp.com, linux kernel <linux-kernel@vger.kernel.org>,
-       oprofile <oprofile-list@lists.sourceforge.net>
-References: <20070726140222.GA7852@frankl.hpl.hp.com> <200708010922.41551.rrnelson@linux.vnet.ibm.com>
-In-Reply-To: <200708010922.41551.rrnelson@linux.vnet.ibm.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 1 Aug 2007 10:29:25 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
+From: "Peter Oruba" <peter.oruba@amd.com>
+Organization: AMD
+To: linux-kernel@vger.kernel.org
+Subject: Re: Search for x86_64 documentation.
+Date: Wed, 1 Aug 2007 16:29:54 +0200
+User-Agent: KMail/1.9.7
+References: <38b2ab8a0708010627n7b7d2bbbicc7dc5f212faf016@mail.gmail.com>
+In-Reply-To: <38b2ab8a0708010627n7b7d2bbbicc7dc5f212faf016@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708011629.03828.arnd.bergmann@de.ibm.com>
+Message-ID: <200708011629.59176.peter.oruba@amd.com>
+X-OriginalArrivalTime: 01 Aug 2007 14:27:39.0097 (UTC)
+ FILETIME=[1CE6CC90:01C7D448]
+X-WSS-ID: 6AAE47390X83183813-06-01
+Content-Type: multipart/signed;
+ boundary=nextPart1604171.ymf8Qa8N2E;
+ protocol="application/pgp-signature";
+ micalg=pgp-sha1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 01 August 2007, Bob Nelson wrote:
-> It looks to me like you were saying you would remove this extension to the
-> OProfile file system (/dev/oprofile/implementation).
-> However, it looks like it has made it into the mainline kernel code. 
 
-Just to be clear, this problem showed up in my own kernel patch set
-from http://www.kernel.org/pub/linux/kernel/people/arnd/patches/2.6.22-arnd1/,
-not in mainline.
+--nextPart1604171.ymf8Qa8N2E
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-	Arnd <><
+=46rancis,
+
+this may be a good site to start with:
+
+http://www.amd.com/us-en/Processors/DevelopWithAMD/0,,30_2252_739_7044,00.h=
+tml
+
+Regards,
+Peter Oruba
+
+
+Am Mittwoch, 1. August 2007 15:27:23 schrieb Francis Moreau:
+> Hello,
+>
+> I'm used to hack Linux on a ARM based board and would like to be
+> involved in x86_64 architecture but I don't know where I should
+> start...
+>
+> Could anyone point out some nice documentations/books describing this
+> architecture ?
+>
+> thanks
+
+
+
+=2D-=20
+AMD Saxony Limited Liability Company & Co. KG
+Operating System Research Center
+Wilschdorfer Landstr. 101, 01109 Dresden, Germany
+Register Court Dresden: HRA 4896
+General Partner authorized to represent:
+AMD Saxony LLC (Wilmington, Delaware, US)
+General Manager of AMD Saxony LLC: Dr. Hans-R. Deppe, Thomas McCoy
+
+--nextPart1604171.ymf8Qa8N2E
+Content-Type: application/pgp-signature;
+ name=signature.asc
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGsJjn38rmLONd5dwRArLpAKDhGT2pcDmdfbrTqHWb20V+iUyDmgCfRrqB
+VU555IRayH+2Q7YySp1SI90=
+=MJA1
+-----END PGP SIGNATURE-----
+
+--nextPart1604171.ymf8Qa8N2E--
+
+
