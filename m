@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763023AbXHAThH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764217AbXHATki@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763023AbXHAThH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:37:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759326AbXHATgy
+	id S1764217AbXHATki (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:40:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761632AbXHATka
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:36:54 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34411 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757755AbXHATgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:36:53 -0400
-Date: Wed, 1 Aug 2007 15:36:49 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: guilt@josefsipek.net
-Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org, brandon@ifup.org
-Subject: [ANNOUNCE] Guilt v0.27
-Message-ID: <20070801193649.GB20928@filer.fsl.cs.sunysb.edu>
-MIME-Version: 1.0
+	Wed, 1 Aug 2007 15:40:30 -0400
+Received: from uosis.mif.vu.lt ([193.219.42.14]:3850 "EHLO uosis.mif.vu.lt"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761592AbXHATka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 15:40:30 -0400
+X-Greylist: delayed 1953 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 15:40:30 EDT
+Date: Wed, 1 Aug 2007 22:07:54 +0300
+From: Rokas Masiulis <roma1390@uosis.mif.vu.lt>
+To: linux-kernel@vger.kernel.org
+Subject: Examine user space locks
+Message-ID: <20070801190754.GA31656@uosis.mif.vu.lt>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-07-16)
+User-Agent: Mutt/1.4.2.2i
+Organization: VU MIF
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guilt v0.27 is available for download (once it mirrors out on kernel.org).
+Hi
 
-Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
-queues-like functionality and interface to git.
+sometimes user space program hangs forever.
+In old days i remeber there was unkillable dosemu.
+May be there are good how to. Some one can point to it?
 
-Tarballs:
-http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
+This is problem/solution isn't related to current kernel. This
+is question: what to do in this sitaution. 
 
-Git repo:
-git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
+Now i have eject(1)
 
+ $ ps uax | grep eject
+ root     12662  0.0  0.0   1528   560 ?        D    Jul31   0:00 eject
+ root     12866  0.0  0.0   1532   560 pts/10   D    Jul31   0:00 eject
+ $ date
+ Wed Aug  1 21:56:59 EEST 2007
 
-Alright, I'm trying to get back to the 2-week release schedule, so here's
-v0.27!
+That same eject worked on that same hardware and kernel before.
 
-There has been a number of changes in those two weeks, Out of the 20
-commits, about half of them are bug fixes of all sorts - mostly preventive
-(does anyone actually use whitespace in their branch names?).
+ # strace -p 12662
+ Process 12662 attached - interrupt to quit
 
-The major changes include some performance speedups. Little bit thought
-(there's more to come!) went into making guilt-push faster, 0.27 is about 8%
-faster than 0.26 on push. The other major thing is the infrastructure (which
-turned out to be really simple) for hooks. Currently, only one hook is
-supported (guilt-delete) but that'll change sooner or later.
+dosn't show which syscall is called.
 
-And the last major change under the hood: guilt now checks and expects git
-1.5.
+kill -9 12662 doesn't help to.
 
-Other new features:
-	guilt-series -e	to edit the series file by hand
-	guilt-header -e to edit a patch's header
-	guilt-refresh --diffstat to include a diffstat in the patch file
+No ops, no other info in dmesg.
 
-As always, patches, and other feedback is welcome.
+How to find problem? How to kill/stop proces without reboot?
+How to find which lock is taken by kernel to complete user space
+request/syscalls? 
 
-Josef "Jeff" Sipek.
+kernel: 2.6.17-gentoo-r4-20061014-00
+dmesg: http://89.190.108.145/~rokas/dmesg.txt
+config: http://89.190.108.145/~rokas/config.txt
 
-------------
-Changes since v0.26:
+Thanks for any hints.
 
-Dmitry Monakhov (2):
-      Fix guilt-import patch naming
-      Add series editor support
-
-Eric Lesh (4):
-      Handles slashes in branch names
-      Makefile: don't install *~ files
-      guilt-rebase: Make fast-forward work
-      guilt-header: Add -e option for editing
-
-Josef 'Jeff' Sipek (14):
-      refresh: Added --diffstat option
-      init: Be careful with whitespace in branch names
-      guilt: check git version and bail if version is not supported
-      guilt: Create infrastructure for guilt hooks
-      delete: Added delete-patch hook
-      pop: Check if no patches are applied
-      guilt: Do not scan entire patch file when not necessary
-      guilt: git-apply --index can be used to update the index
-      guilt: Remove unnecessary reading of the status file
-      push_patch: propagate return code to caller
-      rebase: warn the user that rebase is experimental
-      Documentation: document series -e option
-      header: rewrite option parsing and patch searching
-      Guilt v0.27
-
-Michael Halcrow (1):
-      import-commit: Retry with a different patch name if necessary
+roma139
