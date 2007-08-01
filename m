@@ -1,277 +1,233 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbXHAQb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbXHAQep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756254AbXHAQb5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXHAQbt
+	id S1755593AbXHAQep (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751838AbXHAQee
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 12:31:49 -0400
-Received: from pat.uio.no ([129.240.10.15]:46582 "EHLO pat.uio.no"
+	Wed, 1 Aug 2007 12:34:34 -0400
+Received: from mga02.intel.com ([134.134.136.20]:2513 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750799AbXHAQbq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 12:31:46 -0400
-Subject: Re: PROBLEM: [2.6.22.1] Copying to full NFS dir
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Raphael Manfredi <Raphael_Manfredi@pobox.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <30002.1185980421@nice>
-References: <30002.1185980421@nice>
-Content-Type: multipart/mixed; boundary="=-p3jowV5dBrcA5u4O4rVx"
-Date: Wed, 01 Aug 2007 12:31:40 -0400
-Message-Id: <1185985900.6700.132.camel@localhost>
+	id S1751171AbXHAQeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 12:34:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,209,1183359600"; 
+   d="scan'208";a="273178646"
+Date: Wed, 1 Aug 2007 09:31:36 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+Message-Id: <20070801093136.e927e0d6.kristen.c.accardi@intel.com>
+In-Reply-To: <46B05109.4080007@gmail.com>
+References: <20070705194909.337398431@intel.com>
+	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+	<46AE12B6.6090408@garzik.org>
+	<46AED656.8070407@gmail.com>
+	<1185891382.2750.8.camel@laptopd505.fenrus.org>
+	<46AF4B05.4010700@gmail.com>
+	<1185898532.2766.2.camel@laptopd505.fenrus.org>
+	<46AF7F7E.6060300@gmail.com>
+	<46B05109.4080007@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.077)
-X-UiO-Scanned: 98AAEA616F8776D69FF1B8C7700FFCD939E12CE1
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 334 total 3051371 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 01 Aug 2007 18:23:21 +0900
+Tejun Heo <htejun@gmail.com> wrote:
 
---=-p3jowV5dBrcA5u4O4rVx
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Wed, 2007-08-01 at 17:00 +0200, Raphael Manfredi wrote:
-> I've stumbled into a problem running 2.6.22.1 on both my NFS client and
-> my NFS server.  I've just upgraded from 2.4.31, so I have no idea whether
-> this is a new problem or if it is known in the 2.6.x series.
+> Tejun Heo wrote:
+> > Arjan van de Ven wrote:
+> >>> They were hardware problems.  I don't think any amount of proper
+> >>> implementation can fix them.  I have one DVD RAM somewhere in my pile of
+> >>> hardware which locks up solidly if any link PS mode is used and had a
+> >> and the AHCI ALPM code decides to use power savings on this device? if
+> >> so, please give us the idents so that we can add it to the blacklist as
+> >> the first entry... (or can buy it to check it in detail first)
+> > 
+> > Yeap, lemme check.
+> > 
+> > It's "TSSTcorpCD/DVDW SH-S183A" with firmware revision "SB01".  Wanna
+> > check ID capability bits but 'hdparm -I /dev/sr0' is still broken and
+> > it's already past 3 am here.  I'll report back tomorrow.
 > 
-> Here's a high-level description of the context:
+> Oops, that was the wrong one.  Locking up one was HL-DT-STDVD-RAM
+> GSA-H30N and it correctly reports that it doesn't support IPM.  Here
+> are some test results.
 > 
-> * The NFS server has a directory which is full.
-> * That directory is mounted on the NFS client.
-> * The NFS client tries to "mv local-file /nfs/remote-dir/"
-> * local-file is big (typically 700 MiB).
+> Controller is ICH9.
 > 
-> What happens is:
+> 00:1f.2 SATA controller [Class 0106]: Intel Corporation Unknown device [8086:2922] (rev 02)
 > 
-> * The "mv" takes a long long time and eventually fails, of course.
-> * The load on the NFS server (initially at 0) increases to about 8.
-> * Any access to the NFS-mounted dir from the client whilst "mv" is in
->   progress stalls (e.g. ls -l /nfs/remote-dir).
+> ====
 > 
-> I've tried to write my own "mv" in C to see which syscalls were involved.
-> What happens is:
+> 1. HL-DT-STDVD-RAM GSA-H30N
 > 
-> * All the write() succeed with no error.
-> * The final close() returns -1 with either EINTR or ENOSPC.
+>   ATAPI CD-ROM, with removable media
+> 	  Model Number:       HL-DT-STDVD-RAM GSA-H30N
+> 	  Serial Number:
+> 	  Firmware Revision:  1.00
+>   Standards:
+> 	  Likely used CD-ROM ATAPI-1
+>   Configuration:
+> 	  DRQ response: 50us.
+> 	  Packet size: 12 bytes
+>   Capabilities:
+> 	  LBA, IORDY(can be disabled)
+> 	  DMA: sdma0 sdma1 sdma2 mdma0 mdma1 mdma2 udma0 udma1 udma2 udma3 udma4 *udma5
+> 	       Cycle time: min=120ns recommended=120ns
+> 	  PIO: pio0 pio1 pio2 pio3 pio4
+> 	       Cycle time: no flow control=120ns  IORDY flow control=120
 > 
-> I could not determine what makes close return EINTR or ENOSPC.
-> 
-> Problem is, under 2.4.31, the write() was immediately failing when writing
-> to a full NFS partition.
-> 
-> This looks like an important bug, but I don't know if it is in the NFS-client
-> or NFS-server side.  I'm tempted to say NFS-server, but that's more a hunch.
+> This device doesn't claim to support HIPM nor DIPM.
 
-The answer appears to be that some filesystems really _suck_ when they
-have to return errors: they take forever to return to the user. When the
-client then tries with several WRITE requests (it can cache huge numbers
-of requests) then the cumulative effect of the delays are quite
-noticeable as you can see above.
-
-I've got a tentative client-side patch to deal with this sort of server.
-Basically, when the client sees that a cached write returns an error,
-then it will stop caching, and start doing O_SYNC-style writes until the
-error conditions stop. That won't fix the server side problem, but it
-does ensure that the application gets notified of the error as soon as
-possible.
-
-Cheers
-  Trond
-
---=-p3jowV5dBrcA5u4O4rVx
-Content-Disposition: inline; filename=linux-2.6.23-011-osync_on_error.dif
-Content-Type: message/rfc822; name=linux-2.6.23-011-osync_on_error.dif
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Wed, 25 Jul 2007 14:09:54 -0400
-NFS: Fall back to synchronous writes when a background write errors...
-Subject: No Subject
-Message-Id: <1185985859.6700.131.camel@localhost>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-This helps prevent huge queues of background writes from building up
-whenever the server runs out of disk or quota space, or if someone changes
-the file access modes behind our backs.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/file.c          |   64 +++++++++++++++++++++++++++++++++---------------
- fs/nfs/write.c         |   13 ++++++++--
- include/linux/nfs_fs.h |    3 ++
- 3 files changed, 57 insertions(+), 23 deletions(-)
-
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 72711b4..4d9dca2 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -177,6 +177,31 @@ static loff_t nfs_file_llseek(struct file *filp, loff_t offset, int origin)
- }
+Are you sure you are using the latest version of the patch?  This seems
+like a bug, if the device doesn't support HIPM or DIPM it shouldn't attempt
+to use ALPM.  There was a check for this put into the patch on about the 
+second or third version - maybe I'm not doing it right.
  
- /*
-+ * Helper for nfs_file_flush() and nfs_fsync()
-+ *
-+ * Notice that it clears the NFS_CONTEXT_ERROR_WRITE before synching to
-+ * disk, but it retrieves and clears ctx->error after synching, despite
-+ * the two being set at the same time in nfs_context_set_write_error().
-+ * This is because the former is used to notify the _next_ call to
-+ * nfs_file_write() that a write error occured, and hence cause it to
-+ * fall back to doing a synchronous write.
-+ */
-+static int nfs_do_fsync(struct nfs_open_context *ctx, struct inode *inode)
-+{
-+	int have_error, status;
-+	int ret = 0;
+(from the patch located here:
+http://www.kernel.org/pub/linux/kernel/people/kristen/patches/SATA/alpm/libata-enable-pm
+
+if (ata_id_has_hipm(dev->id) || ata_id_has_dipm(dev->id))
++		dev->flags |= ATA_DFLAG_IPM;
 +
-+	have_error = test_and_clear_bit(NFS_CONTEXT_ERROR_WRITE, &ctx->flags);
-+	status = nfs_wb_all(inode);
-+	have_error |= test_bit(NFS_CONTEXT_ERROR_WRITE, &ctx->flags);
-+	if (have_error)
-+		ret = xchg(&ctx->error, 0);
-+	if (!ret)
-+		ret = status;
-+	return ret;
-+}
-+
-+/*
-  * Flush all dirty pages, and check for write errors.
-  *
-  */
-@@ -192,16 +217,11 @@ nfs_file_flush(struct file *file, fl_owner_t id)
- 	if ((file->f_mode & FMODE_WRITE) == 0)
- 		return 0;
- 	nfs_inc_stats(inode, NFSIOS_VFSFLUSH);
--	lock_kernel();
-+
- 	/* Ensure that data+attribute caches are up to date after close() */
--	status = nfs_wb_all(inode);
--	if (!status) {
--		status = ctx->error;
--		ctx->error = 0;
--		if (!status)
--			nfs_revalidate_inode(NFS_SERVER(inode), inode);
--	}
--	unlock_kernel();
-+	status = nfs_do_fsync(ctx, inode);
-+	if (!status)
-+		nfs_revalidate_inode(NFS_SERVER(inode), inode);
- 	return status;
- }
- 
-@@ -278,19 +298,11 @@ nfs_fsync(struct file *file, struct dentry *dentry, int datasync)
- {
- 	struct nfs_open_context *ctx = (struct nfs_open_context *)file->private_data;
- 	struct inode *inode = dentry->d_inode;
--	int status;
- 
- 	dfprintk(VFS, "nfs: fsync(%s/%ld)\n", inode->i_sb->s_id, inode->i_ino);
- 
- 	nfs_inc_stats(inode, NFSIOS_VFSFSYNC);
--	lock_kernel();
--	status = nfs_wb_all(inode);
--	if (!status) {
--		status = ctx->error;
--		ctx->error = 0;
--	}
--	unlock_kernel();
--	return status;
-+	return nfs_do_fsync(ctx, inode);
- }
- 
- /*
-@@ -377,6 +389,18 @@ static struct vm_operations_struct nfs_file_vm_ops = {
- 	.page_mkwrite = nfs_vm_page_mkwrite,
- };
- 
-+static int nfs_need_sync_write(struct file *filp, struct inode *inode)
-+{
-+	struct nfs_open_context *ctx;
-+
-+	if (IS_SYNC(inode) || (filp->f_flags & O_SYNC))
-+		return 1;
-+	ctx = filp->private_data;
-+	if (test_bit(NFS_CONTEXT_ERROR_WRITE, &ctx->flags))
-+		return 1;
-+	return 0;
-+}
-+
- static ssize_t nfs_file_write(struct kiocb *iocb, const struct iovec *iov,
- 				unsigned long nr_segs, loff_t pos)
- {
-@@ -413,8 +437,8 @@ static ssize_t nfs_file_write(struct kiocb *iocb, const struct iovec *iov,
- 	nfs_add_stats(inode, NFSIOS_NORMALWRITTENBYTES, count);
- 	result = generic_file_aio_write(iocb, iov, nr_segs, pos);
- 	/* Return error values for O_SYNC and IS_SYNC() */
--	if (result >= 0 && (IS_SYNC(inode) || (iocb->ki_filp->f_flags & O_SYNC))) {
--		int err = nfs_fsync(iocb->ki_filp, dentry, 1);
-+	if (result >= 0 && nfs_need_sync_write(iocb->ki_filp, inode)) {
-+		int err = nfs_do_fsync(iocb->ki_filp->private_data, inode);
- 		if (err < 0)
- 			result = err;
- 	}
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 4e5d43a..d448954 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -110,6 +110,13 @@ void nfs_writedata_release(void *wdata)
- 	nfs_writedata_free(wdata);
- }
- 
-+static void nfs_context_set_write_error(struct nfs_open_context *ctx, int error)
-+{
-+	ctx->error = error;
-+	smp_wmb();
-+	set_bit(NFS_CONTEXT_ERROR_WRITE, &ctx->flags);
-+}
-+
- static struct nfs_page *nfs_page_find_request_locked(struct page *page)
- {
- 	struct nfs_page *req = NULL;
-@@ -945,7 +952,7 @@ static void nfs_writeback_done_partial(struct rpc_task *task, void *calldata)
- 
- 	if (task->tk_status < 0) {
- 		nfs_set_pageerror(page);
--		req->wb_context->error = task->tk_status;
-+		nfs_context_set_write_error(req->wb_context, task->tk_status);
- 		dprintk(", error = %d\n", task->tk_status);
- 		goto out;
- 	}
-@@ -1008,7 +1015,7 @@ static void nfs_writeback_done_full(struct rpc_task *task, void *calldata)
- 
- 		if (task->tk_status < 0) {
- 			nfs_set_pageerror(page);
--			req->wb_context->error = task->tk_status;
-+			nfs_context_set_write_error(req->wb_context, task->tk_status);
- 			dprintk(", error = %d\n", task->tk_status);
- 			goto remove_request;
- 		}
-@@ -1222,7 +1229,7 @@ static void nfs_commit_done(struct rpc_task *task, void *calldata)
- 			req->wb_bytes,
- 			(long long)req_offset(req));
- 		if (task->tk_status < 0) {
--			req->wb_context->error = task->tk_status;
-+			nfs_context_set_write_error(req->wb_context, task->tk_status);
- 			nfs_inode_remove_request(req);
- 			dprintk(", error = %d\n", task->tk_status);
- 			goto next;
-diff --git a/include/linux/nfs_fs.h b/include/linux/nfs_fs.h
-index eb76bbd..59ce401 100644
---- a/include/linux/nfs_fs.h
-+++ b/include/linux/nfs_fs.h
-@@ -77,6 +77,9 @@ struct nfs_open_context {
- 	struct nfs4_state *state;
- 	fl_owner_t lockowner;
- 	int mode;
-+
-+	unsigned long flags;
-+#define NFS_CONTEXT_ERROR_WRITE		(0)
- 	int error;
- 
- 	struct list_head list;
+<snip>
+> 
+> 2. TSSTcorpCD/DVDW SH-S183A
+> 
+>   ATAPI CD-ROM, with removable media
+> 	  Model Number:       TSSTcorpCD/DVDW SH-S183A                
+> 	  Serial Number:      
+> 	  Firmware Revision:  SB01    
+>   Standards:
+> 	  Likely used CD-ROM ATAPI-1
+>   Configuration:
+> 	  DRQ response: 50us.
+> 	  Packet size: 12 bytes
+>   Capabilities:
+> 	  LBA, IORDY(can be disabled)
+> 	  DMA: mdma0 mdma1 mdma2 udma0 udma1 *udma2 
+> 	       Cycle time: min=120ns recommended=120ns
+> 	  PIO: pio0 pio1 pio2 pio3 pio4 
+> 	       Cycle time: no flow control=120ns  IORDY flow control=120ns
+>   Commands/features:
+> 	  Enabled Supported:
+> 	     *    SATA-I signaling speed (1.5Gb/s)
+> 	     *    Host-initiated interface power management
+> 	     *    Phy event counters
+> 		  Device-initiated interface power management
+> 		  unknown 78[5]
+> 	     *    Software settings preservation
+> 
+> This one claims to support HIPS.
+> 
+>   # echo min_power > link_power_management_policy
+>   [ 1301.917248] ata1.00: exception Emask 0x10 SAct 0x0 SErr 0x50000 action 0x2
+>   [ 1301.938338] ata1.00: irq_stat 0x40000001
+>   [ 1301.956955] ata1.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x43 data 12 in
+>   [ 1301.956959]          res 51/20:03:00:00:00/00:00:00:00:00/a0 Emask 0x10 (ATA bus error)
+>   [ 1304.189565] ata1: soft resetting port
+>   [ 1304.207745] ata1: SATA link down (SStatus 611 SControl 300)
+>   [ 1304.228076] ata1: failed to recover some devices, retrying in 5 secs
+>   [ 1309.245599] ata1: hard resetting port
+>   [ 1314.773227] ata1: port is slow to respond, please be patient (Status 0x80)
+>   [ 1319.269677] ata1: COMRESET failed (errno=-16)
+>   [ 1319.289639] ata1: hard resetting port
+>   [ 1319.781285] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>   [ 1320.115569] ata1.00: configured for UDMA/33
+>   [ 1320.134780] ata1: EH complete
+> 
+> And hotplug works fine after EH is done with itself.  Dunno why.
 
---=-p3jowV5dBrcA5u4O4rVx--
+It works because after EH you've reset the port, and when you reset the
+port you turn off ipm (note the value of SControl).  I left this the way
+it was without attempting to renable link pm after a reset because I figured
+if there was something bad happening and we needed to reset we should leave
+ipm off.
 
+As far as the failure you are seeing goes - this may not actually be a
+hardware problem but just a case of us not understanding which bits we
+need to clear out of the Interrupt status register once we enable
+ALPM. The value of SErr indicates that this device has gotten PhyRdy - 
+which is normal for power state changes, and the interrupt status indicates 
+that a d2h FIS was received which is also normal - the TFES bit seems to be 
+set - it may be that we need to modify the interrupt code to not only ignore 
+PhyRdy when ALPM is enabled, but also clear out bit 0 - this is definitely 
+something we can try.  But, meanwhile, please make sure you are testing 
+with the latest version of the patches.
+
+> 
+> 3. PLEXTOR DVDR   PX-716A
+> 
+>   ATAPI CD-ROM, with removable media
+> 	  Model Number:       PLEXTOR DVDR   PX-716A                  
+> 	  Serial Number:      127377
+> 	  Firmware Revision:  1.09    
+>   Standards:
+> 	  Likely used CD-ROM ATAPI-1
+>   Configuration:
+> 	  DRQ response: 50us.
+> 	  Packet size: 12 bytes
+>   Capabilities:
+> 	  LBA, IORDY(can be disabled)
+> 	  DMA: mdma0 mdma1 mdma2 udma0 udma1 udma2 udma3 *udma4 
+> 	       Cycle time: min=120ns recommended=120ns
+> 	  PIO: pio0 pio1 pio2 pio3 pio4 
+> 	       Cycle time: no flow control=120ns  IORDY flow control=120ns
+>   HW reset results:
+> 	  CBLID- below Vih
+> 	  Device num = 0
+> 
+>   # echo min_power > link_power_management_policy
+>   [ 2102.655765] ata1.00: Unable to set Link PM policy
+>   [ 2104.505926] ata1.00: exception Emask 0x10 SAct 0x0 SErr 0x50000 action 0x2
+>   [ 2104.527256] ata1.00: irq_stat 0x40000001
+>   [ 2104.545868] ata1.00: cmd a0/00:00:00:00:20/00:00:00:00:00/a0 tag 0 cdb 0x43 data 12 in
+>   [ 2104.545870]          res 51/24:03:00:00:20/00:00:00:00:00/a0 Emask 0x10 (ATA bus error)
+>   [ 2106.810252] ata1: soft resetting port
+>   [ 2106.828106] ata1: SATA link down (SStatus 611 SControl 300)
+>   [ 2106.847957] ata1: failed to recover some devices, retrying in 5 secs
+>   [ 2111.870285] ata1: hard resetting port
+>   [ 2117.401917] ata1: port is slow to respond, please be patient (Status 0x80)
+>   [ 2121.902365] ata1: COMRESET failed (errno=-16)
+>   [ 2121.920313] ata1: hard resetting port
+>   [ 2122.413973] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>   [ 2122.795507] ata1.00: configured for UDMA/66
+>   [ 2122.813234] ata1: EH complete
+
+this looks like the same issue as above.
+
+
+> 
+> 4. Harddisks
+> 
+> All the harddisks I have behave themselves.  Impressive.
+> 
+> ====
+> 
+> In all cases, hotplug works well even after ALPM is configured.  Have
+> no idea why.  It might be that PARTIAL/SLUMBER mode didn't kick in or
+> ICH9 has some magic feature to detect PHY status changes even in PS
+> mode (wishful thinking).
+
+Make sure you are using the latest version of the patches - and that
+the devices are not resetting themselves for some reason.  I don't see
+how hotplug can work if we are indeed ignoring PhyRdy.
+
+> With some massging to ahci_disable_alpm(), I think it can be fairly
+> safe on this chipset at least.
+
+Not sure what part of disable_alpm you think is broken here - I see
+the issue to be more likely in the interrupt handler.  I'll 
+regenerate the patches today against the latest kernel and you
+should rerun your tests just to make sure we aren't trying to fix
+something that's already been fixed.
+
+Thanks,
+Kristen
