@@ -1,57 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933517AbXHAOzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXHAO4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933517AbXHAOzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932420AbXHAOzb
+	id S933605AbXHAO4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbXHAO4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:55:31 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:15664 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932409AbXHAOz3 (ORCPT
+	Wed, 1 Aug 2007 10:56:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:37219 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754301AbXHAO4H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:55:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=ZgaXBYNRVDoCsurJZ0EVsoI1zeFVSrsQy5lhf2fAXrvVmUTSOpJy1G82k7NeZYoCNswlCLyBXOzuLaG2lIdq/bIFf7NNKUcAOb26XHQ+JNowDz+QSQe4sKm6zez1t2ej1O0BrYVMTTOefGJXewbEjKla+63jESKljkyIZwpCc+E=
-Message-ID: <46B09EC4.2010704@googlemail.com>
-Date: Wed, 01 Aug 2007 16:55:00 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 1 Aug 2007 10:56:07 -0400
+Date: Wed, 1 Aug 2007 17:56:07 +0300
+From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       len.brown@intel.com, linux-acpi@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
+       linux-pm@linux-foundation.org,
+       Borislav Deianov <borislav@users.sourceforge.net>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: 2.6.21-rc1: T60 ACPI issues
+Message-ID: <20070801145607.GB8480@mellanox.co.il>
+Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
+References: <20070801135820.GA8266@mellanox.co.il>
+	<Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Matthew Wilcox <matthew@wil.cx>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kyle McMartin <kyle@parisc-linux.org>, parisc-linux@parisc-linux.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Coding style fix include/asm-parisc/compat_rt_sigframe.h
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> Quoting Hugh Dickins <hugh@veritas.com>:
+> Subject: Re: 2.6.21-rc1: T60 ACPI issues
+> 
+> On Wed, 1 Aug 2007, Michael S. Tsirkin wrote:
+> 
+> > Hi!
+> > ACPI appears to have been broken with 2.6.23-rc1 on my T60
+> > Userspace from ubuntu dapper.
+> 
+> (Whereas I'm using a T43p with openSUSE 10.2.)
+> 
+> > 
+> > 1. During boot, I see a lot of messages like this:
+> > [   41.034204] acpi LNXSYSTM:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+> 
+> (I've not seen those.)
+> 
+> > 
+> > 2. Pressing Fn/F4 does not trigger suspend to ram
+> >    This normally triigers ACPI event which triggers suspend to RAM on Ubuntu
+> >    (echo mem > /sys/power/state works)
+> 
+> I'll bet this is your CONFIG_THINKPAD_ACPI_INPUT_ENABLED=y.
+> I got the same, see my "THINKPAD_ACPI_INPUT_ENABLED seems regressive"
+> mail to Henrique and lkml an hour ago.
 
-Coding style fix
+This? http://lkml.org/lkml/2007/8/1/176
 
-Regards,
-Michal
 
---
-LOG
-http://www.stardust.webpages.pl/log/
+> > 
+> > 3. After suspend to RAM, system wakes up but laptop's screen is blank,
+> >    switching VTs etc does not help.
+> >    External screen wakes up OK though.
+> >    dmesg output from boot attached.
+> 
+> (I've not had that.)
 
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Bingo.
+sudo rmmod thinkpad_acpi cures both 2 and 3.
+Thanks for pointing this out.
 
---- linux-mm-clean/include/asm-parisc/compat_rt_sigframe.h	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/include/asm-parisc/compat_rt_sigframe.h	2007-08-01 16:51:57.000000000 +0200
-@@ -1,6 +1,6 @@
--#include<linux/compat.h>
--#include<linux/compat_siginfo.h>
--#include<asm/compat_ucontext.h>
-+#include <linux/compat.h>
-+#include <linux/compat_siginfo.h>
-+#include <asm/compat_ucontext.h>
- 
- #ifndef _ASM_PARISC_COMPAT_RT_SIGFRAME_H
- #define _ASM_PARISC_COMPAT_RT_SIGFRAME_H
+Henrique, if there's a patch to test, pls let me know.
+Or maybe CONFIG_THINKPAD_ACPI_INPUT_ENABLED should be N by default.
+
+-- 
+MST
