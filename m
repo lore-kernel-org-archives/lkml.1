@@ -1,135 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757232AbXHAGso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbXHAGts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757232AbXHAGso (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 02:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbXHAGse
+	id S1758330AbXHAGts (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 02:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbXHAGtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 02:48:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38082 "EHLO mx3.mail.elte.hu"
+	Wed, 1 Aug 2007 02:49:41 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:36857 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751064AbXHAGsd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 02:48:33 -0400
-Date: Wed, 1 Aug 2007 08:48:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: teresa@kvitka.net, CK Mailinglist <ck@vds.kolivas.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-Message-ID: <20070801064816.GC10134@elte.hu>
-References: <1185827130.26459.16.camel@xtower.fri> <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>
+	id S1752068AbXHAGtk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 02:49:40 -0400
+Date: Wed, 1 Aug 2007 15:48:55 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] net: smc91x: Build fixes for general sh boards.
+Message-ID: <20070801064855.GA8118@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+	Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+SH boards in general only wire this up in 8 or 16-bit mode, and
+as we never had the wrappers for 32-bit mode defined, SMC_CAN_USE_32BIT
+caused build failure for the non-Solution Engine boards. This gets it
+building again.
 
-* Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+Also kill off the straggling set_irq_type() definition, this is left
+over cruft that was missed when the rest of it switched to IRQ flags.
 
-> Hi,
-> 
-> On 30/07/07, <::.. Teresa_II ..::> <teresa@kvitka.net> wrote:
-> > Hi all,
-> >
-> >
-> > first of all i am not sure if its scheduler issue. But i didn't found
-> > anything about that in google related to something else.
-> >
-> > So i tried 2.6.22.1 kernel with new cfs scheduler v19.1 from Ingo page.
-> > Previous i used 2.6.22-ck1.
-> >
-> > After 24 hours running i get strange behavior in Xorg. It act slower
-> > with my special keys, like SHIFT, or CTRL. So if i hold SHIFT and press
-> > ")" and than will press enter, i release SHIIFT and press ENTER it
-> > doesn't create new line. Even if i start write a Sentence or word with
-> > "SHIFTed" char it makes next char in high case also.
-> > Like this: "HAllo" even if i type "Hallo".
-> >
-> > It's extremely unusable.
-> >
-> > It doesn't happen if i am on other kernel.
-> >
-> > I am ready to provide any requested information to find issue.
-> > If its not kernel related thing - i am very sorry, i just don't know
-> > where to start to trace whats wrong.
-> >
-> > I am on gentoo and use latest xorg server. Keyboard driver is "KBD".
-> > Mouse use "evdev" driver.
-> 
-> Ingo, can you take a look at this?
+Signed-off-by: Paul Mundt <lethal@linux-sh.org>
 
-another reaction below in this thread reported kbd problems in vanilla 
-2.6.22.1 as well. What is the X versions, etc.? Does the problem go away 
-if the X kbd driver selection is tweaked to a simpler model, say:
+--
 
- Section "InputDevice"
-         Identifier  "Keyboard0"
-         Driver      "kbd"
-         Option      "XkbModel" "pc105"
-         Option      "XkbLayout" "us"
-         Option      "XkbVariant" "basic"
- EndSection
+ drivers/net/smc91x.h |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-	Ingo
-
------------------------>
-
-From: Rene Herman <rene.herman@gmail.com>
-
-On 07/30/2007 10:25 PM, <::.. Teresa_II ..::> wrote:
-
-> first of all i am not sure if its scheduler issue. But i didn't found
-> anything about that in google related to something else.
-> 
-> So i tried 2.6.22.1 kernel with new cfs scheduler v19.1 from Ingo page.
-> Previous i used 2.6.22-ck1.
-> 
-> After 24 hours running i get strange behavior in Xorg. It act slower
-> with my special keys, like SHIFT, or CTRL. So if i hold SHIFT and press
-> ")" and than will press enter, i release SHIIFT and press ENTER it
-> doesn't create new line. Even if i start write a Sentence or word with
-> "SHIFTed" char it makes next char in high case also. 
-> Like this: "HAllo" even if i type "Hallo".
-
-For a few days now I have been experiencing a "stuck delete" key while 
-reading mail -- I run through the mail with "delete" and every once in a 
-while it just keeps on deleting messages while I've already released the 
-delete key and was trying to read the next message.
-
-Regular unpatched 2.6.22.1 though and I've recently changed too many things 
-to be certain of anything. My X is the modular X.org 1.3.0 since not long, 
-and the mailer showing the problem is Thunderbird 2.0.0.5, recently switched 
-from 1.5.0.12. The problem was on my "I'll get to it" list but seems this 
-could be a good thread to report it into. PS/2 keyboard...
-
-> It's extremely unusable.
-> 
-> It doesn't happen if i am on other kernel.
-
-Very very sure?
-
-> I am ready to provide any requested information to find issue. If its not
-> kernel related thing - i am very sorry, i just don't know where to start
-> to trace whats wrong.
-> 
-> I am on gentoo and use latest xorg server. Keyboard driver is "KBD". 
-> Mouse use "evdev" driver.
-
-Rene.
-
-
+diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
+index f842944..6ff3a16 100644
+--- a/drivers/net/smc91x.h
++++ b/drivers/net/smc91x.h
+@@ -299,7 +299,7 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
+ 
+ #define SMC_CAN_USE_8BIT       1
+ #define SMC_CAN_USE_16BIT      1
+-#define SMC_CAN_USE_32BIT      1
++#define SMC_CAN_USE_32BIT      0
+ 
+ #define SMC_inb(a, r)          inb((a) + (r))
+ #define SMC_inw(a, r)          inw((a) + (r))
+@@ -310,8 +310,6 @@ SMC_outw(u16 val, void __iomem *ioaddr, int reg)
+ 
+ #endif  /* BOARDS */
+ 
+-#define set_irq_type(irq, type) do {} while (0)
 -
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+ #elif   defined(CONFIG_M32R)
+ 
+ #define SMC_CAN_USE_8BIT	0
