@@ -1,156 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762508AbXHAH73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761724AbXHAICv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762508AbXHAH73 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758380AbXHAH7V
+	id S1761724AbXHAICv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757719AbXHAICi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:59:21 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:13074 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757905AbXHAH7U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:59:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dEvdZTdraBwjBuDIasDZ7qPg8hwYVlKhj47Ctzc6k8prY+bDtEPv2hAK0BhUT0j1t4gU/jmA+G4dO0URkhZum9bVdvIlA3Rz/Nk0QE5fC3iD+rfh0F9gRd+r3uKYNatfhkEFd1swyYEgqTBfJMl3HCE+9Kw2HNj1P3DPIuozdVw=
-Message-ID: <a307c1910708010059l6c2c9df0n4ad9d0197eaba0f@mail.gmail.com>
-Date: Wed, 1 Aug 2007 13:29:18 +0530
-From: "Gireesh Kumar M" <gireesh.mnair@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: request_module() fails
-In-Reply-To: <a307c1910708010011l57dbee87hb0d9a725ac259966@mail.gmail.com>
+	Wed, 1 Aug 2007 04:02:38 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1420 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753845AbXHAICf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 04:02:35 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc1-mm2
+Date: Wed, 1 Aug 2007 10:02:30 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
+       gregkh@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <a307c1910708010011l57dbee87hb0d9a725ac259966@mail.gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708011002.30962.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-I'm trying to load some modules upon occurance of a GPIO interrupt.
-The ISR checks some register and then schedules a tasklet to act
-further on the interrupt.
-Inside the tasklet, I call request_module to load a driver. But, here
-it's failing. Please see the error log pasted below.
-When I tried to load the same module using modprobe and it works fine. I
-have edited modules.dep with an entry for my module.
+	I get this warning. Looking at the comment in kernel/irq/resend.c
+it's harmless. Is it?
 
-[Note:] The kernel modules installed on the rootfs are from a
-different kernel version. So I don't see an entry in /lib/modules/<my
-kernel name>. Instead, the rootfs has a different
-entry(/lib/modules/<default-kernel>)
-Since I have a different kernel version, the "uname -r" gives <my
-kernel name> and since that entry is not in /lib/modules/; modprobe
-was failing initially.
-I fixed this by creating a soft link called /lib/modules/<my kernel
-name> that points to /lib/modules/<default-kernel>
-After this modification, modprobe worked fine.
+WARNING: at kernel/irq/resend.c:69 check_irq_resend()
+ [<c010456a>] show_trace_log_lvl+0x1a/0x30
+ [<c010508d>] show_trace+0x12/0x14
+ [<c01051e0>] dump_stack+0x15/0x17
+ [<c013b001>] check_irq_resend+0x91/0xa0
+ [<c013ab58>] enable_irq+0xb1/0xb3
+ [<c02d7b81>] ide_config_drive_speed+0xda/0x269
+ [<c02d391c>] ali15x3_tune_chipset+0xcc/0x161
+ [<c02dd367>] ide_tune_dma+0x43/0x4d
+ [<c02d29e0>] ali15x3_config_drive_for_dma+0xf/0x2a
+ [<c02dc89a>] ide_set_dma+0x11/0x40
+ [<c02d41cf>] set_using_dma+0x84/0xd1
+ [<c02d4dfe>] generic_ide_ioctl+0xb9/0x3fb
+ [<c02df7e4>] idedisk_ioctl+0x3f/0x10c
+ [<c023d779>] blkdev_driver_ioctl+0x55/0x5e
+ [<c023da3e>] blkdev_ioctl+0x2bc/0x83e
+ [<c017e5ca>] block_ioctl+0x1b/0x21
+ [<c01664c2>] do_ioctl+0x22/0x71
+ [<c0166566>] vfs_ioctl+0x55/0x28a
+ [<c01667ce>] sys_ioctl+0x33/0x51
+ [<c0103f32>] sysenter_past_esp+0x5f/0x85
+ =======================
 
-Kindly help me if anyone has a clue.
+Then reattaching a usb mouse caused this (only once)
 
-Kernel version: 2.6.10
-Architecture: ARM
+usb 2-1: USB disconnect, address 2
+BUG: atomic counter underflow at:
+ [<c010456a>] show_trace_log_lvl+0x1a/0x30
+ [<c010508d>] show_trace+0x12/0x14
+ [<c01051e0>] dump_stack+0x15/0x17
+ [<c01418cf>] __free_pages+0x50/0x52
+ [<c01418f0>] free_pages+0x1f/0x21
+ [<c010783d>] dma_free_coherent+0x43/0x9c
+ [<c0315067>] hcd_buffer_free+0x43/0x6a
+ [<c030b2b4>] usb_buffer_free+0x23/0x29
+ [<c0346db4>] hid_free_buffers+0x23/0x71
+ [<c0346eb2>] hid_disconnect+0xb0/0xc8
+ [<c0313676>] usb_unbind_interface+0x30/0x72
+ [<c02c6df0>] __device_release_driver+0x6a/0x92
+ [<c02c71c3>] device_release_driver+0x20/0x36
+ [<c02c6736>] bus_remove_device+0x62/0x85
+ [<c02c49f8>] device_del+0x16d/0x27c
+ [<c0310f25>] usb_disable_device+0x7a/0xe2
+ [<c030d0bc>] usb_disconnect+0x94/0xde
+ [<c030e030>] hub_thread+0x2fe/0xc1b
+ [<c0128aee>] kthread+0x36/0x58
+ [<c0104233>] kernel_thread_helper+0x7/0x14
+ =======================
+uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
 
-Thank you,
-Gireesh
+Every new try shows:
+
+usb 2-1: new low speed USB device using uhci_hcd and address 3
+usb 2-1: new device found, idVendor=046d, idProduct=c00e
+usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
+usb 2-1: Product: USB-PS/2 Optical Mouse
+usb 2-1: Manufacturer: Logitech
+usb 2-1: configuration #1 chosen from 1 choice
+input: Logitech USB-PS/2 Optical Mouse as /class/input/input9
+input: USB HID v1.10 Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:0c.0-1
+usb 2-1: USB disconnect, address 3
+uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+
+But mouse works ok.
 
 
- =====Error Log=========================================
-root@10.24.241.113:/home/gireesh/test_mod# insmod test_mod.ko pin_a=0 pin_b=2
-Test module inserted
-irq registered successfully
+Second issue as reported earilier allmodconfig fails to build on imac g3.
 
-[gireesh] then I generated the interrupt and what I see is as follows.
-"In tasklet" is the message I'm printing from the tasklet.
+  CC      arch/powerpc/kernel/lparmap.s
+  AS      arch/powerpc/kernel/head_64.o
+lparmap.c: Assembler messages:
+lparmap.c:84: Error: file number 1 already allocated
+make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
+make: *** [arch/powerpc/kernel] Blad 2
 
-root@10.24.241.113:/home/gireesh/test_mod # In tasklet
-BUG: scheduling while atomic: swapper/0x00000103/0
-caller is schedule+0xec/0x12c
-BUG: scheduling from the idle thread!
-Unable to handle kernel NULL pointer dereference at virtual address 00000004
-pgd = c0004000
-[00000004] *pgd=00000000
-Internal error: Oops: 17 [#1]
-Modules linked in: test_mod dsplinkk
-CPU: 0
-PC is at dequeue_task+0xc/0x78
-LR is at deactivate_task+0x28/0x34
-pc : [<c003c128>]    lr : [<c003c464>]    Tainted: PF
-sp : c027fca0  ip : c027fcb0  fp : c027fcac
-r10: c027e000  r9 : c02d94f0  r8 : c02800c0
-r7 : c027e000  r6 : c027fde4  r5 : c027fd5c  r4 : c02800c0
-r3 : 00000001  r2 : 00000000  r1 : 00000000  r0 : c02800c0
-Flags: nZCv  IRQs off  FIQs on  Mode SVC_32  Segment kernel
-Control: 5317F  Table: 80FD8000  DAC: 00000017
-Process swapper (pid: 0, stack limit = 0xc027e1a0)
-Stack: (0xc027fca0 to 0xc0280000)
-fca0: c027fcc4 c027fcb0 c003c464 c003c12c c0239168 c0239168 c027fd14 c027fcc8
-fcc0: c0238c24 c003c44c 00000000 20000093 c027fcfc 03938700 f4e31f00 0000049a
-fce0: c0369ed0 c028021c 00000000 c027e000 c027fd5c c027fde4 c027e000 c027fde0
-fd00: c02d6ca0 c02de780 c027fd34 c027fd18 c0239168 c0238a50 c02d6ca0 c027fd48
-fd20: c027fd5c c027fd48 c027fd8c c027fd38 c02392fc c023908c 00000000 c02800c0
-fd40: c003d00c 00000000 00000000 c0238ffc 00000001 c02800c0 c003d00c c027fde4
-fd60: c027fde4 c027fde0 c027fd8c c028334c c027fd90 c027fde0 c02de7d0 0000000a
-fd80: c027fe0c c027fd90 c0052898 c023923c 00000001 c0369ec8 c0369ec8 c0052774
-fda0: c027fdc8 c0369ec0 00000000 00000000 00000000 4b87ad6e 00000000 00000000
-fdc0: 00000000 00000000 c027fde0 c028334c c027fe10 c028344c 00000001 00000000
-fde0: 00000000 c027fd5c c027fd5c c027fe28 c02de7d0 c02e0240 c02e0244 c027fe28
-fe00: c027fe84 c027fe10 c00529b0 c00527f8 c028334c c0244588 c024458c c027fe28
-fe20: 00000000 00000000 6273756d 7264685f c0280063 0000000b c027fe74 c027fe48
-fe40: c0041c44 c0041840 c0041c44 c027feac e1048000 00000000 c02de7a4 00000001
-fe60: c02de7d0 0000000a c027fe84 00000000 c02de7a4 00000001 c027fea4 c027fe98
-fe80: bf012360 c00528c8 bf0124b8 c027e000 00000000 00000000 c027febc c027fea8
-fea0: c00469a0 bf012344 c027e000 00000103 c027fee4 c027fec0 c0046458 c0046930
-fec0: c027e000 00000000 ffffffff 00000002 c027e000 c027ff50 c027fefc c027fee8
-fee0: c0046534 c0046414 c027e000 c027e000 c027ff14 c027ff00 c00466ec c004650c
-ff00: c027e000 c027ff84 c027ff4c c027ff18 c002d320 c00466b0 c003c424 c003c27c
-ff20: 00000000 c027ff84 e1048000 ffffffff 00000002 c027e000 00000001 800240f8
-ff40: c027ffac c027ff50 c002b5e0 c002d210 00000000 0005317f 0005217f 60000013
-ff60: c027e000 60000093 c02812a8 c02fa450 80024128 41069265 800240f8 c027ffac
-ff80: c027ff98 c027ff98 c002ddfc c002de0c 60000013 ffffffff c027e000 c002dd94
-ffa0: c027ffcc c027ffb0 c002de78 c002dda4 c027ffcc 00053175 c02d67dc c02e13e4
-ffc0: c027fffc c027ffd0 c00087d8 c002de24 c0008304 00000000 00000000 c02d7c30
-ffe0: 00000000 00053175 c02d7c1c c0280fd0 00000000 c0280000 8000809c c0008660
-Backtrace:
-[<c003c11c>] (dequeue_task+0x0/0x78) from [<c003c464>]
-(deactivate_task+0x28/0x3
-4)
-[<c003c43c>] (deactivate_task+0x0/0x34) from [<c0238c24>] (__schedule+0x1e4/0x5a
-c)
- r4 = C0239168
-[<c0238a40>] (__schedule+0x0/0x5ac) from [<c0239168>] (schedule+0xec/0x12c)
-[<c023907c>] (schedule+0x0/0x12c) from [<c02392fc>] (wait_for_completion+0xd0/0x
-164)
- r4 = C027FD48
-[<c023922c>] (wait_for_completion+0x0/0x164) from [<c0052898>] (call_usermodehel
-per+0xb0/0xcc)
- r8 = 0000000A  r7 = C02DE7D0  r6 = C027FDE0  r5 = C027FD90
- r4 = C028334C
-[<c00527e8>] (call_usermodehelper+0x0/0xcc) from [<c00529b0>] (request_module+0x
-fc/0x140)
- r6 = C027FE28  r5 = C02E0244  r4 = C02E0240
-[<c00528b4>] (request_module+0x0/0x140) from [<bf012360>] (load_module_tasklet+0
-x2c/0x54 [test_mod])
- r3 = 00000000  r2 = 00000000  r1 = C027E000  r0 = BF0124B8
- r6 = 00000001  r5 = C02DE7A4  r4 = 00000000
-[<bf012334>] (load_module_tasklet+0x0/0x54 [test_mod]) from [<c00469a0>] (tas
-klet_action+0x80/0xcc)
-[<c0046920>] (tasklet_action+0x0/0xcc) from [<c0046458>] (___do_softirq+0x54/0xf
-8)
- r5 = 00000103  r4 = C027E000
-[<c0046404>] (___do_softirq+0x0/0xf8) from [<c0046534>] (__do_softirq+0x38/0x58)
-[<c00464fc>] (__do_softirq+0x0/0x58) from [<c00466ec>] (irq_exit+0x4c/0x60)
- r5 = C027E000  r4 = C027E000
-[<c00466a0>] (irq_exit+0x0/0x60) from [<c002d320>] (asm_do_IRQ+0x120/0x138)
- r4 = C027FF84
-[<c002d200>] (asm_do_IRQ+0x0/0x138) from [<c002b5e0>] (__irq_svc+0x40/0x74)
-[<c002dd94>] (default_idle+0x0/0x80) from [<c002de78>] (cpu_idle+0x64/0xac)
- r5 = C002DD94  r4 = C027E000
-[<c002de14>] (cpu_idle+0x0/0xac) from [<c00087d8>] (start_kernel+0x188/0x1cc)
- r6 = C02E13E4  r5 = C02D67DC  r4 = 00053175
-[<c0008650>] (start_kernel+0x0/0x1cc) from [<8000809c>] (0x8000809c)
-Code: e89da800 e1a0c00d e92dd800 e24cb004 (e5913004)
- <0>Kernel panic - not syncing: Aiee, killing interrupt handler!
+
+Regards,
+
+	Mariusz
