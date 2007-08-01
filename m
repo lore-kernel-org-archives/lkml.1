@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758022AbXHAQmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbXHAQpu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758022AbXHAQmm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXHAQma
+	id S1758016AbXHAQpu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:45:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbXHAQpm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 12:42:30 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:38647 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbXHAQm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 12:42:29 -0400
-Message-ID: <46B0B7A4.8060805@free.fr>
-Date: Wed, 01 Aug 2007 18:41:08 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-rt-users@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de
-Subject: Old -rt patches
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 1 Aug 2007 12:45:42 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41260 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753153AbXHAQpm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 12:45:42 -0400
+Date: Wed, 1 Aug 2007 09:44:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rishikesh K Rajak <risrajak@in.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Olof Johansson <olof@lixom.net>
+Subject: Re: build error on powerpc for 2.6.23-rc1-mm2
+Message-Id: <20070801094442.b710279b.akpm@linux-foundation.org>
+In-Reply-To: <OFFC0F3DEC.2DEDE1A8-ON6525732A.002DB5E7-6525732A.002DEF2C@in.ibm.com>
+References: <OFFC0F3DEC.2DEDE1A8-ON6525732A.002DB5E7-6525732A.002DEF2C@in.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 1 Aug 2007 13:52:05 +0530 Rishikesh K Rajak <risrajak@in.ibm.com> wrote:
 
-I wrote a Linux app where I need high-resolution timers. I went all the 
-way and installed the -rt patch, which includes the -hrt patches, as far 
-as I understand.
+> 
+> Hi Andrew,
+> 
+> I am getting following error on powerpc almost for allyesconfig,
+> allmodconfig.
+> 
+> Error produced:
+> 
+> PowerPC: allmodconfig,allyesconfig
+> 
+>   CC      arch/powerpc/mm/tlb_64.o
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:
+>  Assembler messages:
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:27:
+>  Error: Unrecognized opcode: `mtocrf'
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:138:
+>  Error: Unrecognized opcode: `mtocrf'
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/copyuser_64.S:153:
+>  Error: Unrecognized opcode: `mtocrf'
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:
+>  Assembler messages:
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:15:
+>  Error: Unrecognized opcode: `mtocrf'
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:131:
+>  Error: Unrecognized opcode: `mtocrf'
+> /home/risrajak/TEST2/TEST/linux/CurrentTest/23-rc1-mm2-testing/linux-2.6.23-rc1/arch/powerpc/lib/memcpy_64.S:146:
+>  Error: Unrecognized opcode: `mtocrf'
+> make[2]: *** [arch/powerpc/lib/memcpy_64.o] Error 1
+> make[2]: *** Waiting for unfinished jobs....
+>   CC      arch/powerpc/sysdev/mpic_u3msi.o
+> make[2]: *** [arch/powerpc/lib/copyuser_64.o] Error 1
+> make[1]: *** [arch/powerpc/lib] Error 2
+> 
 
-Since I could not afford to change kernels with every new release, I 
-decided to track the 2.6.20 branch (arbitrarily).
+Presumably, disabling CONFIG_POWER4_ONLY would fix that.
 
-At this point I'm using 2.6.20.7-rt8 (-rt8 was the last patch to the 
-2.6.20 branch). (I see 2.6.20 is already up to .15)
-
-I see a lot of patches going into the -rt patch, but development moved 
-on to 2.6.21, then 2.6.22, and now 2.6.23, following mainline.
-
-I'm not a kernel hacker, so I don't claim to understand the patches, but 
-the comments sound like a few bugs are fixed here and there. I can't 
-tell whether these bugs also exist in previous kernels or only appeared 
-in newer kernels. Even if I knew, I probably wouldn't have the expertise 
-to back-port the patch.
-
-I'm seeing weird behavior in my app, when it has been running 2-4 days. 
-The timers start to act out, and all hell breaks loose. Basically, I 
-have no idea what's going on...
-
-My question is: is it possible that there is a bug in 2.6.20-rt8 that 
-has been fixed in subsequent -rt patches (there's a 2.6.21.6-rt21 and a 
-2.6.22.1-rt9)? In other words, if I give 2.6.21.6-rt8 or 2.6.22.1-rt9 a 
-spin, is it possible that my weird behavior disappears?
-
-I'm not saying that it's impossible for the bug to be in my app, but the 
-app is small enough that I'm fairly confident there's no problem there.
-
-Thanks for reading this far,
-
-John
+It could be that your toolchain is insufficiently recent.  Which
+version of binutils are you using?
