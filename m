@@ -1,62 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758050AbXHAD0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbXHAD1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758050AbXHAD0N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 23:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbXHADZ4
+	id S1760027AbXHAD1e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 23:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753414AbXHAD10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 23:25:56 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:45235 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752280AbXHADZ4 (ORCPT
+	Tue, 31 Jul 2007 23:27:26 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:35883 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752467AbXHAD1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 23:25:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=B6zdrZl6tWz16+mNI3U4fSX6FiLgBIznzswSjwdawQ+9zETaoHPAmiBZEdh2vwtkptXm4awjt/WcTbMKrttAvSv7LhyGutwjGi0+XGlK2dgGCsvMMI/+b3HFi1xiKLnJ5HJOvzuLTYK2kANlI9YVKNjDPNW4ARJjVBwPNS6JJmE=
-Message-ID: <46AFFCFC.7020902@gmail.com>
-Date: Wed, 01 Aug 2007 12:24:44 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Tue, 31 Jul 2007 23:27:25 -0400
+Date: Tue, 31 Jul 2007 23:26:40 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>
+Subject: [PATCH RT] Move RECURSION_LIMIT define up for more global use (take
+ 2)
+Message-ID: <Pine.LNX.4.58.0707312315210.10742@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: Jeff Garzik <jeff@garzik.org>, James.Bottomley@steeleye.com,
-       linux-scsi@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       edwintorok@gmail.com, axboe@kernel.dk
-Subject: Re: [patch 2/4] Expose Power Management Policy option to users
-References: <20070705194909.337398431@intel.com>	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>	<46AE12B6.6090408@garzik.org>	<46AED656.8070407@gmail.com>	<20070731093014.db9e0734.kristen.c.accardi@intel.com>	<46AF794F.1020107@gmail.com> <20070731125849.501443c1.kristen.c.accardi@intel.com>
-In-Reply-To: <20070731125849.501443c1.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
->> I don't think the interface you're suggesting is a good one.  Do you?
-> 
-> I think if it's applicable to SCSI at all it is fine.  If it is not, then
-> I think we need to make do with the interface we are given.  I do not think
-> we should hold up a feature for libata sysfs integration.
 
-Well, I guess we'll have to agree to disagree here and leave the
-decision to James and Jeff.
+OK, I sent this out once before but it must have slipped under the radar.
+http://lkml.org/lkml/2007/6/28/325
 
->>> I can assert that I think ALPM is a good idea,
->>> because I've never had a report of it causing problems.  Windows has 
->>> been using this feature for a very long time - and you have to admit that
->>> they have a pretty large market share.  Nobody is complaining about ALPM
->>> increasing device malfunction, so unless you have proof it seems insane
->>> to nak due to this. 
->> Is ALPM enabled by default?  How do they deal with the performance
->> degradation?
-> 
-> I believe so, but I'm obviously not privvy to their implementation details.
+My config fails miserably with lockdep:
 
-It would be *really* great if we can find more about how they do it.
-How and when it's enabled and on which systems.  Is it possible to find
-this out?
+kernel/lockdep.c: In function 'find_usage_forwards':
+kernel/lockdep.c:814: error: 'RECURSION_LIMIT' undeclared (first use in
+this function)
+kernel/lockdep.c:814: error: (Each undeclared identifier is reported only
+once
+kernel/lockdep.c:814: error: for each function it appears in.)
+kernel/lockdep.c:815: warning: implicit declaration of function
+'print_infinite_recursion_bug'
+kernel/lockdep.c: In function 'find_usage_backwards':
+kernel/lockdep.c:856: error: 'RECURSION_LIMIT' undeclared (first use in
+this function)
+make[1]: *** [kernel/lockdep.o] Error 1
 
--- 
-tejun
+But this patch fixes it nicely.
+
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+Index: linux-2.6.22.1-rt9/kernel/lockdep.c
+===================================================================
+--- linux-2.6.22.1-rt9.orig/kernel/lockdep.c	2007-07-31 23:14:12.000000000 -0400
++++ linux-2.6.22.1-rt9/kernel/lockdep.c	2007-07-31 23:25:04.000000000 -0400
+@@ -683,6 +683,21 @@ static void print_kernel_version(void)
+ 		init_utsname()->version);
+ }
+
++#if defined(CONFIG_PROVE_LOCKING) || defined(CONFIG_TRACE_IRQFLAGS)
++
++#define RECURSION_LIMIT 40
++
++static int noinline print_infinite_recursion_bug(void)
++{
++	if (!debug_locks_off_graph_unlock())
++		return 0;
++
++	WARN_ON(1);
++
++	return 0;
++}
++#endif /* CONFIG_PROVE_LOCKING || CONFIG_TRACE_IRQFLAGS */
++
+ #ifdef CONFIG_PROVE_LOCKING
+ /*
+  * When a circular dependency is detected, print the
+@@ -736,18 +751,6 @@ static noinline int print_circular_bug_t
+ 	return 0;
+ }
+
+-#define RECURSION_LIMIT 40
+-
+-static int noinline print_infinite_recursion_bug(void)
+-{
+-	if (!debug_locks_off_graph_unlock())
+-		return 0;
+-
+-	WARN_ON(1);
+-
+-	return 0;
+-}
+-
+ /*
+  * Prove that the dependency graph starting at <entry> can not
+  * lead to <target>. Print an error and return 0 if it does.
+@@ -874,6 +877,7 @@ find_usage_backwards(struct lock_class *
+ 	return 1;
+ }
+
++#ifdef CONFIG_PROVE_LOCKING
+ static int
+ print_bad_irq_dependency(struct task_struct *curr,
+ 			 struct held_lock *prev,
+@@ -956,6 +960,7 @@ check_usage(struct task_struct *curr, st
+ 	return print_bad_irq_dependency(curr, prev, next,
+ 			bit_backwards, bit_forwards, irqclass);
+ }
++#endif /* CONFIG_PROVE_LOCKING */
+
+ #endif
+
