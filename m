@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932273AbXHANxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbXHANzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932273AbXHANxk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 09:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbXHANxb
+	id S932131AbXHANzd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 09:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932073AbXHANzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 09:53:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:30522 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762266AbXHANxa (ORCPT
+	Wed, 1 Aug 2007 09:55:18 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33537 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750898AbXHANzR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 09:53:30 -0400
-Message-ID: <fa686aa40708010653v7e1fb909gb03eb1d4754359bf@mail.gmail.com>
-Date: Wed, 1 Aug 2007 07:53:28 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [2.6 patch] ppc .gitignore update
-Cc: "Rutger Nijlunsing" <rutger@nospam.com>,
-       "Paul Mackerras" <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070801133056.GP3972@stusta.de>
+	Wed, 1 Aug 2007 09:55:17 -0400
+Date: Wed, 1 Aug 2007 07:55:15 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Eugene Teo <eugeneteo@kernel.sg>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/advansys.c: fix advansys_board_found compile error
+Message-ID: <20070801135515.GV21219@parisc-linux.org>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <46B0842D.3060703@googlemail.com> <20070801133912.GA11027@kernel.sg>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070801133056.GP3972@stusta.de>
-X-Google-Sender-Auth: 37849d3c11e55727
+In-Reply-To: <20070801133912.GA11027@kernel.sg>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, Adrian Bunk <bunk@stusta.de> wrote:
-> arch/ppc/.gitignore shouldn't exclude arch/ppc/boot/include
->
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
->
-> ---
-> --- /dev/null   2006-09-19 00:45:31.000000000 +0200
-> +++ linux-2.6.23-rc1-mm2/arch/ppc/boot/.gitignore       2007-08-01 15:18:33.000000000 +0200
-> @@ -0,0 +1 @@
-> +!include
+On Wed, Aug 01, 2007 at 09:39:12PM +0800, Eugene Teo wrote:
+> This patch fixes the following compile error:
+> 
+> drivers/scsi/advansys.c: In function 'advansys_board_found':
+> drivers/scsi/advansys.c:17781: error: implicit declaration of function
+> 'to_pci_dev'
 
-I don't think this is the best way to go about it; rather,
-arch/ppc/.gitignore should be made more specific like so:
+Or just remove the ifdefs around the include ... which is done in this
+patch:
 
-diff --git a/arch/ppc/.gitignore b/arch/ppc/.gitignore
-index a1a869c..1e79a0a 100644
---- a/arch/ppc/.gitignore
-+++ b/arch/ppc/.gitignore
-@@ -1 +1 @@
--include
-+/include
+http://www.kernel.org/pub/linux/kernel/people/willy/advansys-2007-07-30/0001-advansys-version-copyright-etc.txt
 
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
-
+I'd be interested in seeing the results of the randconfig trials on the
+driver with those 23 patches applied, but not particularly interested in
+the intermediate result.
 
 -- 
-Grant Likely, B.Sc., P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
