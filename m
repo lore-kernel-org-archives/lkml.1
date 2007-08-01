@@ -1,65 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbXHAQ3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbXHAQ31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754756AbXHAQ3L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbXHAQ25
+	id S1756720AbXHAQ31 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754168AbXHAQ3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 12:28:57 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52971 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751049AbXHAQ24 (ORCPT
+	Wed, 1 Aug 2007 12:29:09 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:38472 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753687AbXHAQ3G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 12:28:56 -0400
-Date: Wed, 1 Aug 2007 09:27:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-cc: Ingo Molnar <mingo@elte.hu>, Roman Zippel <zippel@linux-m68k.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-In-Reply-To: <p73ps27npu0.fsf@bingen.suse.de>
-Message-ID: <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
-References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
- <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801071230.GA16375@elte.hu>
- <Pine.LNX.4.64.0708011511530.1817@scrub.home> <20070801150742.GA23670@elte.hu>
- <p73ps27npu0.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 1 Aug 2007 12:29:06 -0400
+Date: Wed, 1 Aug 2007 09:32:33 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Randy Dunlap <rdunlap@xenotime.net>, Dave Jones <davej@redhat.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: [PATCH] fix slown down printk on boot compile error
+Message-Id: <20070801093233.98b1693a.randy.dunlap@oracle.com>
+In-Reply-To: <20070801111644.GB12124@osiris.boeblingen.de.ibm.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<20070801111644.GB12124@osiris.boeblingen.de.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 1 Aug 2007 13:16:44 +0200 Heiko Carstens wrote:
 
-
-On Wed, 1 Aug 2007, Andi Kleen wrote:
-
-> Ingo Molnar <mingo@elte.hu> writes:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> > thanks. Just to make sure, while you said that your TSC was off on that 
-> > laptop, the bootup log of yours suggests a working TSC:
-> > 
-> >   Time: tsc clocksource has been installed.
+> The slow-down-printk-during-boot patch depends on preset_lpj being
+> available. That's not the case for architectures that have it's own
+> calibrate_delay() function.
 > 
-> Standard kernels often disable the TSC later after running a bit 
-> with it (e.g. on any cpufreq change without p state invariant TSC) 
+> kernel/sched.c:3840: undefined reference to `preset_lpj'
 
-I assume that what Roman hit was that he had explicitly disabled the TSC 
-because of TSC instability with the "notsc" kernel command line. Which 
-disabled is *entirely*.
+Thanks.
 
-That *used* to be the right thing to do, since the gettimeofday() logic 
-originally didn't know about TSC instability, and it just resulted in 
-somewhat flaky timekeeping.
+> Cc: Randy Dunlap <rdunlap@xenotime.net>
+> Cc: Dave Jones <davej@redhat.com>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  lib/Kconfig.debug |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.22/lib/Kconfig.debug
+> ===================================================================
+> --- linux-2.6.22.orig/lib/Kconfig.debug
+> +++ linux-2.6.22/lib/Kconfig.debug
+> @@ -436,7 +436,7 @@ config FORCED_INLINING
+>  
+>  config BOOT_PRINTK_DELAY
+>  	bool "Delay each boot printk message by N milliseconds"
+> -	depends on DEBUG_KERNEL && PRINTK
+> +	depends on DEBUG_KERNEL && PRINTK && GENERIC_CALIBRATE_DELAY
+>  	help
+>  	  This build option allows you to read kernel boot messages
+>  	  by inserting a short delay after each one.  The delay is
 
-These days, of course, we should notice it on our own, and just switch 
-away from the TSC as a reliable clock-source, but still allow it to be 
-used for the cases where absolute accuracy is not a big issue.
-
-So I suspect that Roman - by virtue of being an old-timer - ends up having 
-a workaround for an old problem that isn't needed, and that in turn ends 
-up meaning that his scheduler clock also ends up using the really not very 
-good timer tick..
-
-			Linus
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
