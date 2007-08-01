@@ -1,47 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764983AbXHAOgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765314AbXHAOhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764983AbXHAOgu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbXHAOgm
+	id S1765314AbXHAOhj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763886AbXHAOhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:36:42 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45042 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbXHAOgl (ORCPT
+	Wed, 1 Aug 2007 10:37:19 -0400
+Received: from jericho.provo.novell.com ([137.65.248.124]:19277 "EHLO
+	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764087AbXHAOhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:36:41 -0400
-Message-ID: <46B09A57.8000403@zytor.com>
-Date: Wed, 01 Aug 2007 10:36:07 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 1 Aug 2007 10:37:18 -0400
+Message-ID: <46B09A92.9090409@suse.de>
+Date: Wed, 01 Aug 2007 23:37:06 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-To: bbpetkov@yahoo.de
-CC: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
-       Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: 2.6.23-rc1: no setup signature found...
-References: <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com> <20070729085059.GA10758@gollum.tnic> <20070729092402.GA2272@xguan-laptop> <20070729103706.GA16780@gollum.tnic> <46AC9B28.6060906@zytor.com> <20070729191528.GA5166@gollum.tnic> <46ADF02F.7010800@zytor.com> <20070730185359.GA4290@gollum.tnic> <46AE4E29.7060402@zytor.com> <20070801043835.GA4676@gollum.tnic>
-In-Reply-To: <20070801043835.GA4676@gollum.tnic>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Avi Kivity <avi@argo.co.il>
+CC: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 000 of 35] Refactor block layer to improve support for
+ stacked devices.
+References: <20070731112539.22428.patches@notabene> <46AF5534.3010902@argo.co.il>
+In-Reply-To: <46AF5534.3010902@argo.co.il>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
+Avi Kivity wrote:
+> NeilBrown wrote:
+>> To achieve this, the "for_each" macros are now somewhat more complex.
+>> For example, rq_for_each_segment is:
+>>
+>> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size)        \
+>>     for (_i.i = 0, _i.offset = (bio)->bi_offset + offs,        \
+>>          _i.size = min_t(int, _size, (bio)->bi_size - offs);       \
+>>          _i.i < (bio)->bi_vcnt && _i.size > 0;            \
+>>          _i.i++)                            \
+>>         if (bv = *bio_iovec_idx((bio), _i.i),            \
+>>             bv.bv_offset += _i.offset,                \
+>>             bv.bv_len <= _i.offset                \
+>>             ? (_i.offset -= bv.bv_len, 0)            \
+>>             : (bv.bv_len -= _i.offset,                \
+>>                _i.offset = 0,                    \
+>>                bv.bv_len < _i.size                \
+>>                ? (_i.size -= bv.bv_len, 1)            \
+>>                : (bv.bv_len = _i.size,                \
+>>               _i.size = 0,                    \
+>>               bv.bv_len > 0)))
+>>
+>> #define bio_for_each_segment(bv, bio, __i)                \
+>>         bio_for_each_segment_offset(bv, bio, __i, 0, (bio)->bi_size)
+>>
+>> It does some with some explanatory text in a comment, but it is still
+>> a bit daunting.  Any suggestions on making this more approachable
+>> would be very welcome.
+>>
+>>   
 > 
-> 	Breakpoint 4, 0x00040200 in ?? ()
-> 	1: x/i ($cs << 4) + $eip  0x40300:      lea    (%si),%dx
-> 	(gdb) c
-> 	Continuing.
+> Well, I hesitate to state the obvious, but how about:
 > 
-> if i do delete here, it loads the second stage of grub and continues to load the
-> kernel. Is there another way to land at the jmp instruction instead of poking
-> blindly, maybe disassemble something parts of the initial code. \me reading
-> grub-docs...
+> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size) \
+>    for (bio_iterator_init(&_i, ...); bio_iterator_cont(&_i, ...);
+> bio_iterator_advance(&_i, ...)) \
+>         if (bio_iterator_want_segment(&_i, ...))
 > 
+> While this doesn't remove the complexity, at least it's readable.
 
-If you do "delete" without a breakpoint number, you're deleting all 
-breakpoints.  I just experimented with grub, and it looks like it should 
-break at 0x90200, so just set that breakpoint and none of the others.
+Violently seconded.
 
-	-hpa
-
+-- 
+tejun
