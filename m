@@ -1,55 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761166AbXHAHuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbXHAH4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761166AbXHAHuf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757272AbXHAHu1
+	id S1760848AbXHAH4g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbXHAH4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:50:27 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:56223 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756918AbXHAHu0 (ORCPT
+	Wed, 1 Aug 2007 03:56:25 -0400
+Received: from webmail.icp-qv1-irony3.iinet.net.au ([203.59.1.108]:57568 "EHLO
+	webmail.icp-qv1-irony3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752914AbXHAH4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:50:26 -0400
-Date: Wed, 1 Aug 2007 09:50:05 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Matthew Hawkins <darthmdh@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Christoph Hellwig <hch@infradead.org>,
-       Jacob Braun <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?
-Message-ID: <20070801075005.GM3972@stusta.de>
-References: <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com> <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site> <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com> <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com> <20070730182959.GA29151@infradead.org> <adaps29sm62.fsf@cisco.com> <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com> <20070801052513.GL3972@stusta.de> <b21f8390707312319l3ffd8e7cn85984e32344a41f2@mail.gmail.com>
+	Wed, 1 Aug 2007 03:56:24 -0400
+X-Greylist: delayed 621 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 03:56:23 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgAAAJzWr0bLzisi/2dsb2JhbAAN
+X-IronPort-AV: i="4.19,207,1183305600"; 
+   d="scan'208"; a="171907789:sNHT31428900"
+Message-ID: <46B03A42.3030708@gmail.com>
+Date: Wed, 01 Aug 2007 17:46:10 +1000
+From: William Pettersson <william.pettersson@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070731)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <b21f8390707312319l3ffd8e7cn85984e32344a41f2@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: ALPS touchpad with new Dell not recognised
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 04:19:36PM +1000, Matthew Hawkins wrote:
-> On 8/1/07, Adrian Bunk <bunk@stusta.de> wrote:
-> > But there's not much value in benchmarking if an important part of the
-> > performance critical code is in some undebuggable driver...
-> 
-> In this case we don't care about the performance of the video driver.
-> This isn't a race to see who can get the most fps.  The driver can be
-> thought of as a black box so long as comparative benchmarks are done
-> with the same driver.
->...
+I've got a Dell Vostro 1400 here, which according to the Windows drivers
+has an ALPS touchpad that I'm working on.  It has PS/2 pass through,
+which means I can move the pointer around.  It also picks up (via
+hardware I assume) quick double-taps as click-and-drag.  It however,
+doesn't do multi-finger taps for middle and right mouse button.  It also
+doesn't do side scrolling, which is the big one for me.
 
-What if your "black box" e.g. uses the BKL?
+/proc/bus/inputs/devices lists the mouse as
+I: Bus=0011 Vendor=0002 Product=0001 Version=0000
+N: Name="PS/2 Generic Mouse"
+P: Phys=isa0060/serio1/input0
+S: Sysfs=/class/input/input20
+H: Handlers=mouse0 event4
+B: EV=7
+B: KEY=70000 0 0 0 0 0 0 0 0
+B: REL=3
 
-> Matt
+I enabled debugging in the alps.c driver.  My touchpad "passes" the E6
+test, but the E7 test it returns 0x73, 0x2, 0x50.  I've tried adding a
+new model to the alps_model_info structure, with these numbers.
+This made it be detected as an "Alps", but the behaviour was very
+erratic, and kernel messages talked about the GlidePoint lost sync at
+byte 1.
 
-cu
-Adrian
+I'm not too familiar with the Alps driver, so I don't know exactly how
+the byte0 or mask0 variables affect things.  I tried 0xff and 0xf8 as
+they were two common options.
 
--- 
+Is anyone familiar with the Alps driver, and able to help me work out
+how to get this touchpad working?
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
 
+William
