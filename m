@@ -1,95 +1,284 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759466AbXHAG7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbXHAHDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759466AbXHAG7q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 02:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbXHAG7d
+	id S1757972AbXHAHDX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753592AbXHAHDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 02:59:33 -0400
-Received: from mms2.broadcom.com ([216.31.210.18]:4972 "EHLO mms2.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbXHAG7b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 02:59:31 -0400
-X-Server-Uuid: A6C4E0AE-A7F0-449F-BAE7-7FA0D737AC76
-Subject: Re: [REGRESSION] tg3 dead after s2ram
-From: "Michael Chan" <mchan@broadcom.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-cc: "Joachim Deguara" <joachim.deguara@amd.com>,
-       "lkml List" <linux-kernel@vger.kernel.org>,
-       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "netdev" <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
-In-Reply-To: <20070731174522.b141178a.akpm@linux-foundation.org>
-References: <20070731174522.b141178a.akpm@linux-foundation.org>
-Date: Wed, 01 Aug 2007 00:53:31 -0700
-Message-ID: <1185954811.5552.7.camel@dell>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AAEF0C23A0418944-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 03:03:14 -0400
+Received: from mail.clusterfs.com ([74.0.229.162]:44611 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642AbXHAHDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 03:03:12 -0400
+Subject: Re: [EXT4 set 8][PATCH 1/1]Add journal checksums
+From: Girish Shilamkar <girish@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>, Mingming Cao <cmm@us.ibm.com>
+Cc: Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
+References: <1183275505.4010.136.camel@localhost.localdomain>
+	 <20070710231601.798304e0.akpm@linux-foundation.org>
+	 <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
+Content-Type: multipart/mixed; boundary="=-kakK77po6F6ah0VxkqG2"
+Date: Wed, 01 Aug 2007 12:34:17 +0530
+Message-Id: <1185951857.3875.6.camel@dhcp4.linsyssoft.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-SystemSpamProbe: GOOD 0.0000684 a84a172f69e1620db65dff070f29a3c7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 17:45 -0700, Andrew Morton wrote:
-> On Tue, 31 Jul 2007 11:28:32 +0200 "Joachim Deguara"
-> <joachim.deguara@amd.com> wrote:
+
+--=-kakK77po6F6ah0VxkqG2
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+
+On Wed, 2007-07-11 at 17:16 +0530, Girish Shilamkar wrote:
+
+> I will make the changes and send an incremental patch.
 > 
-> > On my Acer Ferrari 1000 the tg3 ethernet no longer is available
-> after a
-> > suspend to ram with the latet 2.6.23-rc1-git9.
+Hi,
+	I have made the changes and attached the incremental patch as per the
+review.
 
-It seems to work for me on the same 2.6.23-rc1-git9 kernel with the same
-tg3 hardware.  Can you narrow down the problem some more?  It seems that
-in your case, the chip registers are returning 0xffffffff after resume.
-Can you do lspci -xxxvvv on the tg3 adapter after resume?
+This is the actual changelog which was missing in the original patch.
 
-Here's my log:
+------
+The journal checksum feature adds two new flags i.e 
+JBD2_FEATURE_INCOMPAT_ASYNC_COMMIT and JBD2_FEATURE_COMPAT_CHECKSUM.
 
-tg3.c:v3.79 (July 18, 2007)
-ACPI: PCI Interrupt 0000:01:00.0[A] -> GSI 16 (level, low) -> IRQ 16
-eth0: Tigon3 [partno(BCM95755m) rev a002 PHY(5755)] (PCI Express) 10/100/1000Ba1eth0: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-eth0: dma_rwctrl[76180000] dma_mask[64-bit]
-ACPI: PCI Interrupt 0000:40:00.0[A] -> GSI 17 (level, low) -> IRQ 17
-eth1: Tigon3 [partno(BCM95751) rev 4001 PHY(5750)] (PCI Express) 10/100/1000Bas5eth1: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[1] TSOcap[1]
-eth1: dma_rwctrl[76180000] dma_mask[64-bit]
-ACPI: PCI Interrupt 0000:05:09.0[A] -> GSI 18 (level, low) -> IRQ 19
-eth2: Tigon3 [partno(BCM95788A50) rev 3003 PHY(5705)] (PCI:33MHz:32-bit) 10/1008eth2: RXcsums[1] LinkChgREG[0] MIirq[0] ASF[0] WireSpeed[0] TSOcap[1]
-eth2: dma_rwctrl[763f0000] dma_mask[32-bit]
-ADDRCONF(NETDEV_UP): eth0: link is not ready
-ADDRCONF(NETDEV_UP): eth1: link is not ready
-ADDRCONF(NETDEV_UP): eth2: link is not ready
-tg3: eth2: Link is up at 1000 Mbps, full duplex.
-tg3: eth2: Flow control is on for TX and on for RX.
-ADDRCONF(NETDEV_CHANGE): eth2: link becomes ready
-Stopping tasks ... done.
-Suspending console(s)
-ACPI handle has no context!
-pnp: Device 00:08 disabled.
-ACPI handle has no context!
-Intel machine check architecture supported.
-Intel machine check reporting enabled on CPU#0.
-CPU0: Intel P4/Xeon Extended MCE MSRs (12) available
-ACPI: PCI Interrupt 0000:00:1f.2[B] -> GSI 19 (level, low) -> IRQ 18
-tg3: eth2: Link is down.
-pnp: Device 00:08 activated.
-Restarting tasks ... hda: status error: status=0x51 { DriveReady SeekComplete E}hda: status error: error=0x04 { DriveStatusError }
-ide: failed opcode was: unknown
-hda: no DRQ after issuing MULTWRITE_EXT
-hda: status error: status=0x51 { DriveReady SeekComplete Error }
-hda: status error: error=0x04 { DriveStatusError }
-ide: failed opcode was: unknown
-hda: no DRQ after issuing MULTWRITE_EXT
-hda: status error: status=0x51 { DriveReady SeekComplete Error }
-hda: status error: error=0x04 { DriveStatusError }
-ide: failed opcode was: unknown
-hda: no DRQ after issuing MULTWRITE_EXT
-hda: status error: status=0x51 { DriveReady SeekComplete Error }
-hda: status error: error=0x04 { DriveStatusError }
-ide: failed opcode was: unknown
-hda: no DRQ after issuing MULTWRITE_EXT
-done.
-ide0: reset: success
-tg3: eth2: Link is up at 1000 Mbps, full duplex.
-tg3: eth2: Flow control is on for TX and on for RX.
+JBD2_FEATURE_CHECKSUM flag indicates that the commit block contains the
+checksum for the blocks described by the descriptor blocks.
+Due to checksums, writing of the commit record no longer needs to be
+synchronous. Now commit record can be sent to disk without waiting for
+descriptor blocks to be written to disk. This behavior is controlled
+using JBD2_FEATURE_ASYNC_COMMIT flag. Older kernels/e2fsck should not be
+able to recover the journal with _ASYNC_COMMIT hence it is made
+incompat.
+The commit header has been extended to hold the checksum along with the
+type of the checksum.
+
+For recovery in pass scan checksums are verified to ensure the sanity
+and completeness(in case of _ASYNC_COMMIT) of every transaction.
+-----
+
+Thanks & Regards,
+Girish. 
 
 
+--=-kakK77po6F6ah0VxkqG2
+Content-Disposition: attachment; filename=jrnl-chksum-fix-review.patch
+Content-Type: text/x-patch; name=jrnl-chksum-fix-review.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Signed-off-by: Andreas Dilger <adilger@clusterfs.com>
+Signed-off-by: Girish Shilamkar <girish@clusterfs.com>
+
+Index: linux-2.6.22/Documentation/filesystems/ext4.txt
+===================================================================
+--- linux-2.6.22.orig/Documentation/filesystems/ext4.txt
++++ linux-2.6.22/Documentation/filesystems/ext4.txt
+@@ -89,6 +89,16 @@ When mounting an ext4 filesystem, the fo
+ extents			ext4 will use extents to address file data.  The
+ 			file system will no longer be mountable by ext3.
+ 
++journal_checksum	Enable checksumming of the journal transactions.
++			This will allow the recovery code in e2fsck and the
++			kernel to detect corruption in the kernel.  It is a 
++			compatible change and will be ignored by older kernels.
++
++journal_async_commit	Commit block can be written to disk without waiting 
++			for descriptor blocks. If enabled older kernels cannot
++			mount the device. This will enable 'journal_checksum'
++			internally.
++
+ journal=update		Update the ext4 file system's journal to the current
+ 			format.
+ 
+Index: linux-2.6.22/fs/Kconfig
+===================================================================
+--- linux-2.6.22.orig/fs/Kconfig
++++ linux-2.6.22/fs/Kconfig
+@@ -235,6 +235,7 @@ config JBD_DEBUG
+ 
+ config JBD2
+ 	tristate
++	select CRC32
+ 	help
+ 	  This is a generic journaling layer for block devices that support
+ 	  both 32-bit and 64-bit block numbers.  It is currently used by
+Index: linux-2.6.22/fs/jbd2/commit.c
+===================================================================
+--- linux-2.6.22.orig/fs/jbd2/commit.c
++++ linux-2.6.22/fs/jbd2/commit.c
+@@ -108,8 +108,9 @@ static int journal_submit_commit_record(
+ 					__u32 crc32_sum)
+ {
+ 	struct journal_head *descriptor;
++	struct commit_header *tmp;
+ 	struct buffer_head *bh;
+-	int i, ret;
++	int ret;
+ 	int barrier_done = 0;
+ 
+ 	if (is_journal_aborted(journal))
+@@ -121,19 +122,16 @@ static int journal_submit_commit_record(
+ 
+ 	bh = jh2bh(descriptor);
+ 
+-	for (i = 0; i < bh->b_size; i += 512) {
+-		struct commit_header *tmp =
+-			(struct commit_header *)(bh->b_data + i);
+-		tmp->h_magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
+-		tmp->h_blocktype = cpu_to_be32(JBD2_COMMIT_BLOCK);
+-		tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
+-
+-		if (JBD2_HAS_COMPAT_FEATURE(journal,
+-					    JBD2_FEATURE_COMPAT_CHECKSUM)) {
+-			tmp->h_chksum_type 	= JBD2_CRC32_CHKSUM;
+-			tmp->h_chksum_size 	= JBD2_CRC32_CHKSUM_SIZE;
+-			tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
+-		}
++	tmp = (struct commit_header *)bh->b_data;
++	tmp->h_magic = cpu_to_be32(JBD2_MAGIC_NUMBER);
++	tmp->h_blocktype = cpu_to_be32(JBD2_COMMIT_BLOCK);
++	tmp->h_sequence = cpu_to_be32(commit_transaction->t_tid);
++
++	if (JBD2_HAS_COMPAT_FEATURE(journal,
++				    JBD2_FEATURE_COMPAT_CHECKSUM)) {
++		tmp->h_chksum_type 	= JBD2_CRC32_CHKSUM;
++		tmp->h_chksum_size 	= JBD2_CRC32_CHKSUM_SIZE;
++		tmp->h_chksum[0] 	= cpu_to_be32(crc32_sum);
+ 	}
+ 
+ 	JBUFFER_TRACE(descriptor, "submit commit block");
+@@ -185,8 +183,8 @@ static int journal_wait_on_commit_record
+ {
+ 	int ret = 0;
+ 
+-	if (buffer_locked(bh))
+-		wait_on_buffer(bh);
++	clear_buffer_dirty(bh);
++	wait_on_buffer(bh);
+ 
+ 	if (unlikely(!buffer_uptodate(bh)))
+ 		ret = -EIO;
+Index: linux-2.6.22/fs/jbd2/recovery.c
+===================================================================
+--- linux-2.6.22.orig/fs/jbd2/recovery.c
++++ linux-2.6.22/fs/jbd2/recovery.c
+@@ -318,14 +318,14 @@ static inline unsigned long long read_ta
+ }
+ 
+ /*
+- * cal_chksums calculates the checksums for the blocks described in the
++ * calc_chksums calculates the checksums for the blocks described in the
+  * descriptor block.
+  */
+-static int cal_chksums(journal_t *journal, struct buffer_head *bh,
+-		       unsigned long *next_log_block, __u32 *crc32_sum)
++static int calc_chksums(journal_t *journal, struct buffer_head *bh,
++			unsigned long *next_log_block, __u32 *crc32_sum)
+ {
+ 	int i, num_blks, err;
+-	unsigned long io_block;
++	unsigned io_block;
+ 	struct buffer_head *obh;
+ 
+ 	num_blks = count_tags(journal, bh);
+@@ -338,7 +338,7 @@ static int cal_chksums(journal_t *journa
+ 		err = jread(&obh, journal, io_block);
+ 		if (err) {
+ 			printk(KERN_ERR "JBD: IO error %d recovering block "
+-				"%ld in log\n", err, io_block);
++				"%u in log\n", err, io_block);
+ 			return 1;
+ 		} else {
+ 			*crc32_sum = crc32_be(*crc32_sum, (void *)obh->b_data,
+@@ -460,7 +460,7 @@ static int do_one_pass(journal_t *journa
+ 				    JBD2_HAS_COMPAT_FEATURE(journal,
+ 					    JBD2_FEATURE_COMPAT_CHECKSUM) &&
+ 				    !info->end_transaction) {
+-					if (cal_chksums(journal, bh,
++					if (calc_chksums(journal, bh,
+ 							&next_log_block,
+ 							&crc32_sum)) {
+ 						brelse(bh);
+@@ -601,11 +601,14 @@ static int do_one_pass(journal_t *journa
+ 			if (pass == PASS_SCAN &&
+ 			    JBD2_HAS_COMPAT_FEATURE(journal,
+ 				    JBD2_FEATURE_COMPAT_CHECKSUM)) {
++				int chksum_err, chksum_seen;
+ 				struct commit_header *cbh =
+ 					(struct commit_header *)bh->b_data;
+ 				unsigned found_chksum =
+ 					be32_to_cpu(cbh->h_chksum[0]);
+ 
++				chksum_err = chksum_seen = 0;
++
+ 				if (info->end_transaction) {
+ 					printk(KERN_ERR "JBD: Transaction %u "
+ 						"found to be corrupt.\n",
+@@ -614,7 +617,29 @@ static int do_one_pass(journal_t *journa
+ 					break;
+ 				}
+ 
+-				if (crc32_sum != found_chksum) {
++				if (crc32_sum == found_chksum &&
++				    cbh->h_chksum_type == JBD2_CRC32_CHKSUM &&
++				    cbh->h_chksum_size ==
++						JBD2_CRC32_CHKSUM_SIZE) {
++				       chksum_seen = 1;
++				} else if (!(cbh->h_chksum_type == 0 &&
++					     cbh->h_chksum_size == 0 &&
++					     found_chksum == 0 &&
++					     !chksum_seen)) {
++				/*
++				 * If fs is mounted using an old kernel and then
++				 * kernel with journal_chksum is used then we
++				 * get a situation where the journal flag has
++				 * checksum flag set but checksums are not
++				 * present i.e chksum = 0, in the individual
++				 * commit blocks.
++				 * Hence to avoid checksum failures, in this
++				 * situation, this extra check is added.
++				 */
++						chksum_err = 1;
++				}
++
++				if (chksum_err) {
+ 					info->end_transaction = next_commit_ID;
+ 
+ 					if (!JBD2_HAS_COMPAT_FEATURE(journal,
+Index: linux-2.6.22/fs/jbd2/journal.c
+===================================================================
+--- linux-2.6.22.orig/fs/jbd2/journal.c
++++ linux-2.6.22/fs/jbd2/journal.c
+@@ -1582,8 +1582,9 @@ int jbd2_journal_set_features (journal_t
+ 	return 1;
+ }
+ 
+-/**
+- * int jbd2_journal_clear_features () - Clear a given journal feature in the superblock
++/*
++ * jbd2_journal_clear_features () - Clear a given journal feature in the
++ * 				    superblock
+  * @journal: Journal to act on.
+  * @compat: bitmask of compatible features
+  * @ro: bitmask of features that force read-only mount
+@@ -1591,10 +1592,9 @@ int jbd2_journal_set_features (journal_t
+  *
+  * Clear a given journal feature as present on the
+  * superblock.  Returns true if the requested features could be reset.
+- *
+  */
+-int jbd2_journal_clear_features (journal_t *journal, unsigned long compat,
+-			  unsigned long ro, unsigned long incompat)
++int jbd2_journal_clear_features(journal_t *journal, unsigned long compat,
++				unsigned long ro, unsigned long incompat)
+ {
+ 	journal_superblock_t *sb;
+ 
+
+--=-kakK77po6F6ah0VxkqG2--
 
