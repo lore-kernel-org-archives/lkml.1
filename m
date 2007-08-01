@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765675AbXHAPxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764146AbXHAPyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765675AbXHAPxL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933136AbXHAPww
+	id S1764146AbXHAPyn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757336AbXHAPyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:52:52 -0400
-Received: from Mycroft.westnet.com ([216.187.52.7]:59908 "EHLO
-	Mycroft.westnet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932988AbXHAPwv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:52:51 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18096.44099.826200.638485@stoffel.org>
-Date: Wed, 1 Aug 2007 11:52:35 -0400
-From: "John Stoffel" <john@stoffel.org>
-To: Tejun Heo <teheo@suse.de>
-Cc: Avi Kivity <avi@argo.co.il>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 000 of 35] Refactor block layer to improve support for
- stacked devices.
-In-Reply-To: <46B09A92.9090409@suse.de>
-References: <20070731112539.22428.patches@notabene>
-	<46AF5534.3010902@argo.co.il>
-	<46B09A92.9090409@suse.de>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	Wed, 1 Aug 2007 11:54:32 -0400
+Received: from compulypse.net ([212.227.20.180]:1064 "EHLO compulypse.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756790AbXHAPyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:54:31 -0400
+Subject: Re: [ck] Re: Linux Kernel cfs scheduler and xorg kbd
+From: "<::.. Teresa_II ..::>" <teresa@kvitka.net>
+To: Matthew Hawkins <darthmdh@gmail.com>
+Cc: Rene Herman <rene.herman@gmail.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       CK Mailinglist <ck@vds.kolivas.org>, Andi Kleen <andi@firstfloor.org>,
+       Indan Zupancic <indan@nul.nu>
+In-Reply-To: <b21f8390708010800i40b0281dv77c82f3c75fb0a89@mail.gmail.com>
+References: <1185827130.26459.16.camel@xtower.fri>
+	 <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>
+	 <46B06815.10200@gmail.com>
+	 <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>
+	 <46B0818F.10204@gmail.com>
+	 <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>
+	 <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com>
+	 <1185979460.16632.9.camel@xtower.fri>
+	 <b21f8390708010800i40b0281dv77c82f3c75fb0a89@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 01 Aug 2007 17:53:32 +0200
+Message-Id: <1185983612.16632.14.camel@xtower.fri>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+У чт, 2007-08-02 у 01:00 +1000, Matthew Hawkins пише:
 
-Tejun> Avi Kivity wrote:
->> NeilBrown wrote:
->>> To achieve this, the "for_each" macros are now somewhat more complex.
->>> For example, rq_for_each_segment is:
->>> 
->>> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size)        \
->>> for (_i.i = 0, _i.offset = (bio)->bi_offset + offs,        \
->>> _i.size = min_t(int, _size, (bio)->bi_size - offs);       \
->>> _i.i < (bio)->bi_vcnt && _i.size > 0;            \
->>> _i.i++)                            \
->>> if (bv = *bio_iovec_idx((bio), _i.i),            \
->>> bv.bv_offset += _i.offset,                \
->>> bv.bv_len <= _i.offset                \
->>> ? (_i.offset -= bv.bv_len, 0)            \
->>> : (bv.bv_len -= _i.offset,                \
->>> _i.offset = 0,                    \
->>> bv.bv_len < _i.size                \
->>> ? (_i.size -= bv.bv_len, 1)            \
->>> : (bv.bv_len = _i.size,                \
->>> _i.size = 0,                    \
->>> bv.bv_len > 0)))
->>> 
->>> #define bio_for_each_segment(bv, bio, __i)                \
->>> bio_for_each_segment_offset(bv, bio, __i, 0, (bio)->bi_size)
->>> 
->>> It does some with some explanatory text in a comment, but it is still
->>> a bit daunting.  Any suggestions on making this more approachable
->>> would be very welcome.
->>> 
->>> 
->> 
->> Well, I hesitate to state the obvious, but how about:
->> 
->> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size) \
->> for (bio_iterator_init(&_i, ...); bio_iterator_cont(&_i, ...);
->> bio_iterator_advance(&_i, ...)) \
->> if (bio_iterator_want_segment(&_i, ...))
->> 
->> While this doesn't remove the complexity, at least it's readable.
+> Are you sure its not just a setting in Gnome/KDE for accessibility?
+> That tends to do crazy things like making control keys sticky...
 
-Tejun> Violently seconded.
+Yes, i use gnome, and all keyboard layouts are set in gnome, also group
+switching for layouts. But accessibility is switched completely off.
 
-How about it be made into a real function instead?  I was reading
-through the patch, but got timed out yesterday, so take this with a
-grain of salt.  
+-- 
+Teresa Kalitowska
+jid: teresa@kvitka.net
 
-I thought I saw a couple of macros defined to use this macro yet
-again.  Which I figured might be a problem is the passed in variables
-get munged.
-
-In any case, why does something so complicated need to be a macro, why
-not a function instead?
-
-John
