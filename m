@@ -1,92 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764005AbXHABQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763677AbXHABTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764005AbXHABQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759013AbXHABQa
+	id S1763677AbXHABTW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:19:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759000AbXHABTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:16:30 -0400
-Received: from mga09.intel.com ([134.134.136.24]:41671 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758394AbXHABQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:16:28 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,206,1183359600"; 
-   d="scan'208";a="111998890"
-Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
-	hibernation
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-In-Reply-To: <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com>
-	 <20070731091004.GA2022@elf.ucw.cz>
-	 <1185873924.23149.86.camel@caritas-dev.intel.com>
-	 <m17iogrgjw.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
+	Tue, 31 Jul 2007 21:19:14 -0400
+Received: from smtp111.iad.emailsrvr.com ([207.97.245.111]:51191 "EHLO
+	smtp111.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757501AbXHABTO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Jul 2007 21:19:14 -0400
+Message-ID: <46AFDF3A.6080300@gentoo.org>
+Date: Tue, 31 Jul 2007 21:17:46 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
+MIME-Version: 1.0
+To: Zwane Mwaikambo <zwane@infradead.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>, "Antonino A. Daplas" <adaplas@pol.net>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com> <4686D85B.6090803@gentoo.org> <20070630154230.4ad373fa.akpm@linux-foundation.org> <4690E65B.5050607@gentoo.org> <20070708111404.1486e73c.akpm@linux-foundation.org> <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org> <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org> <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org> <4693CCC6.7050400@zytor.com> <46AFCCBB.70307@gentoo.org> <Pine.LNX.4.64.0707311719540.5207@montezuma.windriver.com>
+In-Reply-To: <Pine.LNX.4.64.0707311719540.5207@montezuma.windriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Date: Wed, 01 Aug 2007 09:16:13 +0800
-Message-Id: <1185930973.1363.1.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 01 Aug 2007 01:16:21.0993 (UTC) FILETIME=[9257A590:01C7D3D9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 04:52 -0600, Eric W. Biederman wrote:
-> "Huang, Ying" <ying.huang@intel.com> writes:
-> 
-> > On Tue, 2007-07-31 at 11:10 +0200, Pavel Machek wrote:
-> >> > Index: kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c
-> >> > ===================================================================
-> >> > --- kexec-tools-1.101.orig/kexec/arch/i386/crashdump-x86.c 2007-07-08
-> > 23:00:25.000000000 +0800
-> >> > +++ kexec-tools-1.101/kexec/arch/i386/crashdump-x86.c 2007-07-14
-> > 17:06:45.000000000 +0800
-> >> > @@ -428,6 +428,29 @@
-> >> >  	return 0;
-> >> >  }
-> >> >  
-> >> > +/* Adds the kexec_backup= command line parameter to command line. */
-> >> > +static int cmdline_add_backup(char *cmdline, unsigned long addr)
-> >> > +{
-> >> > +	int cmdlen, len, align = 1024;
-> >> > +	char str[30], *ptr;
-> >> > +
-> >> > +	/* Passing in kexec_backup=xxxK format. Saves space required
-> >> > +	 * in cmdline. Ensure 1K alignment*/
-> >> > +	if (addr%align)
-> >> > +		return -1;
-> >> > +	addr = addr/align;
-> >> > +	ptr = str;
-> >> > +	strcpy(str, " kexec_backup=");
-> >> > +	ptr += strlen(str);
-> >> > +	ultoa(addr, ptr);
-> >> > +	strcat(str, "K");
-> >> > +	len = strlen(str);
-> >> > +	cmdlen = strlen(cmdline) + len;
-> >> > +	if (cmdlen > (COMMAND_LINE_SIZE - 1))
-> >> > +		die("Command line overflow\n");
-> >> > +	strcat(cmdline, str);
-> >> > +	return 0;
-> >> > +}
-> >> 
-> >> This part did not apply for me -- it seems crashdump related and I did
-> >> not have that applied. Is it critical?
-> >
-> > This is needed for kexec_jump to work properly. Which version of
-> > kexec-tools do you use? This patch is against 1.101. The kdump patch
-> > must be applied before this patch is applied.
-> 
-> Please work against the kexec-tools-testing tree, if you can.
-> All of the outstanding patches should be there.
+Zwane Mwaikambo wrote:
+> Sorry if this has been hashed out before, but could you point me towards 
+> the gentoo bugzilla entry? I'm trying to understand how your setup broke. 
+> Which version VBE does your system have?
 
-OK, I will work against the kexec-tools-testing tree in the next
-version.
+Here's the bug:
+http://bugs.gentoo.org/show_bug.cgi?id=181067
 
-Best Regards,
-Huang Ying
+How can we identify the VBE version?
+
+Thanks,
+Daniel
