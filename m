@@ -1,85 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932851AbXHATNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765556AbXHATPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932851AbXHATNk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758492AbXHATNb
+	id S1765556AbXHATPe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764274AbXHATP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:13:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:3487 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759084AbXHATNa (ORCPT
+	Wed, 1 Aug 2007 15:15:26 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41886 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762151AbXHATP0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:13:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OXBRCyvBgyvl4/jMTcIaWhDV/rVxzHx4Yl4agqAej5jkriVOnVbB5jSI1arPx5da5y8hD4q2edHK98lvnubf/URvuN42wbxrC5jjcSH/7aD0CD/tyBZkBlBqLa8TBElxBqMKRf61d9YzEYK2+BolakhYN6IiAp/1NlNyO6THPDk=
-Message-ID: <6bffcb0e0708011213q1c8908e2p1c87967745b977b5@mail.gmail.com>
-Date: Wed, 1 Aug 2007 21:13:26 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Markus Gutschke" <markus@gutschke.com>
-Subject: Re: Marvell 7042 (sata_mv) fails to initialize drive
-Cc: "Jeff Garzik" <jgarzik@pobox.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-ide@vger.kernel.org
-In-Reply-To: <46AEAAB1.801@gutschke.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 15:15:26 -0400
+Date: Wed, 1 Aug 2007 21:15:24 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] Simple Performance Counters: x86_64 support
+Message-ID: <20070801191524.GE20713@one.firstfloor.org>
+References: <11859243121617-git-send-email-clameter@sgi.com> <p73ir7zplty.fsf@bingen.suse.de> <Pine.LNX.4.64.0708011052080.20795@schroedinger.engr.sgi.com> <20070801182611.GB20713@one.firstfloor.org> <Pine.LNX.4.64.0708011127490.22867@schroedinger.engr.sgi.com> <20070801184026.GC20713@one.firstfloor.org> <Pine.LNX.4.64.0708011144450.22867@schroedinger.engr.sgi.com> <20070801185741.GD20713@one.firstfloor.org> <Pine.LNX.4.64.0708011158110.24852@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <46AEAAB1.801@gutschke.com>
+In-Reply-To: <Pine.LNX.4.64.0708011158110.24852@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Markus,
+On Wed, Aug 01, 2007 at 11:58:44AM -0700, Christoph Lameter wrote:
+> On Wed, 1 Aug 2007, Andi Kleen wrote:
+> 
+> > That might be on your systems, but for a mainline submission the
+> > standards are higher.
+> 
+> Right that is why I asked for someone to take it over and do mainline work 
+> if that is wanted. I had a couple of requests for these patches.
 
-On 31/07/07, Markus Gutschke <markus@gutschke.com> wrote:
-> I just tried hooking up a Hitachi 1TB SATA-II drive to a Marvell 7042
-> based controller, and the most recent Linux kernel (2.6.23-rc1) fails to
-> properly initialize the interface.
+The easiest way to solve this would be to switch to reporting cycles.
+That would simplify your patch in fact.
 
-Does 2.6.22.1 work?
-
-> Here are the relevant kernel messages:
->
-> > kernel: [43.312417] sata_mv 0000:06:00.0: version 0.81
-> > kernel: [43.312752] ACPI: PCI Interrupt Link [APC5] enabled at IRQ 16
-> > kernel: [43.312757] ACPI: PCI Interrupt 0000:06:00.0[A] -> Link [APC5] -> GSI 16 (level, low) -> IRQ 16
-> > kernel: [43.312788] sata_mv 0000:06:00.0: Applying 60X1C0 workarounds to unknown rev
-> > kernel: [43.314443] sata_mv 0000:06:00.0: Gen-IIE 32 slots 4 ports SCSI mode IRQ via INTx
-> > kernel: [43.314535] scsi0 : sata_mv
-> > kernel: [43.314581] scsi1 : sata_mv
-> > kernel: [43.314614] scsi2 : sata_mv
-> > kernel: [43.314640] scsi3 : sata_mv
-> > kernel: [43.314660] ata1: SATA max UDMA/133 cmd 0x0000000000000000 ctl 0xffffc20003522120 bmdma 0x0000000000000000 irq 16
-> > kernel: [43.314663] ata2: SATA max UDMA/133 cmd 0x0000000000000000 ctl 0xffffc20003524120 bmdma 0x0000000000000000 irq 16
-> > kernel: [43.314666] ata3: SATA max UDMA/133 cmd 0x0000000000000000 ctl 0xffffc20003526120 bmdma 0x0000000000000000 irq 16
-> > kernel: [43.314669] ata4: SATA max UDMA/133 cmd 0x0000000000000000 ctl 0xffffc20003528120 bmdma 0x0000000000000000 irq 16
-> > kernel: [53.409086] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> > kernel: [59.741602] ata1: EH pending after completion, repeating EH (cnt=4)
-> > kernel: [59.777642] ata2: SATA link down (SStatus 0 SControl 300)
-> > kernel: [59.809752] ata3: SATA link down (SStatus 0 SControl 300)
-> > kernel: [59.841740] ata4: SATA link down (SStatus 0 SControl 300)
->
-> The kernel never even registers the drive as an available disk device,
-> whereas everything appears to work fine, if I connect the disk to one of
-> the other controllers (JMicron AHCI, or NVidia sata_nv) on this motherboard.
->
-> As I have two of those disks (in a RAID-1 array) and multiple
-> independent controllers, it is relatively easy for me to do some testing
-> here. The worst case scenario is that I need to wait a couple of hours
-> for the array to rebuild itself after I am done experimenting.
->
-> Let me know, if there is anything I can do to help you diagnose the root
-> cause, or whether this is a known bug and you don't need any help
-> testing at this point.
->
->
-> Markus
-
-Regards,
-Michal
-
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+-Andi
