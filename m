@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762017AbXHALEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbXHALR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762017AbXHALEf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 07:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756932AbXHALEZ
+	id S1762101AbXHALR2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 07:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbXHALRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 07:04:25 -0400
-Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:36631 "EHLO
-	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756642AbXHALEY (ORCPT
+	Wed, 1 Aug 2007 07:17:18 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:53396 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751185AbXHALRR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 07:04:24 -0400
-Message-ID: <46B06815.10200@gmail.com>
-Date: Wed, 01 Aug 2007 13:01:41 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Wed, 1 Aug 2007 07:17:17 -0400
+Date: Wed, 1 Aug 2007 13:16:44 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [PATCH] fix slown down printk on boot compile error
+Message-ID: <20070801111644.GB12124@osiris.boeblingen.de.ibm.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       CK Mailinglist <ck@vds.kolivas.org>, teresa@kvitka.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-References: <1185827130.26459.16.camel@xtower.fri>	<6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>	<20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>
-In-Reply-To: <p73abtbpk2s.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01/2007 01:31 PM, Andi Kleen wrote:
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-> Ingo Molnar <mingo@elte.hu> writes:
+The slow-down-printk-during-boot patch depends on preset_lpj being
+available. That's not the case for architectures that have it's own
+calibrate_delay() function.
 
->> another reaction below in this thread reported kbd problems in vanilla 
->> 2.6.22.1 as well. What is the X versions, etc.? Does the problem go away 
->> if the X kbd driver selection is tweaked to a simpler model, say:
-> 
-> Or perhaps just test with CFS reverted? It really sounds more like something
-> independent from the scheduler. Perhaps someone could put a CFS-revert-for-testing patch
-> on ftp somewhere. It's only a few git changesets so shouldn't be too difficult to
-> do.
+kernel/sched.c:3840: undefined reference to `preset_lpj'
 
-Teresa was already using 2.6.22.1, with CFS (v19.1) patched in, so reverting 
-that would be a matter of patching it out again. She said she wasn't seeing 
-trouble on other kernels though.
+Cc: Randy Dunlap <rdunlap@xenotime.net>
+Cc: Dave Jones <davej@redhat.com>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ lib/Kconfig.debug |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
-I was the one who also saw keyboard trouble on 2.6.22.1 without CFS by the 
-way -- and haven't (yet) seen any anymore since patching _in_ CFS v19.1...
-
-Rene.
-
+Index: linux-2.6.22/lib/Kconfig.debug
+===================================================================
+--- linux-2.6.22.orig/lib/Kconfig.debug
++++ linux-2.6.22/lib/Kconfig.debug
+@@ -436,7 +436,7 @@ config FORCED_INLINING
+ 
+ config BOOT_PRINTK_DELAY
+ 	bool "Delay each boot printk message by N milliseconds"
+-	depends on DEBUG_KERNEL && PRINTK
++	depends on DEBUG_KERNEL && PRINTK && GENERIC_CALIBRATE_DELAY
+ 	help
+ 	  This build option allows you to read kernel boot messages
+ 	  by inserting a short delay after each one.  The delay is
