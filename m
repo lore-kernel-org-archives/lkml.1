@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764318AbXHAKD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764616AbXHAKDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764318AbXHAKD0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 06:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759734AbXHAKDS
+	id S1764616AbXHAKDz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 06:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761232AbXHAKDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 06:03:18 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:46435 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755414AbXHAKDR (ORCPT
+	Wed, 1 Aug 2007 06:03:46 -0400
+Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:39445 "EHLO
+	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759734AbXHAKDp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 06:03:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=AxknRjlIp9coZMqyoQYc15+WHc1XwKryVdjQG3zU6fGC/lA0kU+rWSCs2Q6O4JNz39qSVEEHw6LYZWmWGa2jb7x8ik0cyUS1MXhf0aJ+y0hyk3vZ7ST999PSDFk8zY3awRpKQQkoJHV1By+U1HbfQ5CwlIUGxDkEfmAF8exxMog=
-Message-ID: <8bd0f97a0708010303j7f443b06lf9d77f6d36816237@mail.gmail.com>
-Date: Wed, 1 Aug 2007 06:03:16 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: "Richard Knutsson" <ricknu-0@student.ltu.se>
-Subject: Re: [PATCH 06/68] 0 -> NULL, for arch/frv
-Cc: "Robin Getz" <rgetz@blackfin.uclinux.org>,
-       "Yoann Padioleau" <padator@wanadoo.fr>,
-       "David Howells" <dhowells@redhat.com>, kernel-janitors@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-In-Reply-To: <46AF255A.4050106@student.ltu.se>
+	Wed, 1 Aug 2007 06:03:45 -0400
+Message-ID: <46B059EB.7060003@gmail.com>
+Date: Wed, 01 Aug 2007 12:01:15 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: kriko <kristjan.ugrin@gmail.com>
+CC: alan@lxorguk.ukuu.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Reboot hang FIXED
+References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com> <op.twcrsx1yatcbto@linux.site> <46B038B5.2030702@gmail.com> <op.twdgw4xiatcbto@linux.site> <46B04896.5020606@gmail.com> <op.twdjn41aatcbto@linux.site>
+In-Reply-To: <op.twdjn41aatcbto@linux.site>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200707270944.LAA17167@ifs.emn.fr> <22618.1185531297@redhat.com>
-	 <87lkd29mk9.fsf@wanadoo.fr>
-	 <200707272138.23323.rgetz@blackfin.uclinux.org>
-	 <8bd0f97a0707271837q5d5f31d9pe342e72ebf9368c1@mail.gmail.com>
-	 <46AF255A.4050106@student.ltu.se>
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
-> Mike Frysinger wrote:
-> > On 7/27/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
-> >> If there is a definite style or semantic preference that everyone should live
-> >> with - does it make sense to put checks in checkpatch.pl to enforce it?
-> >
-> > checkpatch.pl does not have enough semantic knowledge to know if the
-> > thing being tested is a pointer ... dont know if the sparse utility
-> > would be able to pick it out as i'm not familiar with what level that
-> > thing runs at
->
-> Didn't he mean "x == NULL" > "!x"?
+On 08/01/2007 11:37 AM, kriko wrote:
 
-i'm sure i understand your meaning of ">" ... are you saying that "x
-== NULL" is greater (preferred) to "!x" or are you saying that "x ==
-NULL" should be changed to "!x" ?
+>>>  I just want to add that my DVD drive is not detected when using new 
+>>> driver. So back to old one....
+>>
+>> You shouldn't have dropped Alan from CC then... pata_amd, right?
+>>
+>> Rene.
+> 
+> Sorry, yes its pata_amd.
+> 
+> IBM drive is on Primary master (detected as /dev/sdc)
+> DVD-ROM is on Secondary master (not detected)
 
-i dont think the former case can be checked by checkpatch.pl, but the
-latter certainly can ... but i'd be very skeptical you could get the
-wider LKML audience to sign off one way or the other wrt to "x ==
-NULL" vs "!x".  you can certainly get people to sign off on "x == 0"
-being wrong when x is a pointer.
--mike
+It's probably a timing issue (and might be related to why the old driver 
+makes the BIOS hang at reboot) but pata_amd should I believe be one of the 
+best tested pata drivers. Using it myself as well, on amd756. I haven't 
+observed any problems with (a few) various CD/DVD drives attached and am not 
+actually sure how to go about debugging the thing -- over to Alan.
+
+The DVD-ROM is jumpered for master? Or for cable-select and using the master 
+cable-slot? Using an 80-ribbon cable for it?
+
+Rene.
+
