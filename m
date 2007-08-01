@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764952AbXHAOcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764983AbXHAOgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764952AbXHAOcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758715AbXHAOcl
+	id S1764983AbXHAOgu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757637AbXHAOgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:32:41 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:49743 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758069AbXHAOck (ORCPT
+	Wed, 1 Aug 2007 10:36:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:45042 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634AbXHAOgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:32:40 -0400
-Date: Wed, 1 Aug 2007 08:32:39 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Eugene Teo <eugeneteo@kernel.sg>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] drivers/scsi/advansys.c: fix advansys_board_found compile error
-Message-ID: <20070801143239.GZ21219@parisc-linux.org>
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <46B0842D.3060703@googlemail.com> <20070801133912.GA11027@kernel.sg> <20070801135515.GV21219@parisc-linux.org> <46B09843.7010701@googlemail.com>
+	Wed, 1 Aug 2007 10:36:41 -0400
+Message-ID: <46B09A57.8000403@zytor.com>
+Date: Wed, 01 Aug 2007 10:36:07 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B09843.7010701@googlemail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: bbpetkov@yahoo.de
+CC: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: 2.6.23-rc1: no setup signature found...
+References: <20070727013615.GC4570@gollum.tnic> <46A9753A.1010206@zytor.com> <20070729085059.GA10758@gollum.tnic> <20070729092402.GA2272@xguan-laptop> <20070729103706.GA16780@gollum.tnic> <46AC9B28.6060906@zytor.com> <20070729191528.GA5166@gollum.tnic> <46ADF02F.7010800@zytor.com> <20070730185359.GA4290@gollum.tnic> <46AE4E29.7060402@zytor.com> <20070801043835.GA4676@gollum.tnic>
+In-Reply-To: <20070801043835.GA4676@gollum.tnic>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 04:27:15PM +0200, Gabriel C wrote:
-> Matthew Wilcox wrote:
-> > I'd be interested in seeing the results of the randconfig trials on the
-> > driver with those 23 patches applied, but not particularly interested in
-> > the intermediate result.
+Borislav Petkov wrote:
 > 
-> I can do that on weekend.
+> 	Breakpoint 4, 0x00040200 in ?? ()
+> 	1: x/i ($cs << 4) + $eip  0x40300:      lea    (%si),%dx
+> 	(gdb) c
+> 	Continuing.
+> 
+> if i do delete here, it loads the second stage of grub and continues to load the
+> kernel. Is there another way to land at the jmp instruction instead of poking
+> blindly, maybe disassemble something parts of the initial code. \me reading
+> grub-docs...
+> 
 
-Thanks
+If you do "delete" without a breakpoint number, you're deleting all 
+breakpoints.  I just experimented with grub, and it looks like it should 
+break at 0x90200, so just set that breakpoint and none of the others.
 
-> Are the patches meant for -mm or git head ?
+	-hpa
 
-They were developed against git head as of a few days ago.  Here's a git
-tree, if that's easier for you:
-
-http://git.kernel.org/?p=linux/kernel/git/willy/advansys.git;a=shortlog
-
--- 
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
