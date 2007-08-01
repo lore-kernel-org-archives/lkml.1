@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbXHAVee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbXHAVlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbXHAVee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbXHAVeU
+	id S1755533AbXHAVlc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752498AbXHAVlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:34:20 -0400
-Received: from mail.screens.ru ([213.234.233.54]:43069 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753605AbXHAVeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:34:18 -0400
-Date: Thu, 2 Aug 2007 01:34:22 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
-Message-ID: <20070801213422.GA280@tv-sign.ru>
-References: <20070801002407.4973.54778.stgit@novell1.haskins.net> <1185940340.2636.97.camel@imap.mvista.com> <1185987663.12034.99.camel@twins> <20070801181253.GA90@tv-sign.ru> <1185992994.2636.142.camel@imap.mvista.com> <20070801201802.GA225@tv-sign.ru> <1186000468.2636.168.camel@imap.mvista.com> <20070801205053.GA263@tv-sign.ru> <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 1 Aug 2007 17:41:22 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:43804 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751474AbXHAVlV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 17:41:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Vje3xwIFvi3z25k7kBhcDVJefsFAsvZor0tdCPbhWLCFYfa9RzheI/NlZrc/QCuIo3yoEUeA5bz3xN3X3c4LQlMHo65a3Xc643JvGixCgwI5GmAZDla6twdcN3XqNEcpaKDbm+IdZYEIKOUd29iVTz/JKulTxzpGCeASYuj6ciA=
+Message-ID: <29495f1d0708011441qe576ebdgb72d920989e114ca@mail.gmail.com>
+Date: Wed, 1 Aug 2007 14:41:19 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Zan Lynx" <zlynx@acm.org>
+Subject: Re: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1185919297.6981.16.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
-User-Agent: Mutt/1.5.11
+References: <1185918261.6981.13.camel@localhost>
+	 <20070731150245.5932b763.randy.dunlap@oracle.com>
+	 <1185919297.6981.16.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/01, Gregory Haskins wrote:
+On 7/31/07, Zan Lynx <zlynx@acm.org> wrote:
+> On Tue, 2007-07-31 at 15:02 -0700, Randy Dunlap wrote:
+> > On Tue, 31 Jul 2007 15:44:21 -0600 Zan Lynx wrote:
+> >
+> > > I was playing with huge pages and libhugetlbfs.  Small programs like
+> > > "ls" work fine.  I tried running Evolution through libhugetlbfs and the
+> > > system slowly stops running.  One interesting thing is the "ps" command,
+> > > it gets stuck like this:
+> >
+> > Do you mean 2.6.22-rc1-mm1 or 2.6.23-rc1-mm1?
 >
-> On Thu, 2007-08-02 at 00:50 +0400, Oleg Nesterov wrote:
-> > On 08/01, Daniel Walker wrote:
-> > >
-> > > It's translating priorities through the work queues, which doesn't seem
-> > > to happen with the current implementation. A high priority, say
-> > > SCHED_FIFO priority 99, task may have to wait for a nice -5 work queue
-> > > to finish..
-> > 
-> > Why should that task wait?
-> 
-> I assume "that task" = the RT99 task?  If so, that is precisely the
-> question.  It shouldn't wait.  ;)  With mainline, it is simply queued
-> with every other request.  There could be an RT40, and a SCHED_NORMAL in
-> front of it in the queue that will get processed first.  In addition,
-> the system could suffer from a priority inversion if some unrelated but
-> lower priority task (say RT98) was blocking the workqueue thread from
-> making forward progress on the nice -5 job. 
-> 
-> To clarify: when a design utilizes a singlethread per workqueue (such as
-> in both mainline and this patch), the RT99 will always have to wait
-> behind any already dispatched jobs.
+> D'oh!  I mean 2.6.23-rc1-mm1, the 22 was a typo.  Cut & paste to be
+> sure:
+> Linux zephyr 2.6.23-rc1-mm1 #1 SMP PREEMPT Wed Jul 25 17:33:04 MDT 2007
+> x86_64 AMD Athlon(tm) 64 Processor 3400+ AuthenticAMD GNU/Linux
 
-It is not that "RT99 will always have to wait". But yes, the work_struct
-queued by RT99 has to wait.
+Also, are we at all sure this isn't a reiser4 issue? I assume you're
+able to use Evolution w/o libhuge on rc1-mm1 ok? Any chance to remove
+reiser4 from the picture? Have you been using libhuge this way
+regularly? Any chance you know it worked ok with some recent kernel
+(say 2.6.23-rc1?).
 
-> That is a given.  However, with
-> Daniels patch, two things happen in addition to normal processing.
-
-Yes, I see what the patch does,
-
-> 1) The RT99 task would move ahead in the queue of anything else that was
-> also scheduled on the workqueue that is < RT99.
-
-this itself is wrong, breaks flush_workqueue() semantics
-
-> 2) The priority of the workqueue task would be temporarily elevated to
-> RT99 so that the currently dispatched task will complete at the same
-> priority as the waiter.
-
-_Which_ waiter? I can't understand at all why work_struct should "inherit"
-the priority of the task which queued it. This looks just wrong to me,
-even if could implement this safely.
-
-Oleg.
-
+Thanks,
+Nish
