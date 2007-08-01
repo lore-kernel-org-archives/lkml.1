@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762373AbXHAIK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbXHAILq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762373AbXHAIK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757649AbXHAIKp
+	id S1762501AbXHAILq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbXHAIL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:10:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35969 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756903AbXHAIKn (ORCPT
+	Wed, 1 Aug 2007 04:11:28 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:26982 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757649AbXHAILZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:10:43 -0400
-Date: Wed, 1 Aug 2007 01:10:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Paul Mundt" <lethal@linux-sh.org>, linux-kernel@vger.kernel.org,
-       Jason Wessel <jason.wessel@windriver.com>
-Subject: Re: 2.6.23-rc1-mm2
-Message-Id: <20070801011033.51679dd5.akpm@linux-foundation.org>
-In-Reply-To: <8bd0f97a0708010058v76f13361q62e79fe39c1f0589@mail.gmail.com>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<20070801062501.GB7581@linux-sh.org>
-	<8bd0f97a0708010058v76f13361q62e79fe39c1f0589@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Aug 2007 04:11:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hR1Cp+Hw1lTEO19B+U3mTqxbNMl0nrkIcsXfTLtnI/zz8Yew6XspZ3yWWiYXoYuTyETumv6Y6GOGgxr4IH8w7xKJc9IXV5ucfJuI28J8g/snbIpAkKdCdGkuit63cmtbnDgn9E1BH8/NTmzSvXfLlRhTCjUMOygMO1h4BPc+sDo=
+Message-ID: <a56dfcf00708010111n4b862a11wf91fe9677ee46143@mail.gmail.com>
+Date: Wed, 1 Aug 2007 04:11:23 -0400
+From: "Dan Merillat" <dan.merillat@gmail.com>
+To: "Eric Sandeen" <sandeen@sandeen.net>
+Subject: Re: [PATCH][RFC] 4K stacks default, not a debug thing any more...?
+Cc: "Satyam Sharma" <satyam.sharma@gmail.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       "Andrea Arcangeli" <andrea@suse.de>, "Matt Mackall" <mpm@selenic.com>,
+       "Rene Herman" <rene.herman@gmail.com>, "Ray Lee" <ray-lk@madrabbit.org>,
+       "Bodo Eggert" <7eggert@gmx.de>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "William Lee Irwin III" <wli@holomorphy.com>,
+       "David Chinner" <dgc@sgi.com>, "Arjan van de Ven" <arjan@infradead.org>
+In-Reply-To: <46B003A3.1090507@sandeen.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <469BF104.1040703@gmail.com>
+	 <20070719013955.1bedc423@the-village.bc.nu>
+	 <20070719013358.GD29728@v2.random> <20070719013725.GP11115@waste.org>
+	 <20070719112436.GG29728@v2.random>
+	 <20070719124419.48c3d610@the-village.bc.nu>
+	 <46A9ECD5.3050801@sandeen.net>
+	 <20070727183807.2d7dbe7b@the-village.bc.nu>
+	 <a781481a0707271131j3ab89470o4dea2fe2624fca32@mail.gmail.com>
+	 <46B003A3.1090507@sandeen.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 03:58:48 -0400 "Mike Frysinger" <vapier.adi@gmail.com> wrote:
+On 7/31/07, Eric Sandeen <sandeen@sandeen.net> wrote:
 
-> On 8/1/07, Paul Mundt <lethal@linux-sh.org> wrote:
-> > On Tue, Jul 31, 2007 at 11:09:32PM -0700, Andrew Morton wrote:
-> > > - Is anyone testing the kgdb code in here?
-> >
-> > Testing, yes. Succeeding, no. It's utterly hosed on SH in its present
-> > condition at least. Presumably it's been tested on at least one platform
-> > with some measure of success, but it's certainly not mine ;-)
-> 
-> does kgdb actually have a chance to get merged ?
+> No, what I had did only that, so it was still a matter of probabilities...
 
-I was hoping for a 2.6.24 merge.  But I haven't actually looked at it yet. 
-Hopefully Jason is planning to get it all out for review soonish.
+How expensive would it be to allocate two , then use the MMU mark the
+second page unwritable? Hardware wise it should be possible,  (for
+constant 4k pagesizes, I have not worked with variable pagesize MMUs)
+and since it's a per-context-switch constant operation, it would be a
+special case in the fault handler rather then adding another entry to
+the VM for every process.
 
->  with the history of
-> it, i just assumed it was never going in, so we've been using our own
-> kgdb patch on Blackfin ... so the version *we have* works great :) but
-> if there's a chance of this actually going mainline, we can see about
-> testing that version as well ...
+Using large hardware pages to cover the kernel mapping could be worked
+around by leaving the area where the current process stack resides
+mapped via 4k pages.  Of course, I haven't touched a modern PC MMU in
+ages, so I could be missing something fundamentally difficult.
 
-Please, do so.
+The other issue is with the layered IO design - no matter what we
+configure the stack size to, it is still possible to create a set of
+translation layers that will cause it to crash regularly:  XFS on
+dm_crypt on loop on XFS on dm_crypt on loop on ad infinitum.
 
-But runtime testing isn't actually the most important thing at this time -
-if is doesn't work, well hey, we fix it, easy - we always have bugs.  The
-main emphasis right now should be on higher-level design/review/integration
-stuff.
-
+That said, I'm missing something here - why is the stack growing?
+Filesystems should be issuing bios with callbacks, so they should be
+back off the stack, same with dm, loop, etc.   Am I missing step where
+they use a wrapper function that pretends to be syncronous?
