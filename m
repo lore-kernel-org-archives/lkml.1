@@ -1,119 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbXHAIOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763138AbXHAIPP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbXHAIOo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbXHAIO3
+	id S1763138AbXHAIPP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:15:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756120AbXHAIO6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:14:29 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56381 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757217AbXHAIO0 (ORCPT
+	Wed, 1 Aug 2007 04:14:58 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:4522 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754607AbXHAIOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:14:26 -0400
-Date: Wed, 1 Aug 2007 01:13:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       gregkh@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: 2.6.23-rc1-mm2
-Message-Id: <20070801011323.6e8d8259.akpm@linux-foundation.org>
-In-Reply-To: <200708011002.30962.m.kozlowski@tuxland.pl>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<200708011002.30962.m.kozlowski@tuxland.pl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Aug 2007 04:14:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=tpXO/1mXTqVqVmTg0nPjO8HFkL7Do2VvRuOvnsP8kt8aYr1+BApFS+Ma+NmUT697IZJEBxTD1KuOoAoi//jZoVb2xFF7ZWKyfk873GbXtVFCcprAjdF7Ru79xdfn4fDvjX/94osKWOtFKAWuB+yMgApcITMbDW2CX34m5vBBx64=
+Message-ID: <5c77e14b0708010114x49e5c468gd71a77f2aa8cb48f@mail.gmail.com>
+Date: Wed, 1 Aug 2007 10:14:54 +0200
+From: jos@mijnkamer.nl
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1 -- It does not matter who's code gets merged!
+Cc: "Hua Zhong" <hzhong@gmail.com>,
+       "Carlo Florendo" <subscribermail@gmail.com>,
+       "Roman Zippel" <zippel@linux-m68k.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "jos poortvliet" <jos@mijnkamer.nl>,
+       "Michael Chang" <thenewme91@gmail.com>,
+       "Kasper Sandberg" <lkml@metanurb.dk>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1185951901.2754.12.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <200707282003.45142.jos@mijnkamer.nl>
+	 <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>
+	 <200707282128.39906.jos@mijnkamer.nl>
+	 <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0708010539230.1818@scrub.home>
+	 <46B01E3F.6050401@gmail.com> <005001c7d403$8d7601a0$a86204e0$@com>
+	 <1185951901.2754.12.camel@laptopd505.fenrus.org>
+X-Google-Sender-Auth: ae4ed0629ee2185c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 10:02:30 +0200 Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+On 8/1/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> Let me repeat the key message:
+>
+> It does not matter who's code gets merged.
+> It does not matter who's code gets merged.
+> It does not matter who's code gets merged.
+> It does not matter who's code gets merged.
+>
+> What matters is that the problem gets solved and that the Linux kernel
+> innovates forward.
 
-> Hello,
-> 
-> 	I get this warning. Looking at the comment in kernel/irq/resend.c
-> it's harmless. Is it?
-> 
-> WARNING: at kernel/irq/resend.c:69 check_irq_resend()
->  [<c010456a>] show_trace_log_lvl+0x1a/0x30
->  [<c010508d>] show_trace+0x12/0x14
->  [<c01051e0>] dump_stack+0x15/0x17
->  [<c013b001>] check_irq_resend+0x91/0xa0
->  [<c013ab58>] enable_irq+0xb1/0xb3
->  [<c02d7b81>] ide_config_drive_speed+0xda/0x269
->  [<c02d391c>] ali15x3_tune_chipset+0xcc/0x161
->  [<c02dd367>] ide_tune_dma+0x43/0x4d
->  [<c02d29e0>] ali15x3_config_drive_for_dma+0xf/0x2a
->  [<c02dc89a>] ide_set_dma+0x11/0x40
->  [<c02d41cf>] set_using_dma+0x84/0xd1
->  [<c02d4dfe>] generic_ide_ioctl+0xb9/0x3fb
->  [<c02df7e4>] idedisk_ioctl+0x3f/0x10c
->  [<c023d779>] blkdev_driver_ioctl+0x55/0x5e
->  [<c023da3e>] blkdev_ioctl+0x2bc/0x83e
->  [<c017e5ca>] block_ioctl+0x1b/0x21
->  [<c01664c2>] do_ioctl+0x22/0x71
->  [<c0166566>] vfs_ioctl+0x55/0x28a
->  [<c01667ce>] sys_ioctl+0x33/0x51
->  [<c0103f32>] sysenter_past_esp+0x5f/0x85
->  =======================
+And, from a standpoint of ONGOING, long-term innovation: what matters
+is that brilliant, new ideas get rewarded one way or another. Because
+if you don't, the people with the 'different' ideas walk away, you end
+up with only those who 'fit' the culture, and there goes innovation.
 
-Ingo debug stuff.
+That's why I tried to get involved in this discussion. It doesn't
+matter who's code gets merged. But it does matter that people get
+scared away. It took the kernel folks a few years, but they managed to
+get someone kicked out who's not 'in-crowd', who clearly has a
+different view, and who has the intent and motivation to write and
+maintain code.
 
-> Then reattaching a usb mouse caused this (only once)
-> 
-> usb 2-1: USB disconnect, address 2
-> BUG: atomic counter underflow at:
->  [<c010456a>] show_trace_log_lvl+0x1a/0x30
->  [<c010508d>] show_trace+0x12/0x14
->  [<c01051e0>] dump_stack+0x15/0x17
->  [<c01418cf>] __free_pages+0x50/0x52
->  [<c01418f0>] free_pages+0x1f/0x21
->  [<c010783d>] dma_free_coherent+0x43/0x9c
->  [<c0315067>] hcd_buffer_free+0x43/0x6a
->  [<c030b2b4>] usb_buffer_free+0x23/0x29
->  [<c0346db4>] hid_free_buffers+0x23/0x71
->  [<c0346eb2>] hid_disconnect+0xb0/0xc8
->  [<c0313676>] usb_unbind_interface+0x30/0x72
->  [<c02c6df0>] __device_release_driver+0x6a/0x92
->  [<c02c71c3>] device_release_driver+0x20/0x36
->  [<c02c6736>] bus_remove_device+0x62/0x85
->  [<c02c49f8>] device_del+0x16d/0x27c
->  [<c0310f25>] usb_disable_device+0x7a/0xe2
->  [<c030d0bc>] usb_disconnect+0x94/0xde
->  [<c030e030>] hub_thread+0x2fe/0xc1b
->  [<c0128aee>] kthread+0x36/0x58
->  [<c0104233>] kernel_thread_helper+0x7/0x14
->  =======================
-> uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+And that's bad.
 
-whoa. huuuuuuuuuuge USB bug!
+I've quoted this before: Reward Brilliant Failures, Punish Mediocre Successes.
 
-> Every new try shows:
-> 
-> usb 2-1: new low speed USB device using uhci_hcd and address 3
-> usb 2-1: new device found, idVendor=046d, idProduct=c00e
-> usb 2-1: new device strings: Mfr=1, Product=2, SerialNumber=0
-> usb 2-1: Product: USB-PS/2 Optical Mouse
-> usb 2-1: Manufacturer: Logitech
-> usb 2-1: configuration #1 chosen from 1 choice
-> input: Logitech USB-PS/2 Optical Mouse as /class/input/input9
-> input: USB HID v1.10 Mouse [Logitech USB-PS/2 Optical Mouse] on usb-0000:00:0c.0-1
-> usb 2-1: USB disconnect, address 3
-> uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
-> 
-> But mouse works ok.
-> 
+Of course that's 'overdone', but it conveys a point: If you focus too
+much on exploiting current code, instead of fundamentally exploring
+new ideas you go down in the long run. There has to be a balance. And
+in some area's of the kernel, there seems to be a good balance - new
+ideas come in, code is being re-factored. But in scheduling and VM, I
+wonder if there's enough exploration...
 
-ok..
+I hear 'We don't do politics' a lot in the kernel community.
 
-> 
-> Second issue as reported earilier allmodconfig fails to build on imac g3.
-> 
->   CC      arch/powerpc/kernel/lparmap.s
->   AS      arch/powerpc/kernel/head_64.o
-> lparmap.c: Assembler messages:
-> lparmap.c:84: Error: file number 1 already allocated
-> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
-> make: *** [arch/powerpc/kernel] Blad 2
+Well, what are politics? Managing the way code gets into the kernel?
+That's important for sure, right? And what about thinking about the
+hacker culture? Nobody would object to preserving and securing that.
+But those are not just technical matters. Yet they require thought. If
+the kernel culture doesn't work, the code won't work. There is a
+delicate balance, and a key part of what Linus has been doing is
+preserving it. I think he must not ignore that there is always room
+for improvement, and moments like these (where a big 'fight' is going
+on, and there is a clear sense of urgency about the matter) are the
+perfect times for a good discussion, and possible change.
 
-hm, someone is working that, I think?
+Use it.
+
+
+Love,
+
+Jos
+
+
+
+* Disclaimer:
+- I'm no kernel hacker
+- actually I help at the KDE project in the area of marketing...
+- yet, i have followed Con and his stuff for years
+- and I do research in the area of promoting innovation in
+organisations at a Dutch research institute, which is why I so
+annoyingly think I might have something to say.
