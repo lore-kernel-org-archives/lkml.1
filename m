@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764114AbXHAMWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764225AbXHAMXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764114AbXHAMWg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXHAMW2
+	id S1764225AbXHAMXe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761429AbXHAMXY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:22:28 -0400
-Received: from mail.windriver.com ([147.11.1.11]:65205 "EHLO mail.wrs.com"
+	Wed, 1 Aug 2007 08:23:24 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39428 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbXHAMW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:22:28 -0400
-Message-ID: <46B07AF8.9080406@windriver.com>
-Date: Wed, 01 Aug 2007 07:22:16 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>,
+	id S1761166AbXHAMXX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:23:23 -0400
+Date: Wed, 1 Aug 2007 14:23:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.23-rc1-mm2
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <20070801062501.GB7581@linux-sh.org>
-In-Reply-To: <20070801062501.GB7581@linux-sh.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Aug 2007 12:22:15.0626 (UTC) FILETIME=[98903AA0:01C7D436]
+Subject: Re: CFS review
+Message-ID: <20070801122308.GA25429@elte.hu>
+References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random> <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801112229.GA11710@elte.hu> <Pine.LNX.4.64.0708011346510.1817@scrub.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011346510.1817@scrub.home>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> On Tue, Jul 31, 2007 at 11:09:32PM -0700, Andrew Morton wrote:
->   
->> - Is anyone testing the kgdb code in here?
->>
->>     
-> Testing, yes. Succeeding, no. It's utterly hosed on SH in its present
-> condition at least. Presumably it's been tested on at least one platform
-> with some measure of success, but it's certainly not mine ;-)
->
-> I'll get you some patches that fix it up the rest of the way for SH
-> platforms in the next couple days. There's nothing too rough, though,
-> mostly serial driver fallout and changes in the current stub that aren't
-> reflected in the 'new' one.
->   
-Sh "not working" is a side effect of the fact that there is no one 
-maintaining the sh kgdb work.  As an example, the sh-lite.patch which is 
-part of the kgdb git tree explicitly says that the sh-sci.c needs to be 
-"re-ported".  There were many changes since the 2.6.17 code base that 
-KGDB was upreved from and the fact of the matter is that I have no sh 
-hardware, tool chain, or means to support it.   I will happily merge in 
-the pieces to fix up the sh kgdb arch specifics.  The same was true of 
-IA64 at first (meaning it did not work), but Bob Pico submitted some 
-further patches and IA64 is should compile build and work with kgdb.
 
-In the development branch, the kgdb core is compiled and test and should 
-work for the archs i386, x86_64, ppc, powerpc (32 & 64), mips (32 & 64) 
-and arm.
+* Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Jason.
+> On Wed, 1 Aug 2007, Ingo Molnar wrote:
+> 
+> > > [...] e.g. in this example there are three tasks that run only for 
+> > > about 1ms every 3ms, but they get far more time than should have 
+> > > gotten fairly:
+> > > 
+> > >  4544 roman     20   0  1796  520  432 S 32.1  0.4   0:21.08 lt
+> > >  4545 roman     20   0  1796  344  256 R 32.1  0.3   0:21.07 lt
+> > >  4546 roman     20   0  1796  344  256 R 31.7  0.3   0:21.07 lt
+> > >  4547 roman     20   0  1532  272  216 R  3.3  0.2   0:01.94 l
+> > 
+> > Mike and me have managed to reproduce similarly looking 'top' output, 
+> > but it takes some effort: we had to deliberately run a non-TSC 
+> > sched_clock(), CONFIG_HZ=100, !CONFIG_NO_HZ and !CONFIG_HIGH_RES_TIMERS.
+> 
+> I used my old laptop for these tests, where tsc is indeed disabled due 
+> to instability. Otherwise the kernel was configured with 
+> CONFIG_HZ=1000.
+
+please send all the debug info and source code we asked for - thanks!
+
+	Ingo
