@@ -1,100 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763984AbXHABMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764546AbXHABNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763984AbXHABMj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Jul 2007 21:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762100AbXHABMW
+	id S1764546AbXHABNG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Jul 2007 21:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762074AbXHABMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Jul 2007 21:12:22 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:2265 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761026AbXHABMU (ORCPT
+	Tue, 31 Jul 2007 21:12:52 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:14700 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761306AbXHABMu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Jul 2007 21:12:20 -0400
-Date: Tue, 31 Jul 2007 21:08:25 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: [GIT PATCH] hwmon updates against ~v2.6.23-rc1-git8
-Message-ID: <20070801010825.GC3747@jupiter.solarsys.private>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 31 Jul 2007 21:12:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=bUEvThMN+cH/kF9Y0Ih6lb5t+3jwdtF+wosXhEJ6YjjjptAtcQBN6uH9Lcg7rmLdgu4arSHZp8XVLUZbY7n6dLSzOzYoH7QlVe1gIFB1nMpm6BJpYHSsB2bFEkhiG41Ruul6urQXCR7TuZ/GZLAdGUEUD0wDIRJ1ZLTHYNxx3xw=
+Message-ID: <43e72e890707311812t3bf67684p6af4d0c21d44608e@mail.gmail.com>
+Date: Tue, 31 Jul 2007 21:12:49 -0400
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: "Mariusz Kozlowski" <m.kozlowski@tuxland.pl>
+Subject: Re: [PATCH 60] drivers/net/wireless/prism54/oid_mgt.c: kmalloc + memset conversion to kzalloc
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-wireless@vger.kernel.org
+In-Reply-To: <200707312334.51067.m.kozlowski@tuxland.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.4.2.3i
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+	 <200707312334.51067.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus:
+On 7/31/07, Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
+> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Please pull from:
-	git://lm-sensors.org/kernel/mhoffman/hwmon-2.6.git release
+Acked-by: Luis R. Rodriguez <mcgrof@gmail.com>
 
-You'll get a handful of cleanups and bugfixes (including a couple that fix
-regressions since 2.6.22).  The Macbook gets some additional sensors, and
-there's also one brand new driver, which has spent some time in the latest -mm.
-
-This patch series was also posted to the lm-sensors list yesterday:
-http://lists.lm-sensors.org/pipermail/lm-sensors/2007-July/020730.html
-
-Thanks & regards,
-
- Documentation/hwmon/adm1031  |    4 +-
- Documentation/hwmon/thmc50   |   74 +++++++
- drivers/hwmon/Kconfig        |   10 +
- drivers/hwmon/Makefile       |    1 +
- drivers/hwmon/abituguru3.c   |    5 +-
- drivers/hwmon/ams/ams-core.c |    1 -
- drivers/hwmon/applesmc.c     |   14 +-
- drivers/hwmon/dme1737.c      |    2 +-
- drivers/hwmon/fscher.c       |    4 +-
- drivers/hwmon/it87.c         |    2 +-
- drivers/hwmon/lm78.c         |    2 +-
- drivers/hwmon/lm90.c         |    2 +-
- drivers/hwmon/lm93.c         |    2 +-
- drivers/hwmon/pc87360.c      |    2 +-
- drivers/hwmon/sis5595.c      |    2 +-
- drivers/hwmon/smsc47m1.c     |    2 +-
- drivers/hwmon/thmc50.c       |  440 ++++++++++++++++++++++++++++++++++++++++++
- drivers/hwmon/via686a.c      |    2 +-
- drivers/hwmon/vt8231.c       |    4 +-
- drivers/hwmon/w83627hf.c     |    2 +-
- 20 files changed, 554 insertions(+), 23 deletions(-)
- create mode 100644 Documentation/hwmon/thmc50
- create mode 100644 drivers/hwmon/thmc50.c
-
-Adrian Bunk (1):
-      hwmon: make abituguru3_read_increment_offset() static
-
-Guillaume Chazarain (1):
-      hwmon: Fix regression caused by typo in lm90.c
-
-Hans de Goede (3):
-      hwmon: fix lm78 detection regression
-      hwmon: fscher control update bugfix
-      hwmon: fscher read control bugfix
-
-Hans-Jürgen Koch (1):
-      hwmon: fix array overruns in lm93.c
-
-Jean Delvare (2):
-      hwmon: Add missing __devexit tags in various drivers
-      hwmon: (adm1031) Fix broken links in documentation
-
-Jesper Juhl (1):
-      hwmon: clean up duplicate includes
-
-Juerg Haefliger (1):
-      hwmon: fix dme1737 temp fault attribute
-
-Krzysztof Helt (1):
-      hwmon: add support for THMC50 and ADM1022
-
-Martin Szulecki (1):
-      hwmon: (applesmc) add temperature sensors set for Macbook
-
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+>  drivers/net/wireless/prism54/oid_mgt.c | 25377 -> 25297 (-80 bytes)
+>  drivers/net/wireless/prism54/oid_mgt.o | 128460 -> 128284 (-176 bytes)
+>
+>  drivers/net/wireless/prism54/oid_mgt.c |    4 +---
+>  1 file changed, 1 insertion(+), 3 deletions(-)
+>
+> --- linux-2.6.23-rc1-mm1-a/drivers/net/wireless/prism54/oid_mgt.c       2007-07-26 13:07:43.000000000 +0200
+> +++ linux-2.6.23-rc1-mm1-b/drivers/net/wireless/prism54/oid_mgt.c       2007-07-30 00:27:44.000000000 +0200
+> @@ -244,13 +244,11 @@ mgt_init(islpci_private *priv)
+>         /* Alloc the cache */
+>         for (i = 0; i < OID_NUM_LAST; i++) {
+>                 if (isl_oid[i].flags & OID_FLAG_CACHED) {
+> -                       priv->mib[i] = kmalloc(isl_oid[i].size *
+> +                       priv->mib[i] = kzalloc(isl_oid[i].size *
+>                                                (isl_oid[i].range + 1),
+>                                                GFP_KERNEL);
+>                         if (!priv->mib[i])
+>                                 return -ENOMEM;
+> -                       memset(priv->mib[i], 0,
+> -                              isl_oid[i].size * (isl_oid[i].range + 1));
+>                 } else
+>                         priv->mib[i] = NULL;
+>         }
+>
