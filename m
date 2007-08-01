@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755181AbXHAXqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbXHAXrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755181AbXHAXqr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 19:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbXHAXqi
+	id S1755956AbXHAXrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 19:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbXHAXrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 19:46:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57171 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751596AbXHAXqi (ORCPT
+	Wed, 1 Aug 2007 19:47:12 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:57744 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753199AbXHAXrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 19:46:38 -0400
-Date: Wed, 1 Aug 2007 16:45:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Andi K <ak@suse.de>, arjan <arjan@linux.intel.com>,
-       Ashok Raj <ashok.raj@intel.com>, Suresh B <suresh.b.siddha@intel.com>
-Subject: Re: [patch -mm][Intel-IOMMU] Optimize sg map/unmap calls
-Message-Id: <20070801164554.5d2d157a.akpm@linux-foundation.org>
-In-Reply-To: <20070801200623.GA20780@linux-os.sc.intel.com>
-References: <20070801200623.GA20780@linux-os.sc.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 1 Aug 2007 19:47:11 -0400
+Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ck@vds.kolivas.org
+In-Reply-To: <20070731085713.GA15136@elte.hu>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu>
+	 <1185839164.27166.7.camel@localhost> <1185863461.3092.4.camel@twins>
+	 <20070731085713.GA15136@elte.hu>
+Content-Type: text/plain
+Date: Thu, 02 Aug 2007 01:43:47 +0200
+Message-Id: <1186011827.2482.1.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 13:06:23 -0700
-"Keshavamurthy, Anil S" <anil.s.keshavamurthy@intel.com> wrote:
+On Tue, 2007-07-31 at 10:57 +0200, Ingo Molnar wrote:
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Tue, 2007-07-31 at 01:46 +0200, Kasper Sandberg wrote:
+> > 
+> > > could perhaps be filesystem related, i have my maildir(extremely 
+> > > large) on reiserfs, and /home on xfs. what my mail client will do is 
+> > > download mail, spamasassin it(loading database from home), then it 
+> > > will put to imap server placing it on reiserfs, and then a "local" 
+> > > copy in my home.
+> > 
+> > Ooh, do you perchance have PREEMPT_BKL=y?
+> > 
 
-> +/* Computes the padding size required, to make the
-> + * the start address naturally aligned on its size
-> + */
-> +static int
-> +iova_get_pad_size(int size, unsigned int limit_pfn)
-> +{
-> +	unsigned int pad_size = 0;
-> +	unsigned int order = ilog2(size);
-> +
-> +	if (order)
-> +		pad_size = (limit_pfn + 1) % (1 << order);
-> +
-> +	return pad_size;
-> +}
+sorry late response.
 
-This isn't obviously doing the right thing for non-power-of-2 inputs.
-ilog2() rounds down...
+nope, i run totally without preemption, i did however test with, it
+seemed to not matter in terms of smoothness, but reduced the throughput
+slightly.
 
-Please check that this, and all the other ilog2()s which have been added
-are doing the right thing if they can be presented with non-power-of-2
-inputs?
+> > If so, try on another filesystem than reiserfs (or disable 
+> > PREEMPT_BKL, but that is obviously the lesser of the two choices).
+> > 
+> > Ingo traced a 1+ second latency at my end to BKL priority inversion 
+> > between tty and reiserfs.
+> 
+> ah, indeed, that makes quite a bit of sense. Almost all of the Reiser3 
+> code runs under the BKL, and the only other major kernel infrastructure 
+> that has BKL dependencies is the TTY code. Kasper, as a debugging 
+> matter, could you try to move that spamassassin workload off into a 
+> non-Reiser3 filesystem and/or disable PREEMPT_BKL? If that makes a 
+> noticeable difference (for the better ;) then we can continue figuring 
+> out what's happening exactly.
+
+the pricess is as this:
+mail client fetches mail
+mail client invokes spamasassin
+ if spam -> spam
+ else filtering
+if it matches certain filters, it gets put into my imap server, which is
+reiserfs.
+
+
+> 	Ingo
+
