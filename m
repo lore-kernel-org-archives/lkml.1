@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765779AbXHAPof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764958AbXHAPp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765779AbXHAPof (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764113AbXHAPoX
+	id S1764958AbXHAPp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755159AbXHAPpH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:44:23 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:57260 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbXHAPoW (ORCPT
+	Wed, 1 Aug 2007 11:45:07 -0400
+Received: from fk-out-0910.google.com ([209.85.128.187]:60062 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756354AbXHAPpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:44:22 -0400
+	Wed, 1 Aug 2007 11:45:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=dYVh7aC8CJLWUsupjRJRSK1MUT56YhDsR9/Sp+dnuIS8ZjUm0bj9GfpT3rJi7Q8lDI/e5H/PN9dhUGWwutGgsibP/VegBr9cjHHz2+XlYdLVcNkM2MOUlxyg1Z03v4czk534iPzrXF0os/1vgm4ktPespb6kFqnKf7b8+1DDiN8=
-Message-ID: <46B0AA38.3050308@googlemail.com>
-Date: Wed, 01 Aug 2007 17:43:52 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gojl85MHFOD7DSZ/AEwXoxS0YkFEDjoltDUUpAdl9PGeRbjzW7h8J/Ra1EHKscwrDaHjnxqTBkozdVMV10bWMb4fv9kqmAXZexZ65b0EOhpW7Fk/8linS0OwMdv6boL9zdHWCNEFxl06uFI99EXraToY2VHLSQWGOOL68xI6YSE=
+Message-ID: <29495f1d0708010845x446f7823qcfe2c5244b604078@mail.gmail.com>
+Date: Wed, 1 Aug 2007 08:45:00 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
+Cc: "Zan Lynx" <zlynx@acm.org>, "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070731150245.5932b763.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Coding style fix drivers/serial/icom.h
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Disposition: inline
+References: <1185918261.6981.13.camel@localhost>
+	 <20070731150245.5932b763.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 7/31/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Tue, 31 Jul 2007 15:44:21 -0600 Zan Lynx wrote:
+>
+> > I was playing with huge pages and libhugetlbfs.  Small programs like
+> > "ls" work fine.  I tried running Evolution through libhugetlbfs and the
+> > system slowly stops running.  One interesting thing is the "ps" command,
+> > it gets stuck like this:
+>
+> Do you mean 2.6.22-rc1-mm1 or 2.6.23-rc1-mm1?
+>
+> There was a hugepage problem fixed very recently, in 2.6.23-rc1 IIRC.
 
-Coding style fix
+Actually fixed just after 2.6.23-rc1:
 
-Regards,
-Michal
+git describe 5ab3ee7b1cd5c91eb2272764f9d7d1fe4749681e
+v2.6.23-rc1-14-g5ab3ee7
 
---
-LOG
-http://www.stardust.webpages.pl/log/
-
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-mm-clean/drivers/serial/icom.h	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/drivers/serial/icom.h	2007-08-01 17:41:23.000000000 +0200
-@@ -20,7 +20,7 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-  */
- 
--#include<linux/serial_core.h>
-+#include <linux/serial_core.h>
- 
- #define BAUD_TABLE_LIMIT	((sizeof(icom_acfg_baud)/sizeof(int)) - 1)
- static int icom_acfg_baud[] = {
+Thanks,
+Nish
