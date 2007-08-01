@@ -1,74 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763857AbXHATdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763023AbXHAThH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763857AbXHATdu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760155AbXHATdk
+	id S1763023AbXHAThH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:37:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759326AbXHATgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:33:40 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34290 "EHLO
+	Wed, 1 Aug 2007 15:36:54 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:34411 "EHLO
 	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760112AbXHATdi (ORCPT
+	with ESMTP id S1757755AbXHATgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:33:38 -0400
-Date: Wed, 1 Aug 2007 15:33:30 -0400
+	Wed, 1 Aug 2007 15:36:53 -0400
+Date: Wed, 1 Aug 2007 15:36:49 -0400
 From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <20070731170012.GN5101@hasse.suse.de> <20070731171159.GA27234@filer.fsl.cs.sunysb.edu> <1185981810.18007.14.camel@kleikamp.austin.ibm.com> <20070801184405.GA18405@filer.fsl.cs.sunysb.edu> <1185995431.18007.24.camel@kleikamp.austin.ibm.com>
+To: guilt@josefsipek.net
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org, brandon@ifup.org
+Subject: [ANNOUNCE] Guilt v0.27
+Message-ID: <20070801193649.GB20928@filer.fsl.cs.sunysb.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1185995431.18007.24.camel@kleikamp.austin.ibm.com>
 User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 02:10:31PM -0500, Dave Kleikamp wrote:
-> On Wed, 2007-08-01 at 14:44 -0400, Josef Sipek wrote:
-> > Alright not the greatest of examples, there is something to be said about
-> > symmetry, so...let me try again :)
-> > 
-> > /a/
-> > /b/bar		(whiteout for bar)
-> > /c/foo/qwerty
-> > 
-> > Now, let's mount a union of {a,b,c}, and we'll see:
-> > 
-> > $ find /u
-> > /u
-> > /u/foo
-> > /u/foo/qwerty
-> > $ mv /u/foo /u/bar
-> > 
-> > Now what? How do you rename? Do you rename in the same branch (assuming it
-> > is rw)?
-> 
-> Er, no.  According to Documentation/filesystems/union-mounts.txt, "only
-> the topmost layer of the mount stack can be altered".
- 
-This brings up an very interesting (but painful) question...which makes more
-sense? Allowing the modifications in only the top-most branch, or any branch
-(given the user allows it at mount-time)?
+Guilt v0.27 is available for download (once it mirrors out on kernel.org).
 
-This is really question to the community at large, not just you, Dave :)
+Guilt (Git Quilt) is a series of bash scripts which add a Mercurial
+queues-like functionality and interface to git.
 
-> > 1) "cp -r" the entire subtree being renamed to highest-priority branch, and
-> > rename there (you might have to recreate a series of directories to have a
-> > place to "cp" to...so you got "cp -r" _AND_ "mkdir -p"-like code in the VFS!
-> > 1/2 a :) )
-> 
-> I think this is the only alternative, given the design.
- 
-Right. Doing something like this at the filesystem level (as we do in
-unionfs) seems less painful - filesystems are places full of all sorts of
-nefarious activities to begin with. Having it in the VFS seems...even
-uglier.
+Tarballs:
+http://www.kernel.org/pub/linux/kernel/people/jsipek/guilt/
 
-Josef 'Jeff' Sipek.
+Git repo:
+git://git.kernel.org/pub/scm/linux/kernel/git/jsipek/guilt.git
 
--- 
-*NOTE: This message is ROT-13 encrypted twice for extra protection*
+
+Alright, I'm trying to get back to the 2-week release schedule, so here's
+v0.27!
+
+There has been a number of changes in those two weeks, Out of the 20
+commits, about half of them are bug fixes of all sorts - mostly preventive
+(does anyone actually use whitespace in their branch names?).
+
+The major changes include some performance speedups. Little bit thought
+(there's more to come!) went into making guilt-push faster, 0.27 is about 8%
+faster than 0.26 on push. The other major thing is the infrastructure (which
+turned out to be really simple) for hooks. Currently, only one hook is
+supported (guilt-delete) but that'll change sooner or later.
+
+And the last major change under the hood: guilt now checks and expects git
+1.5.
+
+Other new features:
+	guilt-series -e	to edit the series file by hand
+	guilt-header -e to edit a patch's header
+	guilt-refresh --diffstat to include a diffstat in the patch file
+
+As always, patches, and other feedback is welcome.
+
+Josef "Jeff" Sipek.
+
+------------
+Changes since v0.26:
+
+Dmitry Monakhov (2):
+      Fix guilt-import patch naming
+      Add series editor support
+
+Eric Lesh (4):
+      Handles slashes in branch names
+      Makefile: don't install *~ files
+      guilt-rebase: Make fast-forward work
+      guilt-header: Add -e option for editing
+
+Josef 'Jeff' Sipek (14):
+      refresh: Added --diffstat option
+      init: Be careful with whitespace in branch names
+      guilt: check git version and bail if version is not supported
+      guilt: Create infrastructure for guilt hooks
+      delete: Added delete-patch hook
+      pop: Check if no patches are applied
+      guilt: Do not scan entire patch file when not necessary
+      guilt: git-apply --index can be used to update the index
+      guilt: Remove unnecessary reading of the status file
+      push_patch: propagate return code to caller
+      rebase: warn the user that rebase is experimental
+      Documentation: document series -e option
+      header: rewrite option parsing and patch searching
+      Guilt v0.27
+
+Michael Halcrow (1):
+      import-commit: Retry with a different patch name if necessary
