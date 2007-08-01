@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934824AbXHAPSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934915AbXHAPSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934824AbXHAPSY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934616AbXHAPR7
+	id S934915AbXHAPSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934771AbXHAPSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:17:59 -0400
-Received: from qb-out-0506.google.com ([72.14.204.239]:43414 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934567AbXHAPR6 (ORCPT
+	Wed, 1 Aug 2007 11:18:17 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50427 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934762AbXHAPSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:17:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=sqHNaiwiO/eNCJKT0XUkIJ1zw6YbTSIpB31GSH1dblXFBz+JYeOFBRNP/H5Jy2fzDnulbLKOOpTII1QImrL7xg+7erpSYkMIO071G9xKUZLPWd/eC2o0BVFrCBsZov+9qbpdaUsO5lAbsQazCXvp7EOqGJAwaiE+F/ILAMBG03E=
-Message-ID: <46B0A41E.50707@gmail.com>
-Date: Thu, 02 Aug 2007 00:17:50 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: NeilBrown <neilb@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 007 of 35] Drop 'size' argument from bio_endio and bi_end_io.
-References: <20070731112539.22428.patches@notabene> <1070731021622.25177@suse.de>
-In-Reply-To: <1070731021622.25177@suse.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 11:18:15 -0400
+Date: Wed, 1 Aug 2007 16:18:12 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Coding style fix drivers/scsi/aha1542.c
+Message-ID: <20070801151812.GA17601@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-scsi@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <46B0A30A.8090500@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B0A30A.8090500@googlemail.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NeilBrown wrote:
-> As bi_end_io is only called once when the reqeust is compelte,
-> the 'size' argument is now redundant.  Remove it.
+On Wed, Aug 01, 2007 at 05:13:14PM +0200, Michal Piotrowski wrote:
+> Hi,
 > 
-> Now there is no need for bio_endio to subtract the size completed
-> from bi_size.  So don't do that either.
+> Coding style fix
 > 
-> While we are at it, change bi_end_io to return void.
-> 
-> Signed-off-by: Neil Brown <neilb@suse.de>
-> 
-> @@ -538,14 +538,10 @@ static int flush_dry_bio_endio(struct bi
->  
->  	/* Reset bio */
->  	set_bit(BIO_UPTODATE, &bio->bi_flags);
-> -	bio->bi_size = bytes;
-> -	bio->bi_sector -= (bytes >> 9);
-> -
-> -	return 0;
->  }
+> Regards,
+> Michal
+>
 
-Please adjust comment together.  Just keeping /* Reset bio */ and
-killing the comment above it should be enough.  Other than that, nice
-clean up!
+I think that include should just go.  There is no reason at all for
+a scsi driver to include stat.h
 
-Thanks.
-
--- 
-tejun
