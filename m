@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932361AbXHAPpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763938AbXHAPre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932361AbXHAPpx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762516AbXHAPpW
+	id S1763938AbXHAPre (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXHAPrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:45:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35814 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762306AbXHAPpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:45:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Subject: Re: pm_trace displays the wrong time from the RTC
-Date: Wed, 1 Aug 2007 17:54:25 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-References: <46AFA78A.9010904@redhat.com> <200708011747.37932.rjw@sisk.pl>
-In-Reply-To: <200708011747.37932.rjw@sisk.pl>
+	Wed, 1 Aug 2007 11:47:25 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:60519 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752968AbXHAPrY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:47:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NzqVPHORehqbs3vtCB+aSpfBZ91KiTSbClvikIzY15G7ChmCP7PEOg2N4gezw4qM9wpfQqjhvANKAmH+abIJPyDrScxbbtXNMP7drUq7LfkVfDwjQtNU3x+XxUG8NqgtMerpnlZqLdXjVWeiBv+yvlYLvMe4eNq2eH/CMng6d0M=
+Message-ID: <29495f1d0708010847obc4a68alb99f7d04f7515159@mail.gmail.com>
+Date: Wed, 1 Aug 2007 08:47:22 -0700
+From: "Nish Aravamudan" <nish.aravamudan@gmail.com>
+To: "Zan Lynx" <zlynx@acm.org>
+Subject: Re: 2.6.22-rc1-mm1 huge pages VM freeze (maybe?)
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1185919297.6981.16.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708011754.25903.rjw@sisk.pl>
+References: <1185918261.6981.13.camel@localhost>
+	 <20070731150245.5932b763.randy.dunlap@oracle.com>
+	 <1185919297.6981.16.camel@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 1 August 2007 17:47, Rafael J. Wysocki wrote:
-> Sorry for slow response, I've just noticed this thread.
-> 
-> On Tuesday, 31 July 2007 23:20, Chuck Ebbert wrote:
-> > When resuming, systems print this when booted on 07/31/07:
-> > 
-> > Date: 06/31/107
-> > 
-> > /drivers/base/power/trace.c::read_magic_time():
-> > 114	get_rtc_time(&time);
-> > 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
-> > 116		time.tm_hour, time.tm_min, time.tm_sec,
-> > 117		time.tm_mon, time.tm_mday, time.tm_year);
-> > 
-> > include/asm-generic/rtc.h:
-> > 102         /*
-> > 103          * Account for differences between how the RTC uses the values
-> > 104          * and how they are defined in a struct rtc_time;
-> > 105          */
-> > 106         if (time->tm_year <= 69)
-> > 107                 time->tm_year += 100;
-> > 108 
-> > 109         time->tm_mon--;
-> 
-> Do you mean that systems display bad date after resuming if PM_TRACE is set,
-> even if /sys/power/pm_trace contains 1 ?
+On 7/31/07, Zan Lynx <zlynx@acm.org> wrote:
+> On Tue, 2007-07-31 at 15:02 -0700, Randy Dunlap wrote:
+> > On Tue, 31 Jul 2007 15:44:21 -0600 Zan Lynx wrote:
+> >
+> > > I was playing with huge pages and libhugetlbfs.  Small programs like
+> > > "ls" work fine.  I tried running Evolution through libhugetlbfs and the
+> > > system slowly stops running.  One interesting thing is the "ps" command,
+> > > it gets stuck like this:
+> >
+> > Do you mean 2.6.22-rc1-mm1 or 2.6.23-rc1-mm1?
+>
+> D'oh!  I mean 2.6.23-rc1-mm1, the 22 was a typo.  Cut & paste to be
+> sure:
+> Linux zephyr 2.6.23-rc1-mm1 #1 SMP PREEMPT Wed Jul 25 17:33:04 MDT 2007
+> x86_64 AMD Athlon(tm) 64 Processor 3400+ AuthenticAMD GNU/Linux
 
-s/1/0/ (sorry)
+Hrm -- if you kill Evolution does the system come back? Or is it
+unkillable/unusable. I guess you were able to run ps at the same time.
+
+What is Evolution doing (sysrq+t)? For that matter, what was the
+output from libhuge?
+
+Thanks,
+Nish
