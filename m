@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765107AbXHAMdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765248AbXHAMfR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765107AbXHAMdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761972AbXHAMdP
+	id S1765248AbXHAMfR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:35:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763788AbXHAMfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:33:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:40912 "EHLO mx1.suse.de"
+	Wed, 1 Aug 2007 08:35:05 -0400
+Received: from neon.samage.net ([85.17.153.66]:33463 "EHLO neon.samage.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761963AbXHAMdO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:33:14 -0400
-From: Andi Kleen <ak@novell.com>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: linux-kernel@vger.kernel.org
-Subject: [RFC] [PATCH] Deprecate a.out ELF interpreters
-Date: Wed, 1 Aug 2007 14:33:09 +0200
-User-Agent: KMail/1.9.6
+	id S1762233AbXHAMfE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:35:04 -0400
+Message-ID: <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>
+In-Reply-To: <46B06815.10200@gmail.com>
+References: <1185827130.26459.16.camel@xtower.fri>
+    <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>
+    <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>
+    <46B06815.10200@gmail.com>
+Date: Wed, 1 Aug 2007 14:34:53 +0200 (CEST)
+Subject: Re: Linux Kernel cfs scheduler and xorg kbd
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Rene Herman" <rene.herman@gmail.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "CK Mailinglist" <ck@vds.kolivas.org>, teresa@kvitka.net,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708011433.09433.ak@novell.com>
+Content-Type: text/plain;charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: a350ae07b5350cdad28cef237d2e7179
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, August 1, 2007 13:01, Rene Herman wrote:
+> On 08/01/2007 01:31 PM, Andi Kleen wrote:
+>
+>> Ingo Molnar <mingo@elte.hu> writes:
+>
+>>> another reaction below in this thread reported kbd problems in vanilla
+>>> 2.6.22.1 as well. What is the X versions, etc.? Does the problem go away
+>>> if the X kbd driver selection is tweaked to a simpler model, say:
+>>
+>> Or perhaps just test with CFS reverted? It really sounds more like something
+>> independent from the scheduler. Perhaps someone could put a CFS-revert-for-testing patch
+>> on ftp somewhere. It's only a few git changesets so shouldn't be too difficult to
+>> do.
+>
+> Teresa was already using 2.6.22.1, with CFS (v19.1) patched in, so reverting
+> that would be a matter of patching it out again. She said she wasn't seeing
+> trouble on other kernels though.
+>
+> I was the one who also saw keyboard trouble on 2.6.22.1 without CFS by the
+> way -- and haven't (yet) seen any anymore since patching _in_ CFS v19.1...
 
-[apologies for the empty mail earlier; wetware error]
+Could the people who had or have keyboard problems try out Dmitry's
+input locking patches, and see if those help: http://lkml.org/lkml/2007/7/24/17
+And if it does, report it to him, either there or here after CCing him.
 
-RFC: Deprecate a.out ELF interpreter support
+Greetings,
 
-The Linux ELF loader is quite complicated and messy code (that could
-probably need a rewrite, but that's a different chapter). One particular
-messy part in it is the support for non ELF a.out ld.sos. This 
-was originally added to make transition from a.out to ELF easier
-because an a.out ELF ld.so could be still build using an older
-a.out toolkit. But by now that should be fully obsolete and removing
-it would clean up binfmt_elf.c up a bit.
-
-I propose to deprecate this support and remove for 2.6.25.
-
-Drawback is that someone still runs their system with a.out ld.so
-they would need to update the ld.so when updating to a new kernel.
-
-This patch just adds an entry to the deprecation file and a printk
-warning users.
-
-Comments?
-
-Signed-off-by: Andi Kleen <ak@suse.de>
-
-Index: linux-2.6.23-rc1-misc/Documentation/feature-removal-schedule.txt
-===================================================================
---- linux-2.6.23-rc1-misc.orig/Documentation/feature-removal-schedule.txt
-+++ linux-2.6.23-rc1-misc/Documentation/feature-removal-schedule.txt
-@@ -306,3 +306,12 @@ Why:	All mthca hardware also supports MS
- Who:	Roland Dreier <rolandd@cisco.com>
- 
- ---------------------------
-+
-+What:  a.out interpreter support for ELF executables
-+When:  2.6.25
-+Files: fs/binfmt_elf.c
-+Why:   Using a.out interpreters for ELF executables was a feature for
-+       transition from a.out to ELF. But now it is unlikely to be still
-+       needed anymore and removing it would simplify the hairy ELF
-+       loader code.
-+Who:   Andi Kleen <ak@suse.de>
-Index: linux-2.6.23-rc1-misc/fs/binfmt_elf.c
-===================================================================
---- linux-2.6.23-rc1-misc.orig/fs/binfmt_elf.c
-+++ linux-2.6.23-rc1-misc/fs/binfmt_elf.c
-@@ -730,6 +730,7 @@ static int load_elf_binary(struct linux_
- 
- 	/* Some simple consistency checks for the interpreter */
- 	if (elf_interpreter) {
-+		static int warn;
- 		interpreter_type = INTERPRETER_ELF | INTERPRETER_AOUT;
- 
- 		/* Now figure out which format our binary is */
-@@ -741,6 +742,12 @@ static int load_elf_binary(struct linux_
- 		if (memcmp(loc->interp_elf_ex.e_ident, ELFMAG, SELFMAG) != 0)
- 			interpreter_type &= ~INTERPRETER_ELF;
- 
-+		if (interpreter_type == INTERPRETER_AOUT && warn < 10) {
-+			printk(KERN_WARNING "a.out ELF interpreter %s is "
-+	"deprecated and will not be supported anymore\n", elf_interpreter);
-+			warn++;
-+		}
-+
- 		retval = -ELIBBAD;
- 		if (!interpreter_type)
- 			goto out_free_dentry;
+Indan
 
 
