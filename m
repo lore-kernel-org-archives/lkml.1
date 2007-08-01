@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754571AbXHAX5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756384AbXHBAAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754571AbXHAX5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 19:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbXHAX5n
+	id S1756384AbXHBAAd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 20:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbXHBAAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 19:57:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38653 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752586AbXHAX5m (ORCPT
+	Wed, 1 Aug 2007 20:00:25 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:46729 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753267AbXHBAAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 19:57:42 -0400
-Date: Wed, 1 Aug 2007 16:57:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Thomas Renninger <trenn@suse.de>
-Subject: Re: cpufreq.c:(.text+0xaf178): undefined reference to
- `cpufreq_gov_performance'
-Message-Id: <20070801165704.a26961b7.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com>
-References: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Wed, 1 Aug 2007 20:00:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=izK1JV5W3PS3M/y3UxfI7UJxF3nPWsHWZ6zzvoMALc+rqfV+fti2tOwzNM3jmqWVJqhYHOaDBjIWuH5/PeLrerKjZ4YSXosft8tN6A68DmPlC9B0zvR5314ifmzEqpVl6/Jf05I6SbmXulQmUMdlZidsJS6iAXYoFVkKWGhvGhk=
+Message-ID: <46B11E7A.4050908@googlemail.com>
+Date: Thu, 02 Aug 2007 01:59:54 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH -mm] linux-audit list is subscribers-only 
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 16:31:46 -0700
-"Miles Lane" <miles.lane@gmail.com> wrote:
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
->   LD      .tmp_vmlinux1
-> drivers/built-in.o: In function `__cpufreq_governor':
-> cpufreq.c:(.text+0xaf178): undefined reference to `cpufreq_gov_performance'
-> cpufreq.c:(.text+0xaf18a): undefined reference to `cpufreq_gov_performance'
-> make: *** [.tmp_vmlinux1] Error 1
+---
 
-One for Thomas, I expect.
+--- linux-2.6.23-rc1-mm/MAINTAINERS.orig	2007-08-02 01:51:40.000000000 +0200
++++ linux-2.6.23-rc1-mm/MAINTAINERS	2007-08-02 01:52:17.000000000 +0200
+@@ -672,7 +672,7 @@ S:	Maintained
+ AUDIT SUBSYSTEM
+ P:	David Woodhouse
+ M:	dwmw2@infradead.org
+-L:	linux-audit@redhat.com
++L:	linux-audit@redhat.com (subscribers-only)
+ W:	http://people.redhat.com/sgrubb/audit/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/dwmw2/audit-2.6.git
+ S:	Maintained
 
-> # Automatically generated make config: don't edit
-> # Linux kernel version: 2.6.23-rc1-mm2
-> # Wed Aug  1 15:46:12 2007
-
-<useful thanks.  But snipped>
