@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763501AbXHAJh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763547AbXHAJij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763501AbXHAJh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760049AbXHAJhW
+	id S1763547AbXHAJij (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXHAJib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:37:22 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:51613 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759423AbXHAJhV (ORCPT
+	Wed, 1 Aug 2007 05:38:31 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:47995 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752941AbXHAJi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:from:cc:content-type:mime-version:references:content-transfer-encoding:message-id:in-reply-to:user-agent;
-        b=qBVYOzPoDExLqgzy8mSN7QWhMkQOq8ADpRDNFib/0B2atVP+5eTbHwCYAKnf2daFnU9doGy28Ai/clQIYXgJ7fqp4t3KpBKgQqRGAlWLrr3nvva8G/nDm16c4fPncEVT/Zv1KQ0ClWp/MsBRutBJkbq0NUjEhYeir+WHF+Bfrzk=
-Date: Wed, 01 Aug 2007 11:37:06 +0200
-To: "Rene Herman" <rene.herman@gmail.com>, alan@lxorguk.ukuu.org.uk
-Subject: Re: Reboot hang FIXED
-From: kriko <kristjan.ugrin@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+	Wed, 1 Aug 2007 05:38:29 -0400
+Message-ID: <46B0549A.1010308@bull.net>
+Date: Wed, 01 Aug 2007 11:38:34 +0200
+From: Zoltan Menyhart <Zoltan.Menyhart@bull.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.3) Gecko/20040913
+X-Accept-Language: en-us, en, fr, hu
 MIME-Version: 1.0
-References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com> <op.twcrsx1yatcbto@linux.site> <46B038B5.2030702@gmail.com> <op.twdgw4xiatcbto@linux.site> <46B04896.5020606@gmail.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: David Mosberger-Tang <dmosberger@gmail.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-ia64@vger.kernel.org,
+       Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] flush icache before set_pte take6. [4/4] optimization
+ for cpus other than montecito
+References: <617E1C2C70743745A92448908E030B2A020E3B1C@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <617E1C2C70743745A92448908E030B2A020E3B1C@scsmsx411.amr.corp.intel.com>
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 01/08/2007 11:43:16,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 01/08/2007 11:43:18,
+	Serialize complete at 01/08/2007 11:43:18
 Content-Transfer-Encoding: 7bit
-Message-ID: <op.twdjn41aatcbto@linux.site>
-In-Reply-To: <46B04896.5020606@gmail.com>
-User-Agent: Opera Mail/9.22 (Linux)
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 08/01/2007 10:37 AM, kriko wrote:
->
->>>> using only new drivers works fine.
->>>
->>> ... oh well. I suppose it's not really worth it to try and debug that.  
->>> Cheers.
->>  I just want to add that my DVD drive is not detected when using new  
->> driver. So back to old one....
->
-> You shouldn't have dropped Alan from CC then... pata_amd, right?
->
-> Rene.
+Luck, Tony wrote:
+>>This seems crazy to me.  Flushing should occur according to the
+>>*architecture*, not model-by-model.  Even if we happen to get "lucky"
+>>on pre-Montecito CPUs, that doesn't justify such ugly hacks.  Or you
+>>really want to debug this *again* come next CPU?
+> 
+> 
+> Ditto.  The only reason we should ever have model specific checks should
+> be to work around model specific errata (e.g. the McKinley Errata #9 code
+> in patch.c).
 
-Sorry, yes its pata_amd.
+You do have model specific I cache semantics.
+Not taking it into account will oblige you to flush in vain for the models
+which do not require it. Why do you want to take this option?
 
-IBM drive is on Primary master (detected as /dev/sdc)
-DVD-ROM is on Secondary master (not detected)
 
--- 
-kriko
+Thanks,
+
+Zoltan
