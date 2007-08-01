@@ -1,116 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbXHAWBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbXHAWFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbXHAWBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 18:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752677AbXHAWBl
+	id S1755310AbXHAWFZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 18:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752971AbXHAWFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 18:01:41 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:41447 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752390AbXHAWBj (ORCPT
+	Wed, 1 Aug 2007 18:05:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38101 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752677AbXHAWFM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 18:01:39 -0400
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
-	workqueue infrastructure
-From: Gregory Haskins <ghaskins@novell.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070801213422.GA280@tv-sign.ru>
-References: <20070801002407.4973.54778.stgit@novell1.haskins.net>
-	 <1185940340.2636.97.camel@imap.mvista.com>
-	 <1185987663.12034.99.camel@twins> <20070801181253.GA90@tv-sign.ru>
-	 <1185992994.2636.142.camel@imap.mvista.com>
-	 <20070801201802.GA225@tv-sign.ru>
-	 <1186000468.2636.168.camel@imap.mvista.com>
-	 <20070801205053.GA263@tv-sign.ru>
-	 <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
-	 <20070801213422.GA280@tv-sign.ru>
+	Wed, 1 Aug 2007 18:05:12 -0400
+Subject: RE: [ck] Re: Linus 2.6.23-rc1 -- It does not matter who's
+	code	gets merged!
+From: Arjan van de Ven <arjan@infradead.org>
+To: Hua Zhong <hzhong@gmail.com>
+Cc: jos@mijnkamer.nl, "'Carlo Florendo'" <subscribermail@gmail.com>,
+       "'Roman Zippel'" <zippel@linux-m68k.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Michael Chang'" <thenewme91@gmail.com>,
+       "'Kasper Sandberg'" <lkml@metanurb.dk>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+In-Reply-To: <006b01c7d46b$6e356250$4aa026f0$@com>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org>
+	 <200707282003.45142.jos@mijnkamer.nl>
+	 <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org>
+	 <200707282128.39906.jos@mijnkamer.nl>
+	 <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0708010539230.1818@scrub.home> <46B01E3F.6050401@gmail.com>
+	 <005001c7d403$8d7601a0$a86204e0$@com>
+	 <1185951901.2754.12.camel@laptopd505.fenrus.org>
+	 <5c77e14b0708010114x49e5c468gd71a77f2aa8cb48f@mail.gmail.com>
+	 <1185976972.2754.21.camel@laptopd505.fenrus.org>
+	 <006b01c7d46b$6e356250$4aa026f0$@com>
 Content-Type: text/plain
-Date: Wed, 01 Aug 2007 17:59:58 -0400
-Message-Id: <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
+Organization: Intel International BV
+Date: Wed, 01 Aug 2007 15:04:28 -0700
+Message-Id: <1186005868.2705.3.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 01:34 +0400, Oleg Nesterov wrote:
-> On 08/01, Gregory Haskins wrote:
-> >
-> > On Thu, 2007-08-02 at 00:50 +0400, Oleg Nesterov wrote:
-> > > On 08/01, Daniel Walker wrote:
-> > > >
-> > > > It's translating priorities through the work queues, which doesn't seem
-> > > > to happen with the current implementation. A high priority, say
-> > > > SCHED_FIFO priority 99, task may have to wait for a nice -5 work queue
-> > > > to finish..
-> > > 
-> > > Why should that task wait?
+On Wed, 2007-08-01 at 11:40 -0700, Hua Zhong wrote:
+> > > And, from a standpoint of ONGOING, long-term innovation: what matters
+> > > is that brilliant, new ideas get rewarded one way or another.
 > > 
-> > I assume "that task" = the RT99 task?  If so, that is precisely the
-> > question.  It shouldn't wait.  ;)  With mainline, it is simply queued
-> > with every other request.  There could be an RT40, and a SCHED_NORMAL in
-> > front of it in the queue that will get processed first.  In addition,
-> > the system could suffer from a priority inversion if some unrelated but
-> > lower priority task (say RT98) was blocking the workqueue thread from
-> > making forward progress on the nice -5 job. 
-> > 
-> > To clarify: when a design utilizes a singlethread per workqueue (such as
-> > in both mainline and this patch), the RT99 will always have to wait
-> > behind any already dispatched jobs.
+> > and in this case, the reward is that the idea got used and credit was
+> > given....
 > 
-> It is not that "RT99 will always have to wait". But yes, the work_struct
-> queued by RT99 has to wait.
+> You mean, when Ingo announced CFS he mentioned Con's name?
 
-Agreed.  We are talking only within the scope of workqueues here.
+and put his name in the code too
 
 
-> > 1) The RT99 task would move ahead in the queue of anything else that was
-> > also scheduled on the workqueue that is < RT99.
-> 
-> this itself is wrong, breaks flush_workqueue() semantics
+> When you said "it does not matter whose code got merged", I have to
+> disagree. Sure, for the Linux community as a whole, for Linux itself,
+> it may not matter, but for the individuals involved, it does. And I
+> think benefits of individuals are as important as benefits of the
+> community (or the nation).
 
-Perhaps in Daniels patch.  I am not familiar enough with plist to be
-able to tell you if it has a problem there or not.  However, I think
-this works in the original patch I submitted with had a different
-queuing mechanism.  Daniels patch was derived from that so he may have
-inadvertently picked up something from mine which was no longer true in
-the new design.  I'll defer to Daniel for clarification there.
+I agree it's a nice ego boost to see your code merged.
+But... do you care more about your ego boost or about your problem
+getting solved? I really want to change this if you say "ego for code
+merging"... "ego boost for getting linux improved and being involved in
+solving an important problem" is a lot better type of ego boost..
 
-However, IIUC the point of flush_workqueue() is a barrier only relative
-to your own submissions, correct?.  E.g. to make sure *your* requests
-are finished, not necessarily the entire queue.
+No developer can or should expect that most, or even half of his code to
+be merged. Even Linus doesn't get half the code he writes into linux :)
 
-If thats true, the flush would be injected at the same priority(*) as
-your other pending tasks at the tail of that priority level.  Then you
-would still block until all of your tasks complete.
+Con did get a whole bunch of stuff merged over the years, and for the
+rest he mostly got the problem solved. That's pretty successful....
 
-If flush_workqueue is supposed to behave differently than I describe,
-then I agree its broken even in my original patch.
-
-(*) We would probably have to protect against somebody else PI-boosting
-*us* ;)
-
-> 
-> > 2) The priority of the workqueue task would be temporarily elevated to
-> > RT99 so that the currently dispatched task will complete at the same
-> > priority as the waiter.
-> 
-> _Which_ waiter?
-
-The RT99 task that submitted the request.
-
->  I can't understand at all why work_struct should "inherit"
-> the priority of the task which queued it. 
-
-Think about it:  If you are an RT99 task and you have work to do,
-shouldn't *all* of the work you need be done at RT99 if possible.  Why
-should something like a measly RT98 task block you from completing your
-work. ;) The fact that you need to do some work via a workqueue (perhaps
-because you need specific cpu routing) is inconsequential, IMHO.
-
-Regards,
--Greg
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
