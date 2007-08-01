@@ -1,53 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761092AbXHAHMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758180AbXHAHW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761092AbXHAHMt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756384AbXHAHMk
+	id S1758180AbXHAHW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbXHAHWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:12:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53978 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756358AbXHAHMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:12:39 -0400
-Date: Wed, 1 Aug 2007 09:12:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070801071230.GA16375@elte.hu>
-References: <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu> <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random> <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+	Wed, 1 Aug 2007 03:22:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:56487 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753056AbXHAHWS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 03:22:18 -0400
+Message-ID: <46B03468.3010307@netcom.eu>
+Date: Wed, 01 Aug 2007 09:21:12 +0200
+From: David Engraf <david.engraf@netcom.eu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708010439050.1817@scrub.home>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: linux-kernel@vger.kernel.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       gregkh@suse.de, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
+ we the driver is configured
+References: <Pine.LNX.4.44L0.0707311058470.3520-100000@iolanthe.rowland.org> <46B03078.5040305@netcom.eu>
+In-Reply-To: <46B03078.5040305@netcom.eu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX19lghxdU8OtVpxBwt8/oJVJ2OwFXEA/Yfs4ous
+ +An0l4aEnc39sCw+aLvuFhU92lUXiHiJkiBOGq5uOsDnIZCFqp
+ LXBsd3FXPDgch6dvV87RQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+At the moment I have a Jetway/VIA Mainboard which seems to have a
+problem with the handoff.
+Evenwhen I wait about 20 seconds the EHCI_USBLEGSUP_BIOS flag is not
+cleared. I think this is a BIOS
+bug and I will have to talk to Jetway/VIA.
+On the other hand, I don't need the EHCI controller in my kernel, so I
+think the kernel shouldn't take the
+handover for the EHCI controller like other OS which do not have an usb
+driver and so don't know that
+there is a EHCI_USBLEGSUP_BIOS flag which should be cleared.
 
-Roman,
+David Engraf
 
-Thanks for the testing and the feedback, it's much appreciated! :-) On
-what platform did you do your tests, and what .config did you use (and
-could you please send me your .config)?
 
-Please also send me the output of this script:
+Alan Stern schrieb:
+> On Tue, 31 Jul 2007, David Engraf wrote:
+>
+>   
+>> When CONFIG_USB_UHCI_HCD, CONFIG_USB_OHCI_HCD or CONFIG_USB_EHCI_HCD is
+>> not configured we don't need to call the quirk_usb_handoff_xxxx function
+>> in driver/usb/host/pci_quiks.c.
+>>
+>> I think the kernel shouldn't take the control over the usb controller
+>> when we don't have the driver for it,
+>> so with this patch the kernel takes the control only when the driver is
+>> configured.
+>>     
+>
+> Have you found a system where this really improves behavior or is it 
+> just theoretical?
+>
+> There _is_ a theoretical reason for running the handoff routines even 
+> when the corresponding driver isn't configured.  Namely, at startup the 
+> controller will be in some undetermined state as a result of usage by 
+> the firmware.  Resetting it to a known idle state is a good idea.
+>
+> Bear in mind that on some systems, not performing the handoff has
+> caused interrupt storms during startup.
+>
+> Alan Stern
+>
+>   
+>
 
-  http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+-- 
+Mit freundlichen Grüßen
 
-(if the output is too large send it to me privately, or bzip2 -9 it.)
+ 
 
-Could you also please send the source code for the "l.c" and "lt.c" apps
-you used for your testing so i can have a look. Thanks!
+David Engraf
 
-	Ingo
+ 
+
+ 
+Netcom Sicherheitstechnik GmbH
+Rheinallee 189
+55120 Mainz
+Tel: 	+49 6131 6305 0
+Fax: 	+49 6131 6305 40
+Email: 	david.engraf@netcom.eu
+
+ 
+Sitz der Gesellschaft: Mainz
+Registergericht: Amtsgericht Mainz, 14HRB3411
+Geschäftsführer: Peter Otto
+
