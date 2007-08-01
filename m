@@ -1,173 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760895AbXHARMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbXHARS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760895AbXHARMd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 13:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbXHARMY
+	id S1761053AbXHARS1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 13:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756795AbXHARSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 13:12:24 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:14153 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755206AbXHARMX (ORCPT
+	Wed, 1 Aug 2007 13:18:16 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55758 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755817AbXHARSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 13:12:23 -0400
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
-	workqueue infrastructure
-From: Daniel Walker <dwalker@mvista.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Gregory Haskins <ghaskins@novell.com>, linux-rt-users@vger.kernel.org,
+	Wed, 1 Aug 2007 13:18:15 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <1185987663.12034.99.camel@twins>
-References: <20070801002407.4973.54778.stgit@novell1.haskins.net>
-	 <1185940340.2636.97.camel@imap.mvista.com>
-	 <1185987663.12034.99.camel@twins>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 10:10:43 -0700
-Message-Id: <1185988243.2636.126.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+References: <1185851583.23149.30.camel@caritas-dev.intel.com>
+	<m1r6mptcc8.fsf@ebiederm.dsl.xmission.com>
+	<1185865087.23149.50.camel@caritas-dev.intel.com>
+Date: Wed, 01 Aug 2007 11:16:43 -0600
+In-Reply-To: <1185865087.23149.50.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Tue, 31 Jul 2007 14:58:07 +0800")
+Message-ID: <m1r6mnnpj8.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 19:01 +0200, Peter Zijlstra wrote:
-> (you guys forgot to CC Ingo, Oleg and me)
-> 
-> On Tue, 2007-07-31 at 20:52 -0700, Daniel Walker wrote:
-> 
-> > Here's a simpler version .. uses the plist data structure instead of the
-> > 100 queues, which makes for a cleaner patch ..
-> > 
-> > Signed-off-by: Daniel Walker <dwalker@mvista.com>
-> 
-> looks good, assuming you actually ran the code:
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-No faith huh? I boot tested a few times, but it could be tested more.
+> On Mon, 2007-07-30 at 22:40 -0600, Eric W. Biederman wrote:
+>> "Huang, Ying" <ying.huang@intel.com> writes:
+>> 
+>> > This patch adds document for EFI x86_64 support. The boot parameters
+>> > added are documented in Documentation/i386/zero-page.txt. The setup
+>> > and operation guide of EFI based system is documented in
+>> > Documentation/x86_64/uefi.txt.
+>> >
+>> > Signed-off-by: Chandramouli Narayanan <mouli@linux.intel.com>
+>> > Signed-off-by: Huang Ying <ying.huang@intel.com>
+>> >
+>> > ---
+>> >
+>> >  i386/zero-page.txt |   18 ++++++++++++++----
+>> >  x86_64/uefi.txt    |   42 ++++++++++++++++++++++++++++++++++++++++++
+>> >  2 files changed, 56 insertions(+), 4 deletions(-)
+>> >
+>> > Index: linux-2.6.23-rc1/Documentation/i386/zero-page.txt
+>> > ===================================================================
+>> > --- linux-2.6.23-rc1.orig/Documentation/i386/zero-page.txt 2007-07-30
+>> > 11:28:45.000000000 +0800
+>> > +++ linux-2.6.23-rc1/Documentation/i386/zero-page.txt 2007-07-30
+>> > 11:29:28.000000000 +0800
+>> > @@ -31,11 +31,11 @@
+>> > 0xb0 - 0x13f Free. Add more parameters here if you really need them.
+>> >   0x140- 0x1be		EDID_INFO Video mode setup
+>> >  
+>> > -0x1c4	unsigned long	EFI system table pointer
+>> > -0x1c8	unsigned long	EFI memory descriptor size
+>> > -0x1cc	unsigned long	EFI memory descriptor version
+>> > +0x1c4	unsigned long	EFI system table pointer*
+>> > +0x1c8	unsigned long	EFI memory descriptor size*
+>> > +0x1cc	unsigned long	EFI memory descriptor version*
+>> >  0x1d0	unsigned long	EFI memory descriptor map pointer
+>> > -0x1d4	unsigned long	EFI memory descriptor map size
+>> > +0x1d4	unsigned long	EFI memory descriptor map size*
+>> >  0x1e0	unsigned long	ALT_MEM_K, alternative mem check, in Kb
+>> >  0x1e4	unsigned long	Scratch field for the kernel setup code
+>> >  0x1e8	char		number of entries in E820MAP (below)
+>> > @@ -87,3 +87,13 @@
+>> >  0x2d0 - 0xd00		E820MAP
+>> >  0xd00 - 0xeff		EDDBUF (edd.S) for disk signature read sector
+>> >  0xd00 - 0xeeb		EDDBUF (edd.S) for edd data
+>> > +
+>> > +Changes for x86_64 implementation:
+>> > +---------------------------------
+>> > +For alignment purposes, the following parameters are rearranged.
+>> > +
+>> > +0x1b8	unsigned long	EFI system table pointer
+>> > +0x1c0	unsigned long	EFI Loader signature
+>> > +0x1c4	unsigned long	EFI memory descriptor size
+>> > +0x1c8	unsigned long	EFI memory descriptor version
+>> > +0x1cc	unsigned long	EFI memory descriptor map size
+>> 
+>> Huh?  It is the same protocol.  Unless there are specific issues such
+>> as pointers being to small we should remain 100% the same for both
+>> arch/i386 and arch/x86_64   This variation looks like a serious
+>> bug.
+>
+> The parameters are rearranged, because the pointer is too small. For
+> example, the EFI system table pointer is 8 bytes in x86_64, while it is
+> 4 bytes in i386.
 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> small nit below though..
-> 
-> > ---
-> >  include/linux/workqueue.h |    7 ++++---
-> >  kernel/power/poweroff.c   |    1 +
-> >  kernel/sched.c            |    4 ----
-> >  kernel/workqueue.c        |   40 +++++++++++++++++++++++++---------------
-> >  4 files changed, 30 insertions(+), 22 deletions(-)
-> > 
-> > Index: linux-2.6.22/include/linux/workqueue.h
-> > ===================================================================
-> > --- linux-2.6.22.orig/include/linux/workqueue.h
-> > +++ linux-2.6.22/include/linux/workqueue.h
-> > @@ -8,6 +8,7 @@
-> >  #include <linux/timer.h>
-> >  #include <linux/linkage.h>
-> >  #include <linux/bitops.h>
-> > +#include <linux/plist.h>
-> >  #include <asm/atomic.h>
-> >  
-> >  struct workqueue_struct;
-> > @@ -26,7 +27,7 @@ struct work_struct {
-> >  #define WORK_STRUCT_PENDING 0		/* T if work item pending execution */
-> >  #define WORK_STRUCT_FLAG_MASK (3UL)
-> >  #define WORK_STRUCT_WQ_DATA_MASK (~WORK_STRUCT_FLAG_MASK)
-> > -	struct list_head entry;
-> > +	struct plist_node entry;
-> >  	work_func_t func;
-> >  };
-> >  
-> > @@ -43,7 +44,7 @@ struct execute_work {
-> >  
-> >  #define __WORK_INITIALIZER(n, f) {				\
-> >  	.data = WORK_DATA_INIT(),				\
-> > -	.entry	= { &(n).entry, &(n).entry },			\
-> > +	.entry	= PLIST_NODE_INIT(n.entry, MAX_PRIO),		\
-> >  	.func = (f),						\
-> >  	}
-> >  
-> > @@ -79,7 +80,7 @@ struct execute_work {
-> >  #define INIT_WORK(_work, _func)						\
-> >  	do {								\
-> >  		(_work)->data = (atomic_long_t) WORK_DATA_INIT();	\
-> > -		INIT_LIST_HEAD(&(_work)->entry);			\
-> > +		plist_node_init(&(_work)->entry, -1);			\
-> >  		PREPARE_WORK((_work), (_func));				\
-> >  	} while (0)
-> >  
-> > Index: linux-2.6.22/kernel/power/poweroff.c
-> > ===================================================================
-> > --- linux-2.6.22.orig/kernel/power/poweroff.c
-> > +++ linux-2.6.22/kernel/power/poweroff.c
-> > @@ -8,6 +8,7 @@
-> >  #include <linux/sysrq.h>
-> >  #include <linux/init.h>
-> >  #include <linux/pm.h>
-> > +#include <linux/sched.h>
-> >  #include <linux/workqueue.h>
-> >  #include <linux/reboot.h>
-> >  
-> > Index: linux-2.6.22/kernel/sched.c
-> > ===================================================================
-> > --- linux-2.6.22.orig/kernel/sched.c
-> > +++ linux-2.6.22/kernel/sched.c
-> > @@ -4379,8 +4379,6 @@ long __sched sleep_on_timeout(wait_queue
-> >  }
-> >  EXPORT_SYMBOL(sleep_on_timeout);
-> >  
-> > -#ifdef CONFIG_RT_MUTEXES
-> > -
-> >  /*
-> >   * rt_mutex_setprio - set the current priority of a task
-> >   * @p: task
-> > @@ -4457,8 +4455,6 @@ out_unlock:
-> >  	task_rq_unlock(rq, &flags);
-> >  }
-> >  
-> > -#endif
-> > -
-> >  void set_user_nice(struct task_struct *p, long nice)
-> >  {
-> >  	int old_prio, delta, on_rq;
-> > Index: linux-2.6.22/kernel/workqueue.c
-> > ===================================================================
-> > --- linux-2.6.22.orig/kernel/workqueue.c
-> > +++ linux-2.6.22/kernel/workqueue.c
-> > @@ -44,7 +44,7 @@ struct cpu_workqueue_struct {
-> >  
-> >  	spinlock_t lock;
-> >  
-> > -	struct list_head worklist;
-> > +	struct plist_head worklist;
-> >  	wait_queue_head_t more_work;
-> >  	struct work_struct *current_work;
-> >  
-> > @@ -127,16 +127,19 @@ struct cpu_workqueue_struct *get_wq_data
-> >  static void insert_work(struct cpu_workqueue_struct *cwq,
-> >  				struct work_struct *work, int tail)
-> >  {
-> > +	int prio = current->normal_prio;
-> > +
-> >  	set_wq_data(work, cwq);
-> >  	/*
-> >  	 * Ensure that we get the right work->data if we see the
-> >  	 * result of list_add() below, see try_to_grab_pending().
-> >  	 */
-> >  	smp_wmb();
-> > -	if (tail)
-> > -		list_add_tail(&work->entry, &cwq->worklist);
-> > -	else
-> > -		list_add(&work->entry, &cwq->worklist);
-> > +	plist_node_init(&work->entry, prio);
-> > +	plist_add(&work->entry, &cwq->worklist);
-> 
-> perhaps we ought to handle tail, perhaps not, not sure what the
-> consequences are.
+Ok.  I see what is happening.  When the documentation is for arch/i386
+unsigned long is 4 bytes, and you are using unsigned long to mean 8
+bytes.  For an 8 byte fields please just spell out the size as 8
+bytes.
 
-The plist doesn't distinguish since it's a sorted list. There is no way
-to force something to the back of the list ..
+How does EFI handle 32bit/64bit compatibility?  In particular
+how do I load a 32bit kernel on machine with a 64bit EFI?  Can
+it be done?
 
-It seems like the "tail" option was the old way to prioritize..  I think
-It could be removed since we're always priority ordering now anyway..
-
-Daniel
-
+Eric
