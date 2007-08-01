@@ -1,50 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764250AbXHAJps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763250AbXHAJuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764250AbXHAJps (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 05:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761175AbXHAJpg
+	id S1763250AbXHAJuJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 05:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756316AbXHAJtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 05:45:36 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:20095 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760903AbXHAJpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 05:45:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BvQTeabzrarkPjFgcuHOeBuS/s+AMeb6We3G1CyXbChGWF4d4/9H8kD4J65nWCkREXJnisxcW2WuJoqRt50iSxgH2crw6Q33SZdEfr++VlRYFSHJtLiArTNG0fHQU6v3Kzzds0rGRfHAQoj390JZvuzgY1I2RgxapGIWgt9B3/E=
-Message-ID: <4354d3270708010245v5831610fw10ab2ff74d90ccae@mail.gmail.com>
-Date: Wed, 1 Aug 2007 12:45:33 +0300
-From: edwintorok@gmail.com
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [patch 3/4] Enable link power management for ata drivers
-Cc: "Kristen Carlson Accardi" <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       axboe@kernel.dk, linux-scsi@vger.kernel.org
-In-Reply-To: <46B043FB.5090005@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 1 Aug 2007 05:49:55 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:56715 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756428AbXHAJtx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 05:49:53 -0400
+Date: Wed, 1 Aug 2007 11:59:21 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+Message-ID: <20070801095920.GA1941@ff.dom.local>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070705194909.337398431@intel.com>
-	 <20070705130530.5873afeb.kristen.c.accardi@intel.com>
-	 <46B043FB.5090005@gmail.com>
+In-Reply-To: <46AF4F9C.5060000@googlemail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, Tejun Heo <htejun@gmail.com> wrote:
-> >
-> > +	if (ata_id_has_hipm(dev->id) || ata_id_has_dipm(dev->id))
-> > +		dev->flags |= ATA_DFLAG_IPM;
->
-> Is it safe to use ALPM on a device which only claims to support DIPM?
+On Tue, Jul 31, 2007 at 05:05:00PM +0200, Gabriel C wrote:
+> Jarek Poplawski wrote:
+> > On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
+> >> Jarek Poplawski wrote:
+> >>> On 28-07-2007 20:42, Gabriel C wrote:
+> >>>> Andrew Morton wrote:
+> >>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> >>>>>
+> >>>>>> Hi,
+> >>>>>>
+> >>>>>> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
+> >>>>>>
+> >>>>>> ...
+> >>>>>>
+> >>>>>> net/core/netpoll.c: In function 'netpoll_poll':
+> >>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+> >>>>>> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
+> >>>>>> net/core/netpoll.c: In function 'netpoll_setup':
+> >>>>>> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
+> >>>>>> make[2]: *** [net/core/netpoll.o] Error 1
+> >>>>>> make[1]: *** [net/core] Error 2
+> >>>>>> make: *** [net] Error 2
+> >>>>>> make: *** Waiting for unfinished jobs....
+> >>>>>>
+> >>>>>> ...
+> >>>>>>
+> >>>>>>
+> >>>>>> I think is because KGDBOE selects just NETPOLL.
+> >>>>>>
+> >>>>> Looks like it.
+> >>>>>
+> >>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+> >>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+> >>>>> remains evil.
+> >>> ...
+> >>>> I think there may be a logical issue ( again if I got it right ).
+> >>>> We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
+> >>>>
+> >>>> So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
+> >>> IMHO, the only logical issue here is netpoll.c mustn't use 
+> >>> CONFIG_NET_POLL_CONTROLLER code without #ifdef if it doesn't
+> >>> add this dependency itself.
+> >>>
+> >> Well it does if NETDEVICES && if NET_ETHERNET which booth are N when !NETDEVICES is why KGDBOE uses select and not depends on.
+> > 
+> > "does if XXX" means may "use if XXX".
+> 
+> From what I know means only use "if xxx" on !xxx everything inside the "if xxx" is n and "depends on <something inside the if xxx> 
+> does not work.
+> 
+> ...
+> 
+> menuconfig FOO
+> 	bool "FOO"
+> 	depends on BAR
+> 	default y 
+> 	-- help --
+> 	something
+> if FOO
+> 
+> config BAZ
+> 	depends on WHATEVR && !NOT_THIS
+> 
+> menuconfig SOMETHING_ELSE
+> 	....
+> if SOMETHING_ELSE
+> 
+> config BLUBB
+> 	depends on PCI && WHATNOT
+> 
+> endif # SOMETHING_ELSE
+> 
+> config NETPOLL
+>         def_bool NETCONSOLE
+>         
+> config NETPOLL_TRAP
+>         bool "Netpoll traffic trapping"
+>         default n
+>         depends on NETPOLL
+>           
+> config NET_POLL_CONTROLLER
+>         def_bool NETPOLL
+> 
+> endif # FOO
+> 
+> Now if you set FOO=n all is gone and your driver have to select whatever it needs from there.
 
-I have tested on a Dell Inspiron 6400, it has ICH7-M (82801GBM) chipset.
-The harddisk claims to support only DIPM, and the ALPM patches work with it.
-Kristen said either DIPM or HIPM will work with ALPM accord to the
-spec, see this email:
-http://www.bughost.org/pipermail/power/2007-June/000691.html
+Probably not exactly so...
 
---Edwin
+>From drivers/net/Kconfig:
+
+> # All the following symbols are dependent on NETDEVICES - do not repeat
+> # that for each of the symbols.
+> if NETDEVICES
+
+So, according to this netpoll could presume NETDEVICES and
+NET_POLL_CONTROLLER are always on.
+
+But, as you've found, it's possible to select NETPOLL and !NETDEVICES,
+so this comment is at least not precise.
+
+On the other side something like this:
+
+...
+endif # NETDEVICES
+
+config NETPOLL
+        depends on NETDEVICES
+        def_bool NETCONSOLE
+
+config NETPOLL_TRAP
+        bool "Netpoll traffic trapping"
+        default n
+        depends on NETPOLL
+
+config NET_POLL_CONTROLLER
+        def_bool NETPOLL
+        depends on NETPOLL
+
+
+seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
+still doesn't check for NETDEVICES dependency.
+
+> 
+> > 
+> >> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+> >> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
+> > 
+> > Why kgdboe should care what netpoll needs? So, I hope, you are adding
+> > this select under config NETPOLL. On the other hand, if NETPOLL should
+> > depend on NET_POLL_CONTROLLER there is probably no reason to have them
+> > both.
+> 
+> NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
+> 
+> Net peoples ping ?:)
+
+OK, I wasn't right here: there is no visible reason for both in the
+kernel code, but I can imagine there could be some external users of
+NET_POLL_CONTROLLER without NETPOLL.
+
+> 
+> > 
+> > The "does it work" question isn't logical issue, so it's irrelevant
+> > here...
+> 
+> Right irrelevant for the compile error but relevant for the fix in my opinion.
+
+This was kind of joking, but since some people prefer things to work,
+and it's hard to do this right (logical) way, some strange (unlogical)
+measures have to be done like repeating dependencies here.
+
+Regards,
+Jarek P.
