@@ -1,81 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXHAO4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933619AbXHAO6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933605AbXHAO4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbXHAO4K
+	id S933619AbXHAO6z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:58:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932670AbXHAO6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:56:10 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:37219 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbXHAO4H (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:56:07 -0400
-Date: Wed, 1 Aug 2007 17:56:07 +0300
-From: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com, linux-acpi@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, mingo@redhat.com,
-       linux-pm@linux-foundation.org,
-       Borislav Deianov <borislav@users.sourceforge.net>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: 2.6.21-rc1: T60 ACPI issues
-Message-ID: <20070801145607.GB8480@mellanox.co.il>
-Reply-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-References: <20070801135820.GA8266@mellanox.co.il>
-	<Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
+	Wed, 1 Aug 2007 10:58:47 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:60479 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932665AbXHAO6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 10:58:46 -0400
+Date: Wed, 1 Aug 2007 09:57:40 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       ecryptfs-devel@lists.sourceforge.net, moriai.satoshi@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc1] eCryptfs: fix lookup error for special files
+Message-ID: <20070801145740.GF30416@halcrow.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <200708011301.AA00221@paprika.lab.ntt.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708011516540.15447@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200708011301.AA00221@paprika.lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Quoting Hugh Dickins <hugh@veritas.com>:
-> Subject: Re: 2.6.21-rc1: T60 ACPI issues
+On Wed, Aug 01, 2007 at 10:01:14PM +0900, Ryusuke Konishi wrote:
+> When ecryptfs_lookup() is called against special files, eCryptfs
+> generates the following errors because it tries to treat them like
+> regular eCryptfs files.
 > 
-> On Wed, 1 Aug 2007, Michael S. Tsirkin wrote:
+> Error opening lower file for lower_dentry [0xffff810233a6f150], lower_mnt [0xffff810235bb4c80], and flags 
+> [0x8000]
+> Error opening lower_file to read header region
+> Error attempting to read the [user.ecryptfs] xattr from the lower file; return value = [-95]
+> Valid metadata not found in header region or xattr region; treating file as unencrypted
 > 
-> > Hi!
-> > ACPI appears to have been broken with 2.6.23-rc1 on my T60
-> > Userspace from ubuntu dapper.
+> For instance, the problem can be reproduced by the steps below.
 > 
-> (Whereas I'm using a T43p with openSUSE 10.2.)
+>   # mkdir /root/crypt /mnt/crypt
+>   # mount -t ecryptfs /root/crypt /mnt/crypt
+>   # mknod /mnt/crypt/c0 c 0 0
+>   # umount /mnt/crypt
+>   # mount -t ecryptfs /root/crypt /mnt/crypt
+>   # ls -l /mnt/crypt
 > 
-> > 
-> > 1. During boot, I see a lot of messages like this:
-> > [   41.034204] acpi LNXSYSTM:00: uevent: unsupported action-string; this will be ignored in a future kernel version
+> This patch fixes it by adding a check similar to directories and
+> symlinks.
 > 
-> (I've not seen those.)
-> 
-> > 
-> > 2. Pressing Fn/F4 does not trigger suspend to ram
-> >    This normally triigers ACPI event which triggers suspend to RAM on Ubuntu
-> >    (echo mem > /sys/power/state works)
-> 
-> I'll bet this is your CONFIG_THINKPAD_ACPI_INPUT_ENABLED=y.
-> I got the same, see my "THINKPAD_ACPI_INPUT_ENABLED seems regressive"
-> mail to Henrique and lkml an hour ago.
+> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-This? http://lkml.org/lkml/2007/8/1/176
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-
-> > 
-> > 3. After suspend to RAM, system wakes up but laptop's screen is blank,
-> >    switching VTs etc does not help.
-> >    External screen wakes up OK though.
-> >    dmesg output from boot attached.
+> ---
+>  fs/ecryptfs/inode.c |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-> (I've not had that.)
-
-Bingo.
-sudo rmmod thinkpad_acpi cures both 2 and 3.
-Thanks for pointing this out.
-
-Henrique, if there's a patch to test, pls let me know.
-Or maybe CONFIG_THINKPAD_ACPI_INPUT_ENABLED should be N by default.
-
--- 
-MST
+> diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+> index 0a50942..131954b 100644
+> --- a/fs/ecryptfs/inode.c
+> +++ b/fs/ecryptfs/inode.c
+> @@ -353,6 +353,10 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
+>  		ecryptfs_printk(KERN_DEBUG, "Is a symlink; returning\n");
+>  		goto out;
+>  	}
+> +	if (special_file(lower_inode->i_mode)) {
+> +		ecryptfs_printk(KERN_DEBUG, "Is a special file; returning\n");
+> +		goto out;
+> +	}
+>  	if (!nd) {
+>  		ecryptfs_printk(KERN_DEBUG, "We have a NULL nd, just leave"
+>  				"as we *think* we are about to unlink\n");
