@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbXHAVPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbXHAVPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbXHAVPa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 17:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbXHAVPM
+	id S1755720AbXHAVPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 17:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXHAVP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 17:15:12 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:40598 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754162AbXHAVPK (ORCPT
+	Wed, 1 Aug 2007 17:15:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55975 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755188AbXHAVPX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 17:15:10 -0400
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
-	workqueue infrastructure
-From: Gregory Haskins <ghaskins@novell.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070801205053.GA263@tv-sign.ru>
-References: <20070801002407.4973.54778.stgit@novell1.haskins.net>
-	 <1185940340.2636.97.camel@imap.mvista.com>
-	 <1185987663.12034.99.camel@twins> <20070801181253.GA90@tv-sign.ru>
-	 <1185992994.2636.142.camel@imap.mvista.com>
-	 <20070801201802.GA225@tv-sign.ru>
-	 <1186000468.2636.168.camel@imap.mvista.com>
-	 <20070801205053.GA263@tv-sign.ru>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 17:13:03 -0400
-Message-Id: <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
+	Wed, 1 Aug 2007 17:15:23 -0400
+Date: Wed, 1 Aug 2007 14:14:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: kupdate weirdness
+Message-Id: <20070801141439.ff1c29f9.akpm@linux-foundation.org>
+In-Reply-To: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
+References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 00:50 +0400, Oleg Nesterov wrote:
-> On 08/01, Daniel Walker wrote:
-> >
-> > On Thu, 2007-08-02 at 00:18 +0400, Oleg Nesterov wrote:
-> > > On 08/01, Daniel Walker wrote:
-> > > >
-> > > > On Wed, 2007-08-01 at 22:12 +0400, Oleg Nesterov wrote:
-> > > > 
-> > > > > And I personally think it is not very useful, even if it was correct.
-> > > > > You can create your own workqueue and change the priority of cwq->thread.
-> > > > 
-> > > > This change is more dynamic than than just setting a single priority ..
-> > > > There was some other work going on around this, so it's not totally
-> > > > clear what the benefits are ..
-> > > 
-> > > Yes, I see. But still I think the whole idea is broken, not just the
-> > > implementation.
-> > 
-> > It's translating priorities through the work queues, which doesn't seem
-> > to happen with the current implementation. A high priority, say
-> > SCHED_FIFO priority 99, task may have to wait for a nice -5 work queue
-> > to finish..
+On Wed, 01 Aug 2007 22:45:16 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
+
+> The following strange behavior can be observed:
 > 
-> Why should that task wait?
+> 1. large file is written
+> 2. after 30 seconds, nr_dirty goes down by 1024
+> 3. then for some time (< 30 sec) nothing happens (disk idle)
+> 4. then nr_dirty again goes down by 1024
+> 5. repeat from 3. until whole file is written
+> 
+> So basically a 4Mbyte chunk of the file is written every 30 seconds.
+> I'm quite sure this is not the intended behavior.
+> 
+> The reason seems to be that __sync_single_inode() will move the
+> partially written inode from s_io onto s_dirty, and sync_sb_inode()
+> will not splice it back onto s_io until the rest of the inodes on s_io
+> has been processed.
 
-I assume "that task" = the RT99 task?  If so, that is precisely the
-question.  It shouldn't wait.  ;)  With mainline, it is simply queued
-with every other request.  There could be an RT40, and a SCHED_NORMAL in
-front of it in the queue that will get processed first.  In addition,
-the system could suffer from a priority inversion if some unrelated but
-lower priority task (say RT98) was blocking the workqueue thread from
-making forward progress on the nice -5 job. 
+It does all sorts of weird crap.
 
-To clarify: when a design utilizes a singlethread per workqueue (such as
-in both mainline and this patch), the RT99 will always have to wait
-behind any already dispatched jobs.  That is a given.  However, with
-Daniels patch, two things happen in addition to normal processing.
+> Since there will probably be a recently dirtied inode on s_io, this
+> will take some of time, but always less than 30 sec.
+> 
+> I don't know what's the easiest solution.
+> 
+> Any ideas?
 
-1) The RT99 task would move ahead in the queue of anything else that was
-also scheduled on the workqueue that is < RT99.
-
-2) The priority of the workqueue task would be temporarily elevated to
-RT99 so that the currently dispatched task will complete at the same
-priority as the waiter.  This prevents inversion.
-
-HTH
--Greg
-
+Try 2.6.23-rc1-mm2.
