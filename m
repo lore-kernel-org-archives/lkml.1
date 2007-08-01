@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759611AbXHAHgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761656AbXHAHmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759611AbXHAHgp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 03:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbXHAHgf
+	id S1761656AbXHAHmS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 03:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758569AbXHAHmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 03:36:35 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:59527 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757721AbXHAHge (ORCPT
+	Wed, 1 Aug 2007 03:42:06 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:46989 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758309AbXHAHmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 03:36:34 -0400
-Subject: Re: 2.6.23-rc1-mm2
-	(vm-dont-run-touch_buffer-during-buffercache-lookups.patch)
-From: Eric St-Laurent <ericstl34@sympatico.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 03:36:30 -0400
-Message-Id: <1185953790.6393.20.camel@perkele>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 1 Aug 2007 03:42:05 -0400
+Message-ID: <46B038B5.2030702@gmail.com>
+Date: Wed, 01 Aug 2007 09:39:33 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: kriko <kristjan.ugrin@gmail.com>
+CC: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: Reboot hang FIXED
+References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com> <op.twcrsx1yatcbto@linux.site>
+In-Reply-To: <op.twcrsx1yatcbto@linux.site>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-31-07 at 23:09 -0700, Andrew Morton wrote:
+On 08/01/2007 01:35 AM, kriko wrote:
 
-> +vm-dont-run-touch_buffer-during-buffercache-lookups.patch
+>> Machine hangs at summary screen where it would be trying a boot from 
+>> DVD normally on cold boot, or reboot from Windows. reboot=b doesn't help.
 > 
->  A little VM experiment.  See changelog for details.
+> Sorted out, built 2 kernels, one with old driver, other with only new 
+> driver. The one with old driver hangs (it could be because 
+> BLK_DEV_OFFBOARD was enabled?),
 
-> We don't have any tests to determine the effects of this, and nobody will
-> bother setting one up, so ho hum, this remains in -mm for ever.
+As far as I'm aware it shouldn't, but ...
 
-> I don't think there's any point in doing this until we have some decent
-> testcases.
+> using only new drivers works fine.
 
+... oh well. I suppose it's not really worth it to try and debug that. Cheers.
 
-Hi Andrew,
-
-
-For which problem this patch was coded?  Is it a potential fix to the
-updatedb problem?
-
-Is the patch effective without the filesystem dependant change you talk
-about?  (I use reiserfs)
-
-I've been thinking about a test case for the updatedb problem:
-
-1. Script or program that create a large number of directories and zero
-sized files.  Same setup for everyone to have reproducible results.
-
-2. Run updatedb on those.
-
-3. Observe the effects (with vmstat, slabinfo and meminfo) before,
-during and after the updatedb run.
-
-4. Do something to trigger some reclaim like copying a large file.
-
-5. See the effects.
-
-
-What do you think? What would be the ideal test case for the problem in
-your opinion?
-
-
-Best regards,
-
-- Eric
-
-
+Rene.
