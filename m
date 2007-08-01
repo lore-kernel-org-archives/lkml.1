@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934140AbXHAPDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934178AbXHAPE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934140AbXHAPDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 11:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763281AbXHAPDJ
+	id S934178AbXHAPE0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 11:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXHAPEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 11:03:09 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:49498 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759188AbXHAPDI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 11:03:08 -0400
-Message-ID: <46B0A081.5080405@zytor.com>
-Date: Wed, 01 Aug 2007 11:02:25 -0400
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andi Kleen <ak@novell.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [RFC] [PATCH] Deprecate a.out ELF interpreters
-References: <200708011433.09433.ak@novell.com>
-In-Reply-To: <200708011433.09433.ak@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 1 Aug 2007 11:04:14 -0400
+Received: from www.osadl.org ([213.239.205.134]:53198 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932372AbXHAPEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 11:04:12 -0400
+Subject: [PATCH] remove get_perm_addr from ucc_geth_ethtool.c
+From: Jan Altenberg <jan.altenberg@linutronix.de>
+To: leoli@freescale.com
+Cc: netdev@vger.kernel.org, Linux Kernel list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 01 Aug 2007 17:04:10 +0200
+Message-Id: <1185980650.3854.63.camel@bender.lan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> 
-> I propose to deprecate this support and remove for 2.6.25.
-> 
-> Drawback is that someone still runs their system with a.out ld.so
-> they would need to update the ld.so when updating to a new kernel.
-> 
-> This patch just adds an entry to the deprecation file and a printk
-> warning users.
-> 
-> Comments?
-> 
+Remove get_perm_addr from ucc_geth_ethtool.c
 
-Makes total sense.  This is a highly oddball configuration, and 
-*extremely* unlikely to have a significant user base of modern kernels.
+This is needed because commit 313674afa8fdced2fe79f50f38e1c387b63d8790
+inlines the generic function to the caller.
 
-It's been 12 years since we switched to ELF.
+Signed-off-by: Jan Altenberg <jan.altenberg@linutronix.de>
 
-	-hpa
+---
+ drivers/net/ucc_geth_ethtool.c |    1 -
+ 1 file changed, 1 deletion(-)
+
+Index: linux-2.6/drivers/net/ucc_geth_ethtool.c
+===================================================================
+--- linux-2.6.orig/drivers/net/ucc_geth_ethtool.c
++++ linux-2.6/drivers/net/ucc_geth_ethtool.c
+@@ -379,7 +379,6 @@ static const struct ethtool_ops uec_etht
+ 	.get_stats_count        = uec_get_stats_count,
+ 	.get_strings            = uec_get_strings,
+ 	.get_ethtool_stats      = uec_get_ethtool_stats,
+-	.get_perm_addr          = ethtool_op_get_perm_addr,
+ };
+ 
+ void uec_set_ethtool_ops(struct net_device *netdev)
+
+
