@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932905AbXHAOqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933084AbXHAOrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932905AbXHAOqR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932197AbXHAOqF
+	id S933084AbXHAOrU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932245AbXHAOrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:46:05 -0400
-Received: from nf-out-0910.google.com ([64.233.182.188]:7844 "EHLO
+	Wed, 1 Aug 2007 10:47:06 -0400
+Received: from nf-out-0910.google.com ([64.233.182.191]:8590 "EHLO
 	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932158AbXHAOqE (ORCPT
+	with ESMTP id S932263AbXHAOrF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:46:04 -0400
+	Wed, 1 Aug 2007 10:47:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=r9PDBpXEw+qEk5L8TaWjRvAjcATrJXV+k6GpJuKNeOnGMocernYtEtBrAp5k/ETLoA/UyWrnN/dDouDVXerUWnStJx1ACm1TbTC67HeMqtpFucIHBeGzXox/+joIIXr6E2ufTIe0VOSDNPhVOGu/hcNjAP6KpMmbUOGlnqo7DgY=
-Message-ID: <46B09C8E.3010103@googlemail.com>
-Date: Wed, 01 Aug 2007 16:45:34 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=nq4HRNxzZdyDbsLFu+mp5tC8rwPb0FvjrJKe0hMiTFrJm31DLeJmaZ6AeLcYsGcQPOXE93JY7d0hrHpCAkOWPGXyh5iv4jHWXqmtfdFG9G39FwYvIIow44YwlfQUYo1dOp+JUbO0uqQ+t/EywSfU2TcB+rZGjbVNwBrh5oBTaYs=
+Message-ID: <46B09CD0.5050307@googlemail.com>
+Date: Wed, 01 Aug 2007 16:46:40 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>, Tilman Kranz <tilde@tk-sls.de>,
-       alsa-devel@alsa-project.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] Coding style fix sound/pci/ca0106/ca_midi.h
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Eugene Teo <eugeneteo@kernel.sg>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] drivers/scsi/advansys.c: fix advansys_board_found compile
+ error
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <46B0842D.3060703@googlemail.com> <20070801133912.GA11027@kernel.sg> <20070801135515.GV21219@parisc-linux.org> <46B09843.7010701@googlemail.com> <20070801143239.GZ21219@parisc-linux.org>
+In-Reply-To: <20070801143239.GZ21219@parisc-linux.org>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Matthew Wilcox wrote:
+> On Wed, Aug 01, 2007 at 04:27:15PM +0200, Gabriel C wrote:
+>> Matthew Wilcox wrote:
+>>> I'd be interested in seeing the results of the randconfig trials on the
+>>> driver with those 23 patches applied, but not particularly interested in
+>>> the intermediate result.
+>> I can do that on weekend.
+> 
+> Thanks
+> 
+>> Are the patches meant for -mm or git head ?
+> 
+> They were developed against git head as of a few days ago.  Here's a git
+> tree, if that's easier for you:
+> 
+> http://git.kernel.org/?p=linux/kernel/git/willy/advansys.git;a=shortlog
+> 
 
-Coding style fix
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
-
-Signed-off-by: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-
---- linux-mm-clean/sound/pci/ca0106/ca_midi.h	2007-07-09 01:32:17.000000000 +0200
-+++ linux-mm/sound/pci/ca0106/ca_midi.h	2007-08-01 16:38:54.000000000 +0200
-@@ -22,9 +22,9 @@
-  *
-  */
- 
--#include<linux/spinlock.h>
--#include<sound/rawmidi.h>
--#include<sound/mpu401.h>
-+#include <linux/spinlock.h>
-+#include <sound/rawmidi.h>
-+#include <sound/mpu401.h>
- 
- #define CA_MIDI_MODE_INPUT	MPU401_MODE_INPUT
- #define CA_MIDI_MODE_OUTPUT	MPU401_MODE_OUTPUT
+Ach nice , yes is a lot easier to work with git.
