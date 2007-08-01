@@ -1,66 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbXHAKio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763548AbXHAKj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbXHAKio (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 06:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763264AbXHAKid
+	id S1763548AbXHAKj5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 06:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXHAKju
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 06:38:33 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:50033 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763208AbXHAKib (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 06:38:31 -0400
-Message-ID: <46B062AF.1040907@student.ltu.se>
-Date: Wed, 01 Aug 2007 12:38:39 +0200
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 1 Aug 2007 06:39:50 -0400
+Received: from mx2.suse.de ([195.135.220.15]:53183 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754334AbXHAKjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 06:39:49 -0400
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] type safe allocator
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+	<p73myxbpm8r.fsf@bingen.suse.de>
+	<E1IGAx0-0006TK-00@dorka.pomaz.szeredi.hu>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 01 Aug 2007 13:34:23 +0200
+In-Reply-To: <E1IGAx0-0006TK-00@dorka.pomaz.szeredi.hu>
+Message-ID: <p73643zpjy8.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Robin Getz <rgetz@blackfin.uclinux.org>,
-       Yoann Padioleau <padator@wanadoo.fr>,
-       David Howells <dhowells@redhat.com>, kernel-janitors@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/68] 0 -> NULL, for arch/frv
-References: <200707270944.LAA17167@ifs.emn.fr> <22618.1185531297@redhat.com>	 <87lkd29mk9.fsf@wanadoo.fr>	 <200707272138.23323.rgetz@blackfin.uclinux.org>	 <8bd0f97a0707271837q5d5f31d9pe342e72ebf9368c1@mail.gmail.com>	 <46AF255A.4050106@student.ltu.se> <8bd0f97a0708010303j7f443b06lf9d77f6d36816237@mail.gmail.com>
-In-Reply-To: <8bd0f97a0708010303j7f443b06lf9d77f6d36816237@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Frysinger wrote:
-> On 7/31/07, Richard Knutsson <ricknu-0@student.ltu.se> wrote:
->   
->> Mike Frysinger wrote:
->>     
->>> On 7/27/07, Robin Getz <rgetz@blackfin.uclinux.org> wrote:
->>>       
->>>> If there is a definite style or semantic preference that everyone should live
->>>> with - does it make sense to put checks in checkpatch.pl to enforce it?
->>>>         
->>> checkpatch.pl does not have enough semantic knowledge to know if the
->>> thing being tested is a pointer ... dont know if the sparse utility
->>> would be able to pick it out as i'm not familiar with what level that
->>> thing runs at
->>>       
->> Didn't he mean "x == NULL" > "!x"?
->>     
->
-> i'm sure i understand your meaning of ">" ... are you saying that "x
-> == NULL" is greater (preferred) to "!x" or are you saying that "x ==
-> NULL" should be changed to "!x" ?
->   
-If I understood Robin correctly, he suggested that checkpatch.pl would 
-tell to convert "x == NULL" to "!x", if that would be the preferred way.
-> i dont think the former case can be checked by checkpatch.pl, but the
-> latter certainly can ... but i'd be very skeptical you could get the
-> wider LKML audience to sign off one way or the other wrt to "x ==
-> NULL" vs "!x".  you can certainly get people to sign off on "x == 0"
-> being wrong when x is a pointer.
->   
-I agree!
-BTW, too bad checkpatch.pl does not know the types, since it otherwise 
-could check for the "x [=!]= 0"-thing.
+Miklos Szeredi <miklos@szeredi.hu> writes:
+> 
+> #define k_new(type, flags) ((type *) kmalloc(sizeof(type), flags))
 
-Richard Knutsson
+The cast doesn't make it more safe in any way
 
+(at least as long as you don't care about portability to C++;
+the kernel doesn't)
+
+-Andi
