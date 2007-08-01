@@ -1,92 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752672AbXIADCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1758093AbXHAEVK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752672AbXIADCn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 31 Aug 2007 23:02:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbXIADCe
+	id S1758093AbXHAEVK (ORCPT <rfc822;akpm@linux-foundation.org>);
+	Wed, 1 Aug 2007 00:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751365AbXHAEU4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 31 Aug 2007 23:02:34 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:57365 "EHLO smtp.gentoo.org"
+	Wed, 1 Aug 2007 00:20:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:56408 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751511AbXIADCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 31 Aug 2007 23:02:33 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: linuxsh-dev@lists.sourceforge.net
-Subject: Re: [PATCH] Patch pvr2 driver to allow development of maple bus driver
-Date: Fri, 31 Aug 2007 23:02:45 -0400
-User-Agent: KMail/1.9.7
-Cc: "Adrian McMenamin" <lkmladrian@gmail.com>,
-       "Mike Frysinger" <vapier.adi@gmail.com>,
-       Paul Mundt <lethal@linux-sh.org>, linux-kernel@vger.kernel.org
-References: <8b67d60708311300k3ea67eadod531752cca253bbc@mail.gmail.com> <8bd0f97a0708311312n78f1c163o20aa17214bfe3702@mail.gmail.com> <8b67d60708311314p39c7be30v630e97189d656abf@mail.gmail.com>
-In-Reply-To: <8b67d60708311314p39c7be30v630e97189d656abf@mail.gmail.com>
+	id S1751501AbXHAEUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 00:20:55 -0400
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2842700.tRFiO0C76J";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708312302.46542.vapier@gentoo.org>
+Message-ID: <18096.2592.877510.221163@cargo.ozlabs.ibm.com>
+Date: Wed, 1 Aug 2007 14:20:48 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, Alexey Dobriyan <adobriyan@sw.ru>,
+        akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+        herbert@gondor.apana.org.au
+Subject: Re: WARN_ON() which sometimes sucks
+In-Reply-To: <alpine.LFD.0.999.0707312101410.3582@woody.linux-foundation.org>
+References: <20070731155527.GB7253@localhost.sw.ru>
+	<20070731160248.GK21089@ftp.linux.org.uk>
+	<18096.949.934194.648312@cargo.ozlabs.ibm.com>
+	<alpine.LFD.0.999.0707312101410.3582@woody.linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2842700.tRFiO0C76J
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Linus Torvalds writes:
 
-On Friday 31 August 2007, Adrian McMenamin wrote:
-> On 31/08/2007, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > On 8/31/07, Adrian McMenamin <lkmladrian@gmail.com> wrote:
-> > > This patch makes the PVR2 VBLANK interrupt on the SEGA Dreamcast
-> > > shareable - a small but necessary change to enable ongoing efforts to
-> > > develop a driver for the maple bus on the Dreamcast. (Maple is Sega's
-> > > proprietary serial interface for the Dreamcast and can be set to
-> > > synchronise dma transfers to the VBLANK).
-> > >
-> > > This has no impact on the performance of the PVR2.
-> >
-> > sharable implies the interrupt handler checks to see if it actually
-> > caused the interrupt ... which it doesnt at the moment ... presumably,
-> > you're making it shared because another device will be using that
-> > interrupt as well ... so when that other device gets an interrupt, how
-> > do you know it's for that device and not PVR2 ?
->
-> If the interrupt occurs then it will be for both of them. The hardware
-> cannot be removed and the maple bus driver is set for hardware sync.
->
-> The question seems redundant to me.
+> Umm. The WARN_ON() might actually get a "long long" value for all we know. 
+> Ie it's perfectly possible that the WARN_ON might look like
+> 
+> 	/* Must not have high bits on */
+> 	WARN_ON(offset & 0xffffffff00000000);
+> 
+> which on a 32-bit pcc would apparently do the wrong thing entirely as it 
+> stands now. No?
 
-i really dont know how the maple bus works or what piece of hardware is wir=
-ed=20
-up to the same interrupt line.  my point is that if the other device fires =
-an=20
-interrupt, the pvr interrupt handler may be executed and attempt to do work=
-=20
-when in reality the pvr was not the source of the interrupt.
-=2Dmike
+Actually, because of the typeof in the powerpc WARN_ON, I think it
+would fail to build since we'd be passing a long long value to an
+inline asm, or at least I hope it would fail to build. :)
 
---nextPart2842700.tRFiO0C76J
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+But your criticism is correct with regard to the powerpc BUG_ON, and
+you're correct that a long wouldn't be sufficient if someone passes in
+a long long.  Oh well.  I guess we just wear the extra two
+instructions.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.6 (GNU/Linux)
-
-iQIVAwUARtjWVkFjO5/oN/WBAQIEihAAwyLXm7hCbKiuCpwU7iNYURfWp925lzni
-q1iVZvZ2wHwTTlGfdwdcj5JqNq+jNLo4FYhKaHNj3MSOfMCPbsj0M0Ehv/OIkar3
-lahqKE0U+W89OATfdMTxSpSUdn+gSv/8Kk8QipOYW6wB2zfy7xDHCYVN4K62WqFp
-EThjI5t04drP064RdJfyV1m1BM95OS33+QHpeGBtFsjp2yRdKFcfkblYvk15rD6V
-hszT4h0sqz70Q8xfcqdXYYrTUJpOMr0Cw9pb4EO8nwpKDlpA0F1EWcDpMwDgJILF
-X234btTxtPf5hZ0HFfvXUvvO4cpoFRnYvErGGObirxQqSPgmADQ2rqXhw5KqxQ8K
-megksKI4DuehAeLXEFDP9YGX23hBBPSrFV4TL4Qj+A5QcsN18LNaK26eOBlHAss3
-yg/HwbpL2fb8CNu0K0HvOOez4R2Egxwy2GeUYzPageyaQalODlfvKz56lpOeSy/v
-dMepbhuAWxm4GM6YQoP/9hItqFQv/vSZdmZv24iEzAm2qwUY1x2OUx68esRdKGbn
-+F+zAV5HYFHLj3HHe2zvOFlr+7ocdPypRlnqmSW+xXoWWTMW43jesQUYP3Fwlhmx
-LtkCgM+xFUclRWWzq5r8Vzo4WRcCUUYIkdGtyARf1kRQ5NLHUk1oU/kFJUaXUNRw
-MRamIjVzobA=
-=80Nh
------END PGP SIGNATURE-----
-
---nextPart2842700.tRFiO0C76J--
+Paul.
