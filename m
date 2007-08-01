@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbXHAGTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbXHAGVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760584AbXHAGTr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 02:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756505AbXHAGTi
+	id S1761653AbXHAGVT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 02:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbXHAGVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 02:19:38 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:7695 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757388AbXHAGTh (ORCPT
+	Wed, 1 Aug 2007 02:21:09 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:54476 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbXHAGVH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 02:19:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d0SQRIEyeba3EqzMpC/8AU3ZPd3TTSKLXU1qa50yYVSteVEaIS4M2ACQOy1F162NKFOSSQty8LY1CEqc+hE4ALNorKPPYka3qcO7G/hNMc10Hj4046vUkib2rqKYw03inB1n4/26DT/cqDpDZyK8hBckUSn6645KKOK8SAWiwPU=
-Message-ID: <b21f8390707312319l3ffd8e7cn85984e32344a41f2@mail.gmail.com>
-Date: Wed, 1 Aug 2007 16:19:36 +1000
-From: "Matthew Hawkins" <darthmdh@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: [ck] Re: SD still better than CFS for 3d ?
-Cc: "Roland Dreier" <rdreier@cisco.com>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       "Jacob Braun" <jwbraun@gmail.com>, kriko <kristjan.ugrin@gmail.com>,
-       ck@vds.kolivas.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, "Martin Schwidefsky" <schwidefsky@de.ibm.com>
-In-Reply-To: <20070801052513.GL3972@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <930f95dc0707291154j102494d9m58f4cc452c7ff17c@mail.gmail.com>
-	 <930f95dc0707291431j4e50214di3c01cd44b5597502@mail.gmail.com>
-	 <20070730114649.GB19186@elte.hu> <op.tv90xghwatcbto@linux.site>
-	 <d3380cee0707300831m33d896aufcbdb188576940a2@mail.gmail.com>
-	 <b21f8390707300925i76cb08f2j55bba537cf853f88@mail.gmail.com>
-	 <20070730182959.GA29151@infradead.org> <adaps29sm62.fsf@cisco.com>
-	 <b21f8390707302007n2f21018crc6b7cd83666e0f3c@mail.gmail.com>
-	 <20070801052513.GL3972@stusta.de>
+	Wed, 1 Aug 2007 02:21:07 -0400
+To: trond.myklebust@fys.uio.no
+CC: chuck.lever@oracle.com, miklos@szeredi.hu, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kzak@redhat.com, sfrench@samba.org,
+       mark.fasheh@oracle.com, kurt.hackel@oracle.com
+In-reply-to: <1185917255.6700.80.camel@localhost> (message from Trond
+	Myklebust on Tue, 31 Jul 2007 17:27:35 -0400)
+Subject: Re: request for patches: showing mount options
+References: <E1IEQ7q-0000qE-00@dorka.pomaz.szeredi.hu>
+	 <46AA4AC5.2050200@oracle.com> <E1IEW21-0001kL-00@dorka.pomaz.szeredi.hu>
+	 <46AA51CA.7030105@oracle.com> <E1IEezF-0002g6-00@dorka.pomaz.szeredi.hu>
+	 <46AE01C2.3000008@oracle.com> <E1IFnSa-0002BL-00@dorka.pomaz.szeredi.hu>
+	 <46AF450D.5020106@oracle.com> <E1IFyEK-00042c-00@dorka.pomaz.szeredi.hu>
+	 <46AFA6AB.8080208@oracle.com> <1185917255.6700.80.camel@localhost>
+Message-Id: <E1IG7ZE-00060y-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 01 Aug 2007 08:20:20 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, Adrian Bunk <bunk@stusta.de> wrote:
-> But there's not much value in benchmarking if an important part of the
-> performance critical code is in some undebuggable driver...
+> On Tue, 2007-07-31 at 17:16 -0400, Chuck Lever wrote:
+> > Miklos Szeredi wrote:
+> > > It would be nice to have all this stuff in 2.6.24, which doesn't leave
+> > > a lot of time.
+> > 
+> > Yes, that would be nice, but there's a lot of stuff that needs to get 
+> > done before this.  NFS IPv6, for example, is a higher priority than 
+> > refactoring to remove /etc/mtab -- the US government has a new 
+> > requirement in 2008 for IPv6 support in any software that it purchases, 
+> > and NFS may be a stumbling block for distributors if it doesn't have it.
+> > 
+> > So I'd say "no way" for 2.6.24, but it's really Trond's call to make.
+> 
+> I never like to tell people what their priorities should be. If someone
+> is interested enough to do the work, then it will get done, however this
+> cannot make the top of my already-overloaded list of priorities for
+> 2.6.24, and it would appear that Chuck is busy too.
+> 
+> Any other volunteers out there?
 
-In this case we don't care about the performance of the video driver.
-This isn't a race to see who can get the most fps.  The driver can be
-thought of as a black box so long as comparative benchmarks are done
-with the same driver.
+I'm willing to help out.
 
-What we're looking for primarily is progress or regress in
-interactivity under load with different cpu schedulers, and secondly
-the effect of swap prefetch.  The video driver is irrelevant -
-especially considering the people doing this testing have a wide
-variety of video cards.  This is why I have included some commentary
-on "feel" because that's the important part.
+I could have basically fixed up all filesystems, but I think it's
+better if the maintainers do it and are aware that this needs to be
+looked at each time a new option is added.
 
-Ingo specifically asked for CFS v20 in 2.6.23 to be included in the
-testing (its not available separately on his website), hence the need
-to be able to bring up one's usual working environment under that
-kernel also so the results aren't skewed by driver artifacts.
+But there's no problem with making exceptions if the maintainers are
+busy.
 
-For my next trick, I'll attempt to quantify the "feel" bits using
-scheduler statistics.
-While riding a unicycle.
+Miklos
 
-Okay, scratch the unicycle ;-)
 
--- 
-Matt
