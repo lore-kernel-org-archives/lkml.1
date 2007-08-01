@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765314AbXHAOhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763574AbXHAOhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765314AbXHAOhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 10:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763886AbXHAOhT
+	id S1763574AbXHAOhJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 10:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763874AbXHAOgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 10:37:19 -0400
-Received: from jericho.provo.novell.com ([137.65.248.124]:19277 "EHLO
-	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764087AbXHAOhS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 10:37:18 -0400
-Message-ID: <46B09A92.9090409@suse.de>
-Date: Wed, 01 Aug 2007 23:37:06 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 1 Aug 2007 10:36:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44534 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763093AbXHAOgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 10:36:44 -0400
+Date: Wed, 1 Aug 2007 16:36:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070801143624.GA18043@elte.hu>
+References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random> <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home> <p73wswfo0hf.fsf@bingen.suse.de> <Pine.LNX.4.64.0708011525560.1817@scrub.home>
 MIME-Version: 1.0
-To: Avi Kivity <avi@argo.co.il>
-CC: NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 000 of 35] Refactor block layer to improve support for
- stacked devices.
-References: <20070731112539.22428.patches@notabene> <46AF5534.3010902@argo.co.il>
-In-Reply-To: <46AF5534.3010902@argo.co.il>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011525560.1817@scrub.home>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> NeilBrown wrote:
->> To achieve this, the "for_each" macros are now somewhat more complex.
->> For example, rq_for_each_segment is:
->>
->> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size)        \
->>     for (_i.i = 0, _i.offset = (bio)->bi_offset + offs,        \
->>          _i.size = min_t(int, _size, (bio)->bi_size - offs);       \
->>          _i.i < (bio)->bi_vcnt && _i.size > 0;            \
->>          _i.i++)                            \
->>         if (bv = *bio_iovec_idx((bio), _i.i),            \
->>             bv.bv_offset += _i.offset,                \
->>             bv.bv_len <= _i.offset                \
->>             ? (_i.offset -= bv.bv_len, 0)            \
->>             : (bv.bv_len -= _i.offset,                \
->>                _i.offset = 0,                    \
->>                bv.bv_len < _i.size                \
->>                ? (_i.size -= bv.bv_len, 1)            \
->>                : (bv.bv_len = _i.size,                \
->>               _i.size = 0,                    \
->>               bv.bv_len > 0)))
->>
->> #define bio_for_each_segment(bv, bio, __i)                \
->>         bio_for_each_segment_offset(bv, bio, __i, 0, (bio)->bi_size)
->>
->> It does some with some explanatory text in a comment, but it is still
->> a bit daunting.  Any suggestions on making this more approachable
->> would be very welcome.
->>
->>   
-> 
-> Well, I hesitate to state the obvious, but how about:
-> 
-> #define bio_for_each_segment_offset(bv, bio, _i, offs, _size) \
->    for (bio_iterator_init(&_i, ...); bio_iterator_cont(&_i, ...);
-> bio_iterator_advance(&_i, ...)) \
->         if (bio_iterator_want_segment(&_i, ...))
-> 
-> While this doesn't remove the complexity, at least it's readable.
 
-Violently seconded.
+* Roman Zippel <zippel@linux-m68k.org> wrote:
 
--- 
-tejun
+> > jiffies based sched_clock should be soon very rare. It's probably 
+> > not worth optimizing for it.
+> 
+> I'm not so sure about that. sched_clock() has to be fast, so many 
+> archs may want to continue to use jiffies. [...]
+
+i think Andi was talking about the vast majority of the systems out 
+there. For example, check out the arch demography of current Fedora 
+installs (according to the Smolt opt-in UUID based user metrics):
+
+   http://smolt.fedoraproject.org/
+
+   i686:     74743
+   x86_64:   18599
+   i386:      1208
+   ppc:        527
+   ppc64:      396
+   sparc64:     14
+   ---------------
+   Total:    95488
+
+even pure i386 (kernels, not systems) is a only 1.2% of all installs. By 
+the time the CFS kernel gets into a distro (a few months at minimum, 
+typically a year) this percentage will go down further. And embedded 
+doesnt really care about task-statistics corner cases [ (it likely 
+doesnt have 'top' installed - likely doesnt even have /proc mounted or 
+even built in ;-) ].
+
+of course CFS should not do _worse_ stats than what we had before, and 
+should not break or massively misbehave. Also, anything sane we can do 
+for low-resolution arches we should do (and we already do quite a bit - 
+the while wmult stuff is to avoid expensive divisions) - and i regularly 
+booted CFS with a low-resolution clock to make sure it works. So i'm not 
+trying to duck anything, we've just got to keep our design priorities 
+right :-)
+
+	Ingo
