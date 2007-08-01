@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764217AbXHATki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765055AbXHATmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764217AbXHATki (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 15:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761632AbXHATka
+	id S1765055AbXHATmA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 15:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761632AbXHATlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 15:40:30 -0400
-Received: from uosis.mif.vu.lt ([193.219.42.14]:3850 "EHLO uosis.mif.vu.lt"
+	Wed, 1 Aug 2007 15:41:52 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:36769 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761592AbXHATka (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 15:40:30 -0400
-X-Greylist: delayed 1953 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 15:40:30 EDT
-Date: Wed, 1 Aug 2007 22:07:54 +0300
-From: Rokas Masiulis <roma1390@uosis.mif.vu.lt>
-To: linux-kernel@vger.kernel.org
-Subject: Examine user space locks
-Message-ID: <20070801190754.GA31656@uosis.mif.vu.lt>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753538AbXHATlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 15:41:51 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chuck Ebbert <cebbert@redhat.com>
+Subject: Re: pm_trace displays the wrong time from the RTC
+Date: Wed, 1 Aug 2007 21:50:32 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+References: <46AFA78A.9010904@redhat.com> <200708011747.37932.rjw@sisk.pl> <46B0CDB3.8060505@redhat.com>
+In-Reply-To: <46B0CDB3.8060505@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
-Organization: VU MIF
+Message-Id: <200708012150.32715.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Wednesday, 1 August 2007 20:15, Chuck Ebbert wrote:
+> On 08/01/2007 11:47 AM, Rafael J. Wysocki wrote:
+> > Sorry for slow response, I've just noticed this thread.
+> > 
+> > On Tuesday, 31 July 2007 23:20, Chuck Ebbert wrote:
+> >> When resuming, systems print this when booted on 07/31/07:
+> >>
+> >> Date: 06/31/107
+> >>
+> >> /drivers/base/power/trace.c::read_magic_time():
+> >> 114	get_rtc_time(&time);
+> >> 115	printk("Time: %2d:%02d:%02d Date: %02d/%02d/%02d\n",
+> >> 116		time.tm_hour, time.tm_min, time.tm_sec,
+> >> 117		time.tm_mon, time.tm_mday, time.tm_year);
+> >>
+> >> include/asm-generic/rtc.h:
+> >> 102         /*
+> >> 103          * Account for differences between how the RTC uses the values
+> >> 104          * and how they are defined in a struct rtc_time;
+> >> 105          */
+> >> 106         if (time->tm_year <= 69)
+> >> 107                 time->tm_year += 100;
+> >> 108 
+> >> 109         time->tm_mon--;
+> > 
+> > Do you mean that systems display bad date after resuming if PM_TRACE is set,
+> > even if /sys/power/pm_trace contains 1 ?
+> > 
+> > If that's the case, are they i386 or x86_64?
+> > 
+> 
+> i386:
+> 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250238
 
-sometimes user space program hangs forever.
-In old days i remeber there was unkillable dosemu.
-May be there are good how to. Some one can point to it?
+OK, I now see what you mean.
 
-This is problem/solution isn't related to current kernel. This
-is question: what to do in this sitaution. 
+On my x86_64 test box this also happens after a fresh boot without
+suspending/resuming, so I think the problem is that we just shouldn't add 100
+to the year and decrease the month in get_rtc_time().
 
-Now i have eject(1)
+Greetings,
+Rafael
 
- $ ps uax | grep eject
- root     12662  0.0  0.0   1528   560 ?        D    Jul31   0:00 eject
- root     12866  0.0  0.0   1532   560 pts/10   D    Jul31   0:00 eject
- $ date
- Wed Aug  1 21:56:59 EEST 2007
 
-That same eject worked on that same hardware and kernel before.
-
- # strace -p 12662
- Process 12662 attached - interrupt to quit
-
-dosn't show which syscall is called.
-
-kill -9 12662 doesn't help to.
-
-No ops, no other info in dmesg.
-
-How to find problem? How to kill/stop proces without reboot?
-How to find which lock is taken by kernel to complete user space
-request/syscalls? 
-
-kernel: 2.6.17-gentoo-r4-20061014-00
-dmesg: http://89.190.108.145/~rokas/dmesg.txt
-config: http://89.190.108.145/~rokas/config.txt
-
-Thanks for any hints.
-
-roma139
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
