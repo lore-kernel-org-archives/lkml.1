@@ -1,65 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbXHAMEE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXHAMLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764021AbXHAMEE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:04:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759724AbXHAMDz
+	id S1763695AbXHAMLa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760814AbXHAMLV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:03:55 -0400
-Received: from mta5.srv.hcvlny.cv.net ([167.206.4.200]:43018 "EHLO
-	mta5.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760851AbXHAMDy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:03:54 -0400
-X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 08:03:54 EDT
-Date: Wed, 01 Aug 2007 07:38:40 -0400
-From: Steven Toth <stoth@hauppauge.com>
-Subject: Re: [linux-dvb] SAA7160/2
-In-reply-to: <1a297b360707312205j773a5910tc8e5e95172d77e20@mail.gmail.com>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: linux-dvb <linux-dvb@linuxtv.org>,
-       Linux and Kernel Video <video4linux-list@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Roland Dreier <rdreier@cisco.com>,
-       Grant Grundler <grundler@parisc-linux.org>
-Message-id: <46B070C0.1000801@hauppauge.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7BIT
-References: <1a297b360707312205j773a5910tc8e5e95172d77e20@mail.gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (Macintosh/20070716)
+	Wed, 1 Aug 2007 08:11:21 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:50701 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758283AbXHAMLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:11:20 -0400
+Date: Wed, 1 Aug 2007 14:11:10 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Chr <chunkeey@web.de>
+cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: Cleaning up the USBHID's blacklist.
+In-Reply-To: <200707312324.06116.chunkeey@web.de>
+Message-ID: <Pine.LNX.4.64.0708011409460.26230@twin.jikos.cz>
+References: <200707240228.39421.chunkeey@web.de> <200707301611.08758.chunkeey@web.de>
+ <Pine.LNX.4.64.0707311038400.5747@twin.jikos.cz> <200707312324.06116.chunkeey@web.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manu Abraham wrote:
-> Hi All,
->
-> After a bit of talks with NXP, they stated that if shown enough of a
-> user base (future business forecast) for the SAA7160 / SAA7162 PCIe
-> chipset, they would take into consideration, an investment into
-> support, such that the chips can be better supported.
->
-> ie, i need to provide them information that there is some significant
-> numbers in the user base.
-> Additionally, vendors such as Azurewave are ready to help us as well,
-> in whatever way they can.
->
-> Any ideas, how we can show user support in terms of a future business
-> case ? Comments appreciated.
->
->   
+On Tue, 31 Jul 2007, Chr wrote:
 
-Hi manu,
+> But I have one (final?) question. Since I am sometimes stuck to 80x25 
+> console...
+>  can we alphabetically sort the blacklist by the Vendor (the first 
+> field), instead of the quirk field(last field)? Or is there a 
+> technical/theoretical reason behind it?
 
-Hauppauge deal with NXP on a daily basis. We have a number of 716x 
-products either in the market or coming to market and we can add some 
-leverage.
+I find the blacklist sorted by quirk type more convenient - we typically 
+want to know "who has this particular quirk", but we generally don't care 
+"what quirks does this particular vendor have".
 
-I can push this through our FAE and account manager. Who's your contact 
-at NXP that we should make reference to?
-
-Email me privately and we can work together on this.
-
-Regards,
-
-Steve
-
+-- 
+Jiri Kosina
