@@ -1,40 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763695AbXHAMLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761988AbXHAMLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763695AbXHAMLa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 08:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760814AbXHAMLV
+	id S1761988AbXHAMLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 08:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763608AbXHAMLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 08:11:21 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:50701 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758283AbXHAMLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 08:11:20 -0400
-Date: Wed, 1 Aug 2007 14:11:10 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Chr <chunkeey@web.de>
-cc: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: Cleaning up the USBHID's blacklist.
-In-Reply-To: <200707312324.06116.chunkeey@web.de>
-Message-ID: <Pine.LNX.4.64.0708011409460.26230@twin.jikos.cz>
-References: <200707240228.39421.chunkeey@web.de> <200707301611.08758.chunkeey@web.de>
- <Pine.LNX.4.64.0707311038400.5747@twin.jikos.cz> <200707312324.06116.chunkeey@web.de>
+	Wed, 1 Aug 2007 08:11:47 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:13579 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1763333AbXHAMLp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 08:11:45 -0400
+Message-ID: <46B07877.8060604@interia.pl>
+Date: Wed, 01 Aug 2007 14:11:35 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jaroslav Kysela <perex@suse.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: CS5530 Alsa driver fails
+References: <46AFC017.8090805@interia.pl>	<20070801005310.1ef01458@the-village.bc.nu> <s5hodhrttz1.wl%tiwai@suse.de>
+In-Reply-To: <s5hodhrttz1.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+X-EMID: d5964acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007, Chr wrote:
+>> Might be worth setting the IRQ to sharable. I've never seen a 5530 with
+>> the sound IRQ shared so I don't know if that works and is a valid
+>> configuration for the VSA firmware
+> 
+> The relevant patch is below.  Please give it a try.
+> 
+> 
+> Takashi
 
-> But I have one (final?) question. Since I am sometimes stuck to 80x25 
-> console...
->  can we alphabetically sort the blacklist by the Vendor (the first 
-> field), instead of the quirk field(last field)? Or is there a 
-> technical/theoretical reason behind it?
+> -	if (request_irq(irq, irq_handler, hardware == SB_HW_ALS4000 ?
+> +	if (request_irq(irq, irq_handler,
+> +			(hardware == SB_HW_ALS4000 ||
+> +			 hardware == SB_HW_CS5530) ?
 
-I find the blacklist sorted by quirk type more convenient - we typically 
-want to know "who has this particular quirk", but we generally don't care 
-"what quirks does this particular vendor have".
+CS5530: XpressAudio at 0x220
+CS5530: MPU at 0x330
+CS5530: IRQ: 9 DMA8: 0 DMA16: 5
+ALSA sound/isa/sb/sb_common.c:91: snd_sbdsp_reset [0x220] failed...
+CS5530: Could not create SoundBlaster
 
--- 
-Jiri Kosina
+Does this mean that interrupt cannot be shared? Or is this something 
+worse?
+
+Thanks
+Rafa³
+
+
+----------------------------------------------------------------------
+Dowiedz sie, co naprawde podnieca kobiety. Wiecej wiesz, latwiej je
+oczarujesz 
+
+>>>http://link.interia.pl/f1b17
+
