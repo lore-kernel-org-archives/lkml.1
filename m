@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762653AbXHAIiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbXHAIqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762653AbXHAIiN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 04:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759017AbXHAIh7
+	id S1760709AbXHAIqd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 04:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbXHAIqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 04:37:59 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:29003 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756680AbXHAIh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 04:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:to:subject:from:cc:content-type:mime-version:references:content-transfer-encoding:message-id:in-reply-to:user-agent;
-        b=e4xmVKFmf2aDUK+XKofosxhjElCdhVKbzCrlnX3HWgJGilwGl8WP/1AdsJ9q4XYyia1xrw+uQTtsT9gYVL9i7G+dvo+lsFCI9KDGcFRom4hLGz8eu9hvhN9jtYSw85mikJMRAgn+CkcvkmXczm4e2GtP/8RWKMnX0rIqY73DCSQ=
-Date: Wed, 01 Aug 2007 10:37:42 +0200
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: Reboot hang FIXED
-From: kriko <kristjan.ugrin@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; format=flowed; delsp=yes; charset=utf-8
+	Wed, 1 Aug 2007 04:46:25 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47000 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750718AbXHAIqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 04:46:24 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+Date: Wed, 1 Aug 2007 10:39:23 +0200
+User-Agent: KMail/1.9.6
+Cc: Nick Piggin <npiggin@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-References: <op.twci6be2atcbto@linux.site> <46AF9DC8.7080103@gmail.com> <op.twclwllkatcbto@linux.site> <46AFABE8.7050107@gmail.com> <op.twcmvlvcatcbto@linux.site> <46AFAF4E.1000605@gmail.com> <op.twcrsx1yatcbto@linux.site> <46B038B5.2030702@gmail.com>
+Content-Type: text/plain;
+  charset="ansi_x3.4-1968"
 Content-Transfer-Encoding: 7bit
-Message-ID: <op.twdgw4xiatcbto@linux.site>
-In-Reply-To: <46B038B5.2030702@gmail.com>
-User-Agent: Opera Mail/9.22 (Linux)
+Content-Disposition: inline
+Message-Id: <200708011039.23356.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> using only new drivers works fine.
->
-> ... oh well. I suppose it's not really worth it to try and debug that.  
-> Cheers.
+On Wednesday 01 August 2007 01:40:18 Christoph Lameter wrote:
+ 
+> It does in the sense that slabs are allocated following policies. If you 
+> want to place individual objects then you need to use kmalloc_node().
 
-I just want to add that my DVD drive is not detected when using new  
-driver. So back to old one....
+Nick wants to place individual objects here
 
--- 
-kriko
+-Andi
+
+
