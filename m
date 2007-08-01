@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXHAQY4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754756AbXHAQ3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbXHAQY4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 12:24:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbXHAQYt
+	id S1754756AbXHAQ3L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 12:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751456AbXHAQ25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 12:24:49 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:58253 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751486AbXHAQYr (ORCPT
+	Wed, 1 Aug 2007 12:28:57 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52971 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751049AbXHAQ24 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 12:24:47 -0400
-X-Sasl-enc: E921xGYp/YtF+omTFYenqydpeM/v7Dbp0B5yBbXjHzuq 1185985486
-Date: Wed, 1 Aug 2007 13:24:42 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Michael S. Tsirkin" <mst@dev.mellanox.co.il>
-Cc: Hugh Dickins <hugh@veritas.com>, Len Brown <len.brown@intel.com>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       linux-kernel@vger.kernel.org, ibm-acpi-devel@lists.sourceforge.net,
-       Richard Hughes <hughsient@gmail.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: THINKPAD_ACPI_INPUT_ENABLED seems regressive
-Message-ID: <20070801162442.GO23111@khazad-dum.debian.net>
-References: <Pine.LNX.4.64.0708011327200.4615@blonde.wat.veritas.com> <20070801153602.GJ23111@khazad-dum.debian.net> <20070801160805.GB11758@mellanox.co.il>
+	Wed, 1 Aug 2007 12:28:56 -0400
+Date: Wed, 1 Aug 2007 09:27:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+cc: Ingo Molnar <mingo@elte.hu>, Roman Zippel <zippel@linux-m68k.org>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+In-Reply-To: <p73ps27npu0.fsf@bingen.suse.de>
+Message-ID: <alpine.LFD.0.999.0708010924490.3582@woody.linux-foundation.org>
+References: <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
+ <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
+ <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801071230.GA16375@elte.hu>
+ <Pine.LNX.4.64.0708011511530.1817@scrub.home> <20070801150742.GA23670@elte.hu>
+ <p73ps27npu0.fsf@bingen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070801160805.GB11758@mellanox.co.il>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Aug 2007, Michael S. Tsirkin wrote:
-> Forcing the selection at compile-time isn't such a great idea IMHO.
-> Isn't there a way to support both old and new userspace?
 
-It only afects the *defaults* of various driver knobs that can be freely
-modified at runtime:
 
-without THINKPAD_ACPI_INPUT_ENABLED:
-	hotkey_enable = 0
-	hotkey_mask unchanged from whatever is already set
+On Wed, 1 Aug 2007, Andi Kleen wrote:
 
-	hot keys from ibm-acpi 0.14 are mapped to KEY_UNKNOWN, and thus will
-	generate ACPI events if hotkey_enabled is set to 1.
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > thanks. Just to make sure, while you said that your TSC was off on that 
+> > laptop, the bootup log of yours suggests a working TSC:
+> > 
+> >   Time: tsc clocksource has been installed.
+> 
+> Standard kernels often disable the TSC later after running a bit 
+> with it (e.g. on any cpufreq change without p state invariant TSC) 
 
-with THINKPAD_ACPI_INPUT_ENABLED:
-	hotkey_enable = 1
-	hotkey_mask = hotkey_recommended_mask
+I assume that what Roman hit was that he had explicitly disabled the TSC 
+because of TSC instability with the "notsc" kernel command line. Which 
+disabled is *entirely*.
 
-	most hot keys are mapped to something other than KEY_UNKNOWN, and
-	thus will not generate ACPI events but rather input layer events.
+That *used* to be the right thing to do, since the gettimeofday() logic 
+originally didn't know about TSC instability, and it just resulted in 
+somewhat flaky timekeeping.
 
-You should select whichever works better with your userspace.
+These days, of course, we should notice it on our own, and just switch 
+away from the TSC as a reliable clock-source, but still allow it to be 
+used for the cases where absolute accuracy is not a big issue.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+So I suspect that Roman - by virtue of being an old-timer - ends up having 
+a workaround for an old problem that isn't needed, and that in turn ends 
+up meaning that his scheduler clock also ends up using the really not very 
+good timer tick..
+
+			Linus
