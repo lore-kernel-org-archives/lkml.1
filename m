@@ -1,116 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765928AbXHASjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932765AbXHASkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765928AbXHASjh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbXHASj3
+	id S932765AbXHASkg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:40:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbXHASk2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:39:29 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:47639 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbXHASj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:39:28 -0400
-Subject: Re: [rfc] balance-on-fork NUMA placement
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Martin Bligh <mbligh@mbligh.org>
-Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Eric Whitney <eric.whitney@hp.com>
-In-Reply-To: <46B0C8A3.8090506@mbligh.org>
-References: <20070731054142.GB11306@wotan.suse.de>
-	 <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de>
-	 <46B0C8A3.8090506@mbligh.org>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 01 Aug 2007 14:32:48 -0400
-Message-Id: <1185993169.5059.79.camel@localhost>
+	Wed, 1 Aug 2007 14:40:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:60674 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761288AbXHASk1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:40:27 -0400
+Date: Wed, 1 Aug 2007 20:40:26 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] Simple Performance Counters: x86_64 support
+Message-ID: <20070801184026.GC20713@one.firstfloor.org>
+References: <11859243121617-git-send-email-clameter@sgi.com> <p73ir7zplty.fsf@bingen.suse.de> <Pine.LNX.4.64.0708011052080.20795@schroedinger.engr.sgi.com> <20070801182611.GB20713@one.firstfloor.org> <Pine.LNX.4.64.0708011127490.22867@schroedinger.engr.sgi.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708011127490.22867@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 10:53 -0700, Martin Bligh wrote:
-> Nick Piggin wrote:
-> > On Tue, Jul 31, 2007 at 11:14:08AM +0200, Andi Kleen wrote:
-> >> On Tuesday 31 July 2007 07:41, Nick Piggin wrote:
-> >>
-> >>> I haven't given this idea testing yet, but I just wanted to get some
-> >>> opinions on it first. NUMA placement still isn't ideal (eg. tasks with
-> >>> a memory policy will not do any placement, and process migrations of
-> >>> course will leave the memory behind...), but it does give a bit more
-> >>> chance for the memory controllers and interconnects to get evenly
-> >>> loaded.
-> >> I didn't think slab honored mempolicies by default? 
-> >> At least you seem to need to set special process flags.
-> >>
-> >>> NUMA balance-on-fork code is in a good position to allocate all of a new
-> >>> process's memory on a chosen node. However, it really only starts
-> >>> allocating on the correct node after the process starts running.
-> >>>
-> >>> task and thread structures, stack, mm_struct, vmas, page tables etc. are
-> >>> all allocated on the parent's node.
-> >> The page tables should be only allocated when the process runs; except
-> >> for the PGD.
-> > 
-> > We certainly used to copy all page tables on fork. Not any more, but we
-> > must still copy anonymous page tables.
-> 
-> This topic seems to come up periodically every since we first introduced
-> the NUMA scheduler, and every time we decide it's a bad idea. What's
-> changed? What workloads does this improve (aside from some artificial
-> benchmark like stream)?
-> 
-> To repeat the conclusions of last time ... the primary problem is that
-> 99% of the time, we exec after we fork, and it makes that fork/exec
-> cycle slower, not faster, so exec is generally a much better time to do
-> this. There's no good predictor of whether we'll exec after fork, unless
-> one has magically appeared since late 2.5.x ?
-> 
+> It is certainly interesting to compare alternative ways of handling the 
+> instruction streams by various processors or models of processors.
 
-As Nick points out, one reason to balance on fork() rather than exec()
-is that with balance on exec you already have the new task's kernel
-structs allocated on the "wrong" node.  However, as you point out, this
-slows down the fork/exec cycle.  This is especially noticeable on larger
-node-count systems in, e.g., shell scripts that spawn a lot of short
-lived child processes.  "Back in the day", we got bitten by this on the
-Alpha EV7 [a.k.a. Marvel] platform with just ~64 nodes--small compared
-to, say, the current Altix platform.  
+Well you have to do a lot more work then to handle instable TSCs then.
 
-On the other hand, if you're launching a few larger, long-lived
-applications with any significant %-age of system time, you might want
-to consider spreading them out across nodes and having their warmer
-kernel data structures close to them.  A dilemma.
+In particular the frequencies can be different between CPUs, they 
+change (which you can catch with cpufreq notifiers) and during the
+cpufreq change period they're instable (as in you can't tell for
+some time which frequency they're currently running at and they
+might be running immediate frequencies) 
 
-Altho' I was no longer working on this platform when this issue came up,
-I believe that the kernel developers came up with something along these
-lines:
+The current cycles_2_ns() users avoid this problem by not
+using the TSC in this case, but that might not be an option
+for you (cpufreq is becoming more and more ubiquitous)
 
-+ define a "credit" member of the "task" struct, initialized to, say,
-zero.
+Good luck.
 
-+ when "credit" is zero, or below some threshold, balance on fork--i.e.,
-spread out the load--otherwise fork "locally" and decrement credit
-[maybe not < 0].
-
-+ when reaping dead children, if the poor thing's cpu utilization is
-below some threshold, give the parent some credit.  [blood money?]
-
-And so forth.  Initial forks will balance.  If the children refuse to
-die, forks will continue to balance.  If the parent starts seeing short
-lived children, fork()s will eventually start to stay local.  
-
-I believe that this solved the pathological behavior we were seeing with
-shell scripts taking way longer on the larger, supposedly more powerful,
-platforms.
-
-Of course, that OS could migrate the equivalent of task structs and
-kernel stack [the old Unix user struct that was traditionally swappable,
-so fairly easy to migrate].  On Linux, all bets are off, once the
-scheduler starts migrating tasks away from the node that contains their
-task struct, ...  [Remember Eric Focht's "NUMA Affine Scheduler" patch
-with it's "home node"?]
-
-Lee
-
+-Andi
