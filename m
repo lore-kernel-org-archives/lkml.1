@@ -1,76 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933205AbXHASGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933345AbXHASHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933205AbXHASGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762390AbXHASGV
+	id S933345AbXHASHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbXHASHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:06:21 -0400
-Received: from fallback.us4.outblaze.com ([205.158.62.120]:60154 "EHLO
-	fallback.us4.outblaze.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763455AbXHASGU convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:06:20 -0400
-X-OB-Received: from unknown (205.158.62.81)
-  by wfilter2.us4.outblaze.com; 1 Aug 2007 17:41:03 -0000
-Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-MIME-Version: 1.0
-From: "Ash Willis" <ashwillis@programmer.net>
-To: rafalbilski@interia.pl
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk, tiwai@suse.de
-Date: Wed, 1 Aug 2007 12:41:03 -0500
-Subject: Re: CS5530 Alsa driver fails
-X-Originating-Ip: 79.65.38.5
-X-Originating-Server: ws1-2.us4.outblaze.com
-Message-Id: <20070801174103.D03341F50B1@ws1-2.us4.outblaze.com>
+	Wed, 1 Aug 2007 14:07:32 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41726 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752280AbXHASHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:07:31 -0400
+Date: Wed, 1 Aug 2007 14:06:57 -0400
+From: Ulrich Drepper <drepper@redhat.com>
+Message-Id: <200708011806.l71I6v9N002535@devserv.devel.redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: More documentation: system call how-to
+Cc: akpm@linux-foundation.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Hello,
->
->Linux: 2.6.23-rc1-git3
->Hardware: CX5530
->
->After "modprobe snd-cs5530" I have:
->CS5530: XpressAudio at 0x220
->CS5530: MPU at 0x330
->CS5530: IRQ: 9 DMA8: 0 DMA16: 5
->sb: can't grab irq 9
->CS5530: Could not create SoundBlaster
->CS5530_Audio: probe of 0000:00:12.3 failed with error -16
->Thank You
->Rafa&#322;
->
->~ $ cat /proc/interrupts
->           CPU0
->  0:      26624    XT-PIC-XT        timer
->  2:          0    XT-PIC-XT        cascade
->  4:        428    XT-PIC-XT        serial
->  8:          0    XT-PIC-XT        rtc
->  9:      10793    XT-PIC-XT        ohci_hcd:usb1
-> 10:       1326    XT-PIC-XT        eth0
->NMI:          0
->ERR:          0
-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-Hi Rafa&#322;,
-It seems that you're already using irq 9 for another device, and as Alan says
-the cs5530 audio device doesn't seem to do irq sharing. It seems to me that you
-need to go into your BIOS settings at startup and tell the device to use an irq
-line that's not already in use by some other device. Can you please let me know
-if this works?
+How about adding the attached text to the Documentation directory?  I
+had to correct over the years to one or the other system call design
+problems.  Other problems couldn't be corrected anymore and we have to
+live with them.  Maybe spelling out the rules explicitly will help a bit.
 
-The ALSA CS5530 driver is one that I ported from Alan's OSS Kahlua driver, so
-there may be some things that I've missed. If the above advice doesn't work,
-please confirm whether or not the device is functioning correctly in your
-current set up with Alan's original OSS driver.
-
-Thanks,
-
-Ash
+I've added a few rules I could think of right now.  What should be
+added as well is a rule for 64-bit parameters on 32-bit platforms.  I
+leave this to the s390 people who have the biggest restrictions when
+it comes to this.
 
 
--- 
-We've Got Your Name at http://www.mail.com!
-Get a FREE E-mail Account Today - Choose From 100+ Domains
 
+Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+
+Rules for designing new system calls
+------------------------------------
+
+1. Do not use multiplexing system calls.
+
+   A practical argument is that it invariably reduces the number of
+   available parameters to the system call which will haunt people who
+   have to care about architectures with a limited set of registers
+   reserved for this purpose.
+
+   Another aspect is that it is most likely slower.  The caller in
+   most cases knows exactly which sub-function of the system call is
+   needed.  If the decision about the sub-function is dynamic the
+   computation of the code could just as well be a computation of a
+   system call number.  The difference lies in the kernel where the
+   multiplexing always has to happen, even if the required
+   sub-function is known to the caller ahead of time.
+
+   Adding new system calls is much cheaper: it is a word in a table.
+   This is much less code and data than the switch statement or
+   if-cascade needed to implement the multiplexer.
+
+   Bad examples: sys_socketcall on x86, sys_futex, and several more
+
+
+2. Use of ENOSYS:
+
+   The runtime has to be able to distinguish non-existing system calls
+   due to old kernel versions from error conditions in an implemented
+   system call.  This means the ENOSYS error should never be used in
+   an error condition once a system call is implemented.
+
+   Example: In sys_fallocate, if the file system does not implement the
+   fallocate operation, return EOPNOTSUPP and not ENOSYS.
+
+   There is one exception to the rule: if rule #1 is violated and a
+   multiplexer system call is used, invalid sub-function codes should
+   be signaled using ENOSYS.
+
+   Example: sys_futex
+
+
+3. Choose parameters for growth
+
+   It makes today no sense anymore to implement any system call which
+   restricts even on 32-bit machines the size of values indicating
+   file sizes or offsets to 32-bits.  64-bit values should be used
+   throughout.
+
+   Example: sys_fadvise64, which should have been defined from day 1
+   like sys_fadvise64_64.
+
+   Similarly, timeout granularity of seconds is not suitable anymore.
+   Most interfaces use nano-second resolution and a often used way
+   to specify such times and intervals is using the timespec structure.
+
+
+4. 32-bit compatibility
+
+   Kernels for architectures like x86-64 and PPC64 have to be able to
+   execute 32-bit binaries as well.  The implementation of the actual
+   system calls is of course shared.  The types for the system call
+   parameters and return values on 32-bit and 64-bit systems can be
+   different.  This is where compatibility wrappers come in.
+
+   These functions, usually named compat_sys_XYZ for a system call
+   sys_XYZ, are only needed in case the system call parameter is
+   a pointer to a structure which has a different representation in
+   32- and 64-bit mode.  Differences in size of integer or pointer
+   arguments does not require a compatibility wrapper.
+
+   Examples: compat_sys_utimensat, which has to convert a timespec
+   structure from 32-bit to 64-bit.  See also rule #3.
