@@ -1,66 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbXHAFzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756294AbXHAFz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbXHAFzj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 01:55:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbXHAFzZ
+	id S1756294AbXHAFz7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 01:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbXHAFzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 01:55:25 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:42063 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757539AbXHAFzW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 01:55:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=A5SOdPhzDIyHFBhgbqQ+JA0hNJ7aTXuEN77Tqr3RQPCa2QtFM276JHAxMSY68JoMw9YDEyP97RLlzpZ8/EdT8aBC1M98DX2U9eXwmiJ+px9lM3D1zuJ6RGuDKVi7s8R0unM3RNGtVNUyeiEOnUhnSiSigC8/oqIdxd2aD4fv1OU=
-Subject: Re: [PATCH 4/5] x86_64 EFI support -v3: EFI framebuffer driver
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1185851582.23149.29.camel@caritas-dev.intel.com>
-References: <1185851582.23149.29.camel@caritas-dev.intel.com>
-Content-Type: text/plain
-Date: Wed, 01 Aug 2007 13:55:12 +0800
-Message-Id: <1185947712.4688.22.camel@daplas>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Wed, 1 Aug 2007 01:55:45 -0400
+Received: from mail.bmlv.gv.at ([193.171.152.37]:39469 "EHLO mail.bmlv.gv.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756277AbXHAFzo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 01:55:44 -0400
+From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
+To: Cal Peake <cp@absolutedigital.net>
+Subject: Re: [PATCH] documentation fixes
+Date: Wed, 1 Aug 2007 07:55:35 +0200
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200707311114.09308.philipp.marek@bmlv.gv.at> <Pine.LNX.4.64.0707311606350.13917@lancer.cnet.absolutedigital.net>
+In-Reply-To: <Pine.LNX.4.64.0707311606350.13917@lancer.cnet.absolutedigital.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708010755.36022.philipp.marek@bmlv.gv.at>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-07-31 at 11:13 +0800, Huang, Ying wrote:
-
-> +
-> +#include <linux/delay.h>
-> +#include <linux/errno.h>
-> +#include <linux/fb.h>
-> +#include <linux/kernel.h>
-> +#include <linux/init.h>
-> +#include <linux/ioport.h>
-> +#include <linux/mm.h>
-> +#include <linux/module.h>
-> +#include <linux/platform_device.h>
-> +#include <linux/screen_info.h>
-> +#include <linux/slab.h>
-> +#include <linux/string.h>
-> +#include <linux/dmi.h>
-> +#include <linux/efi.h>
-> +#include <linux/io.h>
-> +
-> +#include <video/vga.h>
-> +
-
-I don't see any problems with this driver, just a few minor nits.
-
-Do you really need all the #include's?
-I presume this driver only supports bpp 16 and above?
-
-Tony
+On Dienstag, 31. Juli 2007, Cal Peake wrote:
+> > Whom should I CC for other documentation updates? Is the maintainer
+> > the correct person, or are such small fixes "send and forget"?
+>
+> For spelling and grammar fixes, sending to trivial@kernel.org is prolly
+> the best bet with a CC to l-k.
+>
+> Also, please see Documentation/SubmittingPatches, particularly section 12
+> about signing off your work.
+Ok, thank you!
 
 
+Regards,
 
+Phil
