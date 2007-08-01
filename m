@@ -1,128 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765879AbXHASiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765928AbXHASjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765879AbXHASiT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 14:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbXHASiK
+	id S1765928AbXHASjh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 14:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757499AbXHASj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 14:38:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47035 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757286AbXHASiJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 14:38:09 -0400
-Date: Thu, 2 Aug 2007 00:20:24 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Ulrich Drepper <drepper@redhat.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: More documentation: system call how-to
-In-Reply-To: <200708011806.l71I6v9N002535@devserv.devel.redhat.com>
-Message-ID: <alpine.LFD.0.999.0708020004170.7288@enigma.security.iitk.ac.in>
-References: <200708011806.l71I6v9N002535@devserv.devel.redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Wed, 1 Aug 2007 14:39:29 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:47639 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752073AbXHASj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 14:39:28 -0400
+Subject: Re: [rfc] balance-on-fork NUMA placement
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Martin Bligh <mbligh@mbligh.org>
+Cc: Nick Piggin <npiggin@suse.de>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <46B0C8A3.8090506@mbligh.org>
+References: <20070731054142.GB11306@wotan.suse.de>
+	 <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de>
+	 <46B0C8A3.8090506@mbligh.org>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 01 Aug 2007 14:32:48 -0400
+Message-Id: <1185993169.5059.79.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ulrich,
-
-
-On Wed, 1 Aug 2007, Ulrich Drepper wrote:
-
-> How about adding the attached text to the Documentation directory?  I
-> had to correct over the years to one or the other system call design
-> problems.  Other problems couldn't be corrected anymore and we have to
-> live with them.  Maybe spelling out the rules explicitly will help a bit.
-
-Most definitely, but going through the list below, I could think of
-maybe several more little things that people tend to forget when actually
-/implementing/ the system call (and not necessarily the abstract level
-design decisions such as argument(s) and sizes).
-
-
-> I've added a few rules I could think of right now.  What should be
-> added as well is a rule for 64-bit parameters on 32-bit platforms.  I
-> leave this to the s390 people who have the biggest restrictions when
-> it comes to this.
-
-Yes, that must definitely be spelt out clearly, probably with examples
-of how to do it right.
-
-Another thing that's a must when designing a syscall would be thinking
-of any security implications that it brings about and clearly spelling
-out expected behaviour in all cases -- security could mean different
-things for different syscalls, but just getting that word in here would
-mean people don't make basic mistakes like introducing "xxx_set_xxx"
-kind of syscalls that go ahead and modify kernel/global structures
-without authors having even thought of how and why that's wrong.
-
-Other than that, as I said above, probably what we also need is a
-"system call implementation checklist" of some sort, which lists out the
-basic things (copying buffers from/to userspace, various security checks,
-other things I'm not recollecting currently) and how to get them right.
-
-
-> Signed-off-by: Ulrich Drepper <drepper@redhat.com>
+On Wed, 2007-08-01 at 10:53 -0700, Martin Bligh wrote:
+> Nick Piggin wrote:
+> > On Tue, Jul 31, 2007 at 11:14:08AM +0200, Andi Kleen wrote:
+> >> On Tuesday 31 July 2007 07:41, Nick Piggin wrote:
+> >>
+> >>> I haven't given this idea testing yet, but I just wanted to get some
+> >>> opinions on it first. NUMA placement still isn't ideal (eg. tasks with
+> >>> a memory policy will not do any placement, and process migrations of
+> >>> course will leave the memory behind...), but it does give a bit more
+> >>> chance for the memory controllers and interconnects to get evenly
+> >>> loaded.
+> >> I didn't think slab honored mempolicies by default? 
+> >> At least you seem to need to set special process flags.
+> >>
+> >>> NUMA balance-on-fork code is in a good position to allocate all of a new
+> >>> process's memory on a chosen node. However, it really only starts
+> >>> allocating on the correct node after the process starts running.
+> >>>
+> >>> task and thread structures, stack, mm_struct, vmas, page tables etc. are
+> >>> all allocated on the parent's node.
+> >> The page tables should be only allocated when the process runs; except
+> >> for the PGD.
+> > 
+> > We certainly used to copy all page tables on fork. Not any more, but we
+> > must still copy anonymous page tables.
 > 
-> Rules for designing new system calls
-> ------------------------------------
+> This topic seems to come up periodically every since we first introduced
+> the NUMA scheduler, and every time we decide it's a bad idea. What's
+> changed? What workloads does this improve (aside from some artificial
+> benchmark like stream)?
 > 
-> 1. Do not use multiplexing system calls.
+> To repeat the conclusions of last time ... the primary problem is that
+> 99% of the time, we exec after we fork, and it makes that fork/exec
+> cycle slower, not faster, so exec is generally a much better time to do
+> this. There's no good predictor of whether we'll exec after fork, unless
+> one has magically appeared since late 2.5.x ?
 > 
->    A practical argument is that it invariably reduces the number of
->    available parameters to the system call which will haunt people who
->    have to care about architectures with a limited set of registers
->    reserved for this purpose.
-> 
->    Another aspect is that it is most likely slower.  The caller in
->    most cases knows exactly which sub-function of the system call is
->    needed.  If the decision about the sub-function is dynamic the
->    computation of the code could just as well be a computation of a
->    system call number.  The difference lies in the kernel where the
->    multiplexing always has to happen, even if the required
->    sub-function is known to the caller ahead of time.
-> 
->    Adding new system calls is much cheaper: it is a word in a table.
->    This is much less code and data than the switch statement or
->    if-cascade needed to implement the multiplexer.
-> 
->    Bad examples: sys_socketcall on x86, sys_futex, and several more
-> 
-> 
-> 2. Use of ENOSYS:
-> 
->    The runtime has to be able to distinguish non-existing system calls
->    due to old kernel versions from error conditions in an implemented
->    system call.  This means the ENOSYS error should never be used in
->    an error condition once a system call is implemented.
-> 
->    Example: In sys_fallocate, if the file system does not implement the
->    fallocate operation, return EOPNOTSUPP and not ENOSYS.
-> 
->    There is one exception to the rule: if rule #1 is violated and a
->    multiplexer system call is used, invalid sub-function codes should
->    be signaled using ENOSYS.
-> 
->    Example: sys_futex
-  ^^^
 
-Probably makes sense to prefix "sad" or "unfortunate" here.
+As Nick points out, one reason to balance on fork() rather than exec()
+is that with balance on exec you already have the new task's kernel
+structs allocated on the "wrong" node.  However, as you point out, this
+slows down the fork/exec cycle.  This is especially noticeable on larger
+node-count systems in, e.g., shell scripts that spawn a lot of short
+lived child processes.  "Back in the day", we got bitten by this on the
+Alpha EV7 [a.k.a. Marvel] platform with just ~64 nodes--small compared
+to, say, the current Altix platform.  
 
-> 3. Choose parameters for growth
-> 
->    It makes today no sense anymore to implement any system call which
->    restricts even on 32-bit machines the size of values indicating
->    file sizes or offsets to 32-bits.  64-bit values should be used
->    throughout.
-> 
->    Example: sys_fadvise64, which should have been defined from day 1
->    like sys_fadvise64_64.
+On the other hand, if you're launching a few larger, long-lived
+applications with any significant %-age of system time, you might want
+to consider spreading them out across nodes and having their warmer
+kernel data structures close to them.  A dilemma.
 
-Again, this is a "bad" example.
+Altho' I was no longer working on this platform when this issue came up,
+I believe that the kernel developers came up with something along these
+lines:
 
->    Similarly, timeout granularity of seconds is not suitable anymore.
->    Most interfaces use nano-second resolution and a often used way
->    to specify such times and intervals is using the timespec structure.
++ define a "credit" member of the "task" struct, initialized to, say,
+zero.
 
++ when "credit" is zero, or below some threshold, balance on fork--i.e.,
+spread out the load--otherwise fork "locally" and decrement credit
+[maybe not < 0].
 
-Satyam
++ when reaping dead children, if the poor thing's cpu utilization is
+below some threshold, give the parent some credit.  [blood money?]
+
+And so forth.  Initial forks will balance.  If the children refuse to
+die, forks will continue to balance.  If the parent starts seeing short
+lived children, fork()s will eventually start to stay local.  
+
+I believe that this solved the pathological behavior we were seeing with
+shell scripts taking way longer on the larger, supposedly more powerful,
+platforms.
+
+Of course, that OS could migrate the equivalent of task structs and
+kernel stack [the old Unix user struct that was traditionally swappable,
+so fairly easy to migrate].  On Linux, all bets are off, once the
+scheduler starts migrating tasks away from the node that contains their
+task struct, ...  [Remember Eric Focht's "NUMA Affine Scheduler" patch
+with it's "home node"?]
+
+Lee
+
