@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932095AbXHAKYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762024AbXHAKaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932095AbXHAKYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 06:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbXHAKYe
+	id S1762024AbXHAKaY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 06:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXHAKaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 06:24:34 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:42360 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757737AbXHAKYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 06:24:33 -0400
-Date: Wed, 1 Aug 2007 12:23:24 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net,
-       Greg KH <gregkh@suse.de>
-Subject: Re: 2.6.23-rc1-mm2
-In-Reply-To: <20070801011323.6e8d8259.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708011221430.26230@twin.jikos.cz>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
- <200708011002.30962.m.kozlowski@tuxland.pl> <20070801011323.6e8d8259.akpm@linux-foundation.org>
+	Wed, 1 Aug 2007 06:30:13 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:9597 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756079AbXHAKaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 06:30:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=hW4VAUYLLtUZsRxI1C8fDjFRE7K4rJ4yd+voWindZdd6K/c42q9jfSjw+Suz7e+7IMnHALCmKRtSEHYDZ+2e8DG8PqaLpZuXR/NOXztvvxNgDikukwusRcqlsMh1Nqyc+SJH9MtI/uMgrf4ru8VHMGOEXEnJCqR+/rp3Q8tIZNc=
+Message-ID: <46B060AD.6040907@gmail.com>
+Date: Wed, 01 Aug 2007 19:30:05 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Gabriel C <nix.or.die@googlemail.com>, "A. Kalten" <akalten@comcast.net>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Can't unload uhci_hcd module with 2.6.22 -- also oops
+References: <Pine.LNX.4.44L0.0707311139120.3520-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0707311139120.3520-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CCs adjusted)
+Hello, Alan.
 
-On Wed, 1 Aug 2007, Andrew Morton wrote:
+Alan Stern wrote:
+> Tejun:
+> 
+> Can you look at this oops message please?  It appears similar to the
+> sysfs bug in 2.6.23-rc1, but it occurred under 2.6.22.  Is a similar 
+> fix needed for the 2.6.22-stable series?
 
-> > usb 2-1: USB disconnect, address 2
-> > BUG: atomic counter underflow at:
-> >  [<c010456a>] show_trace_log_lvl+0x1a/0x30
-> >  [<c010508d>] show_trace+0x12/0x14
-> >  [<c01051e0>] dump_stack+0x15/0x17
-> >  [<c01418cf>] __free_pages+0x50/0x52
-> >  [<c01418f0>] free_pages+0x1f/0x21
-> >  [<c010783d>] dma_free_coherent+0x43/0x9c
-> >  [<c0315067>] hcd_buffer_free+0x43/0x6a
-> >  [<c030b2b4>] usb_buffer_free+0x23/0x29
-> >  [<c0346db4>] hid_free_buffers+0x23/0x71
-> >  [<c0346eb2>] hid_disconnect+0xb0/0xc8
-> >  [<c0313676>] usb_unbind_interface+0x30/0x72
-> >  [<c02c6df0>] __device_release_driver+0x6a/0x92
-> >  [<c02c71c3>] device_release_driver+0x20/0x36
-> >  [<c02c6736>] bus_remove_device+0x62/0x85
-> >  [<c02c49f8>] device_del+0x16d/0x27c
-> >  [<c0310f25>] usb_disable_device+0x7a/0xe2
-> >  [<c030d0bc>] usb_disconnect+0x94/0xde
-> >  [<c030e030>] hub_thread+0x2fe/0xc1b
-> >  [<c0128aee>] kthread+0x36/0x58
-> >  [<c0104233>] kernel_thread_helper+0x7/0x14
-> >  =======================
-> > uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+2.6.23-rc1 bug was one too many put during symlink creation failure path
+leading to premature release of parent kobject on removal.  The posted
+log looks more like premature module unload.
 
-Mariusz,
+For example, something like...
 
-I guess the patch below (which I have just added to my tree) fixes that, 
-right? Thanks.
+1. module b uses services of module a
+2. module b creates some attributes with struct attribute in the module
+3. module b unloads but attr created in #2 is not removed
+4. module a tries to unload and tries to remove attr from #2 and oops
+because struct attribute referenced by the attr is already gone.
 
-diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
-index 6e73934..0a1f2b5 100644
---- a/drivers/hid/usbhid/hid-core.c
-+++ b/drivers/hid/usbhid/hid-core.c
-@@ -877,9 +877,9 @@ fail:
- 	usb_free_urb(usbhid->urbin);
- 	usb_free_urb(usbhid->urbout);
- 	usb_free_urb(usbhid->urbctrl);
-+	hid_free_buffers(dev, hid);
- 	kfree(usbhid);
- fail_no_usbhid:
--	hid_free_buffers(dev, hid);
- 	hid_free_device(hid);
- 
- 	return NULL;
-@@ -913,9 +913,9 @@ static void hid_disconnect(struct usb_interface *intf)
- 	usb_free_urb(usbhid->urbin);
- 	usb_free_urb(usbhid->urbctrl);
- 	usb_free_urb(usbhid->urbout);
--	kfree(usbhid);
- 
- 	hid_free_buffers(hid_to_usb_dev(hid), hid);
-+	kfree(usbhid);
- 	hid_free_device(hid);
- }
- 
+Thanks.
+
+-- 
+tejun
