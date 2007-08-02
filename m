@@ -1,49 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbXHBRph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbXHBRwI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbXHBRph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758395AbXHBRpa
+	id S1759310AbXHBRwI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:52:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbXHBRv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:45:30 -0400
-Received: from max.aladin.ro ([80.96.155.2]:39753 "EHLO aladin.ro"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752579AbXHBRp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:45:28 -0400
-Message-ID: <46B21833.600@aladin.ro>
-Date: Thu, 02 Aug 2007 20:45:23 +0300
-From: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 2 Aug 2007 13:51:56 -0400
+Received: from livid.absolutedigital.net ([66.92.46.173]:44514 "EHLO
+	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbXHBRvz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 13:51:55 -0400
+Date: Thu, 2 Aug 2007 13:50:56 -0400 (EDT)
+From: Cal Peake <cp@absolutedigital.net>
+To: Gabriel C <nix.or.die@googlemail.com>
+cc: Frank Hale <frankhale@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: ACPI on Averatec 2370
+In-Reply-To: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
+Message-ID: <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
+ <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Dynamic major/minor numbers (or dropping them completely)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-*This message was transferred with a trial version of CommuniGate(r) Pro*
-Currently, the kernel has the following properties:
-1) initramfs can be used to boot the system. We don't need any 
-predefined /dev entries.
-2) udev can be started from the initramfs to create the required entries 
-in /dev. udev doesn't care about major/minor numbers.
-3) Most distros already use udev and maybe initramfs. If there are 
-exceptions, they can be easily converted.
+This problem seems to be getting worse. With the latest linus tree, after 
+the initial hang where the power button is needed to bring the system back 
+to life, the boot process slows to a crawl.
 
-For the first part, I'm asking: is there any reason why new char/block 
-drivers shouldn't use dynamic major/minor numbers? Is there any reason 
-against converting the whole kernel to dynamic major/minor numbers?
+Although if I repeatedly press the shift key it'll help move things along. 
+I'm guessing the keyboard interrupt firing off is doing something to help 
+it. The system seems OK though after booting is finished.
 
-Okay, maybe the previous questions looked useless from a pragmatic POV. 
-But why shouldn't the whole major/minor numbering system be dropped 
-completely? sysfs already maintains a hierachy of device drivers and 
-kernel subsystems, one which is better than the major/minor system. The 
-current system could be replaced by a single-numbered, 
-dynamically-allocated scheme.
+Upon shutdown it actually stalls out without help from the shift key.
 
-Device files could be stored on a tmpfs filesystem, so that we don't 
-make any changes to current filesystems. Apps won't need to be modified, 
-since they access /dev entries by name, provided udev maintains the 
-current naming scheme.
+Any thoughts on this, or tips to help debug it further?
 
-Any thoughts on this?
+thx, Cal
+
+On Mon, 30 Jul 2007, Cal Peake wrote:
+
+> On Sun, 29 Jul 2007, Gabriel C wrote:
+> 
+> > Frank Hale wrote:
+> > [ added  linux-acpi to CC ]
+> > > I have an Averatec 2370 laptop with the nVidia MCP51. With kernel
+> > > 2.6.20 I had no issues with ACPI however with 2.6.21 and higher the
+> > > kernel will hang on boot until I press the suspend button or the power
+> > > button in which case the kernel wakes up and finishes the boot
+> > > process. Including the following support only causes the issue:
+> > > 
+> > >  [*] ACPI Support
+> > > 
+> > > What I mean by that is every ACPI option has been deactivated and only
+> > > ACPI support checked. The boot process with 2.6.21 and higher hangs at
+> > > the point where the Scheduler is being registered.
+> > > 
+> > > io scheduler cfq registered (default)
+> > > 
+> > > If I allow it to sit there it never comes back to life and finishes
+> > > booting. If I press the power or suspend button it will finish booting
+> > > as expected.
+> > > 
+> > > I've scoured google for quite a while but cannot find any relevant
+> > > information pertaining to this issue. For now I've disabled ACPI
+> > > altogether.
+> 
+> Frank, thanks for the tip about 2.6.20 being good, it gave me a nice place 
+> to start bisecting from.
+> 
+> Thomas, Ingo,
+> 
+> Regarding the issue described above that Frank and I are having, I've 
+> narrowed it down to commit e9e2cdb4[1]: [PATCH] clockevents: i386 drivers
+> 
+> About our systems:
+>   Averatec 2370/2371 Laptop
+>     AMD Turion 64 X2 TL-50/TL-52
+>     nVidia MCP51 chipset
+> 
+> Here a small matrix of my tests:
+> 
+> 2.6.20.15 SMP		: OK
+> 2.6.21.5 SMP		: hang
+> 2.6.21.5 UP w/o APIC	: OK
+> 2.6.22.1 UP		: hang
+> 2.6.22.1 UP w/o IO-APIC	: hang
+> 2.6.22.1 UP w/o APIC	: OK
+> 2.6.22.1 SMP		: hang
+> 2.6.22.1 SMP w/o ACPI	: OK
+> 
+> Please let me know if there's anything else I can provide to help.
+> 
+> thanks!
+> -- 
+> Cal Peake
+> 
+> [1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e9e2cdb412412326c4827fc78ba27f410d837e6e
