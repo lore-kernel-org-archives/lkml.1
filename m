@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXHBTQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXHBTRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759635AbXHBTQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:16:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXHBTQY
+	id S1759916AbXHBTRc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:17:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756254AbXHBTRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:16:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48626 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751207AbXHBTQX (ORCPT
+	Thu, 2 Aug 2007 15:17:24 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:57908
+	"EHLO moonbase" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756222AbXHBTRY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:16:23 -0400
-Date: Thu, 2 Aug 2007 12:16:23 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Subject: Re: [RFC PATCH] type safe allocator
-In-Reply-To: <E1IGVGf-0000sv-00@dorka.pomaz.szeredi.hu>
-Message-ID: <Pine.LNX.4.64.0708021211100.7948@schroedinger.engr.sgi.com>
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
- <Pine.LNX.4.64.0708012223520.3265@schroedinger.engr.sgi.com>
- <E1IGVGf-0000sv-00@dorka.pomaz.szeredi.hu>
+	Thu, 2 Aug 2007 15:17:24 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: CFS review
+Date: Thu, 2 Aug 2007 12:16:56 -0700
+User-Agent: KMail/1.9.5
+Cc: Roman Zippel <zippel@linux-m68k.org>, Andi Kleen <andi@firstfloor.org>,
+       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <20070710013152.ef2cd200.akpm@linux-foundation.org> <Pine.LNX.4.64.0708011525560.1817@scrub.home> <alpine.LFD.0.999.0708011903300.3582@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708011903300.3582@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708021216.57065.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, Miklos Szeredi wrote:
+Hi Linus,
 
-> > If you define a new flag like GFP_ZERO_ATOMIC and GFP_ZERO_KERNEL you 
-> > could do
-> > 
-> > 	kalloc(struct, GFP_ZERO_KERNEL)
-> > 
-> > instead of adding new variants?
-> 
-> I don't really like this, introducing new gfp flags just makes
-> grepping harder.
+On Wednesday 01 August 2007 19:17, Linus Torvalds wrote:
+>    And the "approximates" thing would be about the fact that we don't
+>    actually care about "absolute" microseconds as much as something
+> that is in the "roughly a microsecond" area. So if we say "it doesn't
+> have to be microseconds, but it should be within a factor of two of a
+> ms", we could avoid all the expensive divisions (even if they turn
+> into multiplications with reciprocals), and just let people *shift*
+> the CPU counter instead.
 
-The __GFP_ZERO flag has been around for a long time. GFP_ZERO_ATOMIC and 
-GFP_ZERO_KERNEL or so could just be a shorthand notation.
+On that theme, expressing the subsecond part of high precision time in 
+decimal instead of left-aligned binary always was an insane idea.  
+Applications end up with silly numbers of multiplies and divides 
+(likely as not incorrect) whereas they would often just need a simple 
+shift as you say, if the tv struct had been defined sanely from the 
+start.  As a bonus, whenever precision gets bumped up, the new bits 
+appear on the right in formerly zero locations on the right, meaning 
+little if any code needs to change.  What we have in the incumbent libc 
+timeofday scheme is the moral equivalent of BCD.
 
-Maybe
+Of course libc is unlikely ever to repent, but we can at least put off 
+converting into the awkward decimal format until the last possible 
+instant.  In other words, I do not see why xtime is expressed as a tv 
+instead of simple 32.32 fixed point.  Perhaps somebody can elucidate 
+me?
 
-#define GFP_ZATOMIC (GFP_ATOMIC | __GFP_ZERO)
-#define GFP_ZKERNEL (GFP_KERNEL | __GFP_ZERO)
+Regards,
 
-?
-
-> I do think that at least having a zeroing and a non-zeroing variant
-> makes sense.
-
-They require a duplication of the API and have led to inconsistencies 
-because the complete API was not available with zeroing capabilities 
-(there is still no kzalloc_node f.e.). 
-Using a gfp flag allows all allocation functions to optionally zero data 
-without having to define multiple functions.
-
-The definition of new variants is a bit complicated since the allocator 
-functions contain lots of smarts to do inline constant folding. This is 
-necessary to determine the correct slab at compile time. I'd rather have 
-as few of those as possible.
+Daniel
