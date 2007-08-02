@@ -1,47 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbXHBJy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbXHBJ4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbXHBJy3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 05:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbXHBJyS
+	id S1755273AbXHBJ4U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 05:56:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbXHBJ4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 05:54:18 -0400
-Received: from mx2.suse.de ([195.135.220.15]:52780 "EHLO mx2.suse.de"
+	Thu, 2 Aug 2007 05:56:09 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:36241 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752372AbXHBJyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 05:54:17 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       trenn@suse.de, pavel@ucw.cz, mjg59@srcf.ucam.org, lenb@kernel.org
-Subject: Re: 2.6.22 regression: thermal trip points
-References: <46B1988C.3090302@t-online.de>
-	<20070802015248.45a40717.akpm@linux-foundation.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 02 Aug 2007 12:48:49 +0200
-In-Reply-To: <20070802015248.45a40717.akpm@linux-foundation.org>
-Message-ID: <p731wemnre6.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1753036AbXHBJ4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 05:56:07 -0400
+Message-ID: <46B1A9DE.4090907@free.fr>
+Date: Thu, 02 Aug 2007 11:54:38 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: linux-rt-users@vger.kernel.org
+CC: linux-kernel@vger.kernel.org
+Subject: Section mismatch: reference to .init.text: (between 'kthreadd' and
+ 'init_waitqueue_head')
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Hello,
 
-> I didn't understand the arguments either, actually.
+I'm trying to build a 2.6.22.1-rt9 kernel for a P3.
 
-The issue is that you can actually kill hardware by setting this wrong.
-We've had such cases where trip point problems eventually lead
-to overheated laptops with hard disks dying etc. 
+I used 'make xconfig' to create .config
+http://linux.kernel.free.fr/latency/config-2.6.22.1-rt9-adlink
 
-Also it runs the system out of spec and is similar to overclocking
-which we also do not support.
- 
-> Here we had obviously-useful-to-you functionality which was taken away
-> without, afaik, providing any alternative.
+I get the following warning:
 
-I don't think it's that unreasonable to require source code modifications
-for anything that can kill hardware. At least that raises the barrier
-a bit and hopefully ensures people think twice about it and then really
-only blame themselves if anything goes wrong.
+   LD      vmlinux
+   SYSMAP  System.map
+   SYSMAP  .tmp_System.map
+   MODPOST vmlinux
+WARNING: kernel/built-in.o(.text+0x19152): Section mismatch: reference 
+to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
+   AS      arch/i386/boot/bootsect.o
+   LD      arch/i386/boot/bootsect
+   AS      arch/i386/boot/setup.o
+   LD      arch/i386/boot/setup
+   AS      arch/i386/boot/compressed/head.o
+   CC      arch/i386/boot/compressed/misc.o
+   OBJCOPY arch/i386/boot/compressed/vmlinux.bin
+   GZIP    arch/i386/boot/compressed/vmlinux.bin.gz
+   LD      arch/i386/boot/compressed/piggy.o
+   LD      arch/i386/boot/compressed/vmlinux
+   OBJCOPY arch/i386/boot/vmlinux.bin
+   HOSTCC  arch/i386/boot/tools/build
+   BUILD   arch/i386/boot/bzImage
+Root device is (3, 1)
+Boot sector 512 bytes.
+Setup is 7082 bytes.
+System is 1142 kB
+Kernel: arch/i386/boot/bzImage is ready  (#1)
+   Building modules, stage 2.
+   MODPOST 0 modules
 
--Andi
+
+I also get the following warnings (which seem less severe)
+
+   CC      drivers/pci/pci.o
+   CC      drivers/pci/quirks.o
+   CC      drivers/pci/pci-driver.o
+   CC      drivers/pci/search.o
+drivers/pci/search.c: In function `pci_find_slot':
+drivers/pci/search.c:99: warning: `pci_find_device' is deprecated 
+(declared at include/linux/pci.h:477)
+drivers/pci/search.c: At top level:
+drivers/pci/search.c:434: warning: `pci_find_device' is deprecated 
+(declared at drivers/pci/search.c:241)
+drivers/pci/search.c:434: warning: `pci_find_device' is deprecated 
+(declared at drivers/pci/search.c:241)
+   CC      drivers/pci/pci-sysfs.o
+   CC      drivers/pci/rom.o
+
+
+Finally, I note that X86_CMPXCHG64 is no longer defined since its 
+specification was changed between 2.6.20 and 2.6.22.
+
+  config X86_CMPXCHG64
+     bool
+-   depends on !M386 && !M486
++   depends on X86_PAE
+     default y
+
+Will this have an impact on spinlocks? RCU? something else?
+
+Regards.
