@@ -1,72 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbXHBItR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbXHBIuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbXHBItR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 04:49:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXHBItG
+	id S1755947AbXHBIuv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 04:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbXHBIuk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 04:49:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49502 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751922AbXHBItE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 04:49:04 -0400
-Date: Thu, 2 Aug 2007 01:48:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "debian developer" <debiandev@gmail.com>
-Cc: "Andev Debi" <andev.debi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Problem - disabling IRQ #20 and others
-Message-Id: <20070802014819.4760b06a.akpm@linux-foundation.org>
-In-Reply-To: <f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
-References: <ef8c225f0708010347l2a0a8e4cj4f47a243bba88989@mail.gmail.com>
-	<f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 2 Aug 2007 04:50:40 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:49090 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753562AbXHBIui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 04:50:38 -0400
+Date: Thu, 2 Aug 2007 11:00:08 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+Message-ID: <20070802090008.GA1699@ff.dom.local>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802020219.GM11166@waste.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 19:41:31 +0530 "debian developer" <debiandev@gmail.com> wrote:
-
-> On 8/1/07, Andev Debi <andev.debi@gmail.com> wrote:
-> > Hello,
-> > Im getting the following error while booting the kernel 2.6.22.1-cfs
-> >
-> > Aug  1 09:14:17 localhost kernel: [   63.106550] irq 20: nobody cared (try
-> > booting with the "irqpoll" option)
-> > Aug  1 09:14:17 localhost kernel: [   63.106574]  [__report_bad_irq+36/128]
-> > __report_bad_irq+0x24/0x80
-> > Aug  1 09:14:17 localhost kernel: [   63.106596]  [note_interrupt+485/560]
-> > note_interrupt+0x1e5/0x230
-> > Aug  1 09:14:17 localhost kernel: [   63.106619]  [handle_IRQ_event+37/80]
-> > handle_IRQ_event+0x25/0x50
-> > Aug  1 09:14:17 localhost kernel: [   63.106634]
-> > [handle_fasteoi_irq+141/160] handle_fasteoi_irq+0x8d/0xa0
-> > Aug  1 09:14:17 localhost kernel: [   63.106643]  [do_IRQ+62/128]
-> > do_IRQ+0x3e/0x80
-> > Aug  1 09:14:17 localhost kernel: [   63.106665]  [common_interrupt+35/40]
-> > common_interrupt+0x23/0x28
-> > Aug  1 09:14:17 localhost kernel: [   63.106674]  [default_idle+0/64]
-> > default_idle+0x0/0x40
-> > Aug  1 09:14:17 localhost kernel: [   63.106696]  [default_idle+42/64]
-> > default_idle+0x2a/0x40
-> > Aug  1 09:14:17 localhost kernel: [   63.106704]  [cpu_idle+72/112]
-> > cpu_idle+0x48/0x70
-> > Aug  1 09:14:17 localhost kernel: [   63.106707]  [start_kernel+559/704]
-> > start_kernel+0x22f/0x2c0
-> > Aug  1 09:14:17 localhost kernel: [   63.106715]  [unknown_bootoption+0/592]
-> > unknown_bootoption+0x0/0x250
-> > Aug  1 09:14:17 localhost kernel: [   63.106735]  =======================
-> > Aug  1 09:14:17 localhost kernel: [   63.106736] handlers:
-> > Aug  1 09:14:17 localhost kernel: [   63.106738] [<dcc13080>]
-> > (via_driver_irq_handler+0x0/0x1b0 [via])
-> > Aug  1 09:14:17 localhost kernel: [   63.106747] Disabling IRQ #20
-> >
+On Wed, Aug 01, 2007 at 09:02:19PM -0500, Matt Mackall wrote:
+> On Wed, Aug 01, 2007 at 11:59:21AM +0200, Jarek Poplawski wrote:
+> > On Tue, Jul 31, 2007 at 05:05:00PM +0200, Gabriel C wrote:
+> > > Jarek Poplawski wrote:
+> > > > On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
+> > > >> Jarek Poplawski wrote:
+> > > >>> On 28-07-2007 20:42, Gabriel C wrote:
+> > > >>>> Andrew Morton wrote:
+> > > >>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+...
+> > > >>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+...
+> > > >>>>>> I think is because KGDBOE selects just NETPOLL.
+> > > >>>>>>
+> > > >>>>> Looks like it.
+> > > >>>>>
+> > > >>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+> > > >>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+> > > >>>>> remains evil.
+...
+> > seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
+> > still doesn't check for NETDEVICES dependency.
 > 
+> That's odd. Adding Sam to the cc:.
 
-Please fix the wordwrapping before sending any more stuff - it's truly awful.
+Looks right, but after reading Andrew's opinion about select I'd be
+astonished if he doesn't know this problem already.
 
-Could be a bug in the via driver, but it's more likely an
-acpi/pci/platform/bios thing.
+> 
+> > > >> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+> > > >> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
+> > > > 
+> > > > Why kgdboe should care what netpoll needs? So, I hope, you are adding
+> > > > this select under config NETPOLL. On the other hand, if NETPOLL should
+> > > > depend on NET_POLL_CONTROLLER there is probably no reason to have them
+> > > > both.
+> > > 
+> > > NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
+> > > 
+> > > Net peoples ping ?:)
+> 
+> How about cc:ing the netpoll maintainer?
 
-Did any previous kernels work OK?  If so, which?
+Is there a new one or do you suggest possibility of abusing the
+authority of the netpoll's author with such trifles...?!
+
+BTW, I can't find any official meaning of def_bool, but it's name
+suggests only default value, so logically it should be not enough
+to assure NET_POLL_CONTROLLER=y, and netpoll should use "depends",
+"require" or "select" (IMHO more readable too), but on the other
+hand this could be practially wrong...
+
+>  
+> > OK, I wasn't right here: there is no visible reason for both in the
+> > kernel code, but I can imagine there could be some external users of
+> > NET_POLL_CONTROLLER without NETPOLL.
+> 
+> I don't know of any. As far as I can tell at this point,
+> NET_POLL_CONTROLLER == NETPOLL.
+
+There are some notions about "other diagnostic tools" in some
+net drivers, eg. 3c509.c, so there would be a little bit of
+work if, after changing this, they really exist (and even if
+not - maybe it's reasonable to save such possibility for the
+future?).
+
+Best regards,
+Jarek P.
