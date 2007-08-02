@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbXHBVmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760513AbXHBVyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760966AbXHBVmm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbXHBVmf
+	id S1760513AbXHBVyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXHBVyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:42:35 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:3753 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752508AbXHBVmd (ORCPT
+	Thu, 2 Aug 2007 17:54:32 -0400
+Received: from livid.absolutedigital.net ([66.92.46.173]:44377 "EHLO
+	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752967AbXHBVyb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:42:33 -0400
-Date: Thu, 02 Aug 2007 15:42:29 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: gcc fixed size char array initialization bug - known?
-In-reply-to: <fa.cjPWb5ZShF43DhggNXkMKMadPYY@ifi.uio.no>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Message-id: <46B24FC5.8060409@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.LxMYkBaN628VuktB9CFi9SC3LTA@ifi.uio.no>
- <fa.6wYNfcIjXc+jXzdUGE5gFFOal1g@ifi.uio.no>
- <fa.cjPWb5ZShF43DhggNXkMKMadPYY@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Thu, 2 Aug 2007 17:54:31 -0400
+Date: Thu, 2 Aug 2007 17:53:28 -0400 (EDT)
+From: Cal Peake <cp@absolutedigital.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Chuck Ebbert <cebbert@redhat.com>, Gabriel C <nix.or.die@googlemail.com>,
+       Frank Hale <frankhale@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: ACPI on Averatec 2370
+In-Reply-To: <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net>
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
+ <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
+ <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
+ <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net>
+ <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net>
+ <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
-> On Thu, 2 Aug 2007, Andi Kleen wrote:
-> 
->> Guennadi Liakhovetski <g.liakhovetski@gmx.de> writes:
->>
->>> 	char c[4] = "0123";
->>> and - a wonder - no warning. 
->> It's required by the C standard.
->>
->> 6.7.8.14 of C99:
->> ``
->> An array of character type may be initialized by a character string literal, optionally
->> enclosed in braces. Successive characters of the character string literal (including the
->> terminating null character if there is room or if the array is of unknown size) initialize the
->> elements of the array.
->> ''
->>
->> Note the "if there is room".
->>
->> I believe the rationale is that it still allows to conveniently initialize 
->> non zero terminated strings.
-> 
-> Right, I accept that it will compile, but I don't understand why "01234" 
-> produces a warning and "0123" doesn't? Don't think C99 says anything about 
+On Thu, 2 Aug 2007, Linus Torvalds wrote:
 
-Because 5 characters will not fit in a 4 character array, even without 
-the null terminator.
+> On Thu, 2 Aug 2007, Cal Peake wrote:
+> > 
+> > Figured I should have sent that right after I hit the send key...
+> > 
+> > processor	: 0
+> > vendor_id	: AuthenticAMD
+> > cpu family	: 15
+> > model		: 72
+> > model name	: AMD Turion(tm) 64 X2 Mobile Technology TL-52
+> 
+> Sadly, this doesn't show the "extended family" stuff from cpuid.
+> 
+> So it doesn't show any of the bits we actually care about. Sad.
+> 
+> That said, the "AMD Turion(tm) 64 X2 Mobile Technology TL-52" _should_ be 
+> a REV-F CPU afaik, and it should have thus fallen through to the 
+> "ENABLE_C1E_MASK" logic. Afaik that's broken.
+> 
+> Cal - can you
+>  (a) test that forcing a "return 1" from that amd_apic_timer_broken() 
+>      function fixes it for you.
 
-> that. And, AFAIU, using structs with fixed-size char array we more or less 
-> rely on the compiler warning us if anyone initializes it with too long a 
-> string.
-> 
-> Also interesting, that with
-> 
-> 	char c[4] = "012345";
-> 
-> the compiler warns, but actually allocates a 6-byte long array...
-> 
-> Thanks
-> Guennadi
+ACK
 
+>  (b) make that function print out the values it uses for debugging (ie the 
+>      xtended family and model numbers, and the MSR_K8_ENABLE_C1E MSR 
+>      values)?
+
+eax & CPUID_XFAM == 0x00000000
+eax & CPUID_XMOD == 0x00040000
+MSR_K8_ENABLE_C1E lo == 0x04c14015
+MSR_K8_ENABLE_C1E hi == 0x00000000
+lo & ENABLE_C1E_MASK == 0
+amd_apic_timer_broken: forcing return value of 1
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Cal Peake
 
