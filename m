@@ -1,51 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbXHBJYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbXHBJ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbXHBJYL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 05:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbXHBJXo
+	id S1755921AbXHBJ0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 05:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXHBJ0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 05:23:44 -0400
-Received: from an-out-0708.google.com ([209.85.132.250]:3407 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755445AbXHBJXm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 05:23:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=lGbjPsww/j7OX0rtNnkBgGCcedNdfPf3SrOSUkUVxC6TwCO7Rf0on7GwAg+Y1OWtmq2apC6j5siayeX8bp7KiLilXb+7meZ8nn/EI3yQCnIolvSfrKCdD8Hq68Mr1ljIjFXat/uQZN6IKV4tNbgNUey7AsheDCZymE7Ww2P63UM=
-Message-ID: <eb3ff54b0708020223o521e89b9v3200e06ab296df12@mail.gmail.com>
-Date: Thu, 2 Aug 2007 12:23:41 +0300
-From: "Rami Rosen" <ramirose@gmail.com>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC][PATCH] Removal of FASTROUTE definition include/linux/if_packet.h
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 2 Aug 2007 05:26:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42271
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751411AbXHBJ0F convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 05:26:05 -0400
+Date: Thu, 02 Aug 2007 02:26:05 -0700 (PDT)
+Message-Id: <20070802.022605.44936803.davem@davemloft.net>
+To: ilpo.jarvinen@helsinki.fi
+Cc: darryl-mailinglists@netbauds.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: TCP SACK issue, hung connection, tcpdump included
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0708021056560.8788@kivilampi-30.cs.helsinki.fi>
+References: <20070729160721.GA31276@1wt.eu>
+	<46AEC286.2030302@netbauds.net>
+	<Pine.LNX.4.64.0708021056560.8788@kivilampi-30.cs.helsinki.fi>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  It seems that PACKET_FASTROUTE definition should be removed due to that
-	fastroute is no longer supported.
+From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
+Date: Thu, 2 Aug 2007 12:23:23 +0300 (EEST)
 
-Regards,
-Rami Rosen
---
+> ...Seriously, somebody else than me is probably better in suggesting what 
+> could cause the discarding at the SERVER in this case. SNMP stuff Dave was 
+> asking could help, you can find them from /proc/net/{netstat,snmp}...
 
-
-Signed-off-by: Rami Rosen <ramirose@gmail.com>
-	
-	
---- linux-2.6.23-rc1-clean/include/linux/if_packet.h	2007-05-03
-12:07:59.000000000 +0300
-+++ linux-2.6.23-rc1/include/linux/if_packet.h	2007-08-02
-11:37:16.000000000 +0300
-@@ -30,7 +30,6 @@ struct sockaddr_ll
- #define PACKET_OUTGOING		4		/* Outgoing of any type */
- /* These ones are invisible by user level */
- #define PACKET_LOOPBACK		5		/* MC/BRD frame looped back */
--#define PACKET_FASTROUTE	6		/* Fastrouted frame	*/
-
- /* Packet socket options */
+That will also tell us if TCP discarded the packet due to
+timestamps tests or similar.
