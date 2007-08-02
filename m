@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbXHBA6o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbXHBBIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbXHBA6o (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 20:58:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752283AbXHBA6f
+	id S1755632AbXHBBIf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 21:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbXHBBI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 20:58:35 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:46072 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751567AbXHBA6e (ORCPT
+	Wed, 1 Aug 2007 21:08:26 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58625 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752283AbXHBBI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 20:58:34 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=kgHVySgIjzMgDh0JRB6BXutl7mOosQhYnKtSY0LfbIHMK1ghoPdCYmFR8htgn
-	tHM4kjUzYhYHVqw+E/EONYBhg==
-Date: Thu, 2 Aug 2007 02:58:22 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, rmk@arm.linux.org.uk,
-       tglx@linutronix.de
-Subject: Re: [PATCH][RFC] unbreak generic futex_atomic_cmpxchg_inatomic() on UP
-Message-ID: <20070802005822.GB7910@xi.wantstofly.org>
-References: <200708020006.l7206RoY009376@harpo.it.uu.se>
-Mime-Version: 1.0
+	Wed, 1 Aug 2007 21:08:26 -0400
+Date: Wed, 1 Aug 2007 18:10:56 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu
+Subject: Re: [PATCH 1/7] sysfs: fix locking in sysfs_lookup() and
+	sysfs_rename_dir()
+Message-ID: <20070802011056.GA27131@kroah.com>
+References: <11858769082982-git-send-email-htejun@gmail.com> <1185876908509-git-send-email-htejun@gmail.com> <20070802002900.GA16784@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708020006.l7206RoY009376@harpo.it.uu.se>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070802002900.GA16784@kroah.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 02:06:27AM +0200, Mikael Pettersson wrote:
-
-> > > @@ -52,7 +53,34 @@ futex_atomic_op_inuser (int encoded_op, 
-> > >  static inline int
-> > >  futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
-> > >  {
-> > > +#ifdef CONFIG_SMP
-> > >  	return -ENOSYS;
-> > > +#else
+On Wed, Aug 01, 2007 at 05:29:00PM -0700, Greg KH wrote:
+> On Tue, Jul 31, 2007 at 07:15:08PM +0900, Tejun Heo wrote:
+> > sd children list walking in sysfs_lookup() and sd renaming in
+> > sysfs_rename_dir() were left out during i_mutex -> sysfs_mutex
+> > conversion.  Fix them.
 > > 
-> > Since the callers of futex_atomic_cmpxchg_inatomic() don't really
-> > seem prepared to deal with -ENOSYS (e.g. the handle_futex_death()
-> > infinite loop when it gets -ENOSYS), it seems better never to
-> > return -ENOSYS from this function at all.
-> > 
-> > What if you just stick an #error in here in the SMP case?
+> > Signed-off-by: Tejun Heo <htejun@gmail.com>
 > 
-> The problem with #error is that it would cause compile-time
-> regressions. I assume that e.g. alpha supports building SMP
-> kernels, but #error would prevent that.
+> Ok, to apply this, it messes with Eric's further patches for the shadow
+> directory stuff.  But since it looks like you and Eric seem to have
+> worked something else in that area, I'll drop Eric's patches for now, as
+> that's the safest thing.
 > 
-> Thus I opted to fix the UP case while leaving the SMP case
-> unchanged. Actually I think the SMP case should be a BUG()
-> rather than -ENOSYS,
+> Eric, is that ok?
 
-Probably.  Or handle -ENOSYS in the callers -- but that's more
-work, and would cease to be necessary once everyone implements
-futex_atomic_cmpxchg_inatomic().
+Oh nevermind, it looks like you already took care of this with the later
+patches...
 
+thanks,
 
-> but that's a different issue from the UP case which I really do
-> want to see fixed.
-
-ACK.
+greg k-h
