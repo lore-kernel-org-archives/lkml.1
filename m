@@ -1,75 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755206AbXHBJGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbXHBJPu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755206AbXHBJGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 05:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbXHBJGJ
+	id S1754080AbXHBJPu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 05:15:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751606AbXHBJPi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 05:06:09 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:37275 "EHLO mx1.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752042AbXHBJGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 05:06:07 -0400
-Message-ID: <46B19E8E.6090709@gmail.com>
-Date: Thu, 02 Aug 2007 17:06:22 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Thu, 2 Aug 2007 05:15:38 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:48289 "EHLO
+	outbound2-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750898AbXHBJPg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 05:15:36 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.8;Service: EHS
+X-Server-Uuid: 5FC0E2DF-CD44-48CD-883A-0ED95B391E89
+From: "Joachim Deguara" <joachim.deguara@amd.com>
+Organization: AMD
+To: "Michael Chan" <mchan@broadcom.com>
+Subject: Re: [REGRESSION] tg3 dead after s2ram
+Date: Thu, 2 Aug 2007 11:15:05 +0200
+User-Agent: KMail/1.9.7
+cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "lkml List" <linux-kernel@vger.kernel.org>,
+       "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "netdev" <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
+References: <20070731174522.b141178a.akpm@linux-foundation.org>
+ <1186002023.18322.7.camel@dell>
+ <200708021005.45773.joachim.deguara@amd.com>
+In-Reply-To: <200708021005.45773.joachim.deguara@amd.com>
 MIME-Version: 1.0
-To: Klaus Schulz <klaus.schulz@web.de>
-Cc: =?ISO-8859-15?Q?Lenar_L=F5hmus?= <lenar@city.ee>, ck@vds.kolivas.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: ck vs. cfs : realtime audio performance
-References: <1745683987@web.de>
-In-Reply-To: <1745683987@web.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Message-ID: <200708021115.10812.joachim.deguara@amd.com>
+X-OriginalArrivalTime: 02 Aug 2007 09:15:18.0542 (UTC)
+ FILETIME=[A512CAE0:01C7D4E5]
+X-WSS-ID: 6AAF7F231A43316253-01-01
+Content-Type: text/plain;
+ charset=utf-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Klaus Schulz wrote:
-> Hello Carlo.
-> 
-> The ranters! comment:
-> 
-> I can understand your way of looking at things.
-> But you'd better be a bit more careful with statements like these below, 
-> if you don't really know what's going on.
-> 
-> Just FYI: All possible traces - Ingo asked for - are on Ingos desk!
+On Thursday 02 August 2007 10:05:44 Joachim Deguara wrote:
+> On Wednesday 01 August 2007 23:00:23 Michael Chan wrote:
+> > On Wed, 2007-08-01 at 10:47 -0700, Michael Chan wrote:
+> > The problem is that memory enable and bus master were not set in PCI
+> > register 4 after resume.  This also explains the register access
+> > failures.
 
-Then that's very good :)  I was just wondering on what possibly happened to 
-the problem since the person who forwarded your concern from the ck list to 
-the lkml (I don't subscribe to the ck list) didn't have a follow-up after a 
-few days.
+Found it! I did the instrumentation and found pci_restore was not being 
+called. Why, because this code failed:
 
-And as far as the public list archives are concerned, there were no stats 
-posted as Ingo had asked for.  It seems though that you had done privately, 
-then that's very good.
+	printk(KERN_INFO "tg3_resume: entered\n");
+	if (!netif_running(dev))
+		return 0;
+	printk(KERN_INFO "tg3_resume: before restore\n");
 
-Since your problem had already been posted online, I thought that any 
-person who might've had a similar problem like yours would benefit from 
-knowing what steps got undertaken to address the problem.  I particularly 
-was interested in your problem since I myself do a lot of music in Linux. 
-I'm very sure that if your problem got discussed on-line, many linux-user 
-musicians/programmers would benefit from it, like myself.
+Bad dmesg:
+[    0.581236] PM: Writing back config space on device 0000:07:00.0 at offset 
+4
+(was 4, writing d0200004)
+[    0.581259] tg3_resume: entered
+[    0.581276] PM: Writing back config space on device 0000:08:09.0 at offset 
+f
+(was c001ff, writing 1c0010b)
 
-Sorry if I have offended you and please accept my apologies.
+why is this, oh damn it is because I was calling openSUSE's "powersave -u" and 
+not s2ram directly.  powersave is disabling the network and the tg3 will not 
+restore the pci device like this! right?
 
-Thank you very much.
+here is a good dmesg with by calling s2ram:
+[    0.577085] PM: Writing back config space on device 0000:07:00.0 at offset 
+4
+(was 4, writing d0200004)
+[    0.577108] tg3_resume: entered
+[    0.577109] tg3_resume: before restore
+[    0.577140] PM: Writing back config space on device 0000:08:04.0 at offset 
+c
+(was 0, writing ffff0000)
+[    0.577171] PM: Writing back config space on device 0000:08:04.0 at offset 
+1
+(was 2b00000, writing 2b00006)
+[    0.577304] tg3_resume: after set_power_state
+[    0.579119] tg3: eth0: Link is down.
+[    0.786266] ata2: SATA link down (SStatus 0 SControl 310)
+[    0.848176] tg3_resume: after tg3_restart_hw
+[    0.848265] PM: Writing back config space on device 0000:08:09.0 at offset 
+f
+(was c001ff, writing 1c0010b)
 
-Best Regards,
+Seams like even if powersave shuts down the network that the device should 
+still work after a suspend to ram, so who is at fault here?
 
-Carlo
+-Joachim
 
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, UP Campus Diliman
-1101 Quezon City, Philippines
-http://www.astra.ph
 
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
