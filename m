@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759450AbXHBTy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760102AbXHBTzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759450AbXHBTy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbXHBTyV
+	id S1760102AbXHBTzy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754235AbXHBTzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:54:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35628 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754033AbXHBTyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:54:21 -0400
-Message-ID: <46B23666.3020205@redhat.com>
-Date: Thu, 02 Aug 2007 15:54:14 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Thu, 2 Aug 2007 15:55:47 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58043 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757333AbXHBTzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 15:55:46 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX193G2ANVJp3v75knDlUaVyu3pf8exHnEpGVruP18Z
+	/HMC52vx7duLFM
+Date: Thu, 2 Aug 2007 21:55:51 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: gcc fixed size char array initialization bug - known?
+Message-ID: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: richard kennedy <richard@rsk.demon.co.uk>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] balance_dirty_pages - exit loop when no more pages	available
-References: <1185901890.3133.33.camel@castor.rsk.org>
-In-Reply-To: <1185901890.3133.33.camel@castor.rsk.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 07/31/2007 01:11 PM, richard kennedy wrote:
+Hi
 
-Peter, did you see this?
+I've run across the following gcc "feature":
 
-> exit loop in balance_dirty_pages when no more pages available to write
-> 
-> On a bdi that has very little traffic balance_dirty_pages can loop
-> needlessly waiting until do_writepages has written enough pages.
-> 
-> do_writepages will return encountered_congestion==0 && nr_to_write > 0 
-> when it has completed a pass but did not find enough pages available to
-> write. balance_dirty_pages ignores this and keeps looping until a total
-> of chunk pages was written. 
-> 
-> this patch adds an extra exit condition to break out of the loop in this
-> case. 
-> 
-> I've tested this on my amd64 desktop, and I also have a version of this
-> patch that includes a printk and a test case that occasionally does
-> trigger this condition.  
-> 
-> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-> 
-> ------
-> --- linux-2.6.22.1/mm/page-writeback.c.orig	2007-07-30 16:36:09.000000000 +0100
-> +++ linux-2.6.22.1/mm/page-writeback.c	2007-07-31 16:26:43.000000000 +0100
-> @@ -250,6 +250,8 @@ static void balance_dirty_pages(struct a
->  			pages_written += write_chunk - wbc.nr_to_write;
->  			if (pages_written >= write_chunk)
->  				break;		/* We've done our duty */
-> +			if (!wbc.encountered_congestion && wbc.nr_to_write > 0)
-> +				break;	/* didn't find enough to do */
->  		}
->  		congestion_wait(WRITE, HZ/10);
->  	}
-> 
+	char c[4] = "01234";
 
+gcc emits a nice warning
+
+warning: initializer-string for array of chars is too long
+
+But do a
+
+	char c[4] = "0123";
+
+and - a wonder - no warning. No warning with gcc 3.3.2, 3.3.5, 3.4.5, 
+4.1.2. I was told 4.2.x does produce a warning. Now do a
+
+	struct {
+		char c[4];
+		int i;
+	} t;
+	t.i = 0x12345678;
+	strcpy(t.c, c);
+
+and t.i is silently corrupted. Just wanted to ask if this is known, 
+really...
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
