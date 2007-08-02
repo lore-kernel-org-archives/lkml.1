@@ -1,57 +1,334 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbXHBFYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXHBFZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755552AbXHBFYw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 01:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbXHBFYo
+	id S1757205AbXHBFZM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 01:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbXHBFYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 01:24:44 -0400
-Received: from mail.bmlv.gv.at ([193.171.152.37]:43711 "EHLO mail.bmlv.gv.at"
+	Thu, 2 Aug 2007 01:24:49 -0400
+Received: from mx2.suse.de ([195.135.220.15]:35197 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752448AbXHBFYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 01:24:43 -0400
-From: "Ph. Marek" <philipp.marek@bmlv.gv.at>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Date: Thu, 2 Aug 2007 07:24:39 +0200
-User-Agent: KMail/1.9.7
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
-References: <20070730161323.100048969@weierstrass.suse.de> <1185981810.18007.14.camel@kleikamp.austin.ibm.com> <20070801184405.GA18405@filer.fsl.cs.sunysb.edu>
-In-Reply-To: <20070801184405.GA18405@filer.fsl.cs.sunysb.edu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1754662AbXHBFYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 01:24:48 -0400
+Date: Thu, 2 Aug 2007 07:24:46 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [patch] radix-tree: use indirect bit
+Message-ID: <20070802052446.GC31121@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708020724.40623.philipp.marek@bmlv.gv.at>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mittwoch, 1. August 2007, Josef Sipek wrote:
-> Alright not the greatest of examples, there is something to be said about
-> symmetry, so...let me try again :)
-...
-> Oops! There's a whiteout in /b that hides the directory in /c -- rename(2)
-> shouldn't make directory subtrees disappear.
->
-> There are two ways to solve this:
->
-> 1) "cp -r" the entire subtree ...
->
-> 2) Don't store whiteouts within branches ...
-Sorry for making uninformed guesses, but if there are already special nodes 
-(whiteout), why not extending them to some more general format - specifying a 
-(source, destination) pair at the topmost level?
-- A delete is a (source, NULL) pair
-- A rename is a (source, destination) pair, which causes lookups on source to
-  use the string destination in the lower branches.
 
+Rather than sign direct radix-tree pointers with a special bit, sign
+the indirect one that hangs off the root. This means that, given a
+lookup_slot operation, the invalid result will be differentiated from
+the valid (previously, valid results could have the bit either set or
+clear).
 
-Would that work?
+This does not affect slot lookups which occur under lock -- they
+can never return an invalid result. Is needed in future for lockless
+pagecache.
 
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-Regards,
-
-Phil
-
+Index: linux-2.6/include/linux/radix-tree.h
+===================================================================
+--- linux-2.6.orig/include/linux/radix-tree.h
++++ linux-2.6/include/linux/radix-tree.h
+@@ -26,28 +26,31 @@
+ #include <linux/rcupdate.h>
+ 
+ /*
+- * A direct pointer (root->rnode pointing directly to a data item,
+- * rather than another radix_tree_node) is signalled by the low bit
+- * set in the root->rnode pointer.
+- *
+- * In this case root->height is also NULL, but the direct pointer tests are
+- * needed for RCU lookups when root->height is unreliable.
++ * An indirect pointer (root->rnode pointing to a radix_tree_node, rather
++ * than a data item) is signalled by the low bit set in the root->rnode
++ * pointer.
++ *
++ * In this case root->height is > 0, but the indirect pointer tests are
++ * needed for RCU lookups (because root->height is unreliable). The only
++ * time callers need worry about this is when doing a lookup_slot under
++ * RCU.
+  */
+-#define RADIX_TREE_DIRECT_PTR	1
++#define RADIX_TREE_INDIRECT_PTR	1
++#define RADIX_TREE_RETRY ((void *)-1UL)
+ 
+-static inline void *radix_tree_ptr_to_direct(void *ptr)
++static inline void *radix_tree_ptr_to_indirect(void *ptr)
+ {
+-	return (void *)((unsigned long)ptr | RADIX_TREE_DIRECT_PTR);
++	return (void *)((unsigned long)ptr | RADIX_TREE_INDIRECT_PTR);
+ }
+ 
+-static inline void *radix_tree_direct_to_ptr(void *ptr)
++static inline void *radix_tree_indirect_to_ptr(void *ptr)
+ {
+-	return (void *)((unsigned long)ptr & ~RADIX_TREE_DIRECT_PTR);
++	return (void *)((unsigned long)ptr & ~RADIX_TREE_INDIRECT_PTR);
+ }
+ 
+-static inline int radix_tree_is_direct_ptr(void *ptr)
++static inline int radix_tree_is_indirect_ptr(void *ptr)
+ {
+-	return (int)((unsigned long)ptr & RADIX_TREE_DIRECT_PTR);
++	return (int)((unsigned long)ptr & RADIX_TREE_INDIRECT_PTR);
+ }
+ 
+ /*** radix-tree API starts here ***/
+@@ -130,7 +133,10 @@ do {									\
+  */
+ static inline void *radix_tree_deref_slot(void **pslot)
+ {
+-	return radix_tree_direct_to_ptr(*pslot);
++	void *ret = *pslot;
++	if (unlikely(radix_tree_is_indirect_ptr(ret)))
++		ret = RADIX_TREE_RETRY;
++	return ret;
+ }
+ /**
+  * radix_tree_replace_slot	- replace item in a slot
+@@ -142,10 +148,8 @@ static inline void *radix_tree_deref_slo
+  */
+ static inline void radix_tree_replace_slot(void **pslot, void *item)
+ {
+-	BUG_ON(radix_tree_is_direct_ptr(item));
+-	rcu_assign_pointer(*pslot,
+-		(void *)((unsigned long)item |
+-			((unsigned long)*pslot & RADIX_TREE_DIRECT_PTR)));
++	BUG_ON(radix_tree_is_indirect_ptr(item));
++	rcu_assign_pointer(*pslot, item);
+ }
+ 
+ int radix_tree_insert(struct radix_tree_root *, unsigned long, void *);
+Index: linux-2.6/lib/radix-tree.c
+===================================================================
+--- linux-2.6.orig/lib/radix-tree.c
++++ linux-2.6/lib/radix-tree.c
+@@ -104,7 +104,7 @@ radix_tree_node_alloc(struct radix_tree_
+ 			rtp->nr--;
+ 		}
+ 	}
+-	BUG_ON(radix_tree_is_direct_ptr(ret));
++	BUG_ON(radix_tree_is_indirect_ptr(ret));
+ 	return ret;
+ }
+ 
+@@ -240,7 +240,7 @@ static int radix_tree_extend(struct radi
+ 			return -ENOMEM;
+ 
+ 		/* Increase the height.  */
+-		node->slots[0] = radix_tree_direct_to_ptr(root->rnode);
++		node->slots[0] = radix_tree_indirect_to_ptr(root->rnode);
+ 
+ 		/* Propagate the aggregated tag info into the new root */
+ 		for (tag = 0; tag < RADIX_TREE_MAX_TAGS; tag++) {
+@@ -251,6 +251,7 @@ static int radix_tree_extend(struct radi
+ 		newheight = root->height+1;
+ 		node->height = newheight;
+ 		node->count = 1;
++		node = radix_tree_ptr_to_indirect(node);
+ 		rcu_assign_pointer(root->rnode, node);
+ 		root->height = newheight;
+ 	} while (height > root->height);
+@@ -274,7 +275,7 @@ int radix_tree_insert(struct radix_tree_
+ 	int offset;
+ 	int error;
+ 
+-	BUG_ON(radix_tree_is_direct_ptr(item));
++	BUG_ON(radix_tree_is_indirect_ptr(item));
+ 
+ 	/* Make sure the tree is high enough.  */
+ 	if (index > radix_tree_maxindex(root->height)) {
+@@ -283,7 +284,8 @@ int radix_tree_insert(struct radix_tree_
+ 			return error;
+ 	}
+ 
+-	slot = root->rnode;
++	slot = radix_tree_indirect_to_ptr(root->rnode);
++
+ 	height = root->height;
+ 	shift = (height-1) * RADIX_TREE_MAP_SHIFT;
+ 
+@@ -298,7 +300,8 @@ int radix_tree_insert(struct radix_tree_
+ 				rcu_assign_pointer(node->slots[offset], slot);
+ 				node->count++;
+ 			} else
+-				rcu_assign_pointer(root->rnode, slot);
++				rcu_assign_pointer(root->rnode,
++					radix_tree_ptr_to_indirect(slot));
+ 		}
+ 
+ 		/* Go a level down */
+@@ -318,7 +321,7 @@ int radix_tree_insert(struct radix_tree_
+ 		BUG_ON(tag_get(node, 0, offset));
+ 		BUG_ON(tag_get(node, 1, offset));
+ 	} else {
+-		rcu_assign_pointer(root->rnode, radix_tree_ptr_to_direct(item));
++		rcu_assign_pointer(root->rnode, item);
+ 		BUG_ON(root_tag_get(root, 0));
+ 		BUG_ON(root_tag_get(root, 1));
+ 	}
+@@ -350,11 +353,12 @@ void **radix_tree_lookup_slot(struct rad
+ 	if (node == NULL)
+ 		return NULL;
+ 
+-	if (radix_tree_is_direct_ptr(node)) {
++	if (!radix_tree_is_indirect_ptr(node)) {
+ 		if (index > 0)
+ 			return NULL;
+ 		return (void **)&root->rnode;
+ 	}
++	node = radix_tree_indirect_to_ptr(node);
+ 
+ 	height = node->height;
+ 	if (index > radix_tree_maxindex(height))
+@@ -398,11 +402,12 @@ void *radix_tree_lookup(struct radix_tre
+ 	if (node == NULL)
+ 		return NULL;
+ 
+-	if (radix_tree_is_direct_ptr(node)) {
++	if (!radix_tree_is_indirect_ptr(node)) {
+ 		if (index > 0)
+ 			return NULL;
+-		return radix_tree_direct_to_ptr(node);
++		return node;
+ 	}
++	node = radix_tree_indirect_to_ptr(node);
+ 
+ 	height = node->height;
+ 	if (index > radix_tree_maxindex(height))
+@@ -447,7 +452,7 @@ void *radix_tree_tag_set(struct radix_tr
+ 	height = root->height;
+ 	BUG_ON(index > radix_tree_maxindex(height));
+ 
+-	slot = root->rnode;
++	slot = radix_tree_indirect_to_ptr(root->rnode);
+ 	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
+ 
+ 	while (height > 0) {
+@@ -497,7 +502,7 @@ void *radix_tree_tag_clear(struct radix_
+ 
+ 	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
+ 	pathp->node = NULL;
+-	slot = root->rnode;
++	slot = radix_tree_indirect_to_ptr(root->rnode);
+ 
+ 	while (height > 0) {
+ 		int offset;
+@@ -562,8 +567,9 @@ int radix_tree_tag_get(struct radix_tree
+ 	if (node == NULL)
+ 		return 0;
+ 
+-	if (radix_tree_is_direct_ptr(node))
++	if (!radix_tree_is_indirect_ptr(node))
+ 		return (index == 0);
++	node = radix_tree_indirect_to_ptr(node);
+ 
+ 	height = node->height;
+ 	if (index > radix_tree_maxindex(height))
+@@ -680,13 +686,13 @@ radix_tree_gang_lookup(struct radix_tree
+ 	if (!node)
+ 		return 0;
+ 
+-	if (radix_tree_is_direct_ptr(node)) {
++	if (!radix_tree_is_indirect_ptr(node)) {
+ 		if (first_index > 0)
+ 			return 0;
+-		node = radix_tree_direct_to_ptr(node);
+-		results[0] = rcu_dereference(node);
++		results[0] = node;
+ 		return 1;
+ 	}
++	node = radix_tree_indirect_to_ptr(node);
+ 
+ 	max_index = radix_tree_maxindex(node->height);
+ 
+@@ -808,13 +814,13 @@ radix_tree_gang_lookup_tag(struct radix_
+ 	if (!node)
+ 		return 0;
+ 
+-	if (radix_tree_is_direct_ptr(node)) {
++	if (!radix_tree_is_indirect_ptr(node)) {
+ 		if (first_index > 0)
+ 			return 0;
+-		node = radix_tree_direct_to_ptr(node);
+-		results[0] = rcu_dereference(node);
++		results[0] = node;
+ 		return 1;
+ 	}
++	node = radix_tree_indirect_to_ptr(node);
+ 
+ 	max_index = radix_tree_maxindex(node->height);
+ 
+@@ -844,12 +850,22 @@ EXPORT_SYMBOL(radix_tree_gang_lookup_tag
+ static inline void radix_tree_shrink(struct radix_tree_root *root)
+ {
+ 	/* try to shrink tree height */
+-	while (root->height > 0 &&
+-			root->rnode->count == 1 &&
+-			root->rnode->slots[0]) {
++	while (root->height > 0) {
+ 		struct radix_tree_node *to_free = root->rnode;
+ 		void *newptr;
+ 
++		BUG_ON(!radix_tree_is_indirect_ptr(to_free));
++		to_free = radix_tree_indirect_to_ptr(to_free);
++
++		/*
++		 * The candidate node has more than one child, or its child
++		 * is not at the leftmost slot, we cannot shrink.
++		 */
++		if (to_free->count != 1)
++			break;
++		if (!to_free->slots[0])
++			break;
++
+ 		/*
+ 		 * We don't need rcu_assign_pointer(), since we are simply
+ 		 * moving the node from one part of the tree to another. If
+@@ -858,8 +874,8 @@ static inline void radix_tree_shrink(str
+ 		 * one (root->rnode).
+ 		 */
+ 		newptr = to_free->slots[0];
+-		if (root->height == 1)
+-			newptr = radix_tree_ptr_to_direct(newptr);
++		if (root->height > 1)
++			newptr = radix_tree_ptr_to_indirect(newptr);
+ 		root->rnode = newptr;
+ 		root->height--;
+ 		/* must only free zeroed nodes into the slab */
+@@ -894,12 +910,12 @@ void *radix_tree_delete(struct radix_tre
+ 		goto out;
+ 
+ 	slot = root->rnode;
+-	if (height == 0 && root->rnode) {
+-		slot = radix_tree_direct_to_ptr(slot);
++	if (height == 0) {
+ 		root_tag_clear_all(root);
+ 		root->rnode = NULL;
+ 		goto out;
+ 	}
++	slot = radix_tree_indirect_to_ptr(slot);
+ 
+ 	shift = (height - 1) * RADIX_TREE_MAP_SHIFT;
+ 	pathp->node = NULL;
+@@ -941,7 +957,8 @@ void *radix_tree_delete(struct radix_tre
+ 			radix_tree_node_free(to_free);
+ 
+ 		if (pathp->node->count) {
+-			if (pathp->node == root->rnode)
++			if (pathp->node ==
++					radix_tree_indirect_to_ptr(root->rnode))
+ 				radix_tree_shrink(root);
+ 			goto out;
+ 		}
