@@ -1,403 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbXHBOiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbXHBOrA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754972AbXHBOiV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754187AbXHBOiN
+	id S1755634AbXHBOrA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:47:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbXHBOqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:38:13 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45774 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753970AbXHBOiL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:38:11 -0400
-Subject: [-mm patch] CPUfreq: Only check for transition latency on
-	problematic governors
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Gabriel C <nix.or.die@googlemail.com>, davej@codemonkey.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-In-Reply-To: <20070802134838.GV3972@stusta.de>
-References: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com>
-	 <20070801165704.a26961b7.akpm@linux-foundation.org>
-	 <46B12516.4090006@googlemail.com>  <20070802134838.GV3972@stusta.de>
-Content-Type: multipart/mixed; boundary="=-tb+2jeMG7pwnhLBBDATl"
-Organization: Novell/SUSE
-Date: Thu, 02 Aug 2007 16:38:06 +0200
-Message-Id: <1186065486.18821.545.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
+	Thu, 2 Aug 2007 10:46:51 -0400
+Received: from web52507.mail.re2.yahoo.com ([206.190.48.190]:47597 "HELO
+	web52507.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751953AbXHBOqv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 10:46:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=JchfvWEW+0scqpyARyu3uNUQ18r6P0mHrxF74K+uGew/DFZNhKu3BeoeyCE+n808kWucz9R6NlDsftimnRN21cFI1RmNIjfIvnHDO/ShSKLCyJXPbtOfeOBHJWhwoyRuCYRIgmBFmdRx86VofVjUu704ElqwsUPdnXkk/3POP4g=;
+X-YMail-OSG: 0Yl4FZQVM1mVKbrelQMlJe9fbjrKn4mOucf96immutL_B8fT0QmjYqZMgHNnfeqA8xIUe9cNekBPT0TazObaj2TCcjVXAQ380GfW3r_Y6yrEqCwlkv0-
+Date: Thu, 2 Aug 2007 07:46:49 -0700 (PDT)
+From: Marc Perkel <mperkel@yahoo.com>
+Subject: Re: Woke up to a crashed kernet this morning - nVidia is crap
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <6bffcb0e0708020728x5751fc76pad5deadce3a21a5b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+Message-ID: <898083.40014.qm@web52507.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+OK - so the driver I downloaded from nVidia to fix
+their problem I was having with the video installed
+drivers for everything? I'm really getting to dislike
+nVidia.
 
---=-tb+2jeMG7pwnhLBBDATl
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
 
-On Thu, 2007-08-02 at 15:48 +0200, Adrian Bunk wrote:
-> On Thu, Aug 02, 2007 at 02:28:06AM +0200, Gabriel C wrote:
-> > Andrew Morton wrote:
-> > > On Wed, 1 Aug 2007 16:31:46 -0700
-> > > "Miles Lane" <miles.lane@gmail.com> wrote:
-> > > 
-> > >>   LD      .tmp_vmlinux1
-> > >> drivers/built-in.o: In function `__cpufreq_governor':
-> > >> cpufreq.c:(.text+0xaf178): undefined reference to `cpufreq_gov_performance'
-> > >> cpufreq.c:(.text+0xaf18a): undefined reference to `cpufreq_gov_performance'
-> > >> make: *** [.tmp_vmlinux1] Error 1
-> > > 
-> > > One for Thomas, I expect.
-> > 
-> > Is this patch :
-> > 
-> > cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
-> > 
-> > Reverting it here fixes the error.
+--- Michal Piotrowski
+<michal.k.k.piotrowski@gmail.com> wrote:
+
 > 
-> Possible fix below.
-Or this one.
-Advantage: You can still have cpufreq core without the performance 
-           governor built.
-Disadvantage: The logic whether transition latency checks are
-              needed/done is moved to Kconfig.
-              Means, if you write a governor that has transition
-              latency values above 0, you must let it depend on
-              the performance governor in Kconfig.
-
-Hope I got all .config possibilities with that one now.
-Attached is also a replacement patch for this one:
-cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
-
-
-CPUfreq: Only check for transition latency on problematic governors
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
---
-
---- linux-2.6.23-rc1-mm2/include/linux/cpufreq.h	2007-08-02 16:01:36.000000000 +0200
-+++ linux-2.6.23-rc1-mm2_fixed/include/linux/cpufreq.h	2007-08-02 15:21:28.000000000 +0200
-@@ -299,8 +299,10 @@ static inline unsigned int cpufreq_get(u
-   Performance governor is fallback governor if any other gov failed to
-   auto load due latency restrictions
- */
-+#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
- extern struct cpufreq_governor cpufreq_gov_performance;
- #define CPUFREQ_PERFORMANCE_GOVERNOR	(&cpufreq_gov_performance)
-+#endif
- #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
- #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_performance)
- #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
---- linux-2.6.23-rc1-mm2/drivers/cpufreq/cpufreq.c	2007-08-02 16:01:35.000000000 +0200
-+++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq.c	2007-08-02 16:23:09.000000000 +0200
-@@ -1484,17 +1484,30 @@ static int __cpufreq_governor(struct cpu
- 					unsigned int event)
- {
- 	int ret;
-+
-+	/* Only must be defined when default governor is known to have latency
-+	   restrictions, like e.g. conservative or ondemand.
-+	   That this is the case is already ensured in Kconfig
-+	*/
-+#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
- 	struct cpufreq_governor *gov = CPUFREQ_PERFORMANCE_GOVERNOR;
-+#else
-+	struct cpufreq_governor *gov = NULL;
-+#endif
- 
- 	if (policy->governor->max_transition_latency &&
- 	    policy->cpuinfo.transition_latency >
- 	    policy->governor->max_transition_latency) {
--		printk(KERN_WARNING "%s governor failed, too long"
--		       " transition latency of HW, fallback"
--		       " to %s governor\n",
--		       policy->governor->name,
--		       gov->name);
--		       policy->governor = gov;
-+		if (!gov)
-+			return -EINVAL;
-+		else {
-+			printk(KERN_WARNING "%s governor failed, too long"
-+			       " transition latency of HW, fallback"
-+			       " to %s governor\n",
-+			       policy->governor->name,
-+			       gov->name);
-+			policy->governor = gov;
-+		}
- 	}
- 
- 	if (!try_module_get(policy->governor->owner))
+> Nvidia binary crap
+> 
+> "    When you are using a binary driver, the kernel
+> is "tainted",
+> which means that the source
+> of possible problems may be unrelated to the kernel
+> code (see
+> https://secure-support.
+>
+novell.com/KanisaPlatform/Publishing/250/3582750_f.SAL_Public.html
+> for more de-
+> tails). You can check whether or not the kernel was
+> tainted when the
+> problem occurred by
+> looking at the corresponding error message. If can
+> you see something
+> similar to the following
+> line:
+> EIP:       0060:[<c046c7c3>]        Tainted: P     
+> VLI
+> (the word Tainted is crucial here), the kernel was
+> tainted and most
+> probably the kernel
+> developers will not be able to help you. In that
+> case you should try
+> to reproduce the problem
+> without the binary driver loaded. Moreover, if the
+> problem does not
+> occur without it, you
+> should send a bug report to the creators of the
+> binary driver and ask
+> them to ﬁx it.
+>     In the ﬁle Documentation/oops-tracing.txt,
+> included in the kernel
+> sources, there is a
+> list of reasons why the kernel can be considered as
+> tainted. As
+> follows from this document,
+> the presence of a binary module is not the only
+> possible reason of
+> tainting the kernel, but
+> in practice it turns out to be the most frequent
+> one. Generally, you
+> should avoid reporting
+> problems in tainted kernels to the LKML (or to the
+> kernel developers
+> in general) and the
+> problems related to binary drivers should be
+> reported to their providers."
+> 
+> -- Linux Kernel Tester's Guide
+> 
+> Regards,
+> Michal
+> 
+> -- 
+> LOG
+> http://www.stardust.webpages.pl/log/
+> 
 
 
---=-tb+2jeMG7pwnhLBBDATl
-Content-Disposition: attachment; filename=ondemand_default.patch
-Content-Type: text/x-patch; name=ondemand_default.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
 
-Allow ondemand and conservative cpufreq governors to be used as default
-
-Depending on the transition latency of the HW for cpufreq switches, the
-ondemand or conservative governor cannot be used with certain cpufreq drivers.
-Still the ondemand should be the default governor on a wide range of systems.
-This patch allows this and lets the governor fallback to the performance
-governor at cpufreq driver load time, if the driver does not support fast
-enough frequency switching.
-
-Main benefit is that on e.g. installation or other systems without userspace
-support a working dynamic cpufreq support can be achieved on most systems by
-simply loading the cpufreq driver. This is especially essential for recent
-x86(_64) laptop hardware which may rely on working dynamic cpufreq OS support.
-
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-
----
- drivers/cpufreq/Kconfig                |   27 +++++++++++++++++++++++----
- drivers/cpufreq/cpufreq.c              |   25 +++++++++++++++++++++++++
- drivers/cpufreq/cpufreq_conservative.c |   19 +++++++++----------
- drivers/cpufreq/cpufreq_ondemand.c     |   22 +++++++++-------------
- include/linux/cpufreq.h                |   22 +++++++++++++++++++---
- 5 files changed, 85 insertions(+), 30 deletions(-)
-
-Index: linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq_ondemand.c
-===================================================================
---- linux-2.6.23-rc1-mm2_fixed.orig/drivers/cpufreq/cpufreq_ondemand.c
-+++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq_ondemand.c
-@@ -47,7 +47,7 @@ static unsigned int def_sampling_rate;
- 			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
- #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
--#define TRANSITION_LATENCY_LIMIT		(10 * 1000)
-+#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
- 
- static void do_dbs_timer(struct work_struct *work);
- 
-@@ -508,12 +508,6 @@ static int cpufreq_governor_dbs(struct c
- 		if ((!cpu_online(cpu)) || (!policy->cur))
- 			return -EINVAL;
- 
--		if (policy->cpuinfo.transition_latency >
--				(TRANSITION_LATENCY_LIMIT * 1000)) {
--			printk(KERN_WARNING "ondemand governor failed to load "
--			       "due to too long transition latency\n");
--			return -EINVAL;
--		}
- 		if (this_dbs_info->enable) /* Already enabled */
- 			break;
- 
-@@ -585,11 +579,13 @@ static int cpufreq_governor_dbs(struct c
- 	return 0;
- }
- 
--static struct cpufreq_governor cpufreq_gov_dbs = {
--	.name = "ondemand",
--	.governor = cpufreq_governor_dbs,
--	.owner = THIS_MODULE,
-+struct cpufreq_governor cpufreq_gov_ondemand = {
-+	.name			= "ondemand",
-+	.governor		= cpufreq_governor_dbs,
-+	.max_transition_latency = TRANSITION_LATENCY_LIMIT,
-+	.owner			= THIS_MODULE,
- };
-+EXPORT_SYMBOL(cpufreq_gov_ondemand);
- 
- static int __init cpufreq_gov_dbs_init(void)
- {
-@@ -598,12 +594,12 @@ static int __init cpufreq_gov_dbs_init(v
- 		printk(KERN_ERR "Creation of kondemand failed\n");
- 		return -EFAULT;
- 	}
--	return cpufreq_register_governor(&cpufreq_gov_dbs);
-+	return cpufreq_register_governor(&cpufreq_gov_ondemand);
- }
- 
- static void __exit cpufreq_gov_dbs_exit(void)
- {
--	cpufreq_unregister_governor(&cpufreq_gov_dbs);
-+	cpufreq_unregister_governor(&cpufreq_gov_ondemand);
- 	destroy_workqueue(kondemand_wq);
- }
- 
-Index: linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-2.6.23-rc1-mm2_fixed.orig/drivers/cpufreq/cpufreq_conservative.c
-+++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq_conservative.c
-@@ -58,7 +58,7 @@ static unsigned int 				def_sampling_rat
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define DEF_SAMPLING_DOWN_FACTOR		(1)
- #define MAX_SAMPLING_DOWN_FACTOR		(10)
--#define TRANSITION_LATENCY_LIMIT		(10 * 1000)
-+#define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
- 
- static void do_dbs_timer(struct work_struct *work);
- 
-@@ -466,9 +466,6 @@ static int cpufreq_governor_dbs(struct c
- 		    (!policy->cur))
- 			return -EINVAL;
- 
--		if (policy->cpuinfo.transition_latency >
--				(TRANSITION_LATENCY_LIMIT * 1000))
--			return -EINVAL;
- 		if (this_dbs_info->enable) /* Already enabled */
- 			break;
- 		 
-@@ -551,15 +548,17 @@ static int cpufreq_governor_dbs(struct c
- 	return 0;
- }
- 
--static struct cpufreq_governor cpufreq_gov_dbs = {
--	.name		= "conservative",
--	.governor	= cpufreq_governor_dbs,
--	.owner		= THIS_MODULE,
-+struct cpufreq_governor cpufreq_gov_conservative = {
-+	.name			= "conservative",
-+	.governor		= cpufreq_governor_dbs,
-+	.max_transition_latency	= TRANSITION_LATENCY_LIMIT,
-+	.owner			= THIS_MODULE,
- };
-+EXPORT_SYMBOL(cpufreq_gov_conservative);
- 
- static int __init cpufreq_gov_dbs_init(void)
- {
--	return cpufreq_register_governor(&cpufreq_gov_dbs);
-+	return cpufreq_register_governor(&cpufreq_gov_conservative);
- }
- 
- static void __exit cpufreq_gov_dbs_exit(void)
-@@ -567,7 +566,7 @@ static void __exit cpufreq_gov_dbs_exit(
- 	/* Make sure that the scheduled work is indeed not running */
- 	flush_scheduled_work();
- 
--	cpufreq_unregister_governor(&cpufreq_gov_dbs);
-+	cpufreq_unregister_governor(&cpufreq_gov_conservative);
- }
- 
- 
-Index: linux-2.6.23-rc1-mm2_fixed/include/linux/cpufreq.h
-===================================================================
---- linux-2.6.23-rc1-mm2_fixed.orig/include/linux/cpufreq.h
-+++ linux-2.6.23-rc1-mm2_fixed/include/linux/cpufreq.h
-@@ -163,6 +163,9 @@ struct cpufreq_governor {
- 	char	name[CPUFREQ_NAME_LEN];
- 	int 	(*governor)	(struct cpufreq_policy *policy,
- 				 unsigned int event);
-+	unsigned int max_transition_latency; /* HW must be able to switch to
-+			next freq faster than this value in nano secs or we
-+			will fallback to performance governor */
- 	struct list_head	governor_list;
- 	struct module		*owner;
- };
-@@ -292,12 +295,25 @@ static inline unsigned int cpufreq_get(u
-  *********************************************************************/
- 
- 
--#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-+/*
-+  Performance governor is fallback governor if any other gov failed to
-+  auto load due latency restrictions
-+*/
-+#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
- extern struct cpufreq_governor cpufreq_gov_performance;
--#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_performance
-+#define CPUFREQ_PERFORMANCE_GOVERNOR	(&cpufreq_gov_performance)
-+#endif
-+#ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_performance)
- #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
- extern struct cpufreq_governor cpufreq_gov_userspace;
--#define CPUFREQ_DEFAULT_GOVERNOR	&cpufreq_gov_userspace
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_userspace)
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND)
-+extern struct cpufreq_governor cpufreq_gov_ondemand;
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_ondemand)
-+#elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE)
-+extern struct cpufreq_governor cpufreq_gov_conservative;
-+#define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_conservative)
- #endif
- 
- 
-Index: linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/Kconfig
-===================================================================
---- linux-2.6.23-rc1-mm2_fixed.orig/drivers/cpufreq/Kconfig
-+++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/Kconfig
-@@ -56,10 +56,6 @@ config CPU_FREQ_STAT_DETAILS
- 
- 	  If in doubt, say N.
- 
--# Note that it is not currently possible to set the other governors (such as ondemand)
--# as the default, since if they fail to initialise, cpufreq will be
--# left in an undefined state.
--
- choice
- 	prompt "Default CPUFreq governor"
- 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
-@@ -85,6 +81,29 @@ config CPU_FREQ_DEFAULT_GOV_USERSPACE
- 	  program shall be able to set the CPU dynamically without having
- 	  to enable the userspace governor manually.
- 
-+config CPU_FREQ_DEFAULT_GOV_ONDEMAND
-+	bool "ondemand"
-+	select CPU_FREQ_GOV_ONDEMAND
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	help
-+	  Use the CPUFreq governor 'ondemand' as default. This allows
-+	  you to get a full dynamic frequency capable system by simply
-+	  loading your cpufreq low-level hardware driver.
-+	  Be aware that not all cpufreq drivers support the ondemand
-+	  governor. If unsure have a look at the help section of the
-+	  driver. Fallback governor will be the performance governor.
-+
-+config CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
-+	bool "conservative"
-+	select CPU_FREQ_GOV_CONSERVATIVE
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	help
-+	  Use the CPUFreq governor 'conservative' as default. This allows
-+	  you to get a full dynamic frequency capable system by simply
-+	  loading your cpufreq low-level hardware driver.
-+	  Be aware that not all cpufreq drivers support the conservative
-+	  governor. If unsure have a look at the help section of the
-+	  driver. Fallback governor will be the performance governor.
- endchoice
- 
- config CPU_FREQ_GOV_PERFORMANCE
-Index: linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6.23-rc1-mm2_fixed.orig/drivers/cpufreq/cpufreq.c
-+++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq.c
-@@ -1485,6 +1485,31 @@ static int __cpufreq_governor(struct cpu
- {
- 	int ret;
- 
-+	/* Only must be defined when default governor is known to have latency
-+	   restrictions, like e.g. conservative or ondemand.
-+	   That this is the case is already ensured in Kconfig
-+	*/
-+#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
-+	struct cpufreq_governor *gov = CPUFREQ_PERFORMANCE_GOVERNOR;
-+#else
-+	struct cpufreq_governor *gov = NULL;
-+#endif
-+
-+	if (policy->governor->max_transition_latency &&
-+	    policy->cpuinfo.transition_latency >
-+	    policy->governor->max_transition_latency) {
-+		if (!gov)
-+			return -EINVAL;
-+		else {
-+			printk(KERN_WARNING "%s governor failed, too long"
-+			       " transition latency of HW, fallback"
-+			       " to %s governor\n",
-+			       policy->governor->name,
-+			       gov->name);
-+			policy->governor = gov;
-+		}
-+	}
-+
- 	if (!try_module_get(policy->governor->owner))
- 		return -EINVAL;
- 
-
---=-tb+2jeMG7pwnhLBBDATl--
-
+       
+____________________________________________________________________________________
+Moody friends. Drama queens. Your life? Nope! - their life, your story. Play Sims Stories at Yahoo! Games.
+http://sims.yahoo.com/  
