@@ -1,39 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbXHBMAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbXHBMES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbXHBMAv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754543AbXHBMAo
+	id S1756051AbXHBMES (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbXHBMEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:00:44 -0400
-Received: from wildsau.enemy.org ([193.170.194.34]:33116 "EHLO
-	wildsau.enemy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754513AbXHBMAo (ORCPT
+	Thu, 2 Aug 2007 08:04:08 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:37567 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752344AbXHBMEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:00:44 -0400
-From: Herbert Rosmanith <kernel@wildsau.enemy.org>
-Message-Id: <200708021200.l72C0Vbx008657@wildsau.enemy.org>
-Subject: Re: VIA EPIA EK: strange eth dev numbering
-In-Reply-To: <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Date: Thu, 2 Aug 2007 14:00:31 +0200 (MET DST)
-CC: Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL100 (25)]
+	Thu, 2 Aug 2007 08:04:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=eM48sCtZSdBFbmNPp21VHHVpzaCNbPCYKaZklyGs3nWwnsLflJ+v+74gss5zbfnNrC1zrRldPCBT0oG1opwBCSa5G4bDoUWKaaWQMCJcx3MpJkYJ5webkk3FaMcJK8pK0ziuIyxeh4TGzCp3XGGfBaVYmQzDYy3qLWCduOwljxU=
+Message-ID: <b6fcc0a0708020504j7588061fq7e70a50499dcbdfe@mail.gmail.com>
+Date: Thu, 2 Aug 2007 16:04:06 +0400
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Miklos Szeredi" <miklos@szeredi.hu>
+Subject: Re: [PATCH] type safe allocator
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, torvalds@linux-foundation.org
+In-Reply-To: <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+	 <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-> Wait, you forget that something may change the name. That dmesg message
-> from 1 second ago does not need to be valid anymore, just as anything
-> else in this world.
+On 8/2/07, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> The linux kernel doesn't have a type safe object allocator a-la new()
+> in C++ or g_new() in glib.
+>
+> Introduce two helpers for this purpose:
+>
+>    alloc_struct(type, gfp_flags);
+>
+>    zalloc_struct(type, gfp_flags);
 
-there are many things in this world which are usually very persistent, and
-people rely on their persistence. e.g. in my office, I assume the phone number
-is still the same I used 1 second ago ... but what has this to do with
-ethernet device names? well: I expected the names persist - like they did
-without udev. I'm used that things persist, as probably the rest of the world :-)
+ick.
 
-cheers,
-herp
+> These macros take a type name (usually a 'struct foo') as first
+> argument
+
+So one has to type struct twice.
+
+> and the usual gfp-flags as second argument.  They return a
+> pointer cast to 'type *'.
+>
+> The traditional forms of allocating a structure are:
+>
+>   fooptr = kmalloc(sizeof(*fooptr), ...);
+>
+>   fooptr = kmalloc(sizeof(struct foo), ...);
+
+Key word is "traditional". Good traditional form which even half-competent
+C programmers immediately parse in retina.
+
+> The new form is preferred over these, because of it's type safety and
+> more descriptive nature.
+
+> +/**
+> + * alloc_struct - allocate given type object
+> + * @type: the type of the object to allocate
+> + * @flags: the type of memory to allocate.
+> + */
+> +#define alloc_struct(type, flags) ((type *) kmalloc(sizeof(type), flags))
+
+someone will write alloc_struct(int, GFP_KERNEL), I promise.
+
+Can you play instead with something Lisp based which has infinetely more
+potential for idioms.
