@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbXHBFOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbXHBFOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbXHBFOH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 01:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbXHBFN4
+	id S1754805AbXHBFOk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 01:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbXHBFOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 01:13:56 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:48875 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751139AbXHBFNz (ORCPT
+	Thu, 2 Aug 2007 01:14:30 -0400
+Received: from smtp103.plus.mail.mud.yahoo.com ([68.142.206.236]:44428 "HELO
+	smtp103.plus.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754426AbXHBFO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 01:13:55 -0400
-Date: Wed, 1 Aug 2007 22:13:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Eric Moore <Eric.Moore@lsi.com>,
-       DL-MPTFusionLinux@lsi.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       support@lsi.com, mpt_linux_developer@lsi.com,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH] Fix two potential mem leaks in MPT Fusion
- (mpt_attach())
-Message-Id: <20070801221342.d1f0db35.akpm@linux-foundation.org>
-In-Reply-To: <20070802030350.GF21219@parisc-linux.org>
-References: <200708020155.33690.jesper.juhl@gmail.com>
-	<20070801172653.1fd44e99.akpm@linux-foundation.org>
-	<20070802030350.GF21219@parisc-linux.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 01:14:29 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:References:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:In-Reply-To:User-Agent;
+  b=gO8FJ0EN3cJH0r9hvEB/sFycTHt0LSkEdWNUMkn6Jtsja6sFNV0aT0HGraD962lLbl/SNh+D5Q/Z3YxBZIQ1HR+RP0CVLNAA9F4C0mHJp/gxEsuRPwCw8qDx8DJwJLoYKLc/zhp3+W0hreZ/ot8qa0/bVUqU60DvYO+nj1usweM=  ;
+X-YMail-OSG: vkIBou8VM1mUR69mITiayWi6CA5GjqplN70mP2aMd7EpyPBVyFTdybrHeeAZDD1PxHJUUCH9mQ--
+Date: Thu, 2 Aug 2007 07:13:23 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>, michal.k.k.piotrowski@gmail.com
+Subject: Re: 2.6.23-rc1: no setup signature found... SOLVED!
+Message-ID: <20070802051323.GA4152@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+References: <20070729085059.GA10758@gollum.tnic> <20070729092402.GA2272@xguan-laptop> <20070729103706.GA16780@gollum.tnic> <46AC9B28.6060906@zytor.com> <20070729191528.GA5166@gollum.tnic> <46ADF02F.7010800@zytor.com> <20070730185359.GA4290@gollum.tnic> <46AE4E29.7060402@zytor.com> <20070801043835.GA4676@gollum.tnic> <46B09A57.8000403@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <46B09A57.8000403@zytor.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007 21:03:50 -0600 Matthew Wilcox <matthew@wil.cx> wrote:
+On Wed, Aug 01, 2007 at 10:36:07AM -0400, H. Peter Anvin wrote:
+> Borislav Petkov wrote:
+>> 	Breakpoint 4, 0x00040200 in ?? ()
+>> 	1: x/i ($cs << 4) + $eip  0x40300:      lea    (%si),%dx
+>> 	(gdb) c
+>> 	Continuing.
+>> if i do delete here, it loads the second stage of grub and continues to 
+>> load the
+>> kernel. Is there another way to land at the jmp instruction instead of 
+>> poking
+>> blindly, maybe disassemble something parts of the initial code. \me 
+>> reading
+>> grub-docs...
+>
+> If you do "delete" without a breakpoint number, you're deleting all 
+> breakpoints.  I just experimented with grub, and it looks like it should 
+> break at 0x90200, so just set that breakpoint and none of the others.
+>
+> 	-hpa
 
-> On Wed, Aug 01, 2007 at 05:26:53PM -0700, Andrew Morton wrote:
-> > Why on earth is that using GFP_ATOMIC?  This function later goes on to
-> > create procfs files and such things.
-> 
-> Seems fairly common in driver initialisation code.  I removed three
-> instances of this in the advansys driver.
+Hi,
 
-hrm.  People reach for GFP_ATOMIC so often that it becomes a habit, I guess.
+now this is one of those cases where one tries to shoot a small fly with a
+nuclear missile. The first assumption that something was wrong with the kernel
+setup code was wrong and here's how i know:
 
-It makes one wonder how much that lovely fault-injection framework is being
-used.
+The problem with my version of grub not hitting the breakpoint 0x90200 made me
+think that something might be messed up in the grub part of the boot sequence.
+Thus, i did the qemu simulation again and noticed on the initial boot screen of
+grub it saying "Grub version 0.91." However, you remember from a different post
+that the version of grub i have is the latest to be found in debian unstable,
+0.97-29, so i thought that something has to be wrong with it and especially with all
+those grub stages binaries, in my case in /boot/grub, which grub-install setups.
+Checking their timestamps revealed that the files are from 2004 so i thought,
+well, these are OLD! :) After refreshing the grub installation and replacing
+the stages-binaries with the fresh ones, the kernel booted just fine :), here:
 
+[boris@gollum:07:02:07:~:9994)->  uname -a
+Linux gollum 2.6.22-4fd06960f120e02e9abc802a09f9511c400042a5-12 #12 PREEMPT Thu Jul 26 18:08:34 CEST 2007 i686 GNU/Linux
 
-> > y'know, we could have a debug option which will spit warnings if someone
-> > does a !__GFP_WAIT allocation while !in_atomic() (only works if
-> > CONFIG_PREEMPT).  
-> > 
-> > But please, make it depend on !CONFIG_AKPM.  I shudder to think about all
-> > the stuff it would pick up.
-> 
-> Seems like you'd get a lot of false positives.
+so i guess the problem was with the ancient parts of a grub installation i had
+lying around which weren't replaced by the apt-get update process and somehow
+messed up newer grub versions. Anyway, in the end one still learns a lot while at it.
 
-There would be a few.  mempool does a non-__GFP_WAIT allocation
-deliberately, for example (I still think that's fishy btw).
+Thanks for your help.
 
-But I don't expect there would be a large number of falsies.  We could add
-a __GFP_I_REALLY_MEANT_ATOMIC flag to shut those up.
-
->  How about a call:
-> 
-> slab_warn_about_atomic_allocs();
-> 
-> right before calling the initcalls, and then
-> 
-> slab_stop_warning_about_atomic_allocs();
-> 
-> after calling them?  That should give people a lot to chew on for a few
-> months.  Obviously, you would need to not warn about allocations from
-> interrupt context, as you say above.
-
-Could.  But GFP_ATOMIC at initcall-time really isn't a problem (except that
-it can probably also happen at modprobe-time).
-
-What is the major concern is needlessly atomic allocations at regular
-runtime.
-
+-- 
+Regards/Gruﬂ,
+    Boris.
