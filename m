@@ -1,63 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbXHBTsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760075AbXHBTvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbXHBTsl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758076AbXHBTsc
+	id S1760075AbXHBTvH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757921AbXHBTuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:48:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46851 "EHLO mx2.mail.elte.hu"
+	Thu, 2 Aug 2007 15:50:55 -0400
+Received: from mail.screens.ru ([213.234.233.54]:53621 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758071AbXHBTsc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:48:32 -0400
-Date: Thu, 2 Aug 2007 21:48:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Roehricht <ml@felicis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Scheduling the highest priority task
-Message-ID: <20070802194825.GA23245@elte.hu>
-References: <8KLFD-G9-5@gated-at.bofh.it> <46B19CA1.7050204@felicis.org> <20070802114012.GA4067@elte.hu> <46B1F182.3010608@felicis.org> <20070802150350.GA3030@elte.hu> <46B1F4BA.4010107@felicis.org> <20070802151916.GA8688@elte.hu> <46B1FC6D.7010202@felicis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1757439AbXHBTux (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 15:50:53 -0400
+Date: Thu, 2 Aug 2007 23:50:49 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
+Message-ID: <20070802195049.GA361@tv-sign.ru>
+References: <20070801181253.GA90@tv-sign.ru> <1185992994.2636.142.camel@imap.mvista.com> <20070801201802.GA225@tv-sign.ru> <1186000468.2636.168.camel@imap.mvista.com> <20070801205053.GA263@tv-sign.ru> <1186002783.9513.228.camel@ghaskins-t60p.haskins.net> <20070801213422.GA280@tv-sign.ru> <1186005598.9513.261.camel@ghaskins-t60p.haskins.net> <20070801222201.GA316@tv-sign.ru> <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <46B1FC6D.7010202@felicis.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5053]
+In-Reply-To: <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Martin Roehricht <ml@felicis.org> wrote:
-
-> On 08/02/2007 05:19 PM, Ingo Molnar wrote:
-> >* Martin Roehricht <ml@felicis.org> wrote:
-> >
-> >>That's fine with me, that within the same priority-queue any task can 
-> >>be chosen. But assume two tasks with highly different priorities, such 
-> >>as 105 and 135 are scheduled on the same processor and one of them is 
-> >>now to be migrated -- shouldn't be the queue with task P=105 
-> >>considered first for migration by this code? Both tasks would use 
-> >>different queues with their own linked lists, right?
-> >
-> >yes. What makes you believe that the lower priority one (prio 135) is 
-> >chosen? [ as i said before, that will only be chosen if all tasks in the 
-> >higher-priority queue (prio 105) are either already running on a CPU or 
-> >have recently run so that the cache-hot logic skips them. ]
+On 08/01, Gregory Haskins wrote:
+>
+> On Thu, 2007-08-02 at 02:22 +0400, Oleg Nesterov wrote:
 > 
-> This believe is primarily based on my observations of multiple 
-> benchmark runs and also on your statement earlier: »in the SMP 
-> migration code, the 'old scheduler' indeed picks the lowest priority 
-> one«.
+> > No,
+> 
+> You sure are a confident one ;)
 
-oh, sorry, that was meant to be the 'highest priority one' :-/
+Yeah, this is a rare case when I am very sure I am right ;)
 
-so i think you got it all right, i just typoed that first sentence.
+I strongly believe you guys take a _completely_ wrong approach.
+queue_work() should _not_ take the priority of the caller into
+account, this is bogus.
 
-	Ingo
+Once again. Why do you think that queue_work() from RT99 should
+be considered as more important? This is just not true _unless_
+this task has to _wait_ for this work.
+
+So, perhaps, perhaps, it makes sense to modify insert_wq_barrier()
+so that it temporary raises the priority of cwq->thread to match
+that of the caller of flush_workqueue() or cancel_work_sync().
+
+However, I think even this is not needed. Please show us the real
+life example why the current implementation sucks.
+
+> > The comment near flush_workqueue() says:
+> > 
+> > 	* We sleep until all works which were queued on entry have been handled,
+> > 	* but we are not livelocked by new incoming ones.
+> 
+> Dude, of *course* says that.  It would be completely illogical for it to
+> say otherwise with the linear priority queue that mainline has.  Since
+> we are changing things here you have to read between the lines and ask
+> yourself "what is the intention of this barrier logic?".  Generally
+> speaking, the point of a barrier is to flush relevant work from your own
+> context, sometimes at the granularity of flushing everyone elses work
+> inadvertently if the flush mechanism isn't fine grained enough.  But
+> that is a side-effect, not a requirement.
+> 
+> So now my turn:
+> 
+> No. :P
+
+OK. Suppose that we re-order work_struct's according to the caller's
+priority.
+
+Now, a niced thread doing flush_workqueue() can livelock if workqueue
+is actively used.
+
+Actually a niced (so that its priority is lower than cwq->thread's one)
+can deadlock. Suppose it does
+
+	lock(LOCK);
+	flush_workueue(wq);
+
+and we have a pending work_struct which does:
+
+	void work_handler(struct work_struct *self)
+	{
+		if (!try_lock(LOCK)) {
+			// try again later...
+			queue_work(wq, self);
+			return;
+		}
+
+		do_something();
+	}
+
+Deadlock. Because now the caller of queue_work() is cwq->thread itself,
+so we insert this work ahead of the barrier which should complete
+flush_workueue(wq) above.
+
+There are other scenarious scenarios for more subtle deadlocks. Say,
+the pending task doesn't touch LOCK itself, but schedules another
+work which takes the LOCK.
+
+[... snip a good portion of text which I wasn't able to translate
+ and understand ... ;) ]
+
+> > Now, again, why do you think this task should wait?
+> 
+> I don't think it *should* wait.  It *will* wait and we don't want that.
+> And without PI-boost, it could wait indefinitely.  I think the detail
+> you are missing is that the RT kernel introduces some new workqueue APIs
+> that allow for "RPC" like behavior.  E.g. they are like
+> "smp_call_function()", but instead of using an IPI, it uses workqueues
+> to dispatch work to other CPUs.
+
+Aha. And this is exactly what I meant above. And this means that flush
+should govern the priority boosting, not queueing!
+
+But again, I think we can just create a special workqueue for that and
+make it RT99. No re-ordering, no playing games with re-niceing.
+
+Because that workqueue should be "idle" most of the time (no pending
+works), otherwise we are doing something wrong. And I don't think this
+wq can have many users and work->func() shouldn't be heavy, so perhaps
+it is OK if it always runs with the high priority. The latter may be
+wrong though.
+
+> However, you seem to have objections to the overall change in general
+
+Well, yes... You propose the complex changes to solve the problem which
+doesn't look very common, this makes me unhappy :)
+
+Oleg.
+
