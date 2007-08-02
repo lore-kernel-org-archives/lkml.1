@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbXHBMiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbXHBMif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756616AbXHBMiV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXHBMiK
+	id S1756307AbXHBMif (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755151AbXHBMiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:38:10 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:17297 "EHLO
+	Thu, 2 Aug 2007 08:38:12 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:17401 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754306AbXHBMiI (ORCPT
+	with ESMTP id S1754828AbXHBMiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:38:08 -0400
+	Thu, 2 Aug 2007 08:38:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=AzOUnH5hOM6mHcMr9viIb9SlluFfEVOrhHz25Y9uvwIyM8C18WnLOHy2yqi/UoHUhumm4SDvZL5sNJ+21vuZuNrAEe6i1I0dgonCoR0XJK/dWU8den7ITVzhjnGOjUbi6IAeBy8i4T35kLganq5GWhHRObs2OTMeWBkmonqvHGk=
+        b=GcaLZPcBP0BmDtVPiAERwVcM0JwbO/I/GtDM1DWkSvYHRSksuDfY73MPBSvsz04IOjAs45/MrveR33AoqwCiU/SsyFu8VVtaAbHwFy1QtWTG42VMx6st1W8XPYNOeJVC+PwHievy8dUpq/ScfARs63XO8piFfFSinuKsP7ni7CE=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 2/5] sysfs: simplify sysfs_rename_dir()
+Subject: [PATCH 3/5] sysfs: make sysfs_add/remove_one() call link/unlink_sibling() implictly
 In-Reply-To: <11860582821512-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
-Date: Thu, 2 Aug 2007 21:38:02 +0900
-Message-Id: <11860582821949-git-send-email-htejun@gmail.com>
+Date: Thu, 2 Aug 2007 21:38:03 +0900
+Message-Id: <11860582831967-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,89 +31,181 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With the shadow directories gone, sysfs_rename_dir() can be simplified.
+When adding or removing a sysfs_dirent, the user used to be required
+to call link/unlink separately.  It was for two reasons - code looked
+like that before sysfs_addrm_cxt conversion and to avoid looping
+through parent_sd->children list twice during removal.
 
-* parent doesn't need to be grabbed separately.  Just access
-  old_dentry->d_parent.
-
-* parent sd can never change.  Remove code to move under the new
-  parent.
-
-* Massage comments a bit.
+Performance optimization during removal just isn't worth it.  Make
+sysfs_add/remove_one() call sysfs_link/unlink_sibing() implicitly.
+This makes code simpler albeit slightly less efficient.  This change
+doesn't introduce any noticeable behavior change.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 ---
- fs/sysfs/dir.c |   26 ++++----------------------
- 1 files changed, 4 insertions(+), 22 deletions(-)
+ fs/sysfs/dir.c     |   21 ++++++++++-----------
+ fs/sysfs/file.c    |    4 +---
+ fs/sysfs/inode.c   |   17 ++++-------------
+ fs/sysfs/symlink.c |    4 +---
+ fs/sysfs/sysfs.h   |    2 --
+ 5 files changed, 16 insertions(+), 32 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 026ea70..0fe6aa3 100644
+index 0fe6aa3..8ce3ffb 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -883,14 +883,10 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	struct sysfs_dirent *sd;
- 	struct dentry *parent = NULL;
- 	struct dentry *old_dentry = NULL, *new_dentry = NULL;
--	struct sysfs_dirent *parent_sd;
- 	const char *dup_name = NULL;
- 	int error;
+@@ -30,7 +30,7 @@ static DEFINE_IDA(sysfs_ino_ida);
+  *	Locking:
+  *	mutex_lock(sysfs_mutex)
+  */
+-void sysfs_link_sibling(struct sysfs_dirent *sd)
++static void sysfs_link_sibling(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_dirent *parent_sd = sd->s_parent;
  
--	if (!kobj->parent)
--		return -EINVAL;
--
--	/* get dentries */
-+	/* get the original dentry */
- 	sd = kobj->sd;
- 	old_dentry = sysfs_get_dentry(sd);
- 	if (IS_ERR(old_dentry)) {
-@@ -898,12 +894,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 		goto out_dput;
- 	}
+@@ -49,7 +49,7 @@ void sysfs_link_sibling(struct sysfs_dirent *sd)
+  *	Locking:
+  *	mutex_lock(sysfs_mutex)
+  */
+-void sysfs_unlink_sibling(struct sysfs_dirent *sd)
++static void sysfs_unlink_sibling(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_dirent **pos;
  
--	parent_sd = kobj->parent->sd;
--	parent = sysfs_get_dentry(parent_sd);
--	if (IS_ERR(parent)) {
--		error = PTR_ERR(parent);
--		goto out_dput;
+@@ -500,6 +500,8 @@ void sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 		inc_nlink(acxt->parent_inode);
+ 
+ 	acxt->cnt++;
++
++	sysfs_link_sibling(sd);
+ }
+ 
+ /**
+@@ -521,7 +523,9 @@ void sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+  */
+ void sysfs_remove_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ {
+-	BUG_ON(sd->s_sibling || (sd->s_flags & SYSFS_FLAG_REMOVED));
++	BUG_ON(sd->s_flags & SYSFS_FLAG_REMOVED);
++
++	sysfs_unlink_sibling(sd);
+ 
+ 	sd->s_flags |= SYSFS_FLAG_REMOVED;
+ 	sd->s_sibling = acxt->removed;
+@@ -697,10 +701,8 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
+ 	/* link in */
+ 	sysfs_addrm_start(&acxt, parent_sd);
+ 
+-	if (!sysfs_find_dirent(parent_sd, name)) {
++	if (!sysfs_find_dirent(parent_sd, name))
+ 		sysfs_add_one(&acxt, sd);
+-		sysfs_link_sibling(sd);
 -	}
-+	parent = old_dentry->d_parent;
  
- 	/* lock parent and get dentry for new name */
- 	mutex_lock(&parent->d_inode->i_mutex);
-@@ -933,22 +924,14 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 		goto out_drop;
+ 	if (!sysfs_addrm_finish(&acxt)) {
+ 		sysfs_put(sd);
+@@ -821,7 +823,6 @@ static void remove_dir(struct sysfs_dirent *sd)
+ 	struct sysfs_addrm_cxt acxt;
  
- 	mutex_lock(&sysfs_mutex);
--
- 	dup_name = sd->s_name;
- 	sd->s_name = new_name;
-+	mutex_unlock(&sysfs_mutex);
- 
--	/* move under the new parent */
-+	/* rename */
- 	d_add(new_dentry, NULL);
- 	d_move(sd->s_dentry, new_dentry);
- 
+ 	sysfs_addrm_start(&acxt, sd->s_parent);
 -	sysfs_unlink_sibling(sd);
--	sysfs_get(parent_sd);
--	sysfs_put(sd->s_parent);
--	sd->s_parent = parent_sd;
--	sysfs_link_sibling(sd);
--
--	mutex_unlock(&sysfs_mutex);
--
- 	error = 0;
- 	goto out_unlock;
+ 	sysfs_remove_one(&acxt, sd);
+ 	sysfs_addrm_finish(&acxt);
+ }
+@@ -846,11 +847,9 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
+ 	while (*pos) {
+ 		struct sysfs_dirent *sd = *pos;
  
-@@ -958,7 +941,6 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	mutex_unlock(&parent->d_inode->i_mutex);
-  out_dput:
- 	kfree(dup_name);
--	dput(parent);
- 	dput(old_dentry);
- 	dput(new_dentry);
- 	return error;
+-		if (sysfs_type(sd) && sysfs_type(sd) != SYSFS_DIR) {
+-			*pos = sd->s_sibling;
+-			sd->s_sibling = NULL;
++		if (sysfs_type(sd) && sysfs_type(sd) != SYSFS_DIR)
+ 			sysfs_remove_one(&acxt, sd);
+-		} else
++		else
+ 			pos = &(*pos)->s_sibling;
+ 	}
+ 	sysfs_addrm_finish(&acxt);
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 3e1cc06..fcd065e 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -405,10 +405,8 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
+ 
+ 	sysfs_addrm_start(&acxt, dir_sd);
+ 
+-	if (!sysfs_find_dirent(dir_sd, attr->name)) {
++	if (!sysfs_find_dirent(dir_sd, attr->name))
+ 		sysfs_add_one(&acxt, sd);
+-		sysfs_link_sibling(sd);
+-	}
+ 
+ 	if (!sysfs_addrm_finish(&acxt)) {
+ 		sysfs_put(sd);
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 9671164..f05cda9 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -190,25 +190,16 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
+ {
+ 	struct sysfs_addrm_cxt acxt;
+-	struct sysfs_dirent **pos, *sd;
++	struct sysfs_dirent *sd;
+ 
+ 	if (!dir_sd)
+ 		return -ENOENT;
+ 
+ 	sysfs_addrm_start(&acxt, dir_sd);
+ 
+-	for (pos = &dir_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
+-		sd = *pos;
+-
+-		if (!sysfs_type(sd))
+-			continue;
+-		if (!strcmp(sd->s_name, name)) {
+-			*pos = sd->s_sibling;
+-			sd->s_sibling = NULL;
+-			sysfs_remove_one(&acxt, sd);
+-			break;
+-		}
+-	}
++	sd = sysfs_find_dirent(dir_sd, name);
++	if (sd)
++		sysfs_remove_one(&acxt, sd);
+ 
+ 	if (sysfs_addrm_finish(&acxt))
+ 		return 0;
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 4ce687f..8f70ca7 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -92,10 +92,8 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
+ 
+ 	sysfs_addrm_start(&acxt, parent_sd);
+ 
+-	if (!sysfs_find_dirent(parent_sd, name)) {
++	if (!sysfs_find_dirent(parent_sd, name))
+ 		sysfs_add_one(&acxt, sd);
+-		sysfs_link_sibling(sd);
+-	}
+ 
+ 	if (!sysfs_addrm_finish(&acxt)) {
+ 		error = -EEXIST;
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index b55e510..32b8b64 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -56,8 +56,6 @@ extern struct sysfs_dirent sysfs_root;
+ extern struct kmem_cache *sysfs_dir_cachep;
+ 
+ extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
+-extern void sysfs_link_sibling(struct sysfs_dirent *sd);
+-extern void sysfs_unlink_sibling(struct sysfs_dirent *sd);
+ extern struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
+ extern void sysfs_put_active(struct sysfs_dirent *sd);
+ extern struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
 -- 
 1.5.0.3
 
