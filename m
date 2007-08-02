@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXHBWrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760793AbXHBWs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760640AbXHBWrH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXHBWqz
+	id S1760793AbXHBWs7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756886AbXHBWsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:46:55 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:65479 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756427AbXHBWqz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:46:55 -0400
-Subject: Re: VIA EPIA EK: strange eth dev numbering
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Herbert Rosmanith <kernel@wildsau.enemy.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708030039300.495@fbirervta.pbzchgretzou.qr>
-References: <200708021056.l72Au722008603@wildsau.enemy.org>
-	 <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
-	 <46B1D708.9040106@msgid.tls.msk.ru>
-	 <Pine.LNX.4.64.0708021536350.24572@fbirervta.pbzchgretzou.qr>
-	 <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
-	 <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
-	 <Pine.LNX.4.64.0708030039300.495@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Fri, 03 Aug 2007 00:49:39 +0200
-Message-Id: <1186094979.3443.35.camel@lov.localdomain>
+	Thu, 2 Aug 2007 18:48:50 -0400
+Received: from xenotime.net ([66.160.160.81]:59643 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757334AbXHBWst (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:48:49 -0400
+Date: Thu, 2 Aug 2007 15:54:34 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: gcc fixed size char array initialization bug - known?
+Message-Id: <20070802155434.b085219c.rdunlap@xenotime.net>
+In-Reply-To: <Pine.LNX.4.60.0708030024490.6774@poirot.grange>
+References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
+	<p73vebxmysb.fsf@bingen.suse.de>
+	<Pine.LNX.4.60.0708022231160.6774@poirot.grange>
+	<46B2578A.805@s5r6.in-berlin.de>
+	<Pine.LNX.4.60.0708030024490.6774@poirot.grange>
+Organization: YPO4
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.11.5 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19GyTv6oIzgq8UxVkBn5STKgYSeJUcYWDUpqbr
- x5kAQ/XLwmT66IiiA9SnyWve7yF/yor6yiZg8ftPXBJtWLR1DU
- kyUukoiKnElQmFuXOFhQ2LZleqoQaJj
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 3 Aug 2007 00:36:40 +0200 (CEST) Guennadi Liakhovetski wrote:
 
-On Fri, 2007-08-03 at 00:39 +0200, Jan Engelhardt wrote:
-> On Aug 3 2007 00:00, Kay Sievers wrote:
-> >On 8/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> >> I know I have seen my kernel outputting "A renamed to B". Since you two
-> >> however wanted that information in the first place, I grepped a bit
-> >> around, and actually found, (drumroll), that the SUSE kernel has had a
-> >> proper patch for [I can't remember how long] quite some time. (At least
-> >> one distro which does the right thing.) I copied it below.
-> >
-> >> e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
-> >> dev_change_name: about to rename 'eth3' to 'eth0'
-> >> dev_change_name: about to rename 'eth3' to 'ethxx3'
-> >> eth3 renamed to ethxx3
-> >
-> >I just made udev when it successfully renamed an interface to write
-> >that to the kernel log, so dmesg will show:
-> >  <6>udev: renamed network interface eth0 to eth1
+> On Thu, 2 Aug 2007, Robert Hancock wrote:
 > 
-> I think it is helpful to integrate the suse patch rather than to patch udev
-> alone. This way, renames that do not involve udev also show up.
+> > Because 5 characters will not fit in a 4 character array, even without the
+> > null terminator.
+> 
+> On Fri, 3 Aug 2007, Stefan Richter wrote:
+> 
+> > How should gcc know whether you actually wanted that char foo[len] to
+> > contain a \0 as last element?
+> 
+> Robert, Stefan, I am sorry, I think, you are VERY wrong here. There is no 
+> "even" and no guessing. The "string" DOES include a terminating '\0'. It 
+> is EQUIVALENT to {'s', 't', 'r', 'i', 'n', 'g', '\0'}. And it contains 
+> SEVEN characters. Please, re-read your K&R. Specifically, the Section 
+> "Initialization" in the "Function and Program Structure" chapter (section 
+> 4.9 in my copy), the paragraph about initialization with a string, which I 
+> quoted in an earlier email.
+> 
+> And, Stefan, there is a perfect way to specify a "0123" without the '\0' - 
+> {'0', '1', '2', '3'}.
 
-But if you need to swap interface names, you will see the useless
-temporary device names. On SUSE, nothing else renames network interfaces
-these days, so we'll probably just remove that patch. :)
+We are actually a bit beyond traditional K&R, fwiw.
 
-Kay
+C99 spec that Al referred you to (available for around US$18 as a pdf)
+says in 6.7.8, para. 14 (where Al said):
 
+"An array of character type may be initialized by a character string literal, optionally
+enclosed in braces. Successive characters of the character string literal (including the
+terminating null character if there is room or if the array is of unknown size) initialize the
+elements of the array."
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
