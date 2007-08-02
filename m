@@ -1,101 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXHBNxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXHBN6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbXHBNxY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 09:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbXHBNxQ
+	id S1753455AbXHBN6H (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 09:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXHBN5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 09:53:16 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:20032 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750750AbXHBNxP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 09:53:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=Er3qpvNdVIOrNOmK54/9ssWuhYfwa+M5ORr8ub3C70i9zVF3vBGmD4LoZxnqVohHBkCjnFW1Y+zlneh6e22OC27w0qtEW8jhalXoli+Xt7BSekjW0RHz+Uti6q5lcAn8gQl5yK6tuoB5IlyLSkvOAmzS13mWPfrecnLnyXZiX5s=
-Message-ID: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com>
-Date: Thu, 2 Aug 2007 15:53:13 +0200
-From: "Guillaume Chazarain" <guichaz@yahoo.fr>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
+	Thu, 2 Aug 2007 09:57:54 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:51700 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751488AbXHBN5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 09:57:53 -0400
+Date: Thu, 2 Aug 2007 08:56:43 -0500
+From: Michael Halcrow <mhalcrow@us.ibm.com>
+To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       ecryptfs-devel@lists.sourceforge.net, moriai.satoshi@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.23-rc1] eCryptfs: fix error handling in ecryptfs_init
+Message-ID: <20070802135642.GH30416@halcrow.austin.ibm.com>
+Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
+References: <200708021306.AA00225@paprika.lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Google-Sender-Auth: dd72f6a7d4030619
+In-Reply-To: <200708021306.AA00225@paprika.lab.ntt.co.jp>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Resent with different recipients as nagar@watson.ibm.com bounced with
-a User unknown]
+On Thu, Aug 02, 2007 at 10:06:19PM +0900, Ryusuke Konishi wrote:
+> ecryptfs_init() exits without doing any cleanup jobs if
+> ecryptfs_init_messaging() fails.  In that case, eCryptfs leaves
+> sysfs entries, leaks memory, and causes an invalid page fault.
+> This patch fixes the problem.
+> 
+> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-Hi,
+Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
 
-This patch adds all thread accounting stats for the global tgid stats.
-As a shameless plug, this fixes iotop -P (http://guichaz.free.fr/misc/iotop.py).
-
-Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
----
-
-diff -r 22708012ca6e kernel/taskstats.c
---- a/kernel/taskstats.c	Tue Jul 31 21:12:07 2007 -0700
-+++ b/kernel/taskstats.c	Wed Aug 01 17:43:54 2007 +0200
-@@ -233,6 +233,7 @@ static int fill_tgid(pid_t tgid, struct
- 		memset(stats, 0, sizeof(*stats));
-
- 	tsk = first;
-+	bacct_add_tsk(stats, first);
- 	do {
- 		if (tsk->exit_state)
- 			continue;
-@@ -246,6 +247,7 @@ static int fill_tgid(pid_t tgid, struct
-
- 		stats->nvcsw += tsk->nvcsw;
- 		stats->nivcsw += tsk->nivcsw;
-+		xacct_add_tsk(stats, tsk);
- 	} while_each_thread(first, tsk);
-
- 	unlock_task_sighand(first, &flags);
-diff -r 22708012ca6e kernel/tsacct.c
---- a/kernel/tsacct.c	Tue Jul 31 21:12:07 2007 -0700
-+++ b/kernel/tsacct.c	Wed Aug 01 17:41:40 2007 +0200
-@@ -81,8 +81,8 @@ void xacct_add_tsk(struct taskstats *sta
- 	struct mm_struct *mm;
-
- 	/* convert pages-jiffies to Mbyte-usec */
--	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
--	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
-+	stats->coremem += jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-+	stats->virtmem += jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
- 	mm = get_task_mm(p);
- 	if (mm) {
- 		/* adjust to KB unit */
-@@ -90,18 +90,14 @@ void xacct_add_tsk(struct taskstats *sta
- 		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
- 		mmput(mm);
- 	}
--	stats->read_char	= p->rchar;
--	stats->write_char	= p->wchar;
--	stats->read_syscalls	= p->syscr;
--	stats->write_syscalls	= p->syscw;
-+	stats->read_char	+= p->rchar;
-+	stats->write_char	+= p->wchar;
-+	stats->read_syscalls	+= p->syscr;
-+	stats->write_syscalls	+= p->syscw;
- #ifdef CONFIG_TASK_IO_ACCOUNTING
--	stats->read_bytes	= p->ioac.read_bytes;
--	stats->write_bytes	= p->ioac.write_bytes;
--	stats->cancelled_write_bytes = p->ioac.cancelled_write_bytes;
--#else
--	stats->read_bytes	= 0;
--	stats->write_bytes	= 0;
--	stats->cancelled_write_bytes = 0;
-+	stats->read_bytes	+= p->ioac.read_bytes;
-+	stats->write_bytes	+= p->ioac.write_bytes;
-+	stats->cancelled_write_bytes += p->ioac.cancelled_write_bytes;
- #endif
- }
- #undef KB
+> ---
+>  fs/ecryptfs/main.c |   18 +++++++++++++-----
+>  1 files changed, 13 insertions(+), 5 deletions(-)
+> 
+> diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
+> index e557a67..a984972 100644
+> --- a/fs/ecryptfs/main.c
+> +++ b/fs/ecryptfs/main.c
+> @@ -813,6 +813,15 @@ out:
+>  	return rc;
+>  }
+> 
+> +static void do_sysfs_unregistration(void)
+> +{
+> +	sysfs_remove_file(&ecryptfs_subsys.kobj,
+> +			  &sysfs_attr_version.attr);
+> +	sysfs_remove_file(&ecryptfs_subsys.kobj,
+> +			  &sysfs_attr_version_str.attr);
+> +	subsystem_unregister(&ecryptfs_subsys);
+> +}
+> +
+>  static int __init ecryptfs_init(void)
+>  {
+>  	int rc;
+> @@ -851,6 +860,9 @@ static int __init ecryptfs_init(void)
+>  	if (rc) {
+>  		ecryptfs_printk(KERN_ERR, "Failure occured while attempting to "
+>  				"initialize the eCryptfs netlink socket\n");
+> +		do_sysfs_unregistration();
+> +		unregister_filesystem(&ecryptfs_fs_type);
+> +		ecryptfs_free_kmem_caches();
+>  	}
+>  out:
+>  	return rc;
+> @@ -858,11 +870,7 @@ out:
+> 
+>  static void __exit ecryptfs_exit(void)
+>  {
+> -	sysfs_remove_file(&ecryptfs_subsys.kobj,
+> -			  &sysfs_attr_version.attr);
+> -	sysfs_remove_file(&ecryptfs_subsys.kobj,
+> -			  &sysfs_attr_version_str.attr);
+> -	subsystem_unregister(&ecryptfs_subsys);
+> +	do_sysfs_unregistration();
+>  	ecryptfs_release_messaging(ecryptfs_transport);
+>  	unregister_filesystem(&ecryptfs_fs_type);
+>  	ecryptfs_free_kmem_caches();
