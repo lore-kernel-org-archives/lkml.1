@@ -1,74 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbXHBVJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761747AbXHBVJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758287AbXHBVJX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761933AbXHBVIc
+	id S1761747AbXHBVJj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbXHBVJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:08:32 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:53781
-	"EHLO moonbase" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761900AbXHBVIa (ORCPT
+	Thu, 2 Aug 2007 17:09:05 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:38881 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761663AbXHBVJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:08:30 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: Distributed storage.
-Date: Thu, 2 Aug 2007 14:08:24 -0700
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru>
-In-Reply-To: <20070731171347.GA14267@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 17:09:03 -0400
+Date: Thu, 2 Aug 2007 22:09:02 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: gcc fixed size char array initialization bug - known?
+Message-ID: <20070802210902.GQ21089@ftp.linux.org.uk>
+References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <20070802200856.GO21089@ftp.linux.org.uk> <Pine.LNX.4.60.0708022223190.6774@poirot.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708021408.24876.phillips@phunq.net>
+In-Reply-To: <Pine.LNX.4.60.0708022223190.6774@poirot.grange>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 31 July 2007 10:13, Evgeniy Polyakov wrote:
-> Hi.
->
-> I'm pleased to announce first release of the distributed storage
-> subsystem, which allows to form a storage on top of remote and local
-> nodes, which in turn can be exported to another storage as a node to
-> form tree-like storages.
+On Thu, Aug 02, 2007 at 10:26:37PM +0200, Guennadi Liakhovetski wrote:
+> 
+> Worse yet, K&R explicitely writes:
+> 
+> <quote>
+> 
+> 	char pattern[] = "ould";
+> 
+> is a shorthand for the longer but equivalent
+> 
+> 	char pattern[] = { 'o', 'u', 'l', 'd', '\0' };
+> 
+> </quote>
+> 
+> In the latter spelling gcc < 4.2 DOES warn too.
 
-Excellent!  This is precisely what the doctor ordered for the 
-OCFS2-based distributed storage system I have been mumbling about for 
-some time.  In fact the dd in ddsnap and ddraid stands for "distributed 
-data".  The ddsnap/raid devices do not include an actual network 
-transport, that is expected to be provided by a specialized block 
-device, which up till now has been NBD.  But NBD has various 
-deficiencies as you note, in addition to its tendency to deadlock when 
-accessed locally.  Your new code base may be just the thing we always 
-wanted.  We (zumastor et al) will take it for a drive and see if 
-anything breaks.
+Does warn for what?  Array with known size?  Sure, so it should - you
+have excess initializer list elements.
 
-Memory deadlock is a concern of course.  From a cursory glance through, 
-it looks like this code is pretty vm-friendly and you have thought 
-quite a lot about it, however I respectfully invite peterz 
-(obsessive/compulsive memory deadlock hunter) to help give it a good 
-going over with me.
+Note the [] in the quoted - it does matter.
 
-I see bits that worry me, e.g.:
-
-+		req = mempool_alloc(st->w->req_pool, GFP_NOIO);
-
-which seems to be callable in response to a local request, just the case 
-where NBD deadlocks.  Your mempool strategy can work reliably only if 
-you can prove that the pool allocations of the maximum number of 
-requests you can have in flight do not exceed the size of the pool.  In 
-other words, if you ever take the pool's fallback path to normal 
-allocation, you risk deadlock.
-
-Anyway, if this is as grand as it seems then I would think we ought to 
-factor out a common transfer core that can be used by all of NBD, 
-iSCSI, ATAoE and your own kernel server, in place of the roll-yer-own 
-code those things have now.
-
-Regards,
-
-Daniel
+Again, it's perfectly legitimate to use string literal to initialize
+any kind of array of character type.  \0 goes there only if there's
+space for it; if array size is unknown, the space is left.  That's it.
