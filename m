@@ -1,117 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbXHBOy5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbXHBOza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbXHBOy5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:54:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXHBOyu
+	id S1756911AbXHBOza (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170AbXHBOzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:54:50 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:58226 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754862AbXHBOyt (ORCPT
+	Thu, 2 Aug 2007 10:55:21 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:13749 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753482AbXHBOzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:54:49 -0400
-Date: Thu, 2 Aug 2007 16:54:29 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Thomas Renninger <trenn@suse.de>
-Cc: Gabriel C <nix.or.die@googlemail.com>, davej@codemonkey.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [-mm patch] CPUfreq: Only check for transition latency on
-	problematic governors
-Message-ID: <20070802145429.GW3972@stusta.de>
-References: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com> <20070801165704.a26961b7.akpm@linux-foundation.org> <46B12516.4090006@googlemail.com> <20070802134838.GV3972@stusta.de> <1186065486.18821.545.camel@queen.suse.de>
+	Thu, 2 Aug 2007 10:55:18 -0400
+X-IronPort-AV: i="4.19,213,1183348800"; 
+   d="scan'208"; a="47211213:sNHT38213042"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Richard Knutsson" <ricknu-0@student.ltu.se>
+Subject: Re: [PATCH 06/68] 0 -> NULL, for arch/frv
+Date: Thu, 2 Aug 2007 10:58:47 -0400
+User-Agent: KMail/1.9.5
+Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
+       "Yoann Padioleau" <padator@wanadoo.fr>,
+       "David Howells" <dhowells@redhat.com>, kernel-janitors@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200707270944.LAA17167@ifs.emn.fr> <8bd0f97a0708010303j7f443b06lf9d77f6d36816237@mail.gmail.com> <46B062AF.1040907@student.ltu.se>
+In-Reply-To: <46B062AF.1040907@student.ltu.se>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1186065486.18821.545.camel@queen.suse.de>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200708021058.47811.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 02 Aug 2007 14:54:58.0440 (UTC) FILETIME=[18707080:01C7D515]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 04:38:06PM +0200, Thomas Renninger wrote:
-> On Thu, 2007-08-02 at 15:48 +0200, Adrian Bunk wrote:
-> > On Thu, Aug 02, 2007 at 02:28:06AM +0200, Gabriel C wrote:
-> > > Andrew Morton wrote:
-> > > > On Wed, 1 Aug 2007 16:31:46 -0700
-> > > > "Miles Lane" <miles.lane@gmail.com> wrote:
-> > > > 
-> > > >>   LD      .tmp_vmlinux1
-> > > >> drivers/built-in.o: In function `__cpufreq_governor':
-> > > >> cpufreq.c:(.text+0xaf178): undefined reference to `cpufreq_gov_performance'
-> > > >> cpufreq.c:(.text+0xaf18a): undefined reference to `cpufreq_gov_performance'
-> > > >> make: *** [.tmp_vmlinux1] Error 1
-> > > > 
-> > > > One for Thomas, I expect.
-> > > 
-> > > Is this patch :
-> > > 
-> > > cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
-> > > 
-> > > Reverting it here fixes the error.
-> > 
-> > Possible fix below.
-> Or this one.
-> Advantage: You can still have cpufreq core without the performance 
->            governor built.
-> Disadvantage: The logic whether transition latency checks are
->               needed/done is moved to Kconfig.
->               Means, if you write a governor that has transition
->               latency values above 0, you must let it depend on
->               the performance governor in Kconfig.
-> 
-> Hope I got all .config possibilities with that one now.
-> Attached is also a replacement patch for this one:
-> cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
-> 
-> 
-> CPUfreq: Only check for transition latency on problematic governors
-> 
-> Signed-off-by: Thomas Renninger <trenn@suse.de>
-> --
-> 
-> --- linux-2.6.23-rc1-mm2/include/linux/cpufreq.h	2007-08-02 16:01:36.000000000 +0200
-> +++ linux-2.6.23-rc1-mm2_fixed/include/linux/cpufreq.h	2007-08-02 15:21:28.000000000 +0200
-> @@ -299,8 +299,10 @@ static inline unsigned int cpufreq_get(u
->    Performance governor is fallback governor if any other gov failed to
->    auto load due latency restrictions
->  */
-> +#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
->  extern struct cpufreq_governor cpufreq_gov_performance;
->  #define CPUFREQ_PERFORMANCE_GOVERNOR	(&cpufreq_gov_performance)
-> +#endif
->  #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
->  #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_performance)
->  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
-> --- linux-2.6.23-rc1-mm2/drivers/cpufreq/cpufreq.c	2007-08-02 16:01:35.000000000 +0200
-> +++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq.c	2007-08-02 16:23:09.000000000 +0200
-> @@ -1484,17 +1484,30 @@ static int __cpufreq_governor(struct cpu
->  					unsigned int event)
->  {
->  	int ret;
-> +
-> +	/* Only must be defined when default governor is known to have latency
-> +	   restrictions, like e.g. conservative or ondemand.
-> +	   That this is the case is already ensured in Kconfig
-> +	*/
-> +#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
->  	struct cpufreq_governor *gov = CPUFREQ_PERFORMANCE_GOVERNOR;
-> +#else
-> +	struct cpufreq_governor *gov = NULL;
-> +#endif
->...
+On Wed 1 Aug 2007 06:38, Richard Knutsson pondered:
+> If I understood Robin correctly, he suggested that checkpatch.pl would 
+> tell to convert "x == NULL" to "!x", if that would be the preferred way.
 
-Looks good, but you could remove CPUFREQ_PERFORMANCE_GOVERNOR and 
-directly use cpufreq_gov_performance.
-  
-cu
-Adrian
+I guess I was asking - _if_ this is really important - lets pick a 
+preferred way, and try to use the existing infrastructure (sparce 
+or checkpatch.pl) to try to enforce it.
 
--- 
+If it is just pedantic - let it go. There are lots of ways to do the 
+same thing, one is not necessarily more correct. (but in this case - 
+I see the point, and agree).
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+> BTW, too bad checkpatch.pl does not know the types, since it otherwise 
+> could check for the "x [=!]= 0"-thing.
 
+Then let's ask people to use sparse on anything in their diffstat.
+(or at least recommend it).
+
+Sparse isn't mentioned in Documentation/SubmittingPatches yet. (if
+it is a suggestion)
+
+Even something completely stupid like:
+
+diff -uprN old new | diffstat -p 0 | grep -v changed | awk '{print $1}' | sed 's/\.c/\.o/' | xargs make C=2
+
+worked for me.
+
+-Robin
