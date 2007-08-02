@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760513AbXHBVyl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759580AbXHBV50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760513AbXHBVyl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:54:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXHBVyc
+	id S1759580AbXHBV50 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbXHBV5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:54:32 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:44377 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752967AbXHBVyb (ORCPT
+	Thu, 2 Aug 2007 17:57:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50434 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753438AbXHBV5Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:54:31 -0400
-Date: Thu, 2 Aug 2007 17:53:28 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Chuck Ebbert <cebbert@redhat.com>, Gabriel C <nix.or.die@googlemail.com>,
-       Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
- <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
- <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net>
- <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net>
- <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
+	Thu, 2 Aug 2007 17:57:16 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Subject: Re: 2.6.22 regression: thermal trip points
+Date: Thu, 2 Aug 2007 17:56:30 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, trenn@suse.de,
+       pavel@ucw.cz, mjg59@srcf.ucam.org, linux-acpi@vger.kernel.org
+References: <46B1988C.3090302@t-online.de>
+In-Reply-To: <46B1988C.3090302@t-online.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708021756.30776.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, Linus Torvalds wrote:
+On Thursday 02 August 2007 04:40, Knut Petersen wrote:
 
-> On Thu, 2 Aug 2007, Cal Peake wrote:
-> > 
-> > Figured I should have sent that right after I hit the send key...
-> > 
-> > processor	: 0
-> > vendor_id	: AuthenticAMD
-> > cpu family	: 15
-> > model		: 72
-> > model name	: AMD Turion(tm) 64 X2 Mobile Technology TL-52
+> Kernel 2.6.22 decreases performance by about 50% on my system.
+> No, I do not like that. The reason is a broken BIOS, granted, but there
+> was a perfect workaround in the kernel that has been dropped.
 > 
-> Sadly, this doesn't show the "extended family" stuff from cpuid.
+> mainboard: AOpen i915GMm-hfs, AWARD BIOS
+> cpu: Pentium-M 750 (0.8 to 1.86 MHz)
+> openSuSE 10.2 with kernel 2.6.22.1
 > 
-> So it doesn't show any of the bits we actually care about. Sad.
+> The cpu fan can not be controled by linux kernel.
+> The BIOS will switch on the cpu fan a bit above 50 deg. Celsius.
+> The active and passive trip points both are set to 50 deg. Celsius.
+> Temperature of the idle cpu at 800 Mhz: 34 to 42 deg. C.
+> The BIOS never changes the trip points.
+> Cpufreq does work perfectly.
 > 
-> That said, the "AMD Turion(tm) 64 X2 Mobile Technology TL-52" _should_ be 
-> a REV-F CPU afaik, and it should have thus fallen through to the 
-> "ENABLE_C1E_MASK" logic. Afaik that's broken.
+> Previously there was the possibility  to add something like
 > 
-> Cal - can you
->  (a) test that forcing a "return 1" from that amd_apic_timer_broken() 
->      function fixes it for you.
+> echo  "100:0:65:70:0" > /proc/acpi/thermal_zone/THRM/trip_points
+> echo  2 > /proc/acpi/thermal_zone/THRM/polling_frequency
+> echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> 
+> to e.g. /etc/init.d/boot.local. With 2.6.22 that solution does not exist
+> any longer. Now the code in thermal.c slows down the cpu under load
+> to prevent "overheating". Kernel compile time increases from about 12
+> to 18 minutes. No, I don´t like that, nobody would.
+ 
 
-ACK
+Thanks for the sighting, Knut!
+This regression is dramatic when put in the terms of 50% performance hit!
+I guess the good news is that thermal throttling is doing the job
+we are asking it to:-)
 
->  (b) make that function print out the values it uses for debugging (ie the 
->      xtended family and model numbers, and the MSR_K8_ENABLE_C1E MSR 
->      values)?
+The statement above regarding the existence of active trip points
+and the kernel not being able to control the fan are inconsistent
+with each other.
 
-eax & CPUID_XFAM == 0x00000000
-eax & CPUID_XMOD == 0x00040000
-MSR_K8_ENABLE_C1E lo == 0x04c14015
-MSR_K8_ENABLE_C1E hi == 0x00000000
-lo & ENABLE_C1E_MASK == 0
-amd_apic_timer_broken: forcing return value of 1
+Please open a sighting for this machine here:
 
--- 
-Cal Peake
+http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
+vs. Power-Thermal
+and attach the output from acpidump, cat /proc/acpi/thermal_zone/*/*
+and assign it to len.brown@intel.com
 
+BTW. does the board boot and run properly with "acpi=off"?
+
+thanks,
+-Len
