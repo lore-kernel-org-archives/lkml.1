@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbXHBPlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbXHBPm4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756072AbXHBPlL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 11:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbXHBPk4
+	id S1756892AbXHBPm4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 11:42:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbXHBPmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 11:40:56 -0400
-Received: from rtr.ca ([64.26.128.89]:4957 "EHLO mail.rtr.ca"
+	Thu, 2 Aug 2007 11:42:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50462 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751933AbXHBPkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 11:40:55 -0400
-Message-ID: <46B1FB04.9010802@rtr.ca>
-Date: Thu, 02 Aug 2007 11:40:52 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	id S1752802AbXHBPmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 11:42:49 -0400
+Date: Thu, 2 Aug 2007 17:42:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ck@vds.kolivas.org
+Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
+Message-ID: <20070802154228.GA12371@elte.hu>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <1185839164.27166.7.camel@localhost> <1185863461.3092.4.camel@twins> <20070731085713.GA15136@elte.hu> <1186011827.2482.1.camel@localhost> <20070802121018.GA11900@elte.hu>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: David Miller <davem@davemloft.net>, arjan@infradead.org,
-       torvalds@linux-foundation.org, matthew@wil.cx, mingo@elte.hu,
-       linux-kernel@vger.kernel.org
-Subject: Re: IRQF_DISABLED problem
-References: <fa.mb8woD3e5JnT1x6AgEMOmnlVvg0@ifi.uio.no> <fa.axY2ukp7kqKVMAidyu4NVN81MbI@ifi.uio.no> <fa.tS+LCGnYgeCNRIaF90yH21XBCqI@ifi.uio.no> <fa./08N/HtpJQ6zg8Xc1K5pP6/aKMM@ifi.uio.no> <46ACB510.5060700@shaw.ca>
-In-Reply-To: <46ACB510.5060700@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802121018.GA11900@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> David Miller wrote:
->> From: Arjan van de Ven <arjan@infradead.org>
->> Date: Fri, 27 Jul 2007 13:11:56 -0700
->>
->>> On Thu, 2007-07-26 at 16:17 -0700, Linus Torvalds wrote:
->>>> On Thu, 26 Jul 2007, Linus Torvalds wrote:
->>>>>  (c) "one IRQF_DISABLED means that everything runs disabled". This 
->>>>> is      quite possibly buggy.
->>>> (Side note: I'm not claiming this (or it's mirror image (d)) is 
->>>> really any better/worse than the current behaviour from a 
->>>> theoretical standpoint, but at least the current behaviour is 
->>>> _tested_, which makes it better in practice. So if we want to change 
->>>> this, I think we want to change it to something that is _obviously_ 
->>>> better).
->>> my personal preference would actually be to just never enable
->>> interrupts. It's the fastest solution obviously, the most friendly on
->>> stack and.. well simplest. Drivers no longer need to play some of the
->>> games that they do today. And while there is an argument that this may
->>> introduce a bit of latency... I'm not really convinced.
->>
->> If you have a "chirpy" serial controller with only a 1 byte
->> fifo, even a quite reasonable interrupt handler can cause
->> receive characters to get lost if you disable interrupts during
->> the entirety of it's execution.
->>
->> It really is needed.
->>
->> And it's just plain rude to disable interrupts when it isn't
->> absolutely necessary.
-> 
-> Does anyone really use those serial controllers with no FIFO anymore? 
-> They've never been reliable for remotely high speeds..
 
-There's another thread on lkml currently about this exact issue,
-whereby the UART "fifo nearly full" interrupt isn't getting in quickly
-enough for the kernel to de-assert RTS in time..
+Kasper,
+
+could you please try the "chew-max" latency-printing utility:
+
+   http://people.redhat.com/mingo/cfs-scheduler/tools/chew-max.c
+
+if you start it on an idle system it prints a single line:
+
+  $ ./chew-max
+  pid 14506, prio   0, interval of 99984800 nsec
+
+and prints nothing else. It continues looping and looping (using up 100% 
+of CPU time), and the moment it's preempted, it prints a line about that 
+preemption latency. Under higher load it will print something like this:
+
+  out for   63 ms [max:   66], ran for    5 ms, load   7
+  out for   85 ms [max:   85], ran for    4 ms, load   5
+  out for    7 ms [max:   85], ran for    0 ms, load   0
+  out for  105 ms [max:  105], ran for    3 ms, load   3
+  out for  174 ms [max:  174], ran for    6 ms, load   3
+  out for  219 ms [max:  219], ran for    3 ms, load   1
+  out for   78 ms [max:  219], ran for    3 ms, load   3
+
+so that we get a picture of your latencies, could you run this tool why 
+you are seeing those 'bad' desktop latencies? (Since your CPU has two 
+cores it might make sense to run two instances of chew-max.)
+
+record the latencies like this:
+
+  ./chew-max > chew1.out &
+  ./chew-max > chew2.out &
+
+and send us the chew1.out and chew2.out files (bzip2 -9 compressed). 
+Thanks!
+
+	Ingo
