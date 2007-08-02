@@ -1,47 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758214AbXHBP6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbXHBP74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758214AbXHBP6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 11:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756525AbXHBP6J
+	id S1758362AbXHBP74 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 11:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbXHBP7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 11:58:09 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4894 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755797AbXHBP6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 11:58:08 -0400
-Date: Thu, 2 Aug 2007 15:57:54 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       trenn@suse.de, mjg59@srcf.ucam.org, lenb@kernel.org
-Subject: Re: 2.6.22 regression: thermal trip points
-Message-ID: <20070802155753.GB3974@ucw.cz>
-References: <46B1988C.3090302@t-online.de> <20070802015248.45a40717.akpm@linux-foundation.org> <p731wemnre6.fsf@bingen.suse.de> <20070802120014.1d08830a@the-village.bc.nu> <20070802120511.GA440@one.firstfloor.org> <20070802140442.62c56dbd@the-village.bc.nu> <20070802131622.GA1234@one.firstfloor.org>
-Mime-Version: 1.0
+	Thu, 2 Aug 2007 11:59:46 -0400
+Received: from waste.org ([66.93.16.53]:51657 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756525AbXHBP7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 11:59:44 -0400
+Date: Thu, 2 Aug 2007 10:59:23 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+Message-ID: <20070802155922.GQ11115@waste.org>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org> <20070802090008.GA1699@ff.dom.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070802131622.GA1234@one.firstfloor.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070802090008.GA1699@ff.dom.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2007-08-02 15:16:22, Andi Kleen wrote:
-> On Thu, Aug 02, 2007 at 02:04:42PM +0100, Alan Cox wrote:
-> > > > Set a taint flag, 
-> > > That's hardly any useful if the machine is dead afterwards.
+On Thu, Aug 02, 2007 at 11:00:08AM +0200, Jarek Poplawski wrote:
+> On Wed, Aug 01, 2007 at 09:02:19PM -0500, Matt Mackall wrote:
+> > On Wed, Aug 01, 2007 at 11:59:21AM +0200, Jarek Poplawski wrote:
+> > > On Tue, Jul 31, 2007 at 05:05:00PM +0200, Gabriel C wrote:
+> > > > Jarek Poplawski wrote:
+> > > > > On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
+> > > > >> Jarek Poplawski wrote:
+> > > > >>> On 28-07-2007 20:42, Gabriel C wrote:
+> > > > >>>> Andrew Morton wrote:
+> > > > >>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> ...
+> > > > >>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+> ...
+> > > > >>>>>> I think is because KGDBOE selects just NETPOLL.
+> > > > >>>>>>
+> > > > >>>>> Looks like it.
+> > > > >>>>>
+> > > > >>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+> > > > >>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+> > > > >>>>> remains evil.
+> ...
+> > > seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
+> > > still doesn't check for NETDEVICES dependency.
 > > 
-> > It won't be the hardware will do a failsafe shutdown first.
+> > That's odd. Adding Sam to the cc:.
 > 
-> Not necessarily. At SUSE we had at least one broken laptop
-> with wrong trip points. The machine ran very hot for some time
-> and afterwards the hard disk was dead.
+> Looks right, but after reading Andrew's opinion about select I'd be
+> astonished if he doesn't know this problem already.
+> 
+> > 
+> > > > >> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+> > > > >> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
+> > > > > 
+> > > > > Why kgdboe should care what netpoll needs? So, I hope, you are adding
+> > > > > this select under config NETPOLL. On the other hand, if NETPOLL should
+> > > > > depend on NET_POLL_CONTROLLER there is probably no reason to have them
+> > > > > both.
+> > > > 
+> > > > NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
+> > > > 
+> > > > Net peoples ping ?:)
+> > 
+> > How about cc:ing the netpoll maintainer?
+> 
+> Is there a new one or do you suggest possibility of abusing the
+> authority of the netpoll's author with such trifles...?!
 
-Yes, but it was original BIOS trip points that were wrong. And yes,
-its failsafe shutdown was too late. At least lowering the trip points
-would allow me to run it safely.
+I'm just subtly suggesting that if you're going to have a discussion
+about netpoll, you ought to cc: me.
+
+> There are some notions about "other diagnostic tools" in some
+> net drivers, eg. 3c509.c, so there would be a little bit of
+> work if, after changing this, they really exist (and even if
+> not - maybe it's reasonable to save such possibility for the
+> future?).
+
+I created it for netpoll, only netpoll clients have ever cared.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mathematics is the supreme nostalgia of our time.
