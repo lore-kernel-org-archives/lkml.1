@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759053AbXHBTcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbXHBTfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759053AbXHBTcu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXHBTcl
+	id S1758648AbXHBTfr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbXHBTfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:32:41 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45679 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753518AbXHBTck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:32:40 -0400
-Date: Thu, 2 Aug 2007 21:31:59 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Jan Blunck <jblunck@suse.de>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070802193159.GA23149@elf.ucw.cz>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731034515.GD25876@thunk.org> <20070731074436.GE5101@hasse.suse.de> <20070731105309.GA6980@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070731105309.GA6980@thunk.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Thu, 2 Aug 2007 15:35:38 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:45509 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753843AbXHBTfh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 15:35:37 -0400
+To: akpm@linux-foundation.org
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, kenchen@google.com, peterz@infradead.org
+In-reply-to: <20070802121806.d7071ba1.akpm@linux-foundation.org> (message from
+	Andrew Morton on Thu, 2 Aug 2007 12:18:06 -0700)
+Subject: Re: kupdate weirdness
+References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
+	<20070801141439.ff1c29f9.akpm@linux-foundation.org>
+	<E1IGcyd-00025s-00@dorka.pomaz.szeredi.hu> <20070802121806.d7071ba1.akpm@linux-foundation.org>
+Message-Id: <E1IGgS3-0002ib-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 02 Aug 2007 21:35:15 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > I wouldn't bother with setting the directory type field to be DT_WHT,
-> > > given that they will never be returned to userspace anyway.
-> > 
-> > At the moment I still rely on this for the current readdir implementation.
-> > Viro already said that he doesn't want to see this (the readdir changes) in
-> > the kernel but in userspace.
+> There were heaps of problems in there and it is surprising how few people
+> were hitting them.  Ordered-mode journalling filesystems will fix it all up
+> behind the scenes, of course.
 > 
-> Life gets very messy if you have to do this in userspace.  Example:
-> statically linked programs that were compiled with a version of glibc
-> that didn't know about whiteout records.  Unfortunately, the memory
+> I just have a bad feeling about that code - list_heads are the wrong data
+> structure and it all needs to be ripped and redone using some indexable
+> data structure.  There has been desultory discussion, but nothing's
+> happening and nothing will happen in the medium term, so we need to keep
+> on whapping bandainds on it.
 
-WEll, also if root deletes something, it should be _gone_, and user
-should not be able to work around that just by bringing statically
-linked ls..
-									Pavel
+The reason why I'm looking at that code is because of those
+balance_dirty_pages() deadlocks.  I'm not perfectly happy with the
+per-pdi-per-cpu counters Peter's patch is introducing.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I was wondering if we can count the number of writeback pages through
+the radix tree, just like we do for dirty pages?
+
+All that would be needed is to keep the under-writeback inodes on some
+list as well.
+
+But I realize, that this introduces it's own problems as well...
+
+Miklos
