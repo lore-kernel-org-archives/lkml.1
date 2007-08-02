@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbXHBXaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbXHBXgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761851AbXHBXaa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbXHBXaW
+	id S1760178AbXHBXgh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbXHBXg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:30:22 -0400
-Received: from mail.gmx.net ([213.165.64.20]:54617 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755784AbXHBXaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:30:21 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18pSw8UWz0p8+T9YVMnLvIVFXqtrGUJEV+zjKqk53
-	1FLj3AwV45EiTp
-Date: Fri, 3 Aug 2007 01:30:24 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-In-Reply-To: <20070802230914.GT21089@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.60.0708030128340.6774@poirot.grange>
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
- <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange>
- <46B25B5E.30406@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030046230.6774@poirot.grange>
- <20070802230914.GT21089@ftp.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Thu, 2 Aug 2007 19:36:27 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36747 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756116AbXHBXg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 19:36:26 -0400
+Date: Thu, 2 Aug 2007 16:35:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Yinghai.Lu@Sun.COM
+Cc: Daniel Ritz <daniel.ritz-ml@swissonline.ch>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org
+Subject: Re: REGRESSION: serial_cs broken by 8250 changes
+Message-Id: <20070802163547.39f41af1.akpm@linux-foundation.org>
+In-Reply-To: <46B267BA.4030006@sun.com>
+References: <200708030106.33917.daniel.ritz-ml@swissonline.ch>
+	<46B267BA.4030006@sun.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007, Al Viro wrote:
+On Thu, 02 Aug 2007 16:24:42 -0700
+Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
 
-> It doesn't change the fact that use of c[4] or strlen(c) or strcpy(..., c)
-> means nasal demon country for you.
+> Daniel Ritz wrote:
+> > commit 18a8bd949d6adb311ea816125ff65050df1f3f6e breaks serial_cs badly
+> > with an oops, completely killing PCMCIA.
+> > 
+> > register_console() now calls console->early_setup(). which in case of
+> > 8250.c (the only user anyway) is serial8250_console_early_setup()
+> > which is __init, calling 8250_early.c:serial8250_find_port_for_earlycon()
+> > which is __init as well. boom.
+> > 
+> > the changelog mentions SERIAL_PORT_DFNS removal which happens to be
+> > commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26. but this got reverted
+> > by commit 57d4810ea0d9ca58a7bcc1336607f0cede0a2abf. so i'd suggest to
+> > just revert the 8250 changes as well.
+> > 
+> > rgds
+> > -daniel
+> 
+> Is there any flag or sign that init code has been released?
 
-Haha, funny. You, certainly, may think whatever you want, I'm anyway 
-greatful to you and to all the rest for the trouble you took to find THE 
-quote that actually answers the question.
+Nope.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> We could use that to prevent init code to be called after code is freed.
+
+If we can omit a function call without breaking anything then we shouldn't
+have been calling that function at all ;)
+
+It sounds like making serial8250_console_early_setup() and
+serial8250_find_port_for_earlycon() non-__init will fix this.
+
