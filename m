@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753455AbXHBN6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754701AbXHBN7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753455AbXHBN6H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 09:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXHBN5y
+	id S1754701AbXHBN7A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 09:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbXHBN6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 09:57:54 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:51700 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751488AbXHBN5x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 09:57:53 -0400
-Date: Thu, 2 Aug 2007 08:56:43 -0500
-From: Michael Halcrow <mhalcrow@us.ibm.com>
-To: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       ecryptfs-devel@lists.sourceforge.net, moriai.satoshi@lab.ntt.co.jp,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.23-rc1] eCryptfs: fix error handling in ecryptfs_init
-Message-ID: <20070802135642.GH30416@halcrow.austin.ibm.com>
-Reply-To: Michael Halcrow <mhalcrow@us.ibm.com>
-References: <200708021306.AA00225@paprika.lab.ntt.co.jp>
+	Thu, 2 Aug 2007 09:58:51 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:50414 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbXHBN6u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 09:58:50 -0400
+Date: Thu, 2 Aug 2007 15:58:43 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>
+Subject: Re: [PATCH] Merge the Sonics Silicon Backplane subsystem
+In-Reply-To: <200707271857.24162.mb@bu3sch.de>
+Message-ID: <Pine.LNX.4.64.0708021557280.5150@anakin>
+References: <200707271857.24162.mb@bu3sch.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708021306.AA00225@paprika.lab.ntt.co.jp>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 10:06:19PM +0900, Ryusuke Konishi wrote:
-> ecryptfs_init() exits without doing any cleanup jobs if
-> ecryptfs_init_messaging() fails.  In that case, eCryptfs leaves
-> sysfs entries, leaks memory, and causes an invalid page fault.
-> This patch fixes the problem.
-> 
-> Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+On Fri, 27 Jul 2007, Michael Buesch wrote:
+> The Sonics Silicon Backplane is a mini-bus used on
+> various Broadcom chips and embedded devices.
+> Devices using the SSB include b44, bcm43xx and various
+> Broadcom based wireless routers.
+> A b44 and bcm43xx port and a SSB based OHCI driver is available.
 
-Acked-by: Michael Halcrow <mhalcrow@us.ibm.com>
-
-> ---
->  fs/ecryptfs/main.c |   18 +++++++++++++-----
->  1 files changed, 13 insertions(+), 5 deletions(-)
-> 
-> diff --git a/fs/ecryptfs/main.c b/fs/ecryptfs/main.c
-> index e557a67..a984972 100644
-> --- a/fs/ecryptfs/main.c
-> +++ b/fs/ecryptfs/main.c
-> @@ -813,6 +813,15 @@ out:
->  	return rc;
->  }
-> 
-> +static void do_sysfs_unregistration(void)
-> +{
-> +	sysfs_remove_file(&ecryptfs_subsys.kobj,
-> +			  &sysfs_attr_version.attr);
-> +	sysfs_remove_file(&ecryptfs_subsys.kobj,
-> +			  &sysfs_attr_version_str.attr);
-> +	subsystem_unregister(&ecryptfs_subsys);
-> +}
+> --- a/drivers/Kconfig
+> +++ b/drivers/Kconfig
+> @@ -58,6 +58,8 @@ source "drivers/power/Kconfig"
+>  
+>  source "drivers/hwmon/Kconfig"
+>  
+> +source "drivers/ssb/Kconfig"
 > +
->  static int __init ecryptfs_init(void)
->  {
->  	int rc;
-> @@ -851,6 +860,9 @@ static int __init ecryptfs_init(void)
->  	if (rc) {
->  		ecryptfs_printk(KERN_ERR, "Failure occured while attempting to "
->  				"initialize the eCryptfs netlink socket\n");
-> +		do_sysfs_unregistration();
-> +		unregister_filesystem(&ecryptfs_fs_type);
-> +		ecryptfs_free_kmem_caches();
->  	}
->  out:
->  	return rc;
-> @@ -858,11 +870,7 @@ out:
-> 
->  static void __exit ecryptfs_exit(void)
->  {
-> -	sysfs_remove_file(&ecryptfs_subsys.kobj,
-> -			  &sysfs_attr_version.attr);
-> -	sysfs_remove_file(&ecryptfs_subsys.kobj,
-> -			  &sysfs_attr_version_str.attr);
-> -	subsystem_unregister(&ecryptfs_subsys);
-> +	do_sysfs_unregistration();
->  	ecryptfs_release_messaging(ecryptfs_transport);
->  	unregister_filesystem(&ecryptfs_fs_type);
->  	ecryptfs_free_kmem_caches();
+>  source "drivers/mfd/Kconfig"
+>  
+>  source "drivers/media/Kconfig"
+
+> --- /dev/null
+> +++ b/drivers/ssb/Kconfig
+> @@ -0,0 +1,92 @@
+> +menu "Sonics Silicon Backplane"
+> +
+> +config SSB
+> +	tristate "Sonics Silicon Backplane support"
+> +	depends on EXPERIMENTAL
+
+Hence this will show up on all platforms?
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
