@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754626AbXHBJC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbXHBJEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754626AbXHBJC2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 05:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXHBJCV
+	id S1754933AbXHBJEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 05:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752017AbXHBJEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 05:02:21 -0400
-Received: from mailout03.sul.t-online.de ([194.25.134.81]:52966 "EHLO
-	mailout03.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752152AbXHBJCU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 05:02:20 -0400
-X-Greylist: delayed 1279 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Aug 2007 05:02:20 EDT
-Message-ID: <46B1988C.3090302@t-online.de>
-Date: Thu, 02 Aug 2007 10:40:44 +0200
-From: Knut Petersen <Knut_Petersen@t-online.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+	Thu, 2 Aug 2007 05:04:13 -0400
+Received: from xsmtp1.ethz.ch ([82.130.70.13]:16506 "EHLO xsmtp1.ethz.ch"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751962AbXHBJEM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 05:04:12 -0400
+Message-ID: <46B19E0A.5040605@inf.ethz.ch>
+Date: Thu, 02 Aug 2007 11:04:10 +0200
+From: Stefan Walter <stefan.walter@inf.ethz.ch>
+User-Agent: Mail/News 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@osdl.org>, trenn@suse.de, pavel@ucw.cz,
-       mjg59@srcf.ucam.org, lenb@kernel.org
-Subject: 2.6.22 regression: thermal trip points
+To: Steve Dickson <SteveD@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: rpc.mountd crashes when extensively using netgroups
+References: <46ADDFB2.9070709@inf.ethz.ch> <46AF4034.6080507@RedHat.com>
+In-Reply-To: <46AF4034.6080507@RedHat.com>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-ID: V+eJ8ZZeQeqx5K0KTMBEjEUc8N2mqIbGbh-ZcRpAKpCJKIit7FZFkO
-X-TOI-MSGID: 8ea7915c-6580-41ec-a7a7-0e6aa4919e49
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Aug 2007 09:04:10.0353 (UTC) FILETIME=[16CD3E10:01C7D4E4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everybody!
+Steve Dickson wrote:
+> Stefan Walter wrote:
+>>
+>> We do this on a much larger scale though. The bug we ran into is
+>> in line 96 in utils/mountd/auth.c. The strcpy can corrupt
+>> memory when it copies the string returned by client_compose() to
+>> my_client.m_hostname which has a fixed size of 1024 bytes. For our
+>> example above, client_compose() returns "@joe,@jane"
+>> for any machine in the offices_1 netgroup. Unfortunately we have
+>> a machine to which roughly 150 netgroups like @joe or @jane
+>> export to and client_compose() returns a string over 1300 bytes
+>> long and rpc.mountd nicely segfaults.
+>>  
+>> To prevent the crash is of course trivial: Inserting a simple
+>> 'if (strlen(n) > 1024) return NULL;' before line 96 does the job.
+> Does the attached patch help?
+>
+rpc.mountd does not crash anymore but I get a 'permission denied' when
+trying
+to mount a share. Doing an 'strace rpc.mountd -F' reveals:
 
-Kernel 2.6.22 decreases performance by about 50% on my system.
-No, I do not like that. The reason is a broken BIOS, granted, but there
-was a perfect workaround in the kernel that has been dropped.
+...
+open("/proc/net/rpc/auth.unix.ip/channel", O_WRONLY|O_CREAT|O_TRUNC,
+0666) = 9
+fstat64(9, {st_mode=S_IFREG|0600, st_size=0, ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
+0) = 0xb7f41000
+time(NULL)                              = 1186041882
+write(9, "nfsd 129.132.10.33 1186043682 @a"..., 1024) = -1 EINVAL
+(Invalid argument)
+write(9, "\n", 1)                       = -1 EINVAL (Invalid argument)
+close(9)                                = 0
+munmap(0xb7f41000, 4096)                = 0
+open("/proc/net/rpc/nfsd.export/channel", O_WRONLY|O_CREAT|O_TRUNC,
+0666) = 9
+fstat64(9, {st_mode=S_IFREG|0600, st_size=0, ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
+0) = 0xb7f41000
+write(9, "@anbuehle,@anhorni,@antoinet,@ap"..., 1024) = -1 EINVAL
+(Invalid argument)
+time(NULL)                              = 1186041882
+write(9, "/export/groups/grossm/h1/home/gr"..., 68) = -1 ENOENT (No such
+file or directory)
+close(9)                                = 0
+munmap(0xb7f41000, 4096)                = 0
+open("/proc/fs/nfsd/filehandle", O_RDWR) = 9
+fstat64(9, {st_mode=S_IFREG|0600, st_size=0, ...}) = 0
+mmap2(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1,
+0) = 0xb7f41000
+write(9, "@anbuehle,@anhorni,@antoinet,@ap"..., 1066) = -1 EPERM
+(Operation not permitted)
+...
 
-mainboard: AOpen i915GMm-hfs, AWARD BIOS
-cpu: Pentium-M 750 (0.8 to 1.86 MHz)
-openSuSE 10.2 with kernel 2.6.22.1
+>>
+>> Our ultimate goal is to get Red Hat fix the code in nfs-utils 1.0.6
+>> that is used in RHEL4. A first step would be to get a suitable fix in
+>> the current nfs-utils. 
+> Please open up bugs on all three of these issues and
+> we'll see what can done...
+>
 
-The cpu fan can not be controled by linux kernel.
-The BIOS will switch on the cpu fan a bit above 50 deg. Celsius.
-The active and passive trip points both are set to 50 deg. Celsius.
-Temperature of the idle cpu at 800 Mhz: 34 to 42 deg. C.
-The BIOS never changes the trip points.
-Cpufreq does work perfectly.
+Just did that (request IDs 1765949, 1765938 and 1765930 on sourceforge).
 
-Previously there was the possibility  to add something like
+- Stefan
 
-echo  "100:0:65:70:0" > /proc/acpi/thermal_zone/THRM/trip_points
-echo  2 > /proc/acpi/thermal_zone/THRM/polling_frequency
-echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-
-to e.g. /etc/init.d/boot.local. With 2.6.22 that solution does not exist
-any longer. Now the code in thermal.c slows down the cpu under load
-to prevent "overheating". Kernel compile time increases from about 12
-to 18 minutes. No, I don´t like that, nobody would.
-
-Possible solutions:
-
-1. Get a better BIOS! --- There is none.
-
-2. Fix DSDT!  --- Recompiling gives a number of errors ... I do not  know
-how to fix it.
-
-3. Don´t include thermal.c! --- That does help, but as this is a 24/7
-system, the
-cpu fan could break. At that time I do not want to rely on the BIOS to
-save my
-system (the next trip point is at 100 deg. Celsius).
-
-4. Revert Len Browns commit 11ccc0f249cb01a129f54760b8ff087f242935d4
-
-I would vote for option 4, but I do understand some of the arguments of
-Len in
-the 2.6.22-rc1-mm1 discussion in May. Yes, communicating trip points to
-thermal.c is a hack, it will fail on systems that change trip points
-dynamically
-and it might be dangerous for the machine if unreasonable trip points
-are chosen.
-But it does help to keep the machine quiet, and to work around a too low
-or too
-trip points defined by the BIOS.
-
-If it should be not acceptable to revert the questionable commit without
-changes,
-would it be acceptable to make rw trip_points a kernel config option?
-
-cu,
- Knut Petersen
