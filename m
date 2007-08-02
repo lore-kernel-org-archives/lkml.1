@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbXHBRXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759412AbXHBRYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759138AbXHBRXQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbXHBRXE
+	id S1759412AbXHBRYu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757607AbXHBRYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:23:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:41732 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756376AbXHBRXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:23:01 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.23-rc1-mm2: Fix crash in sysfs_hash_and_remove
-Date: Thu, 2 Aug 2007 19:31:57 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       Greg KH <greg@kroah.com>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
+	Thu, 2 Aug 2007 13:24:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:59232 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757248AbXHBRYm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 13:24:42 -0400
+Date: Thu, 2 Aug 2007 10:23:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: [RFC PATCH] type safe allocator
+In-Reply-To: <E1IGV6D-0000rM-00@dorka.pomaz.szeredi.hu>
+Message-ID: <alpine.LFD.0.999.0708021019070.32351@woody.linux-foundation.org>
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+ <alpine.LFD.0.999.0708012051100.3582@woody.linux-foundation.org>
+ <E1IGV6D-0000rM-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708021931.58123.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
 
-My test box crashes during suspend, while the nonboot CPUs are being disabled,
-because sysfs_hash_and_remove() doesn't check if dir_sd passed to it is not
-NULL.  Fix it.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- fs/sysfs/inode.c |    2 ++
- 1 file changed, 2 insertions(+)
+On Thu, 2 Aug 2007, Miklos Szeredi wrote:
+> 
+> The number of variations can be reduced to just zeroing/nonzeroing, by
+> making the array length mandatory.  That's what glib does in g_new().
 
-Index: linux-2.6.23-rc1-mm2/fs/sysfs/inode.c
-===================================================================
---- linux-2.6.23-rc1-mm2.orig/fs/sysfs/inode.c
-+++ linux-2.6.23-rc1-mm2/fs/sysfs/inode.c
-@@ -191,6 +191,8 @@ int sysfs_hash_and_remove(struct kobject
- 	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent **pos, *sd;
- 
-+	if (!dir_sd)
-+		return -ENOENT;
- 	sysfs_addrm_start(&acxt, dir_sd);
- 	if (!sysfs_resolve_for_remove(kobj, &acxt.parent_sd))
- 		goto addrm_finish;
+Quite frankly, you don't need the zeroing. That's what __GFP_ZERO does in 
+the flags.
+
+That said, I'm not at all sure that it's at all more readable to add some 
+new abstraction layer and do
+
+	struct random_struct *ptr;
+
+	ptr = alloc_struct(random_struct, 1, GFP_KERNEL | __GFP_ZERO);
+
+than just doing a
+
+	ptr = kmalloc(sizeof(*ptr), GFP_KERNEL | __GFP_ZERO);
+
+or
+
+	ptr = kzalloc(sizeof(*ptr), GFP_KERNEL);
+
+(and adding the zeroing variant of alloc_struct() just adds *more* 
+confusing issues).
+
+The fact is, type safety in this area is probably less important than the 
+code just being readable. And have fifteen different interfaces to memory 
+allocation just isn't ever going to readable - regardless of how good they 
+are individually.
+
+		Linus
