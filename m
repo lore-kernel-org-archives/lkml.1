@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXHBAnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbXHBAuO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbXHBAnb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 20:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751796AbXHBAnX
+	id S1755490AbXHBAuO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 20:50:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753758AbXHBAt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 20:43:23 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:54287 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbXHBAnW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 20:43:22 -0400
-Date: Thu, 2 Aug 2007 09:44:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] 2.6.23-rc1-mm1 - fix missing numa_zonelist_order sysctl
-Message-Id: <20070802094445.6495e25d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1185994972.5059.91.camel@localhost>
-References: <1185994972.5059.91.camel@localhost>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 1 Aug 2007 20:49:59 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51527 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753404AbXHBAt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 20:49:58 -0400
+From: Neil Brown <neilb@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Date: Thu, 2 Aug 2007 10:49:42 +1000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18097.10790.205449.176104@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 026 of 35] Split any large bios that arrive at __make_request.
+In-Reply-To: message from Tejun Heo on Thursday August 2
+References: <20070731112539.22428.patches@notabene>
+	<1070731021804.25499@suse.de>
+	<20070801175636.GJ13674@htj.dyndns.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Aug 2007 15:02:51 -0400
-Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
-> [But, maybe reordering the zonelists is not such a good idea
-> when ZONE_MOVABLE is populated?]
+On Thursday August 2, htejun@gmail.com wrote:
+> Hmmm... Patches don't apply beyond this one.  I'm applying against
+> clean 2.6.23-rc1-mm1 grabbed using ketchup.
 > 
 
-It's case-by-case I think. In zone order with ZONE_MOVABLE case,
-user's page cache will not use ZONE_NORMAL until ZONE_MOVABLE in all node
-is exhausted. This is an expected behavior, I think.
+So do you mean 027 doesn't apply, or that 028 doesn't apply next?
 
-I think the real problem is the scheme for "How to set zone movable size to
-appropriate value for the system". This needs more study and documentation.
-(but maybe depends on system configuration to some extent.)
+It is possible that you missed 027.  It originally has 3 consecutive
+Xs in the subject line, so vger.kernel.org bounced it.
+I re-sent it, but it would have had a different References header and
+the might not appear in the same thread.
+
+If you confirm that 027 isn't applying, I'll track down what happened.
 
 Thanks,
--Kame
-
+NeilBrown
