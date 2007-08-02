@@ -1,56 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758002AbXHBWgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbXHBWhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758002AbXHBWgq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHBWgk
+	id S1759354AbXHBWhU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:37:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHBWhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:36:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35922 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751002AbXHBWgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:36:39 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18msLoZmHImRDhnRaVrcA8mz5HZCgK5HljA7s/9mV
-	YiXKMJ234e+LrZ
-Date: Fri, 3 Aug 2007 00:36:40 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Robert Hancock <hancockr@shaw.ca>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-In-Reply-To: <46B2578A.805@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.60.0708030024490.6774@poirot.grange>
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
- <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange>
- <46B2578A.805@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Thu, 2 Aug 2007 18:37:05 -0400
+Received: from mail.screens.ru ([213.234.233.54]:55936 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755830AbXHBWhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:37:03 -0400
+Date: Fri, 3 Aug 2007 02:37:20 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] do_sigaction: remove now unneeded recalc_sigpending()
+Message-ID: <20070802223720.GA623@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, Robert Hancock wrote:
+With the recent changes, do_sigaction()->recalc_sigpending_and_wake() can
+never clear TIF_SIGPENDING. Instead, it can set this flag and wake up the
+thread without any reason. Harmless, but unneeded and wastes CPU.
 
-> Because 5 characters will not fit in a 4 character array, even without the
-> null terminator.
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-On Fri, 3 Aug 2007, Stefan Richter wrote:
+--- t/kernel/signal.c~	2007-08-03 02:26:30.000000000 +0400
++++ t/kernel/signal.c	2007-08-03 02:28:50.000000000 +0400
+@@ -2342,7 +2342,6 @@ int do_sigaction(int sig, struct k_sigac
+ 			rm_from_queue_full(&mask, &t->signal->shared_pending);
+ 			do {
+ 				rm_from_queue_full(&mask, &t->pending);
+-				recalc_sigpending_and_wake(t);
+ 				t = next_thread(t);
+ 			} while (t != current);
+ 		}
 
-> How should gcc know whether you actually wanted that char foo[len] to
-> contain a \0 as last element?
-
-Robert, Stefan, I am sorry, I think, you are VERY wrong here. There is no 
-"even" and no guessing. The "string" DOES include a terminating '\0'. It 
-is EQUIVALENT to {'s', 't', 'r', 'i', 'n', 'g', '\0'}. And it contains 
-SEVEN characters. Please, re-read your K&R. Specifically, the Section 
-"Initialization" in the "Function and Program Structure" chapter (section 
-4.9 in my copy), the paragraph about initialization with a string, which I 
-quoted in an earlier email.
-
-And, Stefan, there is a perfect way to specify a "0123" without the '\0' - 
-{'0', '1', '2', '3'}.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
