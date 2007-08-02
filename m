@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbXHBLMg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756381AbXHBLNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbXHBLMg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:12:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbXHBLM1
+	id S1756381AbXHBLNz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753448AbXHBLNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:12:27 -0400
-Received: from wildsau.enemy.org ([193.170.194.34]:33105 "EHLO
-	wildsau.enemy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754109AbXHBLM1 (ORCPT
+	Thu, 2 Aug 2007 07:13:47 -0400
+Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:35960 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1753436AbXHBLNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:12:27 -0400
-From: Herbert Rosmanith <kernel@wildsau.enemy.org>
-Message-Id: <200708021112.l72BCAW0008626@wildsau.enemy.org>
-Subject: Re: VIA EPIA EK: strange eth dev numbering
-In-Reply-To: <Pine.LNX.4.64.0708021246200.24572@fbirervta.pbzchgretzou.qr>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Date: Thu, 2 Aug 2007 13:12:10 +0200 (MET DST)
-CC: Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org
-X-Mailer: ELM [version 2.4ME+ PL100 (25)]
+	Thu, 2 Aug 2007 07:13:46 -0400
+Date: Thu, 2 Aug 2007 12:13:27 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: trenn@suse.de, Adrian =?iso-8859-1?Q?Schr=F6ter?= <adrian@suse.de>,
+       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, pavel@ucw.cz, lenb@kernel.org,
+       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>
+Message-ID: <20070802111327.GA29002@srcf.ucam.org>
+References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de> <200708021145.09377.adrian@suse.de> <1186048701.18821.459.camel@queen.suse.de> <20070802120221.5474e732@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802120221.5474e732@the-village.bc.nu>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22 regression: thermal trip points
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > cards around), eth0 would also suddenly become a different one. There never
-> > *were* days when eth0 remained eth0 across such changes.
+On Thu, Aug 02, 2007 at 12:02:21PM +0100, Alan Cox wrote:
+> > Anyway, only solution/workaround to use these machines with current
+> > kernels is to override trip points, maybe the patch should really just
+> > be reverted...
 > 
-> but there *were* days when eth0 was eth0, if the kernel reports it as such.
-> now there is no eth0 at all. if I see an "eth0" from dmesg, I expect
-> it to be present.
+> The question really is whether the vendors will all revert it and carry
+> it as a patch or whether the main tree will accept reality on this one.
+> 
+> Reverting it and adding a taint marker if you do it is much preferable I
+> suspect to having every vendor revert this bogus if well meaning
+> changeset.
 
-hm, well, a thought, maybe udev should report what is doing, like
-printinig "renamed eth0 to eth2", or such.
+I strongly suspect that the vast majority[1] of hardware that "needs" 
+the trip points changing works perfectly well under Windows, so it's 
+likely to be papering over bugs in the kernel. It'd be nice if we fixed 
+those rather than encouraging people to poke stuff into /proc, 
+especially when doing so is guaranteed to break in really confusing ways 
+with a lot of hardware. The firmware can reset the trip points at 
+essentially arbitrary times and is well within its rights to expect the 
+OS to actually pay attention to them.
 
-the problem with this device renaming in my case was that other software,
-in particular dhcpcd, didnt get any lease, because (obviously?) dhcpcd
-on the other hand _still_ seemed to look for eth0, and thus, after
-booting, there was no network configured at all.
-
-Maybe the name "eth0" is hardcoded in the gentoo init scripts, I dont know.
-
-Can this be considered a distrubtion bug?
-
-cheers,
-herp
+[1] Some hardware is simply broken. We don't carry phc just because some 
+vendors put the wrong voltage values in their tables, either
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
