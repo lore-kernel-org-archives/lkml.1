@@ -1,50 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757101AbXHBOwE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbXHBOy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757101AbXHBOwE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:52:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXHBOvz
+	id S1757289AbXHBOy5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753482AbXHBOyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:51:55 -0400
-Received: from users.crfreenet.org ([81.92.145.1]:32852 "EHLO
-	mail.crfreenet.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751008AbXHBOvy (ORCPT
+	Thu, 2 Aug 2007 10:54:50 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:58226 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754862AbXHBOyt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:51:54 -0400
-Date: Thu, 2 Aug 2007 16:51:52 +0200
-From: Ondrej Zajicek <santiago@crfreenet.org>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Herbert Rosmanith <kernel@wildsau.enemy.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: renaming kernel devices [was: VIA EPIA EK: strange eth dev numbering]
-Message-ID: <20070802145152.GB19346@localhost.localdomain>
-References: <200708021056.l72Au722008603@wildsau.enemy.org> <46B1BEB8.70104@msgid.tls.msk.ru> <Pine.LNX.4.64.0708021346300.24572@fbirervta.pbzchgretzou.qr>
+	Thu, 2 Aug 2007 10:54:49 -0400
+Date: Thu, 2 Aug 2007 16:54:29 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Gabriel C <nix.or.die@googlemail.com>, davej@codemonkey.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [-mm patch] CPUfreq: Only check for transition latency on
+	problematic governors
+Message-ID: <20070802145429.GW3972@stusta.de>
+References: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com> <20070801165704.a26961b7.akpm@linux-foundation.org> <46B12516.4090006@googlemail.com> <20070802134838.GV3972@stusta.de> <1186065486.18821.545.camel@queen.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708021346300.24572@fbirervta.pbzchgretzou.qr>
-X-Operating-System: Debian GNU/Linux 3.1 (Sarge)
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1186065486.18821.545.camel@queen.suse.de>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 01:47:23PM +0200, Jan Engelhardt wrote:
-> It does not rename ethX to the "next free" one, but to a _persistent_ one.
-> If it were a "next free" thing, then removing a card would shuffle all
-> your eth around again (and invalidate your iptables rules at the same
-> time, to note).
+On Thu, Aug 02, 2007 at 04:38:06PM +0200, Thomas Renninger wrote:
+> On Thu, 2007-08-02 at 15:48 +0200, Adrian Bunk wrote:
+> > On Thu, Aug 02, 2007 at 02:28:06AM +0200, Gabriel C wrote:
+> > > Andrew Morton wrote:
+> > > > On Wed, 1 Aug 2007 16:31:46 -0700
+> > > > "Miles Lane" <miles.lane@gmail.com> wrote:
+> > > > 
+> > > >>   LD      .tmp_vmlinux1
+> > > >> drivers/built-in.o: In function `__cpufreq_governor':
+> > > >> cpufreq.c:(.text+0xaf178): undefined reference to `cpufreq_gov_performance'
+> > > >> cpufreq.c:(.text+0xaf18a): undefined reference to `cpufreq_gov_performance'
+> > > >> make: *** [.tmp_vmlinux1] Error 1
+> > > > 
+> > > > One for Thomas, I expect.
+> > > 
+> > > Is this patch :
+> > > 
+> > > cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
+> > > 
+> > > Reverting it here fixes the error.
+> > 
+> > Possible fix below.
+> Or this one.
+> Advantage: You can still have cpufreq core without the performance 
+>            governor built.
+> Disadvantage: The logic whether transition latency checks are
+>               needed/done is moved to Kconfig.
+>               Means, if you write a governor that has transition
+>               latency values above 0, you must let it depend on
+>               the performance governor in Kconfig.
+> 
+> Hope I got all .config possibilities with that one now.
+> Attached is also a replacement patch for this one:
+> cpufreq-allow-ondemand-and-conservative-cpufreq-governors-to-be-used-as-default.patch
+> 
+> 
+> CPUfreq: Only check for transition latency on problematic governors
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+> --
+> 
+> --- linux-2.6.23-rc1-mm2/include/linux/cpufreq.h	2007-08-02 16:01:36.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2_fixed/include/linux/cpufreq.h	2007-08-02 15:21:28.000000000 +0200
+> @@ -299,8 +299,10 @@ static inline unsigned int cpufreq_get(u
+>    Performance governor is fallback governor if any other gov failed to
+>    auto load due latency restrictions
+>  */
+> +#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
+>  extern struct cpufreq_governor cpufreq_gov_performance;
+>  #define CPUFREQ_PERFORMANCE_GOVERNOR	(&cpufreq_gov_performance)
+> +#endif
+>  #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+>  #define CPUFREQ_DEFAULT_GOVERNOR	(&cpufreq_gov_performance)
+>  #elif defined(CONFIG_CPU_FREQ_DEFAULT_GOV_USERSPACE)
+> --- linux-2.6.23-rc1-mm2/drivers/cpufreq/cpufreq.c	2007-08-02 16:01:35.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2_fixed/drivers/cpufreq/cpufreq.c	2007-08-02 16:23:09.000000000 +0200
+> @@ -1484,17 +1484,30 @@ static int __cpufreq_governor(struct cpu
+>  					unsigned int event)
+>  {
+>  	int ret;
+> +
+> +	/* Only must be defined when default governor is known to have latency
+> +	   restrictions, like e.g. conservative or ondemand.
+> +	   That this is the case is already ensured in Kconfig
+> +	*/
+> +#ifdef CONFIG_CPU_FREQ_GOV_PERFORMANCE
+>  	struct cpufreq_governor *gov = CPUFREQ_PERFORMANCE_GOVERNOR;
+> +#else
+> +	struct cpufreq_governor *gov = NULL;
+> +#endif
+>...
 
-It is questionable what is _persistent_ . MAC-based names are persistent
-with regard to adding and removing of other cards, 'Plain' names are persistent
-with regard to replacing that card with different item (of a same kind).
-
-I am very happy that (using 'plain' names) i can send technician to
-replace broken NIC in our routers without need for configuration
-change.
+Looks good, but you could remove CPUFREQ_PERFORMANCE_GOVERNOR and 
+directly use cpufreq_gov_performance.
+  
+cu
+Adrian
 
 -- 
-Elen sila lumenn' omentielvo
 
-Ondrej 'SanTiago' Zajicek (email: santiago@crfreenet.org, jabber: santiago@njs.netlab.cz)
-OpenPGP encrypted e-mails preferred (KeyID 0x11DEADC3, wwwkeys.pgp.net)
-"To err is human -- to blame it on a computer is even more so."
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
