@@ -1,83 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXHBRDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759650AbXHBRD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbXHBRDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758189AbXHBRDT
+	id S1759650AbXHBRD4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbXHBRDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:03:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.189]:6276 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752912AbXHBRDQ (ORCPT
+	Thu, 2 Aug 2007 13:03:40 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:61621 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759480AbXHBRDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:03:16 -0400
+	Thu, 2 Aug 2007 13:03:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=GRGtWNbWX2JQTcCfkd6YblZ2kweZz8pmgrlT5GX5BN3uC/Nb+yH5SNh3fhsrZ67dX7lmnzncHRlSL5qSW+N+fSPDks2B+BpouG7QrSKJnTUh2wMQhrh3uG4TGNrnUuPCoy9vdjekz3jkBw4GyEyw7IuqKSOSiroezDJIZriGkR8=
-Message-ID: <46B20E47.6020403@googlemail.com>
-Date: Thu, 02 Aug 2007 19:03:03 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=p+voj1G/Zkso5LauuNnRyQ0SBpmt318I5/8LPLqefrYkn3n2sLK+wkxfwW0ALJnRCrmNEVrdZ7cmCcBPj6UBLbyPp6JpRC5BfdW6ZZqJSapEJORE8eglNlhEnrJLnS3gsjNNNEsPTlEgoB8eLhk8YnMpO8oi7Lo193nLDnUhtl8=
+Message-ID: <dda83e780708021003k7ada3fb5v97a067788e967ed6@mail.gmail.com>
+Date: Thu, 2 Aug 2007 10:03:36 -0700
+From: "Bret Towe" <magnade@gmail.com>
+To: "Jiri Kosina" <jkosina@suse.cz>
+Subject: Re: Is PIE randomization breaking klibc binaries?
+Cc: "Ulrich Kunitz" <kune@deine-taler.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Chuck Ebbert" <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       "Jan Kratochvil" <honza@jikos.cz>, jakub@redhat.com
+In-Reply-To: <Pine.LNX.4.64.0708021316020.1779@jikos.suse.cz>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
-Subject: Re: [patch] genirq: temporary fix for level-triggered IRQ resend
-References: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org> <20070724200431.GA22190@elte.hu> <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu>
-In-Reply-To: <20070731155843.GA7033@elte.hu>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46A667BD.5080106@redhat.com> <46A68118.9080902@zytor.com>
+	 <20070725063243.GA25148@deine-taler.de>
+	 <Pine.LNX.4.64.0707311326090.26532@jikos.suse.cz>
+	 <46AF24B2.8070900@zytor.com>
+	 <Pine.LNX.4.64.0707311418040.26532@jikos.suse.cz>
+	 <46AF27E6.5080008@zytor.com>
+	 <Pine.LNX.4.64.0708011604570.6311@jikos.suse.cz>
+	 <20070802042942.GA4054@deine-taler.de>
+	 <Pine.LNX.4.64.0708021316020.1779@jikos.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> Linus,
-> 
-> with -rc2 approaching i think we should apply the minimal fix below to 
-> get Marcin's ne2k-pci networking back in working order. The 
-> WARN_ON_ONCE() will not prevent the system from working and it will be a 
-> reminder.
-> 
-> a better workaround would be to inhibit the resent vector via the 
-> IO-APIC irqchip - but i'd still like to have the patch below because the 
-> ne2k driver _should_ be able to survive the spurious irq that happens. 
-> (even on Marcin's system that ne2k-pci irq line is shared with another 
-> networking card, so an irq could happen at any moment - it's just that 
-> with the delayed-disable logic it happens _all the time_.)
-> 
+On 8/2/07, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Thu, 2 Aug 2007, Ulrich Kunitz wrote:
+>
+> > Here is the .config file. I used it directly with 60bfba7e8 and could
+> > reproduce the bug. (All other builds after the patch could also
+> > reproduce the bug.)
+>
+> Thanks, I used your .config against 60bfba7e8 on x86_64, and still can't
+> seem to be able to reproduce the problem:
+>
+> linux-w027:~ # echo "test" | ./klibc-1.5/usr/utils/shared/cat
+> test
+> linux-w027:~ # echo "test" | ./klibc-1.5/usr/utils/static/cat
+> test
+>
+> hpa, were you successful reproducing this?
+>
+> Bret, I can see that you also reported some related segfaults, what were
+> your conditions that triggered it please?
 
-I get a warning on each boot now with this patch .. 
+not really much to it just did the usual make oldconfig on a current
+git and installed
+it with ubuntus kernel tools and it was broken
+the system is a 64bit feisty setup nothing special to me at least
+i can attach the .config later (not near the computer and its not on atm)
 
-[   63.686613] WARNING: at kernel/irq/resend.c:70 check_irq_resend()
-[   63.686636]  [<c013c55c>] check_irq_resend+0x8c/0xa0
-[   63.686653]  [<c013c15f>] enable_irq+0xad/0xb3
-[   63.686662]  [<e886481e>] vortex_timer+0x20c/0x3d5 [3c59x]
-[   63.686675]  [<c01164b9>] scheduler_tick+0x154/0x273
-[   63.686685]  [<c012fed1>] getnstimeofday+0x34/0xe3
-[   63.686697]  [<c0121f4a>] run_timer_softirq+0x137/0x197
-[   63.686709]  [<e8864612>] vortex_timer+0x0/0x3d5 [3c59x]
-[   63.686720]  [<c011ed09>] __do_softirq+0x75/0xe1
-[   63.686729]  [<c011edac>] do_softirq+0x37/0x3d
-[   63.686735]  [<c011ef85>] irq_exit+0x7c/0x7e
-[   63.686740]  [<c010e013>] smp_apic_timer_interrupt+0x59/0x84
-[   63.686751]  [<c0103428>] apic_timer_interrupt+0x28/0x30
-[   63.686759]  [<c0101355>] default_idle+0x0/0x3f
-[   63.686767]  [<c0101385>] default_idle+0x30/0x3f
-[   63.686773]  [<c0100c19>] cpu_idle+0x5e/0x8e
-[   63.686779]  [<c03fdc5f>] start_kernel+0x2d7/0x368
-
-
-That means ?:)
-
-
-> 	Ingo
-> 
-
-
-Gabriel
+> --
+> Jiri Kosina
+> SUSE Labs
+>
