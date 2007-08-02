@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbXHBDcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbXHBDiK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757099AbXHBDcf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 23:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbXHBDc1
+	id S1756806AbXHBDiK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 23:38:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXHBDh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 23:32:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56405 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753952AbXHBDc0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 23:32:26 -0400
-Date: Thu, 2 Aug 2007 09:14:10 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Dobriyan <adobriyan@sw.ru>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Matthew Wilcox <matthew@wil.cx>, Kyle McMartin <kyle@parisc-linux.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix WARN_ON() on bitfield ops for all other archs
-In-Reply-To: <20070801221838.GA9010@osiris.ibm.com>
-Message-ID: <alpine.LFD.0.999.0708020900010.8258@enigma.security.iitk.ac.in>
-References: <20070801221838.GA9010@osiris.ibm.com>
+	Wed, 1 Aug 2007 23:37:58 -0400
+Received: from mail.suse.de ([195.135.220.2]:49859 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753502AbXHBDh6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 23:37:58 -0400
+From: Neil Brown <neilb@suse.de>
+To: Tejun Heo <htejun@gmail.com>
+Date: Thu, 2 Aug 2007 13:37:42 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18097.20870.834262.405375@notabene.brown>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 013 of 35] Don't update bi_hw_*_size if we aren't going to merge.
+In-Reply-To: message from Tejun Heo on Thursday August 2
+References: <20070731112539.22428.patches@notabene>
+	<1070731021655.25270@suse.de>
+	<20070801155753.GF13674@htj.dyndns.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 2 Aug 2007, Heiko Carstens wrote:
-
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+On Thursday August 2, htejun@gmail.com wrote:
+> On Tue, Jul 31, 2007 at 12:16:55PM +1000, NeilBrown wrote:
+> > 
+> > ll_merge_requests_fn can update bi_hw_*_size in one case where we end
+> > up not merging.  This is wrong.
+> > 
+> > Signed-off-by: Neil Brown <neilb@suse.de>
 > 
-> Fixes WARN_ON() on bitfiels ops for all architectures that have
-> been left out in 8d4fbcfbe0a4bfc73e7f0297c59ae514e1f1436f.
+> As this is a bug fix, I think it would better to bump this to the top
+> of the series such that it can be pushed into mainline.
 
-Well, considering ...
+Good point.  I'll do that, thanks.
 
-On Tue, 31 Jul 2007, Alexey Dobriyan wrote:
-> But I question the rationale of that commit:
-> [...]
-> I think that second case is more clear and immediately understandable.
-
-and
-
-On Tue, 31 Jul 2007, Linus Torvalds wrote:
-> For all I know, the proper solution is
-> to just revert the whole mess, and *not* make WARN_ON() return a value
-> at all, since that seems to be the fundamental mistake here.
-
-... I think it makes sense to stop returning the value from WARN_ON()
-in the first place. There's only 5 places in the tree that uses its
-return value anyway, and one of them ( net/xfrm/xfrm_policy.c:681 )
-is a good example of why it's less readable that way.
-
-
-Satyam
+NeilBrown
