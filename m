@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757608AbXHBPVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbXHBPXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757608AbXHBPVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 11:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXHBPVh
+	id S1757910AbXHBPXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 11:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXHBPXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 11:21:37 -0400
-Received: from outbound-blu.frontbridge.com ([65.55.251.16]:57326 "EHLO
-	outbound4-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751031AbXHBPVg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 11:21:36 -0400
-X-BigFish: VP
-X-FB-SS: 0,
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
-X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
-Date: Thu, 2 Aug 2007 09:23:19 -0600
-From: "Jordan Crouse" <jordan.crouse@amd.com>
-To: ashwillis@programmer.net
-cc: linux-kernel@vger.kernel.org, tiwai@suse.de, rafalbilski@interia.pl
-Subject: Re: CS5530 Alsa driver fails
-Message-ID: <20070802152319.GA25325@cosmic.amd.com>
+	Thu, 2 Aug 2007 11:23:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48639 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754287AbXHBPXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 11:23:01 -0400
+Date: Thu, 2 Aug 2007 17:22:57 +0200
+From: Andrea Arcangeli <andrea@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Hua Zhong <hzhong@gmail.com>,
+       "'Carlo Florendo'" <subscribermail@gmail.com>,
+       "'Roman Zippel'" <zippel@linux-m68k.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'jos poortvliet'" <jos@mijnkamer.nl>,
+       "'Michael Chang'" <thenewme91@gmail.com>,
+       "'Kasper Sandberg'" <lkml@metanurb.dk>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1 -- It does not matter who's code gets merged!
+Message-ID: <20070802152257.GH6910@v2.random>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <200707282003.45142.jos@mijnkamer.nl> <alpine.LFD.0.999.0707281109120.3442@woody.linux-foundation.org> <200707282128.39906.jos@mijnkamer.nl> <alpine.LFD.0.999.0707281313570.3442@woody.linux-foundation.org> <Pine.LNX.4.64.0708010539230.1818@scrub.home> <46B01E3F.6050401@gmail.com> <005001c7d403$8d7601a0$a86204e0$@com> <1185951901.2754.12.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-In-Reply-To: <20070802135700.09319306@the-village.bc.nu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-OriginalArrivalTime: 02 Aug 2007 15:21:23.0982 (UTC)
- FILETIME=[C97EF2E0:01C7D518]
-X-WSS-ID: 6AAF29FE7CS3968654-01-01
-Content-Type: text/plain;
- charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1185951901.2754.12.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I wouldn't mind porting VSA2 support to ALSA. I just don't have test
->> hardware. Do you happen to know any examples of hardware that run VSA2
->> firmware or is it just a case of a firmware update?
+On Wed, Aug 01, 2007 at 12:05:01AM -0700, Arjan van de Ven wrote:
+> I've had several cases myself where I spent quite some time solving a
+> problem, just to get some random remark from someone smart on lkml
+> saying "if you had done <this simple thing> you would have had <this
+> simple and superior solution>". Was I pissed off that my patch didn't
+> get merged but that this better approach got picked? NO! The problem
+> that I needed to solve got solved in a really good way. Mission
+> accomplished.
 
-> Anything from the natsemi era onwards ought to be VSA2
-
-VSA2 is mainly used to support the GX and LX processors, and the 
-CS5535 and CS5536 southbridges.  The southbridges both have 
-native AC97 controllers, supported by the snd-cs5535 driver
-in the kernel and maintained by Jaya Kumar.
-
-These just work, straight out of the box.
-
-And as an aside, the VSA2 source code is open, so you can peruse
-it and discover its secrets for yourself:
-
-http://dev.laptop.org/git.do?p=geode-vsa;a=tree;hb=HEAD
-
-Jordan
--- 
-Jordan Crouse
-Systems Software Development Engineer 
-Advanced Micro Devices, Inc.
-
-
+Hey to me it even happened I had this nice and safe pte-highmem patch
+but the buggy highpte was merged instead, go figure. Con got lucky.
