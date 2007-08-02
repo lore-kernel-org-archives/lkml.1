@@ -1,122 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759038AbXHBSQn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbXHBST6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759038AbXHBSQn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 14:16:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755863AbXHBSQd
+	id S1758861AbXHBST6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 14:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbXHBSTv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 14:16:33 -0400
-Received: from mms3.broadcom.com ([216.31.210.19]:3744 "EHLO MMS3.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752875AbXHBSQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 14:16:31 -0400
-X-Server-Uuid: 20144BB6-FB76-4F11-80B6-E6B2900CA0D7
-Subject: Re: [REGRESSION] tg3 dead after s2ram
-From: "Michael Chan" <mchan@broadcom.com>
-To: "David Miller" <davem@davemloft.net>
-cc: joachim.deguara@amd.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
-       "netdev" <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
-In-Reply-To: <20070802.022317.66176729.davem@davemloft.net>
-References: <1186002023.18322.7.camel@dell>
- <200708021005.45773.joachim.deguara@amd.com>
- <200708021115.10812.joachim.deguara@amd.com>
- <20070802.022317.66176729.davem@davemloft.net>
-Date: Thu, 02 Aug 2007 12:10:29 -0700
-Message-ID: <1186081829.18322.20.camel@dell>
+	Thu, 2 Aug 2007 14:19:51 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58451 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752281AbXHBSTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 14:19:50 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+Subject: Re: 2.6.23-rc1-mm2: Fix crash in sysfs_hash_and_remove
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<200708021931.58123.rjw@sisk.pl> <46B2158F.4060302@gmail.com>
+Date: Thu, 02 Aug 2007 12:19:11 -0600
+In-Reply-To: <46B2158F.4060302@gmail.com> (Tejun Heo's message of "Fri, 03 Aug
+	2007 02:34:07 +0900")
+Message-ID: <m1ps25n6jk.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AACC0F139C614465-01-01
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 02:23 -0700, David Miller wrote:
-> From: "Joachim Deguara" <joachim.deguara@amd.com>
-> Date: Thu, 2 Aug 2007 11:15:05 +0200
-> 
-> > Seams like even if powersave shuts down the network that the device should 
-> > still work after a suspend to ram, so who is at fault here?
-> 
-> It's a good question.
-> 
-> The pci_enable() is done on the PCI device at probe time, at least in
-> the tg3 driver, and with such a model restoring and saving of PCI
-> config space should not be dependant upon whether the netdev is
-> running or not.
-> 
+Tejun Heo <htejun@gmail.com> writes:
 
-Alternatively, we can also fix it by calling pci_enable_device() again
-in tg3_open().  But I think it is better to just always save and restore
-in suspend/resume.  bnx2.c will also require the same fix.
+> Rafael J. Wysocki wrote:
+>> From: Rafael J. Wysocki <rjw@sisk.pl>
+>> 
+>> My test box crashes during suspend, while the nonboot CPUs are being disabled,
+>> because sysfs_hash_and_remove() doesn't check if dir_sd passed to it is not
+>> NULL.  Fix it.
+>> 
+>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>
+> It got broken when shadow support was added.  The shadow support in -mm1
+> will be dropped and Eric is preparing a new version.  So, this fix
+> probably won't be necessary from -mm2.
 
-Thanks Joachim for helping to debug this problem.  Please try this
-patch:
+Agreed.  That check is in my current development tree.
 
-[TG3]: Fix suspend/resume problem.
-
-Joachim Deguara <joachim.deguara@amd.com> reported that tg3 devices
-would not resume properly if the device was shutdown before the system
-was suspended.  In such scenario where the netif_running state is 0,
-tg3_suspend() would not save the PCI state and so the memory enable bit
-and bus master enable bit would be lost.
-
-We fix this by always saving and restoring the PCI state in
-tg3_suspend() and tg3_resume() regardless of netif_running() state.
-
-Signed-off-by: Michael Chan <mchan@broadcom.com>
-
-diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-index dc41c05..5874042 100644
---- a/drivers/net/tg3.c
-+++ b/drivers/net/tg3.c
-@@ -64,8 +64,8 @@
- 
- #define DRV_MODULE_NAME		"tg3"
- #define PFX DRV_MODULE_NAME	": "
--#define DRV_MODULE_VERSION	"3.79"
--#define DRV_MODULE_RELDATE	"July 18, 2007"
-+#define DRV_MODULE_VERSION	"3.80"
-+#define DRV_MODULE_RELDATE	"August 2, 2007"
- 
- #define TG3_DEF_MAC_MODE	0
- #define TG3_DEF_RX_MODE		0
-@@ -12111,6 +12111,12 @@ static int tg3_suspend(struct pci_dev *pdev, pm_message_t state)
- 	struct tg3 *tp = netdev_priv(dev);
- 	int err;
- 
-+	/* PCI register 4 needs to be saved whether netif_running() or not.
-+	 * MSI address and data need to be saved if using MSI and
-+	 * netif_running().
-+	 */
-+	pci_save_state(pdev);
-+
- 	if (!netif_running(dev))
- 		return 0;
- 
-@@ -12130,9 +12136,6 @@ static int tg3_suspend(struct pci_dev *pdev, pm_message_t state)
- 	tp->tg3_flags &= ~TG3_FLAG_INIT_COMPLETE;
- 	tg3_full_unlock(tp);
- 
--	/* Save MSI address and data for resume.  */
--	pci_save_state(pdev);
--
- 	err = tg3_set_power_state(tp, pci_choose_state(pdev, state));
- 	if (err) {
- 		tg3_full_lock(tp, 0);
-@@ -12160,11 +12163,11 @@ static int tg3_resume(struct pci_dev *pdev)
- 	struct tg3 *tp = netdev_priv(dev);
- 	int err;
- 
-+	pci_restore_state(tp->pdev);
-+
- 	if (!netif_running(dev))
- 		return 0;
- 
--	pci_restore_state(tp->pdev);
--
- 	err = tg3_set_power_state(tp, PCI_D0);
- 	if (err)
- 		return err;
-
-
+Eric
