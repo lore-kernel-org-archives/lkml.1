@@ -1,93 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbXHBCSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbXHBCXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755637AbXHBCSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 22:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbXHBCS1
+	id S1755151AbXHBCXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 22:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750929AbXHBCWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 22:18:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51611 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751231AbXHBCS0 (ORCPT
+	Wed, 1 Aug 2007 22:22:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:43583 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbXHBCWx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 22:18:26 -0400
-Date: Wed, 1 Aug 2007 19:17:51 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-In-Reply-To: <Pine.LNX.4.64.0708011525560.1817@scrub.home>
-Message-ID: <alpine.LFD.0.999.0708011903300.3582@woody.linux-foundation.org>
-References: <20070710013152.ef2cd200.akpm@linux-foundation.org>
- <p734pkbyuu4.fsf@bingen.suse.de> <20070711174252.GA16793@elte.hu>
- <20070711211638.GE18767@one.firstfloor.org> <20070711214649.GK14435@v2.random>
- <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0708010439050.1817@scrub.home> <p73wswfo0hf.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0708011525560.1817@scrub.home>
+	Wed, 1 Aug 2007 22:22:53 -0400
+Date: Thu, 2 Aug 2007 08:05:16 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Rokas Masiulis <roma1390@uosis.mif.vu.lt>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>
+Subject: Re: Examine user space locks
+In-Reply-To: <20070801205205.GA34272@uosis.mif.vu.lt>
+Message-ID: <alpine.LFD.0.999.0708020729460.8258@enigma.security.iitk.ac.in>
+References: <20070801190754.GA31656@uosis.mif.vu.lt>
+ <Pine.LNX.4.64.0708012150420.23692@fbirervta.pbzchgretzou.qr>
+ <20070801205205.GA34272@uosis.mif.vu.lt>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Rokas,
+
+[ Your mailer does not maintain the Cc: list. That's not good
+  when posting to LKML. Adding back Jan Engelhardt to Cc: ]
 
 
-On Wed, 1 Aug 2007, Roman Zippel wrote:
+On Wed, 1 Aug 2007, Rokas Masiulis wrote:
+
+> On Wed, Aug 01, 2007 at 09:51:06PM +0200, Jan Engelhardt wrote:
+> > [...]
+> > echo t >/proc/sysrq-trigger
 > 
-> I'm not so sure about that. sched_clock() has to be fast, so many archs 
-> may want to continue to use jiffies. As soon as one does that one can also 
-> save a lot of computational overhead by using 32bit instead of 64bit.
-> The question is then how easy that is possible.
+>  # cat /proc/kmsg > log &
+>  [1] 28058
+>  # echo t >/proc/sysrq-trigger
+>  # sleep 3
+>  # fg
+>  cat /proc/kmsg > log
+>  ^C
 
-I have to say, it would be interesting to try to use 32-bit arithmetic.
+First, ensure:
+# echo 1 > /proc/sys/kernel/sysrq
 
-I also think it's likely a mistake to do a nanosecond resolution. That's 
-part of what forces us to 64 bits, and it's just not even an *interesting* 
-resolution.
+and that you've built with various debug stuff like CONFIG_LOCKDEP,
+CONFIG_FRAME_POINTER, etc enabled.
 
-It would be better, I suspect, to make the scheduler clock totally 
-distinct from the other clock sources (many architectures have per-cpu 
-cycle counters), and *not* try to even necessarily force it to be a 
-"time-based" one.
+If you're only interested in those processes that are hung in "D"
+i.e. TASK_UNINTERRUPTIBLE wait, you could try:
 
-So I think it would be entirely appropriate to
+# dmesg -c
+# echo w > /proc/sysrq-trigger
+# dmesg > uninterruptible-sleeping-tasks.txt
 
- - do something that *approximates* microseconds.
+to limit output to only interesting stuff. Also, not all tasks waiting
+in TASK_UNINTERRUPTIBLE may be blocked on locks / mutexes (most would
+simply be waiting for IO to complete), so:
 
-   Using microseconds instead of nanoseconds would likely allow us to do 
-   32-bit arithmetic in more areas, without any real overflow.
+# dmesg -c
+# echo d > /proc/sysrq-trigger
+# dmesg > held-locks.txt
 
-   And quite frankly, even on fast CPU's, the scheduler is almost 
-   certainly not going to be able to take any advantage of the nanosecond 
-   resolution. Just about anything takes a microsecond - including IO. I 
-   don't think nanoseconds are worth the ten extra bits they need, if we 
-   could do microseconds in 32 bits.
+would tell us specifically what locks are held currently.
 
-   And the "approximates" thing would be about the fact that we don't 
-   actually care about "absolute" microseconds as much as something that 
-   is in the "roughly a microsecond" area. So if we say "it doesn't have 
-   to be microseconds, but it should be within a factor of two of a ms", 
-   we could avoid all the expensive divisions (even if they turn into 
-   multiplications with reciprocals), and just let people *shift* the CPU 
-   counter instead.
 
-   In fact, we could just say that we don't even care about CPU counters 
-   that shift frequency - so what? It gets a bit further off the "ideal 
-   microsecond", but the scheduler just cares about _relative_ times 
-   between tasks (and that the total latency is within some reasonable 
-   value), it doesn't really care about absolute time.
+> it seems that i can't get full log. Not all proceses are listed on it.
+> 
+> But some of "bad proceses i have".
+> (full log: http://89.190.108.145/~rokas/tasks.txt)
 
-Hmm?
+Eek, not very readable, that.
 
-It would still be true that something that is purely based on timer ticks 
-will always be liable to have rounding errors that will inevitably mean 
-that you don't get good fairness - tuning threads to run less than a timer 
-tick at a time would effectively "hide" them from the scheduler 
-accounting. However, in the end, I think that's pretty much unavoidable. 
-We should make sure that things mostly *work* for that situation, but I 
-think it's ok to say that the *quality* of the fairness will obviously 
-suffer (and possibly a lot in the extreme cases).
 
-			Linus
+> it seems that some are stoped on cdrom_transfer_packet_command, some on __mutex_lock_slowpath.
+> I'm confused..
+> 
+>  hald-addon-st D 000004E2     0  5826      1         17981 12866 (NOTLB)
+>         f55ebc34 c02c9717 c02c94b8 000004e2 c0529780 00000000 00200202 c0529a64 
+>         00000000 c0529780 c02c9656 00000080 c2a17b20 00000000 b25fc600 003d0c2e 
+>         c042e340 f54d1a70 f54d1b78 f55ea000 f55ebca8 f55ebc54 f55ebc8c c03bdb8a 
+>  Call Trace:
+>   <c02c9717> cdrom_transfer_packet_command+0x80/0xf9  <c02c94b8> cdrom_timer_expiry+0x0/0x5d
+>   <c02c9656> cdrom_start_packet_command+0x141/0x182  <c03bdb8a> wait_for_completion+0x85/0xca
+> ...
+>   <c016051e> do_sys_open+0x4a/0xca  <c01605ba> sys_open+0x1c/0x20
+>   <c0102b67> sysenter_past_esp+0x54/0x75 
+
+Could be waiting on i/o ... (?)
+
+
+>  eject         D 00000101     0 12662      1         12793 17981 (NOTLB)
+>         e5c17e9c c0156dfd 00000000 00000101 00000001 00000000 f308eac4 00000000 
+>         00000003 00000802 f56d5e40 00000003 c2a17b20 00000000 0616c400 003d2850 
+>         c042e340 eb65e030 eb65e138 f5ad970c f5ad9710 eb65e030 f5ad9718 c03be586 
+>  Call Trace:
+>   <c0156dfd> free_pages_and_swap_cache+0x51/0x75  <c03be586> __mutex_lock_slowpath+0x46/0x7f
+>   <c03be6e0> .text.lock.mutex+0x5/0x14  <c0169041> do_open+0x55/0x382
+> ...
+>   <c016051e> do_sys_open+0x4a/0xca  <c01605ba> sys_open+0x1c/0x20
+>   <c0102b67> sysenter_past_esp+0x54/0x75 
+
+Not the BKL. Sounds like bdev->bd_mutex ...
+
+
+>  hald-probe-st D 00000101     0 17981      1         12662  5826 (NOTLB)
+>         dfa3be9c f5761144 00000000 00000101 00000001 00000000 e5ab03f4 00000000 
+>         00000004 00008800 00000000 dd243550 c2a1fb20 00000000 22986700 003d64c8 
+>         dd243550 e4379550 e4379658 f5ad970c f5ad9710 e4379550 f5ad9718 c03be586 
+>  Call Trace:
+>   <c03be586> __mutex_lock_slowpath+0x46/0x7f  <c03be6e0> .text.lock.mutex+0x5/0x14
+>   <c0169041> do_open+0x55/0x382  <c0169405> blkdev_open+0x0/0x5a
+> ...
+>   <c012926e> do_sigaction+0xf1/0x192  <c016051e> do_sys_open+0x4a/0xca
+>   <c01605ba> sys_open+0x1c/0x20  <c0102b67> sysenter_past_esp+0x54/0x75
+
+Hmm, a lot of stuff seems hung on the bdev->bd_mutex of your cdrom device.
+Your cdrom drive becomes unusable after this, right?
+
+Can you reproduce this, or let us know what exactly you did to lead to
+this situation? You could put up your .config somewhere as well, also
+probably give some description of your setup / cdrom hardware.
+
+
+Satyam
