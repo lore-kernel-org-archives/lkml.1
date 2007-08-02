@@ -1,44 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbXHBXGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbXHBXJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760920AbXHBXGq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:06:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbXHBXGi
+	id S1761086AbXHBXJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbXHBXJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:06:38 -0400
-Received: from viefep18-int.chello.at ([213.46.255.22]:15440 "EHLO
-	viefep28-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756290AbXHBXGh (ORCPT
+	Thu, 2 Aug 2007 19:09:19 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:59473 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757134AbXHBXJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:06:37 -0400
-From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: REGRESSION: serial_cs broken by 8250 changes
-Date: Fri, 3 Aug 2007 01:06:32 +0200
-User-Agent: KMail/1.9.6
-Cc: Yinghai Lu <yinghai.lu@sun.com>, Bjorn Helgaas <bjorn.helgaas@hp.com>,
-       linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 19:09:18 -0400
+Date: Fri, 3 Aug 2007 00:09:15 +0100
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: gcc fixed size char array initialization bug - known?
+Message-ID: <20070802230914.GT21089@ftp.linux.org.uk>
+References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange> <46B25B5E.30406@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030046230.6774@poirot.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708030106.33917.daniel.ritz-ml@swissonline.ch>
+In-Reply-To: <Pine.LNX.4.60.0708030046230.6774@poirot.grange>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 18a8bd949d6adb311ea816125ff65050df1f3f6e breaks serial_cs badly
-with an oops, completely killing PCMCIA.
+On Fri, Aug 03, 2007 at 12:51:16AM +0200, Guennadi Liakhovetski wrote:
+> On Fri, 3 Aug 2007, Stefan Richter wrote:
+> 
+> > Guennadi Liakhovetski wrote:
+> > > with
+> > > 
+> > > 	char c[4] = "012345";
+> > > 
+> > > the compiler warns, but actually allocates a 6-byte long array...
+> > 
+> > Off-topic here, but:  sizeof c / sizeof *c == 4.
+> 
+> Don't think it is OT here - kernel depends on gcc. And, what I meant, is, 
+> that gcc places all 7 (sorry, not 6 as I said above) characters in the 
+> .rodata section of the compiled object file. Of course, it doesn't mean, 
+> that c is 7 characters long.
 
-register_console() now calls console->early_setup(). which in case of
-8250.c (the only user anyway) is serial8250_console_early_setup()
-which is __init, calling 8250_early.c:serial8250_find_port_for_earlycon()
-which is __init as well. boom.
+So gcc does that kind of recovery, after having warned you.  Makes sense,
+as long as it's for ordinary variables (and not, say it, struct fields) -
+you get less likely runtime breakage on the undefined behaviour (e.g.
+passing c to string functions).  So gcc has generated some padding between
+the global variables, that's all.
 
-the changelog mentions SERIAL_PORT_DFNS removal which happens to be
-commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26. but this got reverted
-by commit 57d4810ea0d9ca58a7bcc1336607f0cede0a2abf. so i'd suggest to
-just revert the 8250 changes as well.
+It doesn't change the fact that use of c[4] or strlen(c) or strcpy(..., c)
+means nasal demon country for you.
 
-rgds
--daniel
+Now, if gcc does that for similar situation with struct fields, you'd have
+a cause to complain.
