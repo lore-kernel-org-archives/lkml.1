@@ -1,53 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXHBVhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbXHBVlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbXHBVhY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbXHBVhK
+	id S1760573AbXHBVlK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:41:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbXHBVk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:37:10 -0400
-Received: from mail.screens.ru ([213.234.233.54]:53645 "EHLO mail.screens.ru"
+	Thu, 2 Aug 2007 17:40:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42690 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752045AbXHBVhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:37:08 -0400
-Date: Fri, 3 Aug 2007 01:37:30 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH, RESEND] pi-futex: set PF_EXITING without taking ->pi_lock
-Message-ID: <20070802213730.GA554@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754311AbXHBVk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 17:40:57 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm 2/3] Freezer: Use wait queue instead of busy looping (updated)
+Date: Thu, 2 Aug 2007 23:49:43 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200708012328.23939.rjw@sisk.pl> <200708022313.32944.rjw@sisk.pl> <20070802212307.GA521@tv-sign.ru>
+In-Reply-To: <20070802212307.GA521@tv-sign.ru>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Message-Id: <200708022349.44778.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is a bit annoying that do_exit() takes ->pi_lock to set PF_EXITING.
-All we need is to synchronize with lookup_pi_state() which saw this task
-without PF_EXITING under ->pi_lock.
+On Thursday, 2 August 2007 23:23, Oleg Nesterov wrote:
+> On 08/02, Rafael J. Wysocki wrote:
+> >
+> > On Thursday, 2 August 2007 20:40, Oleg Nesterov wrote:
+> > > On 08/02, Rafael J. Wysocki wrote:
+> > > >
+> > > > @@ -171,6 +186,10 @@ static int try_to_freeze_tasks(int freez
+> > > >  
+> > > >  	end_time = jiffies + TIMEOUT;
+> > > >  	do {
+> > > > +		DEFINE_WAIT(wait);
+> > > > +
+> > > > +		add_wait_queue(&refrigerator_waitq, &wait);
+> > > 
+> > > Hmm. In that case I'd sugest to use prepare_to_wait(). This means that
+> > > multiple wakeups from refrigerator() won't do unnecessary work,
+> > 
+> > I'm not sure what you mean.
+> > 
+> > Do you mean that if we are TASK_UNINTERRUPTIBLE, then the first wake up
+> > should remove us from the queue?
+> 
+> No, not because we are TASK_UNINTERRUPTIBLE, but yes, first wake up will
+> remove us because DEFINE_WAIT() uses autoremove_wake_function().
 
-Change do_exit() to use spin_unlock_wait().
+Yes, it does, but the prepare_to_wait() version would only cause current to
+become TASK_UNINTERRUPTIBLE before it sends freezing requests, the other
+differences don't seem to matter.  I'm trying to understand why it would change
+the behavior in the way you have described.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Greetings,
+Rafael
 
---- t/kernel/exit.c~PF_EXIT	2007-06-19 17:09:15.000000000 +0400
-+++ t/kernel/exit.c	2007-07-21 15:34:13.000000000 +0400
-@@ -908,13 +908,13 @@ fastcall NORET_TYPE void do_exit(long co
- 		schedule();
- 	}
- 
-+	tsk->flags |= PF_EXITING;
- 	/*
- 	 * tsk->flags are checked in the futex code to protect against
- 	 * an exiting task cleaning up the robust pi futexes.
- 	 */
--	spin_lock_irq(&tsk->pi_lock);
--	tsk->flags |= PF_EXITING;
--	spin_unlock_irq(&tsk->pi_lock);
-+	smp_mb();
-+	spin_unlock_wait(&tsk->pi_lock);
- 
- 	if (unlikely(in_atomic()))
- 		printk(KERN_INFO "note: %s[%d] exited with preempt_count %d\n",
 
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
