@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbXHBWF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbXHBWGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756355AbXHBWF2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXHBWFT
+	id S1757118AbXHBWGs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbXHBWGh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:05:19 -0400
-Received: from mail.screens.ru ([213.234.233.54]:47180 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752372AbXHBWFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:05:17 -0400
-Date: Fri, 3 Aug 2007 02:05:41 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH -mm 2/3] Freezer: Use wait queue instead of busy looping (updated)
-Message-ID: <20070802220541.GA572@tv-sign.ru>
-References: <200708012328.23939.rjw@sisk.pl> <200708022313.32944.rjw@sisk.pl> <20070802212307.GA521@tv-sign.ru> <200708022349.44778.rjw@sisk.pl>
+	Thu, 2 Aug 2007 18:06:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55032
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753507AbXHBWGg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:06:36 -0400
+Date: Thu, 02 Aug 2007 15:06:36 -0700 (PDT)
+Message-Id: <20070802.150636.77057800.davem@davemloft.net>
+To: mchan@broadcom.com
+Cc: joachim.deguara@amd.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
+       netdev@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [REGRESSION] tg3 dead after s2ram
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1186081829.18322.20.camel@dell>
+References: <200708021115.10812.joachim.deguara@amd.com>
+	<20070802.022317.66176729.davem@davemloft.net>
+	<1186081829.18322.20.camel@dell>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708022349.44778.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/02, Rafael J. Wysocki wrote:
->
-> On Thursday, 2 August 2007 23:23, Oleg Nesterov wrote:
-> > On 08/02, Rafael J. Wysocki wrote:
-> > >
-> > > On Thursday, 2 August 2007 20:40, Oleg Nesterov wrote:
-> > > > On 08/02, Rafael J. Wysocki wrote:
-> > > > >
-> > > > > @@ -171,6 +186,10 @@ static int try_to_freeze_tasks(int freez
-> > > > >  
-> > > > >  	end_time = jiffies + TIMEOUT;
-> > > > >  	do {
-> > > > > +		DEFINE_WAIT(wait);
-> > > > > +
-> > > > > +		add_wait_queue(&refrigerator_waitq, &wait);
-> > > > 
-> > > > Hmm. In that case I'd sugest to use prepare_to_wait(). This means that
-> > > > multiple wakeups from refrigerator() won't do unnecessary work,
-> > > 
-> > > I'm not sure what you mean.
-> > > 
-> > > Do you mean that if we are TASK_UNINTERRUPTIBLE, then the first wake up
-> > > should remove us from the queue?
+From: "Michael Chan" <mchan@broadcom.com>
+Date: Thu, 02 Aug 2007 12:10:29 -0700
+
+> On Thu, 2007-08-02 at 02:23 -0700, David Miller wrote:
+> > From: "Joachim Deguara" <joachim.deguara@amd.com>
+> > Date: Thu, 2 Aug 2007 11:15:05 +0200
 > > 
-> > No, not because we are TASK_UNINTERRUPTIBLE, but yes, first wake up will
-> > remove us because DEFINE_WAIT() uses autoremove_wake_function().
+> > > Seams like even if powersave shuts down the network that the device should 
+> > > still work after a suspend to ram, so who is at fault here?
+> > 
+> > It's a good question.
+> > 
+> > The pci_enable() is done on the PCI device at probe time, at least in
+> > the tg3 driver, and with such a model restoring and saving of PCI
+> > config space should not be dependant upon whether the netdev is
+> > running or not.
+> > 
 > 
-> Yes, it does, but the prepare_to_wait() version would only cause current to
-> become TASK_UNINTERRUPTIBLE before it sends freezing requests, the other
-> differences don't seem to matter.  I'm trying to understand why it would change
-> the behavior in the way you have described.
+> Alternatively, we can also fix it by calling pci_enable_device() again
+> in tg3_open().  But I think it is better to just always save and restore
+> in suspend/resume.  bnx2.c will also require the same fix.
 
-Ugh, this is not the first time when I didn't read your patch carefully, sorry!
+We could do it that way.  But don't you think it's more reliable to
+save and restore around the event we know will be what clobbers the
+PCI config space on us? :-)
 
-I missed that your patch already uses DEFINE_WAIT(), and I was confused by the
-add_wait_queue() which is usually used along with DECLARE_WAITQUEUE().
+Other things might happen between ->resume() and ->open() that could
+modify PCI config space, and we could overwrite such changes if we do
+the PCI restore in ->open().
 
-Oleg.
+One thing that's interesting to me is that, essentially, every PCI
+driver with very few if any exceptions needs to do this sequence on
+suspend and resume.  It would be nice if there was a way to get this
+to happen transparently by default, with some reasonable override
+mechanism, for PCI device drivers.
 
+Anyways, once your patch is tested feel free to send me the bnx2
+one too.
+
+Thanks!
