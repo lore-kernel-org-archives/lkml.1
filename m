@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757953AbXHBPTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757608AbXHBPVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757953AbXHBPTc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 11:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756852AbXHBPTW
+	id S1757608AbXHBPVo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 11:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751106AbXHBPVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 11:19:22 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44936 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757371AbXHBPTV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 11:19:21 -0400
-Date: Thu, 2 Aug 2007 17:19:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Roehricht <ml@felicis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Scheduling the highest priority task
-Message-ID: <20070802151916.GA8688@elte.hu>
-References: <8KLFD-G9-5@gated-at.bofh.it> <46B19CA1.7050204@felicis.org> <20070802114012.GA4067@elte.hu> <46B1F182.3010608@felicis.org> <20070802150350.GA3030@elte.hu> <46B1F4BA.4010107@felicis.org>
+	Thu, 2 Aug 2007 11:21:37 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:57326 "EHLO
+	outbound4-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751031AbXHBPVg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 11:21:36 -0400
+X-BigFish: VP
+X-FB-SS: 0,
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+Date: Thu, 2 Aug 2007 09:23:19 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: ashwillis@programmer.net
+cc: linux-kernel@vger.kernel.org, tiwai@suse.de, rafalbilski@interia.pl
+Subject: Re: CS5530 Alsa driver fails
+Message-ID: <20070802152319.GA25325@cosmic.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070802135700.09319306@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 02 Aug 2007 15:21:23.0982 (UTC)
+ FILETIME=[C97EF2E0:01C7D518]
+X-WSS-ID: 6AAF29FE7CS3968654-01-01
+Content-Type: text/plain;
+ charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B1F4BA.4010107@felicis.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> I wouldn't mind porting VSA2 support to ALSA. I just don't have test
+>> hardware. Do you happen to know any examples of hardware that run VSA2
+>> firmware or is it just a case of a firmware update?
 
-* Martin Roehricht <ml@felicis.org> wrote:
+> Anything from the natsemi era onwards ought to be VSA2
 
-> That's fine with me, that within the same priority-queue any task can 
-> be chosen. But assume two tasks with highly different priorities, such 
-> as 105 and 135 are scheduled on the same processor and one of them is 
-> now to be migrated -- shouldn't be the queue with task P=105 
-> considered first for migration by this code? Both tasks would use 
-> different queues with their own linked lists, right?
+VSA2 is mainly used to support the GX and LX processors, and the 
+CS5535 and CS5536 southbridges.  The southbridges both have 
+native AC97 controllers, supported by the snd-cs5535 driver
+in the kernel and maintained by Jaya Kumar.
 
-yes. What makes you believe that the lower priority one (prio 135) is 
-chosen? [ as i said before, that will only be chosen if all tasks in the 
-higher-priority queue (prio 105) are either already running on a CPU or 
-have recently run so that the cache-hot logic skips them. ]
+These just work, straight out of the box.
 
-	Ingo
+And as an aside, the VSA2 source code is open, so you can peruse
+it and discover its secrets for yourself:
+
+http://dev.laptop.org/git.do?p=geode-vsa;a=tree;hb=HEAD
+
+Jordan
+-- 
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+
