@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbXHBWP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758165AbXHBWRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbXHBWP5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:15:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbXHBWPs
+	id S1758165AbXHBWRS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbXHBWRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:15:48 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47325 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754578AbXHBWPr (ORCPT
+	Thu, 2 Aug 2007 18:17:09 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:27903 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754802AbXHBWRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:15:47 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46B2578A.805@s5r6.in-berlin.de>
-Date: Fri, 03 Aug 2007 00:15:38 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Thu, 2 Aug 2007 18:17:08 -0400
+X-IronPort-AV: i="4.19,215,1183348800"; 
+   d="scan'208"; a="36242791:sNHT24838821"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] debugfs helper for decimal challenged
+Date: Thu, 2 Aug 2007 18:20:57 -0400
+User-Agent: KMail/1.9.5
+Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       "Mike Frysinger" <vapier.adi@gmail.com>
+References: <200708011752.58481.rgetz@blackfin.uclinux.org> <200708012313.51933.rgetz@blackfin.uclinux.org> <20070802210925.GA6199@kroah.com>
+In-Reply-To: <20070802210925.GA6199@kroah.com>
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0708022231160.6774@poirot.grange>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708021820.57341.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 02 Aug 2007 22:17:07.0065 (UTC) FILETIME=[DCBB5E90:01C7D552]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
-> On Thu, 2 Aug 2007, Andi Kleen wrote:
->> 6.7.8.14 of C99:
->> ``
->> An array of character type may be initialized by a character string literal, optionally
->> enclosed in braces. Successive characters of the character string literal (including the
->> terminating null character if there is room or if the array is of unknown size) initialize the
->> elements of the array.
->> ''
->>
->> Note the "if there is room".
->>
->> I believe the rationale is that it still allows to conveniently initialize 
->> non zero terminated strings.
+On Thu 2 Aug 2007 17:09, Greg KH pondered:
+> On Wed, Aug 01, 2007 at 11:13:51PM -0400, Robin Getz wrote:
+> > From: Robin Getz <rgetz@blackfin.uclinux.org>
+> > 
+> > Allows debugfs helper functions to have a hex output, rather than just
+> decimal
+> >  
+> > Signed-off-by:  Robin Getz <rgetz@blackfin.uclinux.org>
+> > ---
+> >  fs/debugfs/file.c |   36 ++++++++++++++++++++++++++++++++++++
+> >  1 file changed, 36 insertions(+)
 > 
-> Right, I accept that it will compile, but I don't understand why "01234" 
-> produces a warning and "0123" doesn't? Don't think C99 says anything about 
+> You forgot to add the prototypes to the debugfs.h file so that people
+> can actually use these functions :)
+> 
+> Care to redo this?
 
-How should gcc know whether you actually wanted that char foo[len] to
-contain a \0 as last element?
+No problem.
 
-Given the respective command line switches, gcc does warn in some cases
-where it is guesswork whether what you typed is what you intended.  For
-example
+> > --- fs/debugfs/file.c	(revision 3529)
+> > +++ fs/debugfs/file.c	(working copy)
+> 
+> Oh, and add another level to the patch so it can be applied with "-p1"
+> by patch.
 
-	if (i = j())
-
-is reason for gcc to warn even if that might exactly be what you wanted.
-However this construct can easily be annotated as
-
-	if ((i = j()))
-
-to show to gcc and to carbon-based bipedals that you indeed wanted this.
-
-Now there is no nice way to make an annotation that says "look, I'm
-going to initialize an array of char with a string literal now, and the
-resulting array will contain a non-zero member as last element, and I
-mean it".  And since there is no such annotation possible, gcc does not
-warn and demand that you annotate the perfectly valid and 100%
-spec-compliant construct char a[4] = "1234";.
--- 
-Stefan Richter
--=====-=-=== =--- ---==
-http://arcgraph.de/sr/
+will do.
