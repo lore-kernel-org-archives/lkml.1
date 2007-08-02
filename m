@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbXHBMFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757369AbXHBMFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757457AbXHBMFm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbXHBMFS
+	id S1757369AbXHBMFz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbXHBMF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:05:18 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33857 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754805AbXHBMFQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:05:16 -0400
-Date: Thu, 2 Aug 2007 13:05:15 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, akpm@linux-foundation.org
-Subject: Re: [RFC PATCH] type safe allocator
-Message-ID: <20070802120515.GL21089@ftp.linux.org.uk>
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> <alpine.LFD.0.999.0708012051100.3582@woody.linux-foundation.org> <E1IGV6D-0000rM-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
+	Thu, 2 Aug 2007 08:05:26 -0400
+Received: from mail.suse.de ([195.135.220.2]:34108 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756990AbXHBMFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 08:05:25 -0400
+Date: Thu, 2 Aug 2007 14:05:24 +0200
+From: Jan Blunck <jblunck@suse.de>
+To: Erez Zadok <ezk@cs.sunysb.edu>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       Josef Sipek <jsipek@fsl.cs.sunysb.edu>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070802120524.GY5101@hasse.suse.de>
+References: <1185997941.18007.30.camel@kleikamp.austin.ibm.com> <200708012206.l71M6ai6028268@agora.fsl.cs.sunysb.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1IGV6D-0000rM-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <200708012206.l71M6ai6028268@agora.fsl.cs.sunysb.edu>
+Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
+	Nuernberg)
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 09:27:57AM +0200, Miklos Szeredi wrote:
-> > Quite frankly, I suspect you would be better off just instrumenting 
-> > "sparse" instead, and matching up the size of the allocation with the type 
-> > it gets assigned to.
+On Wed, Aug 01, Erez Zadok wrote:
+
+> There are three other reasons why Unionfs and our users like to have
+> multiple writable branches:
 > 
-> But that just can't be done, because kmalloc() doesn't tell us the
-> _intent_ of the allocation.
 
-Of course it can be done.  When argument has form sizeof(...), attach
-the information about target of pointer to the resulting void *; have
-? : between pointer to object and that one warn if types do not match,
-? : between void * and that one lose that information, ? : between
-two such warn when types do not match.  On assigment-type operations
-(assignment, passing argument to function, initializer, return) when
-the type of target is pointer to object (and not void *) warn if
-types do not match.  Have typeof lose that information.
+...
 
-Not even hard to implement; just let us finish cleaning the lazy examination
-logics up first (~5-6 patches away).
+>    And yes, it does make our implementation more complex.
 
-FWIW, I object against the original proposal, no matter how you name it.
-Reason: we are introducing more magical constructs that have to be known
-to human reader in order to parse the damn code.
+And error-prone and unflexible wrt to changes. When XIP was introduced,
+unionfs crashed all over this changes. I don't know if this has changed
+yet. Not speaking of other issues like calling back into VFS (stack usage),
+locking problems and so on.
 
-Folks, this is serious.  _We_ might be used to having in effect a C dialect
-with extensions implemented by preprocessor.  That's fine, but for a fresh
-reader it becomes a problem; sure, they can dig in include/linux/*.h and
-to some extent they clearly have to.  However, it doesn't come for free
-and we really ought to keep that in mind - amount of local idioms (and
-anything that doesn't look like a normal function call with normal arguments
-_does_ become an idiom to be learnt before one can fluently RTFS) is a thing
-to watch out for.
+> 3. Some people use Unionfs in the scenario described in point #2 above, as a
+>    poor man's space- and load- distribution system.  Some of our users like
+>    the idea of controlling how much storage space they give each branch, and
+>    how much it might grow, and even how much CPU or I/O load might be placed
+>    on each of the lower filesystems which serve a given branch.  That way
+>    they worry less about the top-layer's space filling up more quickly than
+>    expected.  Now Unionfs was never designed to be a load-balancing f/s (we
+>    have RAIF for that, see <http://www.filesystems.org/project-raif.html>),
+>    but users seems to always find creative ways to [ab]use one's software in
+>    ways one never thought of. :-)
 
-IOW, whenever we add to that pile we ought to look hard at whether it's worth
-the trouble.
+And this has nothing to do with unioning ...
+
+> BTW, does Union Mounts copyup on meta-data changes (e.g., chmod, chgrp,
+> etc.)?
+
+No. But it was proposed during on of the last postings.
