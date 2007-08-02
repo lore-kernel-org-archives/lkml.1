@@ -1,123 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXHBUpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbXHBUsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760727AbXHBUpr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 16:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760369AbXHBUph
+	id S1760438AbXHBUsw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 16:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXHBUsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 16:45:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41858 "EHLO hera.kernel.org"
+	Thu, 2 Aug 2007 16:48:45 -0400
+Received: from mail.erfurth.eu ([213.131.252.67]:53665 "EHLO mail.erfurth.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760359AbXHBUpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 16:45:36 -0400
-Date: Thu, 2 Aug 2007 20:45:31 GMT
-Message-Id: <200708022045.l72KjVTV001857@hera.kernel.org>
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] Additional x86 setup fixes
+	id S1753639AbXHBUso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 16:48:44 -0400
+X-Greylist: delayed 1428 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Aug 2007 16:48:44 EDT
+Message-ID: <46B23DB0.5010702@perlgolf.de>
+Date: Thu, 02 Aug 2007 22:25:20 +0200
+From: Nico Erfurth <masta@perlgolf.de>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070720)
+MIME-Version: 1.0
+To: gregkh@suse.de
+CC: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH 2.6.22] Adding drivers/usb/misc/iowarrior.c to the Makefile
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
+X-Spam_score: -3.9
+X-Spam_score_int: -38
+X-Spam_bar: ---
+X-Spam_report: Spam detection software, running on the system "daemlich.net", has
+	identified this incoming email as possible spam.  The original message
+	has been attached to this so you can view it (if it isn't spam) or label
+	similar future email.  If you have any questions, see
+	the administrator of that system for details.
+	Content preview:  This patch adds the new iowarrior module to the Makefile in
+	drivers/usb. Currently the module isn't build unless another driver from
+	usb/misc is selected. Signed-off-by: Nico Erfurth <masta@perlgolf.de> ---
+	--- linux/drivers/usb/Makefile.orig 2007-08-02 21:54:16.000000000 +0200 +++
+	linux/drivers/usb/Makefile 2007-08-02 22:20:57.000000000 +0200 @@ -38,6 +38,7
+	@@ obj-$(CONFIG_USB_EMI26) += misc/ obj-$(CONFIG_USB_EMI62) += misc/ obj-$(CONFIG_USB_FTDI_ELAN)
+	+= misc/ obj-$(CONFIG_USB_IDMOUSE) += misc/ +obj-$(CONFIG_USB_IOWARRIOR)
+	+= misc/ obj-$(CONFIG_USB_LCD) += misc/ obj-$(CONFIG_USB_LD) += misc/ obj-$(CONFIG_USB_LED)
+	+= misc/ [...] 
+	Content analysis details:   (-3.9 points, 5.0 required)
+	pts rule name              description
+	---- ---------------------- --------------------------------------------------
+	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
+	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
+	0.5 AWL                    AWL: From: address is in the auto white-list
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+This patch adds the new iowarrior module to the Makefile in drivers/usb.
+Currently the module isn't build unless another driver from usb/misc is
+selected.
 
-One more batch of x86setup bug fixes.  Of these, one is a manifest bug
-(EDID query failure), one is a non-manifest bug, and one is
-documentation (Grub < 0.93 buggy.)
+Signed-off-by: Nico Erfurth <masta@perlgolf.de>
+---
+--- linux/drivers/usb/Makefile.orig     2007-08-02 21:54:16.000000000 +0200
++++ linux/drivers/usb/Makefile  2007-08-02 22:20:57.000000000 +0200
+@@ -38,6 +38,7 @@ obj-$(CONFIG_USB_EMI26)               += misc/
+ obj-$(CONFIG_USB_EMI62)                += misc/
+ obj-$(CONFIG_USB_FTDI_ELAN)    += misc/
+ obj-$(CONFIG_USB_IDMOUSE)      += misc/
++obj-$(CONFIG_USB_IOWARRIOR)    += misc/
+ obj-$(CONFIG_USB_LCD)          += misc/
+ obj-$(CONFIG_USB_LD)           += misc/
+ obj-$(CONFIG_USB_LED)          += misc/
 
-Please pull:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-x86setup.git for-linus
-
-Antonino A. Daplas (1):
-      [x86 setup] video setup: Fix VBE DDC reading
-
-H. Peter Anvin (2):
-      [x86 setup] EDD: add missing =m constraint
-      [x86 setup] Document grub < 0.93 as broken
-
- Documentation/Changes       |    1 +
- arch/i386/boot/edd.c        |    2 +-
- arch/i386/boot/video-vesa.c |    2 +-
- 3 files changed, 3 insertions(+), 2 deletions(-)
-
-[Full changelog and diffs follow]
-
-commit c3887cd7253299cac2a6dc5ea792613a5ba5bf6a
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Thu Aug 2 13:50:43 2007 -0400
-
-    [x86 setup] Document grub < 0.93 as broken
-    
-    Grub older than 0.93 are broken when the kernel setup is bigger than
-    8K.  This was fixed in 2002, and 0.93 was the first grub version which
-    fixed this bug.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/Documentation/Changes b/Documentation/Changes
-index 73a8617..cb2b141 100644
---- a/Documentation/Changes
-+++ b/Documentation/Changes
-@@ -45,6 +45,7 @@ o  nfs-utils              1.0.5                   # showmount --version
- o  procps                 3.2.0                   # ps --version
- o  oprofile               0.9                     # oprofiled --version
- o  udev                   081                     # udevinfo -V
-+o  grub                   0.93                    # grub --version
- 
- Kernel compilation
- ==================
-
-commit 463c9a9f7d1f746c251761cef3af5c808394b7e1
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Thu Aug 2 13:45:49 2007 -0400
-
-    [x86 setup] EDD: add missing =m constraint
-    
-    Add a missing =m constraint to the EDD-probing code, that could have
-    caused improper dead-code elimination.
-    
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/arch/i386/boot/edd.c b/arch/i386/boot/edd.c
-index 77d92da..658834d 100644
---- a/arch/i386/boot/edd.c
-+++ b/arch/i386/boot/edd.c
-@@ -127,7 +127,7 @@ static int get_edd_info(u8 devno, struct edd_info *ei)
- 	ax = 0x4800;
- 	dx = devno;
- 	asm("pushfl; int $0x13; popfl"
--	    : "+a" (ax), "+d" (dx)
-+	    : "+a" (ax), "+d" (dx), "=m" (ei->params)
- 	    : "S" (&ei->params)
- 	    : "ebx", "ecx", "edi");
- 
-
-commit 59acc08fd95aefb5430458a08a82b15a4174ed74
-Author: Antonino A. Daplas <adaplas@gmail.com>
-Date:   Thu Aug 2 18:16:46 2007 +0800
-
-    [x86 setup] video setup: Fix VBE DDC reading
-    
-    Add memory operand constraint and write-only modifier to the inline
-    assembly to effect the writing of the EDID block to boot_params.edid_info.
-    
-    Without this, gcc would think the EDID query was dead code and would
-    eliminate it.
-    
-    Signed-off-by: Antonino Daplas <adaplas@gmail.com>
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-
-diff --git a/arch/i386/boot/video-vesa.c b/arch/i386/boot/video-vesa.c
-index e6aa9eb..f1bc71e 100644
---- a/arch/i386/boot/video-vesa.c
-+++ b/arch/i386/boot/video-vesa.c
-@@ -268,7 +268,7 @@ void vesa_store_edid(void)
- 	dx = 0;			/* EDID block number */
- 	di =(size_t) &boot_params.edid_info; /* (ES:)Pointer to block */
- 	asm(INT10
--	    : "+a" (ax), "+b" (bx), "+d" (dx)
-+	    : "+a" (ax), "+b" (bx), "+d" (dx), "=m" (boot_params.edid_info)
- 	    : "c" (cx), "D" (di)
- 	    : "esi");
- #endif /* CONFIG_FIRMWARE_EDID */
