@@ -1,56 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbXHBQIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758680AbXHBQIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbXHBQIG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXHBQH4
+	id S1758680AbXHBQIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756097AbXHBQId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:07:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4246 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754355AbXHBQHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:07:55 -0400
-Date: Thu, 2 Aug 2007 16:07:43 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Knut Petersen <Knut_Petersen@t-online.de>
-Cc: trenn@suse.de, linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       mjg59@srcf.ucam.org, lenb@kernel.org,
-       Adrian =?iso-8859-1?Q?Schr=F6ter?= <adrian@suse.de>,
-       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: 2.6.22 regression: thermal trip points
-Message-ID: <20070802160742.GA4415@ucw.cz>
-References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de> <46B1C0BA.1020004@t-online.de>
-Mime-Version: 1.0
+	Thu, 2 Aug 2007 12:08:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57408 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755102AbXHBQIc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 12:08:32 -0400
+Date: Thu, 2 Aug 2007 18:08:25 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [git pull request] scheduler updates
+Message-ID: <20070802160825.GA18710@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B1C0BA.1020004@t-online.de>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> Well, it would not be the first time to eliminate a regression by
-> reverting a
-> patch after it was accepted previously.
-> >> Sanity checks that trip points only can get lowered (compared to initial
-> >> provided ones) needs to be added.
-> >> Len, Rui: For short-term can some 
-> But I _need_ to raise the unreasonably low passive trip point. We could
-> decide to
-> protect the innocent user by allowing write access to trip_points only
-> after a previous
+Linus, please pull the latest scheduler git tree from:
 
-Actually, you should lower your active trip point, and keep cpu temp
-below 50C.
+   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
 
-> echo "I know what I am doing" >
-> /proc/acpi/thermal_zone/THRM/enable_really_dangerous_options
+these are all low-risk sched.o and task_struct debloating patches:
 
-No... but patch that only permits lowering could be acceptable.
+   text    data     bss     dec     hex filename
+  37033    3066      20   40119    9cb7 sched.o.debug.before
+  34840    3066      20   37926    9426 sched.o.debug.after
 
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+   text    data     bss     dec     hex filename
+  28997    2726      16   31739    7bfb sched.o.before
+  27991    2726      16   30733    780d sched.o.after
+
+1006 bytes of code off in the nondebug case (this also speeds things up) 
+and 2193 bytes of code off in the debug case. The size of sched.o is now 
+1k smaller than it was before CFS on SMP, and within 1k of its old size 
+on UP. (Further reduction is possible, there is another patch that 
+shaves off another 500 bytes but it needs some more testing.)
+
+also a nice smpnice cleanup/simplification from Peter Williams.
+
+built and booted on x86-32 and x86-64, built allnoconfig and 
+allyesconfig, and for good measure it also passed 38 iterations of 'make 
+randconfig; make -j vmlinux' builds without any failure.
+
+Thanks!
+
+	Ingo
+
+------------------->
+
+Ingo Molnar (10):
+      sched: remove cache_hot_time
+      sched: calc_delta_mine(): use fixed limit
+      sched: uninline calc_delta_mine()
+      sched: uninline inc/dec_nr_running()
+      sched: ->task_new cleanup
+      sched: move load-calculation functions
+      sched: add schedstat_set() API
+      sched: use schedstat_set() API
+      sched: reduce debug code
+      sched: reduce task_struct size
+
+Peter Williams (1):
+      sched: tidy up left over smpnice code
+
+ include/linux/sched.h    |   24 +++--
+ include/linux/topology.h |    1 
+ kernel/sched.c           |  193 +++++++++++++++++++++++------------------------
+ kernel/sched_debug.c     |   22 +++--
+ kernel/sched_fair.c      |   21 +----
+ kernel/sched_rt.c        |   14 ---
+ kernel/sched_stats.h     |    2 
+ 7 files changed, 134 insertions(+), 143 deletions(-)
