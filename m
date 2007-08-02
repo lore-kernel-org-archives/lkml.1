@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbXHBRka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759754AbXHBRm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759595AbXHBRka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:40:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756790AbXHBRkU
+	id S1759754AbXHBRm1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758240AbXHBRmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:40:20 -0400
-Received: from mga02.intel.com ([134.134.136.20]:22176 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755338AbXHBRkR convert rfc822-to-8bit (ORCPT
+	Thu, 2 Aug 2007 13:42:20 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:49604 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbXHBRmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:40:17 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,214,1183359600"; 
-   d="scan'208";a="273757004"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 2 Aug 2007 13:42:19 -0400
+Message-ID: <46B2174F.2070705@zytor.com>
+Date: Thu, 02 Aug 2007 13:41:35 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: scripts/mod/file2alias.c cross compile problem
-Date: Thu, 2 Aug 2007 10:40:14 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A02156CC1@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <jewswdvqpt.fsf@sykes.suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: scripts/mod/file2alias.c cross compile problem
-Thread-Index: AcfVI0Nnai62keSmSVSgd7IchnqiEAACE2aQ
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Andreas Schwab" <schwab@suse.de>
-Cc: <trenn@suse.de>, "Adrian Bunk" <bunk@stusta.de>,
-       "Sam Ravnborg" <sam@ravnborg.org>, "Jan Dittmer" <jdi@l4x.org>,
-       "Len Brown" <lenb@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-ia64@vger.kernel.org>
-X-OriginalArrivalTime: 02 Aug 2007 17:40:16.0058 (UTC) FILETIME=[2FCCD9A0:01C7D52C]
+To: bbpetkov@yahoo.de
+CC: Xudong Guan <xudong.guan@gmail.com>, linux-kernel@vger.kernel.org,
+       Chuck Ebbert <cebbert@redhat.com>, michal.k.k.piotrowski@gmail.com
+Subject: Re: 2.6.23-rc1: no setup signature found... SOLVED!
+References: <20070729085059.GA10758@gollum.tnic> <20070729092402.GA2272@xguan-laptop> <20070729103706.GA16780@gollum.tnic> <46AC9B28.6060906@zytor.com> <20070729191528.GA5166@gollum.tnic> <46ADF02F.7010800@zytor.com> <20070730185359.GA4290@gollum.tnic> <46AE4E29.7060402@zytor.com> <20070801043835.GA4676@gollum.tnic> <46B09A57.8000403@zytor.com> <20070802051323.GA4152@gollum.tnic>
+In-Reply-To: <20070802051323.GA4152@gollum.tnic>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>  struct acpi_device_id {
->>>  	__u8 id[ACPI_ID_LEN];
->>> +	__u8 dummy[FILLUP_LEN];
->>>  	kernel_ulong_t driver_data;
->>>  };
->>
->> What's so special about this structure that we get an error?
->
-> It's special because it's a device_id structure, and those structures
-> must come out identical using either the host or the target compiler.
+Borislav Petkov wrote:
+> 
+> Hi,
+> 
+> now this is one of those cases where one tries to shoot a small fly with a
+> nuclear missile. The first assumption that something was wrong with the kernel
+> setup code was wrong and here's how i know:
+> 
+> The problem with my version of grub not hitting the breakpoint 0x90200 made me
+> think that something might be messed up in the grub part of the boot sequence.
+> Thus, i did the qemu simulation again and noticed on the initial boot screen of
+> grub it saying "Grub version 0.91." However, you remember from a different post
+> that the version of grub i have is the latest to be found in debian unstable,
+> 0.97-29, so i thought that something has to be wrong with it and especially with all
+> those grub stages binaries, in my case in /boot/grub, which grub-install setups.
+> Checking their timestamps revealed that the files are from 2004 so i thought,
+> well, these are OLD! :) After refreshing the grub installation and replacing
+> the stages-binaries with the fresh ones, the kernel booted just fine :), here:
+> 
+> [boris@gollum:07:02:07:~:9994)->  uname -a
+> Linux gollum 2.6.22-4fd06960f120e02e9abc802a09f9511c400042a5-12 #12 PREEMPT Thu Jul 26 18:08:34 CEST 2007 i686 GNU/Linux
+> 
+> so i guess the problem was with the ancient parts of a grub installation i had
+> lying around which weren't replaced by the apt-get update process and somehow
+> messed up newer grub versions. Anyway, in the end one still learns a lot while at it.
+> 
+> Thanks for your help.
+> 
 
-That didn't help me understand.  Are device_id structures visible
-in some user-level API?  If so, then I can see why they'd need to
-be the same (but then I'd be confused why this structure uses a
-"kernel_ulong_t" type).
+Very cool.  I actually suspected that, but I wanted to explore all 
+avenues.  I'm glad this can be written off.
 
--Tony
+	-hpa
