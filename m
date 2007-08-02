@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757501AbXHBMj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbXHBMjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757501AbXHBMj3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755341AbXHBMiQ
+	id S1757964AbXHBMjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbXHBMiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:38:16 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:17401 "EHLO
+	Thu, 2 Aug 2007 08:38:17 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:16925 "EHLO
 	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754933AbXHBMiL (ORCPT
+	with ESMTP id S1755232AbXHBMiO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:38:11 -0400
+	Thu, 2 Aug 2007 08:38:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
-        b=B4TK+zK5LP5h/meMpBCjtW7LKCQmO+Mr4YP6D109t3yDI6LUG/J/kS/dkuCLsvYwehjQjRcebcaxMAXF30iSg5kCO5Oc0zMouvGwKqDpkoZqqpeWkKX2vN5GiTcxyYqh1DHG8D57hjfvNZ4wflgok/Lgo4OO5PVEZdCW9p4NiKg=
+        b=Y4PCZ83qQ/KxIdn1UFP/S99man4FAZOCZzfIftJdJ0HGvkIh5bbv9mX5Z4xmblB9jX4kT2aa1PyDNg0IpP8Q7r/SoExYk0PisOD0BVbR3b3V7IIvv6q/OvvpROMhJT2sVRT/ofnBf4Mszvs6oEH188uSvrB/V0eQhnTnI9xoB18=
 Cc: Tejun Heo <htejun@gmail.com>
-Subject: [PATCH 4/5] sysfs: make sysfs_add_one() automatically check for duplicate entry
+Subject: [PATCH 5/5] sysfs: make sysfs_addrm_finish() return void
 In-Reply-To: <11860582821512-git-send-email-htejun@gmail.com>
 X-Mailer: git-send-email
 Date: Thu, 2 Aug 2007 21:38:03 +0900
-Message-Id: <11860582831609-git-send-email-htejun@gmail.com>
+Message-Id: <11860582832964-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Reply-To: Tejun Heo <htejun@gmail.com>
@@ -31,151 +31,78 @@ From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sysfs_add_one() check for duplicate entry and return -EEXIST if
-such entry exists.  This simplifies node addition code a bit.
+With the previous sysfs_add_one() update, there is only one user of
+the return value of sysfs_addrm_finish() and the user can switch to
+testing @sd easily.  Make sysfs_addrm_finish() return void for cleaner
+semantics as suggested by Satyam Sharma.
 
 This patch doesn't introduce any noticeable behavior change.
 
 Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>
 Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 ---
- fs/sysfs/dir.c     |   26 +++++++++++++++++---------
- fs/sysfs/file.c    |   12 +++++-------
- fs/sysfs/symlink.c |    9 +++------
- fs/sysfs/sysfs.h   |    2 +-
- 4 files changed, 26 insertions(+), 23 deletions(-)
+ fs/sysfs/dir.c   |    7 +------
+ fs/sysfs/inode.c |    7 +++++--
+ fs/sysfs/sysfs.h |    2 +-
+ 3 files changed, 7 insertions(+), 9 deletions(-)
 
 diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 8ce3ffb..91934e1 100644
+index 91934e1..3e5acc4 100644
 --- a/fs/sysfs/dir.c
 +++ b/fs/sysfs/dir.c
-@@ -491,9 +491,16 @@ void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
+@@ -609,11 +609,8 @@ static void sysfs_drop_dentry(struct sysfs_dirent *sd)
   *
   *	LOCKING:
-  *	Determined by sysfs_addrm_start().
-+ *
-+ *	RETURNS:
-+ *	0 on success, -EEXIST if entry with the given name already
-+ *	exists.
+  *	All mutexes acquired by sysfs_addrm_start() are released.
+- *
+- *	RETURNS:
+- *	Number of added/removed sysfs_dirents since sysfs_addrm_start().
   */
--void sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
-+int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+-int sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
++void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
  {
-+	if (sysfs_find_dirent(acxt->parent_sd, sd->s_name))
-+		return -EEXIST;
-+
- 	sd->s_parent = sysfs_get(acxt->parent_sd);
- 
- 	if (sysfs_type(sd) == SYSFS_DIR && acxt->parent_inode)
-@@ -502,6 +509,8 @@ void sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- 	acxt->cnt++;
- 
- 	sysfs_link_sibling(sd);
-+
-+	return 0;
+ 	/* release resources acquired by sysfs_addrm_start() */
+ 	mutex_unlock(&sysfs_mutex);
+@@ -639,8 +636,6 @@ int sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
+ 		sysfs_deactivate(sd);
+ 		sysfs_put(sd);
+ 	}
+-
+-	return acxt->cnt;
  }
  
  /**
-@@ -691,6 +700,7 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 	umode_t mode = S_IFDIR| S_IRWXU | S_IRUGO | S_IXUGO;
- 	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
-+	int rc;
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index f05cda9..e74224e 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -201,7 +201,10 @@ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
+ 	if (sd)
+ 		sysfs_remove_one(&acxt, sd);
  
- 	/* allocate */
- 	sd = sysfs_new_dirent(name, mode, SYSFS_DIR);
-@@ -700,17 +710,15 @@ static int create_dir(struct kobject *kobj, struct sysfs_dirent *parent_sd,
- 
- 	/* link in */
- 	sysfs_addrm_start(&acxt, parent_sd);
-+	rc = sysfs_add_one(&acxt, sd);
+-	if (sysfs_addrm_finish(&acxt))
 +	sysfs_addrm_finish(&acxt);
- 
--	if (!sysfs_find_dirent(parent_sd, name))
--		sysfs_add_one(&acxt, sd);
--
--	if (!sysfs_addrm_finish(&acxt)) {
-+	if (rc == 0)
-+		*p_sd = sd;
++
++	if (sd)
+ 		return 0;
+-	return -ENOENT;
 +	else
- 		sysfs_put(sd);
--		return -EEXIST;
--	}
- 
--	*p_sd = sd;
--	return 0;
-+	return rc;
++		return -ENOENT;
  }
- 
- int sysfs_create_subdir(struct kobject *kobj, const char *name,
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index fcd065e..416351a 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -397,6 +397,7 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
- 	umode_t mode = (attr->mode & S_IALLUGO) | S_IFREG;
- 	struct sysfs_addrm_cxt acxt;
- 	struct sysfs_dirent *sd;
-+	int rc;
- 
- 	sd = sysfs_new_dirent(attr->name, mode, type);
- 	if (!sd)
-@@ -404,16 +405,13 @@ int sysfs_add_file(struct sysfs_dirent *dir_sd, const struct attribute *attr,
- 	sd->s_elem.attr.attr = (void *)attr;
- 
- 	sysfs_addrm_start(&acxt, dir_sd);
-+	rc = sysfs_add_one(&acxt, sd);
-+	sysfs_addrm_finish(&acxt);
- 
--	if (!sysfs_find_dirent(dir_sd, attr->name))
--		sysfs_add_one(&acxt, sd);
--
--	if (!sysfs_addrm_finish(&acxt)) {
-+	if (rc)
- 		sysfs_put(sd);
--		return -EEXIST;
--	}
- 
--	return 0;
-+	return rc;
- }
- 
- 
-diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
-index 8f70ca7..f77ad61 100644
---- a/fs/sysfs/symlink.c
-+++ b/fs/sysfs/symlink.c
-@@ -91,14 +91,11 @@ int sysfs_create_link(struct kobject * kobj, struct kobject * target, const char
- 	target_sd = NULL;	/* reference is now owned by the symlink */
- 
- 	sysfs_addrm_start(&acxt, parent_sd);
-+	error = sysfs_add_one(&acxt, sd);
-+	sysfs_addrm_finish(&acxt);
- 
--	if (!sysfs_find_dirent(parent_sd, name))
--		sysfs_add_one(&acxt, sd);
--
--	if (!sysfs_addrm_finish(&acxt)) {
--		error = -EEXIST;
-+	if (error)
- 		goto out_put;
--	}
- 
- 	return 0;
- 
 diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 32b8b64..bb3f0c9 100644
+index bb3f0c9..0436754 100644
 --- a/fs/sysfs/sysfs.h
 +++ b/fs/sysfs/sysfs.h
-@@ -62,7 +62,7 @@ extern struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
- extern void sysfs_put_active_two(struct sysfs_dirent *sd);
- extern void sysfs_addrm_start(struct sysfs_addrm_cxt *acxt,
- 			      struct sysfs_dirent *parent_sd);
--extern void sysfs_add_one(struct sysfs_addrm_cxt *acxt,
-+extern int sysfs_add_one(struct sysfs_addrm_cxt *acxt,
+@@ -66,7 +66,7 @@ extern int sysfs_add_one(struct sysfs_addrm_cxt *acxt,
  			  struct sysfs_dirent *sd);
  extern void sysfs_remove_one(struct sysfs_addrm_cxt *acxt,
  			     struct sysfs_dirent *sd);
+-extern int sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
++extern void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt);
+ 
+ extern struct inode * sysfs_get_inode(struct sysfs_dirent *sd);
+ extern void sysfs_instantiate(struct dentry *dentry, struct inode *inode);
 -- 
 1.5.0.3
 
