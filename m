@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbXHBLk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbXHBLoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754910AbXHBLk3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbXHBLkS
+	id S1755156AbXHBLoK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbXHBLny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:40:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48887 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbXHBLkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:40:16 -0400
-Date: Thu, 2 Aug 2007 13:40:12 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Roehricht <ml@felicis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Scheduling the highest priority task
-Message-ID: <20070802114012.GA4067@elte.hu>
-References: <8KLFD-G9-5@gated-at.bofh.it> <46B19CA1.7050204@felicis.org>
+	Thu, 2 Aug 2007 07:43:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:50131 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752642AbXHBLnx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 07:43:53 -0400
+Date: Thu, 2 Aug 2007 17:26:12 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Jarek Poplawski <jarkao2@o2.pl>
+cc: Sam Ravnborg <sam@ravnborg.org>, Matt Mackall <mpm@selenic.com>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+In-Reply-To: <20070802114042.GB1699@ff.dom.local>
+Message-ID: <alpine.LFD.0.999.0708021721230.8258@enigma.security.iitk.ac.in>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com>
+ <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com>
+ <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org>
+ <20070802093659.GB27748@uranus.ravnborg.org>
+ <alpine.LFD.0.999.0708021547420.8258@enigma.security.iitk.ac.in>
+ <20070802114042.GB1699@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B19CA1.7050204@felicis.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Martin Roehricht <ml@felicis.org> wrote:
 
-> perhaps someone can give me a hint what I should consider to look for in 
-> order to change the ("old" 2.6.21) scheduler such that it schedules the 
-> highest priority task of a given runqueue.
-> Given a multiprocessor system I currently observe that whenever there 
-> are two tasks on one CPU, the lower priority one is migrated to another 
-> CPU. But I don't realize why this happens. From looking at the source 
-> code I thought it should be the highest priority one (lowest bit set in 
-> the runqueue's bitmap) according to
-> 	idx = sched_find_first_bit(array->bitmap);
-> within move_tasks(). The idx value is then used as an index (surprise) 
-> to the linked list of tasks of this particular priority and one task is 
-> picked:
-> 	head = array->queue + idx;
->         curr = head->prev;
->         tmp = list_entry(curr, struct task_struct, run_list);
-> 
-> Can anybody confirm that my observations are correct that the 
-> scheduler picks the lowest priority job of a runqueue for migration? 
-> What needs to be changed in order to pick the highest priority one?
+On Thu, 2 Aug 2007, Jarek Poplawski wrote:
 
-in the SMP migration code, the 'old scheduler' indeed picks the lowest 
-priority one, _except_ if that task is running on another CPU or is too 
-'cache hot':
+> On Thu, Aug 02, 2007 at 04:02:21PM +0530, Satyam Sharma wrote:
+> [...]
+> How often "common" developer has to make such decisions in Kconfig?
+> Probably no more than once per year. So, it's fair to blame anybody
+> for not reading lkml to find if there are some bugs or
+> recommendations before using apparently simple tool? I think there
+> is usually some README for such things (maybe in Documentation/)?
 
-        if (skip_for_load ||
-            !can_migrate_task(tmp, busiest, this_cpu, sd, idle, &pinned)) {
+Whoops, I only said that in humour, probably should've snuck in a
+smiley or two. Definitely not blaming anybody. Apologies to anyone
+who felt offended, sorry, nothing such was intended, I assure.
 
-also, from the priority-queue at 'idx', we pick head->prev, i.e. we 
-process the list in the opposite order as schedule(). (This got changed 
-in CFS to process in the same direction - which is more logical and also 
-yield the most cache-cold tasks for migration.)
-
-i hope this helps.
-
-> Is my assumption wrong? Using printk()s within this code section makes 
-> the system just hang completely quite soon. The schedstats do not 
-> notify me immediately. So I am a bit lost on how to track down or 
-> trace the problem.
-
-yep, printk locks up. You can use my static tracer:
-
-   http://people.redhat.com/mingo/latency-tracing-patches/
-
-add explicit static tracepoints to the scheduler code you want to 
-instrument via trace_special(x,y,z) calls [with parameters that interest 
-you most], and you can read out the trace via:
-
-   http://people.redhat.com/mingo/latency-tracing-patches/trace-it.c
-
-	Ingo
+Satyam
