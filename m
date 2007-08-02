@@ -1,183 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758683AbXHBSGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbXHBSIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758683AbXHBSGl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 14:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXHBSGc
+	id S1758225AbXHBSIA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 14:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754111AbXHBSHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 14:06:32 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3842 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753107AbXHBSGa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 14:06:30 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, Andy Whitcroft <apw@shadowen.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] wait for page writeback when directly reclaiming contiguous areas
-References: <exportbomb.1186077923@pinky>
-InReply-To: <exportbomb.1186077923@pinky>
-Message-ID: <7bdbf266c3f68dc57a9cf7469c2652a5@pinky>
-Date: Thu, 02 Aug 2007 19:18:43 +0100
+	Thu, 2 Aug 2007 14:07:50 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:37951 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753749AbXHBSHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 14:07:49 -0400
+Date: Thu, 2 Aug 2007 20:09:03 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Andreas Schwab <schwab@suse.de>, trenn@suse.de,
+       Adrian Bunk <bunk@stusta.de>, Jan Dittmer <jdi@l4x.org>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: scripts/mod/file2alias.c cross compile problem
+Message-ID: <20070802180903.GD2431@uranus.ravnborg.org>
+References: <jewswdvqpt.fsf@sykes.suse.de> <617E1C2C70743745A92448908E030B2A02156CC1@scsmsx411.amr.corp.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <617E1C2C70743745A92448908E030B2A02156CC1@scsmsx411.amr.corp.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 02, 2007 at 10:40:14AM -0700, Luck, Tony wrote:
+> >>>  struct acpi_device_id {
+> >>>  	__u8 id[ACPI_ID_LEN];
+> >>> +	__u8 dummy[FILLUP_LEN];
+> >>>  	kernel_ulong_t driver_data;
+> >>>  };
+> >>
+> >> What's so special about this structure that we get an error?
+> >
+> > It's special because it's a device_id structure, and those structures
+> > must come out identical using either the host or the target compiler.
+> 
+> That didn't help me understand.  Are device_id structures visible
+> in some user-level API?  If so, then I can see why they'd need to
+> be the same (but then I'd be confused why this structure uses a
+> "kernel_ulong_t" type).
 
-Lumpy reclaim works by selecting a lead page from the LRU list and
-then selecting pages for reclaim from the order-aligned area of
-pages. In the situation were all pages in that region are inactive
-and not referenced by any process over time, it works well.
+I second this. For anything visible in userspace from
+include/* we require usage of the kernel specific
+__u8, __u16, __u32, __u64 typedefs but for device_id we accept
+kernel_ulong_t which result in the following crap in
+file2alias.c:
 
-In the situation where there is even light load on the system, the
-pages may not free quickly. Out of a area of 1024 pages, maybe only
-950 of them are freed when the allocation attempt occurs because
-lumpy reclaim returned early.  This patch alters the behaviour of
-direct reclaim for large contiguous blocks.
+/* We use the ELF typedefs for kernel_ulong_t but bite the bullet and
+ * use either stdint.h or inttypes.h for the rest. */
+#if KERNEL_ELFCLASS == ELFCLASS32
+typedef Elf32_Addr      kernel_ulong_t;
+#define BITS_PER_LONG 32
+#else
+typedef Elf64_Addr      kernel_ulong_t;
+#define BITS_PER_LONG 64
+#endif
 
-The first attempt to call shrink_page_list() is asynchronous but
-if it fails, the pages are submitted a second time and the calling
-process waits for the IO to complete. This may stall allocators
-waiting for contiguous memory but that should be expected behaviour
-for high-order users. It is preferable behaviour to potentially
-queueing unnecessary areas for IO. Note that kswapd will not stall
-in this fashion.
+And we ought to have __u64 available.
+See for example types.h from asm-i386:
+#if defined(__GNUC__) && !defined(__STRICT_ANSI__)
+typedef __signed__ long long __s64;
+typedef unsigned long long __u64;
+#endif
 
-Changelog:
 
-Changes in V3:
- - remove the typdedef from the enum pageout_io.
- - if we cannot enter fs do not wait for io completion
- - fix spelling in commentary
-
-Changes in V2:
- - remove retry loop
- - fix up active accounting (count deactivate events correctly)
- - use our own sync/async flag type
-
-[apw@shadowen.org: update to version 2]
-[apw@shadowen.org: update to version 3]
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
- mm/vmscan.c |   60 +++++++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 52 insertions(+), 8 deletions(-)
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 99ec7fa..b1e9291 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -271,6 +271,12 @@ static void handle_write_error(struct address_space *mapping,
- 	unlock_page(page);
- }
- 
-+/* Request for sync pageout. */
-+enum pageout_io {
-+	PAGEOUT_IO_ASYNC,
-+	PAGEOUT_IO_SYNC,
-+};
-+
- /* possible outcome of pageout() */
- typedef enum {
- 	/* failed to write page out, page is locked */
-@@ -287,7 +293,8 @@ typedef enum {
-  * pageout is called by shrink_page_list() for each dirty page.
-  * Calls ->writepage().
-  */
--static pageout_t pageout(struct page *page, struct address_space *mapping)
-+static pageout_t pageout(struct page *page, struct address_space *mapping,
-+						enum pageout_io sync_writeback)
- {
- 	/*
- 	 * If the page is dirty, only perform writeback if that write
-@@ -346,6 +353,15 @@ static pageout_t pageout(struct page *page, struct address_space *mapping)
- 			ClearPageReclaim(page);
- 			return PAGE_ACTIVATE;
- 		}
-+
-+		/*
-+		 * Wait on writeback if requested to. This happens when
-+		 * direct reclaiming a large contiguous area and the
-+		 * first attempt to free a range of pages fails.
-+		 */
-+		if (PageWriteback(page) && sync_writeback == PAGEOUT_IO_SYNC)
-+			wait_on_page_writeback(page);
-+
- 		if (!PageWriteback(page)) {
- 			/* synchronous write or broken a_ops? */
- 			ClearPageReclaim(page);
-@@ -423,7 +439,8 @@ cannot_free:
-  * shrink_page_list() returns the number of reclaimed pages
-  */
- static unsigned long shrink_page_list(struct list_head *page_list,
--					struct scan_control *sc)
-+					struct scan_control *sc,
-+					enum pageout_io sync_writeback)
- {
- 	LIST_HEAD(ret_pages);
- 	struct pagevec freed_pvec;
-@@ -458,8 +475,15 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		if (page_mapped(page) || PageSwapCache(page))
- 			sc->nr_scanned++;
- 
--		if (PageWriteback(page))
--			goto keep_locked;
-+		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
-+			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
-+
-+		if (PageWriteback(page)) {
-+			if (sync_writeback == PAGEOUT_IO_SYNC && may_enter_fs)
-+				wait_on_page_writeback(page);
-+			else
-+				goto keep_locked;
-+		}
- 
- 		referenced = page_referenced(page, 1);
- 		/* In active use or really unfreeable?  Activate it. */
-@@ -478,8 +502,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- #endif /* CONFIG_SWAP */
- 
- 		mapping = page_mapping(page);
--		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
--			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
- 
- 		/*
- 		 * The page is mapped into the page tables of one or more
-@@ -505,7 +527,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 				goto keep_locked;
- 
- 			/* Page is dirty, try to write it out here */
--			switch(pageout(page, mapping)) {
-+			switch (pageout(page, mapping, sync_writeback)) {
- 			case PAGE_KEEP:
- 				goto keep_locked;
- 			case PAGE_ACTIVATE:
-@@ -786,7 +808,29 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
- 		spin_unlock_irq(&zone->lru_lock);
- 
- 		nr_scanned += nr_scan;
--		nr_freed = shrink_page_list(&page_list, sc);
-+		nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
-+
-+		/*
-+		 * If we are direct reclaiming for contiguous pages and we do
-+		 * not reclaim everything in the list, try again and wait
-+		 * for IO to complete. This will stall high-order allocations
-+		 * but that should be acceptable to the caller
-+		 */
-+		if (nr_freed < nr_taken && !current_is_kswapd() &&
-+					sc->order > PAGE_ALLOC_COSTLY_ORDER) {
-+			congestion_wait(WRITE, HZ/10);
-+
-+			/*
-+			 * The attempt at page out may have made some
-+			 * of the pages active, mark them inactive again.
-+			 */
-+			nr_active = clear_active_flags(&page_list);
-+			count_vm_events(PGDEACTIVATE, nr_active);
-+
-+			nr_freed += shrink_page_list(&page_list, sc,
-+							PAGEOUT_IO_SYNC);
-+		}
-+
- 		nr_reclaimed += nr_freed;
- 		local_irq_disable();
- 		if (current_is_kswapd()) {
+	Sam
