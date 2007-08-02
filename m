@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbXHBDn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbXHBD5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbXHBDn7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 23:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754306AbXHBDnw
+	id S1755952AbXHBD5O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 23:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXHBD5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 23:43:52 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58896 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754244AbXHBDnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 23:43:51 -0400
-From: Neil Brown <neilb@suse.de>
-To: "John Stoffel" <john@stoffel.org>
-Date: Thu, 2 Aug 2007 13:43:34 +1000
+	Wed, 1 Aug 2007 23:57:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56410 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753033AbXHBD5D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 23:57:03 -0400
+Date: Wed, 1 Aug 2007 20:56:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org
+Subject: Re: [RFC PATCH] type safe allocator
+In-Reply-To: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+Message-ID: <alpine.LFD.0.999.0708012051100.3582@woody.linux-foundation.org>
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18097.21222.991285.306202@notabene.brown>
-Cc: Tejun Heo <teheo@suse.de>, Avi Kivity <avi@argo.co.il>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 000 of 35] Refactor block layer to improve support for
- stacked devices.
-In-Reply-To: message from John Stoffel on Wednesday August 1
-References: <20070731112539.22428.patches@notabene>
-	<46AF5534.3010902@argo.co.il>
-	<46B09A92.9090409@suse.de>
-	<18096.44099.826200.638485@stoffel.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday August 1, john@stoffel.org wrote:
+
+
+On Wed, 1 Aug 2007, Miklos Szeredi wrote:
+>
+> I wonder why we don't have type safe object allocators a-la new() in
+> C++ or g_new() in glib?
 > 
-> In any case, why does something so complicated need to be a macro, why
-> not a function instead?
+>   fooptr = k_new(struct foo, GFP_KERNEL);
 
-There needs to be a macro so you can put a statement after it to be
-executed "for each ..."
-But you are right that it doesn't all need to be in the one macro.
+I would object to this if only because of the horrible name.
 
-The idea of something like
+C++ is not a good language to take ideas from, and "new()" was not it's 
+best feature to begin with. "k_new()" is just disgusting.
 
-#define bio_for_each_segment_offset(bv, bio, _i, offset, _size) \
-	for (bio_iterator_init(bio, &_i, &bv, offset, _size);	\
-	     i.remaining > 0 ;					\
-	     bio_next(bio, &_i, &bv))
-	
-with bio_iterator_init and bio_next being (inline?) functions is a
-very good one.  I'll see what works.
+I'd call it something like "alloc_struct()" instead, which tells you 
+exactly what it's all about. Especially since we try to avoid typedefs in 
+the kernel, and as a result, it's basically almost always a struct thing.
 
-Thanks,
-NeilBrown
+That said, I'm not at all sure it's worth it. Especially not with all the 
+various variations on a theme (zeroed, arrays, etc etc).
+
+Quite frankly, I suspect you would be better off just instrumenting 
+"sparse" instead, and matching up the size of the allocation with the type 
+it gets assigned to.
+
+		Linus
