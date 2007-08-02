@@ -1,96 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755376AbXHBF1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753373AbXHBFdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755376AbXHBF1z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 01:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbXHBF1o
+	id S1753373AbXHBFdS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 01:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751267AbXHBFdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 01:27:44 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:34162 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752070AbXHBF1m (ORCPT
+	Thu, 2 Aug 2007 01:33:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47516 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751071AbXHBFdI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 01:27:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=H93hpKVGJo5c263CUuuePXnmIx/8d4BXPA+BC5xl6Ue9BnRA9ABbJ54NaSsoUW9fR3hI6hOOESGL3nnThdqa9PdOmI9s+aGgoNKiIWM/MO7T6Y42OPU9ZEWhSdNovUCFvAX1xVuuzO3MzhPJpfTlH/8OOIzmCKRrDUU4mq+mN+0=
-Message-ID: <46B16B46.4020108@gmail.com>
-Date: Thu, 02 Aug 2007 14:27:34 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Thu, 2 Aug 2007 01:33:08 -0400
+Date: Wed, 1 Aug 2007 22:33:07 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] type safe allocator
+In-Reply-To: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0708012223520.3265@schroedinger.engr.sgi.com>
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: jeff@garzik.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, James.Bottomley@steeleye.com,
-       edwintorok@gmail.com, axboe@kernel.dk, linux-scsi@vger.kernel.org
-Subject: Re: [patch 3/4] Enable link power management for ata drivers
-References: <20070705194909.337398431@intel.com>	<20070705130530.5873afeb.kristen.c.accardi@intel.com>	<46B043FB.5090005@gmail.com> <20070801141154.3246a20d.kristen.c.accardi@intel.com>
-In-Reply-To: <20070801141154.3246a20d.kristen.c.accardi@intel.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kristen Carlson Accardi wrote:
-> On Wed, 01 Aug 2007 17:27:39 +0900
-> Tejun Heo <htejun@gmail.com> wrote:
+On Wed, 1 Aug 2007, Miklos Szeredi wrote:
+
+> I wonder why we don't have type safe object allocators a-la new() in
+> C++ or g_new() in glib?
 > 
->> Kristen Carlson Accardi wrote:
-> <snippy>
->> Is it safe to use ALPM on a device which only claims to support DIPM?
+>   fooptr = k_new(struct foo, GFP_KERNEL);
 > 
-> Yes - I doubled checked this with the AHCI people - and of course you
-> have Edvin's testing to prove it does fine.
+> is nicer and more descriptive than
+> 
+>   fooptr = kmalloc(sizeof(*fooptr), GFP_KERNEL);
+> 
+> and more safe than
+> 
+>   fooptr = kmalloc(sizeof(struct foo), GFP_KERNEL);
+> 
+> And we have zillions of both variants.
 
-Alright.
+Hmmm yes I think that would be good. However, please clean up the naming.
+The variant on zeroing on zering get to be too much.
 
-> As far as moving the enable/disable_pm calls to EH - can you take
-> a look at the other patch I sent which implements the shost_attrs
-> to see if I still need to do this?  I really don't know much about
-> the EH stuff - can you explain why we need to use it to set the
-> link pm?
+> + * k_new - allocate given type object
+> + * @type: the type of the object to allocate
+> + * @flags: the type of memory to allocate.
+> + */
+> +#define k_new(type, flags) ((type *) kmalloc(sizeof(type), flags))
 
-Unfortunately, yes, you still need to.  Only two threads of execution
-(one is not a real thread tho) are allowed to access a libata port -
-command execution and EH, and the two are mutually exclusive.  Invoking
-something from the outside is done by doing the following.
+kalloc?
 
-1. recording what to do in ehi->[dev_]action, ap->pflags or dev->flags
+> +
+> + * k_new0 - allocate given type object, zero out allocated space
+> + * @type: the type of the object to allocate
+> + * @flags: the type of memory to allocate.
+> + */
+> +#define k_new0(type, flags) ((type *) kzalloc(sizeof(type), flags))
 
-2. schedule EH by calling either ata_port_schedule_eh(),
-ata_port_abort() or ata_port_freeze().  The first one waits for the
-currently in-flight commands to finish before entering EH.  The second
-one aborts all in-flight commands and enters EH.  The third one aborts
-all commands and freezes the port and enters EH.
+A new notation for zeroing! This is equivalent to
 
-3. wait for EH to finish by calling ata_port_wait_eh().
+kalloc(type, flags | __GFP_ZERO)
 
-This achieves correct synchronization and other EH functionalities can
-be easily used.  e.g. Resuming requires resetting the bus and
-revalidating the attached devices, so the resume handler can just
-request such actions together.  For link PS, I think it would probably
-be a good idea to revalidate after mode change to make sure the device
-works in the new mode.  If revalidation fails, it can reset and back off.
+maybe define new GFP_xxx instead?
 
-EH is done in three large steps - autopsy, report and recover.  To
-implement an action, the 'recover' stage needs to be extended.  It
-basically comes down to hooking the enable/disable functions into the
-right places in ata_eh_recover().  Unconditionally disabling link PS
-prior to reset and enabling it back again before revalidation would be a
-pretty good choice, but haven't thought about it too hard so take it
-with a grain of salt.
+> +/**
+> + * k_new_array - allocate array of given type object
+> + * @type: the type of the object to allocate
+> + * @len: the length of the array
+> + * @flags: the type of memory to allocate.
+> + */
+> +#define k_new_array(type, len, flags) \
+> +	((type *) kmalloc(sizeof(type) * (len), flags))
 
-I'm not sure whether it would be necessary now but it would be nice to
-have a proper recovery logic later.  e.g. If more than certain number of
-ATA bus occurs in certain mount of time, disable link PS.  This kind of
-logic is used during autopsy to determine whether stepping down
-link/transfer speed is needed.  Please take a look at
-ata_eh_speed_down().  It might be enough to piggy back on
-ata_eh_speed_down() tho such that the first step of speeding down is
-turning off link PS.
+We already have array initializations using kcalloc.
 
-Hope the brief introduction to libata-EH-hacking helps.
+> +#define k_new0_array(type, len, flags) \
+> +	((type *) kzalloc(sizeof(type) * (len), flags))
 
--- 
-tejun
+Same as before.
+
+
+I do not see any _node variants?
+
+How about the following minimal set
+
+
+kmalloc(size, flags)		kalloc(struct, flags)
+kmalloc_node(size, flags, node)	kalloc_node(struct, flags, node)
+
+
+The array variants translate into kmalloc anyways and are used
+in an inconsistent manner. Sometime this way sometimes the other. Leave 
+them?
+
+	kcalloc(n, size, flags) == kmalloc(size, flags)
+
+Then kzalloc is equivalent to adding the __GFP_ZERO flag. Thus
+
+	kzalloc(size, flags) == kmalloc(size, flags | __GFPZERO)
+
+If you define a new flag like GFP_ZERO_ATOMIC and GFP_ZERO_KERNEL you 
+could do
+
+	kalloc(struct, GFP_ZERO_KERNEL)
+
+instead of adding new variants?
+
