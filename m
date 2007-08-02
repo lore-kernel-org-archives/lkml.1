@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbXHBDbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757099AbXHBDcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbXHBDbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 23:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbXHBDbd
+	id S1757099AbXHBDcf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 23:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754244AbXHBDc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 23:31:33 -0400
-Received: from ns1.suse.de ([195.135.220.2]:49461 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752953AbXHBDbc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 23:31:32 -0400
-From: Neil Brown <neilb@suse.de>
-To: Tejun Heo <htejun@gmail.com>
-Date: Thu, 2 Aug 2007 13:31:16 +1000
+	Wed, 1 Aug 2007 23:32:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56405 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753952AbXHBDc0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 23:32:26 -0400
+Date: Thu, 2 Aug 2007 09:14:10 +0530 (IST)
+From: Satyam Sharma <satyam@infradead.org>
+X-X-Sender: satyam@enigma.security.iitk.ac.in
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@sw.ru>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Matthew Wilcox <matthew@wil.cx>, Kyle McMartin <kyle@parisc-linux.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix WARN_ON() on bitfield ops for all other archs
+In-Reply-To: <20070801221838.GA9010@osiris.ibm.com>
+Message-ID: <alpine.LFD.0.999.0708020900010.8258@enigma.security.iitk.ac.in>
+References: <20070801221838.GA9010@osiris.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18097.20484.698570.267166@notabene.brown>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 025 of 35] Treat rq->hard_nr_sectors as setting an overriding limit in the size of the request
-In-Reply-To: message from Tejun Heo on Thursday August 2
-References: <20070731112539.22428.patches@notabene>
-	<1070731021759.25484@suse.de>
-	<20070801174418.GI13674@htj.dyndns.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday August 2, htejun@gmail.com wrote:
+
+
+On Thu, 2 Aug 2007, Heiko Carstens wrote:
+
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> This is pretty confusing.  In all other places, bi_size -> #sector
-> conversion is done by rounding down but only in blk_rq_bio_prep() it's
-> being rounded up.
-> 
-> Is my following reasoning correct?
-> 
-> It was okay till now because unaligned requests don't get merged and
-> also haven't done partial completions (end_that_request_first with
-> partial count)?  So till now, hard_nr_sectors and nr_sectors didn't
-> really matter for unaligned requests but now it matters because it's
-> considered while iterating over bvecs in rq.
+> Fixes WARN_ON() on bitfiels ops for all architectures that have
+> been left out in 8d4fbcfbe0a4bfc73e7f0297c59ae514e1f1436f.
 
-Yes, that reasoning matches mine.
+Well, considering ...
 
-> 
-> If so, I think the correct thing to do would be changing bio_sectors()
-> to round up first or let block layer measure transfer in bytes not in
-> sectors.  I don't think everyone would agree with the latter tho.  I
-> (tentatively) think it would be better to represent length in bytes
-> tho.  A lot of requests which aren't aligned to 512 bytes pass through
-> the block layer and the mismatch can result in subtle bugs.
+On Tue, 31 Jul 2007, Alexey Dobriyan wrote:
+> But I question the rationale of that commit:
+> [...]
+> I think that second case is more clear and immediately understandable.
 
-I suspect that having a byte count in 'struct request' would make
-sense too.  However I would rather avoid making that change myself - I
-think it would require reading and understanding a lot more code....
+and
 
-I cannot see anything that would go wrong with rounding up bio_sectors
-unconditionally, so I think I will take that approach for this patch
-series.
+On Tue, 31 Jul 2007, Linus Torvalds wrote:
+> For all I know, the proper solution is
+> to just revert the whole mess, and *not* make WARN_ON() return a value
+> at all, since that seems to be the fundamental mistake here.
 
-Thanks.
+... I think it makes sense to stop returning the value from WARN_ON()
+in the first place. There's only 5 places in the tree that uses its
+return value anyway, and one of them ( net/xfrm/xfrm_policy.c:681 )
+is a good example of why it's less readable that way.
 
-NeilBrown
+
+Satyam
