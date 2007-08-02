@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbXHBXLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbXHBXMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761549AbXHBXLr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXHBXLj
+	id S1761702AbXHBXMV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758299AbXHBXML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:11:39 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:52012 "EHLO havoc.gtf.org"
+	Thu, 2 Aug 2007 19:12:11 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:35329 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756185AbXHBXLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:11:38 -0400
-Date: Thu, 2 Aug 2007 19:11:37 -0400
+	id S1756185AbXHBXMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 19:12:10 -0400
+Date: Thu, 2 Aug 2007 19:12:09 -0400
 From: Jeff Garzik <jeff@garzik.org>
 To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
        LKML <linux-kernel@vger.kernel.org>, werner@titro.de
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] hysdn: convert to PCI hotplug API
-Message-ID: <20070802231137.GA20071@havoc.gtf.org>
-References: <20070724074653.GA14987@havoc.gtf.org>
+Subject: [PATCH 2/2] hysdn: fix SMP brokenness
+Message-ID: <20070802231209.GB20071@havoc.gtf.org>
+References: <20070724074653.GA14987@havoc.gtf.org> <20070802231137.GA20071@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070724074653.GA14987@havoc.gtf.org>
+In-Reply-To: <20070802231137.GA20071@havoc.gtf.org>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -29,342 +29,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 This patch has been committed to the 'hysdn' branch of
 git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-commit b025c86cba3bb9fd7218ce6e8a60f0c65b414d0c
+commit 4ef2632c0fdf4598cf6a417f39514257ecbb2ba2
 Author: Jeff Garzik <jeff@garzik.org>
-Date:   Thu Aug 2 18:51:14 2007 -0400
+Date:   Thu Aug 2 19:08:10 2007 -0400
 
-    [ISDN] hysdn: convert to PCI hotplug API
+    [ISDN] hysdn: fix SMP brokenness
     
     Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
- drivers/isdn/hysdn/hysdn_init.c |  274 ++++++++++++++++++----------------------
- 1 file changed, 130 insertions(+), 144 deletions(-)
+ drivers/isdn/hysdn/Kconfig     |    2 +-
+ drivers/isdn/hysdn/boardergo.c |   14 ++++++++------
+ 2 files changed, 9 insertions(+), 7 deletions(-)
 
-b025c86cba3bb9fd7218ce6e8a60f0c65b414d0c
-diff --git a/drivers/isdn/hysdn/hysdn_init.c b/drivers/isdn/hysdn/hysdn_init.c
-index 9e01748..b7cc5c2 100644
---- a/drivers/isdn/hysdn/hysdn_init.c
-+++ b/drivers/isdn/hysdn/hysdn_init.c
-@@ -20,10 +20,15 @@
- #include "hysdn_defs.h"
+4ef2632c0fdf4598cf6a417f39514257ecbb2ba2
+diff --git a/drivers/isdn/hysdn/Kconfig b/drivers/isdn/hysdn/Kconfig
+index c6d8a70..c9e4231 100644
+--- a/drivers/isdn/hysdn/Kconfig
++++ b/drivers/isdn/hysdn/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ config HYSDN
+ 	tristate "Hypercope HYSDN cards (Champ, Ergo, Metro) support (module only)"
+-	depends on m && PROC_FS && PCI && BROKEN_ON_SMP
++	depends on m && PROC_FS && PCI
+ 	help
+ 	  Say Y here if you have one of Hypercope's active PCI ISDN cards
+ 	  Champ, Ergo and Metro. You will then get a module called hysdn.
+diff --git a/drivers/isdn/hysdn/boardergo.c b/drivers/isdn/hysdn/boardergo.c
+index 6cdbad3..7145d37 100644
+--- a/drivers/isdn/hysdn/boardergo.c
++++ b/drivers/isdn/hysdn/boardergo.c
+@@ -90,7 +90,12 @@ ergo_irq_bh(struct work_struct *ugli_api)
+ 	card->hw_lock = 1;	/* we now lock the hardware */
  
- static struct pci_device_id hysdn_pci_tbl[] = {
--	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_METRO},
--	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_CHAMP2},
--	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_ERGO},
--	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_OLD_ERGO},
-+	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
-+	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_METRO, 0, 0, BD_METRO },
-+	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
-+	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_CHAMP2, 0, 0, BD_CHAMP2 },
-+	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
-+	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_ERGO, 0, 0, BD_ERGO },
-+	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
-+	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_OLD_ERGO, 0, 0, BD_ERGO },
+ 	do {
+-		sti();		/* reenable other ints */
++		spin_unlock_irqrestore(&card->hysdn_lock, flags);
 +
- 	{ }				/* Terminating entry */
- };
- MODULE_DEVICE_TABLE(pci, hysdn_pci_tbl);
-@@ -34,128 +39,7 @@ MODULE_LICENSE("GPL");
- static char *hysdn_init_revision = "$Revision: 1.6.6.6 $";
- static int cardmax;		/* number of found cards */
- hysdn_card *card_root = NULL;	/* pointer to first card */
--
--/**********************************************/
--/* table assigning PCI-sub ids to board types */
--/* the last entry contains all 0              */
--/**********************************************/
--static struct {
--	unsigned short subid;		/* PCI sub id */
--	unsigned char cardtyp;		/* card type assigned */
--} pci_subid_map[] = {
--
--	{
--		PCI_SUBDEVICE_ID_HYPERCOPE_METRO, BD_METRO
--	},
--	{
--		PCI_SUBDEVICE_ID_HYPERCOPE_CHAMP2, BD_CHAMP2
--	},
--	{
--		PCI_SUBDEVICE_ID_HYPERCOPE_ERGO, BD_ERGO
--	},
--	{
--		PCI_SUBDEVICE_ID_HYPERCOPE_OLD_ERGO, BD_ERGO
--	},
--	{
--		0, 0
--	}			/* terminating entry */
--};
--
--
--/*********************************************************************/
--/* search_cards searches for available cards in the pci config data. */
--/* If a card is found, the card structure is allocated and the cards */
--/* ressources are reserved. cardmax is incremented.                  */
--/*********************************************************************/
--static void
--search_cards(void)
--{
--	struct pci_dev *akt_pcidev = NULL;
--	hysdn_card *card, *card_last;
--	int i;
--
--	card_root = NULL;
--	card_last = NULL;
--	while ((akt_pcidev = pci_find_device(PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
--					     akt_pcidev)) != NULL) {
--		if (pci_enable_device(akt_pcidev))
--			continue;
--
--		if (!(card = kzalloc(sizeof(hysdn_card), GFP_KERNEL))) {
--			printk(KERN_ERR "HYSDN: unable to alloc device mem \n");
--			return;
--		}
--		card->myid = cardmax;	/* set own id */
--		card->bus = akt_pcidev->bus->number;
--		card->devfn = akt_pcidev->devfn;	/* slot + function */
--		card->subsysid = akt_pcidev->subsystem_device;
--		card->irq = akt_pcidev->irq;
--		card->iobase = pci_resource_start(akt_pcidev, PCI_REG_PLX_IO_BASE);
--		card->plxbase = pci_resource_start(akt_pcidev, PCI_REG_PLX_MEM_BASE);
--		card->membase = pci_resource_start(akt_pcidev, PCI_REG_MEMORY_BASE);
--		card->brdtype = BD_NONE;	/* unknown */
--		card->debug_flags = DEF_DEB_FLAGS;	/* set default debug */
--		card->faxchans = 0;	/* default no fax channels */
--		card->bchans = 2;	/* and 2 b-channels */
--		for (i = 0; pci_subid_map[i].subid; i++)
--			if (pci_subid_map[i].subid == card->subsysid) {
--				card->brdtype = pci_subid_map[i].cardtyp;
--				break;
--			}
--		if (card->brdtype != BD_NONE) {
--			if (ergo_inithardware(card)) {
--				printk(KERN_WARNING "HYSDN: card at io 0x%04x already in use\n", card->iobase);
--				kfree(card);
--				continue;
--			}
--		} else {
--			printk(KERN_WARNING "HYSDN: unknown card id 0x%04x\n", card->subsysid);
--			kfree(card);	/* release mem */
--			continue;
--		}
--		cardmax++;
--		card->next = NULL;	/*end of chain */
--		if (card_last)
--			card_last->next = card;		/* pointer to next card */
--		else
--			card_root = card;
--		card_last = card;	/* new chain end */
--	}			/* device found */
--}				/* search_cards */
--
--/************************************************************************************/
--/* free_resources frees the acquired PCI resources and returns the allocated memory */
--/************************************************************************************/
--static void
--free_resources(void)
--{
--	hysdn_card *card;
--
--	while (card_root) {
--		card = card_root;
--		if (card->releasehardware)
--			card->releasehardware(card);	/* free all hardware resources */
--		card_root = card_root->next;	/* remove card from chain */
--		kfree(card);	/* return mem */
--
--	}			/* while card_root */
--}				/* free_resources */
--
--/**************************************************************************/
--/* stop_cards disables (hardware resets) all cards and disables interrupt */
--/**************************************************************************/
--static void
--stop_cards(void)
--{
--	hysdn_card *card;
--
--	card = card_root;	/* first in chain */
--	while (card) {
--		if (card->stopcard)
--			card->stopcard(card);
--		card = card->next;	/* remove card from chain */
--	}			/* while card */
--}				/* stop_cards */
-+static hysdn_card *card_last = NULL;	/* pointer to first card */
++		cond_resched();
++
++		spin_lock_irqsave(&card->hysdn_lock, flags);
++
+ 		again = 0;	/* assume loop not to be repeated */
  
+ 		if (!dpr->ToHyFlag) {
+@@ -110,7 +115,7 @@ ergo_irq_bh(struct work_struct *ugli_api)
+ 				again = 1;	/* restart loop */
+ 			}
+ 		}		/* a message has arrived for us */
+-		cli();		/* no further ints */
++
+ 		if (again) {
+ 			dpr->ToHyInt = 1;
+ 			dpr->ToPcInt = 1;	/* interrupt to E1 for all cards */
+@@ -240,9 +245,7 @@ ergo_writebootimg(struct HYSDN_CARD *card, unsigned char *buf,
+ 		while (!dpram->ToHyNoDpramErrLog);	/* reread volatile register to flush PCI */
  
- /****************************************************************************/
-@@ -191,31 +75,138 @@ hysdn_getrev(const char *revision)
- /* and the module is added to the list in /proc/modules, otherwise an error */
- /* is assumed and the module will not be kept in memory.                    */
- /****************************************************************************/
-+
-+static int __devinit hysdn_pci_init_one(struct pci_dev *akt_pcidev,
-+					const struct pci_device_id *ent)
-+{
-+	hysdn_card *card;
-+	int rc;
-+
-+	rc = pci_enable_device(akt_pcidev);
-+	if (rc)
-+		return rc;
-+
-+	if (!(card = kzalloc(sizeof(hysdn_card), GFP_KERNEL))) {
-+		printk(KERN_ERR "HYSDN: unable to alloc device mem \n");
-+		rc = -ENOMEM;
-+		goto err_out;
-+	}
-+	card->myid = cardmax;	/* set own id */
-+	card->bus = akt_pcidev->bus->number;
-+	card->devfn = akt_pcidev->devfn;	/* slot + function */
-+	card->subsysid = akt_pcidev->subsystem_device;
-+	card->irq = akt_pcidev->irq;
-+	card->iobase = pci_resource_start(akt_pcidev, PCI_REG_PLX_IO_BASE);
-+	card->plxbase = pci_resource_start(akt_pcidev, PCI_REG_PLX_MEM_BASE);
-+	card->membase = pci_resource_start(akt_pcidev, PCI_REG_MEMORY_BASE);
-+	card->brdtype = BD_NONE;	/* unknown */
-+	card->debug_flags = DEF_DEB_FLAGS;	/* set default debug */
-+	card->faxchans = 0;	/* default no fax channels */
-+	card->bchans = 2;	/* and 2 b-channels */
-+	card->brdtype = ent->driver_data;
-+
-+	if (ergo_inithardware(card)) {
-+		printk(KERN_WARNING "HYSDN: card at io 0x%04x already in use\n", card->iobase);
-+		rc = -EBUSY;
-+		goto err_out_card;
-+	}
-+
-+	cardmax++;
-+	card->next = NULL;	/*end of chain */
-+	if (card_last)
-+		card_last->next = card;		/* pointer to next card */
-+	else
-+		card_root = card;
-+	card_last = card;	/* new chain end */
-+
-+	pci_set_drvdata(akt_pcidev, card);
-+	return 0;
-+
-+err_out_card:
-+	kfree(card);
-+err_out:
-+	pci_disable_device(akt_pcidev);
-+	return rc;
-+}
-+
-+static void __devexit hysdn_pci_remove_one(struct pci_dev *akt_pcidev)
-+{
-+	hysdn_card *card = pci_get_drvdata(akt_pcidev);
-+
-+	pci_set_drvdata(akt_pcidev, NULL);
-+
-+	if (card->stopcard)
-+		card->stopcard(card);
-+
-+#ifdef CONFIG_HYSDN_CAPI
-+	hycapi_capi_release(card);
-+#endif
-+
-+	if (card->releasehardware)
-+		card->releasehardware(card);   /* free all hardware resources */
-+
-+	if (card == card_root) {
-+		card_root = card_root->next;
-+		if (!card_root)
-+			card_last = NULL;
-+	} else {
-+		hysdn_card *tmp = card_root;
-+		while (tmp) {
-+			if (tmp->next == card)
-+				tmp->next = card->next;
-+			card_last = tmp;
-+			tmp = tmp->next;
-+		}
-+	}
-+
-+	kfree(card);
-+	pci_disable_device(akt_pcidev);
-+}
-+
-+static struct pci_driver hysdn_pci_driver = {
-+	.name		= "hysdn",
-+	.id_table	= hysdn_pci_tbl,
-+	.probe		= hysdn_pci_init_one,
-+	.remove		= __devexit_p(hysdn_pci_remove_one),
-+};
-+
-+static int hysdn_have_procfs;
-+
- static int __init
- hysdn_init(void)
- {
- 	char tmp[50];
-+	int rc;
+ 		byteout(card->iobase + PCI9050_USER_IO, PCI9050_E1_RUN);	/* start E1 processor */
+-		/* the interrupts are still masked */
  
- 	strcpy(tmp, hysdn_init_revision);
- 	printk(KERN_NOTICE "HYSDN: module Rev: %s loaded\n", hysdn_getrev(tmp));
- 	strcpy(tmp, hysdn_net_revision);
- 	printk(KERN_NOTICE "HYSDN: network interface Rev: %s \n", hysdn_getrev(tmp));
--	search_cards();
-+
-+	rc = pci_register_driver(&hysdn_pci_driver);
-+	if (rc)
-+		return rc;
-+
- 	printk(KERN_INFO "HYSDN: %d card(s) found.\n", cardmax);
+-		sti();
+ 		msleep_interruptible(20);		/* Timeout 20ms */
  
--	if (hysdn_procconf_init()) {
--		free_resources();	/* proc file_sys not created */
--		return (-1);
--	}
-+	if (!hysdn_procconf_init())
-+		hysdn_have_procfs = 1;
-+
- #ifdef CONFIG_HYSDN_CAPI
- 	if(cardmax > 0) {
- 		if(hycapi_init()) {
- 			printk(KERN_ERR "HYCAPI: init failed\n");
--			return(-1);
-+
-+			if (hysdn_have_procfs)
-+				hysdn_procconf_release();
-+
-+			pci_unregister_driver(&hysdn_pci_driver);
-+			return -ESPIPE;
- 		}
- 	}
+ 		if (((tDpramBootSpooler *) card->dpram)->Len != DPRAM_SPOOLER_DATA_SIZE) {
+@@ -276,7 +279,6 @@ ergo_writebootseq(struct HYSDN_CARD *card, unsigned char *buf, int len)
+ 	dst = sp->Data;		/* point to data in spool structure */
+ 	buflen = sp->Len;	/* maximum len of spooled data */
+ 	wr_mirror = sp->WrPtr;	/* only once read */
+-	sti();
+ 
+ 	/* try until all bytes written or error */
+ 	i = 0x1000;		/* timeout value */
+@@ -380,7 +382,7 @@ ergo_waitpofready(struct HYSDN_CARD *card)
  #endif /* CONFIG_HYSDN_CAPI */
--	return (0);		/* no error */
+ 			return (0);	/* success */
+ 		}		/* data has arrived */
+-		sti();
 +
-+	return 0;		/* no error */
- }				/* init_module */
- 
- 
-@@ -230,20 +221,15 @@ hysdn_init(void)
- static void __exit
- hysdn_exit(void)
- {
-+	if (hysdn_have_procfs)
-+		hysdn_procconf_release();
-+
-+	pci_unregister_driver(&hysdn_pci_driver);
-+
- #ifdef CONFIG_HYSDN_CAPI
--	hysdn_card *card;
--#endif /* CONFIG_HYSDN_CAPI */
--	stop_cards();
--#ifdef CONFIG_HYSDN_CAPI
--	card = card_root;	/* first in chain */
--	while (card) {
--		hycapi_capi_release(card);
--		card = card->next;	/* remove card from chain */
--	}			/* while card */
- 	hycapi_cleanup();
- #endif /* CONFIG_HYSDN_CAPI */
--	hysdn_procconf_release();
--	free_resources();
-+
- 	printk(KERN_NOTICE "HYSDN: module unloaded\n");
- }				/* cleanup_module */
+ 		msleep_interruptible(50);		/* Timeout 50ms */
+ 	}			/* wait until timeout */
  
