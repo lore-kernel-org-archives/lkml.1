@@ -1,56 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbXHBBxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755395AbXHBCC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbXHBBxu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 21:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbXHBBxk
+	id S1755395AbXHBCC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 22:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbXHBCCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 21:53:40 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:39385 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751542AbXHBBxj (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 21:53:39 -0400
-Date: Thu, 2 Aug 2007 11:53:18 +1000
-From: David Chinner <dgc@sgi.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: kupdate weirdness
-Message-ID: <20070802015318.GM12413810@sgi.com>
-References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
+	Wed, 1 Aug 2007 22:02:15 -0400
+Received: from waste.org ([66.93.16.53]:46995 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751456AbXHBCCO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 22:02:14 -0400
+Date: Wed, 1 Aug 2007 21:02:19 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+Message-ID: <20070802020219.GM11166@waste.org>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070801095920.GA1941@ff.dom.local>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 10:45:16PM +0200, Miklos Szeredi wrote:
-> The following strange behavior can be observed:
+On Wed, Aug 01, 2007 at 11:59:21AM +0200, Jarek Poplawski wrote:
+> On Tue, Jul 31, 2007 at 05:05:00PM +0200, Gabriel C wrote:
+> > Jarek Poplawski wrote:
+> > > On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
+> > >> Jarek Poplawski wrote:
+> > >>> On 28-07-2007 20:42, Gabriel C wrote:
+> > >>>> Andrew Morton wrote:
+> > >>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> > >>>>>
+> > >>>>>> Hi,
+> > >>>>>>
+> > >>>>>> I got this compile error with a randconfig ( http://194.231.229.228/MM/randconfig-auto-82.broken.netpoll.c ).
+> > >>>>>>
+> > >>>>>> ...
+> > >>>>>>
+> > >>>>>> net/core/netpoll.c: In function 'netpoll_poll':
+> > >>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
+> > >>>>>> net/core/netpoll.c:159: error: 'struct net_device' has no member named 'poll_controller'
+> > >>>>>> net/core/netpoll.c: In function 'netpoll_setup':
+> > >>>>>> net/core/netpoll.c:670: error: 'struct net_device' has no member named 'poll_controller'
+> > >>>>>> make[2]: *** [net/core/netpoll.o] Error 1
+> > >>>>>> make[1]: *** [net/core] Error 2
+> > >>>>>> make: *** [net] Error 2
+> > >>>>>> make: *** Waiting for unfinished jobs....
+> > >>>>>>
+> > >>>>>> ...
+> > >>>>>>
+> > >>>>>>
+> > >>>>>> I think is because KGDBOE selects just NETPOLL.
+> > >>>>>>
+> > >>>>> Looks like it.
+> > >>>>>
+> > >>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
+> > >>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
+> > >>>>> remains evil.
+> > >>> ...
+> > >>>> I think there may be a logical issue ( again if I got it right ).
+> > >>>> We need some ethernet card to work with kgdboe right ? but we don't have any if !NETDEVICES && !NET_ETHERNET.
+> > >>>>
+> > >>>> So maybe some ' depends on ... && NETDEVICES!=n && NET_ETHERNET!=n ' is needed too ? 
+> > >>> IMHO, the only logical issue here is netpoll.c mustn't use 
+> > >>> CONFIG_NET_POLL_CONTROLLER code without #ifdef if it doesn't
+> > >>> add this dependency itself.
+> > >>>
+> > >> Well it does if NETDEVICES && if NET_ETHERNET which booth are N when !NETDEVICES is why KGDBOE uses select and not depends on.
+> > > 
+> > > "does if XXX" means may "use if XXX".
+> > 
+> > From what I know means only use "if xxx" on !xxx everything inside the "if xxx" is n and "depends on <something inside the if xxx> 
+> > does not work.
+> > 
+> > ...
+> > 
+> > menuconfig FOO
+> > 	bool "FOO"
+> > 	depends on BAR
+> > 	default y 
+> > 	-- help --
+> > 	something
+> > if FOO
+> > 
+> > config BAZ
+> > 	depends on WHATEVR && !NOT_THIS
+> > 
+> > menuconfig SOMETHING_ELSE
+> > 	....
+> > if SOMETHING_ELSE
+> > 
+> > config BLUBB
+> > 	depends on PCI && WHATNOT
+> > 
+> > endif # SOMETHING_ELSE
+> > 
+> > config NETPOLL
+> >         def_bool NETCONSOLE
+> >         
+> > config NETPOLL_TRAP
+> >         bool "Netpoll traffic trapping"
+> >         default n
+> >         depends on NETPOLL
+> >           
+> > config NET_POLL_CONTROLLER
+> >         def_bool NETPOLL
+> > 
+> > endif # FOO
+> > 
+> > Now if you set FOO=n all is gone and your driver have to select whatever it needs from there.
 > 
-> 1. large file is written
-> 2. after 30 seconds, nr_dirty goes down by 1024
-> 3. then for some time (< 30 sec) nothing happens (disk idle)
-> 4. then nr_dirty again goes down by 1024
-> 5. repeat from 3. until whole file is written
+> Probably not exactly so...
 > 
-> So basically a 4Mbyte chunk of the file is written every 30 seconds.
-> I'm quite sure this is not the intended behavior.
+> >From drivers/net/Kconfig:
 > 
-> The reason seems to be that __sync_single_inode() will move the
-> partially written inode from s_io onto s_dirty, and sync_sb_inode()
-> will not splice it back onto s_io until the rest of the inodes on s_io
-> has been processed.
+> > # All the following symbols are dependent on NETDEVICES - do not repeat
+> > # that for each of the symbols.
+> > if NETDEVICES
+> 
+> So, according to this netpoll could presume NETDEVICES and
+> NET_POLL_CONTROLLER are always on.
+> 
+> But, as you've found, it's possible to select NETPOLL and !NETDEVICES,
+> so this comment is at least not precise.
+> 
+> On the other side something like this:
+> 
+> ...
+> endif # NETDEVICES
+> 
+> config NETPOLL
+>         depends on NETDEVICES
+>         def_bool NETCONSOLE
+> 
+> config NETPOLL_TRAP
+>         bool "Netpoll traffic trapping"
+>         default n
+>         depends on NETPOLL
+> 
+> config NET_POLL_CONTROLLER
+>         def_bool NETPOLL
+>         depends on NETPOLL
+> 
+> 
+> seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
+> still doesn't check for NETDEVICES dependency.
 
-It's been doing this for a long time.
+That's odd. Adding Sam to the cc:.
 
-http://marc.info/?l=linux-kernel&m=113919849421679&w=2
+> > >> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
+> > >> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
+> > > 
+> > > Why kgdboe should care what netpoll needs? So, I hope, you are adding
+> > > this select under config NETPOLL. On the other hand, if NETPOLL should
+> > > depend on NET_POLL_CONTROLLER there is probably no reason to have them
+> > > both.
+> > 
+> > NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
+> > 
+> > Net peoples ping ?:)
 
-Cheers,
+How about cc:ing the netpoll maintainer?
+ 
+> OK, I wasn't right here: there is no visible reason for both in the
+> kernel code, but I can imagine there could be some external users of
+> NET_POLL_CONTROLLER without NETPOLL.
 
-Dave.
+I don't know of any. As far as I can tell at this point,
+NET_POLL_CONTROLLER == NETPOLL.
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Mathematics is the supreme nostalgia of our time.
