@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbXHBAAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbXHBAHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbXHBAAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 20:00:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754365AbXHBAA1
+	id S1756131AbXHBAHk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 20:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbXHBAHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 20:00:27 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:57500 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753936AbXHBAAZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 20:00:25 -0400
-Date: Thu, 2 Aug 2007 02:00:05 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Maurice Volaski <mvolaski@aecom.yu.edu>
-Cc: jheffner@psc.edu, discussion@web100.org, linux-kernel@vger.kernel.org,
-       drbd-user@linbit.com
-Subject: Re: drbd 8.0.2/3 doesn't load under kernel 2.6.21
-Message-ID: <20070802000005.GT3972@stusta.de>
-References: <a0624045cc2d691fb7294@[129.98.90.227]> <20070801223440.GS3972@stusta.de> <a06240463c2d6bfa92746@[129.98.90.227]>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <a06240463c2d6bfa92746@[129.98.90.227]>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 1 Aug 2007 20:07:32 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:39651 "EHLO aun.it.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753439AbXHBAHb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 20:07:31 -0400
+Date: Thu, 2 Aug 2007 02:06:27 +0200 (MEST)
+Message-Id: <200708020006.l7206RoY009376@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: buytenh@wantstofly.org, mikpe@it.uu.se
+Subject: Re: [PATCH][RFC] unbreak generic futex_atomic_cmpxchg_inatomic() on UP
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, rmk@arm.linux.org.uk,
+       tglx@linutronix.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 07:02:14PM -0400, Maurice Volaski wrote:
-> First, did you confirm this behavior? Can you please explain that? How 
-> could they possibly interact with one another?
+On Thu, 2 Aug 2007 01:49:02 +0200, Lennert Buytenhek wrote:
+> On Thu, Aug 02, 2007 at 01:00:21AM +0200, Mikael Pettersson wrote:
+> 
+> > @@ -52,7 +53,34 @@ futex_atomic_op_inuser (int encoded_op, 
+> >  static inline int
+> >  futex_atomic_cmpxchg_inatomic(int __user *uaddr, int oldval, int newval)
+> >  {
+> > +#ifdef CONFIG_SMP
+> >  	return -ENOSYS;
+> > +#else
+> 
+> Since the callers of futex_atomic_cmpxchg_inatomic() don't really
+> seem prepared to deal with -ENOSYS (e.g. the handle_futex_death()
+> infinite loop when it gets -ENOSYS), it seems better never to
+> return -ENOSYS from this function at all.
+> 
+> What if you just stick an #error in here in the SMP case?
 
+The problem with #error is that it would cause compile-time
+regressions. I assume that e.g. alpha supports building SMP
+kernels, but #error would prevent that.
 
-It's obvious when looking at the source code that both modules you are
-trying to use are buggy, and the sum of the bugs in both modules is the 
-drbd breakage you observe.
+Thus I opted to fix the UP case while leaving the SMP case
+unchanged. Actually I think the SMP case should be a BUG()
+rather than -ENOSYS, but that's a different issue from the
+UP case which I really do want to see fixed.
 
-
-30% of the guilt go to the drbd developers for doing the following:
-
-#ifdef NETLINK_ROUTE6
-        /* pre 2.6.16 */
-        err = cn_init();
-        if(err) return err;
-#endif
-
-The author wanted to check for pre-2.6.14 when the connector code was 
-added to the kernel, not for pre-2.6.16 as the comment implies or 
-pre-2.6.13 as the code does.
-
-Or he wanted to check whether it's a recent kernel and the connector 
-code is compiled into the kernel.
-
-
-70% of the guilt go to the web100 developers for shipping the following 
-to their users:
-
---- linux-2.6-web100/include/linux/netlink.h	19 Jul 2007 17:49:17 -0000	1.1.1.16
-+++ linux-2.6-web100/include/linux/netlink.h	19 Jul 2007 18:11:01 -0000	1.17
-@@ -14,6 +14,7 @@
- #define NETLINK_SELINUX		7	/* SELinux event notifications */
- #define NETLINK_ISCSI		8	/* Open-iSCSI */
- #define NETLINK_AUDIT		9	/* auditing */
-+#define NETLINK_ROUTE6		11	/* af_inet6 route comm channel */
- #define NETLINK_FIB_LOOKUP	10	
- #define NETLINK_CONNECTOR	11
- #define NETLINK_NETFILTER	12	/* netfilter subsystem */
- 
-That's not only buggy but also not used by web100.
-
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+/Mikael
