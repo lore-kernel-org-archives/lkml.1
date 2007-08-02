@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbXHBWAw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXHBWBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755815AbXHBWAw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:00:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbXHBWAn
+	id S1755210AbXHBWBJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbXHBWAu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:00:43 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:1376 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbXHBWAm (ORCPT
+	Thu, 2 Aug 2007 18:00:50 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:46665 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755398AbXHBWAs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:00:42 -0400
+	Thu, 2 Aug 2007 18:00:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=NeEeK1VSMwTrlPhkqYunxGlnMkumGQMPuJiaoqMADbSN5/R4JNP1oDFG3rBD1gPqYJRGGA796L6boVZkAG3SEPr5M7+O4e26YwnPCeHQ2w7evg9uFCYQKMK3Gj4ykTiwN7crL1SEkrSZRVNRzyhQ+Q3XVwRgFzMMWtnRmAOs9Bo=
-Message-ID: <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
-Date: Fri, 3 Aug 2007 00:00:41 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: VIA EPIA EK: strange eth dev numbering
-Cc: "Michael Tokarev" <mjt@tls.msk.ru>,
-       "Herbert Rosmanith" <kernel@wildsau.enemy.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=GlDyjbCIqT4UKS3ufNObdjmHIaiNJpRbybbI315CxAYJzeJ/EalUo7hmmWUgyGFFOAmslIum7Xn05o7m9BM+vkK09k2VGhxmL0nlMq9Fbuifd4tNdHm/Z8gWa44o/k3lIPfAg49DtSkbl1OtnOOauIzucd9F6kTiuR24nv9hsfM=
+Message-ID: <46B25403.90902@googlemail.com>
+Date: Fri, 03 Aug 2007 00:00:35 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] kernel-parameters.txt : watchdog.txt should be wdt.txt 
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200708021056.l72Au722008603@wildsau.enemy.org>
-	 <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
-	 <46B1D708.9040106@msgid.tls.msk.ru>
-	 <Pine.LNX.4.64.0708021536350.24572@fbirervta.pbzchgretzou.qr>
-	 <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
-X-Google-Sender-Auth: f0159f90f1f4d556
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
-> I know I have seen my kernel outputting "A renamed to B". Since you two
-> however wanted that information in the first place, I grepped a bit
-> around, and actually found, (drumroll), that the SUSE kernel has had a
-> proper patch for [I can't remember how long] quite some time. (At least
-> one distro which does the right thing.) I copied it below.
+Documentation/watchdog/watchdog.txt does not exist, it is Documentation/watchdog/wdt.txt
 
-> e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
-> dev_change_name: about to rename 'eth3' to 'eth0'
-> dev_change_name: about to rename 'eth3' to 'ethxx3'
-> eth3 renamed to ethxx3
+Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
 
-I just made udev when it successfully renamed an interface to write
-that to the kernel log, so dmesg will show:
-  <6>udev: renamed network interface eth0 to eth1
+---
 
-Kay
+ Documentation/kernel-parameters.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index efdb42f..a326487 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1922,7 +1922,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			See header of drivers/scsi/wd7000.c.
+ 
+ 	wdt=		[WDT] Watchdog
+-			See Documentation/watchdog/watchdog.txt.
++			See Documentation/watchdog/wdt.txt.
+ 
+ 	xd=		[HW,XT] Original XT pre-IDE (RLL encoded) disks.
+ 	xd_geo=		See header of drivers/block/xd.c.
