@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbXHBMES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbXHBMEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbXHBMES (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbXHBMEI
+	id S1755058AbXHBMEc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbXHBMEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:04:08 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:37567 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752344AbXHBMEH (ORCPT
+	Thu, 2 Aug 2007 08:04:16 -0400
+Received: from nf-out-0910.google.com ([64.233.182.190]:17704 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755337AbXHBMEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:04:07 -0400
+	Thu, 2 Aug 2007 08:04:15 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=eM48sCtZSdBFbmNPp21VHHVpzaCNbPCYKaZklyGs3nWwnsLflJ+v+74gss5zbfnNrC1zrRldPCBT0oG1opwBCSa5G4bDoUWKaaWQMCJcx3MpJkYJ5webkk3FaMcJK8pK0ziuIyxeh4TGzCp3XGGfBaVYmQzDYy3qLWCduOwljxU=
-Message-ID: <b6fcc0a0708020504j7588061fq7e70a50499dcbdfe@mail.gmail.com>
-Date: Thu, 2 Aug 2007 16:04:06 +0400
-From: "Alexey Dobriyan" <adobriyan@gmail.com>
-To: "Miklos Szeredi" <miklos@szeredi.hu>
-Subject: Re: [PATCH] type safe allocator
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, torvalds@linux-foundation.org
-In-Reply-To: <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=tRULU6V4tSJcepa53ZHFP8pHBOZQZkHviFf3CALEnjg1D55vWPdt1nlqmsmwDDUl6v3MYenNNw4nLz/5yxmU+j6stq15NBy10N+a55iGWn7X1zNQuJ+f4GigYdysqk6/EB87HMHPo2vWdbCllLOl9UJajmLRnNQzWOWXbpYUQP4=
+Message-ID: <46B1C835.3060505@googlemail.com>
+Date: Thu, 02 Aug 2007 14:04:05 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: trenn@suse.de
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Miles Lane <miles.lane@gmail.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: cpufreq.c:(.text+0xaf178): undefined reference to	`cpufreq_gov_performance'
+References: <a44ae5cd0708011631k7f476af2jcd01d2875f4b4b17@mail.gmail.com>	 <20070801165704.a26961b7.akpm@linux-foundation.org> <1186053332.18821.465.camel@queen.suse.de>
+In-Reply-To: <1186053332.18821.465.camel@queen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
-	 <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/2/07, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> The linux kernel doesn't have a type safe object allocator a-la new()
-> in C++ or g_new() in glib.
->
-> Introduce two helpers for this purpose:
->
->    alloc_struct(type, gfp_flags);
->
->    zalloc_struct(type, gfp_flags);
+Thomas Renninger wrote:
+> On Wed, 2007-08-01 at 16:57 -0700, Andrew Morton wrote:
+>> On Wed, 1 Aug 2007 16:31:46 -0700
+>> "Miles Lane" <miles.lane@gmail.com> wrote:
+>>
+>>>   LD      .tmp_vmlinux1
+>>> drivers/built-in.o: In function `__cpufreq_governor':
+>>> cpufreq.c:(.text+0xaf178): undefined reference to `cpufreq_gov_performance'
+>>> cpufreq.c:(.text+0xaf18a): undefined reference to `cpufreq_gov_performance'
+>>> make: *** [.tmp_vmlinux1] Error 1
+>> One for Thomas, I expect.
+> 
+> Miles, could you send me or point me to the offending .config file.
 
-ick.
+http://lkml.org/lkml/2007/8/1/480
 
-> These macros take a type name (usually a 'struct foo') as first
-> argument
+> 
+> Thanks,
+> 
+>    Thomas
 
-So one has to type struct twice.
 
-> and the usual gfp-flags as second argument.  They return a
-> pointer cast to 'type *'.
->
-> The traditional forms of allocating a structure are:
->
->   fooptr = kmalloc(sizeof(*fooptr), ...);
->
->   fooptr = kmalloc(sizeof(struct foo), ...);
-
-Key word is "traditional". Good traditional form which even half-competent
-C programmers immediately parse in retina.
-
-> The new form is preferred over these, because of it's type safety and
-> more descriptive nature.
-
-> +/**
-> + * alloc_struct - allocate given type object
-> + * @type: the type of the object to allocate
-> + * @flags: the type of memory to allocate.
-> + */
-> +#define alloc_struct(type, flags) ((type *) kmalloc(sizeof(type), flags))
-
-someone will write alloc_struct(int, GFP_KERNEL), I promise.
-
-Can you play instead with something Lisp based which has infinetely more
-potential for idioms.
+Gabriel
