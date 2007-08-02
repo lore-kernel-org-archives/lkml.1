@@ -1,72 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbXHBMfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756616AbXHBMiV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbXHBMfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754741AbXHBMfW
+	id S1756616AbXHBMiV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:38:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXHBMiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:35:22 -0400
-Received: from ns1.suse.de ([195.135.220.2]:36273 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754698AbXHBMfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:35:21 -0400
-Subject: Re: 2.6.22 regression: thermal trip points
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian =?ISO-8859-1?Q?Schr=F6ter?= <adrian@suse.de>,
-       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, pavel@ucw.cz, lenb@kernel.org,
-       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>
-In-Reply-To: <20070802121556.GA30114@srcf.ucam.org>
-References: <46B1988C.3090302@t-online.de>
-	 <1186047747.18821.450.camel@queen.suse.de>
-	 <200708021145.09377.adrian@suse.de>
-	 <1186048701.18821.459.camel@queen.suse.de>
-	 <20070802120221.5474e732@the-village.bc.nu>
-	 <20070802111327.GA29002@srcf.ucam.org>
-	 <20070802125947.4a1ff933@the-village.bc.nu>
-	 <20070802115743.GB29735@srcf.ucam.org>
-	 <1186056386.18821.497.camel@queen.suse.de>
-	 <20070802121556.GA30114@srcf.ucam.org>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 02 Aug 2007 14:35:18 +0200
-Message-Id: <1186058118.18821.516.camel@queen.suse.de>
+	Thu, 2 Aug 2007 08:38:10 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:17297 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754306AbXHBMiI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 08:38:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:cc:subject:in-reply-to:x-mailer:date:message-id:mime-version:content-type:reply-to:to:content-transfer-encoding:from;
+        b=AzOUnH5hOM6mHcMr9viIb9SlluFfEVOrhHz25Y9uvwIyM8C18WnLOHy2yqi/UoHUhumm4SDvZL5sNJ+21vuZuNrAEe6i1I0dgonCoR0XJK/dWU8den7ITVzhjnGOjUbi6IAeBy8i4T35kLganq5GWhHRObs2OTMeWBkmonqvHGk=
+Cc: Tejun Heo <htejun@gmail.com>
+Subject: [PATCH 2/5] sysfs: simplify sysfs_rename_dir()
+In-Reply-To: <11860582821512-git-send-email-htejun@gmail.com>
+X-Mailer: git-send-email
+Date: Thu, 2 Aug 2007 21:38:02 +0900
+Message-Id: <11860582821949-git-send-email-htejun@gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Reply-To: Tejun Heo <htejun@gmail.com>
+To: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, htejun@gmail.com
+Content-Transfer-Encoding: 7BIT
+From: Tejun Heo <htejun@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 13:15 +0100, Matthew Garrett wrote:
-> On Thu, Aug 02, 2007 at 02:06:26PM +0200, Thomas Renninger wrote:
-> > On Thu, 2007-08-02 at 12:57 +0100, Matthew Garrett wrote:
-> > > On Thu, Aug 02, 2007 at 12:59:47PM +0100, Alan Cox wrote:
-> > > > Windows as I understand it has vendor mechanisms to allow the bits
-> > > > shipped with the OS to override/ignore just about everything trip points
-> > > > included. Lots of hardware that requires fixups in Linux and just works
-> > > > in Windows is not Linux bugs but Windows magic .inf files and other
-> > > > registry gunge done by the machine vendor. We see this in ATA, in power
-> > > > management and elsewhere.
-> > > 
-> > > I've seen no evidence that this happens with thermal trip points.
-> > 
-> > WMI needed for fan control -- FSC Amilo M3438G
-> > http://bugzilla.kernel.org/show_bug.cgi?id=5670
-> 
-> That machine has no active thermal trip points, so I'm not sure how it's 
-> relevant here.
->From above: "Windows as I understand it has vendor mechanisms to..."
-Maybe thermal trip points are not influenced here, it's at least about
-thermal management and another prove that we cannot just try to copy
-Windows behavior, but need to provide workarounds wherever possible.
+With the shadow directories gone, sysfs_rename_dir() can be simplified.
 
-   Thomas
+* parent doesn't need to be grabbed separately.  Just access
+  old_dentry->d_parent.
 
-> By the sounds of the bug log, I suspect Linux just runs 
-> slightly hotter on the machine than Windows does - especially since the 
-> user isn't running the closed nvidia driver, so there's nothing to carry 
-> out any power management on the GPU.
+* parent sd can never change.  Remove code to move under the new
+  parent.
+
+* Massage comments a bit.
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Acked-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+---
+ fs/sysfs/dir.c |   26 ++++----------------------
+ 1 files changed, 4 insertions(+), 22 deletions(-)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 026ea70..0fe6aa3 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -883,14 +883,10 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 	struct sysfs_dirent *sd;
+ 	struct dentry *parent = NULL;
+ 	struct dentry *old_dentry = NULL, *new_dentry = NULL;
+-	struct sysfs_dirent *parent_sd;
+ 	const char *dup_name = NULL;
+ 	int error;
+ 
+-	if (!kobj->parent)
+-		return -EINVAL;
+-
+-	/* get dentries */
++	/* get the original dentry */
+ 	sd = kobj->sd;
+ 	old_dentry = sysfs_get_dentry(sd);
+ 	if (IS_ERR(old_dentry)) {
+@@ -898,12 +894,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 		goto out_dput;
+ 	}
+ 
+-	parent_sd = kobj->parent->sd;
+-	parent = sysfs_get_dentry(parent_sd);
+-	if (IS_ERR(parent)) {
+-		error = PTR_ERR(parent);
+-		goto out_dput;
+-	}
++	parent = old_dentry->d_parent;
+ 
+ 	/* lock parent and get dentry for new name */
+ 	mutex_lock(&parent->d_inode->i_mutex);
+@@ -933,22 +924,14 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 		goto out_drop;
+ 
+ 	mutex_lock(&sysfs_mutex);
+-
+ 	dup_name = sd->s_name;
+ 	sd->s_name = new_name;
++	mutex_unlock(&sysfs_mutex);
+ 
+-	/* move under the new parent */
++	/* rename */
+ 	d_add(new_dentry, NULL);
+ 	d_move(sd->s_dentry, new_dentry);
+ 
+-	sysfs_unlink_sibling(sd);
+-	sysfs_get(parent_sd);
+-	sysfs_put(sd->s_parent);
+-	sd->s_parent = parent_sd;
+-	sysfs_link_sibling(sd);
+-
+-	mutex_unlock(&sysfs_mutex);
+-
+ 	error = 0;
+ 	goto out_unlock;
+ 
+@@ -958,7 +941,6 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 	mutex_unlock(&parent->d_inode->i_mutex);
+  out_dput:
+ 	kfree(dup_name);
+-	dput(parent);
+ 	dput(old_dentry);
+ 	dput(new_dentry);
+ 	return error;
+-- 
+1.5.0.3
+
 
