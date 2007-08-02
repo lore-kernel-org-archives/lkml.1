@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbXHBVlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760966AbXHBVmm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760573AbXHBVlK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbXHBVk5
+	id S1760966AbXHBVmm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbXHBVmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:40:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42690 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754311AbXHBVk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:40:57 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH -mm 2/3] Freezer: Use wait queue instead of busy looping (updated)
-Date: Thu, 2 Aug 2007 23:49:43 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200708012328.23939.rjw@sisk.pl> <200708022313.32944.rjw@sisk.pl> <20070802212307.GA521@tv-sign.ru>
-In-Reply-To: <20070802212307.GA521@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708022349.44778.rjw@sisk.pl>
+	Thu, 2 Aug 2007 17:42:35 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:3753 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752508AbXHBVmd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 17:42:33 -0400
+Date: Thu, 02 Aug 2007 15:42:29 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: gcc fixed size char array initialization bug - known?
+In-reply-to: <fa.cjPWb5ZShF43DhggNXkMKMadPYY@ifi.uio.no>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Message-id: <46B24FC5.8060409@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.LxMYkBaN628VuktB9CFi9SC3LTA@ifi.uio.no>
+ <fa.6wYNfcIjXc+jXzdUGE5gFFOal1g@ifi.uio.no>
+ <fa.cjPWb5ZShF43DhggNXkMKMadPYY@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, 2 August 2007 23:23, Oleg Nesterov wrote:
-> On 08/02, Rafael J. Wysocki wrote:
-> >
-> > On Thursday, 2 August 2007 20:40, Oleg Nesterov wrote:
-> > > On 08/02, Rafael J. Wysocki wrote:
-> > > >
-> > > > @@ -171,6 +186,10 @@ static int try_to_freeze_tasks(int freez
-> > > >  
-> > > >  	end_time = jiffies + TIMEOUT;
-> > > >  	do {
-> > > > +		DEFINE_WAIT(wait);
-> > > > +
-> > > > +		add_wait_queue(&refrigerator_waitq, &wait);
-> > > 
-> > > Hmm. In that case I'd sugest to use prepare_to_wait(). This means that
-> > > multiple wakeups from refrigerator() won't do unnecessary work,
-> > 
-> > I'm not sure what you mean.
-> > 
-> > Do you mean that if we are TASK_UNINTERRUPTIBLE, then the first wake up
-> > should remove us from the queue?
+Guennadi Liakhovetski wrote:
+> On Thu, 2 Aug 2007, Andi Kleen wrote:
 > 
-> No, not because we are TASK_UNINTERRUPTIBLE, but yes, first wake up will
-> remove us because DEFINE_WAIT() uses autoremove_wake_function().
+>> Guennadi Liakhovetski <g.liakhovetski@gmx.de> writes:
+>>
+>>> 	char c[4] = "0123";
+>>> and - a wonder - no warning. 
+>> It's required by the C standard.
+>>
+>> 6.7.8.14 of C99:
+>> ``
+>> An array of character type may be initialized by a character string literal, optionally
+>> enclosed in braces. Successive characters of the character string literal (including the
+>> terminating null character if there is room or if the array is of unknown size) initialize the
+>> elements of the array.
+>> ''
+>>
+>> Note the "if there is room".
+>>
+>> I believe the rationale is that it still allows to conveniently initialize 
+>> non zero terminated strings.
+> 
+> Right, I accept that it will compile, but I don't understand why "01234" 
+> produces a warning and "0123" doesn't? Don't think C99 says anything about 
 
-Yes, it does, but the prepare_to_wait() version would only cause current to
-become TASK_UNINTERRUPTIBLE before it sends freezing requests, the other
-differences don't seem to matter.  I'm trying to understand why it would change
-the behavior in the way you have described.
+Because 5 characters will not fit in a 4 character array, even without 
+the null terminator.
 
-Greetings,
-Rafael
+> that. And, AFAIU, using structs with fixed-size char array we more or less 
+> rely on the compiler warning us if anyone initializes it with too long a 
+> string.
+> 
+> Also interesting, that with
+> 
+> 	char c[4] = "012345";
+> 
+> the compiler warns, but actually allocates a 6-byte long array...
+> 
+> Thanks
+> Guennadi
 
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
