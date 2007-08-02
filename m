@@ -1,51 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbXHBSim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXHBSj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbXHBSim (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 14:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbXHBSie
+	id S1759916AbXHBSj4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 14:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754151AbXHBSjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 14:38:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52622 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757070AbXHBSid (ORCPT
+	Thu, 2 Aug 2007 14:39:48 -0400
+Received: from stinky.trash.net ([213.144.137.162]:50208 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752829AbXHBSjs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 14:38:33 -0400
-Date: Thu, 2 Aug 2007 20:38:30 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Andi Kleen <andi@firstfloor.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       trenn@suse.de, mjg59@srcf.ucam.org, lenb@kernel.org
-Subject: Re: 2.6.22 regression: thermal trip points
-Message-ID: <20070802183830.GA4192@one.firstfloor.org>
-References: <46B1988C.3090302@t-online.de> <20070802015248.45a40717.akpm@linux-foundation.org> <p731wemnre6.fsf@bingen.suse.de> <20070802120014.1d08830a@the-village.bc.nu> <20070802120511.GA440@one.firstfloor.org> <20070802140442.62c56dbd@the-village.bc.nu> <20070802131622.GA1234@one.firstfloor.org> <20070802155753.GB3974@ucw.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070802155753.GB3974@ucw.cz>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 2 Aug 2007 14:39:48 -0400
+Message-ID: <46B22364.9060506@trash.net>
+Date: Thu, 02 Aug 2007 20:33:08 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.0 (X11/20070601)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Netfilter Developer Mailing List 
+	<netfilter-devel@lists.netfilter.org>,
+       yasuyuki.kozakai@toshiba.co.jp,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: nf_conntrack_ipv4 must be loaded explicitly
+References: <Pine.LNX.4.64.0708021937140.9319@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708021937140.9319@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 03:57:54PM +0000, Pavel Machek wrote:
-> On Thu 2007-08-02 15:16:22, Andi Kleen wrote:
-> > On Thu, Aug 02, 2007 at 02:04:42PM +0100, Alan Cox wrote:
-> > > > > Set a taint flag, 
-> > > > That's hardly any useful if the machine is dead afterwards.
-> > > 
-> > > It won't be the hardware will do a failsafe shutdown first.
-> > 
-> > Not necessarily. At SUSE we had at least one broken laptop
-> > with wrong trip points. The machine ran very hot for some time
-> > and afterwards the hard disk was dead.
-> 
-> Yes, but it was original BIOS trip points that were wrong. And yes,
-> its failsafe shutdown was too late. At least lowering the trip points
-> would allow me to run it safely.
+Jan Engelhardt wrote
+> in recent git kernels, I experience the following "regression" that no 
+> packets traverse the nat table (esp. the POSTROUTING counters just stand 
+> still) - and hence things like ping+SNAT do not work. Bisect nailed it 
+> down to:
+>
+> ff09b7493c8f433d3ffd6a31ad58d190f82ef0c5 is first bad commit
+> commit ff09b7493c8f433d3ffd6a31ad58d190f82ef0c5
+> Author: Yasuyuki Kozakai <yasuyuki.kozakai@toshiba.co.jp>
+> Date:   Sat Jul 7 22:25:28 2007 -0700
+>
+>     [NETFILTER]: nf_nat: remove unused nf_nat_module_is_loaded
+>
+>     Signed-off-by: Yasuyuki Kozakai <yasuyuki.kozakai@toshiba.co.jp>
+>     Signed-off-by: Patrick McHardy <kaber@trash.net>
+>     Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+> :040000 040000 177886eca60385293ac736c8e4861a2d4910d90a 32e63b6a9399e1ea65dc6cd0b357ca811e4dc835 M      include
+> :040000 040000 e1c20c3db28c927af62df067b2a20f8604a5fe06 84a277d1f81e3be9ce37ce6040c6d814ca20b3b0 M      net
+>
+>
+> The diff from ff09b7^...ff09b7 made me think...
+>
+> End result:
+>
+> After loading nf_conntrack_ipv4.ko, everything works again (also with 
+> the "bad" ff09b7). But I have to load it explicitly, and I think that 
+> unfortunately breaks a lot of setups (such as mine) which assume ipv4 
+> connection tracking is always there.
+>   
 
-I have no problem with lowering them (in fact I proposed this
-to Thomas as a possible solution at some point). Just rising 
-is a bad idea.
+I already have a patch for this queued. I'll push it upstream once
+I get a new power supply for the box I keep that tree on, hopefully
+tommorrow.
 
--Andi
