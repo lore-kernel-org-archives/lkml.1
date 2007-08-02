@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbXHBSY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758664AbXHBScb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759402AbXHBSY1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 14:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbXHBSYT
+	id S1758664AbXHBScb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 14:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbXHBScU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 14:24:19 -0400
-Received: from nf-out-0910.google.com ([64.233.182.186]:7448 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756689AbXHBSYT (ORCPT
+	Thu, 2 Aug 2007 14:32:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48962 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753638AbXHBScT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 14:24:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=mb2K5Gk2zbzKmEfwIZQkPMx7m21OycllJwxsW2s6d2T/AYm5Zi6DhO6DOX56VS2xB/FsgaT3kz9+gGbVLhlxcIpzPyLcBH4EGYaWMv66lzhJFtiSJ9XXkp6wV0W53Zk1ujkxUXwaxhs7EGW8gQbs2psBrr9UNumsvw5lYq8E+FU=
-Message-ID: <46B22145.6020402@googlemail.com>
-Date: Thu, 02 Aug 2007 20:24:05 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Section mismatch warnings
-References: <46AE2459.7080905@googlemail.com> <20070730185124.GA29116@uranus.ravnborg.org> <46AE3C80.7010307@googlemail.com> <46AF9152.2050707@googlemail.com> <20070731204846.GA9985@uranus.ravnborg.org> <46AFB06E.2020401@googlemail.com> <46B1E9D6.80006@googlemail.com> <20070802163108.GA2431@uranus.ravnborg.org> <46B21084.4050308@googlemail.com> <20070802175914.GC2431@uranus.ravnborg.org>
-In-Reply-To: <20070802175914.GC2431@uranus.ravnborg.org>
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Aug 2007 14:32:19 -0400
+Date: Thu, 2 Aug 2007 11:31:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Andev Debi" <andev.debi@gmail.com>
+Cc: "debian developer" <debiandev@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org, lenb@kernel.org, rl@hellgate.ch,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: Problem - disabling IRQ #20 and others
+Message-Id: <20070802113146.30eb2139.akpm@linux-foundation.org>
+In-Reply-To: <ef8c225f0708020427i6665d486he6a90f1f02823382@mail.gmail.com>
+References: <ef8c225f0708010347l2a0a8e4cj4f47a243bba88989@mail.gmail.com>
+	<f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
+	<20070802014819.4760b06a.akpm@linux-foundation.org>
+	<ef8c225f0708020427i6665d486he6a90f1f02823382@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> Please forward it to akpm.
-> I usually do not carry non-kbuild patches in my tree to keep 'noise' level down.
+On Thu, 2 Aug 2007 16:57:42 +0530
+"Andev Debi" <andev.debi@gmail.com> wrote:
 
-Ok done.
-
-Thank you very much for your help on this.
-
-I'll try to fix the remaining warnings soon.
-
+> On 8/2/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> >> Please fix the wordwrapping before sending any more stuff - it's truly awful.
+> >
+> Sorry about that. Gmail automatically wraps the line. Will check in the future.
 > 
-> 	Sam
-> 
+> > Could be a bug in the via driver, but it's more likely an
+> > acpi/pci/platform/bios thing.
+> >
+> CC'ing VIA Rhine network driver maintainer. May be he has any idea.
 
-Gabriel
+Sorry, I meant the VIA DRM driver.
+
+> CC'ing ACPI people too.
+
+I suspect that's getting warmer.
+
+> > Did any previous kernels work OK?  If so, which?
+> >
+> 
+> I booted with the stock ubuntu kernel 2.6.15-28-386, and it is showing
+> a different irq (irq #201)being disabled.
+
+OK, that's bad.
+
+
+> Im attaching the dmesg of both stock 2.6.15 and self compiled 2.6.22.1-cfs-v19
+
+For long-term bugs like this one it's best to track it in
+bugzilla.kernel.org.  I'd suggest that you assign it to
+acpi_config-interrupts@kernel-bugs.osdl.org and add airlied@linux.ie to the
+cc.
+
+It'll take a while, but these things often do end up fixed.
