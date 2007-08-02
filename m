@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756154AbXHBKt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755378AbXHBKyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756154AbXHBKt0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 06:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbXHBKtS
+	id S1755378AbXHBKyR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 06:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753373AbXHBKyB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 06:49:18 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:37682 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbXHBKtR (ORCPT
+	Thu, 2 Aug 2007 06:54:01 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44750 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751942AbXHBKyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 06:49:17 -0400
-Date: Thu, 2 Aug 2007 12:49:16 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Herbert Rosmanith <kernel@wildsau.enemy.org>
-cc: Michael Tokarev <mjt@tls.msk.ru>, linux-kernel@vger.kernel.org
-Subject: Re: VIA EPIA EK: strange eth dev numbering
-In-Reply-To: <200708021042.l72AguIM008585@wildsau.enemy.org>
-Message-ID: <Pine.LNX.4.64.0708021246200.24572@fbirervta.pbzchgretzou.qr>
-References: <200708021042.l72AguIM008585@wildsau.enemy.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Aug 2007 06:54:01 -0400
+Date: Thu, 2 Aug 2007 12:00:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
+       trenn@suse.de, pavel@ucw.cz, mjg59@srcf.ucam.org, lenb@kernel.org
+Subject: Re: 2.6.22 regression: thermal trip points
+Message-ID: <20070802120014.1d08830a@the-village.bc.nu>
+In-Reply-To: <p731wemnre6.fsf@bingen.suse.de>
+References: <46B1988C.3090302@t-online.de>
+	<20070802015248.45a40717.akpm@linux-foundation.org>
+	<p731wemnre6.fsf@bingen.suse.de>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Also it runs the system out of spec and is similar to overclocking
+> which we also do not support.
 
-On Aug 2 2007 12:42, Herbert Rosmanith wrote:
->
->hu. where are the days when eth0 was eth0 ...
+We do not systematically prevent overclocking. There are lots of cases
+where altering the trip points is helpful, and if you look in vendor
+bugzilla databases there are multiple moans from people whose laptops now
+run slow, or in many cases are simply unusable as a result of Len's
+change.
 
-If you and/or your distribution accidentally or incidentally loaded modules in
-the wrong order (which may happen in e.g. parallel-running boot scripts), you
-suddenly have eth0 as eth1. Or, when you changed the PCI slots (i.e. swapped
-cards around), eth0 would also suddenly become a different one. There never
-*were* days when eth0 remained eth0 across such changes.
+Given you can achieve some of the same result by not loading the relevant
+ACPI code in the first place your argument makes no rational sense at all.
 
->which translates:
->
->    "Haha, that's randy, that's like in Windows, which
->    notices that you've got a new mainboard"
+Set a taint flag, print a loud message but don't stop users actually
+doing things they intend as root. Or have you forgotten the original Unix
+philosophy too ?
 
-In Linux, the user recognizes he got himself a new mainboard,
-e.g. when the IDE chip changed and the new module is not in the initrd.
+> > Here we had obviously-useful-to-you functionality which was taken away
+> > without, afaik, providing any alternative.
+> 
+> I don't think it's that unreasonable to require source code modifications
+> for anything that can kill hardware.
 
+As root you can erase the bios, lock the hard disk with a random
+password, reflash your video card .... 
 
+Sorry Andi, you simply do not know better than all end users.
 
-	Jan
--- 
+Alan
