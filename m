@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbXHBUsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760881AbXHBUtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760438AbXHBUsw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 16:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbXHBUsp
+	id S1760881AbXHBUtV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 16:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbXHBUtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 16:48:45 -0400
-Received: from mail.erfurth.eu ([213.131.252.67]:53665 "EHLO mail.erfurth.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753639AbXHBUso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 16:48:44 -0400
-X-Greylist: delayed 1428 seconds by postgrey-1.27 at vger.kernel.org; Thu, 02 Aug 2007 16:48:44 EDT
-Message-ID: <46B23DB0.5010702@perlgolf.de>
-Date: Thu, 02 Aug 2007 22:25:20 +0200
-From: Nico Erfurth <masta@perlgolf.de>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070720)
+	Thu, 2 Aug 2007 16:49:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:36038 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754534AbXHBUtH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 16:49:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=B+pXp5HTB4R91o15sVFz0VTLJvnvfnPt3kESMBd5Xn95VfYpVnfOauHXdr9S6D45Ou6iE55hI90JjECo2g3rVUCVMCIaUuj87EY6FhNgx9zRnkOnhQ7kAkOiSI0siVCw+dwhLiKNdw5XK3RVF45Lt3kwDlkAmfb87yV1zcKiWro=
+Message-ID: <9a8748490708021349h7be6df29m611a5ea0c01d1690@mail.gmail.com>
+Date: Thu, 2 Aug 2007 22:49:06 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: error: implicit declaration of function 'rcu_dereference' - current -git fails to build
+Cc: "Dipankar Sarma" <dipankar@in.ibm.com>, "Adrian Bunk" <bunk@stusta.de>
+In-Reply-To: <9a8748490708021316o473705e9v795784973171de72@mail.gmail.com>
 MIME-Version: 1.0
-To: gregkh@suse.de
-CC: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: [PATCH 2.6.22] Adding drivers/usb/misc/iowarrior.c to the Makefile
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam_score: -3.9
-X-Spam_score_int: -38
-X-Spam_bar: ---
-X-Spam_report: Spam detection software, running on the system "daemlich.net", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	the administrator of that system for details.
-	Content preview:  This patch adds the new iowarrior module to the Makefile in
-	drivers/usb. Currently the module isn't build unless another driver from
-	usb/misc is selected. Signed-off-by: Nico Erfurth <masta@perlgolf.de> ---
-	--- linux/drivers/usb/Makefile.orig 2007-08-02 21:54:16.000000000 +0200 +++
-	linux/drivers/usb/Makefile 2007-08-02 22:20:57.000000000 +0200 @@ -38,6 +38,7
-	@@ obj-$(CONFIG_USB_EMI26) += misc/ obj-$(CONFIG_USB_EMI62) += misc/ obj-$(CONFIG_USB_FTDI_ELAN)
-	+= misc/ obj-$(CONFIG_USB_IDMOUSE) += misc/ +obj-$(CONFIG_USB_IOWARRIOR)
-	+= misc/ obj-$(CONFIG_USB_LCD) += misc/ obj-$(CONFIG_USB_LD) += misc/ obj-$(CONFIG_USB_LED)
-	+= misc/ [...] 
-	Content analysis details:   (-3.9 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.8 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	-2.6 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
-	0.5 AWL                    AWL: From: address is in the auto white-list
+Content-Disposition: inline
+References: <9a8748490708021257q2f28f8d5y4fdcebaca587fe8a@mail.gmail.com>
+	 <20070802201344.GZ3972@stusta.de>
+	 <9a8748490708021316o473705e9v795784973171de72@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the new iowarrior module to the Makefile in drivers/usb.
-Currently the module isn't build unless another driver from usb/misc is
-selected.
+On 02/08/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
+> On 02/08/07, Adrian Bunk <bunk@stusta.de> wrote:
+> > On Thu, Aug 02, 2007 at 09:57:07PM +0200, Jesper Juhl wrote:
+> > > I get this build error with the current mainline git tree.
+> > > Let me know if further details are needed...
+> > >...
+> >
+> > -ENODOTCONFIG
+> >
+>
+> Attached.
+>
 
-Signed-off-by: Nico Erfurth <masta@perlgolf.de>
----
---- linux/drivers/usb/Makefile.orig     2007-08-02 21:54:16.000000000 +0200
-+++ linux/drivers/usb/Makefile  2007-08-02 22:20:57.000000000 +0200
-@@ -38,6 +38,7 @@ obj-$(CONFIG_USB_EMI26)               += misc/
- obj-$(CONFIG_USB_EMI62)                += misc/
- obj-$(CONFIG_USB_FTDI_ELAN)    += misc/
- obj-$(CONFIG_USB_IDMOUSE)      += misc/
-+obj-$(CONFIG_USB_IOWARRIOR)    += misc/
- obj-$(CONFIG_USB_LCD)          += misc/
- obj-$(CONFIG_USB_LD)           += misc/
- obj-$(CONFIG_USB_LED)          += misc/
+Forget about this.
 
+I thought I had a clean tree, but it turns out that I did not.  I had
+some local (buggy) changes in there that I had overlooked. I did
+  git reset --hard master
+  git clean -d
+and now everything builds fine with that config.
+
+Sorry about the noise.
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
