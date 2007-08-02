@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759252AbXHBQaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbXHBQae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759252AbXHBQaH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbXHBQ3x
+	id S1759313AbXHBQae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759108AbXHBQaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:29:53 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60037 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757372AbXHBQ3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:29:52 -0400
-Date: Thu, 2 Aug 2007 18:31:08 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Section mismatch warnings
-Message-ID: <20070802163108.GA2431@uranus.ravnborg.org>
-References: <46AE2459.7080905@googlemail.com> <20070730185124.GA29116@uranus.ravnborg.org> <46AE3C80.7010307@googlemail.com> <46AF9152.2050707@googlemail.com> <20070731204846.GA9985@uranus.ravnborg.org> <46AFB06E.2020401@googlemail.com> <46B1E9D6.80006@googlemail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B1E9D6.80006@googlemail.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 2 Aug 2007 12:30:13 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:35522 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759257AbXHBQaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 12:30:11 -0400
+Date: Thu, 2 Aug 2007 12:29:59 -0400
+Message-Id: <200708021629.l72GTxFE007558@agora.fsl.cs.sunysb.edu>
+From: Erez Zadok <ezk@cs.sunysb.edu>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gabriel C <nix.or.die@googlemail.com>, linux-kernel@vger.kernel.org,
+       ezk@cs.sunysb.edu, jsipek@cs.sunysb.edu
+Subject: Re: unionfs compile error ( Re: 2.6.23-rc1-mm2 ) 
+In-reply-to: Your message of "Wed, 01 Aug 2007 13:27:51 EDT."
+             <20070801172751.GA8565@filer.fsl.cs.sunysb.edu> 
+X-MailKey: Erez_Zadok
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 04:27:34PM +0200, Gabriel C wrote:
+In message <20070801172751.GA8565@filer.fsl.cs.sunysb.edu>, Josef Sipek writes:
+> On Wed, Aug 01, 2007 at 10:22:07AM -0700, Andrew Morton wrote:
+> > On Wed, 01 Aug 2007 12:33:18 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
+> > 
+> > > ....
+> > > 
+> > > fs/unionfs/file.c:147: error: 'file_fsync' undeclared here (not in a function)
+> > > make[2]: *** [fs/unionfs/file.o] Error 1
+> > > make[1]: *** [fs/unionfs] Error 2
+> > > make: *** [fs] Error 2
+> > > make: *** Waiting for unfinished jobs....
+> > > 
+> > > ...
+> > > 
+> > > Config can be found there -> http://194.231.229.228/MM/config-auto-3
+> > > 
+> > 
+> > This, I assume:
+> > 
+> > --- a/fs/unionfs/file.c~git-unionfs-fix-2
+> > +++ a/fs/unionfs/file.c
+> > @@ -17,6 +17,7 @@
+> >   */
+> >  
+> >  #include "union.h"
+> > +#include <linux/buffer_head.h>
+> >  
+> >  /*******************
+> >   * File Operations *
+> > _
+> > 
+> > (and no, sorry, I will not be complicit in that
+> > single-header-file-which-includes-the-whole-world junk).
 > 
-> >>> WARNING: vmlinux.o(.init.text+0x29d40): Section mismatch: reference to .exit.text:wbsd_release_resources (between 'wbsd_init' and 'wbsd_probe')
-> >>> WARNING: vmlinux.o(.init.text+0x29d49): Section mismatch: reference to .exit.text:wbsd_free_mmc (between 'wbsd_init' and 'wbsd_probe')
-> >>> WARNING: vmlinux.o(.init.text+0x29f28): Section mismatch: reference to .exit.text:wbsd_free_mmc (between 'wbsd_init' and 'wbsd_probe')
-> >> When a function is marked __exit and used from an init function then the safe choice
-> >> is to just remove the __exit marking. Usually this is small functions used
-> >> only in error situations.
-> >> Should be trivial too.
-> > 
-> > I'll look at those too
-> > 
-> >> Sorry - no patch this time. Could you try to look at it yorself then I will review.
-> > 
-> > Ok I'll try.
-> > 
+> Ouch. I had a fix for this, and it managed to get lost in the pile of
+> patches.
 > 
-> The warnings gone with this patch but I'm not really sure it is correct.
-Looks correct to me.
-You drop the __devexit marking for functions used outside __exit.
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> I'll fix it up and push fix to kernel.org.
 
-	Sam
-> 
-> 
->  drivers/mmc/host/wbsd.c |   10 +++++-----
->  1 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/mmc/host/wbsd.c b/drivers/mmc/host/wbsd.c
-> index e0c9808..9bf2a87 100644
-> --- a/drivers/mmc/host/wbsd.c
-> +++ b/drivers/mmc/host/wbsd.c
-> @@ -1266,7 +1266,7 @@ static int __devinit wbsd_alloc_mmc(struct device *dev)
->  	return 0;
->  }
->  
-> -static void __devexit wbsd_free_mmc(struct device *dev)
-> +static void wbsd_free_mmc(struct device *dev)
->  {
->  	struct mmc_host *mmc;
->  	struct wbsd_host *host;
-> @@ -1358,7 +1358,7 @@ static int __devinit wbsd_request_region(struct wbsd_host *host, int base)
->  	return 0;
->  }
->  
-> -static void __devexit wbsd_release_regions(struct wbsd_host *host)
-> +static void wbsd_release_regions(struct wbsd_host *host)
->  {
->  	if (host->base)
->  		release_region(host->base, 8);
-> @@ -1434,7 +1434,7 @@ err:
->  		"Falling back on FIFO.\n", dma);
->  }
->  
-> -static void __devexit wbsd_release_dma(struct wbsd_host *host)
-> +static void wbsd_release_dma(struct wbsd_host *host)
->  {
->  	if (host->dma_addr) {
->  		dma_unmap_single(mmc_dev(host->mmc), host->dma_addr,
-> @@ -1484,7 +1484,7 @@ static int __devinit wbsd_request_irq(struct wbsd_host *host, int irq)
->  	return 0;
->  }
->  
-> -static void __devexit wbsd_release_irq(struct wbsd_host *host)
-> +static void  wbsd_release_irq(struct wbsd_host *host)
->  {
->  	if (!host->irq)
->  		return;
-> @@ -1535,7 +1535,7 @@ static int __devinit wbsd_request_resources(struct wbsd_host *host,
->   * Release all resources for the host.
->   */
->  
-> -static void __devexit wbsd_release_resources(struct wbsd_host *host)
-> +static void wbsd_release_resources(struct wbsd_host *host)
->  {
->  	wbsd_release_dma(host);
->  	wbsd_release_irq(host);
+Jeff, make sure you push my fix which will work even if CONFIG_BLOCK=n is
+set.
+
+> Jeff.
+
+Erez.
