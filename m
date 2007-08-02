@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbXHBQgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbXHBQlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758806AbXHBQgb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756036AbXHBQgV
+	id S1758572AbXHBQlA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbXHBQkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:36:21 -0400
-Received: from ns2.suse.de ([195.135.220.15]:54896 "EHLO mx2.suse.de"
+	Thu, 2 Aug 2007 12:40:52 -0400
+Received: from ns2.suse.de ([195.135.220.15]:55143 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751165AbXHBQgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:36:19 -0400
-From: Andreas Schwab <schwab@suse.de>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: <trenn@suse.de>, "Adrian Bunk" <bunk@stusta.de>,
-       "Sam Ravnborg" <sam@ravnborg.org>, "Jan Dittmer" <jdi@l4x.org>,
-       "Len Brown" <lenb@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <linux-ia64@vger.kernel.org>
-Subject: Re: scripts/mod/file2alias.c cross compile problem
-References: <617E1C2C70743745A92448908E030B2A0211AFF0@scsmsx411.amr.corp.intel.com>
-X-Yow: ...A housewife is wearing a polypyrene jumpsuit!!
-Date: Thu, 02 Aug 2007 18:36:14 +0200
-In-Reply-To: <617E1C2C70743745A92448908E030B2A0211AFF0@scsmsx411.amr.corp.intel.com>
-	(Tony Luck's message of "Thu\, 2 Aug 2007 09\:25\:58 -0700")
-Message-ID: <jewswdvqpt.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.1 (gnu/linux)
+	id S1757378AbXHBQkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 12:40:51 -0400
+Date: Thu, 2 Aug 2007 09:43:29 -0700
+From: Greg KH <gregkh@suse.de>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Engraf <david.engraf@netcom.eu>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
+	we the driver is configured
+Message-ID: <20070802164329.GD28721@suse.de>
+References: <46B1844B.8090007@netcom.eu> <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Luck, Tony" <tony.luck@intel.com> writes:
+On Thu, Aug 02, 2007 at 10:32:21AM -0400, Alan Stern wrote:
+> On Thu, 2 Aug 2007, David Engraf wrote:
+> 
+> > This would be solution too, but what if someone uses the uhci controller
+> > and don't want the
+> > ehci. So a single Kconfig flag wouldn't be enough, we have to add 3
+> > flags for uchi, ohci and
+> > ehci. I think this maybe a little bit difficult when configuring the kernel.
+> > The best solution would be when we could use the CONFIG_USB_xxxx_HCD
+> > flag, but it
+> > seems that some hardware has problems when we disable the handoff and
+> > let the BIOS
+> > control the usb controller. Do you know any of this hardware?
+> 
+> The email messages are hidden in the depths of the linux-usb-devel 
+> archives.  Maybe you can find them by checking the Git history for 
+> drivers/usb/host/pci-quirks.c, finding the dates for patches that 
+> affected the handoff code, and then searching through the archives near 
+> those dates.
+> 
+> IIRC the problems arose on some MIPS machines.  And I don't think the 
+> problem involved letting the firmware manage the USB controller; I 
+> think the problem came when the controller driver tried to do the 
+> handoff later on.
 
->> +#define FILLUP_LEN	7 /* dirty fix for i386 -> 64bit cross-compilation */
->>  
->>  struct acpi_device_id {
->>  	__u8 id[ACPI_ID_LEN];
->> +	__u8 dummy[FILLUP_LEN];
->>  	kernel_ulong_t driver_data;
->>  };
->
-> What's so special about this structure that we get an error?
+It wasn't just MIPS.  IBM has a very popular blade system that has huge
+issues with this, and I think there are some other IBM systems based on
+the same BIOS that also do bad things if we don't grab the USB
+controller away from the BIOS as soon as possible (nasty interrupt and
+other messes happen...)
 
-It's special because it's a device_id structure, and those structures
-must come out identical using either the host or the target compiler.
+thanks,
 
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+greg k-h
