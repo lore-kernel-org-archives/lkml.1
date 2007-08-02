@@ -1,80 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbXHBTPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759635AbXHBTQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbXHBTPk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXHBTPb
+	id S1759635AbXHBTQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753843AbXHBTQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:15:31 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58553 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751368AbXHBTPa (ORCPT
+	Thu, 2 Aug 2007 15:16:24 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48626 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751207AbXHBTQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:15:30 -0400
-Date: Thu, 2 Aug 2007 21:15:09 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "Luck, Tony" <tony.luck@intel.com>, Andreas Schwab <schwab@suse.de>,
-       trenn@suse.de, Jan Dittmer <jdi@l4x.org>, Len Brown <lenb@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       rusty@rustcorp.com.au, jcm@jonmasters.org
-Subject: Re: scripts/mod/file2alias.c cross compile problem
-Message-ID: <20070802191509.GX3972@stusta.de>
-References: <jewswdvqpt.fsf@sykes.suse.de> <617E1C2C70743745A92448908E030B2A02156CC1@scsmsx411.amr.corp.intel.com> <20070802180903.GD2431@uranus.ravnborg.org>
+	Thu, 2 Aug 2007 15:16:23 -0400
+Date: Thu, 2 Aug 2007 12:16:23 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+Subject: Re: [RFC PATCH] type safe allocator
+In-Reply-To: <E1IGVGf-0000sv-00@dorka.pomaz.szeredi.hu>
+Message-ID: <Pine.LNX.4.64.0708021211100.7948@schroedinger.engr.sgi.com>
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+ <Pine.LNX.4.64.0708012223520.3265@schroedinger.engr.sgi.com>
+ <E1IGVGf-0000sv-00@dorka.pomaz.szeredi.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070802180903.GD2431@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 08:09:03PM +0200, Sam Ravnborg wrote:
+On Thu, 2 Aug 2007, Miklos Szeredi wrote:
+
+> > If you define a new flag like GFP_ZERO_ATOMIC and GFP_ZERO_KERNEL you 
+> > could do
+> > 
+> > 	kalloc(struct, GFP_ZERO_KERNEL)
+> > 
+> > instead of adding new variants?
 > 
-> I second this. For anything visible in userspace from
-> include/* we require usage of the kernel specific
-> __u8, __u16, __u32, __u64 typedefs but for device_id we accept
-> kernel_ulong_t which result in the following crap in
-> file2alias.c:
-> 
-> /* We use the ELF typedefs for kernel_ulong_t but bite the bullet and
->  * use either stdint.h or inttypes.h for the rest. */
-> #if KERNEL_ELFCLASS == ELFCLASS32
-> typedef Elf32_Addr      kernel_ulong_t;
-> #define BITS_PER_LONG 32
-> #else
-> typedef Elf64_Addr      kernel_ulong_t;
-> #define BITS_PER_LONG 64
-> #endif
-> 
-> And we ought to have __u64 available.
-> See for example types.h from asm-i386:
-> #if defined(__GNUC__) && !defined(__STRICT_ANSI__)
-> typedef __signed__ long long __s64;
-> typedef unsigned long long __u64;
-> #endif
+> I don't really like this, introducing new gfp flags just makes
+> grepping harder.
 
+The __GFP_ZERO flag has been around for a long time. GFP_ZERO_ATOMIC and 
+GFP_ZERO_KERNEL or so could just be a shorthand notation.
 
-You are talking about something different than the current problem.
+Maybe
 
-The current problem is that when crosscompiling we get a different 
-_padding_ due to file2alias.c being compiled with HOSTCC.
+#define GFP_ZATOMIC (GFP_ATOMIC | __GFP_ZERO)
+#define GFP_ZKERNEL (GFP_KERNEL | __GFP_ZERO)
 
+?
 
-What you are talking about is a different issue, and I can't talk about 
-it since I don't understand these interactions between modpost and depmod.
+> I do think that at least having a zeroing and a non-zeroing variant
+> makes sense.
 
+They require a duplication of the API and have led to inconsistencies 
+because the complete API was not available with zeroing capabilities 
+(there is still no kzalloc_node f.e.). 
+Using a gfp flag allows all allocation functions to optionally zero data 
+without having to define multiple functions.
 
-> 	Sam
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+The definition of new variants is a bit complicated since the allocator 
+functions contain lots of smarts to do inline constant folding. This is 
+necessary to determine the correct slab at compile time. I'd rather have 
+as few of those as possible.
