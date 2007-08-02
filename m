@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbXHBOza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbXHBO52@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbXHBOza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170AbXHBOzV
+	id S1757425AbXHBO52 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:57:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbXHBO5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:55:21 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:13749 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753482AbXHBOzS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:55:18 -0400
-X-IronPort-AV: i="4.19,213,1183348800"; 
-   d="scan'208"; a="47211213:sNHT38213042"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Richard Knutsson" <ricknu-0@student.ltu.se>
-Subject: Re: [PATCH 06/68] 0 -> NULL, for arch/frv
-Date: Thu, 2 Aug 2007 10:58:47 -0400
-User-Agent: KMail/1.9.5
-Cc: "Mike Frysinger" <vapier.adi@gmail.com>,
-       "Yoann Padioleau" <padator@wanadoo.fr>,
-       "David Howells" <dhowells@redhat.com>, kernel-janitors@vger.kernel.org,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <200707270944.LAA17167@ifs.emn.fr> <8bd0f97a0708010303j7f443b06lf9d77f6d36816237@mail.gmail.com> <46B062AF.1040907@student.ltu.se>
-In-Reply-To: <46B062AF.1040907@student.ltu.se>
+	Thu, 2 Aug 2007 10:57:20 -0400
+Received: from rtr.ca ([64.26.128.89]:3190 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750742AbXHBO5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 10:57:19 -0400
+Message-ID: <46B1F0CB.9060106@rtr.ca>
+Date: Thu, 02 Aug 2007 10:57:15 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>,
+       Robert Hancock <hancockr@shaw.ca>, Lee Howard <faxguy@howardsilvan.com>,
+       linux-serial@vger.kernel.org, tytso@mit.edu,
+       linux-kernel@vger.kernel.org
+Subject: Re: serial flow control appears broken
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl> <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl> <46AA3801.7090204@shaw.ca> <20070728092842.GC26443@flint.arm.linux.org.uk> <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl>
+In-Reply-To: <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708021058.47811.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 02 Aug 2007 14:54:58.0440 (UTC) FILETIME=[18707080:01C7D515]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 1 Aug 2007 06:38, Richard Knutsson pondered:
-> If I understood Robin correctly, he suggested that checkpatch.pl would 
-> tell to convert "x == NULL" to "!x", if that would be the preferred way.
+Maciej W. Rozycki wrote:
+> On Sat, 28 Jul 2007, Russell King wrote:
+> 
+>> Essentially, any complex interrupt handler (such as an IDE interrupt
+>> doing a multi-sector PIO transfer _in interrupt context_) can cause this
+>> kind of starvation.  That's why Linux 1.x had bottom halves - so that
+>> the time consuming work could be moved out of the interrupt handler,
+>> thereby causing minimal the blockage of other interrupts.
+>>
+>> Unfortunately, that kind of design has been long since forgotten.
+>> Apparantly modern machines are fast enough that it doesn't have to be
+>> worried about anymore...  Or are they?
+> 
+>  I would guess it is not that the machines are fast enough, but that this 
+> two-level processing makes things more complicated.  Enough that most 
+> people would not bother digging into it unless really forced.  Only 
+> occasional latency problems are probably not enough of a force.
 
-I guess I was asking - _if_ this is really important - lets pick a 
-preferred way, and try to use the existing infrastructure (sparce 
-or checkpatch.pl) to try to enforce it.
+I don't believe the speed of the machine has much to do with it,
+as IDE PIO is always at pretty much the same speed (or slower)
+regardless of the CPU speed.
 
-If it is just pedantic - let it go. There are lots of ways to do the 
-same thing, one is not necessarily more correct. (but in this case - 
-I see the point, and agree).
+Best case is about .120 usec per 16-bit word, but that doesn't often pan out
+in practice.  More typical is something closer to 1 usec per 16-bit word.
 
-> BTW, too bad checkpatch.pl does not know the types, since it otherwise 
-> could check for the "x [=!]= 0"-thing.
+So, for multcount=16 (very common), best case is 16 * 256 * .120 = 491 usec,
+plus extra overhead for reading the IDE status register (another usec or so),
+and other stuff.  Figure maybe 500usec total per interrupt for multcount=16
+in the best case, or 4000usec in the worst case.
 
-Then let's ask people to use sparse on anything in their diffstat.
-(or at least recommend it).
+At 115200bps, we get a byte every 86 usec or so.  Assuming the UART FIFO
+is set to interrupt (warn) us at 12/16 full, we have 4*86 = 344 usec to
+respond and de-assert RTS.  Less than that in practice.
 
-Sparse isn't mentioned in Documentation/SubmittingPatches yet. (if
-it is a suggestion)
+Conclusion:  using IDE multisector PIO is not a good idea with high speed
+serial transfers happening, since we cannot respond quickly enough.
 
-Even something completely stupid like:
+It might be possible to set the buffer underrun threshold lower in the UART (?).
 
-diff -uprN old new | diffstat -p 0 | grep -v changed | awk '{print $1}' | sed 's/\.c/\.o/' | xargs make C=2
-
-worked for me.
-
--Robin
+All that said, I doubt that his system is using IDE PIO in the first place.
+Dunno how long IDE DMA interrupts take, but it's probably in the 20-50 usec range.
