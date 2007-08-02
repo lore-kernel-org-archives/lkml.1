@@ -1,131 +1,370 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbXHBXKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761549AbXHBXLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbXHBXKT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbXHBXKF
+	id S1761549AbXHBXLr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXHBXLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:10:05 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:14053 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757583AbXHBXKD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:10:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=iGKXghr1OrO5sNBBNMa00puadNPBuSz5b7jlOeJu3cUbFSmxY4muoB3vgPaQOmaigTSvkxJOnJas70pkvAJqmVAcGftkRnc8ztKZWPnknRr9+Yru+CIytItyO+sKelh98znRPFQ6NY6Pjv07BEqihovQCZNeeibcZ69orWuoSPI=
-Message-ID: <9a8748490708021610k31a86c17y58fb631a36dfdb6a@mail.gmail.com>
-Date: Fri, 3 Aug 2007 01:10:02 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] Fix two potential mem leaks in MPT Fusion (mpt_attach())
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "James Bottomley" <James.Bottomley@steeleye.com>,
-       "Christoph Lameter" <clameter@sgi.com>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
-       "Ingo Molnar" <mingo@elte.hu>, "Matt Mackall" <mpm@selenic.com>
-In-Reply-To: <20070802160406.5c5b5ff6.akpm@linux-foundation.org>
+	Thu, 2 Aug 2007 19:11:39 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:52012 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756185AbXHBXLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 19:11:38 -0400
+Date: Thu, 2 Aug 2007 19:11:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       LKML <linux-kernel@vger.kernel.org>, werner@titro.de
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/2] hysdn: convert to PCI hotplug API
+Message-ID: <20070802231137.GA20071@havoc.gtf.org>
+References: <20070724074653.GA14987@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200708020155.33690.jesper.juhl@gmail.com>
-	 <20070801172653.1fd44e99.akpm@linux-foundation.org>
-	 <9a8748490708020120w4bbfe6d1n6f6986aec507316@mail.gmail.com>
-	 <200708030053.45297.jesper.juhl@gmail.com>
-	 <20070802160406.5c5b5ff6.akpm@linux-foundation.org>
+In-Reply-To: <20070724074653.GA14987@havoc.gtf.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Fri, 3 Aug 2007 00:53:44 +0200
-> Jesper Juhl <jesper.juhl@gmail.com> wrote:
->
-> > On Thursday 02 August 2007 10:20:47 Jesper Juhl wrote:
-> > > On 02/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> > [snip]
-> > > > y'know, we could have a debug option which will spit warnings if someone
-> > > > does a !__GFP_WAIT allocation while !in_atomic() (only works if
-> > > > CONFIG_PREEMPT).
-> > > >
-> > > > But please, make it depend on !CONFIG_AKPM.  I shudder to think about all
-> > > > the stuff it would pick up.
-> > > >
-> > >
-> > > I can try to cook up something like that tonight...
-> > >
-> >
-> > Ok, so I did a quick hack and I'm drowning in dmesg WARN_ON() traces
-> > with my usual config.
-> >
-> > This is what I added :
-> >
-> > diff --git a/mm/slub.c b/mm/slub.c
-> > index 6c6d74f..e60dd9e 100644
-> > --- a/mm/slub.c
-> > +++ b/mm/slub.c
-> > @@ -20,6 +20,7 @@
-> >  #include <linux/mempolicy.h>
-> >  #include <linux/ctype.h>
-> >  #include <linux/kallsyms.h>
-> > +#include <linux/hardirq.h>
-> >
-> >  /*
-> >   * Lock order:
-> > @@ -1568,6 +1569,10 @@ static void __always_inline *slab_alloc(struct kmem_cache *s,
-> >
-> >  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
-> >  {
-> > +#ifdef CONFIG_PREEMPT
-> > +     WARN_ON( !in_atomic() && !(gfpflags & __GFP_WAIT) );
-> > +#endif
-> > +
-> >       return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
-> >  }
-> >  EXPORT_SYMBOL(kmem_cache_alloc);
-> > @@ -2370,6 +2375,10 @@ void *__kmalloc(size_t size, gfp_t flags)
-> >  {
-> >       struct kmem_cache *s = get_slab(size, flags);
-> >
-> > +#ifdef CONFIG_PREEMPT
-> > +     WARN_ON( !in_atomic() && !(flags & __GFP_WAIT) );
-> > +#endif
-> > +
-> >       if (ZERO_OR_NULL_PTR(s))
-> >               return s;
-> >
-> >
-> >
-> > And this is what I'm getting heaps of :
-> >
-> > ...
-> > [  165.128607]  =======================
-> > [  165.128609] WARNING: at mm/slub.c:1573 kmem_cache_alloc()
-> > [  165.128611]  [<c010400a>] show_trace_log_lvl+0x1a/0x30
-> > [  165.128614]  [<c0104cd2>] show_trace+0x12/0x20
-> > [  165.128616]  [<c0104cf6>] dump_stack+0x16/0x20
-> > [  165.128619]  [<c0175ad3>] kmem_cache_alloc+0xe3/0x110
-> > [  165.128622]  [<c015b10e>] mempool_alloc_slab+0xe/0x10
-> > [  165.128625]  [<c015b211>] mempool_alloc+0x31/0xf0
->
-> I said you would.
->
-Hehe, I know you did. I'm not complaining, simply stating facts
-(confirming what you said actually).
 
-> > So, where do we go from here?
->
-> Where I said ;) Add a new __GFP_ flag which suppresses the warning, add
-> that flag to known-to-be-OK callsites, such as mempool_alloc().
->
-Ok, I'll try to play around with this some more, try to filter out
-false positives and see what I'm left with (if anything - I'm pretty
-limited hardware-wise, so I can only test a small subset of drivers,
-archs etc) - I'll keep you informed, but expect a few days to pass
-before I have any news...
+This patch has been committed to the 'hysdn' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
+commit b025c86cba3bb9fd7218ce6e8a60f0c65b414d0c
+Author: Jeff Garzik <jeff@garzik.org>
+Date:   Thu Aug 2 18:51:14 2007 -0400
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+    [ISDN] hysdn: convert to PCI hotplug API
+    
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+ drivers/isdn/hysdn/hysdn_init.c |  274 ++++++++++++++++++----------------------
+ 1 file changed, 130 insertions(+), 144 deletions(-)
+
+b025c86cba3bb9fd7218ce6e8a60f0c65b414d0c
+diff --git a/drivers/isdn/hysdn/hysdn_init.c b/drivers/isdn/hysdn/hysdn_init.c
+index 9e01748..b7cc5c2 100644
+--- a/drivers/isdn/hysdn/hysdn_init.c
++++ b/drivers/isdn/hysdn/hysdn_init.c
+@@ -20,10 +20,15 @@
+ #include "hysdn_defs.h"
+ 
+ static struct pci_device_id hysdn_pci_tbl[] = {
+-	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_METRO},
+-	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_CHAMP2},
+-	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_ERGO},
+-	{PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX, PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_OLD_ERGO},
++	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
++	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_METRO, 0, 0, BD_METRO },
++	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
++	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_CHAMP2, 0, 0, BD_CHAMP2 },
++	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
++	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_ERGO, 0, 0, BD_ERGO },
++	{ PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
++	  PCI_ANY_ID, PCI_SUBDEVICE_ID_HYPERCOPE_OLD_ERGO, 0, 0, BD_ERGO },
++
+ 	{ }				/* Terminating entry */
+ };
+ MODULE_DEVICE_TABLE(pci, hysdn_pci_tbl);
+@@ -34,128 +39,7 @@ MODULE_LICENSE("GPL");
+ static char *hysdn_init_revision = "$Revision: 1.6.6.6 $";
+ static int cardmax;		/* number of found cards */
+ hysdn_card *card_root = NULL;	/* pointer to first card */
+-
+-/**********************************************/
+-/* table assigning PCI-sub ids to board types */
+-/* the last entry contains all 0              */
+-/**********************************************/
+-static struct {
+-	unsigned short subid;		/* PCI sub id */
+-	unsigned char cardtyp;		/* card type assigned */
+-} pci_subid_map[] = {
+-
+-	{
+-		PCI_SUBDEVICE_ID_HYPERCOPE_METRO, BD_METRO
+-	},
+-	{
+-		PCI_SUBDEVICE_ID_HYPERCOPE_CHAMP2, BD_CHAMP2
+-	},
+-	{
+-		PCI_SUBDEVICE_ID_HYPERCOPE_ERGO, BD_ERGO
+-	},
+-	{
+-		PCI_SUBDEVICE_ID_HYPERCOPE_OLD_ERGO, BD_ERGO
+-	},
+-	{
+-		0, 0
+-	}			/* terminating entry */
+-};
+-
+-
+-/*********************************************************************/
+-/* search_cards searches for available cards in the pci config data. */
+-/* If a card is found, the card structure is allocated and the cards */
+-/* ressources are reserved. cardmax is incremented.                  */
+-/*********************************************************************/
+-static void
+-search_cards(void)
+-{
+-	struct pci_dev *akt_pcidev = NULL;
+-	hysdn_card *card, *card_last;
+-	int i;
+-
+-	card_root = NULL;
+-	card_last = NULL;
+-	while ((akt_pcidev = pci_find_device(PCI_VENDOR_ID_HYPERCOPE, PCI_DEVICE_ID_HYPERCOPE_PLX,
+-					     akt_pcidev)) != NULL) {
+-		if (pci_enable_device(akt_pcidev))
+-			continue;
+-
+-		if (!(card = kzalloc(sizeof(hysdn_card), GFP_KERNEL))) {
+-			printk(KERN_ERR "HYSDN: unable to alloc device mem \n");
+-			return;
+-		}
+-		card->myid = cardmax;	/* set own id */
+-		card->bus = akt_pcidev->bus->number;
+-		card->devfn = akt_pcidev->devfn;	/* slot + function */
+-		card->subsysid = akt_pcidev->subsystem_device;
+-		card->irq = akt_pcidev->irq;
+-		card->iobase = pci_resource_start(akt_pcidev, PCI_REG_PLX_IO_BASE);
+-		card->plxbase = pci_resource_start(akt_pcidev, PCI_REG_PLX_MEM_BASE);
+-		card->membase = pci_resource_start(akt_pcidev, PCI_REG_MEMORY_BASE);
+-		card->brdtype = BD_NONE;	/* unknown */
+-		card->debug_flags = DEF_DEB_FLAGS;	/* set default debug */
+-		card->faxchans = 0;	/* default no fax channels */
+-		card->bchans = 2;	/* and 2 b-channels */
+-		for (i = 0; pci_subid_map[i].subid; i++)
+-			if (pci_subid_map[i].subid == card->subsysid) {
+-				card->brdtype = pci_subid_map[i].cardtyp;
+-				break;
+-			}
+-		if (card->brdtype != BD_NONE) {
+-			if (ergo_inithardware(card)) {
+-				printk(KERN_WARNING "HYSDN: card at io 0x%04x already in use\n", card->iobase);
+-				kfree(card);
+-				continue;
+-			}
+-		} else {
+-			printk(KERN_WARNING "HYSDN: unknown card id 0x%04x\n", card->subsysid);
+-			kfree(card);	/* release mem */
+-			continue;
+-		}
+-		cardmax++;
+-		card->next = NULL;	/*end of chain */
+-		if (card_last)
+-			card_last->next = card;		/* pointer to next card */
+-		else
+-			card_root = card;
+-		card_last = card;	/* new chain end */
+-	}			/* device found */
+-}				/* search_cards */
+-
+-/************************************************************************************/
+-/* free_resources frees the acquired PCI resources and returns the allocated memory */
+-/************************************************************************************/
+-static void
+-free_resources(void)
+-{
+-	hysdn_card *card;
+-
+-	while (card_root) {
+-		card = card_root;
+-		if (card->releasehardware)
+-			card->releasehardware(card);	/* free all hardware resources */
+-		card_root = card_root->next;	/* remove card from chain */
+-		kfree(card);	/* return mem */
+-
+-	}			/* while card_root */
+-}				/* free_resources */
+-
+-/**************************************************************************/
+-/* stop_cards disables (hardware resets) all cards and disables interrupt */
+-/**************************************************************************/
+-static void
+-stop_cards(void)
+-{
+-	hysdn_card *card;
+-
+-	card = card_root;	/* first in chain */
+-	while (card) {
+-		if (card->stopcard)
+-			card->stopcard(card);
+-		card = card->next;	/* remove card from chain */
+-	}			/* while card */
+-}				/* stop_cards */
++static hysdn_card *card_last = NULL;	/* pointer to first card */
+ 
+ 
+ /****************************************************************************/
+@@ -191,31 +75,138 @@ hysdn_getrev(const char *revision)
+ /* and the module is added to the list in /proc/modules, otherwise an error */
+ /* is assumed and the module will not be kept in memory.                    */
+ /****************************************************************************/
++
++static int __devinit hysdn_pci_init_one(struct pci_dev *akt_pcidev,
++					const struct pci_device_id *ent)
++{
++	hysdn_card *card;
++	int rc;
++
++	rc = pci_enable_device(akt_pcidev);
++	if (rc)
++		return rc;
++
++	if (!(card = kzalloc(sizeof(hysdn_card), GFP_KERNEL))) {
++		printk(KERN_ERR "HYSDN: unable to alloc device mem \n");
++		rc = -ENOMEM;
++		goto err_out;
++	}
++	card->myid = cardmax;	/* set own id */
++	card->bus = akt_pcidev->bus->number;
++	card->devfn = akt_pcidev->devfn;	/* slot + function */
++	card->subsysid = akt_pcidev->subsystem_device;
++	card->irq = akt_pcidev->irq;
++	card->iobase = pci_resource_start(akt_pcidev, PCI_REG_PLX_IO_BASE);
++	card->plxbase = pci_resource_start(akt_pcidev, PCI_REG_PLX_MEM_BASE);
++	card->membase = pci_resource_start(akt_pcidev, PCI_REG_MEMORY_BASE);
++	card->brdtype = BD_NONE;	/* unknown */
++	card->debug_flags = DEF_DEB_FLAGS;	/* set default debug */
++	card->faxchans = 0;	/* default no fax channels */
++	card->bchans = 2;	/* and 2 b-channels */
++	card->brdtype = ent->driver_data;
++
++	if (ergo_inithardware(card)) {
++		printk(KERN_WARNING "HYSDN: card at io 0x%04x already in use\n", card->iobase);
++		rc = -EBUSY;
++		goto err_out_card;
++	}
++
++	cardmax++;
++	card->next = NULL;	/*end of chain */
++	if (card_last)
++		card_last->next = card;		/* pointer to next card */
++	else
++		card_root = card;
++	card_last = card;	/* new chain end */
++
++	pci_set_drvdata(akt_pcidev, card);
++	return 0;
++
++err_out_card:
++	kfree(card);
++err_out:
++	pci_disable_device(akt_pcidev);
++	return rc;
++}
++
++static void __devexit hysdn_pci_remove_one(struct pci_dev *akt_pcidev)
++{
++	hysdn_card *card = pci_get_drvdata(akt_pcidev);
++
++	pci_set_drvdata(akt_pcidev, NULL);
++
++	if (card->stopcard)
++		card->stopcard(card);
++
++#ifdef CONFIG_HYSDN_CAPI
++	hycapi_capi_release(card);
++#endif
++
++	if (card->releasehardware)
++		card->releasehardware(card);   /* free all hardware resources */
++
++	if (card == card_root) {
++		card_root = card_root->next;
++		if (!card_root)
++			card_last = NULL;
++	} else {
++		hysdn_card *tmp = card_root;
++		while (tmp) {
++			if (tmp->next == card)
++				tmp->next = card->next;
++			card_last = tmp;
++			tmp = tmp->next;
++		}
++	}
++
++	kfree(card);
++	pci_disable_device(akt_pcidev);
++}
++
++static struct pci_driver hysdn_pci_driver = {
++	.name		= "hysdn",
++	.id_table	= hysdn_pci_tbl,
++	.probe		= hysdn_pci_init_one,
++	.remove		= __devexit_p(hysdn_pci_remove_one),
++};
++
++static int hysdn_have_procfs;
++
+ static int __init
+ hysdn_init(void)
+ {
+ 	char tmp[50];
++	int rc;
+ 
+ 	strcpy(tmp, hysdn_init_revision);
+ 	printk(KERN_NOTICE "HYSDN: module Rev: %s loaded\n", hysdn_getrev(tmp));
+ 	strcpy(tmp, hysdn_net_revision);
+ 	printk(KERN_NOTICE "HYSDN: network interface Rev: %s \n", hysdn_getrev(tmp));
+-	search_cards();
++
++	rc = pci_register_driver(&hysdn_pci_driver);
++	if (rc)
++		return rc;
++
+ 	printk(KERN_INFO "HYSDN: %d card(s) found.\n", cardmax);
+ 
+-	if (hysdn_procconf_init()) {
+-		free_resources();	/* proc file_sys not created */
+-		return (-1);
+-	}
++	if (!hysdn_procconf_init())
++		hysdn_have_procfs = 1;
++
+ #ifdef CONFIG_HYSDN_CAPI
+ 	if(cardmax > 0) {
+ 		if(hycapi_init()) {
+ 			printk(KERN_ERR "HYCAPI: init failed\n");
+-			return(-1);
++
++			if (hysdn_have_procfs)
++				hysdn_procconf_release();
++
++			pci_unregister_driver(&hysdn_pci_driver);
++			return -ESPIPE;
+ 		}
+ 	}
+ #endif /* CONFIG_HYSDN_CAPI */
+-	return (0);		/* no error */
++
++	return 0;		/* no error */
+ }				/* init_module */
+ 
+ 
+@@ -230,20 +221,15 @@ hysdn_init(void)
+ static void __exit
+ hysdn_exit(void)
+ {
++	if (hysdn_have_procfs)
++		hysdn_procconf_release();
++
++	pci_unregister_driver(&hysdn_pci_driver);
++
+ #ifdef CONFIG_HYSDN_CAPI
+-	hysdn_card *card;
+-#endif /* CONFIG_HYSDN_CAPI */
+-	stop_cards();
+-#ifdef CONFIG_HYSDN_CAPI
+-	card = card_root;	/* first in chain */
+-	while (card) {
+-		hycapi_capi_release(card);
+-		card = card->next;	/* remove card from chain */
+-	}			/* while card */
+ 	hycapi_cleanup();
+ #endif /* CONFIG_HYSDN_CAPI */
+-	hysdn_procconf_release();
+-	free_resources();
++
+ 	printk(KERN_NOTICE "HYSDN: module unloaded\n");
+ }				/* cleanup_module */
+ 
