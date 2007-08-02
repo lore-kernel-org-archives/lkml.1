@@ -1,55 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756620AbXHBPEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756299AbXHBPJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756620AbXHBPEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 11:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbXHBPEE
+	id S1756299AbXHBPJV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 11:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbXHBPJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 11:04:04 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59871 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750818AbXHBPEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 11:04:01 -0400
-Date: Thu, 2 Aug 2007 17:03:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Roehricht <ml@felicis.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Scheduling the highest priority task
-Message-ID: <20070802150350.GA3030@elte.hu>
-References: <8KLFD-G9-5@gated-at.bofh.it> <46B19CA1.7050204@felicis.org> <20070802114012.GA4067@elte.hu> <46B1F182.3010608@felicis.org>
+	Thu, 2 Aug 2007 11:09:08 -0400
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:59427 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753003AbXHBPJH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 11:09:07 -0400
+Date: Thu, 2 Aug 2007 11:09:06 -0400
+To: Marc Perkel <mperkel@yahoo.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Woke up to a crashed kernet this morning - nVidia is crap
+Message-ID: <20070802150906.GC14084@csclub.uwaterloo.ca>
+References: <6bffcb0e0708020728x5751fc76pad5deadce3a21a5b@mail.gmail.com> <898083.40014.qm@web52507.mail.re2.yahoo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B1F182.3010608@felicis.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <898083.40014.qm@web52507.mail.re2.yahoo.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Aug 02, 2007 at 07:46:49AM -0700, Marc Perkel wrote:
+> OK - so the driver I downloaded from nVidia to fix
+> their problem I was having with the video installed
+> drivers for everything? I'm really getting to dislike
+> nVidia.
 
-* Martin Roehricht <ml@felicis.org> wrote:
+It installs a kernel module just for the video card.  Nothing else.  But
+being a kernel module means any bugs in it could mess up other stuff in
+the kernel.
 
-> On 08/02/2007 01:40 PM, Ingo Molnar wrote:
-> >in the SMP migration code, the 'old scheduler' indeed picks the lowest 
-> >priority one, _except_ if that task is running on another CPU or is too 
-> >'cache hot':
-> 
-> But why is it, that the scheduler picks the lowest priority one? I 
-> thought sched_find_first_bit() picks the index of the lowest order bit 
-> in the bitmap and thus the highest priority job. Is that wrong? What 
-> needs to be changed to let the scheduler pick the highest priority 
-> task from a given runqueue? I am very confused ...
+Now if you can reproduce the crash without the nvidia module, then you
+have something to report.  For what it is worth, it seems the nvidia
+module has very rarely been the cause of crashes, but since you can
+never tell, it is best to reproduce the problem without it to be sure.
 
-it first picks the lowest index (i.e. the highest priority active 
-priority-queue), but within those tasks (each task in that priority 
-queue has equal priority) the load-balancer has freedom to pick any. 
-Based on performance data we went for picking from the tail of the 
-queue.
-
-	Ingo
+--
+Len Sorensen
