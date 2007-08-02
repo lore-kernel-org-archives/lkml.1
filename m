@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXHBSde@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbXHBSdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbXHBSde (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 14:33:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbXHBSd1
+	id S1759708AbXHBSdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 14:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759011AbXHBSdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 14:33:27 -0400
-Received: from stephens.ittc.ku.edu ([129.237.125.220]:52118 "EHLO
-	stephens.ittc.ku.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753863AbXHBSd0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 14:33:26 -0400
-Date: Thu, 2 Aug 2007 13:32:51 -0500
-From: Noah Watkins <nwatkins@ittc.ku.edu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
-       "systemtap@sourceware.org" <systemtap@sourceware.org>
-Subject: Re: [patch 0/1] extending low-level markers
-Message-ID: <20070802183251.GA15216@ittc.ku.edu>
-References: <20070801215723.GA10470@ittc.ku.edu> <20070802164437.GA27003@Krystal>
+	Thu, 2 Aug 2007 14:33:42 -0400
+Received: from dvhart.com ([64.146.134.43]:46027 "EHLO dvhart.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756323AbXHBSdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 14:33:41 -0400
+Message-ID: <46B22383.5020109@mbligh.org>
+Date: Thu, 02 Aug 2007 11:33:39 -0700
+From: Martin Bligh <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070802164437.GA27003@Krystal>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-2.0.2 (stephens.ittc.ku.edu [129.237.125.220]); Thu, 02 Aug 2007 13:32:51 -0500 (CDT)
-X-VirusScan: Clean
-X-MailScanner-From: nwatkins@ittc.ku.edu
+To: Nick Piggin <npiggin@suse.de>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de> <46B0C8A3.8090506@mbligh.org> <1185993169.5059.79.camel@localhost> <46B10E9B.2030907@mbligh.org> <20070802013631.GA15595@wotan.suse.de>
+In-Reply-To: <20070802013631.GA15595@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/08/07 12:44 -0400, Mathieu Desnoyers wrote:
-> * nwatkins@ittc.ku.edu (nwatkins@ittc.ku.edu) wrote:
-> > Mathieu
-> > 
-> > I have been working with your Kernel Markers infrastructure now for some
-> > time and have run into an extendability issue.
+Nick Piggin wrote:
+> On Wed, Aug 01, 2007 at 03:52:11PM -0700, Martin Bligh wrote:
+>>> And so forth.  Initial forks will balance.  If the children refuse to
+>>> die, forks will continue to balance.  If the parent starts seeing short
+>>> lived children, fork()s will eventually start to stay local.  
+>> Fork without exec is much more rare than without. Optimising for
+>> the uncommon case is the Wrong Thing to Do (tm). What we decided
 > 
-> Hi Noah,
+> It's only the wrong thing to do if it hurts the common case too
+> much. Considering we _already_ balance on exec, then adding another
+> balance on fork is not going to introduce some order of magnitude
+> problem -- at worst it would be 2x but it really isn't too slow
+> anyway (at least nobody complained when we added it).
 > 
-> Can you tell us a little bit more about what you are doing with the
-> markers ? I guess it could be useful to know so we can get a sense of
-> how it fits in the big picture.
+> One place where we found it helps is clone for threads.
+> 
+> If we didn't do such a bad job at keeping tasks together with their
+> local memory, then we might indeed reduce some of the balance-on-crap
+> and increase the aggressiveness of periodic balancing.
+> 
+> Considering we _already_ balance on fork/clone, I don't know what
+> your argument is against this patch is? Doing the balance earlier
+> and allocating more stuff on the local node is surely not a bad
+> idea.
 
-We have been maintaining an in-house instrumentation framework. The
-instrumenation points we use differ from Kernel Markers in that the desired
-callback is attached at compile time. Other than this difference, they
-are implemented in much the same way. The biggest difference is that we
-have been implicitly encoding the 'type' of instrumenation point by
-assigning a particular callback. For example one type of instrumenation
-point in our framework has the form:
+I don't know who turned that on ;-( I suspect nobody bothered
+actually measuring it at the time though, or used some crap
+benchmark like stream to do so. It should get reverted.
 
-ds_event(name, int, size_t, void *);
-
-Thus, a ds_event has a definite set of arguments, and some name, which
-is compatible with a trace_mark.
-
-We would like to be able to construct a ds_event on top of the low-level
-kernel markers and be able to differentiate between a standard trace_mark in
-in the markers section, and a trace_mark which actually represents a
-ds_event, or another event type.
-
-Granted we could simply match on compatible argument formats, its only
-that a separation between types would be nice in order to not touch
-markers which are of not interest to us, hence this notion of type.
-Our framework would have blindly attached some callback to all
-points which had matching argument formats, perhaps many that were not
-inserted using ds_event (or some other api built on top of markers).
-
-The biggest problem we are facing now is with a set of points which
-cooperate together in the sense that one references the others (or some
-other connection topology). For example:
-
-ds_point_start(NAME, params)
-ds_point_end(NAME, params)
-
-In this situation ds_point_start collects some data, stashes it in its
-private data area,  and ds_point_end references the corresponding
-ds_point_start when it fires. The two points are wired up by our
-framework (using the marker's private data) and the NAME, in order to
-avoid lookups at logging time.
-
-So, in this case the names are the same which logically links them, but
-their functionality is different. The difference in functionality could
-again be encoded by the 'type' of point.
-
-> The current approach is to use the marker name as a way to specify
-> markers "group". If we go with a "flavor" enumeration instead, we would
-> have to add an enumeration of every markers users in marker.h, which I
-> am a bit reluctant to do.
-
-This would have to be my biggest complaint with the 'flavor' concept as
-well. However, if all points in main-line always used no concept of
-flavor (or essentially the default flavor) then users wishing to use the
-flavor enumeration out of main-line development could do so?
-
-Hope this helps portray more of what we are trying to do.
-
-Noah
