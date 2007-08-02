@@ -1,59 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbXHBVDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbXHBVEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759726AbXHBVDU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755735AbXHBVDK
+	id S1760306AbXHBVEQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXHBVEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:03:10 -0400
-Received: from styx.suse.cz ([82.119.242.94]:44503 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755068AbXHBVDI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:03:08 -0400
-Date: Thu, 2 Aug 2007 23:03:21 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Sergey Vlasov <vsu@altlinux.ru>, Ulrich Kunitz <kune@deine-taler.de>,
-       Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Jan Kratochvil <honza@jikos.cz>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Is PIE randomization breaking klibc binaries?
-In-Reply-To: <46B22C25.2070601@zytor.com>
-Message-ID: <Pine.LNX.4.64.0708022259170.1779@jikos.suse.cz>
-References: <20070720211300.GA21644@deine-taler.de> <46A131BF.4080404@zytor.com>
- <46A6624E.60003@redhat.com> <46A667BD.5080106@redhat.com>
- <20070724220053.GA20531@deine-taler.de> <46A68003.6060901@redhat.com>
- <46A68118.9080902@zytor.com> <20070725063243.GA25148@deine-taler.de>
- <20070802230219.97b7f7b5.vsu@altlinux.ru> <46B22C25.2070601@zytor.com>
+	Thu, 2 Aug 2007 17:04:04 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:6664 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755735AbXHBVEC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 17:04:02 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ao8CACfjsUarR7MV/2dsb2JhbAA
+X-IronPort-AV: i="4.19,215,1183359600"; 
+   d="scan'208"; a="193357723:sNHT28383903"
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
+       paulus@samba.org, general@lists.openfabrics.org,
+       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
+X-Message-Flag: Warning: May contain useful information
+References: <200708021139.31695.hnguyen@linux.vnet.ibm.com>
+	<200708021608.16436.arnd@arndb.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 02 Aug 2007 14:03:59 -0700
+In-Reply-To: <200708021608.16436.arnd@arndb.de> (Arnd Bergmann's message of "Thu, 2 Aug 2007 16:08:15 +0200")
+Message-ID: <adawswd3ayo.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 02 Aug 2007 21:03:59.0445 (UTC) FILETIME=[A581B050:01C7D548]
+Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim1004 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, H. Peter Anvin wrote:
+ > remap_4k_pfn is defined in terms of remap_pfn_range if the base page
+ > size if 4k, so you don't need this #ifdef afaics.
 
-> Yup... it should probably be pointed out the reason the old kernel 
-> worked was nothing but pure dumb luck.  This was a GNU ld change which 
-> needed to be undone for klibc.  It's unfortunate that stock x86-64 
-> binaries leave as little of a null pointer range as they do, but that's 
-> life, unfortunately.  The other alternative is to map klibc just below 
-> the 2 GB point, which would also work, but the old way broke when the ld 
-> change went in.  As previously stated, klibc-1.4.35 or higher fixes 
-> this.
-
-Thanks for pointing this out. So it seems that maybe the mainline revert 
-of pie-randomization.patch was a little bit premature. Bret -- could you 
-please clarify whether you have experienced also klibc-related segfaults 
-with pie-randomization.patch applied, or you have had just random binaries 
-segfaulting, as you pointed out here: http://lkml.org/lkml/2007/7/21/31
-
-Seems like you are also using ubuntu, same as Ulrich, so you might have 
-been hitting the very same behavior of klibc-1.4.
-
-Thanks in advance for clarifying this, so that I can eventually resubmit 
-the pie-randomization patch.
-
-Thanks,
-
--- 
-Jiri Kosina
-SUSE Labs
+Good point.  I'll wait for an updated patch.
