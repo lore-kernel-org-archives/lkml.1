@@ -1,105 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbXHBGmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbXHBGt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754194AbXHBGmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 02:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbXHBGlw
+	id S1753952AbXHBGt6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 02:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbXHBGtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 02:41:52 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:46412 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbXHBGlv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 02:41:51 -0400
-Date: Thu, 2 Aug 2007 12:24:05 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Alexey Dobriyan <adobriyan@sw.ru>
-cc: akpm@osdl.org, viro@ftp.linux.org.uk, linux-kernel@vger.kernel.org,
-       devel@openvz.org, mingo@elte.hu
-Subject: Re: [PATCH] single_open/seq_release leak diagnostics
-In-Reply-To: <20070731120526.GA6883@localhost.sw.ru>
-Message-ID: <alpine.LFD.0.999.0708021217370.8258@enigma.security.iitk.ac.in>
-References: <20070731120526.GA6883@localhost.sw.ru>
+	Thu, 2 Aug 2007 02:49:47 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37325 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751930AbXHBGtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 02:49:46 -0400
+Date: Thu, 2 Aug 2007 12:19:43 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 00/26] VFS based Union Mount (V2)
+Message-ID: <20070802064943.GB24152@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070730161323.100048969@weierstrass.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070730161323.100048969@weierstrass.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jul 30, 2007 at 06:13:23PM +0200, Jan Blunck wrote:
+> Here is another post of the VFS based union mount implementation. Unlike the
+> traditional mount which hides the contents of the mount point, union mounts
+> present the merged view of the mount point and the mounted filesytem.
 
+Doesn't compile without CONFIG_DEBUG_UNION_MOUNT.
 
-On Tue, 31 Jul 2007, Alexey Dobriyan wrote:
+fs/namei.c: In function `hash_lookup_union':
+fs/namei.c:1798: error: implicit declaration of function `UM_DEBUG_LOOKUP'
+make[1]: *** [fs/namei.o] Error 1
 
-> [...]
-> --- a/fs/seq_file.c
-> +++ b/fs/seq_file.c
-> @@ -281,6 +281,13 @@ EXPORT_SYMBOL(seq_lseek);
->  int seq_release(struct inode *inode, struct file *file)
->  {
->  	struct seq_file *m = (struct seq_file *)file->private_data;
-> +
-> +	if (m->seq_ops_allocated) {
-> +		struct dentry *dentry = file->f_dentry;
-> +		printk("memory leak: '%.*s'\n",
-> +			dentry->d_name.len, dentry->d_name.name);
-> +		WARN_ON(1);
-> +	}
->  	kfree(m->buf);
->  	kfree(m);
->  	return 0;
-> @@ -401,9 +408,12 @@ int single_open(struct file *file, int (*show)(struct seq_file *, void *),
->  		op->stop = single_stop;
->  		op->show = show;
->  		res = seq_open(file, op);
-> -		if (!res)
-> -			((struct seq_file *)file->private_data)->private = data;
-> -		else
-> +		if (!res) {
-> +			struct seq_file *seq = file->private_data;
-> +
-> +			seq->private = data;
-> +			seq->seq_ops_allocated = 1;
-> +		} else
->  			kfree(op);
->  	}
->  	return res;
-> @@ -412,8 +422,13 @@ EXPORT_SYMBOL(single_open);
->  
->  int single_release(struct inode *inode, struct file *file)
->  {
-> -	const struct seq_operations *op = ((struct seq_file *)file->private_data)->op;
-> -	int res = seq_release(inode, file);
-> +	struct seq_file *seq = file->private_data;
-> +	const struct seq_operations *op = seq->op;
-> +	int res;
-> +
-> +	/* All roads lead to seq_release(), so... */
-> +	seq->seq_ops_allocated = 0;
-> +	res = seq_release(inode, file);
->  	kfree(op);
->  	return res;
->  }
-> --- a/include/linux/seq_file.h
-> +++ b/include/linux/seq_file.h
-> @@ -22,6 +22,7 @@ struct seq_file {
->  	struct mutex lock;
->  	const struct seq_operations *op;
->  	void *private;
-> +	unsigned int seq_ops_allocated:1;
->  };
->  
->  struct seq_operations {
-
-Hmm, curiously, I think this patch just killed the utility of having
-single_release() around in the first place :-)
-
-We might as well free the seq_file->op when we detect that we're
-leaking it in seq_release() itself. That makes single_release() wholly
-redundant to keep, and we can just convert all its users to seq_release()
-itself. With less of these around, lesser probability of someone coding
-a bug/leak in the first place!
-
-
-Just my Rs. 0.02,
-
-Satyam
+Regards,
+Bharata.
