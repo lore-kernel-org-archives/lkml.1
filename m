@@ -1,50 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760367AbXHBWvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbXHBWvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760367AbXHBWvU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbXHBWvN
+	id S1760026AbXHBWvr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:51:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757276AbXHBWvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:51:13 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51317 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755135AbXHBWvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:51:13 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/usMxt1ffucJ9eEqVe3E14V/52fk1j5GQAIJ4K/C
-	QNKtzqnOW6ocAN
-Date: Fri, 3 Aug 2007 00:51:16 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-In-Reply-To: <46B25B5E.30406@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.60.0708030046230.6774@poirot.grange>
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
- <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange>
- <46B25B5E.30406@s5r6.in-berlin.de>
+	Thu, 2 Aug 2007 18:51:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38418 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757105AbXHBWvg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:51:36 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
+In-Reply-To: Oleg Nesterov's message of  Friday, 3 August 2007 01:20:09 +0400 <20070802212009.GA516@tv-sign.ru>
+X-Shopping-List: (1) Sunburnt robber winters
+   (2) Astronautical pincushion salmon
+   (3) Courageous relaxers
+   (4) Recreational transient suction
+   (5) Reminiscent hand pancakes
+Message-Id: <20070802225127.3EC214D04B5@magilla.localdomain>
+Date: Thu,  2 Aug 2007 15:51:27 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007, Stefan Richter wrote:
+This looks fine to me, though I don't know anything about the nsproxy bit.
+Now that choose_new_parent is one trivial line, you might go on to get rid
+of it and roll its one line into reparent_thread.
 
-> Guennadi Liakhovetski wrote:
-> > with
-> > 
-> > 	char c[4] = "012345";
-> > 
-> > the compiler warns, but actually allocates a 6-byte long array...
-> 
-> Off-topic here, but:  sizeof c / sizeof *c == 4.
 
-Don't think it is OT here - kernel depends on gcc. And, what I meant, is, 
-that gcc places all 7 (sorry, not 6 as I said above) characters in the 
-.rodata section of the compiled object file. Of course, it doesn't mean, 
-that c is 7 characters long.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Thanks,
+Roland
