@@ -1,76 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758652AbXHBQOg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbXHBQOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758652AbXHBQOg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:14:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXHBQO1
+	id S1758849AbXHBQOv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbXHBQOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:14:27 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:26110 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753612AbXHBQO0 (ORCPT
+	Thu, 2 Aug 2007 12:14:42 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38627 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758744AbXHBQOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:14:26 -0400
-Date: Thu, 02 Aug 2007 10:14:22 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: serial flow control appears broken
-In-reply-to: <46B1F0CB.9060106@rtr.ca>
-To: Mark Lord <lkml@rtr.ca>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, linux-kernel@vger.kernel.org
-Message-id: <46B202DE.5000709@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
- <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com>
- <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
- <46AA2748.80703@howardsilvan.com>
- <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
- <46AA3801.7090204@shaw.ca> <20070728092842.GC26443@flint.arm.linux.org.uk>
- <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl>
- <46B1F0CB.9060106@rtr.ca>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 2 Aug 2007 12:14:41 -0400
+Date: Thu, 2 Aug 2007 17:14:37 +0100
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH] 2.6.23-rc1-mm1 - fix missing numa_zonelist_order sysctl
+Message-ID: <20070802161437.GA22493@skynet.ie>
+References: <1185994972.5059.91.camel@localhost> <20070802094445.6495e25d.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20070802094445.6495e25d.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> I don't believe the speed of the machine has much to do with it,
-> as IDE PIO is always at pretty much the same speed (or slower)
-> regardless of the CPU speed.
+On (02/08/07 09:44), KAMEZAWA Hiroyuki didst pronounce:
+> On Wed, 01 Aug 2007 15:02:51 -0400
+> Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
+> > [But, maybe reordering the zonelists is not such a good idea
+> > when ZONE_MOVABLE is populated?]
+> > 
 > 
-> Best case is about .120 usec per 16-bit word, but that doesn't often pan 
-> out
-> in practice.  More typical is something closer to 1 usec per 16-bit word.
+> It's case-by-case I think. In zone order with ZONE_MOVABLE case,
+> user's page cache will not use ZONE_NORMAL until ZONE_MOVABLE in all node
+> is exhausted. This is an expected behavior, I think.
 > 
-> So, for multcount=16 (very common), best case is 16 * 256 * .120 = 491 
-> usec,
-> plus extra overhead for reading the IDE status register (another usec or 
-> so),
-> and other stuff.  Figure maybe 500usec total per interrupt for multcount=16
-> in the best case, or 4000usec in the worst case.
-> 
-> At 115200bps, we get a byte every 86 usec or so.  Assuming the UART FIFO
-> is set to interrupt (warn) us at 12/16 full, we have 4*86 = 344 usec to
-> respond and de-assert RTS.  Less than that in practice.
-> 
-> Conclusion:  using IDE multisector PIO is not a good idea with high speed
-> serial transfers happening, since we cannot respond quickly enough.
-> 
-> It might be possible to set the buffer underrun threshold lower in the 
-> UART (?).
-> 
-> All that said, I doubt that his system is using IDE PIO in the first place.
-> Dunno how long IDE DMA interrupts take, but it's probably in the 20-50 
-> usec range.
 
-I think that PIO transfers only have to be done with interrupts disabled 
-on really old, evil controllers (without unmask set). I don't think 
-libata ever disables interrupts during transfers(?)
+This is expected behaviour. I see no reason for lower zones to be used
+for allocations that use memory from a higher zone with free memory.
+
+> I think the real problem is the scheme for "How to set zone movable size to
+> appropriate value for the system". This needs more study and documentation.
+> (but maybe depends on system configuration to some extent.)
+> 
+
+It depends on the system configuration and the workload requirements.
+Right now, there isn't exact information available on what size the zone
+should be. It'll need to be studied over a period of time.
 
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
