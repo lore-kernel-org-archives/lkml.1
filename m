@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbXHBQlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbXHBQlh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758572AbXHBQlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756569AbXHBQkw
+	id S1759220AbXHBQlh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:41:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757818AbXHBQl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:40:52 -0400
-Received: from ns2.suse.de ([195.135.220.15]:55143 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757378AbXHBQkv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:40:51 -0400
-Date: Thu, 2 Aug 2007 09:43:29 -0700
-From: Greg KH <gregkh@suse.de>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Engraf <david.engraf@netcom.eu>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
-	we the driver is configured
-Message-ID: <20070802164329.GD28721@suse.de>
-References: <46B1844B.8090007@netcom.eu> <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Thu, 2 Aug 2007 12:41:27 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:28244 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756569AbXHBQl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 12:41:26 -0400
+Date: Thu, 02 Aug 2007 10:40:20 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: serial flow control appears broken
+In-reply-to: <46B20662.6080606@rtr.ca>
+To: Mark Lord <lkml@rtr.ca>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
+       tytso@mit.edu, linux-kernel@vger.kernel.org
+Message-id: <46B208F4.6090901@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
+ <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com>
+ <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
+ <46AA2748.80703@howardsilvan.com>
+ <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
+ <46AA3801.7090204@shaw.ca> <20070728092842.GC26443@flint.arm.linux.org.uk>
+ <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl>
+ <46B1F0CB.9060106@rtr.ca> <46B202DE.5000709@shaw.ca> <46B20662.6080606@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 10:32:21AM -0400, Alan Stern wrote:
-> On Thu, 2 Aug 2007, David Engraf wrote:
+Mark Lord wrote:
+>> I think that PIO transfers only have to be done with interrupts 
+>> disabled on really old, evil controllers (without unmask set). I don't 
+>> think libata ever disables interrupts during transfers(?)
 > 
-> > This would be solution too, but what if someone uses the uhci controller
-> > and don't want the
-> > ehci. So a single Kconfig flag wouldn't be enough, we have to add 3
-> > flags for uchi, ohci and
-> > ehci. I think this maybe a little bit difficult when configuring the kernel.
-> > The best solution would be when we could use the CONFIG_USB_xxxx_HCD
-> > flag, but it
-> > seems that some hardware has problems when we disable the handoff and
-> > let the BIOS
-> > control the usb controller. Do you know any of this hardware?
+> That's what "hdparm -u1" (or -u0) controls.
 > 
-> The email messages are hidden in the depths of the linux-usb-devel 
-> archives.  Maybe you can find them by checking the Git history for 
-> drivers/usb/host/pci-quirks.c, finding the dates for patches that 
-> affected the handoff code, and then searching through the archives near 
-> those dates.
+> But it doesn't matter a whit here.  The problem is that the IDE interrupt
+> handling can take a long time, regardless of whether it unmasks IRQs or 
+> not.
+> And if that IDE interrupt interrupts a serial interrupt, then the serial
+> stuff won't get handled until the IDE stuff completes.  Thus the problem.
 > 
-> IIRC the problems arose on some MIPS machines.  And I don't think the 
-> problem involved letting the firmware manage the USB controller; I 
-> think the problem came when the controller driver tried to do the 
-> handoff later on.
+> The "fix" could be to have the serial IRQ handler never unmask interrupts,
+> but that's a bit unsociable to others.  The IDE stuff really needs to not
+> do so much during the actual IRQ handler.
+> 
+> Ingo's RT patches would probably fix all of this.
 
-It wasn't just MIPS.  IBM has a very popular blade system that has huge
-issues with this, and I think there are some other IBM systems based on
-the same BIOS that also do bad things if we don't grab the USB
-controller away from the BIOS as soon as possible (nasty interrupt and
-other messes happen...)
+libata also doesn't do the actual PIO transfer from the interrupt 
+handler like old IDE does, either, and it only disables interrupts for 
+the transfer if it's transferring to/from high memory..
 
-thanks,
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-greg k-h
