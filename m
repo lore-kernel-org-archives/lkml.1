@@ -1,56 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbXHBXJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbXHBXKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761086AbXHBXJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbXHBXJT
+	id S1761502AbXHBXKT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbXHBXKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:09:19 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:59473 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757134AbXHBXJS (ORCPT
+	Thu, 2 Aug 2007 19:10:05 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:14053 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757583AbXHBXKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:09:18 -0400
-Date: Fri, 3 Aug 2007 00:09:15 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-Message-ID: <20070802230914.GT21089@ftp.linux.org.uk>
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange> <46B25B5E.30406@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030046230.6774@poirot.grange>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Aug 2007 19:10:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=iGKXghr1OrO5sNBBNMa00puadNPBuSz5b7jlOeJu3cUbFSmxY4muoB3vgPaQOmaigTSvkxJOnJas70pkvAJqmVAcGftkRnc8ztKZWPnknRr9+Yru+CIytItyO+sKelh98znRPFQ6NY6Pjv07BEqihovQCZNeeibcZ69orWuoSPI=
+Message-ID: <9a8748490708021610k31a86c17y58fb631a36dfdb6a@mail.gmail.com>
+Date: Fri, 3 Aug 2007 01:10:02 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix two potential mem leaks in MPT Fusion (mpt_attach())
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "James Bottomley" <James.Bottomley@steeleye.com>,
+       "Christoph Lameter" <clameter@sgi.com>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>, linux-mm@kvack.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Matt Mackall" <mpm@selenic.com>
+In-Reply-To: <20070802160406.5c5b5ff6.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.60.0708030046230.6774@poirot.grange>
-User-Agent: Mutt/1.4.1i
+References: <200708020155.33690.jesper.juhl@gmail.com>
+	 <20070801172653.1fd44e99.akpm@linux-foundation.org>
+	 <9a8748490708020120w4bbfe6d1n6f6986aec507316@mail.gmail.com>
+	 <200708030053.45297.jesper.juhl@gmail.com>
+	 <20070802160406.5c5b5ff6.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 12:51:16AM +0200, Guennadi Liakhovetski wrote:
-> On Fri, 3 Aug 2007, Stefan Richter wrote:
-> 
-> > Guennadi Liakhovetski wrote:
-> > > with
-> > > 
-> > > 	char c[4] = "012345";
-> > > 
-> > > the compiler warns, but actually allocates a 6-byte long array...
-> > 
-> > Off-topic here, but:  sizeof c / sizeof *c == 4.
-> 
-> Don't think it is OT here - kernel depends on gcc. And, what I meant, is, 
-> that gcc places all 7 (sorry, not 6 as I said above) characters in the 
-> .rodata section of the compiled object file. Of course, it doesn't mean, 
-> that c is 7 characters long.
+On 03/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Fri, 3 Aug 2007 00:53:44 +0200
+> Jesper Juhl <jesper.juhl@gmail.com> wrote:
+>
+> > On Thursday 02 August 2007 10:20:47 Jesper Juhl wrote:
+> > > On 02/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > [snip]
+> > > > y'know, we could have a debug option which will spit warnings if someone
+> > > > does a !__GFP_WAIT allocation while !in_atomic() (only works if
+> > > > CONFIG_PREEMPT).
+> > > >
+> > > > But please, make it depend on !CONFIG_AKPM.  I shudder to think about all
+> > > > the stuff it would pick up.
+> > > >
+> > >
+> > > I can try to cook up something like that tonight...
+> > >
+> >
+> > Ok, so I did a quick hack and I'm drowning in dmesg WARN_ON() traces
+> > with my usual config.
+> >
+> > This is what I added :
+> >
+> > diff --git a/mm/slub.c b/mm/slub.c
+> > index 6c6d74f..e60dd9e 100644
+> > --- a/mm/slub.c
+> > +++ b/mm/slub.c
+> > @@ -20,6 +20,7 @@
+> >  #include <linux/mempolicy.h>
+> >  #include <linux/ctype.h>
+> >  #include <linux/kallsyms.h>
+> > +#include <linux/hardirq.h>
+> >
+> >  /*
+> >   * Lock order:
+> > @@ -1568,6 +1569,10 @@ static void __always_inline *slab_alloc(struct kmem_cache *s,
+> >
+> >  void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+> >  {
+> > +#ifdef CONFIG_PREEMPT
+> > +     WARN_ON( !in_atomic() && !(gfpflags & __GFP_WAIT) );
+> > +#endif
+> > +
+> >       return slab_alloc(s, gfpflags, -1, __builtin_return_address(0));
+> >  }
+> >  EXPORT_SYMBOL(kmem_cache_alloc);
+> > @@ -2370,6 +2375,10 @@ void *__kmalloc(size_t size, gfp_t flags)
+> >  {
+> >       struct kmem_cache *s = get_slab(size, flags);
+> >
+> > +#ifdef CONFIG_PREEMPT
+> > +     WARN_ON( !in_atomic() && !(flags & __GFP_WAIT) );
+> > +#endif
+> > +
+> >       if (ZERO_OR_NULL_PTR(s))
+> >               return s;
+> >
+> >
+> >
+> > And this is what I'm getting heaps of :
+> >
+> > ...
+> > [  165.128607]  =======================
+> > [  165.128609] WARNING: at mm/slub.c:1573 kmem_cache_alloc()
+> > [  165.128611]  [<c010400a>] show_trace_log_lvl+0x1a/0x30
+> > [  165.128614]  [<c0104cd2>] show_trace+0x12/0x20
+> > [  165.128616]  [<c0104cf6>] dump_stack+0x16/0x20
+> > [  165.128619]  [<c0175ad3>] kmem_cache_alloc+0xe3/0x110
+> > [  165.128622]  [<c015b10e>] mempool_alloc_slab+0xe/0x10
+> > [  165.128625]  [<c015b211>] mempool_alloc+0x31/0xf0
+>
+> I said you would.
+>
+Hehe, I know you did. I'm not complaining, simply stating facts
+(confirming what you said actually).
 
-So gcc does that kind of recovery, after having warned you.  Makes sense,
-as long as it's for ordinary variables (and not, say it, struct fields) -
-you get less likely runtime breakage on the undefined behaviour (e.g.
-passing c to string functions).  So gcc has generated some padding between
-the global variables, that's all.
+> > So, where do we go from here?
+>
+> Where I said ;) Add a new __GFP_ flag which suppresses the warning, add
+> that flag to known-to-be-OK callsites, such as mempool_alloc().
+>
+Ok, I'll try to play around with this some more, try to filter out
+false positives and see what I'm left with (if anything - I'm pretty
+limited hardware-wise, so I can only test a small subset of drivers,
+archs etc) - I'll keep you informed, but expect a few days to pass
+before I have any news...
 
-It doesn't change the fact that use of c[4] or strlen(c) or strcpy(..., c)
-means nasal demon country for you.
 
-Now, if gcc does that for similar situation with struct fields, you'd have
-a cause to complain.
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
