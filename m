@@ -1,110 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXHBKcR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755161AbXHBKkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbXHBKcR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 06:32:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbXHBKcF
+	id S1755161AbXHBKkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 06:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXHBKkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 06:32:05 -0400
-Received: from norsk.toidinamai.de ([78.47.249.60]:37470 "EHLO
-	norsk.toidinamai.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750956AbXHBKcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 06:32:04 -0400
-Message-ID: <46B1B295.1010003@benkstein.net>
-Date: Thu, 02 Aug 2007 12:31:49 +0200
-From: Frank Benkstein <frank@benkstein.net>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: VT_PROCESS, VT_LOCKSWITCH capabilities
-References: <46AFB62E.2080303@benkstein.net>	<46AFF390.10103@benkstein.net> <20070801151900.f80722b6.akpm@linux-foundation.org>
-In-Reply-To: <20070801151900.f80722b6.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF17CD106BBE8F1F303D6DA8E"
+	Thu, 2 Aug 2007 06:40:13 -0400
+Received: from main.gmane.org ([80.91.229.2]:38522 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752812AbXHBKkL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 06:40:11 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: richard kennedy <richard@rsk.demon.co.uk>
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+Date: Thu, 2 Aug 2007 10:37:56 +0000 (UTC)
+Message-ID: <f8sc63$aia$1@sea.gmane.org>
+References: <46B10BB7.60900@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: rsk.demon.co.uk
+User-Agent: Pan/0.131 (Ghosts: First Variation)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF17CD106BBE8F1F303D6DA8E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, 01 Aug 2007 18:39:51 -0400, Chuck Ebbert wrote:
 
-Andrew Morton wrote:
-> On Wed, 01 Aug 2007 04:44:32 +0200
-> Frank Benkstein <frank@benkstein.net> wrote:
->=20
->> Frank Benkstein wrote:
->>> I wonder why there are different permissions needed for VT_PROCESS
->>> (access to the current virtual console) and VT_LOCKSWITCH
->>> (CAP_SYS_TTY_CONFIG).
->> To be more direct:
->>
->> require CAP_SYS_TTY_CONFIG for VT_SETMODE as its essentially the same =
-as
->> VT_LOCKSWITCH and said capability is already required there
->>
->> diff --git a/drivers/char/vt_ioctl.c b/drivers/char/vt_ioctl.c
->> index c6f6f42..7034a68 100644
->> --- a/drivers/char/vt_ioctl.c
->> +++ b/drivers/char/vt_ioctl.c
->> @@ -662,7 +662,7 @@ int vt_ioctl(struct tty_struct *tty, struct file *=
- file,
->>         {
->>                 struct vt_mode tmp;
->>
->> -               if (!perm)
->> +               if (!perm || !capable(CAP_SYS_TTY_CONFIG))
->>                         return -EPERM;
->>                 if (copy_from_user(&tmp, up, sizeof(struct vt_mode)))
->>                         return -EFAULT;
->>
->=20
-> There's a good risk of breaking stuff with this change.  A quick peek
-> through http://www.google.com/codesearch shows that.
->=20
-> We need good reasons for making that change, and for handling the
-> subsequent fallout, getting shouted at by aggrieved users, etc.
->=20
-> It's tricky.
+> Looks like the same problem with spinlock unfairness we've seen
+> elsewhere: it seems to be looping here? Or is everyone stuck just
+> waiting for writeout?
+> 
+> lock_timer_base():
+>         for (;;) {
+>                 tvec_base_t *prelock_base = timer->base; base =
+>                 tbase_get_base(prelock_base);
+>                 if (likely(base != NULL)) {
+>                         spin_lock_irqsave(&base->lock, *flags); if
+>                         (likely(prelock_base == timer->base))
+>                                 return base;
+>                         /* The timer has migrated to another CPU */
+>                         spin_unlock_irqrestore(&base->lock, *flags);
+>                 }
+>                 cpu_relax();
+>         }
+> 
+> The problem goes away completely if filesystem are mounted *without*
+> noatime. Has happened in 2.6.20 through 2.6.22...
+> 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=249563
+> 
+> Part of sysrq-t listing:
+> 
+> mysqld        D 000017c0  2196 23162   1562
+>        e383fcb8 00000082 61650954 000017c0 e383fc9c 00000000 c0407208
+>        e383f000 a12b0434 00004d1d c6ed2c00 c6ed2d9c c200fa80 00000000
+>        c0724640 f6c60540 c4ff3c70 00000508 00000286 c042ffcb e383fcc8
+>        00014926 00000000 00000286
+> Call Trace:
+>  [<c0407208>] do_IRQ+0xbd/0xd1
+>  [<c042ffcb>] lock_timer_base+0x19/0x35 [<c04300df>]
+>  __mod_timer+0x9a/0xa4
+>  [<c060bb55>] schedule_timeout+0x70/0x8f [<c042fd37>]
+>  process_timeout+0x0/0x5
+>  [<c060bb50>] schedule_timeout+0x6b/0x8f [<c060b67c>]
+>  io_schedule_timeout+0x39/0x5d [<c0465eea>] congestion_wait+0x50/0x64
+>  [<c0438539>] autoremove_wake_function+0x0/0x35 [<c04620e2>]
+>  balance_dirty_pages_ratelimited_nr+0x148/0x193 [<c045e7fd>]
+>  generic_file_buffered_write+0x4c7/0x5d3
+> 
+> 
+> named         D 000017c0  2024  1454      1
+>        f722acb0 00000082 6165ed96 000017c0 c1523e80 c16f0c00 c16f20e0
+>        f722a000 a12be87d 00004d1d f768ac00 f768ad9c c200fa80 00000000
+>        00000000 f75bda80 c0407208 00000508 00000286 c042ffcb f722acc0
+>        00020207 00000000 00000286
+> Call Trace:
+>  [<c0407208>] do_IRQ+0xbd/0xd1
+>  [<c042ffcb>] lock_timer_base+0x19/0x35 [<c04300df>]
+>  __mod_timer+0x9a/0xa4
+>  [<c060bb55>] schedule_timeout+0x70/0x8f [<c042fd37>]
+>  process_timeout+0x0/0x5
+>  [<c060bb50>] schedule_timeout+0x6b/0x8f [<c060b67c>]
+>  io_schedule_timeout+0x39/0x5d [<c0465eea>] congestion_wait+0x50/0x64
+>  [<c0438539>] autoremove_wake_function+0x0/0x35 [<c04620e2>]
+>  balance_dirty_pages_ratelimited_nr+0x148/0x193 [<c045e7fd>]
+>  generic_file_buffered_write+0x4c7/0x5d3
+> 
+> 
+> mysqld        D 000017c0  2196 23456   1562
+>        e9293cb8 00000082 616692ed 000017c0 e9293c9c 00000000 e9293cc8
+>        e9293000 a12c8dd0 00004d1d c3d5ac00 c3d5ad9c c200fa80 00000000
+>        c0724640 f6c60540 e9293d10 c07e1f00 00000286 c042ffcb e9293cc8
+>        0002b57f 00000000 00000286
+> Call Trace:
+>  [<c042ffcb>] lock_timer_base+0x19/0x35 [<c04300df>]
+>  __mod_timer+0x9a/0xa4
+>  [<c060bb55>] schedule_timeout+0x70/0x8f [<c042fd37>]
+>  process_timeout+0x0/0x5
+>  [<c060bb50>] schedule_timeout+0x6b/0x8f [<c060b67c>]
+>  io_schedule_timeout+0x39/0x5d [<c0465eea>] congestion_wait+0x50/0x64
+>  [<c0438539>] autoremove_wake_function+0x0/0x35 [<c04620e2>]
+>  balance_dirty_pages_ratelimited_nr+0x148/0x193 [<c045e7fd>]
+>  generic_file_buffered_write+0x4c7/0x5d3
 
-I had a quick look through codesearch, too.  Another solution may be to
-allow VT_SETMODE but deny VT_RELDISP if CAP_SYS_TTY_CONFIG is not
-present. This way graphics tools still get notified when the console is
-switched but can't prevent it.
+I'm not sure if this is related to your problem, but I posted a patch the 
+other day that fixes an issue in balance_dirty_pages.
 
-It probably isn't worth the hassle.  I was just looking though the
-kernel source to find out which ioctl would be better for my own console
-locking tool to use.  I'm happy that it doesn't have to be setuid-root
-but at the same time it nags me a little that denying service (and
-potentially making users lose data because they cannot save) is so easy.
- And there is no way to switch it off.  Other than carrying the patch
-myself, that is.
+If a drive is under light load is can get stuck looping waiting for 
+enough pages to be available to be written. In my test case this occurs 
+when one drive is under heavy load and the other isn't.
 
-Regarding your earlier remark of VT_LOCKSWITCH potentially affecting the
-session of the next user:  this is also possible with VT_PROCESS by
-starting the locking process in the background.
+I sent it with the subject "[PATCH] balance_dirty_pages - exit loop when 
+no more pages available"
+here's the patch again in case it helps
 
---=20
-GPG (Mail): 7093 7A43 CC40 463A 5564  599B 88F6 D625 BE63 866F
-GPG (XMPP): 2243 DBBA F234 7C5A 6D71  3983 9F28 4D03 7110 6D51
+Cheers
+Richard
+
+------
+--- linux-2.6.22.1/mm/page-writeback.c.orig	2007-07-30 16:36:09.000000000 +0100
++++ linux-2.6.22.1/mm/page-writeback.c	2007-07-31 16:26:43.000000000 +0100
+@@ -250,6 +250,8 @@ static void balance_dirty_pages(struct a
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			if (pages_written >= write_chunk)
+ 				break;		/* We've done our duty */
++			if (!wbc.encountered_congestion && wbc.nr_to_write > 0)
++				break;	/* didn't find enough to do */
+ 		}
+ 		congestion_wait(WRITE, HZ/10);
+ 	}
 
 
 
 
---------------enigF17CD106BBE8F1F303D6DA8E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+ 
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGsbKeiPbWJb5jhm8RAuBtAKCJF7RTnP6rZ2FVbTRWQZHd2YhgwgCeJdGB
-o2a1Xl1bZDeXv5V/8XYSIRk=
-=qoDb
------END PGP SIGNATURE-----
 
---------------enigF17CD106BBE8F1F303D6DA8E--
+
