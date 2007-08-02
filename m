@@ -1,67 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760643AbXHBT5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbXHBT6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760643AbXHBT5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbXHBT5J
+	id S1760603AbXHBT6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbXHBT6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:57:09 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:58522 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758287AbXHBT5I (ORCPT
+	Thu, 2 Aug 2007 15:58:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33366 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754512AbXHBT6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:57:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=uYsz+j0EK2/OmwWSJpS2QNlB/+dptK9QLhwujItP1vP7xvGNm5CDnTXIysUmyZ35/fujgPqaYCFZbAM4mDthti+GrddWHWajkQ5vIWsP0SRVxXw6rgUDSe8X6XIEEZLbmh7bRk9wdlo7EbLCUNsmeYeg/aybAAFem9KIdmVt7+Y=
-Message-ID: <9a8748490708021257q2f28f8d5y4fdcebaca587fe8a@mail.gmail.com>
-Date: Thu, 2 Aug 2007 21:57:07 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: error: implicit declaration of function 'rcu_dereference' - current -git fails to build
-Cc: "Dipankar Sarma" <dipankar@in.ibm.com>
+	Thu, 2 Aug 2007 15:58:14 -0400
+Date: Thu, 2 Aug 2007 12:58:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+In-Reply-To: <20070802034201.GA32631@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de>
+ <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
+ <20070802034201.GA32631@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I get this build error with the current mainline git tree.
-Let me know if further details are needed...
+On Thu, 2 Aug 2007, Nick Piggin wrote:
 
-...
-In file included from include/linux/sched.h:75,
-                 from include/linux/smp_lock.h:5,
-                 from include/linux/hardirq.h:5,
-                 from include/linux/slub_def.h:13,
-                 from include/linux/slab.h:116,
-                 from include/linux/percpu.h:5,
-                 from include/linux/rcupdate.h:41,
-                 from include/linux/key.h:21,
-                 from include/linux/syscalls.h:67,
-                 from init/noinitramfs.c:23:
-include/linux/pid.h:51: error: field 'rcu' has incomplete type
-In file included from include/linux/smp_lock.h:5,
-                 from include/linux/hardirq.h:5,
-                 from include/linux/slub_def.h:13,
-                 from include/linux/slab.h:116,
-                 from include/linux/percpu.h:5,
-                 from include/linux/rcupdate.h:41,
-                 from include/linux/key.h:21,
-                 from include/linux/syscalls.h:67,
-                 from init/noinitramfs.c:23:
-include/linux/sched.h:1187: error: field 'rcu' has incomplete type
-include/linux/sched.h: In function 'next_thread':
-include/linux/sched.h:1650: error: implicit declaration of function
-'rcu_dereference'
-include/linux/sched.h:1650: warning: initialization makes pointer from
-integer without a cast
-make[1]: *** [init/noinitramfs.o] Error 1
-make: *** [init] Error 2
+> > It does in the sense that slabs are allocated following policies. If you 
+> > want to place individual objects then you need to use kmalloc_node().
+> 
+> Is there no way to place objects via policy? At least kernel stack and page
+> tables on x86-64 should be covered by page allocator policy, so the patch
+> will still be useful.
 
+Implementing policies on an object level introduces significant allocator 
+overhead. Tried to do it in SLAB which created a mess.
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Add a (slow) kmalloc_policy? Strict Object round robin for interleave 
+right? It probably needs its own RR counter otherwise it disturbs the per 
+task page RR.
+
+For interleave kmalloc() does allocate the slabs round robin not the 
+objects.
