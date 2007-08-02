@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757759AbXHBMtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbXHBMt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757759AbXHBMtV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755677AbXHBMtN
+	id S1757815AbXHBMt5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbXHBMts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:49:13 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:59972 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755487AbXHBMtM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:49:12 -0400
-Message-ID: <46B1D26E.2010508@free.fr>
-Date: Thu, 02 Aug 2007 14:47:42 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-rt-users@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net
-Subject: PROFILE_NMI kernel config symbol
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 2 Aug 2007 08:49:48 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56409 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754581AbXHBMtr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 08:49:47 -0400
+Date: Thu, 2 Aug 2007 13:57:00 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "Ash Willis" <ashwillis@programmer.net>
+Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, rafalbilski@interia.pl
+Subject: Re: CS5530 Alsa driver fails
+Message-ID: <20070802135700.09319306@the-village.bc.nu>
+In-Reply-To: <20070802011745.B6DA0115449@ws1-7.us4.outblaze.com>
+References: <20070802011745.B6DA0115449@ws1-7.us4.outblaze.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+> I wouldn't mind porting VSA2 support to ALSA. I just don't have test
+> hardware. Do you happen to know any examples of hardware that run VSA2
+> firmware or is it just a case of a firmware update?
 
-The -rt patch includes the following update:
+Anything from the natsemi era onwards ought to be VSA2
 
-Index: linux/arch/i386/oprofile/Kconfig
-===================================================================
---- linux.orig/arch/i386/oprofile/Kconfig
-+++ linux/arch/i386/oprofile/Kconfig
-@@ -15,3 +15,6 @@ config OPROFILE
-
-  	  If unsure, say N.
-
-+config PROFILE_NMI
-+	bool
-+	default y
-
-
-What is the purpose of the PROFILE_NMI config symbol?
-(It does not seem to be used anywhere else in the -rt patch.)
-
-Regards.
+Alan
