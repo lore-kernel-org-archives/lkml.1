@@ -1,41 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760306AbXHBVEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbXHBVEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760306AbXHBVEQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbXHBVEE
+	id S1760665AbXHBVEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 17:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757070AbXHBVEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:04:04 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:6664 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755735AbXHBVEC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:04:02 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8CACfjsUarR7MV/2dsb2JhbAA
-X-IronPort-AV: i="4.19,215,1183359600"; 
-   d="scan'208"; a="193357723:sNHT28383903"
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, raisch@de.ibm.com,
-       paulus@samba.org, general@lists.openfabrics.org,
-       Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-X-Message-Flag: Warning: May contain useful information
-References: <200708021139.31695.hnguyen@linux.vnet.ibm.com>
-	<200708021608.16436.arnd@arndb.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 02 Aug 2007 14:03:59 -0700
-In-Reply-To: <200708021608.16436.arnd@arndb.de> (Arnd Bergmann's message of "Thu, 2 Aug 2007 16:08:15 +0200")
-Message-ID: <adawswd3ayo.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.20 (linux)
+	Thu, 2 Aug 2007 17:04:46 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:42553 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754742AbXHBVEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 17:04:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm 2/3] Freezer: Use wait queue instead of busy looping (updated)
+Date: Thu, 2 Aug 2007 23:13:32 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200708012328.23939.rjw@sisk.pl> <200708021938.37547.rjw@sisk.pl> <20070802184002.GA283@tv-sign.ru>
+In-Reply-To: <20070802184002.GA283@tv-sign.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 02 Aug 2007 21:03:59.0445 (UTC) FILETIME=[A581B050:01C7D548]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708022313.32944.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > remap_4k_pfn is defined in terms of remap_pfn_range if the base page
- > size if 4k, so you don't need this #ifdef afaics.
+On Thursday, 2 August 2007 20:40, Oleg Nesterov wrote:
+> On 08/02, Rafael J. Wysocki wrote:
+> >
+> > @@ -171,6 +186,10 @@ static int try_to_freeze_tasks(int freez
+> >  
+> >  	end_time = jiffies + TIMEOUT;
+> >  	do {
+> > +		DEFINE_WAIT(wait);
+> > +
+> > +		add_wait_queue(&refrigerator_waitq, &wait);
+> 
+> Hmm. In that case I'd sugest to use prepare_to_wait(). This means that
+> multiple wakeups from refrigerator() won't do unnecessary work,
 
-Good point.  I'll wait for an updated patch.
+I'm not sure what you mean.
+
+Do you mean that if we are TASK_UNINTERRUPTIBLE, then the first wake up
+should remove us from the queue?
+
+> and 
+> 
+> > +
+> >  		todo = 0;
+> >  		read_lock(&tasklist_lock);
+> >  		do_each_thread(g, p) {
+> > @@ -189,7 +208,12 @@ static int try_to_freeze_tasks(int freez
+> >  				todo++;
+> >  		} while_each_thread(g, p);
+> >  		read_unlock(&tasklist_lock);
+> > -		yield();			/* Yield is okay here */
+> > +
+> > +		set_current_state(TASK_UNINTERRUPTIBLE);
+> > +		if (todo && !list_empty_careful(&wait.task_list))
+> > +			schedule_timeout(WAIT_TIME);
+> 
+> we don't need to check list_empty_careful() before schedule, prepare_to_wait()
+> sets TASK_UNINTERRUPTIBLE under wait_queue_head_t->lock.
+
+Yes.
+
+> Still, I personally agree with Pavel. Perhaps it is better to just replace
+> yield() with schedule_timeout(a_bit).
+
+Hmm, I think that we shouldn't wait if that's not necessary.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
