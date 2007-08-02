@@ -1,94 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756494AbXHBLdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754910AbXHBLk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756494AbXHBLdY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXHBLdP
+	id S1754910AbXHBLk3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbXHBLkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:33:15 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:53991 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbXHBLdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:33:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=UfEBdnARhGO6690iQJwJ96IheOtap9G9s5L3a/ktF42NFczpit7J6DVPIwFQ5JeveTuKWMOEbafbI4W/wonwswB9LRvjxUjxqMVPd0j3E4BXcm9q5Xjpzn9AtVBvJ7yjGrx7QVztJILNxiygc459d3UQUVoXVgC5FTaAOEgq5fE=
-Message-ID: <3ae72650708020433u2f423862t973dff85f85870a0@mail.gmail.com>
-Date: Thu, 2 Aug 2007 13:33:12 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Carl-Daniel Hailfinger" <c-d.hailfinger.devel.2006@gmx.net>
-Subject: Re: forcedeth ?
-Cc: "Gabriel C" <nix.or.die@googlemail.com>,
-       "Sasa Ostrouska" <casaxa@gmail.com>, "Avuton Olrich" <avuton@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <3ae72650707301852p7289cc42of3e2a0ec2c62a5e1@mail.gmail.com>
+	Thu, 2 Aug 2007 07:40:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48887 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753502AbXHBLkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 07:40:16 -0400
+Date: Thu, 2 Aug 2007 13:40:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Martin Roehricht <ml@felicis.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Scheduling the highest priority task
+Message-ID: <20070802114012.GA4067@elte.hu>
+References: <8KLFD-G9-5@gated-at.bofh.it> <46B19CA1.7050204@felicis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <dcf706c60707301301j21d3cf60n59a686c9abb5e5b3@mail.gmail.com>
-	 <3aa654a40707301337w52bbe246o99db15b9f8e7a2c4@mail.gmail.com>
-	 <dcf706c60707301426q4858d039hdfa49fb26835d367@mail.gmail.com>
-	 <46AE6029.60308@googlemail.com> <46AE6372.20808@googlemail.com>
-	 <46AE9221.70302@gmx.net>
-	 <3ae72650707301852p7289cc42of3e2a0ec2c62a5e1@mail.gmail.com>
-X-Google-Sender-Auth: 5e0a1939410c4642
+In-Reply-To: <46B19CA1.7050204@felicis.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Kay Sievers <kay.sievers@vrfy.org> wrote:
-> On 7/31/07, Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net> wrote:
-> > On 31.07.2007 00:17, Gabriel C wrote:
-> > > Sasa Ostrouska wrote:
-> > >
-> > >> Gabriel, hmm, shouldnt udev be able to autoconfigure that ? But I need
-> > >> to check that, thx for the tip.
-> > >
-> > > Yes udev does this based on the MAC address but AFAIK forcedeth is 'special' for some reason
-> > > ( which I can really remember now and gets on each boot a new MAC address or alike )
-> >
-> > Ah yes, that's a workaround for certain buggy boards to make sure you're
-> > not left without networking even if the MAC address stored on the board
-> > is bogus.
-> >
-> > Basically, forcedeth checks if the MAC address supplied by your
-> > mainboard is bogus and autogenerates a random MAC address from a private
-> > range (prefix 00:00:6c) as workaround. However, it will complain loudly
-> > if it has to do that.
-> >
-> > Quoting from forcedeth.c:
-> > > if (!is_valid_ether_addr(dev->perm_addr)) {
-> > >       /*
-> > >        * Bad mac address. At least one bios sets the mac address
-> > >        * to 01:23:45:67:89:ab
-> > >        */
-> > >       printk(KERN_ERR "%s: Invalid Mac address detected: %02x:%02x:%02x:%02x:%02x:%02x\n",
-> > >               pci_name(pci_dev),
-> > >               dev->dev_addr[0], dev->dev_addr[1], dev->dev_addr[2],
-> > >               dev->dev_addr[3], dev->dev_addr[4], dev->dev_addr[5]);
-> > >       printk(KERN_ERR "Please complain to your hardware vendor. Switching to a random MAC.\n");
-> > >       dev->dev_addr[0] = 0x00;
-> > >       dev->dev_addr[1] = 0x00;
-> > >       dev->dev_addr[2] = 0x6c;
-> > >       get_random_bytes(&dev->dev_addr[3], 3);
-> > > }
-> >
-> > Sometimes it helps to update the BIOS and/or set the MAC address which
-> > is printed on the board as MAC address in the BIOS.
->
-> In any case, it would be nice if the network core could add something like:
->   MAC_ORIGIN=device
->   MAC_ORIGIN=user
->   MAC_ORIGIN=random
-> or whatever makes sense here, to the uevent environment. So userspace
-> can handle according to that, like falling back using the
-> bus-slot-number to lookup the persistent name, or whatever is
-> appropriate.
 
-Can't we use the "locally administered" bit in the MAC address? By
-checking for ENV{address}=="?[2367abef]:*", we would skip the
-persistent rule generation based on the MAC address?
+* Martin Roehricht <ml@felicis.org> wrote:
 
-Thanks,
-Kay
+> perhaps someone can give me a hint what I should consider to look for in 
+> order to change the ("old" 2.6.21) scheduler such that it schedules the 
+> highest priority task of a given runqueue.
+> Given a multiprocessor system I currently observe that whenever there 
+> are two tasks on one CPU, the lower priority one is migrated to another 
+> CPU. But I don't realize why this happens. From looking at the source 
+> code I thought it should be the highest priority one (lowest bit set in 
+> the runqueue's bitmap) according to
+> 	idx = sched_find_first_bit(array->bitmap);
+> within move_tasks(). The idx value is then used as an index (surprise) 
+> to the linked list of tasks of this particular priority and one task is 
+> picked:
+> 	head = array->queue + idx;
+>         curr = head->prev;
+>         tmp = list_entry(curr, struct task_struct, run_list);
+> 
+> Can anybody confirm that my observations are correct that the 
+> scheduler picks the lowest priority job of a runqueue for migration? 
+> What needs to be changed in order to pick the highest priority one?
+
+in the SMP migration code, the 'old scheduler' indeed picks the lowest 
+priority one, _except_ if that task is running on another CPU or is too 
+'cache hot':
+
+        if (skip_for_load ||
+            !can_migrate_task(tmp, busiest, this_cpu, sd, idle, &pinned)) {
+
+also, from the priority-queue at 'idx', we pick head->prev, i.e. we 
+process the list in the opposite order as schedule(). (This got changed 
+in CFS to process in the same direction - which is more logical and also 
+yield the most cache-cold tasks for migration.)
+
+i hope this helps.
+
+> Is my assumption wrong? Using printk()s within this code section makes 
+> the system just hang completely quite soon. The schedstats do not 
+> notify me immediately. So I am a bit lost on how to track down or 
+> trace the problem.
+
+yep, printk locks up. You can use my static tracer:
+
+   http://people.redhat.com/mingo/latency-tracing-patches/
+
+add explicit static tracepoints to the scheduler code you want to 
+instrument via trace_special(x,y,z) calls [with parameters that interest 
+you most], and you can read out the trace via:
+
+   http://people.redhat.com/mingo/latency-tracing-patches/trace-it.c
+
+	Ingo
