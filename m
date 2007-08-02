@@ -1,94 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbXHBI35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbXHBItR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbXHBI35 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 04:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbXHBI3u
+	id S1755108AbXHBItR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 04:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbXHBItG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 04:29:50 -0400
-Received: from people.fsn.hu ([195.228.252.137]:54208 "EHLO people.fsn.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753072AbXHBI3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 04:29:47 -0400
-Message-ID: <46B195EF.7090409@fsn.hu>
-Date: Thu, 02 Aug 2007 10:29:35 +0200
-From: Attila Nagy <bra@fsn.hu>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Roger Heflin <rheflin@atipa.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Hangs and reboots under high loads, oops with DEBUG_SHIRQ
-References: <46AE0420.4030900@fsn.hu> <20070730171953.5fe93979@the-village.bc.nu> <46AF4570.7070606@fsn.hu> <46AFB2CB.6040906@atipa.com>
-In-Reply-To: <46AFB2CB.6040906@atipa.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 2 Aug 2007 04:49:06 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49502 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751922AbXHBItE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 04:49:04 -0400
+Date: Thu, 2 Aug 2007 01:48:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "debian developer" <debiandev@gmail.com>
+Cc: "Andev Debi" <andev.debi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: Problem - disabling IRQ #20 and others
+Message-Id: <20070802014819.4760b06a.akpm@linux-foundation.org>
+In-Reply-To: <f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
+References: <ef8c225f0708010347l2a0a8e4cj4f47a243bba88989@mail.gmail.com>
+	<f24d23310708010711w7cec4718tde8fd33b89fdfcf6@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2007.08.01. 0:08, Roger Heflin wrote:
-> Attila Nagy wrote:
->> HARDWARE ERROR
->> HARDWARE ERROR. This is *NOT* a software problem!
->> Please contact your hardware vendor
->> CPU 1 BANK 0 TSC 1167e915e93ce
->> MCG status:RIPV MCIP
->> MCi status:
->> Uncorrected error
->> Error enabled
->> Processor context corrupt
->> MCA: Internal Timer error
->> STATUS b200004010000400 MCGSTATUS 5
->> This is not a software problem!
->> Run through mcelog --ascii to decode and contact your hardware vendor
->>
->> HARDWARE ERROR
->> HARDWARE ERROR. This is *NOT* a software problem!
->> Please contact your hardware vendor
->> CPU 1 BANK 5 TSC 1167e915e9ea8
->> MCG status:RIPV MCIP
->> MCi status:
->> Uncorrected error
->> Error enabled
->> Processor context corrupt
->> MCA: Internal Timer error
->> STATUS b200221024080400 MCGSTATUS 5
->> This is not a software problem!
->> Run through mcelog --ascii to decode and contact your hardware vendor
->
-> Attila,
->
-> We had some issues with very similar boards all of the problems
-> seem to be around the PCIX bus area of the machine, setting the
-> PCIX buses to 66 mhz in the bios made things stable (but slow).   Not 
-> using
-> the PCIX bus also seemed to make things work.   We got MCE's and
-> other odd crashes under heavy IO loads.   I believe turning things
-> down to 100mhz made things more stable, but things still crashed.
->
-> Supermicro reported being able to fix the issue with:
-> setting the PCI Configuration -> PCI-e I/O performance
-> setting to Colasce 128B.
->
-> I am not exactly sure where to set it as we did not try it
-> as we had already changed to a different motherboard that did not
-> have the issue.
->
-> If this works please tell me.
-Roger, you are my hero. :)
-With that PCI-e setting (again, for the record, this is on a Supermicro 
-X7DBE motherboard,
-and the BIOS setting is PCIe I/O performance, which has two states: 
-Coalesce and Payload 256B)
-all of the four machines have survived a half day of continous bashing. 
-Previously one, or two
-machines typically fell off after such amount of IO load, so it looks 
-promising so far.
-I hope this won't change over the time.
+On Wed, 1 Aug 2007 19:41:31 +0530 "debian developer" <debiandev@gmail.com> wrote:
 
-BTW, this is still with 2.6.21.5, because the SCSI target stuff I use 
-(SCST) has some
--I hope temporary- problems with changed (deleted) interfaces in newer 
-kernels.
+> On 8/1/07, Andev Debi <andev.debi@gmail.com> wrote:
+> > Hello,
+> > Im getting the following error while booting the kernel 2.6.22.1-cfs
+> >
+> > Aug  1 09:14:17 localhost kernel: [   63.106550] irq 20: nobody cared (try
+> > booting with the "irqpoll" option)
+> > Aug  1 09:14:17 localhost kernel: [   63.106574]  [__report_bad_irq+36/128]
+> > __report_bad_irq+0x24/0x80
+> > Aug  1 09:14:17 localhost kernel: [   63.106596]  [note_interrupt+485/560]
+> > note_interrupt+0x1e5/0x230
+> > Aug  1 09:14:17 localhost kernel: [   63.106619]  [handle_IRQ_event+37/80]
+> > handle_IRQ_event+0x25/0x50
+> > Aug  1 09:14:17 localhost kernel: [   63.106634]
+> > [handle_fasteoi_irq+141/160] handle_fasteoi_irq+0x8d/0xa0
+> > Aug  1 09:14:17 localhost kernel: [   63.106643]  [do_IRQ+62/128]
+> > do_IRQ+0x3e/0x80
+> > Aug  1 09:14:17 localhost kernel: [   63.106665]  [common_interrupt+35/40]
+> > common_interrupt+0x23/0x28
+> > Aug  1 09:14:17 localhost kernel: [   63.106674]  [default_idle+0/64]
+> > default_idle+0x0/0x40
+> > Aug  1 09:14:17 localhost kernel: [   63.106696]  [default_idle+42/64]
+> > default_idle+0x2a/0x40
+> > Aug  1 09:14:17 localhost kernel: [   63.106704]  [cpu_idle+72/112]
+> > cpu_idle+0x48/0x70
+> > Aug  1 09:14:17 localhost kernel: [   63.106707]  [start_kernel+559/704]
+> > start_kernel+0x22f/0x2c0
+> > Aug  1 09:14:17 localhost kernel: [   63.106715]  [unknown_bootoption+0/592]
+> > unknown_bootoption+0x0/0x250
+> > Aug  1 09:14:17 localhost kernel: [   63.106735]  =======================
+> > Aug  1 09:14:17 localhost kernel: [   63.106736] handlers:
+> > Aug  1 09:14:17 localhost kernel: [   63.106738] [<dcc13080>]
+> > (via_driver_irq_handler+0x0/0x1b0 [via])
+> > Aug  1 09:14:17 localhost kernel: [   63.106747] Disabling IRQ #20
+> >
+> 
 
-Should the DEBUG_SHIRQ problem in e1000 affect stability (or performance)?
+Please fix the wordwrapping before sending any more stuff - it's truly awful.
 
-Thanks,
+Could be a bug in the via driver, but it's more likely an
+acpi/pci/platform/bios thing.
+
+Did any previous kernels work OK?  If so, which?
