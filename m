@@ -1,101 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759432AbXHBWis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbXHBWkN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759432AbXHBWis (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXHBWik
+	id S1759516AbXHBWkN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:40:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbXHBWkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:38:40 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3753 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755436AbXHBWij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:38:39 -0400
-Date: Fri, 3 Aug 2007 00:38:57 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Mike Galbraith <efault@gmx.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-In-Reply-To: <20070802160906.GA20377@elte.hu>
-Message-ID: <Pine.LNX.4.64.0708022101580.1817@scrub.home>
-References: <20070711214649.GK14435@v2.random>
- <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
- <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net>
- <Pine.LNX.4.64.0708010439050.1817@scrub.home> <p73wswfo0hf.fsf@bingen.suse.de>
- <Pine.LNX.4.64.0708011525560.1817@scrub.home>
- <alpine.LFD.0.999.0708011903300.3582@woody.linux-foundation.org>
- <20070802160906.GA20377@elte.hu>
+	Thu, 2 Aug 2007 18:40:00 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56326 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755015AbXHBWkA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:40:00 -0400
+Date: Fri, 3 Aug 2007 00:39:58 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Michael Tokarev <mjt@tls.msk.ru>,
+       Herbert Rosmanith <kernel@wildsau.enemy.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: VIA EPIA EK: strange eth dev numbering
+In-Reply-To: <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708030039300.495@fbirervta.pbzchgretzou.qr>
+References: <200708021056.l72Au722008603@wildsau.enemy.org> 
+ <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr> 
+ <46B1D708.9040106@msgid.tls.msk.ru>  <Pine.LNX.4.64.0708021536350.24572@fbirervta.pbzchgretzou.qr>
+  <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
+ <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Thu, 2 Aug 2007, Ingo Molnar wrote:
+On Aug 3 2007 00:00, Kay Sievers wrote:
+>On 8/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+>> I know I have seen my kernel outputting "A renamed to B". Since you two
+>> however wanted that information in the first place, I grepped a bit
+>> around, and actually found, (drumroll), that the SUSE kernel has had a
+>> proper patch for [I can't remember how long] quite some time. (At least
+>> one distro which does the right thing.) I copied it below.
+>
+>> e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
+>> dev_change_name: about to rename 'eth3' to 'eth0'
+>> dev_change_name: about to rename 'eth3' to 'ethxx3'
+>> eth3 renamed to ethxx3
+>
+>I just made udev when it successfully renamed an interface to write
+>that to the kernel log, so dmesg will show:
+>  <6>udev: renamed network interface eth0 to eth1
 
-> Most importantly, CFS _already_ includes a number of measures that act 
-> against too frequent math. So even though you can see 64-bit math code 
-> in it, it's only rarely called if your clock has a low resolution - and 
-> that happens all automatically! (see below the details of this buffered 
-> delta math)
-> 
-> I have not seen Roman notice and mention any of these important details 
-> (perhaps because he was concentrating on finding faults in CFS - which a 
-> reviewer should do), but those measures are still very important for a 
-> complete, balanced picture, especially if one focuses on overhead on 
-> small boxes where the clock is low-resolution.
-> 
-> As Peter has said it in his detailed review of Roman's suggested 
-> algorithm, our main focus is on keeping total complexity down - and we 
-> are (of course) fundamentally open to changing the math behind CFS, we 
-> ourselves tweaked it numerous times, it's not cast into stone in any 
-> way, shape or form.
+I think it is helpful to integrate the suse patch rather than to patch udev
+alone. This way, renames that do not involve udev also show up.
 
-You're comparing apples with oranges, I explicitely said:
-
-"At this point I'm not that much interested in a few localized 
-optimizations, what I'm interested in is how can this optimized at the 
-design level"
-
-IMO it's very important to keep computational and algorithmic complexity 
-separately, I want to concentrate on the latter, so unless you can _prove_ 
-that a similiar set of optimizations is impossible within my example, I'm 
-going to ignore them for now. CFS has already gone through several 
-versions of optimization and tuning, expecting the same from my design 
-prototype is a little confusing...
-
-I want to analyze the foundation CFS is based on, in the review I 
-mentioned a number of other issues and design related questions. If you 
-need more time, that's fine, but I'd appreciate more background 
-information related to that and not that you only jump on the more trivial 
-issues.
-
-> In Roman's variant of CFS's algorithm the variables are 32-bit, but the 
-> error is rolled forward in separate fract_* (fractional) 32-bit 
-> variables, so we still have 32+32==64 bit of stuff to handle. So we 
-> think that in the end such a 32+32 scheme would be more complex (and 
-> anyone who took a look at fs2.c would i think agree - it took Peter a 
-> day to decypher the math!)
-
-Come on, Ingo, you can do better than that, I did mention in my review 
-some of the requirements for the data types.
-I'm amazed how you can get to that judgement so quickly, could you please 
-substantiate that a little more?
-
-I admit that the lack of source comments is an open invitation for further 
-questions and Peter did exactly this and his comments were great - I'm 
-hoping for more like that. You OTOH jump to conclusions based on a partial 
-understanding what I'm actually trying to do.
-Ingo, how about you provide some of the mathematical prove CFS is based 
-on? Can you prove that the rounding errors are irrelevant? Can you prove 
-that all the limit checks can have no adverse effect? I tried that and I'm 
-not entirely convinced of that, but maybe it's just me, so I'd love to see 
-someone else's attempt at this.
-A major goal of my design is it to be able to define the limits within the 
-scheduler is working correctly, so I know which information is relevant 
-and what can be approximated.
-
-bye, Roman
+	Jan
+-- 
