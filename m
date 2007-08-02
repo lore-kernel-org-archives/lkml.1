@@ -1,104 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759310AbXHBRwI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbXHBRyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759310AbXHBRwI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:52:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbXHBRv4
+	id S1759438AbXHBRyS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbXHBRyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:51:56 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:44514 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbXHBRvz (ORCPT
+	Thu, 2 Aug 2007 13:54:05 -0400
+Received: from lazybastard.de ([212.112.238.170]:41325 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752757AbXHBRyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:51:55 -0400
-Date: Thu, 2 Aug 2007 13:50:56 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Gabriel C <nix.or.die@googlemail.com>
-cc: Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
-Message-ID: <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Aug 2007 13:54:03 -0400
+Date: Thu, 2 Aug 2007 19:50:09 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
+Subject: Re: [RFC 12/26] ext2 white-out support
+Message-ID: <20070802175008.GA12627@lazybastard.org>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <20070731170012.GN5101@hasse.suse.de> <20070731171159.GA27234@filer.fsl.cs.sunysb.edu> <1185981810.18007.14.camel@kleikamp.austin.ibm.com> <20070801184405.GA18405@filer.fsl.cs.sunysb.edu> <1185995431.18007.24.camel@kleikamp.austin.ibm.com> <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This problem seems to be getting worse. With the latest linus tree, after 
-the initial hang where the power button is needed to bring the system back 
-to life, the boot process slows to a crawl.
+On Wed, 1 August 2007 15:33:30 -0400, Josef Sipek wrote:
+>  
+> This brings up an very interesting (but painful) question...which makes more
+> sense? Allowing the modifications in only the top-most branch, or any branch
+> (given the user allows it at mount-time)?
+> 
+> This is really question to the community at large, not just you, Dave :)
 
-Although if I repeatedly press the shift key it'll help move things along. 
-I'm guessing the keyboard interrupt firing off is doing something to help 
-it. The system seems OK though after booting is finished.
+Only write to top-most layer.
 
-Upon shutdown it actually stalls out without help from the shift key.
+There are two reasons for this.  First it allows users to create a union
+mount, test something (e.g. update the distribution) and remove every
+trace from the test by umounting the top-most layer.  Such a thing can
+be quite valuable.
 
-Any thoughts on this, or tips to help debug it further?
+The second reason is simplicity.  I personally couldn't even start to
+describe the semantics.  If the user does a rename, which layer will the
+change end up in?  What if source or target exist in multiple layers?
+How to rename a directory in a lower layer containing a new file in an
+upper layer?
 
-thx, Cal
+Finding new and interesting corner cases for such a beast can be quite
+entertaining.  And until someone has properly documented the semantics
+for _all_ the corner cases, my enthusiasm is below freezing point.  Does
+such a documentation exist?
 
-On Mon, 30 Jul 2007, Cal Peake wrote:
+Jörn
 
-> On Sun, 29 Jul 2007, Gabriel C wrote:
-> 
-> > Frank Hale wrote:
-> > [ added  linux-acpi to CC ]
-> > > I have an Averatec 2370 laptop with the nVidia MCP51. With kernel
-> > > 2.6.20 I had no issues with ACPI however with 2.6.21 and higher the
-> > > kernel will hang on boot until I press the suspend button or the power
-> > > button in which case the kernel wakes up and finishes the boot
-> > > process. Including the following support only causes the issue:
-> > > 
-> > >  [*] ACPI Support
-> > > 
-> > > What I mean by that is every ACPI option has been deactivated and only
-> > > ACPI support checked. The boot process with 2.6.21 and higher hangs at
-> > > the point where the Scheduler is being registered.
-> > > 
-> > > io scheduler cfq registered (default)
-> > > 
-> > > If I allow it to sit there it never comes back to life and finishes
-> > > booting. If I press the power or suspend button it will finish booting
-> > > as expected.
-> > > 
-> > > I've scoured google for quite a while but cannot find any relevant
-> > > information pertaining to this issue. For now I've disabled ACPI
-> > > altogether.
-> 
-> Frank, thanks for the tip about 2.6.20 being good, it gave me a nice place 
-> to start bisecting from.
-> 
-> Thomas, Ingo,
-> 
-> Regarding the issue described above that Frank and I are having, I've 
-> narrowed it down to commit e9e2cdb4[1]: [PATCH] clockevents: i386 drivers
-> 
-> About our systems:
->   Averatec 2370/2371 Laptop
->     AMD Turion 64 X2 TL-50/TL-52
->     nVidia MCP51 chipset
-> 
-> Here a small matrix of my tests:
-> 
-> 2.6.20.15 SMP		: OK
-> 2.6.21.5 SMP		: hang
-> 2.6.21.5 UP w/o APIC	: OK
-> 2.6.22.1 UP		: hang
-> 2.6.22.1 UP w/o IO-APIC	: hang
-> 2.6.22.1 UP w/o APIC	: OK
-> 2.6.22.1 SMP		: hang
-> 2.6.22.1 SMP w/o ACPI	: OK
-> 
-> Please let me know if there's anything else I can provide to help.
-> 
-> thanks!
-> -- 
-> Cal Peake
-> 
-> [1] http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e9e2cdb412412326c4827fc78ba27f410d837e6e
+-- 
+A surrounded army must be given a way out.
+-- Sun Tzu
