@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXHBB3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756708AbXHBBgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbXHBB3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 21:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbXHBB3K
+	id S1756708AbXHBBgn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 21:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbXHBBge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 21:29:10 -0400
-Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:55819 "EHLO
-	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752016AbXHBB3J convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 21:29:09 -0400
-X-Greylist: delayed 27073 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 21:29:09 EDT
-X-OB-Received: from unknown (205.158.62.62)
-  by wfilter2.us4.outblaze.com; 2 Aug 2007 01:17:45 -0000
+	Wed, 1 Aug 2007 21:36:34 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53422 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751443AbXHBBgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 21:36:33 -0400
+Date: Thu, 2 Aug 2007 03:36:31 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Martin Bligh <mbligh@mbligh.org>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+Message-ID: <20070802013631.GA15595@wotan.suse.de>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de> <46B0C8A3.8090506@mbligh.org> <1185993169.5059.79.camel@localhost> <46B10E9B.2030907@mbligh.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 7BIT
-Content-Type: text/plain; charset=US-ASCII
-MIME-Version: 1.0
-From: "Ash Willis" <ashwillis@programmer.net>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, rafalbilski@interia.pl
-Date: Wed, 1 Aug 2007 20:17:45 -0500
-Subject: Re: CS5530 Alsa driver fails
-X-Originating-Ip: 79.65.93.93
-X-Originating-Server: ws1-7.us4.outblaze.com
-Message-Id: <20070802011745.B6DA0115449@ws1-7.us4.outblaze.com>
+In-Reply-To: <46B10E9B.2030907@mbligh.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> the VGA video. If your box has VSA2 then VSA2 firmware has some kind of
-> hooks to allow a native sound driver to take over and to reroute the
-> interrupts without SB emulation. I don't have the docs for VSA2 but the
-> horribly big natsemi provided audio driver does show how to do it.
+On Wed, Aug 01, 2007 at 03:52:11PM -0700, Martin Bligh wrote:
 > 
+> >And so forth.  Initial forks will balance.  If the children refuse to
+> >die, forks will continue to balance.  If the parent starts seeing short
+> >lived children, fork()s will eventually start to stay local.  
+> 
+> Fork without exec is much more rare than without. Optimising for
+> the uncommon case is the Wrong Thing to Do (tm). What we decided
 
-I wouldn't mind porting VSA2 support to ALSA. I just don't have test
-hardware. Do you happen to know any examples of hardware that run VSA2
-firmware or is it just a case of a firmware update?
+It's only the wrong thing to do if it hurts the common case too
+much. Considering we _already_ balance on exec, then adding another
+balance on fork is not going to introduce some order of magnitude
+problem -- at worst it would be 2x but it really isn't too slow
+anyway (at least nobody complained when we added it).
 
-> Alan
+One place where we found it helps is clone for threads.
 
-Thanks,
+If we didn't do such a bad job at keeping tasks together with their
+local memory, then we might indeed reduce some of the balance-on-crap
+and increase the aggressiveness of periodic balancing.
 
-Ash
+Considering we _already_ balance on fork/clone, I don't know what
+your argument is against this patch is? Doing the balance earlier
+and allocating more stuff on the local node is surely not a bad
+idea.
 
--- 
-We've Got Your Name at http://www.mail.com!
-Get a FREE E-mail Account Today - Choose From 100+ Domains
+
+> the last time(s) this came up was to allow userspace to pass
+> a hint in if they wanted to fork and not exec.
+> 
+> >I believe that this solved the pathological behavior we were seeing with
+> >shell scripts taking way longer on the larger, supposedly more powerful,
+> >platforms.
+> >
+> >Of course, that OS could migrate the equivalent of task structs and
+> >kernel stack [the old Unix user struct that was traditionally swappable,
+> >so fairly easy to migrate].  On Linux, all bets are off, once the
+> >scheduler starts migrating tasks away from the node that contains their
+> >task struct, ...  [Remember Eric Focht's "NUMA Affine Scheduler" patch
+> >with it's "home node"?]
+> 
+> Task migration doesn't work well at all without userspace hints.
+> SGI tried for ages (with IRIX) and failed. There's long discussions
+> of all of these things back in the days when we merged the original
+> NUMA scheduler in late 2.5 ...
+
+Task migration? Automatic memory migration you mean? I think it deserves
+another look regardless of what SGI could or could not do, and Lee and I
+are slowly getting things in place. We'll see what happens...
 
