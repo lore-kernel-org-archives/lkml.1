@@ -1,59 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756555AbXHBB1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbXHBB3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756555AbXHBB1S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 21:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752016AbXHBB1H
+	id S1756643AbXHBB3S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 21:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbXHBB3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 21:27:07 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:16730 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754136AbXHBB1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 21:27:06 -0400
-Date: Wed, 1 Aug 2007 18:30:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH -mm] linux-audit list is subscribers-only
-Message-Id: <20070801183030.e07ff8f5.randy.dunlap@oracle.com>
-In-Reply-To: <46B11E7A.4050908@googlemail.com>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<46B11E7A.4050908@googlemail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
+	Wed, 1 Aug 2007 21:29:10 -0400
+Received: from webmail-outgoing.us4.outblaze.com ([205.158.62.67]:55819 "EHLO
+	webmail-outgoing.us4.outblaze.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752016AbXHBB3J convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 21:29:09 -0400
+X-Greylist: delayed 27073 seconds by postgrey-1.27 at vger.kernel.org; Wed, 01 Aug 2007 21:29:09 EDT
+X-OB-Received: from unknown (205.158.62.62)
+  by wfilter2.us4.outblaze.com; 2 Aug 2007 01:17:45 -0000
+Content-Disposition: inline
+Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+MIME-Version: 1.0
+From: "Ash Willis" <ashwillis@programmer.net>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, tiwai@suse.de, rafalbilski@interia.pl
+Date: Wed, 1 Aug 2007 20:17:45 -0500
+Subject: Re: CS5530 Alsa driver fails
+X-Originating-Ip: 79.65.93.93
+X-Originating-Server: ws1-7.us4.outblaze.com
+Message-Id: <20070802011745.B6DA0115449@ws1-7.us4.outblaze.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 02 Aug 2007 01:59:54 +0200 Gabriel C wrote:
-
-> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+> the VGA video. If your box has VSA2 then VSA2 firmware has some kind of
+> hooks to allow a native sound driver to take over and to reroute the
+> interrupts without SB emulation. I don't have the docs for VSA2 but the
+> horribly big natsemi provided audio driver does show how to do it.
 > 
-> ---
-> 
-> --- linux-2.6.23-rc1-mm/MAINTAINERS.orig	2007-08-02 01:51:40.000000000 +0200
-> +++ linux-2.6.23-rc1-mm/MAINTAINERS	2007-08-02 01:52:17.000000000 +0200
-> @@ -672,7 +672,7 @@ S:	Maintained
->  AUDIT SUBSYSTEM
->  P:	David Woodhouse
->  M:	dwmw2@infradead.org
-> -L:	linux-audit@redhat.com
-> +L:	linux-audit@redhat.com (subscribers-only)
->  W:	http://people.redhat.com/sgrubb/audit/
->  T:	git kernel.org:/pub/scm/linux/kernel/git/dwmw2/audit-2.6.git
->  S:	Maintained
-> 
-> -
 
-Ack, I sent this patch last week...
+I wouldn't mind porting VSA2 support to ALSA. I just don't have test
+hardware. Do you happen to know any examples of hardware that run VSA2
+firmware or is it just a case of a firmware update?
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+> Alan
+
+Thanks,
+
+Ash
+
+-- 
+We've Got Your Name at http://www.mail.com!
+Get a FREE E-mail Account Today - Choose From 100+ Domains
+
