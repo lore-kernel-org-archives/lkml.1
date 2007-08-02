@@ -1,97 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755947AbXHBIuv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756569AbXHBIxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755947AbXHBIuv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 04:50:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753752AbXHBIuk
+	id S1756569AbXHBIxv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 04:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbXHBIxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 04:50:40 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:49090 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753562AbXHBIui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 04:50:38 -0400
-Date: Thu, 2 Aug 2007 11:00:08 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jason.wessel@windriver.com,
-       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
-Message-ID: <20070802090008.GA1699@ff.dom.local>
-References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org>
+	Thu, 2 Aug 2007 04:53:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60320 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752570AbXHBIxm convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 04:53:42 -0400
+Date: Thu, 2 Aug 2007 01:52:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: linux-kernel@vger.kernel.org, trenn@suse.de, pavel@ucw.cz,
+       mjg59@srcf.ucam.org, lenb@kernel.org
+Subject: Re: 2.6.22 regression: thermal trip points
+Message-Id: <20070802015248.45a40717.akpm@linux-foundation.org>
+In-Reply-To: <46B1988C.3090302@t-online.de>
+References: <46B1988C.3090302@t-online.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070802020219.GM11166@waste.org>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 09:02:19PM -0500, Matt Mackall wrote:
-> On Wed, Aug 01, 2007 at 11:59:21AM +0200, Jarek Poplawski wrote:
-> > On Tue, Jul 31, 2007 at 05:05:00PM +0200, Gabriel C wrote:
-> > > Jarek Poplawski wrote:
-> > > > On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
-> > > >> Jarek Poplawski wrote:
-> > > >>> On 28-07-2007 20:42, Gabriel C wrote:
-> > > >>>> Andrew Morton wrote:
-> > > >>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-...
-> > > >>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
-...
-> > > >>>>>> I think is because KGDBOE selects just NETPOLL.
-> > > >>>>>>
-> > > >>>>> Looks like it.
-> > > >>>>>
-> > > >>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
-> > > >>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
-> > > >>>>> remains evil.
-...
-> > seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
-> > still doesn't check for NETDEVICES dependency.
+On Thu, 02 Aug 2007 10:40:44 +0200 Knut Petersen <Knut_Petersen@t-online.de> wrote:
+
+> Hi everybody!
 > 
-> That's odd. Adding Sam to the cc:.
-
-Looks right, but after reading Andrew's opinion about select I'd be
-astonished if he doesn't know this problem already.
-
+> Kernel 2.6.22 decreases performance by about 50% on my system.
+> No, I do not like that. The reason is a broken BIOS, granted, but there
+> was a perfect workaround in the kernel that has been dropped.
 > 
-> > > >> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
-> > > >> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
-> > > > 
-> > > > Why kgdboe should care what netpoll needs? So, I hope, you are adding
-> > > > this select under config NETPOLL. On the other hand, if NETPOLL should
-> > > > depend on NET_POLL_CONTROLLER there is probably no reason to have them
-> > > > both.
-> > > 
-> > > NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
-> > > 
-> > > Net peoples ping ?:)
+> mainboard: AOpen i915GMm-hfs, AWARD BIOS
+> cpu: Pentium-M 750 (0.8 to 1.86 MHz)
+> openSuSE 10.2 with kernel 2.6.22.1
 > 
-> How about cc:ing the netpoll maintainer?
-
-Is there a new one or do you suggest possibility of abusing the
-authority of the netpoll's author with such trifles...?!
-
-BTW, I can't find any official meaning of def_bool, but it's name
-suggests only default value, so logically it should be not enough
-to assure NET_POLL_CONTROLLER=y, and netpoll should use "depends",
-"require" or "select" (IMHO more readable too), but on the other
-hand this could be practially wrong...
-
->  
-> > OK, I wasn't right here: there is no visible reason for both in the
-> > kernel code, but I can imagine there could be some external users of
-> > NET_POLL_CONTROLLER without NETPOLL.
+> The cpu fan can not be controled by linux kernel.
+> The BIOS will switch on the cpu fan a bit above 50 deg. Celsius.
+> The active and passive trip points both are set to 50 deg. Celsius.
+> Temperature of the idle cpu at 800 Mhz: 34 to 42 deg. C.
+> The BIOS never changes the trip points.
+> Cpufreq does work perfectly.
 > 
-> I don't know of any. As far as I can tell at this point,
-> NET_POLL_CONTROLLER == NETPOLL.
+> Previously there was the possibility  to add something like
+> 
+> echo  "100:0:65:70:0" > /proc/acpi/thermal_zone/THRM/trip_points
+> echo  2 > /proc/acpi/thermal_zone/THRM/polling_frequency
+> echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+> 
+> to e.g. /etc/init.d/boot.local. With 2.6.22 that solution does not exist
+> any longer. Now the code in thermal.c slows down the cpu under load
+> to prevent "overheating". Kernel compile time increases from about 12
+> to 18 minutes. No, I don´t like that, nobody would.
+> 
+> Possible solutions:
+> 
+> 1. Get a better BIOS! --- There is none.
+> 
+> 2. Fix DSDT!  --- Recompiling gives a number of errors ... I do not  know
+> how to fix it.
+> 
+> 3. Don´t include thermal.c! --- That does help, but as this is a 24/7
+> system, the
+> cpu fan could break. At that time I do not want to rely on the BIOS to
+> save my
+> system (the next trip point is at 100 deg. Celsius).
+> 
+> 4. Revert Len Browns commit 11ccc0f249cb01a129f54760b8ff087f242935d4
+> 
+> I would vote for option 4, but I do understand some of the arguments of
+> Len in
+> the 2.6.22-rc1-mm1 discussion in May. Yes, communicating trip points to
+> thermal.c is a hack, it will fail on systems that change trip points
+> dynamically
+> and it might be dangerous for the machine if unreasonable trip points
+> are chosen.
+> But it does help to keep the machine quiet, and to work around a too low
+> or too
+> trip points defined by the BIOS.
 
-There are some notions about "other diagnostic tools" in some
-net drivers, eg. 3c509.c, so there would be a little bit of
-work if, after changing this, they really exist (and even if
-not - maybe it's reasonable to save such possibility for the
-future?).
+I didn't understand the arguments either, actually.
 
-Best regards,
-Jarek P.
+Here we had obviously-useful-to-you functionality which was taken away
+without, afaik, providing any alternative.
+
+> If it should be not acceptable to revert the questionable commit without
+> changes,
+> would it be acceptable to make rw trip_points a kernel config option?
+
+Well we obviously need to do _something_.  And reverting that commit until
+we get a decent replacement in place sounds like a fine idea to me.
+
