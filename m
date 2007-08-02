@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759516AbXHBWkN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759969AbXHBWlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759516AbXHBWkN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:40:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754849AbXHBWkA
+	id S1759969AbXHBWlI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbXHBWk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:40:00 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:56326 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755015AbXHBWkA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:40:00 -0400
-Date: Fri, 3 Aug 2007 00:39:58 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Herbert Rosmanith <kernel@wildsau.enemy.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: VIA EPIA EK: strange eth dev numbering
-In-Reply-To: <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708030039300.495@fbirervta.pbzchgretzou.qr>
-References: <200708021056.l72Au722008603@wildsau.enemy.org> 
- <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr> 
- <46B1D708.9040106@msgid.tls.msk.ru>  <Pine.LNX.4.64.0708021536350.24572@fbirervta.pbzchgretzou.qr>
-  <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
- <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
+	Thu, 2 Aug 2007 18:40:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35247 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754849AbXHBWkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:40:55 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] do_sigaction: remove now unneeded recalc_sigpending()
+In-Reply-To: Oleg Nesterov's message of  Friday, 3 August 2007 02:37:20 +0400 <20070802223720.GA623@tv-sign.ru>
+X-Zippy-Says: BEEP-BEEP!!  I'm a '49 STUDEBAKER!!
+Message-Id: <20070802224048.524644D04B5@magilla.localdomain>
+Date: Thu,  2 Aug 2007 15:40:48 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> With the recent changes, do_sigaction()->recalc_sigpending_and_wake() can
+> never clear TIF_SIGPENDING. Instead, it can set this flag and wake up the
+> thread without any reason. Harmless, but unneeded and wastes CPU.
+> 
+> Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-On Aug 3 2007 00:00, Kay Sievers wrote:
->On 8/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
->> I know I have seen my kernel outputting "A renamed to B". Since you two
->> however wanted that information in the first place, I grepped a bit
->> around, and actually found, (drumroll), that the SUSE kernel has had a
->> proper patch for [I can't remember how long] quite some time. (At least
->> one distro which does the right thing.) I copied it below.
->
->> e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
->> dev_change_name: about to rename 'eth3' to 'eth0'
->> dev_change_name: about to rename 'eth3' to 'ethxx3'
->> eth3 renamed to ethxx3
->
->I just made udev when it successfully renamed an interface to write
->that to the kernel log, so dmesg will show:
->  <6>udev: renamed network interface eth0 to eth1
+ACK.  (We agreed months ago this was the thing to do.)
 
-I think it is helpful to integrate the suse patch rather than to patch udev
-alone. This way, renames that do not involve udev also show up.
 
-	Jan
--- 
+Thanks,
+Roland
