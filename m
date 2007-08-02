@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbXHBQ7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbXHBQ7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbXHBQ7T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbXHBQ7L
+	id S1759228AbXHBQ7j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757789AbXHBQ7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:59:11 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:4682 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbXHBQ7L (ORCPT
+	Thu, 2 Aug 2007 12:59:17 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:63081 "EHLO
+	outbound6-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757123AbXHBQ7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:59:11 -0400
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] Re: ck vs. cfs : realtime audio performance
-Date: Thu, 2 Aug 2007 18:59:05 +0200
-User-Agent: KMail/1.9.7
-Cc: whansard@sbcglobal.net, Carlo Florendo <subscribermail@gmail.com>,
-       linux-kernel@vger.kernel.org, Klaus Schulz <Klaus.Schulz@web.de>
-References: <1745683987@web.de> <20070802115952.6cd4b217.whansard@sbcglobal.net> <200708021847.49271.Martin@lichtvoll.de> (sfid-20070802_185010_002178_A5EF4503)
-In-Reply-To: <200708021847.49271.Martin@lichtvoll.de>
+	Thu, 2 Aug 2007 12:59:16 -0400
+X-BigFish: VP
+X-MS-Exchange-Organization-Antispam-Report: OrigIP: 139.95.251.8;Service: EHS
+X-Server-Uuid: 89466532-923C-4A88-82C1-66ACAA0041DF
+Date: Thu, 2 Aug 2007 11:00:39 -0600
+From: "Jordan Crouse" <jordan.crouse@amd.com>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+cc: linux-kernel@vger.kernel.org, tiwai@suse.de, rafalbilski@interia.pl
+Subject: Re: CS5530 Alsa driver fails
+Message-ID: <20070802170039.GB27319@cosmic.amd.com>
+References: <20070802135700.09319306@the-village.bc.nu>
+ <20070802152319.GA25325@cosmic.amd.com>
+ <20070802180122.7b38d222@the-village.bc.nu>
 MIME-Version: 1.0
+In-Reply-To: <20070802180122.7b38d222@the-village.bc.nu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 02 Aug 2007 16:59:03.0057 (UTC)
+ FILETIME=[6DC6D810:01C7D526]
+X-WSS-ID: 6AACD2DD7CS3981448-01-01
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+ charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708021859.06411.Martin@lichtvoll.de>
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 02 August 2007 schrieb Martin Steigerwald:
+On 02/08/07 18:01 +0100, Alan Cox wrote:
+> > And as an aside, the VSA2 source code is open, so you can peruse
+> > it and discover its secrets for yourself:
+> > 
+> > http://dev.laptop.org/git.do?p=geode-vsa;a=tree;hb=HEAD
+> 
+> Interesting. I shall have to compare that with the CS5510/20 VSA1 tree I
+> have here (which isn't under LGPL)
 
-> The tone I see on responses to posts that are CCed to LKML in my
-> perception often is just completely and utterly awfully unfriendly. And
-> often those responses actual include factual inaccuracies and
-> preliminary assumptions as well. Is that how Linux Kernel Management
-> Style is supposed to work? I hope not. [...]
+Not to get any further off topic - but we're still soliciting volunteers
+to help port the VSA2 code so that it will build with OSS tools.  If you're
+interested, don't hesitate to dive in.  :)  Patches always gladly accepted.
 
-Well, if Carlo is not a Linux Kernel manager this comment of mine is 
-inapprobiate. Sorry for that.
-
-Actually when I remind myself of all the responses I got from Ingo I did 
-not see anything like that what I have complained about here. I take that 
-as something where I can learn something: Not nearly every Linux Kernel 
-manager is a mean and unfriendly bastard who accuses everyone who wants 
-something merged or has a problem report. ;) (At least Ingo did not 
-accuse me for my problem reports. If I ever happen to dig that deeply 
-into the kernel or its documentation that I have something to merge 
-regarding the scheduler, I can try how he reacts to that...)
+Jordan
 
 -- 
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+Jordan Crouse
+Systems Software Development Engineer 
+Advanced Micro Devices, Inc.
+
+
