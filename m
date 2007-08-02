@@ -1,142 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758867AbXHBRV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759138AbXHBRXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758867AbXHBRV3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbXHBRVV
+	id S1759138AbXHBRXQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbXHBRXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:21:21 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:53487 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbXHBRVU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:21:20 -0400
-Date: Thu, 2 Aug 2007 18:21:18 +0100
-To: akpm@linux-foundation.org
-Cc: Lee.Schermerhorn@hp.com, clameter@sgi.com, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] Apply memory policies to top two highest zones when highest zone is ZONE_MOVABLE
-Message-ID: <20070802172118.GD23133@skynet.ie>
+	Thu, 2 Aug 2007 13:23:04 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41732 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756376AbXHBRXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 13:23:01 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.23-rc1-mm2: Fix crash in sysfs_hash_and_remove
+Date: Thu, 2 Aug 2007 19:31:57 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       Greg KH <greg@kroah.com>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Message-Id: <200708021931.58123.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The NUMA layer only supports NUMA policies for the highest zone. When
-ZONE_MOVABLE is configured with kernelcore=, the the highest zone becomes
-ZONE_MOVABLE. The result is that policies are only applied to allocations
-like anonymous pages and page cache allocated from ZONE_MOVABLE when the
-zone is used.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-This patch applies policies to the two highest zones when the highest zone
-is ZONE_MOVABLE. As ZONE_MOVABLE consists of pages from the highest "real"
-zone, it's always functionally equivalent.
+My test box crashes during suspend, while the nonboot CPUs are being disabled,
+because sysfs_hash_and_remove() doesn't check if dir_sd passed to it is not
+NULL.  Fix it.
 
-The patch has been tested on a variety of machines both NUMA and non-NUMA
-covering x86, x86_64 and ppc64. No abnormal results were seen in kernbench,
-tbench, dbench or hackbench. It passes regression tests from the numactl
-package with and without kernelcore= once numactl tests are patched to
-wait for vmstat counters to update.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- include/linux/mempolicy.h |    2 +-
- include/linux/mmzone.h    |   18 ++++++++++++++++++
- mm/mempolicy.c            |    2 +-
- mm/page_alloc.c           |   13 +++++++++++++
- 4 files changed, 33 insertions(+), 2 deletions(-)
+ fs/sysfs/inode.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/include/linux/mempolicy.h b/include/linux/mempolicy.h
-index e147cf5..5bdd656 100644
---- a/include/linux/mempolicy.h
-+++ b/include/linux/mempolicy.h
-@@ -166,7 +166,7 @@ extern enum zone_type policy_zone;
+Index: linux-2.6.23-rc1-mm2/fs/sysfs/inode.c
+===================================================================
+--- linux-2.6.23-rc1-mm2.orig/fs/sysfs/inode.c
++++ linux-2.6.23-rc1-mm2/fs/sysfs/inode.c
+@@ -191,6 +191,8 @@ int sysfs_hash_and_remove(struct kobject
+ 	struct sysfs_addrm_cxt acxt;
+ 	struct sysfs_dirent **pos, *sd;
  
- static inline void check_highest_zone(enum zone_type k)
- {
--	if (k > policy_zone)
-+	if (k > policy_zone && k != ZONE_MOVABLE)
- 		policy_zone = k;
- }
- 
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 3ea68cd..4e56273 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -410,6 +410,24 @@ struct zonelist {
- #endif
- };
- 
-+#ifdef CONFIG_NUMA
-+/*
-+ * Only custom zonelists like MPOL_BIND need to be filtered as part of
-+ * policies. As described in the comment for struct zonelist_cache, these
-+ * zonelists will not have a zlcache so zlcache_ptr will not be set. Use
-+ * that to determine if the zonelists needs to be filtered or not.
-+ */
-+static inline int alloc_should_filter_zonelist(struct zonelist *zonelist)
-+{
-+	return !zonelist->zlcache_ptr;
-+}
-+#else
-+static inline int alloc_should_filter_zonelist(struct zonelist *zonelist)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_NUMA */
-+
- #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
- struct node_active_region {
- 	unsigned long start_pfn;
-diff --git a/mm/mempolicy.c b/mm/mempolicy.c
-index 71b84b4..172abff 100644
---- a/mm/mempolicy.c
-+++ b/mm/mempolicy.c
-@@ -149,7 +149,7 @@ static struct zonelist *bind_zonelist(nodemask_t *nodes)
- 	   lower zones etc. Avoid empty zones because the memory allocator
- 	   doesn't like them. If you implement node hot removal you
- 	   have to fix that. */
--	k = policy_zone;
-+	k = MAX_NR_ZONES - 1;
- 	while (1) {
- 		for_each_node_mask(nd, *nodes) { 
- 			struct zone *z = &NODE_DATA(nd)->node_zones[k];
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 3da85b8..6427653 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -1157,6 +1157,7 @@ get_page_from_freelist(gfp_t gfp_mask, unsigned int order,
- 	nodemask_t *allowednodes = NULL;/* zonelist_cache approximation */
- 	int zlc_active = 0;		/* set if using zonelist_cache */
- 	int did_zlc_setup = 0;		/* just call zlc_setup() one time */
-+	enum zone_type highest_zoneidx = -1; /* Gets set for policy zonelists */
- 
- zonelist_scan:
- 	/*
-@@ -1166,6 +1167,18 @@ zonelist_scan:
- 	z = zonelist->zones;
- 
- 	do {
-+		/*
-+		 * In NUMA, this could be a policy zonelist which contains
-+		 * zones that may not be allowed by the current gfp_mask.
-+		 * Check the zone is allowed by the current flags
-+		 */
-+		if (unlikely(alloc_should_filter_zonelist(zonelist))) {
-+			if (highest_zoneidx == -1)
-+				highest_zoneidx = gfp_zone(gfp_mask);
-+			if (zone_idx(*z) > highest_zoneidx)
-+				continue;
-+		}
-+
- 		if (NUMA_BUILD && zlc_active &&
- 			!zlc_zone_worth_trying(zonelist, z, allowednodes))
- 				continue;
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
++	if (!dir_sd)
++		return -ENOENT;
+ 	sysfs_addrm_start(&acxt, dir_sd);
+ 	if (!sysfs_resolve_for_remove(kobj, &acxt.parent_sd))
+ 		goto addrm_finish;
