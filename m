@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759513AbXHBSVq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759402AbXHBSY1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759513AbXHBSVq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 14:21:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbXHBSVi
+	id S1759402AbXHBSY1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 14:24:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756755AbXHBSYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 14:21:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55471 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754558AbXHBSVh (ORCPT
+	Thu, 2 Aug 2007 14:24:19 -0400
+Received: from nf-out-0910.google.com ([64.233.182.186]:7448 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756689AbXHBSYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 14:21:37 -0400
-Date: Thu, 2 Aug 2007 19:21:30 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix s2io regression
-Message-ID: <20070802182130.GM21089@ftp.linux.org.uk>
-Mime-Version: 1.0
+	Thu, 2 Aug 2007 14:24:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=mb2K5Gk2zbzKmEfwIZQkPMx7m21OycllJwxsW2s6d2T/AYm5Zi6DhO6DOX56VS2xB/FsgaT3kz9+gGbVLhlxcIpzPyLcBH4EGYaWMv66lzhJFtiSJ9XXkp6wV0W53Zk1ujkxUXwaxhs7EGW8gQbs2psBrr9UNumsvw5lYq8E+FU=
+Message-ID: <46B22145.6020402@googlemail.com>
+Date: Thu, 02 Aug 2007 20:24:05 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Section mismatch warnings
+References: <46AE2459.7080905@googlemail.com> <20070730185124.GA29116@uranus.ravnborg.org> <46AE3C80.7010307@googlemail.com> <46AF9152.2050707@googlemail.com> <20070731204846.GA9985@uranus.ravnborg.org> <46AFB06E.2020401@googlemail.com> <46B1E9D6.80006@googlemail.com> <20070802163108.GA2431@uranus.ravnborg.org> <46B21084.4050308@googlemail.com> <20070802175914.GC2431@uranus.ravnborg.org>
+In-Reply-To: <20070802175914.GC2431@uranus.ravnborg.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	* wrong argument passed to pci_unmap_single() on failure
-exit paths
-	* leak in the same area
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
-diff --git a/drivers/net/s2io.c b/drivers/net/s2io.c
-index 2be0a0f..24feb00 100644
---- a/drivers/net/s2io.c
-+++ b/drivers/net/s2io.c
-@@ -2430,7 +2430,7 @@ static int fill_rx_buffers(struct s2io_nic *nic, int ring_no)
- 					(rxdp3->Buffer1_ptr == DMA_ERROR_CODE)) {
- 					pci_unmap_single
- 						(nic->pdev,
--						(dma_addr_t)skb->data,
-+						(dma_addr_t)rxdp3->Buffer2_ptr,
- 						dev->mtu + 4,
- 						PCI_DMA_FROMDEVICE);
- 					goto pci_map_failed;
-@@ -6211,7 +6211,7 @@ static int set_rxd_buffer_pointer(struct s2io_nic *sp, struct RxD_t *rxdp,
- 			if( (rxdp3->Buffer0_ptr == 0) ||
- 				(rxdp3->Buffer0_ptr == DMA_ERROR_CODE)) {
- 				pci_unmap_single (sp->pdev,
--					(dma_addr_t)(*skb)->data,
-+					(dma_addr_t)rxdp3->Buffer2_ptr,
- 					dev->mtu + 4, PCI_DMA_FROMDEVICE);
- 				goto memalloc_failed;
- 			}
-@@ -6224,7 +6224,10 @@ static int set_rxd_buffer_pointer(struct s2io_nic *sp, struct RxD_t *rxdp,
- 			if( (rxdp3->Buffer1_ptr == 0) ||
- 				(rxdp3->Buffer1_ptr == DMA_ERROR_CODE)) {
- 				pci_unmap_single (sp->pdev,
--					(dma_addr_t)(*skb)->data,
-+					(dma_addr_t)rxdp3->Buffer0_ptr,
-+					BUF0_LEN, PCI_DMA_FROMDEVICE);
-+				pci_unmap_single (sp->pdev,
-+					(dma_addr_t)rxdp3->Buffer2_ptr,
- 					dev->mtu + 4, PCI_DMA_FROMDEVICE);
- 				goto memalloc_failed;
- 			}
+Sam Ravnborg wrote:
+> Please forward it to akpm.
+> I usually do not carry non-kbuild patches in my tree to keep 'noise' level down.
+
+Ok done.
+
+Thank you very much for your help on this.
+
+I'll try to fix the remaining warnings soon.
+
+> 
+> 	Sam
+> 
+
+Gabriel
