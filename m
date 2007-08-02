@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbXHBClm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756197AbXHBCsR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756581AbXHBClm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 22:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753356AbXHBCle
+	id S1756197AbXHBCsR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 22:48:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbXHBCsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 22:41:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56093 "EHLO mx2.suse.de"
+	Wed, 1 Aug 2007 22:48:06 -0400
+Received: from waste.org ([66.93.16.53]:56967 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753265AbXHBCld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 22:41:33 -0400
-Date: Thu, 2 Aug 2007 04:41:32 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: lmbench ctxsw regression with CFS
-Message-ID: <20070802024132.GD15595@wotan.suse.de>
-References: <20070802021525.GC15595@wotan.suse.de> <alpine.LFD.0.999.0708011922500.3582@woody.linux-foundation.org>
-Mime-Version: 1.0
+	id S1753374AbXHBCsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 1 Aug 2007 22:48:04 -0400
+Date: Wed, 1 Aug 2007 21:48:12 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Jan Blunck <jblunck@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC 11/26] tmpfs white-out support
+Message-ID: <20070802024812.GN11166@waste.org>
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.160845468@weierstrass.suse.de> <Pine.LNX.4.64.0708011559340.19454@blonde.wat.veritas.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708011922500.3582@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <Pine.LNX.4.64.0708011559340.19454@blonde.wat.veritas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, 2007 at 07:31:26PM -0700, Linus Torvalds wrote:
+On Wed, Aug 01, 2007 at 04:13:46PM +0100, Hugh Dickins wrote:
+> On Mon, 30 Jul 2007, Jan Blunck wrote:
 > 
-> 
-> On Thu, 2 Aug 2007, Nick Piggin wrote:
+> > Introduce white-out support to tmpfs.
 > > 
-> > lmbench 3 lat_ctx context switching time with 2 processes bound to a
-> > single core increases by between 25%-35% on my Core2 system (didn't do
-> > enough runs to get more significance, but it is around 30%). The problem
-> > bisected to the main CFS commit.
+> > Signed-off-by: Jan Blunck <jblunck@suse.de>
+> > ---
+> >  include/linux/shmem_fs.h |    1 
+> >  mm/shmem.c               |   54 +++++++++++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 55 insertions(+)
 > 
-> One thing to check out is whether the lmbench numbers are "correct". 
-> Especially on SMP systems, the lmbench numbers are actually *best* when 
-> the two processes run on the same CPU, even though that's not really at 
-> all the best scheduling - it's just that it artificially improves lmbench 
-> numbers because of the close cache affinity for the pipe data structures.
-
-Yes, I bound them to a single core.
-
-
-> So when running the lmbench scheduling benchmarks on SMP, it actually 
-> makes sense to run them *pinned* to one CPU, because then you see the true 
-> scheduler performance. Otherwise you easily get noise due to balancing 
-> issues, and a clearly better scheduler can in fact generate worse 
-> numbers for lmbench.
+> I see there's debate about whether this (and its fellows) give the
+> right semantic to whiteouts; and I've not begun to think about that.
 > 
-> Did you do that? It's at least worth testing. I'm not saying it's the case 
-> here, but it's one reason why lmbench3 has the option to either keep 
-> processes on the same CPU or force them to spread out (and both cases are 
-> very interesting for scheduler testing, and tell different things: the 
-> "pin them to the same CPU" shows the latency on one runqueue, while the 
-> "pin them to different CPU's" shows the latency of a remote wakeup).
+> But as a patch to tmpfs for what you're trying to do, it looks just
+> about fine.  I say "just about" because the reference counting looks
+> right, but I wouldn't dare say that it _is_ right without testing.
 > 
-> IOW, while we used the lmbench scheduling benchmark pretty extensively in 
-> early scheduler tuning, if you select the defaults ("let the system just 
-> schedule processes on any CPU") the end result really isn't necessarily a 
-> very meaningful value: getting the best lmbench numbers actually requires 
-> you to do things that tend to be actively *bad* in real life.
-> 
-> Of course, a perfect scheduler would notice when two tasks are *so* 
-> closely related and only do synchronous wakups, that it would keep them on 
-> the same core, and get the best possible scores for lmbench, while not 
-> doing that for other real-life situations. So with a *really* smart 
-> scheduler, lmbench numbers would always be optimal, but I'm not sure 
-> aiming for that kind of perfection is even worth it!
+> And I'd probably want to add a minor adjustment, so that a mount with
+> nr_inodes=1000 could still support exactly 1000 inodes, despite your
+> allocating one for the whiteout (usually never used) at mount time.
+> But that can follow along later, no problem.
 
-Agreed with all your comments on multiprocessor balancing, but that
-was eliminated in these tests. I remote wakeup latency is another thing
-I want to test, but it isn't so interesting until the serial regression
-is fixed.
+Also, you might want to make sure whiteouts work with ramfs, which
+replaces tmpfs when tmpfs is disabled.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
