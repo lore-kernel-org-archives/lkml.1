@@ -1,58 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756813AbXHBI1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbXHBI35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756813AbXHBI1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 04:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbXHBI1l
+	id S1756930AbXHBI35 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 04:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753691AbXHBI3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 04:27:41 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:48666 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753304AbXHBI1k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 04:27:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VIWAtW/fIIYus8OakIARGUFH9+Q9+31SW2araIkKzrsh2wb6rXPzr+hx1da4HoJMkoA2RM5G0G5NTMDw3QVC8dwL9r/Wo3N6uEuufrA4A+tKb6nxFafq4faNiyLIQPAhGysHPlUmWUkzETD1APfY/xzF3Rh9zDZ+YKEGu7lAN2U=
-Message-ID: <38b2ab8a0708020127k1e4ecf2cw576fc83755c40333@mail.gmail.com>
-Date: Thu, 2 Aug 2007 10:27:39 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: "Rene Herman" <rene.herman@gmail.com>
-Subject: Re: Search for x86_64 documentation.
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46B0A92F.80207@gmail.com>
+	Thu, 2 Aug 2007 04:29:50 -0400
+Received: from people.fsn.hu ([195.228.252.137]:54208 "EHLO people.fsn.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753072AbXHBI3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 04:29:47 -0400
+Message-ID: <46B195EF.7090409@fsn.hu>
+Date: Thu, 02 Aug 2007 10:29:35 +0200
+From: Attila Nagy <bra@fsn.hu>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Roger Heflin <rheflin@atipa.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Hangs and reboots under high loads, oops with DEBUG_SHIRQ
+References: <46AE0420.4030900@fsn.hu> <20070730171953.5fe93979@the-village.bc.nu> <46AF4570.7070606@fsn.hu> <46AFB2CB.6040906@atipa.com>
+In-Reply-To: <46AFB2CB.6040906@atipa.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <38b2ab8a0708010627n7b7d2bbbicc7dc5f212faf016@mail.gmail.com>
-	 <46B095F2.2060605@gmail.com>
-	 <38b2ab8a0708010830h6205bfdfm8b5035cbf9ed1ccc@mail.gmail.com>
-	 <46B0A92F.80207@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/1/07, Rene Herman <rene.herman@gmail.com> wrote:
-> On 08/01/2007 05:30 PM, Francis Moreau wrote:
+On 2007.08.01. 0:08, Roger Heflin wrote:
+> Attila Nagy wrote:
+>> HARDWARE ERROR
+>> HARDWARE ERROR. This is *NOT* a software problem!
+>> Please contact your hardware vendor
+>> CPU 1 BANK 0 TSC 1167e915e93ce
+>> MCG status:RIPV MCIP
+>> MCi status:
+>> Uncorrected error
+>> Error enabled
+>> Processor context corrupt
+>> MCA: Internal Timer error
+>> STATUS b200004010000400 MCGSTATUS 5
+>> This is not a software problem!
+>> Run through mcelog --ascii to decode and contact your hardware vendor
+>>
+>> HARDWARE ERROR
+>> HARDWARE ERROR. This is *NOT* a software problem!
+>> Please contact your hardware vendor
+>> CPU 1 BANK 5 TSC 1167e915e9ea8
+>> MCG status:RIPV MCIP
+>> MCi status:
+>> Uncorrected error
+>> Error enabled
+>> Processor context corrupt
+>> MCA: Internal Timer error
+>> STATUS b200221024080400 MCGSTATUS 5
+>> This is not a software problem!
+>> Run through mcelog --ascii to decode and contact your hardware vendor
 >
-> >>> Could anyone point out some nice documentations/books describing this
-> >>> architecture ?
-> >>
-> >> First and foremost the AMD64 architecture documentation from AMD
-> >> itself:
-> >>
-> >> http://www.amd.com/gb-uk/Processors/TechnicalResources/0,,30_182_739_7044,00.html
-> >
-> > Thank you for the pointer but I alread knew about them.
-> >
-> > I was actually more interested in books which are more pleasant to
-> > read than a raw datasheet. Something like "x86_64 arch for newbies" ;)
+> Attila,
 >
-> Not aware of any -- but if you write one, I'll probably buy it ;-|
+> We had some issues with very similar boards all of the problems
+> seem to be around the PCIX bus area of the machine, setting the
+> PCIX buses to 66 mhz in the bios made things stable (but slow).   Not 
+> using
+> the PCIX bus also seemed to make things work.   We got MCE's and
+> other odd crashes under heavy IO loads.   I believe turning things
+> down to 100mhz made things more stable, but things still crashed.
 >
+> Supermicro reported being able to fix the issue with:
+> setting the PCI Configuration -> PCI-e I/O performance
+> setting to Colasce 128B.
+>
+> I am not exactly sure where to set it as we did not try it
+> as we had already changed to a different motherboard that did not
+> have the issue.
+>
+> If this works please tell me.
+Roger, you are my hero. :)
+With that PCI-e setting (again, for the record, this is on a Supermicro 
+X7DBE motherboard,
+and the BIOS setting is PCIe I/O performance, which has two states: 
+Coalesce and Payload 256B)
+all of the four machines have survived a half day of continous bashing. 
+Previously one, or two
+machines typically fell off after such amount of IO load, so it looks 
+promising so far.
+I hope this won't change over the time.
 
-At the time I'll finish it, you will probably want to read
-documentation for x86_512 arch ;)
+BTW, this is still with 2.6.21.5, because the SCSI target stuff I use 
+(SCST) has some
+-I hope temporary- problems with changed (deleted) interfaces in newer 
+kernels.
 
--- 
-Francis
+Should the DEBUG_SHIRQ problem in e1000 affect stability (or performance)?
+
+Thanks,
