@@ -1,75 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbXHBOHA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbXHBOIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbXHBOHA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:07:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752788AbXHBOGw
+	id S1755731AbXHBOIx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbXHBOIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:06:52 -0400
-Received: from ns.firmix.at ([62.141.48.66]:39376 "EHLO ns.firmix.at"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752782AbXHBOGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:06:51 -0400
-Subject: Re: [PATCH] type safe allocator
-From: Bernd Petrovitsch <bernd@firmix.at>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Miklos Szeredi <miklos@szeredi.hu>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, torvalds@linux-foundation.org
-In-Reply-To: <1186062476.12034.115.camel@twins>
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
-	 <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu>
-	 <b6fcc0a0708020504j7588061fq7e70a50499dcbdfe@mail.gmail.com>
-	 <1186062476.12034.115.camel@twins>
-Content-Type: text/plain
-Organization: Firmix Software GmbH
-Date: Thu, 02 Aug 2007 16:06:45 +0200
-Message-Id: <1186063605.8085.82.camel@tara.firmix.at>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
-X-Firmix-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Spam-Status: No, hits=-2.332 required=5
-X-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
-X-Firmix-Envelope-From: <bernd@firmix.at>
-X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
+	Thu, 2 Aug 2007 10:08:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:63509 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752931AbXHBOIo convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 10:08:44 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
+Date: Thu, 2 Aug 2007 16:08:15 +0200
+User-Agent: KMail/1.9.6
+Cc: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+       Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       general@lists.openfabrics.org, raisch@de.ibm.com, paulus@samba.org
+References: <200708021139.31695.hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <200708021139.31695.hnguyen@linux.vnet.ibm.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
+Message-Id: <200708021608.16436.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18bcyyOnP2eGpYyReIt1l3Ebn3Sf8gQEkrQY19
+ 7LD8aYj+CkumwZlGkGueCaAXZzUi/Zs07DMn9gAoyKTqzu9k0U
+ aMJO7pVzi7ivShpncbeJw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 15:47 +0200, Peter Zijlstra wrote:
-> On Thu, 2007-08-02 at 16:04 +0400, Alexey Dobriyan wrote:
-> > On 8/2/07, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> > > The linux kernel doesn't have a type safe object allocator a-la new()
-> > > in C++ or g_new() in glib.
-> > >
-> > > Introduce two helpers for this purpose:
-> > >
-> > >    alloc_struct(type, gfp_flags);
-> > >
-> > >    zalloc_struct(type, gfp_flags);
-> > 
-> > ick.
-> > 
-> > > These macros take a type name (usually a 'struct foo') as first
-> > > argument
-> > 
-> > So one has to type struct twice.
-> 
-> thrice in some cases like alloc_struct(struct task_struct, GFP_KERNEL)
+On Thursday 02 August 2007, Hoang-Nam Nguyen wrote:
+> +#ifdef CONFIG_PPC_64K_PAGES
+> +       /* make sure we map only 4k for fw context */
+> +       ret = remap_4k_pfn(vma, vma->vm_start, physical >> EHCA_PAGESHIFT,
+> +                          vma->vm_page_prot);
+> +#else
+>         ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
+>                               vsize, vma->vm_page_prot);
+> +#endif
 
-Save the explicit "struct" and put it into the macro (and force people
-to not use typedefs).
+remap_4k_pfn is defined in terms of remap_pfn_range if the base page
+size if 4k, so you don't need this #ifdef afaics.
 
-#define alloc_struct(type, flags) ((type *)kmalloc(sizeof(struct type), (flags)))
+otherwise, the patch looks good.
 
-Obious drawback: We may need alloc_union().
-
-SCNR ...
-	Bernd
--- 
-Firmix Software GmbH                   http://www.firmix.at/
-mobil: +43 664 4416156                 fax: +43 1 7890849-55
-          Embedded Linux Development and Services
-
-
+	Arnd <><
