@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbXHBG1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbXHBGlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbXHBG1K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 02:27:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbXHBG0z
+	id S1753415AbXHBGlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 02:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbXHBGlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 02:26:55 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:37006 "EHLO mx1.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751883AbXHBG0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 02:26:54 -0400
-Message-ID: <46B17937.1050401@gmail.com>
-Date: Thu, 02 Aug 2007 14:27:03 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Thu, 2 Aug 2007 02:41:07 -0400
+Received: from mtoichi16.ns.itscom.net ([219.110.2.186]:52412 "EHLO
+	mtoichi16.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751889AbXHBGlF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 02:41:05 -0400
+Date: Thu, 2 Aug 2007 15:40:34 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Eugene Teo <eugeneteo@kernel.sg>, Len Brown <lenb@kernel.org>,
+       Thomas Renninger <trenn@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/char/sonypi.c: fix ids member of struct
+	acpi_driver
+Message-ID: <20070802064034.GF25969@inferi.kami.home>
+References: <20070801091534.GA6845@kernel.sg>
 MIME-Version: 1.0
-To: =?UTF-8?B?TGVuYXIgTMO1aG11cw==?= <lenar@city.ee>
-Cc: Klaus Schulz <Klaus.Schulz@web.de>, ck@vds.kolivas.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: ck vs. cfs : realtime audio performance
-References: <1185870355.7933.55.camel@klaus-laptop> <1185886161.7397.11.camel@klaus-laptop> <46AF3111.7090206@city.ee>
-In-Reply-To: <46AF3111.7090206@city.ee>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070801091534.GA6845@kernel.sg>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.23-rc1-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lenar Lõhmus wrote:
-> Klaus Schulz wrote:
->>> I am currently testing the 2.6.22.1 cfs-rt9 vs. ck1 on my rather pure
->>> realtime high-end-audio setup. (NO X, just a terminal, streaming 
->>> .wav. I am using my own written player and brutefir as the audio 
->>> engine.)
->>> Comment: This is not a standard (amarok or xmms setup), all buffers in
->>> the chain are very small. Any problem will immidetialy end up in xruns.
->>> The sounddriver, HW (pci-bus etc.) are tweaked accordingly
->>> Until now ck1 on 2.6.22 is giving me better results (less audible
->>> distortions) and runs extremely stable compared to cfs. Under ck I 
->>> ran my player with schedtool -R -p 98, which was better than
->>> running it e.g. with nice -20 Both setups under cfs were giving me 
->>> worse results than ck.
->>> With CFS I also experienced XRUNS from time to time, what never happened
->>> with ck.
+On Wed, Aug 01, 2007 at 05:15:34PM +0800, Eugene Teo wrote:
+> ids member of struct acpi_driver is of type struct acpi_device_id, not a
+> character array.
+> 
+> Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+> ---
+>  drivers/char/sonypi.c |    8 +++++++-
+>  1 files changed, 7 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+> index 73037a4..ac0aeb0 100644
+> --- a/drivers/char/sonypi.c
+> +++ b/drivers/char/sonypi.c
+> @@ -1147,10 +1147,16 @@ static int sonypi_acpi_remove(struct acpi_device *device, int type)
+>  	return 0;
+>  }
+>  
+> +const static struct acpi_device_id sonypi_device_ids[] = {
+> +	{"SNY6001", 0},
+> +	{"", 0},
+> +};
+> +MODULE_DEVICE_TABLE(acpi, sonypi_device_ids);
 
-See, this is exactly the problem of the SD ranters.  A ranter posts a 
-problem, doesn't give reproducability hints, and neither provides technical 
-detail, not even the slightest relevant stats.  And the most irritating 
-part is that the code that the OP wrote (or at least its relevant parts) is 
-not even available for download.
-
-I was wondering why the OP need timers for audio playback.  What type of 
-audio?  PCM, MIDI?  Once does not need timers for PCM playback but for MIDI.
-
-SD ranters. Pure rants.
-
-Thank you very much.
-
-Best Regards,
-
-Carlo
-
+how does it behave with the already existing id in sony-laptop?
+I'd rather avoid the MODULE_DEVICE_TABLE for sonypi allowing sony-laptop
+to take over automagically.
 
 -- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, UP Campus Diliman
-1101 Quezon City, Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
-
-
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, UP Campus Diliman
-1101 Quezon City, Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
+mattia
+:wq!
