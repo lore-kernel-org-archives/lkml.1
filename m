@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbXHBNQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbXHBNSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756341AbXHBNQd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 09:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbXHBNQZ
+	id S1756879AbXHBNSo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 09:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbXHBNSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 09:16:25 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:52102 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753960AbXHBNQY (ORCPT
+	Thu, 2 Aug 2007 09:18:36 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:47712 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752591AbXHBNSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 09:16:24 -0400
-Date: Thu, 2 Aug 2007 15:16:22 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       trenn@suse.de, pavel@ucw.cz, mjg59@srcf.ucam.org, lenb@kernel.org
-Subject: Re: 2.6.22 regression: thermal trip points
-Message-ID: <20070802131622.GA1234@one.firstfloor.org>
-References: <46B1988C.3090302@t-online.de> <20070802015248.45a40717.akpm@linux-foundation.org> <p731wemnre6.fsf@bingen.suse.de> <20070802120014.1d08830a@the-village.bc.nu> <20070802120511.GA440@one.firstfloor.org> <20070802140442.62c56dbd@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Aug 2007 09:18:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SGWSZLsVEsAeW35FcbmwiUprcTcGnbBaatVBDnXJIk+YRVK3tfGtFYhhUAup+1CVo3DYmzKye3euR4WPy/hu4RKhs/+i6H+EhpQ3yWPdxjIC3B220Qxn8WK7s2DogG8YhQsAl5OjEk80s1LeOxGx9H4DByIcEjph8+JLxVyjxSA=
+Message-ID: <3d8471ca0708020618g5b7cf05dr350c25626137a13e@mail.gmail.com>
+Date: Thu, 2 Aug 2007 15:18:33 +0200
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Peter Zijlstra" <peterz@infradead.org>
+Subject: Re: mmap behavior on out-of-space conditions
+Cc: "Petr Tesarik" <ptesarik@suse.cz>, "Dave Chinner" <dgc@sgi.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <1186059975.12034.111.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070802140442.62c56dbd@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.1i
+References: <1186058486.2289.17.camel@elijah.suse.cz>
+	 <1186059975.12034.111.camel@twins>
+X-Google-Sender-Auth: c479a9a2e4c072f0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 02:04:42PM +0100, Alan Cox wrote:
-> > > Set a taint flag, 
-> > That's hardly any useful if the machine is dead afterwards.
-> 
-> It won't be the hardware will do a failsafe shutdown first.
+2007/8/2, Peter Zijlstra <peterz@infradead.org>:
 
-Not necessarily. At SUSE we had at least one broken laptop
-with wrong trip points. The machine ran very hot for some time
-and afterwards the hard disk was dead.
+> I think Dave's block_page_mkwrite() stuff addresses this as well, no?
+>
+> http://lkml.org/lkml/2007/3/18/198
 
--Andi
+I saw a similar problem some time ago with msync:
+http://lkml.org/lkml/2006/12/29/136 but Andrew didn't
+like my patch.
+
+-- 
+Guillaume
