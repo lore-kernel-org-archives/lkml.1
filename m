@@ -1,78 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbXHBLc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756618AbXHBLcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbXHBLc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXHBLcV
+	id S1756618AbXHBLcm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXHBLcZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:32:21 -0400
-Received: from mailout07.sul.t-online.de ([194.25.134.83]:35544 "EHLO
-	mailout07.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752002AbXHBLcU (ORCPT
+	Thu, 2 Aug 2007 07:32:25 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52930 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754636AbXHBLcY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:32:20 -0400
-Message-ID: <46B1C0BA.1020004@t-online.de>
-Date: Thu, 02 Aug 2007 13:32:10 +0200
-From: Knut Petersen <Knut_Petersen@t-online.de>
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: trenn@suse.de
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, pavel@ucw.cz,
-       mjg59@srcf.ucam.org, lenb@kernel.org,
-       =?UTF-8?B?QWRyaWFu?= =?UTF-8?B?IFNjaHLDtnRlcg==?= 
-	<adrian@suse.de>,
-       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: 2.6.22 regression: thermal trip points
-References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de>
-In-Reply-To: <1186047747.18821.450.camel@queen.suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ID: Go6cCiZDweIP7QjoNHuEwojBNBvJ7GbSq+ShumNe1s+Nc2iPd3TvsC
-X-TOI-MSGID: fe3e96fa-414e-4842-a20b-8a6100c700de
+	Thu, 2 Aug 2007 07:32:24 -0400
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org
+Subject: [PATCH] type safe allocator
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 02 Aug 2007 13:31:56 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger wrote:
->> mainboard: AOpen i915GMm-hfs, AWARD BIOS
->> cpu: Pentium-M 750 (0.8 to 1.86 MHz)
->> openSuSE 10.2 with kernel 2.6.22.1
-> Is this a DELL laptop that gets throttled by 75% to throttling state 6
-> if 60 degrees are exceeded?
-No, it is a Pentium M desktop board.:
-    Chipset i915GM, FSB 533MHz, max 2GB DDR2 RAM, 2 PCI
-    and 1 16x PCI Express slots, serial, parallel, usb, firewire,
-    2x Marvel Gigabit Ethernet, Realtek ALC 880 sound, IDE,
-    Intel SATA and SiI SATA Raid, FDC, DVI and VGA video out etc.
-    Very low power consumption: ~40W to 65W for the whole system,
-    except monitor.
-> As 2.6.22 was shipped without, I think reverting is not a real option.
-Well, it would not be the first time to eliminate a regression by
-reverting a
-patch after it was accepted previously.
->> Sanity checks that trip points only can get lowered (compared to initial
->> provided ones) needs to be added.
->> Len, Rui: For short-term can some 
-But I _need_ to raise the unreasonably low passive trip point. We could
-decide to
-protect the innocent user by allowing write access to trip_points only
-after a previous
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-echo "I know what I am doing" >
-/proc/acpi/thermal_zone/THRM/enable_really_dangerous_options
+The linux kernel doesn't have a type safe object allocator a-la new()
+in C++ or g_new() in glib.
 
-if we believe that this is a good idea ...
+Introduce two helpers for this purpose:
 
-Andi Kleen wrote:
+   alloc_struct(type, gfp_flags);
 
-  > I don't think it's that unreasonable to require source code
-modifications
-  >  for anything that can kill hardware. At least that raises the barrier
-  >  a bit and hopefully ensures people think twice about it and then really
-  > only blame themselves if anything goes wrong.
+   zalloc_struct(type, gfp_flags);
 
-Andi, would the above be mechanism sufficiently safe for your taste?
+These macros take a type name (usually a 'struct foo') as first
+argument and the usual gfp-flags as second argument.  They return a
+pointer cast to 'type *'.
 
-cu,
- Knut
+The traditional forms of allocating a structure are:
 
+  fooptr = kmalloc(sizeof(*fooptr), ...);
+
+  fooptr = kmalloc(sizeof(struct foo), ...);
+
+The new form is preferred over these, because of it's type safety and
+more descriptive nature.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux-2.6.22/include/linux/slab.h
+===================================================================
+--- linux-2.6.22.orig/include/linux/slab.h	2007-08-01 16:47:41.000000000 +0200
++++ linux-2.6.22/include/linux/slab.h	2007-08-02 12:55:20.000000000 +0200
+@@ -110,6 +110,20 @@ static inline void *kcalloc(size_t n, si
+ 	return __kzalloc(n * size, flags);
+ }
+ 
++/**
++ * alloc_struct - allocate given type object
++ * @type: the type of the object to allocate
++ * @flags: the type of memory to allocate.
++ */
++#define alloc_struct(type, flags) ((type *) kmalloc(sizeof(type), flags))
++
++/**
++ * zalloc_struct - allocate given type object, zero out the contents
++ * @type: the type of the object to allocate
++ * @flags: the type of memory to allocate.
++ */
++#define zalloc_struct(type, flags) ((type *) kzalloc(sizeof(type), flags))
++
+ /*
+  * Allocator specific definitions. These are mainly used to establish optimized
+  * ways to convert kmalloc() calls to kmem_cache_alloc() invocations by selecting
+Index: linux-2.6.22/Documentation/CodingStyle
+===================================================================
+--- linux-2.6.22.orig/Documentation/CodingStyle	2007-07-09 01:32:17.000000000 +0200
++++ linux-2.6.22/Documentation/CodingStyle	2007-08-02 13:03:48.000000000 +0200
+@@ -631,21 +631,20 @@ Printing numbers in parentheses (%d) add
+ 		Chapter 14: Allocating memory
+ 
+ The kernel provides the following general purpose memory allocators:
+-kmalloc(), kzalloc(), kcalloc(), and vmalloc().  Please refer to the API
++kmalloc(), kzalloc(), kcalloc(), and vmalloc(), and the following
++helpers: alloc_struct() and zalloc_struct().  Please refer to the API
+ documentation for further information about them.
+ 
+-The preferred form for passing a size of a struct is the following:
++The preferred form for allocating a structure is the following:
+ 
+-	p = kmalloc(sizeof(*p), ...);
++	p = alloc_struct(struct name, ...);
+ 
+-The alternative form where struct name is spelled out hurts readability and
+-introduces an opportunity for a bug when the pointer variable type is changed
+-but the corresponding sizeof that is passed to a memory allocator is not.
+-
+-Casting the return value which is a void pointer is redundant. The conversion
+-from void pointer to any other pointer type is guaranteed by the C programming
+-language.
++The alternatives are less readable or introduce an opportunity for a bug
++when the pointer variable type is changed but the corresponding sizeof that
++is passed to a memory allocator is not.
+ 
++The return value of alloc_struct() and zalloc_struct() have the right type,
++so the compiler will warn if it is assigned to a pointer of different type.
+ 
+ 		Chapter 15: The inline disease
+ 
