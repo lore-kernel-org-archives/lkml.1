@@ -1,745 +1,402 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935139AbYBNXqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935231AbYBNXqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935139AbYBNXqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 Feb 2008 18:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933171AbYBNXkc
+	id S935231AbYBNXqy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 Feb 2008 18:46:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933300AbYBNXke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 Feb 2008 18:40:32 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:47674 "EHLO havoc.gtf.org"
+	Thu, 14 Feb 2008 18:40:34 -0500
+Received: from havoc.gtf.org ([69.61.125.42]:36016 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932366AbYBNXkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 Feb 2008 18:40:20 -0500
-Message-Id: <03afe62a7cf97563af244734bfd069a93235c07d.1203031879.git.jeff@garzik.org>
+	id S932652AbYBNXkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 Feb 2008 18:40:21 -0500
+Message-Id: <5d31abe9711b0486c9df58afb7f2cb3705539b13.1203031879.git.jeff@garzik.org>
 In-Reply-To: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org>
 References: <74fc75b3eadfa82aee70b855e9944b5439a259d5.1203031878.git.jeff@garzik.org>
 From: Jeff Garzik <jeff@garzik.org>
 To: linux-kernel@vger.kernel.org, kkeil@suse.de,
        isdn4linux@listserv.isdn4linux.de
-Date: Wed, 31 Oct 2007 01:13:26 -0400
-Subject: [PATCH 12/14] [ISDN] HiSax diva: convert to modern ISA/PNP/PCI probing
+Date: Thu, 2 Aug 2007 08:37:15 -0400
+Subject: [PATCH 13/14] [ISDN] HiSax bkm_a8: convert to PCI hotplug API
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 ---
- drivers/isdn/hisax/Kconfig   |    3 +-
- drivers/isdn/hisax/Makefile  |    3 +-
- drivers/isdn/hisax/avm_pci.c |    9 +-
- drivers/isdn/hisax/config.c  |   27 +---
- drivers/isdn/hisax/diva.c    |  452 ++++++++++++++++++++++++++----------------
- drivers/isdn/hisax/niccy.c   |    2 +
- 6 files changed, 290 insertions(+), 206 deletions(-)
+ drivers/isdn/hisax/Kconfig  |    4 +-
+ drivers/isdn/hisax/Makefile |    2 +-
+ drivers/isdn/hisax/bkm_a8.c |  186 +++++++++++++++++++++++++++++-------------
+ drivers/isdn/hisax/config.c |   48 +-----------
+ 4 files changed, 133 insertions(+), 107 deletions(-)
 
 diff --git a/drivers/isdn/hisax/Kconfig b/drivers/isdn/hisax/Kconfig
-index 02cdc57..36af79f 100644
+index 36af79f..8e18f7c 100644
 --- a/drivers/isdn/hisax/Kconfig
 +++ b/drivers/isdn/hisax/Kconfig
-@@ -165,7 +165,8 @@ config HISAX_IX1MICROR2
- 	  non-standard IRQ/port settings.
+@@ -298,8 +298,8 @@ config HISAX_BKM_A4T
+ 	  settings.
  
- config HISAX_DIEHLDIVA
--	bool "Eicon.Diehl Diva cards"
-+	tristate "Eicon.Diehl Diva cards"
-+	depends on (ISA || PCI)
+ config HISAX_SCT_QUADRO
+-	bool "Scitel Quadro card"
+-	depends on PCI && PCI_LEGACY
++	tristate "Scitel Quadro card"
++	depends on PCI
  	help
- 	  This enables HiSax support for the Eicon.Diehl Diva none PRO
- 	  versions passive ISDN cards.
+ 	  This enables HiSax support for the Scitel Quadro card.
+ 
 diff --git a/drivers/isdn/hisax/Makefile b/drivers/isdn/hisax/Makefile
-index f840b23..81ae5be 100644
+index 81ae5be..d95a31d 100644
 --- a/drivers/isdn/hisax/Makefile
 +++ b/drivers/isdn/hisax/Makefile
-@@ -25,11 +25,13 @@ obj-$(CONFIG_HISAX_TELESPCI)		+= telespci.o libhisax.o
- obj-$(CONFIG_HISAX_FRITZPCI)		+= avm_pci.o libhisax.o
+@@ -26,6 +26,7 @@ obj-$(CONFIG_HISAX_FRITZPCI)		+= avm_pci.o libhisax.o
  obj-$(CONFIG_HISAX_GAZEL)		+= gazel.o libhisax.o
  obj-$(CONFIG_HISAX_NICCY)		+= niccy.o libhisax.o
-+obj-$(CONFIG_HISAX_DIEHLDIVA)		+= hisaxdiva.o libhisax.o
+ obj-$(CONFIG_HISAX_DIEHLDIVA)		+= hisaxdiva.o libhisax.o
++obj-$(CONFIG_HISAX_SCT_QUADRO)		+= bkm_a8.o libhisax.o
  
  bkm_a4t_pci-objs			:= bkm_a4t.o jade.o
  enternow-objs				:= enternow_pci.o amd7930_fn.o
- netjet_s-objs				:= nj_s.o
- netjet_u-objs				:= nj_u.o icc.o
-+hisaxdiva-objs				:= diva.o ipacx.o 
- libhisax-objs				:= netjet.o isac.o arcofi.o hscx.o
+@@ -65,5 +66,4 @@ hisax-$(CONFIG_HISAX_HFCS)		+= hfcscard.o hfc_2bds0.o
+ hisax-$(CONFIG_HISAX_HFC_SX)		+= hfc_sx.o
+ hisax-$(CONFIG_HISAX_ISURF)		+= isurf.o isar.o
+ hisax-$(CONFIG_HISAX_HSTSAPHIR)		+= saphir.o
+-hisax-$(CONFIG_HISAX_SCT_QUADRO)	+= bkm_a8.o
  
- ifdef CONFIG_HISAX_HDLC
-@@ -54,7 +56,6 @@ hisax-$(CONFIG_HISAX_AVM_A1)		+= avm_a1.o
- hisax-$(CONFIG_HISAX_AVM_A1_PCMCIA)	+= avm_a1p.o
- hisax-$(CONFIG_HISAX_ELSA)		+= elsa.o
- hisax-$(CONFIG_HISAX_IX1MICROR2)	+= ix1_micro.o
--hisax-$(CONFIG_HISAX_DIEHLDIVA)		+= diva.o ipacx.o 
- hisax-$(CONFIG_HISAX_ASUSCOM)		+= asuscom.o
- hisax-$(CONFIG_HISAX_TELEINT)		+= teleint.o hfc_2bs0.o
- hisax-$(CONFIG_HISAX_SEDLBAUER)		+= sedlbauer.o isar.o
-diff --git a/drivers/isdn/hisax/avm_pci.c b/drivers/isdn/hisax/avm_pci.c
-index 69f8389..0b420aa 100644
---- a/drivers/isdn/hisax/avm_pci.c
-+++ b/drivers/isdn/hisax/avm_pci.c
-@@ -781,8 +781,8 @@ static int __devinit avm_isa_setup(struct IsdnCard *card)
- 	struct IsdnCardState *cs = card->cs;
- 
- 	/* old manual method */
--	cs->hw.avm.cfg_reg = avm_io_base;
--	cs->irq = avm_irq;
-+	cs->hw.avm.cfg_reg = card->para[1];
-+	cs->irq = card->para[0];
- 	cs->subtyp = AVM_FRITZ_PNP;
- 
- 	return avm_setup_rest(cs);
-@@ -793,7 +793,8 @@ static int __devinit avm_isa_init_one(struct device *dev, unsigned int id)
- 	struct IsdnCard icard = { ISDN_CTYPE_FRITZPCI, };
- 	int cardnr;
- 
--	icard.para[0] = (unsigned long) dev;
-+	icard.para[0] = avm_irq;
-+	icard.para[1] = avm_io_base;
- 	if (!avm_protocol)
- 		icard.protocol = DEFAULT_PROTO;
- 	else
-@@ -889,6 +890,8 @@ static struct pnp_device_id avm_pnp_table[] = {
- 	{ .id = "" }		/* terminate list */
- };
- 
-+MODULE_DEVICE_TABLE(pnp, avm_pnp_table);
-+
- static struct pnp_driver avm_pnp_driver = {
- 	.name		= "avm_pci",
- 	.id_table	= avm_pnp_table,
-diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
-index 7a1eb7d..fd8a564 100644
---- a/drivers/isdn/hisax/config.c
-+++ b/drivers/isdn/hisax/config.c
-@@ -145,13 +145,6 @@ const char *CardType[] = {
- #define DEFAULT_CFG {5,0x390,0,0}
- #endif
- 
--#ifdef CONFIG_HISAX_DIEHLDIVA
--#undef DEFAULT_CARD
--#undef DEFAULT_CFG
--#define DEFAULT_CARD ISDN_CTYPE_DIEHLDIVA
--#define DEFAULT_CFG {0,0x0,0,0}
--#endif
--
- #ifdef CONFIG_HISAX_ASUSCOM
- #undef DEFAULT_CARD
- #undef DEFAULT_CFG
-@@ -404,10 +397,6 @@ extern int setup_elsa(struct IsdnCard *card);
- extern int setup_ix1micro(struct IsdnCard *card);
- #endif
- 
--#if CARD_DIEHLDIVA
--extern int setup_diva(struct IsdnCard *card);
--#endif
--
- #if CARD_ASUSCOM
- extern int setup_asuscom(struct IsdnCard *card);
- #endif
-@@ -769,11 +758,6 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
- 		ret = setup_ix1micro(card);
- 		break;
- #endif
--#if CARD_DIEHLDIVA
--	case ISDN_CTYPE_DIEHLDIVA:
--		ret = setup_diva(card);
--		break;
--#endif
- #if CARD_ASUSCOM
- 	case ISDN_CTYPE_ASUSCOM:
- 		ret = setup_asuscom(card);
-@@ -841,6 +825,7 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
- 	case ISDN_CTYPE_FRITZPCI:
- 	case ISDN_CTYPE_GAZEL:
- 	case ISDN_CTYPE_NICCY:
-+	case ISDN_CTYPE_DIEHLDIVA:
- 		printk(KERN_WARNING "HiSax: Support for %s Card has moved "
- 		       "to separate PCI driver module\n",
- 		       CardType[card->typ]);
-@@ -1275,7 +1260,6 @@ static int __init HiSax_init(void)
- 		case ISDN_CTYPE_ELSA_PNP:
- 		case ISDN_CTYPE_ELSA_PCMCIA:
- 		case ISDN_CTYPE_IX1MICROR2:
--		case ISDN_CTYPE_DIEHLDIVA:
- 		case ISDN_CTYPE_ASUSCOM:
- 		case ISDN_CTYPE_TELEINT:
- 		case ISDN_CTYPE_SEDLBAUER:
-@@ -1311,6 +1295,7 @@ static int __init HiSax_init(void)
- 		case ISDN_CTYPE_FRITZPCI:
- 		case ISDN_CTYPE_GAZEL:
- 		case ISDN_CTYPE_NICCY:
-+		case ISDN_CTYPE_DIEHLDIVA:
- 			break;
- 
- 		case ISDN_CTYPE_SCT_QUADRO:
-@@ -1784,14 +1769,6 @@ static void EChannel_proc_rcv(struct hisax_d_if *d_if)
- #include <linux/pci.h>
- 
- static struct pci_device_id hisax_pci_tbl[] __devinitdata = {
--#ifdef CONFIG_HISAX_DIEHLDIVA
--	{PCI_VENDOR_ID_EICON,    PCI_DEVICE_ID_EICON_DIVA20,     PCI_ANY_ID, PCI_ANY_ID},
--	{PCI_VENDOR_ID_EICON,    PCI_DEVICE_ID_EICON_DIVA20_U,   PCI_ANY_ID, PCI_ANY_ID},
--	{PCI_VENDOR_ID_EICON,    PCI_DEVICE_ID_EICON_DIVA201,    PCI_ANY_ID, PCI_ANY_ID},
--//#########################################################################################	
--	{PCI_VENDOR_ID_EICON,    PCI_DEVICE_ID_EICON_DIVA202,    PCI_ANY_ID, PCI_ANY_ID},
--//#########################################################################################	
--#endif
- #ifdef CONFIG_HISAX_ELSA
- 	{PCI_VENDOR_ID_ELSA,     PCI_DEVICE_ID_ELSA_MICROLINK,   PCI_ANY_ID, PCI_ANY_ID},
- 	{PCI_VENDOR_ID_ELSA,     PCI_DEVICE_ID_ELSA_QS3000,      PCI_ANY_ID, PCI_ANY_ID},
-diff --git a/drivers/isdn/hisax/diva.c b/drivers/isdn/hisax/diva.c
-index 2d67085..4fd5440 100644
---- a/drivers/isdn/hisax/diva.c
-+++ b/drivers/isdn/hisax/diva.c
-@@ -17,13 +17,22 @@
+diff --git a/drivers/isdn/hisax/bkm_a8.c b/drivers/isdn/hisax/bkm_a8.c
+index e1ff471..8530327 100644
+--- a/drivers/isdn/hisax/bkm_a8.c
++++ b/drivers/isdn/hisax/bkm_a8.c
+@@ -13,6 +13,7 @@
  
  #include <linux/init.h>
  #include "hisax.h"
 +#include "hisax_proto.h"
  #include "isac.h"
- #include "hscx.h"
  #include "ipac.h"
- #include "ipacx.h"
- #include "isdnl1.h"
+ #include "hscx.h"
+@@ -20,6 +21,8 @@
  #include <linux/pci.h>
--#include <linux/isapnp.h>
-+#include <linux/isa.h>
-+#include <linux/pnp.h>
+ #include "bkm_ax.h"
+ 
++static int a8_protocol;		/* 0 == use DEFAULT_PROTO */
 +
-+static int diva_protocol;		/* 0 == use DEFAULT_PROTO */
-+
-+#ifdef CONFIG_ISA
-+static int diva_irq;			/* 0 == disable ISA */
-+static int diva_io_base;		/* 0 == disable ISA */
-+#endif
+ #define	ATTEMPT_PCI_REMAPPING	/* Required for PLX rev 1 */
  
- static const char *Diva_revision = "$Revision: 1.33.2.6 $";
- 
-@@ -908,6 +917,13 @@ static int __devinit setup_diva_common(struct IsdnCardState *cs)
- {
- 	int bytecnt;
- 	u_char val;
-+	char tmp[64];
-+
-+	strcpy(tmp, Diva_revision);
-+	printk(KERN_INFO "HiSax: Eicon.Diehl Diva driver Rev. %s\n", HiSax_getrev(tmp));
-+	if (cs->typ != ISDN_CTYPE_DIEHLDIVA)
-+		return(0);
-+	cs->hw.diva.status = 0;
- 
- 	if ((cs->subtyp == DIVA_ISA) || (cs->subtyp == DIVA_IPAC_ISA))
- 		bytecnt = 8;
-@@ -997,7 +1013,7 @@ static int __devinit setup_diva_common(struct IsdnCardState *cs)
- 
- #ifdef CONFIG_ISA
- 
--static int __devinit setup_diva_isa(struct IsdnCard *card)
-+static int __devinit diva_isa_setup(struct IsdnCard *card)
- {
- 	struct IsdnCardState *cs = card->cs;
- 	u_char val;
-@@ -1028,173 +1044,192 @@ static int __devinit setup_diva_isa(struct IsdnCard *card)
- 	}
- 	cs->irq = card->para[0];
- 
--	return (1);		/* card found */
-+	return setup_diva_common(cs);
+ static const char sct_quadro_revision[] = "$Revision: 1.22.2.4 $";
+@@ -267,63 +270,23 @@ sct_alloc_io(u_int adr, u_int len)
+ 	return(0);
  }
  
--#else	/* if !CONFIG_ISA */
-+static int __devinit diva_isa_init_one(struct device *dev, unsigned int id)
-+{
-+	struct IsdnCard icard = { ISDN_CTYPE_DIEHLDIVA, };
-+	int cardnr;
- 
--static int __devinit setup_diva_isa(struct IsdnCard *card)
-+	icard.para[0] = diva_irq;
-+	icard.para[1] = diva_io_base;
-+	if (!diva_protocol)
-+		icard.protocol = DEFAULT_PROTO;
-+	else
-+		icard.protocol = diva_protocol;
-+
-+	cardnr = hisax_init_hotplug(&icard, diva_isa_setup);
-+	if (cardnr < 0)
-+		return -ENODEV;
-+	
-+	dev_set_drvdata(dev, (void *)(unsigned long) cardnr);
-+	return 0;
-+}
-+
-+static int __devexit diva_isa_remove_one(struct device *dev, unsigned int id)
- {
--	return (-1);	/* card not found; continue search */
-+	int cardnr = (unsigned long) dev_get_drvdata(dev);
-+
-+	HiSax_closecard(cardnr);
-+	return 0;
- }
- 
--#endif	/* CONFIG_ISA */
+-static struct pci_dev *dev_a8 __devinitdata = NULL;
+-static u16  sub_vendor_id __devinitdata = 0;
+-static u16  sub_sys_id __devinitdata = 0;
+-static u_char pci_bus __devinitdata = 0;
+-static u_char pci_device_fn __devinitdata = 0;
+-static u_char pci_irq __devinitdata = 0;
 -
--#ifdef __ISAPNP__
--static struct isapnp_device_id diva_ids[] __devinitdata = {
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
--	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51), 
--	  (unsigned long) "Diva picola" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
--	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x51), 
--	  (unsigned long) "Diva picola" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
--	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71), 
--	  (unsigned long) "Diva 2.0" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
--	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x71), 
--	  (unsigned long) "Diva 2.0" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
--	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1), 
--	  (unsigned long) "Diva 2.01" },
--	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
--	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0xA1), 
--	  (unsigned long) "Diva 2.01" },
--	{ 0, }
-+static struct isa_driver diva_isa_driver = {
-+	.probe		= diva_isa_init_one,
-+	.remove		= __devexit_p(diva_isa_remove_one),
-+	.driver = {
-+		.owner	= THIS_MODULE,
-+		.name	= "diva_isa",
-+	},
- };
- 
--static struct isapnp_device_id *ipid __devinitdata = &diva_ids[0];
--static struct pnp_card *pnp_c __devinitdata = NULL;
--
--static int __devinit setup_diva_isapnp(struct IsdnCard *card)
-+#ifdef CONFIG_PNP
-+static int __devinit diva_pnp_setup(struct IsdnCard *card)
+-int __devinit
++static int __devinit
+ setup_sct_quadro(struct IsdnCard *card)
  {
  	struct IsdnCardState *cs = card->cs;
--	struct pnp_dev *pnp_d;
-+	struct pnp_dev *pnp_d = (void *) card->para[0];
-+	int ipid_function = card->para[1];
-+	int err;
++	u_int pci_ioaddr2, pci_ioaddr3, pci_ioaddr4, pci_ioaddr5;
+ 	char tmp[64];
+-	u_int found = 0;
+-	u_int pci_ioaddr1, pci_ioaddr2, pci_ioaddr3, pci_ioaddr4, pci_ioaddr5;
++	struct pci_dev *dev_a8 = (void *) card->para[1];
++	u_int pci_ioaddr1 = pci_resource_start(dev_a8, 1);
++	u_char pci_irq = dev_a8->irq;
+ 
+ 	strcpy(tmp, sct_quadro_revision);
+ 	printk(KERN_INFO "HiSax: T-Berkom driver Rev. %s\n", HiSax_getrev(tmp));
+-	if (cs->typ == ISDN_CTYPE_SCT_QUADRO) {
+-		cs->subtyp = SCT_1;	/* Preset */
+-	} else
+-		return (0);
+ 
+-	/* Identify subtype by para[0] */
+-	if (card->para[0] >= SCT_1 && card->para[0] <= SCT_4)
+-		cs->subtyp = card->para[0];
+-	else {
+-		printk(KERN_WARNING "HiSax: Scitel Quadro: Invalid "
+-		       "subcontroller in configuration, default to 1\n");
+-		return (0);
+-	}
+-	if ((cs->subtyp != SCT_1) && ((sub_sys_id != PCI_DEVICE_ID_BERKOM_SCITEL_QUADRO) ||
+-		(sub_vendor_id != PCI_VENDOR_ID_BERKOM)))
+-		return (0);
++	cs->subtyp = card->para[0];
 +
-+	printk(KERN_INFO "HiSax: DIVA PNP detected\n");
-+	pnp_disable_dev(pnp_d);
-+	err = pnp_activate_dev(pnp_d);
-+	if (err<0) {
-+		printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
-+			__FUNCTION__, err);
-+		return(0);
-+	}
-+	card->para[1] = pnp_port_start(pnp_d, 0);
-+	card->para[0] = pnp_irq(pnp_d, 0);
-+	if (!card->para[0] || !card->para[1]) {
-+		printk(KERN_ERR "Diva PnP:some resources are missing %ld/%lx\n",
-+			card->para[0], card->para[1]);
-+		pnp_disable_dev(pnp_d); 
-+		return(0);
-+	}
-+	cs->hw.diva.cfg_reg  = card->para[1];
-+	cs->irq = card->para[0];
-+	if (ipid_function == 0xA1) {
-+		cs->subtyp = DIVA_IPAC_ISA;
-+		cs->hw.diva.ctrl = 0;
-+		cs->hw.diva.isac =
-+			card->para[1] + DIVA_IPAC_DATA;
-+		cs->hw.diva.hscx =
-+			card->para[1] + DIVA_IPAC_DATA;
-+		cs->hw.diva.isac_adr =
-+			card->para[1] + DIVA_IPAC_ADR;
-+		cs->hw.diva.hscx_adr =
-+			card->para[1] + DIVA_IPAC_ADR;
-+		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
-+	} else {
-+		cs->subtyp = DIVA_ISA;
-+		cs->hw.diva.ctrl =
-+			card->para[1] + DIVA_ISA_CTRL;
-+		cs->hw.diva.isac =
-+			card->para[1] + DIVA_ISA_ISAC_DATA;
-+		cs->hw.diva.hscx =
-+			card->para[1] + DIVA_HSCX_DATA;
-+		cs->hw.diva.isac_adr =
-+			card->para[1] + DIVA_ISA_ISAC_ADR;
-+		cs->hw.diva.hscx_adr =
-+			card->para[1] + DIVA_HSCX_ADR;
-+	}
- 
--	if (!isapnp_present())
--		return (-1);	/* card not found; continue search */
-+	return setup_diva_common(cs);
-+}
- 
--	while(ipid->card_vendor) {
--		if ((pnp_c = pnp_find_card(ipid->card_vendor,
--			ipid->card_device, pnp_c))) {
--			pnp_d = NULL;
--			if ((pnp_d = pnp_find_dev(pnp_c,
--				ipid->vendor, ipid->function, pnp_d))) {
--				int err;
--
--				printk(KERN_INFO "HiSax: %s detected\n",
--					(char *)ipid->driver_data);
--				pnp_disable_dev(pnp_d);
--				err = pnp_activate_dev(pnp_d);
--				if (err<0) {
--					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
--						__FUNCTION__, err);
+ 	if (cs->subtyp == SCT_1) {
+-		while ((dev_a8 = pci_find_device(PCI_VENDOR_ID_PLX,
+-			PCI_DEVICE_ID_PLX_9050, dev_a8))) {
+-			
+-			sub_vendor_id = dev_a8->subsystem_vendor;
+-			sub_sys_id = dev_a8->subsystem_device;
+-			if ((sub_sys_id == PCI_DEVICE_ID_BERKOM_SCITEL_QUADRO) &&
+-				(sub_vendor_id == PCI_VENDOR_ID_BERKOM)) {
+-				if (pci_enable_device(dev_a8))
 -					return(0);
--				}
--				card->para[1] = pnp_port_start(pnp_d, 0);
--				card->para[0] = pnp_irq(pnp_d, 0);
--				if (!card->para[0] || !card->para[1]) {
--					printk(KERN_ERR "Diva PnP:some resources are missing %ld/%lx\n",
--						card->para[0], card->para[1]);
--					pnp_disable_dev(pnp_d); 
--					return(0);
--				}
--				cs->hw.diva.cfg_reg  = card->para[1];
--				cs->irq = card->para[0];
--				if (ipid->function == ISAPNP_FUNCTION(0xA1)) {
--					cs->subtyp = DIVA_IPAC_ISA;
--					cs->hw.diva.ctrl = 0;
--					cs->hw.diva.isac =
--						card->para[1] + DIVA_IPAC_DATA;
--					cs->hw.diva.hscx =
--						card->para[1] + DIVA_IPAC_DATA;
--					cs->hw.diva.isac_adr =
--						card->para[1] + DIVA_IPAC_ADR;
--					cs->hw.diva.hscx_adr =
--						card->para[1] + DIVA_IPAC_ADR;
--					test_and_set_bit(HW_IPAC, &cs->HW_Flags);
--				} else {
--					cs->subtyp = DIVA_ISA;
--					cs->hw.diva.ctrl =
--						card->para[1] + DIVA_ISA_CTRL;
--					cs->hw.diva.isac =
--						card->para[1] + DIVA_ISA_ISAC_DATA;
--					cs->hw.diva.hscx =
--						card->para[1] + DIVA_HSCX_DATA;
--					cs->hw.diva.isac_adr =
--						card->para[1] + DIVA_ISA_ISAC_ADR;
--					cs->hw.diva.hscx_adr =
--						card->para[1] + DIVA_HSCX_ADR;
--				}
--				return (1);		/* card found */
--			} else {
--				printk(KERN_ERR "Diva PnP: PnP error card found, no device\n");
--				return(0);
+-				pci_ioaddr1 = pci_resource_start(dev_a8, 1);
+-				pci_irq = dev_a8->irq;
+-				pci_bus = dev_a8->bus->number;
+-				pci_device_fn = dev_a8->devfn;
+-				found = 1;
+-				break;
 -			}
 -		}
--		ipid++;
--		pnp_c=NULL;
--	} 
-+static int __devinit diva_pnp_init_one(struct pnp_dev *pdev,
-+				       const struct pnp_device_id *dev_id)
-+{
-+	struct IsdnCard icard = { ISDN_CTYPE_DIEHLDIVA, };
-+	int cardnr;
- 
--	return (-1);	/* card not found; continue search */
--}
-+	icard.para[0] = (unsigned long) pdev;
-+	icard.para[1] = dev_id->driver_data;
-+	if (!diva_protocol)
-+		icard.protocol = DEFAULT_PROTO;
-+	else
-+		icard.protocol = diva_protocol;
- 
--#else	/* if !ISAPNP */
-+	cardnr = hisax_init_hotplug(&icard, diva_pnp_setup);
-+	if (cardnr < 0)
-+		return -ENODEV;
-+	
-+	pnp_set_drvdata(pdev, (void *)(unsigned long) cardnr);
-+	return 0;
-+}
- 
--static int __devinit setup_diva_isapnp(struct IsdnCard *card)
-+static void __devexit diva_pnp_remove_one(struct pnp_dev *pdev)
- {
--	return (-1);	/* card not found; continue search */
-+	int cardnr = (unsigned long) pnp_get_drvdata(pdev);
+-		if (!found) {
+-			printk(KERN_WARNING "HiSax: Scitel Quadro (%s): "
+-				"Card not found\n",
+-				sct_quadro_subtypes[cs->subtyp]);
+-			return (0);
+-		}
 +
-+	HiSax_closecard(cardnr);
- }
- 
--#endif	/* ISAPNP */
-+static struct pnp_device_id diva_pnp_table[] = {
-+	{ .id = "GDI0051", 0 },
-+	{ .id = "GDI0071", 0 },
-+	{ .id = "GDI00A1", 0xA1 },
-+	{ .id = "EIC0051", 0 },
-+	{ .id = "EIC0071", 0 },
-+	{ .id = "EIC00A1", 0xA1 },
-+
-+	{ .id = "" }		/* terminate list */
-+};
-+
-+MODULE_DEVICE_TABLE(pnp, diva_pnp_table);
-+
-+static struct pnp_driver diva_pnp_driver = {
-+	.name		= "diva_pnp",
-+	.id_table	= diva_pnp_table,
-+	.probe		= diva_pnp_init_one,
-+	.remove		= __devexit_p(diva_pnp_remove_one),
-+};
-+#endif /* CONFIG_PNP */
-+#endif /* CONFIG_ISA */
-+
-+#ifdef CONFIG_PCI
- 
--#ifdef CONFIG_PCI_LEGACY
--static struct pci_dev *dev_diva __devinitdata = NULL;
--static struct pci_dev *dev_diva_u __devinitdata = NULL;
--static struct pci_dev *dev_diva201 __devinitdata = NULL;
--static struct pci_dev *dev_diva202 __devinitdata = NULL;
-+enum diva_board_type {
-+	diva20,
-+	diva20_u,
-+	diva201,
-+	diva202,
-+};
- 
--static int __devinit setup_diva_pci(struct IsdnCard *card)
-+static int __devinit diva_pci_setup(struct IsdnCard *card)
- {
- 	struct IsdnCardState *cs = card->cs;
-+	struct pci_dev *dev_diva = (void *) card->para[0];
-+	enum diva_board_type btype = card->para[1];
- 
- 	cs->subtyp = 0;
--	if ((dev_diva = pci_find_device(PCI_VENDOR_ID_EICON,
--		PCI_DEVICE_ID_EICON_DIVA20, dev_diva))) {
--		if (pci_enable_device(dev_diva))
--			return(0);
-+	cs->irq = dev_diva->irq;
-+
-+	if (pci_enable_device(dev_diva))
-+		return(0);
-+
-+	if (btype == diva20) {
- 		cs->subtyp = DIVA_PCI;
--		cs->irq = dev_diva->irq;
- 		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
--	} else if ((dev_diva_u = pci_find_device(PCI_VENDOR_ID_EICON,
--		PCI_DEVICE_ID_EICON_DIVA20_U, dev_diva_u))) {
--		if (pci_enable_device(dev_diva_u))
--			return(0);
-+	} else if (btype == diva20_u) {
- 		cs->subtyp = DIVA_PCI;
--		cs->irq = dev_diva_u->irq;
--		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva_u, 2);
--	} else if ((dev_diva201 = pci_find_device(PCI_VENDOR_ID_EICON,
--		PCI_DEVICE_ID_EICON_DIVA201, dev_diva201))) {
--		if (pci_enable_device(dev_diva201))
--			return(0);
-+		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
-+	} else if (btype == diva201) {
- 		cs->subtyp = DIVA_IPAC_PCI;
--		cs->irq = dev_diva201->irq;
- 		cs->hw.diva.pci_cfg =
--			(ulong) ioremap(pci_resource_start(dev_diva201, 0), 4096);
-+			(ulong) ioremap(pci_resource_start(dev_diva, 0), 4096);
- 		cs->hw.diva.cfg_reg =
--			(ulong) ioremap(pci_resource_start(dev_diva201, 1), 4096);
--	} else if ((dev_diva202 = pci_find_device(PCI_VENDOR_ID_EICON,
--		PCI_DEVICE_ID_EICON_DIVA202, dev_diva202))) {
--		if (pci_enable_device(dev_diva202))
--			return(0);
-+			(ulong) ioremap(pci_resource_start(dev_diva, 1), 4096);
-+	} else if (btype == diva202) {
- 		cs->subtyp = DIVA_IPACX_PCI;
--		cs->irq = dev_diva202->irq;
- 		cs->hw.diva.pci_cfg =
--			(ulong) ioremap(pci_resource_start(dev_diva202, 0), 4096);
-+			(ulong) ioremap(pci_resource_start(dev_diva, 0), 4096);
- 		cs->hw.diva.cfg_reg =
--			(ulong) ioremap(pci_resource_start(dev_diva202, 1), 4096);
-+			(ulong) ioremap(pci_resource_start(dev_diva, 1), 4096);
- 	} else {
--		return (-1);	/* card not found; continue search */
-+		BUG();
+ #ifdef ATTEMPT_PCI_REMAPPING
+ /* HACK: PLX revision 1 bug: PLX address bit 7 must not be set */
+ 		if ((pci_ioaddr1 & 0x80) && (dev_a8->revision == 1)) {
+@@ -345,22 +308,19 @@ setup_sct_quadro(struct IsdnCard *card)
+ 		       sct_quadro_subtypes[cs->subtyp]);
+ 		return (0);
  	}
- 
- 	if (!cs->irq) {
-@@ -1226,58 +1261,123 @@ static int __devinit setup_diva_pci(struct IsdnCard *card)
- 		cs->hw.diva.hscx_adr = cs->hw.diva.cfg_reg + DIVA_HSCX_ADR;
+-	pci_read_config_dword(dev_a8, PCI_BASE_ADDRESS_1, &pci_ioaddr1);
+-	pci_read_config_dword(dev_a8, PCI_BASE_ADDRESS_2, &pci_ioaddr2);
+-	pci_read_config_dword(dev_a8, PCI_BASE_ADDRESS_3, &pci_ioaddr3);
+-	pci_read_config_dword(dev_a8, PCI_BASE_ADDRESS_4, &pci_ioaddr4);
+-	pci_read_config_dword(dev_a8, PCI_BASE_ADDRESS_5, &pci_ioaddr5);
++
++	pci_ioaddr2 = pci_resource_start(dev_a8, 2);
++	pci_ioaddr3 = pci_resource_start(dev_a8, 3);
++	pci_ioaddr4 = pci_resource_start(dev_a8, 4);
++	pci_ioaddr5 = pci_resource_start(dev_a8, 5);
++
+ 	if (!pci_ioaddr1 || !pci_ioaddr2 || !pci_ioaddr3 || !pci_ioaddr4 || !pci_ioaddr5) {
+ 		printk(KERN_WARNING "HiSax: Scitel Quadro (%s): "
+ 		       "No IO base address(es)\n",
+ 		       sct_quadro_subtypes[cs->subtyp]);
+ 		return (0);
  	}
- 
--	return (1);		/* card found */
-+	return setup_diva_common(cs);
+-	pci_ioaddr1 &= PCI_BASE_ADDRESS_IO_MASK;
+-	pci_ioaddr2 &= PCI_BASE_ADDRESS_IO_MASK;
+-	pci_ioaddr3 &= PCI_BASE_ADDRESS_IO_MASK;
+-	pci_ioaddr4 &= PCI_BASE_ADDRESS_IO_MASK;
+-	pci_ioaddr5 &= PCI_BASE_ADDRESS_IO_MASK;
++
+ 	/* Take over */
+ 	cs->irq = pci_irq;
+ 	cs->irq_flags |= IRQF_SHARED;
+@@ -433,3 +393,113 @@ setup_sct_quadro(struct IsdnCard *card)
+ 		readreg(cs->hw.ax.base, cs->hw.ax.data_adr, IPAC_ID));
+ 	return (1);
  }
- 
--#else	/* if !CONFIG_PCI_LEGACY */
--
--static int __devinit setup_diva_pci(struct IsdnCard *card)
-+static int __devinit diva_pci_init_one(struct pci_dev *pdev,
++
++enum {
++	a8_bri_count	= 4,
++};
++
++struct a8_pci_bri {
++	int		cardnr;
++};
++
++struct a8_pci_info {
++	struct a8_pci_bri	bri[a8_bri_count];
++};
++
++static int __devinit a8_pci_init_one(struct pci_dev *pdev,
 +				      const struct pci_device_id *ent)
- {
--	return (-1);	/* card not found; continue search */
-+	struct IsdnCard icard = { ISDN_CTYPE_DIEHLDIVA, };
-+	int cardnr;
++{
++	struct IsdnCard icard = { ISDN_CTYPE_SCT_QUADRO, };
++	int rc, i, found = 0;
++	struct a8_pci_info *api;
 +
-+	icard.para[0] = (unsigned long) pdev;
-+	icard.para[1] = ent->driver_data;
-+	if (!diva_protocol)
++	rc = pci_enable_device(pdev);
++	if (rc)
++		return rc;
++
++	api = kzalloc(sizeof(*api), GFP_KERNEL);
++	if (!api) {
++		rc = -ENOMEM;
++		goto err_out;
++	}
++
++	icard.para[1] = (unsigned long) pdev;
++	if (!a8_protocol)
 +		icard.protocol = DEFAULT_PROTO;
 +	else
-+		icard.protocol = diva_protocol;
++		icard.protocol = a8_protocol;
 +
-+	cardnr = hisax_init_hotplug(&icard, diva_pci_setup);
-+	if (cardnr < 0)
-+		return -ENODEV;
++	for (i = 0; i < a8_bri_count; i++) {
++		icard.para[0] = SCT_1 + i;
++		api->bri[i].cardnr =
++			hisax_init_hotplug(&icard, setup_sct_quadro);
++		if (api->bri[i].cardnr >= 0)
++			found = 1;
++	}
++
++	if (!found) {
++		rc = -ENODEV;
++		goto err_out_api;
++	}
 +	
-+	pci_set_drvdata(pdev, (void *)(unsigned long) cardnr);
++	pci_set_drvdata(pdev, api);
 +	return 0;
- }
- 
--#endif	/* CONFIG_PCI_LEGACY */
-+static struct pci_device_id diva_pci_table[] = {
-+	{ PCI_VDEVICE(EICON, PCI_DEVICE_ID_EICON_DIVA20),	diva20 },
-+	{ PCI_VDEVICE(EICON, PCI_DEVICE_ID_EICON_DIVA20_U),	diva20_u },
-+	{ PCI_VDEVICE(EICON, PCI_DEVICE_ID_EICON_DIVA201),	diva201 },
-+//#########################################################################################	
-+	{ PCI_VDEVICE(EICON, PCI_DEVICE_ID_EICON_DIVA202),	diva202 },
-+//#########################################################################################	
- 
--int __devinit
--setup_diva(struct IsdnCard *card)
--{
--	int rc, have_card = 0;
--	struct IsdnCardState *cs = card->cs;
--	char tmp[64];
++
++err_out_api:
++	kfree(api);
++err_out:
++	pci_disable_device(pdev);
++	return rc;
++}
++
++static void __devexit a8_pci_remove_one(struct pci_dev *pdev)
++{
++	struct a8_pci_info *api = pci_get_drvdata(pdev);
++	int i;
++
++	pci_set_drvdata(pdev, NULL);
++
++	for (i = 0; i < a8_bri_count; i++) {
++		struct a8_pci_bri *bri = &api->bri[i];
++
++		if (bri->cardnr >= 0)
++			HiSax_closecard(bri->cardnr);
++	}
++
++	kfree(api);
++	pci_disable_device(pdev);
++}
++
++static struct pci_device_id a8_pci_table[] = {
++	{ PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050,
++	  PCI_VENDOR_ID_BERKOM, PCI_DEVICE_ID_BERKOM_SCITEL_QUADRO, },
++
 +	{ }		/* terminate list */
 +};
- 
--	strcpy(tmp, Diva_revision);
--	printk(KERN_INFO "HiSax: Eicon.Diehl Diva driver Rev. %s\n", HiSax_getrev(tmp));
--	if (cs->typ != ISDN_CTYPE_DIEHLDIVA)
--		return(0);
--	cs->hw.diva.status = 0;
-+static struct pci_driver diva_pci_driver = {
-+	.name		= "diva",
-+	.id_table	= diva_pci_table,
-+	.probe		= diva_pci_init_one,
-+	.remove		= hisax_pci_remove_one,
++
++static struct pci_driver a8_pci_driver = {
++	.name		= "bkm_a8",
++	.id_table	= a8_pci_table,
++	.probe		= a8_pci_init_one,
++	.remove		= __devexit_p(a8_pci_remove_one),
 +};
- 
--	rc = setup_diva_isa(card);
--	if (!rc)
--		return rc;
--	if (rc > 0) {
--		have_card = 1;
--		goto ready;
--	}
-+#endif /* CONFIG_PCI */
 +
-+static int __init diva_mod_init(void)
++static int __init a8_mod_init(void)
 +{
-+	int rc = 0;
- 
--	rc = setup_diva_isapnp(card);
--	if (!rc)
--		return rc;
--	if (rc > 0) {
--		have_card = 1;
--		goto ready;
-+#ifdef CONFIG_ISA
-+	if (diva_irq && diva_io_base) {
-+		rc = isa_register_driver(&diva_isa_driver, 1);
-+		if (rc)
-+			return rc;
- 	}
-+#ifdef CONFIG_PNP
-+	else {
-+		rc = pnp_register_driver(&diva_pnp_driver);
-+		if (rc)
-+			return rc;
-+	}
-+#endif
-+#endif /* CONFIG_ISA */
- 
--	rc = setup_diva_pci(card);
--	if (!rc)
--		return rc;
--	if (rc > 0)
--		have_card = 1;
-+#ifdef CONFIG_PCI
-+	rc = pci_register_driver(&diva_pci_driver);
-+	if (rc)
-+		goto err_out_isa;
-+#endif /* CONFIG_PCI */
- 
--ready:
--	if (!have_card) {
--		printk(KERN_WARNING "Diva: No ISA, ISAPNP or PCI card found\n");
--		return(0);
--	}
-+	return 0;
-+
-+#ifdef CONFIG_PCI
-+err_out_isa:
-+
-+#ifdef CONFIG_ISA
-+	if (diva_irq && diva_io_base)
-+		isa_unregister_driver(&diva_isa_driver);
-+#ifdef CONFIG_PNP
-+	else
-+		pnp_unregister_driver(&diva_pnp_driver);
-+#endif /* CONFIG_PNP */
-+#endif /* CONFIG_ISA */
- 
--	return setup_diva_common(card->cs);
-+	return rc;
-+#endif /* CONFIG_PCI */
- }
-+
-+static void __exit diva_mod_exit(void)
-+{
-+#ifdef CONFIG_PCI
-+	pci_unregister_driver(&diva_pci_driver);
-+#endif /* CONFIG_PCI */
-+
-+#ifdef CONFIG_ISA
-+	if (diva_irq && diva_io_base)
-+		isa_unregister_driver(&diva_isa_driver);
-+#ifdef CONFIG_PNP
-+	else
-+		pnp_unregister_driver(&diva_pnp_driver);
-+#endif /* CONFIG_PNP */
-+#endif /* CONFIG_ISA */
++	return pci_register_driver(&a8_pci_driver);
 +}
 +
-+module_init(diva_mod_init);
-+module_exit(diva_mod_exit);
++static void __exit a8_mod_exit(void)
++{
++	pci_unregister_driver(&a8_pci_driver);
++}
 +
-+#ifdef CONFIG_ISA
-+module_param_named(irq, diva_irq, int, 0444);
-+MODULE_PARM_DESC(irq, "ISA IRQ.  Zero disables ISA support (default).");
++module_init(a8_mod_init);
++module_exit(a8_mod_exit);
 +
-+module_param_named(io, diva_io_base, int, 0444);
-+MODULE_PARM_DESC(io, "ISA I/O base.  Zero disables ISA support (default).");
-+#endif /* CONFIG_ISA */
-+
-+module_param_named(protocol, diva_protocol, int, 0444);
++module_param_named(protocol, a8_protocol, int, 0444);
 +MODULE_PARM_DESC(protocol, "Values 0 (default) through 4. See ISDN_PTYPE_xxx in linux/isdnif.h");
 +
-+MODULE_DEVICE_TABLE(pci, diva_pci_table);
-+MODULE_DESCRIPTION("ISDN HiSax Diehldiva PCI/PNP/ISA driver");
++MODULE_DEVICE_TABLE(pci, a8_pci_table);
++MODULE_DESCRIPTION("ISDN HiSax BKM SCT QUADRO (A8) PCI driver");
 +MODULE_LICENSE("GPL");
-diff --git a/drivers/isdn/hisax/niccy.c b/drivers/isdn/hisax/niccy.c
-index 20d4285..6b52c56 100644
---- a/drivers/isdn/hisax/niccy.c
-+++ b/drivers/isdn/hisax/niccy.c
-@@ -397,6 +397,8 @@ static struct pnp_device_id niccy_pnp_table[] = {
- 	{ .id = "" }		/* terminate list */
+diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
+index fd8a564..0c379e8 100644
+--- a/drivers/isdn/hisax/config.c
++++ b/drivers/isdn/hisax/config.c
+@@ -208,13 +208,6 @@ const char *CardType[] = {
+ #define DEFAULT_CFG {5,0x250,0,0}
+ #endif
+ 
+-#ifdef CONFIG_HISAX_SCT_QUADRO
+-#undef DEFAULT_CARD
+-#undef DEFAULT_CFG
+-#define DEFAULT_CARD ISDN_CTYPE_SCT_QUADRO
+-#define DEFAULT_CFG {1,0x0,0,0}
+-#endif
+-
+ #ifndef DEFAULT_CARD
+ #define DEFAULT_CARD 0
+ #define DEFAULT_CFG {0,0,0,0}
+@@ -433,10 +426,6 @@ extern int setup_isurf(struct IsdnCard *card);
+ extern int setup_saphir(struct IsdnCard *card);
+ #endif
+ 
+-#if CARD_SCT_QUADRO
+-extern int setup_sct_quadro(struct IsdnCard *card);
+-#endif
+-
+ /*
+  * Find card with given driverId
+  */
+@@ -806,11 +795,6 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
+ 		ret = setup_saphir(card);
+ 		break;
+ #endif
+-#if	CARD_SCT_QUADRO
+-	case ISDN_CTYPE_SCT_QUADRO:
+-		ret = setup_sct_quadro(card);
+-		break;
+-#endif
+ 	case ISDN_CTYPE_DYNAMIC:
+ 		ret = 2;
+ 		break;
+@@ -826,6 +810,7 @@ static int __devinit hisax_cs_setup_card(struct IsdnCard *card)
+ 	case ISDN_CTYPE_GAZEL:
+ 	case ISDN_CTYPE_NICCY:
+ 	case ISDN_CTYPE_DIEHLDIVA:
++	case ISDN_CTYPE_SCT_QUADRO:
+ 		printk(KERN_WARNING "HiSax: Support for %s Card has moved "
+ 		       "to separate PCI driver module\n",
+ 		       CardType[card->typ]);
+@@ -1296,32 +1281,9 @@ static int __init HiSax_init(void)
+ 		case ISDN_CTYPE_GAZEL:
+ 		case ISDN_CTYPE_NICCY:
+ 		case ISDN_CTYPE_DIEHLDIVA:
+-			break;
+-
+ 		case ISDN_CTYPE_SCT_QUADRO:
+-			if (irq[i]) {
+-				cards[j].para[0] = irq[i];
+-			} else {
+-				/* QUADRO is a 4 BRI card */
+-				cards[j++].para[0] = 1;
+-				/* we need to check if further cards can be added */
+-				if (j < HISAX_MAX_CARDS) {
+-					cards[j].typ = ISDN_CTYPE_SCT_QUADRO;
+-					cards[j].protocol = protocol[i];
+-					cards[j++].para[0] = 2;
+-				}
+-				if (j < HISAX_MAX_CARDS) {
+-					cards[j].typ = ISDN_CTYPE_SCT_QUADRO;
+-					cards[j].protocol = protocol[i];
+-					cards[j++].para[0] = 3;
+-				}
+-				if (j < HISAX_MAX_CARDS) {
+-					cards[j].typ = ISDN_CTYPE_SCT_QUADRO;
+-					cards[j].protocol = protocol[i];
+-					cards[j].para[0] = 4;
+-				}
+-			}
+ 			break;
++
+ 		}
+ 		j++;
+ 	}
+@@ -1773,15 +1735,9 @@ static struct pci_device_id hisax_pci_tbl[] __devinitdata = {
+ 	{PCI_VENDOR_ID_ELSA,     PCI_DEVICE_ID_ELSA_MICROLINK,   PCI_ANY_ID, PCI_ANY_ID},
+ 	{PCI_VENDOR_ID_ELSA,     PCI_DEVICE_ID_ELSA_QS3000,      PCI_ANY_ID, PCI_ANY_ID},
+ #endif
+-#ifdef CONFIG_HISAX_SCT_QUADRO
+-	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_9050,         PCI_ANY_ID, PCI_ANY_ID},
+-#endif
+ #ifdef CONFIG_HISAX_SEDLBAUER
+ 	{PCI_VENDOR_ID_TIGERJET, PCI_DEVICE_ID_TIGERJET_100,     PCI_ANY_ID,PCI_ANY_ID},
+ #endif
+-#if defined(CONFIG_HISAX_SCT_QUADRO)
+-	{PCI_VENDOR_ID_ZORAN,    PCI_DEVICE_ID_ZORAN_36120,      PCI_ANY_ID,PCI_ANY_ID},
+-#endif
+ 	{ }				/* Terminating entry */
  };
  
-+MODULE_DEVICE_TABLE(pnp, niccy_pnp_table);
-+
- static struct pnp_driver niccy_pnp_driver = {
- 	.name		= "niccy",
- 	.id_table	= niccy_pnp_table,
 -- 
 1.5.3.8
 
