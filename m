@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbXHBXDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760997AbXHBXE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbXHBXDq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756210AbXHBXDi
+	id S1760997AbXHBXE0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbXHBXER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:03:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:47541 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755293AbXHBXDh (ORCPT
+	Thu, 2 Aug 2007 19:04:17 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:58787 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756349AbXHBXEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:03:37 -0400
-Date: Fri, 3 Aug 2007 00:03:34 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Randy Dunlap <rdunlap@xenotime.net>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Robert Hancock <hancockr@shaw.ca>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-Message-ID: <20070802230333.GS21089@ftp.linux.org.uk>
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange> <46B2578A.805@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030024490.6774@poirot.grange> <20070802155434.b085219c.rdunlap@xenotime.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Aug 2007 19:04:15 -0400
+Date: Fri, 3 Aug 2007 01:03:56 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: "Luck, Tony" <tony.luck@intel.com>, trenn@suse.de,
+       Sam Ravnborg <sam@ravnborg.org>, Jan Dittmer <jdi@l4x.org>,
+       Len Brown <lenb@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: scripts/mod/file2alias.c cross compile problem
+Message-ID: <20070802230355.GA3972@stusta.de>
+References: <617E1C2C70743745A92448908E030B2A0211AFF0@scsmsx411.amr.corp.intel.com> <1186092501.6131.154.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070802155434.b085219c.rdunlap@xenotime.net>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <1186092501.6131.154.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 03:54:34PM -0700, Randy Dunlap wrote:
-> > 
-> > And, Stefan, there is a perfect way to specify a "0123" without the '\0' - 
-> > {'0', '1', '2', '3'}.
-> 
-> We are actually a bit beyond traditional K&R, fwiw.
+On Fri, Aug 03, 2007 at 08:08:20AM +1000, Rusty Russell wrote:
+>...
+> scripts/mod/file2alias is the program that reads this: although it can
+> be altered to parse 32-vs-64, Adrian's fix is the simplest.
 
-Not in that area - this behaviour is precisely what traditional K&R
-had all along.  Unchanged.
+s/Adrian/Thomas/
+
+> Hope that clarifies,
+> Rusty.
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
