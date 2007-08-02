@@ -1,111 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761702AbXHBXMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760920AbXHBXO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761702AbXHBXMV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758299AbXHBXML
+	id S1760920AbXHBXO6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXHBXOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:12:11 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:35329 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756185AbXHBXMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:12:10 -0400
-Date: Thu, 2 Aug 2007 19:12:09 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
-       LKML <linux-kernel@vger.kernel.org>, werner@titro.de
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] hysdn: fix SMP brokenness
-Message-ID: <20070802231209.GB20071@havoc.gtf.org>
-References: <20070724074653.GA14987@havoc.gtf.org> <20070802231137.GA20071@havoc.gtf.org>
+	Thu, 2 Aug 2007 19:14:50 -0400
+Received: from smtp-out5.blueyonder.co.uk ([195.188.213.8]:35968 "EHLO
+	smtp-out5.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751446AbXHBXOt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 19:14:49 -0400
+Message-ID: <46B2655F.8060502@blueyonder.co.uk>
+Date: Fri, 03 Aug 2007 00:14:39 +0100
+From: Sid Boyce <g3vbv@blueyonder.co.uk>
+Reply-To: g3vbv@blueyonder.co.uk
+Organization: blueyonder.co.uk
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070802231137.GA20071@havoc.gtf.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-git3 init failure
+References: <46ABF0FA.8060301@blueyonder.co.uk> <6bffcb0e0707300725i3bb8b677i75aeec6fed66bee2@mail.gmail.com>
+In-Reply-To: <6bffcb0e0707300725i3bb8b677i75aeec6fed66bee2@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michal Piotrowski wrote:
+> Hi Sid,
+>
+> On 29/07/07, Sid Boyce <g3vbv@blueyonder.co.uk> wrote:
+>   
+>>  > Boot failure on x86_64 (64X2), says it can't find init, specifically
+>>  > /init. 2.6.23-rc1-git1 boots and runs successfully. I haven't tried
+>>  > -git2. I shall reboot on 2.6.23-rc1-git3 tomorrow and record the full
+>>  > message.
+>>  > Strings from vmlinux in both the above:-
+>>  >
+>>  > Kernel alive
+>>  > /dev/console
+>>  > <4>Warning: unable to open an initial console.
+>>  > <4>Failed to execute %s
+>>  > <4>Failed to execute %s.  Attempting defaults...
+>>  > /sbin/init
+>>  > /etc/init
+>>  > /bin/init
+>>  > /bin/sh
+>>  > No init found.  Try passing init= option to kernel.
+>>  >
+>>  > Tried option "init=/sbin/init" and got the same failure.
+>>  > Regards
+>>  > Sid.
+>>
+>> I see the sam problem with 2.6.23-rc1-git5.
+>>
+>> Freeing unused kernel memory: 236k freed
+>> failed to execute /init
+>> kernel panic - not syncing: No init found. Try passing init= option to
+>> kernel
+>>
+>> Copying /sbin/init to / results in the same error.
+>> openSUSE 10.3Alpha6plus
+>> # rpm -qf /sbin/init
+>> sysvinit-2.86-90
+>>     
+>
+> Please read chapter 4.1 and 4.5
+> http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf
+>
+> It should be very simple
+>
+> git-bisect start
+> git-bisect bad
+> git-bisect good 0de085bb474f64e4fdb2f1ff3268590792648c7b
+>
+> and so on and so forth
+>
+>   
+>> Regards
+>> Sid.
+>>     
+>
+> Regards,
+> Michal
+>
+>   
+I had to do a fresh install of opeSUSE 10.3 Alpha6 to replace a failing 
+drive. After that I again built 2.6.23-rc1-git10 which boots without 
+problems. My guess is that something on the old hard drive got mangled. 
+The old drive was PATA, the new one SATA, also disappeared have been the 
+problems that suddenly appeared with sata_nv slow responses and timeouts 
+with no devices installed and which I didn't see without the sata_nv 
+module loaded.
+Regards
+Sid.
 
-This patch has been committed to the 'hysdn' branch of
-git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+-- 
+Sid Boyce ... Hamradio License G3VBV, Licensed Private Pilot
+Emeritus IBM/Amdahl Mainframes and Sun/Fujitsu Servers Tech Support Specialist, Cricket Coach
+Microsoft Windows Free Zone - Linux used for all Computing Tasks
 
-commit 4ef2632c0fdf4598cf6a417f39514257ecbb2ba2
-Author: Jeff Garzik <jeff@garzik.org>
-Date:   Thu Aug 2 19:08:10 2007 -0400
 
-    [ISDN] hysdn: fix SMP brokenness
-    
-    Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
- drivers/isdn/hysdn/Kconfig     |    2 +-
- drivers/isdn/hysdn/boardergo.c |   14 ++++++++------
- 2 files changed, 9 insertions(+), 7 deletions(-)
-
-4ef2632c0fdf4598cf6a417f39514257ecbb2ba2
-diff --git a/drivers/isdn/hysdn/Kconfig b/drivers/isdn/hysdn/Kconfig
-index c6d8a70..c9e4231 100644
---- a/drivers/isdn/hysdn/Kconfig
-+++ b/drivers/isdn/hysdn/Kconfig
-@@ -3,7 +3,7 @@
- #
- config HYSDN
- 	tristate "Hypercope HYSDN cards (Champ, Ergo, Metro) support (module only)"
--	depends on m && PROC_FS && PCI && BROKEN_ON_SMP
-+	depends on m && PROC_FS && PCI
- 	help
- 	  Say Y here if you have one of Hypercope's active PCI ISDN cards
- 	  Champ, Ergo and Metro. You will then get a module called hysdn.
-diff --git a/drivers/isdn/hysdn/boardergo.c b/drivers/isdn/hysdn/boardergo.c
-index 6cdbad3..7145d37 100644
---- a/drivers/isdn/hysdn/boardergo.c
-+++ b/drivers/isdn/hysdn/boardergo.c
-@@ -90,7 +90,12 @@ ergo_irq_bh(struct work_struct *ugli_api)
- 	card->hw_lock = 1;	/* we now lock the hardware */
- 
- 	do {
--		sti();		/* reenable other ints */
-+		spin_unlock_irqrestore(&card->hysdn_lock, flags);
-+
-+		cond_resched();
-+
-+		spin_lock_irqsave(&card->hysdn_lock, flags);
-+
- 		again = 0;	/* assume loop not to be repeated */
- 
- 		if (!dpr->ToHyFlag) {
-@@ -110,7 +115,7 @@ ergo_irq_bh(struct work_struct *ugli_api)
- 				again = 1;	/* restart loop */
- 			}
- 		}		/* a message has arrived for us */
--		cli();		/* no further ints */
-+
- 		if (again) {
- 			dpr->ToHyInt = 1;
- 			dpr->ToPcInt = 1;	/* interrupt to E1 for all cards */
-@@ -240,9 +245,7 @@ ergo_writebootimg(struct HYSDN_CARD *card, unsigned char *buf,
- 		while (!dpram->ToHyNoDpramErrLog);	/* reread volatile register to flush PCI */
- 
- 		byteout(card->iobase + PCI9050_USER_IO, PCI9050_E1_RUN);	/* start E1 processor */
--		/* the interrupts are still masked */
- 
--		sti();
- 		msleep_interruptible(20);		/* Timeout 20ms */
- 
- 		if (((tDpramBootSpooler *) card->dpram)->Len != DPRAM_SPOOLER_DATA_SIZE) {
-@@ -276,7 +279,6 @@ ergo_writebootseq(struct HYSDN_CARD *card, unsigned char *buf, int len)
- 	dst = sp->Data;		/* point to data in spool structure */
- 	buflen = sp->Len;	/* maximum len of spooled data */
- 	wr_mirror = sp->WrPtr;	/* only once read */
--	sti();
- 
- 	/* try until all bytes written or error */
- 	i = 0x1000;		/* timeout value */
-@@ -380,7 +382,7 @@ ergo_waitpofready(struct HYSDN_CARD *card)
- #endif /* CONFIG_HYSDN_CAPI */
- 			return (0);	/* success */
- 		}		/* data has arrived */
--		sti();
-+
- 		msleep_interruptible(50);		/* Timeout 50ms */
- 	}			/* wait until timeout */
- 
