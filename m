@@ -1,130 +1,660 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbXHBMli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbXHBMmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbXHBMli (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbXHBMl3
+	id S1758028AbXHBMmU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbXHBMmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:41:29 -0400
-Received: from styx.suse.cz ([82.119.242.94]:58443 "EHLO elijah.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755068AbXHBMl2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:41:28 -0400
-Subject: mmap behavior on out-of-space conditions
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-xsleWFtAuKBfGVb390Mj"
-Organization: SuSE CR
-Date: Thu, 02 Aug 2007 14:41:26 +0200
-Message-Id: <1186058486.2289.17.camel@elijah.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+	Thu, 2 Aug 2007 08:42:04 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:33024 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754917AbXHBMmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 08:42:01 -0400
+Date: Thu, 2 Aug 2007 08:42:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, surya.prabhakar@wipro.com
+Subject: [PATCH 1/4] HiSax niccy: convert to ISA/PNP/PCI new style probing
+Message-ID: <20070802124200.GA29074@havoc.gtf.org>
+References: <20070724074653.GA14987@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070724074653.GA14987@havoc.gtf.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-xsleWFtAuKBfGVb390Mj
-Content-Type: multipart/mixed; boundary="=-zSm295JPNFY80If2LFQN"
+This patch was committed to the 'isdn-pci' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
+commit c0a1375fab3207dfe9f7889fae54dd05af3dd950
+Author: Jeff Garzik <jeff@garzik.org>
+Date:   Tue Jul 24 08:26:59 2007 -0400
 
---=-zSm295JPNFY80If2LFQN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+    [ISDN] HiSax niccy: convert to ISA/PNP/PCI new style probing
+    
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
 
-Hello,
+ drivers/isdn/hisax/Kconfig  |    3 
+ drivers/isdn/hisax/Makefile |    2 
+ drivers/isdn/hisax/config.c |   26 --
+ drivers/isdn/hisax/niccy.c  |  460 +++++++++++++++++++++++++++++++-------------
+ 4 files changed, 333 insertions(+), 158 deletions(-)
 
-while solving a different issue, my colleague Libor Pechacek found a
-problem with handling mmapped sparse files. If you mmap the hole insidea
-sparse file and write to it, the data gets silently lost if there is not
-enough space left on the underlying device.
-
-I found a thread which touched this topic in December 2001 (sic!). I'd
-like to quote an email by Andrea Arcangeli:
-
-> On Sun, Dec 30, 2001 at 01:33:24AM -0500, Alexander Viro wrote:
-> >=20
-> >=20
-> > On Sat, 29 Dec 2001, Andrew Morton wrote:
-> >=20
-> > > Would it be necessary to preallocate the holes at mmap() time?  Mad
-> > > hand-waving: Could we not perform the instantiation at pagefault time=
-,
-> > > and give the caller SIGBUS if we cannot allocate the blocks?  Or if
-> > > there's an IO error, or quota exceeded.
-> >=20
-> > Allocation at mmap() Is Not Going To Happen.  Consider it vetoed.
-> > There are applications that use mmap() on large and very sparse
-> > files.
->=20
-> it's exactly this kind of apps that will be screwed up by silent data
-> corruption. the point of the holes is to optimize performance and save
-> space, but they shouldn't introduce the possibilty of data corruption.
->=20
-> Note: I'm fine to introduce another way to notify the app about -ENOSPC,
-> -ENOSPC on mmap is the most obvious one, but we could still allow the
-> current "overcommit" behaviour with a kind of sigbus mentioned by
-> Andrew (possibly not sigbus though, since it has just well defined
-> semantics for MAP_SHARED, maybe they could be extended, anyways as said
-> this is only a matter of API). My point is only that some API should be
-> added because your mmap on sparse files are unreliable at the moment.
-
-(see http://marc.info/?l=3Dlinux-kernel&m=3D100975730421590&w=3D2)
-
-However, this is still not fixed - I am attaching a simple test case,
-run it like:
-
-$ make
-$ # become root
-# make check
-
-IMO we should go with the SIGBUS solution, but I want to discuss it here
-before making a patch.
-
-Kind regards,
-Petr Tesarik
-SUSE LINUX, L3 Prague
-
-
---=-zSm295JPNFY80If2LFQN
-Content-Disposition: attachment; filename=mmap-nospc.tar.gz
-Content-Type: application/x-compressed-tar; name=mmap-nospc.tar.gz
-Content-Transfer-Encoding: base64
-
-H4sIAIbNsUYAA+1Y60/jRhDnq/evGAItSeoktuOEFpK7IggClccpBCG1PUXuek2s+CU/0ru29793
-dp3HmgtHWgFVdf59ILvjee3M7O4svm9FjSBMItraeiloiP1OB3+Ntmnui7lumuJ3ji1d63bMttnt
-4ljTjX3N3ILOi3kkIUtSKwbYilKWWLE7fZyPxclrOPS68Ff5Xw2b9Flt8AR3Rb7X5r/daRvL/HeM
-Nua/o7f1LdCe1YtH8JXnf8cNqJfZDHpJarthc/KGSKSPSSv9GLHkczJGLS1SHRqkXpGUBS5q/VwY
-Ky1YQw2zQOgkOzZz3IDB8dnt1U/jm/OfB4qp/dBd0s+uLwY5WTe+r6+4COFuuRTcICU0ZlbKxklk
-xQkbO67HqjQMkhToBBNedwLLZzXyJ1GQGRz7kCjiA4U+7B3vHSpKqw7H4LlT9EOognqLILcDVag6
-NrKFEQuqQo8K1+Phyd0Q/sLBaHh7dSxGx8PB0UgFrdvt1mrQA60GaE+JWByHcbXC5Ss1NKzELM3i
-ABo6Tj7NjfweuylDQyp8S1XQa7Dd539lBYJFz1Xch2kISB+HWSpp8RLGpkLLMmgq3AwGGLDBSOhc
-0ou6heAXVW/qoPGolvmyefDJ/MtBrpt6YcJ112qSNkEUyqR4fSokHdPsjSehx5JqnlaR4dBxxilE
-YbJIct2y7RiNKk4YQxU/YDa1Q84BPSkiOeW7vlSI+fq4OIrwE7N6dXtxoUocKrwbXo/GmPoTLAIx
-vhuejwYqyimAuDx6N745OxoOTlTg0UMbIkB83bnivuA5PTq/GJzkBpcx4CbzeBaKRoRTqc/92jvF
-+sXyPc3L9xSDwos3N+FnAXebs8pu1x4aEmzrTcnJ0x5PwTivkC8lgi68XePuv85Ose6R6UHF84AX
-FysV+5qwPlHsxWoHvvRNw8ZD41tuIGJkxfeoOq/POk5mhdMp3xecBw+Sdm7ZiWL87FTxkEUXVKjc
-JtY9O4BvMFB4naX80HsDvZg5YvRrUFG5ldkv2nv52JFPnfnRtubwFIL6+/lBtpI2Fr5Je2++cR9y
-rHZ14ZQQZFg4XDgRjc1dMzZybbxI5D93EMPIYhZQBo+6KSf3v77ZN4PU/11aU8ZX9uw2nuj/NF3q
-/8wu7/9xZJb932vA8rwDWBUBoRNGpweAZKIkExDTZjIhZMUj8zcpUe4phcYdSkDj2oBGCLs/wm7v
-f1L/Xzuk/b/I9bPbeGL/6/q+udr/+7rY/0a33P+vgZ1taP3mBi2+xS+vRifnwz6/iH1s5EjCUmgw
-fI4tHkDpJL/78LWWMp/YNrhOv2WzWesPFocQOv2ZG2MvMgPK33J9fJ0RfnWmWQSCzQvDSIM5E/Gn
-TtL03cD9IH3l5i659ENr/tR2Y2hEsJv7ScR7ERrYQT1QseQoep53DEIlRF6WgCV6DkEgTenfHwv5
-Vi7REBLL219Mueoh89f4CfjKcYOZ5bk2NxxhQwbUwr1FspxdWupmK+DbcmWEYJ+yDdSPNvDykIsF
-hD86GJ2EUDmztuFughxgu7bQiU5acB++rQgu3sZnSV8nDDtimaJhWy+c8ZgVQBatWcwi0Q1bpsY+
-z9pyOeyDm8JurrS8IUqUKFGiRIkSJUqUKFGiRIkSJUqUeGH8DcnBEaIAKAAA
-
-
---=-zSm295JPNFY80If2LFQN--
-
---=-xsleWFtAuKBfGVb390Mj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2 (GNU/Linux)
-
-iD8DBQBGsdD2jpY2ODFi2ogRAkJKAKCMCUq/lI96oYuzBtjkeYZj7y9cXACfXiDg
-C+vXpDmsMsgA2aw0DCPMXb4=
-=DQvg
------END PGP SIGNATURE-----
-
---=-xsleWFtAuKBfGVb390Mj--
+c0a1375fab3207dfe9f7889fae54dd05af3dd950
+diff --git a/drivers/isdn/hisax/Kconfig b/drivers/isdn/hisax/Kconfig
+index ec6d9df..dbd7153 100644
+--- a/drivers/isdn/hisax/Kconfig
++++ b/drivers/isdn/hisax/Kconfig
+@@ -257,7 +257,8 @@ config HISAX_NETJET_U
+ 	  settings.
+ 
+ config HISAX_NICCY
+-	bool "Niccy PnP/PCI card"
++	tristate "Niccy PnP/PCI card"
++	depends on (ISA || PCI)
+ 	help
+ 	  This enables HiSax support for the Dr. Neuhaus Niccy PnP or PCI.
+ 
+diff --git a/drivers/isdn/hisax/Makefile b/drivers/isdn/hisax/Makefile
+index e67bf92..f840b23 100644
+--- a/drivers/isdn/hisax/Makefile
++++ b/drivers/isdn/hisax/Makefile
+@@ -24,6 +24,7 @@ obj-$(CONFIG_HISAX_NETJET_U)		+= netjet_u.o libhisax.o
+ obj-$(CONFIG_HISAX_TELESPCI)		+= telespci.o libhisax.o
+ obj-$(CONFIG_HISAX_FRITZPCI)		+= avm_pci.o libhisax.o
+ obj-$(CONFIG_HISAX_GAZEL)		+= gazel.o libhisax.o
++obj-$(CONFIG_HISAX_NICCY)		+= niccy.o libhisax.o
+ 
+ bkm_a4t_pci-objs			:= bkm_a4t.o jade.o
+ enternow-objs				:= enternow_pci.o amd7930_fn.o
+@@ -61,7 +62,6 @@ hisax-$(CONFIG_HISAX_SPORTSTER)		+= sportster.o
+ hisax-$(CONFIG_HISAX_MIC)		+= mic.o
+ hisax-$(CONFIG_HISAX_HFCS)		+= hfcscard.o hfc_2bds0.o
+ hisax-$(CONFIG_HISAX_HFC_SX)		+= hfc_sx.o
+-hisax-$(CONFIG_HISAX_NICCY)		+= niccy.o
+ hisax-$(CONFIG_HISAX_ISURF)		+= isurf.o isar.o
+ hisax-$(CONFIG_HISAX_HSTSAPHIR)		+= saphir.o
+ hisax-$(CONFIG_HISAX_SCT_QUADRO)	+= bkm_a8.o
+diff --git a/drivers/isdn/hisax/config.c b/drivers/isdn/hisax/config.c
+index 79beff9..9ed7429 100644
+--- a/drivers/isdn/hisax/config.c
++++ b/drivers/isdn/hisax/config.c
+@@ -201,13 +201,6 @@ const char *CardType[] = {
+ #define DEFAULT_CFG {5,0x2E0,0,0}
+ #endif
+ 
+-#ifdef CONFIG_HISAX_NICCY
+-#undef DEFAULT_CARD
+-#undef DEFAULT_CFG
+-#define DEFAULT_CARD ISDN_CTYPE_NICCY
+-#define DEFAULT_CFG {0,0x0,0,0}
+-#endif
+-
+ #ifdef CONFIG_HISAX_ISURF
+ #undef DEFAULT_CARD
+ #undef DEFAULT_CFG
+@@ -258,10 +251,6 @@ static int io[HISAX_MAX_CARDS] = { 0, };
+ #ifdef CONFIG_HISAX_16_3
+ #define IO0_IO1
+ #endif
+-#ifdef CONFIG_HISAX_NICCY
+-#undef IO0_IO1
+-#define IO0_IO1
+-#endif
+ #ifdef IO0_IO1
+ static int io0[HISAX_MAX_CARDS] __devinitdata = { 0, };
+ static int io1[HISAX_MAX_CARDS] __devinitdata = { 0, };
+@@ -447,10 +436,6 @@ extern int setup_hfcs(struct IsdnCard *card);
+ extern int setup_hfcsx(struct IsdnCard *card);
+ #endif
+ 
+-#if CARD_NICCY
+-extern int setup_niccy(struct IsdnCard *card);
+-#endif
+-
+ #if CARD_ISURF
+ extern int setup_isurf(struct IsdnCard *card);
+ #endif
+@@ -827,11 +812,6 @@ static int hisax_cs_setup_card(struct IsdnCard *card)
+ 		ret = setup_hfcsx(card);
+ 		break;
+ #endif
+-#if CARD_NICCY
+-	case ISDN_CTYPE_NICCY:
+-		ret = setup_niccy(card);
+-		break;
+-#endif
+ #if CARD_ISURF
+ 	case ISDN_CTYPE_ISURF:
+ 		ret = setup_isurf(card);
+@@ -860,6 +840,7 @@ static int hisax_cs_setup_card(struct IsdnCard *card)
+ 	case ISDN_CTYPE_TELESPCI:
+ 	case ISDN_CTYPE_FRITZPCI:
+ 	case ISDN_CTYPE_GAZEL:
++	case ISDN_CTYPE_NICCY:
+ 		printk(KERN_WARNING "HiSax: Support for %s Card has moved "
+ 		       "to separate PCI driver module\n",
+ 		       CardType[card->typ]);
+@@ -1270,7 +1251,6 @@ static int __init HiSax_init(void)
+ 
+ #ifdef IO0_IO1
+ 		case ISDN_CTYPE_PNP:
+-		case ISDN_CTYPE_NICCY:
+ 			cards[j].para[0] = irq[i];
+ 			cards[j].para[1] = io0[i];
+ 			cards[j].para[2] = io1[i];
+@@ -1327,6 +1307,7 @@ static int __init HiSax_init(void)
+ 		case ISDN_CTYPE_TELESPCI:
+ 		case ISDN_CTYPE_FRITZPCI:
+ 		case ISDN_CTYPE_GAZEL:
++		case ISDN_CTYPE_NICCY:
+ 			break;
+ 
+ 		case ISDN_CTYPE_SCT_QUADRO:
+@@ -1815,9 +1796,6 @@ static struct pci_device_id hisax_pci_tbl[] __devinitdata = {
+ #ifdef CONFIG_HISAX_SCT_QUADRO
+ 	{PCI_VENDOR_ID_PLX,      PCI_DEVICE_ID_PLX_9050,         PCI_ANY_ID, PCI_ANY_ID},
+ #endif
+-#ifdef CONFIG_HISAX_NICCY
+-	{PCI_VENDOR_ID_SATSAGEM, PCI_DEVICE_ID_SATSAGEM_NICCY,   PCI_ANY_ID,PCI_ANY_ID},
+-#endif
+ #ifdef CONFIG_HISAX_SEDLBAUER
+ 	{PCI_VENDOR_ID_TIGERJET, PCI_DEVICE_ID_TIGERJET_100,     PCI_ANY_ID,PCI_ANY_ID},
+ #endif
+diff --git a/drivers/isdn/hisax/niccy.c b/drivers/isdn/hisax/niccy.c
+index e5918c6..20d4285 100644
+--- a/drivers/isdn/hisax/niccy.c
++++ b/drivers/isdn/hisax/niccy.c
+@@ -15,13 +15,22 @@
+ 
+ #include <linux/init.h>
+ #include "hisax.h"
++#include "hisax_proto.h"
+ #include "isac.h"
+ #include "hscx.h"
+ #include "isdnl1.h"
+ #include <linux/pci.h>
+-#include <linux/isapnp.h>
++#include <linux/pnp.h>
++#include <linux/isa.h>
++
++static int niccy_protocol;		/* 0 == use DEFAULT_PROTO */
++
++#ifdef CONFIG_ISA
++static int niccy_base0;
++static int niccy_base1;
++static int niccy_irq;
++#endif /* CONFIG_ISA */
+ 
+-extern const char *CardType[];
+ static const char *niccy_revision = "$Revision: 1.21.2.4 $";
+ 
+ #define byteout(addr,val) outb(val,addr)
+@@ -223,143 +232,18 @@ static int niccy_card_msg(struct IsdnCardState *cs, int mt, void *arg)
+ 	return 0;
+ }
+ 
+-static struct pci_dev *niccy_dev __devinitdata = NULL;
+-#ifdef __ISAPNP__
+-static struct pnp_card *pnp_c __devinitdata = NULL;
+-#endif
+-
+-int __devinit setup_niccy(struct IsdnCard *card)
++static int __devinit setup_niccy(struct IsdnCard *card)
+ {
+ 	struct IsdnCardState *cs = card->cs;
+ 	char tmp[64];
+ 
+ 	strcpy(tmp, niccy_revision);
+ 	printk(KERN_INFO "HiSax: Niccy driver Rev. %s\n", HiSax_getrev(tmp));
+-	if (cs->typ != ISDN_CTYPE_NICCY)
+-		return 0;
+-#ifdef __ISAPNP__
+-	if (!card->para[1] && isapnp_present()) {
+-		struct pnp_dev *pnp_d = NULL;
+-		int err;
+-
+-		pnp_c = pnp_find_card(ISAPNP_VENDOR('S', 'D', 'A'),
+-				ISAPNP_FUNCTION(0x0150), pnp_c);
+-		if (pnp_c) {
+-			pnp_d = pnp_find_dev(pnp_c,
+-					ISAPNP_VENDOR('S', 'D', 'A'),
+-					ISAPNP_FUNCTION(0x0150), pnp_d);
+-			if (!pnp_d) {
+-				printk(KERN_ERR "NiccyPnP: PnP error card "
+-					"found, no device\n");
+-				return 0;
+-			}
+-			pnp_disable_dev(pnp_d);
+-			err = pnp_activate_dev(pnp_d);
+-			if (err < 0) {
+-				printk(KERN_WARNING "%s: pnp_activate_dev "
+-					"ret(%d)\n", __FUNCTION__, err);
+-				return 0;
+-			}
+-			card->para[1] = pnp_port_start(pnp_d, 0);
+-			card->para[2] = pnp_port_start(pnp_d, 1);
+-			card->para[0] = pnp_irq(pnp_d, 0);
+-			if (!card->para[0] || !card->para[1] ||
+-					!card->para[2]) {
+-				printk(KERN_ERR "NiccyPnP:some resources are "
+-					"missing %ld/%lx/%lx\n",
+-					card->para[0], card->para[1],
+-					card->para[2]);
+-				pnp_disable_dev(pnp_d);
+-				return 0;
+-			}
+-		} else
+-			printk(KERN_INFO "NiccyPnP: no ISAPnP card found\n");
+-	}
+-#endif
+-	if (card->para[1]) {
+-		cs->hw.niccy.isac = card->para[1] + ISAC_PNP;
+-		cs->hw.niccy.hscx = card->para[1] + HSCX_PNP;
+-		cs->hw.niccy.isac_ale = card->para[2] + ISAC_PNP;
+-		cs->hw.niccy.hscx_ale = card->para[2] + HSCX_PNP;
+-		cs->hw.niccy.cfg_reg = 0;
+-		cs->subtyp = NICCY_PNP;
+-		cs->irq = card->para[0];
+-		if (!request_region(cs->hw.niccy.isac, 2, "niccy data")) {
+-			printk(KERN_WARNING "HiSax: %s data port %x-%x "
+-				"already in use\n", CardType[card->typ],
+-				cs->hw.niccy.isac, cs->hw.niccy.isac + 1);
+-			return 0;
+-		}
+-		if (!request_region(cs->hw.niccy.isac_ale, 2, "niccy addr")) {
+-			printk(KERN_WARNING "HiSax: %s address port %x-%x "
+-				"already in use\n", CardType[card->typ],
+-				cs->hw.niccy.isac_ale,
+-				cs->hw.niccy.isac_ale + 1);
+-			release_region(cs->hw.niccy.isac, 2);
+-			return 0;
+-		}
+-	} else {
+-#ifdef CONFIG_PCI
+-		u_int pci_ioaddr;
+-		cs->subtyp = 0;
+-		if ((niccy_dev = pci_find_device(PCI_VENDOR_ID_SATSAGEM,
+-						 PCI_DEVICE_ID_SATSAGEM_NICCY,
+-						 niccy_dev))) {
+-			if (pci_enable_device(niccy_dev))
+-				return 0;
+-			/* get IRQ */
+-			if (!niccy_dev->irq) {
+-				printk(KERN_WARNING
+-				       "Niccy: No IRQ for PCI card found\n");
+-				return 0;
+-			}
+-			cs->irq = niccy_dev->irq;
+-			cs->hw.niccy.cfg_reg = pci_resource_start(niccy_dev, 0);
+-			if (!cs->hw.niccy.cfg_reg) {
+-				printk(KERN_WARNING
+-				       "Niccy: No IO-Adr for PCI cfg found\n");
+-				return 0;
+-			}
+-			pci_ioaddr = pci_resource_start(niccy_dev, 1);
+-			if (!pci_ioaddr) {
+-				printk(KERN_WARNING
+-				       "Niccy: No IO-Adr for PCI card found\n");
+-				return 0;
+-			}
+-			cs->subtyp = NICCY_PCI;
+-		} else {
+-			printk(KERN_WARNING "Niccy: No PCI card found\n");
+-			return 0;
+-		}
+-		cs->irq_flags |= IRQF_SHARED;
+-		cs->hw.niccy.isac = pci_ioaddr + ISAC_PCI_DATA;
+-		cs->hw.niccy.isac_ale = pci_ioaddr + ISAC_PCI_ADDR;
+-		cs->hw.niccy.hscx = pci_ioaddr + HSCX_PCI_DATA;
+-		cs->hw.niccy.hscx_ale = pci_ioaddr + HSCX_PCI_ADDR;
+-		if (!request_region(cs->hw.niccy.isac, 4, "niccy")) {
+-			printk(KERN_WARNING
+-			       "HiSax: %s data port %x-%x already in use\n",
+-			       CardType[card->typ],
+-			       cs->hw.niccy.isac, cs->hw.niccy.isac + 4);
+-			return 0;
+-		}
+-		if (!request_region(cs->hw.niccy.cfg_reg, 0x40, "niccy pci")) {
+-			printk(KERN_WARNING
+-			       "HiSax: %s pci port %x-%x already in use\n",
+-			       CardType[card->typ],
+-			       cs->hw.niccy.cfg_reg,
+-			       cs->hw.niccy.cfg_reg + 0x40);
+-			release_region(cs->hw.niccy.isac, 4);
+-			return 0;
+-		}
+-#else
+-		printk(KERN_WARNING "Niccy: io0 0 and NO_PCI_BIOS\n");
+-		printk(KERN_WARNING "Niccy: unable to config NICCY PCI\n");
+-		return 0;
+-#endif				/* CONFIG_PCI */
+-	}
++
++	WARN_ON(cs->typ != ISDN_CTYPE_NICCY);
++
+ 	printk(KERN_INFO "HiSax: %s %s config irq:%d data:0x%X ale:0x%X\n",
+-		CardType[cs->typ], (cs->subtyp == 1) ? "PnP" : "PCI",
++		"niccy", (cs->subtyp == 1) ? "PnP" : "PCI",
+ 		cs->irq, cs->hw.niccy.isac, cs->hw.niccy.isac_ale);
+ 	setup_isac(cs);
+ 	cs->readisac = &ReadISAC;
+@@ -380,3 +264,315 @@ int __devinit setup_niccy(struct IsdnCard *card)
+ 	}
+ 	return 1;
+ }
++
++#ifdef CONFIG_ISA
++
++static int __devinit niccy_isa_setup(struct IsdnCard *card)
++{
++	struct IsdnCardState *cs = card->cs;
++
++	cs->hw.niccy.isac = card->para[1] + ISAC_PNP;
++	cs->hw.niccy.hscx = card->para[1] + HSCX_PNP;
++	cs->hw.niccy.isac_ale = card->para[2] + ISAC_PNP;
++	cs->hw.niccy.hscx_ale = card->para[2] + HSCX_PNP;
++	cs->hw.niccy.cfg_reg = 0;
++	cs->subtyp = NICCY_PNP;
++	cs->irq = card->para[0];
++	if (!request_region(cs->hw.niccy.isac, 2, "niccy data")) {
++		printk(KERN_WARNING "HiSax: %s data port %x-%x "
++			"already in use\n", "niccy",
++			cs->hw.niccy.isac, cs->hw.niccy.isac + 1);
++		return 0;
++	}
++	if (!request_region(cs->hw.niccy.isac_ale, 2, "niccy addr")) {
++		printk(KERN_WARNING "HiSax: %s address port %x-%x "
++			"already in use\n", "niccy",
++			cs->hw.niccy.isac_ale,
++			cs->hw.niccy.isac_ale + 1);
++		release_region(cs->hw.niccy.isac, 2);
++		return 0;
++	}
++
++	return setup_niccy(card);
++}
++
++static int __devinit niccy_isa_init_one(struct device *dev, unsigned int id)
++{
++	struct IsdnCard icard = { ISDN_CTYPE_NICCY, };
++	int cardnr;
++
++	icard.para[0] = niccy_irq;
++	icard.para[1] = niccy_base0;
++	icard.para[2] = niccy_base1;
++	if (!niccy_protocol)
++		icard.protocol = DEFAULT_PROTO;
++	else
++		icard.protocol = niccy_protocol;
++
++	cardnr = hisax_init_hotplug(&icard, niccy_isa_setup);
++	if (cardnr < 0)
++		return -ENODEV;
++	
++	dev_set_drvdata(dev, (void *)(unsigned long) cardnr);
++	return 0;
++}
++
++static int __devexit niccy_isa_remove_one(struct device *dev, unsigned int id)
++{
++	int cardnr = (unsigned long) dev_get_drvdata(dev);
++
++	HiSax_closecard(cardnr);
++	return 0;
++}
++
++static struct isa_driver niccy_isa_driver = {
++	.probe		= niccy_isa_init_one,
++	.remove		= __devexit_p(niccy_isa_remove_one),
++	.driver = {
++		.owner	= THIS_MODULE,
++		.name	= "niccy_pci",
++	},
++};
++
++#ifdef CONFIG_PNP
++
++static int __devinit niccy_pnp_setup(struct IsdnCard *card)
++{
++	struct pnp_dev *pnp_d = (void *) card->para[0];
++	int err;
++
++	pnp_disable_dev(pnp_d);
++	err = pnp_activate_dev(pnp_d);
++	if (err < 0) {
++		printk(KERN_WARNING "%s: pnp_activate_dev "
++			"ret(%d)\n", __FUNCTION__, err);
++		return 0;
++	}
++	card->para[1] = pnp_port_start(pnp_d, 0);
++	card->para[2] = pnp_port_start(pnp_d, 1);
++	card->para[0] = pnp_irq(pnp_d, 0);
++	if (!card->para[0] || !card->para[1] ||
++			!card->para[2]) {
++		printk(KERN_ERR "NiccyPnP:some resources are "
++			"missing %ld/%lx/%lx\n",
++			card->para[0], card->para[1],
++			card->para[2]);
++		pnp_disable_dev(pnp_d);
++		return 0;
++	}
++
++	return niccy_isa_setup(card);
++}
++
++static int __devinit niccy_pnp_init_one(struct pnp_dev *pdev,
++				       const struct pnp_device_id *dev_id)
++{
++	struct IsdnCard icard = { ISDN_CTYPE_NICCY, };
++	int cardnr;
++
++	icard.para[0] = (unsigned long) pdev;
++	if (!niccy_protocol)
++		icard.protocol = DEFAULT_PROTO;
++	else
++		icard.protocol = niccy_protocol;
++
++	cardnr = hisax_init_hotplug(&icard, niccy_pnp_setup);
++	if (cardnr < 0)
++		return -ENODEV;
++	
++	pnp_set_drvdata(pdev, (void *)(unsigned long) cardnr);
++	return 0;
++}
++
++static void __devexit niccy_pnp_remove_one(struct pnp_dev *pdev)
++{
++	int cardnr = (unsigned long) pnp_get_drvdata(pdev);
++
++	HiSax_closecard(cardnr);
++}
++
++static struct pnp_device_id niccy_pnp_table[] = {
++	{ .id = "SDA0150", },
++
++	{ .id = "" }		/* terminate list */
++};
++
++static struct pnp_driver niccy_pnp_driver = {
++	.name		= "niccy",
++	.id_table	= niccy_pnp_table,
++	.probe		= niccy_pnp_init_one,
++	.remove		= __devexit_p(niccy_pnp_remove_one),
++};
++#endif /* CONFIG_PNP */
++#endif /* CONFIG_ISA */
++
++#ifdef CONFIG_PCI
++
++static int __devinit niccy_pci_setup(struct IsdnCard *card)
++{
++	u_int pci_ioaddr;
++	struct pci_dev *niccy_dev = (void *) card->para[0];
++	struct IsdnCardState *cs = card->cs;
++
++	cs->subtyp = 0;
++	if (pci_enable_device(niccy_dev))
++		return 0;
++	/* get IRQ */
++	if (!niccy_dev->irq) {
++		printk(KERN_WARNING
++		       "Niccy: No IRQ for PCI card found\n");
++		return 0;
++	}
++	cs->irq = niccy_dev->irq;
++	cs->hw.niccy.cfg_reg = pci_resource_start(niccy_dev, 0);
++	if (!cs->hw.niccy.cfg_reg) {
++		printk(KERN_WARNING
++		       "Niccy: No IO-Adr for PCI cfg found\n");
++		return 0;
++	}
++	pci_ioaddr = pci_resource_start(niccy_dev, 1);
++	if (!pci_ioaddr) {
++		printk(KERN_WARNING
++		       "Niccy: No IO-Adr for PCI card found\n");
++		return 0;
++	}
++	cs->subtyp = NICCY_PCI;
++	cs->irq_flags |= IRQF_SHARED;
++	cs->hw.niccy.isac = pci_ioaddr + ISAC_PCI_DATA;
++	cs->hw.niccy.isac_ale = pci_ioaddr + ISAC_PCI_ADDR;
++	cs->hw.niccy.hscx = pci_ioaddr + HSCX_PCI_DATA;
++	cs->hw.niccy.hscx_ale = pci_ioaddr + HSCX_PCI_ADDR;
++	if (!request_region(cs->hw.niccy.isac, 4, "niccy")) {
++		printk(KERN_WARNING
++		       "HiSax: %s data port %x-%x already in use\n",
++		       "niccy",
++		       cs->hw.niccy.isac, cs->hw.niccy.isac + 4);
++		return 0;
++	}
++	if (!request_region(cs->hw.niccy.cfg_reg, 0x40, "niccy pci")) {
++		printk(KERN_WARNING
++		       "HiSax: %s pci port %x-%x already in use\n",
++		       "niccy",
++		       cs->hw.niccy.cfg_reg,
++		       cs->hw.niccy.cfg_reg + 0x40);
++		release_region(cs->hw.niccy.isac, 4);
++		return 0;
++	}
++
++	return setup_niccy(card);
++}
++
++static int __devinit niccy_pci_init_one(struct pci_dev *pdev,
++				      const struct pci_device_id *ent)
++{
++	struct IsdnCard icard = { ISDN_CTYPE_NICCY, };
++	int cardnr;
++
++	icard.para[0] = (unsigned long) pdev;
++	if (!niccy_protocol)
++		icard.protocol = DEFAULT_PROTO;
++	else
++		icard.protocol = niccy_protocol;
++
++	cardnr = hisax_init_hotplug(&icard, niccy_pci_setup);
++	if (cardnr < 0)
++		return -ENODEV;
++	
++	pci_set_drvdata(pdev, (void *)(unsigned long) cardnr);
++	return 0;
++}
++
++static struct pci_device_id niccy_pci_table[] = {
++	{ PCI_VDEVICE(SATSAGEM, PCI_DEVICE_ID_SATSAGEM_NICCY) },
++
++	{ }		/* terminate list */
++};
++
++static struct pci_driver niccy_pci_driver = {
++	.name		= "niccy",
++	.id_table	= niccy_pci_table,
++	.probe		= niccy_pci_init_one,
++	.remove		= hisax_pci_remove_one,
++};
++
++#endif /* CONFIG_PCI */
++
++static int __init niccy_mod_init(void)
++{
++	int rc = 0;
++
++#ifdef CONFIG_ISA
++	if (niccy_irq && niccy_base0 && niccy_base1) {
++		rc = isa_register_driver(&niccy_isa_driver, 1);
++		if (rc)
++			return rc;
++	}
++#ifdef CONFIG_PNP
++	else {
++		rc = pnp_register_driver(&niccy_pnp_driver);
++		if (rc)
++			return rc;
++	}
++#endif
++#endif /* CONFIG_ISA */
++
++#ifdef CONFIG_PCI
++	rc = pci_register_driver(&niccy_pci_driver);
++	if (rc)
++		goto err_out_isa;
++#endif /* CONFIG_PCI */
++
++	return 0;
++
++#ifdef CONFIG_PCI
++err_out_isa:
++
++#ifdef CONFIG_ISA
++	if (niccy_irq && niccy_base0 && niccy_base1)
++		isa_unregister_driver(&niccy_isa_driver);
++#ifdef CONFIG_PNP
++	else
++		pnp_unregister_driver(&niccy_pnp_driver);
++#endif /* CONFIG_PNP */
++#endif /* CONFIG_ISA */
++
++	return rc;
++#endif /* CONFIG_PCI */
++}
++
++static void __exit niccy_mod_exit(void)
++{
++#ifdef CONFIG_PCI
++	pci_unregister_driver(&niccy_pci_driver);
++#endif /* CONFIG_PCI */
++
++#ifdef CONFIG_ISA
++	if (niccy_irq && niccy_base0 && niccy_base1)
++		isa_unregister_driver(&niccy_isa_driver);
++#ifdef CONFIG_PNP
++	else
++		pnp_unregister_driver(&niccy_pnp_driver);
++#endif /* CONFIG_PNP */
++#endif /* CONFIG_ISA */
++}
++
++module_init(niccy_mod_init);
++module_exit(niccy_mod_exit);
++
++#ifdef CONFIG_ISA
++module_param_named(irq, niccy_irq, int, 0444);
++MODULE_PARM_DESC(irq, "ISA IRQ.  Zero disables ISA support (default).");
++
++module_param_named(base0, niccy_base0, int, 0444);
++MODULE_PARM_DESC(base0, "ISA I/O base #0.  Zero disables ISA support (default).");
++
++module_param_named(base1, niccy_base1, int, 0444);
++MODULE_PARM_DESC(base1, "ISA I/O base #1.  Zero disables ISA support (default).");
++#endif /* CONFIG_ISA */
++
++module_param_named(protocol, niccy_protocol, int, 0444);
++MODULE_PARM_DESC(protocol, "Values 0 (default) through 4. See ISDN_PTYPE_xxx in linux/isdnif.h");
++
++MODULE_DEVICE_TABLE(pci, niccy_pci_table);
++MODULE_DESCRIPTION("ISDN HiSax Niccy PCI/PNP driver");
++MODULE_LICENSE("GPL");
