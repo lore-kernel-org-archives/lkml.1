@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755731AbXHBOUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbXHBOZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755731AbXHBOUn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbXHBOUg
+	id S1755980AbXHBOZc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXHBOZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:20:36 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50763 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753525AbXHBOUf (ORCPT
+	Thu, 2 Aug 2007 10:25:22 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:52302
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbXHBOZV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:20:35 -0400
-Date: Thu, 2 Aug 2007 10:20:29 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-cc: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.23-rc1-mm2
-In-Reply-To: <200708021147.33887.m.kozlowski@tuxland.pl>
-Message-ID: <Pine.LNX.4.44L0.0708021019400.3611-100000@iolanthe.rowland.org>
+	Thu, 2 Aug 2007 10:25:21 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH] Merge the Sonics Silicon Backplane subsystem
+Date: Thu, 2 Aug 2007 16:24:58 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel <linux-kernel@vger.kernel.org>,
+       bcm43xx-dev@lists.berlios.de, netdev@vger.kernel.org,
+       linux-wireless@vger.kernel.org, Gary Zambrano <zambrano@broadcom.com>
+References: <200707271857.24162.mb@bu3sch.de> <Pine.LNX.4.64.0708021557280.5150@anakin>
+In-Reply-To: <Pine.LNX.4.64.0708021557280.5150@anakin>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708021624.59701.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, Mariusz Kozlowski wrote:
-
-> > > >  =======================
-> > > > uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
-> > 
-> > Mariusz,
-> > 
-> > I guess the patch below (which I have just added to my tree) fixes that, 
-> > right? Thanks.
+On Thursday 02 August 2007, Geert Uytterhoeven wrote:
+> On Fri, 27 Jul 2007, Michael Buesch wrote:
+> > The Sonics Silicon Backplane is a mini-bus used on
+> > various Broadcom chips and embedded devices.
+> > Devices using the SSB include b44, bcm43xx and various
+> > Broadcom based wireless routers.
+> > A b44 and bcm43xx port and a SSB based OHCI driver is available.
 > 
-> Yes - that's correct. This patch fixes the bug. Thanks.
+> > --- a/drivers/Kconfig
+> > +++ b/drivers/Kconfig
+> > @@ -58,6 +58,8 @@ source "drivers/power/Kconfig"
+> >  
+> >  source "drivers/hwmon/Kconfig"
+> >  
+> > +source "drivers/ssb/Kconfig"
+> > +
+> >  source "drivers/mfd/Kconfig"
+> >  
+> >  source "drivers/media/Kconfig"
+> 
+> > --- /dev/null
+> > +++ b/drivers/ssb/Kconfig
+> > @@ -0,0 +1,92 @@
+> > +menu "Sonics Silicon Backplane"
+> > +
+> > +config SSB
+> > +	tristate "Sonics Silicon Backplane support"
+> > +	depends on EXPERIMENTAL
+> 
+> Hence this will show up on all platforms?
 
-Does it also fix the "dma_pool_free" error?
-
-Alan Stern
-
+So?
