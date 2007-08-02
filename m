@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbXHBJp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbXHBJrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbXHBJp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 05:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXHBJpU
+	id S1754578AbXHBJrq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 05:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbXHBJri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 05:45:20 -0400
-Received: from ns2.suse.de ([195.135.220.15]:51155 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752560AbXHBJpT convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 05:45:19 -0400
-From: Adrian =?utf-8?q?Schr=C3=B6ter?= <adrian@suse.de>
-Organization: SUSE Linux Products GmbH
-To: trenn@suse.de
-Subject: Re: 2.6.22 regression: thermal trip points
-Date: Thu, 2 Aug 2007 11:45:08 +0200
-User-Agent: KMail/1.9.7
-Cc: Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, pavel@ucw.cz, mjg59@srcf.ucam.org,
-       lenb@kernel.org, "Zhang, Rui" <rui.zhang@intel.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>
-References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de>
-In-Reply-To: <1186047747.18821.450.camel@queen.suse.de>
+	Thu, 2 Aug 2007 05:47:38 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:2224 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752148AbXHBJrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 05:47:37 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Jiri Kosina <jikos@jikos.cz>
+Subject: Re: 2.6.23-rc1-mm2
+Date: Thu, 2 Aug 2007 11:47:33 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <20070801011323.6e8d8259.akpm@linux-foundation.org> <Pine.LNX.4.64.0708011221430.26230@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0708011221430.26230@twin.jikos.cz>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708021145.09377.adrian@suse.de>
+Message-Id: <200708021147.33887.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 August 2007 11:42:27 wrote Thomas Renninger:
-> On Thu, 2007-08-02 at 10:40 +0200, Knut Petersen wrote:
-> > Hi everybody!
-> >
-> > Kernel 2.6.22 decreases performance by about 50% on my system.
-> > No, I do not like that. The reason is a broken BIOS, granted, but there
-> > was a perfect workaround in the kernel that has been dropped.
-> >
-> > mainboard: AOpen i915GMm-hfs, AWARD BIOS
-> > cpu: Pentium-M 750 (0.8 to 1.86 MHz)
-> > openSuSE 10.2 with kernel 2.6.22.1
->
-> Is this a DELL laptop that gets throttled by 75% to throttling state 6
-> if 60 degrees are exceeded?
-> Adrian has such a machine..., no idea what is going on with that one,
-> but only workaround to get any use out of this machine is to override at
-> least the passive trip point.
+Hello,
 
-JFYI, there are plenty of these systems around, it was one out of four 
-standard Novell modells. I am mabye just the first one who uses Factory on 
-it, but expect more bugreports when 10.3 gets released ...
+> > > usb 2-1: USB disconnect, address 2
+> > > BUG: atomic counter underflow at:
+> > >  [<c010456a>] show_trace_log_lvl+0x1a/0x30
+> > >  [<c010508d>] show_trace+0x12/0x14
+> > >  [<c01051e0>] dump_stack+0x15/0x17
+> > >  [<c01418cf>] __free_pages+0x50/0x52
+> > >  [<c01418f0>] free_pages+0x1f/0x21
+> > >  [<c010783d>] dma_free_coherent+0x43/0x9c
+> > >  [<c0315067>] hcd_buffer_free+0x43/0x6a
+> > >  [<c030b2b4>] usb_buffer_free+0x23/0x29
+> > >  [<c0346db4>] hid_free_buffers+0x23/0x71
+> > >  [<c0346eb2>] hid_disconnect+0xb0/0xc8
+> > >  [<c0313676>] usb_unbind_interface+0x30/0x72
+> > >  [<c02c6df0>] __device_release_driver+0x6a/0x92
+> > >  [<c02c71c3>] device_release_driver+0x20/0x36
+> > >  [<c02c6736>] bus_remove_device+0x62/0x85
+> > >  [<c02c49f8>] device_del+0x16d/0x27c
+> > >  [<c0310f25>] usb_disable_device+0x7a/0xe2
+> > >  [<c030d0bc>] usb_disconnect+0x94/0xde
+> > >  [<c030e030>] hub_thread+0x2fe/0xc1b
+> > >  [<c0128aee>] kthread+0x36/0x58
+> > >  [<c0104233>] kernel_thread_helper+0x7/0x14
+> > >  =======================
+> > > uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b (bad dma)
+> 
+> Mariusz,
+> 
+> I guess the patch below (which I have just added to my tree) fixes that, 
+> right? Thanks.
 
-bye
-adrian
+Yes - that's correct. This patch fixes the bug. Thanks.
 
--- 
-
-Adrian Schroeter
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-email: adrian@suse.de
-
+	Mariusz
