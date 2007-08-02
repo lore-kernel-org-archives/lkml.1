@@ -1,63 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbXHBNa6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbXHBNer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbXHBNa6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 09:30:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbXHBNar
+	id S1756972AbXHBNer (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 09:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXHBNek
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 09:30:47 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:48292 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756756AbXHBNao (ORCPT
+	Thu, 2 Aug 2007 09:34:40 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:63293 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753384AbXHBNej (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 09:30:44 -0400
-Date: Thu, 2 Aug 2007 15:30:43 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-cc: Herbert Rosmanith <kernel@wildsau.enemy.org>, linux-kernel@vger.kernel.org
-Subject: Re: renaming kernel devices [was: VIA EPIA EK: strange eth dev
- numbering]
-In-Reply-To: <46B1D46D.7080609@msgid.tls.msk.ru>
-Message-ID: <Pine.LNX.4.64.0708021526310.24572@fbirervta.pbzchgretzou.qr>
-References: <200708021056.l72Au722008603@wildsau.enemy.org>
- <46B1BEB8.70104@msgid.tls.msk.ru> <Pine.LNX.4.64.0708021346300.24572@fbirervta.pbzchgretzou.qr>
- <46B1D46D.7080609@msgid.tls.msk.ru>
+	Thu, 2 Aug 2007 09:34:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
+        b=BYFh/NTT+nKSkJu1R63WRjcF7Mrd+K61wCfVtWrXrvVrNNLJM1ek53gNhyTt5jXjfMigRtGxY8Iovaypv096mABBVdt9/WtgKtOw6ezN/Kbrl+OFzQESIFxBeieSJxb59zMzYEAlKRP+Q4ne6048p7FqH0CJ3kMef+0FYLcYZPY=
+Message-ID: <3d8471ca0708020634u46fbdcbo16ba9de566efad73@mail.gmail.com>
+Date: Thu, 2 Aug 2007 15:34:36 +0200
+From: "Guillaume Chazarain" <guichaz@yahoo.fr>
+To: "Shailabh Nagar" <nagar@watson.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Google-Sender-Auth: 681fa18279df759b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-On Aug 2 2007 16:56, Michael Tokarev wrote:
->>> I already can see comments from udev/sysfs maintainers here: "naming
->>> is a policy which does not belong to kernel".  It's a bullshit, because
->>> kernel too has to use SOME way to name things,
->> 
->> (1) The kernel starts with ethX
->> (2) udev renames it to something else
->> (3) kernel uses new name too ("ni0: link down")
->
->And now tell me please how can I connect two messages from dmesg:
->
->eth0: Tigon3 [partno(BCM95721) rev 4201 PHY(5750)] (PCI Express) 10/100/1000Base-T Ethernet 00:14:5e:5d:18:26
->nic10: Link is up at 100 Mbps, full duplex.
+This patch adds all thread accounting stats for the global tgid stats.
+As a shameless plug, this fixes iotop -P (http://guichaz.free.fr/misc/iotop.py).
 
-Generally, the "link is xyz" message comes directly after loading the module,
-so it should be eth0 before udev gets a chance to rename it. Or maybe not -
-in which case, well, you're literally fubared, and your distro should put a
-"renamed A to B" into syslog.
+Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+---
 
->What I wanted to say (here with network devices, and with disk names
->and everything else) is -- as long as the device is here (plugged in
->but not yet unplugged), I want it to have the same "primary" name in
->kernel and in userspace, so that everything
+diff -r 22708012ca6e kernel/taskstats.c
+--- a/kernel/taskstats.c	Tue Jul 31 21:12:07 2007 -0700
++++ b/kernel/taskstats.c	Wed Aug 01 17:43:54 2007 +0200
+@@ -233,6 +233,7 @@ static int fill_tgid(pid_t tgid, struct
+ 		memset(stats, 0, sizeof(*stats));
 
-Oh I think it already has a "primary name" today --
+ 	tsk = first;
++	bacct_add_tsk(stats, first);
+ 	do {
+ 		if (tsk->exit_state)
+ 			continue;
+@@ -246,6 +247,7 @@ static int fill_tgid(pid_t tgid, struct
 
-$ readlink /sys/class/net/eth0/device
-../../../../../devices/pci0000:00/0000:00:04.0
+ 		stats->nvcsw += tsk->nvcsw;
+ 		stats->nivcsw += tsk->nivcsw;
++		xacct_add_tsk(stats, tsk);
+ 	} while_each_thread(first, tsk);
 
-there is your primary name, and your secondary name is ethZ. :)
+ 	unlock_task_sighand(first, &flags);
+diff -r 22708012ca6e kernel/tsacct.c
+--- a/kernel/tsacct.c	Tue Jul 31 21:12:07 2007 -0700
++++ b/kernel/tsacct.c	Wed Aug 01 17:41:40 2007 +0200
+@@ -81,8 +81,8 @@ void xacct_add_tsk(struct taskstats *sta
+ 	struct mm_struct *mm;
 
-
-	Jan
--- 
+ 	/* convert pages-jiffies to Mbyte-usec */
+-	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+-	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
++	stats->coremem += jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
++	stats->virtmem += jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+ 	mm = get_task_mm(p);
+ 	if (mm) {
+ 		/* adjust to KB unit */
+@@ -90,18 +90,14 @@ void xacct_add_tsk(struct taskstats *sta
+ 		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
+ 		mmput(mm);
+ 	}
+-	stats->read_char	= p->rchar;
+-	stats->write_char	= p->wchar;
+-	stats->read_syscalls	= p->syscr;
+-	stats->write_syscalls	= p->syscw;
++	stats->read_char	+= p->rchar;
++	stats->write_char	+= p->wchar;
++	stats->read_syscalls	+= p->syscr;
++	stats->write_syscalls	+= p->syscw;
+ #ifdef CONFIG_TASK_IO_ACCOUNTING
+-	stats->read_bytes	= p->ioac.read_bytes;
+-	stats->write_bytes	= p->ioac.write_bytes;
+-	stats->cancelled_write_bytes = p->ioac.cancelled_write_bytes;
+-#else
+-	stats->read_bytes	= 0;
+-	stats->write_bytes	= 0;
+-	stats->cancelled_write_bytes = 0;
++	stats->read_bytes	+= p->ioac.read_bytes;
++	stats->write_bytes	+= p->ioac.write_bytes;
++	stats->cancelled_write_bytes += p->ioac.cancelled_write_bytes;
+ #endif
+ }
+ #undef KB
