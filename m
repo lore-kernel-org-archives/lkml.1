@@ -1,107 +1,585 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758156AbXHBMmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757423AbXHBMnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758156AbXHBMmf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 08:42:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757534AbXHBMmZ
+	id S1757423AbXHBMnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 08:43:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755395AbXHBMnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 08:42:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37317 "EHLO mx2.suse.de"
+	Thu, 2 Aug 2007 08:43:05 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:43145 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758055AbXHBMmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 08:42:23 -0400
-Subject: Re: 2.6.22 regression: thermal trip points
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Adrian =?ISO-8859-1?Q?Schr=F6ter?= <adrian@suse.de>,
-       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, pavel@ucw.cz, lenb@kernel.org,
-       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>
-In-Reply-To: <20070802115631.GA29735@srcf.ucam.org>
-References: <46B1988C.3090302@t-online.de>
-	 <1186047747.18821.450.camel@queen.suse.de>
-	 <200708021145.09377.adrian@suse.de>
-	 <1186048701.18821.459.camel@queen.suse.de>
-	 <20070802120221.5474e732@the-village.bc.nu>
-	 <20070802111327.GA29002@srcf.ucam.org>
-	 <1186055100.18821.494.camel@queen.suse.de>
-	 <20070802115631.GA29735@srcf.ucam.org>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Thu, 02 Aug 2007 14:42:19 +0200
-Message-Id: <1186058539.18821.523.camel@queen.suse.de>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+	id S1755458AbXHBMnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 08:43:03 -0400
+Date: Thu, 2 Aug 2007 08:43:01 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: kkeil@suse.de, isdn4linux@listserv.isdn4linux.de,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, surya.prabhakar@wipro.com
+Subject: [PATCH 2/4] diva: split setup into three smaller functions
+Message-ID: <20070802124301.GB29074@havoc.gtf.org>
+References: <20070724074653.GA14987@havoc.gtf.org> <20070802124200.GA29074@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802124200.GA29074@havoc.gtf.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 12:56 +0100, Matthew Garrett wrote:
-> On Thu, Aug 02, 2007 at 01:45:00PM +0200, Thomas Renninger wrote:
-> > On Thu, 2007-08-02 at 12:13 +0100, Matthew Garrett wrote:
-> > > I strongly suspect that the vast majority[1] of hardware that "needs" 
-> > > the trip points changing works perfectly well under Windows, so it's 
-> > > likely to be papering over bugs in the kernel. It'd be nice if we fixed 
-> > > those rather than encouraging people to poke stuff into /proc,
-> > Some arguments against that:
-> >   - You cannot tell a customer: Wait for the kernel in half a year.
-> >     This is the time it at least needs until a laptop got sold, the
-> >     problem is found, a patch is written and checked in and finally
-> >     hits the distribution.
-> 
-> We have to do so frequently. New hardware often exposes bugs in the 
-> kernel.
-And often we can provide a boot param or whatever, that makes it at
-least useable.
-> 
-> >   - You can also not backport fixes as ACPI patches mostly have the
-> >     potential to break other machines/BIOSes
-> >   - There also exist the policy to not fix up/workaround totally broken
-> >     AML BIOS implementations
-> 
-> The policy has been to attempt to be bug-compatible with Windows 
-> whenever possible for some time now.
-*whenever possible*
-> 
-> >   - We do not need to and never will be able to copy or do the same
-> >     Windows is doing
-> 
-> Given that many vendors still only test against Windows, that's exactly 
-> what we need to do.
-But we cannot (copy all windows (mis-)behavior).
-> 
-> > > especially when doing so is guaranteed to break in really confusing ways 
-> > > with a lot of hardware. The firmware can reset the trip points at 
-> > > essentially arbitrary times and is well within its rights to expect the 
-> > > OS to actually pay attention to them.
-> > What the hell is so wrong with:
-> > 
-> > Let the user override the trip points. If he does so, ignore
-> > thermal trip point updates from BIOS. Don't care for hysteresis
-> > BIOS implementations (these are the BIOS trip point updates).
-> 
-> No, that's not the only reason for notifications. Alteration in hardware 
-> state may also force a recalculation of trip point (adding a battery to 
-> a bay rather than a DVD drive may require the platform to be kept at a 
-> lower temperature)
-"I've seen no evidence that this happens...", but I see the point.
-> > If user changes them, it's his fault, he doesn't need to...
-> > Make sure that trip points can only be lowered, compared to the
-> > initially fetched one from BIOS.
-> 
-> Surely people want this functionality so that they can raise trip 
-> points?
-For Adrian it would be enough to be able to lower them.
-Also being able to define a passive trip point (even if not provided by
-BIOS) could help a lot machines.
 
-What about at least:
-  - Be able to override passive cooling trip point
-  - If BIOS does not provide one, let user be able to define it
-This should already make a lot people happy.
+This patch was committed to the 'isdn-pci' branch of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
 
-    Thomas
+commit 5bc15a177ea173e02b8f43f67d524c781eb8f758
+Author: Jeff Garzik <jeff@garzik.org>
+Date:   Thu Aug 2 05:45:30 2007 -0400
 
+    [ISDN] HiSax diva: split setup into three smaller functions
 
+ drivers/isdn/hisax/diva.c |  512 ++++++++++++++++++++++++++--------------------
+ 1 file changed, 293 insertions(+), 219 deletions(-)
+
+5bc15a177ea173e02b8f43f67d524c781eb8f758
+diff --git a/drivers/isdn/hisax/diva.c b/drivers/isdn/hisax/diva.c
+index 6eebeb4..6fc59ec 100644
+--- a/drivers/isdn/hisax/diva.c
++++ b/drivers/isdn/hisax/diva.c
+@@ -25,8 +25,6 @@
+ #include <linux/pci.h>
+ #include <linux/isapnp.h>
+ 
+-extern const char *CardType[];
+-
+ static const char *Diva_revision = "$Revision: 1.33.2.6 $";
+ 
+ #define byteout(addr,val) outb(val,addr)
+@@ -906,225 +904,15 @@ Diva_card_msg(struct IsdnCardState *cs, int mt, void *arg)
+ 	return(0);
+ }
+ 
+-static struct pci_dev *dev_diva __devinitdata = NULL;
+-static struct pci_dev *dev_diva_u __devinitdata = NULL;
+-static struct pci_dev *dev_diva201 __devinitdata = NULL;
+-static struct pci_dev *dev_diva202 __devinitdata = NULL;
+-
+-#ifdef __ISAPNP__
+-static struct isapnp_device_id diva_ids[] __devinitdata = {
+-	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
+-	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51), 
+-	  (unsigned long) "Diva picola" },
+-	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
+-	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x51), 
+-	  (unsigned long) "Diva picola" },
+-	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
+-	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71), 
+-	  (unsigned long) "Diva 2.0" },
+-	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
+-	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x71), 
+-	  (unsigned long) "Diva 2.0" },
+-	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
+-	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1), 
+-	  (unsigned long) "Diva 2.01" },
+-	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
+-	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0xA1), 
+-	  (unsigned long) "Diva 2.01" },
+-	{ 0, }
+-};
+-
+-static struct isapnp_device_id *ipid __devinitdata = &diva_ids[0];
+-static struct pnp_card *pnp_c __devinitdata = NULL;
+-#endif
+-
+-
+-int __devinit
+-setup_diva(struct IsdnCard *card)
++static int __devinit setup_diva_common(struct IsdnCardState *cs)
+ {
+-	int bytecnt = 8;
++	int bytecnt;
+ 	u_char val;
+-	struct IsdnCardState *cs = card->cs;
+-	char tmp[64];
+ 
+-	strcpy(tmp, Diva_revision);
+-	printk(KERN_INFO "HiSax: Eicon.Diehl Diva driver Rev. %s\n", HiSax_getrev(tmp));
+-	if (cs->typ != ISDN_CTYPE_DIEHLDIVA)
+-		return(0);
+-	cs->hw.diva.status = 0;
+-	if (card->para[1]) {
+-		cs->hw.diva.ctrl_reg = 0;
+-		cs->hw.diva.cfg_reg = card->para[1];
+-		val = readreg(cs->hw.diva.cfg_reg + DIVA_IPAC_ADR,
+-			cs->hw.diva.cfg_reg + DIVA_IPAC_DATA, IPAC_ID);
+-		printk(KERN_INFO "Diva: IPAC version %x\n", val);
+-		if ((val == 1) || (val==2)) {
+-			cs->subtyp = DIVA_IPAC_ISA;
+-			cs->hw.diva.ctrl = 0;
+-			cs->hw.diva.isac = card->para[1] + DIVA_IPAC_DATA;
+-			cs->hw.diva.hscx = card->para[1] + DIVA_IPAC_DATA;
+-			cs->hw.diva.isac_adr = card->para[1] + DIVA_IPAC_ADR;
+-			cs->hw.diva.hscx_adr = card->para[1] + DIVA_IPAC_ADR;
+-			test_and_set_bit(HW_IPAC, &cs->HW_Flags);
+-		} else {
+-			cs->subtyp = DIVA_ISA;
+-			cs->hw.diva.ctrl = card->para[1] + DIVA_ISA_CTRL;
+-			cs->hw.diva.isac = card->para[1] + DIVA_ISA_ISAC_DATA;
+-			cs->hw.diva.hscx = card->para[1] + DIVA_HSCX_DATA;
+-			cs->hw.diva.isac_adr = card->para[1] + DIVA_ISA_ISAC_ADR;
+-			cs->hw.diva.hscx_adr = card->para[1] + DIVA_HSCX_ADR;
+-		}
+-		cs->irq = card->para[0];
+-	} else {
+-#ifdef __ISAPNP__
+-		if (isapnp_present()) {
+-			struct pnp_dev *pnp_d;
+-			while(ipid->card_vendor) {
+-				if ((pnp_c = pnp_find_card(ipid->card_vendor,
+-					ipid->card_device, pnp_c))) {
+-					pnp_d = NULL;
+-					if ((pnp_d = pnp_find_dev(pnp_c,
+-						ipid->vendor, ipid->function, pnp_d))) {
+-						int err;
+-
+-						printk(KERN_INFO "HiSax: %s detected\n",
+-							(char *)ipid->driver_data);
+-						pnp_disable_dev(pnp_d);
+-						err = pnp_activate_dev(pnp_d);
+-						if (err<0) {
+-							printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
+-								__FUNCTION__, err);
+-							return(0);
+-						}
+-						card->para[1] = pnp_port_start(pnp_d, 0);
+-						card->para[0] = pnp_irq(pnp_d, 0);
+-						if (!card->para[0] || !card->para[1]) {
+-							printk(KERN_ERR "Diva PnP:some resources are missing %ld/%lx\n",
+-								card->para[0], card->para[1]);
+-							pnp_disable_dev(pnp_d); 
+-							return(0);
+-						}
+-						cs->hw.diva.cfg_reg  = card->para[1];
+-						cs->irq = card->para[0];
+-						if (ipid->function == ISAPNP_FUNCTION(0xA1)) {
+-							cs->subtyp = DIVA_IPAC_ISA;
+-							cs->hw.diva.ctrl = 0;
+-							cs->hw.diva.isac =
+-								card->para[1] + DIVA_IPAC_DATA;
+-							cs->hw.diva.hscx =
+-								card->para[1] + DIVA_IPAC_DATA;
+-							cs->hw.diva.isac_adr =
+-								card->para[1] + DIVA_IPAC_ADR;
+-							cs->hw.diva.hscx_adr =
+-								card->para[1] + DIVA_IPAC_ADR;
+-							test_and_set_bit(HW_IPAC, &cs->HW_Flags);
+-						} else {
+-							cs->subtyp = DIVA_ISA;
+-							cs->hw.diva.ctrl =
+-								card->para[1] + DIVA_ISA_CTRL;
+-							cs->hw.diva.isac =
+-								card->para[1] + DIVA_ISA_ISAC_DATA;
+-							cs->hw.diva.hscx =
+-								card->para[1] + DIVA_HSCX_DATA;
+-							cs->hw.diva.isac_adr =
+-								card->para[1] + DIVA_ISA_ISAC_ADR;
+-							cs->hw.diva.hscx_adr =
+-								card->para[1] + DIVA_HSCX_ADR;
+-						}
+-						goto ready;
+-					} else {
+-						printk(KERN_ERR "Diva PnP: PnP error card found, no device\n");
+-						return(0);
+-					}
+-				}
+-				ipid++;
+-				pnp_c=NULL;
+-			} 
+-			if (!ipid->card_vendor) {
+-				printk(KERN_INFO "Diva PnP: no ISAPnP card found\n");
+-			}
+-		}
+-#endif
+-#ifdef CONFIG_PCI
+-		cs->subtyp = 0;
+-		if ((dev_diva = pci_find_device(PCI_VENDOR_ID_EICON,
+-			PCI_DEVICE_ID_EICON_DIVA20, dev_diva))) {
+-			if (pci_enable_device(dev_diva))
+-				return(0);
+-			cs->subtyp = DIVA_PCI;
+-			cs->irq = dev_diva->irq;
+-			cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
+-		} else if ((dev_diva_u = pci_find_device(PCI_VENDOR_ID_EICON,
+-			PCI_DEVICE_ID_EICON_DIVA20_U, dev_diva_u))) {
+-			if (pci_enable_device(dev_diva_u))
+-				return(0);
+-			cs->subtyp = DIVA_PCI;
+-			cs->irq = dev_diva_u->irq;
+-			cs->hw.diva.cfg_reg = pci_resource_start(dev_diva_u, 2);
+-		} else if ((dev_diva201 = pci_find_device(PCI_VENDOR_ID_EICON,
+-			PCI_DEVICE_ID_EICON_DIVA201, dev_diva201))) {
+-			if (pci_enable_device(dev_diva201))
+-				return(0);
+-			cs->subtyp = DIVA_IPAC_PCI;
+-			cs->irq = dev_diva201->irq;
+-			cs->hw.diva.pci_cfg =
+-				(ulong) ioremap(pci_resource_start(dev_diva201, 0), 4096);
+-			cs->hw.diva.cfg_reg =
+-				(ulong) ioremap(pci_resource_start(dev_diva201, 1), 4096);
+-		} else if ((dev_diva202 = pci_find_device(PCI_VENDOR_ID_EICON,
+-			PCI_DEVICE_ID_EICON_DIVA202, dev_diva202))) {
+-			if (pci_enable_device(dev_diva202))
+-				return(0);
+-			cs->subtyp = DIVA_IPACX_PCI;
+-			cs->irq = dev_diva202->irq;
+-			cs->hw.diva.pci_cfg =
+-				(ulong) ioremap(pci_resource_start(dev_diva202, 0), 4096);
+-			cs->hw.diva.cfg_reg =
+-				(ulong) ioremap(pci_resource_start(dev_diva202, 1), 4096);
+-		} else {
+-			printk(KERN_WARNING "Diva: No PCI card found\n");
+-			return(0);
+-		}
+-
+-		if (!cs->irq) {
+-			printk(KERN_WARNING "Diva: No IRQ for PCI card found\n");
+-			iounmap_diva(cs);
+-			return(0);
+-		}
+-
+-		if (!cs->hw.diva.cfg_reg) {
+-			printk(KERN_WARNING "Diva: No IO-Adr for PCI card found\n");
+-			iounmap_diva(cs);
+-			return(0);
+-		}
+-		cs->irq_flags |= IRQF_SHARED;
+-#else
+-		printk(KERN_WARNING "Diva: cfgreg 0 and NO_PCI_BIOS\n");
+-		printk(KERN_WARNING "Diva: unable to config DIVA PCI\n");
+-		return (0);
+-#endif /* CONFIG_PCI */
+-		if ((cs->subtyp == DIVA_IPAC_PCI) ||
+-		    (cs->subtyp == DIVA_IPACX_PCI)   ) {
+-			cs->hw.diva.ctrl = 0;
+-			cs->hw.diva.isac = 0;
+-			cs->hw.diva.hscx = 0;
+-			cs->hw.diva.isac_adr = 0;
+-			cs->hw.diva.hscx_adr = 0;
+-			test_and_set_bit(HW_IPAC, &cs->HW_Flags);
+-			bytecnt = 0;
+-		} else {
+-			cs->hw.diva.ctrl = cs->hw.diva.cfg_reg + DIVA_PCI_CTRL;
+-			cs->hw.diva.isac = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_DATA;
+-			cs->hw.diva.hscx = cs->hw.diva.cfg_reg + DIVA_HSCX_DATA;
+-			cs->hw.diva.isac_adr = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_ADR;
+-			cs->hw.diva.hscx_adr = cs->hw.diva.cfg_reg + DIVA_HSCX_ADR;
+-			bytecnt = 32;
+-		}
+-	}
+-
+-#ifdef __ISAPNP__
+-ready:
+-#endif
++	if ((cs->subtyp == DIVA_ISA) || (cs->subtyp == DIVA_IPAC_ISA))
++		bytecnt = 8;
++	else
++		bytecnt = 32;
+ 
+ 	printk(KERN_INFO
+ 		"Diva: %s card configured at %#lx IRQ %d\n",
+@@ -1145,7 +933,7 @@ ready:
+ 		if (!request_region(cs->hw.diva.cfg_reg, bytecnt, "diva isdn")) {
+ 			printk(KERN_WARNING
+ 			       "HiSax: %s config port %lx-%lx already in use\n",
+-			       CardType[card->typ],
++			       "diva",
+ 			       cs->hw.diva.cfg_reg,
+ 			       cs->hw.diva.cfg_reg + bytecnt);
+ 			iounmap_diva(cs);
+@@ -1206,3 +994,289 @@ ready:
+ 	}
+ 	return (1);
+ }
++
++#ifdef CONFIG_ISA
++
++static int __devinit setup_diva_isa(struct IsdnCard *card)
++{
++	struct IsdnCardState *cs = card->cs;
++
++	if (!card->para[1])
++		return (-1);	/* card not found; continue search */
++
++	cs->hw.diva.ctrl_reg = 0;
++	cs->hw.diva.cfg_reg = card->para[1];
++	val = readreg(cs->hw.diva.cfg_reg + DIVA_IPAC_ADR,
++		cs->hw.diva.cfg_reg + DIVA_IPAC_DATA, IPAC_ID);
++	printk(KERN_INFO "Diva: IPAC version %x\n", val);
++	if ((val == 1) || (val==2)) {
++		cs->subtyp = DIVA_IPAC_ISA;
++		cs->hw.diva.ctrl = 0;
++		cs->hw.diva.isac = card->para[1] + DIVA_IPAC_DATA;
++		cs->hw.diva.hscx = card->para[1] + DIVA_IPAC_DATA;
++		cs->hw.diva.isac_adr = card->para[1] + DIVA_IPAC_ADR;
++		cs->hw.diva.hscx_adr = card->para[1] + DIVA_IPAC_ADR;
++		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
++	} else {
++		cs->subtyp = DIVA_ISA;
++		cs->hw.diva.ctrl = card->para[1] + DIVA_ISA_CTRL;
++		cs->hw.diva.isac = card->para[1] + DIVA_ISA_ISAC_DATA;
++		cs->hw.diva.hscx = card->para[1] + DIVA_HSCX_DATA;
++		cs->hw.diva.isac_adr = card->para[1] + DIVA_ISA_ISAC_ADR;
++		cs->hw.diva.hscx_adr = card->para[1] + DIVA_HSCX_ADR;
++	}
++	cs->irq = card->para[0];
++
++	return (1);		/* card found */
++}
++
++#else	/* if !CONFIG_ISA */
++
++static int __devinit setup_diva_isa(struct IsdnCard *card)
++{
++	return (-1);	/* card not found; continue search */
++}
++
++#endif	/* CONFIG_ISA */
++
++#ifdef __ISAPNP__
++static struct isapnp_device_id diva_ids[] __devinitdata = {
++	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
++	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51), 
++	  (unsigned long) "Diva picola" },
++	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x51),
++	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x51), 
++	  (unsigned long) "Diva picola" },
++	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
++	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71), 
++	  (unsigned long) "Diva 2.0" },
++	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0x71),
++	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0x71), 
++	  (unsigned long) "Diva 2.0" },
++	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
++	  ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1), 
++	  (unsigned long) "Diva 2.01" },
++	{ ISAPNP_VENDOR('G', 'D', 'I'), ISAPNP_FUNCTION(0xA1),
++	  ISAPNP_VENDOR('E', 'I', 'C'), ISAPNP_FUNCTION(0xA1), 
++	  (unsigned long) "Diva 2.01" },
++	{ 0, }
++};
++
++static struct isapnp_device_id *ipid __devinitdata = &diva_ids[0];
++static struct pnp_card *pnp_c __devinitdata = NULL;
++
++static int __devinit setup_diva_isapnp(struct IsdnCard *card)
++{
++	struct IsdnCardState *cs = card->cs;
++	struct pnp_dev *pnp_d;
++
++	if (!isapnp_present())
++		return (-1);	/* card not found; continue search */
++
++	while(ipid->card_vendor) {
++		if ((pnp_c = pnp_find_card(ipid->card_vendor,
++			ipid->card_device, pnp_c))) {
++			pnp_d = NULL;
++			if ((pnp_d = pnp_find_dev(pnp_c,
++				ipid->vendor, ipid->function, pnp_d))) {
++				int err;
++
++				printk(KERN_INFO "HiSax: %s detected\n",
++					(char *)ipid->driver_data);
++				pnp_disable_dev(pnp_d);
++				err = pnp_activate_dev(pnp_d);
++				if (err<0) {
++					printk(KERN_WARNING "%s: pnp_activate_dev ret(%d)\n",
++						__FUNCTION__, err);
++					return(0);
++				}
++				card->para[1] = pnp_port_start(pnp_d, 0);
++				card->para[0] = pnp_irq(pnp_d, 0);
++				if (!card->para[0] || !card->para[1]) {
++					printk(KERN_ERR "Diva PnP:some resources are missing %ld/%lx\n",
++						card->para[0], card->para[1]);
++					pnp_disable_dev(pnp_d); 
++					return(0);
++				}
++				cs->hw.diva.cfg_reg  = card->para[1];
++				cs->irq = card->para[0];
++				if (ipid->function == ISAPNP_FUNCTION(0xA1)) {
++					cs->subtyp = DIVA_IPAC_ISA;
++					cs->hw.diva.ctrl = 0;
++					cs->hw.diva.isac =
++						card->para[1] + DIVA_IPAC_DATA;
++					cs->hw.diva.hscx =
++						card->para[1] + DIVA_IPAC_DATA;
++					cs->hw.diva.isac_adr =
++						card->para[1] + DIVA_IPAC_ADR;
++					cs->hw.diva.hscx_adr =
++						card->para[1] + DIVA_IPAC_ADR;
++					test_and_set_bit(HW_IPAC, &cs->HW_Flags);
++				} else {
++					cs->subtyp = DIVA_ISA;
++					cs->hw.diva.ctrl =
++						card->para[1] + DIVA_ISA_CTRL;
++					cs->hw.diva.isac =
++						card->para[1] + DIVA_ISA_ISAC_DATA;
++					cs->hw.diva.hscx =
++						card->para[1] + DIVA_HSCX_DATA;
++					cs->hw.diva.isac_adr =
++						card->para[1] + DIVA_ISA_ISAC_ADR;
++					cs->hw.diva.hscx_adr =
++						card->para[1] + DIVA_HSCX_ADR;
++				}
++				return (1);		/* card found */
++			} else {
++				printk(KERN_ERR "Diva PnP: PnP error card found, no device\n");
++				return(0);
++			}
++		}
++		ipid++;
++		pnp_c=NULL;
++	} 
++
++	return (-1);	/* card not found; continue search */
++}
++
++#else	/* if !ISAPNP */
++
++static int __devinit setup_diva_isapnp(struct IsdnCard *card)
++{
++	return (-1);	/* card not found; continue search */
++}
++
++#endif	/* ISAPNP */
++
++#ifdef CONFIG_PCI
++static struct pci_dev *dev_diva __devinitdata = NULL;
++static struct pci_dev *dev_diva_u __devinitdata = NULL;
++static struct pci_dev *dev_diva201 __devinitdata = NULL;
++static struct pci_dev *dev_diva202 __devinitdata = NULL;
++
++static int __devinit setup_diva_pci(struct IsdnCard *card)
++{
++	struct IsdnCardState *cs = card->cs;
++
++	cs->subtyp = 0;
++	if ((dev_diva = pci_find_device(PCI_VENDOR_ID_EICON,
++		PCI_DEVICE_ID_EICON_DIVA20, dev_diva))) {
++		if (pci_enable_device(dev_diva))
++			return(0);
++		cs->subtyp = DIVA_PCI;
++		cs->irq = dev_diva->irq;
++		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva, 2);
++	} else if ((dev_diva_u = pci_find_device(PCI_VENDOR_ID_EICON,
++		PCI_DEVICE_ID_EICON_DIVA20_U, dev_diva_u))) {
++		if (pci_enable_device(dev_diva_u))
++			return(0);
++		cs->subtyp = DIVA_PCI;
++		cs->irq = dev_diva_u->irq;
++		cs->hw.diva.cfg_reg = pci_resource_start(dev_diva_u, 2);
++	} else if ((dev_diva201 = pci_find_device(PCI_VENDOR_ID_EICON,
++		PCI_DEVICE_ID_EICON_DIVA201, dev_diva201))) {
++		if (pci_enable_device(dev_diva201))
++			return(0);
++		cs->subtyp = DIVA_IPAC_PCI;
++		cs->irq = dev_diva201->irq;
++		cs->hw.diva.pci_cfg =
++			(ulong) ioremap(pci_resource_start(dev_diva201, 0), 4096);
++		cs->hw.diva.cfg_reg =
++			(ulong) ioremap(pci_resource_start(dev_diva201, 1), 4096);
++	} else if ((dev_diva202 = pci_find_device(PCI_VENDOR_ID_EICON,
++		PCI_DEVICE_ID_EICON_DIVA202, dev_diva202))) {
++		if (pci_enable_device(dev_diva202))
++			return(0);
++		cs->subtyp = DIVA_IPACX_PCI;
++		cs->irq = dev_diva202->irq;
++		cs->hw.diva.pci_cfg =
++			(ulong) ioremap(pci_resource_start(dev_diva202, 0), 4096);
++		cs->hw.diva.cfg_reg =
++			(ulong) ioremap(pci_resource_start(dev_diva202, 1), 4096);
++	} else {
++		return (-1);	/* card not found; continue search */
++	}
++
++	if (!cs->irq) {
++		printk(KERN_WARNING "Diva: No IRQ for PCI card found\n");
++		iounmap_diva(cs);
++		return(0);
++	}
++
++	if (!cs->hw.diva.cfg_reg) {
++		printk(KERN_WARNING "Diva: No IO-Adr for PCI card found\n");
++		iounmap_diva(cs);
++		return(0);
++	}
++	cs->irq_flags |= IRQF_SHARED;
++
++	if ((cs->subtyp == DIVA_IPAC_PCI) ||
++	    (cs->subtyp == DIVA_IPACX_PCI)   ) {
++		cs->hw.diva.ctrl = 0;
++		cs->hw.diva.isac = 0;
++		cs->hw.diva.hscx = 0;
++		cs->hw.diva.isac_adr = 0;
++		cs->hw.diva.hscx_adr = 0;
++		test_and_set_bit(HW_IPAC, &cs->HW_Flags);
++	} else {
++		cs->hw.diva.ctrl = cs->hw.diva.cfg_reg + DIVA_PCI_CTRL;
++		cs->hw.diva.isac = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_DATA;
++		cs->hw.diva.hscx = cs->hw.diva.cfg_reg + DIVA_HSCX_DATA;
++		cs->hw.diva.isac_adr = cs->hw.diva.cfg_reg + DIVA_PCI_ISAC_ADR;
++		cs->hw.diva.hscx_adr = cs->hw.diva.cfg_reg + DIVA_HSCX_ADR;
++	}
++
++	return (1);		/* card found */
++}
++
++#else	/* if !CONFIG_PCI */
++
++static int __devinit setup_diva_pci(struct IsdnCard *card)
++{
++	return (-1);	/* card not found; continue search */
++}
++
++#endif	/* CONFIG_PCI */
++
++int __devinit
++setup_diva(struct IsdnCard *card)
++{
++	int rc, have_card = 0;
++	struct IsdnCardState *cs = card->cs;
++	char tmp[64];
++
++	strcpy(tmp, Diva_revision);
++	printk(KERN_INFO "HiSax: Eicon.Diehl Diva driver Rev. %s\n", HiSax_getrev(tmp));
++	if (cs->typ != ISDN_CTYPE_DIEHLDIVA)
++		return(0);
++	cs->hw.diva.status = 0;
++
++	rc = setup_diva_isa(card);
++	if (!rc)
++		return rc;
++	if (rc > 0) {
++		have_card = 1;
++		goto ready;
++	}
++
++	rc = setup_diva_isapnp(card);
++	if (!rc)
++		return rc;
++	if (rc > 0) {
++		have_card = 1;
++		goto ready;
++	}
++
++	rc = setup_diva_pci(card);
++	if (!rc)
++		return rc;
++	if (rc > 0)
++		have_card = 1;
++
++ready:
++	if (!have_card) {
++		printk(KERN_WARNING "Diva: No ISA, ISAPNP or PCI card found\n");
++		return(0);
++	}
++
++	return setup_diva_common(card->cs);
++}
