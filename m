@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbXHBD5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbXHBD6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755952AbXHBD5O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 1 Aug 2007 23:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753174AbXHBD5E
+	id S1756917AbXHBD6V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 1 Aug 2007 23:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbXHBD6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 1 Aug 2007 23:57:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56410 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753033AbXHBD5D (ORCPT
+	Wed, 1 Aug 2007 23:58:14 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:56240 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753207AbXHBD6N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 1 Aug 2007 23:57:03 -0400
-Date: Wed, 1 Aug 2007 20:56:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@linux-foundation.org
-Subject: Re: [RFC PATCH] type safe allocator
-In-Reply-To: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
-Message-ID: <alpine.LFD.0.999.0708012051100.3582@woody.linux-foundation.org>
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu>
+	Wed, 1 Aug 2007 23:58:13 -0400
+Message-ID: <46B1547F.3090403@zytor.com>
+Date: Wed, 01 Aug 2007 23:50:23 -0400
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+CC: Daniel Drake <dsd@gentoo.org>, Zwane Mwaikambo <zwane@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+ mode
+References: <4678191D.76E4.0078.0@novell.com> <4686D85B.6090803@gentoo.org>	 <20070630154230.4ad373fa.akpm@linux-foundation.org>	 <4690E65B.5050607@gentoo.org>	 <20070708111404.1486e73c.akpm@linux-foundation.org>	 <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org>	 <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org>	 <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org>	 <4693CCC6.7050400@zytor.com> <46AFCCBB.70307@gentoo.org>	 <Pine.LNX.4.64.0707311719540.5207@montezuma.windriver.com>	 <46AFDF3A.6080300@gentoo.org>  <1185933291.4688.11.camel@daplas> <1186024158.4629.1.camel@daplas>
+In-Reply-To: <1186024158.4629.1.camel@daplas>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 1 Aug 2007, Miklos Szeredi wrote:
->
-> I wonder why we don't have type safe object allocators a-la new() in
-> C++ or g_new() in glib?
+Antonino A. Daplas wrote:
+> On Wed, 2007-08-01 at 09:54 +0800, Antonino A. Daplas wrote:
+>> On Tue, 2007-07-31 at 21:17 -0400, Daniel Drake wrote:
+>>> Zwane Mwaikambo wrote:
+>>>> Sorry if this has been hashed out before, but could you point me towards 
+>>>> the gentoo bugzilla entry? I'm trying to understand how your setup broke. 
+>>>> Which version VBE does your system have?
+>>> Here's the bug:
+>>> http://bugs.gentoo.org/show_bug.cgi?id=181067
+>>>
+>> Looking at the dmesg output of the working and failing kernel, it does
+>> seem that there's no EDID block available in the failing kernel.
+>>
 > 
->   fooptr = k_new(struct foo, GFP_KERNEL);
+> BTW, I looked at the above bug report, it seems his last dmesg does not
+> have fbcon enabled.  Make sure that CONFIG_FRAMEBUFFER_CONSOLE=y before
+> doing more tests (the problem of lack of the EDID block in the failing
+> kernel still applies).
+> 
 
-I would object to this if only because of the horrible name.
+Okay, I'm royally puzzled why that would be.  I've gone over the code 
+quite a few times, and I do not see any way (other than VESA < 2.0) that 
+could cause that.
 
-C++ is not a good language to take ideas from, and "new()" was not it's 
-best feature to begin with. "k_new()" is just disgusting.
+I look forward to getting the debug output; depending on what it is we 
+might have to get some debugging output from the setup code.
 
-I'd call it something like "alloc_struct()" instead, which tells you 
-exactly what it's all about. Especially since we try to avoid typedefs in 
-the kernel, and as a result, it's basically almost always a struct thing.
+We can printf in the new setup code, although obviously that requires 
+leaving the screen in text mode.  However, EDID information should still 
+be available.
 
-That said, I'm not at all sure it's worth it. Especially not with all the 
-various variations on a theme (zeroed, arrays, etc etc).
+	-hpa
 
-Quite frankly, I suspect you would be better off just instrumenting 
-"sparse" instead, and matching up the size of the allocation with the type 
-it gets assigned to.
-
-		Linus
