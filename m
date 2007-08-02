@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbXHBP74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758287AbXHBQC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758362AbXHBP74 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 11:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756534AbXHBP7q
+	id S1758287AbXHBQC3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756536AbXHBQCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 11:59:46 -0400
-Received: from waste.org ([66.93.16.53]:51657 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756525AbXHBP7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 11:59:44 -0400
-Date: Thu, 2 Aug 2007 10:59:23 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jason.wessel@windriver.com,
-       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
-Message-ID: <20070802155922.GQ11115@waste.org>
-References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org> <20070802090008.GA1699@ff.dom.local>
+	Thu, 2 Aug 2007 12:02:22 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:33415 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751817AbXHBQCV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 12:02:21 -0400
+Message-ID: <46B1FFFB.6040209@interia.pl>
+Date: Thu, 02 Aug 2007 18:02:03 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070802090008.GA1699@ff.dom.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Satyam Sharma <satyam@infradead.org>
+Cc: trivial@kernel.org, David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mtdsuper: licensce = GPL
+References: <46B0D1F7.9090805@interia.pl> <alpine.LFD.0.999.0708020318070.8258@enigma.security.iitk.ac.in> <46B18551.2020809@interia.pl> <alpine.LFD.0.999.0708021309430.8258@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708021309430.8258@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+X-EMID: 2441eacc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 11:00:08AM +0200, Jarek Poplawski wrote:
-> On Wed, Aug 01, 2007 at 09:02:19PM -0500, Matt Mackall wrote:
-> > On Wed, Aug 01, 2007 at 11:59:21AM +0200, Jarek Poplawski wrote:
-> > > On Tue, Jul 31, 2007 at 05:05:00PM +0200, Gabriel C wrote:
-> > > > Jarek Poplawski wrote:
-> > > > > On Tue, Jul 31, 2007 at 12:14:36PM +0200, Gabriel C wrote:
-> > > > >> Jarek Poplawski wrote:
-> > > > >>> On 28-07-2007 20:42, Gabriel C wrote:
-> > > > >>>> Andrew Morton wrote:
-> > > > >>>>> On Sat, 28 Jul 2007 17:44:45 +0200 Gabriel C <nix.or.die@googlemail.com> wrote:
-> ...
-> > > > >>>>>> net/core/netpoll.c:155: error: 'struct net_device' has no member named 'poll_controller'
-> ...
-> > > > >>>>>> I think is because KGDBOE selects just NETPOLL.
-> > > > >>>>>>
-> > > > >>>>> Looks like it.
-> > > > >>>>>
-> > > > >>>>> Select went and selected NETPOLL and NETPOLL_TRAP but things like
-> > > > >>>>> CONFIG_NETDEVICES and CONFIG_NET_POLL_CONTROLLER remain unset.  `select'
-> > > > >>>>> remains evil.
-> ...
-> > > seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
-> > > still doesn't check for NETDEVICES dependency.
-> > 
-> > That's odd. Adding Sam to the cc:.
-> 
-> Looks right, but after reading Andrew's opinion about select I'd be
-> astonished if he doesn't know this problem already.
-> 
-> > 
-> > > > >> Now KGDBOE just selects NETPOLL and NETPOLL_TRAP.
-> > > > >> Adding 'select CONFIG_NET_POLL_CONTROLLER' let kgdboe compiles but the question is does it work without any ethernet card ?
-> > > > > 
-> > > > > Why kgdboe should care what netpoll needs? So, I hope, you are adding
-> > > > > this select under config NETPOLL. On the other hand, if NETPOLL should
-> > > > > depend on NET_POLL_CONTROLLER there is probably no reason to have them
-> > > > > both.
-> > > > 
-> > > > NET_POLL_CONTROLLER has def_bool NETPOLL if NETDEVICES .
-> > > > 
-> > > > Net peoples ping ?:)
-> > 
-> > How about cc:ing the netpoll maintainer?
-> 
-> Is there a new one or do you suggest possibility of abusing the
-> authority of the netpoll's author with such trifles...?!
+> You should apply -rcN or -gitX patches on the previous Linus' kernel
+> (2.6.x) and not the 2.6.x.y "-stable" ones -- those are a "parallel" tree.
+Done.
+> Hmm, you've got mtdpart build separately as well. Could you redo as per
+> what I suggested above (take 2.6.22, apply -rc1, then -rc1-git3) and then
+> rebuild after "make oldconfig" ... and let us know if you still end up
+> with these modules?
+This time I used Linux-2.6.23-rc1-git11 with config for my desktop plus 
+MTD selected as <M>. Previous config was for my "router". Let me know 
+if You need "desktop" config too.
 
-I'm just subtly suggesting that if you're going to have a discussion
-about netpoll, you ought to cc: me.
+  CC [M]  drivers/mtd/mtdcore.o
+  CC [M]  drivers/mtd/mtdsuper.o
+  CC [M]  drivers/mtd/mtdchar.o
+  CC [M]  drivers/mtd/mtd_blkdevs.o
+  CC [M]  drivers/mtd/mtdblock.o
+[...]
+  CC      drivers/mtd/chips/chipreg.mod.o
+  LD [M]  drivers/mtd/chips/chipreg.ko
+  CC      drivers/mtd/devices/block2mtd.mod.o
+  LD [M]  drivers/mtd/devices/block2mtd.ko
+  CC      drivers/mtd/mtd_blkdevs.mod.o
+  LD [M]  drivers/mtd/mtd_blkdevs.ko
+  CC      drivers/mtd/mtdblock.mod.o
+  LD [M]  drivers/mtd/mtdblock.ko
+  CC      drivers/mtd/mtdchar.mod.o
+  LD [M]  drivers/mtd/mtdchar.ko
+  CC      drivers/mtd/mtdcore.mod.o
+  LD [M]  drivers/mtd/mtdcore.ko
+  CC      drivers/mtd/mtdsuper.mod.o
+  LD [M]  drivers/mtd/mtdsuper.ko
 
-> There are some notions about "other diagnostic tools" in some
-> net drivers, eg. 3c509.c, so there would be a little bit of
-> work if, after changing this, they really exist (and even if
-> not - maybe it's reasonable to save such possibility for the
-> future?).
+% ls *.ko
+mtd_blkdevs.ko  mtdblock.ko  mtdchar.ko  mtdcore.ko  mtdsuper.ko
 
-I created it for netpoll, only netpoll clients have ever cared.
+> Could also be a make/toolchain issue at your end,
+> for all I know.
+I'm using "Arch Linux" now.
+% make -v
+GNU Make 3.81
+[...]
+This program built for i686-pc-linux-gnu
 
--- 
-Mathematics is the supreme nostalgia of our time.
+% gcc -v
+Using built-in specs.
+Target: i686-pc-linux-gnu
+Configured with: ../configure --prefix=/usr --enable-shared --enable-languages=c,c++,objc --enable-threads=posix --enable-__cxa_atexit --disable-multilib --libdir=/usr/lib --libexecdir=/usr/lib --enable-clocale=gnu --disable-libstdcxx-pch --with-tune=generic
+Thread model: posix
+gcc version 4.2.1 20070704 (prerelease)
+
+% ld -v
+GNU ld version 2.17
+
+> Satyam
+Rafa³
+
+
+----------------------------------------------------------------------
+Jak najszybciej dostac sie na wymarzona plaze?
+Znajdz trase ekspresowa 
+
+>>>http://link.interia.pl/f1b0d
+
