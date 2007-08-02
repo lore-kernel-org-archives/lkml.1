@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXHBNHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbXHBNHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbXHBNHb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 09:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXHBNHU
+	id S1758408AbXHBNHp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 09:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXHBNHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 09:07:20 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:41857 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbXHBNHS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 09:07:18 -0400
-To: jengelh@computergmbh.de
-CC: adobriyan@gmail.com, miklos@szeredi.hu, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       torvalds@linux-foundation.org
-In-reply-to: <Pine.LNX.4.64.0708021417400.24572@fbirervta.pbzchgretzou.qr>
-	(message from Jan Engelhardt on Thu, 2 Aug 2007 14:24:44 +0200 (CEST))
-Subject: Re: [PATCH] type safe allocator
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> 
- <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu> <b6fcc0a0708020504j7588061fq7e70a50499dcbdfe@mail.gmail.com> <Pine.LNX.4.64.0708021417400.24572@fbirervta.pbzchgretzou.qr>
-Message-Id: <E1IGaOE-0001a3-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 02 Aug 2007 15:06:54 +0200
+	Thu, 2 Aug 2007 09:07:25 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:20650 "EHLO hobbit.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753384AbXHBNHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 09:07:23 -0400
+Message-ID: <46B1D708.9040106@msgid.tls.msk.ru>
+Date: Thu, 02 Aug 2007 17:07:20 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Herbert Rosmanith <kernel@wildsau.enemy.org>, linux-kernel@vger.kernel.org
+Subject: Re: VIA EPIA EK: strange eth dev numbering
+References: <200708021056.l72Au722008603@wildsau.enemy.org> <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Aug 2 2007 16:04, Alexey Dobriyan wrote:
-> >On 8/2/07, Miklos Szeredi <miklos@szeredi.hu> wrote:
-> >>   fooptr = kmalloc(sizeof(struct foo), ...);
-> >
-> >Key word is "traditional". Good traditional form which even half-competent
-> >C programmers immediately parse in retina.
+Jan Engelhardt wrote:
+> On Aug 2 2007 12:56, Herbert Rosmanith wrote:
+>>> On Aug 2 2007 12:42, Herbert Rosmanith wrote:
+>>> There never *were* days when eth0 remained eth0 across such changes.
+>> but there *were* days when eth0 was eth0, if the kernel reports it as such.
+>> now there is no eth0 at all. if I see an "eth0" from dmesg, I expect
+>> it to be present.
 > 
-> And being aware of the potential type-unsafety makes programmers more
-> careful IMHO.
+> Wait, you forget that something may change the name. That dmesg message
+> from 1 second ago does not need to be valid anymore, just as anything
+> else in this world.
 
-That's a _really_ good reason ;)
+That was my argument - there should be no way to *change* the name, but
+to give an alias(es) - entirely different thing.
 
-> >> +/**
-> >> + * alloc_struct - allocate given type object
-> >> + * @type: the type of the object to allocate
-> >> + * @flags: the type of memory to allocate.
-> >> + */
-> >> +#define alloc_struct(type, flags) ((type *) kmalloc(sizeof(type), flags))
+Yes, if a device is replugged during that one second, it's another
+at least "instance" of that device - similar to 'ifindex' field in
+interface description (not shown by ifconfig but shown by `ip link'),
+or to usb endpoint numbers which gets incremented each time one
+plug something in.
+
+But as long as the device is connected, it should have the same
+name - that's my key point.  You may change its aliases as you
+wish, but not the "primary name".
+
+[]
+>> the problem with this device renaming in my case was that other software,
+>> in particular dhcpcd, didnt get any lease, because (obviously?) dhcpcd
+>> on the other hand _still_ seemed to look for eth0, and thus, after
+>> booting, there was no network configured at all.
 > 
-> >someone will write alloc_struct(int, GFP_KERNEL), I promise.
-> 
-> and someone else will write
-> 
-> 	struct complexthing foo;
-> 	alloc_struct(foo, GFP_KERNEL);
+> So blame your distro for not integrating udev correctly with dhcp-client.
+> I can only speak for suse, where you define BOOTPROTO=dhcp for an
+> interface. Then, on /etc/init.d/network, every interface that has a
+> configuration file gets run, so you never see what ethX udev picked for
+> the day, but things still work. That's good^TM.
 
-And the compiler will complain like mad about that.
+Again, this is questionable - the integration part, right way to it,
+that is.
 
-Miklos
+If - recalling my "naming scheme" with kernel ethX (which may change each
+boot or even at runtime, OR may not change at all if I don't replug
+devices), and nicN which is based on particular device's MAC address, --
+I configured dhcp to listen on eth0, I assume it's the first network
+card found by the system, whatever it is.  In this case, if I replaced
+the card (because previous one was faulty etc), it will continue to
+work (provided no other renames was done) without renames done by
+udev, and will break with current udev behaviour.  But if I configured
+dhcp to listen on *this* NIC with *this* serial number and MAC address,
+current udev behaviour is right - the system just assumes that this
+particular card isn't here (yet?) and hence dhcp shouldn't run on it.
+
+You see - we again have two names - "first interface found by kernel"
+and "this particular card with this serial number", and both of them
+are useful.
+
+Partially this issue can be solved by - say - kudzu asking for a
+name if it finds new hardware (we'll answer it with the name our
+replaced card had) - but such behaviour is out of the question
+because system startup scripts should not generally ask "random
+questions".
+
+/mjt
