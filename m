@@ -1,171 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbXHBTCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbXHBTEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbXHBTCY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXHBTCP
+	id S1758853AbXHBTEv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXHBTEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:02:15 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:45111 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752154AbXHBTCO (ORCPT
+	Thu, 2 Aug 2007 15:04:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:36570 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752844AbXHBTEm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:02:14 -0400
-Date: Thu, 2 Aug 2007 15:02:11 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Noah Watkins <nwatkins@ittc.ku.edu>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
-       "systemtap@sourceware.org" <systemtap@sourceware.org>
-Subject: Re: [patch 0/1] extending low-level markers
-Message-ID: <20070802190211.GA12124@Krystal>
-References: <20070801215723.GA10470@ittc.ku.edu> <20070802164437.GA27003@Krystal> <20070802183251.GA15216@ittc.ku.edu>
+	Thu, 2 Aug 2007 15:04:42 -0400
+Date: Thu, 2 Aug 2007 12:04:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Guillaume Chazarain" <guichaz@yahoo.fr>
+Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       Shailabh Nagar <nagar@watson.ibm.com>, Jay Lan <jlan@engr.sgi.com>,
+       Jonathan Lim <jlim@sgi.com>
+Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
+Message-Id: <20070802120427.270e5589.akpm@linux-foundation.org>
+In-Reply-To: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com>
+References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070802183251.GA15216@ittc.ku.edu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:40:10 up 3 days, 18:59,  4 users,  load average: 1.55, 0.65, 0.52
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Noah Watkins (nwatkins@ittc.ku.edu) wrote:
-> On 02/08/07 12:44 -0400, Mathieu Desnoyers wrote:
-> > * nwatkins@ittc.ku.edu (nwatkins@ittc.ku.edu) wrote:
-> > > Mathieu
-> > > 
-> > > I have been working with your Kernel Markers infrastructure now for some
-> > > time and have run into an extendability issue.
-> > 
-> > Hi Noah,
-> > 
-> > Can you tell us a little bit more about what you are doing with the
-> > markers ? I guess it could be useful to know so we can get a sense of
-> > how it fits in the big picture.
+On Thu, 2 Aug 2007 15:53:13 +0200
+"Guillaume Chazarain" <guichaz@yahoo.fr> wrote:
+
+> [Resent with different recipients as nagar@watson.ibm.com bounced with
+> a User unknown]
 > 
-> We have been maintaining an in-house instrumentation framework. The
-> instrumenation points we use differ from Kernel Markers in that the desired
-> callback is attached at compile time. Other than this difference, they
-> are implemented in much the same way. The biggest difference is that we
-> have been implicitly encoding the 'type' of instrumenation point by
-> assigning a particular callback. For example one type of instrumenation
-> point in our framework has the form:
+> Hi,
 > 
-> ds_event(name, int, size_t, void *);
+> This patch adds all thread accounting stats for the global tgid stats.
+> As a shameless plug, this fixes iotop -P (http://guichaz.free.fr/misc/iotop.py).
+
+uhm, that's a fairly skimpy changelog for a fairly significant functional
+change.
+
+> Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
+> ---
 > 
-> Thus, a ds_event has a definite set of arguments, and some name, which
-> is compatible with a trace_mark.
+> diff -r 22708012ca6e kernel/taskstats.c
+> --- a/kernel/taskstats.c	Tue Jul 31 21:12:07 2007 -0700
+> +++ b/kernel/taskstats.c	Wed Aug 01 17:43:54 2007 +0200
+> @@ -233,6 +233,7 @@ static int fill_tgid(pid_t tgid, struct
+>  		memset(stats, 0, sizeof(*stats));
 > 
-> We would like to be able to construct a ds_event on top of the low-level
-> kernel markers and be able to differentiate between a standard trace_mark in
-> in the markers section, and a trace_mark which actually represents a
-> ds_event, or another event type.
+>  	tsk = first;
+> +	bacct_add_tsk(stats, first);
+>  	do {
+>  		if (tsk->exit_state)
+>  			continue;
+> @@ -246,6 +247,7 @@ static int fill_tgid(pid_t tgid, struct
 > 
-> Granted we could simply match on compatible argument formats, its only
-> that a separation between types would be nice in order to not touch
-> markers which are of not interest to us, hence this notion of type.
-> Our framework would have blindly attached some callback to all
-> points which had matching argument formats, perhaps many that were not
-> inserted using ds_event (or some other api built on top of markers).
+>  		stats->nvcsw += tsk->nvcsw;
+>  		stats->nivcsw += tsk->nivcsw;
+> +		xacct_add_tsk(stats, tsk);
+>  	} while_each_thread(first, tsk);
 > 
-
-Hrm, what is wrong with :
-
-trace_mark(ds_myevent, "%d %zu %p", arg1, arg2, arg3);
-
-then ?
-
-You could then attach your probe to all markers staring with a ds_
-prefix. (we should keep a list of the used prefixes somewhere) You could
-match with format strings to figure out which callback should be
-connected to which marker (if you don't plan to have your callback
-parsing the format string dynamically).
-
-
-> The biggest problem we are facing now is with a set of points which
-> cooperate together in the sense that one references the others (or some
-> other connection topology). For example:
+>  	unlock_task_sighand(first, &flags);
+> diff -r 22708012ca6e kernel/tsacct.c
+> --- a/kernel/tsacct.c	Tue Jul 31 21:12:07 2007 -0700
+> +++ b/kernel/tsacct.c	Wed Aug 01 17:41:40 2007 +0200
+> @@ -81,8 +81,8 @@ void xacct_add_tsk(struct taskstats *sta
+>  	struct mm_struct *mm;
 > 
-> ds_point_start(NAME, params)
-> ds_point_end(NAME, params)
-> 
-> In this situation ds_point_start collects some data, stashes it in its
-> private data area,  and ds_point_end references the corresponding
-> ds_point_start when it fires. The two points are wired up by our
-> framework (using the marker's private data) and the NAME, in order to
-> avoid lookups at logging time.
-> 
+>  	/* convert pages-jiffies to Mbyte-usec */
+> -	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+> -	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+> +	stats->coremem += jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
+> +	stats->virtmem += jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
+>  	mm = get_task_mm(p);
+>  	if (mm) {
+>  		/* adjust to KB unit */
+> @@ -90,18 +90,14 @@ void xacct_add_tsk(struct taskstats *sta
+>  		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
 
-I wonder how you do your locking there ? I guess you are writing data
-that *should* reside on the stack into the private data, which is
-somewhat static. A solution to this that would be both not too intrusive
-for kernel code and fast enough would be to keep a buffer of such
-saved/read data, indexed with a cookie that would be passed from _start
-to _end. The only issue is that this cookie would have to be placed on
-the kernel stack, its space being reserved even when markers are
-disabled.
+How come hiwater_rss and hiwater_vm weren't similarly treated?
 
+>  		mmput(mm);
+>  	}
+> -	stats->read_char	= p->rchar;
+> -	stats->write_char	= p->wchar;
+> -	stats->read_syscalls	= p->syscr;
+> -	stats->write_syscalls	= p->syscw;
+> +	stats->read_char	+= p->rchar;
+> +	stats->write_char	+= p->wchar;
+> +	stats->read_syscalls	+= p->syscr;
+> +	stats->write_syscalls	+= p->syscw;
+>  #ifdef CONFIG_TASK_IO_ACCOUNTING
+> -	stats->read_bytes	= p->ioac.read_bytes;
+> -	stats->write_bytes	= p->ioac.write_bytes;
+> -	stats->cancelled_write_bytes = p->ioac.cancelled_write_bytes;
+> -#else
+> -	stats->read_bytes	= 0;
+> -	stats->write_bytes	= 0;
+> -	stats->cancelled_write_bytes = 0;
+> +	stats->read_bytes	+= p->ioac.read_bytes;
+> +	stats->write_bytes	+= p->ioac.write_bytes;
+> +	stats->cancelled_write_bytes += p->ioac.cancelled_write_bytes;
+>  #endif
 
-> So, in this case the names are the same which logically links them, but
-> their functionality is different. The difference in functionality could
-> again be encoded by the 'type' of point.
-> 
+Suitable cc's added.  Guys, please have a think about the implications of
+this change?  In particular, why didn't we do this on day one?  It's so
+obvious that I have a feeling we must have had a reason?
 
-if you differentiate them with names like:
-ds_point_start and ds_point_end
-
-and pass the cookie as write parameter to _start and read parameter to
-_end:
-
-void somefct()
-{
-  long cookie;
-
-  trace_mark(ds_point_start, "%p %d %zu %p", &cookie, arg1, arg2, arg3);
-
-  ...
-
-  trace_mark(ds_point_end, "%lu %d %zu %p", cookie, arg1, arg2, arg3);
-}
-It should do the job ?
-(note: if mutual exclusion access to a static variable is insured by
-proper locking in the kernel, then you don't need to do such trick)
-
-> > The current approach is to use the marker name as a way to specify
-> > markers "group". If we go with a "flavor" enumeration instead, we would
-> > have to add an enumeration of every markers users in marker.h, which I
-> > am a bit reluctant to do.
-> 
-> This would have to be my biggest complaint with the 'flavor' concept as
-> well. However, if all points in main-line always used no concept of
-> flavor (or essentially the default flavor) then users wishing to use the
-> flavor enumeration out of main-line development could do so?
-> 
-
-Hrm, the ideal thing would be to agree on an instrumentation set for a
-given subsystem/driver and to get the said instrumentation integrated in
-mainline. That would sound like a better way to stop reinventing the
-wheel forever. And actually, if there are some features in your tracer
-that you would like to add into a mainline tracer, I'll be glad to
-discuss those with you. A lot of people out there are facing the same
-issues as you are anyway :)
-
-Ideally, a marker should express what the kernel code is doing and what
-information we want to extract from it more than being tied to one
-particular consumer (probe).
-
-> Hope this helps portray more of what we are trying to do.
-> 
-
-It sure helps, thanks :)
-
-Mathieu
-
-> Noah
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
