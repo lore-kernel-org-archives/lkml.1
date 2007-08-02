@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756033AbXHBV5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbXHBWAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756033AbXHBV5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 17:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbXHBV5a
+	id S1755815AbXHBWAw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbXHBWAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 17:57:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50499 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759805AbXHBV52 convert rfc822-to-8bit (ORCPT
+	Thu, 2 Aug 2007 18:00:43 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:1376 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754216AbXHBWAm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 17:57:28 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Adrian =?utf-8?q?Schr=C3=B6ter?= <adrian@suse.de>
-Subject: Re: 2.6.22 regression: thermal trip points
-Date: Thu, 2 Aug 2007 17:56:32 -0400
-User-Agent: KMail/1.9.5
-Cc: trenn@suse.de, Knut Petersen <Knut_Petersen@t-online.de>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>,
-       pavel@ucw.cz, mjg59@srcf.ucam.org, "Zhang, Rui" <rui.zhang@intel.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       Alexey Starikovskiy <aystarik@gmail.com>, linux-acpi@vger.kernel.org
-References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de> <200708021145.09377.adrian@suse.de>
-In-Reply-To: <200708021145.09377.adrian@suse.de>
+	Thu, 2 Aug 2007 18:00:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=NeEeK1VSMwTrlPhkqYunxGlnMkumGQMPuJiaoqMADbSN5/R4JNP1oDFG3rBD1gPqYJRGGA796L6boVZkAG3SEPr5M7+O4e26YwnPCeHQ2w7evg9uFCYQKMK3Gj4ykTiwN7crL1SEkrSZRVNRzyhQ+Q3XVwRgFzMMWtnRmAOs9Bo=
+Message-ID: <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
+Date: Fri, 3 Aug 2007 00:00:41 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Jan Engelhardt" <jengelh@computergmbh.de>
+Subject: Re: VIA EPIA EK: strange eth dev numbering
+Cc: "Michael Tokarev" <mjt@tls.msk.ru>,
+       "Herbert Rosmanith" <kernel@wildsau.enemy.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708021756.32802.lenb@kernel.org>
+References: <200708021056.l72Au722008603@wildsau.enemy.org>
+	 <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
+	 <46B1D708.9040106@msgid.tls.msk.ru>
+	 <Pine.LNX.4.64.0708021536350.24572@fbirervta.pbzchgretzou.qr>
+	 <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
+X-Google-Sender-Auth: f0159f90f1f4d556
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 August 2007 05:45, Adrian Schröter wrote:
-> On Thursday 02 August 2007 11:42:27 wrote Thomas Renninger:
-> > On Thu, 2007-08-02 at 10:40 +0200, Knut Petersen wrote:
-> > > Hi everybody!
-> > >
-> > > Kernel 2.6.22 decreases performance by about 50% on my system.
-> > > No, I do not like that. The reason is a broken BIOS, granted, but there
-> > > was a perfect workaround in the kernel that has been dropped.
-> > >
-> > > mainboard: AOpen i915GMm-hfs, AWARD BIOS
-> > > cpu: Pentium-M 750 (0.8 to 1.86 MHz)
-> > > openSuSE 10.2 with kernel 2.6.22.1
-> >
-> > Is this a DELL laptop that gets throttled by 75% to throttling state 6
-> > if 60 degrees are exceeded?
-> > Adrian has such a machine..., no idea what is going on with that one,
-> > but only workaround to get any use out of this machine is to override at
-> > least the passive trip point.
-> 
-> JFYI, there are plenty of these systems around, it was one out of four 
-> standard Novell modells. I am mabye just the first one who uses Factory on 
-> it, but expect more bugreports when 10.3 gets released ...
+On 8/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> I know I have seen my kernel outputting "A renamed to B". Since you two
+> however wanted that information in the first place, I grepped a bit
+> around, and actually found, (drumroll), that the SUSE kernel has had a
+> proper patch for [I can't remember how long] quite some time. (At least
+> one distro which does the right thing.) I copied it below.
 
-That's very good news, Adrian.  In the past all we had to go on
-was the memory of a machine that died several years ago.
-But if you've got a live failure, that is really valuable.
+> e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
+> dev_change_name: about to rename 'eth3' to 'eth0'
+> dev_change_name: about to rename 'eth3' to 'ethxx3'
+> eth3 renamed to ethxx3
 
-Please go here
-http://bugzilla.kernel.org/enter_bug.cgi?product=ACPI
-and submit a new sighting vs. Power-Thermal
-and attach the output from acpidump, cat /proc/acpi/thermal_zone/*/*
-and assign it to len.brown@intel.com
+I just made udev when it successfully renamed an interface to write
+that to the kernel log, so dmesg will show:
+  <6>udev: renamed network interface eth0 to eth1
 
-thanks,
--Len
+Kay
