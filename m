@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756257AbXHBHjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbXHBHk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756257AbXHBHjQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 03:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbXHBHjG
+	id S1756805AbXHBHk7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 03:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753465AbXHBHkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 03:39:06 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:51411 "EHLO
+	Thu, 2 Aug 2007 03:40:52 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:51868 "EHLO
 	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753649AbXHBHjF (ORCPT
+	with ESMTP id S1753418AbXHBHkw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 03:39:05 -0400
-To: clameter@sgi.com
+	Thu, 2 Aug 2007 03:40:52 -0400
+To: satyam@infradead.org
 CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
        akpm@linux-foundation.org, torvalds@linux-foundation.org
-In-reply-to: <Pine.LNX.4.64.0708012223520.3265@schroedinger.engr.sgi.com>
-	(message from Christoph Lameter on Wed, 1 Aug 2007 22:33:07 -0700
-	(PDT))
+In-reply-to: <alpine.LFD.0.999.0708021302500.8258@enigma.security.iitk.ac.in>
+	(message from Satyam Sharma on Thu, 2 Aug 2007 13:07:47 +0530 (IST))
 Subject: Re: [RFC PATCH] type safe allocator
-References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> <Pine.LNX.4.64.0708012223520.3265@schroedinger.engr.sgi.com>
-Message-Id: <E1IGVGf-0000sv-00@dorka.pomaz.szeredi.hu>
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> <alpine.LFD.0.999.0708021302500.8258@enigma.security.iitk.ac.in>
+Message-Id: <E1IGVIO-0000tT-00@dorka.pomaz.szeredi.hu>
 From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 02 Aug 2007 09:38:45 +0200
+Date: Thu, 02 Aug 2007 09:40:32 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I wonder why we don't have type safe object allocators a-la new() in
-> > C++ or g_new() in glib?
-> > 
-> >   fooptr = k_new(struct foo, GFP_KERNEL);
-> > 
-> > is nicer and more descriptive than
-> > 
-> >   fooptr = kmalloc(sizeof(*fooptr), GFP_KERNEL);
-> > 
-> > and more safe than
-> > 
-> >   fooptr = kmalloc(sizeof(struct foo), GFP_KERNEL);
-> > 
-> > And we have zillions of both variants.
+> >  
+> > +/**
+> > + * k_new - allocate given type object
+> > + * @type: the type of the object to allocate
+> > + * @flags: the type of memory to allocate.
+> > + */
+> > +#define k_new(type, flags) ((type *) kmalloc(sizeof(type), flags))
 > 
-> Hmmm yes I think that would be good. However, please clean up the naming.
-> The variant on zeroing on zering get to be too much.
-
-OK, there seems to be a consensus on that ;)
-
-[snip]
-
-> I do not see any _node variants?
-
-Well, those are _very_ rare, I'd only add those if there's a demand
-for them.
-
-> The array variants translate into kmalloc anyways and are used
-> in an inconsistent manner. Sometime this way sometimes the other. Leave 
-> them?
-
-If the too many variants are bothersome, then I'd rather just have the
-array variant, and give 1 as an array size for the non-array case.
-
-> 	kcalloc(n, size, flags) == kmalloc(size, flags)
+> What others already said, plus:
 > 
-> Then kzalloc is equivalent to adding the __GFP_ZERO flag. Thus
+> kmalloc()'ing sizeof(struct foo) is not always what we want in C either.
 > 
-> 	kzalloc(size, flags) == kmalloc(size, flags | __GFPZERO)
-> 
-> If you define a new flag like GFP_ZERO_ATOMIC and GFP_ZERO_KERNEL you 
-> could do
-> 
-> 	kalloc(struct, GFP_ZERO_KERNEL)
-> 
-> instead of adding new variants?
+> Several kernel structs have zero-length / variable-length array members
+> and space must be allocated for them only at alloc() time ... would be
+> impossible to make them work with this scheme.
 
-I don't really like this, introducing new gfp flags just makes
-grepping harder.
-
-I do think that at least having a zeroing and a non-zeroing variant
-makes sense.
+Exactly.  We can, and should use kmalloc() for that.
 
 Miklos
