@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757940AbXHBNGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXHBNHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757940AbXHBNGg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 09:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbXHBNG0
+	id S1758012AbXHBNHb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 09:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbXHBNHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 09:06:26 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52104 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752372AbXHBNGZ (ORCPT
+	Thu, 2 Aug 2007 09:07:20 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:41857 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbXHBNHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 09:06:25 -0400
-Subject: Re: mmap behavior on out-of-space conditions
-From: Peter Zijlstra <peterz@infradead.org>
-To: Petr Tesarik <ptesarik@suse.cz>, Dave Chinner <dgc@sgi.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1186058486.2289.17.camel@elijah.suse.cz>
-References: <1186058486.2289.17.camel@elijah.suse.cz>
-Content-Type: text/plain
-Date: Thu, 02 Aug 2007 15:06:15 +0200
-Message-Id: <1186059975.12034.111.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 09:07:18 -0400
+To: jengelh@computergmbh.de
+CC: adobriyan@gmail.com, miklos@szeredi.hu, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       torvalds@linux-foundation.org
+In-reply-to: <Pine.LNX.4.64.0708021417400.24572@fbirervta.pbzchgretzou.qr>
+	(message from Jan Engelhardt on Thu, 2 Aug 2007 14:24:44 +0200 (CEST))
+Subject: Re: [PATCH] type safe allocator
+References: <E1IGAAI-0006K6-00@dorka.pomaz.szeredi.hu> 
+ <E1IGYuK-0001Jj-00@dorka.pomaz.szeredi.hu> <b6fcc0a0708020504j7588061fq7e70a50499dcbdfe@mail.gmail.com> <Pine.LNX.4.64.0708021417400.24572@fbirervta.pbzchgretzou.qr>
+Message-Id: <E1IGaOE-0001a3-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Thu, 02 Aug 2007 15:06:54 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 14:41 +0200, Petr Tesarik wrote:
-> Hello,
+> On Aug 2 2007 16:04, Alexey Dobriyan wrote:
+> >On 8/2/07, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> >>   fooptr = kmalloc(sizeof(struct foo), ...);
+> >
+> >Key word is "traditional". Good traditional form which even half-competent
+> >C programmers immediately parse in retina.
 > 
-> while solving a different issue, my colleague Libor Pechacek found a
-> problem with handling mmapped sparse files. If you mmap the hole insidea
-> sparse file and write to it, the data gets silently lost if there is not
-> enough space left on the underlying device.
+> And being aware of the potential type-unsafety makes programmers more
+> careful IMHO.
 
-I think Dave's block_page_mkwrite() stuff addresses this as well, no?
+That's a _really_ good reason ;)
 
-http://lkml.org/lkml/2007/3/18/198
+> >> +/**
+> >> + * alloc_struct - allocate given type object
+> >> + * @type: the type of the object to allocate
+> >> + * @flags: the type of memory to allocate.
+> >> + */
+> >> +#define alloc_struct(type, flags) ((type *) kmalloc(sizeof(type), flags))
+> 
+> >someone will write alloc_struct(int, GFP_KERNEL), I promise.
+> 
+> and someone else will write
+> 
+> 	struct complexthing foo;
+> 	alloc_struct(foo, GFP_KERNEL);
 
-Peter
+And the compiler will complain like mad about that.
 
+Miklos
