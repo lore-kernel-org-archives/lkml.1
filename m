@@ -1,123 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbXHBLbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbXHBLc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbXHBLbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbXHBLbO
+	id S1755478AbXHBLc3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXHBLcV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:31:14 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:48470 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752108AbXHBLbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:31:12 -0400
-Date: Thu, 2 Aug 2007 13:40:42 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Satyam Sharma <satyam@infradead.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Matt Mackall <mpm@selenic.com>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jason.wessel@windriver.com,
-       amitkale@linsyssoft.com
-Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
-Message-ID: <20070802114042.GB1699@ff.dom.local>
-References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org> <20070802093659.GB27748@uranus.ravnborg.org> <alpine.LFD.0.999.0708021547420.8258@enigma.security.iitk.ac.in>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708021547420.8258@enigma.security.iitk.ac.in>
-User-Agent: Mutt/1.4.2.2i
+	Thu, 2 Aug 2007 07:32:21 -0400
+Received: from mailout07.sul.t-online.de ([194.25.134.83]:35544 "EHLO
+	mailout07.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752002AbXHBLcU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 07:32:20 -0400
+Message-ID: <46B1C0BA.1020004@t-online.de>
+Date: Thu, 02 Aug 2007 13:32:10 +0200
+From: Knut Petersen <Knut_Petersen@t-online.de>
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: trenn@suse.de
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@osdl.org>, pavel@ucw.cz,
+       mjg59@srcf.ucam.org, lenb@kernel.org,
+       =?UTF-8?B?QWRyaWFu?= =?UTF-8?B?IFNjaHLDtnRlcg==?= 
+	<adrian@suse.de>,
+       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: 2.6.22 regression: thermal trip points
+References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de>
+In-Reply-To: <1186047747.18821.450.camel@queen.suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ID: Go6cCiZDweIP7QjoNHuEwojBNBvJ7GbSq+ShumNe1s+Nc2iPd3TvsC
+X-TOI-MSGID: fe3e96fa-414e-4842-a20b-8a6100c700de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 04:02:21PM +0530, Satyam Sharma wrote:
-> Hi,
-> 
-> 
-> On Thu, 2 Aug 2007, Sam Ravnborg wrote:
-> 
-> > > > 
-> > > > ...
-> > > > endif # NETDEVICES
-> > > > 
-> > > > config NETPOLL
-> > > >         depends on NETDEVICES
-> > > >         def_bool NETCONSOLE
-> > > > 
-> > > > config NETPOLL_TRAP
-> > > >         bool "Netpoll traffic trapping"
-> > > >         default n
-> > > >         depends on NETPOLL
-> > > > 
-> > > > config NET_POLL_CONTROLLER
-> > > >         def_bool NETPOLL
-> > > >         depends on NETPOLL
-> > > > 
-> > > > 
-> > > > seems to select NET_POLL_CONTROLLER after selecting NETPOLL, but
-> > > > still doesn't check for NETDEVICES dependency.
-> > > 
-> > > That's odd. Adding Sam to the cc:.
-> 
-> I just noticed this thread, but I wonder what the fuss is all
-> about :-) Kconfig dependencies are easy, really -- any code that
-> pulls in code from elsewhere, must explicitly "depends on" it.
-> It is possible to use "select" as well, but could lead to breakages
-> as discussed to death on at least 64592 other threads on LKML already
-> and hence should only be used for library-like code that does not
-> have any dependencies itself.
+Thomas Renninger wrote:
+>> mainboard: AOpen i915GMm-hfs, AWARD BIOS
+>> cpu: Pentium-M 750 (0.8 to 1.86 MHz)
+>> openSuSE 10.2 with kernel 2.6.22.1
+> Is this a DELL laptop that gets throttled by 75% to throttling state 6
+> if 60 degrees are exceeded?
+No, it is a Pentium M desktop board.:
+    Chipset i915GM, FSB 533MHz, max 2GB DDR2 RAM, 2 PCI
+    and 1 16x PCI Express slots, serial, parallel, usb, firewire,
+    2x Marvel Gigabit Ethernet, Realtek ALC 880 sound, IDE,
+    Intel SATA and SiI SATA Raid, FDC, DVI and VGA video out etc.
+    Very low power consumption: ~40W to 65W for the whole system,
+    except monitor.
+> As 2.6.22 was shipped without, I think reverting is not a real option.
+Well, it would not be the first time to eliminate a regression by
+reverting a
+patch after it was accepted previously.
+>> Sanity checks that trip points only can get lowered (compared to initial
+>> provided ones) needs to be added.
+>> Len, Rui: For short-term can some 
+But I _need_ to raise the unreasonably low passive trip point. We could
+decide to
+protect the innocent user by allowing write access to trip_points only
+after a previous
 
-So, it seems at least one time not enough (or maybe it would be better
-to write this 1 time only, but in Documentation/).
+echo "I know what I am doing" >
+/proc/acpi/thermal_zone/THRM/enable_really_dangerous_options
 
-> 
-> 
-> > select is evil....
-> > select will by brute force set a symbol equal to 'y' without
-> > visiting the dependencies.
-> > So abusing select you are able to select a symbol FOO even 
-> > if FOO depends on BAR that is not set.
-> > 
-> > In general use select only for non-visible symbols (no promts anywhere)
-> > and for symbols with no dependencies.
-> > That will limit the suefullness but on the other hand avoid the illegal
-> > configurations all over.
-> 
-> The problem with using "depends on" is that your config symbol becomes
-> invisible unless the dependency has already been selected.
-> 
-> So, there's a workaround: make the ultimate config symbol itself depend
-> upon the grand-dependency (excuse the nomenclature) and just "select"
-> the immediate-parent-dependency, i.e. the following:
-> 
-> CONFIG_BAZ
-> 	...
-> 
-> CONFIG BAR
-> 	depends on BAZ
-> 
-> CONFIG_FOO
-> 	depends on BAZ
-> 	select BAR
-> 
-> is perfectly legal, and doesn't cause any build problems. Perhaps such a
-> solution makes sense here as well?
-> 
-> 
-> > kconfig should one day warn about such things but I have not fel inclined
-> > to dive into the matters hoping that Roman does one day.
-> 
-> Yup, I've wanted to do this myself, in fact I wanted to implement an idea
-> I had in mind ( http://lkml.org/lkml/2007/5/16/257 ) but for some reason
-> I tend to stay away from stuff in scripts/ :-)
+if we believe that this is a good idea ...
 
-How often "common" developer has to make such decisions in Kconfig?
-Probably no more than once per year. So, it's fair to blame anybody
-for not reading lkml to find if there are some bugs or
-recommendations before using apparently simple tool? I think there
-is usually some README for such things (maybe in Documentation/)?
+Andi Kleen wrote:
 
-Thanks,
-Jarek P.
+  > I don't think it's that unreasonable to require source code
+modifications
+  >  for anything that can kill hardware. At least that raises the barrier
+  >  a bit and hopefully ensures people think twice about it and then really
+  > only blame themselves if anything goes wrong.
 
-PS: if it's so easy and it's enough to read only 64592 lkml messages,
-I wonder why Andrew, who knows all lkml, and reads more messages per
-hour, cared to remember mainly one short conclusion...
+Andi, would the above be mechanism sufficiently safe for your taste?
+
+cu,
+ Knut
+
