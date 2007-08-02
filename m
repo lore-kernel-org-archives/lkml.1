@@ -1,112 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758853AbXHBTEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbXHBTKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758853AbXHBTEv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbXHBTEn
+	id S1758467AbXHBTKZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXHBTKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:04:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36570 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752844AbXHBTEm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:04:42 -0400
-Date: Thu, 2 Aug 2007 12:04:27 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Guillaume Chazarain" <guichaz@yahoo.fr>
-Cc: "Balbir Singh" <balbir@linux.vnet.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       Shailabh Nagar <nagar@watson.ibm.com>, Jay Lan <jlan@engr.sgi.com>,
-       Jonathan Lim <jlim@sgi.com>
-Subject: Re: [PATCH] Add all thread stats for TASKSTATS_CMD_ATTR_TGID
-Message-Id: <20070802120427.270e5589.akpm@linux-foundation.org>
-In-Reply-To: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com>
-References: <3d8471ca0708020653l575db8cam464a3cffce68fb26@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Thu, 2 Aug 2007 15:10:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46124 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753978AbXHBTKI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 15:10:08 -0400
+Message-ID: <46B22BDA.8090604@redhat.com>
+Date: Thu, 02 Aug 2007 15:09:14 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Cal Peake <cp@absolutedigital.net>
+CC: Gabriel C <nix.or.die@googlemail.com>, Frank Hale <frankhale@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: ACPI on Averatec 2370
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com> <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net> <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
+In-Reply-To: <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007 15:53:13 +0200
-"Guillaume Chazarain" <guichaz@yahoo.fr> wrote:
-
-> [Resent with different recipients as nagar@watson.ibm.com bounced with
-> a User unknown]
+On 08/02/2007 01:50 PM, Cal Peake wrote:
+> This problem seems to be getting worse. With the latest linus tree, after 
+> the initial hang where the power button is needed to bring the system back 
+> to life, the boot process slows to a crawl.
 > 
-> Hi,
+> Although if I repeatedly press the shift key it'll help move things along. 
+> I'm guessing the keyboard interrupt firing off is doing something to help 
+> it. The system seems OK though after booting is finished.
 > 
-> This patch adds all thread accounting stats for the global tgid stats.
-> As a shameless plug, this fixes iotop -P (http://guichaz.free.fr/misc/iotop.py).
-
-uhm, that's a fairly skimpy changelog for a fairly significant functional
-change.
-
-> Signed-off-by: Guillaume Chazarain <guichaz@yahoo.fr>
-> ---
+> Upon shutdown it actually stalls out without help from the shift key.
 > 
-> diff -r 22708012ca6e kernel/taskstats.c
-> --- a/kernel/taskstats.c	Tue Jul 31 21:12:07 2007 -0700
-> +++ b/kernel/taskstats.c	Wed Aug 01 17:43:54 2007 +0200
-> @@ -233,6 +233,7 @@ static int fill_tgid(pid_t tgid, struct
->  		memset(stats, 0, sizeof(*stats));
-> 
->  	tsk = first;
-> +	bacct_add_tsk(stats, first);
->  	do {
->  		if (tsk->exit_state)
->  			continue;
-> @@ -246,6 +247,7 @@ static int fill_tgid(pid_t tgid, struct
-> 
->  		stats->nvcsw += tsk->nvcsw;
->  		stats->nivcsw += tsk->nivcsw;
-> +		xacct_add_tsk(stats, tsk);
->  	} while_each_thread(first, tsk);
-> 
->  	unlock_task_sighand(first, &flags);
-> diff -r 22708012ca6e kernel/tsacct.c
-> --- a/kernel/tsacct.c	Tue Jul 31 21:12:07 2007 -0700
-> +++ b/kernel/tsacct.c	Wed Aug 01 17:41:40 2007 +0200
-> @@ -81,8 +81,8 @@ void xacct_add_tsk(struct taskstats *sta
->  	struct mm_struct *mm;
-> 
->  	/* convert pages-jiffies to Mbyte-usec */
-> -	stats->coremem = jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-> -	stats->virtmem = jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
-> +	stats->coremem += jiffies_to_usecs(p->acct_rss_mem1) * PAGE_SIZE / MB;
-> +	stats->virtmem += jiffies_to_usecs(p->acct_vm_mem1) * PAGE_SIZE / MB;
->  	mm = get_task_mm(p);
->  	if (mm) {
->  		/* adjust to KB unit */
-> @@ -90,18 +90,14 @@ void xacct_add_tsk(struct taskstats *sta
->  		stats->hiwater_vm    = mm->hiwater_vm * PAGE_SIZE / KB;
+> Any thoughts on this, or tips to help debug it further?
 
-How come hiwater_rss and hiwater_vm weren't similarly treated?
-
->  		mmput(mm);
->  	}
-> -	stats->read_char	= p->rchar;
-> -	stats->write_char	= p->wchar;
-> -	stats->read_syscalls	= p->syscr;
-> -	stats->write_syscalls	= p->syscw;
-> +	stats->read_char	+= p->rchar;
-> +	stats->write_char	+= p->wchar;
-> +	stats->read_syscalls	+= p->syscr;
-> +	stats->write_syscalls	+= p->syscw;
->  #ifdef CONFIG_TASK_IO_ACCOUNTING
-> -	stats->read_bytes	= p->ioac.read_bytes;
-> -	stats->write_bytes	= p->ioac.write_bytes;
-> -	stats->cancelled_write_bytes = p->ioac.cancelled_write_bytes;
-> -#else
-> -	stats->read_bytes	= 0;
-> -	stats->write_bytes	= 0;
-> -	stats->cancelled_write_bytes = 0;
-> +	stats->read_bytes	+= p->ioac.read_bytes;
-> +	stats->write_bytes	+= p->ioac.write_bytes;
-> +	stats->cancelled_write_bytes += p->ioac.cancelled_write_bytes;
->  #endif
-
-Suitable cc's added.  Guys, please have a think about the implications of
-this change?  In particular, why didn't we do this on day one?  It's so
-obvious that I have a feeling we must have had a reason?
-
+Try the 'nolapic_timer' option.
