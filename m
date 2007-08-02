@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755410AbXHBOcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbXHBOcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755410AbXHBOcU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 10:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751008AbXHBOcO
+	id S1755094AbXHBOcf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 10:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750815AbXHBOcY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 10:32:14 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3287 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750815AbXHBOcN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 10:32:13 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] 2.6.23-rc1-mm2
-Date: Thu, 2 Aug 2007 16:32:09 +0200
-User-Agent: KMail/1.9.5
-Cc: Jiri Kosina <jikos@jikos.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       linux-usb-devel@lists.sourceforge.net
-References: <Pine.LNX.4.44L0.0708021019400.3611-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0708021019400.3611-100000@iolanthe.rowland.org>
+	Thu, 2 Aug 2007 10:32:24 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:45538 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755548AbXHBOcW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 10:32:22 -0400
+Date: Thu, 2 Aug 2007 10:32:21 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: David Engraf <david.engraf@netcom.eu>
+cc: linux-pci@atrey.karlin.mff.cuni.cz, <gregkh@suse.de>,
+       <linux-kernel@vger.kernel.org>, <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
+ we the driver is configured
+In-Reply-To: <46B1844B.8090007@netcom.eu>
+Message-ID: <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708021632.10074.m.kozlowski@tuxland.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > > >  =======================
-> > > > > uhci_hcd 0000:00:0c.0: dma_pool_free buffer-32, 6b6b6b6b/6b6b6b6b
-> > > > > (bad dma)
-> > >
-> > > Mariusz,
-> > >
-> > > I guess the patch below (which I have just added to my tree) fixes
-> > > that, right? Thanks.
-> >
-> > Yes - that's correct. This patch fixes the bug. Thanks.
->
-> Does it also fix the "dma_pool_free" error?
+On Thu, 2 Aug 2007, David Engraf wrote:
 
-Yes - it does.
+> This would be solution too, but what if someone uses the uhci controller
+> and don't want the
+> ehci. So a single Kconfig flag wouldn't be enough, we have to add 3
+> flags for uchi, ohci and
+> ehci. I think this maybe a little bit difficult when configuring the kernel.
+> The best solution would be when we could use the CONFIG_USB_xxxx_HCD
+> flag, but it
+> seems that some hardware has problems when we disable the handoff and
+> let the BIOS
+> control the usb controller. Do you know any of this hardware?
 
-Regards,
+The email messages are hidden in the depths of the linux-usb-devel 
+archives.  Maybe you can find them by checking the Git history for 
+drivers/usb/host/pci-quirks.c, finding the dates for patches that 
+affected the handoff code, and then searching through the archives near 
+those dates.
 
-	Mariusz
+IIRC the problems arose on some MIPS machines.  And I don't think the 
+problem involved letting the firmware manage the USB controller; I 
+think the problem came when the controller driver tried to do the 
+handoff later on.
+
+Alan Stern
+
