@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXHBIOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbXHBIVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbXHBIOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 04:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXHBIOS
+	id S1755148AbXHBIVE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 04:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbXHBIUv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 04:14:18 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57499 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753400AbXHBIOP (ORCPT
+	Thu, 2 Aug 2007 04:20:51 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:34298 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbXHBIUt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 04:14:15 -0400
-Message-ID: <46B19195.8010207@ah.jp.nec.com>
-Date: Thu, 02 Aug 2007 17:11:01 +0900
-From: Takenori Nagano <t-nagano@ah.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 2 Aug 2007 04:20:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ph0gaA1/YJh1sko4tDfIAAaL9au8hed4gbW/ZVIhDS67/wyATI7bs6lWTrzxxVszuske6PnM4nLTizg/A0R2tFhHPc6qdrS/SxT/TdQ9TPlvf7XNut6jxkVis2Y4wXyaIQTwy+xKk4PGFsrYY+29D7pRllw4jLfgv7+E883H38g=
+Message-ID: <9a8748490708020120w4bbfe6d1n6f6986aec507316@mail.gmail.com>
+Date: Thu, 2 Aug 2007 10:20:47 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix two potential mem leaks in MPT Fusion (mpt_attach())
+Cc: "Eric Moore" <Eric.Moore@lsi.com>, DL-MPTFusionLinux@lsi.com,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       support@lsi.com, mpt_linux_developer@lsi.com,
+       linux-scsi@vger.kernel.org,
+       "James Bottomley" <James.Bottomley@steeleye.com>
+In-Reply-To: <20070801172653.1fd44e99.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: vgoyal@in.ibm.com, k-miyoshi@cb.jp.nec.com,
-       Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       kaos@sgi.com
-Subject: Re: [patch] add kdump_after_notifier
-References: <469F55D0.4050203@ah.jp.nec.com> <20070726140702.GA8949@suse.de>	<20070726153240.GA15969@in.ibm.com> <20070726153440.GA19095@suse.de>	<20070726154415.GB15969@in.ibm.com> <20070726154718.GA25561@suse.de>	<20070726155444.GC15969@in.ibm.com> <46A92E30.8070703@ah.jp.nec.com>	<20070730091624.GB6071@in.ibm.com>	<m16442vwgs.fsf@ebiederm.dsl.xmission.com>	<46AECEE0.3000307@ah.jp.nec.com>	<m1fy35t665.fsf@ebiederm.dsl.xmission.com>	<46B051B5.6020207@ah.jp.nec.com> <m18x8vpoa7.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m18x8vpoa7.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708020155.33690.jesper.juhl@gmail.com>
+	 <20070801172653.1fd44e99.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Takenori Nagano <t-nagano@ah.jp.nec.com> writes:
->> Then I gave up to merge my patch to kdb, and I tried to send another patch to
->> kexec community. I can understand his opinion, but it is very difficult to
->> modify that kdump is called from panic_notifier. Because it has a reason why
->> kdump don't use panic_notifier. So, I made this patch.
->>
->> Please do something about this problem.
-> 
-> Hmm.  Tricky.  These appear to be two code bases with a completely different
-> philosophy on what errors are being avoided.
-> 
-> The kexec on panic assumption is that the kernel is broken and we better not
-> touch it something horrible has gone wrong.  And this is the reason why
-> kexec on panic is replacing lkcd.  Because the strong assumption results
-> in more errors getting captured with less likely hood of messing up your
-> system.
-> 
-> The kdb assumption appears to be that the kernel is mostly ok, and that there
-> are just some specific thing that is wrong.
+On 02/08/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Thu, 2 Aug 2007 01:55:33 +0200
+> Jesper Juhl <jesper.juhl@gmail.com> wrote:
+>
+[snip]
+> > +++ b/drivers/message/fusion/mptbase.c
+> > @@ -1393,18 +1393,18 @@ mpt_attach(struct pci_dev *pdev, const struct pci_device_id *id)
+> >       struct proc_dir_entry *dent, *ent;
+> >  #endif
+> >
+> > +     if (mpt_debug_level)
+> > +             printk(KERN_INFO MYNAM ": mpt_debug_level=%xh\n", mpt_debug_level);
+> > +
+> > +     if (pci_enable_device(pdev))
+> > +             return r;
+> > +
+> >       ioc = kzalloc(sizeof(MPT_ADAPTER), GFP_ATOMIC);
+>
+> Why on earth is that using GFP_ATOMIC?  This function later goes on to
+> create procfs files and such things.
+>
+Dunno. But you are right, that does seem a bit odd, but I assumed
+there was a reason for it.
 
-Yes, kdump and kdb have a completely different philosophy. But it's natural,
-because their duties are different.
+>
+> y'know, we could have a debug option which will spit warnings if someone
+> does a !__GFP_WAIT allocation while !in_atomic() (only works if
+> CONFIG_PREEMPT).
+>
+> But please, make it depend on !CONFIG_AKPM.  I shudder to think about all
+> the stuff it would pick up.
+>
 
-I think kdb is a supplementary debug means. kdump is not perfect, because
-hardware sometimes breaks down. The probability that hardware (HDD, HBA, memory,
-etc...) breaks down is very low, but it is not zero. If kdump fails taking a
-dump, kdb data (process status, backtrace, log buffer, etc...) is very useful to
-analyze the panic reason. kdb data is very poor in comparison with kdump, but
-better than nothing.
+I can try to cook up something like that tonight...
 
-So I request a favor of you again, please do something about this problem.
-
-> The easiest way I can think to resolve this is for kdb to simply set
-> a break point at the entry point of panic() when it initializes.  Then
-> it wouldn't even need to be on the panic_list.  That approach would probably
-> even give better debug information because you would not have the effects
-> of bust_spinlocks to undo.
-> 
-> Is there some reason why kdb doesn't want to hook panic with a some
-> kind of break point?
-
-I think there is no technical reason. But panic code will be dirty if every
-kernel developers adds their own hook. I think this is a reason why kdb uses
-panic_notifier.
-
-Thanks,
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
