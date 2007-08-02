@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbXHBJ4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbXHBJ6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755273AbXHBJ4U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 05:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbXHBJ4J
+	id S1755439AbXHBJ6c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 05:58:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbXHBJ6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 05:56:09 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:36241 "EHLO smtp4-g19.free.fr"
+	Thu, 2 Aug 2007 05:58:25 -0400
+Received: from mail.suse.de ([195.135.220.2]:50221 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753036AbXHBJ4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 05:56:07 -0400
-Message-ID: <46B1A9DE.4090907@free.fr>
-Date: Thu, 02 Aug 2007 11:54:38 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: linux-rt-users@vger.kernel.org
-CC: linux-kernel@vger.kernel.org
-Subject: Section mismatch: reference to .init.text: (between 'kthreadd' and
- 'init_waitqueue_head')
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1753387AbXHBJ6Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 05:58:24 -0400
+Subject: Re: 2.6.22 regression: thermal trip points
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Adrian =?ISO-8859-1?Q?Schr=F6ter?= <adrian@suse.de>
+Cc: Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, pavel@ucw.cz, mjg59@srcf.ucam.org,
+       lenb@kernel.org, "Zhang, Rui" <rui.zhang@intel.com>,
+       Jean Delvare <khali@linux-fr.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>
+In-Reply-To: <200708021145.09377.adrian@suse.de>
+References: <46B1988C.3090302@t-online.de>
+	 <1186047747.18821.450.camel@queen.suse.de>
+	 <200708021145.09377.adrian@suse.de>
+Content-Type: text/plain; charset=utf-8
+Organization: Novell/SUSE
+Date: Thu, 02 Aug 2007 11:58:21 +0200
+Message-Id: <1186048701.18821.459.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 2007-08-02 at 11:45 +0200, Adrian Schröter wrote:
+> On Thursday 02 August 2007 11:42:27 wrote Thomas Renninger:
+> > On Thu, 2007-08-02 at 10:40 +0200, Knut Petersen wrote:
+> > > Hi everybody!
+> > >
+> > > Kernel 2.6.22 decreases performance by about 50% on my system.
+> > > No, I do not like that. The reason is a broken BIOS, granted, but there
+> > > was a perfect workaround in the kernel that has been dropped.
+> > >
+> > > mainboard: AOpen i915GMm-hfs, AWARD BIOS
+> > > cpu: Pentium-M 750 (0.8 to 1.86 MHz)
+> > > openSuSE 10.2 with kernel 2.6.22.1
+> >
+> > Is this a DELL laptop that gets throttled by 75% to throttling state 6
+> > if 60 degrees are exceeded?
+> > Adrian has such a machine..., no idea what is going on with that one,
+> > but only workaround to get any use out of this machine is to override at
+> > least the passive trip point.
+> 
+> JFYI, there are plenty of these systems around, it was one out of four 
+> standard Novell modells. I am mabye just the first one who uses Factory on 
+> it, but expect more bugreports when 10.3 gets released ...
 
-I'm trying to build a 2.6.22.1-rt9 kernel for a P3.
+Oops. So this is not broken HW/BIOS, but definitely a kernel problem?
+Only idea that comes to my mind finding this is to grep through the DSDT
+and look out for code that accesses CPU throttling HW ports. Maybe ACPI
+subsystem gets something wrong, processing this code and activating
+throttling by accident?
 
-I used 'make xconfig' to create .config
-http://linux.kernel.free.fr/latency/config-2.6.22.1-rt9-adlink
+Anyway, only solution/workaround to use these machines with current
+kernels is to override trip points, maybe the patch should really just
+be reverted...
 
-I get the following warning:
+   Thomas 
 
-   LD      vmlinux
-   SYSMAP  System.map
-   SYSMAP  .tmp_System.map
-   MODPOST vmlinux
-WARNING: kernel/built-in.o(.text+0x19152): Section mismatch: reference 
-to .init.text: (between 'kthreadd' and 'init_waitqueue_head')
-   AS      arch/i386/boot/bootsect.o
-   LD      arch/i386/boot/bootsect
-   AS      arch/i386/boot/setup.o
-   LD      arch/i386/boot/setup
-   AS      arch/i386/boot/compressed/head.o
-   CC      arch/i386/boot/compressed/misc.o
-   OBJCOPY arch/i386/boot/compressed/vmlinux.bin
-   GZIP    arch/i386/boot/compressed/vmlinux.bin.gz
-   LD      arch/i386/boot/compressed/piggy.o
-   LD      arch/i386/boot/compressed/vmlinux
-   OBJCOPY arch/i386/boot/vmlinux.bin
-   HOSTCC  arch/i386/boot/tools/build
-   BUILD   arch/i386/boot/bzImage
-Root device is (3, 1)
-Boot sector 512 bytes.
-Setup is 7082 bytes.
-System is 1142 kB
-Kernel: arch/i386/boot/bzImage is ready  (#1)
-   Building modules, stage 2.
-   MODPOST 0 modules
-
-
-I also get the following warnings (which seem less severe)
-
-   CC      drivers/pci/pci.o
-   CC      drivers/pci/quirks.o
-   CC      drivers/pci/pci-driver.o
-   CC      drivers/pci/search.o
-drivers/pci/search.c: In function `pci_find_slot':
-drivers/pci/search.c:99: warning: `pci_find_device' is deprecated 
-(declared at include/linux/pci.h:477)
-drivers/pci/search.c: At top level:
-drivers/pci/search.c:434: warning: `pci_find_device' is deprecated 
-(declared at drivers/pci/search.c:241)
-drivers/pci/search.c:434: warning: `pci_find_device' is deprecated 
-(declared at drivers/pci/search.c:241)
-   CC      drivers/pci/pci-sysfs.o
-   CC      drivers/pci/rom.o
-
-
-Finally, I note that X86_CMPXCHG64 is no longer defined since its 
-specification was changed between 2.6.20 and 2.6.22.
-
-  config X86_CMPXCHG64
-     bool
--   depends on !M386 && !M486
-+   depends on X86_PAE
-     default y
-
-Will this have an impact on spinlocks? RCU? something else?
-
-Regards.
