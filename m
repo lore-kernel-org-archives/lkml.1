@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760190AbXHBToB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXHBTrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760190AbXHBToB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 15:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757910AbXHBTnw
+	id S1760050AbXHBTrs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 15:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755251AbXHBTrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 15:43:52 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:33991 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754262AbXHBTnv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 15:43:51 -0400
-Date: Thu, 2 Aug 2007 15:42:47 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Chuck Ebbert <cebbert@redhat.com>
-cc: Gabriel C <nix.or.die@googlemail.com>, Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <46B22BDA.8090604@redhat.com>
-Message-ID: <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
- <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
- <46B22BDA.8090604@redhat.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 2 Aug 2007 15:47:41 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:33558 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753653AbXHBTrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 15:47:40 -0400
+Subject: Re: [PATCH] Apply memory policies to top two highest zones when
+	highest zone is ZONE_MOVABLE
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@skynet.ie>
+Cc: akpm@linux-foundation.org, clameter@sgi.com,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070802172118.GD23133@skynet.ie>
+References: <20070802172118.GD23133@skynet.ie>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 02 Aug 2007 15:41:51 -0400
+Message-Id: <1186083711.5040.74.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, Chuck Ebbert wrote:
-
-> On 08/02/2007 01:50 PM, Cal Peake wrote:
-> > This problem seems to be getting worse. With the latest linus tree, after 
-> > the initial hang where the power button is needed to bring the system back 
-> > to life, the boot process slows to a crawl.
-> > 
-> > Although if I repeatedly press the shift key it'll help move things along. 
-> > I'm guessing the keyboard interrupt firing off is doing something to help 
-> > it. The system seems OK though after booting is finished.
-> > 
-> > Upon shutdown it actually stalls out without help from the shift key.
-> > 
-> > Any thoughts on this, or tips to help debug it further?
+On Thu, 2007-08-02 at 18:21 +0100, Mel Gorman wrote:
+> The NUMA layer only supports NUMA policies for the highest zone. When
+> ZONE_MOVABLE is configured with kernelcore=, the the highest zone becomes
+> ZONE_MOVABLE. The result is that policies are only applied to allocations
+> like anonymous pages and page cache allocated from ZONE_MOVABLE when the
+> zone is used.
 > 
-> Try the 'nolapic_timer' option.
+> This patch applies policies to the two highest zones when the highest zone
+> is ZONE_MOVABLE. As ZONE_MOVABLE consists of pages from the highest "real"
+> zone, it's always functionally equivalent.
+> 
+> The patch has been tested on a variety of machines both NUMA and non-NUMA
+> covering x86, x86_64 and ppc64. No abnormal results were seen in kernbench,
+> tbench, dbench or hackbench. It passes regression tests from the numactl
+> package with and without kernelcore= once numactl tests are patched to
+> wait for vmstat counters to update.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 
-Ah, thank you Chuck! This looks to have fixed the stalling/hanging 
-problems I was having.
 
-Now I'm wondering if arch/i386/kernel/cpu/amd.c:amd_apic_timer_broken() 
-can (or needs to) be updated for this particular CPU revision.
+And an ia_64 NUMA platform with some ad hoc, interactive functional
+testing with memtoy and an overnight run of a usex job mix.  Job mix
+included a 32-way kernel build, several povray tracing apps, IO tests,
+sequential and random vm fault tests and a number of 'bin' tests that
+simulate a half a dozen crazed monkeys pounding away at keyboards
+entering surprisingly error-free commands.  All of these loop until
+stopped or the system hangs/crashes--which it didn't...
 
-Andi?
 
-Thanks,
--- 
-Cal Peake
+Acked-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Tested-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+
 
