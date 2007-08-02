@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbXHBWBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756355AbXHBWF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbXHBWBJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbXHBWAu
+	id S1756355AbXHBWF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbXHBWFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:00:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.190]:46665 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755398AbXHBWAs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:00:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
-        b=GlDyjbCIqT4UKS3ufNObdjmHIaiNJpRbybbI315CxAYJzeJ/EalUo7hmmWUgyGFFOAmslIum7Xn05o7m9BM+vkK09k2VGhxmL0nlMq9Fbuifd4tNdHm/Z8gWa44o/k3lIPfAg49DtSkbl1OtnOOauIzucd9F6kTiuR24nv9hsfM=
-Message-ID: <46B25403.90902@googlemail.com>
-Date: Fri, 03 Aug 2007 00:00:35 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070721)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] kernel-parameters.txt : watchdog.txt should be wdt.txt 
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 18:05:19 -0400
+Received: from mail.screens.ru ([213.234.233.54]:47180 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752372AbXHBWFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:05:17 -0400
+Date: Fri, 3 Aug 2007 02:05:41 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH -mm 2/3] Freezer: Use wait queue instead of busy looping (updated)
+Message-ID: <20070802220541.GA572@tv-sign.ru>
+References: <200708012328.23939.rjw@sisk.pl> <200708022313.32944.rjw@sisk.pl> <20070802212307.GA521@tv-sign.ru> <200708022349.44778.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708022349.44778.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Documentation/watchdog/watchdog.txt does not exist, it is Documentation/watchdog/wdt.txt
+On 08/02, Rafael J. Wysocki wrote:
+>
+> On Thursday, 2 August 2007 23:23, Oleg Nesterov wrote:
+> > On 08/02, Rafael J. Wysocki wrote:
+> > >
+> > > On Thursday, 2 August 2007 20:40, Oleg Nesterov wrote:
+> > > > On 08/02, Rafael J. Wysocki wrote:
+> > > > >
+> > > > > @@ -171,6 +186,10 @@ static int try_to_freeze_tasks(int freez
+> > > > >  
+> > > > >  	end_time = jiffies + TIMEOUT;
+> > > > >  	do {
+> > > > > +		DEFINE_WAIT(wait);
+> > > > > +
+> > > > > +		add_wait_queue(&refrigerator_waitq, &wait);
+> > > > 
+> > > > Hmm. In that case I'd sugest to use prepare_to_wait(). This means that
+> > > > multiple wakeups from refrigerator() won't do unnecessary work,
+> > > 
+> > > I'm not sure what you mean.
+> > > 
+> > > Do you mean that if we are TASK_UNINTERRUPTIBLE, then the first wake up
+> > > should remove us from the queue?
+> > 
+> > No, not because we are TASK_UNINTERRUPTIBLE, but yes, first wake up will
+> > remove us because DEFINE_WAIT() uses autoremove_wake_function().
+> 
+> Yes, it does, but the prepare_to_wait() version would only cause current to
+> become TASK_UNINTERRUPTIBLE before it sends freezing requests, the other
+> differences don't seem to matter.  I'm trying to understand why it would change
+> the behavior in the way you have described.
 
-Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
+Ugh, this is not the first time when I didn't read your patch carefully, sorry!
 
----
+I missed that your patch already uses DEFINE_WAIT(), and I was confused by the
+add_wait_queue() which is usually used along with DECLARE_WAITQUEUE().
 
- Documentation/kernel-parameters.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Oleg.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index efdb42f..a326487 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -1922,7 +1922,7 @@ and is between 256 and 4096 characters. It is defined in the file
- 			See header of drivers/scsi/wd7000.c.
- 
- 	wdt=		[WDT] Watchdog
--			See Documentation/watchdog/watchdog.txt.
-+			See Documentation/watchdog/wdt.txt.
- 
- 	xd=		[HW,XT] Original XT pre-IDE (RLL encoded) disks.
- 	xd_geo=		See header of drivers/block/xd.c.
