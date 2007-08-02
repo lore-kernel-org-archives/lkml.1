@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759339AbXHBRGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758939AbXHBRKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759339AbXHBRGx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 13:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXHBRGo
+	id S1758939AbXHBRKI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 13:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbXHBRJ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 13:06:44 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48056 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751297AbXHBRGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 13:06:43 -0400
-Date: Thu, 2 Aug 2007 18:13:49 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-Message-ID: <20070802181349.40ca474f@the-village.bc.nu>
-In-Reply-To: <46B20662.6080606@rtr.ca>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no>
-	<46A84B4A.6070902@shaw.ca>
-	<46A8C6F1.4080309@howardsilvan.com>
-	<Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
-	<46AA2748.80703@howardsilvan.com>
-	<Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
-	<46AA3801.7090204@shaw.ca>
-	<20070728092842.GC26443@flint.arm.linux.org.uk>
-	<Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl>
-	<46B1F0CB.9060106@rtr.ca>
-	<46B202DE.5000709@shaw.ca>
-	<46B20662.6080606@rtr.ca>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Aug 2007 13:09:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:41674 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754598AbXHBRJz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 13:09:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH][Fix] Hibernation: Do not try to mark invalid PFNs as nosave
+Date: Thu, 2 Aug 2007 19:18:51 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Thomas Renninger <trenn@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708021918.52283.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's what "hdparm -u1" (or -u0) controls.
+[Please consider as 2.6.23 material.]
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Only some of the time.
+On some systems some PFNs reported by the early initialization code as 'nosave'
+may be invalid.  If we try to set the corresponding bits in the hibernation
+bitmap, BUG_ON() in memory_bm_find_bit() will be triggered and the system
+won't be able to boot  (cf. https://bugzilla.novell.com/show_bug.cgi?id=296242).
 
-> Ingo's RT patches would probably fix all of this.
+Prevent this from happening by verifying if the 'nosave' PFNs are valid in
+mark_nosave_pages().
 
-The worst case IDE times we've seen for executing a single indivisible
-un-interruptible I/O cycle with a drive are around 1mS. Thats a hardware
-limit.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/snapshot.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-Alan
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -709,7 +709,8 @@ static void mark_nosave_pages(struct mem
+ 				region->end_pfn << PAGE_SHIFT);
+ 
+ 		for (pfn = region->start_pfn; pfn < region->end_pfn; pfn++)
+-			memory_bm_set_bit(bm, pfn);
++			if (pfn_valid(pfn))
++				memory_bm_set_bit(bm, pfn);
+ 	}
+ }
+ 
