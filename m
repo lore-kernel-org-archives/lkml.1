@@ -1,137 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758704AbXHBWUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbXHBWUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758704AbXHBWUS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbXHBWUE
+	id S1759343AbXHBWUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbXHBWUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:20:04 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:11540 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbXHBWUC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:20:02 -0400
-X-IronPort-AV: i="4.19,215,1183348800"; 
-   d="scan'208"; a="47254542:sNHT28371091"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Greg KH" <greg@kroah.com>
-Subject: [PATCH] debugfs helper for decimal challenged
-Date: Thu, 2 Aug 2007 18:23:50 -0400
-User-Agent: KMail/1.9.5
-Cc: "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "Mike Frysinger" <vapier.adi@gmail.com>
-References: <200708011752.58481.rgetz@blackfin.uclinux.org> <200708012313.51933.rgetz@blackfin.uclinux.org> <20070802210925.GA6199@kroah.com>
-In-Reply-To: <20070802210925.GA6199@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 18:20:15 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:40693 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756617AbXHBWUN (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:20:13 -0400
+Date: Fri, 3 Aug 2007 08:20:02 +1000
+From: David Chinner <dgc@sgi.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Petr Tesarik <ptesarik@suse.cz>, Dave Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: mmap behavior on out-of-space conditions
+Message-ID: <20070802222002.GT12413810@sgi.com>
+References: <1186058486.2289.17.camel@elijah.suse.cz> <1186059975.12034.111.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708021823.50173.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 02 Aug 2007 22:19:59.0892 (UTC) FILETIME=[43BEAD40:01C7D553]
+In-Reply-To: <1186059975.12034.111.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Robin Getz <rgetz@blackfin.uclinux.org>
- 
-Allows debugfs helper functions to have a hex output, rather than just decimal
- 
-Signed-off-by:  Robin Getz <rgetz@blackfin.uclinux.org>
----
+On Thu, Aug 02, 2007 at 03:06:15PM +0200, Peter Zijlstra wrote:
+> On Thu, 2007-08-02 at 14:41 +0200, Petr Tesarik wrote:
+> > Hello,
+> > 
+> > while solving a different issue, my colleague Libor Pechacek found a
+> > problem with handling mmapped sparse files. If you mmap the hole insidea
+> > sparse file and write to it, the data gets silently lost if there is not
+> > enough space left on the underlying device.
+> 
+> I think Dave's block_page_mkwrite() stuff addresses this as well, no?
+> 
+> http://lkml.org/lkml/2007/3/18/198
 
- fs/debugfs/file.c       |   36 ++++++++++++++++++++++++++++++++++++
- include/linux/debugfs.h |   27 +++++++++++++++++++++++++++
- 2 files changed, 63 insertions(+)
+Yes it does. But only XFS hooks that right now. It works, too. ;)
 
-Index: linux-2.6.x/include/linux/debugfs.h
-===================================================================
---- linux-2.6.x/include/linux/debugfs.h	(revision 3534)
-+++ linux-2.6.x/include/linux/debugfs.h	(working copy)
-@@ -44,6 +44,12 @@
- 				  struct dentry *parent, u16 *value);
- struct dentry *debugfs_create_u32(const char *name, mode_t mode,
- 				  struct dentry *parent, u32 *value);
-+struct dentry *debugfs_create_x8(const char *name, mode_t mode,
-+				 struct dentry *parent, u8 *value);
-+struct dentry *debugfs_create_x16(const char *name, mode_t mode,
-+				 struct dentry *parent, u16 *value);
-+struct dentry *debugfs_create_x32(const char *name, mode_t mode,
-+				 struct dentry *parent, u32 *value);
- struct dentry *debugfs_create_bool(const char *name, mode_t mode,
- 				  struct dentry *parent, u32 *value);
- 
-@@ -104,6 +110,27 @@
- 	return ERR_PTR(-ENODEV);
- }
- 
-+static inline struct dentry *debugfs_create_x8(const char *name, mode_t mode,
-+					       struct dentry *parent,
-+					       u8 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
-+static inline struct dentry *debugfs_create_x16(const char *name, mode_t mode,
-+						struct dentry *parent,
-+						u16 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
-+static inline struct dentry *debugfs_create_x32(const char *name, mode_t mode,
-+						struct dentry *parent,
-+						u32 *value)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct dentry *debugfs_create_bool(const char *name, mode_t mode,
- 						 struct dentry *parent,
- 						 u32 *value)
-Index: linux-2.6.x/fs/debugfs/file.c
-===================================================================
---- linux-2.6.x/fs/debugfs/file.c	(revision 3534)
-+++ linux-2.6.x/fs/debugfs/file.c	(working copy)
-@@ -179,6 +179,42 @@
- }
- EXPORT_SYMBOL_GPL(debugfs_create_u32);
- 
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x8, debugfs_u8_get, debugfs_u8_set, "0x%02llx\n");
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x16, debugfs_u16_get, debugfs_u16_set, "0x%04llx\n");
-+
-+DEFINE_SIMPLE_ATTRIBUTE(fops_x32, debugfs_u32_get, debugfs_u32_set, "0x%08llx\n");
-+
-+/**
-+ * debugfs_create_x8 - create a debugfs file that is used to read and write an unsigned 8-bit value
-+ * debugfs_create_x16 - create a debugfs file that is used to read and write an unsigned 16-bit value
-+ * debugfs_create_x32 - create a debugfs file that is used to read and write an unsigned 32-bit value
-+ *
-+ * These functions are exactly the same as the above functions, (but use a hex
-+ * output for the decimal challenged) for details look at the above unsigned
-+ * decimal functions.
-+ */
-+struct dentry *debugfs_create_x8(const char *name, mode_t mode,
-+				 struct dentry *parent, u8 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_x8);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_x8);
-+
-+struct dentry *debugfs_create_x16(const char *name, mode_t mode,
-+				 struct dentry *parent, u16 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_x16);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_x16);
-+
-+struct dentry *debugfs_create_x32(const char *name, mode_t mode,
-+				 struct dentry *parent, u32 *value)
-+{
-+	return debugfs_create_file(name, mode, parent, value, &fops_x32);
-+}
-+EXPORT_SYMBOL_GPL(debugfs_create_x32);
-+
- static ssize_t read_file_bool(struct file *file, char __user *user_buf,
- 			      size_t count, loff_t *ppos)
- {
+Create and mount 128MB filesystem:
+
+budgie:~ # mkfs.xfs -f -d size=128m /dev/sdb9
+....
+
+Fill it up:
+
+budgie:~ # dd if=/dev/zero of=/mnt/scratch/fred bs=1024k count=127
+dd: writing `/mnt/scratch/fred': No space left on device
+119+0 records in
+118+0 records out
+124764160 bytes (125 MB) copied, 4.69505 seconds, 26.6 MB/s
+budgie:~ # sync
+budgie:~ # df -h /mnt/scratch
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sdb9             124M  120M   48K 100% /mnt/scratch
+
+Free up one block:
+
+budgie:~ # xfs_io -f -c "truncate 124760000" /mnt/scratch/fred
+budgie:~ # df -h /mnt/scratch
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sdb9             124M  120M   52K 100% /mnt/scratch
+
+Create sparse file:
+
+budgie:~ # dd if=/dev/zero of=/mnt/scratch/sparse_mmap_file bs=4k count=1 seek=1000000000
+1+0 records in
+1+0 records out
+4096 bytes (4.1 kB) copied, 0.00022675 seconds, 18.1 MB/s
+budgie:~ # ls -l /mnt/scratch/sparse_mmap_file
+-rw-r--r-- 1 root root 4096000004096 Aug  3 08:13 /mnt/scratch/sparse_mmap_file
+
+Mmap sparse file and try to write to it:
+
+budgie:~ # xfs_io -f -c "mmap 0 1000000000" -c " mwrite 4000000 50000" /mnt/scratch/sparse_mmap_file
+Bus error
+
+There's your bus error. The blocks that were allocated before ENOSPC:
+
+budgie:~ # xfs_bmap -vp /mnt/scratch/sparse_mmap_file
+/mnt/scratch/sparse_mmap_file:
+ EXT: FILE-OFFSET               BLOCK-RANGE      AG AG-OFFSET             TOTAL
+   0: [0..7807]:                hole                                       7808
+   1: [7808..7839]:             155520..155551    4 (24448..24479)           32
+   2: [7840..7999999999]:       hole                                 7999992160
+   3: [8000000000..8000000007]: 155512..155519    4 (24440..24447)            8
+budgie:~ #
+
+We got 4x4k data blocks allocated and:
+
+budgie:~ # df -h /mnt/scratch
+Filesystem            Size  Used Avail Use% Mounted on
+/dev/sdb9             124M  120M   32K 100% /mnt/scratch
+
+That shows that 5 blocks were allocated to hold the 4 data blocks
+that lead to ENOSPC. i.e. a metadata block of some kind was also
+allocated.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
