@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbXHBLGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbXHBLGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbXHBLGT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbXHBLGJ
+	id S1756775AbXHBLGg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbXHBLG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:06:09 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:52112 "EHLO havoc.gtf.org"
+	Thu, 2 Aug 2007 07:06:27 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39851 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753436AbXHBLGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:06:08 -0400
-Date: Thu, 2 Aug 2007 07:06:07 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+	id S1756442AbXHBLG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 07:06:26 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm 2/3] Freezer: Use wait queue instead of busy looping
+Date: Thu, 2 Aug 2007 13:15:18 +0200
+User-Agent: KMail/1.9.5
 Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] pata_isapnp: use MODULE_DEVICE_TABLE()
-Message-ID: <20070802110606.GA26087@havoc.gtf.org>
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <200708012328.23939.rjw@sisk.pl> <200708012332.48798.rjw@sisk.pl> <20070801164831.ed40546d.akpm@linux-foundation.org>
+In-Reply-To: <20070801164831.ed40546d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200708021315.18851.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, 2 August 2007 01:48, Andrew Morton wrote:
+> On Wed, 1 Aug 2007 23:32:48 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > +/*
+> > + * Used to notify try_to_freeze_tasks() that the refrigerator has been entered
+> > + * by a task.
+> > + */
+> > +static int refrigerator_called;
+> 
+> this is rather icky.
 
-I found this while doing ISDN PCI API conversions...  I presume this
-omission was not intentional?
-
-Signed-off-by: Jeff Garzik <jeff@garzik.org>
-
-
-diff --git a/drivers/ata/pata_isapnp.c b/drivers/ata/pata_isapnp.c
-index 5525518..91a396f 100644
---- a/drivers/ata/pata_isapnp.c
-+++ b/drivers/ata/pata_isapnp.c
-@@ -139,6 +139,8 @@ static struct pnp_device_id isapnp_devices[] = {
- 	{.id = ""}
- };
- 
-+MODULE_DEVICE_TABLE(pnp, isapnp_devices);
-+
- static struct pnp_driver isapnp_driver = {
- 	.name		= DRV_NAME,
- 	.id_table	= isapnp_devices,
+Well, the alternative would be to open code something like wait_event_timeout.
