@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760178AbXHBXgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbXHBXhV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760178AbXHBXgh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 19:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbXHBXg1
+	id S1761410AbXHBXhV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 19:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756444AbXHBXhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 19:36:27 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:36747 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756116AbXHBXg0 (ORCPT
+	Thu, 2 Aug 2007 19:37:09 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:39366 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755875AbXHBXhH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 19:36:26 -0400
-Date: Thu, 2 Aug 2007 16:35:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai.Lu@Sun.COM
-Cc: Daniel Ritz <daniel.ritz-ml@swissonline.ch>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org
-Subject: Re: REGRESSION: serial_cs broken by 8250 changes
-Message-Id: <20070802163547.39f41af1.akpm@linux-foundation.org>
-In-Reply-To: <46B267BA.4030006@sun.com>
-References: <200708030106.33917.daniel.ritz-ml@swissonline.ch>
-	<46B267BA.4030006@sun.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 2 Aug 2007 19:37:07 -0400
+Message-ID: <46B269FC.6020309@gmail.com>
+Date: Fri, 03 Aug 2007 01:34:20 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: Randy Dunlap <rdunlap@xenotime.net>, Robert Hancock <hancockr@shaw.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: gcc fixed size char array initialization bug - known?
+References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange> <46B2578A.805@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030024490.6774@poirot.grange> <20070802155434.b085219c.rdunlap@xenotime.net> <Pine.LNX.4.60.0708030056390.6774@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708030056390.6774@poirot.grange>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 02 Aug 2007 16:24:42 -0700
-Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+On 08/03/2007 01:26 AM, Guennadi Liakhovetski wrote:
 
-> Daniel Ritz wrote:
-> > commit 18a8bd949d6adb311ea816125ff65050df1f3f6e breaks serial_cs badly
-> > with an oops, completely killing PCMCIA.
-> > 
-> > register_console() now calls console->early_setup(). which in case of
-> > 8250.c (the only user anyway) is serial8250_console_early_setup()
-> > which is __init, calling 8250_early.c:serial8250_find_port_for_earlycon()
-> > which is __init as well. boom.
-> > 
-> > the changelog mentions SERIAL_PORT_DFNS removal which happens to be
-> > commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26. but this got reverted
-> > by commit 57d4810ea0d9ca58a7bcc1336607f0cede0a2abf. so i'd suggest to
-> > just revert the 8250 changes as well.
-> > 
-> > rgds
-> > -daniel
+> On Thu, 2 Aug 2007, Randy Dunlap wrote:
 > 
-> Is there any flag or sign that init code has been released?
+>> C99 spec that Al referred you to (available for around US$18 as a pdf) 
+>> says in 6.7.8, para. 14 (where Al said):
+>> 
+>> "An array of character type may be initialized by a character string
+>> literal, optionally enclosed in braces. Successive characters of the
+>> character string literal (including the terminating null character if
+>> there is room or if the array is of unknown size) initialize the 
+>> elements of the array."
+> 
+> Wow... So, the terminating '\0' in the string constant IS "special" and 
+> "optional"... Ok, then, THIS does answer my question, THIS I can 
+> understand, and, ghm, accept...
+> 
+> Thanks to all who tried to explain this to me and sorry it took so
+> long...
 
-Nope.
+Ah come on, it would be great fun to now make the argument that that quoted 
+bit doesn't actually say wat should happen when there's _no_ room for the 
+terminating null character...
 
-> We could use that to prevent init code to be called after code is freed.
-
-If we can omit a function call without breaking anything then we shouldn't
-have been calling that function at all ;)
-
-It sounds like making serial8250_console_early_setup() and
-serial8250_find_port_for_earlycon() non-__init will fix this.
-
+Rene.
