@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759125AbXHBQ3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759252AbXHBQaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759125AbXHBQ3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 12:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758597AbXHBQ31
+	id S1759252AbXHBQaH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 12:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbXHBQ3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 12:29:27 -0400
-Received: from rtr.ca ([64.26.128.89]:2865 "EHLO mail.rtr.ca"
+	Thu, 2 Aug 2007 12:29:53 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:60037 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756488AbXHBQ30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 12:29:26 -0400
-Message-ID: <46B20662.6080606@rtr.ca>
-Date: Thu, 02 Aug 2007 12:29:22 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl> <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl> <46AA3801.7090204@shaw.ca> <20070728092842.GC26443@flint.arm.linux.org.uk> <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl> <46B1F0CB.9060106@rtr.ca> <46B202DE.5000709@shaw.ca>
-In-Reply-To: <46B202DE.5000709@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1757372AbXHBQ3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 12:29:52 -0400
+Date: Thu, 2 Aug 2007 18:31:08 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Gabriel C <nix.or.die@googlemail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Section mismatch warnings
+Message-ID: <20070802163108.GA2431@uranus.ravnborg.org>
+References: <46AE2459.7080905@googlemail.com> <20070730185124.GA29116@uranus.ravnborg.org> <46AE3C80.7010307@googlemail.com> <46AF9152.2050707@googlemail.com> <20070731204846.GA9985@uranus.ravnborg.org> <46AFB06E.2020401@googlemail.com> <46B1E9D6.80006@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B1E9D6.80006@googlemail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Mark Lord wrote:
->> I don't believe the speed of the machine has much to do with it,
->> as IDE PIO is always at pretty much the same speed (or slower)
->> regardless of the CPU speed.
->>
->> Best case is about .120 usec per 16-bit word, but that doesn't often 
->> pan out
->> in practice.  More typical is something closer to 1 usec per 16-bit word.
->>
->> So, for multcount=16 (very common), best case is 16 * 256 * .120 = 491 
->> usec,
->> plus extra overhead for reading the IDE status register (another usec 
->> or so),
->> and other stuff.  Figure maybe 500usec total per interrupt for 
->> multcount=16
->> in the best case, or 4000usec in the worst case.
->>
->> At 115200bps, we get a byte every 86 usec or so.  Assuming the UART FIFO
->> is set to interrupt (warn) us at 12/16 full, we have 4*86 = 344 usec to
->> respond and de-assert RTS.  Less than that in practice.
->>
->> Conclusion:  using IDE multisector PIO is not a good idea with high speed
->> serial transfers happening, since we cannot respond quickly enough.
->>
->> It might be possible to set the buffer underrun threshold lower in the 
->> UART (?).
->>
->> All that said, I doubt that his system is using IDE PIO in the first 
->> place.
->> Dunno how long IDE DMA interrupts take, but it's probably in the 20-50 
->> usec range.
+On Thu, Aug 02, 2007 at 04:27:34PM +0200, Gabriel C wrote:
 > 
-> I think that PIO transfers only have to be done with interrupts disabled 
-> on really old, evil controllers (without unmask set). I don't think 
-> libata ever disables interrupts during transfers(?)
+> >>> WARNING: vmlinux.o(.init.text+0x29d40): Section mismatch: reference to .exit.text:wbsd_release_resources (between 'wbsd_init' and 'wbsd_probe')
+> >>> WARNING: vmlinux.o(.init.text+0x29d49): Section mismatch: reference to .exit.text:wbsd_free_mmc (between 'wbsd_init' and 'wbsd_probe')
+> >>> WARNING: vmlinux.o(.init.text+0x29f28): Section mismatch: reference to .exit.text:wbsd_free_mmc (between 'wbsd_init' and 'wbsd_probe')
+> >> When a function is marked __exit and used from an init function then the safe choice
+> >> is to just remove the __exit marking. Usually this is small functions used
+> >> only in error situations.
+> >> Should be trivial too.
+> > 
+> > I'll look at those too
+> > 
+> >> Sorry - no patch this time. Could you try to look at it yorself then I will review.
+> > 
+> > Ok I'll try.
+> > 
+> 
+> The warnings gone with this patch but I'm not really sure it is correct.
+Looks correct to me.
+You drop the __devexit marking for functions used outside __exit.
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-That's what "hdparm -u1" (or -u0) controls.
-
-But it doesn't matter a whit here.  The problem is that the IDE interrupt
-handling can take a long time, regardless of whether it unmasks IRQs or not.
-And if that IDE interrupt interrupts a serial interrupt, then the serial
-stuff won't get handled until the IDE stuff completes.  Thus the problem.
-
-The "fix" could be to have the serial IRQ handler never unmask interrupts,
-but that's a bit unsociable to others.  The IDE stuff really needs to not
-do so much during the actual IRQ handler.
-
-Ingo's RT patches would probably fix all of this.
- 
-
+	Sam
+> 
+> 
+>  drivers/mmc/host/wbsd.c |   10 +++++-----
+>  1 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/mmc/host/wbsd.c b/drivers/mmc/host/wbsd.c
+> index e0c9808..9bf2a87 100644
+> --- a/drivers/mmc/host/wbsd.c
+> +++ b/drivers/mmc/host/wbsd.c
+> @@ -1266,7 +1266,7 @@ static int __devinit wbsd_alloc_mmc(struct device *dev)
+>  	return 0;
+>  }
+>  
+> -static void __devexit wbsd_free_mmc(struct device *dev)
+> +static void wbsd_free_mmc(struct device *dev)
+>  {
+>  	struct mmc_host *mmc;
+>  	struct wbsd_host *host;
+> @@ -1358,7 +1358,7 @@ static int __devinit wbsd_request_region(struct wbsd_host *host, int base)
+>  	return 0;
+>  }
+>  
+> -static void __devexit wbsd_release_regions(struct wbsd_host *host)
+> +static void wbsd_release_regions(struct wbsd_host *host)
+>  {
+>  	if (host->base)
+>  		release_region(host->base, 8);
+> @@ -1434,7 +1434,7 @@ err:
+>  		"Falling back on FIFO.\n", dma);
+>  }
+>  
+> -static void __devexit wbsd_release_dma(struct wbsd_host *host)
+> +static void wbsd_release_dma(struct wbsd_host *host)
+>  {
+>  	if (host->dma_addr) {
+>  		dma_unmap_single(mmc_dev(host->mmc), host->dma_addr,
+> @@ -1484,7 +1484,7 @@ static int __devinit wbsd_request_irq(struct wbsd_host *host, int irq)
+>  	return 0;
+>  }
+>  
+> -static void __devexit wbsd_release_irq(struct wbsd_host *host)
+> +static void  wbsd_release_irq(struct wbsd_host *host)
+>  {
+>  	if (!host->irq)
+>  		return;
+> @@ -1535,7 +1535,7 @@ static int __devinit wbsd_request_resources(struct wbsd_host *host,
+>   * Release all resources for the host.
+>   */
+>  
+> -static void __devexit wbsd_release_resources(struct wbsd_host *host)
+> +static void wbsd_release_resources(struct wbsd_host *host)
+>  {
+>  	wbsd_release_dma(host);
+>  	wbsd_release_irq(host);
