@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbXHBWoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760640AbXHBWrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbXHBWoP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 18:44:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbXHBWn4
+	id S1760640AbXHBWrH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 18:47:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbXHBWqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 18:43:56 -0400
-Received: from mms1.broadcom.com ([216.31.210.17]:2164 "EHLO mms1.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754983AbXHBWny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 18:43:54 -0400
-X-Server-Uuid: 6B5CFB92-F616-4477-B110-55F967A57302
-Subject: Re: [REGRESSION] tg3 dead after s2ram
-From: "Michael Chan" <mchan@broadcom.com>
-To: "David Miller" <davem@davemloft.net>
-cc: joachim.deguara@amd.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
-       "netdev" <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
-In-Reply-To: <20070802.150636.77057800.davem@davemloft.net>
-References: <200708021115.10812.joachim.deguara@amd.com>
- <20070802.022317.66176729.davem@davemloft.net>
- <1186081829.18322.20.camel@dell>
- <20070802.150636.77057800.davem@davemloft.net>
-Date: Thu, 02 Aug 2007 16:38:00 -0700
-Message-ID: <1186097880.18322.73.camel@dell>
-MIME-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8)
-X-WSS-ID: 6AAC81AA35W1368972-01-01
+	Thu, 2 Aug 2007 18:46:55 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:65479 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756427AbXHBWqz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 18:46:55 -0400
+Subject: Re: VIA EPIA EK: strange eth dev numbering
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Michael Tokarev <mjt@tls.msk.ru>,
+       Herbert Rosmanith <kernel@wildsau.enemy.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708030039300.495@fbirervta.pbzchgretzou.qr>
+References: <200708021056.l72Au722008603@wildsau.enemy.org>
+	 <Pine.LNX.4.64.0708021347270.24572@fbirervta.pbzchgretzou.qr>
+	 <46B1D708.9040106@msgid.tls.msk.ru>
+	 <Pine.LNX.4.64.0708021536350.24572@fbirervta.pbzchgretzou.qr>
+	 <Pine.LNX.4.64.0708022034190.9319@fbirervta.pbzchgretzou.qr>
+	 <3ae72650708021500v3de84e6vdf15d0a9e5baf661@mail.gmail.com>
+	 <Pine.LNX.4.64.0708030039300.495@fbirervta.pbzchgretzou.qr>
 Content-Type: text/plain
+Date: Fri, 03 Aug 2007 00:49:39 +0200
+Message-Id: <1186094979.3443.35.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.5 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19GyTv6oIzgq8UxVkBn5STKgYSeJUcYWDUpqbr
+ x5kAQ/XLwmT66IiiA9SnyWve7yF/yor6yiZg8ftPXBJtWLR1DU
+ kyUukoiKnElQmFuXOFhQ2LZleqoQaJj
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 15:06 -0700, David Miller wrote:
-> From: "Michael Chan" <mchan@broadcom.com>
-> Date: Thu, 02 Aug 2007 12:10:29 -0700
->
-> > Alternatively, we can also fix it by calling pci_enable_device() again
-> > in tg3_open().  But I think it is better to just always save and restore
-> > in suspend/resume.  bnx2.c will also require the same fix.
+
+On Fri, 2007-08-03 at 00:39 +0200, Jan Engelhardt wrote:
+> On Aug 3 2007 00:00, Kay Sievers wrote:
+> >On 8/2/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+> >> I know I have seen my kernel outputting "A renamed to B". Since you two
+> >> however wanted that information in the first place, I grepped a bit
+> >> around, and actually found, (drumroll), that the SUSE kernel has had a
+> >> proper patch for [I can't remember how long] quite some time. (At least
+> >> one distro which does the right thing.) I copied it below.
+> >
+> >> e1000: eth3: e1000_probe: Intel(R) PRO/1000 Network Connection
+> >> dev_change_name: about to rename 'eth3' to 'eth0'
+> >> dev_change_name: about to rename 'eth3' to 'ethxx3'
+> >> eth3 renamed to ethxx3
+> >
+> >I just made udev when it successfully renamed an interface to write
+> >that to the kernel log, so dmesg will show:
+> >  <6>udev: renamed network interface eth0 to eth1
 > 
-> We could do it that way.  But don't you think it's more reliable to
-> save and restore around the event we know will be what clobbers the
-> PCI config space on us? :-)
-> 
+> I think it is helpful to integrate the suse patch rather than to patch udev
+> alone. This way, renames that do not involve udev also show up.
 
-Yes for sure when netif state is running and we were already doing that.
+But if you need to swap interface names, you will see the useless
+temporary device names. On SUSE, nothing else renames network interfaces
+these days, so we'll probably just remove that patch. :)
 
-> Other things might happen between ->resume() and ->open() that could
-> modify PCI config space, and we could overwrite such changes if we do
-> the PCI restore in ->open().
-
-I suggested calling pci_enable_device() in ->open(), not calling
-pci_restore_state() in ->open().  I ultimately decided against it
-because some devices do not enable memory as a workaround and it would
-be messy to deal with it again in tg3_open().
-
-I definitely agree that calling PCI restore in ->open() is a bad idea.
-We used to save PCI state in ->probe() once and restore PCI state after
-every chip reset.  This sequence caused many subtle problems.
+Kay
 
