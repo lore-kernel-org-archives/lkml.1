@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbXHBLzr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757083AbXHBL46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbXHBLzr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 07:55:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754581AbXHBLzj
+	id S1757083AbXHBL46 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 07:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbXHBL4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 07:55:39 -0400
-Received: from ns1.suse.de ([195.135.220.2]:33209 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752367AbXHBLzi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 07:55:38 -0400
-Date: Thu, 2 Aug 2007 13:55:34 +0200
-From: Jan Blunck <jblunck@suse.de>
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Cc: Dave Kleikamp <shaggy@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>, hch@infradead.org
-Subject: Re: [RFC 12/26] ext2 white-out support
-Message-ID: <20070802115534.GX5101@hasse.suse.de>
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.261652101@weierstrass.suse.de> <20070731163656.GC22350@filer.fsl.cs.sunysb.edu> <20070731170012.GN5101@hasse.suse.de> <20070731171159.GA27234@filer.fsl.cs.sunysb.edu> <1185981810.18007.14.camel@kleikamp.austin.ibm.com> <20070801184405.GA18405@filer.fsl.cs.sunysb.edu> <1185995431.18007.24.camel@kleikamp.austin.ibm.com> <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
+	Thu, 2 Aug 2007 07:56:51 -0400
+Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:38122 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1754355AbXHBL4u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 07:56:50 -0400
+Date: Thu, 2 Aug 2007 12:56:31 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Adrian =?iso-8859-1?Q?Schr=F6ter?= <adrian@suse.de>,
+       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, pavel@ucw.cz, lenb@kernel.org,
+       "Zhang, Rui" <rui.zhang@intel.com>, Jean Delvare <khali@linux-fr.org>,
+       Alexey Starikovskiy <aystarik@gmail.com>
+Message-ID: <20070802115631.GA29735@srcf.ucam.org>
+References: <46B1988C.3090302@t-online.de> <1186047747.18821.450.camel@queen.suse.de> <200708021145.09377.adrian@suse.de> <1186048701.18821.459.camel@queen.suse.de> <20070802120221.5474e732@the-village.bc.nu> <20070802111327.GA29002@srcf.ucam.org> <1186055100.18821.494.camel@queen.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070801193330.GA20928@filer.fsl.cs.sunysb.edu>
-Organization: SUSE LINUX Products GmbH, GF Markus Rex, HRB 16746 (AG
-	Nuernberg)
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <1186055100.18821.494.camel@queen.suse.de>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: 2.6.22 regression: thermal trip points
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 01, Josef Sipek wrote:
+On Thu, Aug 02, 2007 at 01:45:00PM +0200, Thomas Renninger wrote:
+> On Thu, 2007-08-02 at 12:13 +0100, Matthew Garrett wrote:
+> > I strongly suspect that the vast majority[1] of hardware that "needs" 
+> > the trip points changing works perfectly well under Windows, so it's 
+> > likely to be papering over bugs in the kernel. It'd be nice if we fixed 
+> > those rather than encouraging people to poke stuff into /proc,
+> Some arguments against that:
+>   - You cannot tell a customer: Wait for the kernel in half a year.
+>     This is the time it at least needs until a laptop got sold, the
+>     problem is found, a patch is written and checked in and finally
+>     hits the distribution.
 
-> This brings up an very interesting (but painful) question...which makes more
-> sense? Allowing the modifications in only the top-most branch, or any branch
-> (given the user allows it at mount-time)?
+We have to do so frequently. New hardware often exposes bugs in the 
+kernel.
 
-My implementation is keeping things simple because of reason. There have been
-many attempts to get unioning working on the filesystem layer. Most of them
-failed because of complexity. E.g. BSD throwed away all of the filesystem
-stacking support after they tried to fix unionfs for years. Writing to lower
-layers is making things unnecessary complex. Therefore I left it out.
+>   - You can also not backport fixes as ACPI patches mostly have the
+>     potential to break other machines/BIOSes
+>   - There also exist the policy to not fix up/workaround totally broken
+>     AML BIOS implementations
 
-> > > 1) "cp -r" the entire subtree being renamed to highest-priority branch, and
-> > > rename there (you might have to recreate a series of directories to have a
-> > > place to "cp" to...so you got "cp -r" _AND_ "mkdir -p"-like code in the VFS!
-> > > 1/2 a :) )
-> > 
-> > I think this is the only alternative, given the design.
->  
-> Right. Doing something like this at the filesystem level (as we do in
-> unionfs) seems less painful - filesystems are places full of all sorts of
-> nefarious activities to begin with. Having it in the VFS seems...even
-> uglier.
+The policy has been to attempt to be bug-compatible with Windows 
+whenever possible for some time now.
 
-The userspace is doing it since I return -EXDEV. And that even comes for
-free. I don't need to hack around and call back into VFS as you do. It is so
-simple and straightforward in the VFS.
+>   - We do not need to and never will be able to copy or do the same
+>     Windows is doing
+
+Given that many vendors still only test against Windows, that's exactly 
+what we need to do.
+
+> > especially when doing so is guaranteed to break in really confusing ways 
+> > with a lot of hardware. The firmware can reset the trip points at 
+> > essentially arbitrary times and is well within its rights to expect the 
+> > OS to actually pay attention to them.
+> What the hell is so wrong with:
+> 
+> Let the user override the trip points. If he does so, ignore
+> thermal trip point updates from BIOS. Don't care for hysteresis
+> BIOS implementations (these are the BIOS trip point updates).
+
+No, that's not the only reason for notifications. Alteration in hardware 
+state may also force a recalculation of trip point (adding a battery to 
+a bay rather than a DVD drive may require the platform to be kept at a 
+lower temperature)
+
+> If user changes them, it's his fault, he doesn't need to...
+> Make sure that trip points can only be lowered, compared to the
+> initially fetched one from BIOS.
+
+Surely people want this functionality so that they can raise trip 
+points?
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
