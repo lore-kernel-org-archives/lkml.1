@@ -1,134 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754011AbXHBH5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbXHBIAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754011AbXHBH5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 03:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751620AbXHBH5e
+	id S1754893AbXHBIAI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 04:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbXHBH7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 03:57:34 -0400
-Received: from fmmailgate09.web.de ([217.72.192.184]:35079 "EHLO
-	fmmailgate09.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751638AbXHBH5e convert rfc822-to-8bit (ORCPT
+	Thu, 2 Aug 2007 03:59:55 -0400
+Received: from mtoichi13.ns.itscom.net ([219.110.2.183]:52874 "EHLO
+	mtoichi13.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751606AbXHBH7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 03:57:34 -0400
-Date: Thu, 02 Aug 2007 09:57:31 +0200
-Message-Id: <1745683987@web.de>
+	Thu, 2 Aug 2007 03:59:55 -0400
+Date: Thu, 2 Aug 2007 16:59:22 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Eugene Teo <eugeneteo@kernel.sg>, Len Brown <lenb@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/char/sonypi.c: fix ids member of struct
+	acpi_driver
+Message-ID: <20070802075921.GJ25969@inferi.kami.home>
+References: <20070801091534.GA6845@kernel.sg> <20070802064034.GF25969@inferi.kami.home> <1186041019.18821.399.camel@queen.suse.de>
 MIME-Version: 1.0
-From: Klaus Schulz <klaus.schulz@web.de>
-To: =?iso-8859-15?Q?Lenar_L=F5hmus?= <lenar@city.ee>,
-       Carlo Florendo <subscribermail@gmail.com>
-Cc: Klaus Schulz <Klaus.Schulz@web.de>, ck@vds.kolivas.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: ck vs. cfs : realtime audio performance
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19M8D/eguY6Em0T087l9dX9ttIsm7BPTbFxDTXvG4QWMyDsA
- YFax1tsre+vihhWFz5+1n3VdnfcND5a+8LCqe9rJ51QMZzN75TS05fj8/8rm
- w==
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186041019.18821.399.camel@queen.suse.de>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.23-rc1-mm1-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Carlo.
-
-The ranters! comment:
-
-I can understand your way of looking at things.
-But you'd better be a bit more careful with statements like these below, 
-if you don't really know what's going on.
-
-Just FYI: All possible traces - Ingo asked for - are on Ingos desk!
-
-My intention is to support you folks as good as I can to get the issues solved.
-
-As a user, with a rather limited knowledge about ck or cfs, I am just able to 
-judge on the results these patches are delivering. 
-I'll go always for the one  - if I have a choice - matching my requirements! 
-
-Since there is just one patch left in the near future, at least the way it looks to me today, 
-I am trying of course to support Ingo the best I can to identify potential issues.
-
-Constructive critism - always welcome! 
-
-Best regards
-\Klaus
-
-
-> -----Ursprüngliche Nachricht-----
-> Von: Carlo Florendo <subscribermail@gmail.com>
-> Gesendet: 02.08.07 08:27:01
-> An: Lenar Lõhmus <lenar@city.ee>
-> CC: Klaus Schulz <Klaus.Schulz@web.de>, ck@vds.kolivas.org, linux-kernel@vger.kernel.org, mingo@elte.hu
-> Betreff: Re: ck vs. cfs : realtime audio performance
-
-
+On Thu, Aug 02, 2007 at 09:50:18AM +0200, Thomas Renninger wrote:
+> On Thu, 2007-08-02 at 15:40 +0900, Mattia Dongili wrote:
+> > On Wed, Aug 01, 2007 at 05:15:34PM +0800, Eugene Teo wrote:
+> > > ids member of struct acpi_driver is of type struct acpi_device_id, not a
+> > > character array.
+> > > 
+> > > Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+> > > ---
+> > >  drivers/char/sonypi.c |    8 +++++++-
+> > >  1 files changed, 7 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+> > > index 73037a4..ac0aeb0 100644
+> > > --- a/drivers/char/sonypi.c
+> > > +++ b/drivers/char/sonypi.c
+> > > @@ -1147,10 +1147,16 @@ static int sonypi_acpi_remove(struct acpi_device *device, int type)
+> > >  	return 0;
+> > >  }
+> > >  
+> > > +const static struct acpi_device_id sonypi_device_ids[] = {
+> > > +	{"SNY6001", 0},
+> > > +	{"", 0},
+> > > +};
+> > > +MODULE_DEVICE_TABLE(acpi, sonypi_device_ids);
+> > 
+> > how does it behave with the already existing id in sony-laptop?
+> > I'd rather avoid the MODULE_DEVICE_TABLE for sonypi allowing sony-laptop
+> > to take over automagically.
 > 
-> Lenar Lõhmus wrote:
-> > Klaus Schulz wrote:
-> >>> I am currently testing the 2.6.22.1 cfs-rt9 vs. ck1 on my rather pure
-> >>> realtime high-end-audio setup. (NO X, just a terminal, streaming 
-> >>> .wav. I am using my own written player and brutefir as the audio 
-> >>> engine.)
-> >>> Comment: This is not a standard (amarok or xmms setup), all buffers in
-> >>> the chain are very small. Any problem will immidetialy end up in xruns.
-> >>> The sounddriver, HW (pci-bus etc.) are tweaked accordingly
-> >>> Until now ck1 on 2.6.22 is giving me better results (less audible
-> >>> distortions) and runs extremely stable compared to cfs. Under ck I 
-> >>> ran my player with schedtool -R -p 98, which was better than
-> >>> running it e.g. with nice -20 Both setups under cfs were giving me 
-> >>> worse results than ck.
-> >>> With CFS I also experienced XRUNS from time to time, what never happened
-> >>> with ck.
-> 
-> See, this is exactly the problem of the SD ranters.  A ranter posts a 
-> problem, doesn't give reproducability hints, and neither provides technical 
-> detail, not even the slightest relevant stats.  And the most irritating 
-> part is that the code that the OP wrote (or at least its relevant parts) is 
-> not even available for download.
-> 
-> I was wondering why the OP need timers for audio playback.  What type of 
-> audio?  PCM, MIDI?  Once does not need timers for PCM playback but for MIDI.
-> 
-> SD ranters. Pure rants.
-> 
-> Thank you very much.
-> 
-> Best Regards,
-> 
-> Carlo
-> 
-> 
-> -- 
-> Carlo Florendo
-> Softare Engineer/Network Co-Administrator
-> Astra Philippines Inc.
-> UP-Ayala Technopark, UP Campus Diliman
-> 1101 Quezon City, Philippines
-> http://www.astra.ph
-> 
-> --
-> The Astra Group of Companies
-> 5-3-11 Sekido, Tama City
-> Tokyo 206-0011, Japan
-> http://www.astra.co.jp
-> 
-> 
-> -- 
-> Carlo Florendo
-> Softare Engineer/Network Co-Administrator
-> Astra Philippines Inc.
-> UP-Ayala Technopark, UP Campus Diliman
-> 1101 Quezon City, Philippines
-> http://www.astra.ph
-> 
-> --
-> The Astra Group of Companies
-> 5-3-11 Sekido, Tama City
-> Tokyo 206-0011, Japan
-> http://www.astra.co.jp
-> 
+> Yes, sounds reasonable.
+> The patch is needed, but MODULE_DEVICE_TABLE should be ripped out.
+> AFAIK sonypi and sony-laptop cannot coexist together. But sony-acpi
+> should be preferred. If someone needs sonypi, he needs to blacklist
+> sony-apci in modprobe.conf and load sonypi manually.
 
+Yes, that's what I meant.
 
-_______________________________________________________________________
-Jetzt neu! Schützen Sie Ihren PC mit McAfee und WEB.DE. 3 Monate
-kostenlos testen. http://www.pc-sicherheit.web.de/startseite/?mc=022220
+> Shouldn't sony-acpi replace sonypi on longterm or at least addtional
+> "SNY6001" functionality be merged to sony-acpi? Having two drivers for
+> the same device is not a good idea.
 
+yep, sony-laptop will replace sonypi. It still has some problems but
+development is progressing in sony-laptop, not sonypi.
+
+Eugene, I'll import the patch without the MODULE_DEVICE_TABLE line.
+cheers
+-- 
+mattia
+:wq!
