@@ -1,63 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbXHCRqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764414AbXHCRr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764101AbXHCRqv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761285AbXHCRqo
+	id S1764414AbXHCRr2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 13:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762968AbXHCRrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:46:44 -0400
-Received: from mx2.suse.de ([195.135.220.15]:54020 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753547AbXHCRqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:46:43 -0400
-Date: Fri, 3 Aug 2007 10:49:00 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Brownell <david-b@pacbell.net>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-usb-devel@lists.sourceforge.net, Rogan Dawes <lists@dawes.za.net>,
-       Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by
-	default on certain device classes
-Message-ID: <20070803174900.GB17053@suse.de>
-References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org> <200708030737.56316.david-b@pacbell.net> <20070803150303.GA19968@srcf.ucam.org> <200708030929.17049.david-b@pacbell.net>
+	Fri, 3 Aug 2007 13:47:21 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43727 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761285AbXHCRrU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 13:47:20 -0400
+Date: Fri, 3 Aug 2007 13:47:17 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Jiri Kosina <jikos@jikos.cz>
+cc: David Brownell <david-b@pacbell.net>,
+       <linux-usb-devel@lists.sourceforge.net>, Dave Jones <davej@redhat.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Rogan Dawes <lists@dawes.za.net>,
+       Greg KH <gregkh@suse.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend
+ =?iso-8859-1?q?by=09default_on_certain_device?= classes
+In-Reply-To: <Pine.LNX.4.64.0708031725520.26230@twin.jikos.cz>
+Message-ID: <Pine.LNX.4.44L0.0708031327470.3758-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708030929.17049.david-b@pacbell.net>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 09:29:16AM -0700, David Brownell wrote:
-> On Friday 03 August 2007, Matthew Garrett wrote:
-> > > Speaking of which, what's this /dev/bus/usb/* crap on Ubuntu?
-> > > I had to undo all that on my Feisty system before any normal
-> > > /proc/bus/usb stuff would work again.
-> > 
-> > "Usbfs files can't handle Access Control Lists (ACL), which are the 
-> > default way to grant access to USB devices for untrusted users of a 
-> > desktop system. The usbfs functionality is replaced by real device-nodes 
-> > managed by udev. These nodes live in /dev/bus/usb and are used by 
-> > libusb."
-> > 
-> > (From Kconfig)
+On Fri, 3 Aug 2007, Jiri Kosina wrote:
+
+> What I have been seeing with both these keyboards was: if connected to 
+> UHCI controller, root hub not auto-suspended, as soon as they got 
+> autosuspended, and keys were pressed on them rapidly, very often some 
+> keypressess got lost. I didn't experience this on OHCI, but I remember 
+> Alan saying that he triggered it on OHCI too, right?
 > 
-> That's shortly after the explanation that the relevant Kconfig
-> option is for  ** /proc/bus/usb ** files ... note that despite the
-> strangeness in that text (usbfs still hasn't been "replaced", so
-> that should say "will eventually be replaced" not "is replaced"),
-> it's clear that /proc/bus/usb/ and /dev/bus/usb/ are two different
-> things.  And thus:  that Ubuntu's /dev/bus/usb/ setup is flakey.
+> Seemed like a timing issue - by lowering the polling timeout we were able 
+> to make things much better, but that of course costs us more power etc. 
+> and it's even not sure if it is an ultimate solution.
 
-Hm, if you look at SuSE and Fedora, they too are putting usbfs in
-/dev/bus/usb/ now, not mounting the filesystem, but using the device
-nodes for access due to ACLs for local users.
+Jiri and I ran a few tests at OLS, and we each did additional testing
+on our own.  We looked at a small selection of keyboards; the ones I
+tested were by Apple and HP.  Some keyboards had embedded hubs and
+others didn't.  Some of our testing was with the keyboard behind an
+external hub.  Sometimes only the keyboard controller was suspended,
+sometimes the controller and the embedded hub were, sometimes the
+external hub and everything downstream of it were, and sometimes the
+root hub was.  We tested with both UHCI and OHCI -- I may even have
+done some tests with EHCI and a high-speed hub, I don't remember now.
 
-libusb works just fine with this, and I think that all other programs
-that directly access the old /proc/bus/usb mount are fixed up, with the
-exception of usbview (but I do have patches floating around for that to
-solve it.)
+The end result was that some scenarios worked more reliably than 
+others.  There were lots of variables and it was hard to tie overall 
+behavior with system settings.  It did seem that in situations where 
+the topmost suspended device was plugged into a UHCI root hub, 
+increasing the the root hub's polling rate helped.  But it didn't 
+always help, and in any case we certainly don't want to change a kernel 
+timer from 250 ms to 32 ms whenever a device is suspended!
 
-thanks,
+The bad behavior we observed, as Jiri described, was that rapid typing 
+on a suspended keyboard would often cause one or more of the keystrokes 
+to be lost.  The probability of this happening varied with the 
+circumstances, but I don't think I ever found a combination that was 
+100% reliable.  It could well be a timing issue, or buffering -- 
+there's no real way to know.
 
-greg k-h
+An additional drawback to autosuspend for keyboards is the fact that 
+the NumLock, CapsLock, etc. LEDs go out.
+
+We didn't test any mice (at least, I didn't).  However it has been
+reported that while some suspended mice will send wakeup requests when
+they are moved, others won't.  Certainly an optical mouse won't.
+
+All in all, it appears that the simplest and most user-friendly
+approach is just not to autosuspend keyboards and mice.
+
+Alan Stern
+
