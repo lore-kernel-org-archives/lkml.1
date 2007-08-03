@@ -1,60 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762743AbXHCQjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbXHCQkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762743AbXHCQjd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 12:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbXHCQj0
+	id S1763008AbXHCQkm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 12:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbXHCQkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 12:39:26 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:50016 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753638AbXHCQjZ (ORCPT
+	Fri, 3 Aug 2007 12:40:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:34084 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753560AbXHCQke (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 12:39:25 -0400
-Subject: Re: [PATCH] remove hugetlb_instantiation_mutex
-From: Adam Litke <agl@us.ibm.com>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1185779758.4688.177.camel@ymzhang>
-References: <1185523069.4688.115.camel@ymzhang>
-	 <1185554277.23817.18.camel@localhost.localdomain>
-	 <1185779758.4688.177.camel@ymzhang>
-Content-Type: text/plain
-Date: Fri, 03 Aug 2007 11:39:23 -0500
-Message-Id: <1186159163.23817.32.camel@localhost.localdomain>
+	Fri, 3 Aug 2007 12:40:34 -0400
+Date: Fri, 3 Aug 2007 09:38:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
+       Neil Brown <neilb@suse.de>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: 2.6.23-rc1-mm2
+Message-Id: <20070803093830.39852a01.akpm@linux-foundation.org>
+In-Reply-To: <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-07-30 at 15:15 +0800, Zhang, Yanmin wrote:
-> On Fri, 2007-07-27 at 11:37 -0500, Adam Litke wrote:
-> > Hey... I am amazed at how quickly you came back with a patch for this :)
-> > Thanks for looking at it.  Unfortunately there is one show-stopper and I
-> > have some reservations (pun definitely intended) with your approach:
-> Thanks for your great comments.
+On Fri, 3 Aug 2007 13:00:46 +0200 Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de> wrote:
 
-Sorry for such a long delay in responding.  I have been pretty busy
-lately.
-
-> > First, your patch does not pass the libhugetlbfs test
-> > 'alloc-instantiate-race' which was written to tickle the the race which
-> > the mutex was introduced to solve.  Your patch works for shared
-> > mappings, but not for the private case.
-> My testing about private might not be thorough. Function hugetlb_cow has a race
-> for multi-thread to fault on the same private page index. But after I fixed it,
-> alloc-instantiate-race still failed.
 > 
-> I tried to google the source code tarball of libhugetlbfs test suite, but couldn't
-> find it. Would you like to send me a copy of the test source codes?
+> Hi,
+> 
+> Am Wednesday 01 August 2007 08:09 schrieb Andrew Morton:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.
+> >6.23-rc1-mm2/
+> >
+> >
+> > - the git-block tree remains dropped due to disageement with the Vaio
+> >
+> > - git-e1000new was withdrawn by the authors
+> >
+> > - git-wireless is back.  It is still a >3MB diff, and appears to compile.
+> >
+> > - Is anyone testing the kgdb code in here?
+> 
+> I still get some nfs related locking bug.
+> 
+> I applied 
+> 
+> linux-2.6.23-001-fix_rpciod_down_race.dif
+> linux-2.6.23-003-fix_locking_regression.dif
+> linux-2.6.23-004-fix_stateid_regression.dif
+> 
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.23-rc1-mm2 #3
+> ---------------------------------------------
+> events/0/5 is trying to acquire lock:
+>  (events){--..}, at: [<c012ed90>] flush_workqueue+0x0/0x70
+> 
+> but task is already holding lock:
+>  (events){--..}, at: [<c012e5c4>] run_workqueue+0xd4/0x1e0
+> 
+> other info that might help us debug this:
+> 2 locks held by events/0/5:
+>  #0:  (events){--..}, at: [<c012e5c4>] run_workqueue+0xd4/0x1e0
+>  #1:  ((nfs_automount_task).work){--..}, at: [<c012e5c4>] 
+> run_workqueue+0xd4/0x1e0
+> 
+> stack backtrace:
+>  [<c0104fda>] show_trace_log_lvl+0x1a/0x30
+>  [<c0105c02>] show_trace+0x12/0x20
+>  [<c0105d15>] dump_stack+0x15/0x20
+>  [<c013ee42>] __lock_acquire+0xc22/0x1030
+>  [<c013f2b1>] lock_acquire+0x61/0x80
+>  [<c012edd9>] flush_workqueue+0x49/0x70
+>  [<c012ee0d>] flush_scheduled_work+0xd/0x10
+>  [<dcf55c0c>] nfs_release_automount_timer+0x2c/0x30 [nfs]
+>  [<dcf45d8e>] nfs_free_server+0x9e/0xd0 [nfs]
+>  [<dcf4e626>] nfs_kill_super+0x16/0x20 [nfs]
+>  [<c017b38d>] deactivate_super+0x7d/0xa0
+>  [<c018f94b>] mntput_no_expire+0x4b/0x80
+>  [<c018fd94>] expire_mount_list+0xe4/0x140
+>  [<c0191219>] mark_mounts_for_expiry+0x99/0xb0
+>  [<dcf55d1d>] nfs_expire_automounts+0xd/0x40 [nfs]
+>  [<c012e61b>] run_workqueue+0x12b/0x1e0
+>  [<c012f05b>] worker_thread+0x9b/0x100
+>  [<c0131c72>] kthread+0x42/0x70
+>  [<c0104c0f>] kernel_thread_helper+0x7/0x18
+>  =======================
+> 
 
-http://libhugetlbfs.ozlabs.org/releases/libhugetlbfs-1.2-pre1.tar.gz
+There is new debugging stuff in -mm: deadlockable usage of workqueue
+primitives will now trigger lockdep warnings.  See
 
-The tarball will contain a test called alloc-instantiate-race.  Make
-sure to run it in private and shared mode.  Let me know what you find
-out.
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/broken-out/workqueue-debug-flushing-deadlocks-with-lockdep.patch
+ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/broken-out/workqueue-debug-work-related-deadlocks-with-lockdep.patch
 
--- 
-Adam Litke - (agl at us.ibm.com)
-IBM Linux Technology Center
-
+I am suspecting that running flush_scheduled_work() from within run_workqueue()
+isn't good.
