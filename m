@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbXHCGov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbXHCGyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759981AbXHCGov (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 02:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbXHCGon
+	id S1760161AbXHCGyR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 02:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbXHCGyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 02:44:43 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52170 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756327AbXHCGom (ORCPT
+	Fri, 3 Aug 2007 02:54:03 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:56339 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756418AbXHCGyB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 02:44:42 -0400
-To: peterz@infradead.org
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-reply-to: <1186091062.11797.34.camel@lappy> (message from Peter Zijlstra on
-	Thu, 02 Aug 2007 23:44:22 +0200)
-Subject: per bdi dirty balancing (was Re: kupdate weirdness)
-References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
-	 <20070801141439.ff1c29f9.akpm@linux-foundation.org>
-	 <E1IGcyd-00025s-00@dorka.pomaz.szeredi.hu>
-	 <20070802121806.d7071ba1.akpm@linux-foundation.org>
-	 <E1IGgS3-0002ib-00@dorka.pomaz.szeredi.hu> <1186091062.11797.34.camel@lappy>
-Message-Id: <E1IGqsn-0003uq-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 03 Aug 2007 08:43:33 +0200
+	Fri, 3 Aug 2007 02:54:01 -0400
+Message-ID: <46B2D0C6.5010409@netcom.eu>
+Date: Fri, 03 Aug 2007 08:52:54 +0200
+From: David Engraf <david.engraf@netcom.eu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: Alan Stern <stern@rowland.harvard.edu>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
+ we the driver is configured
+References: <46B1844B.8090007@netcom.eu> <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org> <20070802164329.GD28721@suse.de>
+In-Reply-To: <20070802164329.GD28721@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Provags-ID: V01U2FsdGVkX19W46iawa2sWX1jYITLPjkScbnOvL9uhBqc+to
+ Mmu3+XE0lxwoDKnu7Jbs2IBLIVMoXW8Y7QAZiiR7nWGeFbccmM
+ kyClzclmSXB48ZoWWIrYw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc restored)
+Greg KH schrieb:
+> On Thu, Aug 02, 2007 at 10:32:21AM -0400, Alan Stern wrote:
+>   
+>> On Thu, 2 Aug 2007, David Engraf wrote:
+>>
+>>     
+>>> This would be solution too, but what if someone uses the uhci controller
+>>> and don't want the
+>>> ehci. So a single Kconfig flag wouldn't be enough, we have to add 3
+>>> flags for uchi, ohci and
+>>> ehci. I think this maybe a little bit difficult when configuring the kernel.
+>>> The best solution would be when we could use the CONFIG_USB_xxxx_HCD
+>>> flag, but it
+>>> seems that some hardware has problems when we disable the handoff and
+>>> let the BIOS
+>>> control the usb controller. Do you know any of this hardware?
+>>>       
+>> The email messages are hidden in the depths of the linux-usb-devel 
+>> archives.  Maybe you can find them by checking the Git history for 
+>> drivers/usb/host/pci-quirks.c, finding the dates for patches that 
+>> affected the handoff code, and then searching through the archives near 
+>> those dates.
+>>
+>> IIRC the problems arose on some MIPS machines.  And I don't think the 
+>> problem involved letting the firmware manage the USB controller; I 
+>> think the problem came when the controller driver tried to do the 
+>> handoff later on.
+>>     
+>
+> It wasn't just MIPS.  IBM has a very popular blade system that has huge
+> issues with this, and I think there are some other IBM systems based on
+> the same BIOS that also do bad things if we don't grab the USB
+> controller away from the BIOS as soon as possible (nasty interrupt and
+> other messes happen...)
+>
+> thanks,
+>
+> greg k-h
+>   
+So we have hardware which has problems when we are not doing the
+handoff, and hardware which has
+problems when we are  doing the handoff...
+What is the best way to solve the problem? Maybe a kernel parameter, a
+config flag or an automatic
+hardware dependent check of the system?
+In fact it is hard to find a solution which works for both as long as
+the hardware has this bugs.
 
-> > > There were heaps of problems in there and it is surprising how few people
-> > > were hitting them.  Ordered-mode journalling filesystems will fix it all up
-> > > behind the scenes, of course.
-> > > 
-> > > I just have a bad feeling about that code - list_heads are the wrong data
-> > > structure and it all needs to be ripped and redone using some indexable
-> > > data structure.  There has been desultory discussion, but nothing's
-> > > happening and nothing will happen in the medium term, so we need to keep
-> > > on whapping bandainds on it.
-> > 
-> > The reason why I'm looking at that code is because of those
-> > balance_dirty_pages() deadlocks.  I'm not perfectly happy with the
-> > per-pdi-per-cpu counters Peter's patch is introducing.
-> 
-> What is your biggest concern regarding them?
 
-Complexity.  I've started to review the patches, and they are just too
-damn complex.
+Thanks
 
-For example introducing the backing_dev_info initializer and
-destructor adds potential bugs if we miss to add them somewhere.
 
-Now maybe this is unavoidable.  I'm just trying to look for a solution
-involving less uncertanties and complexities.
+David Engraf
 
-My plan is to extract the minimal set of features from your patchset,
-that solves the dirty balancing deadlocks and submit them as quickly
-as possible.
+ 
 
-After that we can look at trying to solve the more ambitious problem
-of the slow vs. fast devices in a way that not only you can understand ;)
+ 
+Netcom Sicherheitstechnik GmbH
+Rheinallee 189
+55120 Mainz
+Tel: 	+49 6131 6305 0
+Fax: 	+49 6131 6305 40
+Email: 	david.engraf@netcom.eu
 
-How's that?
+ 
+Sitz der Gesellschaft: Mainz
+Registergericht: Amtsgericht Mainz, 14HRB3411
+Geschäftsführer: Peter Otto
 
-Miklos
