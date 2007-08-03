@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbXHCVEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763513AbXHCVOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763698AbXHCVEc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 17:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbXHCVEZ
+	id S1763513AbXHCVOR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 17:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbXHCVOE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 17:04:25 -0400
-Received: from mail.screens.ru ([213.234.233.54]:34504 "EHLO mail.screens.ru"
+	Fri, 3 Aug 2007 17:14:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37906 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756804AbXHCVEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 17:04:25 -0400
-Date: Sat, 4 Aug 2007 01:04:41 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH] kill an obsolete sub-thread-ptrace stuff
-Message-ID: <20070803210441.GA247@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S1756956AbXHCVOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 17:14:03 -0400
+Message-ID: <46B39A8F.5070809@redhat.com>
+Date: Fri, 03 Aug 2007 17:13:51 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Dynamic major/minor numbers (or dropping them completely)
+References: <46B21833.600@aladin.ro>
+In-Reply-To: <46B21833.600@aladin.ro>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a couple of subtle checks which were needed to handle ptracing from
-the same thread group. This was deprecated a long ago, imho this code just
-complicates the understanding.
+Eduard-Gabriel Munteanu wrote:
+> *This message was transferred with a trial version of CommuniGate(r) Pro*
+> Currently, the kernel has the following properties:
+> 1) initramfs can be used to boot the system. We don't need any 
+> predefined /dev entries.
+> 2) udev can be started from the initramfs to create the required entries 
+> in /dev. udev doesn't care about major/minor numbers.
+> 3) Most distros already use udev and maybe initramfs. If there are 
+> exceptions, they can be easily converted.
+> 
+> For the first part, I'm asking: is there any reason why new char/block 
+> drivers shouldn't use dynamic major/minor numbers? Is there any reason 
+> against converting the whole kernel to dynamic major/minor numbers?
+> 
+> Okay, maybe the previous questions looked useless from a pragmatic POV. 
+> But why shouldn't the whole major/minor numbering system be dropped 
+> completely? sysfs already maintains a hierachy of device drivers and 
+> kernel subsystems, one which is better than the major/minor system. The 
+> current system could be replaced by a single-numbered, 
+> dynamically-allocated scheme.
+> 
+> Device files could be stored on a tmpfs filesystem, so that we don't 
+> make any changes to current filesystems. Apps won't need to be modified, 
+> since they access /dev entries by name, provided udev maintains the 
+> current naming scheme.
+> 
+> Any thoughts on this?
 
-And, the "->parent->signal->flags & SIGNAL_GROUP_EXIT" check in exit_notify()
-is not right. SIGNAL_GROUP_EXIT can mean exec(), not exit_group(). This means
-ptracer can lose a ptraced zombie on exec(). Minor problem, but still the bug.
+You're correct that dynamic major/minor numbers are sufficient for most 
+purposes, but embedded users really need their static numbers.  As for ripping 
+out major/minor numberings, that's a non-starter.  Too much of our device 
+management infrastructure is based around this numbering scheme, and there isn't 
+really anything wrong with it to justify breaking everything in the change.
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+As a rule of thumb, if you ever find yourself wondering why we still support 
+doing statically something we can now do dynamically, the answer is generally 
+that doing it dynamically sucks for embedded.
 
---- t/kernel/exit.c~PT_TG	2007-08-03 18:05:52.000000000 +0400
-+++ t/kernel/exit.c	2007-08-03 21:10:40.000000000 +0400
-@@ -802,7 +802,7 @@ static void exit_notify(struct task_stru
- 		__kill_pgrp_info(SIGCONT, SEND_SIG_PRIV, pgrp);
- 	}
- 
--	/* Let father know we died 
-+	/* Let father know we died
- 	 *
- 	 * Thread signals are configurable, but you aren't going to use
- 	 * that to send signals to arbitary processes. 
-@@ -815,9 +815,7 @@ static void exit_notify(struct task_stru
- 	 * If our self_exec id doesn't match our parent_exec_id then
- 	 * we have changed execution domain as these two values started
- 	 * the same after a fork.
--	 *	
- 	 */
--	
- 	if (tsk->exit_signal != SIGCHLD && tsk->exit_signal != -1 &&
- 	    ( tsk->parent_exec_id != t->self_exec_id  ||
- 	      tsk->self_exec_id != tsk->parent_exec_id)
-@@ -837,9 +835,7 @@ static void exit_notify(struct task_stru
- 	}
- 
- 	state = EXIT_ZOMBIE;
--	if (tsk->exit_signal == -1 &&
--	    (likely(tsk->ptrace == 0) ||
--	     unlikely(tsk->parent->signal->flags & SIGNAL_GROUP_EXIT)))
-+	if (tsk->exit_signal == -1 && likely(!tsk->ptrace))
- 		state = EXIT_DEAD;
- 	tsk->exit_state = state;
- 
---- t/kernel/signal.c~PT_TG	2007-07-28 16:58:17.000000000 +0400
-+++ t/kernel/signal.c	2007-08-03 21:11:59.000000000 +0400
-@@ -1561,10 +1561,6 @@ static inline int may_ptrace_stop(void)
- 		    (current->ptrace & PT_ATTACHED)))
- 		return 0;
- 
--	if (unlikely(current->signal == current->parent->signal) &&
--	    unlikely(current->signal->flags & SIGNAL_GROUP_EXIT))
--		return 0;
--
- 	/*
- 	 * Are we in the middle of do_coredump?
- 	 * If so and our tracer is also part of the coredump stopping
-
+	-- Chris
