@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764145AbXHCV5R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbXHCWAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764145AbXHCV5R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 17:57:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763434AbXHCV5E
+	id S1764175AbXHCWAl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 18:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761886AbXHCWAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 17:57:04 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54729 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1763097AbXHCV5B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 17:57:01 -0400
-Date: Fri, 3 Aug 2007 14:56:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Cal Peake <cp@absolutedigital.net>
-cc: Chuck Ebbert <cebbert@redhat.com>, Gabriel C <nix.or.die@googlemail.com>,
-       Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net>
-Message-ID: <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
- <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
- <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net>
- <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net>
- <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
- <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 3 Aug 2007 18:00:35 -0400
+Received: from mail.screens.ru ([213.234.233.54]:45407 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753927AbXHCWAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 18:00:35 -0400
+Date: Sat, 4 Aug 2007 02:00:48 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kill an obsolete sub-thread-ptrace stuff
+Message-ID: <20070803220048.GA277@tv-sign.ru>
+References: <20070803210441.GA247@tv-sign.ru> <20070803215101.481DD4D04BC@magilla.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070803215101.481DD4D04BC@magilla.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 2 Aug 2007, Cal Peake wrote:
-> On Thu, 2 Aug 2007, Linus Torvalds wrote:
-> >
-> > That said, the "AMD Turion(tm) 64 X2 Mobile Technology TL-52" _should_ be 
-> > a REV-F CPU afaik, and it should have thus fallen through to the 
-> > "ENABLE_C1E_MASK" logic. Afaik that's broken.
-> > 
-> > Cal - can you
-> >  (a) test that forcing a "return 1" from that amd_apic_timer_broken() 
-> >      function fixes it for you.
+On 08/03, Roland McGrath wrote:
+>
+> > There is a couple of subtle checks which were needed to handle ptracing from
+> > the same thread group. This was deprecated a long ago, imho this code just
+> > complicates the understanding.
 > 
-> ACK
+> Looks ok to me.
+
+Thanks!
+
+> > And, the "->parent->signal->flags & SIGNAL_GROUP_EXIT" check in exit_notify()
+> > is not right. SIGNAL_GROUP_EXIT can mean exec(), not exit_group(). This means
+> > ptracer can lose a ptraced zombie on exec(). Minor problem, but still the bug.
 > 
-> >  (b) make that function print out the values it uses for debugging (ie the 
-> >      xtended family and model numbers, and the MSR_K8_ENABLE_C1E MSR 
-> >      values)?
-> 
-> eax & CPUID_XFAM == 0x00000000
-> eax & CPUID_XMOD == 0x00040000
+> This bug never happens because this check is only in the now-impossible
+> ptrace-same-group case.
 
-Yeah, that's a REV-F
+This means that changelog is wrong and should be changed.
 
-> MSR_K8_ENABLE_C1E lo == 0x04c14015
-> MSR_K8_ENABLE_C1E hi == 0x00000000
-> lo & ENABLE_C1E_MASK == 0
+However, I disagree. exit_notify() doesn't check the ptrace-same-group case. So,
+unless I missed something, we set EXIT_DEAD in any case, even if ptracer doesn't
+belong to our thread group.
 
-And yeah, that claims that C1E is not on, but:
+No?
 
-> amd_apic_timer_broken: forcing return value of 1
+Oleg.
 
-since this makes it all work for you, it does appear that the AMD local 
-timer stops in C1 even when that isn't true, and as such is not useful.
-
-Sad. It probably means that we have to disable the local timer for *all* 
-modern AMD CPU's.
-
-Thomas/Ingo - did something change in the local apic programming? Or why 
-did this work before? Was it just that we didn't use the local timer apic 
-for some other reason?
-
-			Linus
