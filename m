@@ -1,84 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763729AbXHCUQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762748AbXHCUTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763729AbXHCUQf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761345AbXHCUQZ
+	id S1762748AbXHCUTe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXHCUT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:16:25 -0400
-Received: from mga09.intel.com ([134.134.136.24]:30850 "EHLO mga09.intel.com"
+	Fri, 3 Aug 2007 16:19:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47885 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760986AbXHCUQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:16:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,218,1183359600"; 
-   d="scan'208";a="113364858"
-Date: Fri, 3 Aug 2007 13:10:13 -0700
-From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Martin Bligh <mbligh@mbligh.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Eric Whitney <eric.whitney@hp.com>
-Subject: Re: [rfc] balance-on-fork NUMA placement
-Message-ID: <20070803201013.GA12874@linux-os.sc.intel.com>
-References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de> <46B0C8A3.8090506@mbligh.org> <1185993169.5059.79.camel@localhost> <46B10E9B.2030907@mbligh.org> <20070802013631.GA15595@wotan.suse.de> <46B22383.5020109@mbligh.org> <20070803002010.GB14775@wotan.suse.de>
-Mime-Version: 1.0
+	id S1752527AbXHCUT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:19:27 -0400
+Date: Fri, 3 Aug 2007 16:12:39 -0400
+From: Dave Jones <davej@redhat.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Rogan Dawes <lists@dawes.za.net>,
+       Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
+       David Brownell <david-b@pacbell.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by
+	default on certain device classes
+Message-ID: <20070803201239.GB20376@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Rogan Dawes <lists@dawes.za.net>, Oliver Neukum <oliver@neukum.org>,
+	linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+	Alan Stern <stern@rowland.harvard.edu>,
+	linux-usb-devel@lists.sourceforge.net
+References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org> <200708022301.08719.david-b@pacbell.net> <20070803112824.GA16802@srcf.ucam.org> <200708031344.03282.oliver@neukum.org> <20070803120418.GB16802@srcf.ucam.org> <46B31F03.80908@dawes.za.net> <20070803123253.GA17725@srcf.ucam.org> <20070803174435.GA17053@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070803002010.GB14775@wotan.suse.de>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070803174435.GA17053@suse.de>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 02:20:10AM +0200, Nick Piggin wrote:
-> On Thu, Aug 02, 2007 at 11:33:39AM -0700, Martin Bligh wrote:
-> > Nick Piggin wrote:
-> > >On Wed, Aug 01, 2007 at 03:52:11PM -0700, Martin Bligh wrote:
-> > >>>And so forth.  Initial forks will balance.  If the children refuse to
-> > >>>die, forks will continue to balance.  If the parent starts seeing short
-> > >>>lived children, fork()s will eventually start to stay local.  
-> > >>Fork without exec is much more rare than without. Optimising for
-> > >>the uncommon case is the Wrong Thing to Do (tm). What we decided
-> > >
-> > >It's only the wrong thing to do if it hurts the common case too
-> > >much. Considering we _already_ balance on exec, then adding another
-> > >balance on fork is not going to introduce some order of magnitude
-> > >problem -- at worst it would be 2x but it really isn't too slow
-> > >anyway (at least nobody complained when we added it).
-> > >
-> > >One place where we found it helps is clone for threads.
-> > >
-> > >If we didn't do such a bad job at keeping tasks together with their
-> > >local memory, then we might indeed reduce some of the balance-on-crap
-> > >and increase the aggressiveness of periodic balancing.
-> > >
-> > >Considering we _already_ balance on fork/clone, I don't know what
-> > >your argument is against this patch is? Doing the balance earlier
-> > >and allocating more stuff on the local node is surely not a bad
-> > >idea.
-> > 
-> > I don't know who turned that on ;-( I suspect nobody bothered
-> > actually measuring it at the time though, or used some crap
-> > benchmark like stream to do so. It should get reverted.
-> 
-> So you have numbers to show it hurts? I tested some things where it
-> is not supposed to help, and it didn't make any difference. Nobody
-> else noticed either.
-> 
-> If the cost of doing the double balance is _really_ that painful,
-> then we ccould skip balance-on-exec for domains with balance-on-fork
-> set.
+On Fri, Aug 03, 2007 at 10:44:35AM -0700, Greg KH wrote:
+ > On Fri, Aug 03, 2007 at 01:32:53PM +0100, Matthew Garrett wrote:
+ > > On Fri, Aug 03, 2007 at 02:26:43PM +0200, Rogan Dawes wrote:
+ > > 
+ > > > Compare that to:
+ > > > 
+ > > > "My USB printer broke, guess I'd better report it to LKML".
+ > > 
+ > > But while this is still a likely probability, the chances are no 
+ > > distribution is going to ship with CONFIG_USB_SUSPEND enabled.
+ > 
+ > I wouldn't be so sure, I was thinking of doing just that based on an
+ > internal conversation I had yesterday.
+ > 
+ > Let's see what breaks and what happens :)
 
-Nick, Even if it is not painful, can we skip balance-on-exec if
-balance-on-fork is set. There is no need for double balance, right?
+here's a head start for you.
 
-Especially with the optimization you are trying to do with this patch,
-balance-on-exec may lead to wrong decision making this optimization
-not work as expected.
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243038
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246713
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243953
+https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242359
 
-or perhaps do balance-on-fork based on clone_flags..
+That's just the ones that were handy..
 
-thanks,
-suresh
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
