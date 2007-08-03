@@ -1,48 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbXHCNWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbXHCN1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762770AbXHCNWS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761432AbXHCNWF
+	id S1762300AbXHCN1k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757731AbXHCN1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 09:22:05 -0400
-Received: from renko.ucs.ed.ac.uk ([129.215.13.3]:41369 "EHLO
-	renko.ucs.ed.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761469AbXHCNWE (ORCPT
+	Fri, 3 Aug 2007 09:27:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:63696 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757371AbXHCN1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 09:22:04 -0400
-X-Greylist: delayed 3006 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Aug 2007 09:22:04 EDT
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "T. J. Brumfield" <enderandrew@gmail.com>
-Subject: Re: Scheduler Situation
-Date: Fri, 3 Aug 2007 13:31:35 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com>
-In-Reply-To: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com>
+	Fri, 3 Aug 2007 09:27:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=F6SyVnGa9sgSuwvsjRoQIsPg+Th6/AEiciNlgG5pVVK7dJrmU76anQlVhh2LeLuqb3unwLKmAfoWq9j9jtCs8ck9HjARtDwKpIUYl8YyBO00P+wA+GfNO1k24cjEkb9p8YWPow9D1SEwgKLAToD7toGvfiP6FCnZcyY81pnT7hs=
+Message-ID: <192840a00708030627p11e445fbi66833ca27b39af8e@mail.gmail.com>
+Date: Fri, 3 Aug 2007 17:27:30 +0400
+From: "=?UTF-8?B?0JDQvdC00YDRltC5INCc0ZbRiNC60L7QstGB0YzQutC40Lk=?=" 
+	<mishok13@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Scheduler Situation
+In-Reply-To: <192840a00708030616g22d9dd16o95b2620bfe3347a8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200708031331.35303.alistair@devzero.co.uk>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Edinburgh-Scanned: at renko.ucs.ed.ac.uk
-    with MIMEDefang 2.52, Sophie, Sophos Anti-Virus, Clam AntiVirus
+Content-Disposition: inline
+References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com>
+	 <loom.20070803T144718-943@post.gmane.org>
+	 <192840a00708030616g22d9dd16o95b2620bfe3347a8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The real question is WHY do people keep writing essays about topics that have 
-_already_ been exhaustively explored in other threads? If you want a better 
-understanding of the situation, read the archives, DON'T post another 
-duplicate message about the same scheduler parade.
+Bad things may happen if Linus gives a right of making decision to
+other people (a big group of people). ;)
+As you said, Linux is a public OS, so Con's code never will be lost.
+That's the base of open source - people come and go, but the code
+stays. :)
 
-Unless you've got some constructive input that goes further than asking the 
-same questions that have already been asked and answered multiple times 
-before, please just do not pollute this list.
+2007/8/3, Oleksandr Natalenko <pfactum@gmail.com>:
+> Question is not only in CFS vs SD, but in -ck patchset. Linus must remember
+> that he has lost nice code and nice maintainer, and it's not a right decision.
+> Linux is a public OS, so let people decide themselves, but not Linus himself.
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-It's becoming so repetitive this almost sounds like a 419.
+This is re-post of personal mail to Olexander.
 
--- 
-Cheers,
-Alistair.
+--
+Wbr, Andriy Mishkovskyy.
 
-137/1 Warrender Park Road, Edinburgh, UK.
+He's got a heart of a little child, and he keeps it in a jar on his desk.
