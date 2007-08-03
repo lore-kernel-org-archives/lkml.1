@@ -1,298 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762549AbXHCNLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762220AbXHCNTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762549AbXHCNLk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932555AbXHCNK6
+	id S1762220AbXHCNTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbXHCNTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 09:10:58 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:57032 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932489AbXHCNKz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 09:10:55 -0400
-From: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: [PATCH] lro: eHEA example how to use LRO
-Date: Fri, 3 Aug 2007 14:41:26 +0200
-User-Agent: KMail/1.8.2
+	Fri, 3 Aug 2007 09:19:08 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40750 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753425AbXHCNTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 09:19:07 -0400
+Date: Fri, 3 Aug 2007 15:19:00 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "T. J. Brumfield" <enderandrew@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: about modularization
+Message-ID: <20070803131900.GA26203@elte.hu>
+References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-To: netdev <netdev@vger.kernel.org>
-Cc: Christoph Raisch <raisch@de.ibm.com>,
-       "Jan-Bernd Themann" <themann@de.ibm.com>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Andrew Gallatin <gallatin@myri.com>, Jeff Garzik <jeff@garzik.org>,
-       David Miller <davem@davemloft.net>
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708031441.26841.ossthema@de.ibm.com>
+In-Reply-To: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.1.7-deb
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch shows how the generic LRO interface is used for SKB mode
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+* T. J. Brumfield <enderandrew@gmail.com> wrote:
 
----
- drivers/net/Kconfig             |    1 +
- drivers/net/ehea/ehea.h         |    9 ++++-
- drivers/net/ehea/ehea_ethtool.c |   15 +++++++
- drivers/net/ehea/ehea_main.c    |   84 +++++++++++++++++++++++++++++++++++---
- 4 files changed, 101 insertions(+), 8 deletions(-)
+> 1 - Can someone please explain why the kernel can be modular in every 
+> other aspect, including offering a choice of IO schedulers, but not 
+> kernel schedulers?
 
-diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
-index f8a602c..fec4004 100644
---- a/drivers/net/Kconfig
-+++ b/drivers/net/Kconfig
-@@ -2399,6 +2399,7 @@ config CHELSIO_T3
- config EHEA
- 	tristate "eHEA Ethernet support"
- 	depends on IBMEBUS
-+	select INET_LRO
- 	---help---
- 	  This driver supports the IBM pSeries eHEA ethernet adapter.
- 
-diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
-index d67f97b..70e33fe 100644
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -33,13 +33,14 @@
- #include <linux/ethtool.h>
- #include <linux/vmalloc.h>
- #include <linux/if_vlan.h>
-+#include <linux/inet_lro.h>
- 
- #include <asm/ibmebus.h>
- #include <asm/abs_addr.h>
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0073"
-+#define DRV_VERSION	"EHEA_0074"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
-@@ -58,6 +59,7 @@
- 
- #define EHEA_SMALL_QUEUES
- #define EHEA_NUM_TX_QP 1
-+#define EHEA_LRO_MAX_AGGR 64
- 
- #ifdef EHEA_SMALL_QUEUES
- #define EHEA_MAX_CQE_COUNT      1023
-@@ -84,6 +86,8 @@
- #define EHEA_RQ2_PKT_SIZE       1522
- #define EHEA_L_PKT_SIZE         256	/* low latency */
- 
-+#define MAX_LRO_DESCRIPTORS 8
-+
- /* Send completion signaling */
- 
- /* Protection Domain Identifier */
-@@ -376,6 +380,8 @@ struct ehea_port_res {
- 	u64 tx_packets;
- 	u64 rx_packets;
- 	u32 poll_counter;
-+	struct net_lro_mgr lro_mgr;
-+	struct net_lro_desc lro_desc[MAX_LRO_DESCRIPTORS];
- };
- 
- 
-@@ -427,6 +433,7 @@ struct ehea_port {
- 	u32 msg_enable;
- 	u32 sig_comp_iv;
- 	u32 state;
-+	u32 lro_max_aggr;
- 	u8 full_duplex;
- 	u8 autoneg;
- 	u8 num_def_qps;
-diff --git a/drivers/net/ehea/ehea_ethtool.c b/drivers/net/ehea/ehea_ethtool.c
-index decec8c..29ef7a9 100644
---- a/drivers/net/ehea/ehea_ethtool.c
-+++ b/drivers/net/ehea/ehea_ethtool.c
-@@ -183,6 +183,9 @@ static char ehea_ethtool_stats_keys[][ETH_GSTRING_LEN] = {
- 	{"PR5 free_swqes"},
- 	{"PR6 free_swqes"},
- 	{"PR7 free_swqes"},
-+	{"LRO aggregated"},
-+	{"LRO flushed"},
-+	{"LRO no_desc"},
- };
- 
- static void ehea_get_strings(struct net_device *dev, u32 stringset, u8 *data)
-@@ -239,6 +242,18 @@ static void ehea_get_ethtool_stats(struct net_device *dev,
- 	for (k = 0; k < 8; k++)
- 		data[i++] = atomic_read(&port->port_res[k].swqe_avail);
- 
-+	for (k = 0, tmp = 0; k < EHEA_MAX_PORT_RES; k++)
-+		tmp |= port->port_res[k].lro_mgr.stats.aggregated;
-+	data[i++] = tmp;
-+
-+	for (k = 0, tmp = 0; k < EHEA_MAX_PORT_RES; k++)
-+		tmp |= port->port_res[k].lro_mgr.stats.flushed;
-+	data[i++] = tmp;
-+
-+	for (k = 0, tmp = 0; k < EHEA_MAX_PORT_RES; k++)
-+		tmp |= port->port_res[k].lro_mgr.stats.no_desc;
-+	data[i++] = tmp;
-+
- }
- 
- const struct ethtool_ops ehea_ethtool_ops = {
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index 9756211..fbaa395 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -52,6 +52,8 @@ static int rq2_entries = EHEA_DEF_ENTRIES_RQ2;
- static int rq3_entries = EHEA_DEF_ENTRIES_RQ3;
- static int sq_entries = EHEA_DEF_ENTRIES_SQ;
- static int use_mcs = 0;
-+static int use_lro = 0;
-+static int lro_max_aggr = EHEA_LRO_MAX_AGGR;
- static int num_tx_qps = EHEA_NUM_TX_QP;
- 
- module_param(msg_level, int, 0);
-@@ -60,6 +62,8 @@ module_param(rq2_entries, int, 0);
- module_param(rq3_entries, int, 0);
- module_param(sq_entries, int, 0);
- module_param(use_mcs, int, 0);
-+module_param(use_lro, int, 0);
-+module_param(lro_max_aggr, int, 0);
- module_param(num_tx_qps, int, 0);
- 
- MODULE_PARM_DESC(num_tx_qps, "Number of TX-QPS");
-@@ -77,6 +81,10 @@ MODULE_PARM_DESC(sq_entries, " Number of entries for the Send Queue  "
- 		 "[2^x - 1], x = [6..14]. Default = "
- 		 __MODULE_STRING(EHEA_DEF_ENTRIES_SQ) ")");
- MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 1 ");
-+MODULE_PARM_DESC(lro_max_aggr, " LRO: Max packets to be aggregated. Default = "
-+		 __MODULE_STRING(EHEA_LRO_MAX_AGGR));
-+MODULE_PARM_DESC(use_lro, " Large Receive Offload, 1: enable, 0: disable, "
-+                 "Default = 0");
- 
- static int port_name_cnt = 0;
- static LIST_HEAD(adapter_list);
-@@ -389,6 +397,60 @@ static int ehea_treat_poll_error(struct ehea_port_res *pr, int rq,
- 	return 0;
- }
- 
-+static int get_skb_hdr(struct sk_buff *skb, void **iphdr,
-+		       void **tcph, u64 *hdr_flags, void *priv)
-+{
-+	struct ehea_cqe *cqe = priv;
-+	unsigned int ip_len;
-+	struct iphdr *iph;
-+
-+        /* non tcp/udp packets */
-+	if (!cqe->header_length)
-+		return -1;
-+
-+        /* non tcp packet */
-+	skb_reset_network_header(skb);
-+	iph = ip_hdr(skb);
-+	if (iph->protocol != IPPROTO_TCP)
-+		return -1;
-+
-+	ip_len = ip_hdrlen(skb);
-+	skb_set_transport_header(skb, ip_len);
-+	*tcph = tcp_hdr(skb);
-+
-+        /* check if ip header and tcp header are complete */
-+	if (iph->tot_len < ip_len + tcp_hdrlen(skb))
-+		return -1;
-+
-+	*hdr_flags = LRO_IPV4 | LRO_TCP;
-+	*iphdr = iph;
-+
-+	return 0;
-+}
-+
-+static void ehea_proc_skb(struct ehea_port_res *pr, struct ehea_cqe *cqe,
-+			  struct sk_buff *skb)
-+{
-+	int vlan_extracted = (cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
-+		&& pr->port->vgrp;
-+
-+	if (use_lro) {
-+		if (vlan_extracted)
-+			lro_vlan_hwaccel_receive_skb(&pr->lro_mgr, skb,
-+						     pr->port->vgrp,
-+						     cqe->vlan_tag,
-+						     cqe);
-+		else
-+			lro_receive_skb(&pr->lro_mgr, skb, cqe);
-+	} else {
-+		if (vlan_extracted)
-+			vlan_hwaccel_receive_skb(skb, pr->port->vgrp,
-+						 cqe->vlan_tag);
-+		else
-+			netif_receive_skb(skb);
-+	}
-+}
-+
- static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
- 					struct ehea_port_res *pr,
- 					int *budget)
-@@ -460,13 +522,7 @@ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
- 				processed_rq3++;
- 			}
- 
--			if ((cqe->status & EHEA_CQE_VLAN_TAG_XTRACT)
--			    && port->vgrp)
--				vlan_hwaccel_receive_skb(skb, port->vgrp,
--							 cqe->vlan_tag);
--			else
--				netif_receive_skb(skb);
--
-+			ehea_proc_skb(pr, cqe, skb);
- 			dev->last_rx = jiffies;
- 		} else {
- 			pr->p_stats.poll_receive_errors++;
-@@ -478,6 +534,8 @@ static struct ehea_cqe *ehea_proc_rwqes(struct net_device *dev,
- 		}
- 		cqe = ehea_poll_rq1(qp, &wqe_index);
- 	}
-+	if (use_lro)
-+		lro_flush_all(&pr->lro_mgr);
- 
- 	pr->rx_packets += processed;
- 	*budget -= processed;
-@@ -1233,6 +1291,15 @@ static int ehea_init_port_res(struct ehea_port *port, struct ehea_port_res *pr,
- 	set_bit(__LINK_STATE_START, &pr->d_netdev->state);
- 	strcpy(pr->d_netdev->name, port->netdev->name);
- 
-+	pr->lro_mgr.max_aggr = pr->port->lro_max_aggr;
-+	pr->lro_mgr.max_desc = MAX_LRO_DESCRIPTORS;
-+	pr->lro_mgr.lro_arr = pr->lro_desc;
-+	pr->lro_mgr.get_skb_header = get_skb_hdr;
-+	pr->lro_mgr.features = LRO_F_NAPI | LRO_F_EXTRACT_VLAN_ID;
-+	pr->lro_mgr.dev = port->netdev;
-+	pr->lro_mgr.ip_summed = CHECKSUM_UNNECESSARY;
-+	pr->lro_mgr.ip_summed_aggr = CHECKSUM_UNNECESSARY;
-+
- 	ret = 0;
- 	goto out;
- 
-@@ -1712,6 +1779,7 @@ static int ehea_change_mtu(struct net_device *dev, int new_mtu)
- 	if ((new_mtu < 68) || (new_mtu > EHEA_MAX_PACKET_SIZE))
- 		return -EINVAL;
- 	dev->mtu = new_mtu;
-+
- 	return 0;
- }
- 
-@@ -2669,6 +2737,8 @@ struct ehea_port *ehea_setup_single_port(struct ehea_adapter *adapter,
- 		goto out_dereg_bc;
- 	}
- 
-+	port->lro_max_aggr = lro_max_aggr;
-+
- 	ret = ehea_get_jumboframe_status(port, &jumbo);
- 	if (ret)
- 		ehea_error("failed determining jumbo frame status for %s",
--- 
-1.5.2
+that's a fundamental misconception. If you boot into a distro kernel on 
+a typical PC, about half of the kernel code that the box runs in any 
+moment will be in modules, half of it is in the "kernel core". For 
+example, on a random laptop:
 
+ $ echo `lsmod | cut -c1-30 | cut -d' ' -f2-` | sed 's/Size //' |
+   sed 's/ /+/g' | bc
+ 2513784
+
+i.e. 2.5 MB of modules. The core kernel's size:
+
+ $ dmesg | grep 'kernel code'
+ Memory: 2053212k/2087808k available (2185k kernel code, 33240k reserved, 1174k data, 244k init, 1170304k highmem)
+
+2.1 MB of kernel core code. (of course the total body of "possible 
+drivers" is 10 times larger than that of the core kernel - but the 
+fundamental 'variety' is not.)
+
+most of the modules are for stuff where there is a significant physical 
+difference between the components they support. Drivers for different 
+pieces of hardware. Filesystem drivers for different on-disk physical 
+layouts. Network protocol drivers for different on-wire formats. The 
+sanest technological decision there is clearly to modularize.
+
+And note that often it's not even about choice there: the user's system 
+has a particular piece of hardware, to which there is usually one 
+primary driver. The user does not have any real 'choice' over the 
+modularization here, it's largely a technological act to make the 
+kernel's footprint smaller.
+
+But the kernel core, which does not depend as much on the physical 
+properties of the stuff it supports (it depends on the physics of the 
+machine of course, but those rules are mostly shared between all 
+machines of that architecture), and is fundamentally influenced by the 
+syscall API (which is not modular either) and by our OS design 
+decisions, has much less reason to be modularized.
+
+The core kernel was always non-modular, and it depends on the technical 
+details whether we want to or _have to_ modularize something so that it 
+becomes modular to the user too. For example we dont have 'competing', 
+modular versions of the IPv4 stack. Neither of the VFS. Nor of timers, 
+futexes, nor of locking code or of the CPU scheduler. But we can switch 
+out any of those implementations from the core kernel, and did so 
+numerous times in the past and will do so in the future.
+
+CPU schedulers are as core kernel code as it gets - you cannot even boot 
+without having a CPU scheduler. IO schedulers, although similar in name, 
+are quite different beasts from CPU schedulers, and they are somewhere 
+between the core kernel and drivers. They are not 'physical drivers' (an 
+IO scheduler can drive any disk), nor are they fully 'core kernel code' 
+in the sense of a kernel not even being able to boot without them. Also, 
+disks are physically different from CPUs, in a way which works _against_ 
+the user-modularization of CPU schedulers. (there are also many other 
+differences which have been pointed out in the past)
+
+In any case, the IO subsystem maintainers decided to modularize IO 
+schedulers, and that's their decision. One of the authors of the IO 
+scheduler code said it on lkml recently that while modularization of IO 
+scheduler had advantages too, in retrospect he wishes they would not 
+have made IO schedulers modular and now that decision cannot be undone. 
+So even that much different situation was far from a clear decision, and 
+some negative effects can be felt today too, in form of having two 
+primary IO schedulers but not having one IO scheduler that works well in 
+all cases. For CPU schedulers the circumstances point away away from 
+user-selectable modularization even stronger.
+
+	Ingo
