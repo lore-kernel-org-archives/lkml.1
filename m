@@ -1,93 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbXHCEJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754363AbXHCEVD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbXHCEJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 00:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXHCEJG
+	id S1754363AbXHCEVD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 00:21:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbXHCEUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 00:09:06 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:51102 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbXHCEJE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 00:09:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ji0aULTEin5ge2MOM23jqLmqxg5sveAW6tD4gfhQlv7oQ+WYuvlilQWIlHFRhOoBg4tCOFxuQtkYSLv+EKnDV71ZWDoIh+riFtnYqMbiyiI+SWIvE/9MOoEnA2r1vwPoNNUHUSzgMRrKMSPQowzkLZZGOS3RdSv8730AyZqFYD4=
-Message-ID: <170fa0d20708022109s60ebb85aqe68ec1033634ef27@mail.gmail.com>
-Date: Fri, 3 Aug 2007 00:09:02 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: Distributed storage.
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, "Daniel Phillips" <phillips@phunq.net>
-In-Reply-To: <20070731171347.GA14267@2ka.mipt.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 00:20:53 -0400
+Received: from 1wt.eu ([62.212.114.60]:1099 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750902AbXHCEUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 00:20:53 -0400
+Date: Fri, 3 Aug 2007 06:18:08 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
+       Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+Message-ID: <20070803041808.GA6002@1wt.eu>
+References: <20070711214649.GK14435@v2.random> <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org> <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801112229.GA11710@elte.hu> <20070803030436.GO11166@waste.org> <1186113467.3996.0.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070731171347.GA14267@2ka.mipt.ru>
+In-Reply-To: <1186113467.3996.0.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> Hi.
->
-> I'm pleased to announce first release of the distributed storage
-> subsystem, which allows to form a storage on top of remote and local
-> nodes, which in turn can be exported to another storage as a node to
-> form tree-like storages.
+On Thu, Aug 02, 2007 at 08:57:47PM -0700, Arjan van de Ven wrote:
+> On Thu, 2007-08-02 at 22:04 -0500, Matt Mackall wrote:
+> > On Wed, Aug 01, 2007 at 01:22:29PM +0200, Ingo Molnar wrote:
+> > > 
+> > > * Roman Zippel <zippel@linux-m68k.org> wrote:
+> > > 
+> > > > [...] e.g. in this example there are three tasks that run only for 
+> > > > about 1ms every 3ms, but they get far more time than should have 
+> > > > gotten fairly:
+> > > > 
+> > > >  4544 roman     20   0  1796  520  432 S 32.1  0.4   0:21.08 lt
+> > > >  4545 roman     20   0  1796  344  256 R 32.1  0.3   0:21.07 lt
+> > > >  4546 roman     20   0  1796  344  256 R 31.7  0.3   0:21.07 lt
+> > > >  4547 roman     20   0  1532  272  216 R  3.3  0.2   0:01.94 l
+> > > 
+> > > Mike and me have managed to reproduce similarly looking 'top' output, 
+> > > but it takes some effort: we had to deliberately run a non-TSC 
+> > > sched_clock(), CONFIG_HZ=100, !CONFIG_NO_HZ and !CONFIG_HIGH_RES_TIMERS.
+> > 
+> > ..which is pretty much the state of play for lots of non-x86 hardware.
+> 
+> question is if it's significantly worse than before. With a 100 or
+> 1000Hz timer, you can't expect perfect fairness just due to the
+> extremely rough measurement of time spent...
 
-Very interesting work, I read through your blog for the project and it
-is amazing how quickly you developed/tested this code.  Thanks for
-capturing the evolution of DST like you have.
+Well, at least we're able to *measure* that task 'l' used 3.3% and
+that tasks 'lt' used 32%. If we're able to measure it, then that's
+already fine enough to be able to adjust future timeslices credits.
+Granted it may be rough for small periods (a few jiffies), but it
+should be fair for larger periods. Or at least it should *report*
+some fair distribution.
 
-> Compared to other similar approaches namely iSCSI and NBD,
-> there are following advantages:
->     * non-blocking processing without busy loops (compared to both above)
->     * small, plugable architecture
->     * failover recovery (reconnect to remote target)
->     * autoconfiguration (full absence in NBD and/or device mapper on top of it)
->     * no additional allocatins (not including network part) - at least two in
->         device mapper for fast path
->     * very simple - try to compare with iSCSI
->     * works with different network protocols
->     * storage can be formed on top of remote nodes and be exported
->         simultaneously (iSCSI is peer-to-peer only, NBD requires device
->         mapper and is synchronous)
+Willy
 
-Having the in-kernel export is a great improvement over NBD's
-userspace nbd-server (extra copy, etc).
-
-But NBD's synchronous nature is actually an asset when coupled with MD
-raid1 as it provides guarantees that the data has _really_ been
-mirrored remotely.
-
-> TODO list currently includes following main items:
->     * redundancy algorithm (drop me a request of your own, but it is highly
->         unlikley that Reed-Solomon based will ever be used - it is too slow
->         for distributed RAID, I consider WEAVER codes)
-
-I'd like to better understand where you see DST heading in the area of
-redundancy.    Based on your blog entries:
-http://tservice.net.ru/~s0mbre/blog/devel/dst/2007_07_24_1.html
-http://tservice.net.ru/~s0mbre/blog/devel/dst/2007_07_31_2.html
-(and your todo above) implementing a mirroring algorithm appears to be
-a near-term goal for you.  Can you comment on how your intended
-implementation would compare, in terms of correctness and efficiency,
-to say MD (raid1) + NBD?  MD raid1 has a write intent bitmap that is
-useful to speed resyncs; what if any mechanisms do you see DST
-embracing to provide similar and/or better reconstruction
-infrastructure?  Do you intend to embrace any exisiting MD or DM
-infrastructure?
-
-BTW, you have definitely published some very compelling work and its
-sad that you're predisposed to think DST won't be recieved well if you
-pushed for inclusion (for others, as much was said in the 7.31.2007
-blog post I referenced above).  Clearly others need to embrace DST to
-help inclusion become a reality.  To that end, its great to see that
-Daniel Phillips and the other zumastor folks will be putting DST
-through its paces.
-
-regards,
-Mike
