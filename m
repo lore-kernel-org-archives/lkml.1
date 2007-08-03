@@ -1,71 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760090AbXHCGec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbXHCGov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760090AbXHCGec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 02:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbXHCGe0
+	id S1759981AbXHCGov (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 02:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbXHCGon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 02:34:26 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48569 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755043AbXHCGeZ (ORCPT
+	Fri, 3 Aug 2007 02:44:43 -0400
+Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:52170 "EHLO
+	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756327AbXHCGom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 02:34:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-From: Keith Owens <kaos@ocs.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: vgoyal@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Takenori Nagano <t-nagano@ah.jp.nec.com>, k-miyoshi@cb.jp.nec.com,
-       Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] add kdump_after_notifier 
-In-reply-to: Your message of "Thu, 02 Aug 2007 23:25:02 MST."
-             <20070802232502.b93f4ea0.akpm@linux-foundation.org> 
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Fri, 03 Aug 2007 16:34:04 +1000
-Message-ID: <2462.1186122844@kao2.melbourne.sgi.com>
+	Fri, 3 Aug 2007 02:44:42 -0400
+To: peterz@infradead.org
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-reply-to: <1186091062.11797.34.camel@lappy> (message from Peter Zijlstra on
+	Thu, 02 Aug 2007 23:44:22 +0200)
+Subject: per bdi dirty balancing (was Re: kupdate weirdness)
+References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
+	 <20070801141439.ff1c29f9.akpm@linux-foundation.org>
+	 <E1IGcyd-00025s-00@dorka.pomaz.szeredi.hu>
+	 <20070802121806.d7071ba1.akpm@linux-foundation.org>
+	 <E1IGgS3-0002ib-00@dorka.pomaz.szeredi.hu> <1186091062.11797.34.camel@lappy>
+Message-Id: <E1IGqsn-0003uq-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 03 Aug 2007 08:43:33 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton (on Thu, 2 Aug 2007 23:25:02 -0700) wrote:
->On Fri, 03 Aug 2007 14:05:47 +1000 Keith Owens <kaos@sgi.com> wrote:
+(cc restored)
 
-Switching to kaos@ocs.com.au, I just resigned from SGI.
+> > > There were heaps of problems in there and it is surprising how few people
+> > > were hitting them.  Ordered-mode journalling filesystems will fix it all up
+> > > behind the scenes, of course.
+> > > 
+> > > I just have a bad feeling about that code - list_heads are the wrong data
+> > > structure and it all needs to be ripped and redone using some indexable
+> > > data structure.  There has been desultory discussion, but nothing's
+> > > happening and nothing will happen in the medium term, so we need to keep
+> > > on whapping bandainds on it.
+> > 
+> > The reason why I'm looking at that code is because of those
+> > balance_dirty_pages() deadlocks.  I'm not perfectly happy with the
+> > per-pdi-per-cpu counters Peter's patch is introducing.
+> 
+> What is your biggest concern regarding them?
 
->> I have pretty well given up on RAS code in the Linux kernel.  Everybody
->> has different ideas, there is no overall plan and little interest from
->> Linus in getting RAS tools into the kernel.  We are just thrashing.
->
->Lots of different groups, little commonality in their desired funtionality,
->little interest in sharing infrastructure or concepts.  Sometimes people
->need a bit of motivational help.
->
->In this case that motivation would come from the understanding that all the
->RAS tools would be *required* to use such infrastructure if it was merged. 
->Going off and open-coding your own stuff would henceforth not be acceptable.
->If it turns out that it really was unsuitable for a particular group's RAS
->feature, and we merged it anyway, well, that mismatch is that group's
->fault.
->
->It was a sizeable mistake to send those patches to a few obscure mailing
->lists - this is the first I've heard of it, for example.
+Complexity.  I've started to review the patches, and they are just too
+damn complex.
 
-linux-arch is obscure??  Where else do you send patches that affect
-multiple architectures?
+For example introducing the backing_dev_info initializer and
+destructor adds potential bugs if we miss to add them somewhere.
 
->So.  Please, send it all again, copy the correct lists and people, make sure
->that at least one client of the infrastructure is wired up and working (ideally,
->all such in-kernel clients should be wired up) and let's take a look at it.
+Now maybe this is unavoidable.  I'm just trying to look for a solution
+involving less uncertanties and complexities.
 
-Already tried that.  The only RAS tool that is currently in the kernel is
-kexec/kdump and they insist on doing things their own way.  That makes
-it impossible to put a common RAS structure in place, because kexec
-will not use it.
+My plan is to extract the minimal set of features from your patchset,
+that solves the dirty balancing deadlocks and submit them as quickly
+as possible.
 
-Sorry to keep beating on this drum, but kexec insist that their code
-must have priority and that they do not trust the rest of the kernel.
-Until that changes, there is no point is discussing how to make kexec
-coexist with other RAS tools.  If kexec change their mind then we can
-look at using a common RAS interface, otherwise it is a waste of time
-and I have better things to do with my life.
+After that we can look at trying to solve the more ambitious problem
+of the slow vs. fast devices in a way that not only you can understand ;)
 
+How's that?
+
+Miklos
