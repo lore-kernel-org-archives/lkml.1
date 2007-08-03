@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbXHCT62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXHCUBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762216AbXHCT62 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 15:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbXHCT6U
+	id S1762921AbXHCUBX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbXHCUBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 15:58:20 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:4127 "EHLO scrub.xs4all.nl"
+	Fri, 3 Aug 2007 16:01:16 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41039 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753691AbXHCT6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 15:58:19 -0400
-Date: Fri, 3 Aug 2007 21:58:42 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] msleep() with hrtimers
-In-Reply-To: <1186170407.3153.8.camel@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0708032152060.1817@scrub.home>
-References: <15327.1186166232@lwn.net>  <Pine.LNX.4.64.0708032116340.1817@scrub.home>
- <1186170407.3153.8.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753978AbXHCUBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:01:15 -0400
+Date: Fri, 3 Aug 2007 12:56:18 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Oliver Neukum <oliver@neukum.org>,
+       Rogan Dawes <lists@dawes.za.net>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net, zaitcev@redhat.com
+Subject: Re: [PATCH] USB: Only enable autosuspend by default on certain
+ device classes
+Message-Id: <20070803125618.36ea1b2f.zaitcev@redhat.com>
+In-Reply-To: <46B38211.4030004@redhat.com>
+References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org>
+	<200708022301.08719.david-b@pacbell.net>
+	<20070803112824.GA16802@srcf.ucam.org>
+	<200708031344.03282.oliver@neukum.org>
+	<20070803120418.GB16802@srcf.ucam.org>
+	<46B31F03.80908@dawes.za.net>
+	<20070803123253.GA17725@srcf.ucam.org>
+	<20070803174435.GA17053@suse.de>
+	<20070803174810.GA23241@srcf.ucam.org>
+	<46B38211.4030004@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 03 Aug 2007 15:29:21 -0400, Chuck Ebbert <cebbert@redhat.com> wrote:
 
-On Fri, 3 Aug 2007, Arjan van de Ven wrote:
-
-> On Fri, 2007-08-03 at 21:19 +0200, Roman Zippel wrote:
-> > Hi,
-> > 
-> > On Fri, 3 Aug 2007, Jonathan Corbet wrote:
-> > 
-> > > Most comments last time were favorable.  The one dissenter was Roman,
-> > > who worries about the overhead of using hrtimers for this operation; my
-> > > understanding is that he would rather see a really_msleep() function for
-> > > those who actually want millisecond resolution.  I'm not sure how to
-> > > characterize what the cost could be, but it can only be buried by the
-> > > fact that every call sleeps for some number of milliseconds.  On my
-> > > system, the several hundred total msleep() calls can't cause any real
-> > > overhead, and almost all happen at initialization time.
-> > 
-> > The main point is still that these are two _different_ APIs for different 
-> > usages, so I still prefer to add a hrsleep() instead.
+> > Well, we did - with hindsight it may not have been such a great plan :) 
+> > I believe that Fedora did as well, but have disabled it in an update 
+> > kernel.
 > 
-> 
-> I would actually prefer it the other way around; call the
-> not-so-accurate one "msleep_approx()" or somesuch, to make it explicit
-> that the sleep is only approximate...
+> Yeah, autosuspend broke too many devices. Way too many.
 
-Actually the hrsleep() function would allow for submillisecond sleeps, 
-which might be what some of the 450 users really want and they only use
-msleep(1) because it's the next best thing.
-A hrsleep() function is really what makes most sense from an API 
-perspective.
+Glad you chimed in, Chuck. I was wondering about it... I saw something
+like 3 reports about broken printers, two of them for the same printer,
+Samsung ML-2010. It's on the installed base of 300,000 to 500,000.
+People simply do not report squat. Today DaveJ said that none of his
+printers work, which sounds bad, and was news to me. But the point is,
+we are trying to extrapolate from too few cases.
 
-bye, Roman
+I am wondering if Ubuntu has better user reporting, so if Matthew
+complains, it really means something.
+
+-- Pete
