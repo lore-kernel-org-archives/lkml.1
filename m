@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763666AbXHCQGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763751AbXHCQH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763666AbXHCQGT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 12:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762639AbXHCQGI
+	id S1763751AbXHCQH2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 12:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762675AbXHCQHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 12:06:08 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:48159 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754595AbXHCQGG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 12:06:06 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by default on certain device classes
-Date: Fri, 3 Aug 2007 18:08:11 +0200
-User-Agent: KMail/1.9.7
-Cc: David Brownell <david-b@pacbell.net>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       Rogan Dawes <lists@dawes.za.net>, linux-kernel@vger.kernel.org,
-       Alan Stern <stern@rowland.harvard.edu>
-References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org> <200708030737.56316.david-b@pacbell.net> <20070803150303.GA19968@srcf.ucam.org>
-In-Reply-To: <20070803150303.GA19968@srcf.ucam.org>
+	Fri, 3 Aug 2007 12:07:20 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:47883 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762639AbXHCQHT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 12:07:19 -0400
+Date: Fri, 3 Aug 2007 12:07:09 -0400
+To: Neil Brown <neilb@suse.de>
+Cc: Jeff Layton <jlayton@redhat.com>,
+       Stefan Walter <stefan.walter@inf.ethz.ch>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] rpc.mountd crashes when extensively using netgroups
+Message-ID: <20070803160709.GD456@fieldses.org>
+References: <46ADDFB2.9070709@inf.ethz.ch> <20070731144824.GA15231@fieldses.org> <20070802113255.d686894c.jlayton@redhat.com> <18098.39541.547557.132952@notabene.brown>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708031808.11903.oliver@neukum.org>
+In-Reply-To: <18098.39541.547557.132952@notabene.brown>
+User-Agent: Mutt/1.5.16 (2007-06-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 03 August 2007 schrieb Matthew Garrett:
-> > Which is why I didn't suggest doing that, of course.  The only
-> > one making that kind of straw man argument seems to be you.
+On Fri, Aug 03, 2007 at 01:01:09PM +1000, Neil Brown wrote:
+> The core issue is this:
 > 
-> But however you phrase it, that's effectively what it is. "Does your 
-> device work?" just makes users wonder why the damn computer doesn't know 
-> already. "This option may prevent your device from working. Click here 
-> to switch it off" results in them wondering why it was switched on in 
-> the first place. Many of our users aren't technical - they don't care 
-> about saving 200mW, they just care about their printer working when they 
-> plug it in.
+>  We need to map IPADDRESS to THING, and  THING + PATH to EXPORTPOINT.
+> (roughly).
+> So what do we choose for "THING"?
+> 
+> One obvious option is the dotted quad of the IP address.
+> People tend to have large sets of similar clients, so doing this seems
+> to be missing out on a valuable optimisation and adding bloat to the
+> lookup tables in the kernel.
 
-Devices rarely simply crash. Although Windows doesn't do runtime power
-management, it certainly will suspend all devices when the system goes
-into suspension. Buggy devices typically disconnect and reconnect when
-resumed. This is testable for in software without user intervention.
+$ gdb vmlinux
+GNU gdb 6.6-debian
+...
+(gdb) print sizeof(struct ip_map)
+$1 = 40
+(gdb) print sizeof(struct svc_export)
+$2 = 136
 
-	Regards
-		Oliver
+Hm, OK, one-address-per-export loses.
 
+> I guess we could use a hash and keep a hash table in mountd.
+> So mountd:
+>   1/ Generates the comma-separated name as needed, being careful to
+>      allocate enough space.
+>   2a/ If this is small enough, write it to the kernel as is.
+>   2b/ If it is too big, Find it in a table (adding if needed) and 
+>       write the address of the table entry to the kernel
+> 
+>   When a THING + PATH request arrives:
+>     If THING looks like an address in the table, do the lookup to get
+>     the string.
+> 
+> This would work to keep the strings in the kernel shorter, but is
+> rather ugly - storing in the kernel addresses in a user-space program.
+
+If you use an actual collision-free hash function then the result will
+be reproduceable, so you don't have to depend on temporary information
+in mountd.
+
+> So maybe we want to combine the two workable approaches.
+> 
+> Sometimes IPADDRESS maps to DOTTED_QUAD
+> Sometimes IPADDRESS maps to LIST,OF,STRINGS,FROM,ETC,EXPORTS
+> 
+> Possibly the choice could be based on a command line switch.
+> In the absence of such a switch, it could be based on the number of
+> entries in /etc/exports.
+
+Seems OK.
+
+--b.
