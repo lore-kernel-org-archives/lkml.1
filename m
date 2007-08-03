@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764175AbXHCWAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764275AbXHCWC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764175AbXHCWAl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 18:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761886AbXHCWAf
+	id S1764275AbXHCWC1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 18:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761886AbXHCWCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 18:00:35 -0400
-Received: from mail.screens.ru ([213.234.233.54]:45407 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753927AbXHCWAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 18:00:35 -0400
-Date: Sat, 4 Aug 2007 02:00:48 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kill an obsolete sub-thread-ptrace stuff
-Message-ID: <20070803220048.GA277@tv-sign.ru>
-References: <20070803210441.GA247@tv-sign.ru> <20070803215101.481DD4D04BC@magilla.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070803215101.481DD4D04BC@magilla.localdomain>
-User-Agent: Mutt/1.5.11
+	Fri, 3 Aug 2007 18:02:20 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:43011 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753927AbXHCWCU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 18:02:20 -0400
+Date: Fri, 3 Aug 2007 15:01:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+Subject: Re: [PATCH] PM: Fix dependencies of CONFIG_SUSPEND and
+ CONFIG_HIBERNATION
+In-Reply-To: <200708032359.37677.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.999.0708031459090.8184@woody.linux-foundation.org>
+References: <200708032359.37677.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03, Roland McGrath wrote:
->
-> > There is a couple of subtle checks which were needed to handle ptracing from
-> > the same thread group. This was deprecated a long ago, imho this code just
-> > complicates the understanding.
-> 
-> Looks ok to me.
 
-Thanks!
 
-> > And, the "->parent->signal->flags & SIGNAL_GROUP_EXIT" check in exit_notify()
-> > is not right. SIGNAL_GROUP_EXIT can mean exec(), not exit_group(). This means
-> > ptracer can lose a ptraced zombie on exec(). Minor problem, but still the bug.
-> 
-> This bug never happens because this check is only in the now-impossible
-> ptrace-same-group case.
+On Fri, 3 Aug 2007, Rafael J. Wysocki wrote:
+>  	depends on PM
+> -	depends on !SMP || SUSPEND_SMP_POSSIBLE
+> +	depends on SUSPEND_SMP_POSSIBLE || ((BLACKFIN || MIPS || SUPERH || FRV \
+> +		    || (PPC32 && PPC_MPC52xx)) && !SMP)
 
-This means that changelog is wrong and should be changed.
+Please, do that as SUSPEND_UP_POSSIBLE, and make it look like
 
-However, I disagree. exit_notify() doesn't check the ptrace-same-group case. So,
-unless I missed something, we set EXIT_DEAD in any case, even if ptracer doesn't
-belong to our thread group.
+	config SUSPEND_UP_POSSIBLE
+		depends on BLACKFIN || MIPS || SUPERH || FRV || ((PPC32 && PPC_MPC52xx)
+		depends on !SMP
+		default y
 
-No?
+and now you can write the above thing as
 
-Oleg.
+	depends on SUSPEND_SMP_POSSIBLE || SUSPEND_UP_POSSIBLE
 
+and it's all much nicer.
+
+I would say that doing a similar setup for HIBERNATE would be nice too, 
+but the SUSPEND case is more noticeable because the SMP case is so nice 
+already.
+
+		Linus
