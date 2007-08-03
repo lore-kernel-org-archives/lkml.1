@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762845AbXHCO23@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbXHCO36@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762845AbXHCO23 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 10:28:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762158AbXHCO2W
+	id S1762982AbXHCO36 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 10:29:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762205AbXHCO3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 10:28:22 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:54130 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761955AbXHCO2V (ORCPT
+	Fri, 3 Aug 2007 10:29:52 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:44682 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762166AbXHCO3v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 10:28:21 -0400
-Date: Fri, 3 Aug 2007 10:28:19 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-cc: David Brownell <david-b@pacbell.net>, Rogan Dawes <lists@dawes.za.net>,
-       Oliver Neukum <oliver@neukum.org>, Greg KH <gregkh@suse.de>,
-       <linux-usb-devel@lists.sourceforge.net>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] USB: Only enable autosuspend by   default on certain
- device classes
-In-Reply-To: <20070803140909.GA19245@srcf.ucam.org>
-Message-ID: <Pine.LNX.4.44L0.0708031014160.3416-100000@iolanthe.rowland.org>
+	Fri, 3 Aug 2007 10:29:51 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend =?iso-8859-1?q?by=09default_on_certain_device?= classes
+Date: Fri, 3 Aug 2007 16:32:07 +0200
+User-Agent: KMail/1.9.7
+Cc: Dave Jones <davej@redhat.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+References: <20070802235613.GA9487@srcf.ucam.org> <200708030957.46320.oliver@neukum.org> <20070803142416.GB11942@redhat.com>
+In-Reply-To: <20070803142416.GB11942@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708031632.07979.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007, Matthew Garrett wrote:
+Am Freitag 03 August 2007 schrieb Dave Jones:
+> On Fri, Aug 03, 2007 at 09:57:45AM +0200, Oliver Neukum wrote:
+>  
+>  > Kernel developers are a diverser lot than you think ;-)
+>  > We don't enable autosuspend in drivers we can't test, except where
+>  > the lack of a kernel driver forces us to use a broad swipe. Printers
+>  > were tested, too, and most printers seem to work.
+> 
+> My experience suggests the opposite.  Of the several I've tried so far,
+> none have worked with usb suspend.
 
-> This patch is exactly that - a way of getting most of the benefits of 
-> autosuspend without any real probability of breaking hardware. If you 
-> mean "Are the distributions willing to pop up dialogs asking users to 
-> start caring about obscure aspects of the USB spec", then I don't think 
-> that's actually making things better.
+vendor:product please.
 
-Quite aside from issues involving desktop ease-of-use and distribution 
-intentions, there is a technical matter to consider.  With the default 
-autosuspend timeout set to 2 seconds, as it is now, it can often happen 
-that userspace isn't able to respond in time to prevent a device from 
-being suspended.  At bootup especially, the system is so busy running 
-lots of tasks that response to a newly-detected device can be delayed 
-for tens of seconds.  Even loading the device driver's module can take 
-so long that the device gets autosuspended first.
+In addition, I'll make a config option for usblp using autosuspend.
 
-There are two possible solutions, both involving the kernel (since
-userspace can't respond in time).  One is to change the default timeout
-to something larger, or even disable it completely.  Then people would
-need to rely on userspace tools to enable autosuspend on known-good
-devices.  The other possibility is to have a fairly reliable blacklist
-or whitelist and again rely on userspace to manage edge cases.  This is 
-of course more flexible than a blanket default setting, but it's still 
-pretty rigid.  On the other hand, a blacklist can't be changed without 
-rebuilding the kernel whereas the default timeout can be adjusted on 
-the boot command line.
-
-I don't know what the "best" approach is, but I can't see any
-alternative to these two.  Furthermore, whatever approach we settle on
-_has_ to be able to handle devices which simply die upon being 
-suspended.
-
-Alan Stern
-
+	Regards
+		Oliver
