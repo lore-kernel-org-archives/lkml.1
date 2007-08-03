@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764018AbXHCXzP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932285AbXHCX77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764018AbXHCXzP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 19:55:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760326AbXHCXzE
+	id S932285AbXHCX77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 19:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761301AbXHCX7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 19:55:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40596 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760259AbXHCXzB (ORCPT
+	Fri, 3 Aug 2007 19:59:53 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:3228 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760973AbXHCX7w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 19:55:01 -0400
-Subject: Re: [PATCH] msleep() with hrtimers
-From: Arjan van de Ven <arjan@infradead.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0708032152060.1817@scrub.home>
-References: <15327.1186166232@lwn.net>
-	 <Pine.LNX.4.64.0708032116340.1817@scrub.home>
-	 <1186170407.3153.8.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708032152060.1817@scrub.home>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Fri, 03 Aug 2007 16:53:49 -0700
-Message-Id: <1186185229.3153.11.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Fri, 3 Aug 2007 19:59:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Aqs1qbZit6lj894KUdzyxu3hHGTAYsn0+v6io4rpguab1HlmbAidZNHjG9wQ71KBXs95SwdPv806P6Os9yOBOEgMORgkLTDW0ODEB717JqpFu/IYltZjVCtOS1IfuY2878HnsFoD8xZzYV2zVUA6v/8hZ2uokNFYm24BFYkIsJs=
+Message-ID: <8bd0f97a0708031659o1e32722cq99b1c248367d6da6@mail.gmail.com>
+Date: Fri, 3 Aug 2007 19:59:51 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: custom baud rates with serial core
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+is there a method for setting custom baud rates that doesnt cause a
+"deprecated" message from showing up ?  for example:
+# setserial -a /dev/ttyBF0 divisor 9 spd_cust
+setserial sets custom speed on ttyBF0. This is deprecated.
 
-> 
-> Actually the hrsleep() function would allow for submillisecond sleeps, 
-> which might be what some of the 450 users really want and they only use
-> msleep(1) because it's the next best thing.
-> A hrsleep() function is really what makes most sense from an API 
-> perspective.
+my reading of the serial core code is that the only way to specify a
+baud rate that does not appear in the B* define list is by setting
+your baud to B38400 and utilizing UPF_SPD_CUST.  this ends up in the
+deprecated warning code though in uart_set_info().
 
-I respectfully disagree. The power of msleep is that the unit of sleep
-time is in the name; so in your proposal it would be hr_msleep or
-somesuch. I much rather do the opposite in that case; make the "short"
-name be the best implementation of the requested behavior, and have
-qualifiers for allowing exceptions to that... least surprise and all
-that.
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+if it's deprecated in favor of something nicer, that's fine, but i
+cant find out what that "nicer" thing is ...
+-mike
