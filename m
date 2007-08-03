@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760638AbXHCA5P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbXHCBDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760638AbXHCA5P (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 20:57:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754852AbXHCA5D
+	id S1760848AbXHCBDL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 21:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbXHCBC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 20:57:03 -0400
-Received: from ns.suse.de ([195.135.220.2]:35491 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754654AbXHCA5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 20:57:01 -0400
-Date: Fri, 3 Aug 2007 02:57:00 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+	Thu, 2 Aug 2007 21:02:58 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:50642 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754899AbXHCBC5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 21:02:57 -0400
+Date: Thu, 2 Aug 2007 18:02:56 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Linux Memory Management List <linux-mm@kvack.org>
 Subject: Re: [rfc] balance-on-fork NUMA placement
-Message-ID: <20070803005700.GD14775@wotan.suse.de>
-References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com> <20070802034201.GA32631@wotan.suse.de> <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com> <20070803002639.GC14775@wotan.suse.de> <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070803005700.GD14775@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0708021801010.13312@schroedinger.engr.sgi.com>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de>
+ <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
+ <20070802034201.GA32631@wotan.suse.de> <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com>
+ <20070803002639.GC14775@wotan.suse.de> <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com>
+ <20070803005700.GD14775@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 05:52:28PM -0700, Christoph Lameter wrote:
-> On Fri, 3 Aug 2007, Nick Piggin wrote:
+On Fri, 3 Aug 2007, Nick Piggin wrote:
+
+> > Ok. So MPOL_BIND on a single node. We would have to save the current 
+> > memory policy on the stack and then restore it later. Then you would need 
+> > a special call anyways.
 > 
-> > > Add a (slow) kmalloc_policy? Strict Object round robin for interleave 
-> > > right? It probably needs its own RR counter otherwise it disturbs the per 
-> > > task page RR.
-> > 
-> > I guess interleave could be nice for other things, but for this, I
-> > just want MPOL_BIND to work. The problem is that the pagetable copying
-> > etc codepaths cover a lot of code and some of it (eg pagetable allocation)
-> > is used for other paths as well.. so I was just hoping to do something
-> > less intrusive for now if possible.
-> 
-> Ok. So MPOL_BIND on a single node. We would have to save the current 
-> memory policy on the stack and then restore it later. Then you would need 
-> a special call anyways.
+> Well the memory policy will already be set to MPOL_BIND at this point.
+> The slab allocator I think would just have to honour the node at the
+> object level.
 
-Well the memory policy will already be set to MPOL_BIND at this point.
-The slab allocator I think would just have to honour the node at the
-object level.
-
-
- 
-> Or is there some way to execute the code on the target cpu? That may be 
-> the easiest solution.
-
-It isn't so easy... we'd have to migrate the parent process to the new
-node to perform the setup, and then migrate it back again afterwards.
+Who set the policy? The parent process may have its own memory policy. If 
+you set that then the earlier policy is lost.
