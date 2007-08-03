@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbXHCIEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbXHCISH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761413AbXHCIEo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 04:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755865AbXHCIE1
+	id S1757371AbXHCISH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 04:18:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbXHCIRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 04:04:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44786 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752337AbXHCIEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 04:04:23 -0400
-Date: Fri, 3 Aug 2007 10:04:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
-Subject: Re: [patch] genirq: fix simple and fasteoi irq handlers
-Message-ID: <20070803080408.GA12222@elte.hu>
-References: <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu> <20070803060733.GA1582@ff.dom.local>
+	Fri, 3 Aug 2007 04:17:51 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:20560 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751554AbXHCIRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 04:17:49 -0400
+Message-ID: <46B2E49E.6080103@interia.pl>
+Date: Fri, 03 Aug 2007 10:17:34 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070803060733.GA1582@ff.dom.local>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Satyam Sharma <satyam@infradead.org>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mtd@lists.infradead.org
+Subject: Re: [PATCH] mtd: Makefile fix (was Re: [PATCH] mtdsuper: licensce
+ = GPL)
+References: <46B0D1F7.9090805@interia.pl> <alpine.LFD.0.999.0708020318070.8258@enigma.security.iitk.ac.in> <46B18551.2020809@interia.pl> <alpine.LFD.0.999.0708021309430.8258@enigma.security.iitk.ac.in> <46B1FFFB.6040209@interia.pl> <alpine.LFD.0.999.0708030811330.23798@enigma.security.iitk.ac.in>
+In-Reply-To: <alpine.LFD.0.999.0708030811330.23798@enigma.security.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+X-EMID: 76f92acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> [PATCH] mtd: Makefile fix
+> 
+> We want drivers/mtd/{mtdcore, mtdsuper, mtdpart}.c to be built and linked
+> into the same mtd.ko module. Fix the Makefile to ensure this, and remove
+> duplicate MODULE_ declarations in mtdpart.c, as mtdcore.c already has them.
+> 
+> Signed-off-by: Satyam Sharma <satyam@infradead.org>
 
-* Jarek Poplawski <jarkao2@o2.pl> wrote:
+Ok. I have mtd.ko now.
 
-> I can't guarantee this is all needed to fix this bug, but I think this 
-> patch is necessary here.
+Thank You
+Rafa³
 
-hmmm ... very interesting! Now _this_ is something we'd like to see 
-tested. Could you send a patch to Marcin that also undoes the workaround 
-we have in place now, so that he could check whether ne2k-pci works fine 
-with your fix alone?
 
-	Ingo
+----------------------------------------------------------------------
+Wszystko czego potrzebujesz latem: kremy do opalania, 
+stroje kapielowe, maly romans 
+
+>>>http://link.interia.pl/f1b15
+
