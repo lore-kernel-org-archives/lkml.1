@@ -1,51 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757371AbXHCISH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbXHCIYi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757371AbXHCISH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 04:18:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbXHCIRv
+	id S1759157AbXHCIYi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 04:24:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXHCIY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 04:17:51 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:20560 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751554AbXHCIRt (ORCPT
+	Fri, 3 Aug 2007 04:24:29 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:57765 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbXHCIY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 04:17:49 -0400
-Message-ID: <46B2E49E.6080103@interia.pl>
-Date: Fri, 03 Aug 2007 10:17:34 +0200
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
+	Fri, 3 Aug 2007 04:24:28 -0400
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
+Date: Fri, 3 Aug 2007 10:36:20 +0200
+User-Agent: KMail/1.8.2
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, raisch@de.ibm.com, paulus@samba.org,
+       general@lists.openfabrics.org
+References: <200708021139.31695.hnguyen@linux.vnet.ibm.com> <200708021608.16436.arnd@arndb.de> <adawswd3ayo.fsf@cisco.com>
+In-Reply-To: <adawswd3ayo.fsf@cisco.com>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam@infradead.org>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mtd@lists.infradead.org
-Subject: Re: [PATCH] mtd: Makefile fix (was Re: [PATCH] mtdsuper: licensce
- = GPL)
-References: <46B0D1F7.9090805@interia.pl> <alpine.LFD.0.999.0708020318070.8258@enigma.security.iitk.ac.in> <46B18551.2020809@interia.pl> <alpine.LFD.0.999.0708021309430.8258@enigma.security.iitk.ac.in> <46B1FFFB.6040209@interia.pl> <alpine.LFD.0.999.0708030811330.23798@enigma.security.iitk.ac.in>
-In-Reply-To: <alpine.LFD.0.999.0708030811330.23798@enigma.security.iitk.ac.in>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: 76f92acc
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708031036.20859.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> [PATCH] mtd: Makefile fix
-> 
-> We want drivers/mtd/{mtdcore, mtdsuper, mtdpart}.c to be built and linked
-> into the same mtd.ko module. Fix the Makefile to ensure this, and remove
-> duplicate MODULE_ declarations in mtdpart.c, as mtdcore.c already has them.
-> 
-> Signed-off-by: Satyam Sharma <satyam@infradead.org>
+From: Hoang-Nam Nguyen <hnguyen at de.ibm.com>
+Date: Fri, 3 Aug 2007 09:44:56 +0200
+Subject: [PATCH] ehca: map 4k firmware context of cq, qp to user space
+This patch utilizes remap_4k_pfn() as introduced by Paul M.,
+for details see http://patchwork.ozlabs.org/linuxppc/patch?id=10281,
+to map ehca cq, qp firmware context (4k) to user space if kernel page
+size is 64k. For reason, why this is required, see also Paul's patch.
+In addition to that the kernel page offset of firmware context needs
+to be set in cq and qp response block so that user space can assemble
+the proper virtual address to use.
+An appropriate patch for libehca will follow for ofed-1.3.
 
-Ok. I have mtd.ko now.
+Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_classes.h |    4 +++-
+ drivers/infiniband/hw/ehca/ehca_cq.c      |    2 ++
+ drivers/infiniband/hw/ehca/ehca_qp.c      |    2 ++
+ drivers/infiniband/hw/ehca/ehca_uverbs.c  |    6 +++---
+ 4 files changed, 10 insertions(+), 4 deletions(-)
 
-Thank You
-Rafa³
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index b5e9603..206d4eb 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -337,6 +337,8 @@ struct ehca_create_cq_resp {
+ 	u32 cq_number;
+ 	u32 token;
+ 	struct ipzu_queue_resp ipz_queue;
++	u32 fw_handle_ofs;
++	u32 dummy;
+ };
+ 
+ struct ehca_create_qp_resp {
+@@ -347,7 +349,7 @@ struct ehca_create_qp_resp {
+ 	u32 qkey;
+ 	/* qp_num assigned by ehca: sqp0/1 may have got different numbers */
+ 	u32 real_qp_num;
+-	u32 dummy; /* padding for 8 byte alignment */
++	u32 fw_handle_ofs;
+ 	struct ipzu_queue_resp ipz_squeue;
+ 	struct ipzu_queue_resp ipz_rqueue;
+ };
+diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
+index 81aff36..ed5d67f 100644
+--- a/drivers/infiniband/hw/ehca/ehca_cq.c
++++ b/drivers/infiniband/hw/ehca/ehca_cq.c
+@@ -276,6 +276,8 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
+ 		resp.ipz_queue.queue_length = ipz_queue->queue_length;
+ 		resp.ipz_queue.pagesize = ipz_queue->pagesize;
+ 		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
++		resp.fw_handle_ofs = (u32)
++			(my_cq->galpas.user.fw_handle & (PAGE_SIZE - 1));
+ 		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
+ 			ehca_err(device, "Copy to udata failed.");
+ 			goto create_cq_exit4;
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index b178cba..66f632c 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -745,6 +745,8 @@ static struct ehca_qp *internal_create_qp(
+ 			queue2resp(&resp.ipz_squeue, &my_qp->ipz_squeue);
+ 		if (HAS_RQ(my_qp))
+ 			queue2resp(&resp.ipz_rqueue, &my_qp->ipz_rqueue);
++		resp.fw_handle_ofs = (u32)
++			(my_qp->galpas.user.fw_handle & (PAGE_SIZE - 1));
+ 
+ 		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
+ 			ehca_err(pd->device, "Copy to udata failed");
+diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
+index 4bc687f..be062f1 100644
+--- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
++++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
+@@ -109,7 +109,7 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
+ 	u64 vsize, physical;
+ 
+ 	vsize = vma->vm_end - vma->vm_start;
+-	if (vsize != EHCA_PAGESIZE) {
++	if (vsize >= EHCA_PAGESIZE) {
+ 		ehca_gen_err("invalid vsize=%lx", vma->vm_end - vma->vm_start);
+ 		return -EINVAL;
+ 	}
+@@ -118,8 +118,8 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+ 	ehca_gen_dbg("vsize=%lx physical=%lx", vsize, physical);
+ 	/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
+-	ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
+-			      vsize, vma->vm_page_prot);
++	ret = remap_4k_pfn(vma, vma->vm_start, physical >> EHCA_PAGESHIFT,
++			   vma->vm_page_prot);
+ 	if (unlikely(ret)) {
+ 		ehca_gen_err("remap_pfn_range() failed ret=%x", ret);
+ 		return -ENOMEM;
+-- 
+1.5.2
 
 
-----------------------------------------------------------------------
-Wszystko czego potrzebujesz latem: kremy do opalania, 
-stroje kapielowe, maly romans 
-
->>>http://link.interia.pl/f1b15
 
