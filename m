@@ -1,96 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbXHCPFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763689AbXHCPGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763626AbXHCPFs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 11:05:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762682AbXHCPFl
+	id S1763689AbXHCPGY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 11:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762782AbXHCPGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 11:05:41 -0400
-Received: from renko.ucs.ed.ac.uk ([129.215.13.3]:54890 "EHLO
-	renko.ucs.ed.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762667AbXHCPFk (ORCPT
+	Fri, 3 Aug 2007 11:06:16 -0400
+Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:38550 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1762682AbXHCPGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 11:05:40 -0400
-From: Alistair John Strachan <alistair@devzero.co.uk>
-To: "T. J. Brumfield" <enderandrew@gmail.com>
-Subject: Re: Scheduler Situation
-Date: Fri, 3 Aug 2007 16:05:43 +0100
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com> <200708031540.29687.alistair@devzero.co.uk> <cdc89fe60708030751r459786dm588cfed7bc855813@mail.gmail.com>
-In-Reply-To: <cdc89fe60708030751r459786dm588cfed7bc855813@mail.gmail.com>
+	Fri, 3 Aug 2007 11:06:15 -0400
+Date: Fri, 3 Aug 2007 16:06:00 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Rogan Dawes <lists@dawes.za.net>,
+       Oliver Neukum <oliver@neukum.org>, Greg KH <gregkh@suse.de>,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Message-ID: <20070803150600.GB19968@srcf.ucam.org>
+References: <20070803140909.GA19245@srcf.ucam.org> <Pine.LNX.4.44L0.0708031014160.3416-100000@iolanthe.rowland.org> <20070803143338.GA19713@srcf.ucam.org> <Pine.LNX.4.64.0708031636160.26230@twin.jikos.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708031605.43563.alistair@devzero.co.uk>
-X-Edinburgh-Scanned: at renko.ucs.ed.ac.uk
-    with MIMEDefang 2.52, Sophie, Sophos Anti-Virus, Clam AntiVirus
+In-Reply-To: <Pine.LNX.4.64.0708031636160.26230@twin.jikos.cz>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] USB: Only enable autosuspend by   default on certain device classes
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 August 2007 15:51:59 T. J. Brumfield wrote:
-> > I'm not going to argue with this point because I think this is exactly
-> > what Linus meant. He wanted a scheduler that worked. And he knew it
-> > wouldn't work immediately after merging it. So he had to go with the
-> > person that he trusted the most to make it work, quickly. And this was
-> > Ingo. That might not be a "purely" technical reason, but I suspect it's a
-> > correct one.
->
-> You're demonstrating a lack of reason here.  In the same post Linus
-> said repeatedly that he feels Con isn't someone he wanted to work with
-> because he felt Con refused to listen to bug reports and was
-> argumentative. 
+On Fri, Aug 03, 2007 at 04:43:16PM +0200, Jiri Kosina wrote:
 
-Which is refuted only by your personal experience, not by any facts that have 
-yet been posted.
+> are you sure about windows suspending the HID devices in runtime? I have 
+> never seen LEDs of USB keyboard connected to windows host to go off after 
+> some time of not using it.
 
-> And never once did Linus say that CFS would work out  
-> of the box.  He said it was new code that needs plenty of testing.  In
-> fact he said that is why he was against plugsched, because if people
-> ran different schedulers, then CFS would get less testing.  You're
-> just putting motives in Linus' mouth that weren't there to begin with.
+Ah, sorry - on reading more closely, HID devices will only be 
+autosuspended if they're whitelisted.
 
-This has gone too far. I said NO such thing. I repeatedly stated in previous 
-emails that the decision was based on code that, _although not perfect on 
-submission_ could most rapidly be made to work. You have just twisted what 
-I've said here to contradict that. Please read ALL of my emails, instead of 
-selectively attacking only what you disagree with.
+> We have been playing with runtime autosuspend of HID devices, are 
+> currently postponed the full support, as it turns out that many devices 
+> don't support this feature properly (probably due to not being tested in 
+> Windows).
 
-( I also don't appreciate being copied back onto LKML, after a long email 
-diatribe (which you selectively did not copy). It's just bad netiquette. )
-
-> > Who cares? You can't say either Linus or Ingo are any worse in this
-> > regard, so it's irrelevant when discussing why SD wasn't chosen. This is
-> > just as political as anything negative that Linus said.
->
-> I imagine if it was your pet project, and you were trampled on in this
-> manner, you'd care.  And I don't like seeing people abused like this.
-
-I certainly wouldn't expect my code to be taken. If somebody else's was taken, 
-I would accept that I was powerless to make them do otherwise. That's what 
-benevolent dictatorships are all about and what somebody familiar with Linux 
-development should expect.
-
-The best way to deal with "injustices" is to constructively move past them. 
-Con decided to leave the community, and that's another option. I just think 
-everybody's lost out, himself included.
-
-> I also don't care to see a project I care about weakened due to petty
-> drama and politics.  I had hoped the Linux community was above this.
-> Your lack of compassion in the matter however is duly noted.  We have
-> polar views and aren't going to agree.
-
-LKML isn't _normally_ a place for compassion, but for code, and I'm pretty 
-sure that if there was less compassion we'd have fewer flamewars and less of 
-the petty politics that you are complaining so loudly about.
-
-Either you can convince Linus to change his mind, or you can't. Complaining 
-about it will achieve nothing other than to increase the noise to signal on 
-LKML.
-
+This doesn't surprise me...
 -- 
-Cheers,
-Alistair.
-
-137/1 Warrender Park Road, Edinburgh, UK.
+Matthew Garrett | mjg59@srcf.ucam.org
