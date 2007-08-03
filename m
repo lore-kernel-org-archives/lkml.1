@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbXHCI2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXHCIeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760002AbXHCI2E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 04:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbXHCI14
+	id S1757350AbXHCIeu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 04:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbXHCIem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 04:27:56 -0400
-Received: from smtp.aaisp.net.uk ([81.187.81.52]:43352 "EHLO smtp.aaisp.net.uk"
+	Fri, 3 Aug 2007 04:34:42 -0400
+Received: from mx2.suse.de ([195.135.220.15]:48935 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751110AbXHCI1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 04:27:55 -0400
-Date: Fri, 3 Aug 2007 09:27:52 +0100
-From: Andrew Clayton <andrew@digital-domain.net>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: [NFSD OOPS] 2.6.23-rc1-git10
-Message-ID: <20070803092752.51e74f8c@zeus.pccl.info>
-In-Reply-To: <18098.42691.783443.554197@notabene.brown>
-References: <20070802171450.7c9b4af3@zeus.pccl.info>
-	<18098.42691.783443.554197@notabene.brown>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752877AbXHCIek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 04:34:40 -0400
+To: Matt Mackall <mpm@selenic.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: CFS review
+References: <20070711214649.GK14435@v2.random>
+	<alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+	<Pine.LNX.4.64.0707130415520.1818@scrub.home>
+	<1184302024.6709.11.camel@Homer.simpson.net>
+	<Pine.LNX.4.64.0707131728070.1817@scrub.home>
+	<1184389456.6632.13.camel@Homer.simpson.net>
+	<Pine.LNX.4.64.0708010439050.1817@scrub.home>
+	<20070801112229.GA11710@elte.hu> <20070803030436.GO11166@waste.org>
+	<1186113467.3996.0.camel@laptopd505.fenrus.org>
+	<20070803043800.GE11115@waste.org>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 03 Aug 2007 11:29:10 +0200
+In-Reply-To: <20070803043800.GE11115@waste.org>
+Message-ID: <p73odhpm0ex.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007 13:53:39 +1000, Neil Brown wrote:
-
-[snip]
-
-> So clearly we need some proper locking around thread start-up and
-> shutdown.  We had previous relied on lock_kernel, but that isn't
-> really good enough for this.   I'll try to figure out the best way to
-> fix it.  Meanwhile, I doubt the problem will recur.
+Matt Mackall <mpm@selenic.com> writes:
 > 
-> Thanks for the report.
+> Indeed. I'm just pointing out that not having TSC, fast HZ, no-HZ
+> mode, or high-res timers should not be treated as an unusual
+> circumstance. That's a PC-centric view.
 
-Thanks for the explanation!
+The question is if it would be that hard to add TSC equivalent
+sched_clock() support to more systems. At least a lot of CPUs I have
+ever looked at had some kind of fast clock available. Perhaps it's
+more laziness of the developers or cut'n'paste that these are not as
+widely used as they should be?
 
-> NeilBrown
-
-Andrew
+-Andi
