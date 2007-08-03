@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXHCH2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbXHCHdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbXHCH2Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 03:28:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXHCH2A
+	id S1760780AbXHCHdR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 03:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751475AbXHCHdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 03:28:00 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:38004 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbXHCH17 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 03:27:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=go+xlUe8S0aiwc7w0KT313Kl4XyH4yEtlAyegEPKQyD3V3LiohE+OnvrmI6ZrglaHCje+xeY+DU0kAK7HZo/MeXkWJSou9woVtwugXi47QV2Ri2Xx712bXm81YeTOnahm7HjlK/aww7jJ6j+rva4qUyv42nWxpfbG/ASpaq1ufo=
-Message-ID: <a8e1da0708030027n38c18e34ld8bc18fc103179f8@mail.gmail.com>
-Date: Fri, 3 Aug 2007 07:27:58 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: dwmw2@infradead.org
-Subject: Re: MTD: pnc2000 iomem oops
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
-In-Reply-To: <a8e1da0708010135we34a17dl604d9f8c3eb630f8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 3 Aug 2007 03:33:07 -0400
+Received: from ns.firmix.at ([62.141.48.66]:40769 "EHLO ns.firmix.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750875AbXHCHdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 03:33:06 -0400
+Subject: Re: gcc fixed size char array initialization bug - known?
+From: Bernd Petrovitsch <bernd@firmix.at>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Satyam Sharma <satyam@infradead.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070803034001.GA3476@localhost.localdomain>
+References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
+	 <Pine.LNX.4.64.0708022157310.9319@fbirervta.pbzchgretzou.qr>
+	 <alpine.LFD.0.999.0708030841390.23798@enigma.security.iitk.ac.in>
+	 <20070803034001.GA3476@localhost.localdomain>
+Content-Type: text/plain
+Organization: http://www.firmix.at/
+Date: Fri, 03 Aug 2007 09:32:55 +0200
+Message-Id: <1186126375.3677.1.camel@gimli.at.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
+X-Firmix-Scanned-By: MIMEDefang 2.56 on ns.firmix.at
+X-Firmix-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Spam-Status: No, hits=-2.332 required=5
+X-Spam-Score: -2.332 () AWL,BAYES_00,FORGED_RCVD_HELO,SPF_HELO_PASS,SPF_PASS
+X-Firmix-Envelope-From: <bernd@firmix.at>
+X-Firmix-Envelope-To: <linux-kernel@vger.kernel.org>
 Content-Disposition: inline
-References: <a8e1da0708010135we34a17dl604d9f8c3eb630f8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 8/1/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> Hi,
-> The pnc2000 probe function  cause oops. Possible reason is its iomem
-> region not being remaped.
->
-> I searched lkml history, the oops was reported at 2006-06-14, but still there.
-> http://lkml.org/lkml/2006/6/14/59
->
-> If the ioremap/iounmap can be added to it, is it the right fix?
->
-Add the linux-mtd list as cc.
+On Fri, 2007-08-03 at 11:40 +0800, WANG Cong wrote:
+> On Fri, Aug 03, 2007 at 08:47:56AM +0530, Satyam Sharma wrote:
+[....]
+> >While we're talking of null-termination of strings, then I bet you
+> >generally want to be using strlcpy(), really. Often strncpy() isn't
+> >what you want. Of course, if that buffer isn't a string at all, then
+> >you should be using memfoo() functions and not strbar() ones in the
+> >first place ...
+> 
+> Afaik, strlcpy() and strlcat() are NOT standard C library functions.
+
+Yes, because they are not old enough as they are results of lessons
+learned with strncpy() and strcpy() and other buffer overflows.
+
+> But, I know, they are available in Linux kernel. ;) And yes, they
+> are better than strn{cpy,cat}().
+
+	Bernd
+-- 
+Firmix Software GmbH                   http://www.firmix.at/
+mobil: +43 664 4416156                 fax: +43 1 7890849-55
+          Embedded Linux Development and Services
+
