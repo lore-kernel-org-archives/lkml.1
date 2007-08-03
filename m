@@ -1,114 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932712AbXHCRyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932914AbXHCRzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932712AbXHCRyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764680AbXHCRuf
+	id S932914AbXHCRzA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 13:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764688AbXHCRuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:50:35 -0400
-Received: from mail-gw1.sa.eol.hu ([212.108.200.67]:34834 "EHLO
-	mail-gw1.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764414AbXHCRud (ORCPT
+	Fri, 3 Aug 2007 13:50:37 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:33352 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764720AbXHCRue (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:50:33 -0400
-Message-Id: <20070803174957.061232088@szeredi.hu>
-References: <20070803174425.998083527@szeredi.hu>
-User-Agent: quilt/0.45-1
-Date: Fri, 03 Aug 2007 19:44:36 +0200
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 10/11] fuse: no abort on interrupt
-Content-Disposition: inline; filename=fuse_kill_no_abort.patch
+	Fri, 3 Aug 2007 13:50:34 -0400
+Message-ID: <46B36A43.6030101@gmail.com>
+Date: Fri, 03 Aug 2007 19:47:47 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: "T. J. Brumfield" <enderandrew@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: about modularization
+References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com> <20070803131900.GA26203@elte.hu>
+In-Reply-To: <20070803131900.GA26203@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On 08/03/2007 03:19 PM, Ingo Molnar wrote:
 
-Don't set 'aborted' flag on a request if it's interrupted.  We have to
-wait for the answer anyway, and this would only a very little time
-while copying the reply.
+> One of the authors of the IO scheduler code said it on lkml recently that
+> while modularization of IO scheduler had advantages too, in retrospect he
+> wishes they would not have made IO schedulers modular and now that
+> decision cannot be undone.
 
-This means, that write() on the fuse device will not return -ENOENT
-during normal operation, only if the filesystem is aborted by a forced
-umount or through the fusectl interface.
+Just as a matter of interest -- why can't it? (a pointer to a list archive 
+if you have one, or a name so I can look for it myself if you don't, will do 
+as answer).
 
-This could simplify userspace code somewhat when backward
-compatibility with earlier kernel versions is not required.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
-
-Index: linux/fs/fuse/dev.c
-===================================================================
---- linux.orig/fs/fuse/dev.c	2007-08-03 18:37:24.000000000 +0200
-+++ linux/fs/fuse/dev.c	2007-08-03 18:37:25.000000000 +0200
-@@ -273,28 +273,41 @@ static void request_wait_answer(struct f
- 			queue_interrupt(fc, req);
- 	}
- 
--	if (req->force) {
--		spin_unlock(&fc->lock);
--		wait_event(req->waitq, req->state == FUSE_REQ_FINISHED);
--		spin_lock(&fc->lock);
--	} else {
-+	if (!req->force) {
- 		sigset_t oldset;
- 
- 		/* Only fatal signals may interrupt this */
- 		block_sigs(&oldset);
- 		wait_answer_interruptible(fc, req);
- 		restore_sigs(&oldset);
-+
-+		if (req->aborted)
-+			goto aborted;
-+		if (req->state == FUSE_REQ_FINISHED)
-+			return;
-+
-+		/* Request is not yet in userspace, bail out */
-+		if (req->state == FUSE_REQ_PENDING) {
-+			list_del(&req->list);
-+			__fuse_put_request(req);
-+			req->out.h.error = -EINTR;
-+			return;
-+		}
- 	}
- 
--	if (req->aborted)
--		goto aborted;
--	if (req->state == FUSE_REQ_FINISHED)
-- 		return;
-+	/*
-+	 * Either request is already in userspace, or it was forced.
-+	 * Wait it out.
-+	 */
-+	spin_unlock(&fc->lock);
-+	wait_event(req->waitq, req->state == FUSE_REQ_FINISHED);
-+	spin_lock(&fc->lock);
- 
--	req->out.h.error = -EINTR;
--	req->aborted = 1;
-+	if (!req->aborted)
-+		return;
- 
-  aborted:
-+	BUG_ON(req->state != FUSE_REQ_FINISHED);
- 	if (req->locked) {
- 		/* This is uninterruptible sleep, because data is
- 		   being copied to/from the buffers of req.  During
-@@ -305,14 +318,6 @@ static void request_wait_answer(struct f
- 		wait_event(req->waitq, !req->locked);
- 		spin_lock(&fc->lock);
- 	}
--	if (req->state == FUSE_REQ_PENDING) {
--		list_del(&req->list);
--		__fuse_put_request(req);
--	} else if (req->state == FUSE_REQ_SENT) {
--		spin_unlock(&fc->lock);
--		wait_event(req->waitq, req->state == FUSE_REQ_FINISHED);
--		spin_lock(&fc->lock);
--	}
- }
- 
- static unsigned len_args(unsigned numargs, struct fuse_arg *args)
-
---
+Rene.
