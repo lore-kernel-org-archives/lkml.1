@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762982AbXHCO36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763127AbXHCOcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762982AbXHCO36 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 10:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762205AbXHCO3w
+	id S1763127AbXHCOcC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 10:32:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbXHCOby
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 10:29:52 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:44682 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762166AbXHCO3v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 10:29:51 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend =?iso-8859-1?q?by=09default_on_certain_device?= classes
-Date: Fri, 3 Aug 2007 16:32:07 +0200
-User-Agent: KMail/1.9.7
-Cc: Dave Jones <davej@redhat.com>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-References: <20070802235613.GA9487@srcf.ucam.org> <200708030957.46320.oliver@neukum.org> <20070803142416.GB11942@redhat.com>
-In-Reply-To: <20070803142416.GB11942@redhat.com>
+	Fri, 3 Aug 2007 10:31:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57576 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762207AbXHCOby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 10:31:54 -0400
+Date: Fri, 3 Aug 2007 10:31:50 -0400
+From: Dave Jones <davej@redhat.com>
+To: Sam Bromley <sbromley@pangeosubsea.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: EIP: [dnotify_flush+104/160] dnotify_flush+0x68/0xa0 SS:ESP
+	0068:ecf85f80
+Message-ID: <20070803143150.GC11942@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Sam Bromley <sbromley@pangeosubsea.com>,
+	linux-kernel@vger.kernel.org
+References: <46B32E15.2060308@pangeosubsea.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708031632.07979.oliver@neukum.org>
+In-Reply-To: <46B32E15.2060308@pangeosubsea.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag 03 August 2007 schrieb Dave Jones:
-> On Fri, Aug 03, 2007 at 09:57:45AM +0200, Oliver Neukum wrote:
->  
->  > Kernel developers are a diverser lot than you think ;-)
->  > We don't enable autosuspend in drivers we can't test, except where
->  > the lack of a kernel driver forces us to use a broad swipe. Printers
->  > were tested, too, and most printers seem to work.
-> 
-> My experience suggests the opposite.  Of the several I've tried so far,
-> none have worked with usb suspend.
+On Fri, Aug 03, 2007 at 11:01:01AM -0230, Sam Bromley wrote:
 
-vendor:product please.
+ > ( Linux version 2.6.20-15-generic (root@palmer) (gcc version 4.1.2 
+ > (Ubuntu 4.1.2-0ubuntu4)) #2 SMP Sun Apr 15 07:36:31
 
-In addition, I'll make a config option for usblp using autosuspend.
+ancient kernel (and a vendor patched one at that)
 
-	Regards
-		Oliver
+ > snd_page_alloc pcspkr gameport nvidia(P) parport serio_raw soundcore 
+
+and tainted with binary only drivers.
+
+No-one here can help you.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
