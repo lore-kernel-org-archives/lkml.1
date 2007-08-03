@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763479AbXHCU2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763874AbXHCU3s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763479AbXHCU2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXHCU2G
+	id S1763874AbXHCU3s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:29:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759633AbXHCU3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:28:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59517 "EHLO hera.kernel.org"
+	Fri, 3 Aug 2007 16:29:39 -0400
+Received: from mga01.intel.com ([192.55.52.88]:31365 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757543AbXHCU2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:28:04 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Andi Kleen <ak@suse.de>
-Subject: Re: Asus A8N-SLI Deluxe latest BIOS wants acpi_use_timer_override
-Date: Fri, 3 Aug 2007 16:27:56 -0400
-User-Agent: KMail/1.9.5
-Cc: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-References: <46B37619.2030205@shaw.ca> <200708032201.15355.ak@suse.de>
-In-Reply-To: <200708032201.15355.ak@suse.de>
+	id S1757152AbXHCU3i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:29:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,218,1183359600"; 
+   d="scan'208";a="276494466"
+Message-ID: <46B39030.7030009@intel.com>
+Date: Fri, 03 Aug 2007 13:29:36 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+CC: netdev <netdev@vger.kernel.org>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Andrew Gallatin <gallatin@myri.com>, Jeff Garzik <jeff@garzik.org>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [PATCH] lro: eHEA example how to use LRO
+References: <200708031441.26841.ossthema@de.ibm.com>
+In-Reply-To: <200708031441.26841.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708031627.56585.lenb@kernel.org>
+X-OriginalArrivalTime: 03 Aug 2007 20:29:36.0845 (UTC) FILETIME=[0283A7D0:01C7D60D]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 August 2007 16:01, Andi Kleen wrote:
-> On Friday 03 August 2007 20:38:17 Robert Hancock wrote:
-> > It appears that the latest BIOS version 1805 for the ASUS A8N-SLI Deluxe
-> > board fixes the broken ACPI timer override that was in earlier versions,
-> > and which the kernel ignores on nForce4 chipsets. Now the same override:
-> > 
-> > ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
-> > 
-> > seems to be needed, since without acpi_use_timer_override we end up
-> > getting this (with apic=verbose):
+Jan-Bernd Themann wrote:
+> This patch shows how the generic LRO interface is used for SKB mode
 > 
-> That's really bad.
->  
-> > ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
-> > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> > ...trying to set up timer (IRQ0) through the 8259A ...  failed.
-> > ...trying to set up timer as Virtual Wire IRQ... failed.
-> > ...trying to set up timer as ExtINT IRQ... works.
-> > 
-> > and the timer IRQ ends up routed as XT-PIC instead of IO-APIC-edge. With 
-> > acpi_use_timer_override we just get:
-> > 
-> > ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
-> > 
-> > and it works through the IO-APIC.
-> > 
-> > I should think there must be a better way to handle this automatically.. 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 > 
-> I have pending patches to key the NF5 case on the PCI-ID, but
-> that obviously cannot be done for NF4.
+> ---
+>  drivers/net/Kconfig             |    1 +
+>  drivers/net/ehea/ehea.h         |    9 ++++-
+>  drivers/net/ehea/ehea_ethtool.c |   15 +++++++
+>  drivers/net/ehea/ehea_main.c    |   84 +++++++++++++++++++++++++++++++++++---
+>  4 files changed, 101 insertions(+), 8 deletions(-)
 > 
-> I cannot think of anything good but putting DMI BIOS version
-> checks in for that specific board.
-> 
-> > Is there some way we can tell, given we have a chipset with a 
-> > potentially broken BIOS, from the configuration of the IOAPIC whether 
-> > the timer override is needed or not? Unfortunately I don't have output 
-> > from apic=verbose with the old BIOS with the broken override, but maybe 
-> > somebody else can provide that..
-> 
-> We don't really know which pins are connected where. This means they
-> likely have some bits they tweaked to get the different behaviour, but they're 
-> unknown. There are also some northbridge bits that can be tweaked
-> (e.g. some of the ATI BIOS workarounds used to use that) 
-> but it's still unknown what the Nvidia chipset actually does and if
-> they really help here.
-> 
-> Ok in theory you could diff config space dumps between the two BIOS 
-> versions to try to figure it out, but that would be still pretty risky
-> and I don't think it would be a good idea to trust such results.
+> diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+> index f8a602c..fec4004 100644
+> --- a/drivers/net/Kconfig
+> +++ b/drivers/net/Kconfig
 
-Is it possible to open a bugzilla and drop the acpidump and dmesg
-from both the new and old BIOS in it?
+<snip>
 
-Assuming the override in both cases is identical, I'm really baffled
-by this failure.  It seems that the new BIOS is playing some tricks
-that we have not seen before, as your hardware didn't change...
+> +module_param(use_lro, int, 0);
 
-thanks,
--Len
+Have you looked at my generic lro get/set patch that I posted this week? this 
+adds a useless module parameter while ethtool has all the structure already to 
+accomodate setting lro on/off.
+
+Auke
