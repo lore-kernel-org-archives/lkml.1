@@ -1,85 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbXHCE4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXHCE5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbXHCE4U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 00:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXHCE4K
+	id S1757243AbXHCE5V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 00:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXHCE5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 00:56:10 -0400
-Received: from 1wt.eu ([62.212.114.60]:1106 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752078AbXHCE4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 00:56:09 -0400
-Date: Fri, 3 Aug 2007 06:53:22 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>,
-       Roman Zippel <zippel@linux-m68k.org>, Mike Galbraith <efault@gmx.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: CFS review
-Message-ID: <20070803045321.GB6002@1wt.eu>
-References: <Pine.LNX.4.64.0707130415520.1818@scrub.home> <1184302024.6709.11.camel@Homer.simpson.net> <Pine.LNX.4.64.0707131728070.1817@scrub.home> <1184389456.6632.13.camel@Homer.simpson.net> <Pine.LNX.4.64.0708010439050.1817@scrub.home> <20070801112229.GA11710@elte.hu> <20070803030436.GO11166@waste.org> <1186113467.3996.0.camel@laptopd505.fenrus.org> <20070803041808.GA6002@1wt.eu> <1186115480.3996.2.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1186115480.3996.2.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.11
+	Fri, 3 Aug 2007 00:57:14 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:38524 "EHLO mx1.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752055AbXHCE5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 00:57:13 -0400
+Message-ID: <46B2B5B3.5050303@gmail.com>
+Date: Fri, 03 Aug 2007 12:57:23 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: gcc fixed size char array initialization bug - known?
+References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange> <46B2578A.805@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030024490.6774@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708030024490.6774@poirot.grange>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 09:31:19PM -0700, Arjan van de Ven wrote:
-> On Fri, 2007-08-03 at 06:18 +0200, Willy Tarreau wrote:
-> > On Thu, Aug 02, 2007 at 08:57:47PM -0700, Arjan van de Ven wrote:
-> > > On Thu, 2007-08-02 at 22:04 -0500, Matt Mackall wrote:
-> > > > On Wed, Aug 01, 2007 at 01:22:29PM +0200, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Roman Zippel <zippel@linux-m68k.org> wrote:
-> > > > > 
-> > > > > > [...] e.g. in this example there are three tasks that run only for 
-> > > > > > about 1ms every 3ms, but they get far more time than should have 
-> > > > > > gotten fairly:
-> > > > > > 
-> > > > > >  4544 roman     20   0  1796  520  432 S 32.1  0.4   0:21.08 lt
-> > > > > >  4545 roman     20   0  1796  344  256 R 32.1  0.3   0:21.07 lt
-> > > > > >  4546 roman     20   0  1796  344  256 R 31.7  0.3   0:21.07 lt
-> > > > > >  4547 roman     20   0  1532  272  216 R  3.3  0.2   0:01.94 l
-> > > > > 
-> > > > > Mike and me have managed to reproduce similarly looking 'top' output, 
-> > > > > but it takes some effort: we had to deliberately run a non-TSC 
-> > > > > sched_clock(), CONFIG_HZ=100, !CONFIG_NO_HZ and !CONFIG_HIGH_RES_TIMERS.
-> > > > 
-> > > > ..which is pretty much the state of play for lots of non-x86 hardware.
-> > > 
-> > > question is if it's significantly worse than before. With a 100 or
-> > > 1000Hz timer, you can't expect perfect fairness just due to the
-> > > extremely rough measurement of time spent...
-> > 
-> > Well, at least we're able to *measure* that task 'l' used 3.3% and
-> > that tasks 'lt' used 32%.
+Guennadi Liakhovetski wrote:
+> On Thu, 2 Aug 2007, Robert Hancock wrote:
 > 
-> It's not measured if you use jiffies level stuff. It's at best sampled!
+>> Because 5 characters will not fit in a 4 character array, even without the
+>> null terminator.
+> 
+> On Fri, 3 Aug 2007, Stefan Richter wrote:
+> 
+>> How should gcc know whether you actually wanted that char foo[len] to
+>> contain a \0 as last element?
+> 
+> Robert, Stefan, I am sorry, I think, you are VERY wrong here. There is no 
+> "even" and no guessing. The "string" DOES include a terminating '\0'. It 
+> is EQUIVALENT to {'s', 't', 'r', 'i', 'n', 'g', '\0'}. And it contains 
+> SEVEN characters. Please, re-read your K&R. Specifically, the Section 
+> "Initialization" in the "Function and Program Structure" chapter (section 
+> 4.9 in my copy), the paragraph about initialization with a string, which I 
+> quoted in an earlier email.
 
-But if we rely on the same sampling method, at least we will report
-something consistent with what happens. And sampling is often the
-correct method to get finer resolution on a macroscopic scale.
+Guennadi,
 
-I mean, we're telling users that we include the "completely fair scheduler"
-in 2.6.23, a scheduler which will ensure that all tasks get a fair share of
-CPU time. A user starts top and sees 33%+32%+32+3% for 4 tasks while he
-would have expected to see 25%+25%+25%+25%. You can try to explain users
-that it's the fairest distribution, but they will have a hard time believing
-it, especially when they measure the time spent on CPU with the "time"
-command. OK this is all sampling, but we should try to avoid relying on
-different sources of data for computation and reporting. Time and Top
-should report something close to 4*25% for comparable tasks. And if not,
-because of some sampling problem, maybe the scheduler cannot be that fair
-in some situations, but either it should make use of the sampling time
-and top use, or top and time should rely on the view of the scheduler.
+The declaration
 
-I'll try to quickly hack up a program which makes use of rdtsc from
-userspace to precisely measure user-space time, and disable TSC use
-from the kernel to see how the values diverge.
+char c[4] = "abcd";
 
-Regards,
-Willy
+is perfectly valid.
 
+If other versions of gcc give warnings with that declaration, then those 
+warnings may be useful but it does not mean to say that other versions of 
+gcc follow the standards or not.
+
+K&R is good as a reference but not as an authority.  They drafted the book 
+as an informal specification of C.  C has evolved throughout the decades.
+
+The current standard is C99. And as quoted earlier in this thread, 
+character array initializations are described as:
+
+6.7.8.14 of C99:
+An array of character type may be initialized by a character string 
+literal, optionally enclosed in braces. Successive characters of the 
+character string literal (including the terminating null character if there 
+is room or if the array is of unknown size) initialize the elements of the 
+array.
+
+The gcc warning you see on other versions is a warning that does not have 
+anything to do with the current C standard. The other versions of gcc that 
+do not emit such character initialization warnings do not mean that they 
+are buggy in that respect.
+
+IOW, the fact that you did not see the warning  in a certain gcc version 
+does not mean that it is buggy in that respect.
+
+Thank you very much.
+
+Best Regards,
+
+Carlo
+
+-- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, UP Campus Diliman
+1101 Quezon City, Philippines
+http://www.astra.ph
+
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
