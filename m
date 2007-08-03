@@ -1,44 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759409AbXHCJc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbXHCJgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759409AbXHCJc6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 05:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbXHCJcu
+	id S1759637AbXHCJgd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 05:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbXHCJg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 05:32:50 -0400
-Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:4925 "EHLO
-	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756018AbXHCJcs (ORCPT
+	Fri, 3 Aug 2007 05:36:26 -0400
+Received: from web26903.mail.ukl.yahoo.com ([217.146.176.92]:36040 "HELO
+	web26903.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757720AbXHCJgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 05:32:48 -0400
-Date: Fri, 3 Aug 2007 10:32:43 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Robert Hancock <hancockr@shaw.ca>, Mark Lord <lkml@rtr.ca>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Lee Howard <faxguy@howardsilvan.com>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-In-Reply-To: <20070802175711.12bdcaec@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.64N.0708031030020.28399@blysk.ds.pg.gda.pl>
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca>
- <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl>
- <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl>
- <46AA3801.7090204@shaw.ca> <20070728092842.GC26443@flint.arm.linux.org.uk>
- <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl> <46B1F0CB.9060106@rtr.ca>
- <46B202DE.5000709@shaw.ca> <20070802175711.12bdcaec@the-village.bc.nu>
+	Fri, 3 Aug 2007 05:36:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.fr;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=y1GkShfUvWgURkPRDLjZZSyv+vxoTWsW5taZkXD3QX6wfoQw5cAMZI7DNMj7F2dM/u0W8FPNYVVrMOTRniVBtttWhwldf06DYhowQm69ACPDObTvSvWV3s4OegwJt8K5QE4L91fo93iNt7TG4KXabrGFPFQLhy8ZK6cBMUoedzE=;
+X-YMail-OSG: dyQI5eEVM1nHVa3Uvpyd.6EtmQjzszJqoME6lT_iTU56sPuRgwgTD79dE64lmAK9TxAb7xaUzQ--
+Date: Fri, 3 Aug 2007 11:36:24 +0200 (CEST)
+From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Subject: Complete freeze if high traffic on standard serial line on ia32?
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <465648.43203.qm@web26903.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007, Alan Cox wrote:
+ Hi,
 
-> Currently libata PIO is mostly done in the IRQ path. Albert Lee was doing
-> some work on that but its actually very hard to fix without doing polled
-> PIO.
+ I can reliably (6 times in one hour) freeze completely (Scroll lock/Caps lock
+flashing together, mouse frozen in X) my PC (AMD sempron on MSI K8MM3-V K8M800
+Socket 754) by doing an FTP using a standard modem connected on the serial port
+of the motherboard, and a bit of browsing (i.e. machine not loaded).
+ That happens on standard Fedora 7 kernel and on the latest 23-rc1 kernel, and
+doesn't happen on a Puppy Linux 2.17 bootable CDROM.
 
- Hmm, when the drive signals it is ready for a PIO data transfer can't 
-just the interrupt handler mask the originating interrupt and post a 
-softirq to handle the case?  That should be rather straightforward.
+ Etienne.
 
-  Maciej
+
+      _____________________________________________________________________________ 
+Ne gardez plus qu'une seule adresse mail ! Copiez vos mails vers Yahoo! Mail 
