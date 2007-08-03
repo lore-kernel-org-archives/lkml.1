@@ -1,66 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762748AbXHCUTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763353AbXHCUW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762748AbXHCUTe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbXHCUT2
+	id S1763353AbXHCUW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbXHCUWV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:19:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47885 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbXHCUT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:19:27 -0400
-Date: Fri, 3 Aug 2007 16:12:39 -0400
-From: Dave Jones <davej@redhat.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Rogan Dawes <lists@dawes.za.net>,
-       Oliver Neukum <oliver@neukum.org>, linux-kernel@vger.kernel.org,
-       David Brownell <david-b@pacbell.net>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by
-	default on certain device classes
-Message-ID: <20070803201239.GB20376@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>, Greg KH <gregkh@suse.de>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Rogan Dawes <lists@dawes.za.net>, Oliver Neukum <oliver@neukum.org>,
-	linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	linux-usb-devel@lists.sourceforge.net
-References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org> <200708022301.08719.david-b@pacbell.net> <20070803112824.GA16802@srcf.ucam.org> <200708031344.03282.oliver@neukum.org> <20070803120418.GB16802@srcf.ucam.org> <46B31F03.80908@dawes.za.net> <20070803123253.GA17725@srcf.ucam.org> <20070803174435.GA17053@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070803174435.GA17053@suse.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 3 Aug 2007 16:22:21 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:10321 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752547AbXHCUWU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:22:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer;
+        b=CwS114H+XbdeOyZXjeCAGs3NmnfnbDpN7/4mR+nj6/EBndXNoyVBXsawivDcxKTSPma6V8GFTySdsBDAFEdRISzk/YVU0ekOFi/n0FFi5ydhCOGnIxZ+MYcaeU0iihRaQEjIccogY7D/VR0MOzGmkinW9KiwdqG3pYIJDhyE9uc=
+Subject: [PATCH] pxa2xx PCMCIA timing issue on iPAQ H5550
+From: Milan Plzik <milan.plzik@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pcmcia@lists.infradead.org
+Content-Type: multipart/mixed; boundary="=-QeL1i628lIyIZhr3TMzm"
+Date: Fri, 03 Aug 2007 22:22:12 +0200
+Message-Id: <1186172532.32154.30.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 10:44:35AM -0700, Greg KH wrote:
- > On Fri, Aug 03, 2007 at 01:32:53PM +0100, Matthew Garrett wrote:
- > > On Fri, Aug 03, 2007 at 02:26:43PM +0200, Rogan Dawes wrote:
- > > 
- > > > Compare that to:
- > > > 
- > > > "My USB printer broke, guess I'd better report it to LKML".
- > > 
- > > But while this is still a likely probability, the chances are no 
- > > distribution is going to ship with CONFIG_USB_SUSPEND enabled.
- > 
- > I wouldn't be so sure, I was thinking of doing just that based on an
- > internal conversation I had yesterday.
- > 
- > Let's see what breaks and what happens :)
 
-here's a head start for you.
+--=-QeL1i628lIyIZhr3TMzm
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243038
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246713
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243953
-https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242359
+  Good day,
 
-That's just the ones that were handy..
+  recently I've been trying to get working PCMCIA interface on H5000
+ipaq series, using dual PCMCIA sleeve. So far things work correctly, but
+I had to do one modification to drivers/pcmcia/pxa2xx_base.c to get the
+interface working with orinoco gold PCMCIA card (wired pcnet_cs ethernet
+card worked even without this modification). Patch attached.
 
-	Dave
+  The issue has something to do with assert time on PCMCIA bus, but I'm
+not really sure what -- I found the working value just by trial&error
+approach. I'm not sure how is the assert value in pxa2xx_mcxx_asst
+calculated (I know, simple formula, but the reason why is it calculated
+that way is not obvious for me), neither that my modification is
+correct. It just works with iPAQ. 
 
--- 
-http://www.codemonkey.org.uk
+  Please include me in Cc, as I'm not subscribed to neither of mailing
+lists.
+
+  Best regards,
+	Milan Plzik
+
+
+--=-QeL1i628lIyIZhr3TMzm
+Content-Disposition: attachment; filename=pcmcia_timing_fix.patch
+Content-Type: text/x-patch; name=pcmcia_timing_fix.patch; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+
+Index: drivers/pcmcia/pxa2xx_base.c
+===================================================================
+RCS file: /cvs/linux/kernel26/drivers/pcmcia/pxa2xx_base.c,v
+retrieving revision 1.12
+diff -a -u -r1.12 pxa2xx_base.c
+--- drivers/pcmcia/pxa2xx_base.c	10 Mar 2007 11:46:02 -0000	1.12
++++ drivers/pcmcia/pxa2xx_base.c	3 Aug 2007 20:04:10 -0000
+@@ -59,7 +59,7 @@
+ 				     u_int mem_clk_10khz)
+ {
+ 	u_int code = pcmcia_cycle_ns * mem_clk_10khz;
+-	return (code / 300000) + ((code % 300000) ? 1 : 0) - 1;
++	return (code / 300000) + ((code % 300000) ? 1 : 0) + 1;
+ }
+ 
+ static inline u_int pxa2xx_mcxx_setup(u_int pcmcia_cycle_ns,
+
+--=-QeL1i628lIyIZhr3TMzm--
+
