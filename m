@@ -1,104 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbXHCSE7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbXHCSFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760888AbXHCSE7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 14:04:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbXHCSEv
+	id S1757074AbXHCSFf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 14:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758599AbXHCSFL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 14:04:51 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44149 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756113AbXHCSEu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 14:04:50 -0400
-Date: Fri, 3 Aug 2007 11:04:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Philipp =?ISO-8859-1?Q?T=F6lke?= <philipptoelke@web.de>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       Christophe Saout <christophe@saout.de>,
-       Alasdair G Kergon <agk@redhat.com>
-Subject: Re: PROBLEM: Oops when using dm-crypt with dpt_i2o
-Message-Id: <20070803110430.88a4b543.akpm@linux-foundation.org>
-In-Reply-To: <46B0D4B4.2040809@web.de>
-References: <46B0D4B4.2040809@web.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 14:05:11 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:39097 "EHLO ron.emn.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753560AbXHCSFI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 14:05:08 -0400
+From: Yoann Padioleau <padator@wanadoo.fr>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Yoann Padioleau <padator@wanadoo.fr>, kernel-janitors@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: dev->priv to netdev_priv(dev)
+References: <87r6mzmf6q.fsf@wanadoo.fr> <46AE43F5.8070802@garzik.org>
+Date: Fri, 03 Aug 2007 20:03:05 +0200
+In-Reply-To: <46AE43F5.8070802@garzik.org> (Jeff Garzik's message of "Mon, 30
+	Jul 2007 16:03:01 -0400")
+Message-ID: <87myx8338m.fsf_-_@wanadoo.fr>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 01 Aug 2007 20:45:08 +0200
-Philipp T__lke <philipptoelke@web.de> wrote:
+Jeff Garzik <jeff@garzik.org> writes:
 
-> Hello everybody,
-> 
-> if I mount a dm-crypt-encrypted Harddisk/RAID-Array on an Adaptec 3200S,
-> and produce load (for example with bonnie++) the kernel crashes.
-> 
-> This is always reproducible. To reproduce simply mount an dm-crypt
-> encrypted device and produce load -- I always used bonnie++.
-> 
-> Unencrypted volumes work fine. Every kind of load I threw at the System
-> worked fine.
-> 
-> I would be very glad, if some kind of solution for this can be found.
-> 
+>> PS: I have performed the same transformation on the whole kernel
+>> and it affects around 70 files, most of them in drivers/net/.
+>> Should I split my patch for each subnet directories ? (wireless/, wan/, etc)
+>
+> applied.  splitting up by sub-directory would be helpful.
 
-Gee we get a lot of bug reports involving dm-crypt.
+Done. I was not always able to find the maintainer for all the subdirectories
+so for those cases I have considered you as the maintainer :)
 
-> 
-> The oopses:
-> 
-> #v+
-> BUG: unable to handle kernel paging request at virtual address 14001000
-> printing eip:
-> *pde = 00000000
-> Oops: 0000 [#1]
-> Modules linked in: dm_crypt dm_mod capability commoncap ipv6 pcspkr
-> ppdev lp parport_pc parport rtc_cmos ppp_generic rtc_core rtc_lib
-> i2c_viapro i2o_core i2c_core via_ircc irda crc_ccitt sg shpchp
-> pci_hotplug evdev thermal processor fan button battery ac slhc r8169
-> usbcore jfs sr_mod cdrom sd_mod sym53c8xx dpt_i2o ata_generic pata_via
-> libata
-> CPU:    0
-> EIP:    0060:[<14001000>]    Not tainted VLI
-> EFLAGS: 00010082   (2.6.22.1 #2)
-> EIP is at 0x14001000
-> eax: 00000000   ebx: 14001000   ecx: 00000000   edx: 0002bc00
-> esi: 5b51c000   edi: 14001000   ebp: 5b51b000   esp: dfe21f08
-> ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-> Process kblockd/0 (pid: 31, ti=dfe20000 task=c1cfca50 task.ti=dfe20000)
-> 
-> Stack: 5b51a000 14001000 5b519000 14001000 5b518000 d4001000 5b517000
-> 00000086
-> c1d0b534 c1d0b424 c1d0b490 c1da7834 c1da7834 c1da7834 00000000 07000000
-> c022aac5 c1da78b8 c022b696 c022c762 00000046 c1d0b534 c1d0b424 c1d0b490
-> 
-> Call Trace:
-> [<c022aac5>] __generic_unplug_device+0x25/0x30
-> [<c022b696>] generic_unplug_device+0x6/0x10
-> [<c022c762>] blk_unplug_work+0x42/0xa0
-> [<c022c720>] blk_unplug_work+0x0/0xa0
-> [<c012a307>] run_workqueue+0x97/0x110
-> [<c012aa00>] worker_thread+0x0/0xe0
-> [<c012aa7d>] worker_thread+0x7d/0xe0
-> [<c012d5e0>] autoremove_wake_function+0x0/0x40
-> [<c012aa00>] worker_thread+0x0/0xe0
-> [<c012d292>] kthread+0x42/0x70
-> [<c012d250>] kthread+0x0/0x70
-> [<c01041df>] kernel_thread_helper+0x7/0x18
-> =======================
-> Code:  Bad EIP value.
-> EIP: [<14001000>] 0x14001000 SS:ESP 0068:dfe21f08
-> 
+I have run another semantic patch (more like a semantic grep in fact)
+to find the places where our tool didn't transform the dev->priv to
+netdev_priv. The reason is that our tool was not able to find the call
+to alloc_dev_xxx(sizeof(T),...) in the driver or there was an
+assignation to dev->priv which means that transforming to netdev_priv
+would do something wrong. I have printed the list of "bad driver"
+below.
 
-So it looks like q->request_fn points at 0x14001000, which is in outer
-space.
-
-I wonder how that could happen, in the middle of heavy IO operations. 
-Possibly a memory scribble.  I'd suggest you enable CONFIG_SLAB,
-CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC.  You could also try switching
-from CONFIG_SLAB to CONFIG_SLUB, then enable CONFIG_SLUB_DEBUG.
+In very few cases the driver was in fact "good" but because of the
+way the code was written, our tool was not able to find the alloc_xxx
+function.
 
 
+
+drivers/net/82596.c                     
+drivers/net/chelsio/cxgb2.c             
+drivers/net/chelsio/sge.c               
+drivers/net/cxgb3/cxgb3_main.c          
+drivers/net/cxgb3/sge.c                 
+drivers/net/e1000/e1000_main.c          
+drivers/net/ehea/ehea_main.c            
+drivers/net/hamradio/dmascc.c           
+drivers/net/hamradio/scc.c              
+drivers/net/lance.c                     
+drivers/net/mace.c                      
+
+ for mace.c the code is written this way:
+
+    #define PRIV_BYTES	(sizeof(struct mace_data) \
+       + (N_RX_RING + NCMDS_TX * N_TX_RING + 3) * sizeof(struct dbdma_cmd))
+
+     dev = alloc_etherdev(PRIV_BYTES);
+ 
+ So our semantic patch can't find a   alloc_etherdev(sizeof(T)).
+ If I inline the definition of PRIV_BYTES, then our tool will be
+ able to transform it.
+
+ 
+
+
+drivers/net/ni65.c      
+drivers/net/pcmcia/com20020_cs.c
+
+   dev = alloc_arcdev("");
+ 
+
+drivers/net/ppp_generic.c       
+drivers/net/spider_net_ethtool.c 
+
+ again, the code is written this way:
+
+       alloc_size = sizeof(struct spider_net_card) +
+          (tx_descriptors + rx_descriptors) * sizeof(struct spider_net_descr);
+       netdev = alloc_etherdev(alloc_size);
+
+ If I inline the definition of alloc_size, then we can transform
+ the file.
+
+drivers/net/tulip/xircom_cb.c           
+drivers/net/wan/cosa.c                  
+drivers/net/wan/cycx_x25.c              
+drivers/net/wan/hdlc_fr.c               
+drivers/net/wan/hdlc_ppp.c              
+drivers/net/wan/hostess_sv11.c          
+drivers/net/wan/pc300_drv.c             
+drivers/net/wan/sbni.c                  
+drivers/net/wireless/airo.c             
+drivers/net/wireless/libertas/ethtool.c 
+drivers/net/wireless/libertas/main.c    
+drivers/net/wireless/libertas/scan.c    
+drivers/net/wireless/libertas/wext.c    
+drivers/net/wireless/wavelan.c          
+drivers/net/wireless/zd1201.c           
+
+drivers/net/tokenring/tms380tr.c
+   This file is both used as a single module and used by other module.
+   The other modules have a call to a alloc_xxx but not tms380tr.c when
+   used as a single module. 
+  
 
