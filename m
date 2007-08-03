@@ -1,68 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbXHCIqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbXHCIri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758792AbXHCIqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 04:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbXHCIqm
+	id S1756698AbXHCIri (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 04:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbXHCIr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 04:46:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:35430 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753774AbXHCIql (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 04:46:41 -0400
-Date: Fri, 3 Aug 2007 14:29:06 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm] Introduce strtol_check_range()
-In-Reply-To: <Pine.LNX.4.64.0708030958450.495@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0708031357530.25703@enigma.security.iitk.ac.in>
-References: <alpine.LFD.0.999.0707312203150.28746@enigma.security.iitk.ac.in>
- <20070801053509.GA5905@martell.zuzino.mipt.ru>
- <alpine.LFD.0.999.0708020454440.8258@enigma.security.iitk.ac.in>
- <Pine.LNX.4.64.0708030958450.495@fbirervta.pbzchgretzou.qr>
+	Fri, 3 Aug 2007 04:47:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35904 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755446AbXHCIrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 04:47:25 -0400
+Date: Fri, 3 Aug 2007 10:46:49 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
+Subject: Re: [patch] genirq: fix simple and fasteoi irq handlers
+Message-ID: <20070803084649.GA21029@elte.hu>
+References: <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu> <20070803060733.GA1582@ff.dom.local> <20070803080408.GA12222@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070803080408.GA12222@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
 
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-On Fri, 3 Aug 2007, Jan Engelhardt wrote:
-
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
 > 
-> On Aug 2 2007 05:16, Satyam Sharma wrote:
-> >
-> >BSD's strtonum(3) is a detestful, horrible shame.
-> >
-> >The strtol_check_range() I implemented here does _all_ that strtonum()
-> >does, plus is generic w.r.t. base, and minus the tasteless "errstr"
-> >argument.
-> >
-> >Tell me, how does that "errstr" ever make sense? We _anyway_ return
-> >errors (-EINVAL or -ERANGE) if any of those cases show up.
+> > I can't guarantee this is all needed to fix this bug, but I think 
+> > this patch is necessary here.
 > 
-> errstr (well, at least for strtol) are useful to find the first character that
-> does not make up a number (and then do whatever the user wants to, including,
-> continuing to parse). For example "chown 0:1337", strtol on "0:1337" should
-> give errstr=pointer to the ":", then check for it being a ':', then you know
-> the next char is the GID. :)
+> hmmm ... very interesting! Now _this_ is something we'd like to see 
+> tested. Could you send a patch to Marcin that also undoes the 
+> workaround we have in place now, so that he could check whether 
+> ne2k-pci works fine with your fix alone?
 
-We were actually discussing the "errstr" that's the fourth argument of
-BSD's strtonum(3) which has quite radically different semantics [1]
-from the "endptr" argument of strtol(3). Anyway, I originally
-misunderstood the interface / the correct way to be using that function
-as I later mentioned in the other mail -- also see the answer to point
-#3 in [2]. Porting it over to here does sound like a good idea.
+or it would be nice if Marcin could test pure 2.6.22 plus your fix 
+(without any other patches applied).
 
-I'm off on vacation with little or intermittent (possibly none) access
-to email for the next 10 days, so please feel free to beat me to it :-)
-
-
-Satyam
-
-[1] http://www.freebsd.org/cgi/man.cgi?query=strtonum&apropos=0&sektion=3&manpath=FreeBSD+7-current&format=html
-[2] http://lists.freebsd.org/pipermail/freebsd-current/2005-April/048744.html
+	Ingo
