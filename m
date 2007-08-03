@@ -1,45 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763983AbXHCVRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbXHCVZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763983AbXHCVRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 17:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761792AbXHCVRa
+	id S1763972AbXHCVZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 17:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXHCVZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 17:17:30 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:2429 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761732AbXHCVR3 (ORCPT
+	Fri, 3 Aug 2007 17:25:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46759
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1757736AbXHCVZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 17:17:29 -0400
-Date: Fri, 3 Aug 2007 17:17:24 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Dave Jones <davej@redhat.com>
-cc: Greg KH <gregkh@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Rogan Dawes <lists@dawes.za.net>, Oliver Neukum <oliver@neukum.org>,
-       <linux-kernel@vger.kernel.org>, David Brownell <david-b@pacbell.net>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by default
- on certain device classes
-In-Reply-To: <20070803201239.GB20376@redhat.com>
-Message-ID: <Pine.LNX.4.44L0.0708031716030.5099-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 3 Aug 2007 17:25:06 -0400
+Date: Fri, 03 Aug 2007 14:25:04 -0700 (PDT)
+Message-Id: <20070803.142504.21593407.davem@davemloft.net>
+To: drepper@redhat.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, rth@redhat.com
+Subject: Re: arch maintainers: define O_CLOEXEC correctly!
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <46B3613C.60007@redhat.com>
+References: <46B3613C.60007@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007, Dave Jones wrote:
+From: Ulrich Drepper <drepper@redhat.com>
+Date: Fri, 03 Aug 2007 10:09:16 -0700
 
-> here's a head start for you.
+> Affected as far as I know:
 > 
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243038
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246713
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243953
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242359
+> Alpha:   probably needs value 010000000
 > 
-> That's just the ones that were handy..
+> Sparc*:         -"-           0x400000
 
-The last report appears to be related more to the EHCI-cpufreq problem, 
-for which a patch was recently posted.
-
-Alan Stern
-
+I've fixed sparc, thanks for reporting this.
