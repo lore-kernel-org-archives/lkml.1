@@ -1,143 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759041AbXHCS0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbXHCS3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759041AbXHCS0x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 14:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbXHCS0p
+	id S1760362AbXHCS3U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 14:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbXHCS3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 14:26:45 -0400
-Received: from mail.screens.ru ([213.234.233.54]:53596 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751939AbXHCS0o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 14:26:44 -0400
-Date: Fri, 3 Aug 2007 22:26:31 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org
-Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
-Message-ID: <20070803182631.GA83@tv-sign.ru>
-References: <20070802212009.GA516@tv-sign.ru> <20070802225127.3EC214D04B5@magilla.localdomain>
-Mime-Version: 1.0
+	Fri, 3 Aug 2007 14:29:12 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:40556 "EHLO ron.emn.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752547AbXHCS3K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 14:29:10 -0400
+From: Yoann Padioleau <padator@wanadoo.fr>
+To: Eugene Surovegin <ebs@ebshome.net>
+Cc: kernel-janitors@vger.kernel.org, jeff@garzik.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 06/13] dev->priv to netdev_priv(dev), for drivers/net/ibm_emac
+References: <200708031734.TAA00777@ifs.emn.fr>
+	<20070803174754.GA1352@gate.ebshome.net>
+Date: Fri, 03 Aug 2007 20:27:06 +0200
+In-Reply-To: <20070803174754.GA1352@gate.ebshome.net> (Eugene Surovegin's
+	message of "Fri, 3 Aug 2007 10:47:54 -0700")
+Message-ID: <87ir7w324l.fsf_-_@wanadoo.fr>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070802225127.3EC214D04B5@magilla.localdomain>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/02, Roland McGrath wrote:
+Eugene Surovegin <ebs@ebshome.net> writes:
+
+> On Fri, Aug 03, 2007 at 07:34:19PM +0200, Yoann Padioleau wrote:
+>> 
+>> Replacing accesses to dev->priv to netdev_priv(dev). The replacment
+>> is safe when netdev_priv is used to access a private structure that is
+>> right next to the net_device structure in memory. Cf
+>> http://groups.google.com/group/comp.os.linux.development.system/browse_thread/thread/de19321bcd94dbb8/0d74a4adcd6177bd
+>> This is the case when the net_device structure was allocated with
+>> a call to alloc_netdev or one of its derivative.
 >
-> This looks fine to me, though I don't know anything about the nsproxy bit.
-> Now that choose_new_parent is one trivial line, you might go on to get rid
-> of it and roll its one line into reparent_thread.
+> NAK.
+>
+> While that assumption is correct for the actual emac net device, it's 
+> not for MAL poll one.
 
-OK, thanks. Please find the same patch + "kill one-liner reparent_thread()"
-below.
+I forgot to add another condition in my semantic patch. 
+
+I was looking only for xxx->priv = yyy; 
+with this rule:
+
+@ danger @
+struct net_device *dev;
+expression E;
+@@
+ dev->priv = E
+
+whereas sometimes it's written xxx.priv = yyy; 
+as in ibm_emac_mal ( mal->poll_dev.priv = mal; )
+
+By adding the following rule in my semantic patch I correctly
+_dont_ modify anything under drivers/net/ibm_emac
+
+@ danger @
+struct net_device dev;
+expression E;
+@@
+ dev.priv = E
 
 
-[PATCH] handle the multi-threaded init's exit() properly
+It's also the case for  drivers/net/e1000/e1000_main.c.
 
-With or without this patch, multi-threaded init's are not fully supported, but
-do_exit() is completely wrong. This becomes a real problem when we support pid
-namespaces.
 
-1. do_exit() panics when the main thread of /sbin/init exits. It should not
-   until the whole thread group exits. Move the code below, under the
-   "if (group_dead)" check.
-
-   Note: this means that forget_original_parent() can use an already dead
-   child_reaper()'s task_struct. This is OK for /sbin/init because
-
-   	- do_wait() from alive sub-thread still can reap a zombie, we iterate
-   	  over all sub-thread's ->children lists
-
-   	- do_notify_parent() will wakeup some alive sub-thread because it sends
-   	  the group-wide signal
-
-   However, we should remove choose_new_parent()->BUG_ON(reaper->exit_state)
-   for this.
-
-2. We are playing games with ->nsproxy->pid_ns. This code is bogus today, and
-   it has to be changed anyway when we really support pid namespaces, just
-   remove it.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- t/kernel/exit.c~MTINIT	2007-07-28 16:58:17.000000000 +0400
-+++ t/kernel/exit.c	2007-08-03 18:05:52.000000000 +0400
-@@ -601,17 +601,6 @@ static void exit_mm(struct task_struct *
- 	mmput(mm);
- }
- 
--static inline void
--choose_new_parent(struct task_struct *p, struct task_struct *reaper)
--{
--	/*
--	 * Make sure we're not reparenting to ourselves and that
--	 * the parent is not a zombie.
--	 */
--	BUG_ON(p == reaper || reaper->exit_state);
--	p->real_parent = reaper;
--}
--
- static void
- reparent_thread(struct task_struct *p, struct task_struct *father, int traced)
- {
-@@ -719,7 +708,7 @@ forget_original_parent(struct task_struc
- 
- 		if (father == p->real_parent) {
- 			/* reparent with a reaper, real father it's us */
--			choose_new_parent(p, reaper);
-+			p->real_parent = reaper;
- 			reparent_thread(p, father, 0);
- 		} else {
- 			/* reparent ptraced task to its real parent */
-@@ -740,7 +729,7 @@ forget_original_parent(struct task_struc
- 	}
- 	list_for_each_safe(_p, _n, &father->ptrace_children) {
- 		p = list_entry(_p, struct task_struct, ptrace_list);
--		choose_new_parent(p, reaper);
-+		p->real_parent = reaper;
- 		reparent_thread(p, father, 1);
- 	}
- }
-@@ -895,6 +884,14 @@ static void check_stack_usage(void)
- static inline void check_stack_usage(void) {}
- #endif
- 
-+static inline void exit_child_reaper(struct task_struct *tsk)
-+{
-+	if (likely(tsk->group_leader != child_reaper(tsk)))
-+		return;
-+
-+	panic("Attempted to kill init!");
-+}
-+
- fastcall NORET_TYPE void do_exit(long code)
- {
- 	struct task_struct *tsk = current;
-@@ -908,13 +905,6 @@ fastcall NORET_TYPE void do_exit(long co
- 		panic("Aiee, killing interrupt handler!");
- 	if (unlikely(!tsk->pid))
- 		panic("Attempted to kill the idle task!");
--	if (unlikely(tsk == child_reaper(tsk))) {
--		if (tsk->nsproxy->pid_ns != &init_pid_ns)
--			tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
--		else
--			panic("Attempted to kill init!");
--	}
--
- 
- 	if (unlikely(current->ptrace & PT_TRACE_EXIT)) {
- 		current->ptrace_message = code;
-@@ -964,6 +954,7 @@ fastcall NORET_TYPE void do_exit(long co
- 	}
- 	group_dead = atomic_dec_and_test(&tsk->signal->live);
- 	if (group_dead) {
-+		exit_child_reaper(tsk);
- 		hrtimer_cancel(&tsk->signal->real_timer);
- 		exit_itimers(tsk->signal);
- 	}
+>
+> You patch breaks a working driver.
+>
+> -- 
+> Eugene
 
