@@ -1,78 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763546AbXHCUOt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763729AbXHCUQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763546AbXHCUOt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:14:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760986AbXHCUOm
+	id S1763729AbXHCUQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761345AbXHCUQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:14:42 -0400
-Received: from mail.screens.ru ([213.234.233.54]:40456 "EHLO mail.screens.ru"
+	Fri, 3 Aug 2007 16:16:25 -0400
+Received: from mga09.intel.com ([134.134.136.24]:30850 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757944AbXHCUOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:14:42 -0400
-Date: Sat, 4 Aug 2007 00:14:58 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       richard kennedy <richard@rsk.demon.co.uk>, linux-kernel@vger.kernel.org
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-Message-ID: <20070803201458.GA181@tv-sign.ru>
+	id S1760986AbXHCUQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:16:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,218,1183359600"; 
+   d="scan'208";a="113364858"
+Date: Fri, 3 Aug 2007 13:10:13 -0700
+From: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Martin Bligh <mbligh@mbligh.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+Message-ID: <20070803201013.GA12874@linux-os.sc.intel.com>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de> <46B0C8A3.8090506@mbligh.org> <1185993169.5059.79.camel@localhost> <46B10E9B.2030907@mbligh.org> <20070802013631.GA15595@wotan.suse.de> <46B22383.5020109@mbligh.org> <20070803002010.GB14775@wotan.suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070803002010.GB14775@wotan.suse.de>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
->
-> Looks like the same problem with spinlock unfairness we've seen
-> elsewhere: it seems to be looping here? Or is everyone stuck
-> just waiting for writeout?
+On Fri, Aug 03, 2007 at 02:20:10AM +0200, Nick Piggin wrote:
+> On Thu, Aug 02, 2007 at 11:33:39AM -0700, Martin Bligh wrote:
+> > Nick Piggin wrote:
+> > >On Wed, Aug 01, 2007 at 03:52:11PM -0700, Martin Bligh wrote:
+> > >>>And so forth.  Initial forks will balance.  If the children refuse to
+> > >>>die, forks will continue to balance.  If the parent starts seeing short
+> > >>>lived children, fork()s will eventually start to stay local.  
+> > >>Fork without exec is much more rare than without. Optimising for
+> > >>the uncommon case is the Wrong Thing to Do (tm). What we decided
+> > >
+> > >It's only the wrong thing to do if it hurts the common case too
+> > >much. Considering we _already_ balance on exec, then adding another
+> > >balance on fork is not going to introduce some order of magnitude
+> > >problem -- at worst it would be 2x but it really isn't too slow
+> > >anyway (at least nobody complained when we added it).
+> > >
+> > >One place where we found it helps is clone for threads.
+> > >
+> > >If we didn't do such a bad job at keeping tasks together with their
+> > >local memory, then we might indeed reduce some of the balance-on-crap
+> > >and increase the aggressiveness of periodic balancing.
+> > >
+> > >Considering we _already_ balance on fork/clone, I don't know what
+> > >your argument is against this patch is? Doing the balance earlier
+> > >and allocating more stuff on the local node is surely not a bad
+> > >idea.
+> > 
+> > I don't know who turned that on ;-( I suspect nobody bothered
+> > actually measuring it at the time though, or used some crap
+> > benchmark like stream to do so. It should get reverted.
 > 
-> lock_timer_base():
->         for (;;) {
->                 tvec_base_t *prelock_base = timer->base;
->                 base = tbase_get_base(prelock_base);
->                 if (likely(base != NULL)) {
->                         spin_lock_irqsave(&base->lock, *flags);
->                         if (likely(prelock_base == timer->base))
->                                 return base;
->                         /* The timer has migrated to another CPU */
->                         spin_unlock_irqrestore(&base->lock, *flags);
->                 }
->                 cpu_relax();
->         }
+> So you have numbers to show it hurts? I tested some things where it
+> is not supposed to help, and it didn't make any difference. Nobody
+> else noticed either.
+> 
+> If the cost of doing the double balance is _really_ that painful,
+> then we ccould skip balance-on-exec for domains with balance-on-fork
+> set.
 
-I don't think there is an unfairness problem. We are looping only
-if timer->base changes in between. IOW, there is no "lock + unlock
-+ lock(same_lock)" here, we take another lock on each iteration.
+Nick, Even if it is not painful, can we skip balance-on-exec if
+balance-on-fork is set. There is no need for double balance, right?
 
-And:
+Especially with the optimization you are trying to do with this patch,
+balance-on-exec may lead to wrong decision making this optimization
+not work as expected.
 
->  [<c0407208>] do_IRQ+0xbd/0xd1
->  [<c042ffcb>] lock_timer_base+0x19/0x35
->  [<c04300df>] __mod_timer+0x9a/0xa4
->  [<c060bb55>] schedule_timeout+0x70/0x8f
->
-> ...
->
->  [<c0407208>] do_IRQ+0xbd/0xd1
->  [<c042ffcb>] lock_timer_base+0x19/0x35
->  [<c04300df>] __mod_timer+0x9a/0xa4
->  [<c060bb55>] schedule_timeout+0x70/0x8f
->
-> ...
->
->  [<c042ffcb>] lock_timer_base+0x19/0x35
->  [<c04300df>] __mod_timer+0x9a/0xa4
->  [<c060bb55>] schedule_timeout+0x70/0x8f
+or perhaps do balance-on-fork based on clone_flags..
 
-All traces start from schedule_timeout()->mod_timer(). This timer
-is local, nobody can see it, its ->base can't be NULL or changed.
-
-This means that lock_timer_base() can't loop, but can't take the
-tvec_t_base_s.lock. But in that case the trace should different,
-strange.
-
-Oleg.
-
+thanks,
+suresh
