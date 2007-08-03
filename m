@@ -1,79 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763353AbXHCUW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763479AbXHCU2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763353AbXHCUW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbXHCUWV
+	id S1763479AbXHCU2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXHCU2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:22:21 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:10321 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbXHCUWU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:22:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer;
-        b=CwS114H+XbdeOyZXjeCAGs3NmnfnbDpN7/4mR+nj6/EBndXNoyVBXsawivDcxKTSPma6V8GFTySdsBDAFEdRISzk/YVU0ekOFi/n0FFi5ydhCOGnIxZ+MYcaeU0iihRaQEjIccogY7D/VR0MOzGmkinW9KiwdqG3pYIJDhyE9uc=
-Subject: [PATCH] pxa2xx PCMCIA timing issue on iPAQ H5550
-From: Milan Plzik <milan.plzik@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-pcmcia@lists.infradead.org
-Content-Type: multipart/mixed; boundary="=-QeL1i628lIyIZhr3TMzm"
-Date: Fri, 03 Aug 2007 22:22:12 +0200
-Message-Id: <1186172532.32154.30.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
+	Fri, 3 Aug 2007 16:28:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59517 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757543AbXHCU2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:28:04 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Andi Kleen <ak@suse.de>
+Subject: Re: Asus A8N-SLI Deluxe latest BIOS wants acpi_use_timer_override
+Date: Fri, 3 Aug 2007 16:27:56 -0400
+User-Agent: KMail/1.9.5
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+References: <46B37619.2030205@shaw.ca> <200708032201.15355.ak@suse.de>
+In-Reply-To: <200708032201.15355.ak@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708031627.56585.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 03 August 2007 16:01, Andi Kleen wrote:
+> On Friday 03 August 2007 20:38:17 Robert Hancock wrote:
+> > It appears that the latest BIOS version 1805 for the ASUS A8N-SLI Deluxe
+> > board fixes the broken ACPI timer override that was in earlier versions,
+> > and which the kernel ignores on nForce4 chipsets. Now the same override:
+> > 
+> > ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> > 
+> > seems to be needed, since without acpi_use_timer_override we end up
+> > getting this (with apic=verbose):
+> 
+> That's really bad.
+>  
+> > ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+> > ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> > ...trying to set up timer (IRQ0) through the 8259A ...  failed.
+> > ...trying to set up timer as Virtual Wire IRQ... failed.
+> > ...trying to set up timer as ExtINT IRQ... works.
+> > 
+> > and the timer IRQ ends up routed as XT-PIC instead of IO-APIC-edge. With 
+> > acpi_use_timer_override we just get:
+> > 
+> > ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+> > 
+> > and it works through the IO-APIC.
+> > 
+> > I should think there must be a better way to handle this automatically.. 
+> 
+> I have pending patches to key the NF5 case on the PCI-ID, but
+> that obviously cannot be done for NF4.
+> 
+> I cannot think of anything good but putting DMI BIOS version
+> checks in for that specific board.
+> 
+> > Is there some way we can tell, given we have a chipset with a 
+> > potentially broken BIOS, from the configuration of the IOAPIC whether 
+> > the timer override is needed or not? Unfortunately I don't have output 
+> > from apic=verbose with the old BIOS with the broken override, but maybe 
+> > somebody else can provide that..
+> 
+> We don't really know which pins are connected where. This means they
+> likely have some bits they tweaked to get the different behaviour, but they're 
+> unknown. There are also some northbridge bits that can be tweaked
+> (e.g. some of the ATI BIOS workarounds used to use that) 
+> but it's still unknown what the Nvidia chipset actually does and if
+> they really help here.
+> 
+> Ok in theory you could diff config space dumps between the two BIOS 
+> versions to try to figure it out, but that would be still pretty risky
+> and I don't think it would be a good idea to trust such results.
 
---=-QeL1i628lIyIZhr3TMzm
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Is it possible to open a bugzilla and drop the acpidump and dmesg
+from both the new and old BIOS in it?
 
-  Good day,
+Assuming the override in both cases is identical, I'm really baffled
+by this failure.  It seems that the new BIOS is playing some tricks
+that we have not seen before, as your hardware didn't change...
 
-  recently I've been trying to get working PCMCIA interface on H5000
-ipaq series, using dual PCMCIA sleeve. So far things work correctly, but
-I had to do one modification to drivers/pcmcia/pxa2xx_base.c to get the
-interface working with orinoco gold PCMCIA card (wired pcnet_cs ethernet
-card worked even without this modification). Patch attached.
-
-  The issue has something to do with assert time on PCMCIA bus, but I'm
-not really sure what -- I found the working value just by trial&error
-approach. I'm not sure how is the assert value in pxa2xx_mcxx_asst
-calculated (I know, simple formula, but the reason why is it calculated
-that way is not obvious for me), neither that my modification is
-correct. It just works with iPAQ. 
-
-  Please include me in Cc, as I'm not subscribed to neither of mailing
-lists.
-
-  Best regards,
-	Milan Plzik
-
-
---=-QeL1i628lIyIZhr3TMzm
-Content-Disposition: attachment; filename=pcmcia_timing_fix.patch
-Content-Type: text/x-patch; name=pcmcia_timing_fix.patch; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-
-Index: drivers/pcmcia/pxa2xx_base.c
-===================================================================
-RCS file: /cvs/linux/kernel26/drivers/pcmcia/pxa2xx_base.c,v
-retrieving revision 1.12
-diff -a -u -r1.12 pxa2xx_base.c
---- drivers/pcmcia/pxa2xx_base.c	10 Mar 2007 11:46:02 -0000	1.12
-+++ drivers/pcmcia/pxa2xx_base.c	3 Aug 2007 20:04:10 -0000
-@@ -59,7 +59,7 @@
- 				     u_int mem_clk_10khz)
- {
- 	u_int code = pcmcia_cycle_ns * mem_clk_10khz;
--	return (code / 300000) + ((code % 300000) ? 1 : 0) - 1;
-+	return (code / 300000) + ((code % 300000) ? 1 : 0) + 1;
- }
- 
- static inline u_int pxa2xx_mcxx_setup(u_int pcmcia_cycle_ns,
-
---=-QeL1i628lIyIZhr3TMzm--
-
+thanks,
+-Len
