@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbXHCG4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbXHCHJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760544AbXHCG4X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 02:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbXHCG4P
+	id S1760383AbXHCHJl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 03:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757516AbXHCHJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 02:56:15 -0400
-Received: from mga03.intel.com ([143.182.124.21]:31934 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757134AbXHCG4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 02:56:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,215,1183359600"; 
-   d="scan'208";a="258370068"
-Subject: Re: [PATCH 4/5] x86_64 EFI support -v3: EFI framebuffer driver
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1185947712.4688.22.camel@daplas>
-References: <1185851582.23149.29.camel@caritas-dev.intel.com>
-	 <1185947712.4688.22.camel@daplas>
-Content-Type: text/plain
+	Fri, 3 Aug 2007 03:09:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:12097 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755481AbXHCHJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 03:09:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G5Ut8uWKgTaCXQpbl8fwI55bGp/qajiDBBf0XFV/YNVILzfdChcTxUtnmCWn2xhtEVUy1PH5Eh/+PCiFvb7kRfDLoUrbQTIpLwEUrUR/oglM3qHUPP9OXaLA7r5uNAm+nZYat3aE1Hnk3ms9qFU29IRnGCiOHdbonrzd4LIgE18=
+Message-ID: <a8e1da0708030009n1209b0b3o823c5254ef57a0d0@mail.gmail.com>
+Date: Fri, 3 Aug 2007 07:09:29 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Wim Van Sebroeck" <wim@iguana.be>
+Subject: Re: eurotechwdt will cause reboot
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070803062436.GA2652@infomag.infomag.iguana.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 03 Aug 2007 14:56:08 +0800
-Message-Id: <1186124168.5075.6.camel@caritas-dev.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-X-OriginalArrivalTime: 03 Aug 2007 06:56:10.0667 (UTC) FILETIME=[5FC3E7B0:01C7D59B]
+Content-Disposition: inline
+References: <a8e1da0707312003s6000b02s95c90b5971dbbd51@mail.gmail.com>
+	 <20070801055845.GA2648@infomag.infomag.iguana.be>
+	 <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
+	 <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
+	 <20070803062436.GA2652@infomag.infomag.iguana.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-01 at 13:55 +0800, Antonino A. Daplas wrote:
-> On Tue, 2007-07-31 at 11:13 +0800, Huang, Ying wrote:
-> 
-> > +
-> > +#include <linux/delay.h>
-> > +#include <linux/errno.h>
-> > +#include <linux/fb.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/init.h>
-> > +#include <linux/ioport.h>
-> > +#include <linux/mm.h>
-> > +#include <linux/module.h>
-> > +#include <linux/platform_device.h>
-> > +#include <linux/screen_info.h>
-> > +#include <linux/slab.h>
-> > +#include <linux/string.h>
-> > +#include <linux/dmi.h>
-> > +#include <linux/efi.h>
-> > +#include <linux/io.h>
-> > +
-> > +#include <video/vga.h>
-> > +
-> 
-> I don't see any problems with this driver, just a few minor nits.
-> 
-> Do you really need all the #include's?
-
-There are some #include's that are not needed. I will remove them in the
-next version.
-
-> I presume this driver only supports bpp 16 and above?
-
-Yes. Only the true color visual is supported. I think only bpp 16 and
-above can support true color visual.
-
-Best Regards,
-Huang Ying
+>On 8/3/07, Wim Van Sebroeck <wim@iguana.be> wrote:
+> Hi Dave,
+>
+> > Hi,
+> > News: 2.6.23-rc1-mm1 will reboot with eurotechwdt, but 2.6.23-rc1-mm2
+> > will not. do you need the config files?
+> >
+> > I will concentrate on this problem as well. Any hints how to debug?
+>
+> Yes: make a diff file between the two versions and see what has changed.
+> If something changed on the eurotechwdt file then that is probably the
+> answer you are looking for.  Else it will mean that your problem is fixed
+> by other code and then we will have to find out which code did this.
+>
+> I was reading the datasheet to see how the driver worked. But I think
+> we want to concentrate now first on what the difference is between the
+> -mm1 and -mm2. Luckily something fixed allready your problem. Now it would
+> be usefull to know what that was.
+>
+> Are your config files for both versions almost the same?
+>
+Yes, I just copyed the -mm1 config file to -mm2, then make oldconfig &
+make. I think they are mostly same.
