@@ -1,49 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764539AbXHCRzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763466AbXHCSBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764539AbXHCRzm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932876AbXHCRyi
+	id S1763466AbXHCSBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 14:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbXHCSB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:54:38 -0400
-Received: from gate.ebshome.net ([208.106.21.240]:34141 "EHLO gate.ebshome.net"
+	Fri, 3 Aug 2007 14:01:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34585 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932870AbXHCRyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:54:36 -0400
-Date: Fri, 3 Aug 2007 10:47:54 -0700
-From: Eugene Surovegin <ebs@ebshome.net>
-To: Yoann Padioleau <padator@wanadoo.fr>
-Cc: kernel-janitors@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/13] dev->priv to netdev_priv(dev), for drivers/net/ibm_emac
-Message-ID: <20070803174754.GA1352@gate.ebshome.net>
-References: <200708031734.TAA00777@ifs.emn.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708031734.TAA00777@ifs.emn.fr>
-X-ICQ-UIN: 1193073
-X-Operating-System: Linux i686
-X-PGP-Key: http://www.ebshome.net/pubkey.asc
-User-Agent: Mutt/1.5.8i
+	id S1752527AbXHCSB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 14:01:28 -0400
+To: linux-kernel@vger.kernel.org
+Subject: SysV IPC: shmctl/msgctl/semctl returns EIDRM instead of EINVAL
+From: Anton Arapov <aarapov@redhat.com>
+X-URL: http://people.redhat.com/aarapov
+Date: Fri, 03 Aug 2007 19:59:50 +0200
+Message-ID: <m3bqdo1otl.fsf@neuro-laptop.skynet>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="=-=-="
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 07:34:19PM +0200, Yoann Padioleau wrote:
-> 
-> Replacing accesses to dev->priv to netdev_priv(dev). The replacment
-> is safe when netdev_priv is used to access a private structure that is
-> right next to the net_device structure in memory. Cf
-> http://groups.google.com/group/comp.os.linux.development.system/browse_thread/thread/de19321bcd94dbb8/0d74a4adcd6177bd
-> This is the case when the net_device structure was allocated with
-> a call to alloc_netdev or one of its derivative.
+--=-=-=
 
-NAK.
+Hi!
 
-While that assumption is correct for the actual emac net device, it's 
-not for MAL poll one.
+  SysV code returns EIDRM for collision of IDs. I sure it should return EINVAL.
 
-You patch breaks a working driver.
+  Steps to reproduce: (this for shared memory code, for msg/sem it is the same)
+   1. Create then drop 2 shmem segments, then create a third.
+   2. Try to shmctl(IPC_STAT) the two now-invalid shm IDs.
+   3. Note error codes returned.
 
--- 
-Eugene
+   One call gives EINVAL, one gives EIDRM due to collision with the third shmem segment.
+   Should both give EINVAL, this is what I've got on every other Unix I've tried it on. 
 
+  IPC code is good, EIDRM is justification of EINVAL. But neither SVr4 nor SVID documents EIDRM. 
+  Single Unix Specification mentions EINVAL but not EIDRM as a possible failure for shmctl(), so the current kernel behavior is not merely self-inconsistent but a flat violation of the spec. 
+
+  Can somebody explain why do we have EIDRM?
+
+Anton.
+SUS: http://www.opengroup.org/onlinepubs/007908799/xsh/shmctl.html
+
+
+--=-=-=
+Content-Type: bug_reproducer
+Content-Disposition: attachment; filename=shmctl-bug.c
+
+#include <sys/ipc.h>
+#include <sys/shm.h>
+
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+int
+main(int argc, char *argv[])
+{
+    int              shmid1;
+    int              shmid2;
+    int              shmid3;
+    struct shmid_ds  buf;
+
+    /* make and stat 2 shmem segments */
+    shmid1 = shmget(0x12345678, 1024 * 1024, IPC_CREAT | IPC_EXCL | 0600);
+    if (shmid1 < 0)
+    {
+	perror("shmget 1 failed");
+	exit(1);
+    }
+    printf("id1 = %d / %#x\n", shmid1, shmid1);
+
+    shmid2 = shmget(0x12345679, 1024 * 1024, IPC_CREAT | IPC_EXCL | 0600);
+    if (shmid2 < 0)
+    {
+	perror("shmget 2 failed");
+	exit(1);
+    }
+    printf("id2 = %d / %#x\n", shmid2, shmid2);
+
+    if (shmctl(shmid1, IPC_STAT, &buf) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_STAT): ERROR: %s\n", shmid1, shmid1,
+	       strerror(errno));
+    }
+
+    if (shmctl(shmid2, IPC_STAT, &buf) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_STAT): ERROR: %s\n", shmid2, shmid2,
+	       strerror(errno));
+    }
+
+    /* remove both */
+    if (shmctl(shmid1, IPC_RMID, NULL) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_RMID): ERROR: %s\n", shmid1, shmid1,
+	       strerror(errno));
+    }
+    if (shmctl(shmid2, IPC_RMID, NULL) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_RMID): ERROR: %s\n", shmid2, shmid2,
+	       strerror(errno));
+    }
+
+    /* make a third one */
+    shmid3 = shmget(0x1234567A, 1024 * 1024, IPC_CREAT | IPC_EXCL | 0600);
+    if (shmid3 < 0)
+    {
+	perror("shmget 3 failed");
+	exit(1);
+    }
+    printf("id3 = %d / %#x\n", shmid3, shmid3);
+
+    /* now observe stat behavior for the two old IDs */
+
+    if (shmctl(shmid1, IPC_STAT, &buf) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_STAT): ERROR: %s\n", shmid1, shmid1,
+	       strerror(errno));
+    }
+
+    if (shmctl(shmid2, IPC_STAT, &buf) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_STAT): ERROR: %s\n", shmid2, shmid2,
+	       strerror(errno));
+    }
+
+    /* clean up by removing third segment */
+    if (shmctl(shmid3, IPC_RMID, NULL) < 0)
+    {
+	printf("shmctl(%d / %#x, IPC_RMID): ERROR: %s\n", shmid3, shmid3,
+	       strerror(errno));
+    }
+
+    return 0;
+}
+
+--=-=-=--
