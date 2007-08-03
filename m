@@ -1,91 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762379AbXHCNbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762117AbXHCNpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762379AbXHCNbV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758313AbXHCNbP
+	id S1762117AbXHCNpy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761281AbXHCNpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 09:31:15 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:59561 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757731AbXHCNbN (ORCPT
+	Fri, 3 Aug 2007 09:45:47 -0400
+Received: from lazybastard.de ([212.112.238.170]:36604 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761006AbXHCNpq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 09:31:13 -0400
-Date: Fri, 3 Aug 2007 15:30:54 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Keith Owens <kaos@ocs.com.au>
-Cc: vgoyal@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Takenori Nagano <t-nagano@ah.jp.nec.com>, k-miyoshi@cb.jp.nec.com,
-       Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC] Handling kernel stack overflows
-Message-ID: <20070803133054.GB3972@stusta.de>
-References: <31700.1186113953@kao2.melbourne.sgi.com>
-MIME-Version: 1.0
+	Fri, 3 Aug 2007 09:45:46 -0400
+Date: Fri, 3 Aug 2007 15:41:50 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Cc: David Miller <davem@davemloft.net>, Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+       Andrew Gallatin <gallatin@myri.com>, Jeff Garzik <jeff@garzik.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>
+Subject: Re: [PATCH 1/1] lro: Generic Large Receive Offload for TCP traffic
+Message-ID: <20070803134150.GH19344@lazybastard.org>
+References: <200708031441.20632.ossthema@de.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <31700.1186113953@kao2.melbourne.sgi.com>
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200708031441.20632.ossthema@de.ibm.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 02:05:53PM +1000, Keith Owens wrote:
->...
-> Long answer:
+On Fri, 3 August 2007 14:41:19 +0200, Jan-Bernd Themann wrote:
 > 
-> * Define a config option to control whether or not extra kernel stacks
->   are to be used.  Set this config option by default on i386 and
->   x86_64, unless EMBEDDED is set, in which case it becomes a user
->   selectable option.  It can never be set on IA64, the 'struct task'
->   embedded in the stack prevents that.  Decide about other
->   architectures as required.
+> This patch provides generic Large Receive Offload (LRO) functionality
+> for IPv4/TCP traffic.
 > 
-> * Create a tunable number of extra kernel stacks on each cpu as it
->   boots.  They are created on each cpu to avoid taking all the memory
->   from any one node.
+> LRO combines received tcp packets to a single larger tcp packet and 
+> passes them then to the network stack in order to increase performance
+> (throughput). The interface supports two modes: Drivers can either pass
+> SKBs or fragment lists to the LRO engine. 
 
-None of this should be in any way user selectable.
+Maybe this is a stupid question, but why is LRO done at the device
+driver level?
 
-We are currently having problems although distributions ship with
-4k stacks. Any option offering less than the default distributions 
-ship with, in the worst case hidden under EMBEEDED, could be called
-CONFIG_NONWORKING_KERNEL since it will be an untested configuration that 
-will no longer be working after some time.
+If it is a unversal performance benefit, I would have expected it to be
+done generically, i.e. have all packets moved into network layer pass
+through LRO instead.
 
->...
-> * If the usage threshold has been reached, do down_trylock() on the
->   counting semaphore.  If all of the extra stacks are in use then
->   down_trylock() will fail, log a rate limited error and return -EIO.
->   The caller will get an I/O error, but that is far better than
->   overflowing the kernel stack and crashing the entire machine.
->
-> * At each critical point, if the config option is true we check how
->   much of the current stack is in use.  If that figure is less than a
->   threshold value then continue with normal processing on the current
->   stack, no change.  Checking the stack usage requires an arch specific
->   routine.
->...
+> +void lro_flush_pkt(struct net_lro_mgr *lro_mgr,
+> +		   struct iphdr *iph, struct tcphdr *tcph);
 
-Even with the current stack usage in the kernel the threshold value must 
-be at a value that you can't do this with only 4 kB of initial stack 
-since you'd have to use extra stack when you have 3 kB left.
+In particular this bit looks like it should be driven by a timeout,
+which would be settable via /proc/sys/net/core/lro_timeout or similar.
 
-Why?
-
-Consider that the highest stack usage of a single function of a network 
-device driver (sic) is currently over 2 kB. [1]
-
-And since relaxed stack usage rules will result in driver authors 
-becoming more sloppy, only 3 kB of free stack won't always be enough...
-
-cu
-Adrian
-
-[1] http://lkml.org/lkml/2006/12/13/87
+Jörn
 
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Rules of Optimization:
+Rule 1: Don't do it.
+Rule 2 (for experts only): Don't do it yet.
+-- M.A. Jackson
