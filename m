@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763251AbXHCNEs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbXHCNFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763251AbXHCNEs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:04:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932113AbXHCM5v
+	id S932422AbXHCNFM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:05:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762570AbXHCM63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:57:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51424 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 08:58:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51664 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932092AbXHCM5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 08:57:49 -0400
-Message-Id: <20070803125237.324836000@chello.nl>
+	id S1762561AbXHCM61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 08:58:27 -0400
+Message-Id: <20070803125236.857669000@chello.nl>
 References: <20070803123712.987126000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 03 Aug 2007 14:37:32 +0200
+Date: Fri, 03 Aug 2007 14:37:28 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,398 +20,173 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 19/23] lib: floating proportions
-Content-Disposition: inline; filename=proportions.patch
+Subject: [PATCH 15/23] mm: scalable bdi statistics counters.
+Content-Disposition: inline; filename=bdi_stat.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Given a set of objects, floating proportions aims to efficiently give the
-proportional 'activity' of a single item as compared to the whole set. Where
-'activity' is a measure of a temporal property of the items.
-
-It is efficient in that it need not inspect any other items of the set
-in order to provide the answer. It is not even needed to know how many
-other items there are.
-
-It has one parameter, and that is the period of 'time' over which the 
-'activity' is measured.
+Provide scalable per backing_dev_info statistics counters.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/proportions.h |   81 +++++++++++++
- lib/Makefile                |    3 
- lib/proportions.c           |  264 ++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 347 insertions(+), 1 deletion(-)
+ include/linux/backing-dev.h |   85 ++++++++++++++++++++++++++++++++++++++++++--
+ mm/backing-dev.c            |   27 +++++++++++++
+ 2 files changed, 109 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/lib/proportions.c
+Index: linux-2.6/include/linux/backing-dev.h
 ===================================================================
---- /dev/null
-+++ linux-2.6/lib/proportions.c
-@@ -0,0 +1,264 @@
-+/*
-+ * Floating proportions
-+ *
-+ *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *
-+ * Description:
-+ *
-+ * The floating proportion is a time derivative with an exponentially decaying
-+ * history:
-+ *
-+ *   p_{j} = \Sum_{i=0} (dx_{j}/dt_{-i}) / 2^(1+i)
-+ *
-+ * Where j is an element from {prop_local}, x_{j} is j's number of events,
-+ * and i the time period over which the differential is taken. So d/dt_{-i} is
-+ * the differential over the i-th last period.
-+ *
-+ * The decaying history gives smooth transitions. The time differential carries
-+ * the notion of speed.
-+ *
-+ * The denominator is 2^(1+i) because we want the series to be normalised, ie.
-+ *
-+ *   \Sum_{i=0} 1/2^(1+i) = 1
-+ *
-+ * Further more, if we measure time (t) in the same events as x; so that:
-+ *
-+ *   t = \Sum_{j} x_{j}
-+ *
-+ * we get that:
-+ *
-+ *   \Sum_{j} p_{j} = 1
-+ *
-+ * Writing this in an iterative fashion we get (dropping the 'd's):
-+ *
-+ *   if (++x_{j}, ++t > period)
-+ *     t /= 2;
-+ *     for_each (j)
-+ *       x_{j} /= 2;
-+ *
-+ * so that:
-+ *
-+ *   p_{j} = x_{j} / t;
-+ *
-+ * We optimize away the '/= 2' for the global time delta by noting that:
-+ *
-+ *   if (++t > period) t /= 2:
-+ *
-+ * Can be approximated by:
-+ *
-+ *   period/2 + (++t % period/2)
-+ *
-+ * [ Furthermore, when we choose period to be 2^n it can be written in terms of
-+ *   binary operations and wraparound artefacts disappear. ]
-+ *
-+ * Also note that this yields a natural counter of the elapsed periods:
-+ *
-+ *   c = t / (period/2)
-+ *
-+ * [ Its monotonic increasing property can be applied to mitigate the wrap-
-+ *   around issue. ]
-+ *
-+ * This allows us to do away with the loop over all prop_locals on each period
-+ * expiration. By remembering the period count under which it was last accessed
-+ * as c_{j}, we can obtain the number of 'missed' cycles from:
-+ *
-+ *   c - c_{j}
-+ *
-+ * We can then lazily catch up to the global period count every time we are
-+ * going to use x_{j}, by doing:
-+ *
-+ *   x_{j} /= 2^(c - c_{j}), c_{j} = c
-+ */
+--- linux-2.6.orig/include/linux/backing-dev.h
++++ linux-2.6/include/linux/backing-dev.h
+@@ -8,6 +8,8 @@
+ #ifndef _LINUX_BACKING_DEV_H
+ #define _LINUX_BACKING_DEV_H
+ 
++#include <linux/percpu_counter.h>
++#include <linux/log2.h>
+ #include <asm/atomic.h>
+ 
+ struct page;
+@@ -24,6 +26,12 @@ enum bdi_state {
+ 
+ typedef int (congested_fn)(void *, int);
+ 
++enum bdi_stat_item {
++	NR_BDI_STAT_ITEMS
++};
 +
-+#include <linux/proportions.h>
-+#include <linux/rcupdate.h>
++#define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
 +
-+int prop_descriptor_init(struct prop_descriptor *pd, int shift)
-+{
-+	int err;
+ struct backing_dev_info {
+ 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
+ 	unsigned long state;	/* Always use atomic bitops on this */
+@@ -32,15 +40,86 @@ struct backing_dev_info {
+ 	void *congested_data;	/* Pointer to aux data for congested func */
+ 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
+ 	void *unplug_io_data;
 +
-+	pd->index = 0;
-+	pd->pg[0].shift = shift;
-+	mutex_init(&pd->mutex);
-+	err = percpu_counter_init_irq(&pd->pg[0].events, 0);
-+	if (err)
-+		goto out;
++	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
+ };
+ 
+-static inline int bdi_init(struct backing_dev_info *bdi)
++int bdi_init(struct backing_dev_info *bdi);
++void bdi_destroy(struct backing_dev_info *bdi);
 +
-+	err = percpu_counter_init_irq(&pd->pg[1].events, 0);
-+	if (err)
-+		percpu_counter_destroy(&pd->pg[0].events);
-+
-+out:
-+	return err;
++static inline void __mod_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item, s32 amount)
+ {
+-	return 0;
++	__percpu_counter_add(&bdi->bdi_stat[item], amount, BDI_STAT_BATCH);
+ }
+ 
+-static inline void bdi_destroy(struct backing_dev_info *bdi)
++static inline void __inc_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
+ {
++	__mod_bdi_stat(bdi, item, 1);
 +}
 +
-+/*
-+ * We have two copies, and flip between them to make it seem like an atomic
-+ * update. The update is not really atomic wrt the events counter, but
-+ * it is internally consistent with the bit layout depending on shift.
-+ *
-+ * We copy the events count, move the bits around and flip the index.
-+ */
-+void prop_change_shift(struct prop_descriptor *pd, int shift)
++static inline void inc_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
 +{
-+	int index;
-+	int offset;
-+	u64 events;
 +	unsigned long flags;
-+
-+	mutex_lock(&pd->mutex);
-+
-+	index = pd->index ^ 1;
-+	offset = pd->pg[pd->index].shift - shift;
-+	if (!offset)
-+		goto out;
-+
-+	pd->pg[index].shift = shift;
 +
 +	local_irq_save(flags);
-+	events = percpu_counter_sum(
-+			&pd->pg[pd->index].events);
-+	if (offset < 0)
-+		events <<= -offset;
-+	else
-+		events >>= offset;
-+	percpu_counter_set(&pd->pg[index].events, events);
-+
-+	/*
-+	 * ensure the new pg is fully written before the switch
-+	 */
-+	smp_wmb();
-+	pd->index = index;
++	__inc_bdi_stat(bdi, item);
 +	local_irq_restore(flags);
-+
-+	synchronize_rcu();
-+
-+out:
-+	mutex_unlock(&pd->mutex);
 +}
 +
-+/*
-+ * wrap the access to the data in an rcu_read_lock() section;
-+ * this is used to track the active references.
-+ */
-+struct prop_global *prop_get_global(struct prop_descriptor *pd)
++static inline void __dec_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
 +{
-+	int index;
-+
-+	rcu_read_lock();
-+	index = pd->index;
-+	/*
-+	 * match the wmb from vcd_flip()
-+	 */
-+	smp_rmb();
-+	return &pd->pg[index];
++	__mod_bdi_stat(bdi, item, -1);
 +}
 +
-+void prop_put_global(struct prop_descriptor *pd, struct prop_global *pg)
++static inline void dec_bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
 +{
-+	rcu_read_unlock();
-+}
-+
-+static void prop_adjust_shift(struct prop_local *pl, int new_shift)
-+{
-+	int offset = pl->shift - new_shift;
-+
-+	if (!offset)
-+		return;
-+
-+	if (offset < 0)
-+		pl->period <<= -offset;
-+	else
-+		pl->period >>= offset;
-+
-+	pl->shift = new_shift;
-+}
-+
-+int prop_local_init(struct prop_local *pl)
-+{
-+	spin_lock_init(&pl->lock);
-+	pl->shift = 0;
-+	pl->period = 0;
-+	return percpu_counter_init_irq(&pl->events, 0);
-+}
-+
-+void prop_local_destroy(struct prop_local *pl)
-+{
-+	percpu_counter_destroy(&pl->events);
-+}
-+
-+/*
-+ * Catch up with missed period expirations.
-+ *
-+ *   until (c_{j} == c)
-+ *     x_{j} -= x_{j}/2;
-+ *     c_{j}++;
-+ */
-+void prop_norm(struct prop_global *pg,
-+		struct prop_local *pl)
-+{
-+	unsigned long period = 1UL << (pg->shift - 1);
-+	unsigned long period_mask = ~(period - 1);
-+	unsigned long global_period;
 +	unsigned long flags;
 +
-+	global_period = percpu_counter_read(&pg->events);
-+	global_period &= period_mask;
-+
-+	/*
-+	 * Fast path - check if the local and global period count still match
-+	 * outside of the lock.
-+	 */
-+	if (pl->period == global_period)
-+		return;
-+
-+	spin_lock_irqsave(&pl->lock, flags);
-+	prop_adjust_shift(pl, pg->shift);
-+	/*
-+	 * For each missed period, we half the local counter.
-+	 * basically:
-+	 *   pl->events >> (global_period - pl->period);
-+	 *
-+	 * but since the distributed nature of percpu counters make division
-+	 * rather hard, use a regular subtraction loop. This is safe, because
-+	 * the events will only every be incremented, hence the subtraction
-+	 * can never result in a negative number.
-+	 */
-+	while (pl->period != global_period) {
-+		unsigned long val = percpu_counter_read(&pl->events);
-+		unsigned long half = (val + 1) >> 1;
-+
-+		/*
-+		 * Half of zero won't be much less, break out.
-+		 * This limits the loop to shift iterations, even
-+		 * if we missed a million.
-+		 */
-+		if (!val)
-+			break;
-+
-+		percpu_counter_add(&pl->events, -half);
-+		pl->period += period;
-+	}
-+	pl->period = global_period;
-+	spin_unlock_irqrestore(&pl->lock, flags);
++	local_irq_save(flags);
++	__dec_bdi_stat(bdi, item);
++	local_irq_restore(flags);
 +}
 +
-+/*
-+ * Obtain an fraction of this proportion
-+ *
-+ *   p_{j} = x_{j} / (period/2 + t % period/2)
-+ */
-+void prop_fraction(struct prop_global *pg, struct prop_local *pl,
-+		long *numerator, long *denominator)
++static inline s64 bdi_stat(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
 +{
-+	unsigned long period_2 = 1UL << (pg->shift - 1);
-+	unsigned long counter_mask = period_2 - 1;
-+	unsigned long global_count;
-+
-+	prop_norm(pg, pl);
-+	*numerator = percpu_counter_read_positive(&pl->events);
-+
-+	global_count = percpu_counter_read(&pg->events);
-+	*denominator = period_2 + (global_count & counter_mask);
++	return percpu_counter_read_positive(&bdi->bdi_stat[item]);
 +}
 +
-Index: linux-2.6/include/linux/proportions.h
-===================================================================
---- /dev/null
-+++ linux-2.6/include/linux/proportions.h
-@@ -0,0 +1,81 @@
-+/*
-+ * FLoating proportions
-+ *
-+ *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *
-+ * This file contains the public data structure and API definitions.
-+ */
-+
-+#ifndef _LINUX_PROPORTIONS_H
-+#define _LINUX_PROPORTIONS_H
-+
-+#include <linux/percpu_counter.h>
-+#include <linux/spinlock.h>
-+#include <linux/mutex.h>
-+
-+struct prop_global {
-+	/*
-+	 * The period over which we differentiate
-+	 *
-+	 *   period = 2^shift
-+	 */
-+	int shift;
-+	/*
-+	 * The total event counter aka 'time'.
-+	 *
-+	 * Treated as an unsigned long; the lower 'shift - 1' bits are the
-+	 * counter bits, the remaining upper bits the period counter.
-+	 */
-+	struct percpu_counter events;
-+};
-+
-+/*
-+ * global proportion descriptor
-+ *
-+ * this is needed to consitently flip prop_global structures.
-+ */
-+struct prop_descriptor {
-+	int index;
-+	struct prop_global pg[2];
-+	struct mutex mutex;		/* serialize the prop_global switch */
-+};
-+
-+int prop_descriptor_init(struct prop_descriptor *pd, int shift);
-+void prop_change_shift(struct prop_descriptor *pd, int new_shift);
-+struct prop_global *prop_get_global(struct prop_descriptor *pd);
-+void prop_put_global(struct prop_descriptor *pd, struct prop_global *pg);
-+
-+struct prop_local {
-+	/*
-+	 * the local events counter
-+	 */
-+	struct percpu_counter events;
-+
-+	/*
-+	 * snapshot of the last seen global state
-+	 */
-+	int shift;
-+	unsigned long period;
-+	spinlock_t lock;		/* protect the snapshot state */
-+};
-+
-+int prop_local_init(struct prop_local *pl);
-+void prop_local_destroy(struct prop_local *pl);
-+
-+void prop_norm(struct prop_global *pg, struct prop_local *pl);
-+
-+/*
-+ *   ++x_{j}, ++t
-+ */
-+static inline
-+void __prop_inc(struct prop_global *pg, struct prop_local *pl)
++static inline s64 __bdi_stat_sum(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
 +{
-+	prop_norm(pg, pl);
-+	percpu_counter_add(&pl->events, 1);
-+	percpu_counter_add(&pg->events, 1);
++	return percpu_counter_sum_positive(&bdi->bdi_stat[item]);
 +}
 +
-+void prop_fraction(struct prop_global *pg, struct prop_local *pl,
-+		long *numerator, long *denominator);
++static inline s64 bdi_stat_sum(struct backing_dev_info *bdi,
++		enum bdi_stat_item item)
++{
++	s64 sum;
++	unsigned long flags;
 +
-+#endif /* _LINUX_PROPORTIONS_H */
-Index: linux-2.6/lib/Makefile
-===================================================================
---- linux-2.6.orig/lib/Makefile
-+++ linux-2.6/lib/Makefile
-@@ -5,7 +5,8 @@
- lib-y := ctype.o string.o vsprintf.o cmdline.o \
- 	 rbtree.o radix-tree.o dump_stack.o \
- 	 idr.o int_sqrt.o bitmap.o extable.o prio_tree.o \
--	 sha1.o irq_regs.o reciprocal_div.o argv_split.o
-+	 sha1.o irq_regs.o reciprocal_div.o argv_split.o \
-+	 proportions.o
++	local_irq_save(flags);
++	sum = __bdi_stat_sum(bdi, item);
++	local_irq_restore(flags);
++
++	return sum;
++}
++
++/*
++ * maximal error of a stat counter.
++ */
++static inline unsigned long bdi_stat_error(struct backing_dev_info *bdi)
++{
++#ifdef CONFIG_SMP
++	return nr_cpu_ids * BDI_STAT_BATCH;
++#else
++	return 1;
++#endif
+ }
  
- lib-$(CONFIG_MMU) += ioremap.o pagewalk.o
- lib-$(CONFIG_SMP) += cpumask.o
+ /*
+Index: linux-2.6/mm/backing-dev.c
+===================================================================
+--- linux-2.6.orig/mm/backing-dev.c
++++ linux-2.6/mm/backing-dev.c
+@@ -5,6 +5,33 @@
+ #include <linux/sched.h>
+ #include <linux/module.h>
+ 
++int bdi_init(struct backing_dev_info *bdi)
++{
++	int i, j;
++	int err;
++
++	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
++		err = percpu_counter_init_irq(&bdi->bdi_stat[i], 0);
++		if (err) {
++			for (j = 0; j < i; j++)
++				perpcu_counter_destroy(&bdi->bdi_stat[i]);
++			break;
++		}
++	}
++
++	return err;
++}
++EXPORT_SYMBOL(bdi_init);
++
++void bdi_destroy(struct backing_dev_info *bdi)
++{
++	int i;
++
++	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
++		percpu_counter_destroy(&bdi->bdi_stat[i]);
++}
++EXPORT_SYMBOL(bdi_destroy);
++
+ static wait_queue_head_t congestion_wqh[2] = {
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[0]),
+ 		__WAIT_QUEUE_HEAD_INITIALIZER(congestion_wqh[1])
 
 --
 
