@@ -1,44 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbXHCNGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXHCNGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932282AbXHCNGF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763068AbXHCNEE
+	id S932646AbXHCNGj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762138AbXHCNG2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 09:04:04 -0400
-Received: from main.gmane.org ([80.91.229.2]:48804 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762894AbXHCNEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 09:04:01 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Oleksandr Natalenko <pfactum@gmail.com>
-Subject: Re: Scheduler Situation
-Date: Fri, 3 Aug 2007 12:52:15 +0000 (UTC)
-Message-ID: <loom.20070803T144718-943@post.gmane.org>
-References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com>
+	Fri, 3 Aug 2007 09:06:28 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49916 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760424AbXHCNG1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 09:06:27 -0400
+Date: Fri, 3 Aug 2007 14:13:47 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Complete freeze if high traffic on standard serial line on
+ ia32?
+Message-ID: <20070803141347.19136546@the-village.bc.nu>
+In-Reply-To: <465648.43203.qm@web26903.mail.ukl.yahoo.com>
+References: <465648.43203.qm@web26903.mail.ukl.yahoo.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 62.68.95.23 (Opera/9.22 (X11; Linux i686; U; ru))
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-T. J. Brumfield <enderandrew <at> gmail.com> writes:
+>  I can reliably (6 times in one hour) freeze completely (Scroll lock/Caps lock
+> flashing together, mouse frozen in X) my PC (AMD sempron on MSI K8MM3-V K8M800
+> Socket 754) by doing an FTP using a standard modem connected on the serial port
+> of the motherboard, and a bit of browsing (i.e. machine not loaded).
+>  That happens on standard Fedora 7 kernel and on the latest 23-rc1 kernel, and
+> doesn't happen on a Puppy Linux 2.17 bootable CDROM.
 
-> 1 - Can someone please explain why the kernel can be modular in every
-> other aspect, including offering a choice of IO schedulers, but not
-> kernel schedulers?
+Can you get this to happen outside of X at all (eg if you do a yum update
+and pull in packages over the modem for a while with 2.6.23-rc1  does it
+die). Just trying to work out what has become unstable.
 
-IMHO, Linus has a grudge against Con, but I can't understand, why. Con has 
-written nice code, I use it even now, I'm glad to have nice high-interactive 
-system on desktop. But "a grudge" is not an argument for Linus, it's better not 
-to make a decision by himself, but to let the community to decide, what is 
-better - CFS or SD.
-
-Question is not only in CFS vs SD, but in -ck patchset. Linus must remember 
-that he has lost nice code and nice maintainer, and it's not a right decision. 
-Linux is a public OS, so let people decide themselves, but not Linus himself.
-
+Also worth trying to see if browsing web type stuff off a CD or local
+files triggers it without the network link.
