@@ -1,67 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763365AbXHCUKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763546AbXHCUOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763365AbXHCUKy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbXHCUKo
+	id S1763546AbXHCUOt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760986AbXHCUOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:10:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44632 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 16:14:42 -0400
+Received: from mail.screens.ru ([213.234.233.54]:40456 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758221AbXHCUKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:10:44 -0400
-Date: Fri, 3 Aug 2007 16:03:36 -0400
-From: Dave Jones <davej@redhat.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Rogan Dawes <lists@dawes.za.net>
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by
-	default on certain device classes
-Message-ID: <20070803200336.GA20376@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Oliver Neukum <oliver@neukum.org>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Rogan Dawes <lists@dawes.za.net>
-References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org> <200708030737.56316.david-b@pacbell.net> <20070803150303.GA19968@srcf.ucam.org> <200708031808.11903.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	id S1757944AbXHCUOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:14:42 -0400
+Date: Sat, 4 Aug 2007 00:14:58 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       richard kennedy <richard@rsk.demon.co.uk>, linux-kernel@vger.kernel.org
+Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
+Message-ID: <20070803201458.GA181@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200708031808.11903.oliver@neukum.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 06:08:11PM +0200, Oliver Neukum wrote:
- > Am Freitag 03 August 2007 schrieb Matthew Garrett:
- > > > Which is why I didn't suggest doing that, of course.  The only
- > > > one making that kind of straw man argument seems to be you.
- > > 
- > > But however you phrase it, that's effectively what it is. "Does your 
- > > device work?" just makes users wonder why the damn computer doesn't know 
- > > already. "This option may prevent your device from working. Click here 
- > > to switch it off" results in them wondering why it was switched on in 
- > > the first place. Many of our users aren't technical - they don't care 
- > > about saving 200mW, they just care about their printer working when they 
- > > plug it in.
- > 
- > Devices rarely simply crash. Although Windows doesn't do runtime power
- > management, it certainly will suspend all devices when the system goes
- > into suspension. Buggy devices typically disconnect and reconnect when
- > resumed. This is testable for in software without user intervention.
+Chuck Ebbert wrote:
+>
+> Looks like the same problem with spinlock unfairness we've seen
+> elsewhere: it seems to be looping here? Or is everyone stuck
+> just waiting for writeout?
+> 
+> lock_timer_base():
+>         for (;;) {
+>                 tvec_base_t *prelock_base = timer->base;
+>                 base = tbase_get_base(prelock_base);
+>                 if (likely(base != NULL)) {
+>                         spin_lock_irqsave(&base->lock, *flags);
+>                         if (likely(prelock_base == timer->base))
+>                                 return base;
+>                         /* The timer has migrated to another CPU */
+>                         spin_unlock_irqrestore(&base->lock, *flags);
+>                 }
+>                 cpu_relax();
+>         }
 
-The printer I mentioned earlier this thread wouldn't work again
-until I physically unplugged and replugged the usb cable.
-It spewed descriptor read errors every time I tried to talk to it.
-Even unloading and reloading the usb modules didn't bring it back
-to life.
+I don't think there is an unfairness problem. We are looping only
+if timer->base changes in between. IOW, there is no "lock + unlock
++ lock(same_lock)" here, we take another lock on each iteration.
 
-	Dave
+And:
 
--- 
-http://www.codemonkey.org.uk
+>  [<c0407208>] do_IRQ+0xbd/0xd1
+>  [<c042ffcb>] lock_timer_base+0x19/0x35
+>  [<c04300df>] __mod_timer+0x9a/0xa4
+>  [<c060bb55>] schedule_timeout+0x70/0x8f
+>
+> ...
+>
+>  [<c0407208>] do_IRQ+0xbd/0xd1
+>  [<c042ffcb>] lock_timer_base+0x19/0x35
+>  [<c04300df>] __mod_timer+0x9a/0xa4
+>  [<c060bb55>] schedule_timeout+0x70/0x8f
+>
+> ...
+>
+>  [<c042ffcb>] lock_timer_base+0x19/0x35
+>  [<c04300df>] __mod_timer+0x9a/0xa4
+>  [<c060bb55>] schedule_timeout+0x70/0x8f
+
+All traces start from schedule_timeout()->mod_timer(). This timer
+is local, nobody can see it, its ->base can't be NULL or changed.
+
+This means that lock_timer_base() can't loop, but can't take the
+tvec_t_base_s.lock. But in that case the trace should different,
+strange.
+
+Oleg.
+
