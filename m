@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763398AbXHCOxw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763397AbXHCO4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763398AbXHCOxw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 10:53:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbXHCOxm
+	id S1763397AbXHCO4q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 10:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762456AbXHCO4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 10:53:42 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39290 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761564AbXHCOxk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 10:53:40 -0400
-Subject: Re: Distributed storage.
-From: Peter Zijlstra <peterz@infradead.org>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Daniel Phillips <phillips@phunq.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-In-Reply-To: <20070803134943.GA21221@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru>
-	 <200708021408.24876.phillips@phunq.net>
-	 <20070803102629.GB10089@2ka.mipt.ru> <20070803105747.GE10089@2ka.mipt.ru>
-	 <1186144072.11797.55.camel@lappy>  <20070803134943.GA21221@2ka.mipt.ru>
-Content-Type: text/plain
-Date: Fri, 03 Aug 2007 16:53:37 +0200
-Message-Id: <1186152817.12034.128.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 10:56:39 -0400
+Received: from aug.linbit.com ([212.69.162.22]:35479 "EHLO mail.linbit.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762277AbXHCO4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 10:56:38 -0400
+Date: Fri, 3 Aug 2007 16:56:17 +0200
+From: Lars Ellenberg <lars.ellenberg@linbit.com>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: Maurice Volaski <mvolaski@aecom.yu.edu>, jheffner@psc.edu,
+       discussion@web100.org, linux-kernel@vger.kernel.org,
+       drbd-user@linbit.com
+Subject: Re: drbd 8.0.2/3 doesn't load under kernel 2.6.21
+Message-ID: <20070803145617.GA8426@racke.local>
+Mail-Followup-To: Adrian Bunk <bunk@stusta.de>,
+	Maurice Volaski <mvolaski@aecom.yu.edu>, jheffner@psc.edu,
+	discussion@web100.org, linux-kernel@vger.kernel.org,
+	drbd-user@lists.linbit.com
+References: <a0624045cc2d691fb7294@[129.98.90.227]> <20070801223440.GS3972@stusta.de> <a06240463c2d6bfa92746@[129.98.90.227]> <20070802000005.GT3972@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802000005.GT3972@stusta.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-03 at 17:49 +0400, Evgeniy Polyakov wrote:
-> On Fri, Aug 03, 2007 at 02:27:52PM +0200, Peter Zijlstra (peterz@infradead.org) wrote:
-> > On Fri, 2007-08-03 at 14:57 +0400, Evgeniy Polyakov wrote:
-> > 
-> > > For receiving situation is worse, since system does not know in advance
-> > > to which socket given packet will belong to, so it must allocate from
-> > > global pool (and thus there must be independent global reserve), and
-> > > then exchange part of the socket's reserve to the global one (or just
-> > > copy packet to the new one, allocated from socket's reseve is it was
-> > > setup, or drop it otherwise). Global independent reserve is what I
-> > > proposed when stopped to advertise network allocator, but it seems that
-> > > it was not taken into account, and reserve was always allocated only
-> > > when system has serious memory pressure in Peter's patches without any
-> > > meaning for per-socket reservation.
-> > 
-> > This is not true. I have a global reserve which is set-up a priori. You
-> > cannot allocate a reserve when under pressure, that does not make sense.
+On Thu, Aug 02, 2007 at 02:00:05AM +0200, Adrian Bunk wrote:
+> On Wed, Aug 01, 2007 at 07:02:14PM -0400, Maurice Volaski wrote:
+> > First, did you confirm this behavior? Can you please explain that? How 
+> > could they possibly interact with one another?
 > 
-> I probably did not cut enough details - my main position is to allocate
-> per socket reserve from socket's queue, and copy data there from main
-> reserve, all of which are allocated either in advance (global one) or
-> per sockoption, so that there would be no fairness issues what to mark 
-> as special and what to not.
 > 
-> Say we have a page per socket, each socket can assign a reserve for
-> itself from own memory, this accounts both tx and rx side. Tx is not
-> interesting, it is simple, rx has global reserve (always allocated on 
-> startup or sometime way before reclaim/oom)where data is originally 
-> received (including skb, shared info and whatever is needed, page is 
-> just an exmaple), then it is copied into per-socket reserve and reused 
-> for the next packet. Having per-socket reserve allows to have progress 
-> in any situation not only in cases where single action must be 
-> received/processed, and allows to be completely fair for all users, but
-> not only special sockets, thus admin for example would be allowed to
-> login, ipsec would work and so on...
+> It's obvious when looking at the source code that both modules you are
+> trying to use are buggy, and the sum of the bugs in both modules is the 
+> drbd breakage you observe.
+> 
+> 
+> 30% of the guilt go to the drbd developers for doing the following:
+> 
+> #ifdef NETLINK_ROUTE6
+>         /* pre 2.6.16 */
+>         err = cn_init();
+>         if(err) return err;
+> #endif
+> 
+> The author wanted to check for pre-2.6.14 when the connector code was 
+> added to the kernel, not for pre-2.6.16 as the comment implies or 
+> pre-2.6.13 as the code does.
+> 
+> Or he wanted to check whether it's a recent kernel and the connector 
+> code is compiled into the kernel.
 
+that is what we wanted to check for. iirc, we first went to test for
+the kernel version, unfortunately going just for the kernel version did
+not exactly work out for patched vendor kernels...
+browsing over the available (to us at that time) kernel trees suggested
+that misusing the define of NETLINK_ROUTE6 might just work...
 
-Ah, I think I understand now. Yes this is indeed a good idea!
+> 70% of the guilt go to the web100 developers for shipping the following 
+> to their users:
+> 
+> --- linux-2.6-web100/include/linux/netlink.h	19 Jul 2007 17:49:17 -0000	1.1.1.16
+> +++ linux-2.6-web100/include/linux/netlink.h	19 Jul 2007 18:11:01 -0000	1.17
+> @@ -14,6 +14,7 @@
+>  #define NETLINK_SELINUX		7	/* SELinux event notifications */
+>  #define NETLINK_ISCSI		8	/* Open-iSCSI */
+>  #define NETLINK_AUDIT		9	/* auditing */
+> +#define NETLINK_ROUTE6		11	/* af_inet6 route comm channel */
+>  #define NETLINK_FIB_LOOKUP	10	
+>  #define NETLINK_CONNECTOR	11
+>  #define NETLINK_NETFILTER	12	/* netfilter subsystem */
+>  
+> That's not only buggy but also not used by web100.
+> 
+> 
+> cu
+> Adrian
 
-It would be quite doable to implement this on top of that I already
-have. We would need to extend the socket with a sock_opt that would
-reserve a specified amount of data for that specific socket. And then on
-socket demux check if the socket has a non zero reserve and has not yet
-exceeded said reserve. If so, process the packet.
+thank you very much for looking at this,
 
-This would also quite neatly work for -rt where we would not want
-incomming packet processing to be delayed by memory allocations.
-
+-- 
+: Lars Ellenberg                            Tel +43-1-8178292-0  :
+: LINBIT Information Technologies GmbH      Fax +43-1-8178292-82 :
+: Vivenotgasse 48, A-1120 Vienna/Europe    http://www.linbit.com :
+__
+please use the "List-Reply" function of your email client.
