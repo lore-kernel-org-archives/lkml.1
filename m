@@ -1,63 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXHCFx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757927AbXHCF6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757243AbXHCFx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 01:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbXHCFxW
+	id S1757927AbXHCF6Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 01:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753986AbXHCF6E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 01:53:22 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:56597 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753724AbXHCFxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 01:53:21 -0400
-Date: Fri, 3 Aug 2007 14:52:35 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] More sh updates for 2.6.23-rc2
-Message-ID: <20070803055235.GA17928@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
+	Fri, 3 Aug 2007 01:58:04 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:58558 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753644AbXHCF6B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 01:58:01 -0400
+Date: Fri, 3 Aug 2007 08:07:33 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
+Subject: [patch] genirq: fix simple and fasteoi irq handlers
+Message-ID: <20070803060733.GA1582@ff.dom.local>
+References: <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070802201126.GA27000@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+On Thu, Aug 02, 2007 at 10:11:26PM +0200, Ingo Molnar wrote:
+> 
+> * Gabriel C <nix.or.die@googlemail.com> wrote:
+> 
+> > I get a warning on each boot now with this patch ..
+> > 
+> > [   63.686613] WARNING: at kernel/irq/resend.c:70 check_irq_resend()
+...
+> we are still trying to figure out what happens with ne2k-pci. The 
+> message will vanish soon.
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.23.git
+Hi,
 
-Which contains:
+I can't guarantee this is all needed to fix this bug, but I think
+this patch is necessary here.
 
-David McCullough (1):
-      sh: update snapgear defconfig.
+Regards,
+Jarek P.
+------------>
 
-Magnus Damm (3):
-      sh: update r2d defconfig
-      sh: fix cf support on r2d boards
-      sh: fix defconfigs for sh7751r boards
+Subject: genirq: fix simple and fasteoi irq handlers
 
-Paul Mundt (5):
-      sh: Fix lockdep debugging oops on SH-3/4.
-      sh: Fix irqflags tracing for SH-3/4 nommu.
-      sh: Don't include fault-nommu on SH-2/SH-2A.
-      sh: Fix pgd mismatch from cached TTB in unhandled fault.
-      sh: Fix SH-X3 FPU exception handling.
+After the "genirq: do not mask interrupts by default" patch interrupts
+should be disabled not immediately upon request, but after they happen.
+But, handle_simple_irq() and handle_fasteoi_irq() can skip this once or
+more if an irq is just serviced (IRQ_INPROGRESS), possibly disrupting a
+driver's work.
 
- arch/sh/boards/renesas/rts7751r2d/setup.c |    9 +-
- arch/sh/configs/hs7751rvoip_defconfig     |    2 +-
- arch/sh/configs/landisk_defconfig         |    2 +-
- arch/sh/configs/lboxre2_defconfig         |    2 +-
- arch/sh/configs/rts7751r2d_defconfig      |    8 +-
- arch/sh/configs/snapgear_defconfig        |  587 ++++++++++++-----------------
- arch/sh/configs/systemh_defconfig         |    2 +-
- arch/sh/configs/titan_defconfig           |    2 +-
- arch/sh/kernel/cpu/sh3/entry.S            |    3 +-
- arch/sh/kernel/traps.c                    |    5 +
- arch/sh/mm/Makefile                       |    4 +-
- arch/sh/mm/fault-nommu.c                  |   47 +--
- arch/sh/mm/fault.c                        |    3 +-
- include/asm-sh/rts7751r2d.h               |    2 +-
- 14 files changed, 282 insertions(+), 396 deletions(-)
+The main reason of problems here, pointing the broken patch and making
+the first patch which can fix this was done by Marcin Slusarz.
+Additional test patches of Thomas Gleixner and Ingo Molnar tested by
+Marcin Slusarz helped to narrow possible reasons even more. Thanks.
+
+PS: this patch fixes only one evident error here, but there could be
+more places affected by above-mentioned change in irq handling.
+
+
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+
+---
+
+diff -Nurp 2.6.23-rc1-/kernel/irq/chip.c 2.6.23-rc1/kernel/irq/chip.c
+--- 2.6.23-rc1-/kernel/irq/chip.c	2007-07-09 01:32:17.000000000 +0200
++++ 2.6.23-rc1/kernel/irq/chip.c	2007-08-02 20:42:38.000000000 +0200
+@@ -295,12 +295,11 @@ handle_simple_irq(unsigned int irq, stru
+ 
+ 	spin_lock(&desc->lock);
+ 
+-	if (unlikely(desc->status & IRQ_INPROGRESS))
+-		goto out_unlock;
+ 	kstat_cpu(cpu).irqs[irq]++;
+ 
+ 	action = desc->action;
+-	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
++	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
++						 IRQ_DISABLED)))) {
+ 		if (desc->chip->mask)
+ 			desc->chip->mask(irq);
+ 		desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+@@ -392,18 +391,16 @@ handle_fasteoi_irq(unsigned int irq, str
+ 
+ 	spin_lock(&desc->lock);
+ 
+-	if (unlikely(desc->status & IRQ_INPROGRESS))
+-		goto out;
+-
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+ 	kstat_cpu(cpu).irqs[irq]++;
+ 
+ 	/*
+-	 * If its disabled or no action available
++	 * If it's running, disabled or no action available
+ 	 * then mask it and get out of here:
+ 	 */
+ 	action = desc->action;
+-	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
++	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
++						 IRQ_DISABLED)))) {
+ 		desc->status |= IRQ_PENDING;
+ 		if (desc->chip->mask)
+ 			desc->chip->mask(irq);
