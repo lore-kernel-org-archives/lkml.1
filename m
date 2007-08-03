@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763127AbXHCOcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763079AbXHCOeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763127AbXHCOcC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 10:32:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbXHCOby
+	id S1763079AbXHCOeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 10:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762275AbXHCOeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 10:31:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57576 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762207AbXHCOby (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 10:31:54 -0400
-Date: Fri, 3 Aug 2007 10:31:50 -0400
-From: Dave Jones <davej@redhat.com>
-To: Sam Bromley <sbromley@pangeosubsea.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: EIP: [dnotify_flush+104/160] dnotify_flush+0x68/0xa0 SS:ESP
-	0068:ecf85f80
-Message-ID: <20070803143150.GC11942@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Sam Bromley <sbromley@pangeosubsea.com>,
-	linux-kernel@vger.kernel.org
-References: <46B32E15.2060308@pangeosubsea.com>
+	Fri, 3 Aug 2007 10:34:12 -0400
+Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:59919 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1762266AbXHCOeL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 10:34:11 -0400
+Date: Fri, 3 Aug 2007 15:33:38 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Brownell <david-b@pacbell.net>, Rogan Dawes <lists@dawes.za.net>,
+       Oliver Neukum <oliver@neukum.org>, Greg KH <gregkh@suse.de>,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Message-ID: <20070803143338.GA19713@srcf.ucam.org>
+References: <20070803140909.GA19245@srcf.ucam.org> <Pine.LNX.4.44L0.0708031014160.3416-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B32E15.2060308@pangeosubsea.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <Pine.LNX.4.44L0.0708031014160.3416-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [PATCH] USB: Only enable autosuspend by   default on certain device classes
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 11:01:01AM -0230, Sam Bromley wrote:
+On Fri, Aug 03, 2007 at 10:28:19AM -0400, Alan Stern wrote:
+> On Fri, 3 Aug 2007, Matthew Garrett wrote:
 
- > ( Linux version 2.6.20-15-generic (root@palmer) (gcc version 4.1.2 
- > (Ubuntu 4.1.2-0ubuntu4)) #2 SMP Sun Apr 15 07:36:31
+> There are two possible solutions, both involving the kernel (since
+> userspace can't respond in time).  One is to change the default timeout
+> to something larger, or even disable it completely.  Then people would
+> need to rely on userspace tools to enable autosuspend on known-good
+> devices.  The other possibility is to have a fairly reliable blacklist
+> or whitelist and again rely on userspace to manage edge cases.  This is 
+> of course more flexible than a blanket default setting, but it's still 
+> pretty rigid.  On the other hand, a blacklist can't be changed without 
+> rebuilding the kernel whereas the default timeout can be adjusted on 
+> the boot command line.
 
-ancient kernel (and a vendor patched one at that)
-
- > snd_page_alloc pcspkr gameport nvidia(P) parport serio_raw soundcore 
-
-and tainted with binary only drivers.
-
-No-one here can help you.
-
-	Dave
+Windows will autosuspend hubs, bluetooth devices, HID devices and CDC 
+devices, so I think we're safe suspending those by default. I'm not so 
+enthusiastic about the "Increase the timeout case" - it doesn't avoid 
+any races, just makes them less likely. USB is likely to get loaded in 
+the initramfs, but we may not have a full set of udev rules until the 
+root fs is up and that can take an effectively arbitrarily large amount 
+of time.
 
 -- 
-http://www.codemonkey.org.uk
+Matthew Garrett | mjg59@srcf.ucam.org
