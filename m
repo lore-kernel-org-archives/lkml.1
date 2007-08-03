@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763621AbXHCRgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764053AbXHCRgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763621AbXHCRgK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761681AbXHCRfK
+	id S1764053AbXHCRgb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 13:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762068AbXHCRfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:35:10 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:37176 "EHLO ron.emn.fr"
+	Fri, 3 Aug 2007 13:35:12 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:37192 "EHLO ron.emn.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762996AbXHCRfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:35:03 -0400
-Date: Fri, 3 Aug 2007 19:33:36 +0200 (MEST)
-Message-Id: <200708031733.TAA00753@ifs.emn.fr>
+	id S1763513AbXHCRfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 13:35:09 -0400
+Date: Fri, 3 Aug 2007 19:33:42 +0200 (MEST)
+Message-Id: <200708031733.TAA00761@ifs.emn.fr>
 To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 03/13] dev->priv to netdev_priv(dev), for drivers/net/arcnet
-Cc: jeff@garzik.org, netdev@vger.kernel.org, akpm@linux-foundation.org,
+Subject: [PATCH 04/13] dev->priv to netdev_priv(dev), for drivers/net/bonding
+Cc: ctindel@users.sourceforge.net, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
 From: Yoann Padioleau <padator@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
@@ -59,552 +60,357 @@ type rule1.T;
 + netdev_priv(dev)
 
 Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: jeff@garzik.org
-Cc: netdev@vger.kernel.org
+Cc: ctindel@users.sourceforge.net
+Cc: fubar@us.ibm.com
+Cc: bonding-devel@lists.sourceforge.net
 Cc: akpm@linux-foundation.org
 ---
 
- drivers/net/arcnet/arc-rawmode.c  |    4 ++--
- drivers/net/arcnet/arc-rimi.c     |   16 ++++++++--------
- drivers/net/arcnet/arcnet.c       |   32 ++++++++++++++++----------------
- drivers/net/arcnet/capmode.c      |    6 +++---
- drivers/net/arcnet/com20020-isa.c |    4 ++--
- drivers/net/arcnet/com20020-pci.c |    2 +-
- drivers/net/arcnet/com20020.c     |   10 +++++-----
- drivers/net/arcnet/com90io.c      |    4 ++--
- drivers/net/arcnet/com90xx.c      |   10 +++++-----
- drivers/net/arcnet/rfc1051.c      |    8 ++++----
- drivers/net/arcnet/rfc1201.c      |   12 ++++++------
- 11 files changed, 54 insertions(+), 54 deletions(-)
+ drivers/net/bonding/bond_3ad.c  |    6 +--
+ drivers/net/bonding/bond_alb.c  |    6 +--
+ drivers/net/bonding/bond_main.c |   62 ++++++++++++++++++++--------------------
+ 3 files changed, 37 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/net/arcnet/arc-rawmode.c b/drivers/net/arcnet/arc-rawmode.c
-index e0a18e7..909ba77 100644
---- a/drivers/net/arcnet/arc-rawmode.c
-+++ b/drivers/net/arcnet/arc-rawmode.c
-@@ -87,7 +87,7 @@ MODULE_LICENSE("GPL");
- static void rx(struct net_device *dev, int bufnum,
- 	       struct archdr *pkthdr, int length)
+diff --git a/drivers/net/bonding/bond_3ad.c b/drivers/net/bonding/bond_3ad.c
+index f829e4a..9ad88d0 100644
+--- a/drivers/net/bonding/bond_3ad.c
++++ b/drivers/net/bonding/bond_3ad.c
+@@ -2364,7 +2364,7 @@ int bond_3ad_get_active_agg_info(struct 
+ int bond_3ad_xmit_xor(struct sk_buff *skb, struct net_device *dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct sk_buff *skb;
- 	struct archdr *pkt = pkthdr;
- 	int ofs;
-@@ -168,7 +168,7 @@ static int build_header(struct sk_buff *
- static int prepare_tx(struct net_device *dev, struct archdr *pkt, int length,
- 		      int bufnum)
+ 	struct slave *slave, *start_at;
+-	struct bonding *bond = dev->priv;
++	struct bonding *bond = netdev_priv(dev);
+ 	int slave_agg_no;
+ 	int slaves_in_agg;
+ 	int agg_id;
+@@ -2444,7 +2444,7 @@ out:
+ 
+ int bond_3ad_lacpdu_recv(struct sk_buff *skb, struct net_device *dev, struct packet_type* ptype, struct net_device *orig_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct arc_hardware *hard = &pkt->hard;
- 	int ofs;
+-	struct bonding *bond = dev->priv;
++	struct bonding *bond = netdev_priv(dev);
+ 	struct slave *slave = NULL;
+ 	int ret = NET_RX_DROP;
  
-diff --git a/drivers/net/arcnet/arc-rimi.c b/drivers/net/arcnet/arc-rimi.c
-index 8c8d6c4..e3082a9 100644
---- a/drivers/net/arcnet/arc-rimi.c
-+++ b/drivers/net/arcnet/arc-rimi.c
-@@ -194,7 +194,7 @@ static int __init arcrimi_found(struct n
+@@ -2452,7 +2452,7 @@ int bond_3ad_lacpdu_recv(struct sk_buff 
+ 		goto out;
  
- 	/* initialize the rest of the device structure. */
+ 	read_lock(&bond->lock);
+-	slave = bond_get_slave_by_dev((struct bonding *)dev->priv, orig_dev);
++	slave = bond_get_slave_by_dev(netdev_priv(dev), orig_dev);
+ 	if (!slave)
+ 		goto out_unlock;
  
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 	lp->card_name = "RIM I";
- 	lp->hw.command = arcrimi_command;
- 	lp->hw.status = arcrimi_status;
-@@ -260,7 +260,7 @@ err_free_irq:
+diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
+index 92c3b6f..c90524b 100644
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -341,7 +341,7 @@ static void rlb_update_entry_from_arp(st
+ 
+ static int rlb_arp_recv(struct sk_buff *skb, struct net_device *bond_dev, struct packet_type *ptype, struct net_device *orig_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct arp_pkt *arp = (struct arp_pkt *)skb->data;
+ 	int res = NET_RX_DROP;
+ 
+@@ -1260,7 +1260,7 @@ void bond_alb_deinitialize(struct bondin
+ 
+ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct ethhdr *eth_data;
+ 	struct alb_bond_info *bond_info = &(BOND_ALB_INFO(bond));
+ 	struct slave *tx_slave = NULL;
+@@ -1621,7 +1621,7 @@ void bond_alb_handle_active_change(struc
+ 
+ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct sockaddr *sa = addr;
+ 	struct slave *slave, *swap_slave;
+ 	int res;
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 070b78d..08f5fcc 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -425,7 +425,7 @@ int bond_dev_queue_xmit(struct bonding *
   */
- static int arcrimi_reset(struct net_device *dev, int really_reset)
+ static void bond_vlan_rx_register(struct net_device *bond_dev, struct vlan_group *grp)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *ioaddr = lp->mem_start + 0x800;
- 
- 	BUGMSG(D_INIT, "Resetting %s (status=%02Xh)\n", dev->name, ASTATUS());
-@@ -281,7 +281,7 @@ static int arcrimi_reset(struct net_devi
- 
- static void arcrimi_setmask(struct net_device *dev, int mask)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *ioaddr = lp->mem_start + 0x800;
- 
- 	AINTMASK(mask);
-@@ -289,7 +289,7 @@ static void arcrimi_setmask(struct net_d
- 
- static int arcrimi_status(struct net_device *dev)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *ioaddr = lp->mem_start + 0x800;
- 
- 	return ASTATUS();
-@@ -297,7 +297,7 @@ static int arcrimi_status(struct net_dev
- 
- static void arcrimi_command(struct net_device *dev, int cmd)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *ioaddr = lp->mem_start + 0x800;
- 
- 	ACOMMAND(cmd);
-@@ -306,7 +306,7 @@ static void arcrimi_command(struct net_d
- static void arcrimi_copy_to_card(struct net_device *dev, int bufnum, int offset,
- 				 void *buf, int count)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *memaddr = lp->mem_start + 0x800 + bufnum * 512 + offset;
- 	TIME("memcpy_toio", count, memcpy_toio(memaddr, buf, count));
- }
-@@ -315,7 +315,7 @@ static void arcrimi_copy_to_card(struct 
- static void arcrimi_copy_from_card(struct net_device *dev, int bufnum, int offset,
- 				   void *buf, int count)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *memaddr = lp->mem_start + 0x800 + bufnum * 512 + offset;
- 	TIME("memcpy_fromio", count, memcpy_fromio(buf, memaddr, count));
- }
-@@ -361,7 +361,7 @@ static int __init arc_rimi_init(void)
- static void __exit arc_rimi_exit(void)
- {
- 	struct net_device *dev = my_dev;
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 
- 	unregister_netdev(dev);
- 	iounmap(lp->mem_start);
-diff --git a/drivers/net/arcnet/arcnet.c b/drivers/net/arcnet/arcnet.c
-index 681e20b..230b545 100644
---- a/drivers/net/arcnet/arcnet.c
-+++ b/drivers/net/arcnet/arcnet.c
-@@ -181,7 +181,7 @@ #if (ARCNET_DEBUG_MAX & (D_RX | D_TX))
- static void arcnet_dump_packet(struct net_device *dev, int bufnum,
- 			       char *desc, int take_arcnet_lock)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int i, length;
- 	unsigned long flags = 0;
- 	static uint8_t buf[512];
-@@ -247,7 +247,7 @@ void arcnet_unregister_proto(struct ArcP
-  */
- static void release_arcbuf(struct net_device *dev, int bufnum)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave;
  	int i;
  
- 	lp->buf_queue[lp->first_free_buf++] = bufnum;
-@@ -269,7 +269,7 @@ static void release_arcbuf(struct net_de
+@@ -448,7 +448,7 @@ static void bond_vlan_rx_register(struct
   */
- static int get_arcbuf(struct net_device *dev)
+ static void bond_vlan_rx_add_vid(struct net_device *bond_dev, uint16_t vid)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int buf = -1, i;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave;
+ 	int i, res;
  
- 	if (!atomic_dec_and_test(&lp->buf_lock)) {
-@@ -353,7 +353,7 @@ struct net_device *alloc_arcdev(char *na
- 	dev = alloc_netdev(sizeof(struct arcnet_local),
- 			   name && *name ? name : "arc%d", arcdev_setup);
- 	if(dev) {
--		struct arcnet_local *lp = (struct arcnet_local *) dev->priv;
-+		struct arcnet_local *lp = netdev_priv(dev);
- 		spin_lock_init(&lp->lock);
- 	}
- 
-@@ -370,7 +370,7 @@ struct net_device *alloc_arcdev(char *na
+@@ -476,7 +476,7 @@ static void bond_vlan_rx_add_vid(struct 
   */
- static int arcnet_open(struct net_device *dev)
+ static void bond_vlan_rx_kill_vid(struct net_device *bond_dev, uint16_t vid)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int count, newmtu, error;
- 
- 	BUGMSG(D_INIT,"opened.");
-@@ -470,7 +470,7 @@ static int arcnet_open(struct net_device
- /* The inverse routine to arcnet_open - shuts down the card. */
- static int arcnet_close(struct net_device *dev)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 
- 	netif_stop_queue(dev);
- 
-@@ -491,7 +491,7 @@ static int arcnet_header(struct sk_buff 
- 			 unsigned short type, void *daddr, void *saddr,
- 			 unsigned len)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	uint8_t _daddr, proto_num;
- 	struct ArcProto *proto;
- 
-@@ -552,7 +552,7 @@ static int arcnet_header(struct sk_buff 
- static int arcnet_rebuild_header(struct sk_buff *skb)
- {
- 	struct net_device *dev = skb->dev;
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int status = 0;		/* default is failure */
- 	unsigned short type;
- 	uint8_t daddr=0;
-@@ -599,7 +599,7 @@ #endif
- /* Called by the kernel in order to transmit a packet. */
- static int arcnet_send_packet(struct sk_buff *skb, struct net_device *dev)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct archdr *pkt;
- 	struct arc_rfc1201 *soft;
- 	struct ArcProto *proto;
-@@ -689,7 +689,7 @@ static int arcnet_send_packet(struct sk_
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave;
+ 	struct net_device *vlan_dev;
+ 	int i, res;
+@@ -900,7 +900,7 @@ static int bond_mc_list_copy(struct dev_
   */
- static int go_tx(struct net_device *dev)
+ static void bond_mc_list_flush(struct net_device *bond_dev, struct net_device *slave_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct dev_mc_list *dmi;
  
- 	BUGMSG(D_DURING, "go_tx: status=%Xh, intmask=%Xh, next_tx=%d, cur_tx=%d\n",
- 	       ASTATUS(), lp->intmask, lp->next_tx, lp->cur_tx);
-@@ -719,7 +719,7 @@ static int go_tx(struct net_device *dev)
- static void arcnet_timeout(struct net_device *dev)
+ 	for (dmi = bond_dev->mc_list; dmi; dmi = dmi->next) {
+@@ -1248,7 +1248,7 @@ static int bond_compute_features(struct 
+ /* enslave device <slave> to bond device <master> */
+ int bond_enslave(struct net_device *bond_dev, struct net_device *slave_dev)
  {
- 	unsigned long flags;
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int status = ASTATUS();
- 	char *msg;
- 
-@@ -768,7 +768,7 @@ irqreturn_t arcnet_interrupt(int irq, vo
- 
- 	BUGMSG(D_DURING, "in arcnet_interrupt\n");
- 	
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 	BUG_ON(!lp);
- 		
- 	spin_lock(&lp->lock);
-@@ -1005,7 +1005,7 @@ irqreturn_t arcnet_interrupt(int irq, vo
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *new_slave = NULL;
+ 	struct dev_mc_list *dmi;
+ 	struct sockaddr addr;
+@@ -1607,7 +1607,7 @@ err_undo_flags:
   */
- static void arcnet_rx(struct net_device *dev, int bufnum)
+ int bond_release(struct net_device *bond_dev, struct net_device *slave_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct archdr pkt;
- 	struct arc_rfc1201 *soft;
- 	int length, ofs;
-@@ -1069,7 +1069,7 @@ static void arcnet_rx(struct net_device 
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *oldcurrent;
+ 	struct sockaddr addr;
+ 	int mac_addr_differ;
+@@ -1780,7 +1780,7 @@ int bond_release(struct net_device *bond
   */
- static struct net_device_stats *arcnet_get_stats(struct net_device *dev)
+ static int bond_release_all(struct net_device *bond_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	return &lp->stats;
- }
- 
-@@ -1086,7 +1086,7 @@ static void null_rx(struct net_device *d
- static int null_build_header(struct sk_buff *skb, struct net_device *dev,
- 			     unsigned short type, uint8_t daddr)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 
- 	BUGMSG(D_PROTO,
- 	       "tx: can't build header for encap %02Xh; load a protocol driver.\n",
-@@ -1101,7 +1101,7 @@ static int null_build_header(struct sk_b
- static int null_prepare_tx(struct net_device *dev, struct archdr *pkt,
- 			   int length, int bufnum)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct arc_hardware newpkt;
- 
- 	BUGMSG(D_PROTO, "tx: no encap for this host; load a protocol driver.\n");
-diff --git a/drivers/net/arcnet/capmode.c b/drivers/net/arcnet/capmode.c
-index cc4610d..bd04be9 100644
---- a/drivers/net/arcnet/capmode.c
-+++ b/drivers/net/arcnet/capmode.c
-@@ -101,7 +101,7 @@ #endif				/* MODULE */
- static void rx(struct net_device *dev, int bufnum,
- 	       struct archdr *pkthdr, int length)
- {
--	struct arcnet_local *lp = (struct arcnet_local *) dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct sk_buff *skb;
- 	struct archdr *pkt = pkthdr;
- 	char *pktbuf, *pkthdrbuf;
-@@ -196,7 +196,7 @@ static int build_header(struct sk_buff *
- static int prepare_tx(struct net_device *dev, struct archdr *pkt, int length,
- 		      int bufnum)
- {
--	struct arcnet_local *lp = (struct arcnet_local *) dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct arc_hardware *hard = &pkt->hard;
- 	int ofs;
- 
-@@ -248,7 +248,7 @@ static int prepare_tx(struct net_device 
- 
- static int ack_tx(struct net_device *dev, int acked)
- {
--  struct arcnet_local *lp = (struct arcnet_local *) dev->priv;
-+  struct arcnet_local *lp = netdev_priv(dev);
-   struct sk_buff *ackskb;
-   struct archdr *ackpkt;
-   int length=sizeof(struct arc_cap);
-diff --git a/drivers/net/arcnet/com20020-isa.c b/drivers/net/arcnet/com20020-isa.c
-index 9289e61..ea53a94 100644
---- a/drivers/net/arcnet/com20020-isa.c
-+++ b/drivers/net/arcnet/com20020-isa.c
-@@ -52,7 +52,7 @@ static int __init com20020isa_probe(stru
- {
- 	int ioaddr;
- 	unsigned long airqmask;
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int err;
- 
- 	BUGLVL(D_NORMAL) printk(VERSION);
-@@ -151,7 +151,7 @@ static int __init com20020_init(void)
- 	if (node && node != 0xff)
- 		dev->dev_addr[0] = node;
- 
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 	lp->backplane = backplane;
- 	lp->clockp = clockp & 7;
- 	lp->clockm = clockm & 3;
-diff --git a/drivers/net/arcnet/com20020-pci.c b/drivers/net/arcnet/com20020-pci.c
-index b8c0fa6..8b51f63 100644
---- a/drivers/net/arcnet/com20020-pci.c
-+++ b/drivers/net/arcnet/com20020-pci.c
-@@ -72,7 +72,7 @@ static int __devinit com20020pci_probe(s
- 	dev = alloc_arcdev(device);
- 	if (!dev)
- 		return -ENOMEM;
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 
- 	pci_set_drvdata(pdev, dev);
- 
-diff --git a/drivers/net/arcnet/com20020.c b/drivers/net/arcnet/com20020.c
-index 7cf0a25..dd02463 100644
---- a/drivers/net/arcnet/com20020.c
-+++ b/drivers/net/arcnet/com20020.c
-@@ -89,7 +89,7 @@ static void com20020_copy_to_card(struct
- int com20020_check(struct net_device *dev)
- {
- 	int ioaddr = dev->base_addr, status;
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 
- 	ARCRESET0;
- 	mdelay(RESETtime);
-@@ -159,7 +159,7 @@ int com20020_found(struct net_device *de
- 
- 	/* Initialize the rest of the device structure. */
- 
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 
- 	lp->hw.owner = THIS_MODULE;
- 	lp->hw.command = com20020_command;
-@@ -233,7 +233,7 @@ int com20020_found(struct net_device *de
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave;
+ 	struct net_device *slave_dev;
+ 	struct sockaddr addr;
+@@ -1907,7 +1907,7 @@ out:
   */
- static int com20020_reset(struct net_device *dev, int really_reset)
+ static int bond_ioctl_change_active(struct net_device *bond_dev, struct net_device *slave_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	u_int ioaddr = dev->base_addr;
- 	u_char inbyte;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *old_active = NULL;
+ 	struct slave *new_active = NULL;
+ 	int res = 0;
+@@ -1951,7 +1951,7 @@ static int bond_ioctl_change_active(stru
  
-@@ -300,7 +300,7 @@ static int com20020_status(struct net_de
- 
- static void com20020_close(struct net_device *dev)
+ static int bond_info_query(struct net_device *bond_dev, struct ifbond *info)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int ioaddr = dev->base_addr;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
  
- 	/* disable transmitter */
-@@ -317,7 +317,7 @@ static void com20020_close(struct net_de
+ 	info->bond_mode = bond->params.mode;
+ 	info->miimon = bond->params.miimon;
+@@ -1965,7 +1965,7 @@ static int bond_info_query(struct net_de
+ 
+ static int bond_slave_info_query(struct net_device *bond_dev, struct ifslave *info)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave;
+ 	int i, found = 0;
+ 
+@@ -2001,7 +2001,7 @@ static int bond_slave_info_query(struct 
+ /* this function is called regularly to monitor each slave's link. */
+ void bond_mii_monitor(struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *oldcurrent;
+ 	int do_failover = 0;
+ 	int delta_in_ticks;
+@@ -2468,7 +2468,7 @@ static int bond_arp_rcv(struct sk_buff *
+ 	if (!(dev->priv_flags & IFF_BONDING) || !(dev->flags & IFF_MASTER))
+ 		goto out;
+ 
+-	bond = dev->priv;
++	bond = netdev_priv(dev);
+ 	read_lock(&bond->lock);
+ 
+ 	dprintk("bond_arp_rcv: bond %s skb->dev %s orig_dev %s\n",
+@@ -2534,7 +2534,7 @@ out:
   */
- static void com20020_set_mc_list(struct net_device *dev)
+ void bond_loadbalance_arp_mon(struct net_device *bond_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int ioaddr = dev->base_addr;
- 
- 	if ((dev->flags & IFF_PROMISC) && (dev->flags & IFF_UP)) {	/* Enable promiscuous mode */
-diff --git a/drivers/net/arcnet/com90io.c b/drivers/net/arcnet/com90io.c
-index 1f03027..c6e373a 100644
---- a/drivers/net/arcnet/com90io.c
-+++ b/drivers/net/arcnet/com90io.c
-@@ -248,7 +248,7 @@ static int __init com90io_found(struct n
- 		return -EBUSY;
- 	}
- 
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 	lp->card_name = "COM90xx I/O";
- 	lp->hw.command = com90io_command;
- 	lp->hw.status = com90io_status;
-@@ -290,7 +290,7 @@ static int __init com90io_found(struct n
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *oldcurrent;
+ 	int do_failover = 0;
+ 	int delta_in_ticks;
+@@ -2665,7 +2665,7 @@ out:
   */
- static int com90io_reset(struct net_device *dev, int really_reset)
+ void bond_activebackup_arp_mon(struct net_device *bond_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	short ioaddr = dev->base_addr;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave;
+ 	int delta_in_ticks;
+ 	int i;
+@@ -3222,7 +3222,7 @@ #endif
  
- 	BUGMSG(D_INIT, "Resetting %s (status=%02Xh)\n", dev->name, ASTATUS());
-diff --git a/drivers/net/arcnet/com90xx.c b/drivers/net/arcnet/com90xx.c
-index 0d45553..f4113d2 100644
---- a/drivers/net/arcnet/com90xx.c
-+++ b/drivers/net/arcnet/com90xx.c
-@@ -468,7 +468,7 @@ static int __init com90xx_found(int ioad
- 		release_mem_region(shmem, MIRROR_SIZE);
- 		return -ENOMEM;
- 	}
--	lp = dev->priv;
-+	lp = netdev_priv(dev);
- 	/* find the real shared memory start/end points, including mirrors */
+ static int bond_master_netdev_event(unsigned long event, struct net_device *bond_dev)
+ {
+-	struct bonding *event_bond = bond_dev->priv;
++	struct bonding *event_bond = netdev_priv(bond_dev);
  
- 	/* guess the actual size of one "memory mirror" - the number of
-@@ -585,7 +585,7 @@ static void com90xx_setmask(struct net_d
+ 	switch (event) {
+ 	case NETDEV_CHANGENAME:
+@@ -3242,7 +3242,7 @@ static int bond_master_netdev_event(unsi
+ static int bond_slave_netdev_event(unsigned long event, struct net_device *slave_dev)
+ {
+ 	struct net_device *bond_dev = slave_dev->master;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 
+ 	switch (event) {
+ 	case NETDEV_UNREGISTER:
+@@ -3470,7 +3470,7 @@ static int bond_xmit_hash_policy_l2(stru
+ 
+ static int bond_open(struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct timer_list *mii_timer = &bond->mii_timer;
+ 	struct timer_list *arp_timer = &bond->arp_timer;
+ 
+@@ -3535,7 +3535,7 @@ static int bond_open(struct net_device *
+ 
+ static int bond_close(struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 
+ 	if (bond->params.mode == BOND_MODE_8023AD) {
+ 		/* Unregister the receive of LACPDUs */
+@@ -3591,7 +3591,7 @@ static int bond_close(struct net_device 
+ 
+ static struct net_device_stats *bond_get_stats(struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct net_device_stats *stats = &(bond->stats), *sstats;
+ 	struct slave *slave;
+ 	int i;
+@@ -3666,7 +3666,7 @@ static int bond_do_ioctl(struct net_devi
+ 		}
+ 
+ 		if (mii->reg_num == 1) {
+-			struct bonding *bond = bond_dev->priv;
++			struct bonding *bond = netdev_priv(bond_dev);
+ 			mii->val_out = 0;
+ 			read_lock_bh(&bond->lock);
+ 			read_lock(&bond->curr_slave_lock);
+@@ -3758,7 +3758,7 @@ static int bond_do_ioctl(struct net_devi
+ 
+ static void bond_set_multicast_list(struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct dev_mc_list *dmi;
+ 
+ 	write_lock_bh(&bond->lock);
+@@ -3811,7 +3811,7 @@ static void bond_set_multicast_list(stru
   */
- int com90xx_reset(struct net_device *dev, int really_reset)
+ static int bond_change_mtu(struct net_device *bond_dev, int new_mtu)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	short ioaddr = dev->base_addr;
- 
- 	BUGMSG(D_INIT, "Resetting (status=%02Xh)\n", ASTATUS());
-@@ -621,7 +621,7 @@ int com90xx_reset(struct net_device *dev
- static void com90xx_copy_to_card(struct net_device *dev, int bufnum, int offset,
- 				 void *buf, int count)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *memaddr = lp->mem_start + bufnum * 512 + offset;
- 	TIME("memcpy_toio", count, memcpy_toio(memaddr, buf, count));
- }
-@@ -630,7 +630,7 @@ static void com90xx_copy_to_card(struct 
- static void com90xx_copy_from_card(struct net_device *dev, int bufnum, int offset,
- 				   void *buf, int count)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	void __iomem *memaddr = lp->mem_start + bufnum * 512 + offset;
- 	TIME("memcpy_fromio", count, memcpy_fromio(buf, memaddr, count));
- }
-@@ -656,7 +656,7 @@ static void __exit com90xx_exit(void)
- 
- 	for (count = 0; count < numcards; count++) {
- 		dev = cards[count];
--		lp = dev->priv;
-+		lp = netdev_priv(dev);
- 
- 		unregister_netdev(dev);
- 		free_irq(dev->irq, dev);
-diff --git a/drivers/net/arcnet/rfc1051.c b/drivers/net/arcnet/rfc1051.c
-index 2de8877..ba58089 100644
---- a/drivers/net/arcnet/rfc1051.c
-+++ b/drivers/net/arcnet/rfc1051.c
-@@ -88,7 +88,7 @@ MODULE_LICENSE("GPL");
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *stop_at;
+ 	int res = 0;
+ 	int i;
+@@ -3883,7 +3883,7 @@ unwind:
   */
- static unsigned short type_trans(struct sk_buff *skb, struct net_device *dev)
+ static int bond_set_mac_address(struct net_device *bond_dev, void *addr)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct archdr *pkt = (struct archdr *) skb->data;
- 	struct arc_rfc1051 *soft = &pkt->soft.rfc1051;
- 	int hdr_size = ARC_HDR_SIZE + RFC1051_HDR_SIZE;
-@@ -125,7 +125,7 @@ static unsigned short type_trans(struct 
- static void rx(struct net_device *dev, int bufnum,
- 	       struct archdr *pkthdr, int length)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct sk_buff *skb;
- 	struct archdr *pkt = pkthdr;
- 	int ofs;
-@@ -169,7 +169,7 @@ static void rx(struct net_device *dev, i
- static int build_header(struct sk_buff *skb, struct net_device *dev,
- 			unsigned short type, uint8_t daddr)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int hdr_size = ARC_HDR_SIZE + RFC1051_HDR_SIZE;
- 	struct archdr *pkt = (struct archdr *) skb_push(skb, hdr_size);
- 	struct arc_rfc1051 *soft = &pkt->soft.rfc1051;
-@@ -220,7 +220,7 @@ static int build_header(struct sk_buff *
- static int prepare_tx(struct net_device *dev, struct archdr *pkt, int length,
- 		      int bufnum)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct arc_hardware *hard = &pkt->hard;
- 	int ofs;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct sockaddr *sa = addr, tmp_sa;
+ 	struct slave *slave, *stop_at;
+ 	int res = 0;
+@@ -3957,7 +3957,7 @@ unwind:
  
-diff --git a/drivers/net/arcnet/rfc1201.c b/drivers/net/arcnet/rfc1201.c
-index 460a095..75998f4 100644
---- a/drivers/net/arcnet/rfc1201.c
-+++ b/drivers/net/arcnet/rfc1201.c
-@@ -92,7 +92,7 @@ static unsigned short type_trans(struct 
+ static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
  {
- 	struct archdr *pkt = (struct archdr *) skb->data;
- 	struct arc_rfc1201 *soft = &pkt->soft.rfc1201;
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int hdr_size = ARC_HDR_SIZE + RFC1201_HDR_SIZE;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *start_at;
+ 	int i;
+ 	int res = 1;
+@@ -4007,7 +4007,7 @@ out:
+  */
+ static int bond_xmit_activebackup(struct sk_buff *skb, struct net_device *bond_dev)
+ {
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	int res = 1;
  
- 	/* Pull off the arcnet header. */
-@@ -134,7 +134,7 @@ static unsigned short type_trans(struct 
- static void rx(struct net_device *dev, int bufnum,
- 	       struct archdr *pkthdr, int length)
+ 	read_lock(&bond->lock);
+@@ -4039,7 +4039,7 @@ out:
+  */
+ static int bond_xmit_xor(struct sk_buff *skb, struct net_device *bond_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct sk_buff *skb;
- 	struct archdr *pkt = pkthdr;
- 	struct arc_rfc1201 *soft = &pkthdr->soft.rfc1201;
-@@ -376,7 +376,7 @@ static void rx(struct net_device *dev, i
- static int build_header(struct sk_buff *skb, struct net_device *dev,
- 			unsigned short type, uint8_t daddr)
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *start_at;
+ 	int slave_no;
+ 	int i;
+@@ -4085,7 +4085,7 @@ out:
+  */
+ static int bond_xmit_broadcast(struct sk_buff *skb, struct net_device *bond_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int hdr_size = ARC_HDR_SIZE + RFC1201_HDR_SIZE;
- 	struct archdr *pkt = (struct archdr *) skb_push(skb, hdr_size);
- 	struct arc_rfc1201 *soft = &pkt->soft.rfc1201;
-@@ -443,7 +443,7 @@ static int build_header(struct sk_buff *
- static void load_pkt(struct net_device *dev, struct arc_hardware *hard,
- 		     struct arc_rfc1201 *soft, int softlen, int bufnum)
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 	struct slave *slave, *start_at;
+ 	struct net_device *tx_dev = NULL;
+ 	int i;
+@@ -4216,7 +4216,7 @@ static const struct ethtool_ops bond_eth
+  */
+ static int bond_init(struct net_device *bond_dev, struct bond_params *params)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	int ofs;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
  
- 	/* assume length <= XMTU: someone should have handled that by now. */
-@@ -476,7 +476,7 @@ static void load_pkt(struct net_device *
- static int prepare_tx(struct net_device *dev, struct archdr *pkt, int length,
- 		      int bufnum)
- {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	const int maxsegsize = XMTU - RFC1201_HDR_SIZE;
- 	struct Outgoing *out;
+ 	dprintk("Begin bond_init for %s\n", bond_dev->name);
  
-@@ -511,7 +511,7 @@ static int prepare_tx(struct net_device 
- 
- static int continue_tx(struct net_device *dev, int bufnum)
+@@ -4291,7 +4291,7 @@ #endif
+  */
+ void bond_deinit(struct net_device *bond_dev)
  {
--	struct arcnet_local *lp = dev->priv;
-+	struct arcnet_local *lp = netdev_priv(dev);
- 	struct Outgoing *out = &lp->outgoing;
- 	struct arc_hardware *hard = &out->pkt->hard;
- 	struct arc_rfc1201 *soft = &out->pkt->soft.rfc1201, *newsoft;
+-	struct bonding *bond = bond_dev->priv;
++	struct bonding *bond = netdev_priv(bond_dev);
+ 
+ 	list_del(&bond->bond_list);
+ 
+@@ -4685,12 +4685,12 @@ int bond_create(char *name, struct bond_
+ 	lockdep_set_class(&bond_dev->_xmit_lock, &bonding_netdev_xmit_lock_key);
+ 
+ 	if (newbond)
+-		*newbond = bond_dev->priv;
++		*newbond = netdev_priv(bond_dev);
+ 
+ 	netif_carrier_off(bond_dev);
+ 
+ 	rtnl_unlock(); /* allows sysfs registration of net device */
+-	res = bond_create_sysfs_entry(bond_dev->priv);
++	res = bond_create_sysfs_entry(netdev_priv(bond_dev));
+ 	if (res < 0) {
+ 		rtnl_lock();
+ 		goto out_bond;
 
