@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbXHCFAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbXHCFFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516AbXHCFAn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 01:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752218AbXHCFAh
+	id S1757619AbXHCFFH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 01:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXHCFEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 01:00:37 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:38537 "EHLO mx1.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752164AbXHCFAg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 01:00:36 -0400
-Message-ID: <46B2B684.2000207@gmail.com>
-Date: Fri, 03 Aug 2007 13:00:52 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+	Fri, 3 Aug 2007 01:04:54 -0400
+Received: from rv-out-0910.google.com ([209.85.198.191]:41993 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752218AbXHCFEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 01:04:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RR10Vr5lz5XK21tEhuNdqNrbnSIT5RA8Dm2q7TNLpkj9S/8Ipv8QxW73/IYakzfbiXENsuXEo8aKXvnBA47r3ADhYINcyBLd2DYq2ICCdt6U0KYaMLA9HXez7p0W0ZLYM6Dw3JQ84UGcrByRYUcXDq/o4qhtJ8j15bE1b/Ijmac=
+Message-ID: <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
+Date: Fri, 3 Aug 2007 09:04:51 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage.
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+In-Reply-To: <20070731171347.GA14267@2ka.mipt.ru>
 MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Randy Dunlap <rdunlap@xenotime.net>, Robert Hancock <hancockr@shaw.ca>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange> <p73vebxmysb.fsf@bingen.suse.de> <Pine.LNX.4.60.0708022231160.6774@poirot.grange> <46B2578A.805@s5r6.in-berlin.de> <Pine.LNX.4.60.0708030024490.6774@poirot.grange> <20070802155434.b085219c.rdunlap@xenotime.net> <Pine.LNX.4.60.0708030056390.6774@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0708030056390.6774@poirot.grange>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070731171347.GA14267@2ka.mipt.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guennadi Liakhovetski wrote:
-> On Thu, 2 Aug 2007, Randy Dunlap wrote:
-> 
->> C99 spec that Al referred you to (available for around US$18 as a pdf)
->> says in 6.7.8, para. 14 (where Al said):
->>
->> "An array of character type may be initialized by a character string literal, optionally
->> enclosed in braces. Successive characters of the character string literal (including the
->> terminating null character if there is room or if the array is of unknown size) initialize the
->> elements of the array."
-> 
-> Wow... So, the terminating '\0' in the string constant IS "special" and 
-> "optional"... Ok, then, THIS does answer my question, THIS I can 
-> understand, and, ghm, accept...
-> 
-> Thanks to all who tried to explain this to me and sorry it took so long...
+On 7/31/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
 
-You should not have asked in the first place.  The declaration
+> TODO list currently includes following main items:
+>     * redundancy algorithm (drop me a request of your own, but it is highly
+>         unlikley that Reed-Solomon based will ever be used - it is too slow
+>         for distributed RAID, I consider WEAVER codes)
 
-char c[4] = "abcd"
 
-is perfectly valid. There is no cause for debate about it :)
+LDPC codes[1][2] have been replacing Turbo code[3] with regards to
+communication links and we have been seeing that transition. (maybe
+helpful, came to mind seeing the mention of Turbo code) Don't know how
+weaver compares to LDPC, though found some comparisons [4][5] But
+looking at fault tolerance figures, i guess Weaver is much better.
 
-Thank you very much.
-
-Best Regards,
-
-Carlo
-
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, UP Campus Diliman
-1101 Quezon City, Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
+[1] http://www.ldpc-codes.com/
+[2] http://portal.acm.org/citation.cfm?id=1240497
+[3] http://en.wikipedia.org/wiki/Turbo_code
+[4] http://domino.research.ibm.com/library/cyberdig.nsf/papers/BD559022A190D41C85257212006CEC11/$File/rj10391.pdf
+[5] http://hplabs.hp.com/personal/Jay_Wylie/publications/wylie_dsn2007.pdf
