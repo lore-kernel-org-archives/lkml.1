@@ -1,76 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762642AbXHCRT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759761AbXHCRUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762642AbXHCRT5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:19:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbXHCRTs
+	id S1759761AbXHCRUg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 13:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760624AbXHCRUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:19:48 -0400
-Received: from mail.screens.ru ([213.234.233.54]:48311 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755658AbXHCRTr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:19:47 -0400
-Date: Fri, 3 Aug 2007 21:21:37 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>,
-       Neil Brown <neilb@suse.de>, Johannes Berg <johannes@sipsolutions.net>,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [NFS] 2.6.23-rc1-mm2
-Message-ID: <20070803172137.GA3783@tv-sign.ru>
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de> <20070803093830.39852a01.akpm@linux-foundation.org> <1186160608.7255.10.camel@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1186160608.7255.10.camel@localhost>
-User-Agent: Mutt/1.5.11
+	Fri, 3 Aug 2007 13:20:19 -0400
+Received: from dsl.myri.com ([64.172.73.26]:1880 "EHLO myri.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1763294AbXHCRUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 13:20:08 -0400
+Message-ID: <46B363A8.4010407@myri.com>
+Date: Fri, 03 Aug 2007 13:19:36 -0400
+From: Andrew Gallatin <gallatin@myri.com>
+User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
+MIME-Version: 1.0
+To: netdev@vger.kernel.org
+CC: raisch@de.ibm.com, themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       stefan.roscher@de.ibm.com, jeff@garzik.org, davem@davemloft.net
+Subject: [PATCH] lro: myri10ge example how to use LRO
+Content-Type: multipart/mixed;
+ boundary="------------050000080608080106020207"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/03, Trond Myklebust wrote:
->
-> On Fri, 2007-08-03 at 09:38 -0700, Andrew Morton wrote:
-> > > stack backtrace:
-> > >  [<c0104fda>] show_trace_log_lvl+0x1a/0x30
-> > >  [<c0105c02>] show_trace+0x12/0x20
-> > >  [<c0105d15>] dump_stack+0x15/0x20
-> > >  [<c013ee42>] __lock_acquire+0xc22/0x1030
-> > >  [<c013f2b1>] lock_acquire+0x61/0x80
-> > >  [<c012edd9>] flush_workqueue+0x49/0x70
-> > >  [<c012ee0d>] flush_scheduled_work+0xd/0x10
-> > >  [<dcf55c0c>] nfs_release_automount_timer+0x2c/0x30 [nfs]
-> > >  [<dcf45d8e>] nfs_free_server+0x9e/0xd0 [nfs]
-> > >  [<dcf4e626>] nfs_kill_super+0x16/0x20 [nfs]
-> > >  [<c017b38d>] deactivate_super+0x7d/0xa0
-> > >  [<c018f94b>] mntput_no_expire+0x4b/0x80
-> > >  [<c018fd94>] expire_mount_list+0xe4/0x140
-> > >  [<c0191219>] mark_mounts_for_expiry+0x99/0xb0
-> > >  [<dcf55d1d>] nfs_expire_automounts+0xd/0x40 [nfs]
-> > >  [<c012e61b>] run_workqueue+0x12b/0x1e0
-> > >  [<c012f05b>] worker_thread+0x9b/0x100
-> > >  [<c0131c72>] kthread+0x42/0x70
-> > >  [<c0104c0f>] kernel_thread_helper+0x7/0x18
-> > >  =======================
-> > > 
-> > 
-> > There is new debugging stuff in -mm: deadlockable usage of workqueue
-> > primitives will now trigger lockdep warnings.  See
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/broken-out/workqueue-debug-flushing-deadlocks-with-lockdep.patch
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/broken-out/workqueue-debug-work-related-deadlocks-with-lockdep.patch
-> > 
-> > I am suspecting that running flush_scheduled_work() from within run_workqueue()
-> > isn't good.
-> 
-> I'll have a look at this. I suspect that most if not all of our calls to
-> run_workqueue()/flush_scheduled_work() can now be replaced by more
-> targeted calls to cancel_work_sync() and cancel_delayed_work_sync().
+This is a multi-part message in MIME format.
+--------------050000080608080106020207
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yes, please, if possible.
+To follow up on Jan-Bernd Themann's LRO patch earlier today,
+this patch shows how the generic LRO interface can be used for
+page based drivers.
 
-To avoid a possible confusion: it is still OK if work->func() flushes
-its own workqueue, so strictly speaking this trace is false positive,
-but it would be very nice if we can get rid of this practice.
+Again, many thanks to Jan-Bernd Themann for leading this effort.
 
-Oleg.
+Drew
 
+Singed off by: Andrew Gallatin <gallatin@myri.com>
+
+--------------050000080608080106020207
+Content-Type: text/plain; x-mac-type="0"; x-mac-creator="0";
+ name="myri10ge_lro.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="myri10ge_lro.diff"
+
+diff -urNp a/drivers/net/myri10ge/myri10ge.c b/drivers/net/myri10ge/myri10ge.c
+--- a/drivers/net/myri10ge/myri10ge.c	2007-07-24 15:57:12.000000000 -0400
++++ b/drivers/net/myri10ge/myri10ge.c	2007-08-03 13:07:48.000000000 -0400
+@@ -48,6 +48,7 @@
+ #include <linux/etherdevice.h>
+ #include <linux/if_ether.h>
+ #include <linux/if_vlan.h>
++#include <linux/inet_lro.h>
+ #include <linux/ip.h>
+ #include <linux/inet.h>
+ #include <linux/in.h>
+@@ -62,6 +63,8 @@
+ #include <linux/io.h>
+ #include <linux/log2.h>
+ #include <net/checksum.h>
++#include <net/ip.h>
++#include <net/tcp.h>
+ #include <asm/byteorder.h>
+ #include <asm/io.h>
+ #include <asm/processor.h>
+@@ -89,6 +92,7 @@ MODULE_LICENSE("Dual BSD/GPL");
+ 
+ #define MYRI10GE_EEPROM_STRINGS_SIZE 256
+ #define MYRI10GE_MAX_SEND_DESC_TSO ((65536 / 2048) * 2)
++#define MYRI10GE_MAX_LRO_DESCRIPTORS 8
+ 
+ #define MYRI10GE_NO_CONFIRM_DATA htonl(0xffffffff)
+ #define MYRI10GE_NO_RESPONSE_RESULT 0xffffffff
+@@ -151,6 +155,8 @@ struct myri10ge_rx_done {
+ 	dma_addr_t bus;
+ 	int cnt;
+ 	int idx;
++	struct net_lro_mgr lro_mgr;
++	struct net_lro_desc lro_desc[MYRI10GE_MAX_LRO_DESCRIPTORS];
+ };
+ 
+ struct myri10ge_priv {
+@@ -276,6 +282,14 @@ static int myri10ge_debug = -1;	/* defau
+ module_param(myri10ge_debug, int, 0);
+ MODULE_PARM_DESC(myri10ge_debug, "Debug level (0=none,...,16=all)");
+ 
++static int myri10ge_lro = 1;
++module_param(myri10ge_lro, int, S_IRUGO);
++MODULE_PARM_DESC(myri10ge_lro, "Enable large receive offload\n");
++
++static int myri10ge_lro_max_pkts = MYRI10GE_LRO_MAX_PKTS;
++module_param(myri10ge_lro_max_pkts, int, S_IRUGO);
++MODULE_PARM_DESC(myri10ge_lro, "Number of LRO packets to be aggregated\n");
++
+ static int myri10ge_fill_thresh = 256;
+ module_param(myri10ge_fill_thresh, int, S_IRUGO | S_IWUSR);
+ MODULE_PARM_DESC(myri10ge_fill_thresh, "Number of empty rx slots allowed\n");
+@@ -1019,6 +1033,15 @@ myri10ge_rx_done(struct myri10ge_priv *m
+ 		remainder -= MYRI10GE_ALLOC_SIZE;
+ 	}
+ 
++	if (mgp->csum_flag && myri10ge_lro) {
++		rx_frags[0].page_offset += MXGEFW_PAD;
++		rx_frags[0].size -= MXGEFW_PAD;
++		len -= MXGEFW_PAD;
++		lro_receive_frags(&mgp->rx_done.lro_mgr, rx_frags,
++				  len, len, (void *)(unsigned long)csum, csum);
++		return 1;
++	}
++
+ 	hlen = MYRI10GE_HLEN > len ? len : MYRI10GE_HLEN;
+ 
+ 	/* allocate an skb to attach the page(s) to. */
+@@ -1137,6 +1160,9 @@ static inline void myri10ge_clean_rx_don
+ 	mgp->stats.rx_packets += rx_packets;
+ 	mgp->stats.rx_bytes += rx_bytes;
+ 
++	if (myri10ge_lro)
++		lro_flush_all(&rx_done->lro_mgr);
++
+ 	/* restock receive rings if needed */
+ 	if (mgp->rx_small.fill_cnt - mgp->rx_small.cnt < myri10ge_fill_thresh)
+ 		myri10ge_alloc_rx_pages(mgp, &mgp->rx_small,
+@@ -1378,7 +1404,8 @@ static const char myri10ge_gstrings_stat
+ 	"dropped_pause", "dropped_bad_phy", "dropped_bad_crc32",
+ 	"dropped_unicast_filtered", "dropped_multicast_filtered",
+ 	"dropped_runt", "dropped_overrun", "dropped_no_small_buffer",
+-	"dropped_no_big_buffer"
++	"dropped_no_big_buffer", "LRO aggregated", "LRO flushed",
++	"LRO avg aggr", "LRO no_desc"
+ };
+ 
+ #define MYRI10GE_NET_STATS_LEN      21
+@@ -1444,6 +1471,14 @@ myri10ge_get_ethtool_stats(struct net_de
+ 	data[i++] = (unsigned int)ntohl(mgp->fw_stats->dropped_overrun);
+ 	data[i++] = (unsigned int)ntohl(mgp->fw_stats->dropped_no_small_buffer);
+ 	data[i++] = (unsigned int)ntohl(mgp->fw_stats->dropped_no_big_buffer);
++	data[i++] = mgp->rx_done.lro_mgr.stats.aggregated;
++	data[i++] = mgp->rx_done.lro_mgr.stats.flushed;
++	if (mgp->rx_done.lro_mgr.stats.flushed)
++		data[i++] = mgp->rx_done.lro_mgr.stats.aggregated /
++		    mgp->rx_done.lro_mgr.stats.flushed;
++	else
++		data[i++] = 0;
++	data[i++] = mgp->rx_done.lro_mgr.stats.no_desc;
+ }
+ 
+ static void myri10ge_set_msglevel(struct net_device *netdev, u32 value)
+@@ -1717,10 +1752,69 @@ static void myri10ge_free_irq(struct myr
+ 		pci_disable_msi(pdev);
+ }
+ 
++static int
++myri10ge_get_frag_header(struct skb_frag_struct *frag, void **mac_hdr,
++			 void **ip_hdr, void **tcpudp_hdr,
++			 u64 * hdr_flags, void *priv)
++{
++	struct ethhdr *eh;
++	struct vlan_ethhdr *veh;
++	struct iphdr *iph;
++	u8 *va = page_address(frag->page) + frag->page_offset;
++	unsigned long ll_hlen;
++	__wsum csum = (__wsum) (unsigned long)priv;
++
++	/* find the mac header, aborting if not IPv4 */
++
++	eh = (struct ethhdr *)va;
++	*mac_hdr = eh;
++	ll_hlen = ETH_HLEN;
++	if (eh->h_proto != htons(ETH_P_IP)) {
++		if (eh->h_proto == htons(ETH_P_8021Q)) {
++			veh = (struct vlan_ethhdr *)va;
++			if (veh->h_vlan_encapsulated_proto != htons(ETH_P_IP))
++				return -1;
++
++			ll_hlen += VLAN_HLEN;
++
++			/*
++			 *  HW checksum starts ETH_HLEN bytes into
++			 *  frame, so we must subtract off the VLAN
++			 *  header's checksum before csum can be used
++			 */
++			csum = csum_sub(csum, csum_partial(va + ETH_HLEN,
++							   VLAN_HLEN, 0));
++		} else {
++			return -1;
++		}
++	}
++	*hdr_flags = LRO_IPV4;
++
++	iph = (struct iphdr *)(va + ll_hlen);
++	*ip_hdr = iph;
++	if (iph->protocol != IPPROTO_TCP)
++		return -1;
++	*hdr_flags |= LRO_TCP;
++	*tcpudp_hdr = (u8 *) (*ip_hdr) + (iph->ihl << 2);
++
++	/* verify the IP checksum */
++	if (unlikely(ip_fast_csum((u8 *) iph, iph->ihl)))
++		return -1;
++
++	/* verify the  checksum */
++	if (unlikely(csum_tcpudp_magic(iph->saddr, iph->daddr,
++				       ntohs(iph->tot_len) - (iph->ihl << 2),
++				       IPPROTO_TCP, csum)))
++		return -1;
++
++	return 0;
++}
++
+ static int myri10ge_open(struct net_device *dev)
+ {
+ 	struct myri10ge_priv *mgp;
+ 	struct myri10ge_cmd cmd;
++	struct net_lro_mgr *lro_mgr;
+ 	int status, big_pow2;
+ 
+ 	mgp = netdev_priv(dev);
+@@ -1852,6 +1946,18 @@ static int myri10ge_open(struct net_devi
+ 	mgp->link_state = htonl(~0U);
+ 	mgp->rdma_tags_available = 15;
+ 
++	lro_mgr = &mgp->rx_done.lro_mgr;
++	lro_mgr->dev = dev;
++	lro_mgr->features = LRO_F_NAPI;
++	lro_mgr->ip_summed = CHECKSUM_COMPLETE;
++	lro_mgr->ip_summed_aggr = CHECKSUM_UNNECESSARY;
++	lro_mgr->max_desc = MYRI10GE_MAX_LRO_DESCRIPTORS;
++	lro_mgr->lro_arr = mgp->rx_done.lro_desc;
++	lro_mgr->get_frag_header = myri10ge_get_frag_header;
++	lro_mgr->max_aggr = myri10ge_lro_max_pkts;
++	if (lro_mgr->max_aggr > MAX_SKB_FRAGS)
++		lro_mgr->max_aggr = MAX_SKB_FRAGS;
++
+ 	netif_poll_enable(mgp->dev);	/* must happen prior to any irq */
+ 
+ 	status = myri10ge_send_cmd(mgp, MXGEFW_CMD_ETHERNET_UP, &cmd, 0);
+
+--------------050000080608080106020207--
