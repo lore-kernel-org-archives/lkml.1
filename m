@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXHCDyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761777AbXHCD7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762011AbXHCDyL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 23:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHCDx6
+	id S1761777AbXHCD7R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 23:59:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbXHCD7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 23:53:58 -0400
-Received: from mx1.suse.de ([195.135.220.2]:45199 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755361AbXHCDx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 23:53:58 -0400
-From: Neil Brown <neilb@suse.de>
-To: Andrew Clayton <andrew@digital-domain.net>
-Date: Fri, 3 Aug 2007 13:53:39 +1000
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 2 Aug 2007 23:59:05 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40517 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755559AbXHCD7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 23:59:04 -0400
+Subject: Re: CFS review
+From: Arjan van de Ven <arjan@infradead.org>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Roman Zippel <zippel@linux-m68k.org>,
+       Mike Galbraith <efault@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070803030436.GO11166@waste.org>
+References: <20070711174252.GA16793@elte.hu>
+	 <20070711211638.GE18767@one.firstfloor.org>
+	 <20070711214649.GK14435@v2.random>
+	 <alpine.LFD.0.999.0707111500210.20061@woody.linux-foundation.org>
+	 <Pine.LNX.4.64.0707130415520.1818@scrub.home>
+	 <1184302024.6709.11.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0707131728070.1817@scrub.home>
+	 <1184389456.6632.13.camel@Homer.simpson.net>
+	 <Pine.LNX.4.64.0708010439050.1817@scrub.home>
+	 <20070801112229.GA11710@elte.hu>  <20070803030436.GO11166@waste.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Thu, 02 Aug 2007 20:57:47 -0700
+Message-Id: <1186113467.3996.0.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18098.42691.783443.554197@notabene.brown>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
-Subject: Re: [NFSD OOPS] 2.6.23-rc1-git10
-In-Reply-To: message from Andrew Clayton on Thursday August 2
-References: <20070802171450.7c9b4af3@zeus.pccl.info>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday August 2, andrew@digital-domain.net wrote:
-> Hi,
+On Thu, 2007-08-02 at 22:04 -0500, Matt Mackall wrote:
+> On Wed, Aug 01, 2007 at 01:22:29PM +0200, Ingo Molnar wrote:
+> > 
+> > * Roman Zippel <zippel@linux-m68k.org> wrote:
+> > 
+> > > [...] e.g. in this example there are three tasks that run only for 
+> > > about 1ms every 3ms, but they get far more time than should have 
+> > > gotten fairly:
+> > > 
+> > >  4544 roman     20   0  1796  520  432 S 32.1  0.4   0:21.08 lt
+> > >  4545 roman     20   0  1796  344  256 R 32.1  0.3   0:21.07 lt
+> > >  4546 roman     20   0  1796  344  256 R 31.7  0.3   0:21.07 lt
+> > >  4547 roman     20   0  1532  272  216 R  3.3  0.2   0:01.94 l
+> > 
+> > Mike and me have managed to reproduce similarly looking 'top' output, 
+> > but it takes some effort: we had to deliberately run a non-TSC 
+> > sched_clock(), CONFIG_HZ=100, !CONFIG_NO_HZ and !CONFIG_HIGH_RES_TIMERS.
 > 
-> Got the following oopsen just now from 2.6.23-rc1-git10 on a 2
-> processor Opteron with 2GB RAM. System is running 64bit Fedora Core 6.
-> 
-> nfsd is exporting directories from a XFS filesystem on top a software
-> RAID 5 array comprising 3 x 250GB SATA disks using the sata_sil driver.
-> 
-> Amongst other things, users (about 12) home directories are
-> automounted from it.
-> 
-> Some problems seem to start when I was experimenting with the
-> stripe_cache_size of the md array. People could no longer run some apps
-> and having general NFS issues. IIRC I had dropped the stripe_cache_size
-> down from 8192 to 768 then I attempted to restart nfsd
-> via /etc/rc.d/init.d/nfsd restart
-> 
-> I then got the Oopses and the machine locked up needing a power cycle.
-> 
-> 
-> Aug  2 10:15:55 thor mountd[30048]: Caught signal 15, un-registering and exiting.
-> Aug  2 10:15:55 thor nfsd[16390]: nfssvc: Setting version failed: errno 16 (Device or resource busy)
-> Aug  2 10:15:56 thor kernel: lockd_down: lockd failed to exit, clearing pid
-> Aug  2 10:15:56 thor kernel: nfsd: last server has exited
-> Aug  2 10:15:56 thor kernel: nfsd: unexporting all filesystems
-> Aug  2 10:15:56 thor kernel: ------------[ cut here ]------------
-> Aug  2 10:15:56 thor kernel: kernel BUG at /home/andrew/src/linux-2.6/net/sunrpc/svc.c:488!
+> ..which is pretty much the state of play for lots of non-x86 hardware.
 
-It seems you have found a race between shutting down and starting up
-nfsd.
-You md array was probably going very slowly due to playing with
-stripe_cache_size, and that stretched things out long enough to loose
-the race.
+question is if it's significantly worse than before. With a 100 or
+1000Hz timer, you can't expect perfect fairness just due to the
+extremely rough measurement of time spent...
 
-NFSD is shut down by something similar to
-   killall nfsd
-
-which sends signals to all the threads, but doesn't wait for them to
-exit.
-The first line in the log is mountd exiting.  nfsd should have all
-been signalled at the same time.
-The second line comes from the nfsd program trying to start up the
-nfsd threads again, and getting an error because there were some
-already running.
-The third is a similar issue with lockd.
-
-The 4th and 5th show the last thread exiting.   Only it isn't really
-the last thread.  By this stage some more nfsd threads have started
-up.  There was probably a backlog of requests as things were running
-slowly so as soon as a new nfsd thread was started, it accepted a
-connection and created a new temporary socket.  This would have been
-after the thread that thought it was the last thread, thought it had
-closed the last temp socket.
-This caused the BUG.
-
-As part of shutting down, the thread that thought it was last cleared
-out the read-ahead info cache.  When the new threads tried to use it,
-they all suffered general protection faults.
-
-So clearly we need some proper locking around thread start-up and
-shutdown.  We had previous relied on lock_kernel, but that isn't
-really good enough for this.   I'll try to figure out the best way to
-fix it.  Meanwhile, I doubt the problem will recur.
-
-Thanks for the report.
-
-NeilBrown
 
