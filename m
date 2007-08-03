@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932194AbXHCNBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763087AbXHCNBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932194AbXHCNBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762272AbXHCM5Z
+	id S1763087AbXHCNBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762276AbXHCM50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:57:25 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51258 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 08:57:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51267 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762250AbXHCM5X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 08:57:23 -0400
-Message-Id: <20070803125235.382710000@chello.nl>
+	id S1762249AbXHCM5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 08:57:24 -0400
+Message-Id: <20070803125237.199910000@chello.nl>
 References: <20070803123712.987126000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 03 Aug 2007 14:37:20 +0200
+Date: Fri, 03 Aug 2007 14:37:31 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,86 +20,72 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 07/23] lib: percpu_count_sum()
-Content-Disposition: inline; filename=percpu_counter_sum.patch
+Subject: [PATCH 18/23] mm: expose BDI statistics in sysfs.
+Content-Disposition: inline; filename=bdi_stat_sysfs.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an accurate version of percpu_counter_read.
+Expose the per BDI stats in /sys/block/<dev>/queue/*
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/percpu_counter.h |   18 +++++++++++++++++-
- lib/percpu_counter.c           |    6 +++---
- 2 files changed, 20 insertions(+), 4 deletions(-)
+ block/ll_rw_blk.c |   29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-Index: linux-2.6/include/linux/percpu_counter.h
+Index: linux-2.6/block/ll_rw_blk.c
 ===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -34,13 +34,24 @@ void percpu_counter_init(struct percpu_c
- void percpu_counter_destroy(struct percpu_counter *fbc);
- void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
--s64 percpu_counter_sum_positive(struct percpu_counter *fbc);
-+s64 __percpu_counter_sum(struct percpu_counter *fbc);
- 
- static inline void percpu_counter_add(struct percpu_counter *fbc, s64 amount)
- {
- 	__percpu_counter_add(fbc, amount, FBC_BATCH);
+--- linux-2.6.orig/block/ll_rw_blk.c
++++ linux-2.6/block/ll_rw_blk.c
+@@ -3977,6 +3977,23 @@ static ssize_t queue_max_hw_sectors_show
+ 	return queue_var_show(max_hw_sectors_kb, (page));
  }
  
-+static inline s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
++static ssize_t queue_nr_reclaimable_show(struct request_queue *q, char *page)
 +{
-+	s64 ret = __percpu_counter_sum(fbc);
-+	return ret < 0 ? 0 : ret;
++	unsigned long long nr_reclaimable =
++		bdi_stat(&q->backing_dev_info, BDI_RECLAIMABLE);
++
++	return sprintf(page, "%llu\n",
++			nr_reclaimable >> (PAGE_CACHE_SHIFT - 10));
 +}
 +
-+static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
++static ssize_t queue_nr_writeback_show(struct request_queue *q, char *page)
 +{
-+	return __percpu_counter_sum(fbc);
-+}
++	unsigned long long nr_writeback =
++		bdi_stat(&q->backing_dev_info, BDI_WRITEBACK);
 +
- static inline s64 percpu_counter_read(struct percpu_counter *fbc)
- {
- 	return fbc->count;
-@@ -107,6 +118,11 @@ static inline s64 percpu_counter_sum_pos
- 	return percpu_counter_read_positive(fbc);
- }
- 
-+static inline s64 percpu_counter_sum(struct percpu_counter *fbc)
-+{
-+	return percpu_counter_read(fbc);
++	return sprintf(page, "%llu\n",
++			nr_writeback >> (PAGE_CACHE_SHIFT - 10));
 +}
+ 
+ static struct queue_sysfs_entry queue_requests_entry = {
+ 	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
+@@ -4001,6 +4018,16 @@ static struct queue_sysfs_entry queue_ma
+ 	.show = queue_max_hw_sectors_show,
+ };
+ 
++static struct queue_sysfs_entry queue_reclaimable_entry = {
++	.attr = {.name = "reclaimable_kb", .mode = S_IRUGO },
++	.show = queue_nr_reclaimable_show,
++};
 +
- #endif	/* CONFIG_SMP */
- 
- static inline void percpu_counter_inc(struct percpu_counter *fbc)
-Index: linux-2.6/lib/percpu_counter.c
-===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -52,7 +52,7 @@ EXPORT_SYMBOL(__percpu_counter_add);
-  * Add up all the per-cpu counts, return the result.  This is a more accurate
-  * but much slower version of percpu_counter_read_positive()
-  */
--s64 percpu_counter_sum_positive(struct percpu_counter *fbc)
-+s64 __percpu_counter_sum(struct percpu_counter *fbc)
- {
- 	s64 ret;
- 	int cpu;
-@@ -64,9 +64,9 @@ s64 percpu_counter_sum_positive(struct p
- 		ret += *pcount;
- 	}
- 	spin_unlock(&fbc->lock);
--	return ret < 0 ? 0 : ret;
-+	return ret;
- }
--EXPORT_SYMBOL(percpu_counter_sum_positive);
-+EXPORT_SYMBOL(__percpu_counter_sum);
- 
- void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
- {
++static struct queue_sysfs_entry queue_writeback_entry = {
++	.attr = {.name = "writeback_kb", .mode = S_IRUGO },
++	.show = queue_nr_writeback_show,
++};
++
+ static struct queue_sysfs_entry queue_iosched_entry = {
+ 	.attr = {.name = "scheduler", .mode = S_IRUGO | S_IWUSR },
+ 	.show = elv_iosched_show,
+@@ -4012,6 +4039,8 @@ static struct attribute *default_attrs[]
+ 	&queue_ra_entry.attr,
+ 	&queue_max_hw_sectors_entry.attr,
+ 	&queue_max_sectors_entry.attr,
++	&queue_reclaimable_entry.attr,
++	&queue_writeback_entry.attr,
+ 	&queue_iosched_entry.attr,
+ 	NULL,
+ };
 
 --
 
