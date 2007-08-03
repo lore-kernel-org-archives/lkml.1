@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbXHCFr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757243AbXHCFx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756486AbXHCFr0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 01:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbXHCFrQ
+	id S1757243AbXHCFx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 01:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753644AbXHCFxW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 01:47:16 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47602 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753464AbXHCFrP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 01:47:15 -0400
-Date: Thu, 2 Aug 2007 22:47:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc] balance-on-fork NUMA placement
-In-Reply-To: <20070803031426.GA28310@wotan.suse.de>
-Message-ID: <Pine.LNX.4.64.0708022234130.14362@schroedinger.engr.sgi.com>
-References: <200707311114.09284.ak@suse.de> <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
- <20070802034201.GA32631@wotan.suse.de> <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com>
- <20070803002639.GC14775@wotan.suse.de> <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com>
- <20070803005700.GD14775@wotan.suse.de> <Pine.LNX.4.64.0708021801010.13312@schroedinger.engr.sgi.com>
- <20070803011448.GF14775@wotan.suse.de> <Pine.LNX.4.64.0708021827280.13538@schroedinger.engr.sgi.com>
- <20070803031426.GA28310@wotan.suse.de>
+	Fri, 3 Aug 2007 01:53:22 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:56597 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753724AbXHCFxV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 01:53:21 -0400
+Date: Fri, 3 Aug 2007 14:52:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PULL] More sh updates for 2.6.23-rc2
+Message-ID: <20070803055235.GA17928@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007, Nick Piggin wrote:
+Please pull from:
 
-> Well what's wrong with it? It seems to use memory policies for exactly
-> what they are intended (aside from it being kernel directed...).
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.23.git
 
-Sure I think you could do it with some effort. They were primarily 
-designed for user space. Lots of little side issues where surprises await 
-you. I think Lee documented many of them. See the recent mm commits.
+Which contains:
 
-> > start the new thread and can the original processor wait on some flag 
-> > until that is complete?
-> 
-> I guess you could, but that is going to add a context switch to fork
-> (although it usually already has one in single-CPU situation because we
-> run child first)... I bet it will slow something down, but it would be
-> interesting to see.
+David McCullough (1):
+      sh: update snapgear defconfig.
 
-The context switch is needed at some point anyways to get the new process 
-running on the new CPU? Just do it before allocating structures. That way 
-the potential memory policy and cpuset context is preserved and followed.
+Magnus Damm (3):
+      sh: update r2d defconfig
+      sh: fix cf support on r2d boards
+      sh: fix defconfigs for sh7751r boards
 
-> I don't know the fork path well enough off the top of my head to know if
-> it will be that simple (with error handling etc). But I think it could
-> be done.
+Paul Mundt (5):
+      sh: Fix lockdep debugging oops on SH-3/4.
+      sh: Fix irqflags tracing for SH-3/4 nommu.
+      sh: Don't include fault-nommu on SH-2/SH-2A.
+      sh: Fix pgd mismatch from cached TTB in unhandled fault.
+      sh: Fix SH-X3 FPU exception handling.
 
-I would think that the forking process has to wait on completion anyways
-and get an error code.
-
-> > Forking off from there not only places the data correctly but it also 
-> > warms up the caches for the new process and avoids evicting cacheline on 
-> > the original processor.
-> 
-> Yeah, you might be right there. If the numbers say that approach is
-> better, then I'd not be against it. But we'd still need the simpler
-> mpol approach to compare it with. 
-
-Lets hope that the simpler process is really simpler after all the corner 
-cases have been dealt with.
+ arch/sh/boards/renesas/rts7751r2d/setup.c |    9 +-
+ arch/sh/configs/hs7751rvoip_defconfig     |    2 +-
+ arch/sh/configs/landisk_defconfig         |    2 +-
+ arch/sh/configs/lboxre2_defconfig         |    2 +-
+ arch/sh/configs/rts7751r2d_defconfig      |    8 +-
+ arch/sh/configs/snapgear_defconfig        |  587 ++++++++++++-----------------
+ arch/sh/configs/systemh_defconfig         |    2 +-
+ arch/sh/configs/titan_defconfig           |    2 +-
+ arch/sh/kernel/cpu/sh3/entry.S            |    3 +-
+ arch/sh/kernel/traps.c                    |    5 +
+ arch/sh/mm/Makefile                       |    4 +-
+ arch/sh/mm/fault-nommu.c                  |   47 +--
+ arch/sh/mm/fault.c                        |    3 +-
+ include/asm-sh/rts7751r2d.h               |    2 +-
+ 14 files changed, 282 insertions(+), 396 deletions(-)
