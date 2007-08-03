@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762722AbXHCNAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762881AbXHCNAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762722AbXHCNAP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:00:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762140AbXHCM5I
+	id S1762881AbXHCNAm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:00:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762158AbXHCM5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:57:08 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51098 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 08:57:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51120 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762102AbXHCM5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 08:57:05 -0400
-Message-Id: <20070803125233.856270000@chello.nl>
+	id S1762137AbXHCM5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 08:57:08 -0400
+Message-Id: <20070803125236.547639000@chello.nl>
 References: <20070803123712.987126000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 03 Aug 2007 14:37:14 +0200
+Date: Fri, 03 Aug 2007 14:37:26 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,69 +20,71 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 01/23] nfs: remove congestion_end()
-Content-Disposition: inline; filename=nfs_congestion_fixup.patch
+Subject: [PATCH 13/23] mtd: clean up the backing_dev_info usage
+Content-Disposition: inline; filename=mtd-bdi-fixups.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Its redundant, clear_bdi_congested() already wakes the waiters.
+Give each mtd device its own backing_dev_info instance.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- fs/nfs/write.c              |    5 ++---
- include/linux/backing-dev.h |    1 -
- mm/backing-dev.c            |   13 -------------
- 3 files changed, 2 insertions(+), 17 deletions(-)
+ drivers/mtd/mtdcore.c   |    8 +++++---
+ include/linux/mtd/mtd.h |    2 ++
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/fs/nfs/write.c
+Index: linux-2.6/drivers/mtd/mtdcore.c
 ===================================================================
---- linux-2.6.orig/fs/nfs/write.c
-+++ linux-2.6/fs/nfs/write.c
-@@ -235,10 +235,8 @@ static void nfs_end_page_writeback(struc
- 	struct nfs_server *nfss = NFS_SERVER(inode);
+--- linux-2.6.orig/drivers/mtd/mtdcore.c
++++ linux-2.6/drivers/mtd/mtdcore.c
+@@ -19,6 +19,7 @@
+ #include <linux/init.h>
+ #include <linux/mtd/compatmac.h>
+ #include <linux/proc_fs.h>
++#include <linux/backing-dev.h>
  
- 	end_page_writeback(page);
--	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH) {
-+	if (atomic_long_dec_return(&nfss->writeback) < NFS_CONGESTION_OFF_THRESH)
- 		clear_bdi_congested(&nfss->backing_dev_info, WRITE);
--		congestion_end(WRITE);
--	}
- }
- 
- /*
-Index: linux-2.6/include/linux/backing-dev.h
+ #include <linux/mtd/mtd.h>
+ #include "internal.h"
+@@ -53,15 +54,16 @@ int add_mtd_device(struct mtd_info *mtd)
+ 	if (!mtd->backing_dev_info) {
+ 		switch (mtd->type) {
+ 		case MTD_RAM:
+-			mtd->backing_dev_info = &mtd_bdi_rw_mappable;
++			mtd->mtd_backing_dev_info = mtd_bdi_rw_mappable;
+ 			break;
+ 		case MTD_ROM:
+-			mtd->backing_dev_info = &mtd_bdi_ro_mappable;
++			mtd->mtd_backing_dev_info = mtd_bdi_ro_mappable;
+ 			break;
+ 		default:
+-			mtd->backing_dev_info = &mtd_bdi_unmappable;
++			mtd->mtd_backing_dev_info = mtd_bdi_unmappable;
+ 			break;
+ 		}
++		mtd->backing_dev_info = &mtd->mtd_backing_dev_info;
+ 	}
+ 	err = bdi_init(mtd->backing_dev_info);
+ 	if (err)
+Index: linux-2.6/include/linux/mtd/mtd.h
 ===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h
-+++ linux-2.6/include/linux/backing-dev.h
-@@ -93,7 +93,6 @@ static inline int bdi_rw_congested(struc
- void clear_bdi_congested(struct backing_dev_info *bdi, int rw);
- void set_bdi_congested(struct backing_dev_info *bdi, int rw);
- long congestion_wait(int rw, long timeout);
--void congestion_end(int rw);
+--- linux-2.6.orig/include/linux/mtd/mtd.h
++++ linux-2.6/include/linux/mtd/mtd.h
+@@ -13,6 +13,7 @@
+ #include <linux/module.h>
+ #include <linux/uio.h>
+ #include <linux/notifier.h>
++#include <linux/backing-dev.h>
  
- #define bdi_cap_writeback_dirty(bdi) \
- 	(!((bdi)->capabilities & BDI_CAP_NO_WRITEBACK))
-Index: linux-2.6/mm/backing-dev.c
-===================================================================
---- linux-2.6.orig/mm/backing-dev.c
-+++ linux-2.6/mm/backing-dev.c
-@@ -54,16 +54,3 @@ long congestion_wait(int rw, long timeou
- 	return ret;
- }
- EXPORT_SYMBOL(congestion_wait);
--
--/**
-- * congestion_end - wake up sleepers on a congested backing_dev_info
-- * @rw: READ or WRITE
-- */
--void congestion_end(int rw)
--{
--	wait_queue_head_t *wqh = &congestion_wqh[rw];
--
--	if (waitqueue_active(wqh))
--		wake_up(wqh);
--}
--EXPORT_SYMBOL(congestion_end);
+ #include <linux/mtd/compatmac.h>
+ #include <mtd/mtd-abi.h>
+@@ -154,6 +155,7 @@ struct mtd_info {
+ 	 * - provides mmap capabilities
+ 	 */
+ 	struct backing_dev_info *backing_dev_info;
++	struct backing_dev_info mtd_backing_dev_info;
+ 
+ 
+ 	int (*read) (struct mtd_info *mtd, loff_t from, size_t len, size_t *retlen, u_char *buf);
 
 --
 
