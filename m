@@ -1,60 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762921AbXHCUBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760236AbXHCUBh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762921AbXHCUBX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:01:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbXHCUBQ
+	id S1760236AbXHCUBh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:01:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762897AbXHCUBX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:01:16 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:41039 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 16:01:23 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60599 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753978AbXHCUBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:01:15 -0400
-Date: Fri, 3 Aug 2007 12:56:18 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Oliver Neukum <oliver@neukum.org>,
-       Rogan Dawes <lists@dawes.za.net>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net, zaitcev@redhat.com
-Subject: Re: [PATCH] USB: Only enable autosuspend by default on certain
- device classes
-Message-Id: <20070803125618.36ea1b2f.zaitcev@redhat.com>
-In-Reply-To: <46B38211.4030004@redhat.com>
-References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org>
-	<200708022301.08719.david-b@pacbell.net>
-	<20070803112824.GA16802@srcf.ucam.org>
-	<200708031344.03282.oliver@neukum.org>
-	<20070803120418.GB16802@srcf.ucam.org>
-	<46B31F03.80908@dawes.za.net>
-	<20070803123253.GA17725@srcf.ucam.org>
-	<20070803174435.GA17053@suse.de>
-	<20070803174810.GA23241@srcf.ucam.org>
-	<46B38211.4030004@redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1761876AbXHCUBW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:01:22 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Asus A8N-SLI Deluxe latest BIOS wants acpi_use_timer_override
+Date: Fri, 3 Aug 2007 22:01:15 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+References: <46B37619.2030205@shaw.ca>
+In-Reply-To: <46B37619.2030205@shaw.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708032201.15355.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Aug 2007 15:29:21 -0400, Chuck Ebbert <cebbert@redhat.com> wrote:
-
-> > Well, we did - with hindsight it may not have been such a great plan :) 
-> > I believe that Fedora did as well, but have disabled it in an update 
-> > kernel.
+On Friday 03 August 2007 20:38:17 Robert Hancock wrote:
+> It appears that the latest BIOS version 1805 for the ASUS A8N-SLI Deluxe
+> board fixes the broken ACPI timer override that was in earlier versions,
+> and which the kernel ignores on nForce4 chipsets. Now the same override:
 > 
-> Yeah, autosuspend broke too many devices. Way too many.
+> ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+> 
+> seems to be needed, since without acpi_use_timer_override we end up
+> getting this (with apic=verbose):
 
-Glad you chimed in, Chuck. I was wondering about it... I saw something
-like 3 reports about broken printers, two of them for the same printer,
-Samsung ML-2010. It's on the installed base of 300,000 to 500,000.
-People simply do not report squat. Today DaveJ said that none of his
-printers work, which sounds bad, and was news to me. But the point is,
-we are trying to extrapolate from too few cases.
+That's really bad.
+ 
+> ..TIMER: vector=0x30 apic1=0 pin1=0 apic2=-1 pin2=-1
+> ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> ...trying to set up timer (IRQ0) through the 8259A ...  failed.
+> ...trying to set up timer as Virtual Wire IRQ... failed.
+> ...trying to set up timer as ExtINT IRQ... works.
+> 
+> and the timer IRQ ends up routed as XT-PIC instead of IO-APIC-edge. With 
+> acpi_use_timer_override we just get:
+> 
+> ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+> 
+> and it works through the IO-APIC.
+> 
+> I should think there must be a better way to handle this automatically.. 
 
-I am wondering if Ubuntu has better user reporting, so if Matthew
-complains, it really means something.
+I have pending patches to key the NF5 case on the PCI-ID, but
+that obviously cannot be done for NF4.
 
--- Pete
+I cannot think of anything good but putting DMI BIOS version
+checks in for that specific board.
+
+> Is there some way we can tell, given we have a chipset with a 
+> potentially broken BIOS, from the configuration of the IOAPIC whether 
+> the timer override is needed or not? Unfortunately I don't have output 
+> from apic=verbose with the old BIOS with the broken override, but maybe 
+> somebody else can provide that..
+
+We don't really know which pins are connected where. This means they
+likely have some bits they tweaked to get the different behaviour, but they're 
+unknown. There are also some northbridge bits that can be tweaked
+(e.g. some of the ATI BIOS workarounds used to use that) 
+but it's still unknown what the Nvidia chipset actually does and if
+they really help here.
+
+Ok in theory you could diff config space dumps between the two BIOS 
+versions to try to figure it out, but that would be still pretty risky
+and I don't think it would be a good idea to trust such results.
+
+-Andi
+
+ 
