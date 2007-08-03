@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764159AbXHCRjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764418AbXHCRkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764159AbXHCRjm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764001AbXHCRij
+	id S1764418AbXHCRkA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 13:40:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764236AbXHCRir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:38:39 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:37445 "EHLO ron.emn.fr"
+	Fri, 3 Aug 2007 13:38:47 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:37455 "EHLO ron.emn.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764292AbXHCRif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:38:35 -0400
-Date: Fri, 3 Aug 2007 19:37:09 +0200 (MEST)
-Message-Id: <200708031737.TAA00878@ifs.emn.fr>
+	id S1762549AbXHCRin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 13:38:43 -0400
+Date: Fri, 3 Aug 2007 19:37:16 +0200 (MEST)
+Message-Id: <200708031737.TAA00882@ifs.emn.fr>
 To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 12/13] dev->priv to netdev_priv(dev), for drivers/net/wan
-Cc: jeff@garzik.org, netdev@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
+Subject: [PATCH 13/13] dev->priv to netdev_priv(dev), for drivers/net/wireless
+Cc: mcgrof@gmail.com, linux-wireless@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
 From: Yoann Padioleau <padator@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -59,664 +59,838 @@ type rule1.T;
 + netdev_priv(dev)
 
 Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: jeff@garzik.org
-Cc: netdev@vger.kernel.org
+Cc: mcgrof@gmail.com
+Cc: linux-wireless@vger.kernel.org
 Cc: akpm@linux-foundation.org
 ---
 
- drivers/net/wan/dlci.c         |   30 +++++++++++++-------------
- drivers/net/wan/lmc/lmc_main.c |   26 +++++++++++------------
- drivers/net/wan/sdla.c         |   46 ++++++++++++++++++++---------------------
- drivers/net/wan/sealevel.c     |   12 +++++-----
- drivers/net/wan/x25_asy.c      |   28 ++++++++++++------------
- 5 files changed, 71 insertions(+), 71 deletions(-)
+ drivers/net/wireless/arlan-proc.c          |   14 +++---
+ drivers/net/wireless/hostap/hostap_cs.c    |    2 
+ drivers/net/wireless/hostap/hostap_hw.c    |    2 
+ drivers/net/wireless/hostap/hostap_ioctl.c |   14 +++---
+ drivers/net/wireless/orinoco_tmd.c         |    2 
+ drivers/net/wireless/prism54/isl_ioctl.c   |    6 +-
+ drivers/net/wireless/ray_cs.c              |   66 ++++++++++++++---------------
+ drivers/net/wireless/strip.c               |    2 
+ drivers/net/wireless/wl3501_cs.c           |   66 ++++++++++++++---------------
+ 9 files changed, 87 insertions(+), 87 deletions(-)
 
-diff --git a/drivers/net/wan/dlci.c b/drivers/net/wan/dlci.c
-index 66be20c..d988161 100644
---- a/drivers/net/wan/dlci.c
-+++ b/drivers/net/wan/dlci.c
-@@ -74,7 +74,7 @@ static int dlci_header(struct sk_buff *s
- 	unsigned int		hlen;
- 	char			*dest;
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	hdr.control = FRAD_I_UI;
- 	switch(type)
-@@ -110,7 +110,7 @@ static void dlci_receive(struct sk_buff 
- 	struct frhdr		*hdr;
- 	int					process, header;
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 	if (!pskb_may_pull(skb, sizeof(*hdr))) {
- 		printk(KERN_NOTICE "%s: invalid data no header\n",
- 		       dev->name);
-@@ -197,7 +197,7 @@ static int dlci_transmit(struct sk_buff 
- 	if (!skb || !dev)
- 		return(0);
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	netif_stop_queue(dev);
- 	
-@@ -235,7 +235,7 @@ static int dlci_config(struct net_device
- 	struct frad_local	*flp;
- 	int			err;
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	flp = dlp->slave->priv;
- 
-@@ -269,7 +269,7 @@ static int dlci_dev_ioctl(struct net_dev
- 	if (!capable(CAP_NET_ADMIN))
- 		return(-EPERM);
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	switch(cmd)
- 	{
-@@ -298,7 +298,7 @@ static int dlci_change_mtu(struct net_de
- {
- 	struct dlci_local *dlp;
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	return((*dlp->slave->change_mtu)(dlp->slave, new_mtu));
- }
-@@ -309,7 +309,7 @@ static int dlci_open(struct net_device *
- 	struct frad_local	*flp;
- 	int			err;
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	if (!*(short *)(dev->dev_addr))
- 		return(-EINVAL);
-@@ -335,7 +335,7 @@ static int dlci_close(struct net_device 
- 
- 	netif_stop_queue(dev);
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	flp = dlp->slave->priv;
- 	err = (*flp->deactivate)(dlp->slave, dev);
-@@ -347,7 +347,7 @@ static struct net_device_stats *dlci_get
- {
- 	struct dlci_local *dlp;
- 
--	dlp = dev->priv;
-+	dlp = netdev_priv(dev);
- 
- 	return(&dlp->stats);
- }
-@@ -365,7 +365,7 @@ static int dlci_add(struct dlci_add *dlc
- 	if (!slave)
- 		return -ENODEV;
- 
--	if (slave->type != ARPHRD_FRAD || slave->priv == NULL)
-+	if (slave->type != ARPHRD_FRAD || netdev_priv(slave) == NULL)
- 		goto err1;
- 
- 	/* create device name */
-@@ -391,11 +391,11 @@ static int dlci_add(struct dlci_add *dlc
- 
- 	*(short *)(master->dev_addr) = dlci->dlci;
- 
--	dlp = (struct dlci_local *) master->priv;
-+	dlp = netdev_priv(master);
- 	dlp->slave = slave;
- 	dlp->master = master;
- 
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 	err = (*flp->assoc)(slave, master);
- 	if (err < 0)
- 		goto err2;
-@@ -435,9 +435,9 @@ static int dlci_del(struct dlci_add *dlc
- 		return(-EBUSY);
+diff --git a/drivers/net/wireless/arlan-proc.c b/drivers/net/wireless/arlan-proc.c
+index 015abd9..c6e70db 100644
+--- a/drivers/net/wireless/arlan-proc.c
++++ b/drivers/net/wireless/arlan-proc.c
+@@ -435,7 +435,7 @@ static int arlan_sysctl_info(ctl_table *
+ 		goto final;
  	}
- 
--	dlp = master->priv;
-+	dlp = netdev_priv(master);
- 	slave = dlp->slave;
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 
- 	rtnl_lock();
- 	err = (*flp->deassoc)(slave, master);
-@@ -487,7 +487,7 @@ static int dlci_ioctl(unsigned int cmd, 
- 
- static void dlci_setup(struct net_device *dev)
- {
--	struct dlci_local *dlp = dev->priv;
-+	struct dlci_local *dlp = netdev_priv(dev);
- 
- 	dev->flags		= 0;
- 	dev->open		= dlci_open;
-diff --git a/drivers/net/wan/lmc/lmc_main.c b/drivers/net/wan/lmc/lmc_main.c
-index ae132c1..9aa04a6 100644
---- a/drivers/net/wan/lmc/lmc_main.c
-+++ b/drivers/net/wan/lmc/lmc_main.c
-@@ -126,7 +126,7 @@ int lmc_ioctl (struct net_device *dev, s
- 
-     ret = -EOPNOTSUPP;
- 
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
- 
-     lmc_trace(dev, "lmc_ioctl in");
- 
-@@ -634,7 +634,7 @@ static void lmc_watchdog (unsigned long 
-     u_int32_t ticks;
-     unsigned long flags;
- 
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
- 
-     lmc_trace(dev, "lmc_watchdog in");
- 
-@@ -872,7 +872,7 @@ #endif
-         lmc_first_load = 1;
-     }
-     
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
-     sc->lmc_device = dev;
-     sc->name = dev->name;
- 
-@@ -1018,7 +1018,7 @@ static void __devexit lmc_remove_one (st
-     struct net_device *dev = pci_get_drvdata(pdev);
-     
-     if (dev) {
--	    lmc_softc_t *sc = dev->priv;
-+	    lmc_softc_t *sc = netdev_priv(dev);
- 	    
- 	    printk("%s: removing...\n", dev->name);
- 	    lmc_proto_detach(sc);
-@@ -1035,7 +1035,7 @@ static void __devexit lmc_remove_one (st
-  */
- static int lmc_open (struct net_device *dev) /*fold00*/
- {
--    lmc_softc_t *sc = dev->priv;
-+    lmc_softc_t *sc = netdev_priv(dev);
- 
-     lmc_trace(dev, "lmc_open in");
- 
-@@ -1153,7 +1153,7 @@ static int lmc_open (struct net_device *
- static void lmc_running_reset (struct net_device *dev) /*fold00*/
- {
- 
--    lmc_softc_t *sc = (lmc_softc_t *) dev->priv;
-+    lmc_softc_t *sc = netdev_priv(dev);
- 
-     lmc_trace(dev, "lmc_runnig_reset in");
- 
-@@ -1194,7 +1194,7 @@ static int lmc_close (struct net_device 
- 
-     lmc_trace(dev, "lmc_close in");
-     
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
-     sc->lmc_ok = 0;
-     sc->lmc_media->set_link_status (sc, 0);
-     del_timer (&sc->timer);
-@@ -1210,7 +1210,7 @@ static int lmc_close (struct net_device 
- /* When the interface goes down, this is called */
- static int lmc_ifdown (struct net_device *dev) /*fold00*/
- {
--    lmc_softc_t *sc = dev->priv;
-+    lmc_softc_t *sc = netdev_priv(dev);
-     u32 csr6;
-     int i;
- 
-@@ -1287,7 +1287,7 @@ static irqreturn_t lmc_interrupt (int ir
- 
-     lmc_trace(dev, "lmc_interrupt in");
- 
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
-     
-     spin_lock(&sc->lmc_lock);
- 
-@@ -1473,7 +1473,7 @@ static int lmc_start_xmit (struct sk_buf
- 
-     lmc_trace(dev, "lmc_start_xmit in");
- 
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
- 
-     spin_lock_irqsave(&sc->lmc_lock, flags);
- 
-@@ -1570,7 +1570,7 @@ static int lmc_rx (struct net_device *de
- 
-     lmc_trace(dev, "lmc_rx in");
- 
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
- 
-     lmc_led_on(sc, LMC_DS3_LED3);
- 
-@@ -1764,7 +1764,7 @@ skip_out_of_mem:
- 
- static struct net_device_stats *lmc_get_stats (struct net_device *dev) /*fold00*/
- {
--    lmc_softc_t *sc = dev->priv;
-+    lmc_softc_t *sc = netdev_priv(dev);
-     unsigned long flags;
- 
-     lmc_trace(dev, "lmc_get_stats in");
-@@ -2145,7 +2145,7 @@ static void lmc_driver_timeout(struct ne
- 
-     lmc_trace(dev, "lmc_driver_timeout in");
- 
--    sc = dev->priv;
-+    sc = netdev_priv(dev);
- 
-     spin_lock_irqsave(&sc->lmc_lock, flags);
- 
-diff --git a/drivers/net/wan/sdla.c b/drivers/net/wan/sdla.c
-index 792e588..a2f1849 100644
---- a/drivers/net/wan/sdla.c
-+++ b/drivers/net/wan/sdla.c
-@@ -185,7 +185,7 @@ static void sdla_stop(struct net_device 
- {
- 	struct frad_local *flp;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 	switch(flp->type)
- 	{
- 		case SDLA_S502A:
-@@ -212,7 +212,7 @@ static void sdla_start(struct net_device
- {
- 	struct frad_local *flp;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 	switch(flp->type)
- 	{
- 		case SDLA_S502A:
-@@ -432,7 +432,7 @@ static int sdla_cmd(struct net_device *d
- 	int                      ret, waiting, len;
- 	long                     window;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 	window = flp->type == SDLA_S508 ? SDLA_508_CMD_BUF : SDLA_502_CMD_BUF;
- 	cmd_buf = (struct sdla_cmd *)(dev->mem_start + (window & SDLA_ADDR_MASK));
- 	ret = 0;
-@@ -509,7 +509,7 @@ static int sdla_activate(struct net_devi
- 	struct frad_local *flp;
- 	int i;
- 
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
- 		if (flp->master[i] == master)
-@@ -531,7 +531,7 @@ static int sdla_deactivate(struct net_de
- 	struct frad_local *flp;
- 	int               i;
- 
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
- 		if (flp->master[i] == master)
-@@ -556,7 +556,7 @@ static int sdla_assoc(struct net_device 
- 	if (master->type != ARPHRD_DLCI)
- 		return(-EINVAL);
- 
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
- 	{
-@@ -589,7 +589,7 @@ static int sdla_deassoc(struct net_devic
- 	struct frad_local *flp;
- 	int               i;
- 
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
- 		if (flp->master[i] == master)
-@@ -619,7 +619,7 @@ static int sdla_dlci_conf(struct net_dev
- 	int               i;
- 	short             len, ret;
- 
--	flp = slave->priv;
-+	flp = netdev_priv(slave);
- 
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
- 		if (flp->master[i] == master)
-@@ -628,7 +628,7 @@ static int sdla_dlci_conf(struct net_dev
- 	if (i == CONFIG_DLCI_MAX)
- 		return(-ENODEV);
- 
--	dlp = master->priv;
-+	dlp = netdev_priv(master);
- 
- 	ret = SDLA_RET_OK;
- 	len = sizeof(struct dlci_conf);
-@@ -659,7 +659,7 @@ static int sdla_transmit(struct sk_buff 
- 	unsigned long     flags;
- 	struct buf_entry  *pbuf;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 	ret = 0;
- 	accept = 1;
- 
-@@ -755,7 +755,7 @@ static void sdla_receive(struct net_devi
- 	int               i=0, received, success, addr, buf_base, buf_top;
- 	short             dlci, len, len2, split;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 	success = 1;
- 	received = addr = buf_top = buf_base = 0;
- 	len = dlci = 0;
-@@ -860,7 +860,7 @@ static void sdla_receive(struct net_devi
- 	if (success)
- 	{
- 		flp->stats.rx_packets++;
--		dlp = master->priv;
-+		dlp = netdev_priv(master);
- 		(*dlp->receive)(skb, master);
- 	}
- 
-@@ -924,7 +924,7 @@ static void sdla_poll(unsigned long devi
- 	struct frad_local *flp;
- 
- 	dev = (struct net_device *) device;
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	if (sdla_byte(dev, SDLA_502_RCV_BUF))
- 		sdla_receive(dev);
-@@ -940,7 +940,7 @@ static int sdla_close(struct net_device 
- 	int               len, i;
- 	short             dlcis[CONFIG_DLCI_MAX];
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	len = 0;
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
-@@ -1001,7 +1001,7 @@ static int sdla_open(struct net_device *
- 	int               len, i;
- 	char              byte;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	if (!flp->initialized)
- 		return(-EPERM);
-@@ -1098,7 +1098,7 @@ static int sdla_config(struct net_device
- 	if (dev->type == 0xFFFF)
- 		return(-EUNATCH);
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	if (!get)
- 	{
-@@ -1229,7 +1229,7 @@ static int sdla_reconfig(struct net_devi
- 	struct conf_data  data;
- 	int               i, len;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	len = 0;
- 	for(i=0;i<CONFIG_DLCI_MAX;i++)
-@@ -1254,7 +1254,7 @@ static int sdla_ioctl(struct net_device 
- 	if(!capable(CAP_NET_ADMIN))
- 		return -EPERM;
- 		
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	if (!flp->initialized)
- 		return(-EINVAL);
-@@ -1320,7 +1320,7 @@ static int sdla_change_mtu(struct net_de
- {
- 	struct frad_local *flp;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	if (netif_running(dev))
- 		return(-EBUSY);
-@@ -1337,7 +1337,7 @@ static int sdla_set_config(struct net_de
- 	unsigned base;
- 	int err = -EINVAL;
- 
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	if (flp->initialized)
- 		return(-EINVAL);
-@@ -1592,14 +1592,14 @@ fail:
- static struct net_device_stats *sdla_stats(struct net_device *dev)
- {
- 	struct frad_local *flp;
--	flp = dev->priv;
-+	flp = netdev_priv(dev);
- 
- 	return(&flp->stats);
- }
- 
- static void setup_sdla(struct net_device *dev)
- {
--	struct frad_local *flp = dev->priv;
-+	struct frad_local *flp = netdev_priv(dev);
- 
- 	netdev_boot_setup_check(dev);
- 
-@@ -1651,7 +1651,7 @@ static int __init init_sdla(void)
- 
- static void __exit exit_sdla(void)
- {
--	struct frad_local *flp = sdla->priv;
-+	struct frad_local *flp = netdev_priv(sdla);
- 
- 	unregister_netdev(sdla);
- 	if (flp->initialized) {
-diff --git a/drivers/net/wan/sealevel.c b/drivers/net/wan/sealevel.c
-index 11276bf..4414901 100644
---- a/drivers/net/wan/sealevel.c
-+++ b/drivers/net/wan/sealevel.c
-@@ -77,7 +77,7 @@ static void sealevel_input(struct z8530_
-  
- static int sealevel_open(struct net_device *d)
- {
--	struct slvl_device *slvl=d->priv;
-+	struct slvl_device *slvl=netdev_priv(d);
- 	int err = -1;
- 	int unit = slvl->channel;
- 	
-@@ -126,7 +126,7 @@ static int sealevel_open(struct net_devi
- 
- static int sealevel_close(struct net_device *d)
- {
--	struct slvl_device *slvl=d->priv;
-+	struct slvl_device *slvl=netdev_priv(d);
- 	int unit = slvl->channel;
- 	
- 	/*
-@@ -166,7 +166,7 @@ static int sealevel_ioctl(struct net_dev
- 
- static struct net_device_stats *sealevel_get_stats(struct net_device *d)
- {
--	struct slvl_device *slvl=d->priv;
-+	struct slvl_device *slvl=netdev_priv(d);
- 	if(slvl)
- 		return z8530_get_stats(slvl->chan);
  	else
-@@ -179,7 +179,7 @@ static struct net_device_stats *sealevel
-  
- static int sealevel_queue_xmit(struct sk_buff *skb, struct net_device *d)
+-		priva = arlan_device[devnum]->priv;
++		priva = netdev_priv(arlan_device[devnum]);
+ 
+ 	if (priva == NULL)
+ 	{
+@@ -654,7 +654,7 @@ static int arlan_sysctl_info161719(ctl_t
+ 		goto final;
+ 	}
+ 	else
+-		priva = arlan_device[devnum]->priv;
++		priva = netdev_priv(arlan_device[devnum]);
+ 	if (priva == NULL)
+ 	{
+ 		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+@@ -688,7 +688,7 @@ static int arlan_sysctl_infotxRing(ctl_t
+ 		  goto final;
+ 	}
+ 	else
+-		priva = arlan_device[devnum]->priv;
++		priva = netdev_priv(arlan_device[devnum]);
+ 	if (priva == NULL)
+ 	{
+ 		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+@@ -716,7 +716,7 @@ static int arlan_sysctl_inforxRing(ctl_t
+ 		  pos += sprintf(arlan_drive_info + pos, "No device found here \n");
+ 		  goto final;
+ 	} else
+-		priva = arlan_device[devnum]->priv;
++		priva = netdev_priv(arlan_device[devnum]);
+ 	if (priva == NULL)
+ 	{
+ 		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+@@ -745,7 +745,7 @@ static int arlan_sysctl_info18(ctl_table
+ 		goto final;
+ 	}
+ 	else
+-		priva = arlan_device[devnum]->priv;
++		priva = netdev_priv(arlan_device[devnum]);
+ 	if (priva == NULL)
+ 	{
+ 		printk(KERN_WARNING " Could not find the device private in arlan procsys, bad\n ");
+@@ -780,7 +780,7 @@ static int arlan_configure(ctl_table * c
+ 	}
+ 	else if (arlan_device[devnum] != NULL)
+ 	{
+-		  priv = arlan_device[devnum]->priv;
++		  priv = netdev_priv(arlan_device[devnum]);
+ 
+ 		  arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_CONF);
+ 	}
+@@ -805,7 +805,7 @@ static int arlan_sysctl_reset(ctl_table 
+ 	}
+ 	else if (arlan_device[devnum] != NULL)
+ 	{
+-		priv = arlan_device[devnum]->priv;
++		priv = netdev_priv(arlan_device[devnum]);
+ 		arlan_command(arlan_device[devnum], ARLAN_COMMAND_CLEAN_AND_RESET);
+ 
+ 	} else
+diff --git a/drivers/net/wireless/hostap/hostap_cs.c b/drivers/net/wireless/hostap/hostap_cs.c
+index 30e723f..f9cf22b 100644
+--- a/drivers/net/wireless/hostap/hostap_cs.c
++++ b/drivers/net/wireless/hostap/hostap_cs.c
+@@ -272,7 +272,7 @@ static int sandisk_enable_wireless(struc
  {
--	struct slvl_device *slvl=d->priv;
-+	struct slvl_device *slvl=netdev_priv(d);
- 	return z8530_queue_xmit(slvl->chan, skb);
+ 	int res, ret = 0;
+ 	conf_reg_t reg;
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 	tuple_t tuple;
+ 	cisparse_t *parse = NULL;
+diff --git a/drivers/net/wireless/hostap/hostap_hw.c b/drivers/net/wireless/hostap/hostap_hw.c
+index 959887b..18023b5 100644
+--- a/drivers/net/wireless/hostap/hostap_hw.c
++++ b/drivers/net/wireless/hostap/hostap_hw.c
+@@ -3424,7 +3424,7 @@ static void prism2_suspend(struct net_de
+ 	struct local_info *local;
+ 	union iwreq_data wrqu;
+ 
+-	iface = dev->priv;
++	iface = netdev_priv(dev);
+ 	local = iface->local;
+ 
+ 	/* Send disconnect event, e.g., to trigger reassociation after resume
+diff --git a/drivers/net/wireless/hostap/hostap_ioctl.c b/drivers/net/wireless/hostap/hostap_ioctl.c
+index 8c71077..d58ac84 100644
+--- a/drivers/net/wireless/hostap/hostap_ioctl.c
++++ b/drivers/net/wireless/hostap/hostap_ioctl.c
+@@ -3088,7 +3088,7 @@ #endif /* PRISM2_DOWNLOAD_SUPPORT */
+ static int prism2_set_genericelement(struct net_device *dev, u8 *elem,
+ 				     size_t len)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 	u8 *buf;
+ 
+@@ -3116,7 +3116,7 @@ static int prism2_ioctl_siwauth(struct n
+ 				struct iw_request_info *info,
+ 				struct iw_param *data, char *extra)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 
+ 	switch (data->flags & IW_AUTH_INDEX) {
+@@ -3182,7 +3182,7 @@ static int prism2_ioctl_giwauth(struct n
+ 				struct iw_request_info *info,
+ 				struct iw_param *data, char *extra)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 
+ 	switch (data->flags & IW_AUTH_INDEX) {
+@@ -3221,7 +3221,7 @@ static int prism2_ioctl_siwencodeext(str
+ 				     struct iw_request_info *info,
+ 				     struct iw_point *erq, char *extra)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 	struct iw_encode_ext *ext = (struct iw_encode_ext *) extra;
+ 	int i, ret = 0;
+@@ -3395,7 +3395,7 @@ static int prism2_ioctl_giwencodeext(str
+ 				     struct iw_request_info *info,
+ 				     struct iw_point *erq, char *extra)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 	struct ieee80211_crypt_data **crypt;
+ 	void *sta_ptr;
+@@ -3716,7 +3716,7 @@ static int prism2_ioctl_giwgenie(struct 
+ 				 struct iw_request_info *info,
+ 				 struct iw_point *data, char *extra)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 	int len = local->generic_elem_len - 2;
+ 
+@@ -3755,7 +3755,7 @@ static int prism2_ioctl_siwmlme(struct n
+ 				struct iw_request_info *info,
+ 				struct iw_point *data, char *extra)
+ {
+-	struct hostap_interface *iface = dev->priv;
++	struct hostap_interface *iface = netdev_priv(dev);
+ 	local_info_t *local = iface->local;
+ 	struct iw_mlme *mlme = (struct iw_mlme *) extra;
+ 	u16 reason;
+diff --git a/drivers/net/wireless/orinoco_tmd.c b/drivers/net/wireless/orinoco_tmd.c
+index 7c7b960..b9c54d8 100644
+--- a/drivers/net/wireless/orinoco_tmd.c
++++ b/drivers/net/wireless/orinoco_tmd.c
+@@ -190,7 +190,7 @@ static int orinoco_tmd_init_one(struct p
+ static void __devexit orinoco_tmd_remove_one(struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+-	struct orinoco_private *priv = dev->priv;
++	struct orinoco_private *priv = netdev_priv(dev);
+ 	struct orinoco_pci_card *card = priv->card;
+ 
+ 	unregister_netdev(dev);
+diff --git a/drivers/net/wireless/prism54/isl_ioctl.c b/drivers/net/wireless/prism54/isl_ioctl.c
+index 585f599..f106661 100644
+--- a/drivers/net/wireless/prism54/isl_ioctl.c
++++ b/drivers/net/wireless/prism54/isl_ioctl.c
+@@ -1753,7 +1753,7 @@ prism54_get_oid(struct net_device *ndev,
+ 	int rvalue;
+ 	enum oid_num_t n = dwrq->flags;
+ 
+-	rvalue = mgt_get_request((islpci_private *) ndev->priv, n, 0, NULL, &r);
++	rvalue = mgt_get_request(netdev_priv(ndev), n, 0, NULL, &r);
+ 	dwrq->length = mgt_response_to_str(n, &r, extra);
+ 	if ((isl_oid[n].flags & OID_FLAG_TYPE) != OID_TYPE_U32)
+ 		kfree(r.ptr);
+@@ -1766,7 +1766,7 @@ prism54_set_u32(struct net_device *ndev,
+ {
+ 	u32 oid = uwrq[0], u = uwrq[1];
+ 
+-	return mgt_set_request((islpci_private *) ndev->priv, oid, 0, &u);
++	return mgt_set_request(netdev_priv(ndev), oid, 0, &u);
  }
  
-@@ -204,7 +204,7 @@ static int sealevel_neigh_setup_dev(stru
- 
- static int sealevel_attach(struct net_device *dev)
+ static int
+@@ -1775,7 +1775,7 @@ prism54_set_raw(struct net_device *ndev,
  {
--	struct slvl_device *sv = dev->priv;
-+	struct slvl_device *sv = netdev_priv(dev);
- 	sppp_attach(&sv->pppdev);
+ 	u32 oid = dwrq->flags;
+ 
+-	return mgt_set_request((islpci_private *) ndev->priv, oid, 0, extra);
++	return mgt_set_request(netdev_priv(ndev), oid, 0, extra);
+ }
+ 
+ void
+diff --git a/drivers/net/wireless/ray_cs.c b/drivers/net/wireless/ray_cs.c
+index 3be6242..1d9dbf8 100644
+--- a/drivers/net/wireless/ray_cs.c
++++ b/drivers/net/wireless/ray_cs.c
+@@ -314,7 +314,7 @@ static int ray_probe(struct pcmcia_devic
+     if (!dev)
+ 	    goto fail_alloc_dev;
+ 
+-    local = dev->priv;
++    local = netdev_priv(dev);
+     local->finder = p_dev;
+ 
+     /* The io structure describes IO port mapping. None used here */
+@@ -388,7 +388,7 @@ static void ray_detach(struct pcmcia_dev
+ 
+     ray_release(link);
+ 
+-    local = (ray_dev_t *)dev->priv;
++    local = netdev_priv(dev);
+     del_timer(&local->timer);
+ 
+     if (link->priv) {
+@@ -412,7 +412,7 @@ static int ray_config(struct pcmcia_devi
+     win_req_t req;
+     memreq_t mem;
+     struct net_device *dev = (struct net_device *)link->priv;
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+ 
+     DEBUG(1, "ray_config(0x%p)\n", link);
+ 
+@@ -520,7 +520,7 @@ static int ray_init(struct net_device *d
+     int i;
+     UCHAR *p;
+     struct ccs __iomem *pccs;
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+     DEBUG(1, "ray_init(0x%p)\n", dev);
+     if (!(pcmcia_dev_present(link))) {
+@@ -581,7 +581,7 @@ static int ray_init(struct net_device *d
+ static int dl_startup_params(struct net_device *dev)
+ {
+     int ccsindex;
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct ccs __iomem *pccs;
+     struct pcmcia_device *link = local->finder;
+ 
+@@ -786,7 +786,7 @@ static void join_net(u_long data)
+ static void ray_release(struct pcmcia_device *link)
+ {
+     struct net_device *dev = link->priv; 
+-    ray_dev_t *local = dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     int i;
+     
+     DEBUG(1, "ray_release(0x%p)\n", link);
+@@ -834,7 +834,7 @@ int ray_dev_init(struct net_device *dev)
+ #ifdef RAY_IMMEDIATE_INIT
+     int i;
+ #endif	/* RAY_IMMEDIATE_INIT */
+-    ray_dev_t *local = dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+ 
+     DEBUG(1,"ray_dev_init(dev=%p)\n",dev);
+@@ -868,7 +868,7 @@ #endif	/* RAY_IMMEDIATE_INIT */
+ /*===========================================================================*/
+ static int ray_dev_config(struct net_device *dev, struct ifmap *map)
+ {
+-    ray_dev_t *local = dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+     /* Dummy routine to satisfy device structure */
+     DEBUG(1,"ray_dev_config(dev=%p,ifmap=%p)\n",dev,map);
+@@ -882,7 +882,7 @@ static int ray_dev_config(struct net_dev
+ /*===========================================================================*/
+ static int ray_dev_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+-    ray_dev_t *local = dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+     short length = skb->len;
+ 
+@@ -925,7 +925,7 @@ static int ray_dev_start_xmit(struct sk_
+ static int ray_hw_xmit(unsigned char* data, int len, struct net_device* dev, 
+                 UCHAR msg_type)
+ {
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct ccs __iomem *pccs;
+     int ccsindex;
+     int offset;
+@@ -1099,7 +1099,7 @@ static int ray_set_freq(struct net_devic
+ 			struct iw_freq *fwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 	int err = -EINPROGRESS;		/* Call commit handler */
+ 
+ 	/* Reject if card is already initialised */
+@@ -1124,7 +1124,7 @@ static int ray_get_freq(struct net_devic
+ 			struct iw_freq *fwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	fwrq->m = local->sparm.b5.a_hop_pattern;
+ 	fwrq->e = 0;
+@@ -1140,7 +1140,7 @@ static int ray_set_essid(struct net_devi
+ 			 struct iw_point *dwrq,
+ 			 char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	/* Reject if card is already initialised */
+ 	if(local->card_status != CARD_AWAITING_PARAM)
+@@ -1173,7 +1173,7 @@ static int ray_get_essid(struct net_devi
+ 			 struct iw_point *dwrq,
+ 			 char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	/* Get the essid that was set */
+ 	memcpy(extra, local->sparm.b5.a_current_ess_id, IW_ESSID_MAX_SIZE);
+@@ -1194,7 +1194,7 @@ static int ray_get_wap(struct net_device
+ 			struct sockaddr *awrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	memcpy(awrq->sa_data, local->bss_id, ETH_ALEN);
+ 	awrq->sa_family = ARPHRD_ETHER;
+@@ -1211,7 +1211,7 @@ static int ray_set_rate(struct net_devic
+ 			struct iw_param *vwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	/* Reject if card is already initialised */
+ 	if(local->card_status != CARD_AWAITING_PARAM)
+@@ -1240,7 +1240,7 @@ static int ray_get_rate(struct net_devic
+ 			struct iw_param *vwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	if(local->net_default_tx_rate == 3)
+ 		vwrq->value = 2000000;		/* Hum... */
+@@ -1260,7 +1260,7 @@ static int ray_set_rts(struct net_device
+ 		       struct iw_param *vwrq,
+ 		       char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 	int rthr = vwrq->value;
+ 
+ 	/* Reject if card is already initialised */
+@@ -1290,7 +1290,7 @@ static int ray_get_rts(struct net_device
+ 		       struct iw_param *vwrq,
+ 		       char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	vwrq->value = (local->sparm.b5.a_rts_threshold[0] << 8)
+ 		+ local->sparm.b5.a_rts_threshold[1];
+@@ -1309,7 +1309,7 @@ static int ray_set_frag(struct net_devic
+ 			struct iw_param *vwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 	int fthr = vwrq->value;
+ 
+ 	/* Reject if card is already initialised */
+@@ -1338,7 +1338,7 @@ static int ray_get_frag(struct net_devic
+ 			struct iw_param *vwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	vwrq->value = (local->sparm.b5.a_frag_threshold[0] << 8)
+ 		+ local->sparm.b5.a_frag_threshold[1];
+@@ -1357,7 +1357,7 @@ static int ray_set_mode(struct net_devic
+ 			__u32 *uwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 	int err = -EINPROGRESS;		/* Call commit handler */
+ 	char card_mode = 1;
+ 
+@@ -1389,7 +1389,7 @@ static int ray_get_mode(struct net_devic
+ 			__u32 *uwrq,
+ 			char *extra)
+ {
+-	ray_dev_t *local = (ray_dev_t *)dev->priv;
++	ray_dev_t *local = netdev_priv(dev);
+ 
+ 	if(local->sparm.b5.a_network_type)
+ 		*uwrq = IW_MODE_INFRA;
+@@ -1492,7 +1492,7 @@ static int ray_commit(struct net_device 
+  */
+ static iw_stats * ray_get_wireless_stats(struct net_device *	dev)
+ {
+-  ray_dev_t *	local = (ray_dev_t *) dev->priv;
++  ray_dev_t *	local = netdev_priv(dev);
+   struct pcmcia_device *link = local->finder;
+   struct status __iomem *p = local->sram + STATUS_BASE;
+ 
+@@ -1580,7 +1580,7 @@ static const struct iw_handler_def	ray_h
+ /*===========================================================================*/
+ static int ray_open(struct net_device *dev)
+ {
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link;
+     link = local->finder;
+     
+@@ -1614,7 +1614,7 @@ static int ray_open(struct net_device *d
+ /*===========================================================================*/
+ static int ray_dev_close(struct net_device *dev)
+ {
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link;
+     link = local->finder;
+ 
+@@ -1773,7 +1773,7 @@ static int parse_addr(char *in_str, UCHA
+ /*===========================================================================*/
+ static struct net_device_stats *ray_get_stats(struct net_device *dev)
+ {
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+     struct status __iomem *p = local->sram + STATUS_BASE;
+     if (!(pcmcia_dev_present(link))) {
+@@ -1803,7 +1803,7 @@ static struct net_device_stats *ray_get_
+ /*===========================================================================*/
+ static void ray_update_parm(struct net_device *dev, UCHAR objid, UCHAR *value, int len)
+ {
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+     int ccsindex;
+     int i;
+@@ -1840,7 +1840,7 @@ static void ray_update_multi_list(struct
+     int ccsindex;
+     struct ccs __iomem *pccs;
+     int i = 0;
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     struct pcmcia_device *link = local->finder;
+     void __iomem *p = local->sram + HOST_TO_ECF_BASE;
+ 
+@@ -1884,7 +1884,7 @@ static void ray_update_multi_list(struct
+ /*===========================================================================*/
+ static void set_multicast_list(struct net_device *dev)
+ {
+-    ray_dev_t *local = (ray_dev_t *)dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     UCHAR promisc;
+ 
+     DEBUG(2,"ray_cs set_multicast_list(%p)\n",dev);
+@@ -1935,7 +1935,7 @@ static irqreturn_t ray_interrupt(int irq
+ 
+     DEBUG(4,"ray_cs: interrupt for *dev=%p\n",dev);
+ 
+-    local = (ray_dev_t *)dev->priv;
++    local = netdev_priv(dev);
+     link = (struct pcmcia_device *)local->finder;
+     if (!pcmcia_dev_present(link)) {
+         DEBUG(2,"ray_cs interrupt from device not present or suspended.\n");
+@@ -2165,7 +2165,7 @@ static void rx_data(struct net_device *d
+ {
+     struct sk_buff *skb = NULL;
+     struct rcs __iomem *prcslink = prcs;
+-    ray_dev_t *local = dev->priv;
++    ray_dev_t *local = netdev_priv(dev);
+     UCHAR *rx_ptr;
+     int total_len;
+     int tmp;
+@@ -2618,7 +2618,7 @@ static int ray_cs_proc_read(char *buf, c
+     dev = (struct net_device *)link->priv;
+     if (!dev)
+     	return 0;
+-    local = (ray_dev_t *)dev->priv;
++    local = netdev_priv(dev);
+     if (!local)
+     	return 0;
+ 
+diff --git a/drivers/net/wireless/strip.c b/drivers/net/wireless/strip.c
+index ef32a5c..ed146ae 100644
+--- a/drivers/net/wireless/strip.c
++++ b/drivers/net/wireless/strip.c
+@@ -2571,7 +2571,7 @@ static struct strip *strip_alloc(void)
+ 		return NULL;	/* If no more memory, return */
+ 
+ 
+-	strip_info = dev->priv;
++	strip_info = netdev_priv(dev);
+ 	strip_info->dev = dev;
+ 
+ 	strip_info->magic = STRIP_MAGIC;
+diff --git a/drivers/net/wireless/wl3501_cs.c b/drivers/net/wireless/wl3501_cs.c
+index c8b5c22..72f3d97 100644
+--- a/drivers/net/wireless/wl3501_cs.c
++++ b/drivers/net/wireless/wl3501_cs.c
+@@ -859,7 +859,7 @@ static int wl3501_esbq_confirm(struct wl
+ 
+ static void wl3501_online(struct net_device *dev)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 
+ 	printk(KERN_INFO "%s: Wireless LAN online. BSSID: "
+ 	       "%02X %02X %02X %02X %02X %02X\n", dev->name,
+@@ -907,7 +907,7 @@ static int wl3501_mgmt_association(struc
+ 
+ static void wl3501_mgmt_join_confirm(struct net_device *dev, u16 addr)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	struct wl3501_join_confirm sig;
+ 
+ 	dprintk(3, "entry");
+@@ -1046,7 +1046,7 @@ static inline void wl3501_start_confirm_
+ static inline void wl3501_assoc_confirm_interrupt(struct net_device *dev,
+ 						  u16 addr)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	struct wl3501_assoc_confirm sig;
+ 
+ 	dprintk(3, "entry");
+@@ -1075,7 +1075,7 @@ static inline void wl3501_rx_interrupt(s
+ 	int morepkts;
+ 	u16 addr;
+ 	u8 sig_id;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 
+ 	dprintk(3, "entry");
+ loop:
+@@ -1257,7 +1257,7 @@ fail:
+ 
+ static int wl3501_close(struct net_device *dev)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = -ENODEV;
+ 	unsigned long flags;
+ 	struct pcmcia_device *link;
+@@ -1289,7 +1289,7 @@ static int wl3501_close(struct net_devic
+  */
+ static int wl3501_reset(struct net_device *dev)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = -ENODEV;
+ 
+ 	wl3501_block_interrupt(this);
+@@ -1318,7 +1318,7 @@ out:
+ 
+ static void wl3501_tx_timeout(struct net_device *dev)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	struct net_device_stats *stats = &this->stats;
+ 	unsigned long flags;
+ 	int rc;
+@@ -1344,7 +1344,7 @@ static void wl3501_tx_timeout(struct net
+ static int wl3501_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ {
+ 	int enabled, rc;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&this->lock, flags);
+@@ -1371,7 +1371,7 @@ static int wl3501_hard_start_xmit(struct
+ static int wl3501_open(struct net_device *dev)
+ {
+ 	int rc = -ENODEV;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	unsigned long flags;
+ 	struct pcmcia_device *link;
+ 	link = this->p_dev;
+@@ -1410,14 +1410,14 @@ fail:
+ 
+ static struct net_device_stats *wl3501_get_stats(struct net_device *dev)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 
+ 	return &this->stats;
+ }
+ 
+ static struct iw_statistics *wl3501_get_wireless_stats(struct net_device *dev)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	struct iw_statistics *wstats = &this->wstats;
+ 	u32 value; /* size checked: it is u32 */
+ 
+@@ -1497,7 +1497,7 @@ static int wl3501_get_name(struct net_de
+ static int wl3501_set_freq(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int channel = wrqu->freq.m;
+ 	int rc = -EINVAL;
+ 
+@@ -1511,7 +1511,7 @@ static int wl3501_set_freq(struct net_de
+ static int wl3501_get_freq(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 
+ 	wrqu->freq.m = wl3501_chan2freq[this->chan - 1] * 100000;
+ 	wrqu->freq.e = 1;
+@@ -1526,7 +1526,7 @@ static int wl3501_set_mode(struct net_de
+ 	if (wrqu->mode == IW_MODE_INFRA ||
+ 	    wrqu->mode == IW_MODE_ADHOC ||
+ 	    wrqu->mode == IW_MODE_AUTO) {
+-		struct wl3501_card *this = dev->priv;
++		struct wl3501_card *this = netdev_priv(dev);
+ 
+ 		this->net_type = wrqu->mode;
+ 		rc = wl3501_reset(dev);
+@@ -1537,7 +1537,7 @@ static int wl3501_set_mode(struct net_de
+ static int wl3501_get_mode(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
+ {
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 
+ 	wrqu->mode = this->net_type;
  	return 0;
- }
-@@ -240,7 +240,7 @@ static inline struct slvl_device *slvl_a
- 	if (!d) 
- 		return NULL;
- 
--	sv = d->priv;
-+	sv = netdev_priv(d);
- 	sv->if_ptr = &sv->pppdev;
- 	sv->pppdev.dev = d;
- 	d->base_addr = iobase;
-diff --git a/drivers/net/wan/x25_asy.c b/drivers/net/wan/x25_asy.c
-index c48b1cc..d62821d 100644
---- a/drivers/net/wan/x25_asy.c
-+++ b/drivers/net/wan/x25_asy.c
-@@ -63,7 +63,7 @@ static struct x25_asy *x25_asy_alloc(voi
- 		if (dev == NULL)
- 			break;
- 
--		sl = dev->priv;
-+		sl = netdev_priv(dev);
- 		/* Not in use ? */
- 		if (!test_and_set_bit(SLF_INUSE, &sl->flags))
- 			return sl;
-@@ -85,7 +85,7 @@ static struct x25_asy *x25_asy_alloc(voi
- 			return NULL;
- 
- 		/* Initialize channel control data */
--		sl = dev->priv;
-+		sl = netdev_priv(dev);
- 		dev->base_addr    = i;
- 
- 		/* register device so that it can be ifconfig'ed       */
-@@ -119,7 +119,7 @@ static void x25_asy_free(struct x25_asy 
- 
- static int x25_asy_change_mtu(struct net_device *dev, int newmtu)
+@@ -1546,7 +1546,7 @@ static int wl3501_get_mode(struct net_de
+ static int wl3501_get_sens(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = dev->priv;
-+	struct x25_asy *sl = netdev_priv(dev);
- 	unsigned char *xbuff, *rbuff;
- 	int len = 2* newmtu;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
  
-@@ -282,7 +282,7 @@ static void x25_asy_write_wakeup(struct 
- 
- static void x25_asy_timeout(struct net_device *dev)
+ 	wrqu->sens.value = this->rssi;
+ 	wrqu->sens.disabled = !wrqu->sens.value;
+@@ -1577,7 +1577,7 @@ static int wl3501_get_range(struct net_d
+ static int wl3501_set_wap(struct net_device *dev, struct iw_request_info *info,
+ 			  union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	struct x25_asy *sl = (struct x25_asy*)(netdev_priv(dev));
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	static const u8 bcast[ETH_ALEN] = { 255, 255, 255, 255, 255, 255 };
+ 	int rc = -EINVAL;
  
- 	spin_lock(&sl->lock);
- 	if (netif_queue_stopped(dev)) {
-@@ -303,7 +303,7 @@ static void x25_asy_timeout(struct net_d
- 
- static int x25_asy_xmit(struct sk_buff *skb, struct net_device *dev)
+@@ -1597,7 +1597,7 @@ out:
+ static int wl3501_get_wap(struct net_device *dev, struct iw_request_info *info,
+ 			  union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	struct x25_asy *sl = (struct x25_asy*)(netdev_priv(dev));
- 	int err;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
  
- 	if (!netif_running(sl->dev)) {
-@@ -372,7 +372,7 @@ static int x25_asy_data_indication(struc
-  
- static void x25_asy_data_transmit(struct net_device *dev, struct sk_buff *skb)
+ 	wrqu->ap_addr.sa_family = ARPHRD_ETHER;
+ 	memcpy(wrqu->ap_addr.sa_data, this->bssid, ETH_ALEN);
+@@ -1616,7 +1616,7 @@ static int wl3501_set_scan(struct net_de
+ static int wl3501_get_scan(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl=dev->priv;
-+	struct x25_asy *sl=netdev_priv(dev);
- 	
- 	spin_lock(&sl->lock);
- 	if (netif_queue_stopped(sl->dev) || sl->tty == NULL)
-@@ -399,7 +399,7 @@ static void x25_asy_data_transmit(struct
-  
- static void x25_asy_connected(struct net_device *dev, int reason)
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int i;
+ 	char *current_ev = extra;
+ 	struct iw_event iwe;
+@@ -1666,7 +1666,7 @@ static int wl3501_set_essid(struct net_d
+ 			    struct iw_request_info *info,
+ 			    union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = dev->priv;
-+	struct x25_asy *sl = netdev_priv(dev);
- 	struct sk_buff *skb;
- 	unsigned char *ptr;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
  
-@@ -418,7 +418,7 @@ static void x25_asy_connected(struct net
- 
- static void x25_asy_disconnected(struct net_device *dev, int reason)
+ 	if (wrqu->data.flags) {
+ 		iw_set_mgmt_info_element(IW_MGMT_INFO_ELEMENT_SSID,
+@@ -1683,7 +1683,7 @@ static int wl3501_get_essid(struct net_d
+ 			    struct iw_request_info *info,
+ 			    union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = dev->priv;
-+	struct x25_asy *sl = netdev_priv(dev);
- 	struct sk_buff *skb;
- 	unsigned char *ptr;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	unsigned long flags;
  
-@@ -449,7 +449,7 @@ static struct lapb_register_struct x25_a
- /* Open the low-level part of the X.25 channel. Easy! */
- static int x25_asy_open(struct net_device *dev)
+ 	spin_lock_irqsave(&this->lock, flags);
+@@ -1697,7 +1697,7 @@ static int wl3501_get_essid(struct net_d
+ static int wl3501_set_nick(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	struct x25_asy *sl = (struct x25_asy*)(netdev_priv(dev));
- 	unsigned long len;
- 	int err;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
  
-@@ -499,7 +499,7 @@ norbuff:
- /* Close the low-level part of the X.25 channel. Easy! */
- static int x25_asy_close(struct net_device *dev)
+ 	if (wrqu->data.length > sizeof(this->nick))
+ 		return -E2BIG;
+@@ -1708,7 +1708,7 @@ static int wl3501_set_nick(struct net_de
+ static int wl3501_get_nick(struct net_device *dev, struct iw_request_info *info,
+ 			   union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	struct x25_asy *sl = (struct x25_asy*)(netdev_priv(dev));
- 	int err;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
  
- 	spin_lock(&sl->lock);
-@@ -615,7 +615,7 @@ static void x25_asy_close_tty(struct tty
- 
- static struct net_device_stats *x25_asy_get_stats(struct net_device *dev)
+ 	strlcpy(extra, this->nick, 32);
+ 	wrqu->data.length = strlen(extra);
+@@ -1733,7 +1733,7 @@ static int wl3501_get_rts_threshold(stru
+ 				    union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	struct x25_asy *sl = (struct x25_asy*)(netdev_priv(dev));
- 
- 	return &sl->stats;
- }
-@@ -730,7 +730,7 @@ static int x25_asy_ioctl(struct tty_stru
- 
- static int x25_asy_open_dev(struct net_device *dev)
+ 	u16 threshold; /* size checked: it is u16 */
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = wl3501_get_mib_value(this, WL3501_MIB_ATTR_RTS_THRESHOLD,
+ 				      &threshold, sizeof(threshold));
+ 	if (!rc) {
+@@ -1749,7 +1749,7 @@ static int wl3501_get_frag_threshold(str
+ 				     union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = (struct x25_asy*)(dev->priv);
-+	struct x25_asy *sl = (struct x25_asy*)(netdev_priv(dev));
- 	if(sl->tty==NULL)
- 		return -ENODEV;
- 	return 0;
-@@ -739,7 +739,7 @@ static int x25_asy_open_dev(struct net_d
- /* Initialise the X.25 driver.  Called by the device init code */
- static void x25_asy_setup(struct net_device *dev)
+ 	u16 threshold; /* size checked: it is u16 */
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = wl3501_get_mib_value(this, WL3501_MIB_ATTR_FRAG_THRESHOLD,
+ 				      &threshold, sizeof(threshold));
+ 	if (!rc) {
+@@ -1765,7 +1765,7 @@ static int wl3501_get_txpow(struct net_d
+ 			    union iwreq_data *wrqu, char *extra)
  {
--	struct x25_asy *sl = dev->priv;
-+	struct x25_asy *sl = netdev_priv(dev);
+ 	u16 txpow;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = wl3501_get_mib_value(this,
+ 				      WL3501_MIB_ATTR_CURRENT_TX_PWR_LEVEL,
+ 				      &txpow, sizeof(txpow));
+@@ -1787,7 +1787,7 @@ static int wl3501_get_retry(struct net_d
+ 			    union iwreq_data *wrqu, char *extra)
+ {
+ 	u8 retry; /* size checked: it is u8 */
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = wl3501_get_mib_value(this,
+ 				      WL3501_MIB_ATTR_LONG_RETRY_LIMIT,
+ 				      &retry, sizeof(retry));
+@@ -1814,7 +1814,7 @@ static int wl3501_get_encode(struct net_
+ 			     union iwreq_data *wrqu, char *extra)
+ {
+ 	u8 implemented, restricted, keys[100], len_keys, tocopy;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = wl3501_get_mib_value(this,
+ 				      WL3501_MIB_ATTR_PRIV_OPT_IMPLEMENTED,
+ 				      &implemented, sizeof(implemented));
+@@ -1852,7 +1852,7 @@ static int wl3501_get_power(struct net_d
+ 			    union iwreq_data *wrqu, char *extra)
+ {
+ 	u8 pwr_state;
+-	struct wl3501_card *this = dev->priv;
++	struct wl3501_card *this = netdev_priv(dev);
+ 	int rc = wl3501_get_mib_value(this,
+ 				      WL3501_MIB_ATTR_CURRENT_PWR_STATE,
+ 				      &pwr_state, sizeof(pwr_state));
+@@ -1937,7 +1937,7 @@ static int wl3501_probe(struct pcmcia_de
+ 	dev->tx_timeout		= wl3501_tx_timeout;
+ 	dev->watchdog_timeo	= 5 * HZ;
+ 	dev->get_stats		= wl3501_get_stats;
+-	this = dev->priv;
++	this = netdev_priv(dev);
+ 	this->wireless_data.spy_data = &this->spy_data;
+ 	this->p_dev = p_dev;
+ 	dev->wireless_data	= &this->wireless_data;
+@@ -2006,7 +2006,7 @@ static int wl3501_config(struct pcmcia_d
  
- 	sl->magic  = X25_ASY_MAGIC;
- 	sl->dev	   = dev;
-@@ -805,7 +805,7 @@ static void __exit exit_x25_asy(void)
- 	for (i = 0; i < x25_asy_maxdev; i++) {
- 		dev = x25_asy_devs[i];
- 		if (dev) {
--			struct x25_asy *sl = dev->priv;
-+			struct x25_asy *sl = netdev_priv(dev);
+ 	SET_MODULE_OWNER(dev);
  
- 			spin_lock_bh(&sl->lock);
- 			if (sl->tty) 
+-	this = dev->priv;
++	this = netdev_priv(dev);
+ 	/*
+ 	 * At this point, the dev_node_t structure(s) should be initialized and
+ 	 * arranged in a linked list at link->dev_node.
+@@ -2079,7 +2079,7 @@ static int wl3501_suspend(struct pcmcia_
+ {
+ 	struct net_device *dev = link->priv;
+ 
+-	wl3501_pwr_mgmt(dev->priv, WL3501_SUSPEND);
++	wl3501_pwr_mgmt(netdev_priv(dev), WL3501_SUSPEND);
+ 	if (link->open)
+ 		netif_device_detach(dev);
+ 
+@@ -2090,7 +2090,7 @@ static int wl3501_resume(struct pcmcia_d
+ {
+ 	struct net_device *dev = link->priv;
+ 
+-	wl3501_pwr_mgmt(dev->priv, WL3501_RESUME);
++	wl3501_pwr_mgmt(netdev_priv(dev), WL3501_RESUME);
+ 	if (link->open) {
+ 		wl3501_reset(dev);
+ 		netif_device_attach(dev);
 
