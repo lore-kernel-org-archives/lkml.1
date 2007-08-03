@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762117AbXHCNpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762046AbXHCNua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762117AbXHCNpy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761281AbXHCNpr
+	id S1762046AbXHCNua (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759693AbXHCNuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 09:45:47 -0400
-Received: from lazybastard.de ([212.112.238.170]:36604 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761006AbXHCNpq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 09:45:46 -0400
-Date: Fri, 3 Aug 2007 15:41:50 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Cc: David Miller <davem@davemloft.net>, Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       Thomas Klein <tklein@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       Andrew Gallatin <gallatin@myri.com>, Jeff Garzik <jeff@garzik.org>,
-       Stefan Roscher <stefan.roscher@de.ibm.com>
-Subject: Re: [PATCH 1/1] lro: Generic Large Receive Offload for TCP traffic
-Message-ID: <20070803134150.GH19344@lazybastard.org>
-References: <200708031441.20632.ossthema@de.ibm.com>
+	Fri, 3 Aug 2007 09:50:17 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53243 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757525AbXHCNuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 09:50:15 -0400
+Date: Fri, 3 Aug 2007 17:49:44 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Daniel Phillips <phillips@phunq.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+Subject: Re: Distributed storage.
+Message-ID: <20070803134943.GA21221@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708021408.24876.phillips@phunq.net> <20070803102629.GB10089@2ka.mipt.ru> <20070803105747.GE10089@2ka.mipt.ru> <1186144072.11797.55.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200708031441.20632.ossthema@de.ibm.com>
+In-Reply-To: <1186144072.11797.55.camel@lappy>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 August 2007 14:41:19 +0200, Jan-Bernd Themann wrote:
+On Fri, Aug 03, 2007 at 02:27:52PM +0200, Peter Zijlstra (peterz@infradead.org) wrote:
+> On Fri, 2007-08-03 at 14:57 +0400, Evgeniy Polyakov wrote:
 > 
-> This patch provides generic Large Receive Offload (LRO) functionality
-> for IPv4/TCP traffic.
+> > For receiving situation is worse, since system does not know in advance
+> > to which socket given packet will belong to, so it must allocate from
+> > global pool (and thus there must be independent global reserve), and
+> > then exchange part of the socket's reserve to the global one (or just
+> > copy packet to the new one, allocated from socket's reseve is it was
+> > setup, or drop it otherwise). Global independent reserve is what I
+> > proposed when stopped to advertise network allocator, but it seems that
+> > it was not taken into account, and reserve was always allocated only
+> > when system has serious memory pressure in Peter's patches without any
+> > meaning for per-socket reservation.
 > 
-> LRO combines received tcp packets to a single larger tcp packet and 
-> passes them then to the network stack in order to increase performance
-> (throughput). The interface supports two modes: Drivers can either pass
-> SKBs or fragment lists to the LRO engine. 
+> This is not true. I have a global reserve which is set-up a priori. You
+> cannot allocate a reserve when under pressure, that does not make sense.
 
-Maybe this is a stupid question, but why is LRO done at the device
-driver level?
+I probably did not cut enough details - my main position is to allocate
+per socket reserve from socket's queue, and copy data there from main
+reserve, all of which are allocated either in advance (global one) or
+per sockoption, so that there would be no fairness issues what to mark 
+as special and what to not.
 
-If it is a unversal performance benefit, I would have expected it to be
-done generically, i.e. have all packets moved into network layer pass
-through LRO instead.
-
-> +void lro_flush_pkt(struct net_lro_mgr *lro_mgr,
-> +		   struct iphdr *iph, struct tcphdr *tcph);
-
-In particular this bit looks like it should be driven by a timeout,
-which would be settable via /proc/sys/net/core/lro_timeout or similar.
-
-Jörn
+Say we have a page per socket, each socket can assign a reserve for
+itself from own memory, this accounts both tx and rx side. Tx is not
+interesting, it is simple, rx has global reserve (always allocated on 
+startup or sometime way before reclaim/oom)where data is originally 
+received (including skb, shared info and whatever is needed, page is 
+just an exmaple), then it is copied into per-socket reserve and reused 
+for the next packet. Having per-socket reserve allows to have progress 
+in any situation not only in cases where single action must be 
+received/processed, and allows to be completely fair for all users, but
+not only special sockets, thus admin for example would be allowed to
+login, ipsec would work and so on...
 
 -- 
-Rules of Optimization:
-Rule 1: Don't do it.
-Rule 2 (for experts only): Don't do it yet.
--- M.A. Jackson
+	Evgeniy Polyakov
