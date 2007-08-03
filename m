@@ -1,62 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXHCAOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbXHCAO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760876AbXHCAOP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 20:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbXHCAOB
+	id S1761423AbXHCAO6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 20:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbXHCAOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 20:14:01 -0400
-Received: from [202.78.101.198] ([202.78.101.198]:37995 "EHLO mx1.hq.astra.ph"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756792AbXHCAOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 20:14:00 -0400
-Message-ID: <46B27351.7000507@gmail.com>
-Date: Fri, 03 Aug 2007 08:14:09 +0800
-From: Carlo Florendo <subscribermail@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
-MIME-Version: 1.0
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: ck@vds.kolivas.org, whansard@sbcglobal.net, linux-kernel@vger.kernel.org,
-       Klaus Schulz <Klaus.Schulz@web.de>
-Subject: Re: [ck] Re: ck vs. cfs : realtime audio performance
-References: <1745683987@web.de> <20070802115952.6cd4b217.whansard@sbcglobal.net> <200708021847.49271.Martin@lichtvoll.de> (sfid-20070802_185010_002178_A5EF4503) <200708021859.06411.Martin@lichtvoll.de>
-In-Reply-To: <200708021859.06411.Martin@lichtvoll.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 20:14:50 -0400
+Received: from ns2.suse.de ([195.135.220.15]:53488 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758540AbXHCAOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 20:14:49 -0400
+Date: Fri, 3 Aug 2007 02:14:47 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: lmbench ctxsw regression with CFS
+Message-ID: <20070803001447.GA14775@wotan.suse.de>
+References: <20070802021525.GC15595@wotan.suse.de> <alpine.LFD.0.999.0708011922500.3582@woody.linux-foundation.org> <20070802024132.GD15595@wotan.suse.de> <20070802071956.GA23300@elte.hu> <20070802073123.GB16744@wotan.suse.de> <20070802154447.GA13725@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802154447.GA13725@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Steigerwald wrote:
-> Am Donnerstag 02 August 2007 schrieb Martin Steigerwald:
+On Thu, Aug 02, 2007 at 05:44:47PM +0200, Ingo Molnar wrote:
 > 
->> The tone I see on responses to posts that are CCed to LKML in my
->> perception often is just completely and utterly awfully unfriendly. And
->> often those responses actual include factual inaccuracies and
->> preliminary assumptions as well. Is that how Linux Kernel Management
->> Style is supposed to work? I hope not. [...]
+> * Nick Piggin <npiggin@suse.de> wrote:
 > 
-> Well, if Carlo is not a Linux Kernel manager this comment of mine is 
-> inapprobiate. Sorry for that.
+> > > > > One thing to check out is whether the lmbench numbers are 
+> > > > > "correct". Especially on SMP systems, the lmbench numbers are 
+> > > > > actually *best* when the two processes run on the same CPU, even 
+> > > > > though that's not really at all the best scheduling - it's just 
+> > > > > that it artificially improves lmbench numbers because of the 
+> > > > > close cache affinity for the pipe data structures.
+> > > > 
+> > > > Yes, I bound them to a single core.
+> > > 
+> > > could you send me the .config you used?
+> > 
+> > Sure, attached...
+> > 
+> > You don't see a regression? If not, then can you send me the .config 
+> > you used? [...]
+> 
+> i used your config to get a few numbers and to see what happens. Here's 
+> the numbers of 10 consecutive "lat_ctx -s 0 2" runs:
+> 
+>                         [ time in micro-seconds, smaller is better ]
+> 
+>         v2.6.22         v2.6.23-git          v2.6.23-git+const-param
+>         -------         -----------          -----------------------
+>          1.30              1.60                       1.19
+>          1.30              1.36                       1.18
+>          1.14              1.50                       1.01
+>          1.26              1.27                       1.23
+>          1.22              1.40                       1.04
+>          1.13              1.34                       1.09
+>          1.27              1.39                       1.05
+>          1.20              1.30                       1.16
+>          1.20              1.17                       1.16
+>          1.25              1.33                       1.01
+>        -------------------------------------------------------------
+>   avg:   1.22              1.36 (+11.3%)              1.11 (-10.3%)
+>   min:   1.13              1.17 ( +3.5%)              1.01 (-11.8%)
+>   max:   1.27              1.60 (+26.0%)              1.23 ( -3.2%)
+> 
+> one reason for the extra overhead is the current tunability of CFS, but 
+> that is not fundamental, it's caused by the many knobs that CFS has at 
+> the moment. The const-tuning patch (attached below, results in the 
+> rightmost column) changes those knobs to constants, allowing the 
+> compiler to optimize the math better and reduce code size. (the code 
+> movement in the patch makes up for most of its size, the change that it 
+> does is simple otherwise.)
 
-I am not a kernel manager, just a simple Linux user.
+[...]
 
-I'm very very sorry if I have hurt anyone in this thread.
+Oh good. Thanks for getting to the bottom of it. We have normally
+disliked too much runtime tunables in the scheduler, so I assume
+these are mostly going away or under a CONFIG option for 2.6.23?
+Or...?
 
-Thank you very much.
+What CPU did you get these numbers on? Do the indirect calls hurt
+much on those without an indirect predictor? (I'll try running some
+tests).
 
-Best Regards.
-
-Carlo
-
--- 
-Carlo Florendo
-Softare Engineer/Network Co-Administrator
-Astra Philippines Inc.
-UP-Ayala Technopark, UP Campus Diliman
-1101 Quezon City, Philippines
-http://www.astra.ph
-
---
-The Astra Group of Companies
-5-3-11 Sekido, Tama City
-Tokyo 206-0011, Japan
-http://www.astra.co.jp
+I must say that I don't really like the indirect calls a great deal,
+and they could be eliminated just with a couple of branches and
+direct calls.
