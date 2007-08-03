@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763423AbXHCTpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763533AbXHCTsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763423AbXHCTpy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 15:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbXHCTps
+	id S1763533AbXHCTsI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 15:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759867AbXHCTr5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 15:45:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:35319 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751266AbXHCTpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 15:45:47 -0400
-Date: Fri, 3 Aug 2007 15:45:32 -0400
-From: Dave Jones <davej@redhat.com>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Greg KH <gregkh@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by
-	default on certain device classes
-Message-ID: <20070803194532.GD16604@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Pete Zaitcev <zaitcev@redhat.com>,
-	Oliver Neukum <oliver@neukum.org>,
-	Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <gregkh@suse.de>,
-	linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070802235613.GA9487@srcf.ucam.org> <20070803011505.GA32589@suse.de> <20070803014756.GA10392@srcf.ucam.org> <200708030957.46320.oliver@neukum.org> <20070803142416.GB11942@redhat.com> <20070803123447.00374108.zaitcev@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070803123447.00374108.zaitcev@redhat.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Fri, 3 Aug 2007 15:47:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33818 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758807AbXHCTr4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 15:47:56 -0400
+Subject: Re: [PATCH] msleep() with hrtimers
+From: Arjan van de Ven <arjan@infradead.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0708032116340.1817@scrub.home>
+References: <15327.1186166232@lwn.net>
+	 <Pine.LNX.4.64.0708032116340.1817@scrub.home>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Fri, 03 Aug 2007 12:46:46 -0700
+Message-Id: <1186170407.3153.8.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 12:34:47PM -0700, Pete Zaitcev wrote:
- > On Fri, 3 Aug 2007 10:24:16 -0400, Dave Jones <davej@redhat.com> wrote:
- > > On Fri, Aug 03, 2007 at 09:57:45AM +0200, Oliver Neukum wrote:
- > >  
- > >  > Kernel developers are a diverser lot than you think ;-)
- > >  > We don't enable autosuspend in drivers we can't test, except where
- > >  > the lack of a kernel driver forces us to use a broad swipe. Printers
- > >  > were tested, too, and most printers seem to work.
- > > 
- > > My experience suggests the opposite.  Of the several I've tried so far,
- > > none have worked with usb suspend.
- > 
- > All of mine work. I'm wondering if this has something to do with
- > a hub or motherboard... How should we test it? Tried plugging elsewhere?
+On Fri, 2007-08-03 at 21:19 +0200, Roman Zippel wrote:
+> Hi,
+> 
+> On Fri, 3 Aug 2007, Jonathan Corbet wrote:
+> 
+> > Most comments last time were favorable.  The one dissenter was Roman,
+> > who worries about the overhead of using hrtimers for this operation; my
+> > understanding is that he would rather see a really_msleep() function for
+> > those who actually want millisecond resolution.  I'm not sure how to
+> > characterize what the cost could be, but it can only be buried by the
+> > fact that every call sleeps for some number of milliseconds.  On my
+> > system, the several hundred total msleep() calls can't cause any real
+> > overhead, and almost all happen at initialization time.
+> 
+> The main point is still that these are two _different_ APIs for different 
+> usages, so I still prefer to add a hrsleep() instead.
 
-no hubs involved, directly plugged them into the mainboard.
-Fairly recent Intel chipsets on all the systems I tested.
 
-	Dave
+I would actually prefer it the other way around; call the
+not-so-accurate one "msleep_approx()" or somesuch, to make it explicit
+that the sleep is only approximate...
 
--- 
-http://www.codemonkey.org.uk
+
