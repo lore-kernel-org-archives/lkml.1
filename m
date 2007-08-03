@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932227AbXHCNBz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762974AbXHCNC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932227AbXHCNBz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:01:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbXHCM51
+	id S1762974AbXHCNC2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762286AbXHCM52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:57:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51269 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 08:57:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51270 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762254AbXHCM5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1762251AbXHCM5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Aug 2007 08:57:24 -0400
-Message-Id: <20070803125234.881136000@chello.nl>
+Message-Id: <20070803125236.299305000@chello.nl>
 References: <20070803123712.987126000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 03 Aug 2007 14:37:18 +0200
+Date: Fri, 03 Aug 2007 14:37:24 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,68 +20,61 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 05/23] lib: percpu_counter_set
-Content-Disposition: inline; filename=percpu_counter_set.patch
+Subject: [PATCH 11/23] containers: bdi init hooks
+Content-Disposition: inline; filename=bdi_init_container.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide a method to set a percpu counter to a specified value.
+split off from the large bdi_init patch because containers are not slated
+for mainline any time soon.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/percpu_counter.h |    6 ++++++
- lib/percpu_counter.c           |   14 ++++++++++++++
- 2 files changed, 20 insertions(+)
+ kernel/container.c |   14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-Index: linux-2.6/include/linux/percpu_counter.h
+Index: linux-2.6/kernel/container.c
 ===================================================================
---- linux-2.6.orig/include/linux/percpu_counter.h
-+++ linux-2.6/include/linux/percpu_counter.h
-@@ -32,6 +32,7 @@ struct percpu_counter {
+--- linux-2.6.orig/kernel/container.c
++++ linux-2.6/kernel/container.c
+@@ -567,12 +567,13 @@ static int container_populate_dir(struct
+ static struct inode_operations container_dir_inode_operations;
+ static struct file_operations proc_containerstats_operations;
  
- void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
- void percpu_counter_destroy(struct percpu_counter *fbc);
-+void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
- s64 percpu_counter_sum(struct percpu_counter *fbc);
- 
-@@ -75,6 +76,11 @@ static inline void percpu_counter_destro
++static struct backing_dev_info container_backing_dev_info = {
++	.capabilities	= BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK,
++};
++
+ static struct inode *container_new_inode(mode_t mode, struct super_block *sb)
  {
+ 	struct inode *inode = new_inode(sb);
+-	static struct backing_dev_info container_backing_dev_info = {
+-		.capabilities	= BDI_CAP_NO_ACCT_DIRTY | BDI_CAP_NO_WRITEBACK,
+-	};
+ 
+ 	if (inode) {
+ 		inode->i_mode = mode;
+@@ -2261,6 +2262,10 @@ int __init container_init(void)
+ 	int i;
+ 	struct proc_dir_entry *entry;
+ 
++	err = bdi_init(&container_backing_dev_info);
++	if (err)
++		return err;
++
+ 	for (i = 0; i < CONTAINER_SUBSYS_COUNT; i++) {
+ 		struct container_subsys *ss = subsys[i];
+ 		if (!ss->early_init)
+@@ -2276,6 +2281,9 @@ int __init container_init(void)
+ 		entry->proc_fops = &proc_containerstats_operations;
+ 
+ out:
++	if (err)
++		bdi_destroy(&container_backing_dev_info);
++
+ 	return err;
  }
  
-+static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
-+{
-+	fbc->count = amount;
-+}
-+
- #define __percpu_counter_add(fbc, amount, batch) \
- 	percpu_counter_add(fbc, amount)
- 
-Index: linux-2.6/lib/percpu_counter.c
-===================================================================
---- linux-2.6.orig/lib/percpu_counter.c
-+++ linux-2.6/lib/percpu_counter.c
-@@ -14,6 +14,20 @@ static LIST_HEAD(percpu_counters);
- static DEFINE_MUTEX(percpu_counters_lock);
- #endif
- 
-+void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
-+{
-+	int cpu;
-+
-+	spin_lock(&fbc->lock);
-+	for_each_possible_cpu(cpu) {
-+		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
-+		*pcount = 0;
-+	}
-+	fbc->count = amount;
-+	spin_unlock(&fbc->lock);
-+}
-+EXPORT_SYMBOL(percpu_counter_set);
-+
- void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch)
- {
- 	s64 count;
 
 --
 
