@@ -1,76 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbXHCKli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761108AbXHCKng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760841AbXHCKli (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 06:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759709AbXHCKl2
+	id S1761108AbXHCKng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 06:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759860AbXHCKnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 06:41:28 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:60014 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759639AbXHCKl1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 06:41:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
-        b=UaZ2KGu8oeVpArlc8qhmTlvTEXs1lR2b7ibWEYlpcsQZkbyS98PdxBhuaLxjbH2Ohpf1lBmcZTKKHsouwoub0yVlGDEvlxfCuoGKk8CN9JrBKLn6cn3Kf0Ouc519BnOQcQGkSk75CRXPR98B8Lnd8+NbCsK0B0ZokH/P3FxVdSw=
-Message-ID: <46B30651.9030505@gmail.com>
-Date: Fri, 03 Aug 2007 19:41:21 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-CC: Mark Lord <lkml@rtr.ca>, jgarzik@pobox.com, linux-ide@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ICH8 CF timeout (regression)...
-References: <6278d2220708020348k26ac2293v648442f2281eca70@mail.gmail.com>	 <46B20D6B.1060506@gmail.com>	 <6278d2220708021411q17cdc151p79922e5dab74add4@mail.gmail.com>	 <46B25DE1.4050105@rtr.ca> <6278d2220708030322h2c779fa3o1e2e2d9c83ff62e8@mail.gmail.com>
-In-Reply-To: <6278d2220708030322h2c779fa3o1e2e2d9c83ff62e8@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------040808040602010706050405"
+	Fri, 3 Aug 2007 06:43:24 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:40492 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759635AbXHCKnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 06:43:22 -0400
+Date: Fri, 3 Aug 2007 14:42:50 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Daniel Phillips <phillips@phunq.net>
+Subject: Re: Distributed storage.
+Message-ID: <20070803104249.GC10089@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <170fa0d20708022109s60ebb85aqe68ec1033634ef27@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <170fa0d20708022109s60ebb85aqe68ec1033634ef27@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040808040602010706050405
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Hi Mike.
 
-Daniel J Blueman wrote:
-> The ICH8 south-bridge I have is the mobile variant and does come
-> equipped with native parallel IDE - see page 447:
-> http://download.intel.com/design/chipsets/datashts/31305603.pdf . I do
-> see 35MB/s with DMA enabled from my CF on the 1 in 15 times the
-> libata-kernel does work.
+On Fri, Aug 03, 2007 at 12:09:02AM -0400, Mike Snitzer (snitzer@gmail.com) wrote:
+> >     * storage can be formed on top of remote nodes and be exported
+> >         simultaneously (iSCSI is peer-to-peer only, NBD requires device
+> >         mapper and is synchronous)
 > 
-> I can dump off and decode the configuration registers for the timing
-> and bus master registers in the working and non-working libata cases,
-> and the legacy ATA working case and see what's different.
+> Having the in-kernel export is a great improvement over NBD's
+> userspace nbd-server (extra copy, etc).
+> 
+> But NBD's synchronous nature is actually an asset when coupled with MD
+> raid1 as it provides guarantees that the data has _really_ been
+> mirrored remotely.
 
-Does the attached patch change anything?
+I believe, that the right answer to this is barrier, but not synchronous
+sending/receiving, which might slow things down noticebly. Barrier must
+wait until remote side received data and send back a notice. Until
+acknowledge is received, no one can say if data mirrored or ever
+received by remote node or not.
+
+> > TODO list currently includes following main items:
+> >     * redundancy algorithm (drop me a request of your own, but it is highly
+> >         unlikley that Reed-Solomon based will ever be used - it is too slow
+> >         for distributed RAID, I consider WEAVER codes)
+> 
+> I'd like to better understand where you see DST heading in the area of
+> redundancy.    Based on your blog entries:
+> http://tservice.net.ru/~s0mbre/blog/devel/dst/2007_07_24_1.html
+> http://tservice.net.ru/~s0mbre/blog/devel/dst/2007_07_31_2.html
+> (and your todo above) implementing a mirroring algorithm appears to be
+> a near-term goal for you.  Can you comment on how your intended
+> implementation would compare, in terms of correctness and efficiency,
+> to say MD (raid1) + NBD?  MD raid1 has a write intent bitmap that is
+> useful to speed resyncs; what if any mechanisms do you see DST
+> embracing to provide similar and/or better reconstruction
+> infrastructure?  Do you intend to embrace any exisiting MD or DM
+> infrastructure?
+
+Depending on what algorithm will be preferred - I do not want mirroring,
+it is _too_ wasteful in terms of used storage, but it is the simplest.
+Right now I still consider WEAVER codes as the fastest in distributed
+envornment from what I checked before, but it is quite complex and spec
+is (at least for me) not clear in all aspects right now. I did not even
+start userspace implementation of that codes. (Hint: spec sucks, kidding :)
+
+For simple mirroring each node must be split to chunks, each one has
+representation bin in main node mask, when dirty full chunk is resynced.
+Depending on node size and amount of memory chunk size varies. Setup is
+performed during node initialization. Having checksum for each chunk
+is a good step.
+
+All interfaces are already there, although require cleanup and move from
+place to place, but I decided to make initial release small.
+
+> BTW, you have definitely published some very compelling work and its
+> sad that you're predisposed to think DST won't be recieved well if you
+> pushed for inclusion (for others, as much was said in the 7.31.2007
+> blog post I referenced above).  Clearly others need to embrace DST to
+> help inclusion become a reality.  To that end, its great to see that
+> Daniel Phillips and the other zumastor folks will be putting DST
+> through its paces.
+
+In that blog entry I misspelled Zen with Xen - that's an error,
+according to prognosis - time will judge :)
+
+> regards,
+> Mike
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
-tejun
-
---------------040808040602010706050405
-Content-Type: text/x-patch;
- name="ich8-map-01b-update.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ich8-map-01b-update.patch"
-
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index ad07086..47a344b 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -436,7 +436,7 @@ static const struct piix_map_db ich8_map_db = {
- 		/* PM   PS   SM   SS       MAP */
- 		{  P0,  P2,  P1,  P3 }, /* 00b (hardwired when in AHCI) */
- 		{  RV,  RV,  RV,  RV },
--		{  IDE,  IDE,  NA,  NA }, /* 10b (IDE mode) */
-+		{  P0,  P2, IDE, IDE }, /* 10b (IDE mode) */
- 		{  RV,  RV,  RV,  RV },
- 	},
- };
-
---------------040808040602010706050405--
+	Evgeniy Polyakov
