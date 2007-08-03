@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761919AbXHCDFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbXHCDJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761919AbXHCDFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 23:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758952AbXHCDFb
+	id S1761808AbXHCDJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 23:09:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbXHCDJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 23:05:31 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39829 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758315AbXHCDFb (ORCPT
+	Thu, 2 Aug 2007 23:09:12 -0400
+Received: from rv-out-0910.google.com ([209.85.198.186]:22142 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525AbXHCDJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 23:05:31 -0400
-Date: Fri, 3 Aug 2007 08:47:56 +0530 (IST)
-From: Satyam Sharma <satyam@infradead.org>
-X-X-Sender: satyam@enigma.security.iitk.ac.in
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: gcc fixed size char array initialization bug - known?
-In-Reply-To: <Pine.LNX.4.64.0708022157310.9319@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LFD.0.999.0708030841390.23798@enigma.security.iitk.ac.in>
-References: <Pine.LNX.4.60.0708022141420.6774@poirot.grange>
- <Pine.LNX.4.64.0708022157310.9319@fbirervta.pbzchgretzou.qr>
+	Thu, 2 Aug 2007 23:09:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=hVlVOKN2G3r7GBcBDSkt4BKW9OYx93nHNOv3aibZn2KUyv4MXh4AOKi9bvgc14atrjXZR0RP9g0s9aRwfMmKyZLmtaRW0HQjuRUzwYqA5OvxT/75F8LL6M2dFxlxmMpPrG25nH0vqjUDbefXsQjX8hjRPIwpq3fNrgd43ll8/5s=
+Message-ID: <a8e1da0708022009u6ee22840m6a260bb98481ddb7@mail.gmail.com>
+Date: Fri, 3 Aug 2007 03:09:10 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Wim Van Sebroeck" <wim@iguana.be>
+Subject: Re: eurotechwdt will cause reboot
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a8e1da0707312003s6000b02s95c90b5971dbbd51@mail.gmail.com>
+	 <20070801055845.GA2648@infomag.infomag.iguana.be>
+	 <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
+	 <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 2 Aug 2007, Jan Engelhardt wrote:
-
-> On Aug 2 2007 21:55, Guennadi Liakhovetski wrote:
-> > [...]
+>On 8/3/07, Dave Young <hidave.darkstar@gmail.com> wrote:
+> >On 8/1/07, Dave Young <hidave.darkstar@gmail.com> wrote:
+> > >On 8/1/07, Wim Van Sebroeck <wim@iguana.be> wrote:
+> > > Hi Dave,
+> > >
+> > > > config eurotechwdt to yes will cause system silent reboot. Is it right
+> > > > behaviour or a bug?
+> > >
+> > > I think this might be a bug. I'll look at the code and will ask you to do some
+> > > tests for me (if that is ok for you).
+> > >
+> > I'm ok for me. BTW, the rebooting is too quick that I have to set he
+> > boot_delay command line parameter to see it.
 > >
-> >	struct {
-> >		char c[4];
-> >		int i;
-> >	} t;
-> >	t.i = 0x12345678;
-> >	strcpy(t.c, c);
-> >
-> >and t.i is silently corrupted. Just wanted to ask if this is known, 
-> >really...
-> 
-> What does this have to do with the kernel? The string "0123" is
-> generally _five_ characters long, so c[4] is not enough.
-> Or use strncpy.
+>
+> Hi,
+> News: 2.6.23-rc1-mm1 will reboot with eurotechwdt, but 2.6.23-rc1-mm2
+> will not. do you need the config files?
+>
+> I will concentrate on this problem as well. Any hints how to debug?
 
-<nitpicking>
+under 2.6.23-rc1-mm1, modprobe eurotechwdt kernel will print:
 
-While we're talking of null-termination of strings, then I bet you
-generally want to be using strlcpy(), really. Often strncpy() isn't
-what you want. Of course, if that buffer isn't a string at all, then
-you should be using memfoo() functions and not strbar() ones in the
-first place ...
+[ 4268.950385] timeout WDT timeout
+[ 4268.950443] Initiating system reboot.
+[ 4268.950472] eurwdt (IRQ 10) handled a spurious interrupt
