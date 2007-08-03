@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763737AbXHCPRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932404AbXHCPYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763737AbXHCPRS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 11:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762758AbXHCPRH
+	id S932404AbXHCPYy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 11:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932141AbXHCPYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 11:17:07 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60456 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762471AbXHCPRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 11:17:05 -0400
-Message-ID: <46B346EB.1040009@garzik.org>
-Date: Fri, 03 Aug 2007 11:16:59 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Fri, 3 Aug 2007 11:24:45 -0400
+Received: from smtp110.sbc.mail.re2.yahoo.com ([68.142.229.95]:24554 "HELO
+	smtp110.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S932067AbXHCPYo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 11:24:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=GSDq9br0Fzvpk2UyaCJEG44pvf+OKUolkWyMPpF3HIm10nFTZ/hihtmHAFhshsrl9cZ5CDPriAE7zl9CtPdtShqO8keJIKGSX+6WqrZLwLWTpbpD/23zrYsMhWaQ080aGGyJUXURrzJlJiCE381DlKHamZ1YUb1EGueeeP6TJTg=  ;
+X-YMail-OSG: s1AZo90VM1nK1PJZaqkTNhtQJm6jZQ2ZPdR1CIvqBv2YEMPT
+From: David Brownell <david-b@pacbell.net>
+To: linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend =?iso-8859-1?q?by=09default_on_certain_device?= classes
+Date: Fri, 3 Aug 2007 08:24:41 -0700
+User-Agent: KMail/1.9.6
+Cc: Dave Jones <davej@redhat.com>, Jiri Kosina <jikos@jikos.cz>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Rogan Dawes <lists@dawes.za.net>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>
+References: <20070803140909.GA19245@srcf.ucam.org> <Pine.LNX.4.64.0708031636160.26230@twin.jikos.cz> <20070803145321.GB17138@redhat.com>
+In-Reply-To: <20070803145321.GB17138@redhat.com>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       mlord@pobox.com
-Subject: Re: [PATCH] sata_qstor, pdc_adma, sata_sx4: convert to new EH
-References: <20070724011404.GA14064@havoc.gtf.org> <46B31862.10201@gmail.com>
-In-Reply-To: <46B31862.10201@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200708030824.41924.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jeff Garzik wrote:
->> This is just a refresh of the existing libata-dev.git#new-eh patches
->> that convert all remaining old-EH drivers to new EH, against 2.6.23-rc1.
->>
->> All three conversions are completely untested.  pdc_adma and sata_qstor
->> need reviewing by someone with docs, in addition to testing.
->>
->> Even "it still works" or "this patch breaks stuff" feedback from users
->> is useful.
+On Friday 03 August 2007, Dave Jones wrote:
+>  > We have been playing with runtime autosuspend of HID devices, are 
+>  > currently postponed the full support, as it turns out that many devices 
+>  > don't support this feature properly (probably due to not being tested in 
+>  > Windows).
 > 
-> pdc_adma works fine.  Tested both a harddrive and a cdrom.  ATAPI check
-> sense seems to work and harddrive was successfully recovered from
-> timeout induced by shaking the harddisk for 30s.  :-)
+> Interesting.  Which devices did you notice failing?
+> Was it a case that they would sleep and not come back out of that state?
 
-Thanks!  I'll push pdc_adma new-EH conversion into #upstream.
+And could you elaborate on "many"?  What proportion of HID devices
+(by volume, model, etc) seem to have problems?
 
-	Jeff
+I'd certainly expect there to be some HID devices which misbehave
+(I have one, a cheap MacAlly trackball).  Early testing seemed to
+indicate such misbehavior was the exception to the rule ... folk
+kept disbelieving me when I pointed out some HID devices misbehaved,
+since nobody else had seen such a thing!
 
+The specific failure I saw was that the device advertised itself as
+supporting remote wakeup, but it couldn't issue that signaling. It
+came back from suspend just fine ... but moving or clicking would
+not do what it should.
 
-
+- Dave
