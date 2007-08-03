@@ -1,19 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764342AbXHCRi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932224AbXHCRjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764342AbXHCRi4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 13:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764247AbXHCRiZ
+	id S932224AbXHCRjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 13:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764132AbXHCRi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 13:38:25 -0400
-Received: from sicnat3.emn.fr ([193.54.76.194]:37431 "EHLO ron.emn.fr"
+	Fri, 3 Aug 2007 13:38:28 -0400
+Received: from sicnat3.emn.fr ([193.54.76.194]:37437 "EHLO ron.emn.fr"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763978AbXHCRiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 13:38:24 -0400
-Date: Fri, 3 Aug 2007 19:36:53 +0200 (MEST)
-Message-Id: <200708031736.TAA00865@ifs.emn.fr>
+	id S1764249AbXHCRi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 13:38:26 -0400
+Date: Fri, 3 Aug 2007 19:34:30 +0200 (MEST)
+Message-Id: <200708031734.TAA00783@ifs.emn.fr>
 To: kernel-janitors@vger.kernel.org
-Subject: [PATCH 11/13] dev->priv to netdev_priv(dev), for drivers/net/usb
-Cc: greg@kroah.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 08/13] dev->priv to netdev_priv(dev), for drivers/net/netxen
+Cc: amitkale@netxen.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
 From: Yoann Padioleau <padator@wanadoo.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -58,32 +59,33 @@ type rule1.T;
 + netdev_priv(dev)
 
 Signed-off-by: Yoann Padioleau <padator@wanadoo.fr>
-Cc: greg@kroah.com
+Cc: amitkale@netxen.com
 Cc: akpm@linux-foundation.org
 ---
 
- drivers/net/usb/mcs7830.c |    4 ++--
+ drivers/net/netxen/netxen_nic_main.c |    4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/usb/mcs7830.c b/drivers/net/usb/mcs7830.c
-index 6240b97..37ad14b 100644
---- a/drivers/net/usb/mcs7830.c
-+++ b/drivers/net/usb/mcs7830.c
-@@ -341,14 +341,14 @@ out:
- static int mcs7830_mdio_read(struct net_device *netdev, int phy_id,
- 			     int location)
- {
--	struct usbnet *dev = netdev->priv;
-+	struct usbnet *dev = netdev_priv(netdev);
- 	return mcs7830_read_phy(dev, location);
- }
+diff --git a/drivers/net/netxen/netxen_nic_main.c b/drivers/net/netxen/netxen_nic_main.c
+index 08a62ac..c14c178 100644
+--- a/drivers/net/netxen/netxen_nic_main.c
++++ b/drivers/net/netxen/netxen_nic_main.c
+@@ -329,7 +329,7 @@ netxen_nic_probe(struct pci_dev *pdev, c
+ 	SET_MODULE_OWNER(netdev);
+ 	SET_NETDEV_DEV(netdev, &pdev->dev);
  
- static void mcs7830_mdio_write(struct net_device *netdev, int phy_id,
- 				int location, int val)
+-	adapter = netdev->priv;
++	adapter = netdev_priv(netdev);
+ 	memset(adapter, 0 , sizeof(struct netxen_adapter));
+ 
+ 	adapter->ahw.pdev = pdev;
+@@ -850,7 +850,7 @@ static void __devexit netxen_nic_remove(
+  */
+ static int netxen_nic_open(struct net_device *netdev)
  {
--	struct usbnet *dev = netdev->priv;
-+	struct usbnet *dev = netdev_priv(netdev);
- 	mcs7830_write_phy(dev, location, val);
- }
+-	struct netxen_adapter *adapter = (struct netxen_adapter *)netdev->priv;
++	struct netxen_adapter *adapter = netdev_priv(netdev);
+ 	int err = 0;
+ 	int ctx, ring;
  
 
