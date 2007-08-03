@@ -1,60 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbXHCHVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXHCH2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760579AbXHCHVR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 03:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbXHCHU6
+	id S1760050AbXHCH2Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 03:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbXHCH2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 03:20:58 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:47403 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752939AbXHCHU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 03:20:57 -0400
-Date: Fri, 3 Aug 2007 09:30:31 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Gabriel C <nix.or.die@googlemail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jason.wessel@windriver.com,
-       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
-Message-ID: <20070803073030.GB1582@ff.dom.local>
-References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org> <20070802090008.GA1699@ff.dom.local> <20070802155922.GQ11115@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 3 Aug 2007 03:28:00 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:38004 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750986AbXHCH17 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 03:27:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=go+xlUe8S0aiwc7w0KT313Kl4XyH4yEtlAyegEPKQyD3V3LiohE+OnvrmI6ZrglaHCje+xeY+DU0kAK7HZo/MeXkWJSou9woVtwugXi47QV2Ri2Xx712bXm81YeTOnahm7HjlK/aww7jJ6j+rva4qUyv42nWxpfbG/ASpaq1ufo=
+Message-ID: <a8e1da0708030027n38c18e34ld8bc18fc103179f8@mail.gmail.com>
+Date: Fri, 3 Aug 2007 07:27:58 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: dwmw2@infradead.org
+Subject: Re: MTD: pnc2000 iomem oops
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mtd@lists.infradead.org
+In-Reply-To: <a8e1da0708010135we34a17dl604d9f8c3eb630f8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070802155922.GQ11115@waste.org>
-User-Agent: Mutt/1.4.2.2i
+References: <a8e1da0708010135we34a17dl604d9f8c3eb630f8@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 10:59:23AM -0500, Matt Mackall wrote:
-> On Thu, Aug 02, 2007 at 11:00:08AM +0200, Jarek Poplawski wrote:
-> > On Wed, Aug 01, 2007 at 09:02:19PM -0500, Matt Mackall wrote:
-...
-> > > How about cc:ing the netpoll maintainer?
-> > 
-> > Is there a new one or do you suggest possibility of abusing the
-> > authority of the netpoll's author with such trifles...?!
-> 
-> I'm just subtly suggesting that if you're going to have a discussion
-> about netpoll, you ought to cc: me.
-
-Thanks! I'm very honored. I've suspected there is some subtlety, but
-wasn't sure of possible new patches to MAINTAINERS, so tried to be
-subtle too...
-
-> 
-> > There are some notions about "other diagnostic tools" in some
-> > net drivers, eg. 3c509.c, so there would be a little bit of
-> > work if, after changing this, they really exist (and even if
-> > not - maybe it's reasonable to save such possibility for the
-> > future?).
-> 
-> I created it for netpoll, only netpoll clients have ever cared.
-
-So, probably you're the best person to change this! Alas, it seems,
-for some time any changes to netpoll could have a cold reception
-here (pity for Ingo's laptop...).
-
-Regards,
-Jarek P.
+>On 8/1/07, Dave Young <hidave.darkstar@gmail.com> wrote:
+> Hi,
+> The pnc2000 probe function  cause oops. Possible reason is its iomem
+> region not being remaped.
+>
+> I searched lkml history, the oops was reported at 2006-06-14, but still there.
+> http://lkml.org/lkml/2006/6/14/59
+>
+> If the ioremap/iounmap can be added to it, is it the right fix?
+>
+Add the linux-mtd list as cc.
