@@ -1,81 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761523AbXHCCxl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760739AbXHCDBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761523AbXHCCxl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 22:53:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbXHCCxe
+	id S1760739AbXHCDBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 23:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbXHCDB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 22:53:34 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:1874 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754690AbXHCCxd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 22:53:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=j0jl2Z6H9SxcdIiFAmKfGDPSGhA8fNEcTApTuk5welHYh0XGXWUhM+eyDjpIMbypfdt17YzOvx6Ubi/pX4jH8WKn8HbKyN6jQzb0gTg7Bb/qBU+5MvkWAKv7p6i3o05q/EHbsM0wPCa/isRIXFy9pXIH8NSMVEZOO9TrlSwmvlE=
-Message-ID: <a44ae5cd0708021953q79d03484k3c191bfe4894cd9a@mail.gmail.com>
-Date: Thu, 2 Aug 2007 19:53:32 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       "Jeff Garzik" <jgarzik@pobox.com>
-Subject: 2.6.23-rc1-mm2 + cpufreq patch -- inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
+	Thu, 2 Aug 2007 23:01:29 -0400
+Received: from ns1.suse.de ([195.135.220.2]:42215 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753525AbXHCDB2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 23:01:28 -0400
+From: Neil Brown <neilb@suse.de>
+To: Jeff Layton <jlayton@redhat.com>
+Date: Fri, 3 Aug 2007 13:01:09 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Message-ID: <18098.39541.547557.132952@notabene.brown>
+Cc: "J. Bruce Fields" <bfields@fieldses.org>,
+       Stefan Walter <stefan.walter@inf.ethz.ch>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] rpc.mountd crashes when extensively using netgroups
+In-Reply-To: message from Jeff Layton on Thursday August 2
+References: <46ADDFB2.9070709@inf.ethz.ch>
+	<20070731144824.GA15231@fieldses.org>
+	<20070802113255.d686894c.jlayton@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am running Ubuntu Gutsy with latest updates.
-When I run "/etc/init.d/networking stop" with my custom kernel, I get:
+On Thursday August 2, jlayton@redhat.com wrote:
+> 
+> I started having a look at this today. The original patches that I
+> proposed to clean up the rmtab a few months ago also eliminated this
+> comma-delimited string. Neil had valid objections to it at the time,
+> but if we switched to using the IP address as a cache key like Bruce
+> describes then doing that becomes more reasonable.
+> 
+> The only downside I see is the one Bruce points out -- the size of
+> the kernel export cache would increase. I don't have a feel for whether
+> this is a show stopper, however.
+> 
+> Neil, do you have thoughts on what you'd consider a reasonable approach
+> to fixing this?
+> 
 
-=================================
-[ INFO: inconsistent lock state ]
-2.6.23-rc1-mm2 #21
----------------------------------
-inconsistent {in-hardirq-W} -> {hardirq-on-W} usage.
-ifconfig/8982 [HC0[0]:SC0[0]:HE1:SE1] takes:
- (&tp->lock){++..}, at: [<f8b9d65a>] rtl8139_interrupt+0x22/0x377 [8139too]
-{in-hardirq-W} state was registered at:
-  [<c0144837>] __lock_acquire+0x430/0xbca
-  [<c0145047>] lock_acquire+0x76/0x9d
-  [<c031ffe0>] _spin_lock+0x23/0x32
-  [<f8b9d65a>] rtl8139_interrupt+0x22/0x377 [8139too]
-  [<c0154b44>] handle_IRQ_event+0x1a/0x4f
-  [<c0155c6c>] handle_fasteoi_irq+0x7d/0xb6
-  [<c0109a5a>] do_IRQ+0xaf/0xd9
-  [<ffffffff>] 0xffffffff
-irq event stamp: 1501
-hardirqs last  enabled at (1501): [<c0173232>] kfree+0xc7/0xdb
-hardirqs last disabled at (1500): [<c01731d2>] kfree+0x67/0xdb
-softirqs last  enabled at (1480): [<c02cf082>] dev_deactivate+0x87/0xa0
-softirqs last disabled at (1478): [<c031fffa>] _spin_lock_bh+0xb/0x37
+I'm having troubling visualising the problematic setup.  Is it
+possible to get a copy of the /etc/exports file, and some idea of what
+hosts are in which netgroups?  Knowing that would help assess the
+appropriateness of various solutions.
 
-other info that might help us debug this:
-1 lock held by ifconfig/8982:
- #0:  (rtnl_mutex){--..}, at: [<c031ed95>] mutex_lock+0x1c/0x1f
 
-stack backtrace:
- [<c01080ab>] show_trace_log_lvl+0x12/0x25
- [<c0108a9e>] show_trace+0xd/0x10
- [<c0108bac>] dump_stack+0x16/0x18
- [<c0143374>] print_usage_bug+0x107/0x114
- [<c0143bdd>] mark_lock+0x1e9/0x400
- [<c01448ab>] __lock_acquire+0x4a4/0xbca
- [<c0145047>] lock_acquire+0x76/0x9d
- [<c031ffe0>] _spin_lock+0x23/0x32
- [<f8b9d65a>] rtl8139_interrupt+0x22/0x377 [8139too]
- [<c015506f>] free_irq+0xc9/0xf2
- [<f8b9ef56>] rtl8139_close+0xac/0x14a [8139too]
- [<c02c2135>] dev_close+0x4e/0x6b
- [<c02c128a>] dev_change_flags+0x9f/0x152
- [<c03015f2>] devinet_ioctl+0x209/0x506
- [<c0301f5a>] inet_ioctl+0x86/0xa4
- [<c02b8211>] sock_ioctl+0x1a9/0x1c7
- [<c017ffca>] do_ioctl+0x22/0x67
- [<c0180258>] vfs_ioctl+0x249/0x25c
- [<c0180297>] sys_ioctl+0x2c/0x45
- [<c0106f02>] sysenter_past_esp+0x6b/0xb5
- =======================
-eth2: link down
+The core issue is this:
+
+ We need to map IPADDRESS to THING, and  THING + PATH to EXPORTPOINT.
+(roughly).
+So what do we choose for "THING"?
+
+One obvious option is the dotted quad of the IP address.
+People tend to have large sets of similar clients, so doing this seems
+to be missing out on a valuable optimisation and adding bloat to the
+lookup tables in the kernel.
+
+Another apparently obvious solution is to use FQDN, but we really
+don't want to do that, as a multihomed host might have one IP address
+that you want to trust, and another that you don't (as the subnet is
+less secure against forgery).  It doesn't help must over dotted-quad
+anyway.
+
+Another option is to use whatever strings are included in /etc/exports
+to identify things.  e.g. *.my.domain or @mynetgroup.
+This seems simple and elegant, but it can be messy in some
+situations.  In particular, if one IP address matches several strings,
+which one do you use?  We have to use them all.
+One path might be exported to *.my.domain and a different path might
+be exported to @mynetgroup.  If a.b.c.d is in both of those sets of
+machines, then the THING that a.b.c.d is mapped to must allow the
+correct
+    THING + PATH -> EXPORTPOINT
+mapping for both paths.
+    *.my.domain,@mynetgroup
+works quite effectively.
+But if you have lots and lots of different netgroups mentioned in
+/etc/exports, and one machine is in all of those netgroups, then you
+have to generate a very long string @a,@b,@c,@d,.....
+
+I guess we could use a hash and keep a hash table in mountd.
+So mountd:
+  1/ Generates the comma-separated name as needed, being careful to
+     allocate enough space.
+  2a/ If this is small enough, write it to the kernel as is.
+  2b/ If it is too big, Find it in a table (adding if needed) and 
+      write the address of the table entry to the kernel
+
+  When a THING + PATH request arrives:
+    If THING looks like an address in the table, do the lookup to get
+    the string.
+
+This would work to keep the strings in the kernel shorter, but is
+rather ugly - storing in the kernel addresses in a user-space program.
+
+Also, if you have lots of netgroups mentioned, then finding out which
+ones contain a given IP address might be slow, and all the information
+isn't really needed.  Once you get THING, it will be paired with a
+specific path, so you only really need to look up netgroups that are
+related to that path.
+
+So maybe we want to combine the two workable approaches.
+
+Sometimes IPADDRESS maps to DOTTED_QUAD
+Sometimes IPADDRESS maps to LIST,OF,STRINGS,FROM,ETC,EXPORTS
+
+Possibly the choice could be based on a command line switch.
+In the absence of such a switch, it could be based on the number of
+entries in /etc/exports.
+
+	int i;
+	int size = 0;
+	nfs_client	*clp;
+
+	for (i = 0 ; i < MCL_MAXTYPES; i++)
+		for (clp = clientlist[i]; clp ; clp = clp->m_next)
+			size += strlen(clp->m_hostname)+1;
+
+	if (size > 1000)
+		use DOTTED_QUAD;
+	els
+		don't.
+
+
+??
+
+NeilBrown
