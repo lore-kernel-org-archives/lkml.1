@@ -1,59 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758997AbXHCG0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759896AbXHCGba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758997AbXHCG0U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 02:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbXHCG0L
+	id S1759896AbXHCGba (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 02:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbXHCGbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 02:26:11 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35614 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751638AbXHCG0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 02:26:10 -0400
-Date: Thu, 2 Aug 2007 23:25:02 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Keith Owens <kaos@sgi.com>
-Cc: vgoyal@in.ibm.com, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Takenori Nagano <t-nagano@ah.jp.nec.com>, k-miyoshi@cb.jp.nec.com,
-       Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] add kdump_after_notifier
-Message-Id: <20070802232502.b93f4ea0.akpm@linux-foundation.org>
-In-Reply-To: <31687.1186113947@kao2.melbourne.sgi.com>
-References: <20070802112852.GA7054@in.ibm.com>
-	<31687.1186113947@kao2.melbourne.sgi.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 02:31:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50931 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755783AbXHCGbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 02:31:22 -0400
+Date: Fri, 3 Aug 2007 08:31:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ck@vds.kolivas.org
+Subject: Re: SD still better than CFS for 3d   ?(was Re: 2.6.23-rc1)
+Message-ID: <20070803063104.GA24598@elte.hu>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185536610.502.8.camel@localhost> <20070729170641.GA26220@elte.hu> <1185839164.27166.7.camel@localhost> <1185863461.3092.4.camel@twins> <20070731085713.GA15136@elte.hu> <1186011827.2482.1.camel@localhost> <20070802121018.GA11900@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802121018.GA11900@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Aug 2007 14:05:47 +1000 Keith Owens <kaos@sgi.com> wrote:
 
-> I have pretty well given up on RAS code in the Linux kernel.  Everybody
-> has different ideas, there is no overall plan and little interest from
-> Linus in getting RAS tools into the kernel.  We are just thrashing.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Lots of different groups, little commonality in their desired funtionality,
-little interest in sharing infrastructure or concepts.  Sometimes people
-need a bit of motivational help.
+> do you have any filesystem that is not reiserfs? If yes, could you, as 
+> a test, check whether file activities on _that_ file system still 
+> cause these lags, or is the lag purely connected to the reiser3 
+> filesystem?
 
-In this case that motivation would come from the understanding that all the
-RAS tools would be *required* to use such infrastructure if it was merged. 
-Going off and open-coding your own stuff would henceforth not be acceptable.
-If it turns out that it really was unsuitable for a particular group's RAS
-feature, and we merged it anyway, well, that mismatch is that group's
-fault.
+i still have little debug info from you to start from: no 
+cfs-debug-info.sh output of the problematic workload and no kernel 
+.config.
 
-It was a sizeable mistake to send those patches to a few obscure mailing
-lists - this is the first I've heard of it, for example.
+i tried to reproduce your problems based on your existing description: i 
+did a lot of reiser3 testing yesterday and i also wrote a 'BKL latency 
+simulator' (which does a faux lock_kernel() + unlock_kernel() so that 
+the testcode runs into the BKL all the time) - but still this had no 
+visible effect on desktop latencies so either i have some subtle 
+difference in my setup or this aspect of your workload is not the cause 
+of the smoothness problem.
 
-So.  Please, send it all again, copy the correct lists and people, make sure
-that at least one client of the infrastructure is wired up and working (ideally,
-all such in-kernel clients should be wired up) and let's take a look at it.
+could please give us more debug info and try to simplify the "bad" case 
+down to something that can be pinpointed and triggered more exactly? Do 
+you see any particular 'ruckle' in the 3D game when you see a smoothness 
+problem? Anything that we could clearly label as 'anomalous latency' in 
+a tracer output? (in that case i'll send you tracing patches so that we 
+can catch a trace of that 'hickup')
 
-Much of the onus is upon the various RAS tool developers to demonstrate why it
-is unsuitable for their use and, hopefully, to explain how it can be fixed for
-them.
+You said the imap stuff could be causing the smoothness problem: as a 
+debugging thing could you try to renice all the imap activities (imap 
+daemon / mailer) to nice +19, does that make the game magically smooth 
+again? If yes then this is an indicator that the problem is interaction 
+between the game and the imap activities.
 
+	Ingo
