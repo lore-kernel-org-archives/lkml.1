@@ -1,37 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763972AbXHCVZU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbXHCVcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763972AbXHCVZU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 17:25:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbXHCVZH
+	id S1764021AbXHCVcz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 17:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762037AbXHCVcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 17:25:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46759
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757736AbXHCVZG (ORCPT
+	Fri, 3 Aug 2007 17:32:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34374 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761930AbXHCVco convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 17:25:06 -0400
-Date: Fri, 03 Aug 2007 14:25:04 -0700 (PDT)
-Message-Id: <20070803.142504.21593407.davem@davemloft.net>
-To: drepper@redhat.com
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, rth@redhat.com
-Subject: Re: arch maintainers: define O_CLOEXEC correctly!
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46B3613C.60007@redhat.com>
-References: <46B3613C.60007@redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 17:32:44 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Alexey Starikovskiy <aystarik@gmail.com>
+Subject: Re: [2/3] 2.6.23-rc1: known regressions v3
+Date: Fri, 3 Aug 2007 17:31:30 -0400
+User-Agent: KMail/1.9.5
+Cc: Meelis Roos <mroos@linux.ee>,
+       Ismail =?iso-8859-1?q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+References: <46AE0F5D.3000500@googlemail.com> <Pine.SOC.4.64.0707302301290.14147@math.ut.ee> <46AEB59B.7030909@gmail.com>
+In-Reply-To: <46AEB59B.7030909@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708031731.30720.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ulrich Drepper <drepper@redhat.com>
-Date: Fri, 03 Aug 2007 10:09:16 -0700
-
-> Affected as far as I know:
+On Tuesday 31 July 2007 00:07, Alexey Starikovskiy wrote:
+> Meelis Roos wrote:
+> >>> Subject         : New ACPI error/warning with Linus' latest GIT
+> >>> References      : http://lkml.org/lkml/2007/7/26/395
+> >>> Last known good : ?
+> >>> Submitter       : Ismail Dönmez <ismail@pardus.org.tr>
+> >>> Caused-By       : ?
+> >>> Handled-By      : ?
+> >>> Status          : unknown
+> >> This started to happen after the second ACPI merge which was for 2.6.23-rc2.
+> > 
+> > It appeared after new Embedded Controller code was merged into ACPI. It 
+> > might as well be just a debug message or a remainder to add support for 
+> > new queries (whatever these are), but I do not know. The message itself 
+> > seems harmless.
+> > 
+> This _is_ a debug message. EC asks us to perform query which was never defined in DSDT.
+> Previously I thought it would be rare error report, but now it seems that every machine
+> has at least one unregistered query... It is not a functional regression, as we just 
+> ignored errors from query execution before.
 > 
-> Alpha:   probably needs value 010000000
-> 
-> Sparc*:         -"-           0x400000
+> Len already has a patch to remove this printk.
 
-I've fixed sparc, thanks for reporting this.
+yes, this verbose message has been removed.
+
+thanks,
+-Len
+
+commit f1cd1fe61b96e4312312d42c0a9784dfab12e007
+Author: Alexey Starikovskiy <astarikovskiy@suse.de>
+Date:   Fri Aug 3 17:28:17 2007 -0400
+
+    ACPI: EC: Remove noisy debug printk fron EC driver.
+    
+    ACPI: EC: Handler for query 0x57 is not found!
+    
+    Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+    Signed-off-by: Len Brown <len.brown@intel.com>
+
+diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+index 469f3f5..dd384ec 100644
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -471,7 +471,6 @@ static void acpi_ec_gpe_query(void *ec_cxt)
+ 		}
+ 	}
+ 	mutex_unlock(&ec->lock);
+-	printk(KERN_ERR PREFIX "Handler for query 0x%x is not found!\n", value);
+ }
+ 
+ static u32 acpi_ec_gpe_handler(void *data)
