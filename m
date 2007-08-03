@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761738AbXHCMNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761789AbXHCM0q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761738AbXHCMNg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 08:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbXHCMN3
+	id S1761789AbXHCM0q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 08:26:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXHCM0f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:13:29 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:14146 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322AbXHCMN2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 08:13:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Cgmo/NOOxQsgF2pCCFTY+OClpp8YzINVhbvGc4jeOrM1Pt7TJ0YS1Thzr9CQTEsaVpaUjPao4t9rg86zRklJLvw/nCmm6yPt4zFmWkd1QoTXj5SFL7quAAnAAGkmb7ClT7bMkVY2ezLlGqfPypUH+YnUeLZvzjtjzAI2Xg/16c8=
-Message-ID: <64bb37e0708030513w7da84fbcia3cb3b90c75a0550@mail.gmail.com>
-Date: Fri, 3 Aug 2007 14:13:26 +0200
-From: "Torsten Kaiser" <just.for.lkml@googlemail.com>
-To: "Ed L. Cashin" <ecashin@coraid.com>
-Subject: Re: ATA over ethernet swapping and obfuscated code
-Cc: "Pavel Machek" <pavel@ucw.cz>,
-       "kernel list" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070731162140.GI3206@coraid.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 08:26:35 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:55759 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754925AbXHCM0e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 08:26:34 -0400
+Date: Fri, 3 Aug 2007 14:26:54 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch] genirq: fix simple and fasteoi irq handlers
+Message-ID: <20070803122654.GA3345@ff.dom.local>
+References: <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu> <20070803060733.GA1582@ff.dom.local> <20070803080408.GA12222@elte.hu> <20070803091008.GC1582@ff.dom.local> <4bacf17f0708030457i8d5c32xcd1ec4a0640f3822@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-References: <20070731135831.GA4604@elf.ucw.cz>
-	 <20070731150324.GE3206@coraid.com> <20070731152924.GM2087@elf.ucw.cz>
-	 <20070731162140.GI3206@coraid.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4bacf17f0708030457i8d5c32xcd1ec4a0640f3822@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Ed L. Cashin <ecashin@coraid.com> wrote:
-> It is easy to chat, though.  Maybe someday I will test and submit a
-> patch that implements this mechanism, but I'm hoping that somebody
-> beats me to it.  :)
+On Fri, Aug 03, 2007 at 01:57:00PM +0200, Marcin ¦lusarz wrote:
+...
+> I'll test this patch tomorrow (and confirm that the last one from Ingo
+> works fine) and report results on monday (sorry, no internet at home
+> since I moved out of city :|).
 
-There is already such a mechanism (planned).
+So, you are a lucky guy! I have only no internet at home.
+...and time for dreaming about moving out of a city...
 
-swap over networked storage -v11
-http://lwn.net/Articles/223057/
-
-"... Also knowing it is headed towards the VM needs a little help, hence we
-introduce the socket flag SOCK_VMIO to mark sockets with. ..."
-
-But it seems it did not make it into -mm.
-
-HTH
-
-Torsten
+Cheers,
+Jarek P.
