@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761733AbXHCBxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760212AbXHCCSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761733AbXHCBxm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 21:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759111AbXHCBxf
+	id S1760212AbXHCCSt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 22:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756319AbXHCCSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 21:53:35 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:52259 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758604AbXHCBxe (ORCPT
+	Thu, 2 Aug 2007 22:18:39 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:24930 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750916AbXHCCSi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 21:53:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=EPLX59JN5d1A+2J+pn0z4cEySEdmPKmedswUTBPulewbofYMdaljXlw2AmrhXJ2xq7dhyH2V6f4kJ6ewxr1ZYGL7bMfMCCKMYOHmvzvyf3X/6xI6l1E5DAxQaW9vDL0xwdxWeGJLGzK2dv5rrVaj5pDmfJ3uRiZr98eN8wZcLi8=
-Message-ID: <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
-Date: Fri, 3 Aug 2007 01:53:34 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Wim Van Sebroeck" <wim@iguana.be>
-Subject: Re: eurotechwdt will cause reboot
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 2 Aug 2007 22:18:38 -0400
+X-IronPort-AV: i="4.19,215,1183348800"; 
+   d="scan'208"; a="47266123:sNHT26169738"
+Subject: Re: blackfin toolchain and build issues
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Bryan Wu <bryan.wu@analog.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
+In-Reply-To: <20070802194405.GB3646@uranus.ravnborg.org>
+References: <20070729223613.GA5916@martell.zuzino.mipt.ru>
+	 <alpine.LFD.0.999.0707291706490.3442@woody.linux-foundation.org>
+	 <1185770527.22473.2.camel@roc-desktop>
+	 <20070730194335.GE5776@martell.zuzino.mipt.ru>
+	 <1185850297.20043.6.camel@roc-desktop>
+	 <20070802194405.GB3646@uranus.ravnborg.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a8e1da0707312003s6000b02s95c90b5971dbbd51@mail.gmail.com>
-	 <20070801055845.GA2648@infomag.infomag.iguana.be>
-	 <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
+Organization: Analog Devices, Ltd.
+Date: Fri, 03 Aug 2007 10:18:01 +0800
+Message-Id: <1186107481.6131.2.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 03 Aug 2007 02:18:36.0688 (UTC) FILETIME=[99386100:01C7D574]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 8/1/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> >On 8/1/07, Wim Van Sebroeck <wim@iguana.be> wrote:
-> > Hi Dave,
-> >
-> > > config eurotechwdt to yes will cause system silent reboot. Is it right
-> > > behaviour or a bug?
-> >
-> > I think this might be a bug. I'll look at the code and will ask you to do some
-> > tests for me (if that is ok for you).
-> >
-> I'm ok for me. BTW, the rebooting is too quick that I have to set the
-> boot_delay command line parameter to see it.
->
+On Thu, 2007-08-02 at 21:44 +0200, Sam Ravnborg wrote:
+> > > 
+> > Oh, do you need use blackfin toolchain? Actually, it is very simple to
+> > setup it on your machine.
+> > please get the latest binary toolchain here:
+> > http://blackfin.uclinux.org/gf/download/frsrelease/344/3180/blackfin-toolchain-uclinux-SVN.tar.bz2
+> > http://blackfin.uclinux.org/gf/download/frsrelease/344/3181/blackfin-toolchain-linux-uclibc-SVN.tar.bz2
+> 
+> Thanks - installed.
+> 
+> While building latest git tree I see several 'funny' errors.
+>   LD      kernel/built-in.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_futex' changed from 4 in kernel/sys_ni.o to 262 in kernel/futex.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_set_robust_list' changed from 4 in kernel/sys_ni.o to 30 in kernel/futex.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_get_robust_list' changed from 4 in kernel/sys_ni.o to 170 in kernel/futex.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_setfsgid16' changed from 4 in kernel/sys_ni.o to 16 in kernel/uid16.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_setfsuid16' changed from 4 in kernel/sys_ni.o to 16 in kernel/uid16.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_setresgid16' changed from 4 in kernel/sys_ni.o to 36 in kernel/uid16.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_setresuid16' changed from 4 in kernel/sys_ni.o to 36 in kernel/uid16.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_setuid16' changed from 4 in kernel/sys_ni.o to 16 in kernel/uid16.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_setreuid16' changed from 4 in kernel/sys_ni.o to 26 in kernel/uid16.o
+> ...
+> 
+> and later:
+> 
+>   LD      .tmp_vmlinux1
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_mremap' changed from 4 in kernel/built-in.o to 82 in mm/built-in.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_ioprio_set' changed from 4 in kernel/built-in.o to 362 in fs/built-in.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_epoll_wait' changed from 4 in kernel/built-in.o to 1002 in fs/built-in.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_timerfd' changed from 4 in kernel/built-in.o to 346 in fs/built-in.o
+> bfin-linux-uclibc-ld: Warning: size of symbol `_sys_ioprio_get' changed from 4 in kernel/built-in.o to 344 in fs/built-in.o
+> 
+> 
 
-Hi,
-News: 2.6.23-rc1-mm1 will reboot with eurotechwdt, but 2.6.23-rc1-mm2
-will not. do you need the config files?
+I will check this on my side ASAP.  But the git-tree did not merge my
+"fs.h" header file patch, how could it compiled passed like this?
 
-I will concentrate on this problem as well. Any hints how to debug?
+> 
+> I did not look into these. I assume it is a toolchain issue??
+> 
+> PS. I had to fix a few things to get so far but as I did not do
+> it the right way I have no patch.
+> 
+> 	Sam
 
-I add andrew to cc.
-
-Regards
-dave
+Thanks
