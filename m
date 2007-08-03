@@ -1,128 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759157AbXHCIYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760002AbXHCI2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759157AbXHCIYi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 04:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbXHCIY3
+	id S1760002AbXHCI2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 04:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752579AbXHCI14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 04:24:29 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:57765 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbXHCIY2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 04:24:28 -0400
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-Date: Fri, 3 Aug 2007 10:36:20 +0200
-User-Agent: KMail/1.8.2
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, raisch@de.ibm.com, paulus@samba.org,
-       general@lists.openfabrics.org
-References: <200708021139.31695.hnguyen@linux.vnet.ibm.com> <200708021608.16436.arnd@arndb.de> <adawswd3ayo.fsf@cisco.com>
-In-Reply-To: <adawswd3ayo.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 3 Aug 2007 04:27:56 -0400
+Received: from smtp.aaisp.net.uk ([81.187.81.52]:43352 "EHLO smtp.aaisp.net.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751110AbXHCI1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 04:27:55 -0400
+Date: Fri, 3 Aug 2007 09:27:52 +0100
+From: Andrew Clayton <andrew@digital-domain.net>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: Re: [NFSD OOPS] 2.6.23-rc1-git10
+Message-ID: <20070803092752.51e74f8c@zeus.pccl.info>
+In-Reply-To: <18098.42691.783443.554197@notabene.brown>
+References: <20070802171450.7c9b4af3@zeus.pccl.info>
+	<18098.42691.783443.554197@notabene.brown>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.14; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708031036.20859.hnguyen@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hoang-Nam Nguyen <hnguyen at de.ibm.com>
-Date: Fri, 3 Aug 2007 09:44:56 +0200
-Subject: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-This patch utilizes remap_4k_pfn() as introduced by Paul M.,
-for details see http://patchwork.ozlabs.org/linuxppc/patch?id=10281,
-to map ehca cq, qp firmware context (4k) to user space if kernel page
-size is 64k. For reason, why this is required, see also Paul's patch.
-In addition to that the kernel page offset of firmware context needs
-to be set in cq and qp response block so that user space can assemble
-the proper virtual address to use.
-An appropriate patch for libehca will follow for ofed-1.3.
+On Fri, 3 Aug 2007 13:53:39 +1000, Neil Brown wrote:
 
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
- drivers/infiniband/hw/ehca/ehca_classes.h |    4 +++-
- drivers/infiniband/hw/ehca/ehca_cq.c      |    2 ++
- drivers/infiniband/hw/ehca/ehca_qp.c      |    2 ++
- drivers/infiniband/hw/ehca/ehca_uverbs.c  |    6 +++---
- 4 files changed, 10 insertions(+), 4 deletions(-)
+[snip]
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index b5e9603..206d4eb 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -337,6 +337,8 @@ struct ehca_create_cq_resp {
- 	u32 cq_number;
- 	u32 token;
- 	struct ipzu_queue_resp ipz_queue;
-+	u32 fw_handle_ofs;
-+	u32 dummy;
- };
- 
- struct ehca_create_qp_resp {
-@@ -347,7 +349,7 @@ struct ehca_create_qp_resp {
- 	u32 qkey;
- 	/* qp_num assigned by ehca: sqp0/1 may have got different numbers */
- 	u32 real_qp_num;
--	u32 dummy; /* padding for 8 byte alignment */
-+	u32 fw_handle_ofs;
- 	struct ipzu_queue_resp ipz_squeue;
- 	struct ipzu_queue_resp ipz_rqueue;
- };
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index 81aff36..ed5d67f 100644
---- a/drivers/infiniband/hw/ehca/ehca_cq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -276,6 +276,8 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
- 		resp.ipz_queue.queue_length = ipz_queue->queue_length;
- 		resp.ipz_queue.pagesize = ipz_queue->pagesize;
- 		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
-+		resp.fw_handle_ofs = (u32)
-+			(my_cq->galpas.user.fw_handle & (PAGE_SIZE - 1));
- 		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
- 			ehca_err(device, "Copy to udata failed.");
- 			goto create_cq_exit4;
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index b178cba..66f632c 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -745,6 +745,8 @@ static struct ehca_qp *internal_create_qp(
- 			queue2resp(&resp.ipz_squeue, &my_qp->ipz_squeue);
- 		if (HAS_RQ(my_qp))
- 			queue2resp(&resp.ipz_rqueue, &my_qp->ipz_rqueue);
-+		resp.fw_handle_ofs = (u32)
-+			(my_qp->galpas.user.fw_handle & (PAGE_SIZE - 1));
- 
- 		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
- 			ehca_err(pd->device, "Copy to udata failed");
-diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-index 4bc687f..be062f1 100644
---- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-@@ -109,7 +109,7 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
- 	u64 vsize, physical;
- 
- 	vsize = vma->vm_end - vma->vm_start;
--	if (vsize != EHCA_PAGESIZE) {
-+	if (vsize >= EHCA_PAGESIZE) {
- 		ehca_gen_err("invalid vsize=%lx", vma->vm_end - vma->vm_start);
- 		return -EINVAL;
- 	}
-@@ -118,8 +118,8 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 	ehca_gen_dbg("vsize=%lx physical=%lx", vsize, physical);
- 	/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
--	ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
--			      vsize, vma->vm_page_prot);
-+	ret = remap_4k_pfn(vma, vma->vm_start, physical >> EHCA_PAGESHIFT,
-+			   vma->vm_page_prot);
- 	if (unlikely(ret)) {
- 		ehca_gen_err("remap_pfn_range() failed ret=%x", ret);
- 		return -ENOMEM;
--- 
-1.5.2
+> So clearly we need some proper locking around thread start-up and
+> shutdown.  We had previous relied on lock_kernel, but that isn't
+> really good enough for this.   I'll try to figure out the best way to
+> fix it.  Meanwhile, I doubt the problem will recur.
+> 
+> Thanks for the report.
 
+Thanks for the explanation!
 
+> NeilBrown
 
+Andrew
