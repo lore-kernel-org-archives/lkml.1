@@ -1,72 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760191AbXHCAMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760876AbXHCAOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760191AbXHCAMt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 20:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758682AbXHCAMl
+	id S1760876AbXHCAOP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 20:14:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbXHCAOB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 20:12:41 -0400
-Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:33229 "EHLO
-	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757556AbXHCAMl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 20:12:41 -0400
-Date: Thu, 02 Aug 2007 17:18:10 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: REGRESSION: serial_cs broken by 8250 changes
-In-reply-to: <20070802163547.39f41af1.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Daniel Ritz <daniel.ritz-ml@swissonline.ch>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, linux-kernel@vger.kernel.org
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <46B27442.7010706@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-References: <200708030106.33917.daniel.ritz-ml@swissonline.ch>
- <46B267BA.4030006@sun.com> <20070802163547.39f41af1.akpm@linux-foundation.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Thu, 2 Aug 2007 20:14:01 -0400
+Received: from [202.78.101.198] ([202.78.101.198]:37995 "EHLO mx1.hq.astra.ph"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756792AbXHCAOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 20:14:00 -0400
+Message-ID: <46B27351.7000507@gmail.com>
+Date: Fri, 03 Aug 2007 08:14:09 +0800
+From: Carlo Florendo <subscribermail@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (Windows/20070509)
+MIME-Version: 1.0
+To: Martin Steigerwald <Martin@lichtvoll.de>
+Cc: ck@vds.kolivas.org, whansard@sbcglobal.net, linux-kernel@vger.kernel.org,
+       Klaus Schulz <Klaus.Schulz@web.de>
+Subject: Re: [ck] Re: ck vs. cfs : realtime audio performance
+References: <1745683987@web.de> <20070802115952.6cd4b217.whansard@sbcglobal.net> <200708021847.49271.Martin@lichtvoll.de> (sfid-20070802_185010_002178_A5EF4503) <200708021859.06411.Martin@lichtvoll.de>
+In-Reply-To: <200708021859.06411.Martin@lichtvoll.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 02 Aug 2007 16:24:42 -0700
-> Yinghai Lu <Yinghai.Lu@Sun.COM> wrote:
+Martin Steigerwald wrote:
+> Am Donnerstag 02 August 2007 schrieb Martin Steigerwald:
 > 
->> Daniel Ritz wrote:
->>> commit 18a8bd949d6adb311ea816125ff65050df1f3f6e breaks serial_cs badly
->>> with an oops, completely killing PCMCIA.
->>>
->>> register_console() now calls console->early_setup(). which in case of
->>> 8250.c (the only user anyway) is serial8250_console_early_setup()
->>> which is __init, calling 8250_early.c:serial8250_find_port_for_earlycon()
->>> which is __init as well. boom.
->>>
->>> the changelog mentions SERIAL_PORT_DFNS removal which happens to be
->>> commit 7e92b4fc345f5b6f57585fbe5ffdb0f24d7c9b26. but this got reverted
->>> by commit 57d4810ea0d9ca58a7bcc1336607f0cede0a2abf. so i'd suggest to
->>> just revert the 8250 changes as well.
->>>
->>> rgds
->>> -daniel
->> Is there any flag or sign that init code has been released?
+>> The tone I see on responses to posts that are CCed to LKML in my
+>> perception often is just completely and utterly awfully unfriendly. And
+>> often those responses actual include factual inaccuracies and
+>> preliminary assumptions as well. Is that how Linux Kernel Management
+>> Style is supposed to work? I hope not. [...]
 > 
-> Nope.
-> 
->> We could use that to prevent init code to be called after code is freed.
-> 
-> If we can omit a function call without breaking anything then we shouldn't
-> have been calling that function at all ;)
-> 
-> It sounds like making serial8250_console_early_setup() and
-> serial8250_find_port_for_earlycon() non-__init will fix this.
-> 
+> Well, if Carlo is not a Linux Kernel manager this comment of mine is 
+> inapprobiate. Sorry for that.
 
-yes, together update_console_cmdline in kernel/printk.c
+I am not a kernel manager, just a simple Linux user.
 
-Daniel,
-can you test that in your setup?
+I'm very very sorry if I have hurt anyone in this thread.
 
-Thanks
+Thank you very much.
 
-Yinghai Lu
+Best Regards.
+
+Carlo
+
+-- 
+Carlo Florendo
+Softare Engineer/Network Co-Administrator
+Astra Philippines Inc.
+UP-Ayala Technopark, UP Campus Diliman
+1101 Quezon City, Philippines
+http://www.astra.ph
+
+--
+The Astra Group of Companies
+5-3-11 Sekido, Tama City
+Tokyo 206-0011, Japan
+http://www.astra.co.jp
