@@ -1,59 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbXHCUDt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763962AbXHCUEI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763573AbXHCUDt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 16:03:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758624AbXHCUDm
+	id S1763962AbXHCUEI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 16:04:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762579AbXHCUDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 16:03:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42007 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757683AbXHCUDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 16:03:41 -0400
-Date: Fri, 3 Aug 2007 13:04:59 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Dave Jones <davej@redhat.com>
-Cc: Oliver Neukum <oliver@neukum.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Greg KH <gregkh@suse.de>, linux-usb-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] USB: Only enable autosuspend by default on certain
- device classes
-Message-Id: <20070803130459.cdd964b7.zaitcev@redhat.com>
-In-Reply-To: <20070803194532.GD16604@redhat.com>
-References: <20070802235613.GA9487@srcf.ucam.org>
-	<20070803011505.GA32589@suse.de>
-	<20070803014756.GA10392@srcf.ucam.org>
-	<200708030957.46320.oliver@neukum.org>
-	<20070803142416.GB11942@redhat.com>
-	<20070803123447.00374108.zaitcev@redhat.com>
-	<20070803194532.GD16604@redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 16:03:55 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:57116 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763744AbXHCUDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 16:03:54 -0400
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, jengelh@computergmbh.de
+Subject: [patch v2] fuse: fix permission checking on sticky directories
+Message-Id: <E1IH3MV-0006hx-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 03 Aug 2007 22:03:03 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007 15:45:32 -0400, Dave Jones <davej@redhat.com> wrote:
+From: Miklos Szeredi <mszeredi@suse.cz>
 
->  > > My experience suggests the opposite.  Of the several I've tried so far,
->  > > none have worked with usb suspend.
->  > 
->  > All of mine work. I'm wondering if this has something to do with
->  > a hub or motherboard... How should we test it? Tried plugging elsewhere?
-> 
-> no hubs involved, directly plugged them into the mainboard.
-> Fairly recent Intel chipsets on all the systems I tested.
+The VFS checks sticky bits on the parent directory even if the
+filesystem defines it's own ->permission().  In some situations
+(sshfs, mountlo, etc) the user does have permission to delete a file
+even if the attribute based checking would not allow it.
 
-Sounds bad.
+So work around this by storing the permission bits separately and
+returning them in stat(), but cutting the permission bits off from
+inode->i_mode.
 
-BTW, when I took over from Vojtech, I looked at the suspend methods
-for the printer and it seemed possible that they can only work
-if the device is not open when suspend occurs. I was going to look
-at that at the first opportunity.
+This is slightly hackish, but it's probably not worth it to add new
+infrastructure in VFS and a slight performance penalty for all
+filesystems, just for the sake of fuse.
 
-So, I'd rather keep at least some kind of capability to suspend
-printers, even if disabled by default. I thought Matthew's patch
-was too harsh.
+[Jan Engelhardt] cosmetic fixes
 
--- Pete
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
+
+Index: linux/fs/fuse/dir.c
+===================================================================
+--- linux.orig/fs/fuse/dir.c	2007-08-03 21:57:53.000000000 +0200
++++ linux/fs/fuse/dir.c	2007-08-03 21:57:58.000000000 +0200
+@@ -1054,8 +1054,10 @@ static int fuse_getattr(struct vfsmount 
+ 	if (fi->i_time < get_jiffies_64())
+ 		err = fuse_do_getattr(inode);
+ 
+-	if (!err)
++	if (!err) {
+ 		generic_fillattr(inode, stat);
++		stat->mode = fi->orig_i_mode;
++	}
+ 
+ 	return err;
+ }
+Index: linux/fs/fuse/fuse_i.h
+===================================================================
+--- linux.orig/fs/fuse/fuse_i.h	2007-08-03 21:57:53.000000000 +0200
++++ linux/fs/fuse/fuse_i.h	2007-08-03 21:58:23.000000000 +0200
+@@ -63,6 +63,10 @@ struct fuse_inode {
+ 
+ 	/** Time in jiffies until the file attributes are valid */
+ 	u64 i_time;
++
++	/** The sticky bit in inode->i_mode may have been removed, so
++	    preserve the original mode */
++	mode_t orig_i_mode;
+ };
+ 
+ /** FUSE specific file data */
+Index: linux/fs/fuse/inode.c
+===================================================================
+--- linux.orig/fs/fuse/inode.c	2007-08-03 21:57:53.000000000 +0200
++++ linux/fs/fuse/inode.c	2007-08-03 21:58:23.000000000 +0200
+@@ -120,10 +120,18 @@ static void fuse_truncate(struct address
+ void fuse_change_attributes(struct inode *inode, struct fuse_attr *attr)
+ {
+ 	struct fuse_conn *fc = get_fuse_conn(inode);
++	struct fuse_inode *fi = get_fuse_inode(inode);
+ 	loff_t oldsize;
+ 
+ 	inode->i_ino     = attr->ino;
+-	inode->i_mode    = (inode->i_mode & S_IFMT) + (attr->mode & 07777);
++	fi->orig_i_mode  = (inode->i_mode & S_IFMT) | (attr->mode & 07777);
++	/*
++	 * Don't set the mode bits in i_mode, unless we want the VFS
++	 * to check permissions.  This prevents failures due to the
++	 * sticky bit check in may_delete().
++	 */
++	if (fc->flags & FUSE_DEFAULT_PERMISSIONS)
++		inode->i_mode = fi->orig_i_mode;
+ 	inode->i_nlink   = attr->nlink;
+ 	inode->i_uid     = attr->uid;
+ 	inode->i_gid     = attr->gid;
