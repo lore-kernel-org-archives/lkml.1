@@ -1,50 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbXHCKGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760253AbXHCKW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760327AbXHCKGY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 06:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbXHCKGP
+	id S1760253AbXHCKW5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 06:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758784AbXHCKWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 06:06:15 -0400
-Received: from web26709.mail.ukl.yahoo.com ([217.146.176.72]:38986 "HELO
-	web26709.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758324AbXHCKGP convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 06:06:15 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Aug 2007 06:06:14 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=gNZNQ2leEaIK4lpyo8Dy/J1txdhmmfmF1nILg1BoLeiJ5MQeYdt7EAbaDrNUuoxUFjqfX4/WAiH6tgb7JSS50/aqpQx4YMTHej703d+QJCb37OxAMH7k3vCN9yEG7xh8TORpgS485x4j/3bufxidXZqGVfJVhiWA0muZualdUAQ=;
-X-YMail-OSG: zc6EsS4VM1krBBdEwNg6Og2VsAuhVsKMfgL.1WMfkcd8yjNfvdFc0BGnOOrBmkW9EElANDMtFw--
-X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.119
-Date: Fri, 3 Aug 2007 09:59:32 +0000 (GMT)
-From: gregfe <gregfe2002@yahoo.fr>
-Subject: Implementation of POSIX mqueues in Linux 2.6
-To: linux-kernel@vger.kernel.org
+	Fri, 3 Aug 2007 06:22:47 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:58242 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758743AbXHCKWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 06:22:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=faL379I7kad8QlvQlGxAUBl3ZsS6HhyBoLLorcFWpEWQGQ0UuGVLUHX8FqbATCFXK0ACBKfyyIhG6Xl72BO0W76s73f/JExvaNeLllZ6BoQxxrsXj/WXuEe8bItrOAzpO06qmlhJGwJdpg4BZ3BOcjJq0O8tiYOXxp7FjR6hyjc=
+Message-ID: <6278d2220708030322h2c779fa3o1e2e2d9c83ff62e8@mail.gmail.com>
+Date: Fri, 3 Aug 2007 11:22:44 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Mark Lord" <lkml@rtr.ca>
+Subject: Re: ICH8 CF timeout (regression)...
+Cc: "Tejun Heo" <htejun@gmail.com>, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <46B25DE1.4050105@rtr.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <76026.87188.qm@web26709.mail.ukl.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6278d2220708020348k26ac2293v648442f2281eca70@mail.gmail.com>
+	 <46B20D6B.1060506@gmail.com>
+	 <6278d2220708021411q17cdc151p79922e5dab74add4@mail.gmail.com>
+	 <46B25DE1.4050105@rtr.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi there,
-I find little documentation on the actual implementation of POSIX message queues in Linux, and need some advise. In
-particular, I am wondering whether it supports inter-process *and* inter-thread
-communication, and if can I manage to use shared memory pools for zero-copy messaging in case of inter-process
-communication. On more thing: kernel's "make menuconfig" of version 2.6.11 says :
+On 02/08/07, Mark Lord <lkml@rtr.ca> wrote:
+> Daniel J Blueman wrote:
+> > On 02/08/07, Tejun Heo <htejun@gmail.com> wrote:
+> >> Daniel J Blueman wrote:
+> >>> I'll grab kernel logs from the legacy ATA boot; what else can help
+> >>> debug this issue? No problem testing patches too.
+> >> Yeap, please post the old log.
+> >
+> > Not much actually - perhaps I need to enable some debugging:
+> >
+> > Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+> > ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+> > hdc: SanDisk SDCFX-4096, CFA DISK drive
+> > ide1 at 0x170-0x177,0x376 on irq 15
+> > hdc: max request size: 128KiB
+> > hdc: 8027712 sectors (4110 MB) w/1KiB Cache, CHS=7964/16/63
+> >  hdc: hdc1 hdc2 hdc3
+> >
+> >>> --- [2]
+> >>> ata2.00: limiting speed to UDMA/33:PIO4
+> >>> ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> >>> ata2.00: cmd c8/00:08:00:00:00/00:00:00:00:00/e0 tag 0 cdb 0x0 data 4096 in
+> >>>          res 40/00:00:00:00:00/00:00:00:00:00/00 Emask 0x4 (timeout)
+> >>> ata2: soft resetting port
+> >>> ata2.00: configured for UDMA/33
+> >>> ata2: EH complete
+> >> What happens after this?
+> >
+> > More EH occurs - I've left it for ~5 mins, but let me know if longer
+> > would give more information, eg if it converges on a lower speed.
+> >
+> > Would it be useful to compare some of the port setup registers in the
+> > working and non-working cases? Or any other debug I can grab?
+>
+> I'm betting that this is the exact same problem we recently debugged
+> for someone else here:  there's a Marvell PATA->SATA bridge chip between
+> that CF card and the SATA controller, and it only works with PIO modes.
+>
+> Tejun.. perhaps (for debugging) a simple patch to disallow DMA completely,
+> just to see if PIO works?
 
->> To use this feature you will also need mqueue library, available
+The ICH8 south-bridge I have is the mobile variant and does come
+equipped with native parallel IDE - see page 447:
+http://download.intel.com/design/chipsets/datashts/31305603.pdf . I do
+see 35MB/s with DMA enabled from my CF on the 1 in 15 times the
+libata-kernel does work.
 
->> from <... a URL ... to M. Wronski's and K. Benedyczak's home page>"
+I can dump off and decode the configuration registers for the timing
+and bus master registers in the working and non-working libata cases,
+and the legacy ATA working case and see what's different.
 
-Is it still up to date ?
-
-Thank you very much for your advise !
-
-G.
-
-
-
-      _____________________________________________________________________________ 
-Ne gardez plus qu'une seule adresse mail ! Copiez vos mails vers Yahoo! Mail 
+Dan
+-- 
+Daniel J Blueman
