@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760161AbXHCGyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbXHCG4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760161AbXHCGyR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 02:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756735AbXHCGyD
+	id S1760544AbXHCG4X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 02:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757174AbXHCG4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 02:54:03 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:56339 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756418AbXHCGyB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 02:54:01 -0400
-Message-ID: <46B2D0C6.5010409@netcom.eu>
-Date: Fri, 03 Aug 2007 08:52:54 +0200
-From: David Engraf <david.engraf@netcom.eu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: Alan Stern <stern@rowland.harvard.edu>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
- we the driver is configured
-References: <46B1844B.8090007@netcom.eu> <Pine.LNX.4.44L0.0708021009460.3611-100000@iolanthe.rowland.org> <20070802164329.GD28721@suse.de>
-In-Reply-To: <20070802164329.GD28721@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Provags-ID: V01U2FsdGVkX19W46iawa2sWX1jYITLPjkScbnOvL9uhBqc+to
- Mmu3+XE0lxwoDKnu7Jbs2IBLIVMoXW8Y7QAZiiR7nWGeFbccmM
- kyClzclmSXB48ZoWWIrYw==
+	Fri, 3 Aug 2007 02:56:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31934 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757134AbXHCG4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 02:56:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,215,1183359600"; 
+   d="scan'208";a="258370068"
+Subject: Re: [PATCH 4/5] x86_64 EFI support -v3: EFI framebuffer driver
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1185947712.4688.22.camel@daplas>
+References: <1185851582.23149.29.camel@caritas-dev.intel.com>
+	 <1185947712.4688.22.camel@daplas>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 03 Aug 2007 14:56:08 +0800
+Message-Id: <1186124168.5075.6.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 03 Aug 2007 06:56:10.0667 (UTC) FILETIME=[5FC3E7B0:01C7D59B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH schrieb:
-> On Thu, Aug 02, 2007 at 10:32:21AM -0400, Alan Stern wrote:
->   
->> On Thu, 2 Aug 2007, David Engraf wrote:
->>
->>     
->>> This would be solution too, but what if someone uses the uhci controller
->>> and don't want the
->>> ehci. So a single Kconfig flag wouldn't be enough, we have to add 3
->>> flags for uchi, ohci and
->>> ehci. I think this maybe a little bit difficult when configuring the kernel.
->>> The best solution would be when we could use the CONFIG_USB_xxxx_HCD
->>> flag, but it
->>> seems that some hardware has problems when we disable the handoff and
->>> let the BIOS
->>> control the usb controller. Do you know any of this hardware?
->>>       
->> The email messages are hidden in the depths of the linux-usb-devel 
->> archives.  Maybe you can find them by checking the Git history for 
->> drivers/usb/host/pci-quirks.c, finding the dates for patches that 
->> affected the handoff code, and then searching through the archives near 
->> those dates.
->>
->> IIRC the problems arose on some MIPS machines.  And I don't think the 
->> problem involved letting the firmware manage the USB controller; I 
->> think the problem came when the controller driver tried to do the 
->> handoff later on.
->>     
->
-> It wasn't just MIPS.  IBM has a very popular blade system that has huge
-> issues with this, and I think there are some other IBM systems based on
-> the same BIOS that also do bad things if we don't grab the USB
-> controller away from the BIOS as soon as possible (nasty interrupt and
-> other messes happen...)
->
-> thanks,
->
-> greg k-h
->   
-So we have hardware which has problems when we are not doing the
-handoff, and hardware which has
-problems when we are  doing the handoff...
-What is the best way to solve the problem? Maybe a kernel parameter, a
-config flag or an automatic
-hardware dependent check of the system?
-In fact it is hard to find a solution which works for both as long as
-the hardware has this bugs.
+On Wed, 2007-08-01 at 13:55 +0800, Antonino A. Daplas wrote:
+> On Tue, 2007-07-31 at 11:13 +0800, Huang, Ying wrote:
+> 
+> > +
+> > +#include <linux/delay.h>
+> > +#include <linux/errno.h>
+> > +#include <linux/fb.h>
+> > +#include <linux/kernel.h>
+> > +#include <linux/init.h>
+> > +#include <linux/ioport.h>
+> > +#include <linux/mm.h>
+> > +#include <linux/module.h>
+> > +#include <linux/platform_device.h>
+> > +#include <linux/screen_info.h>
+> > +#include <linux/slab.h>
+> > +#include <linux/string.h>
+> > +#include <linux/dmi.h>
+> > +#include <linux/efi.h>
+> > +#include <linux/io.h>
+> > +
+> > +#include <video/vga.h>
+> > +
+> 
+> I don't see any problems with this driver, just a few minor nits.
+> 
+> Do you really need all the #include's?
 
+There are some #include's that are not needed. I will remove them in the
+next version.
 
-Thanks
+> I presume this driver only supports bpp 16 and above?
 
+Yes. Only the true color visual is supported. I think only bpp 16 and
+above can support true color visual.
 
-David Engraf
-
- 
-
- 
-Netcom Sicherheitstechnik GmbH
-Rheinallee 189
-55120 Mainz
-Tel: 	+49 6131 6305 0
-Fax: 	+49 6131 6305 40
-Email: 	david.engraf@netcom.eu
-
- 
-Sitz der Gesellschaft: Mainz
-Registergericht: Amtsgericht Mainz, 14HRB3411
-Geschäftsführer: Peter Otto
-
+Best Regards,
+Huang Ying
