@@ -1,91 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbXHCKaI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbXHCKli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760579AbXHCKaI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 06:30:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759340AbXHCK3v
+	id S1760841AbXHCKli (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 06:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759709AbXHCKl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 06:29:51 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:43098 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759218AbXHCK3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 06:29:49 -0400
-Date: Fri, 3 Aug 2007 14:26:29 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Distributed storage.
-Message-ID: <20070803102629.GB10089@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708021408.24876.phillips@phunq.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
-Content-Disposition: inline
-In-Reply-To: <200708021408.24876.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+	Fri, 3 Aug 2007 06:41:28 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:60014 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759639AbXHCKl1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 06:41:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=UaZ2KGu8oeVpArlc8qhmTlvTEXs1lR2b7ibWEYlpcsQZkbyS98PdxBhuaLxjbH2Ohpf1lBmcZTKKHsouwoub0yVlGDEvlxfCuoGKk8CN9JrBKLn6cn3Kf0Ouc519BnOQcQGkSk75CRXPR98B8Lnd8+NbCsK0B0ZokH/P3FxVdSw=
+Message-ID: <46B30651.9030505@gmail.com>
+Date: Fri, 03 Aug 2007 19:41:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Daniel J Blueman <daniel.blueman@gmail.com>
+CC: Mark Lord <lkml@rtr.ca>, jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ICH8 CF timeout (regression)...
+References: <6278d2220708020348k26ac2293v648442f2281eca70@mail.gmail.com>	 <46B20D6B.1060506@gmail.com>	 <6278d2220708021411q17cdc151p79922e5dab74add4@mail.gmail.com>	 <46B25DE1.4050105@rtr.ca> <6278d2220708030322h2c779fa3o1e2e2d9c83ff62e8@mail.gmail.com>
+In-Reply-To: <6278d2220708030322h2c779fa3o1e2e2d9c83ff62e8@mail.gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/mixed;
+ boundary="------------040808040602010706050405"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 02:08:24PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> On Tuesday 31 July 2007 10:13, Evgeniy Polyakov wrote:
-> > Hi.
-> >
-> > I'm pleased to announce first release of the distributed storage
-> > subsystem, which allows to form a storage on top of remote and local
-> > nodes, which in turn can be exported to another storage as a node to
-> > form tree-like storages.
-> 
-> Excellent!  This is precisely what the doctor ordered for the 
-> OCFS2-based distributed storage system I have been mumbling about for 
-> some time.  In fact the dd in ddsnap and ddraid stands for "distributed 
-> data".  The ddsnap/raid devices do not include an actual network 
-> transport, that is expected to be provided by a specialized block 
-> device, which up till now has been NBD.  But NBD has various 
-> deficiencies as you note, in addition to its tendency to deadlock when 
-> accessed locally.  Your new code base may be just the thing we always 
-> wanted.  We (zumastor et al) will take it for a drive and see if 
-> anything breaks.
+This is a multi-part message in MIME format.
+--------------040808040602010706050405
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-That would be great.
+Daniel J Blueman wrote:
+> The ICH8 south-bridge I have is the mobile variant and does come
+> equipped with native parallel IDE - see page 447:
+> http://download.intel.com/design/chipsets/datashts/31305603.pdf . I do
+> see 35MB/s with DMA enabled from my CF on the 1 in 15 times the
+> libata-kernel does work.
+> 
+> I can dump off and decode the configuration registers for the timing
+> and bus master registers in the working and non-working libata cases,
+> and the legacy ATA working case and see what's different.
 
-> Memory deadlock is a concern of course.  From a cursory glance through, 
-> it looks like this code is pretty vm-friendly and you have thought 
-> quite a lot about it, however I respectfully invite peterz 
-> (obsessive/compulsive memory deadlock hunter) to help give it a good 
-> going over with me.
-> 
-> I see bits that worry me, e.g.:
-> 
-> +		req = mempool_alloc(st->w->req_pool, GFP_NOIO);
-> 
-> which seems to be callable in response to a local request, just the case 
-> where NBD deadlocks.  Your mempool strategy can work reliably only if 
-> you can prove that the pool allocations of the maximum number of 
-> requests you can have in flight do not exceed the size of the pool.  In 
-> other words, if you ever take the pool's fallback path to normal 
-> allocation, you risk deadlock.
-
-mempool should be allocated to be able to catch up with maximum
-in-flight requests, in my tests I was unable to force block layer to put
-more than 31 pages in sync, but in one bio. Each request is essentially
-dealyed bio processing, so this must handle maximum number of in-flight
-bios (if they do not cover multiple nodes, if they do, then each node
-requires own request). Sync has one bio in-flight on my machines (from
-tiny VIA nodes to low-end amd64), number of normal requests *usually*
-does not increase several dozens (less than hundred always), but that
-might be only my small systems, so request size was selected as small as
-possible and number of allocations decreased to absolutely healthcare 
-minimum.
-
-> Anyway, if this is as grand as it seems then I would think we ought to 
-> factor out a common transfer core that can be used by all of NBD, 
-> iSCSI, ATAoE and your own kernel server, in place of the roll-yer-own 
-> code those things have now.
-> 
-> Regards,
-> 
-> Daniel
-
-Thanks.
+Does the attached patch change anything?
 
 -- 
-	Evgeniy Polyakov
+tejun
+
+--------------040808040602010706050405
+Content-Type: text/x-patch;
+ name="ich8-map-01b-update.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="ich8-map-01b-update.patch"
+
+diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
+index ad07086..47a344b 100644
+--- a/drivers/ata/ata_piix.c
++++ b/drivers/ata/ata_piix.c
+@@ -436,7 +436,7 @@ static const struct piix_map_db ich8_map_db = {
+ 		/* PM   PS   SM   SS       MAP */
+ 		{  P0,  P2,  P1,  P3 }, /* 00b (hardwired when in AHCI) */
+ 		{  RV,  RV,  RV,  RV },
+-		{  IDE,  IDE,  NA,  NA }, /* 10b (IDE mode) */
++		{  P0,  P2, IDE, IDE }, /* 10b (IDE mode) */
+ 		{  RV,  RV,  RV,  RV },
+ 	},
+ };
+
+--------------040808040602010706050405--
