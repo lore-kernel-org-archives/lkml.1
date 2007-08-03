@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbXHCDJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbXHCDOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761808AbXHCDJT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 23:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbXHCDJM
+	id S1761540AbXHCDOf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 23:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbXHCDO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 23:09:12 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:22142 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753525AbXHCDJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 23:09:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=hVlVOKN2G3r7GBcBDSkt4BKW9OYx93nHNOv3aibZn2KUyv4MXh4AOKi9bvgc14atrjXZR0RP9g0s9aRwfMmKyZLmtaRW0HQjuRUzwYqA5OvxT/75F8LL6M2dFxlxmMpPrG25nH0vqjUDbefXsQjX8hjRPIwpq3fNrgd43ll8/5s=
-Message-ID: <a8e1da0708022009u6ee22840m6a260bb98481ddb7@mail.gmail.com>
-Date: Fri, 3 Aug 2007 03:09:10 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Wim Van Sebroeck" <wim@iguana.be>
-Subject: Re: eurotechwdt will cause reboot
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 2 Aug 2007 23:14:28 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33135 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754366AbXHCDO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 23:14:28 -0400
+Date: Fri, 3 Aug 2007 05:14:26 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+Message-ID: <20070803031426.GA28310@wotan.suse.de>
+References: <200707311114.09284.ak@suse.de> <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com> <20070802034201.GA32631@wotan.suse.de> <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com> <20070803002639.GC14775@wotan.suse.de> <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com> <20070803005700.GD14775@wotan.suse.de> <Pine.LNX.4.64.0708021801010.13312@schroedinger.engr.sgi.com> <20070803011448.GF14775@wotan.suse.de> <Pine.LNX.4.64.0708021827280.13538@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0707312003s6000b02s95c90b5971dbbd51@mail.gmail.com>
-	 <20070801055845.GA2648@infomag.infomag.iguana.be>
-	 <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
-	 <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
+In-Reply-To: <Pine.LNX.4.64.0708021827280.13538@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 8/3/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> >On 8/1/07, Dave Young <hidave.darkstar@gmail.com> wrote:
-> > >On 8/1/07, Wim Van Sebroeck <wim@iguana.be> wrote:
-> > > Hi Dave,
-> > >
-> > > > config eurotechwdt to yes will cause system silent reboot. Is it right
-> > > > behaviour or a bug?
-> > >
-> > > I think this might be a bug. I'll look at the code and will ask you to do some
-> > > tests for me (if that is ok for you).
-> > >
-> > I'm ok for me. BTW, the rebooting is too quick that I have to set he
-> > boot_delay command line parameter to see it.
-> >
->
-> Hi,
-> News: 2.6.23-rc1-mm1 will reboot with eurotechwdt, but 2.6.23-rc1-mm2
-> will not. do you need the config files?
->
-> I will concentrate on this problem as well. Any hints how to debug?
+On Thu, Aug 02, 2007 at 06:34:04PM -0700, Christoph Lameter wrote:
+> On Fri, 3 Aug 2007, Nick Piggin wrote:
+> 
+> > Yeah it only gets set if the parent is initially using a default policy
+> > at this stage (and then is restored afterwards of course).
+> 
+> Uggh. Looks like more hackery ahead. I think this cannot be done in the 
+> desired clean way until we have some revving of the memory policy 
+> subsystem that makes policies task context independent so that you can do
 
-under 2.6.23-rc1-mm1, modprobe eurotechwdt kernel will print:
+Well what's wrong with it? It seems to use memory policies for exactly
+what they are intended (aside from it being kernel directed...).
 
-[ 4268.950385] timeout WDT timeout
-[ 4268.950443] Initiating system reboot.
-[ 4268.950472] eurwdt (IRQ 10) handled a spurious interrupt
+
+> alloc_pages(...., memory_policy)
+
+That still doesn't completely help because again it would require modifying
+call sites (at which point I could just do alloc_pages_node).
+
+
+> The cleanest solution that I can think of at this point is certainly to 
+> switch to another processor and do the allocation and copying actions from 
+> there. We have the migration process context right? Can that be used to 
+> start the new thread and can the original processor wait on some flag 
+> until that is complete?
+
+I guess you could, but that is going to add a context switch to fork
+(although it usually already has one in single-CPU situation because we
+run child first)... I bet it will slow something down, but it would be
+interesting to see.
+
+I don't know the fork path well enough off the top of my head to know if
+it will be that simple (with error handling etc). But I think it could
+be done.
+
+
+> Forking off from there not only places the data correctly but it also 
+> warms up the caches for the new process and avoids evicting cacheline on 
+> the original processor.
+
+Yeah, you might be right there. If the numbers say that approach is
+better, then I'd not be against it. But we'd still need the simpler
+mpol approach to compare it with. 
