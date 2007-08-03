@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757619AbXHCFFH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756486AbXHCFr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757619AbXHCFFH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 01:05:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbXHCFEy
+	id S1756486AbXHCFr0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 01:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbXHCFrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 01:04:54 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:41993 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752218AbXHCFEw (ORCPT
+	Fri, 3 Aug 2007 01:47:16 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47602 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753464AbXHCFrP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 01:04:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RR10Vr5lz5XK21tEhuNdqNrbnSIT5RA8Dm2q7TNLpkj9S/8Ipv8QxW73/IYakzfbiXENsuXEo8aKXvnBA47r3ADhYINcyBLd2DYq2ICCdt6U0KYaMLA9HXez7p0W0ZLYM6Dw3JQ84UGcrByRYUcXDq/o4qhtJ8j15bE1b/Ijmac=
-Message-ID: <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
-Date: Fri, 3 Aug 2007 09:04:51 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>
-Subject: Re: Distributed storage.
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-In-Reply-To: <20070731171347.GA14267@2ka.mipt.ru>
+	Fri, 3 Aug 2007 01:47:15 -0400
+Date: Thu, 2 Aug 2007 22:47:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+In-Reply-To: <20070803031426.GA28310@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0708022234130.14362@schroedinger.engr.sgi.com>
+References: <200707311114.09284.ak@suse.de> <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com>
+ <20070802034201.GA32631@wotan.suse.de> <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com>
+ <20070803002639.GC14775@wotan.suse.de> <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com>
+ <20070803005700.GD14775@wotan.suse.de> <Pine.LNX.4.64.0708021801010.13312@schroedinger.engr.sgi.com>
+ <20070803011448.GF14775@wotan.suse.de> <Pine.LNX.4.64.0708021827280.13538@schroedinger.engr.sgi.com>
+ <20070803031426.GA28310@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070731171347.GA14267@2ka.mipt.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 7/31/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+On Fri, 3 Aug 2007, Nick Piggin wrote:
 
-> TODO list currently includes following main items:
->     * redundancy algorithm (drop me a request of your own, but it is highly
->         unlikley that Reed-Solomon based will ever be used - it is too slow
->         for distributed RAID, I consider WEAVER codes)
+> Well what's wrong with it? It seems to use memory policies for exactly
+> what they are intended (aside from it being kernel directed...).
 
+Sure I think you could do it with some effort. They were primarily 
+designed for user space. Lots of little side issues where surprises await 
+you. I think Lee documented many of them. See the recent mm commits.
 
-LDPC codes[1][2] have been replacing Turbo code[3] with regards to
-communication links and we have been seeing that transition. (maybe
-helpful, came to mind seeing the mention of Turbo code) Don't know how
-weaver compares to LDPC, though found some comparisons [4][5] But
-looking at fault tolerance figures, i guess Weaver is much better.
+> > start the new thread and can the original processor wait on some flag 
+> > until that is complete?
+> 
+> I guess you could, but that is going to add a context switch to fork
+> (although it usually already has one in single-CPU situation because we
+> run child first)... I bet it will slow something down, but it would be
+> interesting to see.
 
-[1] http://www.ldpc-codes.com/
-[2] http://portal.acm.org/citation.cfm?id=1240497
-[3] http://en.wikipedia.org/wiki/Turbo_code
-[4] http://domino.research.ibm.com/library/cyberdig.nsf/papers/BD559022A190D41C85257212006CEC11/$File/rj10391.pdf
-[5] http://hplabs.hp.com/personal/Jay_Wylie/publications/wylie_dsn2007.pdf
+The context switch is needed at some point anyways to get the new process 
+running on the new CPU? Just do it before allocating structures. That way 
+the potential memory policy and cpuset context is preserved and followed.
+
+> I don't know the fork path well enough off the top of my head to know if
+> it will be that simple (with error handling etc). But I think it could
+> be done.
+
+I would think that the forking process has to wait on completion anyways
+and get an error code.
+
+> > Forking off from there not only places the data correctly but it also 
+> > warms up the caches for the new process and avoids evicting cacheline on 
+> > the original processor.
+> 
+> Yeah, you might be right there. If the numbers say that approach is
+> better, then I'd not be against it. But we'd still need the simpler
+> mpol approach to compare it with. 
+
+Lets hope that the simpler process is really simpler after all the corner 
+cases have been dealt with.
