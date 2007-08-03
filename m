@@ -1,61 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764101AbXHCWvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764153AbXHCXTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764101AbXHCWvn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 18:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760798AbXHCWve
+	id S1764153AbXHCXTO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 19:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763652AbXHCXTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 18:51:34 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44604 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759208AbXHCWvd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 18:51:33 -0400
-Date: Fri, 3 Aug 2007 15:50:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Muli Ben-Yehuda <muli@il.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, riku.seppala@kymp.net,
-       Andy Whitcroft <apw@shadowen.org>, Andi Kleen <ak@suse.de>
-Subject: Re: Oops in 2.6.23-rc1-git9,
- arch/x86_64/pci/k8-bus.c::fill_mp_bus_to_cpumask()
-Message-Id: <20070803155035.1fb11c9a.akpm@linux-foundation.org>
-In-Reply-To: <46B3A7BB.9000102@redhat.com>
-References: <46B3A7BB.9000102@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Aug 2007 19:19:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42549 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763651AbXHCXTC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 19:19:02 -0400
+Message-ID: <46B3B7DF.2070302@redhat.com>
+Date: Fri, 03 Aug 2007 19:18:55 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: linux-kernel <linux-kernel@vger.kernel.org>,
+       ide <linux-ide@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH -mm] libata: add human-readable error value decoding v3
+References: <46B36D59.7060803@shaw.ca>
+In-Reply-To: <46B36D59.7060803@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 03 Aug 2007 18:10:03 -0400
-Chuck Ebbert <cebbert@redhat.com> wrote:
-
-> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250859
-> 
-> at line 74:
-> 
-> muli@62829: 
-> muli@62829: 					sd = bus->sysdata;
-> muli@62829: 					sd->node = node;   <=====
-> 
-> bus->sysdata is NULL.
-> 
-> Last changed by this hunk of
-> "x86-64: introduce struct pci_sysdata to facilitate sharing of ->sysdata":
-> 
-> @@ -67,7 +69,9 @@ fill_mp_bus_to_cpumask(void)
->  						continue;
->  					if (!node_online(node))
->  						node = 0;
-> -					bus->sysdata = (void *)node;
-> +
-> +					sd = bus->sysdata;
-> +					sd->node = node;
->  				}		
->  			}
->  		}
+On 08/03/2007 02:00 PM, Robert Hancock wrote:
+> This adds human-readable decoding of the ATA status and error registers
+> (similar to what drivers/ide does) as well as the SATA Serror register to
+> libata error handling output.  This prevents the need to pore through
+> standards documents to figure out the meaning of the bits in these
+> registers when looking at error reports.  Some bits that drivers/ide
+> decoded are not decoded here, since the bits are either command-dependent
+> or obsolete, and properly parsing them would add too much complexity.
 > 
 
-Andy keeps trotting out a patch which will probably fix this, but for some
-reason it doesn't seem to make progress.
+This is really nice.
+
+Maybe make it configurable, though?
