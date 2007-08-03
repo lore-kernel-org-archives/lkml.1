@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbXHCM5E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760527AbXHCM50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762101AbXHCM5E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 08:57:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758076AbXHCM4w
+	id S1760527AbXHCM50 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 08:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758452AbXHCM4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:56:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50982 "EHLO mx1.redhat.com"
+	Fri, 3 Aug 2007 08:56:53 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50983 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757950AbXHCM4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757883AbXHCM4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 3 Aug 2007 08:56:51 -0400
-Message-Id: <20070803125237.072937000@chello.nl>
+Message-Id: <20070803125235.632220000@chello.nl>
 References: <20070803123712.987126000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 03 Aug 2007 14:37:30 +0200
+Date: Fri, 03 Aug 2007 14:37:21 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
 Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
@@ -20,75 +20,176 @@ Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
        nikita@clusterfs.com, trond.myklebust@fys.uio.no,
        yingchao.zhou@gmail.com, richard@rsk.demon.co.uk,
        torvalds@linux-foundation.org
-Subject: [PATCH 17/23] mm: count writeback pages per BDI
-Content-Disposition: inline; filename=bdi_stat_writeback.patch
+Subject: [PATCH 08/23] lib: percpu_counter_init error handling
+Content-Disposition: inline; filename=percpu_counter_init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Count per BDI writeback pages.
+alloc_percpu can fail, propagate that error.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/backing-dev.h |    1 +
- mm/page-writeback.c         |   12 ++++++++++--
- 2 files changed, 11 insertions(+), 2 deletions(-)
+ fs/ext2/super.c                |   11 ++++++++---
+ fs/ext3/super.c                |   11 ++++++++---
+ fs/ext4/super.c                |   11 ++++++++---
+ include/linux/percpu_counter.h |    5 +++--
+ lib/percpu_counter.c           |    8 +++++++-
+ 5 files changed, 34 insertions(+), 12 deletions(-)
 
-Index: linux-2.6/mm/page-writeback.c
+Index: linux-2.6/fs/ext2/super.c
 ===================================================================
---- linux-2.6.orig/mm/page-writeback.c
-+++ linux-2.6/mm/page-writeback.c
-@@ -981,14 +981,18 @@ int test_clear_page_writeback(struct pag
- 	int ret;
+--- linux-2.6.orig/fs/ext2/super.c
++++ linux-2.6/fs/ext2/super.c
+@@ -725,6 +725,7 @@ static int ext2_fill_super(struct super_
+ 	int db_count;
+ 	int i, j;
+ 	__le32 features;
++	int err;
  
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -996,12 +997,16 @@ static int ext2_fill_super(struct super_
+ 	sbi->s_rsv_window_head.rsv_goal_size = 0;
+ 	ext2_rsv_window_add(sb, &sbi->s_rsv_window_head);
  
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestClearPageWriteback(page);
--		if (ret)
-+		if (ret) {
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		write_unlock_irqrestore(&mapping->tree_lock, flags);
- 	} else {
- 		ret = TestClearPageWriteback(page);
-@@ -1004,14 +1008,18 @@ int test_set_page_writeback(struct page 
- 	int ret;
- 
- 	if (mapping) {
-+		struct backing_dev_info *bdi = mapping->backing_dev_info;
- 		unsigned long flags;
- 
- 		write_lock_irqsave(&mapping->tree_lock, flags);
- 		ret = TestSetPageWriteback(page);
--		if (!ret)
-+		if (!ret) {
- 			radix_tree_tag_set(&mapping->page_tree,
- 						page_index(page),
- 						PAGECACHE_TAG_WRITEBACK);
-+			if (bdi_cap_writeback_dirty(bdi))
-+				__inc_bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 		if (!PageDirty(page))
- 			radix_tree_tag_clear(&mapping->page_tree,
- 						page_index(page),
-Index: linux-2.6/include/linux/backing-dev.h
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
++	err = percpu_counter_init(&sbi->s_freeblocks_counter,
+ 				ext2_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
++	err |= percpu_counter_init(&sbi->s_freeinodes_counter,
+ 				ext2_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
++	err |= percpu_counter_init(&sbi->s_dirs_counter,
+ 				ext2_count_dirs(sb));
++	if (err) {
++		printk(KERN_ERR "EXT2-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 	/*
+ 	 * set up enough so that it can read an inode
+ 	 */
+Index: linux-2.6/fs/ext3/super.c
 ===================================================================
---- linux-2.6.orig/include/linux/backing-dev.h
-+++ linux-2.6/include/linux/backing-dev.h
-@@ -28,6 +28,7 @@ typedef int (congested_fn)(void *, int);
+--- linux-2.6.orig/fs/ext3/super.c
++++ linux-2.6/fs/ext3/super.c
+@@ -1485,6 +1485,7 @@ static int ext3_fill_super (struct super
+ 	int i;
+ 	int needs_recovery;
+ 	__le32 features;
++	int err;
  
- enum bdi_stat_item {
- 	BDI_RECLAIMABLE,
-+	BDI_WRITEBACK,
- 	NR_BDI_STAT_ITEMS
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1745,12 +1746,16 @@ static int ext3_fill_super (struct super
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
+ 
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
++	err = percpu_counter_init(&sbi->s_freeblocks_counter,
+ 		ext3_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
++	err |= percpu_counter_init(&sbi->s_freeinodes_counter,
+ 		ext3_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
++	err |= percpu_counter_init(&sbi->s_dirs_counter,
+ 		ext3_count_dirs(sb));
++	if (err) {
++		printk(KERN_ERR "EXT3-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 
+ 	/* per fileystem reservation list head & lock */
+ 	spin_lock_init(&sbi->s_rsv_window_lock);
+Index: linux-2.6/fs/ext4/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/super.c
++++ linux-2.6/fs/ext4/super.c
+@@ -1576,6 +1576,7 @@ static int ext4_fill_super (struct super
+ 	int needs_recovery;
+ 	__le32 features;
+ 	__u64 blocks_count;
++	int err;
+ 
+ 	sbi = kzalloc(sizeof(*sbi), GFP_KERNEL);
+ 	if (!sbi)
+@@ -1857,12 +1858,16 @@ static int ext4_fill_super (struct super
+ 	get_random_bytes(&sbi->s_next_generation, sizeof(u32));
+ 	spin_lock_init(&sbi->s_next_gen_lock);
+ 
+-	percpu_counter_init(&sbi->s_freeblocks_counter,
++	err = percpu_counter_init(&sbi->s_freeblocks_counter,
+ 		ext4_count_free_blocks(sb));
+-	percpu_counter_init(&sbi->s_freeinodes_counter,
++	err |= percpu_counter_init(&sbi->s_freeinodes_counter,
+ 		ext4_count_free_inodes(sb));
+-	percpu_counter_init(&sbi->s_dirs_counter,
++	err |= percpu_counter_init(&sbi->s_dirs_counter,
+ 		ext4_count_dirs(sb));
++	if (err) {
++		printk(KERN_ERR "EXT4-fs: insufficient memory\n");
++		goto failed_mount3;
++	}
+ 
+ 	/* per fileystem reservation list head & lock */
+ 	spin_lock_init(&sbi->s_rsv_window_lock);
+Index: linux-2.6/include/linux/percpu_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/percpu_counter.h
++++ linux-2.6/include/linux/percpu_counter.h
+@@ -30,7 +30,7 @@ struct percpu_counter {
+ #define FBC_BATCH	(NR_CPUS*4)
+ #endif
+ 
+-void percpu_counter_init(struct percpu_counter *fbc, s64 amount);
++int percpu_counter_init(struct percpu_counter *fbc, s64 amount);
+ void percpu_counter_destroy(struct percpu_counter *fbc);
+ void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+ void __percpu_counter_add(struct percpu_counter *fbc, s64 amount, s32 batch);
+@@ -78,9 +78,10 @@ struct percpu_counter {
+ 	s64 count;
  };
  
+-static inline void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
++static inline int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
+ 	fbc->count = amount;
++	return 0;
+ }
+ 
+ static inline void percpu_counter_destroy(struct percpu_counter *fbc)
+Index: linux-2.6/lib/percpu_counter.c
+===================================================================
+--- linux-2.6.orig/lib/percpu_counter.c
++++ linux-2.6/lib/percpu_counter.c
+@@ -68,21 +68,27 @@ s64 __percpu_counter_sum(struct percpu_c
+ }
+ EXPORT_SYMBOL(__percpu_counter_sum);
+ 
+-void percpu_counter_init(struct percpu_counter *fbc, s64 amount)
++int percpu_counter_init(struct percpu_counter *fbc, s64 amount)
+ {
+ 	spin_lock_init(&fbc->lock);
+ 	fbc->count = amount;
+ 	fbc->counters = alloc_percpu(s32);
++	if (!fbc->counters)
++		return -ENOMEM;
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
+ 	list_add(&fbc->list, &percpu_counters);
+ 	mutex_unlock(&percpu_counters_lock);
+ #endif
++	return 0;
+ }
+ EXPORT_SYMBOL(percpu_counter_init);
+ 
+ void percpu_counter_destroy(struct percpu_counter *fbc)
+ {
++	if (!fbc->counters)
++		return;
++
+ 	free_percpu(fbc->counters);
+ #ifdef CONFIG_HOTPLUG_CPU
+ 	mutex_lock(&percpu_counters_lock);
 
 --
 
