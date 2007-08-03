@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbXHCOw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763398AbXHCOxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763420AbXHCOw5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 10:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762235AbXHCOwt
+	id S1763398AbXHCOxw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 10:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762281AbXHCOxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 10:52:49 -0400
-Received: from smtp113.sbc.mail.re2.yahoo.com ([68.142.229.92]:46182 "HELO
-	smtp113.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762352AbXHCOws (ORCPT
+	Fri, 3 Aug 2007 10:53:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:39290 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761564AbXHCOxk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 10:52:48 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=roBtKpOTGg3+UhDFaMbowPW3tbj0Ufpup8eL9/9YNRH4VYol0C0XWvOMvw8X4850U9nQ8NO3w+2fp/DwxYiuD2cVXDhVHPa90+c8IOO8+rYMJyQilB0eP5/JWPyhn7YqggN5Kdh3Bg8KVKq6iVGzFez3nehvuoOCgyJ1OgPpoAM=  ;
-X-YMail-OSG: j4kt9XIVM1kDCtObl06bbF1f2IAHk.7Cq6iPXvqk5Aa.jSAIIUTKojstnudnhc.ULO8FbvK0_v3WhRLD8CTNb8kAmPgNZyc.SNMjblJheCR1cVXM8zVXKw4V0D.AdfLGYoX_3YRqcDAwviU-
-From: David Brownell <david-b@pacbell.net>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by default on certain device classes
-Date: Fri, 3 Aug 2007 07:52:45 -0700
-User-Agent: KMail/1.9.6
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, Greg KH <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070802235613.GA9487@srcf.ucam.org> <200708022306.08410.david-b@pacbell.net> <20070803142255.GA11942@redhat.com>
-In-Reply-To: <20070803142255.GA11942@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Fri, 3 Aug 2007 10:53:40 -0400
+Subject: Re: Distributed storage.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: Daniel Phillips <phillips@phunq.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+In-Reply-To: <20070803134943.GA21221@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru>
+	 <200708021408.24876.phillips@phunq.net>
+	 <20070803102629.GB10089@2ka.mipt.ru> <20070803105747.GE10089@2ka.mipt.ru>
+	 <1186144072.11797.55.camel@lappy>  <20070803134943.GA21221@2ka.mipt.ru>
+Content-Type: text/plain
+Date: Fri, 03 Aug 2007 16:53:37 +0200
+Message-Id: <1186152817.12034.128.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708030752.45454.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 August 2007, Dave Jones wrote:
-> On Thu, Aug 02, 2007 at 11:06:08PM -0700, David Brownell wrote:
->  
->  > Sometimes when I plug in a USB device I get a dialog asking if I want to
->  > configure it ... surely it would be possible to have that mechanism also
->  > consult a database (part of a distro, or on some web server) for info
->  > about the device, and offer the option for to poke at the device a bit to
->  > see if it behaves.  That stuff works for music CDs; why not USB devices?
+On Fri, 2007-08-03 at 17:49 +0400, Evgeniy Polyakov wrote:
+> On Fri, Aug 03, 2007 at 02:27:52PM +0200, Peter Zijlstra (peterz@infradead.org) wrote:
+> > On Fri, 2007-08-03 at 14:57 +0400, Evgeniy Polyakov wrote:
+> > 
+> > > For receiving situation is worse, since system does not know in advance
+> > > to which socket given packet will belong to, so it must allocate from
+> > > global pool (and thus there must be independent global reserve), and
+> > > then exchange part of the socket's reserve to the global one (or just
+> > > copy packet to the new one, allocated from socket's reseve is it was
+> > > setup, or drop it otherwise). Global independent reserve is what I
+> > > proposed when stopped to advertise network allocator, but it seems that
+> > > it was not taken into account, and reserve was always allocated only
+> > > when system has serious memory pressure in Peter's patches without any
+> > > meaning for per-socket reservation.
+> > 
+> > This is not true. I have a global reserve which is set-up a priori. You
+> > cannot allocate a reserve when under pressure, that does not make sense.
 > 
-> Not everyone who uses USB devices uses X.
+> I probably did not cut enough details - my main position is to allocate
+> per socket reserve from socket's queue, and copy data there from main
+> reserve, all of which are allocated either in advance (global one) or
+> per sockoption, so that there would be no fairness issues what to mark 
+> as special and what to not.
+> 
+> Say we have a page per socket, each socket can assign a reserve for
+> itself from own memory, this accounts both tx and rx side. Tx is not
+> interesting, it is simple, rx has global reserve (always allocated on 
+> startup or sometime way before reclaim/oom)where data is originally 
+> received (including skb, shared info and whatever is needed, page is 
+> just an exmaple), then it is copied into per-socket reserve and reused 
+> for the next packet. Having per-socket reserve allows to have progress 
+> in any situation not only in cases where single action must be 
+> received/processed, and allows to be completely fair for all users, but
+> not only special sockets, thus admin for example would be allowed to
+> login, ipsec would work and so on...
 
-True, but for desktop users there doesn't seem to be any
-real counter-argument to my point.
 
+Ah, I think I understand now. Yes this is indeed a good idea!
 
-> It's a bit difficult to pop up a "unscrew my printer" dialog when you're
-> on the console.
+It would be quite doable to implement this on top of that I already
+have. We would need to extend the socket with a sock_opt that would
+reserve a specified amount of data for that specific socket. And then on
+socket demux check if the socket has a non zero reserve and has not yet
+exceeded said reserve. If so, process the packet.
 
-Right.  Remotely operated systems (like servers) might
-need some kind of "default assume-broken" setting.
+This would also quite neatly work for -rt where we would not want
+incomming packet processing to be delayed by memory allocations.
 
-- Dave
