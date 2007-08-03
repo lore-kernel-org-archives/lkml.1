@@ -1,80 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761884AbXHCSfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbXHCSh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761884AbXHCSfv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 14:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXHCSfn
+	id S1762212AbXHCSh0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 14:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbXHCShO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 14:35:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46128 "EHLO hera.kernel.org"
+	Fri, 3 Aug 2007 14:37:14 -0400
+Received: from vena.lwn.net ([206.168.112.25]:36213 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbXHCSfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 14:35:42 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: "Renato S. Yamane" <renatoyamane@mandic.com.br>
-Subject: Re: 2.6.22 regression: thermal trip points
-Date: Fri, 3 Aug 2007 14:35:25 -0400
-User-Agent: KMail/1.9.5
-Cc: Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, trenn@suse.de, pavel@ucw.cz,
-       mjg59@srcf.ucam.org, linux-acpi@vger.kernel.org
-References: <46B1988C.3090302@t-online.de> <200708021756.30776.lenb@kernel.org> <46B314F0.1070503@mandic.com.br>
-In-Reply-To: <46B314F0.1070503@mandic.com.br>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708031435.25416.lenb@kernel.org>
+	id S1754767AbXHCShN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 14:37:13 -0400
+To: linux-kernel@vger.kernel.org
+cc: Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>, Roman Zippel <zippel@linux-m68k.org>
+Subject: [PATCH] msleep() with hrtimers
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 03 Aug 2007 12:37:12 -0600
+Message-ID: <15327.1186166232@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 August 2007 07:43, Renato S. Yamane wrote:
-> Len Brown escreveu:
-> > On Thursday 02 August 2007 04:40, Knut Petersen wrote:
-> >> mainboard: AOpen i915GMm-hfs, AWARD BIOS
-> >> cpu: Pentium-M 750 (0.8 to 1.86 MHz)
-> >> openSuSE 10.2 with kernel 2.6.22.1
-> >>
-> >> The cpu fan can not be controled by linux kernel.
-> >> The BIOS will switch on the cpu fan a bit above 50 deg. Celsius.
-> >> The active and passive trip points both are set to 50 deg. Celsius.
-> >> Temperature of the idle cpu at 800 Mhz: 34 to 42 deg. C.
-> >> The BIOS never changes the trip points.
-> >> Cpufreq does work perfectly.
-> 
-> On my Toshiba M45-S355 (Toshiba Bios, Pentium M 750 - 0.8 at 1.86GHz, 
-> Debian Etch) I see the same using Kernel 2.6.21.6
-> 
-> >> Previously there was the possibility  to add something like
-> >>
-> >> echo  "100:0:65:70:0" > /proc/acpi/thermal_zone/THRM/trip_points
-> >> echo  2 > /proc/acpi/thermal_zone/THRM/polling_frequency
-> >> echo ondemand > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> 
-> I never do that, but see below (Kernel 2.6.21.6):
-> 
-> cat /proc/acpi/thermal_zone/TZCL/trip_points
-> critical (S5):           105 C
-> 
-> cat /proc/acpi/thermal_zone/TZCL/polling_frequency
-> polling frequency:       2 seconds
-> 
-> cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-> ondemand
-> 
+Here's the second (and probably final) posting of the msleep() with
+hrtimers patch.  The problem being addressed here is that the current
+msleep() will stop for a minimum of two jiffies, meaning that, on a
+HZ=100 system, msleep(1) delays for for about 20ms.  In a driver with
+one such delay for each of 150 or so register setting operations, the
+extra time adds up to a few seconds.
 
-Renato,
-I don't understand how your Toshiba is similar to Knut's Aopen.
-You've got a single critical trip point at 105C, but no active or passive
-trip points.
+This patch addresses the situation by using hrtimers.  On tickless
+systems with working timers, msleep(1) now sleeps for 1ms, even with
+HZ=100.
 
-Are you reporting some kind of failure?
+Most comments last time were favorable.  The one dissenter was Roman,
+who worries about the overhead of using hrtimers for this operation; my
+understanding is that he would rather see a really_msleep() function for
+those who actually want millisecond resolution.  I'm not sure how to
+characterize what the cost could be, but it can only be buried by the
+fact that every call sleeps for some number of milliseconds.  On my
+system, the several hundred total msleep() calls can't cause any real
+overhead, and almost all happen at initialization time.
 
-The only thing wrong with your system is that polling_frequency != 0 --
-but that is probably a distro configuration issue rather than
-a kernel issue.
+I still think it would be useful for msleep() to do what it says it does
+and not vastly oversleep with small arguments.  A quick grep turns up
+450 msleep(1) calls in the current mainline.  Andrew, if you agree, can
+you drop this into -mm?  If not, I guess I'll let it go.
 
-thanks,
--Len
+jon
 
+---
+
+Use hrtimers so that msleep() sleeps for the requested time
+
+Current msleep() snoozes for at least two jiffies, causing msleep(1) to
+sleep for at least 20ms on HZ=100 systems.  Using hrtimers allows
+msleep() to sleep for something much closer to the requested time.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+--- 2.6.23-rc1/kernel/timer.c.orig	2007-08-02 13:45:20.000000000 -0600
++++ 2.6.23-rc1/kernel/timer.c	2007-08-03 12:34:48.000000000 -0600
+@@ -1349,18 +1349,43 @@ void __init init_timers(void)
+ 	open_softirq(TIMER_SOFTIRQ, run_timer_softirq, NULL);
+ }
+ 
++
++
++
++static void do_msleep(unsigned int msecs, struct hrtimer_sleeper *sleeper,
++	int sigs)
++{
++	enum hrtimer_mode mode = HRTIMER_MODE_REL;
++	int state = sigs ? TASK_INTERRUPTIBLE : TASK_UNINTERRUPTIBLE;
++
++	/*
++	 * This is really just a reworked and simplified version
++	 * of do_nanosleep().
++	 */
++	hrtimer_init(&sleeper->timer, CLOCK_MONOTONIC, mode);
++	sleeper->timer.expires = ktime_set(0, msecs*NSEC_PER_MSEC);
++	hrtimer_init_sleeper(sleeper, current);
++
++	do {
++		set_current_state(state);
++		hrtimer_start(&sleeper->timer, sleeper->timer.expires, mode);
++		if (sleeper->task)
++			schedule();
++		hrtimer_cancel(&sleeper->timer);
++		mode = HRTIMER_MODE_ABS;
++	} while (sleeper->task && !(sigs && signal_pending(current)));
++}
++
+ /**
+  * msleep - sleep safely even with waitqueue interruptions
+  * @msecs: Time in milliseconds to sleep for
+  */
+ void msleep(unsigned int msecs)
+ {
+-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
++	struct hrtimer_sleeper sleeper;
+ 
+-	while (timeout)
+-		timeout = schedule_timeout_uninterruptible(timeout);
++	do_msleep(msecs, &sleeper, 0);
+ }
+-
+ EXPORT_SYMBOL(msleep);
+ 
+ /**
+@@ -1369,11 +1394,15 @@ EXPORT_SYMBOL(msleep);
+  */
+ unsigned long msleep_interruptible(unsigned int msecs)
+ {
+-	unsigned long timeout = msecs_to_jiffies(msecs) + 1;
++	struct hrtimer_sleeper sleeper;
++	ktime_t left;
+ 
+-	while (timeout && !signal_pending(current))
+-		timeout = schedule_timeout_interruptible(timeout);
+-	return jiffies_to_msecs(timeout);
+-}
++	do_msleep(msecs, &sleeper, 1);
+ 
++	if (!sleeper.task)
++		return 0;
++	left = ktime_sub(sleeper.timer.expires,
++			 sleeper.timer.base->get_time());
++	return max(((long) ktime_to_ns(left))/NSEC_PER_MSEC, 1L);
++}
+ EXPORT_SYMBOL(msleep_interruptible);
