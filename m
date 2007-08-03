@@ -1,47 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbXHCMiI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761339AbXHCMjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbXHCMiI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 08:38:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbXHCMh5
+	id S1761339AbXHCMjY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 08:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbXHCMjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:37:57 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4713 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750916AbXHCMh4 (ORCPT
+	Fri, 3 Aug 2007 08:39:18 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53818 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbXHCMjR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 08:37:56 -0400
-Message-ID: <46B32197.8090708@shadowen.org>
-Date: Fri, 03 Aug 2007 13:37:43 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Fri, 3 Aug 2007 08:39:17 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Keith Owens <kaos@ocs.com.au>
+Cc: vgoyal@in.ibm.com, Takenori Nagano <t-nagano@ah.jp.nec.com>,
+       k-miyoshi@cb.jp.nec.com, Bernhard Walle <bwalle@suse.de>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] Handling kernel stack overflows
+References: <31700.1186113953@kao2.melbourne.sgi.com>
+Date: Fri, 03 Aug 2007 06:36:23 -0600
+In-Reply-To: <31700.1186113953@kao2.melbourne.sgi.com> (Keith Owens's message
+	of "Fri, 03 Aug 2007 14:05:53 +1000")
+Message-ID: <m11wekn6bc.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@computergmbh.de>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Andrew Morton <akpm@osdl.org>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Joel Schopp <jschopp@austin.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] update checkpatch.pl to version 0.08
-References: <740c90243aaa6f6d4640d71230c4fa27@pinky> <46A53B70.1010903@intel.com> <Pine.LNX.4.64.0707241852510.18990@fbirervta.pbzchgretzou.qr>
-In-Reply-To: <Pine.LNX.4.64.0707241852510.18990@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On Jul 23 2007 16:36, Kok, Auke wrote:
->> this somehow seems to match something completely non-related (a function
->> pointer declaration case):
->>
->> ERROR: no space between function name and open parenthesis '('
->> #7278: FILE: drivers/net/e1000e/hw.h:434:
->> +       bool (*check_mng_mode)(struct e1000_hw *);
->>
->> even if I put a space between ")(", it still complains.
-> 
-> [assumed] majority of kernel code uses ")(" instead of ")\s+(",
-> so the warning seems bogus. And it even gets nitpicky.
 
-No that is just a false positive.  Those are meant to be detected, its
-just that bool wasn't listed as a type.
+Well we currently keep a struct thread_info on the stack
+which while not as bad as task_struct has it's own uses
+and implications which may limit what you are trying
+to do.
 
--apw
+That said a function like:
+
+int call_on_new_stack(int (*continuation)(void *), void *closure)
+{
+	struct task_struct *tsk;
+	struct thread_info *ti;
+
+	if (plenty_of_stack_space())
+		return continuation(closure);
+
+	tsk = current();
+	ti = alloc_thread_info(tsk);
+	if (!ti)
+		return -ENOMEM;
+
+	setup_extra_thread_info(tsk, ti, continuation, closure);
+	schedule();
+}
+
+Might make sense.  Last I heard the block layer and xfs seemed
+to have largely solved their problems with running short on stack
+space, so I don't know if it is necessary but it certainly sounds
+relatively simple and interesting.
+
+Running short on stack space is a recurring theme so a function that
+allows us to have a little more when we really need it and be able to
+switch even x86_64 to 4K stacks would be interesting.
+
+I'm not quite certain where we could insert calls to call_on_new_stack,
+but it looks simple enough that it is worth coding up and playing
+with.  If the results are good it could be worth merging.
+
+Eric
