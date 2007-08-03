@@ -1,92 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbXHCTZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763395AbXHCT00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763288AbXHCTZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 15:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbXHCTYx
+	id S1763395AbXHCT00 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 15:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756204AbXHCT0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 15:24:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49927 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbXHCTYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 15:24:52 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
-Date: Fri, 3 Aug 2007 15:23:19 -0400
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <200707251238.50218.lenb@kernel.org> <200707302354.23237.lenb@kernel.org> <20070731063833.GD22419@elf.ucw.cz>
-In-Reply-To: <20070731063833.GD22419@elf.ucw.cz>
+	Fri, 3 Aug 2007 15:26:19 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:44654 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758704AbXHCT0S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 15:26:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=OtM26fvA8qyeQSHpz2AL3MccMWchBSphCxQp7ZDpcSbE/Iy9A4ceetuCOn3RkaaoatYuIKzGvts3lRGQkjPIzHZz5mCQHDLqPKPnzletzN3KCcdK6Ioe/2b7x1P4B4pPCp94GkfYNV6xQ6qpbv7KPg7DqzcH0sP2dF55tnswf+w=
+Message-ID: <8b67d60708031226m747f142sd3ed4447fb896a94@mail.gmail.com>
+Date: Fri, 3 Aug 2007 20:26:17 +0100
+From: "Adrian McMenamin" <lkmladrian@gmail.com>
+To: "Paul Mundt" <lethal@linux-sh.org>, linuxsh-dev@lists.sourceforge.net
+Subject: [PATCH] SH: add machine-ops and Dreamcast specific fix-up
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708031523.19623.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 31 July 2007 02:38, Pavel Machek wrote:
-> Hi!
-> 
-> > Without this change, it is possible to build CONFIG_HIBERNATE
-> > on all !SMP architectures, but not necessarily their SMP versions.
-> 
-> Did you want to say "CONFIG_SUSPEND"?
+(This code is closely modelled on the i386 machine-ops, though
+currently the only board specific fixup is for the Dreamcast and so
+there is not a separate set of mach fixups.)
 
-Yes.
+This needs to be tested against a wide range of SH boards and would be
+good to go in -mm if Paul acks it.
 
-> > I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
-> > is correct.  For now it simply matches the list for
-> > SUSPEND_SMP_POSSIBLE.
-> 
-> I do not think it is.
-> 
-> > Signed-off-by: Len Brown <len.brown@intel.com>
-> > ---
-> >  Kconfig |    7 ++++++-
-> >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > index 412859f..ccf6576 100644
-> > --- a/kernel/power/Kconfig
-> > +++ b/kernel/power/Kconfig
-> > @@ -72,6 +72,11 @@ config PM_TRACE
-> >  	CAUTION: this option will cause your machine's real-time clock to be
-> >  	set to an invalid time after a resume.
-> >  
-> > +config SUSPEND_UP_POSSIBLE
-> > +	bool
-> > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
-> 
-> At least ARM can do suspend, too... probably others. I was under
-> impression that SUSPEND is "supported" by all the architectures, just
-> some of them veto it at runtime (using pm_ops or how was it renamed).
+Add machine-ops code to the SH code base, allowing board specific
+reboot and halt code. Currently only Dreamcast specific warm reboot
+fixup in code.
 
-The reason this entire thread started is because Linus, Jeff and others
-said that they didn't want code magically compiled into their kernel
-that they did not explicitly ask for -- even if the savings were small
-and that kernel was already something rather beefy, such as ACPI+SMP.
+Signed-off by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
 
-The current code is simply broken, because it allows SUSPEND
-on IA64 if UP, but not on SMP.  It should really be neither.
+diff --git a/arch/sh/boards/dreamcast/Makefile
+b/arch/sh/boards/dreamcast/Makefile
+index e6fcd3d..7b97546 100644
+--- a/arch/sh/boards/dreamcast/Makefile
++++ b/arch/sh/boards/dreamcast/Makefile
+@@ -2,5 +2,5 @@
+ # Makefile for the Sega Dreamcast specific parts of the kernel
+ #
 
-Further, the only requirement to enable CONFIG_SUSPEND by default
-is PM && CONFIG_SMP=n, and that doesn't make much sense -- particularly
-since many of the non X86 architectures are small and according
-to the logic above, if SUSPEND (and PM_SLEEP, which it enables)
-adds any code to those kernels when they don't need it,
-then it would be a regression.
+-obj-y	 := setup.o irq.o rtc.o reboot.o
++obj-y	 := setup.o irq.o rtc.o
 
-thus my patch, if there is a list for SMP, there should
-be a list for !SMP.  If the list is incomplete, we need to fix it.
- 
--Len
+diff --git a/arch/sh/kernel/Makefile b/arch/sh/kernel/Makefile
+index bdb30ba..7ab2359 100644
+--- a/arch/sh/kernel/Makefile
++++ b/arch/sh/kernel/Makefile
+@@ -5,15 +5,11 @@
+ extra-y	:= head.o init_task.o vmlinux.lds
 
+ obj-y	:= debugtraps.o io.o io_generic.o irq.o machvec.o process.o ptrace.o \
+-	   semaphore.o setup.o signal.o sys_sh.o syscalls.o \
++	   reboot.o semaphore.o setup.o signal.o sys_sh.o syscalls.o \
+ 	   time.o topology.o traps.o
+
+ obj-y				+= cpu/ timers/
+
+-ifneq ($(CONFIG_SH_DREAMCAST),y)
+-	obj-y			+= reboot.o
+-endif
+-
+ obj-$(CONFIG_VSYSCALL)		+= vsyscall/
+
+ obj-$(CONFIG_SMP)		+= smp.o
+diff --git a/arch/sh/kernel/machine_kexec.c b/arch/sh/kernel/machine_kexec.c
+index 790ed69..201b370 100644
+--- a/arch/sh/kernel/machine_kexec.c
++++ b/arch/sh/kernel/machine_kexec.c
+@@ -29,9 +29,6 @@ extern const unsigned char relocate_new_kernel[];
+ extern const unsigned int relocate_new_kernel_size;
+ extern void *gdb_vbr_vector;
+
+-void machine_shutdown(void)
+-{
+-}
+
+ void machine_crash_shutdown(struct pt_regs *regs)
+ {
+diff --git a/arch/sh/kernel/reboot.c b/arch/sh/kernel/reboot.c
+new file mode 100644
+index 0000000..c6247ae
+--- /dev/null
++++ b/arch/sh/kernel/reboot.c
+@@ -0,0 +1,107 @@
++/*
++ *  linux/arch/sh/kernel/reboot.c
++ *
++ *  Essentially copied from i386 code
++ *  and process.c
++ *
++ *  Copyright (C) 1995  Linus Torvalds
++ *
++ *  SuperH version:  Copyright (C) 1999, 2000  Niibe Yutaka & Kaz Kojima
++ *		     Copyright (C) 2006 Lineo Solutions Inc. support SH4A UBC
++ *		     Copyright (C) 2002 - 2007  Paul Mundt
++ *		     Copyright 2007 Adrian McMenamin
++ *
++ *  Licensed under the terms of version 2 of GNU GPL
++ */
++
++#include <linux/mm.h>
++#include <linux/module.h>
++#include <linux/delay.h>
++#include <linux/init.h>
++#include <asm/io.h>
++#include <asm/reboot.h>
++
++/*
++ * Power off function, if any
++ */
++void (*pm_power_off)(void);
++EXPORT_SYMBOL(pm_power_off);
++
++/* fixups for individual machines -
++ * in i386 this is in a file of its own
++ * but we only have the Dreamcast for now.
++ */
++
++static void mach_reboot_fixups(void)
++{
++	if (mach_is_dreamcast()) {
++		writel(0x00007611, 0xA05F6890);
++	}
++}
++
++static void native_machine_shutdown(void)
++{
++}
++
++static void native_machine_emergency_restart(void)
++{
++	mach_reboot_fixups();
++	/* SR.BL=1 and invoke address error to let CPU reset (manual reset) */
++	asm volatile("ldc %0, sr\n\t"
++		     "mov.l @%1, %0" : : "r" (0x10000000), "r" (0x80000001));
++}
++
++static void native_machine_restart(char * __unused)
++{
++	native_machine_shutdown();
++	native_machine_emergency_restart();
++}
++
++static void native_machine_halt(void)
++{
++	local_irq_disable();
++
++	while (1)
++		cpu_sleep();
++}
++
++static void native_machine_power_off(void)
++{
++	if (pm_power_off) {
++		native_machine_shutdown();
++		pm_power_off();
++	}
++}
++
++struct machine_ops machine_ops = {
++	.power_off = native_machine_power_off,
++	.shutdown = native_machine_shutdown,
++	.emergency_restart = native_machine_emergency_restart,
++	.restart = native_machine_restart,
++	.halt = native_machine_halt,
++};
++
++void machine_power_off(void)
++{
++	machine_ops.power_off();
++}
++
++void machine_shutdown(void)
++{
++	machine_ops.shutdown();
++}
++
++void machine_emergency_restart(void)
++{
++	machine_ops.emergency_restart();
++}
++
++void machine_restart(char *cmd)
++{
++	machine_ops.restart(cmd);
++}
++
++void machine_halt(void)
++{
++	machine_ops.halt();
++}
+diff --git a/include/asm-sh/emergency-restart.h
+b/include/asm-sh/emergency-restart.h
+index 108d8c4..d6bec92 100644
+--- a/include/asm-sh/emergency-restart.h
++++ b/include/asm-sh/emergency-restart.h
+@@ -1,6 +1,6 @@
+-#ifndef _ASM_EMERGENCY_RESTART_H
+-#define _ASM_EMERGENCY_RESTART_H
++#ifndef _ASM_SH_EMERGENCY_RESTART_H
++#define _ASM_SH_EMERGENCY_RESTART_H
+
+-#include <asm-generic/emergency-restart.h>
++extern void machine_emergency_restart(void);
+
+-#endif /* _ASM_EMERGENCY_RESTART_H */
++#endif /* _ASM_SH_EMERGENCY_RESTART_H */
