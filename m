@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762782AbXHCOOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762527AbXHCOWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762782AbXHCOOw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 10:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbXHCOOq
+	id S1762527AbXHCOWT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 10:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761738AbXHCOWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 10:14:46 -0400
-Received: from adelie.ubuntu.com ([82.211.81.139]:34262 "EHLO
-	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760936AbXHCOOp (ORCPT
+	Fri, 3 Aug 2007 10:22:08 -0400
+Received: from pascoe.ucs.ed.ac.uk ([129.215.128.240]:61121 "EHLO
+	pascoe.ucs.ed.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760050AbXHCOWH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 10:14:45 -0400
-Subject: Regression in 2.6.22, clock problems on Turion with 32-bit kernel
-From: Ben Collins <ben.collins@ubuntu.com>
-To: linux-kernel@vger.kernel.org
-Cc: Tim Gardner <tim.gardner@canonical.com>
-Content-Type: text/plain
-Organization: Canonical
-Date: Fri, 03 Aug 2007 10:14:44 -0400
-Message-Id: <1186150484.8105.57.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.5 
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 10:22:07 -0400
+X-Greylist: delayed 2198 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Aug 2007 10:22:07 EDT
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: "=?utf-8?b?0JDQvdC00YDRltC5?=
+	=?utf-8?b?INCc0ZbRiNC60L7QstGB0YzQutC40Lk=?=" <mishok13@gmail.com>
+Subject: Re: Scheduler Situation
+Date: Fri, 3 Aug 2007 14:45:31 +0100
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <cdc89fe60708030507r29283942mbb9947edbe04e23a@mail.gmail.com> <192840a00708030616g22d9dd16o95b2620bfe3347a8@mail.gmail.com> <192840a00708030627p11e445fbi66833ca27b39af8e@mail.gmail.com>
+In-Reply-To: <192840a00708030627p11e445fbi66833ca27b39af8e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708031445.31968.alistair@devzero.co.uk>
+X-Edinburgh-Scanned: at pascoe.ucs.ed.ac.uk
+    with MIMEDefang 2.52, Sophie, Sophos Anti-Virus, Clam AntiVirus
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim and I have both experienced this problem. With 2.6.20 things worked
-perfectly fine on these systems. The two machines are a Dell 1501 Turion
-X2 and Dell 1521 Turion X2.
+On Friday 03 August 2007 14:27:30 Андрій Мішковський wrote:
+> Bad things may happen if Linus gives a right of making decision to
+> other people (a big group of people). ;)
+> As you said, Linux is a public OS, so Con's code never will be lost.
+> That's the base of open source - people come and go, but the code
+> stays. :)
 
-With 2.6.22 the kernel hangs shortly after starting up, but after
-several minutes, you can get activity by tapping keyboard (generating
-interrupts). We have NO_HZ and HIGH_RES enabled, but even disabling this
-doesn't help.
-
-I've tried every combination of boot param revolving around clocksource
-and interrupts. The only thing that gets me booting is nolapic, but then
-again, that knocks me down to a single cpu. Setting maxcpus=1 or nosmp
-doesn't fix it.
-
-We both bisected (separately I might add) down to this commit:
-
-commit e9e2cdb412412326c4827fc78ba27f410d837e6e
-Author: Thomas Gleixner <tglx@linutronix.de>
-Date:   Fri Feb 16 01:28:04 2007 -0800
-
-    [PATCH] clockevents: i386 drivers
-
-    Add clockevent drivers for i386: lapic (local) and PIT/HPET (global).  Update
-    the timer IRQ to call into the PIT/HPET driver's event handler and the
-    lapic-timer IRQ to call into the lapic clockevent driver.  The assignement of
-    timer functionality is delegated to the core framework code and replaces the
-    compile and runtime evalution in do_timer_interrupt_hook()
-
-    Use the clockevents broadcast support and implement the lapic_broadcast
-    function for ACPI.
-
-    No changes to existing functionality.
-
-Note, the problem doesn't happen when using an x86_64 kernel with the
-same basic config, on the same machine.
-
-Hoping to get some tips to test something a bit more specific in this
-patch.
+Unfortunately Con undermined this by leaving all kernel development. So unless 
+somebody else is sufficiently motivated to constructively improve SD (and I 
+think we all hope they will, competition is good), it will probably die.
 
 -- 
-Ubuntu   : http://www.ubuntu.com/
-Linux1394: http://wiki.linux1394.org/
+Cheers,
+Alistair.
 
+137/1 Warrender Park Road, Edinburgh, UK.
