@@ -1,52 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763620AbXHCVBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763698AbXHCVEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763620AbXHCVBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 17:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760670AbXHCVBJ
+	id S1763698AbXHCVEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 17:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbXHCVEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 17:01:09 -0400
-Received: from dsl.myri.com ([64.172.73.26]:2017 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758221AbXHCVBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 17:01:08 -0400
-Message-ID: <46B39774.4050909@myri.com>
-Date: Fri, 03 Aug 2007 17:00:36 -0400
-From: Andrew Gallatin <gallatin@myri.com>
-User-Agent: Thunderbird 1.5.0.7 (Macintosh/20060909)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: netdev@vger.kernel.org, raisch@de.ibm.com, themann@de.ibm.com,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
-       tklein@de.ibm.com, stefan.roscher@de.ibm.com, jeff@garzik.org,
-       davem@davemloft.net
-Subject: Re: [PATCH] lro: myri10ge example how to use LRO
-References: <46B363A8.4010407@myri.com> <46B39063.6070301@intel.com>
-In-Reply-To: <46B39063.6070301@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 17:04:25 -0400
+Received: from mail.screens.ru ([213.234.233.54]:34504 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756804AbXHCVEZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 17:04:25 -0400
+Date: Sat, 4 Aug 2007 01:04:41 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] kill an obsolete sub-thread-ptrace stuff
+Message-ID: <20070803210441.GA247@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kok, Auke wrote:
-> Andrew Gallatin wrote:
->> To follow up on Jan-Bernd Themann's LRO patch earlier today,
->> this patch shows how the generic LRO interface can be used for
->> page based drivers.
->>
->> Again, many thanks to Jan-Bernd Themann for leading this effort.
->>
->> Drew
->>
->> Singed off by: Andrew Gallatin <gallatin@myri.com>
->>
-> 
-> 
-> please take a look at my lro patch for ethtool and see if it works for 
-> you, instead of adding another generic module parameter that doesn't 
-> need to be there.
+There is a couple of subtle checks which were needed to handle ptracing from
+the same thread group. This was deprecated a long ago, imho this code just
+complicates the understanding.
 
-That looks very nice, and will indeed work for me.
+And, the "->parent->signal->flags & SIGNAL_GROUP_EXIT" check in exit_notify()
+is not right. SIGNAL_GROUP_EXIT can mean exec(), not exit_group(). This means
+ptracer can lose a ptraced zombie on exec(). Minor problem, but still the bug.
 
-Thanks,
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-Drew
+--- t/kernel/exit.c~PT_TG	2007-08-03 18:05:52.000000000 +0400
++++ t/kernel/exit.c	2007-08-03 21:10:40.000000000 +0400
+@@ -802,7 +802,7 @@ static void exit_notify(struct task_stru
+ 		__kill_pgrp_info(SIGCONT, SEND_SIG_PRIV, pgrp);
+ 	}
+ 
+-	/* Let father know we died 
++	/* Let father know we died
+ 	 *
+ 	 * Thread signals are configurable, but you aren't going to use
+ 	 * that to send signals to arbitary processes. 
+@@ -815,9 +815,7 @@ static void exit_notify(struct task_stru
+ 	 * If our self_exec id doesn't match our parent_exec_id then
+ 	 * we have changed execution domain as these two values started
+ 	 * the same after a fork.
+-	 *	
+ 	 */
+-	
+ 	if (tsk->exit_signal != SIGCHLD && tsk->exit_signal != -1 &&
+ 	    ( tsk->parent_exec_id != t->self_exec_id  ||
+ 	      tsk->self_exec_id != tsk->parent_exec_id)
+@@ -837,9 +835,7 @@ static void exit_notify(struct task_stru
+ 	}
+ 
+ 	state = EXIT_ZOMBIE;
+-	if (tsk->exit_signal == -1 &&
+-	    (likely(tsk->ptrace == 0) ||
+-	     unlikely(tsk->parent->signal->flags & SIGNAL_GROUP_EXIT)))
++	if (tsk->exit_signal == -1 && likely(!tsk->ptrace))
+ 		state = EXIT_DEAD;
+ 	tsk->exit_state = state;
+ 
+--- t/kernel/signal.c~PT_TG	2007-07-28 16:58:17.000000000 +0400
++++ t/kernel/signal.c	2007-08-03 21:11:59.000000000 +0400
+@@ -1561,10 +1561,6 @@ static inline int may_ptrace_stop(void)
+ 		    (current->ptrace & PT_ATTACHED)))
+ 		return 0;
+ 
+-	if (unlikely(current->signal == current->parent->signal) &&
+-	    unlikely(current->signal->flags & SIGNAL_GROUP_EXIT))
+-		return 0;
+-
+ 	/*
+ 	 * Are we in the middle of do_coredump?
+ 	 * If so and our tracer is also part of the coredump stopping
+
