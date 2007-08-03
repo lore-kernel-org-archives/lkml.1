@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbXHCJ7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbXHCKGY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760109AbXHCJ7r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 05:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758324AbXHCJ7j
+	id S1760327AbXHCKGY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 06:06:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758571AbXHCKGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 05:59:39 -0400
-Received: from web26910.mail.ukl.yahoo.com ([217.146.176.99]:31343 "HELO
-	web26910.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758238AbXHCJ7i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 05:59:38 -0400
+	Fri, 3 Aug 2007 06:06:15 -0400
+Received: from web26709.mail.ukl.yahoo.com ([217.146.176.72]:38986 "HELO
+	web26709.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758324AbXHCKGP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 06:06:15 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 03 Aug 2007 06:06:14 EDT
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.fr;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=lz+dI3lXLJRxJfXUfyXOo8UwA+zBf6xXmPdpk57rjveh2bW++AQWsI0SE7ykFnbcMXyicRTQPs5KhQSHiZAgDBMMdJeFdd6lwge8f2ePeQ3OWd5qJIOmMfU4MDwf8EPkW2FQ7ztqIs790qoy5qoEeJlITL7BBIhYNlKJRMiQ/C0=;
-X-YMail-OSG: YiG_.NoVM1nxa3yCwykpQs.gKHgJc7e8UI6uwRvfkL6f1KiX5xn1pOG01xl9RFVL.7n5RrG.MQ--
-Date: Fri, 3 Aug 2007 11:59:37 +0200 (CEST)
-From: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Subject: [ANNOUNCE] Gujin PC graphic bootloader version 2.1
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=gNZNQ2leEaIK4lpyo8Dy/J1txdhmmfmF1nILg1BoLeiJ5MQeYdt7EAbaDrNUuoxUFjqfX4/WAiH6tgb7JSS50/aqpQx4YMTHej703d+QJCb37OxAMH7k3vCN9yEG7xh8TORpgS485x4j/3bufxidXZqGVfJVhiWA0muZualdUAQ=;
+X-YMail-OSG: zc6EsS4VM1krBBdEwNg6Og2VsAuhVsKMfgL.1WMfkcd8yjNfvdFc0BGnOOrBmkW9EElANDMtFw--
+X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.119
+Date: Fri, 3 Aug 2007 09:59:32 +0000 (GMT)
+From: gregfe <gregfe2002@yahoo.fr>
+Subject: Implementation of POSIX mqueues in Linux 2.6
 To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-Message-ID: <466131.83757.qm@web26910.mail.ukl.yahoo.com>
+Message-ID: <76026.87188.qm@web26709.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Hi,
+Hi there,
+I find little documentation on the actual implementation of POSIX message queues in Linux, and need some advise. In
+particular, I am wondering whether it supports inter-process *and* inter-thread
+communication, and if can I manage to use shared memory pools for zero-copy messaging in case of inter-process
+communication. On more thing: kernel's "make menuconfig" of version 2.6.11 says :
 
- A new version of the Gujin bootloader has been released, with those improvements:
+>> To use this feature you will also need mqueue library, available
 
-- Uses now by default the 16 bits entry point of bzImage Linux files (zImage not
- supported) and do not uncompress the initrd, under the control of the "force
- bzImage protocol" of the graphic menu, or the "/p" parameter of tiny.exe.
+>> from <... a URL ... to M. Wronski's and K. Benedyczak's home page>"
 
-- Able to load (gzip'ed) 64 bits ELF files with the ".kgz" extension (like 32 bits
- ELF - with possible section at ELF address 0 for the real-mode part) as long as
- the entry point is a 32 bits entry point (i.e. use runadr=0x200000 parameter
- inside the comment field of the GZIP'ed ELF64 file).
+Is it still up to date ?
 
-- Uses if possible/autodetected the name of the filesystem in "root=LABEL="
- Linux parameter, instead of the autodetected "root=/dev/hd[a-z][0-9]".
+Thank you very much for your advise !
 
-- Important fixes in the demo cleandisk.kgz standalone application (linker file
- cleandisk.ld change) directly runable from Gujin, with full disk, graphic and
- mouse support.
+G.
 
-- Longer timeout (change from 4 to 8 seconds) to read a CDROM sector, so that new
- ultra speed DVD-RAM drives can be booted...
-
-- More bugfixes, like when chain-loading floppy images from CDROMs or USD drives,
- loading the last uncomplete block of the initrd...
-
- Have fun,
- Etienne.
 
 
       _____________________________________________________________________________ 
