@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbXHCHPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760579AbXHCHVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761005AbXHCHPh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 03:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755434AbXHCHPa
+	id S1760579AbXHCHVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 03:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbXHCHU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 03:15:30 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49591 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753869AbXHCHPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 03:15:30 -0400
-Subject: Re: per bdi dirty balancing (was Re: kupdate weirdness)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <E1IGqsn-0003uq-00@dorka.pomaz.szeredi.hu>
-References: <E1IGL4G-00088R-00@dorka.pomaz.szeredi.hu>
-	 <20070801141439.ff1c29f9.akpm@linux-foundation.org>
-	 <E1IGcyd-00025s-00@dorka.pomaz.szeredi.hu>
-	 <20070802121806.d7071ba1.akpm@linux-foundation.org>
-	 <E1IGgS3-0002ib-00@dorka.pomaz.szeredi.hu>
-	 <1186091062.11797.34.camel@lappy>
-	 <E1IGqsn-0003uq-00@dorka.pomaz.szeredi.hu>
-Content-Type: text/plain
-Date: Fri, 03 Aug 2007 09:15:27 +0200
-Message-Id: <1186125327.12034.121.camel@twins>
+	Fri, 3 Aug 2007 03:20:58 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:47403 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752939AbXHCHU5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 03:20:57 -0400
+Date: Fri, 3 Aug 2007 09:30:31 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, jason.wessel@windriver.com,
+       amitkale@linsyssoft.com, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: NETPOLL=y , NETDEVICES=n compile error ( Re: 2.6.23-rc1-mm1 )
+Message-ID: <20070803073030.GB1582@ff.dom.local>
+References: <20070731083210.GA1797@ff.dom.local> <46AF0B8C.7070006@googlemail.com> <20070731121735.GA1046@ff.dom.local> <46AF4F9C.5060000@googlemail.com> <20070801095920.GA1941@ff.dom.local> <20070802020219.GM11166@waste.org> <20070802090008.GA1699@ff.dom.local> <20070802155922.GQ11115@waste.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070802155922.GQ11115@waste.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-03 at 08:43 +0200, Miklos Szeredi wrote:
-> (cc restored)
-> 
-> > > > There were heaps of problems in there and it is surprising how few people
-> > > > were hitting them.  Ordered-mode journalling filesystems will fix it all up
-> > > > behind the scenes, of course.
-> > > > 
-> > > > I just have a bad feeling about that code - list_heads are the wrong data
-> > > > structure and it all needs to be ripped and redone using some indexable
-> > > > data structure.  There has been desultory discussion, but nothing's
-> > > > happening and nothing will happen in the medium term, so we need to keep
-> > > > on whapping bandainds on it.
-> > > 
-> > > The reason why I'm looking at that code is because of those
-> > > balance_dirty_pages() deadlocks.  I'm not perfectly happy with the
-> > > per-pdi-per-cpu counters Peter's patch is introducing.
+On Thu, Aug 02, 2007 at 10:59:23AM -0500, Matt Mackall wrote:
+> On Thu, Aug 02, 2007 at 11:00:08AM +0200, Jarek Poplawski wrote:
+> > On Wed, Aug 01, 2007 at 09:02:19PM -0500, Matt Mackall wrote:
+...
+> > > How about cc:ing the netpoll maintainer?
 > > 
-> > What is your biggest concern regarding them?
+> > Is there a new one or do you suggest possibility of abusing the
+> > authority of the netpoll's author with such trifles...?!
 > 
-> Complexity.  I've started to review the patches, and they are just too
-> damn complex.
+> I'm just subtly suggesting that if you're going to have a discussion
+> about netpoll, you ought to cc: me.
+
+Thanks! I'm very honored. I've suspected there is some subtlety, but
+wasn't sure of possible new patches to MAINTAINERS, so tried to be
+subtle too...
+
 > 
-> For example introducing the backing_dev_info initializer and
-> destructor adds potential bugs if we miss to add them somewhere.
-
-yeah, that was/is a pain.
-
-> Now maybe this is unavoidable.  I'm just trying to look for a solution
-> involving less uncertanties and complexities.
+> > There are some notions about "other diagnostic tools" in some
+> > net drivers, eg. 3c509.c, so there would be a little bit of
+> > work if, after changing this, they really exist (and even if
+> > not - maybe it's reasonable to save such possibility for the
+> > future?).
 > 
-> My plan is to extract the minimal set of features from your patchset,
-> that solves the dirty balancing deadlocks and submit them as quickly
-> as possible.
+> I created it for netpoll, only netpoll clients have ever cared.
 
-I had hoped to post a new version yesterday, but lets hope for today.
+So, probably you're the best person to change this! Alas, it seems,
+for some time any changes to netpoll could have a cold reception
+here (pity for Ingo's laptop...).
 
-> After that we can look at trying to solve the more ambitious problem
-> of the slow vs. fast devices in a way that not only you can understand ;)
-
-Drad, and here I thought all that documentation in the proportions lib
-would have solved that :-(
-
-
+Regards,
+Jarek P.
