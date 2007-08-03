@@ -1,121 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761729AbXHCSCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbXHCSE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761729AbXHCSCd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 14:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757202AbXHCSCY
+	id S1760888AbXHCSE7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 14:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753560AbXHCSEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 14:02:24 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:10733 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757093AbXHCSCW (ORCPT
+	Fri, 3 Aug 2007 14:04:51 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44149 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756113AbXHCSEu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 14:02:22 -0400
-Date: Fri, 03 Aug 2007 12:00:57 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: [PATCH -mm] libata: add human-readable error value decoding v3
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       ide <linux-ide@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>
-Message-id: <46B36D59.7060803@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 7bit
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 3 Aug 2007 14:04:50 -0400
+Date: Fri, 3 Aug 2007 11:04:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Philipp =?ISO-8859-1?Q?T=F6lke?= <philipptoelke@web.de>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       Christophe Saout <christophe@saout.de>,
+       Alasdair G Kergon <agk@redhat.com>
+Subject: Re: PROBLEM: Oops when using dm-crypt with dpt_i2o
+Message-Id: <20070803110430.88a4b543.akpm@linux-foundation.org>
+In-Reply-To: <46B0D4B4.2040809@web.de>
+References: <46B0D4B4.2040809@web.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds human-readable decoding of the ATA status and error registers
-(similar to what drivers/ide does) as well as the SATA Serror register to
-libata error handling output.  This prevents the need to pore through
-standards documents to figure out the meaning of the bits in these
-registers when looking at error reports.  Some bits that drivers/ide
-decoded are not decoded here, since the bits are either command-dependent
-or obsolete, and properly parsing them would add too much complexity.
+On Wed, 01 Aug 2007 20:45:08 +0200
+Philipp T__lke <philipptoelke@web.de> wrote:
 
-Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+> Hello everybody,
+> 
+> if I mount a dm-crypt-encrypted Harddisk/RAID-Array on an Adaptec 3200S,
+> and produce load (for example with bonnie++) the kernel crashes.
+> 
+> This is always reproducible. To reproduce simply mount an dm-crypt
+> encrypted device and produce load -- I always used bonnie++.
+> 
+> Unencrypted volumes work fine. Every kind of load I threw at the System
+> worked fine.
+> 
+> I would be very glad, if some kind of solution for this can be found.
+> 
 
----
+Gee we get a lot of bug reports involving dm-crypt.
 
-Rebased to apply to 2.6.23-rc1-mm2.
+> 
+> The oopses:
+> 
+> #v+
+> BUG: unable to handle kernel paging request at virtual address 14001000
+> printing eip:
+> *pde = 00000000
+> Oops: 0000 [#1]
+> Modules linked in: dm_crypt dm_mod capability commoncap ipv6 pcspkr
+> ppdev lp parport_pc parport rtc_cmos ppp_generic rtc_core rtc_lib
+> i2c_viapro i2o_core i2c_core via_ircc irda crc_ccitt sg shpchp
+> pci_hotplug evdev thermal processor fan button battery ac slhc r8169
+> usbcore jfs sr_mod cdrom sd_mod sym53c8xx dpt_i2o ata_generic pata_via
+> libata
+> CPU:    0
+> EIP:    0060:[<14001000>]    Not tainted VLI
+> EFLAGS: 00010082   (2.6.22.1 #2)
+> EIP is at 0x14001000
+> eax: 00000000   ebx: 14001000   ecx: 00000000   edx: 0002bc00
+> esi: 5b51c000   edi: 14001000   ebp: 5b51b000   esp: dfe21f08
+> ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> Process kblockd/0 (pid: 31, ti=dfe20000 task=c1cfca50 task.ti=dfe20000)
+> 
+> Stack: 5b51a000 14001000 5b519000 14001000 5b518000 d4001000 5b517000
+> 00000086
+> c1d0b534 c1d0b424 c1d0b490 c1da7834 c1da7834 c1da7834 00000000 07000000
+> c022aac5 c1da78b8 c022b696 c022c762 00000046 c1d0b534 c1d0b424 c1d0b490
+> 
+> Call Trace:
+> [<c022aac5>] __generic_unplug_device+0x25/0x30
+> [<c022b696>] generic_unplug_device+0x6/0x10
+> [<c022c762>] blk_unplug_work+0x42/0xa0
+> [<c022c720>] blk_unplug_work+0x0/0xa0
+> [<c012a307>] run_workqueue+0x97/0x110
+> [<c012aa00>] worker_thread+0x0/0xe0
+> [<c012aa7d>] worker_thread+0x7d/0xe0
+> [<c012d5e0>] autoremove_wake_function+0x0/0x40
+> [<c012aa00>] worker_thread+0x0/0xe0
+> [<c012d292>] kthread+0x42/0x70
+> [<c012d250>] kthread+0x0/0x70
+> [<c01041df>] kernel_thread_helper+0x7/0x18
+> =======================
+> Code:  Bad EIP value.
+> EIP: [<14001000>] 0x14001000 SS:ESP 0068:dfe21f08
+> 
 
---- linux-2.6.23-rc1-mm2/include/linux/ata.h	2007-08-02 16:13:24.000000000 -0600
-+++ linux-2.6.23-rc1-mm2edit/include/linux/ata.h	2007-08-02 16:37:23.000000000 -0600
-@@ -274,6 +274,15 @@ enum {
- 	SERR_PROTOCOL		= (1 << 10), /* protocol violation */
- 	SERR_INTERNAL		= (1 << 11), /* host internal error */
- 	SERR_PHYRDY_CHG		= (1 << 16), /* PHY RDY changed */
-+	SERR_PHY_INT_ERR	= (1 << 17), /* PHY internal error */
-+	SERR_COMM_WAKE		= (1 << 18), /* Comm wake */
-+	SERR_10B_8B_ERR		= (1 << 19), /* 10b to 8b decode error */
-+	SERR_DISPARITY		= (1 << 20), /* Disparity */
-+	SERR_CRC		= (1 << 21), /* CRC error */
-+	SERR_HANDSHAKE		= (1 << 22), /* Handshake error */
-+	SERR_LINK_SEQ_ERR	= (1 << 23), /* Link sequence error */
-+	SERR_TRANS_ST_ERROR	= (1 << 24), /* Transport state trans. error */
-+	SERR_UNRECOG_FIS	= (1 << 25), /* Unrecognized FIS */
- 	SERR_DEV_XCHG		= (1 << 26), /* device exchanged */
- 
- 	/* struct ata_taskfile flags */
---- linux-2.6.23-rc1-mm2/drivers/ata/libata-eh.c	2007-08-02 16:13:11.000000000 -0600
-+++ linux-2.6.23-rc1-mm2edit/drivers/ata/libata-eh.c	2007-08-02 16:35:58.000000000 -0600
-@@ -1698,6 +1698,27 @@ static void ata_eh_report(struct ata_por
- 			ata_port_printk(ap, KERN_ERR, "%s\n", desc);
- 	}
- 
-+	if (ehc->i.serror)
-+		ata_port_printk(ap, KERN_ERR,
-+		  "SError: {%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s}\n",
-+		  ehc->i.serror & SERR_DATA_RECOVERED ? "RecovData " : "",
-+		  ehc->i.serror & SERR_COMM_RECOVERED ? "RecovComm " : "",
-+		  ehc->i.serror & SERR_DATA ? "UnrecovData " : "",
-+		  ehc->i.serror & SERR_PERSISTENT ? "Persist " : "",
-+		  ehc->i.serror & SERR_PROTOCOL ? "Proto " : "",
-+		  ehc->i.serror & SERR_INTERNAL ? "HostInt " : "",
-+		  ehc->i.serror & SERR_PHYRDY_CHG ? "PHYRdyChg " : "",
-+		  ehc->i.serror & SERR_PHY_INT_ERR ? "PHYInt " : "",
-+		  ehc->i.serror & SERR_COMM_WAKE ? "CommWake " : "",
-+		  ehc->i.serror & SERR_10B_8B_ERR ? "10B8B " : "",
-+		  ehc->i.serror & SERR_DISPARITY ? "Dispar " : "",
-+		  ehc->i.serror & SERR_CRC ? "BadCRC " : "",
-+		  ehc->i.serror & SERR_HANDSHAKE ? "Handshk " : "",
-+		  ehc->i.serror & SERR_LINK_SEQ_ERR ? "LinkSeq " : "",
-+		  ehc->i.serror & SERR_TRANS_ST_ERROR ? "TrStaTrns " : "",
-+		  ehc->i.serror & SERR_UNRECOG_FIS ? "UnrecFIS " : "",
-+		  ehc->i.serror & SERR_DEV_XCHG ? "DevExch " : "" );
-+
- 	for (tag = 0; tag < ATA_MAX_QUEUE; tag++) {
- 		static const char *dma_str[] = {
- 			[DMA_BIDIRECTIONAL]	= "bidi",
-@@ -1728,6 +1749,30 @@ static void ata_eh_report(struct ata_por
- 			res->hob_lbal, res->hob_lbam, res->hob_lbah,
- 			res->device, qc->err_mask, ata_err_string(qc->err_mask),
- 			qc->err_mask & AC_ERR_NCQ ? " <F>" : "");
-+
-+		if (res->command & (ATA_BUSY | ATA_DRDY | ATA_DF | ATA_DRQ |
-+				    ATA_ERR) ) {
-+			if (res->command & ATA_BUSY)
-+				ata_dev_printk(qc->dev, KERN_ERR,
-+				  "status: {Busy}\n" );
-+			else
-+				ata_dev_printk(qc->dev, KERN_ERR,
-+				  "status: {%s%s%s%s}\n",
-+				  res->command & ATA_DRDY ? "DRDY " : "",
-+				  res->command & ATA_DF ? "DF " : "",
-+				  res->command & ATA_DRQ ? "DRQ " : "",
-+				  res->command & ATA_ERR ? "ERR " : "" );
-+		}
-+
-+		if (cmd->command != ATA_CMD_PACKET &&
-+		    (res->feature & (ATA_ICRC | ATA_UNC | ATA_IDNF |
-+				     ATA_ABORTED)))
-+			ata_dev_printk(qc->dev, KERN_ERR,
-+			  "error: {%s%s%s%s}\n",
-+			  res->feature & ATA_ICRC ? "ICRC " : "",
-+			  res->feature & ATA_UNC ? "UNC " : "",
-+			  res->feature & ATA_IDNF ? "IDNF " : "",
-+			  res->feature & ATA_ABORTED ? "ABRT " : "" );
- 	}
- }
- 
+So it looks like q->request_fn points at 0x14001000, which is in outer
+space.
+
+I wonder how that could happen, in the middle of heavy IO operations. 
+Possibly a memory scribble.  I'd suggest you enable CONFIG_SLAB,
+CONFIG_DEBUG_SLAB, CONFIG_DEBUG_PAGEALLOC.  You could also try switching
+from CONFIG_SLAB to CONFIG_SLUB, then enable CONFIG_SLUB_DEBUG.
+
+
 
