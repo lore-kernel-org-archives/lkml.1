@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932646AbXHCNGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932556AbXHCNK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932646AbXHCNGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 09:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762138AbXHCNG2
+	id S932556AbXHCNK6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 09:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759693AbXHCNKo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 09:06:28 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49916 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760424AbXHCNG1 (ORCPT
+	Fri, 3 Aug 2007 09:10:44 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:31093 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757636AbXHCNKn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 09:06:27 -0400
-Date: Fri, 3 Aug 2007 14:13:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Etienne Lorrain <etienne_lorrain@yahoo.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Complete freeze if high traffic on standard serial line on
- ia32?
-Message-ID: <20070803141347.19136546@the-village.bc.nu>
-In-Reply-To: <465648.43203.qm@web26903.mail.ukl.yahoo.com>
-References: <465648.43203.qm@web26903.mail.ukl.yahoo.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 3 Aug 2007 09:10:43 -0400
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: [PATCH 0/1] lro: Generic Large Receive Offload for TCP traffic
+Date: Fri, 3 Aug 2007 14:41:14 +0200
+User-Agent: KMail/1.8.2
+MIME-Version: 1.0
+Content-Disposition: inline
+To: David Miller <davem@davemloft.net>
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       Thomas Klein <tklein@de.ibm.com>, Andrew Gallatin <gallatin@myri.com>,
+       Jeff Garzik <jeff@garzik.org>,
+       Stefan Roscher <stefan.roscher@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200708031441.14780.ossthema@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  I can reliably (6 times in one hour) freeze completely (Scroll lock/Caps lock
-> flashing together, mouse frozen in X) my PC (AMD sempron on MSI K8MM3-V K8M800
-> Socket 754) by doing an FTP using a standard modem connected on the serial port
-> of the motherboard, and a bit of browsing (i.e. machine not loaded).
->  That happens on standard Fedora 7 kernel and on the latest 23-rc1 kernel, and
-> doesn't happen on a Puppy Linux 2.17 bootable CDROM.
+Hi,
 
-Can you get this to happen outside of X at all (eg if you do a yum update
-and pull in packages over the modem for a while with 2.6.23-rc1  does it
-die). Just trying to work out what has become unstable.
+I think this patch could be the final version for now. It has been tested
+on two platforms (power and x86_64) and works very well.
 
-Also worth trying to see if browsing web type stuff off a CD or local
-files triggers it without the network link.
+Apart from David Miller and Evgeniy Polaykov, we'd like to thank especially
+Andrew Gallatin for his great reviews and help to make that happen.
+
+After some discussion we decided to post the LRO patch separately from the 
+driver patches. Our final driver patches for LRO will be posted later with
+some additional fixes for upstream inclusion to the netdev git.
+However, I'll also post our LRO patch for the driver today as an example
+of how to use this interface.
+
+Thanks a lot,
+Jan-Bernd 
+
+[PATCH 1/1] lro: Generic Large Receive Offload for TCP traffic
+
+Changes to http://www.spinics.net/lists/netdev/msg37084.html
+
+1) Fixed the LRO_MAX_PG_HLEN bug
+
+2) skb->ip_summed can now be defined by driver for aggregated packets
+
+3) The problem that the "ramp up" for tcp connections between machines
+   with different MTU size (1500 vs 9000) is very slow has been fixed
+   by setting skb->gso_size.
+
+4) Checksum problem for little endian machines has been fixed
+
+5) missing additon of vlan_hdr_len for TCP header determination has been added.
