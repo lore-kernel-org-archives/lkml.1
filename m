@@ -1,65 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763513AbXHCVOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763983AbXHCVRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763513AbXHCVOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 17:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbXHCVOE
+	id S1763983AbXHCVRh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 17:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761792AbXHCVRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 17:14:04 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37906 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756956AbXHCVOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 17:14:03 -0400
-Message-ID: <46B39A8F.5070809@redhat.com>
-Date: Fri, 03 Aug 2007 17:13:51 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 3 Aug 2007 17:17:30 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:2429 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761732AbXHCVR3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 17:17:29 -0400
+Date: Fri, 3 Aug 2007 17:17:24 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Dave Jones <davej@redhat.com>
+cc: Greg KH <gregkh@suse.de>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Rogan Dawes <lists@dawes.za.net>, Oliver Neukum <oliver@neukum.org>,
+       <linux-kernel@vger.kernel.org>, David Brownell <david-b@pacbell.net>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by default
+ on certain device classes
+In-Reply-To: <20070803201239.GB20376@redhat.com>
+Message-ID: <Pine.LNX.4.44L0.0708031716030.5099-100000@netrider.rowland.org>
 MIME-Version: 1.0
-To: Eduard-Gabriel Munteanu <maxdamage@aladin.ro>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Dynamic major/minor numbers (or dropping them completely)
-References: <46B21833.600@aladin.ro>
-In-Reply-To: <46B21833.600@aladin.ro>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eduard-Gabriel Munteanu wrote:
-> *This message was transferred with a trial version of CommuniGate(r) Pro*
-> Currently, the kernel has the following properties:
-> 1) initramfs can be used to boot the system. We don't need any 
-> predefined /dev entries.
-> 2) udev can be started from the initramfs to create the required entries 
-> in /dev. udev doesn't care about major/minor numbers.
-> 3) Most distros already use udev and maybe initramfs. If there are 
-> exceptions, they can be easily converted.
-> 
-> For the first part, I'm asking: is there any reason why new char/block 
-> drivers shouldn't use dynamic major/minor numbers? Is there any reason 
-> against converting the whole kernel to dynamic major/minor numbers?
-> 
-> Okay, maybe the previous questions looked useless from a pragmatic POV. 
-> But why shouldn't the whole major/minor numbering system be dropped 
-> completely? sysfs already maintains a hierachy of device drivers and 
-> kernel subsystems, one which is better than the major/minor system. The 
-> current system could be replaced by a single-numbered, 
-> dynamically-allocated scheme.
-> 
-> Device files could be stored on a tmpfs filesystem, so that we don't 
-> make any changes to current filesystems. Apps won't need to be modified, 
-> since they access /dev entries by name, provided udev maintains the 
-> current naming scheme.
-> 
-> Any thoughts on this?
+On Fri, 3 Aug 2007, Dave Jones wrote:
 
-You're correct that dynamic major/minor numbers are sufficient for most 
-purposes, but embedded users really need their static numbers.  As for ripping 
-out major/minor numberings, that's a non-starter.  Too much of our device 
-management infrastructure is based around this numbering scheme, and there isn't 
-really anything wrong with it to justify breaking everything in the change.
+> here's a head start for you.
+> 
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243038
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=246713
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=243953
+> https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=242359
+> 
+> That's just the ones that were handy..
 
-As a rule of thumb, if you ever find yourself wondering why we still support 
-doing statically something we can now do dynamically, the answer is generally 
-that doing it dynamically sucks for embedded.
+The last report appears to be related more to the EHCI-cpufreq problem, 
+for which a patch was recently posted.
 
-	-- Chris
+Alan Stern
+
