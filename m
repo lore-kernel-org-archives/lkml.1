@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761681AbXHCMDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761981AbXHCMEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761681AbXHCMDl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 08:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbXHCMDd
+	id S1761981AbXHCMEn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 08:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbXHCMEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 08:03:33 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:48623 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbXHCMDc (ORCPT
+	Fri, 3 Aug 2007 08:04:36 -0400
+Received: from 78-32-9-130.no-dns-yet.enta.net ([78.32.9.130]:52290 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbXHCMEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 08:03:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=jDCBDoMC4nk0YghY681/UvCutRwVE5TVX9qfr3O1NmagFeuDA9MysehmCiDf4ltbePflkqAS9a20MPYpdvKMxtlY5MGbh0jLJb3KzUrkMTW+7bZcbKdjSJQKiELPcfPQlFKkyCHVplS4XCX9OGUKpP6ZRY7oMsnabB7oFoBn6Is=
-Message-ID: <46B31862.10201@gmail.com>
-Date: Fri, 03 Aug 2007 20:58:26 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Fri, 3 Aug 2007 08:04:35 -0400
+Date: Fri, 3 Aug 2007 13:04:18 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: linux-usb-devel@lists.sourceforge.net,
+       David Brownell <david-b@pacbell.net>, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>, linux-kernel@vger.kernel.org
+Message-ID: <20070803120418.GB16802@srcf.ucam.org>
+References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org> <200708022301.08719.david-b@pacbell.net> <20070803112824.GA16802@srcf.ucam.org> <200708031344.03282.oliver@neukum.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       mlord@pobox.com
-Subject: Re: [PATCH] sata_qstor, pdc_adma, sata_sx4: convert to new EH
-References: <20070724011404.GA14064@havoc.gtf.org>
-In-Reply-To: <20070724011404.GA14064@havoc.gtf.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708031344.03282.oliver@neukum.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by default on certain device classes
+X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
+X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> This is just a refresh of the existing libata-dev.git#new-eh patches
-> that convert all remaining old-EH drivers to new EH, against 2.6.23-rc1.
+On Fri, Aug 03, 2007 at 01:44:02PM +0200, Oliver Neukum wrote:
+> Am Freitag 03 August 2007 schrieb Matthew Garrett:
+> > It's certainly possible to do that, but it's also possible to have a 
+> > userspace solution that whitelists devices. The question is whether the 
+> > default kernel behaviour should be "Save power, but potentially break 
+> > some of my devices" or "Don't break my devices, but use some more 
+> > powre".
 > 
-> All three conversions are completely untested.  pdc_adma and sata_qstor
-> need reviewing by someone with docs, in addition to testing.
-> 
-> Even "it still works" or "this patch breaks stuff" feedback from users
-> is useful.
+> If both options have drawbacks, IMHO we follow the standard, which
+> says that devices must support suspension.
 
-pdc_adma works fine.  Tested both a harddrive and a cdrom.  ATAPI check
-sense seems to work and harddrive was successfully recovered from
-timeout induced by shaking the harddisk for 30s.  :-)
+Except that lots of hardware doesn't follow the standard in this 
+respect, otherwise we wouldn't be having this discussion. Personally, I 
+think "Will break an unknown number of devices" is a significantly 
+larger drawback than "Will consume a small quantity of additional 
+power".
 
 -- 
-tejun
+Matthew Garrett | mjg59@srcf.ucam.org
