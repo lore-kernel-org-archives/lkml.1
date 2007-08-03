@@ -1,103 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763008AbXHCQkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbXHCQtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763008AbXHCQkm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 12:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbXHCQkf
+	id S1754564AbXHCQtk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 12:49:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbXHCQtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 12:40:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34084 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753560AbXHCQke (ORCPT
+	Fri, 3 Aug 2007 12:49:31 -0400
+Received: from smtp101.sbc.mail.re2.yahoo.com ([68.142.229.104]:41587 "HELO
+	smtp101.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751799AbXHCQtb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 12:40:34 -0400
-Date: Fri, 3 Aug 2007 09:38:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net,
-       Neil Brown <neilb@suse.de>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: 2.6.23-rc1-mm2
-Message-Id: <20070803093830.39852a01.akpm@linux-foundation.org>
-In-Reply-To: <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	<200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 3 Aug 2007 12:49:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=XYKI4A0FcI8qW3+gKo1Q8nFOmQYVN0m7Ag9wqG5Zc/CofLdy4rWbT5ka7+CtvDSok1/+svamn58QTMPYEZu5N/y8W2qvqOHnpmmUS0P/Gej7UmuQ5bZTE4R9Wz1hlQCg2DVuHSMucjP5l2nA1o3yVCyBhLSPzjA+vPQ6hj6qeSM=  ;
+X-YMail-OSG: D5nssioVM1ml7J3rSjBqjVdS4LEprMvnyrHfQUVE_t6mrElzTBQ.QBKncEumv8sUTb.jOM6fs2iiZzVCvvJf.kwhp_wYKXfBFXyBb3SB0oRGv9wi4EmwEhgr._aBaHWxq5XsSrCumkknuKY-
+From: David Brownell <david-b@pacbell.net>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: [linux-usb-devel] [PATCH] USB: Only enable autosuspend by default on certain device classes
+Date: Fri, 3 Aug 2007 09:49:27 -0700
+User-Agent: KMail/1.9.6
+Cc: Jiri Kosina <jikos@jikos.cz>, Adam Kropelin <akropel1@rochester.rr.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Oliver Neukum <oliver@neukum.org>, Rogan Dawes <lists@dawes.za.net>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net
+References: <20070803140909.GA19245@srcf.ucam.org> <Pine.LNX.4.64.0708031730180.26230@twin.jikos.cz> <20070803154838.GH21379@redhat.com>
+In-Reply-To: <20070803154838.GH21379@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200708030949.28252.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007 13:00:46 +0200 Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de> wrote:
+On Friday 03 August 2007, Dave Jones wrote:
+>  > > Plus if you're connected to such a device for monitoring purposes you're 
+>  > > probably powered by it as well, so you have little to gain from suspend 
+>  > > even if it works.
+>  > 
+>  > I currently don't have any HID UPS by hand to verify, but I'd be surprised 
+>  > if they would advertise remote wakeup capability ... ?
+> 
+> Looks like mine does..
 
-> 
-> Hi,
-> 
-> Am Wednesday 01 August 2007 08:09 schrieb Andrew Morton:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.
-> >6.23-rc1-mm2/
-> >
-> >
-> > - the git-block tree remains dropped due to disageement with the Vaio
-> >
-> > - git-e1000new was withdrawn by the authors
-> >
-> > - git-wireless is back.  It is still a >3MB diff, and appears to compile.
-> >
-> > - Is anyone testing the kgdb code in here?
-> 
-> I still get some nfs related locking bug.
-> 
-> I applied 
-> 
-> linux-2.6.23-001-fix_rpciod_down_race.dif
-> linux-2.6.23-003-fix_locking_regression.dif
-> linux-2.6.23-004-fix_stateid_regression.dif
-> 
-> =============================================
-> [ INFO: possible recursive locking detected ]
-> 2.6.23-rc1-mm2 #3
-> ---------------------------------------------
-> events/0/5 is trying to acquire lock:
->  (events){--..}, at: [<c012ed90>] flush_workqueue+0x0/0x70
-> 
-> but task is already holding lock:
->  (events){--..}, at: [<c012e5c4>] run_workqueue+0xd4/0x1e0
-> 
-> other info that might help us debug this:
-> 2 locks held by events/0/5:
->  #0:  (events){--..}, at: [<c012e5c4>] run_workqueue+0xd4/0x1e0
->  #1:  ((nfs_automount_task).work){--..}, at: [<c012e5c4>] 
-> run_workqueue+0xd4/0x1e0
-> 
-> stack backtrace:
->  [<c0104fda>] show_trace_log_lvl+0x1a/0x30
->  [<c0105c02>] show_trace+0x12/0x20
->  [<c0105d15>] dump_stack+0x15/0x20
->  [<c013ee42>] __lock_acquire+0xc22/0x1030
->  [<c013f2b1>] lock_acquire+0x61/0x80
->  [<c012edd9>] flush_workqueue+0x49/0x70
->  [<c012ee0d>] flush_scheduled_work+0xd/0x10
->  [<dcf55c0c>] nfs_release_automount_timer+0x2c/0x30 [nfs]
->  [<dcf45d8e>] nfs_free_server+0x9e/0xd0 [nfs]
->  [<dcf4e626>] nfs_kill_super+0x16/0x20 [nfs]
->  [<c017b38d>] deactivate_super+0x7d/0xa0
->  [<c018f94b>] mntput_no_expire+0x4b/0x80
->  [<c018fd94>] expire_mount_list+0xe4/0x140
->  [<c0191219>] mark_mounts_for_expiry+0x99/0xb0
->  [<dcf55d1d>] nfs_expire_automounts+0xd/0x40 [nfs]
->  [<c012e61b>] run_workqueue+0x12b/0x1e0
->  [<c012f05b>] worker_thread+0x9b/0x100
->  [<c0131c72>] kthread+0x42/0x70
->  [<c0104c0f>] kernel_thread_helper+0x7/0x18
->  =======================
-> 
+Makes sense.  You don't want to force the host to ignore all
+power events.  As with a laptop, you might want servers to
+cleanly hibernate before the (UPS) battery runs out...
 
-There is new debugging stuff in -mm: deadlockable usage of workqueue
-primitives will now trigger lockdep warnings.  See
+- Dave
 
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/broken-out/workqueue-debug-flushing-deadlocks-with-lockdep.patch
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc1/2.6.23-rc1-mm2/broken-out/workqueue-debug-work-related-deadlocks-with-lockdep.patch
-
-I am suspecting that running flush_scheduled_work() from within run_workqueue()
-isn't good.
