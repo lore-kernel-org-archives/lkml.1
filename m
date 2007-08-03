@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbXHCDOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760799AbXHCDeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761540AbXHCDOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 23:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbXHCDO2
+	id S1760799AbXHCDeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 23:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbXHCDeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 23:14:28 -0400
-Received: from mx2.suse.de ([195.135.220.15]:33135 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754366AbXHCDO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 23:14:28 -0400
-Date: Fri, 3 Aug 2007 05:14:26 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andi Kleen <ak@suse.de>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc] balance-on-fork NUMA placement
-Message-ID: <20070803031426.GA28310@wotan.suse.de>
-References: <200707311114.09284.ak@suse.de> <Pine.LNX.4.64.0707311639450.31337@schroedinger.engr.sgi.com> <20070802034201.GA32631@wotan.suse.de> <Pine.LNX.4.64.0708021254160.8527@schroedinger.engr.sgi.com> <20070803002639.GC14775@wotan.suse.de> <Pine.LNX.4.64.0708021748110.13312@schroedinger.engr.sgi.com> <20070803005700.GD14775@wotan.suse.de> <Pine.LNX.4.64.0708021801010.13312@schroedinger.engr.sgi.com> <20070803011448.GF14775@wotan.suse.de> <Pine.LNX.4.64.0708021827280.13538@schroedinger.engr.sgi.com>
+	Thu, 2 Aug 2007 23:34:06 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:54897 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753242AbXHCDeF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 23:34:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=C+a6SntI30pQxCzdJIAp4zxZ3uk2BSd7kIRJ9LQUSyhWV4TQ8TVnRTOrpqSu1VdyJI130G9k33Q6zM+r5h5kW3XEUK5ANSRGlNvcpEjc2zRmZ0i/mwo16WPC7IeWQVZvGUZhA1iw2AMT07OviGK3Wr35S4i9OBVTQQYJgGjUrS0=
+Subject: Re: [PATCH] retrieve VBE EDID/DDC info independent of used video
+	mode
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Daniel Drake <dsd@gentoo.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Zwane Mwaikambo <zwane@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jan Beulich <jbeulich@novell.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <46B293E0.2080008@gentoo.org>
+References: <4678191D.76E4.0078.0@novell.com> <4686D85B.6090803@gentoo.org>
+	 <20070630154230.4ad373fa.akpm@linux-foundation.org>
+	 <4690E65B.5050607@gentoo.org>
+	 <20070708111404.1486e73c.akpm@linux-foundation.org>
+	 <46912E09.2070806@zytor.com> <4692BC61.9070500@gentoo.org>
+	 <4692BDEE.8020802@zytor.com> <4693BF02.2050705@gentoo.org>
+	 <4693C0A1.8010901@zytor.com> <4693CAFF.4000609@gentoo.org>
+	 <4693CCC6.7050400@zytor.com> <46AFCCBB.70307@gentoo.org>
+	 <Pine.LNX.4.64.0707311719540.5207@montezuma.windriver.com>
+	 <46AFDF3A.6080300@gentoo.org>  <1185933291.4688.11.camel@daplas>
+	 <1186024158.4629.1.camel@daplas> <46B1547F.3090403@zytor.com>
+	 <46B1AF0E.40703@gmail.com>  <46B293E0.2080008@gentoo.org>
+Content-Type: text/plain
+Date: Fri, 03 Aug 2007 11:33:49 +0800
+Message-Id: <1186112029.4844.9.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708021827280.13538@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 02, 2007 at 06:34:04PM -0700, Christoph Lameter wrote:
-> On Fri, 3 Aug 2007, Nick Piggin wrote:
+On Thu, 2007-08-02 at 22:33 -0400, Daniel Drake wrote:
+> Antonino A. Daplas wrote:
+> > How about this patch?
+> > 
+> > Tony
+> > ---
+> > 
+> > Subject: video setup: Fix VBE DDC reading
+> > 
+> > Add memory operand constraint and write-only modifier to the inline
+> > assembly to effect the writing of the EDID block to boot_params.edid_info.
 > 
-> > Yeah it only gets set if the parent is initially using a default policy
-> > at this stage (and then is restored afterwards of course).
 > 
-> Uggh. Looks like more hackery ahead. I think this cannot be done in the 
-> desired clean way until we have some revving of the memory policy 
-> subsystem that makes policies task context independent so that you can do
+> Thanks, this patch works in that Linux now reports the correct resolution.
+> 
+> However, the TV output is now scrambled...
 
-Well what's wrong with it? It seems to use memory policies for exactly
-what they are intended (aside from it being kernel directed...).
+The previous problem was just a display shift of 6 pixels, correct?  If
+the display is now scrambled, then this is a new problem.
 
+> I suspect this might be a result of adding CONFIG_FRAMEBUFFER_CONSOLE in 
+> the most recent tests.
 
-> alloc_pages(...., memory_policy)
+It's useless to unset CONFIG_FRAMEBUFFER_CONSOLE to 'n', he'll just end
+up with a 640x400 stretched or windowed display.
 
-That still doesn't completely help because again it would require modifying
-call sites (at which point I could just do alloc_pages_node).
+Can he...
 
+1. describe what 'scrambled' means?
+2. Boot with video=intelfb:accel=0,<old options>?
+3. post the output of 'fbset -i' and the latest dmesg?
+4. change the color depth ('fbset -depth 16')?
+5. If possible, run X using 'fbdev' as the driver at 16 bpp
+   (I don't think 32 bpp works with X-fbdev)?
 
-> The cleanest solution that I can think of at this point is certainly to 
-> switch to another processor and do the allocation and copying actions from 
-> there. We have the migration process context right? Can that be used to 
-> start the new thread and can the original processor wait on some flag 
-> until that is complete?
-
-I guess you could, but that is going to add a context switch to fork
-(although it usually already has one in single-CPU situation because we
-run child first)... I bet it will slow something down, but it would be
-interesting to see.
-
-I don't know the fork path well enough off the top of my head to know if
-it will be that simple (with error handling etc). But I think it could
-be done.
+Tony
 
 
-> Forking off from there not only places the data correctly but it also 
-> warms up the caches for the new process and avoids evicting cacheline on 
-> the original processor.
 
-Yeah, you might be right there. If the numbers say that approach is
-better, then I'd not be against it. But we'd still need the simpler
-mpol approach to compare it with. 
+
