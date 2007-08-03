@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761233AbXHCATR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761548AbXHCAU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761233AbXHCATR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 20:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbXHCATB
+	id S1761548AbXHCAU0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 20:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759246AbXHCAUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 20:19:01 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:42736 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756876AbXHCAS7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 20:18:59 -0400
-Date: Fri, 3 Aug 2007 09:19:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6 patch] mm/migrate.c: cleanups
-Message-Id: <20070803091939.233f296f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0708021142240.7682@schroedinger.engr.sgi.com>
-References: <20070729150320.GF16817@stusta.de>
-	<20070802191502.B7A6.Y-GOTO@jp.fujitsu.com>
-	<Pine.LNX.4.64.0708021142240.7682@schroedinger.engr.sgi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+	Thu, 2 Aug 2007 20:20:14 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33526 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759168AbXHCAUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 20:20:12 -0400
+Date: Fri, 3 Aug 2007 02:20:10 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Martin Bligh <mbligh@mbligh.org>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+Message-ID: <20070803002010.GB14775@wotan.suse.de>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de> <46B0C8A3.8090506@mbligh.org> <1185993169.5059.79.camel@localhost> <46B10E9B.2030907@mbligh.org> <20070802013631.GA15595@wotan.suse.de> <46B22383.5020109@mbligh.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B22383.5020109@mbligh.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2 Aug 2007 11:43:21 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Thu, 2 Aug 2007, Yasunori Goto wrote:
+On Thu, Aug 02, 2007 at 11:33:39AM -0700, Martin Bligh wrote:
+> Nick Piggin wrote:
+> >On Wed, Aug 01, 2007 at 03:52:11PM -0700, Martin Bligh wrote:
+> >>>And so forth.  Initial forks will balance.  If the children refuse to
+> >>>die, forks will continue to balance.  If the parent starts seeing short
+> >>>lived children, fork()s will eventually start to stay local.  
+> >>Fork without exec is much more rare than without. Optimising for
+> >>the uncommon case is the Wrong Thing to Do (tm). What we decided
+> >
+> >It's only the wrong thing to do if it hurts the common case too
+> >much. Considering we _already_ balance on exec, then adding another
+> >balance on fork is not going to introduce some order of magnitude
+> >problem -- at worst it would be 2x but it really isn't too slow
+> >anyway (at least nobody complained when we added it).
+> >
+> >One place where we found it helps is clone for threads.
+> >
+> >If we didn't do such a bad job at keeping tasks together with their
+> >local memory, then we might indeed reduce some of the balance-on-crap
+> >and increase the aggressiveness of periodic balancing.
+> >
+> >Considering we _already_ balance on fork/clone, I don't know what
+> >your argument is against this patch is? Doing the balance earlier
+> >and allocating more stuff on the local node is surely not a bad
+> >idea.
 > 
-> > But, this patch is the cause of compile error of memory unplug code of
-> > 2.6.23-rc1-mm2. It uses putback_lru_pages(). 
-> > Don't make it static please... :-(
-> 
-> Right. But Adrian insisted since it was currently not used upstream.
-> 
-> So I guess you will have to revert this piece in your unplug code.
-> 
-Okay, I'll take are.
-But I'm too busy in these days.
+> I don't know who turned that on ;-( I suspect nobody bothered
+> actually measuring it at the time though, or used some crap
+> benchmark like stream to do so. It should get reverted.
 
-Andrew, If you have to drop unplug patch set, please do.
-I'll rework all when I find time.
+So you have numbers to show it hurts? I tested some things where it
+is not supposed to help, and it didn't make any difference. Nobody
+else noticed either.
 
-Thanks,
--Kame
-
+If the cost of doing the double balance is _really_ that painful,
+then we ccould skip balance-on-exec for domains with balance-on-fork
+set.
