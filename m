@@ -1,55 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761910AbXHCDwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXHCDyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761910AbXHCDwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 2 Aug 2007 23:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHCDwl
+	id S1762011AbXHCDyL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 2 Aug 2007 23:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755107AbXHCDx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 2 Aug 2007 23:52:41 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:49173
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755361AbXHCDwk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 2 Aug 2007 23:52:40 -0400
-Date: Thu, 2 Aug 2007 20:50:35 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: Alan Stern <stern@rowland.harvard.edu>, Oliver Neukum <oliver@neukum.org>,
-       Milton Miller <miltonm@bga.com>, Ying Huang <ying.huang@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       Jeremy Maitin-Shepard <jbms@cmu.edu>
-Subject: Re: [linux-pm] Re: Hibernation considerations
-In-Reply-To: <20070801093437.GC4808@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0708022049400.6905@asgard.lang.hm>
-References: <200707202335.05519.oliver@neukum.org>
- <Pine.LNX.4.44L0.0707201820050.5241-100000@iolanthe.rowland.org>
- <20070801093437.GC4808@ucw.cz>
+	Thu, 2 Aug 2007 23:53:58 -0400
+Received: from mx1.suse.de ([195.135.220.2]:45199 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755361AbXHCDx6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 2 Aug 2007 23:53:58 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Clayton <andrew@digital-domain.net>
+Date: Fri, 3 Aug 2007 13:53:39 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18098.42691.783443.554197@notabene.brown>
+Cc: linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+Subject: Re: [NFSD OOPS] 2.6.23-rc1-git10
+In-Reply-To: message from Andrew Clayton on Thursday August 2
+References: <20070802171450.7c9b4af3@zeus.pccl.info>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 1 Aug 2007, Pavel Machek wrote:
+On Thursday August 2, andrew@digital-domain.net wrote:
+> Hi,
+> 
+> Got the following oopsen just now from 2.6.23-rc1-git10 on a 2
+> processor Opteron with 2GB RAM. System is running 64bit Fedora Core 6.
+> 
+> nfsd is exporting directories from a XFS filesystem on top a software
+> RAID 5 array comprising 3 x 250GB SATA disks using the sata_sil driver.
+> 
+> Amongst other things, users (about 12) home directories are
+> automounted from it.
+> 
+> Some problems seem to start when I was experimenting with the
+> stripe_cache_size of the md array. People could no longer run some apps
+> and having general NFS issues. IIRC I had dropped the stripe_cache_size
+> down from 8192 to 768 then I attempted to restart nfsd
+> via /etc/rc.d/init.d/nfsd restart
+> 
+> I then got the Oopses and the machine locked up needing a power cycle.
+> 
+> 
+> Aug  2 10:15:55 thor mountd[30048]: Caught signal 15, un-registering and exiting.
+> Aug  2 10:15:55 thor nfsd[16390]: nfssvc: Setting version failed: errno 16 (Device or resource busy)
+> Aug  2 10:15:56 thor kernel: lockd_down: lockd failed to exit, clearing pid
+> Aug  2 10:15:56 thor kernel: nfsd: last server has exited
+> Aug  2 10:15:56 thor kernel: nfsd: unexporting all filesystems
+> Aug  2 10:15:56 thor kernel: ------------[ cut here ]------------
+> Aug  2 10:15:56 thor kernel: kernel BUG at /home/andrew/src/linux-2.6/net/sunrpc/svc.c:488!
 
-> Hi!
->
->>>  Do we have to block module loading?
->>
->> No.  Registering new drivers is okay, registering new devices is bad.
->>
->> Of course, some modules do want to register a new device in their init
->> method.  I don't know what we should do about them.  Force the
->> registration to fail, I suppose.  How often will people suspend while a
->> module is loading?
->
-> Well... plug this pcmcia card into the slot so that I do not have to
-> carry it separately, close the lid and go?
->
-> ...not that impossible to imagine...
+It seems you have found a race between shutting down and starting up
+nfsd.
+You md array was probably going very slowly due to playing with
+stripe_cache_size, and that stretched things out long enough to loose
+the race.
 
-I useually leave my broadband card in the slot, but not seated. I wouldn't 
-bet against it getting pushed in enough to be detected while putting the 
-laptop in the bag.
+NFSD is shut down by something similar to
+   killall nfsd
 
-David Lang
+which sends signals to all the threads, but doesn't wait for them to
+exit.
+The first line in the log is mountd exiting.  nfsd should have all
+been signalled at the same time.
+The second line comes from the nfsd program trying to start up the
+nfsd threads again, and getting an error because there were some
+already running.
+The third is a similar issue with lockd.
+
+The 4th and 5th show the last thread exiting.   Only it isn't really
+the last thread.  By this stage some more nfsd threads have started
+up.  There was probably a backlog of requests as things were running
+slowly so as soon as a new nfsd thread was started, it accepted a
+connection and created a new temporary socket.  This would have been
+after the thread that thought it was the last thread, thought it had
+closed the last temp socket.
+This caused the BUG.
+
+As part of shutting down, the thread that thought it was last cleared
+out the read-ahead info cache.  When the new threads tried to use it,
+they all suffered general protection faults.
+
+So clearly we need some proper locking around thread start-up and
+shutdown.  We had previous relied on lock_kernel, but that isn't
+really good enough for this.   I'll try to figure out the best way to
+fix it.  Meanwhile, I doubt the problem will recur.
+
+Thanks for the report.
+
+NeilBrown
+
