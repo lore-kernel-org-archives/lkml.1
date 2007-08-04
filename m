@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763020AbXHDULM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbXHDUMR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763020AbXHDULM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 16:11:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbXHDULA
+	id S1764800AbXHDUMR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 16:12:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbXHDUMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 16:11:00 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42533 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbXHDUK7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 16:10:59 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46B4DBD1.9050206@s5r6.in-berlin.de>
-Date: Sat, 04 Aug 2007 22:04:33 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Sat, 4 Aug 2007 16:12:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53456 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751121AbXHDUME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 16:12:04 -0400
+Date: Sat, 4 Aug 2007 22:11:42 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: J?rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070804201142.GA2545@elte.hu>
+References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804192615.GA25600@lazybastard.org> <alpine.LFD.0.999.0708041246530.5037@woody.linux-foundation.org> <20070804200038.GA31017@elte.hu>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Greg KH <gregkh@suse.de>, Randy Dunlap <rdunlap@xenotime.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       leoli@freescale.com, Gerrit Huizenga <gh@us.ibm.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Kunai, Takashi" <kunai@linux-foundation.jp>,
-       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
-       mtk-manpages@gmx.net, jack@suse.cz, pavel@ucw.cz, tim.bird@am.sony.com,
-       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
-       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
-       davem@davemloft.net, Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com,
-       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
-       linux-doc@vger.kernel.org
-Subject: Re: Documentation of kernel messages (Summary)
-References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com> <200708031432.05714.rob@landley.net> <20070804035206.GB23330@suse.de> <200708041354.17653.rob@landley.net>
-In-Reply-To: <200708041354.17653.rob@landley.net>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070804200038.GA31017@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> Documentation is merely one resource among many, and 
-> to link _out_ you need HTML.
 
-Do you suggest HTML files in linux/Documentation?  I think we can follow
-URIs and other references in plaintext files just fine.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-(People who want clickable links in plaintext files can use plaintext
-viewers which implement this, or utilities or browser plugins which
-follow URLs in the clipboard.)
--- 
-Stefan Richter
--=====-=-=== =--- --=--
-http://arcgraph.de/sr/
+> +#ifdef CONFIG_FASTATIME
+> +	if (!(flags & (MNT_NOATIME | MNT_NODIRATIME)))
+> +		mnt_flags |= MNT_RELATIME;
+> +#endif
+
+btw., "relatime" does not seem to make much of a difference, if i do 
+this:
+
+  ls -l x ; sync
+
+on a "relatime" mounted filesystem ('x' is a regular file), then there's 
+disk IO for every such command. Only if i mount it noatime,nodiratime do 
+i get zero disk IO. Or my patch is wrong somehow.
+
+	Ingo
