@@ -1,59 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbXHDALY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764340AbXHDAMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764211AbXHDALY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 20:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761649AbXHDALQ
+	id S1764340AbXHDAMP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 20:12:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762738AbXHDAMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 20:11:16 -0400
-Received: from fk-out-0910.google.com ([209.85.128.185]:57813 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757562AbXHDALP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 20:11:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=o+VdDIVvVnusZBEw5bRaQB7UFAlZCivw6an+sC1bL0OtZcuTxtPqlA+gJP5UepKPBxXZOpftu7tJjQejyQK8Nq2Ar9chxx4JBmMgi5hPXJUmk0DRwwyT5Flx5JwnI2VDAY2OP5lUtcnqIdRZfxMQVfcxPX/w/H/vAdh2WlEOPbc=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] au88x0: mem leak fix in snd_vortex_create()
-Date: Sat, 4 Aug 2007 02:09:25 +0200
-User-Agent: KMail/1.9.7
-Cc: Manuel Jander <mjander@embedded.cl>, Jesper Juhl <jesper.juhl@gmail.com>,
-       alsa-devel@alsa-project.org
+	Fri, 3 Aug 2007 20:12:00 -0400
+Received: from jan-robben.demon.nl ([83.160.142.71]:57734 "EHLO mail.robben.nu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762894AbXHDAL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 20:11:59 -0400
+Message-ID: <46B3C44D.7020801@gert.robben.nu>
+Date: Sat, 04 Aug 2007 02:11:57 +0200
+From: Gert Robben <lkml@gert.robben.nu>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: snd-au8830: dead after software suspend
+References: <46B3A4F5.2000708@gert.robben.nu>
+In-Reply-To: <46B3A4F5.2000708@gert.robben.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708040209.25589.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Robert Hancock wrote:
+> Have you reported this to the ALSA people?
+No, I thought this might as well be something for PCI or PM people, and 
+I expected some ALSA people are also reading this list.
+If not, where else should I report this exactly?
 
-In sound/pci/au88x0/au88x0.c::snd_vortex_create() : 
-The Coverity checker found that if we allocate storage for 'chip' 
-but then leave via the  regions_out:  label, then we end up leaking 
-the storage allocated for 'chip'.
-I believe simply freeing 'chip' before the "return err;" line is 
-all we need to fix this, but please double-check me :)
-
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
-diff --git a/sound/pci/au88x0/au88x0.c b/sound/pci/au88x0/au88x0.c
-index 5ec1b6f..f70286a 100644
---- a/sound/pci/au88x0/au88x0.c
-+++ b/sound/pci/au88x0/au88x0.c
-@@ -232,6 +232,7 @@ snd_vortex_create(struct snd_card *card, struct pci_dev *pci, vortex_t ** rchip)
- 	pci_disable_device(chip->pci_dev);
- 	//FIXME: this not the right place to unregister the gameport
- 	vortex_gameport_unregister(chip);
-+	kfree(chip);
- 	return err;
- }
- 
-
-
+Gert Robben
