@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXHDQlC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765214AbXHDQmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932570AbXHDQlC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 12:41:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765245AbXHDQkf
+	id S1765214AbXHDQmk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764126AbXHDQmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 12:40:35 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38420 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765222AbXHDQkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 12:40:33 -0400
-Date: Sat, 4 Aug 2007 20:37:40 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Distributed storage.
-Message-ID: <20070804163740.GB14175@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708021408.24876.phillips@phunq.net> <20070803102629.GB10089@2ka.mipt.ru> <200708031819.17039.phillips@phunq.net>
+	Sat, 4 Aug 2007 12:42:32 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53382 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764146AbXHDQmb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 12:42:31 -0400
+Date: Sat, 4 Aug 2007 09:41:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-Id: <20070804094119.81d8e533.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708031819.17039.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 06:19:16PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> It depends on the characteristics of the physical and virtual block 
-> devices involved.  Slow block devices can produce surprising effects.  
-> Ddsnap still qualifies as "slow" under certain circumstances (big 
-> linear write immediately following a new snapshot). Before we added 
-> throttling we would see as many as 800,000 bios in flight.  Nice to 
+On Sat, 4 Aug 2007 09:17:44 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Mmm, sounds tasty to work with such a system :)
-
-> know the system can actually survive this... mostly.  But memory 
-> deadlock is a clear and present danger under those conditions and we 
-> did hit it (not to mention that read latency sucked beyond belief). 
 > 
-> Anyway, we added a simple counting semaphore to throttle the bio traffic 
-> to a reasonable number and behavior became much nicer, but most 
-> importantly, this satisfies one of the primary requirements for 
-> avoiding block device memory deadlock: a strictly bounded amount of bio 
-> traffic in flight.  In fact, we allow some bounded number of 
-> non-memalloc bios *plus* however much traffic the mm wants to throw at 
-> us in memalloc mode, on the assumption that the mm knows what it is 
-> doing and imposes its own bound of in flight bios per device.   This 
-> needs auditing obviously, but the mm either does that or is buggy.  In 
-> practice, with this throttling in place we never saw more than 2,000 in 
-> flight no matter how hard we hit it, which is about the number we were 
-> aiming at.  Since we draw our reserve from the main memalloc pool, we 
-> can easily handle 2,000 bios in flight, even under extreme conditions.
 > 
-> See:
->     http://zumastor.googlecode.com/svn/trunk/ddsnap/kernel/dm-ddsnap.c
->     down(&info->throttle_sem);
+> On Sat, 4 Aug 2007, Ingo Molnar wrote:
 > 
-> To be sure, I am not very proud of this throttling mechanism for various 
-> reasons, but the thing is, _any_ throttling mechanism no matter how 
-> sucky solves the deadlock problem.  Over time I want to move the 
+> > > [ my personal interest in this is the following regression: every time 
+> > >   i start a large kernel build with DEBUG_INFO on a quad-core 4GB RAM 
+> > >   box, i get up to 30 seconds complete pauses in Vim (and most other 
+> > >   tasks), during plain editing of the source code. (which happens when 
+> > >   Vim tries to write() to its swap/undo-file.) ]
+> > 
+> > hm, it turns out that it's due to vim doing an occasional fsync not only 
+> > on writeout, but during normal use too. "set nofsync" in the .vimrc 
+> > solves this problem.
+> 
+> Yes, that's independent. The fact is, ext3 *sucks* at fsync. I hate hate 
+> hate it. It's totally unusable, imnsho.
+> 
+> The whole point of fsync() is that it should sync only that one file, and 
+> avoid syncing all the other stuff that is going on, and ext3 violates 
+> that, because it ends up having to sync the whole log, or something like 
+> that. So even if vim really wants to sync a small file, you end up waiting 
+> for megabytes of data being written out.
+> 
+> I detest logging filesystems. 
+> 
 
-make_request_fn is always called in process context, we can wait in it
-for memory in mempool. Although that means we already in trouble.
+Well it's not a problem with journalling per-se.  Other journalling designs
+may well not have this problem.
 
-I agree, any kind of high-boundary leveling must be implemented in
-device itself, since block layer does not know what device is at the end
-and what it will need to process given block request.
+It's an unfortunate coupling:
 
--- 
-	Evgeniy Polyakov
+- the ext3 journal contains metadata from all altered files
+
+- ordered-mode needs to write back data for a file before committing its
+  metdata to the journal.
+
+- fsync of one file requires a commit for its metadata, which will commit
+  metadata for all files
+
+- hence we need to write back all data for all files which have metadata
+  in the journal.
+
+
+It's pretty much unfixable given the ext3 journalling design, and the
+guarantees which data-ordered provides.
+
+The easy preventive is to mount with data=writeback.  Maybe that should
+have been the default.
