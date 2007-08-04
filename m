@@ -1,63 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764882AbXHDNwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764723AbXHDOYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764882AbXHDNwQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 09:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760382AbXHDNwE
+	id S1764723AbXHDOYU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 10:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762299AbXHDOYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 09:52:04 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:56645 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758956AbXHDNwC (ORCPT
+	Sat, 4 Aug 2007 10:24:13 -0400
+Received: from smtp-out3.blueyonder.co.uk ([195.188.213.6]:51394 "EHLO
+	smtp-out3.blueyonder.co.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759767AbXHDOYM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 09:52:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=OotgbStTjij4uaqvrB3XVKrbWAu8fTu0XJ4/+YPF3GSxq6fUiUUVVpMKyUR2+1Qr0j5LaVEKK/fy9zKDtZQB7bJ/Q0u5QheBRcFFVAnQy36pparrdOv2bT1f85WN9SKIaReS67L26JEW8JsEsxD1fe9xBhIFXGYVy9PkML0MQdU=
-Message-ID: <b6a2187b0708040652l28e9d5aal2cc898f8006906f2@mail.gmail.com>
-Date: Sat, 4 Aug 2007 21:52:01 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Linux 2.6.23-rc2
-In-Reply-To: <b6a2187b0708032234r6ad41be4u5d8142b0b199fcc1@mail.gmail.com>
+	Sat, 4 Aug 2007 10:24:12 -0400
+From: Alistair John Strachan <alistair@devzero.co.uk>
+To: Prakash Punnoor <prakash@punnoor.de>
+Subject: Re: 2.6.23-rc1, KVM-AMD problem
+Date: Sat, 4 Aug 2007 15:24:01 +0100
+User-Agent: KMail/1.9.7
+Cc: Avi Kivity <avi@qumranet.com>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <200707281855.41277.alistair@devzero.co.uk> <46ADE0DD.1030505@qumranet.com> <200708041517.37895.prakash@punnoor.de>
+In-Reply-To: <200708041517.37895.prakash@punnoor.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
-	 <b6a2187b0708032213r476204fbh917d3d6672c70528@mail.gmail.com>
-	 <b6a2187b0708032234r6ad41be4u5d8142b0b199fcc1@mail.gmail.com>
+Message-Id: <200708041524.01625.alistair@devzero.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/4/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+On Saturday 04 August 2007 14:17:34 Prakash Punnoor wrote:
+> Unfortunately this doesn't seem to have made it into 2.6.23-rc2. I need it
+> as well, to make Windows XP boot up w/o hanging or reebooting my host
+> machine.
 
-> > After resume from s2ram or switching to console from X, my console is
-> > messed up on rc1 and rc2. Is there a fix for this?
->
-> This is on IBM X60. i915 chipset. No problem on 2.6.22. If this is a
-> known problem, than I don't need to bisect all over again.
+It isn't in 2.6.23-rc2. I guess Avi should re-send to Linus and hopefully 
+it'll be in -rc3. Thanks for pointing this out.
 
-I managed to bisect down to this commit. Without this, console screen
-can resume without video mess.
+-- 
+Cheers,
+Alistair.
 
-Thanks,
-Jeff.
+137/1 Warrender Park Road, Edinburgh, UK.
 
-4fd06960f120e02e9abc802a09f9511c400042a5 is first bad commit
-commit 4fd06960f120e02e9abc802a09f9511c400042a5
-Author: H. Peter Anvin <hpa@zytor.com>
-Date:   Wed Jul 11 12:18:56 2007 -0700
-
-    Use the new x86 setup code for i386
-
-    This patch hooks the new x86 setup code into the Makefile machinery.  It
-    also adapts boot/tools/build.c to a two-file (as opposed to three-file)
-    universe, and simplifies it substantially.
-
-    Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-:040000 040000 6560eb5b7e40d93813276544bced8c478f9067f5
-fe5f90d9ca08e526559815789175602ba2c51743 M      arch
