@@ -1,49 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933021AbXHDTn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933310AbXHDTpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933021AbXHDTn7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 15:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765246AbXHDTnu
+	id S933310AbXHDTpJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 15:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765372AbXHDTo5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 15:43:50 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55559 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761966AbXHDTnt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 15:43:49 -0400
-Subject: Re: [PATCH][RESEND] Fix a potential NULL pointer deref in the
-	aic7xxx, ahc_print_register() function
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <jejb@kernel.org>, linux-scsi@vger.kernel.org,
-       "Justin T. Gibbs" <gibbs@scsiguy.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200708042030.52405.jesper.juhl@gmail.com>
-References: <200708042030.52405.jesper.juhl@gmail.com>
-Content-Type: text/plain
-Date: Sat, 04 Aug 2007 14:43:47 -0500
-Message-Id: <1186256627.3439.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Aug 2007 15:44:57 -0400
+Received: from mail.enyo.de ([212.9.189.167]:2692 "EHLO mail.enyo.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765548AbXHDTo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 15:44:57 -0400
+X-Greylist: delayed 1668 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Aug 2007 15:44:56 EDT
+From: Florian Weimer <fw@deneb.enyo.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804094119.81d8e533.akpm@linux-foundation.org>
+Date: Sat, 04 Aug 2007 21:16:35 +0200
+In-Reply-To: <20070804094119.81d8e533.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Sat, 4 Aug 2007 09:41:19 -0700")
+Message-ID: <87wswbjejw.fsf@mid.deneb.enyo.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-08-04 at 20:30 +0200, Jesper Juhl wrote:
-> (resend of patch previously submitted on 28-Jul-2007 23:06)
-> 
-> 
-> Ehlo,
-> 
-> The Coverity checker noticed that we have a potential NULL pointer 
-> deref in drivers/scsi/aic7xxx/aic7xxx_core.c::ahc_print_register().
-> This patch handles it by adding the same test against NULL that is 
-> used elsewhere in the same function.
+* Andrew Morton:
 
-It's on my list of things to look at ... but not very high.  I suspect
-it actually isn't triggerable, but if you can tell me how, it will save
-me from looking.
+> The easy preventive is to mount with data=writeback.  Maybe that should
+> have been the default.
 
-James
+The documentation I could find suggests that this may lead to a
+security weakness (old data in blocks of a file that was grown just
+before the crash leaks to a different user).  XFS overwrites that data
+with zeros upon reboot, which tends to irritate users when it happens.
 
-
+>From this point of view, data=ordered doesn't seem too bad.
