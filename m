@@ -1,94 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932701AbXHDRbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932889AbXHDRb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932701AbXHDRbW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 13:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764167AbXHDRbO
+	id S932889AbXHDRb5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 13:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932323AbXHDRbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 13:31:14 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:39584 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761273AbXHDRbO (ORCPT
+	Sat, 4 Aug 2007 13:31:47 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:51834 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932302AbXHDRbq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 13:31:14 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46B4B7C6.1040107@s5r6.in-berlin.de>
-Date: Sat, 04 Aug 2007 19:30:46 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: stable@kernel.org, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit DMA mapping"
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no> <46B4B3DC.7020609@shaw.ca>
-In-Reply-To: <46B4B3DC.7020609@shaw.ca>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 4 Aug 2007 13:31:46 -0400
+Subject: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 04 Aug 2007 12:31:43 -0500
+Message-Id: <1186248703.3439.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding Cc: linuxppc-dev, olh)
+This is mainly bug fixes ... there's one or two features completions
+that have been delayed pending ack and review to do with bsg (headers
+and passthrough) but these are really required to complete already
+upstream code.
 
-Robert Hancock wrote:
-> Stefan Richter wrote:
->> Date: Wed, 1 Aug 2007 20:30:36 +0200 (CEST)
->> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
->> Subject: ieee1394: revert "sbp2: enforce 32bit DMA mapping"
->>
->> Revert commit 0555659d63c285ceb7ead3115532e1b71b0f27a7 from 2.6.22-rc1.
->> The dma_set_mask call somehow failed on a PowerMac G5, PPC64:
->> http://lkml.org/lkml/2007/8/1/344
->>
->> Should there ever occur a DMA mapping beyond the physical DMA range, a
->> proper SBP-2 firmware will report transport errors.  So let's leave it
->> at that.
-> 
-> Isn't this a rather poor workaround? All this means is that if we fail
-> to set a 32-bit DMA mask, we're likely to blow up at runtime instead of
-> at initialization time, when we get a DMA mapping over 4GB.
+The patch is available here:
 
-I generally agree with you.  But since I actually never heard of
-problems that could directly be related to sbp2's DMA areas exceeding
-the OHCI-1394 physical DMA range (4GB in most OHCI-1394
-implementations), I consider this simple reversion good enough for post
-2.6.23-rc1 and especially for 2.6.22.y.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
 
-My original commit 0555659.. was a violation of "If it ain't (known)
-broken, don't fix it".
+The short changelog is:
 
-> If setting 32-bit DMA mask fails on ppc64, that sounds like a problem
-> with the DMA implementation on that architecture. There are enough cards
-> out there that only support 32-bit DMA that this really needs to work..
+Boaz Harrosh (6):
+      aha152x: use data accessors and !use_sg cleanup
+      aha152x: Fix check_condition code-path
+      aha152x: Clean Reset path
+      aha152x: preliminary fixes and some comments
+      aha152x: use bounce buffer
+      aha152x: fix debug mode symbol conflict
 
-Yes, could the PPC folks please have a look at it?  Thanks.
+David Miller (1):
+      ESP: Revert ESP_BUS_TIMEOUT back down to 250
 
->> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
->> Tested-by: Olaf Hering <olh@suse.de>
->> ---
->> Same as commit a9c2f18800753c82c45fc13b27bdc148849bdbb2.
->>
->>  drivers/ieee1394/sbp2.c |    5 -----
->>  1 file changed, 5 deletions(-)
->>
->> Index: linux-2.6.22/drivers/ieee1394/sbp2.c
->> ===================================================================
->> --- linux-2.6.22.orig/drivers/ieee1394/sbp2.c
->> +++ linux-2.6.22/drivers/ieee1394/sbp2.c
->> @@ -774,11 +774,6 @@ static struct sbp2_lu *sbp2_alloc_device
->>              SBP2_ERR("failed to register lower 4GB address range");
->>              goto failed_alloc;
->>          }
->> -#else
->> -        if (dma_set_mask(hi->host->device.parent, DMA_32BIT_MASK)) {
->> -            SBP2_ERR("failed to set 4GB DMA mask");
->> -            goto failed_alloc;
->> -        }
->>  #endif
->>      }
->>  
+FUJITA Tomonori (6):
+      initialize shost_data to zero
+      mptsas: add SMP passthrough support via bsg
+      bsg: update sg_io_v4 structure
+      ibmvscsi: use shost_priv
+      ibmvscsi: remove unnecessary map_sg check
+      zfcp: convert to use the data buffer accessors
 
--- 
-Stefan Richter
--=====-=-=== =--- --=--
-http://arcgraph.de/sr/
+James Bottomley (4):
+      sd: disentangle barriers in SCSI
+      aic7xxx: cap maxsync according to correct card limits
+      mpt fusion: make logging a global sysfs parameter
+      libsas: fix build dependencies on libata
+
+James Smart (9):
+      lpfc : scsi command accessor fix for 8.2.2
+      lpfc 8.2.2 : Change version number to 8.2.2
+      lpfc 8.2.2 : Style cleanups
+      lpfc 8.2.2 : Miscellaneous Bug Fixes
+      lpfc 8.2.2 : Miscellaneous management and logging mods
+      lpfc 8.2.2 : Rework the lpfc_printf_log() macro
+      lpfc 8.2.2 : Attribute and Parameter splits for vport and physical port
+      lpfc 8.2.2 : Fix locking around HBA's port_list
+      lpfc 8.2.2 : Error messages and debugfs updates
+
+Jeff Garzik (1):
+      gdth: remove redundant PCI stuff
+
+Mark Fortescue (1):
+      qlogicpti: Some cosmetic changes
+
+Matthew Wilcox (1):
+      dpt_i2o: convert to SCSI hotplug model
+
+Matthias Kaehlcke (1):
+      st: Use mutex instead of semaphore
+
+Salyzyn, Mark (1):
+      aacraid: prevent panic on adapter resource failure
+
+Seokmann Ju (1):
+      qla2xxx: fix panic caused by previous patch
+
+
+and the diffstat:
+
+ block/bsg.c                         |   10 
+ drivers/message/fusion/mptbase.c    |   17 
+ drivers/message/fusion/mptsas.c     |  126 ++++++
+ drivers/s390/scsi/zfcp_fsf.c        |    5 
+ drivers/s390/scsi/zfcp_qdio.c       |   41 --
+ drivers/scsi/aacraid/linit.c        |    4 
+ drivers/scsi/aha152x.c              |  169 ++++----
+ drivers/scsi/aha152x.h              |    2 
+ drivers/scsi/aic7xxx/aic7xxx_core.c |   22 +
+ drivers/scsi/dpt_i2o.c              |  132 +++---
+ drivers/scsi/dpti.h                 |    9 
+ drivers/scsi/esp_scsi.h             |    2 
+ drivers/scsi/gdth.c                 |   48 +-
+ drivers/scsi/gdth.h                 |    6 
+ drivers/scsi/hosts.c                |    2 
+ drivers/scsi/ibmvscsi/ibmvscsi.c    |   39 --
+ drivers/scsi/libsas/Kconfig         |    3 
+ drivers/scsi/lpfc/lpfc.h            |   72 ++-
+ drivers/scsi/lpfc/lpfc_attr.c       |  423 +++++++++++++++-------
+ drivers/scsi/lpfc/lpfc_crtn.h       |   28 -
+ drivers/scsi/lpfc/lpfc_ct.c         |  243 ++++++------
+ drivers/scsi/lpfc/lpfc_debugfs.c    |  595 ++++++++++++++++++++++++++++---
+ drivers/scsi/lpfc/lpfc_debugfs.h    |    2 
+ drivers/scsi/lpfc/lpfc_els.c        |  679 ++++++++++++++++--------------------
+ drivers/scsi/lpfc/lpfc_hbadisc.c    |  539 ++++++++++++----------------
+ drivers/scsi/lpfc/lpfc_hw.h         |   14 
+ drivers/scsi/lpfc/lpfc_init.c       |  284 +++++++--------
+ drivers/scsi/lpfc/lpfc_logmsg.h     |   10 
+ drivers/scsi/lpfc/lpfc_mbox.c       |   20 -
+ drivers/scsi/lpfc/lpfc_mem.c        |   32 +
+ drivers/scsi/lpfc/lpfc_nportdisc.c  |  162 +++-----
+ drivers/scsi/lpfc/lpfc_scsi.c       |  413 ++++++++++-----------
+ drivers/scsi/lpfc/lpfc_sli.c        |  423 +++++++++++-----------
+ drivers/scsi/lpfc/lpfc_sli.h        |   10 
+ drivers/scsi/lpfc/lpfc_version.h    |    4 
+ drivers/scsi/lpfc/lpfc_vport.c      |  164 +++++---
+ drivers/scsi/lpfc/lpfc_vport.h      |    2 
+ drivers/scsi/qla2xxx/qla_os.c       |   14 
+ drivers/scsi/qlogicpti.c            |   50 +-
+ drivers/scsi/scsi_lib.c             |   17 
+ drivers/scsi/sd.c                   |   14 
+ drivers/scsi/st.c                   |   16 
+ drivers/scsi/st.h                   |    3 
+ include/linux/bsg.h                 |   13 
+ include/scsi/scsi_driver.h          |    2 
+ include/scsi/sd.h                   |    2 
+ 46 files changed, 2837 insertions(+), 2050 deletions(-)
+
+James
+
+
