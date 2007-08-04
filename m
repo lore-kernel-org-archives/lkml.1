@@ -1,44 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764296AbXHDPSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764169AbXHDQB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764296AbXHDPSe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 11:18:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbXHDPSZ
+	id S1764169AbXHDQB2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbXHDQBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 11:18:25 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55066 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753193AbXHDPSY (ORCPT
+	Sat, 4 Aug 2007 12:01:17 -0400
+Received: from nf-out-0910.google.com ([64.233.182.189]:46185 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751808AbXHDQBP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 11:18:24 -0400
-Date: Sat, 4 Aug 2007 16:25:46 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Mike Frysinger" <vapier.adi@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: custom baud rates with serial core
-Message-ID: <20070804162546.145d4628@the-village.bc.nu>
-In-Reply-To: <8bd0f97a0708031659o1e32722cq99b1c248367d6da6@mail.gmail.com>
-References: <8bd0f97a0708031659o1e32722cq99b1c248367d6da6@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 4 Aug 2007 12:01:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Ye7o+q0Agb38Lz2jmM/jWiZe/E/MOvF1vhSDVeX3wMDzehgTMwSdAKXnJ8DDVQLIchF42P5lCqnJgl5vvrFDRYnbotlRxJ1Z/AsjX/wWwnRLrqKDKgBMCS3LvPAz2NwsVOuI2LjBghQ5SqceOlbrLdGuCQawY+Xbg2gcZiMipgo=
+Message-ID: <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
+Date: Sat, 4 Aug 2007 09:01:13 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "david@lang.hm" <david@lang.hm>
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Cc: "Ingo Molnar" <mingo@elte.hu>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, netdev@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708040032570.6905@asgard.lang.hm>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070803123712.987126000@chello.nl>
+	 <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	 <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu>
+	 <Pine.LNX.4.64.0708040032570.6905@asgard.lang.hm>
+X-Google-Sender-Auth: 9553d42d415527e2
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007 19:59:51 -0400
-"Mike Frysinger" <vapier.adi@gmail.com> wrote:
+(adding netdev cc:)
 
-> is there a method for setting custom baud rates that doesnt cause a
-> "deprecated" message from showing up ?  for example:
-> # setserial -a /dev/ttyBF0 divisor 9 spd_cust
-> setserial sets custom speed on ttyBF0. This is deprecated.
+On 8/4/07, david@lang.hm <david@lang.hm> wrote:
+> On Sat, 4 Aug 2007, Ingo Molnar wrote:
+>
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> >
+> >> There are positive reports in the never-ending "my system crawls like
+> >> an XT when copying large files" bugzilla entry:
+> >>
+> >>  http://bugzilla.kernel.org/show_bug.cgi?id=7372
+> >
+> > i forgot this entry:
+> >
+> > " We recently upgraded our office to gigabit Ethernet and got some big
+> >   AMD64 / 3ware boxes for file and vmware servers... only to find them
+> >   almost useless under any kind of real load. I've built some patched
+> >   2.6.21.6 kernels (using the bdi throttling patch you mentioned) to
+> >   see if our various Debian Etch boxes run better. So far my testing
+> >   shows a *great* improvement over the stock Debian 2.6.18 kernel on
+> >   our configurations. "
+> >
+> > and bdi has been in -mm in the past i think, so we also know (to a
+> > certain degree) that it does not hurt those workloads that are fine
+> > either.
+> >
+> > [ my personal interest in this is the following regression: every time i
+> >  start a large kernel build with DEBUG_INFO on a quad-core 4GB RAM box,
+> >  i get up to 30 seconds complete pauses in Vim (and most other tasks),
+> >  during plain editing of the source code. (which happens when Vim tries
+> >  to write() to its swap/undo-file.) ]
+>
+> I have an issue that sounds like it's related.
+>
+> I've got a syslog server that's got two Opteron 246 cpu's, 16G ram, 2x140G
+> 15k rpm drives (fusion MPT hardware mirroring), 16x500G 7200rpm SATA
+> drives on 3ware 9500 cards (software raid6) running 2.6.20.3 with hz set
+> at default and preempt turned off.
+>
+> I have syslog doing buffered writes to the SCSI drives and every 5 min a
+> cron job copies the data to the raid array.
+>
+> I've found that if I do anything significant on the large raid array that
+> the system looses a significant amount of the UDP syslog traffic, even
+> though there should be pleanty of ram and cpu (and the spindles involved
+> in the writes are not being touched), even a grep can cause up to 40%
+> losses in the syslog traffic. I've experimented with nice levels (nicing
+> down the grep and nicing up the syslogd) without a noticable effect on the
+> losses.
+>
+> I've been planning to try a new kernel with hz=1000 to see if that would
+> help, and after that experiment with the various preempt settings, but it
+> sounds like the per-device queues may actually be more relavent to the
+> problem.
+>
+> what would you suggest I test, and in what order and combination?
 
-If your platform is up to date then you can set arbitary speeds via the
-TIOCGETS2/TIOCSETS2 ioctls. Not all platforms support this yet although
-I'm working on getting the sane ones all upstream and sorted. Once that
-is done glibc will be able to switch internally to TIOCGETS2/SETS2 for
-the termios operations it provides and the world will be a far happier
-place ...
+At least on a surface level, your report has some similarities to
+http://lkml.org/lkml/2007/5/21/84 . In that message, John Miller
+mentions several things he tried without effect:
+
+< - I increased the max allowed receive buffer through
+< proc/sys/net/core/rmem_max and the application calls the right
+< syscall. "netstat -su" does not show any "packet receive errors".
+<
+< - After getting "kernel: swapper: page allocation failure.
+< order:0, mode:0x20", I increased /proc/sys/vm/min_free_kbytes
+<
+< - ixgb.txt in kernel network documentation suggests to increase
+< net.core.netdev_max_backlog to 300000. This did not help.
+<
+< - I also had to increase net.core.optmem_max, because the default
+< value was too small for 700 multicast groups.
+
+As they're all pretty simple to test, it may be worthwhile to give
+them a shot just to rule things out.
+
+Ray
