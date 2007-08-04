@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764297AbXHDKBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764589AbXHDKEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764297AbXHDKBT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 06:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbXHDKBL
+	id S1764589AbXHDKEu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 06:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbXHDKEn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 06:01:11 -0400
-Received: from mail.gmx.net ([213.165.64.20]:60489 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753886AbXHDKBK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 06:01:10 -0400
-X-Authenticated: #815327
-X-Provags-ID: V01U2FsdGVkX1/lAAkAkwTlVMyTAXrZv2e2nS+LgCp6T+D20OQoEN
-	oAI8kSMlce4H5r
-Date: Sat, 4 Aug 2007 12:01:05 +0200
-From: Malte =?UTF-8?B?U2NocsO2ZGVy?= <maltesch@gmx.de>
-To: "Chakri n" <chakriin5@gmail.com>
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: OOPS in shrink_dcache_for_umount
-Message-ID: <20070804120105.47ae82fc@highlander.home.lan>
-In-Reply-To: <92cbf19b0708021427l7c88c642g3901e393ac2b90b9@mail.gmail.com>
-References: <92cbf19b0708021427l7c88c642g3901e393ac2b90b9@mail.gmail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_e4W3c19RHe5ff9CRa7Dn8pB;
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
+	Sat, 4 Aug 2007 06:04:43 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:57949 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752593AbXHDKEm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 06:04:42 -0400
+Date: Sat, 4 Aug 2007 12:04:44 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] remove PAGE_SIZE from headers_install
+Message-ID: <20070804100444.GA15222@aepfle.de>
+References: <20070714205709.GA9478@aepfle.de> <8bd0f97a0707141404k16e53945s92b3cd4264ecf0aa@mail.gmail.com> <20070715062708.GA11909@aepfle.de> <8bd0f97a0707150020s33e698d4q702018e08aeb59bc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <8bd0f97a0707150020s33e698d4q702018e08aeb59bc@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_e4W3c19RHe5ff9CRa7Dn8pB
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Sun, Jul 15, Mike Frysinger wrote:
 
-On Thu, 2 Aug 2007 14:27:04 -0700
-"Chakri n" <chakriin5@gmail.com> wrote:
+> On 7/15/07, Olaf Hering <olaf@aepfle.de> wrote:
+> >On Sat, Jul 14, Mike Frysinger wrote:
+> >> imo, asm/page.h should just go away for userspace.  the attached patch
+> >> is what i've been using in Gentoo ... but somethings (like an arch or
+> >> two in glibc) still assume asm/page.h is OK.  in general though,
+> >> considering asm/page.h has become so unreliable lately (a large number
+> >> of arches ifdef the whole thing out), most packages out there have
+> >> updated already to use the userspace interface from unistd.h.
+> >
+> >You need that signed-off thing, and dont forget to send it to
+> >stable@kernel.org
+> 
+> i honestly didnt think people would consider it for inclusion as it
+> was since i ripped out a lot more headers than just asm/page.h ;)
 
-> Hi,
->=20
-> We are seeing this problem while unmounting file systems. It happens
-> once in a while.
-> I am able to grab the trace and core from linux-2.6.18-1.8.el5, but I
-> have observed the same problem with linux-2.6.20.1 kernel.
->=20
-> Has this problem fixed in recent kernel?
->=20
-
-I had those too ... but I haven't seen one in a while.
-I currently run 2.6.22 + cfs-v19 + the Patch from
-http://linux-nfs.org/Linux-2.6.x/2.6.22/linux-2.6.22-NFS_ALL.dif
-
---=20
----------------------------------------
-Malte Schr=C3=B6der
-MalteSch@gmx.de
-ICQ# 68121508
----------------------------------------
-
-
---Sig_e4W3c19RHe5ff9CRa7Dn8pB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGtE5h4q3E2oMjYtURAtATAKDxxFKJtJ9fIF2o7MeCSs1WWVCE6wCfY8+c
-SRhCkvQdIUSUo1wJiDvzDVY=
-=MycX
------END PGP SIGNATURE-----
-
---Sig_e4W3c19RHe5ff9CRa7Dn8pB--
+Did you clean it up and submit it already for 2.6.23?
+Should someone else do it for you?
