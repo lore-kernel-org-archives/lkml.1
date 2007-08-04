@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765214AbXHDQmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765216AbXHDQpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765214AbXHDQmk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 12:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764126AbXHDQmc
+	id S1765216AbXHDQpO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764384AbXHDQoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 12:42:32 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53382 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764146AbXHDQmb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 12:42:31 -0400
-Date: Sat, 4 Aug 2007 09:41:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-Id: <20070804094119.81d8e533.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
-References: <20070803123712.987126000@chello.nl>
-	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
-	<20070804063217.GA25069@elte.hu>
-	<20070804070737.GA940@elte.hu>
-	<20070804103347.GA1956@elte.hu>
-	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 4 Aug 2007 12:44:55 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38297 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764167AbXHDQox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 12:44:53 -0400
+Date: Sat, 4 Aug 2007 20:44:39 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Distributed storage.
+Message-ID: <20070804164438.GC14175@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708031741.18404.phillips@phunq.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708031741.18404.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Aug 2007 09:17:44 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+Hi Daniel.
+> On Tuesday 31 July 2007 10:13, Evgeniy Polyakov wrote:
+> >     * storage can be formed on top of remote nodes and be exported
+> > 	simultaneously (iSCSI is peer-to-peer only, NBD requires device
+> > 	mapper and is synchronous)
 > 
-> 
-> On Sat, 4 Aug 2007, Ingo Molnar wrote:
-> 
-> > > [ my personal interest in this is the following regression: every time 
-> > >   i start a large kernel build with DEBUG_INFO on a quad-core 4GB RAM 
-> > >   box, i get up to 30 seconds complete pauses in Vim (and most other 
-> > >   tasks), during plain editing of the source code. (which happens when 
-> > >   Vim tries to write() to its swap/undo-file.) ]
-> > 
-> > hm, it turns out that it's due to vim doing an occasional fsync not only 
-> > on writeout, but during normal use too. "set nofsync" in the .vimrc 
-> > solves this problem.
-> 
-> Yes, that's independent. The fact is, ext3 *sucks* at fsync. I hate hate 
-> hate it. It's totally unusable, imnsho.
-> 
-> The whole point of fsync() is that it should sync only that one file, and 
-> avoid syncing all the other stuff that is going on, and ext3 violates 
-> that, because it ends up having to sync the whole log, or something like 
-> that. So even if vim really wants to sync a small file, you end up waiting 
-> for megabytes of data being written out.
-> 
-> I detest logging filesystems. 
-> 
+> In fact, NBD has nothing to do with device mapper.  I use it as a 
+> physical target underneath ddraid (a device mapper plugin) just like I 
+> would use your DST if it proves out.
 
-Well it's not a problem with journalling per-se.  Other journalling designs
-may well not have this problem.
+I meant to create a storage on top of several nodes one needs to have
+device mapper or something like that on top of NBD itself. To further
+export resulted device one needs another userspace NDB application and 
+so on. DST simplifies that greatly.
 
-It's an unfortunate coupling:
+DST original code worked as device mapper plugin too, but its two 
+additional allocations (io and clone) per block request ended up for me 
+as a show stopper.
 
-- the ext3 journal contains metadata from all altered files
-
-- ordered-mode needs to write back data for a file before committing its
-  metdata to the journal.
-
-- fsync of one file requires a commit for its metadata, which will commit
-  metadata for all files
-
-- hence we need to write back all data for all files which have metadata
-  in the journal.
-
-
-It's pretty much unfixable given the ext3 journalling design, and the
-guarantees which data-ordered provides.
-
-The easy preventive is to mount with data=writeback.  Maybe that should
-have been the default.
+-- 
+	Evgeniy Polyakov
