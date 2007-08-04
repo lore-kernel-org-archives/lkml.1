@@ -1,47 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933238AbXHDUES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933379AbXHDUGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933238AbXHDUES (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 16:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763070AbXHDUEK
+	id S933379AbXHDUGR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 16:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762892AbXHDUGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 16:04:10 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42983 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762892AbXHDUEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 16:04:09 -0400
-Date: Sat, 4 Aug 2007 22:05:25 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Rob Landley <rob@landley.net>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Documentation/make/headers_install.txt
-Message-ID: <20070804200525.GA21961@uranus.ravnborg.org>
-References: <200708041307.18578.rob@landley.net>
+	Sat, 4 Aug 2007 16:06:04 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:58614 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755967AbXHDUGC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 16:06:02 -0400
+Date: Sat, 4 Aug 2007 21:11:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?UTF-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070804211156.5f600d80@the-village.bc.nu>
+In-Reply-To: <20070804192130.GA25346@elte.hu>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
+	<46B4C0A8.1000902@garzik.org>
+	<20070804191205.GA24723@lazybastard.org>
+	<20070804192130.GA25346@elte.hu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708041307.18578.rob@landley.net>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 04, 2007 at 02:07:18PM -0400, Rob Landley wrote:
-> From: Rob Landley <rob@landley.net>
+> i use Mutt myself, on such a filesystem:
 > 
-> Signed-off-by: Rob Landley <rob@landley.net>
+>    /dev/md0 on / type ext3 (rw,noatime,nodiratime,user_xattr)
 > 
-> Some documentation for "make headers_install".
-> 
-> ---
-> 
-> Earlier discussion was at http://lkml.org/lkml/2007/6/22/7 and I
-> believe I've responded to all of David's comments.
-> 
-> --- /dev/null	2007-04-23 10:59:00.000000000 -0500
-> +++ linux-2.6/Documentation/make/headers_install.txt	2007-08-04 13:04:51.000000000 -0500
+> and i can see no problems, it notices new mails just fine.
 
-Any specific reason not to include this in Documentation/kbuild?
-I would prefer to have all kernel build stuff in one directory and
-we have Documentation/kbuild now.
+In some setups it will and in others it won't. Nor is it the only
+application that has this requirement. Ext3 currently is a standards
+compliant file system. Turn off atime and its very non standards
+compliant, turn to relatime and its not standards compliant but nobody
+will break (which is good)
 
-	Sam
+Either change is a big user/kernel interface change and no major vendor
+targets desktop as primary market so I'm not suprised they haven't done
+this. The fix is to educate them further not to break the kernel.
+
+There are several reasons for that
+-	Distros will change the least conservative stuff first so we
+	have the dedicated followers of fashion finding problems first
+-	Existing systems won't suddenly change behaviour and break
+	(and as the catastrophic failure case is backup failure we do
+	not want to break them)
+
+People just need to know about the performance differences - very few
+realise its more than a fraction of a percent. I'm sure Gentoo will use
+relatime the moment anyone knows its > 5% 8)
+
+Alan
