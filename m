@@ -1,140 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764544AbXHDJji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764579AbXHDJnm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764544AbXHDJji (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 05:39:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbXHDJjb
+	id S1764579AbXHDJnm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 05:43:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753360AbXHDJnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 05:39:31 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48345 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbXHDJja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 05:39:30 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Len Brown <lenb@kernel.org>
-Subject: Re: [PATCH] PM: Fix dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION
-Date: Sat, 4 Aug 2007 11:48:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>
-References: <200708032359.37677.rjw@sisk.pl> <200708040047.35180.rjw@sisk.pl> <200708032345.32262.lenb@kernel.org>
-In-Reply-To: <200708032345.32262.lenb@kernel.org>
+	Sat, 4 Aug 2007 05:43:35 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:34629 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752818AbXHDJne (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 05:43:34 -0400
+Date: Sat, 4 Aug 2007 11:43:33 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Joe Perches <joe@perches.com>
+cc: Jean Delvare <khali@linux-fr.org>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mm-commits@vger.kernel.org, adaplas@pol.net,
+       greg@kroah.com, jeff@garzik.org
+Subject: Re: + remove-current-defines-and-uses-of-pr_err-add-pr_emerg.patch
+ added to -mm tree
+In-Reply-To: <1186179369.13852.36.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0708041141560.11760@fbirervta.pbzchgretzou.qr>
+References: <tI4NY5SL.1186153543.0764100.khali@localhost>
+ <1186179369.13852.36.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708041148.48357.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 4 August 2007 05:45, Len Brown wrote:
-> On Friday 03 August 2007 18:47, Rafael J. Wysocki wrote:
-> > On Saturday, 4 August 2007 00:01, Linus Torvalds wrote:
-> > > On Fri, 3 Aug 2007, Rafael J. Wysocki wrote:
-[--snip--]
-> >  
-> > +config SUSPEND_UP_POSSIBLE
-> > +	bool
-> > +	depends on BLACKFIN || MIPS || SUPERH || FRV || (PPC32 && PPC_MPC52xx)
+
+On Aug 3 2007 15:16, Joe Perches wrote:
+>On Fri, 2007-08-03 at 17:05 +0200, Jean Delvare wrote: 
+>> Fine with me, but this first patch should still be correct per se.
+>
+>Add new pr_<level> printk(KERN_<level> fmt "\n", ##arg) to kernel.h
+>pr_info and pr_debug are unchanged
+>Remove local pr_err #defines
+>Convert current uses of pr_err
+>
+>Signed-off-by:  Joe Perches <joe@perches.com>
+>
+>diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+>index 4300bb4..6447072 100644
+>--- a/include/linux/kernel.h
+>+++ b/include/linux/kernel.h
+>@@ -229,20 +229,24 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+> 			void *buf, size_t len);
+> #define hex_asc(x)	"0123456789abcdef"[x]
 > 
-> please include (X86 && !X86_VOYAGER) here -- else you'll disable
-> SUSPEND from all X86 when built UP.
+>+#define pr_emerg(fmt, arg...)	printk(KERN_EMERG fmt "\n", ##arg)
+>+#define pr_alert(fmt, arg...)	printk(KERN_ALERT fmt "\n", ##arg)
+>+#define pr_crit(fmt, arg...)	printk(KERN_CRIT fmt "\n", ##arg)
+>+#define pr_err(fmt, arg...)	printk(KERN_ERR fmt "\n", ##arg)
+>+#define pr_warn(fmt, arg...)	printk(KERN_WARNING fmt "\n", ##arg)
+>+#define pr_notice(fmt, arg...)	printk(KERN_NOTICE fmt "\n", ##arg)
+>+#define pr_info(fmt, arg...)	printk(KERN_INFO fmt, ##arg)
+>+
 
-Right.  I think I should include everything that can do SMP suspend here.
-
-Updated patch is appended.
-
-Greetings,
-Rafael
+Ugh. What do we have printk for then? I do not like this.
+For pr_debug() it makes sense because its semantics change with
+-DDEBUG and -UDEBUG, but for these pr_()s it does not seem so.
 
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+> 	if (omap_request_gpio(15)) {
+>-		pr_err("can't request GPIO 15\n");
+>+		pr_err(PFX "can't request GPIO 15");
+> 		omap_free_gpio(14);
+> 		r = -1;
+> 		goto exit;
+>
+>
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION introduced by commit
-296699de6bdc717189a331ab6bbe90e05c94db06 "Introduce CONFIG_SUSPEND for
-suspend-to-Ram and standby" are incorrect, as they don't cover the facts that
-(1) not all architectures support suspend and (2) SMP hibernation is only
-possible on X86 and PPC64 (if PPC64_SWSUSP is set).
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/Kconfig |   42 ++++++++++++++++++++++++++++++++----------
- 1 file changed, 32 insertions(+), 10 deletions(-)
-
-Index: linux-2.6/kernel/power/Kconfig
-===================================================================
---- linux-2.6.orig/kernel/power/Kconfig
-+++ linux-2.6/kernel/power/Kconfig
-@@ -72,15 +72,10 @@ config PM_TRACE
- 	CAUTION: this option will cause your machine's real-time clock to be
- 	set to an invalid time after a resume.
- 
--config SUSPEND_SMP_POSSIBLE
--	bool
--	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
--	depends on SMP
--	default y
--
--config SUSPEND_SMP
-+config PM_SLEEP_SMP
- 	bool
--	depends on SUSPEND_SMP_POSSIBLE && PM_SLEEP
-+	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
-+	depends on PM_SLEEP
- 	select HOTPLUG_CPU
- 	default y
- 
-@@ -89,20 +84,47 @@ config PM_SLEEP
- 	depends on SUSPEND || HIBERNATION
- 	default y
- 
-+config SUSPEND_UP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
-+		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
-+		   || MIPS || SUPERH || FRV
-+	depends on !SMP
-+	default y
-+
-+config SUSPEND_SMP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) \
-+		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM
-+	depends on SMP
-+	default y
-+
- config SUSPEND
- 	bool "Suspend to RAM and standby"
- 	depends on PM
--	depends on !SMP || SUSPEND_SMP_POSSIBLE
-+	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
- 	default y
- 	---help---
- 	  Allow the system to enter sleep states in which main memory is
- 	  powered and thus its contents are preserved, such as the
- 	  suspend-to-RAM state (i.e. the ACPI S3 state).
- 
-+config HIBERNATION_UP_POSSIBLE
-+	bool
-+	depends on X86 || PPC64_SWSUSP || FRV || PPC32
-+	depends on !SMP
-+	default y
-+
-+config HIBERNATION_SMP_POSSIBLE
-+	bool
-+	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
-+	depends on SMP
-+	default y
-+
- config HIBERNATION
- 	bool "Hibernation (aka 'suspend to disk')"
- 	depends on PM && SWAP
--	depends on ((X86 || PPC64_SWSUSP || FRV || PPC32) && !SMP) || SUSPEND_SMP_POSSIBLE
-+	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
- 	---help---
- 	  Enable the suspend to disk (STD) functionality, which is usually
- 	  called "hibernation" in user interfaces.  STD checkpoints the
+	Jan
+-- 
