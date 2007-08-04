@@ -1,168 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765470AbXHDScd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765622AbXHDScz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765470AbXHDScd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 14:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765005AbXHDScR
+	id S1765622AbXHDScz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 14:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765512AbXHDScV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 14:32:17 -0400
+	Sat, 4 Aug 2007 14:32:21 -0400
 Received: from fk-out-0910.google.com ([209.85.128.187]:44971 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765483AbXHDScJ (ORCPT
+	with ESMTP id S1765094AbXHDScR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 14:32:09 -0400
+	Sat, 4 Aug 2007 14:32:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
-        b=U7wSO1+attV4WLAB/HfHSnAc6TGLNTHYEwdgw8id/HMhOD9Engv39tQIyvTvgr85m12WXZRY1KHzOPkBZg1iNbjk08O9BbyltJMLow/d4z3XXpJhl+LKK+lqaIKDppmDzQbyOhFV42wsxVDj75nWT5sWeNGOl2XbTw47KecygEI=
+        h=received:from:to:subject:date:user-agent:cc:mime-version:content-disposition:content-type:content-transfer-encoding:message-id;
+        b=OEEGYbe7ZxFzjHB8pUlmr/sc54z4FjU5Wsi/1Dwiw9hrbPVkh31MrDrT1vc9KXY4ugDjb/liVsYWOZAaMZlN3546VM0dpLB52UXYWz/XTT+GeoOaNrWMmBzyD8jMuq4FUxnNDn3CzCo+HaFJSh+Prdx7X8YdWCRO/4hWumIigX8=
 From: Jesper Juhl <jesper.juhl@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH][RESEND] Fix several memory leaks in cr_backlight_probe() - take2
+Subject: [PATCH][RESEND] fix a potential NULL pointer deref in XFS on failed mount.
+Date: Sat, 4 Aug 2007 20:30:21 +0200
 User-Agent: KMail/1.9.7
-Cc: Richard Purdie <rpurdie@rpsys.net>,
-       Alan Hourihane <alanh@tungstengraphics.com>,
-       Thomas Hellstrom <thomas@tungstengraphics.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Chinner <dgc@sgi.com>, xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
        Jesper Juhl <jesper.juhl@gmail.com>
-References: <200707202311.l6KNBRDK021376@imap1.linux-foundation.org> <1185116146.6819.29.camel@localhost.localdomain>
-In-Reply-To: <1185116146.6819.29.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Disposition: inline
-Date: Sat, 4 Aug 2007 20:30:13 +0200
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708042030.13387.jesper.juhl@gmail.com>
+Message-Id: <200708042030.21375.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a resend of a patch I originally submitted on 23/7-2007 23:32. 
-That patch was an updated version of one originally submitted on 21-Jul-2007 00:56.
+Back in 2006 (2006-10-31 to be specific, reposted on 2006-11-16), I 
+submitted a patch to fix a potential NULL pointer deref in XFS on 
+failed mount.
 
-The original patch made a brief appearance in -mm, but was dropped 
-due to concerns raised by Richard Purdie that it didn't fix all issues.
+The patch drew some comments and it turned out that my initial 
+approach to a fix was wrong.
+David Chinner kindly offered some tips on how to implement a proper 
+fix, and on 2006-11-20 I submitted a revised fix.  This patch, 
+unfortunately, didn't draw any comments, nor did it ever get merged 
+anywhere.  
+I believe that now sufficient time has passed to warrent a repost.
 
-Here are Richard's comments:
-> The problems you've spotted are valid however the error paths are still
-> broken both before and after this patch since there is no call to
-> backlight_device_unregister() and/or lcd_device_unregister() in the
-> probe function.
-> 
-
-The following patch fixes the same problems as the original and also 
-tries to fix the stuff that Richard pointed out.
-Hopefully this time it is perfect :-)
-
-
-Here's the new version of the patch : 
+And now, on August 4, 2007 - yet another resend. 
+it would really be nice if this patch could either get merged or, 
+if it is wrong for some reason, get an explicit NACK. Come on people, 
+what's it going to be?
 
 
 
-After fixing the too small memory allocation in cr_backlight_probe()
-from drivers/video/backlight/cr_bllcd.c
-(commit e3bbb3f05339de438faf54124f25c92e6fe4ac2e) I noticed that the
-Coverity checker also thought there were a few memory leaks in there.
-I took a closer look and confirmed that there were indeed several
-leaks.
+The Coverity checker spotted (as bug #346) a potential problem in XFS.
 
-At the start of the function we allocate storage for a
-'struct cr_panel' and store the pointer in a variable named 'crp'.
+The problem is that if, in xfs_mount(), this code triggers:
 
-Then we call pci_get_device() and pci_read_config_byte() and if
-either of them fail we return without freeing the memory allocated
-for the 'struct cr_panel'. These two leaks are easy to fix since we
-don't even use 'crp' for anything up to this point, so I simply
-moved the allocation further down in the function so it only happens
-just before we actually need it.
+       ...
+       if (!mp->m_logdev_targp)
+               goto error0;
+       ...
 
-A bit further down we call backlight_device_register() and store the
-result in 'crp->cr_backlight_device'. In case of error we return
-'crp->cr_backlight_device' from the function, thus leaking 'crp'
-itself. The same thing happens with the call to lcd_device_register().
-To fix these two leaks I declare two new pointers to hold the return
-values, so that in case of error we can return the pointer (as before)
-but without leaking 'crp'.
+Then we'll end up calling xfs_unmountfs_close() with a NULL
+'mp->m_logdev_targp'.
+This in turn will result in a call to xfs_free_buftarg() with its 'btp'
+argument == NULL. xfs_free_buftarg() dereferences 'btp' leading to
+a NULL pointer dereference and crash.
 
-This version of the patch also adds missing 
-backlight_device_unregister() / lcd_device_unregister() / pci_dev_put() 
-calls to error paths.
-  Thanks to Richard Purdie <rpurdie@rpsys.net> for noticing.
+I think this can happen, since the fatal call to xfs_free_buftarg()
+happens when 'm_logdev_targp != m_ddev_targp' and due to a check of
+'m_ddev_targp' against NULL in xfs_mount() (and subsequent return if it is
+NULL) the two will never both be NULL when we hit the error0 label from
+the two lines cited above.
+
+This patch fixes the issue by checking mp->m_logdev_targp against NULL 
+in xfs_unmountfs_close() and doing the proper xfs_blkdev_put(logdev); 
+and xfs_blkdev_put(rtdev); on (!mp->m_rtdev_targp) in xfs_mount().
+
+Compile tested.
+
+Comments and feedback welcome.
 
 Please consider merging.
-
-Note: Due to lack of hardware the patch has only been compile tested.
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
+ fs/xfs/xfs_mount.c  |    2 +-
+ fs/xfs/xfs_vfsops.c |   10 ++++++++--
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
- drivers/video/backlight/cr_bllcd.c |   35 ++++++++++++++++++++---------------
- 1 files changed, 20 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/video/backlight/cr_bllcd.c b/drivers/video/backlight/cr_bllcd.c
-index b7904da..92e201e 100644
---- a/drivers/video/backlight/cr_bllcd.c
-+++ b/drivers/video/backlight/cr_bllcd.c
-@@ -171,13 +171,11 @@ static struct lcd_ops cr_lcd_ops = {
- 
- static int cr_backlight_probe(struct platform_device *pdev)
+diff --git a/fs/xfs/xfs_mount.c b/fs/xfs/xfs_mount.c
+index a66b398..215e041 100644
+--- a/fs/xfs/xfs_mount.c
++++ b/fs/xfs/xfs_mount.c
+@@ -1275,7 +1275,7 @@ xfs_unmountfs(xfs_mount_t *mp, struct cred *cr)
+ void
+ xfs_unmountfs_close(xfs_mount_t *mp, struct cred *cr)
  {
-+	struct backlight_device *bdp;
-+	struct lcd_device *ldp;
- 	struct cr_panel *crp;
- 	u8 dev_en;
- 
--	crp = kzalloc(sizeof(*crp), GFP_KERNEL);
--	if (crp == NULL)
--		return -ENOMEM;
--
- 	lpc_dev = pci_get_device(PCI_VENDOR_ID_INTEL,
- 					CRVML_DEVICE_LPC, NULL);
- 	if (!lpc_dev) {
-@@ -193,27 +191,34 @@ static int cr_backlight_probe(struct platform_device *pdev)
- 		return -ENODEV;
+-	if (mp->m_logdev_targp != mp->m_ddev_targp)
++	if (mp->m_logdev_targp && mp->m_logdev_targp != mp->m_ddev_targp)
+ 		xfs_free_buftarg(mp->m_logdev_targp, 1);
+ 	if (mp->m_rtdev_targp)
+ 		xfs_free_buftarg(mp->m_rtdev_targp, 1);
+diff --git a/fs/xfs/xfs_vfsops.c b/fs/xfs/xfs_vfsops.c
+index 11f5ea2..6d4bc5d 100644
+--- a/fs/xfs/xfs_vfsops.c
++++ b/fs/xfs/xfs_vfsops.c
+@@ -482,13 +482,19 @@ xfs_mount(
  	}
- 
--	crp->cr_backlight_device = backlight_device_register("cr-backlight",
--							     &pdev->dev, NULL,
--							     &cr_backlight_ops);
--	if (IS_ERR(crp->cr_backlight_device)) {
-+	bdp = backlight_device_register("cr-backlight",
-+					&pdev->dev, NULL, &cr_backlight_ops);
-+	if (IS_ERR(bdp)) {
- 		pci_dev_put(lpc_dev);
--		return PTR_ERR(crp->cr_backlight_device);
-+		return PTR_ERR(bdp);
+ 	if (rtdev) {
+ 		mp->m_rtdev_targp = xfs_alloc_buftarg(rtdev, 1);
+-		if (!mp->m_rtdev_targp)
++		if (!mp->m_rtdev_targp) {
++			xfs_blkdev_put(logdev);
++			xfs_blkdev_put(rtdev);
+ 			goto error0;
++		}
  	}
- 
--	crp->cr_lcd_device = lcd_device_register("cr-lcd",
--							&pdev->dev, NULL,
--							&cr_lcd_ops);
--
--	if (IS_ERR(crp->cr_lcd_device)) {
-+	ldp = lcd_device_register("cr-lcd", &pdev->dev, NULL, &cr_lcd_ops);
-+	if (IS_ERR(ldp)) {
-+		backlight_device_unregister(bdp);
- 		pci_dev_put(lpc_dev);
--		return PTR_ERR(crp->cr_backlight_device);
-+		return PTR_ERR(bdp);
- 	}
- 
- 	pci_read_config_dword(lpc_dev, CRVML_REG_GPIOBAR,
- 			      &gpio_bar);
- 	gpio_bar &= ~0x3F;
- 
-+	crp = kzalloc(sizeof(*crp), GFP_KERNEL);
-+	if (!crp) {
-+		lcd_device_unregister(ldp);
-+		backlight_device_unregister(bdp);
-+		pci_dev_put(lpc_dev);
-+		return -ENOMEM;
+ 	mp->m_logdev_targp = (logdev && logdev != ddev) ?
+ 				xfs_alloc_buftarg(logdev, 1) : mp->m_ddev_targp;
+-	if (!mp->m_logdev_targp)
++	if (!mp->m_logdev_targp) {
++		xfs_blkdev_put(logdev);
++		xfs_blkdev_put(rtdev);
+ 		goto error0;
 +	}
-+
-+	crp->cr_backlight_device = bdp;
-+	crp->cr_lcd_device = ldp;
- 	crp->cr_backlight_device->props.power = FB_BLANK_UNBLANK;
- 	crp->cr_backlight_device->props.brightness = 0;
- 	crp->cr_backlight_device->props.max_brightness = 0;
+ 
+ 	/*
+ 	 * Setup flags based on mount(2) options and then the superblock
+
 
 
