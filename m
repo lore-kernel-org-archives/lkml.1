@@ -1,93 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbXHDBTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbXHDCPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762315AbXHDBTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 21:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759744AbXHDBTX
+	id S1762145AbXHDCPm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 22:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756287AbXHDCPd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 21:19:23 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:54003
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756326AbXHDBTW (ORCPT
+	Fri, 3 Aug 2007 22:15:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:19550 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbXHDCPc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 21:19:22 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Subject: Re: Distributed storage.
-Date: Fri, 3 Aug 2007 18:19:16 -0700
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708021408.24876.phillips@phunq.net> <20070803102629.GB10089@2ka.mipt.ru>
-In-Reply-To: <20070803102629.GB10089@2ka.mipt.ru>
+	Fri, 3 Aug 2007 22:15:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=fZokcezuRfQtmx6Clm8yhZd/vd4mjlNMKOYyjGQ3KCyUicvcmmWec9Y+5H9B+AXTJ9reIlDzcOJ7xKpqTPiCEokx+UWmHJm0gMDIpnPkHtXz/S3JF2u+x4BIINF01VXVhXwu3V++dNfpPyULT1gMO+6fkROpiv6mtVoQZGmr1VQ=
+Message-ID: <e9c3a7c20708031915y1fee8c62i9da0f42cddbb44dd@mail.gmail.com>
+Date: Fri, 3 Aug 2007 19:15:31 -0700
+From: "Dan Williams" <dan.j.williams@intel.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: [-mm patch] DMA engine kconfig improvements
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Shannon Nelson" <shannon.nelson@intel.com>,
+       linux-kernel@vger.kernel.org, "Wolfgang Denk" <wd@denx.de>
+In-Reply-To: <20070726052628.GL3572@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="koi8-r"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708031819.17039.phillips@phunq.net>
+References: <20070725040304.111550f4.akpm@linux-foundation.org>
+	 <20070726052628.GL3572@stusta.de>
+X-Google-Sender-Auth: 3fb32596b562f992
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 03 August 2007 03:26, Evgeniy Polyakov wrote:
-> On Thu, Aug 02, 2007 at 02:08:24PM -0700, I wrote:
-> > I see bits that worry me, e.g.:
+On 7/25/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Wed, Jul 25, 2007 at 04:03:04AM -0700, Andrew Morton wrote:
+> >...
+> > Changes since 2.6.22-rc6-mm1:
+> >...
+> > +dma-arch-fix.patch
 > >
-> > +		req = mempool_alloc(st->w->req_pool, GFP_NOIO);
-> >
-> > which seems to be callable in response to a local request, just the
-> > case where NBD deadlocks.  Your mempool strategy can work reliably
-> > only if you can prove that the pool allocations of the maximum
-> > number of requests you can have in flight do not exceed the size of
-> > the pool.  In other words, if you ever take the pool's fallback
-> > path to normal allocation, you risk deadlock.
+> >  Fix git-dma.patch
+> >...
 >
-> mempool should be allocated to be able to catch up with maximum
-> in-flight requests, in my tests I was unable to force block layer to
-> put more than 31 pages in sync, but in one bio. Each request is
-> essentially dealyed bio processing, so this must handle maximum
-> number of in-flight bios (if they do not cover multiple nodes, if
-> they do, then each node requires own request).
+> This results in an ARM-only driver in an X86-only menu...
+>
+> What about the patch below instead that also improves a few other things?
+I like it, just a few nits:
 
-It depends on the characteristics of the physical and virtual block 
-devices involved.  Slow block devices can produce surprising effects.  
-Ddsnap still qualifies as "slow" under certain circumstances (big 
-linear write immediately following a new snapshot). Before we added 
-throttling we would see as many as 800,000 bios in flight.  Nice to 
-know the system can actually survive this... mostly.  But memory 
-deadlock is a clear and present danger under those conditions and we 
-did hit it (not to mention that read latency sucked beyond belief). 
+> -menu "DMA Engine support"
+> -       depends on HAS_DMA
+> +menuconfig DMADEVICES
+> +       bool "DMA Engine support"
+> +       depends on (PCI && X86) || ARCH_IOP32X || ARCH_IOP33X || ARCH_IOP13XX
+> +       help
+> +         Intel(R) DMA engines
+> +
+Perhaps we should go ahead and define ARCH_HAS_DMA_OFFLOAD and have
+DMADEVICES depend on that option.  A ppc32 driver is in the works:
+http://marc.info/?l=linux-raid&m=117400143317440&w=2
 
-Anyway, we added a simple counting semaphore to throttle the bio traffic 
-to a reasonable number and behavior became much nicer, but most 
-importantly, this satisfies one of the primary requirements for 
-avoiding block device memory deadlock: a strictly bounded amount of bio 
-traffic in flight.  In fact, we allow some bounded number of 
-non-memalloc bios *plus* however much traffic the mm wants to throw at 
-us in memalloc mode, on the assumption that the mm knows what it is 
-doing and imposes its own bound of in flight bios per device.   This 
-needs auditing obviously, but the mm either does that or is buggy.  In 
-practice, with this throttling in place we never saw more than 2,000 in 
-flight no matter how hard we hit it, which is about the number we were 
-aiming at.  Since we draw our reserve from the main memalloc pool, we 
-can easily handle 2,000 bios in flight, even under extreme conditions.
-
-See:
-    http://zumastor.googlecode.com/svn/trunk/ddsnap/kernel/dm-ddsnap.c
-    down(&info->throttle_sem);
-
-To be sure, I am not very proud of this throttling mechanism for various 
-reasons, but the thing is, _any_ throttling mechanism no matter how 
-sucky solves the deadlock problem.  Over time I want to move the 
-throttling up into bio submission proper, or perhaps incorporate it in 
-device mapper's queue function, not quite as high up the food chain.  
-Only some stupid little logistical issues stopped me from doing it one 
-of those ways right from the start.   I think Peter has also tried some 
-things in this area.  Anyway, that part is not pressing because the 
-throttling can be done in the virtual device itself as we do it, even 
-if it is not very pretty there.  The point is: you have to throttle the 
-bio traffic.  The alternative is to die a horrible death under 
-conditions that may be rare, but _will_ hit somebody.
+> +if DMADEVICES
+> +
+> +comment "DMA Devices"
+> +
+> +config INTEL_IOATDMA
+> +       tristate "Intel I/OAT DMA support"
+> +       depends on PCI && X86
+> +       select DMA_ENGINE
+> +       select DCA
+> +       help
+> +         Enable support for the Intel(R) I/OAT DMA engine present
+> +         in recent Intel Xeon CPUs.
+> +
+> +         Say yes if you have such a CPU.
+It is actually in recent chipsets, not the CPU, but yes the user
+should have more help making this decision.
 
 Regards,
-
-Daniel
+Dan (for Shannon while he is on vacation)
