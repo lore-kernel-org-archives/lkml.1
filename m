@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764841AbXHDN0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764838AbXHDNau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764841AbXHDN0Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 09:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757966AbXHDN0R
+	id S1764838AbXHDNau (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 09:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759464AbXHDNan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 09:26:17 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:35255 "EHLO
+	Sat, 4 Aug 2007 09:30:43 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:34990 "EHLO
 	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756202AbXHDN0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 09:26:16 -0400
-Date: Sat, 4 Aug 2007 15:26:13 +0200
+	id S1758938AbXHDNam (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 09:30:42 -0400
+Date: Sat, 4 Aug 2007 15:30:40 +0200
 From: Pierre Ossman <drzeus-list@drzeus.cx>
 To: David Vrabel <david.vrabel@csr.com>
 Cc: linux-kernel@vger.kernel.org, David Vrabel <david.vrabel@csr.com>
-Subject: Re: sdio: parameterize SDIO FBR register defines
-Message-ID: <20070804152613.1f190abc@poseidon.drzeus.cx>
-In-Reply-To: <11858961931710-git-send-email-david.vrabel@csr.com>
+Subject: Re: sdio: set the functions' block size
+Message-ID: <20070804153040.73668e4e@poseidon.drzeus.cx>
+In-Reply-To: <1185896193612-git-send-email-david.vrabel@csr.com>
 References: <11858961933491-git-send-email-david.vrabel@csr.com>
-	<11858961931710-git-send-email-david.vrabel@csr.com>
+	<1185896193612-git-send-email-david.vrabel@csr.com>
 X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,47 +25,87 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Jul 2007 16:36:31 +0100
+On Tue, 31 Jul 2007 16:36:32 +0100
 David Vrabel <david.vrabel@csr.com> wrote:
 
+> Prior to calling the driver's probe(), set the functions' block size
+> to the largest that's supported by both the card and the driver.
+> 
 > Signed-off-by: David Vrabel <david.vrabel@csr.com>
 > 
-> ---
-> commit 51755c3d59be1ba778bef45888f9f5e341dc4af4
-> tree c7bbb562b2d801197eefb619a17c94467c1299cd
-> parent 1cf0b6019aa3916197eecafe058bd2f3d700d24a
-> author David Vrabel <david.vrabel@csr.com> Mon, 30 Jul 2007 19:20:59
-> +0100 committer David Vrabel <dvrabel@cantab.net> Mon, 30 Jul 2007
-> 19:28:30 +0100
-> 
->  drivers/mmc/core/sdio.c     |    4 ++--
->  drivers/mmc/core/sdio_cis.c |    2 +-
->  include/linux/mmc/sdio.h    |   16 +++++++++-------
->  3 files changed, 12 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/mmc/core/sdio.c b/drivers/mmc/core/sdio.c
-> index 6589fd6..08f579c 100644
-> --- a/drivers/mmc/core/sdio.c
-> +++ b/drivers/mmc/core/sdio.c
-> @@ -30,7 +30,7 @@ static int sdio_read_fbr(struct sdio_func *func)
->  	unsigned char data;
+
+Why a maximum size for the driver?
+
+> diff --git a/drivers/mmc/core/sdio_cis.c b/drivers/mmc/core/sdio_cis.c
+> index 8aa4666..c16c536 100644
+> --- a/drivers/mmc/core/sdio_cis.c
+> +++ b/drivers/mmc/core/sdio_cis.c
+> @@ -93,9 +93,9 @@ static int cistpl_funce(struct sdio_func *func,
+> unsigned fn, if (size < 0x04 || buf[0] != 0)
+>  			goto bad;
+>  		/* TPLFE_FN0_BLK_SIZE */
+> -		val = buf[1] | (buf[2] << 8);
+> +		func->max_block_size = buf[1] | (buf[2] << 8);
+>  		printk(KERN_DEBUG "%s: TPLFE_FN0_BLK_SIZE = %u\n",
+> -		       sdio_func_id(func), val);
+> +		       sdio_func_id(func), func->max_block_size);
+>  		/* TPLFE_MAX_TRAN_SPEED */
+>  		val = speed_val[(buf[3] >> 3) & 15] *
+> speed_unit[buf[3] & 7]; printk(KERN_DEBUG "%s: max speed = %u kbps\n",
+
+I guess you aren't working against the latest tree as this code is
+already there.
+
+> @@ -126,9 +126,9 @@ static int cistpl_funce(struct sdio_func *func,
+> unsigned fn, printk(KERN_DEBUG "%s: TPLFE_CSA_PROPERTY = 0x%02x\n",
+>  		       sdio_func_id(func), val);
+>  		/* TPLFE_MAX_BLK_SIZE */
+> -		val = buf[12] | (buf[13] << 8);
+> +		func->max_block_size = buf[12] | (buf[13] << 8);
+>  		printk(KERN_DEBUG "%s: TPLFE_MAX_BLK_SIZE = %u\n",
+> -		       sdio_func_id(func), val);
+> +		       sdio_func_id(func), func->max_block_size);
+>  		/* TPLFE_OCR */
+>  		val = buf[14] | (buf[15] << 8) | (buf[16] << 16) |
+> (buf[17] << 24); printk(KERN_DEBUG "%s: TPLFE_OCR = 0x%08x\n",
+
+Ditto.
+
+> diff --git a/drivers/mmc/core/sdio_io.c b/drivers/mmc/core/sdio_io.c
+> index cc62ff7..e74e605 100644
+> --- a/drivers/mmc/core/sdio_io.c
+> +++ b/drivers/mmc/core/sdio_io.c
+> @@ -148,6 +148,29 @@ err:
+>  EXPORT_SYMBOL_GPL(sdio_disable_func);
 >  
->  	ret = mmc_io_rw_direct(func->card, 0, 0,
-> -		func->num * 0x100 + SDIO_FBR_STD_IF, 0, &data);
-> +		SDIO_FBR_STD_IF(func->num), 0, &data);
->  	if (ret != MMC_ERR_NONE)
->  		goto out;
->  
+>  /**
+> + *	sdio_set_block_size - set the block size of an SDIO
+> function
+> + *	@func: SDIO function to change
+> + *	@blksz: new block size
+> + */
+> +int sdio_set_block_size(struct sdio_func *func, unsigned short blksz)
+> +{
+> +	int ret;
+> +
+> +	ret = mmc_io_rw_direct(func->card, 1, 0,
+> SDIO_FBR_BLKSIZE(func->num),
+> +			       blksz & 0xff, NULL);
+> +	if (ret)
+> +		return ret;
+> +	ret = mmc_io_rw_direct(func->card, 1, 0,
+> SDIO_FBR_BLKSIZE(func->num) + 1,
+> +			       (blksz >> 8) & 0xff, NULL);
+> +	if (ret)
+> +		return ret;
+> +	func->block_size = blksz;
+> +	return 0;
+> +}
+> +
+> +EXPORT_SYMBOL_GPL(sdio_set_block_size);
+> +
 
-I am a bit sceptical about these macros. Most i/o code in the kernel is
-in the form of "<base address> + <register offset>". For one thing,
-that model keeps the register defines clean and means people don't have
-to go reaching for specs all the time.
-
-Would you be content with replacing "func->num * 0x100" with a macro so
-that the code becomes something like:
-
-	SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF
+You also need to check that the host supports that block size.
 
 -- 
      -- Pierre Ossman
