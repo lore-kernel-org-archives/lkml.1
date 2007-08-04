@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763155AbXHDC6F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbXHDDAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763155AbXHDC6F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 22:58:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761531AbXHDC5x
+	id S932274AbXHDDAQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 23:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755827AbXHDDAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 22:57:53 -0400
-Received: from smtp.knology.net ([24.214.63.101]:48675 "EHLO smtp.knology.net"
+	Fri, 3 Aug 2007 23:00:03 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1163 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756245AbXHDC5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 22:57:51 -0400
-Subject: Re: Distributed storage.
-From: Dave Dillow <dave@thedillows.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
-References: <20070731171347.GA14267@2ka.mipt.ru>
-	 <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 03 Aug 2007 22:51:08 -0400
-Message-Id: <1186195868.16431.5.camel@obelisk.thedillows.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	id S1754462AbXHDDAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 23:00:00 -0400
+Date: Sat, 4 Aug 2007 05:00:22 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] msleep() with hrtimers
+In-Reply-To: <1186185229.3153.11.camel@laptopd505.fenrus.org>
+Message-ID: <Pine.LNX.4.64.0708040345530.1817@scrub.home>
+References: <15327.1186166232@lwn.net>  <Pine.LNX.4.64.0708032116340.1817@scrub.home>
+  <1186170407.3153.8.camel@laptopd505.fenrus.org>  <Pine.LNX.4.64.0708032152060.1817@scrub.home>
+ <1186185229.3153.11.camel@laptopd505.fenrus.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-03 at 09:04 +0400, Manu Abraham wrote:
-> On 7/31/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > TODO list currently includes following main items:
-> >     * redundancy algorithm (drop me a request of your own, but it is highly
-> >         unlikley that Reed-Solomon based will ever be used - it is too slow
-> >         for distributed RAID, I consider WEAVER codes)
-> 
-> 
-> LDPC codes[1][2] have been replacing Turbo code[3] with regards to
-> communication links and we have been seeing that transition. (maybe
-> helpful, came to mind seeing the mention of Turbo code) Don't know how
-> weaver compares to LDPC, though found some comparisons [4][5] But
-> looking at fault tolerance figures, i guess Weaver is much better.
-> 
-> [1] http://www.ldpc-codes.com/
-> [2] http://portal.acm.org/citation.cfm?id=1240497
-> [3] http://en.wikipedia.org/wiki/Turbo_code
-> [4] http://domino.research.ibm.com/library/cyberdig.nsf/papers/BD559022A190D41C85257212006CEC11/$File/rj10391.pdf
-> [5] http://hplabs.hp.com/personal/Jay_Wylie/publications/wylie_dsn2007.pdf
+Hi,
 
-Searching Google for Dr. Plank's work at the University of TN turns up
-some analysis of using LDPC codes in storage systems.
+On Fri, 3 Aug 2007, Arjan van de Ven wrote:
 
-http://www.google.com/search?hl=en&q=plank+ldpc&btnG=Google+Search
+> > Actually the hrsleep() function would allow for submillisecond sleeps, 
+> > which might be what some of the 450 users really want and they only use
+> > msleep(1) because it's the next best thing.
+> > A hrsleep() function is really what makes most sense from an API 
+> > perspective.
+> 
+> I respectfully disagree. The power of msleep is that the unit of sleep
+> time is in the name; so in your proposal it would be hr_msleep or
+> somesuch. I much rather do the opposite in that case; make the "short"
+> name be the best implementation of the requested behavior, and have
+> qualifiers for allowing exceptions to that... least surprise and all
+> that.
 
-Patents are an issue to watch out for around the use of Tornado/Raptor
-codes. I've not researched it, but I believe there be dragons there.
+hr_msleep makes no sense. Why should we tie this interface to millisecond 
+resolution?
+Your suggested msleep_approx makes not much sense to me either, since 
+neither interface guarantees anything and may "approximate" the sleep 
+(and if the user is surprised by that something else already went wrong).
+If you don't like the hrsleep name, we can also call it nanosleep and so 
+match what we already do for userspace.
+
+
+bye, Roman
