@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764381AbXHDJcY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764370AbXHDJh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764381AbXHDJcY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 05:32:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759852AbXHDJcS
+	id S1764370AbXHDJh0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 05:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759852AbXHDJhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 05:32:18 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57102 "EHLO mx1.suse.de"
+	Sat, 4 Aug 2007 05:37:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48333 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757645AbXHDJcR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 05:32:17 -0400
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Oops in 2.6.23-rc1-git9, arch/x86_64/pci/k8-bus.c::fill_mp_bus_to_cpumask()
-Date: Sat, 4 Aug 2007 11:30:41 +0200
-User-Agent: KMail/1.9.1
-Cc: Chuck Ebbert <cebbert@redhat.com>, Muli Ben-Yehuda <muli@il.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, riku.seppala@kymp.net,
-       Andy Whitcroft <apw@shadowen.org>
-References: <46B3A7BB.9000102@redhat.com> <20070803155035.1fb11c9a.akpm@linux-foundation.org>
-In-Reply-To: <20070803155035.1fb11c9a.akpm@linux-foundation.org>
+	id S1751271AbXHDJhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 05:37:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Gert Robben <lkml@gert.robben.nu>
+Subject: Re: PROBLEM: snd-au8830: dead after software suspend
+Date: Sat, 4 Aug 2007 11:46:18 +0200
+User-Agent: KMail/1.9.5
+Cc: alsa-devel@alsa-project.org, mjander@embedded.cl,
+       linux-kernel@vger.kernel.org
+References: <46B3A4F5.2000708@gert.robben.nu> <46B3C44D.7020801@gert.robben.nu> <46B3CDA0.90804@gert.robben.nu>
+In-Reply-To: <46B3CDA0.90804@gert.robben.nu>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708041130.42038.ak@suse.de>
+Message-Id: <200708041146.18682.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 04 August 2007 00:50, Andrew Morton wrote:
-> On Fri, 03 Aug 2007 18:10:03 -0400
->
-> Chuck Ebbert <cebbert@redhat.com> wrote:
-> > https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=250859
-> >
-> > at line 74:
-> >
-> > muli@62829:
-> > muli@62829: 					sd = bus->sysdata;
-> > muli@62829: 					sd->node = node;   <=====
-> >
-> > bus->sysdata is NULL.
-> >
-> > Last changed by this hunk of
-> > "x86-64: introduce struct pci_sysdata to facilitate sharing of
-> > ->sysdata":
+On Saturday, 4 August 2007 02:51, Gert Robben wrote:
+> >>> Have you reported this to the ALSA people?
+> >> No, I thought this might as well be something for PCI or PM people, and 
+> >> I expected some ALSA people are also reading this list.
+> >> If not, where else should I report this exactly?
+> > alsa-devel [...] the author of the driver
+> Done (original message below). Thanks again :)
 
-Hmm, will double check. Perhaps Muli's conversion was incomplete.
+You also may want to file a bug at http://bugzilla.kernel.org .
 
-> > @@ -67,7 +69,9 @@ fill_mp_bus_to_cpumask(void)
-> >  						continue;
-> >  					if (!node_online(node))
-> >  						node = 0;
-> > -					bus->sysdata = (void *)node;
-> > +
-> > +					sd = bus->sysdata;
-> > +					sd->node = node;
-> >  				}
-> >  			}
-> >  		}
->
-> Andy keeps trotting out a patch which will probably fix this,
+If you decide to do that, please file it as
+"Power Management"->Hibernation/Suspend bug, I'll redirect it to the ALSA
+people.
 
-What patch do you mean? I don't have anything sysdata related
-left over.
+Greetings,
+Rafael
 
--Andi
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
