@@ -1,118 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbXHDHzN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763080AbXHDIFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763134AbXHDHzN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 03:55:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbXHDHy7
+	id S1763080AbXHDIFg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 04:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXHDIFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 03:54:59 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:44162 "EHLO
-	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755751AbXHDHy7 (ORCPT
+	Sat, 4 Aug 2007 04:05:08 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:42660
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753093AbXHDIFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 03:54:59 -0400
-X-Trace: 609996128-mk-filter-3.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
-X-SBRS: None
-X-RemoteIP: 81.1.86.225
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah4FAK/Ns0ZRAVbh/2dsb2JhbACBUQ
-Subject: Re: [PATCH] SH: add machine-ops and Dreamcast specific fix-up
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Adrian McMenamin <lkmladrian@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
-In-Reply-To: <20070804030624.GA20847@linux-sh.org>
-References: <8b67d60708031226m747f142sd3ed4447fb896a94@mail.gmail.com>
-	 <20070804030624.GA20847@linux-sh.org>
-Content-Type: text/plain
-Date: Sat, 04 Aug 2007 08:54:36 +0100
-Message-Id: <1186214076.6302.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 4 Aug 2007 04:05:01 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Subject: Re: [ck] Re: Linus 2.6.23-rc1 -- It does not matter whose code gets merged!
+Date: Sat, 4 Aug 2007 01:04:28 -0700
+User-Agent: KMail/1.9.5
+Cc: Arjan van de Ven <arjan@infradead.org>, Hua Zhong <hzhong@gmail.com>,
+       "'Carlo Florendo'" <subscribermail@gmail.com>,
+       "'Roman Zippel'" <zippel@linux-m68k.org>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'jos poortvliet'" <jos@mijnkamer.nl>,
+       "'Michael Chang'" <thenewme91@gmail.com>,
+       "'Kasper Sandberg'" <lkml@metanurb.dk>,
+       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185951901.2754.12.camel@laptopd505.fenrus.org> <y0mmyx9ya8z.fsf@ton.toronto.redhat.com>
+In-Reply-To: <y0mmyx9ya8z.fsf@ton.toronto.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708040104.28814.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-08-04 at 12:06 +0900, Paul Mundt wrote:
-> On Fri, Aug 03, 2007 at 08:26:17PM +0100, Adrian McMenamin wrote:
-> > diff --git a/arch/sh/boards/dreamcast/Makefile
-> > b/arch/sh/boards/dreamcast/Makefile
-> > index e6fcd3d..7b97546 100644
-> > --- a/arch/sh/boards/dreamcast/Makefile
-> > +++ b/arch/sh/boards/dreamcast/Makefile
-> > @@ -2,5 +2,5 @@
-> >  # Makefile for the Sega Dreamcast specific parts of the kernel
-> >  #
-> > 
-> > -obj-y	 := setup.o irq.o rtc.o reboot.o
-> > +obj-y	 := setup.o irq.o rtc.o
-> > 
-> 
-> You've created this diff against a bogus kernel.
+On Thursday 02 August 2007 13:03, Frank Ch. Eigler wrote:
+> Arjan van de Ven <arjan@infradead.org> writes:
+> > [...]
+> > It does not matter [whose] code gets merged.
+> > What matters is that the problem gets solved and that the Linux
+> > kernel innovates forward.
+> > [...]
+>
+> This attitude has risks over the long term, if outsiders with fresh
+> ideas are discouraged.  Risking becoming known to defer too much to
+> established maintainers, those fresh ideas may stop coming to linux.
 
-True. My apologies - I missed that.
+Amen to that, Frank.  Driving off talented contributers is a Very Bad 
+Thing for Linux in the long run.  This will not not stop evolutionary 
+progress, but it slows it down and may result in an overly inbred 
+animal.
 
-> 
-> > diff --git a/arch/sh/kernel/Makefile b/arch/sh/kernel/Makefile
-> > index bdb30ba..7ab2359 100644
-> > --- a/arch/sh/kernel/Makefile
-> > +++ b/arch/sh/kernel/Makefile
+It is especially easy to drive off a contributor whose day job is not 
+Linux hacking.
 
-....
+Regards,
 
-> > 
-> >  void machine_crash_shutdown(struct pt_regs *regs)
-> >  {
-> 
-> You've missed machine_crash_shutdown().
-> 
-
-Apologies - though I am a bit puzzled as why the code compiled and
-linked with the two definitions, but that's not much of an excuse.
-
-
-> > +static void mach_reboot_fixups(void)
-> > +{
-> > +	if (mach_is_dreamcast()) {
-> > +		writel(0x00007611, 0xA05F6890);
-> > +	}
-> > +}
-> > +
-> Whether it's only the dreamcast or not is irrelevant, why bother adding
-> abstraction if you intend to add pointless hacks that completely
-> side-steps it?
-> 
-
-I don't understand the point you are trying to make. Please explain with
-more clarity. What have I completely side stepped? I have followed,
-broadly, the same pattern used in i386. Just that there, afaics, they
-pick up on various PCI cards as the basis on which to modify the reboot.
-
-
-> > diff --git a/include/asm-sh/emergency-restart.h
-> > b/include/asm-sh/emergency-restart.h
-> > index 108d8c4..d6bec92 100644
-> > --- a/include/asm-sh/emergency-restart.h
-> > +++ b/include/asm-sh/emergency-restart.h
-> > @@ -1,6 +1,6 @@
-> > -#ifndef _ASM_EMERGENCY_RESTART_H
-> > -#define _ASM_EMERGENCY_RESTART_H
-> > +#ifndef _ASM_SH_EMERGENCY_RESTART_H
-> > +#define _ASM_SH_EMERGENCY_RESTART_H
-> > 
-> > -#include <asm-generic/emergency-restart.h>
-> > +extern void machine_emergency_restart(void);
-> > 
-> > -#endif /* _ASM_EMERGENCY_RESTART_H */
-> > +#endif /* _ASM_SH_EMERGENCY_RESTART_H */
-> > 
-> Pointless. Separating out machine_emergency_restart() buys us nothing,
-> leave this alone and just kill it off from the machine_ops entirely.
-> You've also ignored my earlier mail where I suggested this and killing
-> off some of the other ops we had no use for (as well as consolidating
-> machine_crash_shutdown()). I do wish you would read these things and wait
-> until there's been a resolution one way or another.
-
-I haven't ignored it. It was just explained with your customary
-clarity :)
-
-
+Daniel
