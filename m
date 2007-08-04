@@ -1,80 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764968AbXHDROT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932767AbXHDRRn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764968AbXHDROT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 13:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760709AbXHDROM
+	id S932767AbXHDRRn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 13:17:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932131AbXHDRRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 13:14:12 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:31216 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760644AbXHDROK (ORCPT
+	Sat, 4 Aug 2007 13:17:33 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:49786
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932092AbXHDRRb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 13:14:10 -0400
-Date: Sat, 04 Aug 2007 11:14:04 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit DMA mapping"
-In-reply-to: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: stable@kernel.org, linux-kernel@vger.kernel.org
-Message-id: <46B4B3DC.7020609@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 4 Aug 2007 13:17:31 -0400
+Date: Sat, 4 Aug 2007 10:15:05 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Ray Lee <ray-lk@madrabbit.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, netdev@vger.kernel.org
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+In-Reply-To: <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0708041014020.6905@asgard.lang.hm>
+References: <20070803123712.987126000@chello.nl> 
+ <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> 
+ <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> 
+ <Pine.LNX.4.64.0708040032570.6905@asgard.lang.hm>
+ <2c0942db0708040901x7ada0fe2mf71f37ecba51005b@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Date: Wed, 1 Aug 2007 20:30:36 +0200 (CEST)
-> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Subject: ieee1394: revert "sbp2: enforce 32bit DMA mapping"
-> 
-> Revert commit 0555659d63c285ceb7ead3115532e1b71b0f27a7 from 2.6.22-rc1.
-> The dma_set_mask call somehow failed on a PowerMac G5, PPC64:
-> http://lkml.org/lkml/2007/8/1/344
-> 
-> Should there ever occur a DMA mapping beyond the physical DMA range, a
-> proper SBP-2 firmware will report transport errors.  So let's leave it
-> at that.
+On Sat, 4 Aug 2007, Ray Lee wrote:
 
-Isn't this a rather poor workaround? All this means is that if we fail 
-to set a 32-bit DMA mask, we're likely to blow up at runtime instead of 
-at initialization time, when we get a DMA mapping over 4GB.
+> (adding netdev cc:)
+>
+> On 8/4/07, david@lang.hm <david@lang.hm> wrote:
+>> On Sat, 4 Aug 2007, Ingo Molnar wrote:
+>>
+>>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>>
+>>>> There are positive reports in the never-ending "my system crawls like
+>>>> an XT when copying large files" bugzilla entry:
+>>>>
+>>>>  http://bugzilla.kernel.org/show_bug.cgi?id=7372
+>>>
+>>> i forgot this entry:
+>>>
+>>> " We recently upgraded our office to gigabit Ethernet and got some big
+>>>   AMD64 / 3ware boxes for file and vmware servers... only to find them
+>>>   almost useless under any kind of real load. I've built some patched
+>>>   2.6.21.6 kernels (using the bdi throttling patch you mentioned) to
+>>>   see if our various Debian Etch boxes run better. So far my testing
+>>>   shows a *great* improvement over the stock Debian 2.6.18 kernel on
+>>>   our configurations. "
+>>>
+>>> and bdi has been in -mm in the past i think, so we also know (to a
+>>> certain degree) that it does not hurt those workloads that are fine
+>>> either.
+>>>
+>>> [ my personal interest in this is the following regression: every time i
+>>>  start a large kernel build with DEBUG_INFO on a quad-core 4GB RAM box,
+>>>  i get up to 30 seconds complete pauses in Vim (and most other tasks),
+>>>  during plain editing of the source code. (which happens when Vim tries
+>>>  to write() to its swap/undo-file.) ]
+>>
+>> I have an issue that sounds like it's related.
+>>
+>> I've got a syslog server that's got two Opteron 246 cpu's, 16G ram, 2x140G
+>> 15k rpm drives (fusion MPT hardware mirroring), 16x500G 7200rpm SATA
+>> drives on 3ware 9500 cards (software raid6) running 2.6.20.3 with hz set
+>> at default and preempt turned off.
+>>
+>> I have syslog doing buffered writes to the SCSI drives and every 5 min a
+>> cron job copies the data to the raid array.
+>>
+>> I've found that if I do anything significant on the large raid array that
+>> the system looses a significant amount of the UDP syslog traffic, even
+>> though there should be pleanty of ram and cpu (and the spindles involved
+>> in the writes are not being touched), even a grep can cause up to 40%
+>> losses in the syslog traffic. I've experimented with nice levels (nicing
+>> down the grep and nicing up the syslogd) without a noticable effect on the
+>> losses.
+>>
+>> I've been planning to try a new kernel with hz=1000 to see if that would
+>> help, and after that experiment with the various preempt settings, but it
+>> sounds like the per-device queues may actually be more relavent to the
+>> problem.
+>>
+>> what would you suggest I test, and in what order and combination?
+>
+> At least on a surface level, your report has some similarities to
+> http://lkml.org/lkml/2007/5/21/84 . In that message, John Miller
+> mentions several things he tried without effect:
+>
+> < - I increased the max allowed receive buffer through
+> < proc/sys/net/core/rmem_max and the application calls the right
+> < syscall. "netstat -su" does not show any "packet receive errors".
+> <
+> < - After getting "kernel: swapper: page allocation failure.
+> < order:0, mode:0x20", I increased /proc/sys/vm/min_free_kbytes
+> <
+> < - ixgb.txt in kernel network documentation suggests to increase
+> < net.core.netdev_max_backlog to 300000. This did not help.
+> <
+> < - I also had to increase net.core.optmem_max, because the default
+> < value was too small for 700 multicast groups.
+>
+> As they're all pretty simple to test, it may be worthwhile to give
+> them a shot just to rule things out.
 
-If setting 32-bit DMA mask fails on ppc64, that sounds like a problem 
-with the DMA implementation on that architecture. There are enough cards 
-out there that only support 32-bit DMA that this really needs to work..
+I will try them later today.
 
-> 
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
-> Tested-by: Olaf Hering <olh@suse.de>
-> ---
-> Same as commit a9c2f18800753c82c45fc13b27bdc148849bdbb2.
-> 
->  drivers/ieee1394/sbp2.c |    5 -----
->  1 file changed, 5 deletions(-)
-> 
-> Index: linux-2.6.22/drivers/ieee1394/sbp2.c
-> ===================================================================
-> --- linux-2.6.22.orig/drivers/ieee1394/sbp2.c
-> +++ linux-2.6.22/drivers/ieee1394/sbp2.c
-> @@ -774,11 +774,6 @@ static struct sbp2_lu *sbp2_alloc_device
->  			SBP2_ERR("failed to register lower 4GB address range");
->  			goto failed_alloc;
->  		}
-> -#else
-> -		if (dma_set_mask(hi->host->device.parent, DMA_32BIT_MASK)) {
-> -			SBP2_ERR("failed to set 4GB DMA mask");
-> -			goto failed_alloc;
-> -		}
->  #endif
->  	}
->  
-> 
+I forgot to mention that the filesystems are ext2 for the mirrored high 
+speed disks and xfs for the 8TB array.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
-
+David Lang
