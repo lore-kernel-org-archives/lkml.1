@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932959AbXHDTWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933200AbXHDTWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932959AbXHDTWR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 15:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760939AbXHDTWC
+	id S933200AbXHDTWf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 15:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765615AbXHDTWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 15:22:02 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38832 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760775AbXHDTWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 15:22:00 -0400
-Date: Sat, 4 Aug 2007 21:21:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070804192130.GA25346@elte.hu>
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org>
+	Sat, 4 Aug 2007 15:22:10 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:54021
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765544AbXHDTWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 15:22:08 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: "Jesper Juhl" <jesper.juhl@gmail.com>
+Subject: Re: [PATCH 1/2] Group architecture Documentation under Documentation/arch.
+Date: Sat, 4 Aug 2007 15:22:03 -0400
+User-Agent: KMail/1.9.6
+Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
+       "Roland Dreier" <rdreier@cisco.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       linux-doc@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Paul Mundt" <lethal@linux-sh.org>
+References: <200705222225.39949.rob@landley.net> <200708041404.01264.rob@landley.net> <9a8748490708041207t5ba8063s4a75eabc4c8db8b6@mail.gmail.com>
+In-Reply-To: <9a8748490708041207t5ba8063s4a75eabc4c8db8b6@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070804191205.GA24723@lazybastard.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+Message-Id: <200708041422.04493.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 04 August 2007 2:07:31 pm Jesper Juhl wrote:
+> On 04/08/07, Rob Landley <rob@landley.net> wrote:
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> > Amiga part Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> >
+> > Move architecture-specific Documentation into a common subdirectory.
+>
+> ...
+>
+> I have only one complaint; I don't see an update to Documentation/00-INDEX
 
-* Jörn Engel <joern@logfs.org> wrote:
+I now have at least three.  (I missed blackfin, which wasn't there last time I 
+did this.)
 
-> > I actually vote for that.  IMO, distros should turn -on- atime 
-> > updates when they know its needed.
-> 
-> If you mean "relatime" I concur.  "noatime" hurts mutt and others 
-> while "relatime" has no known problems, afaics.
-
-so ... one app can keep 30,000+ apps hostage?
-
-i use Mutt myself, on such a filesystem:
-
-   /dev/md0 on / type ext3 (rw,noatime,nodiratime,user_xattr)
-
-and i can see no problems, it notices new mails just fine.
-
-	Ingo
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
