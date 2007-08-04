@@ -1,42 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932209AbXHDQkk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932570AbXHDQlC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932209AbXHDQkk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 12:40:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764660AbXHDQkY
+	id S932570AbXHDQlC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:41:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765245AbXHDQkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 12:40:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44556 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764648AbXHDQkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 12:40:22 -0400
-Date: Sat, 4 Aug 2007 09:34:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: linux-kernel@vger.kernel.org, David Miller <davem@davemloft.net>,
-       stable@kernel.org
-Subject: Re: [PATCH] unexport asm/shmparam.h
-Message-Id: <20070804093437.4a48d5d9.akpm@linux-foundation.org>
-In-Reply-To: <20070804100743.GB15222@aepfle.de>
-References: <20070714193834.GA9140@aepfle.de>
-	<20070804100743.GB15222@aepfle.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sat, 4 Aug 2007 12:40:35 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:38420 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765222AbXHDQkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 12:40:33 -0400
+Date: Sat, 4 Aug 2007 20:37:40 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Distributed storage.
+Message-ID: <20070804163740.GB14175@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708021408.24876.phillips@phunq.net> <20070803102629.GB10089@2ka.mipt.ru> <200708031819.17039.phillips@phunq.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708031819.17039.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Aug 2007 12:07:43 +0200 Olaf Hering <olaf@aepfle.de> wrote:
+On Fri, Aug 03, 2007 at 06:19:16PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> It depends on the characteristics of the physical and virtual block 
+> devices involved.  Slow block devices can produce surprising effects.  
+> Ddsnap still qualifies as "slow" under certain circumstances (big 
+> linear write immediately following a new snapshot). Before we added 
+> throttling we would see as many as 800,000 bios in flight.  Nice to 
 
-> On Sat, Jul 14, Olaf Hering wrote:
+Mmm, sounds tasty to work with such a system :)
+
+> know the system can actually survive this... mostly.  But memory 
+> deadlock is a clear and present danger under those conditions and we 
+> did hit it (not to mention that read latency sucked beyond belief). 
 > 
-> > SHMLBA cant possible be used in userspace, see sparc versions of that header.
+> Anyway, we added a simple counting semaphore to throttle the bio traffic 
+> to a reasonable number and behavior became much nicer, but most 
+> importantly, this satisfies one of the primary requirements for 
+> avoiding block device memory deadlock: a strictly bounded amount of bio 
+> traffic in flight.  In fact, we allow some bounded number of 
+> non-memalloc bios *plus* however much traffic the mm wants to throw at 
+> us in memalloc mode, on the assumption that the mm knows what it is 
+> doing and imposes its own bound of in flight bios per device.   This 
+> needs auditing obviously, but the mm either does that or is buggy.  In 
+> practice, with this throttling in place we never saw more than 2,000 in 
+> flight no matter how hard we hit it, which is about the number we were 
+> aiming at.  Since we draw our reserve from the main memalloc pool, we 
+> can easily handle 2,000 bios in flight, even under extreme conditions.
 > 
-> Ping.
+> See:
+>     http://zumastor.googlecode.com/svn/trunk/ddsnap/kernel/dm-ddsnap.c
+>     down(&info->throttle_sem);
+> 
+> To be sure, I am not very proud of this throttling mechanism for various 
+> reasons, but the thing is, _any_ throttling mechanism no matter how 
+> sucky solves the deadlock problem.  Over time I want to move the 
 
-ping who?
+make_request_fn is always called in process context, we can wait in it
+for memory in mempool. Although that means we already in trouble.
 
-> Anything wrong with this patch?
+I agree, any kind of high-boundary leveling must be implemented in
+device itself, since block layer does not know what device is at the end
+and what it will need to process given block request.
 
-Not afaik.  I queued it for 2.6.24.
+-- 
+	Evgeniy Polyakov
