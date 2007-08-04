@@ -1,34 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764648AbXHDKHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764386AbXHDKWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764648AbXHDKHr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 06:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbXHDKHl
+	id S1764386AbXHDKWF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 06:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbXHDKVy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 06:07:41 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:42880 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbXHDKHk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 06:07:40 -0400
-Date: Sat, 4 Aug 2007 12:07:43 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Cc: stable@kernel.org
-Subject: Re: [PATCH] unexport asm/shmparam.h
-Message-ID: <20070804100743.GB15222@aepfle.de>
-References: <20070714193834.GA9140@aepfle.de>
+	Sat, 4 Aug 2007 06:21:54 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48454 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751832AbXHDKVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 06:21:54 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.23-rc2
+Date: Sat, 4 Aug 2007 12:30:50 +0200
+User-Agent: KMail/1.9.5
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070714193834.GA9140@aepfle.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708041230.51074.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 14, Olaf Hering wrote:
+On Saturday, 4 August 2007 05:50, Linus Torvalds wrote:
+> 
+> So I tried to hold people to the merge window, and said no to a few pull 
+> requests, but this whole "-rc2 is the new -rc1" thing is a disease, and 
+> not only is -rc2 late, it's bigger than it should be. Oh, well.
 
-> SHMLBA cant possible be used in userspace, see sparc versions of that header.
+Suspend and hibernation are busted on SMP x86_64, AFAICS.  My test boxes
+don't resume.
 
-Ping.
-Anything wrong with this patch?
+2.6.23-rc1 and 2.6.23-rc1-mm2 both work just fine on the same machines, so
+this has to be due to a recent change.  I'll bisect later today.
+
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
