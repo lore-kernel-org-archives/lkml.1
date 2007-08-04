@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765426AbXHDSJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765498AbXHDSKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765426AbXHDSJL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 14:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764855AbXHDSI6
+	id S1765498AbXHDSKA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 14:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764855AbXHDSJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 14:08:58 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46515 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755967AbXHDSI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 14:08:57 -0400
-Message-ID: <46B4C0A8.1000902@garzik.org>
-Date: Sat, 04 Aug 2007 14:08:40 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Sat, 4 Aug 2007 14:09:53 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:32644 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764989AbXHDSJw convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 14:09:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:organization:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
+        b=erXb4C7+lhhaa+ACVF1YuakUy1Q3eSumTmHW5znuHSlJSidFirJqtiIzrfhQ8+1nSxiY+klqtNFgSIVWTWfGhueXq/wyKz+BGYr1L+fRGZ7c8+7EU96iB3yyvskgAaheUDoD6dMTaGBtqrj835DD7p92QPVMCxU6PHeY5BwaHF0=
+Organization: M1K0
+To: linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: many problems with mac80211, iwlwifi and ACPI on Santa Rosa laptop
+Date: Sat, 4 Aug 2007 20:09:39 +0200
+User-Agent: KMail/1.9.7
+References: <fa.v/A5H4Pm9oA6Hct919AmEbMQfJ0@ifi.uio.no> <46B4B234.9040000@shaw.ca>
+In-Reply-To: <46B4B234.9040000@shaw.ca>
+Cc: Robert Hancock <hancockr@shaw.ca>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708042009.40881.Michal.Kudla@gmail.com>
+From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> The "relatime" thing that David mentioned might well be very useful, but 
-> it's probably even less used than "noatime" is. And sadly, I don't really 
-> see that changing (unless we were to actually change the defaults inside 
-> the kernel).
+W liście datowanym na sobota, 4 sierpnia 2007, Robert Hancock pisze:
+>RH Can you reproduce this without the binary NVIDIA module loaded?
 
+Yes,
+Next photo is made on kernel with nvidiafb module
+http://picasaweb.google.pl/Michal.Kudla/Gentoo/photo#5094907741297540418
 
-I actually vote for that.  IMO, distros should turn -on- atime updates 
-when they know its needed.
+// P.S. Can I find this error in some system logs? 
+Photos is not good for reports.
 
-	Jeff
-
-
+-- 
+http://www.m1k0.com
