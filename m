@@ -1,58 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765368AbXHDSGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765434AbXHDSHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765368AbXHDSGY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 14:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764947AbXHDSGQ
+	id S1765434AbXHDSHb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 14:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbXHDSHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 14:06:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42797 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756016AbXHDSGQ (ORCPT
+	Sat, 4 Aug 2007 14:07:24 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33911
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764965AbXHDSHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 14:06:16 -0400
-Message-ID: <46B4C011.8090802@zytor.com>
-Date: Sat, 04 Aug 2007 11:06:09 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 4 Aug 2007 14:07:23 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: akpm@linux-foundation.org
+Subject: [PATCH] Documentation/make/headers_install.txt
+Date: Sat, 4 Aug 2007 14:07:18 -0400
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, David Woodhouse <dwmw2@infradead.org>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeff Chua <jeff.chua.linux@gmail.com>, lkml <linux-kernel@vger.kernel.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Linux 2.6.23-rc2
-References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>  <b6a2187b0708032213r476204fbh917d3d6672c70528@mail.gmail.com>  <b6a2187b0708032234r6ad41be4u5d8142b0b199fcc1@mail.gmail.com> <b6a2187b0708040652l28e9d5aal2cc898f8006906f2@mail.gmail.com> <alpine.LFD.0.999.0708040900170.5037@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.999.0708040900170.5037@woody.linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708041307.18578.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sat, 4 Aug 2007, Jeff Chua wrote:
->> On 8/4/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
->>>> After resume from s2ram or switching to console from X, my console is
->>>> messed up on rc1 and rc2. Is there a fix for this?
->>> This is on IBM X60. i915 chipset. No problem on 2.6.22. If this is a
->>> known problem, than I don't need to bisect all over again.
->> I managed to bisect down to this commit. Without this, console screen
->> can resume without video mess.
-> 
-> [ The commit being 4fd06960f120e02e9abc802a09f9511c400042a5: "Use the new 
->   x86 setup code for i386" ]
-> 
-> Very interesting. 
-> 
-> Jeff - do I understand correctly that the "or" means that even *without* a 
-> suspend-to-ram sequence, and just by going into X and then going back to 
-> text-mode, the screen is corrupt?
+From: Rob Landley <rob@landley.net>
 
-Also, can you please describe "messed up" in more detail?  We had one
-report of "screen messed up" already that did get fixed
-(CONFIG_FIRMWARE_EDID not working.)
+Signed-off-by: Rob Landley <rob@landley.net>
 
-Are you using the VGA console or a framebuffer console?
+Some documentation for "make headers_install".
 
-Also, please submit your .config and kernel command line.
+---
 
-	-=hpa
+Earlier discussion was at http://lkml.org/lkml/2007/6/22/7 and I
+believe I've responded to all of David's comments.
+
+--- /dev/null	2007-04-23 10:59:00.000000000 -0500
++++ linux-2.6/Documentation/make/headers_install.txt	2007-08-04 13:04:51.000000000 -0500
+@@ -0,0 +1,46 @@
++Exporting kernel headers for use by userspace
++=============================================
++
++The "make headers_install" command exports the kernel's header files in a
++form suitable for use by userspace programs. 
++
++The linux kernel's exported header files describe the API for user space
++programs attempting to use kernel services.  These kernel header files are
++used by the system's C library (such as glibc or uClibc) to define available
++system calls, as well as constants and structures to be used with these
++system calls.  The C library's header files include the kernel header files
++from the "linux" subdirectory.  The system's libc headers are usually
++installed at the default location /usr/include and the kernel headers in
++subdirectories under that (most notably /usr/include/linux and
++/usr/include/asm).
++
++Kernel headers are backwards compatible, but not forwards compatible.  This
++means that a program built against a C library using older kernel headers
++should run on a newer kernel (although it may not have access to new
++features), but a program built against newer kernel headers may not work on an
++older kernel.
++
++The "make headers_install" command can be run in the top level directory of the
++kernel source code (or using a standard out-of-tree build).  It takes two
++optional arguments:
++
++  make headers_install ARCH=i386 INSTALL_HDR_PATH=/usr/include
++
++ARCH indicates which architecture to produce headers for, and defaults to the
++current architecture.  The linux/asm directory of the exported kernel headers
++is platform-specific, to see a complete list of supported architectures use
++the command:
++
++  ls -d include/asm-* | sed 's/.*-//'
++
++INSTALL_HDR_PATH indicates where to install the headers.  It defaults to
++"./usr/include".
++
++The command "make headers_install_all" exports headers for all architectures
++simultaneously.  (This is mostly of interest to distribution maintainers,
++who create an architecture-independent tarball from the resulting include
++directory.)  Remember to provide the appropriate linux/asm directory via "mv"
++or "ln -s" before building a C library with headers exported this way.
++
++The kernel header export infrastructure is maintained by David Woodhouse
++<dwmw2@infradead.org>.
+
+
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
