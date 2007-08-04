@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbXHDVUo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765382AbXHDVku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932728AbXHDVUo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 17:20:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762141AbXHDVUf
+	id S1765382AbXHDVku (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 17:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762240AbXHDVkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 17:20:35 -0400
-Received: from antonio.urjc.es ([193.147.184.24]:39663 "EHLO antonio.urjc.es"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762000AbXHDVUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 17:20:35 -0400
-Message-ID: <46B4EDB1.1070808@urjc.es>
-Date: Sat, 04 Aug 2007 23:20:49 +0200
-From: Javier Pello <javier.pello@urjc.es>
-Organization: Universidad Rey Juan Carlos
-User-Agent: Thunderbird 2.0.0.0 (X11/20070503)
-MIME-Version: 1.0
-To: david@lang.hm
-CC: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
-	notified
-References: <46B37CF7.2020803@urjc.es>  
-		<Pine.LNX.4.64.0708032219230.6905@asgard.lang.hm><46B43DBA.5040703@urjc.es
-	> <Pine.LNX.4.64.0708041007430.6905@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0708041007430.6905@asgard.lang.hm>
-Content-Type: text/plain;
-	charset=ISO-8859-1
+	Sat, 4 Aug 2007 17:40:42 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54471 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761515AbXHDVkk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 17:40:40 -0400
+Date: Sat, 4 Aug 2007 22:47:06 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Ingo Molnar <mingo@elte.hu>, =?UTF-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070804224706.617500a0@the-village.bc.nu>
+In-Reply-To: <46B4E161.9080100@garzik.org>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
+	<46B4C0A8.1000902@garzik.org>
+	<20070804191205.GA24723@lazybastard.org>
+	<20070804192130.GA25346@elte.hu>
+	<20070804211156.5f600d80@the-village.bc.nu>
+	<46B4E161.9080100@garzik.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender DNS name whitelisted, not delayed by 
-	milter-greylist-2.0.2 (antonio.urjc.es [193.147.184.24]); Sat, 04 Aug 2007 
-	23:20:15 +0200 (CEST)
-X-imss-version: 2.047
-X-imss-result: Passed
-X-imss-scanInfo: M:B L:E SM:2
-X-imss-tmaseResult: TT:1 TS:-7.4294 TC:1F TRN:31 TV:3.6.1039(15340.003)
-X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
-X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Aug 2007, David Lang wrote:
-> what I've been told is that with the drive built-in instead of
-> modular you can create a filesystem that has only the firmware
-> on it, nothing else, and have the kernel find and load it (no
-> userspace software involved)
+> Linux has always been a "POSIX unless its stupid" type of system.  For 
+> the upstream kernel, we should do the right thing -- noatime by default 
+> -- but allow distros and people that care about rigid compliance to 
+> easily change the default.
 
-I'm afraid my understanding of the kernel is not very deep, so
-I don't know of this method you're describing.
-
-Anyway, if there's no userspace involved then nothing should
-change. The patch I sent only affects the behaviour of the kernel
-when it actually tries to send a firmware request to userspace
-(and it determines that the request was not received). If the
-kernel loads a firmware image without userspace support, it must
-do so in a codepath different from request_firmware, whose point
-is precisely to send a firmware request and wait for it, and
-request_firmware is the only function that effectively changes
-with my patch.
-
-Javier
-
+Linux has never been a "suprise your kernel interfaces all just changed
+today" kernel, nor a "gosh you upgraded and didn't notice your backups
+broke" kernel.
 
