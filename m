@@ -1,88 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbXHDGcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761920AbXHDGk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759554AbXHDGcq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 02:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbXHDGcg
+	id S1761920AbXHDGk1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 02:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXHDGkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 02:32:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60711 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751688AbXHDGcf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 02:32:35 -0400
-Date: Sat, 4 Aug 2007 08:32:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070804063217.GA25069@elte.hu>
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	Sat, 4 Aug 2007 02:40:17 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:40170 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755049AbXHDGkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 02:40:16 -0400
+Date: Fri, 3 Aug 2007 23:39:47 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Manfred Spraul <manfred@colorfullife.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+Subject: [PATCH] Use ERESTART_RESTARTBLOCK if poll() is interrupted by a
+	signal (was: Re: [PATCH] Use ERESTARTNOHAND if poll() is
+	interrupted by a signal)
+Message-ID: <20070804063947.GQ3672@sequoia.sous-sol.org>
+References: <200707291705.l6TH554a003344@colorfullife.mysite.adiungo.com> <20070730163538.67b256da.akpm@linux-foundation.org> <46AF9C2D.70808@colorfullife.com> <20070731210817.GA97@tv-sign.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+In-Reply-To: <20070731210817.GA97@tv-sign.ru>
 User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Oleg Nesterov (oleg@tv-sign.ru) wrote:
+> What we need is ERESTART_RESTARTBLOCK, and restart_block.arg2 should
+> have the new timeout value, which takes the time we already slept
+> into account.
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+This passes my simple 32-bit and 64-bit testing.  See any issues with
+this one?
 
-> On Fri, 3 Aug 2007, Peter Zijlstra wrote:
-> > 
-> > These patches aim to improve balance_dirty_pages() and directly address three
-> > issues:
-> >   1) inter device starvation
-> >   2) stacked device deadlocks
-> >   3) inter process starvation
-> 
-> Ok, the patches certainly look pretty enough, and you fixed the only 
-> thing I complained about last time (naming), so as far as I'm 
-> concerned it's now just a matter of whether it *works* or not. I guess 
-> being in -mm will help somewhat, but it would be good to have people 
-> with several disks etc actively test this out.
+thanks,
+-chris
+--
 
-There are positive reports in the never-ending "my system crawls like an 
-XT when copying large files" bugzilla entry:
+Subject: [PATCH] Use ERESTART_RESTARTBLOCK if poll() is interrupted by a signal
+From: Chris Wright <chrisw@sous-sol.org>
 
- http://bugzilla.kernel.org/show_bug.cgi?id=7372
+Lomesh reported poll returning EINTR during suspend/resume cycle.
+This is caused by the STOP/CONT cycle that the freezer uses, generating
+a pending signal for what in effect is an ignored signal.  In general
+poll is a little eager in returning EINTR, when it could try not bother
+userspace and simply restart the syscall.  Both select and ppoll do use
+ERESTARTNOHAND to restart the syscall.  Oleg points out that simply using
+ERESTARTNOHAND will cause poll to restart with original timeout value.
+which could ultimately lead to process never returning to userspace.
+Instead use ERESTART_RESTARTBLOCK, and restart poll with updated timeout
+value.  Inspired by Manfred's use ERESTARTNOHAND in poll patch.
 
- " vfs_cache_pressure=1
-   TCQ   nr_requests
-   8     128    not that bad
-   1     128    snappiest configuration, almost no pauses
-                (or unnoticable ones) "
+Cc: Manfred Spraul <manfred@colorfullife.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: "Agarwal, Lomesh" <lomesh.agarwal@intel.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+Patch against git-7a883eaf
+
+ fs/select.c |   34 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 33 insertions(+), 1 deletions(-)
+
+diff --git a/fs/select.c b/fs/select.c
+index a974082..50e6d8e 100644
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -736,10 +736,29 @@ out_fds:
+ 	return err;
+ }
  
- " 1) vfs_cache_pressure at 100, 2.6.21.5+per bdi throttling patch 
-   Result is good, not as snappier as I'd want during a large copy but 
-   still usable. No process seems stuck for agen, but there seems to be 
-   some short (second or subsecond) moment where everything is stuck 
-   (like if you run a top d 0.5, the screen is not updated on a regular
-   basis).
-
-   2) vfs_cache_pressure at 1, 2.6.21.5+per bdi throttling patch Result
-   is at 2.6.17 level. It is the better combination since 2.6.17. "
-
- " 1) I've applied the patches posted by Peter Zijlstra in comment #76 
-   to the 2.6.21-mm2 kernel to check if it removes the problem. My
-   impression is that the problem is still there with those patches,
-   although less visible then with the clean 2.6.21 kernel. "
-
-so the whole problem area seems to be a "perfect storm" created by a 
-combination of TCQ, IO scheduling and VM dirty handling weaknesses. Per 
-device dirty throttling is a good step forward and it makes a very 
-visible positive difference.
-
-	Ingo
++long do_restart_poll(struct restart_block *restart_block)
++{
++	struct pollfd __user *ufds = (struct pollfd __user*)restart_block->arg0;
++	int nfds = restart_block->arg1;
++	s64 timeout = ((s64)restart_block->arg3<<32) | (s64)restart_block->arg2;
++	int ret;
++
++	restart_block->fn = do_no_restart_syscall;
++	ret = do_sys_poll(ufds, nfds, &timeout);
++	if (ret == -EINTR) {
++		restart_block->fn = do_restart_poll;
++		restart_block->arg2 = timeout & 0xFFFFFFFF;
++		restart_block->arg3 = timeout >> 32;
++		ret = -ERESTART_RESTARTBLOCK;
++	}
++	return ret;
++}
++
+ asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
+ 			long timeout_msecs)
+ {
+ 	s64 timeout_jiffies;
++	int ret;
+ 
+ 	if (timeout_msecs > 0) {
+ #if HZ > 1000
+@@ -754,7 +773,20 @@ asmlinkage long sys_poll(struct pollfd __user *ufds, unsigned int nfds,
+ 		timeout_jiffies = timeout_msecs;
+ 	}
+ 
+-	return do_sys_poll(ufds, nfds, &timeout_jiffies);
++	ret = do_sys_poll(ufds, nfds, &timeout_jiffies);
++	if (ret == -EINTR) {
++		if (timeout_msecs > 0) {
++			struct restart_block *restart_block;
++			restart_block = &current_thread_info()->restart_block;
++			restart_block->fn = do_restart_poll;
++			restart_block->arg0 = (unsigned long)ufds;
++			restart_block->arg1 = nfds;
++			restart_block->arg2 = timeout_jiffies & 0xFFFFFFFF;
++			restart_block->arg3 = timeout_jiffies >> 32;
++			ret = -ERESTART_RESTARTBLOCK;
++		}
++	}
++	return ret;
+ }
+ 
+ #ifdef TIF_RESTORE_SIGMASK
