@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765350AbXHDQsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765286AbXHDQwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765350AbXHDQsM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 12:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764829AbXHDQr5
+	id S1765286AbXHDQwr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764607AbXHDQwl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 12:47:57 -0400
-Received: from zone4.gcu.info ([217.195.17.234]:59549 "EHLO
-	zone4.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764126AbXHDQr4 convert rfc822-to-8bit (ORCPT
+	Sat, 4 Aug 2007 12:52:41 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49917 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764407AbXHDQwk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 12:47:56 -0400
-Date: Sat, 4 Aug 2007 18:47:50 +0200 (CEST)
-To: jengelh@computergmbh.de, joe@perches.com
-Subject: Re: + remove-current-defines-and-uses-of-pr_err-add-pr_emerg.patch added to -mm tree
-X-IlohaMail-Blah: khali@localhost
-X-IlohaMail-Method: mail() [mem]
-X-IlohaMail-Dummy: moo
-X-Mailer: IlohaMail/0.8.14 (On: mail.gcu-squad.org)
-Message-ID: <0H03p0ll.1186246070.5043630.khali@localhost>
-In-Reply-To: <Pine.LNX.4.64.0708041141560.11760@fbirervta.pbzchgretzou.qr>
-From: "Jean Delvare" <khali@linux-fr.org>
-Bounce-To: "Jean Delvare" <khali@linux-fr.org>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, adaplas@pol.net, greg@kroah.com,
-       jeff@garzik.org
-MIME-Version: 1.0
+	Sat, 4 Aug 2007 12:52:40 -0400
+Date: Sat, 4 Aug 2007 09:51:43 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-Id: <20070804095143.b8cc2c78.akpm@linux-foundation.org>
+In-Reply-To: <20070804163733.GA31001@elte.hu>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 4 Aug 2007 18:37:33 +0200 Ingo Molnar <mingo@elte.hu> wrote:
 
-Hi Jan, Joe,
+> 
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > > hm, it turns out that it's due to vim doing an occasional fsync not 
+> > > only on writeout, but during normal use too. "set nofsync" in the 
+> > > .vimrc solves this problem.
+> > 
+> > Yes, that's independent. The fact is, ext3 *sucks* at fsync. I hate 
+> > hate hate it. It's totally unusable, imnsho.
+> 
+> yeah, it's really ugly. But otherwise i've got no real complaint about 
+> ext3 - with the obligatory qualification that "noatime,nodiratime" in 
+> /etc/fstab is a must. This speeds up things very visibly - especially 
+> when lots of files are accessed. It's kind of weird that every Linux 
+> desktop and server is hurt by a noticeable IO performance slowdown due 
+> to the constant atime updates,
 
-On 8/4/2007, "Jan Engelhardt" <jengelh@computergmbh.de> wrote:
->On Aug 3 2007 15:16, Joe Perches wrote:
->>On Fri, 2007-08-03 at 17:05 +0200, Jean Delvare wrote:
->>> Fine with me, but this first patch should still be correct per se.
->>
->>Add new pr_<level> printk(KERN_<level> fmt "\n", ##arg) to kernel.h
->>pr_info and pr_debug are unchanged
->>Remove local pr_err #defines
->>Convert current uses of pr_err
->>
->>Signed-off-by:  Joe Perches <joe@perches.com>
->>
->>diff --git a/include/linux/kernel.h b/include/linux/kernel.h
->>index 4300bb4..6447072 100644
->>--- a/include/linux/kernel.h
->>+++ b/include/linux/kernel.h
->>@@ -229,20 +229,24 @@ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
->> 			void *buf, size_t len);
->> #define hex_asc(x)	"0123456789abcdef"[x]
->>
->>+#define pr_emerg(fmt, arg...)	printk(KERN_EMERG fmt "\n", ##arg)
->>+#define pr_alert(fmt, arg...)	printk(KERN_ALERT fmt "\n", ##arg)
->>+#define pr_crit(fmt, arg...)	printk(KERN_CRIT fmt "\n", ##arg)
->>+#define pr_err(fmt, arg...)	printk(KERN_ERR fmt "\n", ##arg)
->>+#define pr_warn(fmt, arg...)	printk(KERN_WARNING fmt "\n", ##arg)
->>+#define pr_notice(fmt, arg...)	printk(KERN_NOTICE fmt "\n", ##arg)
->>+#define pr_info(fmt, arg...)	printk(KERN_INFO fmt, ##arg)
->>+
->
->Ugh. What do we have printk for then? I do not like this.
->For pr_debug() it makes sense because its semantics change with
->-DDEBUG and -UDEBUG, but for these pr_()s it does not seem so.
+Not just more IO: it will cause great gobs of blockdev pagecache to remain
+in memory, too.
 
-I think I agree with Jan here, I see no fundamental need for these
-additional macros. But if they are really added, then they should follow
-the same standard as pr_debug() and pr_info(), that is: no "\n" added
-automatically. Otherwise this will become quite messy.
 
-Thanks,
---
-Jean Delvare
+> while there's just two real users of it: 
+> tmpwatch [which can be configured to use ctime so it's not a big issue] 
+> and some backup tools. (Ok, and mail-notify too i guess.) Out of tens of 
+> thousands of applications. So for most file workloads we give Windows a 
+> 20%-30% performance edge, for almost nothing. (for RAM-starved kernel 
+> builds the performance difference between atime and noatime+nodiratime 
+> setups is more on the order of 40%)
+> 
+> 	Ingo
