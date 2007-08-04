@@ -1,48 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762591AbXHDAvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762315AbXHDBTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762591AbXHDAvw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 20:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755682AbXHDAvq
+	id S1762315AbXHDBTf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 21:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759744AbXHDBTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 20:51:46 -0400
-Received: from jan-robben.demon.nl ([83.160.142.71]:43419 "EHLO mail.robben.nu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755563AbXHDAvp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 20:51:45 -0400
-Message-ID: <46B3CDA0.90804@gert.robben.nu>
-Date: Sat, 04 Aug 2007 02:51:44 +0200
-From: Gert Robben <lkml@gert.robben.nu>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
+	Fri, 3 Aug 2007 21:19:23 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:54003
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756326AbXHDBTW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 21:19:22 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage.
+Date: Fri, 3 Aug 2007 18:19:16 -0700
+User-Agent: KMail/1.9.5
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708021408.24876.phillips@phunq.net> <20070803102629.GB10089@2ka.mipt.ru>
+In-Reply-To: <20070803102629.GB10089@2ka.mipt.ru>
 MIME-Version: 1.0
-To: alsa-devel@alsa-project.org
-CC: mjander@embedded.cl, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: snd-au8830: dead after software suspend
-References: <46B3A4F5.2000708@gert.robben.nu> <46B3C44D.7020801@gert.robben.nu>
-In-Reply-To: <46B3C44D.7020801@gert.robben.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="koi8-r"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708031819.17039.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Have you reported this to the ALSA people?
->> No, I thought this might as well be something for PCI or PM people, and 
->> I expected some ALSA people are also reading this list.
->> If not, where else should I report this exactly?
-> alsa-devel [...] the author of the driver
-Done (original message below). Thanks again :)
+On Friday 03 August 2007 03:26, Evgeniy Polyakov wrote:
+> On Thu, Aug 02, 2007 at 02:08:24PM -0700, I wrote:
+> > I see bits that worry me, e.g.:
+> >
+> > +		req = mempool_alloc(st->w->req_pool, GFP_NOIO);
+> >
+> > which seems to be callable in response to a local request, just the
+> > case where NBD deadlocks.  Your mempool strategy can work reliably
+> > only if you can prove that the pool allocations of the maximum
+> > number of requests you can have in flight do not exceed the size of
+> > the pool.  In other words, if you ever take the pool's fallback
+> > path to normal allocation, you risk deadlock.
+>
+> mempool should be allocated to be able to catch up with maximum
+> in-flight requests, in my tests I was unable to force block layer to
+> put more than 31 pages in sync, but in one bio. Each request is
+> essentially dealyed bio processing, so this must handle maximum
+> number of in-flight bios (if they do not cover multiple nodes, if
+> they do, then each node requires own request).
 
-Gert Robben wrote:
-> After a suspend-resume cycle (using Suspend2), my sound card doesn't 
-> work anymore. It works again after reloading the module.
-> 
-> dmesg, initial boot:
->> Linux version 2.6.22-ck1
-> ----8<----
->> PCI driver au8830 lacks driver specific resume support.
-> 
-> dmesg, after resume, trying to use the card:
->> vortex: ac97 codec stuck busy
-> 
-> Thanks for any help!
-> 
-> Gert Robben
+It depends on the characteristics of the physical and virtual block 
+devices involved.  Slow block devices can produce surprising effects.  
+Ddsnap still qualifies as "slow" under certain circumstances (big 
+linear write immediately following a new snapshot). Before we added 
+throttling we would see as many as 800,000 bios in flight.  Nice to 
+know the system can actually survive this... mostly.  But memory 
+deadlock is a clear and present danger under those conditions and we 
+did hit it (not to mention that read latency sucked beyond belief). 
+
+Anyway, we added a simple counting semaphore to throttle the bio traffic 
+to a reasonable number and behavior became much nicer, but most 
+importantly, this satisfies one of the primary requirements for 
+avoiding block device memory deadlock: a strictly bounded amount of bio 
+traffic in flight.  In fact, we allow some bounded number of 
+non-memalloc bios *plus* however much traffic the mm wants to throw at 
+us in memalloc mode, on the assumption that the mm knows what it is 
+doing and imposes its own bound of in flight bios per device.   This 
+needs auditing obviously, but the mm either does that or is buggy.  In 
+practice, with this throttling in place we never saw more than 2,000 in 
+flight no matter how hard we hit it, which is about the number we were 
+aiming at.  Since we draw our reserve from the main memalloc pool, we 
+can easily handle 2,000 bios in flight, even under extreme conditions.
+
+See:
+    http://zumastor.googlecode.com/svn/trunk/ddsnap/kernel/dm-ddsnap.c
+    down(&info->throttle_sem);
+
+To be sure, I am not very proud of this throttling mechanism for various 
+reasons, but the thing is, _any_ throttling mechanism no matter how 
+sucky solves the deadlock problem.  Over time I want to move the 
+throttling up into bio submission proper, or perhaps incorporate it in 
+device mapper's queue function, not quite as high up the food chain.  
+Only some stupid little logistical issues stopped me from doing it one 
+of those ways right from the start.   I think Peter has also tried some 
+things in this area.  Anyway, that part is not pressing because the 
+throttling can be done in the virtual device itself as we do it, even 
+if it is not very pretty there.  The point is: you have to throttle the 
+bio traffic.  The alternative is to die a horrible death under 
+conditions that may be rare, but _will_ hit somebody.
+
+Regards,
+
+Daniel
