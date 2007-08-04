@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933301AbXHDTiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933021AbXHDTn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933301AbXHDTiy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 15:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765488AbXHDTiq
+	id S933021AbXHDTn7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 15:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765246AbXHDTnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 15:38:46 -0400
-Received: from gateway.howardsilvan.com ([64.146.212.27]:47522 "EHLO
-	mail.howardsilvan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764445AbXHDTip (ORCPT
+	Sat, 4 Aug 2007 15:43:50 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:55559 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761966AbXHDTnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 15:38:45 -0400
-Message-ID: <46B4D5BF.6070901@howardsilvan.com>
-Date: Sat, 04 Aug 2007 12:38:39 -0700
-From: Lee Howard <faxguy@howardsilvan.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.13) Gecko/20060501 Fedora/1.7.13-1.1.fc4
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Robert Hancock <hancockr@shaw.ca>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>, linux-serial@vger.kernel.org,
-       tytso@mit.edu, linux-kernel@vger.kernel.org
-Subject: Re: serial flow control appears broken
-References: <fa.Z6O0xFRT69zes0Mg+agt3Uiwux4@ifi.uio.no> <46A84B4A.6070902@shaw.ca> <46A8C6F1.4080309@howardsilvan.com> <Pine.LNX.4.64N.0707271216410.425@blysk.ds.pg.gda.pl> <46AA2748.80703@howardsilvan.com> <Pine.LNX.4.64N.0707271825220.425@blysk.ds.pg.gda.pl> <46AA3801.7090204@shaw.ca> <20070728092842.GC26443@flint.arm.linux.org.uk> <Pine.LNX.4.64N.0707301040320.12082@blysk.ds.pg.gda.pl> <46B1F0CB.9060106@rtr.ca> <46B202DE.5000709@shaw.ca> <46B20662.6080606@rtr.ca>
-In-Reply-To: <46B20662.6080606@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 4 Aug 2007 15:43:49 -0400
+Subject: Re: [PATCH][RESEND] Fix a potential NULL pointer deref in the
+	aic7xxx, ahc_print_register() function
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <jejb@kernel.org>, linux-scsi@vger.kernel.org,
+       "Justin T. Gibbs" <gibbs@scsiguy.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708042030.52405.jesper.juhl@gmail.com>
+References: <200708042030.52405.jesper.juhl@gmail.com>
+Content-Type: text/plain
+Date: Sat, 04 Aug 2007 14:43:47 -0500
+Message-Id: <1186256627.3439.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
+On Sat, 2007-08-04 at 20:30 +0200, Jesper Juhl wrote:
+> (resend of patch previously submitted on 28-Jul-2007 23:06)
+> 
+> 
+> Ehlo,
+> 
+> The Coverity checker noticed that we have a potential NULL pointer 
+> deref in drivers/scsi/aic7xxx/aic7xxx_core.c::ahc_print_register().
+> This patch handles it by adding the same test against NULL that is 
+> used elsewhere in the same function.
 
-> The "fix" could be to have the serial IRQ handler never unmask 
-> interrupts,
-> but that's a bit unsociable to others.  The IDE stuff really needs to not
-> do so much during the actual IRQ handler.
->
-> Ingo's RT patches would probably fix all of this.
+It's on my list of things to look at ... but not very high.  I suspect
+it actually isn't triggerable, but if you can tell me how, it will save
+me from looking.
+
+James
 
 
-I did a Fedora 7 installation and installed Ingo's kernel from here:
-
-http://people.redhat.com/mingo/realtime-preempt/yum-testing/yum/i686/kernel-rt-2.6.21-0182.rt11cfsv17.i686.rpm
-
-Even then, the problem still occurs, unfortunately.
-
-Thanks,
-
-Lee.
