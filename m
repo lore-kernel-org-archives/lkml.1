@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764202AbXHDIxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763993AbXHDJQs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764202AbXHDIxD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 04:53:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759204AbXHDIww
+	id S1763993AbXHDJQs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 05:16:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758412AbXHDJQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 04:52:52 -0400
-Received: from mx1.suse.de ([195.135.220.2]:55075 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbXHDIwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 04:52:50 -0400
-From: Andi Kleen <ak@suse.de>
-To: Mel Gorman <mel@skynet.ie>
-Subject: Re: [PATCH] Apply memory policies to top two highest zones when highest zone is ZONE_MOVABLE
-Date: Sat, 4 Aug 2007 10:51:13 +0200
-User-Agent: KMail/1.9.1
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-References: <20070802172118.GD23133@skynet.ie> <200708040002.18167.ak@suse.de> <20070804002354.GA2841@skynet.ie>
-In-Reply-To: <20070804002354.GA2841@skynet.ie>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708041051.14324.ak@suse.de>
+	Sat, 4 Aug 2007 05:16:40 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:16437 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbXHDJQj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 05:16:39 -0400
+Subject: Re: [PATCH] UBI: Don't use signed int as array index before
+	testing if it is negative
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200708040125.26861.jesper.juhl@gmail.com>
+References: <200708040125.26861.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Sat, 04 Aug 2007 12:16:22 +0300
+Message-Id: <1186218982.26902.47.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 04 Aug 2007 09:16:22.0928 (UTC) FILETIME=[2046D100:01C7D678]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2007-08-04 at 01:25 +0200, Jesper Juhl wrote:
+> Hi,
+> 
+> I can't find anything guaranteeing that 'ubi_num' cannot be <0 in 
+> drivers/mtd/ubi/kapi.c::ubi_open_volume(), and in fact the code 
+> even tests for that and errors out if so. Unfortunately the test 
+> for "ubi_num < 0" happens after we've already used 'ubi_num' as 
+> an array index - bad thing to do if it is negative.
+> This patch moves the test earlier in the function and then moves 
+> the indexing using that variable after the check. A bit safer :-) 
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
-> It only affects hot paths in the NUMA case so non-NUMA users will not care.
+Thanks for the catch, committed to UBI git tree.
 
-For x86-64 most distribution kernels are NUMA these days.
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-> For NUMA users,  I have posted patches that eliminate multiple zonelists
-> altogether which will reduce cache footprint (something like 7K per node on
-> x86_64)
-
-How do you get to 7k? We got worst case 3 zones node (normally less);
-that's three pointers per GFP level.
-
-> and make things like MPOL_BIND behave in a consistent manner. That 
-> would cost on CPU but save on cache which would (hopefully) result in a net
-> gain in most cases.
-
-That might be a good tradeoff, but without seeing the patch 
-the 7k number sounds very dubious.
-
-> I would like to go with this patch for now just for policies but for
-> 2.6.23, we could leave it as "policies only apply to ZONE_MOVABLE when it
-> is used" if you really insisted on it. It's less than ideal though for
-> sure.
-
-Or disable ZONE_MOVABLE. It seems to be clearly not well thought
-out well yet. Perhaps make it dependent on !CONFIG_NUMA.
-
--Andi
