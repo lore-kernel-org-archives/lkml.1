@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbXHDAYI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761487AbXHDAlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764377AbXHDAYI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 20:24:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbXHDAX6
+	id S1761487AbXHDAlg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 20:41:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756615AbXHDAlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 20:23:58 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:33214 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753220AbXHDAX5 (ORCPT
+	Fri, 3 Aug 2007 20:41:24 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:48241
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753762AbXHDAlX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 20:23:57 -0400
-Date: Sat, 4 Aug 2007 01:23:54 +0100
-To: Andi Kleen <ak@suse.de>
-Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Apply memory policies to top two highest zones when highest zone is ZONE_MOVABLE
-Message-ID: <20070804002354.GA2841@skynet.ie>
-References: <20070802172118.GD23133@skynet.ie> <200708040002.18167.ak@suse.de>
+	Fri, 3 Aug 2007 20:41:23 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage.
+Date: Fri, 3 Aug 2007 17:41:18 -0700
+User-Agent: KMail/1.9.5
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+References: <20070731171347.GA14267@2ka.mipt.ru>
+In-Reply-To: <20070731171347.GA14267@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="koi8-r"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200708040002.18167.ak@suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Message-Id: <200708031741.18404.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (04/08/07 00:02), Andi Kleen didst pronounce:
-> On Thursday 02 August 2007 19:21:18 Mel Gorman wrote:
-> > The NUMA layer only supports NUMA policies for the highest zone. When
-> > ZONE_MOVABLE is configured with kernelcore=, the the highest zone becomes
-> > ZONE_MOVABLE. The result is that policies are only applied to allocations
-> > like anonymous pages and page cache allocated from ZONE_MOVABLE when the
-> > zone is used.
-> > 
-> > This patch applies policies to the two highest zones when the highest zone
-> > is ZONE_MOVABLE. As ZONE_MOVABLE consists of pages from the highest "real"
-> > zone, it's always functionally equivalent.
-> > 
-> > The patch has been tested on a variety of machines both NUMA and non-NUMA
-> > covering x86, x86_64 and ppc64. No abnormal results were seen in kernbench,
-> > tbench, dbench or hackbench. It passes regression tests from the numactl
-> > package with and without kernelcore= once numactl tests are patched to
-> > wait for vmstat counters to update.
->  
-> I must honestly say I really hate the patch. It's a horrible hack and makes fast paths
-> slower. When I designed mempolicies I especially tried to avoid things
-> like that, please don't add them through the backdoor now.
-> 
+Hi Evgeniy,
 
-It only affects hot paths in the NUMA case so non-NUMA users will not care. For
-NUMA users,  I have posted patches that eliminate multiple zonelists altogether
-which will reduce cache footprint (something like 7K per node on x86_64)
-and make things like MPOL_BIND behave in a consistent manner. That would
-cost on CPU but save on cache which would (hopefully) result in a net gain
-in most cases.
+Nit alert:
 
-I would like to go with this patch for now just for policies but for 2.6.23,
-we could leave it as "policies only apply to ZONE_MOVABLE when it is used" if
-you really insisted on it. It's less than ideal though for sure.
+On Tuesday 31 July 2007 10:13, Evgeniy Polyakov wrote:
+>     * storage can be formed on top of remote nodes and be exported
+> 	simultaneously (iSCSI is peer-to-peer only, NBD requires device
+> 	mapper and is synchronous)
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+In fact, NBD has nothing to do with device mapper.  I use it as a 
+physical target underneath ddraid (a device mapper plugin) just like I 
+would use your DST if it proves out.
+
+Regards,
+
+Daniel
