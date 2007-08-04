@@ -1,49 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764312AbXHDASb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764377AbXHDAYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764312AbXHDASb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 20:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762709AbXHDASW
+	id S1764377AbXHDAYI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 20:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbXHDAX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 20:18:22 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:14214 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762625AbXHDASW (ORCPT
+	Fri, 3 Aug 2007 20:23:58 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:33214 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753220AbXHDAX5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 20:18:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=b+SI6j6232jXsvVHGScMQP5anePSDU61pih6jQCXMisAxG1ItnGRq/PYwIqkYqhnHq4JZGNnhhbWPJyjUawpBiGxBKZNQ2+CwholHQWM5DCeFPnmO5CGZBSUxYE1ikWpb39nJatvHRBUGgP0Nm94rjFn+vOKshhdYKUNjFbE6W4=
-Message-ID: <9a8748490708031718q677dcc92l84245176eeb99f24@mail.gmail.com>
-Date: Sat, 4 Aug 2007 02:18:21 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Gert Robben" <lkml@gert.robben.nu>
-Subject: Re: PROBLEM: snd-au8830: dead after software suspend
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <46B3C44D.7020801@gert.robben.nu>
+	Fri, 3 Aug 2007 20:23:57 -0400
+Date: Sat, 4 Aug 2007 01:23:54 +0100
+To: Andi Kleen <ak@suse.de>
+Cc: akpm@linux-foundation.org, Lee.Schermerhorn@hp.com, clameter@sgi.com,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Apply memory policies to top two highest zones when highest zone is ZONE_MOVABLE
+Message-ID: <20070804002354.GA2841@skynet.ie>
+References: <20070802172118.GD23133@skynet.ie> <200708040002.18167.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-References: <46B3A4F5.2000708@gert.robben.nu> <46B3C44D.7020801@gert.robben.nu>
+In-Reply-To: <200708040002.18167.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04/08/07, Gert Robben <lkml@gert.robben.nu> wrote:
-> Robert Hancock wrote:
-> > Have you reported this to the ALSA people?
-> No, I thought this might as well be something for PCI or PM people, and
-> I expected some ALSA people are also reading this list.
-> If not, where else should I report this exactly?
->
+On (04/08/07 00:02), Andi Kleen didst pronounce:
+> On Thursday 02 August 2007 19:21:18 Mel Gorman wrote:
+> > The NUMA layer only supports NUMA policies for the highest zone. When
+> > ZONE_MOVABLE is configured with kernelcore=, the the highest zone becomes
+> > ZONE_MOVABLE. The result is that policies are only applied to allocations
+> > like anonymous pages and page cache allocated from ZONE_MOVABLE when the
+> > zone is used.
+> > 
+> > This patch applies policies to the two highest zones when the highest zone
+> > is ZONE_MOVABLE. As ZONE_MOVABLE consists of pages from the highest "real"
+> > zone, it's always functionally equivalent.
+> > 
+> > The patch has been tested on a variety of machines both NUMA and non-NUMA
+> > covering x86, x86_64 and ppc64. No abnormal results were seen in kernbench,
+> > tbench, dbench or hackbench. It passes regression tests from the numactl
+> > package with and without kernelcore= once numactl tests are patched to
+> > wait for vmstat counters to update.
+>  
+> I must honestly say I really hate the patch. It's a horrible hack and makes fast paths
+> slower. When I designed mempolicies I especially tried to avoid things
+> like that, please don't add them through the backdoor now.
+> 
 
-alsa-devel would seem to be a good starting point - see
-http://www.alsa-project.org/mailing-lists.php
-Also, the author of the driver, Manuel Jander <mjander@embedded.cl>,
-would probably be a good person to add to Cc.
-And keeping LKML on Cc while sending to above people usually never hurts :-)
+It only affects hot paths in the NUMA case so non-NUMA users will not care. For
+NUMA users,  I have posted patches that eliminate multiple zonelists altogether
+which will reduce cache footprint (something like 7K per node on x86_64)
+and make things like MPOL_BIND behave in a consistent manner. That would
+cost on CPU but save on cache which would (hopefully) result in a net gain
+in most cases.
+
+I would like to go with this patch for now just for policies but for 2.6.23,
+we could leave it as "policies only apply to ZONE_MOVABLE when it is used" if
+you really insisted on it. It's less than ideal though for sure.
 
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
