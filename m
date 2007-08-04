@@ -1,89 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbXHDHrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763134AbXHDHzN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762044AbXHDHrR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 03:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755937AbXHDHrD
+	id S1763134AbXHDHzN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 03:55:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbXHDHy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 03:47:03 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:46294
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755781AbXHDHrB (ORCPT
+	Sat, 4 Aug 2007 03:54:59 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:44162 "EHLO
+	mk-filter-3-a-4.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755751AbXHDHy7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 03:47:01 -0400
-Date: Sat, 4 Aug 2007 00:44:40 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-In-Reply-To: <20070804070737.GA940@elte.hu>
-Message-ID: <Pine.LNX.4.64.0708040032570.6905@asgard.lang.hm>
-References: <20070803123712.987126000@chello.nl>
- <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
- <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sat, 4 Aug 2007 03:54:59 -0400
+X-Trace: 609996128-mk-filter-3.mail.uk.tiscali.com-B2C-$THROTTLED-DYNAMIC-CUSTOMER-DYNAMIC-IP
+X-SBRS: None
+X-RemoteIP: 81.1.86.225
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah4FAK/Ns0ZRAVbh/2dsb2JhbACBUQ
+Subject: Re: [PATCH] SH: add machine-ops and Dreamcast specific fix-up
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Adrian McMenamin <lkmladrian@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, linuxsh-dev@lists.sourceforge.net
+In-Reply-To: <20070804030624.GA20847@linux-sh.org>
+References: <8b67d60708031226m747f142sd3ed4447fb896a94@mail.gmail.com>
+	 <20070804030624.GA20847@linux-sh.org>
+Content-Type: text/plain
+Date: Sat, 04 Aug 2007 08:54:36 +0100
+Message-Id: <1186214076.6302.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Aug 2007, Ingo Molnar wrote:
+On Sat, 2007-08-04 at 12:06 +0900, Paul Mundt wrote:
+> On Fri, Aug 03, 2007 at 08:26:17PM +0100, Adrian McMenamin wrote:
+> > diff --git a/arch/sh/boards/dreamcast/Makefile
+> > b/arch/sh/boards/dreamcast/Makefile
+> > index e6fcd3d..7b97546 100644
+> > --- a/arch/sh/boards/dreamcast/Makefile
+> > +++ b/arch/sh/boards/dreamcast/Makefile
+> > @@ -2,5 +2,5 @@
+> >  # Makefile for the Sega Dreamcast specific parts of the kernel
+> >  #
+> > 
+> > -obj-y	 := setup.o irq.o rtc.o reboot.o
+> > +obj-y	 := setup.o irq.o rtc.o
+> > 
+> 
+> You've created this diff against a bogus kernel.
 
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->> There are positive reports in the never-ending "my system crawls like
->> an XT when copying large files" bugzilla entry:
->>
->>  http://bugzilla.kernel.org/show_bug.cgi?id=7372
->
-> i forgot this entry:
->
-> " We recently upgraded our office to gigabit Ethernet and got some big
->   AMD64 / 3ware boxes for file and vmware servers... only to find them
->   almost useless under any kind of real load. I've built some patched
->   2.6.21.6 kernels (using the bdi throttling patch you mentioned) to
->   see if our various Debian Etch boxes run better. So far my testing
->   shows a *great* improvement over the stock Debian 2.6.18 kernel on
->   our configurations. "
->
-> and bdi has been in -mm in the past i think, so we also know (to a
-> certain degree) that it does not hurt those workloads that are fine
-> either.
->
-> [ my personal interest in this is the following regression: every time i
->  start a large kernel build with DEBUG_INFO on a quad-core 4GB RAM box,
->  i get up to 30 seconds complete pauses in Vim (and most other tasks),
->  during plain editing of the source code. (which happens when Vim tries
->  to write() to its swap/undo-file.) ]
+True. My apologies - I missed that.
 
-I have an issue that sounds like it's related.
+> 
+> > diff --git a/arch/sh/kernel/Makefile b/arch/sh/kernel/Makefile
+> > index bdb30ba..7ab2359 100644
+> > --- a/arch/sh/kernel/Makefile
+> > +++ b/arch/sh/kernel/Makefile
 
-I've got a syslog server that's got two Opteron 246 cpu's, 16G ram, 2x140G 
-15k rpm drives (fusion MPT hardware mirroring), 16x500G 7200rpm SATA 
-drives on 3ware 9500 cards (software raid6) running 2.6.20.3 with hz set 
-at default and preempt turned off.
+....
 
-I have syslog doing buffered writes to the SCSI drives and every 5 min a 
-cron job copies the data to the raid array.
+> > 
+> >  void machine_crash_shutdown(struct pt_regs *regs)
+> >  {
+> 
+> You've missed machine_crash_shutdown().
+> 
 
-I've found that if I do anything significant on the large raid array that 
-the system looses a significant amount of the UDP syslog traffic, even 
-though there should be pleanty of ram and cpu (and the spindles involved 
-in the writes are not being touched), even a grep can cause up to 40% 
-losses in the syslog traffic. I've experimented with nice levels (nicing 
-down the grep and nicing up the syslogd) without a noticable effect on the 
-losses.
+Apologies - though I am a bit puzzled as why the code compiled and
+linked with the two definitions, but that's not much of an excuse.
 
-I've been planning to try a new kernel with hz=1000 to see if that would 
-help, and after that experiment with the various preempt settings, but it 
-sounds like the per-device queues may actually be more relavent to the 
-problem.
 
-what would you suggest I test, and in what order and combination?
+> > +static void mach_reboot_fixups(void)
+> > +{
+> > +	if (mach_is_dreamcast()) {
+> > +		writel(0x00007611, 0xA05F6890);
+> > +	}
+> > +}
+> > +
+> Whether it's only the dreamcast or not is irrelevant, why bother adding
+> abstraction if you intend to add pointless hacks that completely
+> side-steps it?
+> 
 
-David Lang
+I don't understand the point you are trying to make. Please explain with
+more clarity. What have I completely side stepped? I have followed,
+broadly, the same pattern used in i386. Just that there, afaics, they
+pick up on various PCI cards as the basis on which to modify the reboot.
+
+
+> > diff --git a/include/asm-sh/emergency-restart.h
+> > b/include/asm-sh/emergency-restart.h
+> > index 108d8c4..d6bec92 100644
+> > --- a/include/asm-sh/emergency-restart.h
+> > +++ b/include/asm-sh/emergency-restart.h
+> > @@ -1,6 +1,6 @@
+> > -#ifndef _ASM_EMERGENCY_RESTART_H
+> > -#define _ASM_EMERGENCY_RESTART_H
+> > +#ifndef _ASM_SH_EMERGENCY_RESTART_H
+> > +#define _ASM_SH_EMERGENCY_RESTART_H
+> > 
+> > -#include <asm-generic/emergency-restart.h>
+> > +extern void machine_emergency_restart(void);
+> > 
+> > -#endif /* _ASM_EMERGENCY_RESTART_H */
+> > +#endif /* _ASM_SH_EMERGENCY_RESTART_H */
+> > 
+> Pointless. Separating out machine_emergency_restart() buys us nothing,
+> leave this alone and just kill it off from the machine_ops entirely.
+> You've also ignored my earlier mail where I suggested this and killing
+> off some of the other ops we had no use for (as well as consolidating
+> machine_crash_shutdown()). I do wish you would read these things and wait
+> until there's been a resolution one way or another.
+
+I haven't ignored it. It was just explained with your customary
+clarity :)
+
+
