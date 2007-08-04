@@ -1,146 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932889AbXHDRb5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765206AbXHDRiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932889AbXHDRb5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 13:31:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932323AbXHDRbr
+	id S1765206AbXHDRiz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 13:38:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764829AbXHDRiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 13:31:47 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:51834 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932302AbXHDRbq (ORCPT
+	Sat, 4 Aug 2007 13:38:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.170]:21057 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757810AbXHDRip convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 13:31:46 -0400
-Subject: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 04 Aug 2007 12:31:43 -0500
-Message-Id: <1186248703.3439.20.camel@localhost.localdomain>
+	Sat, 4 Aug 2007 13:38:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=XEr1TkyvoqqSzXCrti3jQxrf1FcoEF4fojUHgVYN336cE3p67RA65wnYqPCSDZuCzSy/nz4WzmrzbTogUpsAEsXekeOkq8fphfR9yzNHyh/uKoH1KD4R57iD76UjjMr3L0XhnkOAf0iVZdDuZkumXo/oGqR3tz0n2paKGBuie38=
+Date: Sat, 4 Aug 2007 19:38:01 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-Id: <20070804193801.d310d025.diegocg@gmail.com>
+In-Reply-To: <20070804171724.GA4740@elte.hu>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+	<20070804190210.8b1530dd.diegocg@gmail.com>
+	<20070804171724.GA4740@elte.hu>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.11.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is mainly bug fixes ... there's one or two features completions
-that have been delayed pending ack and review to do with bsg (headers
-and passthrough) but these are really required to complete already
-upstream code.
+El Sat, 4 Aug 2007 19:17:24 +0200, Ingo Molnar <mingo@elte.hu> escribió:
 
-The patch is available here:
+> i've got util-linux-2.13-0.46.fc6 and 2.6.22 on that box, shouldnt that 
+> be recent enough? As far as i can see it from the kernel-side code, this 
+> works on the general VFS level and hence should be supported by ext3 
+> already.
 
-master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-rc-fixes-2.6.git
+Mmmh, "mount -o remount,noatime /" seems to Work For Me in Ubuntu
+with util-linux/mount "2.12r-17ubuntu"...but then Google says [1] that
+Ubuntu has been shipping with relatime enabled as default for months,
+so it's probably patched (probably only in the kernel). So maybe upstream
+util-linux hasn't merged the relatime patch.
 
-The short changelog is:
-
-Boaz Harrosh (6):
-      aha152x: use data accessors and !use_sg cleanup
-      aha152x: Fix check_condition code-path
-      aha152x: Clean Reset path
-      aha152x: preliminary fixes and some comments
-      aha152x: use bounce buffer
-      aha152x: fix debug mode symbol conflict
-
-David Miller (1):
-      ESP: Revert ESP_BUS_TIMEOUT back down to 250
-
-FUJITA Tomonori (6):
-      initialize shost_data to zero
-      mptsas: add SMP passthrough support via bsg
-      bsg: update sg_io_v4 structure
-      ibmvscsi: use shost_priv
-      ibmvscsi: remove unnecessary map_sg check
-      zfcp: convert to use the data buffer accessors
-
-James Bottomley (4):
-      sd: disentangle barriers in SCSI
-      aic7xxx: cap maxsync according to correct card limits
-      mpt fusion: make logging a global sysfs parameter
-      libsas: fix build dependencies on libata
-
-James Smart (9):
-      lpfc : scsi command accessor fix for 8.2.2
-      lpfc 8.2.2 : Change version number to 8.2.2
-      lpfc 8.2.2 : Style cleanups
-      lpfc 8.2.2 : Miscellaneous Bug Fixes
-      lpfc 8.2.2 : Miscellaneous management and logging mods
-      lpfc 8.2.2 : Rework the lpfc_printf_log() macro
-      lpfc 8.2.2 : Attribute and Parameter splits for vport and physical port
-      lpfc 8.2.2 : Fix locking around HBA's port_list
-      lpfc 8.2.2 : Error messages and debugfs updates
-
-Jeff Garzik (1):
-      gdth: remove redundant PCI stuff
-
-Mark Fortescue (1):
-      qlogicpti: Some cosmetic changes
-
-Matthew Wilcox (1):
-      dpt_i2o: convert to SCSI hotplug model
-
-Matthias Kaehlcke (1):
-      st: Use mutex instead of semaphore
-
-Salyzyn, Mark (1):
-      aacraid: prevent panic on adapter resource failure
-
-Seokmann Ju (1):
-      qla2xxx: fix panic caused by previous patch
-
-
-and the diffstat:
-
- block/bsg.c                         |   10 
- drivers/message/fusion/mptbase.c    |   17 
- drivers/message/fusion/mptsas.c     |  126 ++++++
- drivers/s390/scsi/zfcp_fsf.c        |    5 
- drivers/s390/scsi/zfcp_qdio.c       |   41 --
- drivers/scsi/aacraid/linit.c        |    4 
- drivers/scsi/aha152x.c              |  169 ++++----
- drivers/scsi/aha152x.h              |    2 
- drivers/scsi/aic7xxx/aic7xxx_core.c |   22 +
- drivers/scsi/dpt_i2o.c              |  132 +++---
- drivers/scsi/dpti.h                 |    9 
- drivers/scsi/esp_scsi.h             |    2 
- drivers/scsi/gdth.c                 |   48 +-
- drivers/scsi/gdth.h                 |    6 
- drivers/scsi/hosts.c                |    2 
- drivers/scsi/ibmvscsi/ibmvscsi.c    |   39 --
- drivers/scsi/libsas/Kconfig         |    3 
- drivers/scsi/lpfc/lpfc.h            |   72 ++-
- drivers/scsi/lpfc/lpfc_attr.c       |  423 +++++++++++++++-------
- drivers/scsi/lpfc/lpfc_crtn.h       |   28 -
- drivers/scsi/lpfc/lpfc_ct.c         |  243 ++++++------
- drivers/scsi/lpfc/lpfc_debugfs.c    |  595 ++++++++++++++++++++++++++++---
- drivers/scsi/lpfc/lpfc_debugfs.h    |    2 
- drivers/scsi/lpfc/lpfc_els.c        |  679 ++++++++++++++++--------------------
- drivers/scsi/lpfc/lpfc_hbadisc.c    |  539 ++++++++++++----------------
- drivers/scsi/lpfc/lpfc_hw.h         |   14 
- drivers/scsi/lpfc/lpfc_init.c       |  284 +++++++--------
- drivers/scsi/lpfc/lpfc_logmsg.h     |   10 
- drivers/scsi/lpfc/lpfc_mbox.c       |   20 -
- drivers/scsi/lpfc/lpfc_mem.c        |   32 +
- drivers/scsi/lpfc/lpfc_nportdisc.c  |  162 +++-----
- drivers/scsi/lpfc/lpfc_scsi.c       |  413 ++++++++++-----------
- drivers/scsi/lpfc/lpfc_sli.c        |  423 +++++++++++-----------
- drivers/scsi/lpfc/lpfc_sli.h        |   10 
- drivers/scsi/lpfc/lpfc_version.h    |    4 
- drivers/scsi/lpfc/lpfc_vport.c      |  164 +++++---
- drivers/scsi/lpfc/lpfc_vport.h      |    2 
- drivers/scsi/qla2xxx/qla_os.c       |   14 
- drivers/scsi/qlogicpti.c            |   50 +-
- drivers/scsi/scsi_lib.c             |   17 
- drivers/scsi/sd.c                   |   14 
- drivers/scsi/st.c                   |   16 
- drivers/scsi/st.h                   |    3 
- include/linux/bsg.h                 |   13 
- include/scsi/scsi_driver.h          |    2 
- include/scsi/sd.h                   |    2 
- 46 files changed, 2837 insertions(+), 2050 deletions(-)
-
-James
-
-
+[1]: http://lkml.org/lkml/2007/2/12/30
