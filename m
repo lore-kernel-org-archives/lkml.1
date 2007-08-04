@@ -1,67 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbXHDVt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932153AbXHDWAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932713AbXHDVt2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 17:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764812AbXHDVtQ
+	id S932153AbXHDWAV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 18:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761622AbXHDWAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 17:49:16 -0400
-Received: from thunk.org ([69.25.196.29]:53909 "EHLO thunker.thunk.org"
+	Sat, 4 Aug 2007 18:00:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50287 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764788AbXHDVtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 17:49:14 -0400
-Date: Sat, 4 Aug 2007 17:48:21 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Arjan van de Ven <arjan@infradead.org>
+	id S1761291AbXHDWAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 18:00:08 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] PM: Fix dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION
+Date: Sun, 5 Aug 2007 00:09:09 +0200
+User-Agent: KMail/1.9.5
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070804214821.GC11150@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-	Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-	dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-	richard@rsk.demon.co.uk, david@lang.hm
-References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804192615.GA25600@lazybastard.org> <alpine.LFD.0.999.0708041246530.5037@woody.linux-foundation.org> <1186258399.2777.8.camel@laptopd505.fenrus.org>
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>
+References: <200708032359.37677.rjw@sisk.pl> <200708032345.32262.lenb@kernel.org> <200708041148.48357.rjw@sisk.pl>
+In-Reply-To: <200708041148.48357.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1186258399.2777.8.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200708050009.10769.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 04, 2007 at 01:13:19PM -0700, Arjan van de Ven wrote:
-> there is another trick possible (more involved though, Al will have to
-> jump in on that one I suspect): Have 2 types of "dirty inode" states;
-> one is the current dirty state (meaning the full range of ext3
-> transactions etc) and "lighter" state of "atime-dirty"; which will not
-> do the background syncs or journal transactions (so if your machine
-> crashes, you lose the atime update) but it does keep atime for most
-> normal cases and keeps it standard compliant "except after a crash".
+On Saturday, 4 August 2007 11:48, Rafael J. Wysocki wrote:
+> On Saturday, 4 August 2007 05:45, Len Brown wrote:
+> > On Friday 03 August 2007 18:47, Rafael J. Wysocki wrote:
+> > > On Saturday, 4 August 2007 00:01, Linus Torvalds wrote:
+> > > > On Fri, 3 Aug 2007, Rafael J. Wysocki wrote:
+> [--snip--]
+> > >  
+> > > +config SUSPEND_UP_POSSIBLE
+> > > +	bool
+> > > +	depends on BLACKFIN || MIPS || SUPERH || FRV || (PPC32 && PPC_MPC52xx)
+> > 
+> > please include (X86 && !X86_VOYAGER) here -- else you'll disable
+> > SUSPEND from all X86 when built UP.
+> 
+> Right.  I think I should include everything that can do SMP suspend here.
+> 
+> Updated patch is appended.
 
-That would make us standards compliant (POSIX explicitly says that
-what happens after a unclean shutdown is Unspecified) and it would
-make things a heck of a lot faster.  However, there is a potential
-problem which is that it will keep a large number of inodes pinned in
-memory, which is its own problem.  So there would have to be some way
-to force the atime updates to be merged when under memory pressure,
-and and perhaps on some much longer background interval (i.e., every
-hour or so).
+Well, unfortunately, the patch below is buggy, because I need to change
+CONFIG_SUSPEND_SMP into CONFIG_PM_SLEEP_SMP in some more places.
 
-							- Ted
+I'll send an updated version in a new thread.
+
+Greetings,
+Rafael
+
+
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION introduced by commit
+> 296699de6bdc717189a331ab6bbe90e05c94db06 "Introduce CONFIG_SUSPEND for
+> suspend-to-Ram and standby" are incorrect, as they don't cover the facts that
+> (1) not all architectures support suspend and (2) SMP hibernation is only
+> possible on X86 and PPC64 (if PPC64_SWSUSP is set).
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/Kconfig |   42 ++++++++++++++++++++++++++++++++----------
+>  1 file changed, 32 insertions(+), 10 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/Kconfig
+> +++ linux-2.6/kernel/power/Kconfig
+> @@ -72,15 +72,10 @@ config PM_TRACE
+>  	CAUTION: this option will cause your machine's real-time clock to be
+>  	set to an invalid time after a resume.
+>  
+> -config SUSPEND_SMP_POSSIBLE
+> -	bool
+> -	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES || PPC_PMAC))
+> -	depends on SMP
+> -	default y
+> -
+> -config SUSPEND_SMP
+> +config PM_SLEEP_SMP
+>  	bool
+> -	depends on SUSPEND_SMP_POSSIBLE && PM_SLEEP
+> +	depends on SUSPEND_SMP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
+> +	depends on PM_SLEEP
+>  	select HOTPLUG_CPU
+>  	default y
+>  
+> @@ -89,20 +84,47 @@ config PM_SLEEP
+>  	depends on SUSPEND || HIBERNATION
+>  	default y
+>  
+> +config SUSPEND_UP_POSSIBLE
+> +	bool
+> +	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
+> +		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
+> +		   || MIPS || SUPERH || FRV
+> +	depends on !SMP
+> +	default y
+> +
+> +config SUSPEND_SMP_POSSIBLE
+> +	bool
+> +	depends on (X86 && !X86_VOYAGER) \
+> +		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM
+> +	depends on SMP
+> +	default y
+> +
+>  config SUSPEND
+>  	bool "Suspend to RAM and standby"
+>  	depends on PM
+> -	depends on !SMP || SUSPEND_SMP_POSSIBLE
+> +	depends on SUSPEND_UP_POSSIBLE || SUSPEND_SMP_POSSIBLE
+>  	default y
+>  	---help---
+>  	  Allow the system to enter sleep states in which main memory is
+>  	  powered and thus its contents are preserved, such as the
+>  	  suspend-to-RAM state (i.e. the ACPI S3 state).
+>  
+> +config HIBERNATION_UP_POSSIBLE
+> +	bool
+> +	depends on X86 || PPC64_SWSUSP || FRV || PPC32
+> +	depends on !SMP
+> +	default y
+> +
+> +config HIBERNATION_SMP_POSSIBLE
+> +	bool
+> +	depends on (X86 && !X86_VOYAGER) || PPC64_SWSUSP
+> +	depends on SMP
+> +	default y
+> +
+>  config HIBERNATION
+>  	bool "Hibernation (aka 'suspend to disk')"
+>  	depends on PM && SWAP
+> -	depends on ((X86 || PPC64_SWSUSP || FRV || PPC32) && !SMP) || SUSPEND_SMP_POSSIBLE
+> +	depends on HIBERNATION_UP_POSSIBLE || HIBERNATION_SMP_POSSIBLE
+>  	---help---
+>  	  Enable the suspend to disk (STD) functionality, which is usually
+>  	  called "hibernation" in user interfaces.  STD checkpoints the
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
