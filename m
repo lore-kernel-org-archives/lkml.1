@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763691AbXHDDpF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763984AbXHDDtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763691AbXHDDpF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 23:45:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762110AbXHDDov
+	id S1763984AbXHDDtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 23:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761555AbXHDDtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 23:44:51 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:32218 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761839AbXHDDou (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 23:44:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=oSMMKphT8Br6Kj2nTUX+SUqUR/PTr8oiRsZplmZAkP0Y8tPpxquuNdjBvT2hJvTQeoedajj9cYRAAbNEvCwhfdbfBLXAIzr/iJ/CDqGQcbW2WjpfllEQQRBhwSk2QffAKrAAVblasaMIjCSw8igsAJ5sNZRS5bwCsV2iVU4ENQw=
-Message-ID: <1a297b360708032044q4e2fa558s576478e3e75308bf@mail.gmail.com>
-Date: Sat, 4 Aug 2007 07:44:48 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Dave Dillow" <dave@thedillows.org>
-Subject: Re: Distributed storage.
-Cc: "Evgeniy Polyakov" <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <1186195868.16431.5.camel@obelisk.thedillows.org>
+	Fri, 3 Aug 2007 23:49:46 -0400
+Received: from mx1.suse.de ([195.135.220.2]:43491 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759536AbXHDDto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 3 Aug 2007 23:49:44 -0400
+Date: Fri, 3 Aug 2007 20:50:38 -0700
+From: Greg KH <gregkh@suse.de>
+To: Rob Landley <rob@landley.net>
+Cc: Randy Dunlap <rdunlap@xenotime.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Theodore Tso <tytso@mit.edu>, leoli@freescale.com,
+       Gerrit Huizenga <gh@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Kunai, Takashi" <kunai@linux-foundation.jp>,
+       holzheu@linux.vnet.ibm.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, lf_kernel_messages@linux-foundation.org,
+       mtk-manpages@gmx.net, jack@suse.cz, pavel@ucw.cz, tim.bird@am.sony.com,
+       arjan@infradead.org, sam@ravnborg.org, jengelh@computergmbh.de,
+       joe@perches.com, auke-jan.h.kok@intel.com, hansendc@us.ibm.com,
+       davem@davemloft.net, Valdis.Kletnieks@vt.edu, kenistoj@us.ibm.com,
+       schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
+       linux-doc@vger.kernel.org
+Subject: Re: Documentation of kernel messages (Summary)
+Message-ID: <20070804035038.GA23330@suse.de>
+References: <E1I7wsz-0007oJ-DE@w-gerrit.beaverton.ibm.com> <200707161553.07813.rob@landley.net> <20070803111155.fe9281f6.rdunlap@xenotime.net> <200708031432.05714.rob@landley.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070731171347.GA14267@2ka.mipt.ru>
-	 <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
-	 <1186195868.16431.5.camel@obelisk.thedillows.org>
+In-Reply-To: <200708031432.05714.rob@landley.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/4/07, Dave Dillow <dave@thedillows.org> wrote:
-> On Fri, 2007-08-03 at 09:04 +0400, Manu Abraham wrote:
-> > On 7/31/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
+On Fri, Aug 03, 2007 at 03:32:04PM -0400, Rob Landley wrote:
+> On Friday 03 August 2007 1:11:55 pm Randy Dunlap wrote:
+> > On Mon, 16 Jul 2007 15:53:06 -0400 Rob Landley wrote:
+> > > On Sunday 15 July 2007 12:28:06 pm Randy Dunlap wrote:
+> > > > On Sat, 14 Jul 2007 21:56:15 -0400 Rob Landley wrote:
+> > > > > On Friday 13 July 2007 11:54:41 pm Randy Dunlap wrote:
+> > > > > > > If there's interest, I can push some patches to clean up
+> > > > > > > Documentation by moving files into subdirectories, but
+> > > > > > > Documentation's not well-suited to link out to the web.  (You
+> > > > > > > need html for that, and it's text.)
+> > > > > >
+> > > > > > I think that you should start moving Documentation/ files around
+> > > > > > and adding subdirectories -- if you are pretty sure of where they
+> > > > > > should go (i.e., they won't likely be moved again later on).
+> > > > >
+> > > > > You mean like these?
+> > > > > http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2925.html
+> > > > > http://www.uwsg.iu.edu/hypermail/linux/kernel/0705.3/2924.html
+> > > >
+> > > > Yes.  Have any of these been merged?
+> > >
+> > > Not that I know of.  They seemed to meet with resounding indifference, so
+> > > I went on to other things...
 > >
-> > > TODO list currently includes following main items:
-> > >     * redundancy algorithm (drop me a request of your own, but it is highly
-> > >         unlikley that Reed-Solomon based will ever be used - it is too slow
-> > >         for distributed RAID, I consider WEAVER codes)
-> >
-> >
-> > LDPC codes[1][2] have been replacing Turbo code[3] with regards to
-> > communication links and we have been seeing that transition. (maybe
-> > helpful, came to mind seeing the mention of Turbo code) Don't know how
-> > weaver compares to LDPC, though found some comparisons [4][5] But
-> > looking at fault tolerance figures, i guess Weaver is much better.
-> >
-> > [1] http://www.ldpc-codes.com/
-> > [2] http://portal.acm.org/citation.cfm?id=1240497
-> > [3] http://en.wikipedia.org/wiki/Turbo_code
-> > [4] http://domino.research.ibm.com/library/cyberdig.nsf/papers/BD559022A190D41C85257212006CEC11/$File/rj10391.pdf
-> > [5] http://hplabs.hp.com/personal/Jay_Wylie/publications/wylie_dsn2007.pdf
->
-> Searching Google for Dr. Plank's work at the University of TN turns up
-> some analysis of using LDPC codes in storage systems.
->
-> http://www.google.com/search?hl=en&q=plank+ldpc&btnG=Google+Search
->
-> Patents are an issue to watch out for around the use of Tornado/Raptor
-> codes. I've not researched it, but I believe there be dragons there.
->
+> > You need to be persistent.  Please re-submit this.
+> 
+> Greg KH thinks it's a good idea to add language directories to the top level 
+> of Documentation, and there are slightly more than two of those:
+> http://www.translatorscafe.com/cafe/Help.asp?HelpID=59
+> 
+> Since you think it's worth doing, I'll resubmit the work I've already done 
+> here, but I no longer think trying to shovel Documentation into some 
+> semblance of order against the will of people like Greg is a good use of 
+> time.
 
-We don't use the code in the driver straight away [2] (in the case
-that i mentioned), since that happens in the hardware (demodulator
-chip) [1], but we have an interface for selecting the code-rate [2]
-(LDPC/BCH) for DVB-S2 and the new papers for DVB-T2 looks geared that
-the base decision is to use LDPC.
+My "will" is only that some of these documents be translated _and_ put
+in the main kernel source tree.  I really have no opinion on where they
+need to go within that directory.  If you have a better place for them,
+please let me know.
 
-Though i now see a patent application for it [3]. Not sure whether it
-is a registered patent, i am under an agreement of Non-Disclosure with
-STM. Will ask the relevant person there, whether they have it
-registered. (Most probably they may have it registered).
+thanks,
 
-There are a few people from STM on LK, if not they can possibly
-confirm whether the patent is regsitered or not.
-
-[1] http://www2.dac.com/data2/42nd/42acceptedpapers.nsf/0c4c09c6ffa905c487256b7b007afb72/998f93e4b29e99fa87256fc400714617/$FILE/33_1.pdf
-
-[2] http://linuxtv.org/hg/~manu/stb0899-c5/file/760cb230695c/linux/include/linux/dvb/frontend.h
-
-[3] http://www.freepatentsonline.com/20060206779.html
-http://www.freepatentsonline.com/20060206778.html
+greg k-h
