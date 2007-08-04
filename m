@@ -1,67 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932456AbXHDRSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932857AbXHDRTD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932456AbXHDRSA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 13:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932798AbXHDRRp
+	id S932857AbXHDRTD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 13:19:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932215AbXHDRSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 13:17:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56772 "EHLO mx3.mail.elte.hu"
+	Sat, 4 Aug 2007 13:18:53 -0400
+Received: from mail.reagi.com ([195.60.188.80]:51416 "EHLO mail.reagi.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932757AbXHDRRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 13:17:43 -0400
-Date: Sat, 4 Aug 2007 19:17:24 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070804171724.GA4740@elte.hu>
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <20070804190210.8b1530dd.diegocg@gmail.com>
+	id S932130AbXHDRSw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 13:18:52 -0400
+Message-ID: <46B4B4F8.6050200@oxeva.fr>
+Date: Sat, 04 Aug 2007 19:18:48 +0200
+From: Gabriel Barazer <gabriel@oxeva.fr>
+Organization: OXEVA
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070804190210.8b1530dd.diegocg@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Zachary Amsden <zach@vmware.com>
+CC: Andi Kleen <ak@suse.de>, Jim Mattson <jmattson@vmware.com>,
+       linux-kernel@vger.kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Avi Kivity <avi@qumranet.com>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: 2.6.22 x86_64 : kernel initial decompression hangs on vmware
+References: <46A7E606.4030001@oxeva.fr> <46B4A7E4.4030907@vmware.com>
+In-Reply-To: <46B4A7E4.4030907@vmware.com>
+Content-Type: multipart/mixed;
+ boundary="------------000605000502060202080203"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------000605000502060202080203
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-* Diego Calleja <diegocg@gmail.com> wrote:
-
-> El Sat, 4 Aug 2007 18:37:33 +0200, Ingo Molnar <mingo@elte.hu> escribió:
+On 08/04/2007 6:23:00 PM +0200, Zachary Amsden <zach@vmware.com> wrote:
+> Gabriel Barazer wrote:
+>> Hi,
+>>
+>> After upgrading kernel to 2.6.22 on a Vmware workstation guest version 
+>> 5.5 and 6 , the kernel decompression stage ("Decompressing Linux...") 
+>> is hanging for a very long time (~5 minutes) before finally  
+>> succeeding (displaying "done.\nBooting the kernel.\n"). During this 
+>> time, the VM process is eating all the CPU time during the 
+>> decompression, like an infinite loop.
+>> Between these 2 strings is the gunzip() function at 
+>> boot/compressed/misc.c which does the real job, and the problem seemed 
+>> to appear since commit 1ab60e0f72f71ec54831e525a3e1154f1c092408. 
+>> (2.6.22-rc1 hangs, 2.6.21.6 works). The problem occurs with or without 
+>> CONFIG_RELOCATABLE enabled.
+>>
+>> What are the possible solutions to confirm where the problem is coming 
+>> from ?
 > 
-> > thousands of applications. So for most file workloads we give 
-> > Windows a 20%-30% performance edge, for almost nothing. (for 
-> > RAM-starved kernel builds the performance difference between atime 
-> > and noatime+nodiratime setups is more on the order of 40%)
+> Since I was just involved in the boot decompressor for another bug, I 
+> took a look at this.  2.6.22 switches it to be 64-bit code.  VT is very 
+> picky about what state it can run in.  Not using VT on Intel 64-bit 
+> hardware cripples performance, running at far below normal speed, and 
+> taking minutes to decompress the kernel, which is nearly instantaneous 
+> otherwise.
 > 
-> Just curious - do you have numbers with relatime?
+> To get back into VT in this case, not only do we need to load FS and GS, 
+> we also need to setup an initial LDT and task.  Can you try the attached 
+> patch and see that it does the right thing?
 
-nope. Stupid question, i just tried it and got this:
+It Works (tm) ! Tried compiling with and without the patch, with exactly 
+the same config, just to be sure. Decompressing the kernel is now 
+lightning fast.
 
- EXT3-fs: Unrecognized mount option "relatime" or missing value
+Thanks !
 
-i've got util-linux-2.13-0.46.fc6 and 2.6.22 on that box, shouldnt that 
-be recent enough? As far as i can see it from the kernel-side code, this 
-works on the general VFS level and hence should be supported by ext3 
-already.
+> I've also cc'd the KVM developers, as the same problem will affect them, 
+> and hopefully the same patch will fix it.
 
-even relatime means one extra write IO after a file has been created, 
-but at least for read-mostly files it avoids the continuous atime 
-update.
+--------------000605000502060202080203
+Content-Type: text/x-patch;
+ name="boot-decompress-vt-fix.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="boot-decompress-vt-fix.patch"
 
-	Ingo
+VT is very picky about when it can enter execution.
+Get all segments setup and get LDT and TR into valid state to allow
+VT execution under VMware and KVM (untested).
+
+This makes the boot decompression run under VT, which makes it several
+orders of magnitude faster on 64-bit Intel hardware.
+
+Before, I was seeing times up to a minute or more to decompress a 1.3MB kernel
+on a very fast box.
+
+Signed-off-by: Zachary Amsden <zach@vmware.com>
+
+
+===================================================================
+--- a/arch/x86_64/boot/compressed/head.S
++++ a/arch/x86_64/boot/compressed/head.S
+@@ -195,6 +195,11 @@
+ 	movl	%eax, %ds
+ 	movl	%eax, %es
+ 	movl	%eax, %ss
++	movl	%eax, %fs
++	movl	%eax, %gs
++	lldt	%ax
++	movl    $0x20, %eax
++	ltr	%ax
+ 
+ 	/* Compute the decompressed kernel start address.  It is where
+ 	 * we were loaded at aligned to a 2M boundary. %rbp contains the
+@@ -295,6 +300,8 @@
+ 	.quad	0x0000000000000000	/* NULL descriptor */
+ 	.quad	0x00af9a000000ffff	/* __KERNEL_CS */
+ 	.quad	0x00cf92000000ffff	/* __KERNEL_DS */
++	.quad	0x0080890000000000	/* TS descriptor */
++	.quad   0x0000000000000000	/* TS continued */
+ gdt_end:
+ 	.bss
+ /* Stack for uncompression */
+
+--------------000605000502060202080203--
