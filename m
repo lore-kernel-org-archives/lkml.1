@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763080AbXHDIFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762975AbXHDIQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763080AbXHDIFg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 04:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754208AbXHDIFI
+	id S1762975AbXHDIQF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 04:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753686AbXHDIPx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 04:05:08 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:42660
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753093AbXHDIFB (ORCPT
+	Sat, 4 Aug 2007 04:15:53 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:43310 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752790AbXHDIPv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 04:05:01 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [ck] Re: Linus 2.6.23-rc1 -- It does not matter whose code gets merged!
-Date: Sat, 4 Aug 2007 01:04:28 -0700
-User-Agent: KMail/1.9.5
-Cc: Arjan van de Ven <arjan@infradead.org>, Hua Zhong <hzhong@gmail.com>,
-       "'Carlo Florendo'" <subscribermail@gmail.com>,
-       "'Roman Zippel'" <zippel@linux-m68k.org>,
-       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
-       "'jos poortvliet'" <jos@mijnkamer.nl>,
-       "'Michael Chang'" <thenewme91@gmail.com>,
-       "'Kasper Sandberg'" <lkml@metanurb.dk>,
-       "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <1185951901.2754.12.camel@laptopd505.fenrus.org> <y0mmyx9ya8z.fsf@ton.toronto.redhat.com>
-In-Reply-To: <y0mmyx9ya8z.fsf@ton.toronto.redhat.com>
+	Sat, 4 Aug 2007 04:15:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=DvBRt8bqRWabxJhE9b8pDkyZ6j3I2NhGz13JUssMony2Lvf6xTpsnrNrfJM4cf/KzY5PJopJ3fHTJoaDyn6TBd1Y8CgmsDPu9QxUM4mqSrnF9xIw12ponxbGH0Vqos9Q9L9UKGIwlolIJ0OGeadx6qKt1loe0SO6LPLSlE22RSc=
+Message-ID: <46B4357A.2080502@gmail.com>
+Date: Sat, 04 Aug 2007 17:14:50 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Jeff Garzik <jeff@garzik.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: libata git tree, mbox queue status and contents
+References: <46B35344.3090208@garzik.org> <20070803172040.52853316@the-village.bc.nu>
+In-Reply-To: <20070803172040.52853316@the-village.bc.nu>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708040104.28814.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 02 August 2007 13:03, Frank Ch. Eigler wrote:
-> Arjan van de Ven <arjan@infradead.org> writes:
-> > [...]
-> > It does not matter [whose] code gets merged.
-> > What matters is that the problem gets solved and that the Linux
-> > kernel innovates forward.
-> > [...]
->
-> This attitude has risks over the long term, if outsiders with fresh
-> ideas are discouraged.  Risking becoming known to defer too much to
-> established maintainers, those fresh ideas may stop coming to linux.
+Alan Cox wrote:
+>> * Albert: irq_on/off.  Really need to give this some thought.  Not sure 
+>> I like where this model is going.  Polling and twiddling irq on/off 
+>> should be kept to a minimum, because it's sorta an admission that the 
+>> host state machine has broken down, and we need to bandaid.  Its a 
+>> bandaid not a root-cause solution.
+> 
+> I think of it more as an admission that the IDE design is lacking in a
+> few areas. No suprise as its an emulation of a 15 year old interface that
+> was normally used polled.
 
-Amen to that, Frank.  Driving off talented contributers is a Very Bad 
-Thing for Linux in the long run.  This will not not stop evolutionary 
-progress, but it slows it down and may result in an overly inbred 
-animal.
+I second Alan's opinion.  The root cause of the problem is that the
+controller lacks reliable IRQ masking and pending register.  If you add
+a slightly malfunctioning controller and/or device into the mix, it's
+guaranteed to break.
 
-It is especially easy to drive off a contributor whose day job is not 
-Linux hacking.
+And there's another addition to the mess from SATA land which I
+discovered a few days ago.  Some SATA controllers with SFF interface
+don't send non-command H2D Reg FIS when ATA_NIEN is toggled, so the
+updated ATA_NIEN is sent together with the next command && some SATA
+devices don't honor ATA_NIEN on command H2D Reg FIS.  Fun!
 
-Regards,
+I think we should go combined IRQ + polling mode Jeff once mentioned so
+that we automatically fallback to polling if IRQ doesn't work for some
+reason.  To do that, we need reliable IRQ masking && the only way to
+achieve proper IRQ masking on SFF controllers seems plugging it from the
+host side.
 
-Daniel
+Thanks.
+
+-- 
+tejun
