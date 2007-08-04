@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932730AbXHDRH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932693AbXHDRKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932730AbXHDRH1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 13:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932623AbXHDRHJ
+	id S932693AbXHDRKV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 13:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932130AbXHDRKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 13:07:09 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:27246 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932617AbXHDRHG (ORCPT
+	Sat, 4 Aug 2007 13:10:09 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:48062
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932092AbXHDRKH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 13:07:06 -0400
-Date: Sat, 04 Aug 2007 11:07:00 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: PROBLEM: many problems with mac80211,
- iwlwifi and ACPI on Santa Rosa laptop
-In-reply-to: <fa.v/A5H4Pm9oA6Hct919AmEbMQfJ0@ifi.uio.no>
-To: =?UTF-8?B?TWljaGHFgiBLdWTFgmE=?= <michal.kudla@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46B4B234.9040000@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8; format=flowed
-Content-transfer-encoding: 8BIT
-References: <fa.v/A5H4Pm9oA6Hct919AmEbMQfJ0@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sat, 4 Aug 2007 13:10:07 -0400
+Date: Sat, 4 Aug 2007 10:06:56 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Ondrej Zajicek <santiago@crfreenet.org>,
+       Jan Engelhardt <jengelh@computergmbh.de>,
+       Michael Tokarev <mjt@tls.msk.ru>,
+       Herbert Rosmanith <kernel@wildsau.enemy.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: renaming kernel devices [was: VIA EPIA EK: strange eth dev
+ numbering]
+In-Reply-To: <46B443E5.2020404@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.64.0708040952420.6905@asgard.lang.hm>
+References: <200708021056.l72Au722008603@wildsau.enemy.org>
+ <46B1BEB8.70104@msgid.tls.msk.ru> <Pine.LNX.4.64.0708021346300.24572@fbirervta.pbzchgretzou.qr>
+ <20070802145152.GB19346@localhost.localdomain> <Pine.LNX.4.64.0708022144020.6905@asgard.lang.hm>
+ <46B345E1.1010404@s5r6.in-berlin.de> <Pine.LNX.4.64.0708032127010.6905@asgard.lang.hm>
+ <46B443E5.2020404@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michał Kudła wrote:
-> [1.] One line summary of the problem:
-> many crashes on my new laptop - Santa Rosa
-> 
-> [2.] Full description of the problem/report:
-> from /var/log/messages
-> 
-> cat /var/log/messages 
->  Aug  4 13:34:28 laptok wlan0: setting MTU 576 
->  Aug  4 13:34:30 laptok r8169: eth0: link down 
->  Aug  4 13:34:30 laptok dhcpcd[6258]: eth0: dhcpcd 3.0.16 starting 
->  Aug  4 13:34:30 laptok dhcpcd[6258]: eth0: hardware address = 
-> 00:1b:fc:41:a1:d8 
->  Aug  4 13:34:30 laptok dhcpcd[6258]: eth0: broadcasting for a lease 
->  Aug  4 13:34:49 laptok ------------[ cut here ]------------ 
->  Aug  4 13:34:49 laptok kernel BUG at mm/slab.c:592! 
->  Aug  4 13:34:49 laptok invalid opcode: 0000 [#1] 
->  Aug  4 13:34:49 laptok SMP 
->  Aug  4 13:34:49 laptok Modules linked in: nvidia(P) iwl4965 
->  Aug  4 13:34:49 laptok CPU:    1 
->  Aug  4 13:34:49 laptok EIP:    0060:[<c015edfb>]    Tainted: P       VLI 
+On Sat, 4 Aug 2007, Stefan Richter wrote:
 
-Can you reproduce this without the binary NVIDIA module loaded?
+> david@lang.hm wrote:
+>> On Fri, 3 Aug 2007, Stefan Richter wrote:
+>>> There is a variety of possible naming schemes:
+>>>
+>>>  - Naming by order of discovery.
+>>>  - Naming by vendor/model name strings.
+>>>  - Naming by universally unique identifier.
+>>>  - Naming by topology.
+>>>  - ...
+>>>
+>>> Only the simplest of these schemes (naming by order of discovery)
+>
+> (which is in most cases also the scheme that's the least useful to
+> admins and users)
+>
+>>> is hardwired into the kernel portion of the Linux OS.  The other naming
+>>> schemes are (or can be) implemented in the userland portion of the
+>>> Linux OS.
+> ...
+>> I understand the flexibility that this provides, unfortunantly (IMHO)
+>> default udev rules (or at least what many distros are shipping by
+>> default) changes from this simple naming scheme in a way that hides the
+>> fact from the user. This means that many users will not even realize the
+>> change in policy until the hardware changes and things don't act the way
+>> they were expected to. In my case it was removing 3 quad cards from a
+>> machine and finding that there was no eth0 on the box, instead there was
+>> a eth12, this is fairly benign. what would have caused me significant
+>> problems would have been having a card fail in a production box, have it
+>> replaced and then found that the interfaces were now eth4-eth22 instead
+>> of eth0-eth18. having the interfaces named differently on different
+>> boxes with identical hardware based on the history of what has been
+>> plugged into the boxes in the past is not what sysadmins expect.
+>
+> Yes, these rules by far don't fit everyone's needs.  People who often
+> use hotpluggable NICs are probably served best by MAC address based
+> naming.  Boxes with field replacable but otherwise fixed NICs apparently
+> rather need a naming scheme based on PCI/PCIe topology.  (This requires
+> that the topology is exposed to userspace in comparable manner across
+> boots and across kernel version updates.)
 
->  Aug  4 13:34:49 laptok EFLAGS: 00010046   (2.6.22-gentoo-r2 #5) 
->  Aug  4 13:34:49 laptok EIP is at kfree+0x7b/0x90 
->  Aug  4 13:34:49 laptok eax: 40000000   ebx: 00000000   ecx: 00000000   edx: 
-> c16e0380 
->  Aug  4 13:34:49 laptok esi: f701c000   edi: 00000286   ebp: f6cc7d8c   esp: 
-> f6cc7d80 
->  Aug  4 13:34:49 laptok ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068 
->  Aug  4 13:34:49 laptok Process iwl4965 (pid: 3303, ti=f6cc6000 task=f6d8fa50 
-> task.ti=f6cc6000) 
->  Aug  4 13:34:49 laptok Stack: 00000000 f78a8840 f7fb0e74 f6cc7d9c c03b439c 
-> f78a8840 f78a8840 f6cc7da8 
->  Aug  4 13:34:49 laptok c03b415b 00000000 f6cc7dc8 c03b4230 00000000 00000000 
-> 00000000 00000000 
->  Aug  4 13:34:49 laptok f7fb0d00 f78a8840 f6cc7dd0 c03b42ce f6cc7f7c c04455a9 
-> f78a8864 00000001 
->  Aug  4 13:34:49 laptok Call Trace: 
->  Aug  4 13:34:49 laptok [<c01039fa>] show_trace_log_lvl+0x1a/0x30 
->  Aug  4 13:34:49 laptok [<c0103ab9>] show_stack_log_lvl+0xa9/0xd0 
->  Aug  4 13:34:49 laptok [<c0103cc9>] show_registers+0x1e9/0x2f0 
->  Aug  4 13:34:49 laptok [<c0103edf>] die+0x10f/0x240 
->  Aug  4 13:34:49 laptok [<c01040a1>] do_trap+0x91/0xc0 
->  Aug  4 13:34:49 laptok [<c0104459>] do_invalid_op+0x89/0xa0 
->  Aug  4 13:34:49 laptok [<c045b5aa>] error_code+0x72/0x78 
->  Aug  4 13:34:49 laptok [<c03b439c>] skb_release_data+0x5c/0x90 
->  Aug  4 13:34:49 laptok [<c03b415b>] kfree_skbmem+0xb/0x90 
->  Aug  4 13:34:49 laptok [<c03b4230>] __kfree_skb+0x50/0xd0 
->  Aug  4 13:34:49 laptok [<c03b42ce>] kfree_skb+0x1e/0x40 
->  Aug  4 13:34:49 laptok [<c04455a9>] ieee80211_sta_work+0xd9/0x1a30 
->  Aug  4 13:34:49 laptok [<c012c178>] run_workqueue+0x78/0x100 
->  Aug  4 13:34:49 laptok [<c012cb6d>] worker_thread+0x9d/0x100 
->  Aug  4 13:34:49 laptok [<c012f732>] kthread+0x42/0x70 
->  Aug  4 13:34:49 laptok [<c0103623>] kernel_thread_helper+0x7/0x14 
->  Aug  4 13:34:49 laptok ======================= 
->  
-> And uncatched Exceptions - please look at photos
-> http://picasaweb.google.pl/Michal.Kudla/Gentoo
+the detection order works pretty well, we don't do parallel detection yet, 
+and when we do having parallel detection, but serial registration (in a 
+defined order) will work.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+yes, this can change across kernel version, but in practice it seldom 
+does. having run linux on production systems since the 2.0 days (and on 
+personal systems since before 0.99) there have only been a handful of 
+times when the detection order has changed.
 
+> So, an administrator should get to choose between different well
+> documented naming schemes.
+>
+> Also, like Jan mentioned, confusion can already be minimized by renaming
+> eth[0-9]+ -> net_[a-z]+ (for example, or nic[0-9]+ like Jan wrote)
+> rather than eth[0-9]+ -> eth[0-9]+.  That way it's clearer at all times
+> whether the original names or names given by userspace are used.
+>
+> And there should be a log message when a device was renamed.  Better
+> yet, like Michal wrote:  In case of device files for mass storage, there
+> is no _renaming_.  Instead, udev creates _aliases_ (symlinks), and it
+> does so with a few different naming schemes at once so that admins or
+> users immediately have a choice:
+> $ ls /dev/disk/
+> by-id  by-path  by-uuid
+>
+> Any chance that there could be aliases to network interfaces?  Aliases
+> for device files are easy --- they live only in userspace.
+
+useing different names for the MAC based names, and providing both names 
+at once would work very well.
+
+David Lang
