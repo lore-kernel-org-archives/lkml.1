@@ -1,95 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764297AbXHDJRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764185AbXHDJ0b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764297AbXHDJRH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 05:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751843AbXHDJQw
+	id S1764185AbXHDJ0b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 05:26:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXHDJ0W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 05:16:52 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59294 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763965AbXHDJQs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 05:16:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46B443E5.2020404@s5r6.in-berlin.de>
-Date: Sat, 04 Aug 2007 11:16:21 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.4) Gecko/20070609 SeaMonkey/1.1.2
+	Sat, 4 Aug 2007 05:26:22 -0400
+Received: from ns2.suse.de ([195.135.220.15]:57620 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751271AbXHDJ0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 05:26:22 -0400
+From: Andi Kleen <ak@suse.de>
+To: Zachary Amsden <zach@vmware.com>
+Subject: Re: Vmware crashes if compress/misc.c scrolls?
+Date: Sat, 4 Aug 2007 11:24:34 +0200
+User-Agent: KMail/1.9.1
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       Iouri Kharon <bc-info@styx.cabel.net>, syslinux@zytor.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sahil Rihan <srihan@vmware.com>
+References: <4679BBCB.2000202@zytor.com> <46B40504.70208@vmware.com>
+In-Reply-To: <46B40504.70208@vmware.com>
 MIME-Version: 1.0
-To: david@lang.hm
-CC: Ondrej Zajicek <santiago@crfreenet.org>,
-       Jan Engelhardt <jengelh@computergmbh.de>,
-       Michael Tokarev <mjt@tls.msk.ru>,
-       Herbert Rosmanith <kernel@wildsau.enemy.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: renaming kernel devices [was: VIA EPIA EK: strange eth dev numbering]
-References: <200708021056.l72Au722008603@wildsau.enemy.org> <46B1BEB8.70104@msgid.tls.msk.ru> <Pine.LNX.4.64.0708021346300.24572@fbirervta.pbzchgretzou.qr> <20070802145152.GB19346@localhost.localdomain> <Pine.LNX.4.64.0708022144020.6905@asgard.lang.hm> <46B345E1.1010404@s5r6.in-berlin.de> <Pine.LNX.4.64.0708032127010.6905@asgard.lang.hm>
-In-Reply-To: <Pine.LNX.4.64.0708032127010.6905@asgard.lang.hm>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708041124.35526.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-david@lang.hm wrote:
-> On Fri, 3 Aug 2007, Stefan Richter wrote:
->> There is a variety of possible naming schemes:
->>
->>  - Naming by order of discovery.
->>  - Naming by vendor/model name strings.
->>  - Naming by universally unique identifier.
->>  - Naming by topology.
->>  - ...
->>
->> Only the simplest of these schemes (naming by order of discovery)
 
-(which is in most cases also the scheme that's the least useful to
-admins and users)
+> In the boot decompressor for the kernel in the image Iouri provided, I
 
->> is hardwired into the kernel portion of the Linux OS.  The other naming
->> schemes are (or can be) implemented in the userland portion of the
->> Linux OS.
-...
-> I understand the flexibility that this provides, unfortunantly (IMHO)
-> default udev rules (or at least what many distros are shipping by
-> default) changes from this simple naming scheme in a way that hides the
-> fact from the user. This means that many users will not even realize the
-> change in policy until the hardware changes and things don't act the way
-> they were expected to. In my case it was removing 3 quad cards from a
-> machine and finding that there was no eth0 on the box, instead there was
-> a eth12, this is fairly benign. what would have caused me significant
-> problems would have been having a card fail in a production box, have it
-> replaced and then found that the interfaces were now eth4-eth22 instead
-> of eth0-eth18. having the interfaces named differently on different
-> boxes with identical hardware based on the history of what has been
-> plugged into the boxes in the past is not what sysadmins expect.
+32bit or 64bit image?
 
-Yes, these rules by far don't fit everyone's needs.  People who often
-use hotpluggable NICs are probably served best by MAC address based
-naming.  Boxes with field replacable but otherwise fixed NICs apparently
-rather need a naming scheme based on PCI/PCIe topology.  (This requires
-that the topology is exposed to userspace in comparable manner across
-boots and across kernel version updates.)
+> As you can plainly see, the call to memcpy (which is redefined in
+> boot/compressed/misc.c) is made using stack calling convention.
+> Unfortunately, the compiler generated the memcpy function itself using
+> regparm(3) convention.  I am guessing this happened because a leftover
 
-So, an administrator should get to choose between different well
-documented naming schemes.
+I can't find any here grepping .i files and includes. None of the memcpy
+prototypes in include have a __fastcall
 
-Also, like Jan mentioned, confusion can already be minimized by renaming
-eth[0-9]+ -> net_[a-z]+ (for example, or nic[0-9]+ like Jan wrote)
-rather than eth[0-9]+ -> eth[0-9]+.  That way it's clearer at all times
-whether the original names or names given by userspace are used.
+Are you sure this still happens in mainline?
 
-And there should be a log message when a device was renamed.  Better
-yet, like Michal wrote:  In case of device files for mass storage, there
-is no _renaming_.  Instead, udev creates _aliases_ (symlinks), and it
-does so with a few different naming schemes at once so that admins or
-users immediately have a choice:
-$ ls /dev/disk/
-by-id  by-path  by-uuid
+When I look at my scroll it also looks correct:
 
-Any chance that there could be aliases to network interfaces?  Aliases
-for device files are easy --- they live only in userspace.
--- 
-Stefan Richter
--=====-=-=== =--- --=--
-http://arcgraph.de/sr/
+      c0:       0f af f8                imul   %eax,%edi
+      c3:       01 c0                   add    %eax,%eax
+      c5:       89 c2                   mov    %eax,%edx
+      c7:       01 f2                   add    %esi,%edx
+      c9:       89 45 f0                mov    %eax,0xfffffff0(%ebp)
+      cc:       89 f0                   mov    %esi,%eax
+      ce:       89 f9                   mov    %edi,%ecx
+      d0:       e8 7b ff ff ff          call   50 <memcpy>
+
+
+> Does anyone recall compiler problems (I noticed this VM was booting a
+> 64-bit kernel, 
+
+Ok 64bit, that was 32bit above. 
+
+Since some time the decompressor is 64bit and 64bit always uses 
+regparms. 64bit Scroll is ok too:
+
+     92:       0f af eb                imul   %ebx,%ebp
+      95:       01 db                   add    %ebx,%ebx
+      97:       48 63 f3                movslq %ebx,%rsi
+      9a:       4c 01 ee                add    %r13,%rsi
+      9d:       89 ea                   mov    %ebp,%edx
+      9f:       e8 9c ff ff ff          callq  40 <memcpy>
+
+
+> but the decompressor was 32-bit code, 
+
+That must be a old kernel.
+
+Can you people please verify this all still happens with a mainline or
+2.6.22 kernel? 
+
+> so perhaps at some  
+> time the 64-bit makefile or toolchain for Linux had some kind of
+> compiler bug).
+
+I'm not aware of any such bugs.
+
+-Andi
