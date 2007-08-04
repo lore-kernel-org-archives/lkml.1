@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765498AbXHDSKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765475AbXHDSQi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765498AbXHDSKA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 14:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764855AbXHDSJx
+	id S1765475AbXHDSQi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 14:16:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764989AbXHDSQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 14:09:53 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:32644 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764989AbXHDSJw convert rfc822-to-8bit (ORCPT
+	Sat, 4 Aug 2007 14:16:28 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:60609 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761630AbXHDSQ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 14:09:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:organization:to:subject:date:user-agent:references:in-reply-to:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id:from;
-        b=erXb4C7+lhhaa+ACVF1YuakUy1Q3eSumTmHW5znuHSlJSidFirJqtiIzrfhQ8+1nSxiY+klqtNFgSIVWTWfGhueXq/wyKz+BGYr1L+fRGZ7c8+7EU96iB3yyvskgAaheUDoD6dMTaGBtqrj835DD7p92QPVMCxU6PHeY5BwaHF0=
-Organization: M1K0
-To: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: many problems with mac80211, iwlwifi and ACPI on Santa Rosa laptop
-Date: Sat, 4 Aug 2007 20:09:39 +0200
-User-Agent: KMail/1.9.7
-References: <fa.v/A5H4Pm9oA6Hct919AmEbMQfJ0@ifi.uio.no> <46B4B234.9040000@shaw.ca>
-In-Reply-To: <46B4B234.9040000@shaw.ca>
-Cc: Robert Hancock <hancockr@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708042009.40881.Michal.Kudla@gmail.com>
-From: =?utf-8?q?Micha=C5=82_Kud=C5=82a?= <michal.kudla@gmail.com>
+	Sat, 4 Aug 2007 14:16:27 -0400
+Date: Sat, 4 Aug 2007 11:15:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Chuck Ebbert" <cebbert@redhat.com>,
+       "Muli Ben-Yehuda" <muli@il.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, riku.seppala@kymp.net,
+       "Andy Whitcroft" <apw@shadowen.org>
+Subject: Re: Oops in 2.6.23-rc1-git9,
+ arch/x86_64/pci/k8-bus.c::fill_mp_bus_to_cpumask()
+Message-Id: <20070804111532.1d3936fa.akpm@linux-foundation.org>
+In-Reply-To: <86802c440708041045gd4a70fejf54f8532ff1a46f6@mail.gmail.com>
+References: <46B3A7BB.9000102@redhat.com>
+	<20070803155035.1fb11c9a.akpm@linux-foundation.org>
+	<200708041130.42038.ak@suse.de>
+	<20070804093222.f0d7f3c7.akpm@linux-foundation.org>
+	<86802c440708041045gd4a70fejf54f8532ff1a46f6@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-W liście datowanym na sobota, 4 sierpnia 2007, Robert Hancock pisze:
->RH Can you reproduce this without the binary NVIDIA module loaded?
+On Sat, 4 Aug 2007 10:45:31 -0700 "Yinghai Lu" <yhlu.kernel@gmail.com> wrote:
 
-Yes,
-Next photo is made on kernel with nvidiafb module
-http://picasaweb.google.pl/Michal.Kudla/Gentoo/photo#5094907741297540418
+> Andrew,
+> 
+> still need
+> x86_64-get-mp_bus_to_node-as-early-v2.patch in the -mm
+> it fix
 
-// P.S. Can I find this error in some system logs? 
-Photos is not good for reports.
+What does it fix?  Much more detail, please.
 
--- 
-http://www.m1k0.com
+> diff -puN arch/i386/pci/irq.c~x86_64-get-mp_bus_to_node-as-early-v2
+> arch/i386/pci/irq.c
+> --- a/arch/i386/pci/irq.c~x86_64-get-mp_bus_to_node-as-early-v2
+> +++ a/arch/i386/pci/irq.c
+> @@ -136,10 +136,26 @@ static void __init pirq_peer_trick(void)
+>                busmap[e->bus] = 1;
+>        }
+>        for(i = 1; i < 256; i++) {
+> +               struct pci_bus *bus = NULL;
+> +               struct pci_sysdata *sd;
+>                if (!busmap[i] || pci_find_bus(0, i))
+>                        continue;
+> -               if (pci_scan_bus(i, &pci_root_ops, NULL))
+> +               /* Allocate per-root-bus (not per bus) arch-specific data.
+> +                * TODO: leak; this memory is never freed.
+> +                * It's arguable whether it's worth the trouble to care.
+> +                */
+> +               sd = kzalloc(sizeof(*sd), GFP_KERNEL);
+> +               if (!sd) {
+> +                       printk(KERN_ERR "PCI: OOM, not probing PCI bus %02x\n",
+> +                               i);
+> +                       continue;
+> +               }
+> +               sd->node = get_mp_bus_to_node(i);
+> +               bus = pci_scan_bus(i, &pci_root_ops, sd);
+> +               if (bus)
+>                        printk(KERN_INFO "PCI: Discovered primary peer
+> bus %02x [IRQ]\n", i);
+
+Wordwrapped, tabs replaced with spaces.
+
+Please, for once and for all, fix your email client?
+
+Thanks.
+
