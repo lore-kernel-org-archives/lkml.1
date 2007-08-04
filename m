@@ -1,100 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764612AbXHDNRt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764713AbXHDNVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764612AbXHDNRt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 09:17:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757432AbXHDNRm
+	id S1764713AbXHDNVz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 09:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757966AbXHDNVs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 09:17:42 -0400
-Received: from mail-in-10.arcor-online.net ([151.189.21.50]:53101 "EHLO
-	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756455AbXHDNRl (ORCPT
+	Sat, 4 Aug 2007 09:21:48 -0400
+Received: from clem.clem-digital.net ([68.16.168.10]:54674 "EHLO
+	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756455AbXHDNVr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 09:17:41 -0400
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Avi Kivity <avi@qumranet.com>
-Subject: Re: 2.6.23-rc1, KVM-AMD problem
-Date: Sat, 4 Aug 2007 15:17:34 +0200
-User-Agent: KMail/1.9.7
-Cc: Alistair John Strachan <alistair@devzero.co.uk>,
-       kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <200707281855.41277.alistair@devzero.co.uk> <200707291510.31731.alistair@devzero.co.uk> <46ADE0DD.1030505@qumranet.com>
-In-Reply-To: <46ADE0DD.1030505@qumranet.com>
+	Sat, 4 Aug 2007 09:21:47 -0400
+X-Greylist: delayed 1460 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Aug 2007 09:21:47 EDT
+From: Pete Clements <clem@clem.clem-digital.net>
+Message-Id: <200708041257.l74CvQcH001808@clem.clem-digital.net>
+Subject: 2.6.23-rc2 3com vortex boot g
+To: linux-kernel@vger.kernel.org (linux-kernel)
+Date: Sat, 4 Aug 2007 08:57:26 -0400 (EDT)
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1219845.sbl8aqGya3";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708041517.37895.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1219845.sbl8aqGya3
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Fyi. Seeing the below on boot (first is UP, second SMP system).
 
-Am Montag 30 Juli 2007 schrieb Avi Kivity:
-> Alistair John Strachan wrote:
-[...]
-> > Basically, the installer seems to work fine, but Windows seemed to have
-> > problems after installing post-SP2 updates. Maybe that's why not
-> > everybody is seeing it yet.
->
-> How about the attached patch? (I haven't yet tried to reproduce, but
-> this can cause an AMD-only oops).
-
-commit 80917728e43e248155c019f743655806b582b099
-Author: Avi Kivity <avi@qumranet.com>
-Date:   Mon Jul 30 15:56:36 2007 +0300
-
-    KVM: x86 emulator: disable writeback for debug register instructions
-   =20
-    These are handled internally by the instruction.
-   =20
-    Signed-off-by: Avi Kivity <avi@qumranet.com>
-
-diff --git a/drivers/kvm/x86_emulate.c b/drivers/kvm/x86_emulate.c
-index 1a90ba0..2136da5 100644
-=2D-- a/drivers/kvm/x86_emulate.c
-+++ b/drivers/kvm/x86_emulate.c
-@@ -1222,11 +1222,13 @@ twobyte_insn:
-                }
-                break;
-        case 0x21: /* mov from dr to reg */
-+               no_wb =3D 1;
-                if (modrm_mod !=3D 3)
-                        goto cannot_emulate;
-                rc =3D emulator_get_dr(ctxt, modrm_reg, &_regs[modrm_rm]);
-                break;
-        case 0x23: /* mov from reg to dr */
-+               no_wb =3D 1;
-                if (modrm_mod !=3D 3)
-                        goto cannot_emulate;
-                rc =3D emulator_set_dr(ctxt, modrm_reg, _regs[modrm_rm]);
+from my logs,
+23-rc1-git10 was ok
+sorry, did not run git11 
+23-rc1-git12 first shows up
 
 
-Unfortunately this doesn't seem to have made it into 2.6.23-rc2. I need it =
-as=20
-well, to make Windows XP boot up w/o hanging or reebooting my host machine.
+eth0:  setting half-duplex.
+WARNING: at kernel/irq/resend.c:70 check_irq_resend()
+ [<c012e51b>] check_irq_resend+0xab/0xc0
+ [<c012df59>] enable_irq+0x99/0xa0
+ [<c01f72cb>] vortex_timer+0x26b/0x3d0
+ [<c0122d3b>] hrtimer_run_queues+0x1b/0x140
+ [<c01f7060>] vortex_timer+0x0/0x3d0
+ [<c0117611>] run_timer_softirq+0x101/0x150
+ [<c012648f>] tick_handle_periodic+0xf/0x70
+ [<c014d33e>] sys_fstat64+0x1e/0x30
+ [<c01144b2>] __do_softirq+0x42/0x90
+ [<c0114526>] do_softirq+0x26/0x30
+ [<c01045e7>] do_IRQ+0x47/0x80
+ [<c011a0c2>] sys_rt_sigprocmask+0x62/0xd0
+ [<c0102a2f>] common_interrupt+0x23/0x28
+ =======================
+NET: Registered protocol family 10
 
-Cheers,
-=2D-=20
-(=B0=3D                 =3D=B0)
-//\ Prakash Punnoor /\\
-V_/                 \_V
 
---nextPart1219845.sbl8aqGya3
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+eth2:  setting half-duplex.
+WARNING: at kernel/irq/resend.c:70 check_irq_resend()
+ [<c014218b>] check_irq_resend+0xab/0xc0
+ [<c0141d18>] enable_irq+0xc8/0xd0
+ [<f8839a1b>] vortex_timer+0x27b/0x3f0 [3c59x]
+ [<c0134baa>] hrtimer_run_queues+0xca/0x150
+ [<f88397a0>] vortex_timer+0x0/0x3f0 [3c59x]
+ [<c0127b46>] run_timer_softirq+0x116/0x180
+ [<c0124262>] __do_softirq+0x82/0x100
+ [<c0124317>] do_softirq+0x37/0x40
+ [<c01125c7>] smp_apic_timer_interrupt+0x57/0x90
+ [<c0101a70>] default_idle+0x0/0x40
+ [<c010385c>] apic_timer_interrupt+0x28/0x30
+ [<c0101a70>] default_idle+0x0/0x40
+ [<c0101a9f>] default_idle+0x2f/0x40
+ [<c0101044>] cpu_idle+0x74/0xc0
+ [<c03d99da>] start_kernel+0x2aa/0x2f0
+ [<c03d9140>] unknown_bootoption+0x0/0x1f0
+ =======================
+eth2: no IPv6 routers present
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.5 (GNU/Linux)
-
-iD8DBQBGtHxxxU2n/+9+t5gRAu0oAKCFs5ZjCnapwFR5IVfn4NKnYSXhIACdFnvt
-VnItBG6Pv84twArLgO+afCA=
-=Onc+
------END PGP SIGNATURE-----
-
---nextPart1219845.sbl8aqGya3--
+-- 
+Pete Clements 
