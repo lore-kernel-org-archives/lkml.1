@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765216AbXHDQpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765286AbXHDQrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765216AbXHDQpO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 12:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764384AbXHDQoz
+	id S1765286AbXHDQrf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764384AbXHDQr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 12:44:55 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:38297 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764167AbXHDQox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 12:44:53 -0400
-Date: Sat, 4 Aug 2007 20:44:39 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage.
-Message-ID: <20070804164438.GC14175@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708031741.18404.phillips@phunq.net>
+	Sat, 4 Aug 2007 12:47:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:42349 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1763866AbXHDQrZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 12:47:25 -0400
+Date: Sat, 4 Aug 2007 09:47:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
+       kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 72] drivers/mmc/core/sdio_bus.c: kmalloc + memset
+ conversion to kzalloc
+Message-Id: <20070804094702.9f968b27.akpm@linux-foundation.org>
+In-Reply-To: <20070804150334.75faf362@poseidon.drzeus.cx>
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+	<200708010005.25352.m.kozlowski@tuxland.pl>
+	<20070804150334.75faf362@poseidon.drzeus.cx>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708031741.18404.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel.
-> On Tuesday 31 July 2007 10:13, Evgeniy Polyakov wrote:
-> >     * storage can be formed on top of remote nodes and be exported
-> > 	simultaneously (iSCSI is peer-to-peer only, NBD requires device
-> > 	mapper and is synchronous)
+On Sat, 4 Aug 2007 15:03:34 +0200 Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
+
+> On Wed, 1 Aug 2007 00:05:24 +0200
+> Mariusz Kozlowski <m.kozlowski@tuxland.pl> wrote:
 > 
-> In fact, NBD has nothing to do with device mapper.  I use it as a 
-> physical target underneath ddraid (a device mapper plugin) just like I 
-> would use your DST if it proves out.
+> > Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> > 
+> >  drivers/mmc/core/sdio_bus.c | 5528 -> 5483 (-45 bytes)
+> >  drivers/mmc/core/sdio_bus.o | 70044 -> 69876 (-168 bytes)
+> > 
+> >  drivers/mmc/core/sdio_bus.c |    4 +---
+> >  1 file changed, 1 insertion(+), 3 deletions(-)
+> > 
+> 
+> Acked-by: Pierre Ossman <drzeus@drzeus.cx>
+> 
+> Although this is code that only lives in my -mm tree. Should I carry
+> this patch instead, perhaps?
+> 
 
-I meant to create a storage on top of several nodes one needs to have
-device mapper or something like that on top of NBD itself. To further
-export resulted device one needs another userspace NDB application and 
-so on. DST simplifies that greatly.
+Yes please.  I always get confused when a git-tree maintainer says
+"Acked-by" rather than "applied, thanks".
 
-DST original code worked as device mapper plugin too, but its two 
-additional allocations (io and clone) per block request ended up for me 
-as a show stopper.
-
--- 
-	Evgeniy Polyakov
+But I have these queued in my to-send-to-Pierre-regularly queue,
+so things will sort themselves out.
