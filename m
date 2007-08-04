@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764589AbXHDQLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764715AbXHDQOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764589AbXHDQLy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 12:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759572AbXHDQLq
+	id S1764715AbXHDQOS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 12:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbXHDQOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 12:11:46 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54358 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759419AbXHDQLp (ORCPT
+	Sat, 4 Aug 2007 12:14:08 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:55634 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759289AbXHDQOG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 12:11:45 -0400
-Date: Sat, 4 Aug 2007 09:11:34 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-cc: lkml <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Linux 2.6.23-rc2
-In-Reply-To: <b6a2187b0708040652l28e9d5aal2cc898f8006906f2@mail.gmail.com>
-Message-ID: <alpine.LFD.0.999.0708040900170.5037@woody.linux-foundation.org>
-References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>
-  <b6a2187b0708032213r476204fbh917d3d6672c70528@mail.gmail.com> 
- <b6a2187b0708032234r6ad41be4u5d8142b0b199fcc1@mail.gmail.com>
- <b6a2187b0708040652l28e9d5aal2cc898f8006906f2@mail.gmail.com>
+	Sat, 4 Aug 2007 12:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=JN8d+98615Bz4YsxwVzh1vfJ3xocX85im/hgdzrkbyYo5+c4q0RId2F30Ofdw/45RyapCt68LKr3Ks6ehQ2LyEoZLdtSDQUBYSCn6pyf81NlK/4/wlkno3a65ZWuljGQXnoMIIASQR6YX77ciafUPYnPFjCpTfo/WmZcQ8yuETk=
+Message-ID: <9a8748490708040914x2959fe0n20c542552120362a@mail.gmail.com>
+Date: Sat, 4 Aug 2007 18:14:05 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Len Brown" <lenb@kernel.org>
+Subject: Re: [PATCH][ACPI] Let's not gamble that a possible double free will never happen in asus_hotk_get_info()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Julien Lerouge" <julien.lerouge@free.fr>,
+       "Karol Kozimor" <sziwan@users.sourceforge.net>,
+       linux-acpi@vger.kernel.org, corentincj@iksaif.net,
+       acpi4asus-user@lists.sourceforge.net
+In-Reply-To: <200708031614.09792.lenb@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200707290045.59698.jesper.juhl@gmail.com>
+	 <200708031614.09792.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 4 Aug 2007, Jeff Chua wrote:
->
-> On 8/4/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> > 
-> > > After resume from s2ram or switching to console from X, my console is
-> > > messed up on rc1 and rc2. Is there a fix for this?
+On 03/08/07, Len Brown <lenb@kernel.org> wrote:
+> On Saturday 28 July 2007 18:45, Jesper Juhl wrote:
+> > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+> > ---
 > >
-> > This is on IBM X60. i915 chipset. No problem on 2.6.22. If this is a
-> > known problem, than I don't need to bisect all over again.
-> 
-> I managed to bisect down to this commit. Without this, console screen
-> can resume without video mess.
+> > drivers/acpi/asus_acpi.c | 1 +
+> > 1 files changed, 1 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/drivers/acpi/asus_acpi.c b/drivers/acpi/asus_acpi.c
+> > index 9c4bd22..86fd142 100644
+> > --- a/drivers/acpi/asus_acpi.c
+> > +++ b/drivers/acpi/asus_acpi.c
+> > @@ -1192,6 +1192,7 @@ static int asus_hotk_get_info(void)
+> > break;
+> > default:
+> > kfree(model);
+> > +model = NULL;
+> > break;
+> > }
+> > }
+>
+> applied.
+>
+> coverity didn't find the bug below this code however.
+> we can also leak model in the path that returns  OK.
+>
+Whoops, I should have spotted that.  I assume you've now fixed that locally?
 
-[ The commit being 4fd06960f120e02e9abc802a09f9511c400042a5: "Use the new 
-  x86 setup code for i386" ]
-
-Very interesting. 
-
-Jeff - do I understand correctly that the "or" means that even *without* a 
-suspend-to-ram sequence, and just by going into X and then going back to 
-text-mode, the screen is corrupt?
-
-I just want to make sure that there is no suspend-related activity 
-required for this at all, and the only common issue is probably just that 
-suspend ends up *also* triggering the X mode-setting at resume..
-
-If so, the most likely thing is that we use a different video mode at 
-boot, and while it may look similar, it's enough to confuse X. Not 
-entirely surprising: X tends to be easily confused, and some VGA registers 
-are write-only, so restoring modes can be surprisingly hard.
-
-The other possibility is that the new code sets the same mode, but doesn't 
-set some memory value or other that the kernel used to see, and that X 
-queried to figure out the mode (ie likely some EDD info-block or other). I 
-thought that the X server did all that on its own these days, but that may 
-be just the newer "intel" driver, not the older "i810" driver that you 
-probably use.
-
-(Side note: if you have a modern distro, you might try to change the line 
-that says
-
-	Driver "i810"
-
-in the /etc/X11/xorg.conf to say
-
-	Driver "intel"
-
-instead - just to check. However, the bug that triggered this 
-obviously needs to be fixed regardless).
-
-Peter, any ideas?
-
-		Linus
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
