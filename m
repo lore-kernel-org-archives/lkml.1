@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765848AbXHDSg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765804AbXHDShd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765848AbXHDSg6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 14:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932964AbXHDSdv
+	id S1765804AbXHDShd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 14:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932784AbXHDSeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 14:33:51 -0400
+	Sat, 4 Aug 2007 14:34:05 -0400
 Received: from fk-out-0910.google.com ([209.85.128.190]:45415 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932957AbXHDSdt (ORCPT
+	with ESMTP id S933010AbXHDSeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 14:33:49 -0400
+	Sat, 4 Aug 2007 14:34:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:content-disposition:from:to:subject:user-agent:cc:mime-version:date:content-type:content-transfer-encoding:message-id;
-        b=S9CXSDKK0WIo6UpU5SBD1vfLCNh1uo46q6+18gzo4mpGvurRlhfkNcc6wZyLtR4LBC/dUJ/v8VTcTYuEMjfYzPFRVAjYvOFEJ3QK1g6rrV2+wMRbhui22goj9ujtN4FQX6ot7ZjRJg9lPPS4Qaf6kTNqte0atbVodsNYWuDH7QI=
-Content-Disposition: inline
+        h=received:from:subject:user-agent:cc:mime-version:content-disposition:date:to:content-type:content-transfer-encoding:message-id;
+        b=A8qMLntFo6fqBY7ZO0ttsjOtZHMyN/9x81Qam1afInVG6SZi83eqYzhGW8jbmF1pv6NvbJHKgEAqkqrSl+b+u1WxhxgxFyhtXy6IB/SMfA6xtcAivDxSQ0p7aw7lZH1WH4kJeRIpZWUPmMLfMBYP5BFI0B+XdTEk6nm9kIBoN2Q=
 From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH][RESEND][ISDN] Guard against a potential NULL pointer dereference in old_capi_manufacturer()
+Subject: [PATCH][RESEND][pnp] Avoid a small unlikely memory leak in proc_read_escd()
 User-Agent: KMail/1.9.7
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       isdn4linux@listserv.isdn4linux.de, Carsten Paeth <calle@calle.de>,
-       Kai Germaschewski <kai@germaschewski.name>,
-       Karsten Keil <kkeil@suse.de>,
-       Kai Germaschewski <kai.germaschewski@gmx.de>,
+       Thomas Hood <dthood@mail.com>,
+       David Hinds <dahinds@users.sourceforge.net>,
        Jesper Juhl <jesper.juhl@gmail.com>
 MIME-Version: 1.0
-Date: Sat, 4 Aug 2007 20:31:54 +0200
-Content-Type: Text/Plain;
+Content-Disposition: inline
+Date: Sat, 4 Aug 2007 20:32:04 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708042031.54363.jesper.juhl@gmail.com>
+Message-Id: <200708042032.05139.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(first send: Monday 25 June 2007, resending due to no response)
-(resending again on August 8'th, 2007)
+(Resending patch originally submitted on 20/7-2007 23:41)
 
 
-In drivers/isdn/capi/kcapi.c::old_capi_manufacturer(), if the call 
-to get_capi_ctr_by_nr(ldef.contr); in line 823 returns NULL, then 
-we'll be dereferencing a NULL pointer in the very next line.
+Hi,
 
-(Found by Coverity checker as bug #402)
+There's a small and unlikely memory leak in 
+drivers/pnp/pnpbios/proc.c::proc_read_escd(). It's inside a sanity 
+check, so it probably won't trigger often (if at all), however it 
+*is* a potential leak and it's easy to avoid, so let's just fix it :)
+
+While I was in there I also broke a oneline 'if' statement into two 
+lines - seemed too trivial a changee to warrent a seperate patch.
 
 
 Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 ---
 
- drivers/isdn/capi/kcapi.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ drivers/pnp/pnpbios/proc.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/isdn/capi/kcapi.c b/drivers/isdn/capi/kcapi.c
-index 3ed34f7..3f9e962 100644
---- a/drivers/isdn/capi/kcapi.c
-+++ b/drivers/isdn/capi/kcapi.c
-@@ -821,6 +821,8 @@ static int old_capi_manufacturer(unsigned int cmd, void 
-__user *data)
- 				return -EFAULT;
- 		}
- 		card = get_capi_ctr_by_nr(ldef.contr);
-+		if (!card)
-+			return -EINVAL;
- 		card = capi_ctr_get(card);
- 		if (!card)
- 			return -ESRCH;
+diff --git a/drivers/pnp/pnpbios/proc.c b/drivers/pnp/pnpbios/proc.c
+index 8027073..f77b8c4 100644
+--- a/drivers/pnp/pnpbios/proc.c
++++ b/drivers/pnp/pnpbios/proc.c
+@@ -88,7 +88,8 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
+ 	}
+ 
+ 	tmpbuf = kzalloc(escd.escd_size, GFP_KERNEL);
+-	if (!tmpbuf) return -ENOMEM;
++	if (!tmpbuf)
++		return -ENOMEM;
+ 
+ 	if (pnp_bios_read_escd(tmpbuf, escd.nv_storage_base)) {
+ 		kfree(tmpbuf);
+@@ -100,6 +101,7 @@ static int proc_read_escd(char *buf, char **start, off_t pos,
+ 	/* sanity check */
+ 	if (escd_size > MAX_SANE_ESCD_SIZE) {
+ 		printk(KERN_ERR "PnPBIOS: proc_read_escd: ESCD size reported by BIOS read_escd call is too great\n");
++		kfree(tmpbuf);
+ 		return -EFBIG;
+ 	}
+ 
+
 
