@@ -1,79 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765973AbXHDVtF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932713AbXHDVt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765973AbXHDVtF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 17:49:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761515AbXHDVsz
+	id S932713AbXHDVt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 17:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764812AbXHDVtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 17:48:55 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:41406 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761291AbXHDVsz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 17:48:55 -0400
-Message-ID: <46B4F432.4020408@interia.pl>
-Date: Sat, 04 Aug 2007 23:48:34 +0200
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070720)
+	Sat, 4 Aug 2007 17:49:16 -0400
+Received: from thunk.org ([69.25.196.29]:53909 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764788AbXHDVtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 17:49:14 -0400
+Date: Sat, 4 Aug 2007 17:48:21 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070804214821.GC11150@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+	Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+	dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+	richard@rsk.demon.co.uk, david@lang.hm
+References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804192615.GA25600@lazybastard.org> <alpine.LFD.0.999.0708041246530.5037@woody.linux-foundation.org> <1186258399.2777.8.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-To: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] Remove bdput from do_open() in fs/block_dev.c
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: 3a5ecacc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186258399.2777.8.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I mistyped
-# echo /dev/hdc1 >/sys/module/block2mtd/parameters/block2mt
-instead of sdc1. There is no /dev/hdc1. I have DVD-ROM as /dev/hdc.
-# dmesg
-block2mtd: version $Revision: 1.30 $
-block2mtd: error: cannot open device /dev/hdc1
-Looks right, but tray is locked. And it doesn't want to get out.
-# eject
-hdc: irq timeout: status=0xd0 { Busy }
-ide: failed opcode was: unknown
-WARNING: at kernel/irq/resend.c:70 check_irq_resend()
- [<c013444b>] check_irq_resend+0xab/0xc0
- [<c0133e2a>] enable_irq+0x4a/0xa0
- [<c02c26e7>] ide_error+0x47/0xa0
- [<c02d1e60>] cdrom_newpc_intr+0x0/0x300
- [<c02c2bc0>] ide_timer_expiry+0x1e0/0x2d0
- [<c02c29e0>] ide_timer_expiry+0x0/0x2d0
- [<c011b986>] run_timer_softirq+0x116/0x160
- [<c0127e75>] hrtimer_interrupt+0x165/0x1a0
- [<c0118772>] __do_softirq+0x42/0x90
- [<c01187e6>] do_softirq+0x26/0x30
- [<c0118aaa>] irq_exit+0x5a/0x60
- [<c0104817>] do_IRQ+0x47/0x80
- [<c0102c23>] common_interrupt+0x23/0x30
- [<c0281a46>] acpi_processor_idle+0x162/0x380
- [<c0100d0e>] cpu_idle+0x4e/0x70
- [<c0524ac5>] start_kernel+0x1f5/0x240
- [<c05243a0>] unknown_bootoption+0x0/0x1e0
- =======================
+On Sat, Aug 04, 2007 at 01:13:19PM -0700, Arjan van de Ven wrote:
+> there is another trick possible (more involved though, Al will have to
+> jump in on that one I suspect): Have 2 types of "dirty inode" states;
+> one is the current dirty state (meaning the full range of ext3
+> transactions etc) and "lighter" state of "atime-dirty"; which will not
+> do the background syncs or journal transactions (so if your machine
+> crashes, you lose the atime update) but it does keep atime for most
+> normal cases and keeps it standard compliant "except after a crash".
 
-Removing bdput from do_open() in fs/block_dev.c seems 
-to be a cure for irq timeout.
+That would make us standards compliant (POSIX explicitly says that
+what happens after a unclean shutdown is Unspecified) and it would
+make things a heck of a lot faster.  However, there is a potential
+problem which is that it will keep a large number of inodes pinned in
+memory, which is its own problem.  So there would have to be some way
+to force the atime updates to be merged when under memory pressure,
+and and perhaps on some much longer background interval (i.e., every
+hour or so).
 
-Signed-off-by: Rafa³ Bilski <rafalbilski@interia.pl>
---- 
-diff --git a/fs/block_dev.c b/fs/block_dev.c 
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -1120,7 +1120,6 @@ static int do_open(struct block_device *
- 	disk = get_gendisk(bdev->bd_dev, &part);
- 	if (!disk) {
- 		unlock_kernel();
--		bdput(bdev);
- 		return ret;
- 	}
- 	owner = disk->fops->owner;
-
-----------------------------------------------------------------------
-Wszystko czego potrzebujesz latem: kremy do opalania, 
-stroje kapielowe, maly romans 
-
->>>http://link.interia.pl/f1b15
-
+							- Ted
