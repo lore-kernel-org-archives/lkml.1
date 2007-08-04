@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932498AbXHDREJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764981AbXHDREt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932498AbXHDREJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 13:04:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764167AbXHDRDx
+	id S1764981AbXHDREt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 13:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761211AbXHDREl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 13:03:53 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:53749 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760859AbXHDRDw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 13:03:52 -0400
-Date: Sat, 4 Aug 2007 21:03:44 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage.
-Message-ID: <20070804170344.GA18292@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
+	Sat, 4 Aug 2007 13:04:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:63966 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760644AbXHDREj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 13:04:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=nef7GlHSeksYxPpBdygwUIbstPgqOMBcxJZ9UY/TdgMCIDW8QAPtia+shu2U1N5vyAPKqDE+Fvr0ESPft39sdzhtbcKBp9gzoFW+lhDYQnvxJeyFkA3aNxpXV4THWqb6yrUtnEIqFa2eWpP14klkhBgSV41O8bLGny57MPzHe9g=
+Date: Sat, 4 Aug 2007 19:02:10 +0200
+From: Diego Calleja <diegocg@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-Id: <20070804190210.8b1530dd.diegocg@gmail.com>
+In-Reply-To: <20070804163733.GA31001@elte.hu>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.11.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1a297b360708022204u4fc7603pb6baebe2bdf28618@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 09:04:51AM +0400, Manu Abraham (abraham.manu@gmail.com) wrote:
-> On 7/31/07, Evgeniy Polyakov <johnpol@2ka.mipt.ru> wrote:
-> 
-> > TODO list currently includes following main items:
-> >     * redundancy algorithm (drop me a request of your own, but it is highly
-> >         unlikley that Reed-Solomon based will ever be used - it is too slow
-> >         for distributed RAID, I consider WEAVER codes)
-> 
-> 
-> LDPC codes[1][2] have been replacing Turbo code[3] with regards to
-> communication links and we have been seeing that transition. (maybe
-> helpful, came to mind seeing the mention of Turbo code) Don't know how
-> weaver compares to LDPC, though found some comparisons [4][5] But
-> looking at fault tolerance figures, i guess Weaver is much better.
-> 
-> [1] http://www.ldpc-codes.com/
-> [2] http://portal.acm.org/citation.cfm?id=1240497
-> [3] http://en.wikipedia.org/wiki/Turbo_code
-> [4] http://domino.research.ibm.com/library/cyberdig.nsf/papers/BD559022A190D41C85257212006CEC11/$File/rj10391.pdf
-> [5] http://hplabs.hp.com/personal/Jay_Wylie/publications/wylie_dsn2007.pdf
+El Sat, 4 Aug 2007 18:37:33 +0200, Ingo Molnar <mingo@elte.hu> escribió:
 
-LDPC codes require to solve N order matrix over finite field - exactly
-the reason I do not want to use Reed-Solomon codes even with optimized
-non-Vandermonde matrix. I will investigate LDPC further though.
-Turbo codes are like flow cipher compared to RS codes being block
-ciphers. Transport media is reliable in data storages, otherwise they
-would not even exist.
+> thousands of applications. So for most file workloads we give Windows a 
+> 20%-30% performance edge, for almost nothing. (for RAM-starved kernel 
+> builds the performance difference between atime and noatime+nodiratime 
+> setups is more on the order of 40%)
 
--- 
-	Evgeniy Polyakov
+Just curious - do you have numbers with relatime?
