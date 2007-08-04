@@ -1,89 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764185AbXHDJ0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764193AbXHDJas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764185AbXHDJ0b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 05:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbXHDJ0W
+	id S1764193AbXHDJas (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 05:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761185AbXHDJaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 05:26:22 -0400
-Received: from ns2.suse.de ([195.135.220.15]:57620 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbXHDJ0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 05:26:22 -0400
-From: Andi Kleen <ak@suse.de>
-To: Zachary Amsden <zach@vmware.com>
-Subject: Re: Vmware crashes if compress/misc.c scrolls?
-Date: Sat, 4 Aug 2007 11:24:34 +0200
-User-Agent: KMail/1.9.1
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       Virtualization Mailing List <virtualization@lists.osdl.org>,
-       Iouri Kharon <bc-info@styx.cabel.net>, syslinux@zytor.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sahil Rihan <srihan@vmware.com>
-References: <4679BBCB.2000202@zytor.com> <46B40504.70208@vmware.com>
-In-Reply-To: <46B40504.70208@vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sat, 4 Aug 2007 05:30:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55216 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760454AbXHDJai (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 05:30:38 -0400
+Date: Sat, 4 Aug 2007 11:30:35 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Cal Peake <cp@absolutedigital.net>, Chuck Ebbert <cebbert@redhat.com>,
+       Gabriel C <nix.or.die@googlemail.com>, Frank Hale <frankhale@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: ACPI on Averatec 2370
+Message-ID: <20070804093035.GA25389@one.firstfloor.org>
+References: <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net> <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net> <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net> <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net> <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org> <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net> <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708041124.35526.ak@suse.de>
+In-Reply-To: <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > amd_apic_timer_broken: forcing return value of 1
+> 
+> since this makes it all work for you, it does appear that the AMD local 
+> timer stops in C1 even when that isn't true, and as such is not useful.
 
-> In the boot decompressor for the kernel in the image Iouri provided, I
+Probably messed up SMM code. Might not apply to all AMD CPUs.
 
-32bit or 64bit image?
+> Sad. It probably means that we have to disable the local timer for *all* 
+> modern AMD CPU's.
 
-> As you can plainly see, the call to memcpy (which is redefined in
-> boot/compressed/misc.c) is made using stack calling convention.
-> Unfortunately, the compiler generated the memcpy function itself using
-> regparm(3) convention.  I am guessing this happened because a leftover
+I saw an APIC timer problem on a older AMD laptop too (long before RevF).
+Back then I asked and it was apparently some SMM bug of that specific
+BIOS.
 
-I can't find any here grepping .i files and includes. None of the memcpy
-prototypes in include have a __fastcall
+What exact type of machine is it?
+ 
 
-Are you sure this still happens in mainline?
+> 
+> Thomas/Ingo - did something change in the local apic programming? Or why 
+> did this work before? Was it just that we didn't use the local timer apic 
 
-When I look at my scroll it also looks correct:
+We used to always use the interrupt 0 too, which woke up the CPU and
+then piggy backed the APIC interrupt too which works once the CPU
+is woken.
 
-      c0:       0f af f8                imul   %eax,%edi
-      c3:       01 c0                   add    %eax,%eax
-      c5:       89 c2                   mov    %eax,%edx
-      c7:       01 f2                   add    %esi,%edx
-      c9:       89 45 f0                mov    %eax,0xfffffff0(%ebp)
-      cc:       89 f0                   mov    %esi,%eax
-      ce:       89 f9                   mov    %edi,%ecx
-      d0:       e8 7b ff ff ff          call   50 <memcpy>
+Thomas changed that then when he redid the code for clock sources
+because interrupt 0/PIT isn't good for frequent reprogramming. 
 
-
-> Does anyone recall compiler problems (I noticed this VM was booting a
-> 64-bit kernel, 
-
-Ok 64bit, that was 32bit above. 
-
-Since some time the decompressor is 64bit and 64bit always uses 
-regparms. 64bit Scroll is ok too:
-
-     92:       0f af eb                imul   %ebx,%ebp
-      95:       01 db                   add    %ebx,%ebx
-      97:       48 63 f3                movslq %ebx,%rsi
-      9a:       4c 01 ee                add    %r13,%rsi
-      9d:       89 ea                   mov    %ebp,%edx
-      9f:       e8 9c ff ff ff          callq  40 <memcpy>
-
-
-> but the decompressor was 32-bit code, 
-
-That must be a old kernel.
-
-Can you people please verify this all still happens with a mainline or
-2.6.22 kernel? 
-
-> so perhaps at some  
-> time the 64-bit makefile or toolchain for Linux had some kind of
-> compiler bug).
-
-I'm not aware of any such bugs.
+I did similar experiments some time ago but found it caused a lot of
+problems and wasn't as brave as Thomas in working through them, so
+i never pushed these patches.
 
 -Andi
