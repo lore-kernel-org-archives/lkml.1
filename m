@@ -1,59 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932737AbXHEDLn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933005AbXHEDXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932737AbXHEDLn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 23:11:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbXHEDLe
+	id S933005AbXHEDXg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 23:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763915AbXHEDX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 23:11:34 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60408 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752900AbXHEDLd (ORCPT
+	Sat, 4 Aug 2007 23:23:27 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51050
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756676AbXHEDX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 23:11:33 -0400
-Message-ID: <46B53FDF.5020806@zytor.com>
-Date: Sat, 04 Aug 2007 20:11:27 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: Linux 2.6.23-rc2
-References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org>	 <b6a2187b0708032213r476204fbh917d3d6672c70528@mail.gmail.com>	 <b6a2187b0708032234r6ad41be4u5d8142b0b199fcc1@mail.gmail.com>	 <b6a2187b0708040652l28e9d5aal2cc898f8006906f2@mail.gmail.com>	 <alpine.LFD.0.999.0708040900170.5037@woody.linux-foundation.org>	 <46B4C011.8090802@zytor.com> <b6a2187b0708041937u41f3911ap3f1af6115b797d6b@mail.gmail.com>
-In-Reply-To: <b6a2187b0708041937u41f3911ap3f1af6115b797d6b@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 4 Aug 2007 23:23:26 -0400
+Date: Sat, 04 Aug 2007 20:23:26 -0700 (PDT)
+Message-Id: <20070804.202326.39158668.davem@davemloft.net>
+To: adobriyan@gmail.com
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH] sparc: fix fallout from O_CLOEXEC changes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070804203005.GA7668@martell.zuzino.mipt.ru>
+References: <20070804203005.GA7668@martell.zuzino.mipt.ru>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Chua wrote:
-> On 8/5/07, H. Peter Anvin <hpa@zytor.com> wrote:
+From: Alexey Dobriyan <adobriyan@gmail.com>
+Date: Sun, 5 Aug 2007 00:30:05 +0400
+
+> Just "#define O_CLOEXEC" is OK, because asm-generic/fcntl.h will check if it's
+> already defined.
 > 
->> Also, can you please describe "messed up" in more detail?
+> Loads of "struct flock inside parameter list" warnings and
+> "O_WRONLY undefined" errors.
 > 
-> The screen went into some graphic mode that can't be reset no matter
-> what I tried (stty reset). I see all kinds of ramdom pattern/color
-> everywhere. Then typing "startx" would get in X just fine. But trying
-> to get back to console (ALT F1) or (Ctrl ALT BackSpace) would still
-> end up with the messed-up console.
-> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
->> Are you using the VGA console or a framebuffer console?
->
-> VGA console.
-
-Okay, since you're using VGA console this means suspend-to-ram isn't
-restoring the mode.
-
-Does it matter if you suspend from inside X or not?
-
->> We had one report of "screen messed up" already that did get fixed
->> (CONFIG_FIRMWARE_EDID not working.)
-> 
-> How can I try this?
-
-The patch for this is in -rc2.
-
-	-hpa
+Mark F. already posted a fix to sparclinux@vger.kernel.org for
+this, but thanks.
