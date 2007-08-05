@@ -1,104 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbXHEM56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760639AbXHEM7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbXHEM56 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 08:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756896AbXHEM5u
+	id S1760639AbXHEM7S (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 08:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757263AbXHEM7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 08:57:50 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:54125 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756117AbXHEM5t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 08:57:49 -0400
-Date: Sun, 5 Aug 2007 14:57:26 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Rob Landley <rob@landley.net>
-cc: 7eggert@gmx.de, Greg KH <greg@kroah.com>,
-       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Michael-Luke Jones <mlj28@cam.ac.uk>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Rod Whitby <rod@whitby.id.au>, Russell King <rmk@arm.linux.org.uk>,
-       david@lang.hm
-Subject: Re: Documentation for sysfs, hotplug, and firmware loading.
-In-Reply-To: <200707231749.50405.rob@landley.net>
-Message-ID: <Pine.LNX.4.58.0708051226001.2279@be1.lrz>
-References: <8I2t1-7jt-5@gated-at.bofh.it> <8Jbuh-84N-3@gated-at.bofh.it>
- <E1ICDr7-0000e9-P4@be1.lrz> <200707231749.50405.rob@landley.net>
+	Sun, 5 Aug 2007 08:59:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56445 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756974AbXHEM7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 08:59:09 -0400
+Date: Sun, 5 Aug 2007 14:58:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Claudio Martins <ctpm@ist.utl.pt>, Jeff Garzik <jeff@garzik.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805125847.GC22060@elte.hu>
+References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805072805.GB4414@elte.hu> <20070805134640.2c7d1140@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX18jV0ORhce+txSvUSrhbmPLpfuJA0+/wKi6e5L
- DF8foU84BNWtr7xrv1jQBN2adDtNfXeTls6nWOqcuBucB2a0ed
- cxGqwvwAs39pczM2KpaHg==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070805134640.2c7d1140@the-village.bc.nu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Jul 2007, Rob Landley wrote:
-> On Saturday 21 July 2007 8:14:41 am Bodo Eggert wrote:
-> > Greg KH <greg@kroah.com> wrote:
-> > > On Fri, Jul 20, 2007 at 08:21:39PM -0400, Rob Landley wrote:
-> > >> I'm not trying to document /sys/devices.  I'm trying to document
-> > >> hotplug, populating /dev, and things like firmware loading that fall out
-> > >> of that. This requires use of sysfs, and I'm only trying to document as
-> > >> much of sysfs as you need to do that.
-> > >
-> > > Like I stated before, you do not need to even have sysfs mounted to have
-> > > a dynamic /dev.
-> > >
-> > > And why do you need to document populating /dev dynamically?  udev
-> > > already solves this problem for you, it's not like people are going off
-> > > and reinventing udev for their own enjoyment would not at least look at
-> > > how it solves this problem first.
-> >
-> > Turning your words around, you get: "Whatever one of these programs does
-> > documents how dynamic devices should be handled." If this is true, any
-> > change that makes one of these programs break is a kernel bug.
-> >
-> > Besides that: How am I supposed to be able to correctly change udev if
-> > there is no document telling me what would work and what happens to
-> > work by accident?
+
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+
+> > The only remotely valid compatibility argument would be Mutt - but even 
+> > that handles it just fine. (we broke way more software via noexec)
 > 
-> You aren't expected to.  Remember that udev and sysfs are written by the same 
-> people, working together off-list.  They're free to break the exported data 
-> format on a whim, because they write the code at both ends and fundamentally 
-> they're talking to themselves.  They honestly say you can't expect a new 
-> kernel to work with an old udev, and they say it with a straight face.  (To 
-> me, this sounds like saying you can't expect a new kernel to work with an old 
-> version of ps, because of /proc.)
-> 
-> Documentation is a threat to this way of working, because it would impose 
-> restrictions on them.  A spec is only of use if you introduce the radical 
-> idea that the information exported by sysfs exists for some purpose _other_ 
-> than simply to provide udev with information (and a specific version of udev 
-> matched to that kernel version, at that).
+> And went through a sensible process of resolving it.
+>
+> And its not just mutt. HSM stuff stops working which is a big deal as 
+> stuff clogs up. The /tmp/ cleaning tools go wrong as well.
 
-And having no documentation is, as you can see in this thread, a threat to
-open software. Having exactly one blob of software, and being left on your
-own once you change a bit, is one step away from having a binary only module.
+what OSS HSM software stops working and what is its failure mode? /tmp 
+cleaning tools will work _just fine_ if we report back max(mtime,ctime) 
+as atime - they'll zap more /tmp stuff as they used to. There's no 
+guarantee for /tmp contents anyway if tmpwatch is running. Or the patch 
+below.
 
-> > > To do otherwise would be foolish :)
-> >
-> > Some people like to fool around and create even smaller wheels.
-> > E.g. I'm changing the ACPI button driver to just call Ctrl_alt_del
-> > in order not to have an extra process running and free 0.2 % of my RAM.
-> 
-> When I started looking at udev in 2005, it was a disaster.  My commentary at 
-> the time is at http://lkml.org/lkml/2005/10/30/189 and the relevant bit is:
+	Ingo
 
-[...]
-
-> And so I made mdev, a utility which populated /dev _with_ a config file in 7k.  
-> Greg's upset I didn't just patch udev to remove libsysfs, remove the 
-> duplicated klibc code, remove the gratuitous database, remove the 
-> overcomplicated config file parser (with rules compiler), and so on.  They're 
-> boggling that I could ever have been unhappy with the One True Project to 
-> populate /dev.
-
-I see, we agree on this point. Besides that, I like to see the steps to be
-done, instead of having a letter sent to a voodoo doctor in Africa (called 
-udev) and getting back a magic spell to be chanted on my system (unless 
-he just pokes some voodoo doll).
--- 
-Top 100 things you don't want the sysadmin to say:
-87. Sorry, the new equipment didn't get budgetted.
+--- /etc/cron.daily/tmpwatch.orig	2007-08-05 14:44:25.000000000 +0200
++++ /etc/cron.daily/tmpwatch	2007-08-05 14:45:10.000000000 +0200
+@@ -1,9 +1,9 @@
+ #! /bin/sh
+-/usr/sbin/tmpwatch -x /tmp/.X11-unix -x /tmp/.XIM-unix -x /tmp/.font-unix \
++/usr/sbin/tmpwatch --mtime -x /tmp/.X11-unix -x /tmp/.XIM-unix -x /tmp/.font-unix \
+ 	-x /tmp/.ICE-unix -x /tmp/.Test-unix 10d /tmp
+-/usr/sbin/tmpwatch 30d /var/tmp
++/usr/sbin/tmpwatch --mtime 30d /var/tmp
+ for d in /var/{cache/man,catman}/{cat?,X11R6/cat?,local/cat?}; do
+     if [ -d "$d" ]; then
+-	/usr/sbin/tmpwatch -f 30d "$d"
++	/usr/sbin/tmpwatch --mtime -f 30d "$d"
+     fi
+ done
