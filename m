@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763197AbXHEJug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761074AbXHEK3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763197AbXHEJug (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 05:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbXHEJu1
+	id S1761074AbXHEK3U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 06:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXHEK3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 05:50:27 -0400
-Received: from 1wt.eu ([62.212.114.60]:1152 "EHLO 1wt.eu"
+	Sun, 5 Aug 2007 06:29:10 -0400
+Received: from unthought.net ([212.97.129.88]:3385 "EHLO unthought.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753039AbXHEJu1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 05:50:27 -0400
-Date: Sun, 5 Aug 2007 11:49:16 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Axel Reinhold <axel@freakout.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
-Message-ID: <20070805094916.GE6002@1wt.eu>
-References: <200708050856.l758u4ou031651@bongo.freakout.de>
+	id S1754375AbXHEK3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 06:29:08 -0400
+X-Greylist: delayed 526 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Aug 2007 06:29:08 EDT
+Date: Sun, 5 Aug 2007 12:29:07 +0200
+From: Jakob Oestergaard <jakob@unthought.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Claudio Martins <ctpm@ist.utl.pt>,
+       Jeff Garzik <jeff@garzik.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805102907.GB4246@unthought.net>
+Mail-Followup-To: Jakob Oestergaard <jakob@unthought.net>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Claudio Martins <ctpm@ist.utl.pt>, Jeff Garzik <jeff@garzik.org>,
+	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+	dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+	richard@rsk.demon.co.uk, david@lang.hm
+References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805072805.GB4414@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708050856.l758u4ou031651@bongo.freakout.de>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070805072805.GB4414@elte.hu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 10:56:04AM +0200, Axel Reinhold wrote:
-> i found a bug in linux-2.4.35.
+On Sun, Aug 05, 2007 at 09:28:05AM +0200, Ingo Molnar wrote:
 > 
-> the bug produces a crashing kernel when compiled
-> with gcc >=4.2.0 and VIA C3 optimized -march=c3
-> (CONFIG_MCYRIXIII=y)
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 > 
-> this issue was first discussed on the gcc bugzilla:
->  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=32264
+> > >  Can you give examples of backup solutions that rely on atime being 
+> > > updated? I can understand backup tools using mtime/ctime for 
+> > > incremental backups (like tar + Amanda, etc), but I'm having trouble 
+> > > figuring out why someone would want to use atime for that.
+> > 
+> > HSM is the usual one, and to a large extent probably why Unix 
+> > originally had atime. Basically migrating less used files away so as 
+> > to keep the system disks tidy.
 > 
-> and tracked down to the include/asm-i386/hw_irq.h
-> module with the help of the gcc guys:
+> atime is used as a _hint_, at most and HSM sure works just fine on an 
+> atime-incapable filesystem too. So it's the same deal as "add user_xattr 
+> mount option to the filesystem to make Beagle index faster". It's now: 
+> "if you use HSM storage add the atime mount option to make it slightly 
+> more intelligent. Expect huge IO slowdowns though."
 > 
-> (pluto at agmk dot net) wrote:
-> >yup, i see something new :)
-> >
-> >please look at line 12137 of i8259.i:
-> >
-> >__attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
-> >
-> >as you can see there is a semicolon after call_do_IRQ(void)
-> >and following asm statement isn't treated as a function body.
-> >in this way -O1 -f{no-}unit-at-a-time accidentally produces
-> >different code. it's not a gcc bug.
-> >
-> >linux-2.4.35/include/asm-i386/hw_irq.h
-> >contains these evil macros.
-> 
-> is there a chance to fix this?
-> these macros a far beyond my capabilities to fix.
+> The only remotely valid compatibility argument would be Mutt - but even 
+> that handles it just fine. (we broke way more software via noexec)
 
-That's one of the ugliest things I've discovered to date !
-I have no idea how to fix it, I'm downloading gcc-4.2 right now to try
-to find a solution. I've never compiled 2.4 with gcc 4.2, so there may
-be surprises.
+I find it pretty normal to use tmpreaper to clear out unused files from
+certain types of semi-temporary directory structures. Those files are
+often only ever read. They'd start randomly disappearing while in use.
 
-Regards,
-Willy
+But then again, maybe I'm the only guy on the planet who uses tmpreaper.
+
+-- 
+
+ / jakob
 
