@@ -1,49 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760049AbXHERD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760159AbXHERGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760049AbXHERD2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 13:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753552AbXHERDV
+	id S1760159AbXHERGy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 13:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXHERGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 13:03:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52268 "EHLO ogre.sisk.pl"
+	Sun, 5 Aug 2007 13:06:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48041 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753417AbXHERDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 13:03:21 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Meelis Roos <mroos@linux.ee>
-Subject: Re: Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-Date: Sun, 5 Aug 2007 19:12:17 +0200
-User-Agent: KMail/1.9.5
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-References: <Pine.SOC.4.64.0708041425020.26419@math.ut.ee> <200708050010.19338.rjw@sisk.pl> <Pine.SOC.4.64.0708051217340.11960@math.ut.ee>
-In-Reply-To: <Pine.SOC.4.64.0708051217340.11960@math.ut.ee>
+	id S1753552AbXHERGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 13:06:46 -0400
+To: Adnan Khaleel <akhaleel2001@yahoo.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Page Cache Question
+References: <725937.57185.qm@web33705.mail.mud.yahoo.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 05 Aug 2007 20:01:12 +0200
+In-Reply-To: <725937.57185.qm@web33705.mail.mud.yahoo.com>
+Message-ID: <p738x8pn9nb.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708051912.17342.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 5 August 2007 11:18, Meelis Roos wrote:
-> > > This is arcch/ppc:
-> > > 
-> > > kernel/power/Kconfig:84:warning: 'select' used by config symbol 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-> > 
-> > May I see .config please?
-> 
-> Oops, sorry, should have sent along with the warning. And it's arch/ppc, 
-> not the new arch/powerpc.
+Adnan Khaleel <akhaleel2001@yahoo.com> writes:
 
-Hmm, with this .config SUSPEND_SMP cannot be set, because SMP is unset in it.
+> I'm looking for a way to disable the page cache for an
+> experimental NUMA system running the 2.6.17 kernel. I would prefer to
+> only disable the page cache for my process and still have it be enabled
+> by the rest of the system. Is there an easy way of doing this?
+> Alternatively, I would be fine disabling the Page Cache altogether as well.
 
-Can you please check if this warning is still present with the patch from
-http://marc.info/?l=linux-kernel&m=118633307113052&w=2 applied?
+All user memory is in the page cache. Without it you could only run kernel
+modules.
 
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+-Andi
