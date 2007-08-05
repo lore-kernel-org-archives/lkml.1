@@ -1,48 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755908AbXHERN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbXHERXN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755908AbXHERN6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 13:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbXHERNt
+	id S1756471AbXHERXN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 13:23:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXHERXC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 13:13:49 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59793 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbXHERNt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 13:13:49 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46B6053E.2050708@s5r6.in-berlin.de>
-Date: Sun, 05 Aug 2007 19:13:34 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.5) Gecko/20070804 SeaMonkey/1.1.3
-MIME-Version: 1.0
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-CC: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: 2.6.23-rc1 regression: hwmon/w83627ehf: wrong fan speed
-References: <46B5B290.4040907@s5r6.in-berlin.de> <20070805162141.GI6221@jupiter.solarsys.private>
-In-Reply-To: <20070805162141.GI6221@jupiter.solarsys.private>
-X-Enigmail-Version: 0.95.1
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 5 Aug 2007 13:23:02 -0400
+Received: from main.gmane.org ([80.91.229.2]:47791 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751658AbXHERXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 13:23:00 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Brice Figureau <brice+lklm@daysofwonder.com>
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Date: Sun, 5 Aug 2007 17:22:43 +0000 (UTC)
+Message-ID: <loom.20070805T190600-28@post.gmane.org>
+References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 213.41.177.193 (Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en; rv:1.8.1.4) Gecko/20070509 Camino/1.5)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark M. Hoffman wrote:
-> Does this patch (against v2.6.23-rc2) fix it?
-> 
-> commit f15c50e703c14ff7d72c3cb34e8e55417476a290
-> Author: Mark M. Hoffman <mhoffman@lightlink.com>
-> Date:   Sun Aug 5 12:19:01 2007 -0400
-> 
->     hwmon: read fan_div values during probe
->     
->     This patch forces the driver to read the fan divider values during early init.
->     Otherwise, a call to store_fan_min() could access uninitialized variables.
+Hi,
 
-Alas not; there is no change.
-(I applied on vanilla 2.6.23-rc2 and rebooted.)
--- 
-Stefan Richter
--=====-=-=== =--- --=-=
-http://arcgraph.de/sr/
+Ingo Molnar <mingo <at> elte.hu> writes:
+> * Linus Torvalds <torvalds <at> linux-foundation.org> wrote:
+> > On Fri, 3 Aug 2007, Peter Zijlstra wrote:
+> > > 
+> > > These patches aim to improve balance_dirty_pages() and directly address 
+> > > three issues:
+> > >   1) inter device starvation
+> > >   2) stacked device deadlocks
+> > >   3) inter process starvation
+> > 
+> > Ok, the patches certainly look pretty enough, and you fixed the only 
+> > thing I complained about last time (naming), so as far as I'm 
+> > concerned it's now just a matter of whether it *works* or not. I guess 
+> > being in -mm will help somewhat, but it would be good to have people 
+> > with several disks etc actively test this out.
+> 
+> There are positive reports in the never-ending "my system crawls like an 
+> XT when copying large files" bugzilla entry:
+> 
+>  http://bugzilla.kernel.org/show_bug.cgi?id=7372
+> 
+>[ snipped part of the bug report ]
+> 
+> so the whole problem area seems to be a "perfect storm" created by a 
+> combination of TCQ, IO scheduling and VM dirty handling weaknesses. Per 
+> device dirty throttling is a good step forward and it makes a very 
+> visible positive difference.
+
+
+Foreword: I'm the OP of bug #7372. 
+
+I just want to say/add that:
+ 1) I'm running the per-bdi patch since about 30 days on a master mysql server
+under somewhat mild load without any adverse effect I could notice.
+
+ 2) I _still_ don't get the "performances" of 2.6.17, but since that's the
+better combination I could get, I think there is IMHO progress in the right
+direction (to be compared to no progress since 2.6.18, that's better :-)).
+
+To be honest, a vanilla 2.6.17 not tuned at all (ie vfs_cache_pressure and other
+knobs in /proc/sys/vm like swappiness and dirty_*) is still better than any
+other upcoming kernel I tested. Thus I still think 2.6.18 added a big regression
+(which unfortunately I couldn't find).
+Read the full bug report for any background information if needed.
+
+Unfortunately it isn't practical to git-bisect my issue as the server is a
+production server that can't be rebooted/stopped whenever I want (and since I
+found workarounds of the issue...).
+
+Thanks for showing interest in this issue.
+
+Please CC: me on any answers as I'm not subscribed to the list.
+
+--
+Brice Figureau
+
