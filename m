@@ -1,37 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbXHEQ2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbXHEQ3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760116AbXHEQ2o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 12:28:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755608AbXHEQ2D
+	id S1759301AbXHEQ3F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 12:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbXHEQ2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 12:28:03 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:37722 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755633AbXHEQ16 (ORCPT
+	Sun, 5 Aug 2007 12:28:15 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:26502 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758477AbXHEQ2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 12:27:58 -0400
+	Sun, 5 Aug 2007 12:28:12 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=GySPPr93NjgBHpbWsGhSN/AHQ+oxiYNjiZHqFk9hFIpauWXP25lyMimS4F2JVkch63K8nNhxiwHyihvjRkAYNVFkRIrxNUii9Gdku5Og9Z66Sy/w+RvO9GLele4bru4BW0O9zB6rDfjfJt2F493XQQ6n1nQ99bZLeAgjp0Nnvoc=
-Message-ID: <46B5FA43.9010809@googlemail.com>
-Date: Sun, 05 Aug 2007 18:26:43 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=DS2oLss36xpzdlf6rIx2yh96n045JMCYxWhsiyihmB7TlO9y1aT75aq6ZgvgOWXm5Dha/4WF22taOCXq4n9pshhcti2wxffbzKtU/H+d/YRd+hjmAxVyLlRMZgFBY6lmIISV7IxndsezqJrid8nAVbdXy9YemYBI9rcduPX23ZQ=
+Message-ID: <46B5FA4C.2070700@googlemail.com>
+Date: Sun, 05 Aug 2007 18:26:52 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, Adrian Bunk <bunk@stusta.de>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       Eric Sesterhenn <snakebyte@gmx.de>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [1/2] 2.6.23-rc2: known regressions with patches
+       Christoph Lameter <clameter@sgi.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Jan Dittmer <jdi@l4x.org>, Thomas Renninger <trenn@suse.de>,
+       Netdev <netdev@vger.kernel.org>,
+       Joachim Deguara <joachim.deguara@amd.com>,
+       Michael Chan <mchan@broadcom.com>, linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Matthew Wilcox <matthew@wil.cx>, Seokmann Ju <seokmann.ju@qlogic.com>,
+       Richard Lary <rlary@us.ibm.com>
+Subject: Re: [2/2] 2.6.23-rc2: known regressions with patches
+References: <46B5F93A.1020100@googlemail.com>
+In-Reply-To: <46B5F93A.1020100@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -64,62 +66,57 @@ Trent Piepho                           2
 
 
 
-Unclassified
+Memory management
 
-Subject         : Kconfig prompts without help text
-References      : http://lkml.org/lkml/2007/7/16/326
+Subject         : [bug] SLUB & freeing locks
+References      : http://lkml.org/lkml/2007/7/26/90
 Last known good : ?
-Submitter       : Stefan Richter <stefanr@s5r6.in-berlin.de>
+Submitter       : Ingo Molnar <mingo@elte.hu>
 Caused-By       : ?
-Handled-By      : Jan Engelhardt <jengelh@linux01.gwdg.de>
-Patch           : http://lkml.org/lkml/2007/7/18/236
+Handled-By      : Peter Zijlstra <peterz@infradead.org>
+Patch           : http://lkml.org/lkml/2007/7/26/97
 Status          : patch available
 
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
+
+
+Modpost
+
+Subject         : modpost bug breaks ia64 cross compilation
+References      : http://lkml.org/lkml/2007/7/27/30
+                  http://lkml.org/lkml/2007/7/27/418
 Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
-Caused-By       : ?
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
-Status          : patch available
-
-
-
-ACPI
-
-Subject         : acpi_ec_remove() use-after-free
-References      : http://lkml.org/lkml/2007/7/29/138
-Last known good : 2.6.22
-Submitter       : Adrian Bunk <bunk@stusta.de>
-Caused-By       : Alexey Starikovskiy <astarikovskiy@suse.de>
-                  commit 837012ede14a8fc088be3682c964da7fc6af026b
-Handled-By      : Adrian Bunk <bunk@stusta.de>
-Patch           : http://lkml.org/lkml/2007/7/29/138
-Status          : patch available
-
-Subject         : Time Problems with 2.6.23-rc1-gf695baf2
-References      : http://lkml.org/lkml/2007/7/23/486
-Last known good : ?
-Submitter       : Eric Sesterhenn <snakebyte@gmx.de>
-Caused-By       : Venki Pallipadi <venkatesh.pallipadi@intel.com>
-                  commit 18eab8550397f1f3d4b8b2c5257c88dae25d58ed
+Submitter       : Jan Dittmer <jdi@l4x.org>
+Caused-By       : Thomas Renninger <trenn@suse.de>
+                  commit 29b71a1ca74491fab9fed09e9d835d840d042690
 Handled-By      : ?
-Patch           : http://marc.info/?l=linux-kernel&m=118590919604954&w=2
+Patch           : http://lkml.org/lkml/2007/8/2/211
+Status          : patch was suggested
+
+
+
+Networking
+
+Subject         : tg3 dead after s2ram
+References      : http://lkml.org/lkml/2007/7/31/121
+Last known good : ?
+Submitter       : Joachim Deguara <joachim.deguara@amd.com>
+Caused-By       : ?
+Handled-By      : Michael Chan <mchan@broadcom.com>
+Patch           : http://lkml.org/lkml/2007/8/2/288
 Status          : patch available
 
 
 
-FS
+SCSI
 
-Subject         : NFSv4 poops itself
-References      : http://lkml.org/lkml/2007/7/27/144
+Subject         : qla2xyz broken in current Linus tree
+References      : http://marc.info/?l=linux-scsi&m=118581420308892&w=2
 Last known good : ?
-Submitter       : Jeff Garzik <jeff@garzik.org> 
-Caused-By       : ?
-Handled-By      : Trond Myklebust <Trond.Myklebust@netapp.com>
-Patch           : http://lkml.org/lkml/2007/7/27/183
+Submitter       : Matthew Wilcox <matthew@wil.cx>
+Caused-By       : Seokmann Ju <seokmann.ju@qlogic.com>
+                  commit 281afe1947d855661754850de29d7530b2ff
+Handled-By      : Seokmann Ju <seokmann.ju@qlogic.com>
+Patch           : http://marc.info/?l=linux-scsi&m=118581884800073&w=2
 Status          : patch available
 
 
