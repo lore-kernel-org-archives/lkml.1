@@ -1,392 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757789AbXHETTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758589AbXHETXY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757789AbXHETTf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 15:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbXHETT1
+	id S1758589AbXHETXY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 15:23:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755839AbXHETXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 15:19:27 -0400
-Received: from 1wt.eu ([62.212.114.60]:1181 "EHLO 1wt.eu"
+	Sun, 5 Aug 2007 15:23:16 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41204 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753571AbXHETT0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 15:19:26 -0400
-Date: Sun, 5 Aug 2007 21:17:48 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Axel Reinhold <axel@freakout.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
-Message-ID: <20070805191748.GA5524@1wt.eu>
-References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu>
-Mime-Version: 1.0
+	id S1754827AbXHETXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 15:23:15 -0400
+Date: Sun, 5 Aug 2007 21:22:26 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jakob Oestergaard <jakob@unthought.net>, Jeff Garzik <jeff@garzik.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
+Subject: [patch] implement smarter atime updates support
+Message-ID: <20070805192226.GA20234@elte.hu>
+References: <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070805102021.GA4246@unthought.net> <46B5A996.5060006@garzik.org> <20070805105850.GC4246@unthought.net> <20070805124648.GA21173@elte.hu> <alpine.LFD.0.999.0708050944470.5037@woody.linux-foundation.org> <20070805190928.GA17433@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070805154337.GA4716@1wt.eu>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070805190928.GA17433@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4992]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 05:43:37PM +0200, Willy Tarreau wrote:
-> On Sun, Aug 05, 2007 at 10:56:04AM +0200, Axel Reinhold wrote:
-> > i found a bug in linux-2.4.35.
-> > 
-> > the bug produces a crashing kernel when compiled
-> > with gcc >=4.2.0 and VIA C3 optimized -march=c3
-> > (CONFIG_MCYRIXIII=y)
-> > 
-> > this issue was first discussed on the gcc bugzilla:
-> >  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=32264
-> > 
-> > and tracked down to the include/asm-i386/hw_irq.h
-> > module with the help of the gcc guys:
-> > 
-> > (pluto at agmk dot net) wrote:
-> > >yup, i see something new :)
-> > >
-> > >please look at line 12137 of i8259.i:
-> > >
-> > >__attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
-> > >
-> > >as you can see there is a semicolon after call_do_IRQ(void)
-> > >and following asm statement isn't treated as a function body.
-> > >in this way -O1 -f{no-}unit-at-a-time accidentally produces
-> > >different code. it's not a gcc bug.
-> > >
-> > >linux-2.4.35/include/asm-i386/hw_irq.h
-> > >contains these evil macros.
-> > 
-> > is there a chance to fix this?
-> > these macros a far beyond my capabilities to fix.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> tested it by moving the date forward:
 > 
-> Axel,
+>   # date
+>   Sun Aug  5 22:55:14 CEST 2007
+>   # date -s "Tue Aug  7 22:55:14 CEST 2007"
+>   Tue Aug  7 22:55:14 CEST 2007
 > 
-> I've reproduced it and posted the following explanation to GCC's
-> bugzilla ; I think I can provide you with a simple fix very soon.
+> access to a file did not generate disk IO before the date was set, and 
+> it generated exactly one IO after the date was set.
+> 
+> ( should i perhaps reduce the number of boot options and only use a
+>   single "norelatime_default" boot option to turn this off? )
 
-OK Axel,
+ok, cleaned it up some more: only a single, consistent boot option and 
+all the switches (be that config, boot or sysctl) are now called 
+"default_relatime". Also, got rid of that #ifdef ugliness in namespace.c 
+via a cleaner Kconfig solution (suggested by Peter Zijlstra).
 
-I have a fix now. Three good news :
+	Ingo
 
-  - there were other symbols which were affected by -fno-unit-at-a-time under
-    gcc-4.2
+---------------------------->
+Subject: [patch] implement smarter atime updates support
+From: Ingo Molnar <mingo@elte.hu>
 
-  - gcc-4.1 was also slightly affected but it was not very serious, since the
-    difference only lie in data <-> rodata
+change relatime updates to be performed once per day. This makes
+relatime a compatible solution for HSM, mailer-notification and
+tmpwatch applications too.
 
-  - vmlinux is smaller by 65 kB on my machine with both gcc-4.1 and gcc-4.2,
-    and bzImage is smaller by 7 kB. gcc-4.2's bzImage was 2.5 kB larger and
-    is now 100 bytes smaller.
+also add the CONFIG_DEFAULT_RELATIME kernel option, which makes
+"norelatime" the default for all mounts without an extra kernel
+boot option.
 
-The fix simply consists in removing -fno-unit-at-a-time with gcc-4, as is
-done in 2.6. This was added for gcc-3.4 and is not appropriate for 4.x.
+add the "default_relatime=0" boot option to turn this off.
 
-Here's the list of the other affected symbols. First column is the type of
-the symbol and second one is the symbol name. It's a diff -y of the symbols
-between vmlinux build with both gcc versions :
+also add the /proc/sys/kernel/default_relatime flag which can be changed
+runtime to modify the behavior of subsequent new mounts.
 
-    2.4.35 + gcc-4.2.1        |     2.4.35-git + gcc-4.2.1
-d IRQ0x00_interrupt	      |	t IRQ0x00_interrupt
-d IRQ0x01_interrupt	      |	t IRQ0x01_interrupt
-d IRQ0x02_interrupt	      |	t IRQ0x02_interrupt
-d IRQ0x03_interrupt	      |	t IRQ0x03_interrupt
-d IRQ0x04_interrupt	      |	t IRQ0x04_interrupt
-d IRQ0x05_interrupt	      |	t IRQ0x05_interrupt
-d IRQ0x06_interrupt	      |	t IRQ0x06_interrupt
-d IRQ0x07_interrupt	      |	t IRQ0x07_interrupt
-d IRQ0x08_interrupt	      |	t IRQ0x08_interrupt
-d IRQ0x09_interrupt	      |	t IRQ0x09_interrupt
-d IRQ0x0a_interrupt	      |	t IRQ0x0a_interrupt
-d IRQ0x0b_interrupt	      |	t IRQ0x0b_interrupt
-d IRQ0x0c_interrupt	      |	t IRQ0x0c_interrupt
-d IRQ0x0d_interrupt	      |	t IRQ0x0d_interrupt
-d IRQ0x0e_interrupt	      |	t IRQ0x0e_interrupt
-d IRQ0x0f_interrupt	      |	t IRQ0x0f_interrupt
-d IRQ0x10_interrupt	      |	t IRQ0x10_interrupt
-d IRQ0x11_interrupt	      |	t IRQ0x11_interrupt
-d IRQ0x12_interrupt	      |	t IRQ0x12_interrupt
-d IRQ0x13_interrupt	      |	t IRQ0x13_interrupt
-d IRQ0x14_interrupt	      |	t IRQ0x14_interrupt
-d IRQ0x15_interrupt	      |	t IRQ0x15_interrupt
-d IRQ0x16_interrupt	      |	t IRQ0x16_interrupt
-d IRQ0x17_interrupt	      |	t IRQ0x17_interrupt
-d IRQ0x18_interrupt	      |	t IRQ0x18_interrupt
-d IRQ0x19_interrupt	      |	t IRQ0x19_interrupt
-d IRQ0x1a_interrupt	      |	t IRQ0x1a_interrupt
-d IRQ0x1b_interrupt	      |	t IRQ0x1b_interrupt
-d IRQ0x1c_interrupt	      |	t IRQ0x1c_interrupt
-d IRQ0x1d_interrupt	      |	t IRQ0x1d_interrupt
-d IRQ0x1e_interrupt	      |	t IRQ0x1e_interrupt
-d IRQ0x1f_interrupt	      |	t IRQ0x1f_interrupt
-d IRQ0x20_interrupt	      |	t IRQ0x20_interrupt
-d IRQ0x21_interrupt	      |	t IRQ0x21_interrupt
-d IRQ0x22_interrupt	      |	t IRQ0x22_interrupt
-d IRQ0x23_interrupt	      |	t IRQ0x23_interrupt
-d IRQ0x24_interrupt	      |	t IRQ0x24_interrupt
-d IRQ0x25_interrupt	      |	t IRQ0x25_interrupt
-d IRQ0x26_interrupt	      |	t IRQ0x26_interrupt
-d IRQ0x27_interrupt	      |	t IRQ0x27_interrupt
-d IRQ0x28_interrupt	      |	t IRQ0x28_interrupt
-d IRQ0x29_interrupt	      |	t IRQ0x29_interrupt
-d IRQ0x2a_interrupt	      |	t IRQ0x2a_interrupt
-d IRQ0x2b_interrupt	      |	t IRQ0x2b_interrupt
-d IRQ0x2c_interrupt	      |	t IRQ0x2c_interrupt
-d IRQ0x2d_interrupt	      |	t IRQ0x2d_interrupt
-d IRQ0x2e_interrupt	      |	t IRQ0x2e_interrupt
-d IRQ0x2f_interrupt	      |	t IRQ0x2f_interrupt
-d IRQ0x30_interrupt	      |	t IRQ0x30_interrupt
-d IRQ0x31_interrupt	      |	t IRQ0x31_interrupt
-d IRQ0x32_interrupt	      |	t IRQ0x32_interrupt
-d IRQ0x33_interrupt	      |	t IRQ0x33_interrupt
-d IRQ0x34_interrupt	      |	t IRQ0x34_interrupt
-d IRQ0x35_interrupt	      |	t IRQ0x35_interrupt
-d IRQ0x36_interrupt	      |	t IRQ0x36_interrupt
-d IRQ0x37_interrupt	      |	t IRQ0x37_interrupt
-d IRQ0x38_interrupt	      |	t IRQ0x38_interrupt
-d IRQ0x39_interrupt	      |	t IRQ0x39_interrupt
-d IRQ0x3a_interrupt	      |	t IRQ0x3a_interrupt
-d IRQ0x3b_interrupt	      |	t IRQ0x3b_interrupt
-d IRQ0x3c_interrupt	      |	t IRQ0x3c_interrupt
-d IRQ0x3d_interrupt	      |	t IRQ0x3d_interrupt
-d IRQ0x3e_interrupt	      |	t IRQ0x3e_interrupt
-d IRQ0x3f_interrupt	      |	t IRQ0x3f_interrupt
-d IRQ0x40_interrupt	      |	t IRQ0x40_interrupt
-d IRQ0x41_interrupt	      |	t IRQ0x41_interrupt
-d IRQ0x42_interrupt	      |	t IRQ0x42_interrupt
-d IRQ0x43_interrupt	      |	t IRQ0x43_interrupt
-d IRQ0x44_interrupt	      |	t IRQ0x44_interrupt
-d IRQ0x45_interrupt	      |	t IRQ0x45_interrupt
-d IRQ0x46_interrupt	      |	t IRQ0x46_interrupt
-d IRQ0x47_interrupt	      |	t IRQ0x47_interrupt
-d IRQ0x48_interrupt	      |	t IRQ0x48_interrupt
-d IRQ0x49_interrupt	      |	t IRQ0x49_interrupt
-d IRQ0x4a_interrupt	      |	t IRQ0x4a_interrupt
-d IRQ0x4b_interrupt	      |	t IRQ0x4b_interrupt
-d IRQ0x4c_interrupt	      |	t IRQ0x4c_interrupt
-d IRQ0x4d_interrupt	      |	t IRQ0x4d_interrupt
-d IRQ0x4e_interrupt	      |	t IRQ0x4e_interrupt
-d IRQ0x4f_interrupt	      |	t IRQ0x4f_interrupt
-d IRQ0x50_interrupt	      |	t IRQ0x50_interrupt
-d IRQ0x51_interrupt	      |	t IRQ0x51_interrupt
-d IRQ0x52_interrupt	      |	t IRQ0x52_interrupt
-d IRQ0x53_interrupt	      |	t IRQ0x53_interrupt
-d IRQ0x54_interrupt	      |	t IRQ0x54_interrupt
-d IRQ0x55_interrupt	      |	t IRQ0x55_interrupt
-d IRQ0x56_interrupt	      |	t IRQ0x56_interrupt
-d IRQ0x57_interrupt	      |	t IRQ0x57_interrupt
-d IRQ0x58_interrupt	      |	t IRQ0x58_interrupt
-d IRQ0x59_interrupt	      |	t IRQ0x59_interrupt
-d IRQ0x5a_interrupt	      |	t IRQ0x5a_interrupt
-d IRQ0x5b_interrupt	      |	t IRQ0x5b_interrupt
-d IRQ0x5c_interrupt	      |	t IRQ0x5c_interrupt
-d IRQ0x5d_interrupt	      |	t IRQ0x5d_interrupt
-d IRQ0x5e_interrupt	      |	t IRQ0x5e_interrupt
-d IRQ0x5f_interrupt	      |	t IRQ0x5f_interrupt
-d IRQ0x60_interrupt	      |	t IRQ0x60_interrupt
-d IRQ0x61_interrupt	      |	t IRQ0x61_interrupt
-d IRQ0x62_interrupt	      |	t IRQ0x62_interrupt
-d IRQ0x63_interrupt	      |	t IRQ0x63_interrupt
-d IRQ0x64_interrupt	      |	t IRQ0x64_interrupt
-d IRQ0x65_interrupt	      |	t IRQ0x65_interrupt
-d IRQ0x66_interrupt	      |	t IRQ0x66_interrupt
-d IRQ0x67_interrupt	      |	t IRQ0x67_interrupt
-d IRQ0x68_interrupt	      |	t IRQ0x68_interrupt
-d IRQ0x69_interrupt	      |	t IRQ0x69_interrupt
-d IRQ0x6a_interrupt	      |	t IRQ0x6a_interrupt
-d IRQ0x6b_interrupt	      |	t IRQ0x6b_interrupt
-d IRQ0x6c_interrupt	      |	t IRQ0x6c_interrupt
-d IRQ0x6d_interrupt	      |	t IRQ0x6d_interrupt
-d IRQ0x6e_interrupt	      |	t IRQ0x6e_interrupt
-d IRQ0x6f_interrupt	      |	t IRQ0x6f_interrupt
-d IRQ0x70_interrupt	      |	t IRQ0x70_interrupt
-d IRQ0x71_interrupt	      |	t IRQ0x71_interrupt
-d IRQ0x72_interrupt	      |	t IRQ0x72_interrupt
-d IRQ0x73_interrupt	      |	t IRQ0x73_interrupt
-d IRQ0x74_interrupt	      |	t IRQ0x74_interrupt
-d IRQ0x75_interrupt	      |	t IRQ0x75_interrupt
-d IRQ0x76_interrupt	      |	t IRQ0x76_interrupt
-d IRQ0x77_interrupt	      |	t IRQ0x77_interrupt
-d IRQ0x78_interrupt	      |	t IRQ0x78_interrupt
-d IRQ0x79_interrupt	      |	t IRQ0x79_interrupt
-d IRQ0x7a_interrupt	      |	t IRQ0x7a_interrupt
-d IRQ0x7b_interrupt	      |	t IRQ0x7b_interrupt
-d IRQ0x7c_interrupt	      |	t IRQ0x7c_interrupt
-d IRQ0x7d_interrupt	      |	t IRQ0x7d_interrupt
-d IRQ0x7e_interrupt	      |	t IRQ0x7e_interrupt
-d IRQ0x7f_interrupt	      |	t IRQ0x7f_interrupt
-d IRQ0x80_interrupt	      |	t IRQ0x80_interrupt
-d IRQ0x81_interrupt	      |	t IRQ0x81_interrupt
-d IRQ0x82_interrupt	      |	t IRQ0x82_interrupt
-d IRQ0x83_interrupt	      |	t IRQ0x83_interrupt
-d IRQ0x84_interrupt	      |	t IRQ0x84_interrupt
-d IRQ0x85_interrupt	      |	t IRQ0x85_interrupt
-d IRQ0x86_interrupt	      |	t IRQ0x86_interrupt
-d IRQ0x87_interrupt	      |	t IRQ0x87_interrupt
-d IRQ0x88_interrupt	      |	t IRQ0x88_interrupt
-d IRQ0x89_interrupt	      |	t IRQ0x89_interrupt
-d IRQ0x8a_interrupt	      |	t IRQ0x8a_interrupt
-d IRQ0x8b_interrupt	      |	t IRQ0x8b_interrupt
-d IRQ0x8c_interrupt	      |	t IRQ0x8c_interrupt
-d IRQ0x8d_interrupt	      |	t IRQ0x8d_interrupt
-d IRQ0x8e_interrupt	      |	t IRQ0x8e_interrupt
-d IRQ0x8f_interrupt	      |	t IRQ0x8f_interrupt
-d IRQ0x90_interrupt	      |	t IRQ0x90_interrupt
-d IRQ0x91_interrupt	      |	t IRQ0x91_interrupt
-d IRQ0x92_interrupt	      |	t IRQ0x92_interrupt
-d IRQ0x93_interrupt	      |	t IRQ0x93_interrupt
-d IRQ0x94_interrupt	      |	t IRQ0x94_interrupt
-d IRQ0x95_interrupt	      |	t IRQ0x95_interrupt
-d IRQ0x96_interrupt	      |	t IRQ0x96_interrupt
-d IRQ0x97_interrupt	      |	t IRQ0x97_interrupt
-d IRQ0x98_interrupt	      |	t IRQ0x98_interrupt
-d IRQ0x99_interrupt	      |	t IRQ0x99_interrupt
-d IRQ0x9a_interrupt	      |	t IRQ0x9a_interrupt
-d IRQ0x9b_interrupt	      |	t IRQ0x9b_interrupt
-d IRQ0x9c_interrupt	      |	t IRQ0x9c_interrupt
-d IRQ0x9d_interrupt	      |	t IRQ0x9d_interrupt
-d IRQ0x9e_interrupt	      |	t IRQ0x9e_interrupt
-d IRQ0x9f_interrupt	      |	t IRQ0x9f_interrupt
-d IRQ0xa0_interrupt	      |	t IRQ0xa0_interrupt
-d IRQ0xa1_interrupt	      |	t IRQ0xa1_interrupt
-d IRQ0xa2_interrupt	      |	t IRQ0xa2_interrupt
-d IRQ0xa3_interrupt	      |	t IRQ0xa3_interrupt
-d IRQ0xa4_interrupt	      |	t IRQ0xa4_interrupt
-d IRQ0xa5_interrupt	      |	t IRQ0xa5_interrupt
-d IRQ0xa6_interrupt	      |	t IRQ0xa6_interrupt
-d IRQ0xa7_interrupt	      |	t IRQ0xa7_interrupt
-d IRQ0xa8_interrupt	      |	t IRQ0xa8_interrupt
-d IRQ0xa9_interrupt	      |	t IRQ0xa9_interrupt
-d IRQ0xaa_interrupt	      |	t IRQ0xaa_interrupt
-d IRQ0xab_interrupt	      |	t IRQ0xab_interrupt
-d IRQ0xac_interrupt	      |	t IRQ0xac_interrupt
-d IRQ0xad_interrupt	      |	t IRQ0xad_interrupt
-d IRQ0xae_interrupt	      |	t IRQ0xae_interrupt
-d IRQ0xaf_interrupt	      |	t IRQ0xaf_interrupt
-d IRQ0xb0_interrupt	      |	t IRQ0xb0_interrupt
-d IRQ0xb1_interrupt	      |	t IRQ0xb1_interrupt
-d IRQ0xb2_interrupt	      |	t IRQ0xb2_interrupt
-d IRQ0xb3_interrupt	      |	t IRQ0xb3_interrupt
-d IRQ0xb4_interrupt	      |	t IRQ0xb4_interrupt
-d IRQ0xb5_interrupt	      |	t IRQ0xb5_interrupt
-d IRQ0xb6_interrupt	      |	t IRQ0xb6_interrupt
-d IRQ0xb7_interrupt	      |	t IRQ0xb7_interrupt
-d IRQ0xb8_interrupt	      |	t IRQ0xb8_interrupt
-d IRQ0xb9_interrupt	      |	t IRQ0xb9_interrupt
-d IRQ0xba_interrupt	      |	t IRQ0xba_interrupt
-d IRQ0xbb_interrupt	      |	t IRQ0xbb_interrupt
-d IRQ0xbc_interrupt	      |	t IRQ0xbc_interrupt
-d IRQ0xbd_interrupt	      |	t IRQ0xbd_interrupt
-d IRQ0xbe_interrupt	      |	t IRQ0xbe_interrupt
-d IRQ0xbf_interrupt	      |	t IRQ0xbf_interrupt
-d IRQ0xc0_interrupt	      |	t IRQ0xc0_interrupt
-d IRQ0xc1_interrupt	      |	t IRQ0xc1_interrupt
-d IRQ0xc2_interrupt	      |	t IRQ0xc2_interrupt
-d IRQ0xc3_interrupt	      |	t IRQ0xc3_interrupt
-d IRQ0xc4_interrupt	      |	t IRQ0xc4_interrupt
-d IRQ0xc5_interrupt	      |	t IRQ0xc5_interrupt
-d IRQ0xc6_interrupt	      |	t IRQ0xc6_interrupt
-d IRQ0xc7_interrupt	      |	t IRQ0xc7_interrupt
-d IRQ0xc8_interrupt	      |	t IRQ0xc8_interrupt
-d IRQ0xc9_interrupt	      |	t IRQ0xc9_interrupt
-d IRQ0xca_interrupt	      |	t IRQ0xca_interrupt
-d IRQ0xcb_interrupt	      |	t IRQ0xcb_interrupt
-d IRQ0xcc_interrupt	      |	t IRQ0xcc_interrupt
-d IRQ0xcd_interrupt	      |	t IRQ0xcd_interrupt
-d IRQ0xce_interrupt	      |	t IRQ0xce_interrupt
-d IRQ0xcf_interrupt	      |	t IRQ0xcf_interrupt
-d IRQ0xd0_interrupt	      |	t IRQ0xd0_interrupt
-d IRQ0xd1_interrupt	      |	t IRQ0xd1_interrupt
-d IRQ0xd2_interrupt	      |	t IRQ0xd2_interrupt
-d IRQ0xd3_interrupt	      |	t IRQ0xd3_interrupt
-d IRQ0xd4_interrupt	      |	t IRQ0xd4_interrupt
-d IRQ0xd5_interrupt	      |	t IRQ0xd5_interrupt
-d IRQ0xd6_interrupt	      |	t IRQ0xd6_interrupt
-d IRQ0xd7_interrupt	      |	t IRQ0xd7_interrupt
-d IRQ0xd8_interrupt	      |	t IRQ0xd8_interrupt
-d IRQ0xd9_interrupt	      |	t IRQ0xd9_interrupt
-d IRQ0xda_interrupt	      |	t IRQ0xda_interrupt
-d IRQ0xdb_interrupt	      |	t IRQ0xdb_interrupt
-d IRQ0xdc_interrupt	      |	t IRQ0xdc_interrupt
-d IRQ0xdd_interrupt	      |	t IRQ0xdd_interrupt
-d IRQ0xde_interrupt	      |	t IRQ0xde_interrupt
-d IRQ0xdf_interrupt	      |	t IRQ0xdf_interrupt
-d apic_timer_interrupt	      |	t apic_timer_interrupt
-d call_apic_timer_interrupt   |	t call_apic_timer_interrupt
-d call_call_function_interrup |	t call_call_function_interrup
-d call_do_IRQ		      |	t call_do_IRQ
-d call_error_interrupt	      |	t call_error_interrupt
-d call_function_interrupt     |	t call_function_interrupt
-d call_invalidate_interrupt   |	t call_invalidate_interrupt
-d call_reschedule_interrupt   |	t call_reschedule_interrupt
-d call_spurious_interrupt     |	t call_spurious_interrupt
-d common_interrupt	      |	t common_interrupt
-d error_interrupt	      |	t error_interrupt
-d invalidate_interrupt	      |	t invalidate_interrupt
-d reschedule_interrupt	      |	t reschedule_interrupt
+tested by moving the date forward:
 
-I also noticed a few drivers which do not build with gcc-4.2 (eg: wdt83627).
-I'll have to adress this later.
+   # date
+   Sun Aug  5 22:55:14 CEST 2007
+   # date -s "Tue Aug  7 22:55:14 CEST 2007"
+   Tue Aug  7 22:55:14 CEST 2007
 
-Anyway, could you please try the appended patch ? At least it works for me,
-and I expect it to fix your problem too :
+access to a file did not generate disk IO before the date was set, and
+it generated exactly one IO after the date was set.
 
-willy@pcw:~$ cat /proc/version 
-Linux version 2.4.35 (willy@pcw) (gcc version 4.2.1) #1 SMP Sun Aug 5 20:55:56 CEST 2007
-
-Thanks,
-Willy
-
-
->From fff3b8ca17220353262127bb4045a8edd53e6e8c Mon Sep 17 00:00:00 2001
-From: Willy Tarreau <w@1wt.eu>
-Date: Sun, 5 Aug 2007 18:37:07 +0200
-Subject: [PATCH] fix incorrect use of -fno-unit-at-a-time on GCC >= 4
-
-Axel Reinhold reported wrong code being emitted for arch/i386/kernel/i8259.c
-using gcc-4.2, while the same code with gcc-4.1 was valid. The problem was
-tracked down to gcc-4.2 messing up with sections with this option which is
-already deprecated for gcc 4.x, and the asm statements were incorrectly
-assigned to section .data. It was also possible to trick gcc-4.1 into the
-same error by simply declaring an array before any asm statement.
-
-The correct fix is to remove -fno-unit-at-a-time with gcc >= 4, which is
-also what has been done in 2.6. In anticipation of such other problems with
-gcc 4.x, a new function "if_gcc4" has been added to the main Makefile.
-
-Signed-off-by: Willy Tarreau <w@1wt.eu>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- Makefile           |    1 +
- arch/i386/Makefile |    6 +++---
- 2 files changed, 4 insertions(+), 3 deletions(-)
+ Documentation/kernel-parameters.txt |    4 +++
+ fs/Kconfig                          |   22 ++++++++++++++++
+ fs/inode.c                          |   48 ++++++++++++++++++++++++++----------
+ fs/namespace.c                      |   25 ++++++++++++++++++
+ include/linux/mount.h               |    2 +
+ kernel/sysctl.c                     |    9 ++++++
+ 6 files changed, 97 insertions(+), 13 deletions(-)
 
-diff --git a/Makefile b/Makefile
-index e44ff6b..29db08b 100644
---- a/Makefile
-+++ b/Makefile
-@@ -100,6 +100,7 @@ endif
- AFLAGS := -D__ASSEMBLY__ $(CPPFLAGS)
+Index: linux/Documentation/kernel-parameters.txt
+===================================================================
+--- linux.orig/Documentation/kernel-parameters.txt
++++ linux/Documentation/kernel-parameters.txt
+@@ -525,6 +525,10 @@ and is between 256 and 4096 characters. 
+ 			This is a 16-member array composed of values
+ 			ranging from 0-255.
  
- check_gcc = $(shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi)
-+if_gcc4 = $(shell if echo __GNUC__ | $(CC) -E -xc - | grep -q '^4$$' > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi)
++	default_relatime=
++			[FS] mount all filesystems with relative atime
++			updates by default.
++
+ 	default_utf8=   [VT]
+ 			Format=<0|1>
+ 			Set system-wide default UTF-8 mode for all tty's.
+Index: linux/fs/Kconfig
+===================================================================
+--- linux.orig/fs/Kconfig
++++ linux/fs/Kconfig
+@@ -2060,6 +2060,28 @@ config 9P_FS
  
- # disable pointer signedness warnings in gcc 4.0
- CFLAGS += $(call check_gcc,-Wno-pointer-sign,)
-diff --git a/arch/i386/Makefile b/arch/i386/Makefile
-index 8f93efd..8ba6bd0 100644
---- a/arch/i386/Makefile
-+++ b/arch/i386/Makefile
-@@ -92,9 +92,9 @@ ifdef CONFIG_MVIAC3_2
- CFLAGS += $(call check_gcc,-march=c3-2,-march=i686)
- endif
+ endmenu
  
--# Disable unit-at-a-time mode, it makes gcc use a lot more stack
--# due to the lack of sharing of stacklots.
--CFLAGS += $(call check_gcc,-fno-unit-at-a-time,)
-+# Disable unit-at-a-time mode on pre-gcc-4.0 compilers, it makes gcc use
-+# a lot more stack due to the lack of sharing of stacklots.
-+CFLAGS += $(call if_gcc4,,$(call check_gcc,-fno-unit-at-a-time,))
++config DEFAULT_RELATIME
++	bool "Mount all filesystems with relatime by default"
++	default y
++	help
++	  If you say Y here, all your filesystems will be mounted
++	  with the "relatime" mount option. This eliminates many atime
++	  ('file last accessed' timestamp) updates (which otherwise
++	  is performed on every file access and generates a write
++	  IO to the inode) and thus speeds up IO. Atime is still updated,
++	  but only once per day.
++
++	  The mtime ('file last modified') and ctime ('file created')
++	  timestamp are unaffected by this change.
++
++	  Use the "norelatime" kernel boot option to turn off this
++	  feature.
++
++config DEFAULT_RELATIME_VAL
++	int
++	default "1" if DEFAULT_RELATIME
++	default "0"
++
+ if BLOCK
+ menu "Partition Types"
  
- HEAD := arch/i386/kernel/head.o arch/i386/kernel/init_task.o
+Index: linux/fs/inode.c
+===================================================================
+--- linux.orig/fs/inode.c
++++ linux/fs/inode.c
+@@ -1162,6 +1162,36 @@ sector_t bmap(struct inode * inode, sect
+ }
+ EXPORT_SYMBOL(bmap);
  
--- 
-1.5.2.4
-
-
-
++/*
++ * With relative atime, only update atime if the
++ * previous atime is earlier than either the ctime or
++ * mtime.
++ */
++static int relatime_need_update(struct inode *inode, struct timespec now)
++{
++	/*
++	 * Is mtime younger than atime? If yes, update atime:
++	 */
++	if (timespec_compare(&inode->i_mtime, &inode->i_atime) >= 0)
++		return 1;
++	/*
++	 * Is ctime younger than atime? If yes, update atime:
++	 */
++	if (timespec_compare(&inode->i_ctime, &inode->i_atime) >= 0)
++		return 1;
++
++	/*
++	 * Is the previous atime value older than a day? If yes,
++	 * update atime:
++	 */
++	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24*60*60)
++		return 1;
++	/*
++	 * Good, we can skip the atime update:
++	 */
++	return 0;
++}
++
+ /**
+  *	touch_atime	-	update the access time
+  *	@mnt: mount the inode is accessed on
+@@ -1191,22 +1221,14 @@ void touch_atime(struct vfsmount *mnt, s
+ 			return;
+ 		if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
+ 			return;
+-
+-		if (mnt->mnt_flags & MNT_RELATIME) {
+-			/*
+-			 * With relative atime, only update atime if the
+-			 * previous atime is earlier than either the ctime or
+-			 * mtime.
+-			 */
+-			if (timespec_compare(&inode->i_mtime,
+-						&inode->i_atime) < 0 &&
+-			    timespec_compare(&inode->i_ctime,
+-						&inode->i_atime) < 0)
++	}
++	now = current_fs_time(inode->i_sb);
++	if (mnt) {
++		if (mnt->mnt_flags & MNT_RELATIME)
++			if (!relatime_need_update(inode, now))
+ 				return;
+-		}
+ 	}
+ 
+-	now = current_fs_time(inode->i_sb);
+ 	if (timespec_equal(&inode->i_atime, &now))
+ 		return;
+ 
+Index: linux/fs/namespace.c
+===================================================================
+--- linux.orig/fs/namespace.c
++++ linux/fs/namespace.c
+@@ -1107,6 +1107,8 @@ int do_add_mount(struct vfsmount *newmnt
+ 		goto unlock;
+ 
+ 	newmnt->mnt_flags = mnt_flags;
++	WARN_ON_ONCE(newmnt->mnt_flags & MNT_RELATIME);
++
+ 	if ((err = graft_tree(newmnt, nd)))
+ 		goto unlock;
+ 
+@@ -1362,6 +1364,24 @@ int copy_mount_options(const void __user
+ }
+ 
+ /*
++ * Allow users to disable (or enable) atime updates via a .config
++ * option or via the boot line, or via /proc/sys/fs/default_relatime:
++ */
++int default_relatime __read_mostly = CONFIG_DEFAULT_RELATIME_VAL;
++
++static int __init set_default_relatime(char *str)
++{
++	get_option(&str, &default_relatime);
++
++	printk(KERN_INFO "Mount all filesystems with"
++		"default relative atime updates: %s.\n",
++		default_relatime ? "enabled" : "disabled");
++
++	return 1;
++}
++__setup("default_relatime=", set_default_relatime);
++
++/*
+  * Flags is a 32-bit value that allows up to 31 non-fs dependent flags to
+  * be given to the mount() call (ie: read-only, no-dev, no-suid etc).
+  *
+@@ -1409,6 +1429,11 @@ long do_mount(char *dev_name, char *dir_
+ 		mnt_flags |= MNT_NODIRATIME;
+ 	if (flags & MS_RELATIME)
+ 		mnt_flags |= MNT_RELATIME;
++	else if (default_relatime &&
++				!(flags & (MNT_NOATIME | MNT_NODIRATIME))) {
++		mnt_flags |= MNT_RELATIME;
++		flags |= MS_RELATIME;
++	}
+ 
+ 	flags &= ~(MS_NOSUID | MS_NOEXEC | MS_NODEV | MS_ACTIVE |
+ 		   MS_NOATIME | MS_NODIRATIME | MS_RELATIME);
+Index: linux/include/linux/mount.h
+===================================================================
+--- linux.orig/include/linux/mount.h
++++ linux/include/linux/mount.h
+@@ -103,5 +103,7 @@ extern void shrink_submounts(struct vfsm
+ extern spinlock_t vfsmount_lock;
+ extern dev_t name_to_dev_t(char *name);
+ 
++extern int default_relatime;
++
+ #endif
+ #endif /* _LINUX_MOUNT_H */
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c
++++ linux/kernel/sysctl.c
+@@ -30,6 +30,7 @@
+ #include <linux/capability.h>
+ #include <linux/smp_lock.h>
+ #include <linux/fs.h>
++#include <linux/mount.h>
+ #include <linux/init.h>
+ #include <linux/kernel.h>
+ #include <linux/kobject.h>
+@@ -1206,6 +1207,14 @@ static ctl_table fs_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "default_relatime",
++		.data		= &default_relatime,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++	},
+ #if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
