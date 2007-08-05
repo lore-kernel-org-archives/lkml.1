@@ -1,129 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759301AbXHEQ3F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759342AbXHEQdf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759301AbXHEQ3F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 12:29:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbXHEQ2P
+	id S1759342AbXHEQdf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 12:33:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753032AbXHEQd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 12:28:15 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:26502 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758477AbXHEQ2M (ORCPT
+	Sun, 5 Aug 2007 12:33:27 -0400
+Received: from bram.avontuur.org ([84.244.182.76]:34076 "EHLO
+	bram.avontuur.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbXHEQd0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 12:28:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=DS2oLss36xpzdlf6rIx2yh96n045JMCYxWhsiyihmB7TlO9y1aT75aq6ZgvgOWXm5Dha/4WF22taOCXq4n9pshhcti2wxffbzKtU/H+d/YRd+hjmAxVyLlRMZgFBY6lmIISV7IxndsezqJrid8nAVbdXy9YemYBI9rcduPX23ZQ=
-Message-ID: <46B5FA4C.2070700@googlemail.com>
-Date: Sun, 05 Aug 2007 18:26:52 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Jan Dittmer <jdi@l4x.org>, Thomas Renninger <trenn@suse.de>,
-       Netdev <netdev@vger.kernel.org>,
-       Joachim Deguara <joachim.deguara@amd.com>,
-       Michael Chan <mchan@broadcom.com>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Matthew Wilcox <matthew@wil.cx>, Seokmann Ju <seokmann.ju@qlogic.com>,
-       Richard Lary <rlary@us.ibm.com>
-Subject: Re: [2/2] 2.6.23-rc2: known regressions with patches
-References: <46B5F93A.1020100@googlemail.com>
-In-Reply-To: <46B5F93A.1020100@googlemail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Sun, 5 Aug 2007 12:33:26 -0400
+X-Greylist: delayed 2049 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Aug 2007 12:33:26 EDT
+Date: Sun, 5 Aug 2007 17:59:16 +0200
+From: Bram <bram@linux.kernel.as.avontuur.org>
+To: linux-kernel@vger.kernel.org
+Subject: Possible bug in realtek 8169 ethernet driver
+Message-ID: <20070805155915.GM2761@avontuur.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Verification-Tag: brama@localhost
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hello,
 
-Here is a list of some known regressions in 2.6.23-rc2
-with patches available.
+On my system running linux kernel 2.6.21.5, I can't get my ethernet card
+to work. When loading the r8169 module, it will claim to be detected as
+eth0, but it will show up as eth2 in ifconfig. There are no eth0 or eth1
+devices though. It doesn't work as eth2 either. 
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+The router attached to it indicates a 100mbit link. But that's about it.
+I cannot get any data over it. I can manually configure it to have an IP
+address and netmask, but it won't see anything on the local net. DHCP
+doesn't work either. Nothing out of the ordinary is logged in dmesg or
+anywhere else. An usb ethernet dongle on the system works just fine,
+ruling out (absent anyway) firewall or similar trouble.  The device works
+well in windows XP.
 
-List of Aces
+Relevant system specs:
+-Gigabyte GA-G33m-DS2R motherboard, with the integrated realtec nic
+-intel c2d CPU
 
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            6
-Andi Kleen                             4
-Andrew Morton                          4
-Linus Torvalds                         4
-Al Viro                                3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
-David Woodhouse                        2
-Hugh Dickins                           2
-Trent Piepho                           2
+I've included output of several programs below, hope this helps.
 
+Please CC: to my email address, as I have not subscribed myself to the kernel list.
 
+dmesg output:
 
-Memory management
+r8169 Gigabit Ethernet driver 2.2LK loaded
+ACPI: PCI Interrupt 0000:04:00.0[A] -> GSI 17 (level, low) -> IRQ 18
+PCI: Setting latency timer of device 0000:04:00.0 to 64
+eth0: RTL8168b/8111b at 0xf8854000, 00:1a:4d:44:a1:1f, IRQ 18
+...
+r8169: eth2: link up
+r8169: eth2: link up
 
-Subject         : [bug] SLUB & freeing locks
-References      : http://lkml.org/lkml/2007/7/26/90
-Last known good : ?
-Submitter       : Ingo Molnar <mingo@elte.hu>
-Caused-By       : ?
-Handled-By      : Peter Zijlstra <peterz@infradead.org>
-Patch           : http://lkml.org/lkml/2007/7/26/97
-Status          : patch available
+ifconfig output:
 
+eth2      Link encap:Ethernet  HWaddr 00:1A:4D:44:A1:1F  
+          inet addr:192.168.3.10  Bcast:192.168.3.255  Mask:255.255.255.0
+          inet6 addr: 2001:610:1108:5203::2/64 Scope:Global
+          inet6 addr: 2001:610:1108:5203:21a:4dff:fe44:a11f/64 Scope:Global
+          inet6 addr: fe80::21a:4dff:fe44:a11f/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:296529 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:221678 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:438053177 (417.7 MiB)  TX bytes:14156999 (13.5 MiB)
+          Interrupt:18 Base address:0x4000 
 
+lspci output:
 
-Modpost
-
-Subject         : modpost bug breaks ia64 cross compilation
-References      : http://lkml.org/lkml/2007/7/27/30
-                  http://lkml.org/lkml/2007/7/27/418
-Last known good : ?
-Submitter       : Jan Dittmer <jdi@l4x.org>
-Caused-By       : Thomas Renninger <trenn@suse.de>
-                  commit 29b71a1ca74491fab9fed09e9d835d840d042690
-Handled-By      : ?
-Patch           : http://lkml.org/lkml/2007/8/2/211
-Status          : patch was suggested
-
-
-
-Networking
-
-Subject         : tg3 dead after s2ram
-References      : http://lkml.org/lkml/2007/7/31/121
-Last known good : ?
-Submitter       : Joachim Deguara <joachim.deguara@amd.com>
-Caused-By       : ?
-Handled-By      : Michael Chan <mchan@broadcom.com>
-Patch           : http://lkml.org/lkml/2007/8/2/288
-Status          : patch available
-
-
-
-SCSI
-
-Subject         : qla2xyz broken in current Linus tree
-References      : http://marc.info/?l=linux-scsi&m=118581420308892&w=2
-Last known good : ?
-Submitter       : Matthew Wilcox <matthew@wil.cx>
-Caused-By       : Seokmann Ju <seokmann.ju@qlogic.com>
-                  commit 281afe1947d855661754850de29d7530b2ff
-Handled-By      : Seokmann Ju <seokmann.ju@qlogic.com>
-Patch           : http://marc.info/?l=linux-scsi&m=118581884800073&w=2
-Status          : patch available
+04:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+        Subsystem: Giga-byte Technology Unknown device e000
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 0, Cache Line Size: 32 bytes
+        Interrupt: pin A routed to IRQ 18
+        Region 0: I/O ports at c000 [size=256]
+        Region 2: Memory at ec000000 (64-bit, non-prefetchable) [size=4K]
+        [virtual] Expansion ROM at ed200000 [disabled] [size=64K]
+        Capabilities: [40] Power Management version 2
+                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [48] Vital Product Data
+        Capabilities: [50] Message Signalled Interrupts: Mask- 64bit+ Queue=0/1 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [60] Express Endpoint IRQ 0
+                Device: Supported: MaxPayload 1024 bytes, PhantFunc 0, ExtTag+
+                Device: Latency L0s unlimited, L1 unlimited
+                Device: AtnBtn+ AtnInd+ PwrInd+
+                Device: Errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                Device: RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                Device: MaxPayload 128 bytes, MaxReadReq 512 bytes
+                Link: Supported Speed 2.5Gb/s, Width x1, ASPM L0s, Port 0
+                Link: Latency L0s unlimited, L1 unlimited
+                Link: ASPM Disabled RCB 64 bytes CommClk- ExtSynch-
+                Link: Speed 2.5Gb/s, Width x1
+        Capabilities: [84] Vendor Specific Information
+        Capabilities: [100] Advanced Error Reporting
+        Capabilities: [12c] Virtual Channel
+        Capabilities: [148] Device Serial Number 68-81-ec-10-00-00-00-25
+        Capabilities: [154] Power Budgeting
 
 
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+Best regards,
+Bram
