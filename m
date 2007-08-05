@@ -1,70 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbXHETtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760854AbXHETt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759564AbXHETtc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 15:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757008AbXHETtZ
+	id S1760854AbXHETt5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 15:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757177AbXHETtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 15:49:25 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:50231 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756991AbXHETtZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 15:49:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=CeR5ztdzdzaRyCtn27vcPXSGwbYjNd7lvbhn6jPTC8rtN56iALr3KSyO0GPPAP3KvZY9Y/4ZKuGWKfWBV6A6ldQlZ3qGwtNUAYMC5IWpZ8ofmP1CJ0+eXz40QkL+FP5jfwgtTOtQ6i5zM7pu9CHk4zZnr7XHEzsGMRWpVwlgbBs=
-Message-ID: <46B6297C.900@googlemail.com>
-Date: Sun, 05 Aug 2007 21:48:12 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
-       Meelis Roos <mroos@linux.ee>
-Subject: Re: [2/3] 2.6.23-rc2: known regressions
-References: <46B5F74D.7010708@googlemail.com> <46B5FA32.50208@googlemail.com> <200708051858.12404.rjw@sisk.pl>
-In-Reply-To: <200708051858.12404.rjw@sisk.pl>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
+	Sun, 5 Aug 2007 15:49:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41444 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756991AbXHETtq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 15:49:46 -0400
+Subject: Re: [PATCH] sonypi: Fix initialization warning
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Richard Knutsson <ricknu-0@student.ltu.se>
+Cc: Ben Collins <bcollins@ubuntu.com>, "Brown, Len" <len.brown@intel.com>,
+       linux-acpi@vger.kernel.org, Stelian Pop <stelian@popies.net>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <46B61F70.90005@student.ltu.se>
+References: <46B61F70.90005@student.ltu.se>
+Content-Type: text/plain
+Date: Sun, 05 Aug 2007 21:50:43 +0200
+Message-Id: <1186343443.3858.46.camel@fanta4.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.0 
 Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki pisze:
-> On Sunday, 5 August 2007 18:26, Michal Piotrowski wrote:
->> Hi all,
->>
->> Here is a list of some known regressions in 2.6.23-rc2.
->>
->> Feel free to add new regressions/remove fixed etc.
->> http://kernelnewbies.org/known_regressions
->>
+On Sun, 2007-08-05 at 21:05 +0200, Richard Knutsson wrote:
+> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+> ---
+> Got this from the compiler (gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)):
+> drivers/char/sonypi.c:1153: warning: initialization from incompatible pointer type
+> 
+> 
+> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+> index 73037a4..2dcd519 100644
+> --- a/drivers/char/sonypi.c
+> +++ b/drivers/char/sonypi.c
+> @@ -1147,10 +1147,15 @@ static int sonypi_acpi_remove(struct acpi_device *device, int type)
+>  	return 0;
+>  }
 >  
->> Power management
->>
->> Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
->> References      : http://lkml.org/lkml/2007/8/4/39
->> Last known good : ?
->> Submitter       : Meelis Roos <mroos@linux.ee>
->> Caused-By       : ?
->> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
->> Status          : unknown
-> 
-> Is being debugged.
-> 
-> Frankly, I don't know what to think about that.  With the Meelis' .config
-> SUSPEND_SMP can't even be set ...
+> +static const struct acpi_device_id sonypi_acpi_driver_ids[] = {
+> +        {ACPI_PROCESSOR_HID, 0},
+This is wrong. You need to take the HID the driver should match for, in
+this case: {"SNY6001", 0 },
 
-Meelis, have you used a "make randconfig" without "make oldconfig"?
+> +        {"", 0},
+> +};
+> +
+>  static struct acpi_driver sonypi_acpi_driver = {
+>  	.name           = "sonypi",
+>  	.class          = "hkey",
+> -	.ids            = "SNY6001",
+> +	.ids            = sonypi_acpi_driver_ids,
+>  	.ops            = {
+>  		           .add = sonypi_acpi_add,
+>  			   .remove = sonypi_acpi_remove,
 
-Regards,
-Michal
+A patch from Eugene Teo fixing this is already on the list of Len's
+patches.
+See subject: [PATCH 04/12] sonypi: fix ids member of struct acpi_driver
+posted yesterday on linux-acpi.
+Anyway, thanks for the heads up,
 
--- 
-LOG
-http://www.stardust.webpages.pl/log/
+    Thomas
+
