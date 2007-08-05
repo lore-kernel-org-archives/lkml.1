@@ -1,148 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759508AbXHETDe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760091AbXHETE6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759508AbXHETDe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 15:03:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbXHETD1
+	id S1760091AbXHETE6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 15:04:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755396AbXHETEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 15:03:27 -0400
-Received: from smtp.blackdown.de ([213.239.206.42]:42854 "EHLO
-	smtp.blackdown.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752907AbXHETD0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 15:03:26 -0400
-From: Juergen Kreileder <jk@blackdown.de>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: lvcreate on 2.6.22.1: kernel tried to execute NX-protected page
-X-PGP-Key: http://blackhole.pca.dfn.de:11371/pks/lookup?op=get&search=0x730A28A5
-X-PGP-Fingerprint: 7C19 D069 9ED5 DC2E 1B10  9859 C027 8D5B 730A 28A5
-Mail-Followup-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com
-Date: Sun, 05 Aug 2007 21:03:22 +0200
-Message-ID: <87y7gperd1.fsf@blackdown.de>
-Organization: Blackdown Java-Linux Team
-User-Agent: Gnus/5.110004 (No Gnus v0.4) Emacs/21.4 (gnu/linux)
+	Sun, 5 Aug 2007 15:04:51 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52483 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752837AbXHETEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 15:04:50 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] uli526x: Add suspend and resume routines
+Date: Sun, 5 Aug 2007 21:14:01 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeff Garzik <jeff@garzik.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@mcmartin.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708052114.01790.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[Sorry for the excessive CCs, but I don't know who's the maintainer. ;-)]
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-I've upgraded devmapper to 1.02.20 and lvm2 to 2.02.26.  Didn't help much,
-I just got a the same BUG again:
+Add suspend/resume support to the uli526x network driver (tested on x86_64,
+with "Ethernet controller: ALi Corporation M5263 Ethernet Controller, rev 40").
 
-kernel tried to execute NX-protected page - exploit attempt? (uid: 0)
-BUG: unable to handle kernel paging request at virtual address f492c1f8
- printing eip:
-f492c1f8
-*pdpt = 0000000000001001
-*pde = 80000000348001e3
-*pte = ec1c7da0ec1c7da0
-Oops: 0011 [#1]
-CPU:    0
-EIP:    0060:[<f492c1f8>]    Not tainted VLI
-EFLAGS: 00010282   (2.6.22.1-jk1-exec-shield #1)
-EIP is at 0xf492c1f8
-eax: f492c1cc   ebx: f492c1cc   ecx: 00000000   edx: f492c1f8
-esi: f492c1f8   edi: 00000000   ebp: 00000000   esp: d4177db4
-ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-Process lvcreate (pid: 2303, ti=d4176000 task=d1c88a00 task.ti=d4176000)
-Stack: c02088c4 f492c1e4 c02088d0 c03dd95e c2969f60 c0209118 ce684800 e5436280 
-       00000287 c03dd952 c03dd952 f6a44548 c018e393 c19ea90c 00000000 c19eb900 
-       c03dd952 c18f9780 f45cb300 00000000 c0157664 c18f97cc c18f9780 c01575be 
-Call Trace:
- [kobject_cleanup+116/128] kobject_cleanup+0x74/0x80
- [kobject_release+0/16] kobject_release+0x0/0x10
- [kref_put+56/160] kref_put+0x38/0xa0
- [sysfs_hash_and_remove+275/320] sysfs_hash_and_remove+0x113/0x140
- [sysfs_slab_alias+100/128] sysfs_slab_alias+0x64/0x80
- [sysfs_slab_add+174/208] sysfs_slab_add+0xae/0xd0
- [kmem_cache_create+236/320] kmem_cache_create+0xec/0x140
- [jobs_init+46/128] jobs_init+0x2e/0x80
- [kcopyd_init+45/176] kcopyd_init+0x2d/0xb0
- [kcopyd_client_create+28/208] kcopyd_client_create+0x1c/0xd0
- [init_hash_tables+142/192] init_hash_tables+0x8e/0xc0
- [snapshot_ctr+506/752] snapshot_ctr+0x1fa/0x2f0
- [dm_split_args+47/272] dm_split_args+0x2f/0x110
- [dm_table_add_target+252/400] dm_table_add_target+0xfc/0x190
- [vmalloc+32/48] vmalloc+0x20/0x30
- [populate_table+98/192] populate_table+0x62/0xc0
- [table_load+82/240] table_load+0x52/0xf0
- [table_load+0/240] table_load+0x0/0xf0
- [ctl_ioctl+209/288] ctl_ioctl+0xd1/0x120
- [ctl_ioctl+0/288] ctl_ioctl+0x0/0x120
- [do_ioctl+59/96] do_ioctl+0x3b/0x60
- [vfs_ioctl+94/416] vfs_ioctl+0x5e/0x1a0
- [sys_ioctl+61/128] sys_ioctl+0x3d/0x80
- [sysenter_past_esp+95/133] sysenter_past_esp+0x5f/0x85
- =======================
-Code: 00 00 00 00 00 00 00 ff ff ff ff 00 00 00 00 00 00 00 00 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 <f8> c1 92 f4 f8 c1 92 f4 4c 16 b6 f5 00 00 00 00 00 00 00 00 00 
-EIP: [<f492c1f8>] 0xf492c1f8 SS:ESP 0068:d4177db4
+This patch is based on the suspend/resume code in the tg3 driver.
 
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/net/tulip/uli526x.c |  108 +++++++++++++++++++++++++++++++++++++++++---
+ 1 file changed, 102 insertions(+), 6 deletions(-)
 
-> I got the appended BUG from a 32-bit 2.6.22.1 kernel (with exec-shield
-> patch and PAE enabled) on an Athlon64 with dmsetup 1.02.03 and lvm2
-> v2.02.02.
-> (Note, the message comes from the vanilla kernel, not from the
-> exec-shiled patch.)
-> 
-> I wasn't able to reproduce the problem so far.  The machine creates
-> several snapshot volumes every 4 hours and worked fine with the new
-> kernel for several days.  It had 2.6.16.12+exec-shield before and ran
-> flawlessy for over a year.
-> 
-> 
-> kernel tried to execute NX-protected page - exploit attempt? (uid: 0)
-> BUG: unable to handle kernel paging request at virtual address f551df78
->  printing eip:
-> f551df78
-> *pdpt = 0000000000001001
-> *pde = 80000000354001e3
-> *pte = 9293396c5d22e546
-> Oops: 0011 [#1]
-> CPU:    0
-> EIP:    0060:[<f551df78>]    Not tainted VLI
-> EFLAGS: 00010286   (2.6.22.1-jk1-exec-shield #1)
-> EIP is at 0xf551df78
-> eax: f551df4c   ebx: f551df4c   ecx: 00000000   edx: f551df78
-> esi: f551df78   edi: 00000000   ebp: 00000000   esp: e8ee5db4
-> ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 0068
-> Process lvcreate (pid: 25916, ti=e8ee4000 task=f7358a00 task.ti=e8ee4000)
-> Stack: c02088c4 f551df64 c02088d0 c03dd95e c64ccf00 c0209118 00000287 c03dd95e
->        00000287 c018e38b c03dd952 d3e460e8 c018e393 c192a90c 00000000 c192b900
->        c03dd952 f557a600 f59bbcc0 00000000 c0157664 f557a64c f557a600 c01575be
-> Call Trace:
->  [kobject_cleanup+116/128] kobject_cleanup+0x74/0x80
->  [kobject_release+0/16] kobject_release+0x0/0x10
->  [kref_put+56/160] kref_put+0x38/0xa0
->  [sysfs_hash_and_remove+267/320] sysfs_hash_and_remove+0x10b/0x140
->  [sysfs_hash_and_remove+275/320] sysfs_hash_and_remove+0x113/0x140
->  [sysfs_slab_alias+100/128] sysfs_slab_alias+0x64/0x80
->  [sysfs_slab_add+174/208] sysfs_slab_add+0xae/0xd0
->  [kmem_cache_create+236/320] kmem_cache_create+0xec/0x140
->  [jobs_init+46/128] jobs_init+0x2e/0x80
->  [kcopyd_init+45/176] kcopyd_init+0x2d/0xb0
->  [kcopyd_client_create+28/208] kcopyd_client_create+0x1c/0xd0
->  [init_hash_tables+142/192] init_hash_tables+0x8e/0xc0
->  [snapshot_ctr+506/752] snapshot_ctr+0x1fa/0x2f0
->  [dm_split_args+47/272] dm_split_args+0x2f/0x110
->  [dm_table_add_target+252/400] dm_table_add_target+0xfc/0x190
->  [vmalloc+32/48] vmalloc+0x20/0x30
->  [populate_table+98/192] populate_table+0x62/0xc0
->  [table_load+82/240] table_load+0x52/0xf0
->  [table_load+0/240] table_load+0x0/0xf0
->  [ctl_ioctl+209/288] ctl_ioctl+0xd1/0x120
->  [ctl_ioctl+0/288] ctl_ioctl+0x0/0x120
->  [do_ioctl+59/96] do_ioctl+0x3b/0x60
->  [vfs_ioctl+94/416] vfs_ioctl+0x5e/0x1a0
->  [sys_ioctl+61/128] sys_ioctl+0x3d/0x80
->  [sysenter_past_esp+95/133] sysenter_past_esp+0x5f/0x85
->  =======================
-> Code: 00 00 00 00 00 00 00 ff ff ff ff 00 00 00 00 00 00 00 00 20 00 00 00 00 00 00 \
-> 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 <78> df 51 f5 78 df 51 f5 74 1b 8b \
->                 f7 00 00 00 00 00 00 00 00 32
-> EIP: [<f551df78>] 0xf551df78 SS:ESP 0068:e8ee5db4
-
-        Juergen
-
--- 
-Juergen Kreileder, Blackdown Java-Linux Team
-http://blog.blackdown.de/
+Index: linux-2.6.23-rc2/drivers/net/tulip/uli526x.c
+===================================================================
+--- linux-2.6.23-rc2.orig/drivers/net/tulip/uli526x.c	2007-08-05 20:18:57.000000000 +0200
++++ linux-2.6.23-rc2/drivers/net/tulip/uli526x.c	2007-08-05 20:47:07.000000000 +0200
+@@ -1110,19 +1110,15 @@ static void uli526x_timer(unsigned long 
+ 
+ 
+ /*
+- *	Dynamic reset the ULI526X board
+  *	Stop ULI526X board
+  *	Free Tx/Rx allocated memory
+- *	Reset ULI526X board
+- *	Re-initialize ULI526X board
++ *	Init system variable
+  */
+ 
+-static void uli526x_dynamic_reset(struct net_device *dev)
++static void uli526x_reset_prepare(struct net_device *dev)
+ {
+ 	struct uli526x_board_info *db = netdev_priv(dev);
+ 
+-	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
+-
+ 	/* Sopt MAC controller */
+ 	db->cr6_data &= ~(CR6_RXSC | CR6_TXSC);	/* Disable Tx/Rx */
+ 	update_cr6(db->cr6_data, dev->base_addr);
+@@ -1141,6 +1137,22 @@ static void uli526x_dynamic_reset(struct
+ 	db->link_failed = 1;
+ 	db->init=1;
+ 	db->wait_reset = 0;
++}
++
++
++/*
++ *	Dynamic reset the ULI526X board
++ *	Stop ULI526X board
++ *	Free Tx/Rx allocated memory
++ *	Reset ULI526X board
++ *	Re-initialize ULI526X board
++ */
++
++static void uli526x_dynamic_reset(struct net_device *dev)
++{
++	ULI526X_DBUG(0, "uli526x_dynamic_reset()", 0);
++
++	uli526x_reset_prepare(dev);
+ 
+ 	/* Re-initialize ULI526X board */
+ 	uli526x_init(dev);
+@@ -1150,6 +1162,88 @@ static void uli526x_dynamic_reset(struct
+ }
+ 
+ 
++#ifdef CONFIG_PM_SLEEP
++
++/*
++ *	Suspend the interface.
++ */
++
++static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++	int err = 0;
++
++	ULI526X_DBUG(0, "uli526x_suspend", 0);
++
++	if (dev && netdev_priv(dev)) {
++		pci_power_t power_state;
++
++		pci_save_state(pdev);
++
++		if (!netif_running(dev))
++			return 0;
++
++		netif_device_detach(dev);
++		uli526x_reset_prepare(dev);
++
++		power_state = pci_choose_state(pdev, state);
++		pci_enable_wake(pdev, power_state, 0);
++		err = pci_set_power_state(pdev, power_state);
++		if (err) {
++			netif_device_attach(dev);
++			/* Re-initialize ULI526X board */
++			uli526x_init(dev);
++			/* Restart upper layer interface */
++			netif_wake_queue(dev);
++		}
++	}
++	return err;
++}
++
++/*
++ *	Resume the interface.
++ */
++
++static int uli526x_resume(struct pci_dev *pdev)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++	struct uli526x_board_info *db = netdev_priv(dev);
++
++	ULI526X_DBUG(0, "uli526x_resume", 0);
++
++	if (dev && db) {
++		int err;
++
++		pci_restore_state(pdev);
++
++		if (!netif_running(dev))
++			return 0;
++
++		err = pci_set_power_state(pdev, PCI_D0);
++		if (err) {
++			printk(KERN_WARNING
++				"%s: Could not put device into D0\n",
++				dev->name);
++			return err;
++		}
++
++		netif_device_attach(dev);
++		/* Re-initialize ULI526X board */
++		uli526x_init(dev);
++		/* Restart upper layer interface */
++		netif_wake_queue(dev);
++	}
++	return 0;
++}
++
++#else /* !CONFIG_PM_SLEEP */
++
++#define uli526x_suspend	NULL
++#define uli526x_resume	NULL
++
++#endif /* !CONFIG_PM_SLEEP */
++
++
+ /*
+  *	free all allocated rx buffer
+  */
+@@ -1689,6 +1783,8 @@ static struct pci_driver uli526x_driver 
+ 	.id_table	= uli526x_pci_tbl,
+ 	.probe		= uli526x_init_one,
+ 	.remove		= __devexit_p(uli526x_remove_one),
++	.suspend	= uli526x_suspend,
++	.resume		= uli526x_resume,
+ };
+ 
+ MODULE_AUTHOR("Peer Chen, peer.chen@uli.com.tw");
