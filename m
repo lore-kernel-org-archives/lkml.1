@@ -1,53 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbXHESlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbXHESom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757610AbXHESlc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 14:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXHESlY
+	id S1758198AbXHESom (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 14:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXHESof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 14:41:24 -0400
-Received: from lazybastard.de ([212.112.238.170]:45162 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbXHESlY (ORCPT
+	Sun, 5 Aug 2007 14:44:35 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35525 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751918AbXHESoe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 14:41:24 -0400
-Date: Sun, 5 Aug 2007 20:37:14 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Willy Tarreau <w@1wt.eu>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070805183714.GA31606@lazybastard.org>
-References: <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805072141.GA4414@elte.hu> <20070805085354.GC6002@1wt.eu> <20070805141708.GB25753@lazybastard.org> <1186336953.2777.17.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sun, 5 Aug 2007 14:44:34 -0400
+X-Authenticated: #4463548
+X-Provags-ID: V01U2FsdGVkX1+WnR4wr6+WWVx1GdmVqtaqUAocFPd6jJqXxa/EZx
+	qOmal28Cn6gsnJ
+From: Dimitrios Apostolou <jimis@gmx.net>
+To: =?utf-8?q?Rafa=C5=82_Bilski?= <rafalbilski@interia.pl>
+Subject: Re: high system cpu load during intense disk i/o
+Date: Sun, 5 Aug 2007 21:42:13 +0300
+User-Agent: KMail/1.9.7
+Cc: linux-kernel@vger.kernel.org
+References: <200708031903.10063.jimis@gmx.net> <200708051903.12414.jimis@gmx.net> <46B60FB7.8030301@interia.pl>
+In-Reply-To: <46B60FB7.8030301@interia.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1186336953.2777.17.camel@laptopd505.fenrus.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200708052142.14630.jimis@gmx.net>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 August 2007 11:02:33 -0700, Arjan van de Ven wrote:
-> 
-> but does it work with relatime ?
+On Sunday 05 August 2007 20:58:15 Rafał Bilski wrote:
+> > Hello again,
+>
+> Hi!
+>
+> > was my report so complicated? Perhaps I shouldn't have included so many
+> > oprofile outputs. Anyway, if anyone wants to have a look, the most
+> > important is two_discs_bad.txt oprofile output, attached on my original
+> > message. The problem is 100% reproducible for me so I would appreciate if
+> > anyone told me he has similar experiences.
+>
+> Probably nobody replied to Your message because people at this list think
+> that Your problem isn't kernel related. In this moment I'm using "Arch
+> Linux" too, so I checked /etc/cron directory. There simple jobs You are
+> talking about are not so simple:
+> - update the "locate" database,
+> - update the "whatis" database.
+> Both jobs are scaning "/" partition. I don't know how dcron works, but I
+> can imagine situation in which it is polling cron.daily and says: "hey it
+> wasn't done today yet" and it is starting same jobs over and over again.
+> More and more tasks scans the "/" partition and in result access is slower
+> and slower.
 
-Like a greased penguin.  I had to reboot with my ugly patch posted
-earlier in the patch to actually test it, though.  Relatime suffers from
-a distribution problem, nothing else.
+Hello and thanks for your reply. 
 
-Guess I should throw in a kernel compile test as well, just to get a
-feel for the performance.
+The cron job that is running every 10 min on my system is mpop (a 
+fetchmail-like program) and another running every 5 min is mrtg. Both 
+normally finish within 1-2 seconds. 
 
-Jörn
+The fact that these simple cron jobs don't finish ever is certainly because of 
+the high system CPU load. If you see the two_discs_bad.txt which I attached 
+on my original message, you'll see that *vmlinux*, and specifically the 
+*scheduler*, take up most time. 
 
--- 
-Homo Sapiens is a goal, not a description.
--- unknown
+And the fact that this happens only when running two i/o processes but when 
+running only one everything is absolutely snappy (not at all slow, see 
+one_disc.txt), makes me sure that this is a kernel bug. I'd be happy to help 
+but I need some guidance to pinpoint the problem. 
+
+
+Thanks, 
+Dimitris
