@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbXHEUDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761512AbXHEUFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760759AbXHEUDp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 16:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbXHEUDg
+	id S1761512AbXHEUFd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 16:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbXHEUF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 16:03:36 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:49473 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757014AbXHEUDf (ORCPT
+	Sun, 5 Aug 2007 16:05:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53145 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756750AbXHEUFZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 16:03:35 -0400
-Message-ID: <46B62CFE.2010404@student.ltu.se>
-Date: Sun, 05 Aug 2007 22:03:10 +0200
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: trenn@suse.de
-CC: Ben Collins <bcollins@ubuntu.com>, "Brown, Len" <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Stelian Pop <stelian@popies.net>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] sonypi: Fix initialization warning
-References: <46B61F70.90005@student.ltu.se> <1186343443.3858.46.camel@fanta4.site>
-In-Reply-To: <1186343443.3858.46.camel@fanta4.site>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 5 Aug 2007 16:05:25 -0400
+Date: Sun, 5 Aug 2007 21:04:46 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jakob Oestergaard <jakob@unthought.net>, Jeff Garzik <jeff@garzik.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [patch] implement smarter atime updates support
+Message-ID: <20070805210446.57aa66f6@the-village.bc.nu>
+In-Reply-To: <1186343582.25667.3.camel@laptopd505.fenrus.org>
+References: <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
+	<46B4C0A8.1000902@garzik.org>
+	<20070805102021.GA4246@unthought.net>
+	<46B5A996.5060006@garzik.org>
+	<20070805105850.GC4246@unthought.net>
+	<20070805124648.GA21173@elte.hu>
+	<alpine.LFD.0.999.0708050944470.5037@woody.linux-foundation.org>
+	<20070805190928.GA17433@elte.hu>
+	<20070805192226.GA20234@elte.hu>
+	<1186343582.25667.3.camel@laptopd505.fenrus.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Renninger wrote:
-> On Sun, 2007-08-05 at 21:05 +0200, Richard Knutsson wrote:
->   
->> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
->> ---
->> Got this from the compiler (gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)):
->> drivers/char/sonypi.c:1153: warning: initialization from incompatible pointer type
->>
->>
->> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
->> index 73037a4..2dcd519 100644
->> --- a/drivers/char/sonypi.c
->> +++ b/drivers/char/sonypi.c
->> @@ -1147,10 +1147,15 @@ static int sonypi_acpi_remove(struct acpi_device *device, int type)
->>  	return 0;
->>  }
->>  
->> +static const struct acpi_device_id sonypi_acpi_driver_ids[] = {
->> +        {ACPI_PROCESSOR_HID, 0},
->>     
-> This is wrong. You need to take the HID the driver should match for, in
-> this case: {"SNY6001", 0 },
->   
-Oh bugger, a cut 'n' paste error...
-Thanks for reviewing it.
+O> you might want to add
+> 
+> 	/* 
+> 	 * if the inode is dirty already, do the atime update since
+> 	 * we'll be doing the disk IO anyway to clean the inode.
+> 	 */
+> 	if (inode->i_state & I_DIRTY)
+> 		return 1;
 
+This makes the actual result somewhat less predictable. Is that wise ?
+Right now its clear what happens based on what user sequence of events
+and that this is easily repeatable.
