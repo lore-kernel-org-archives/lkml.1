@@ -1,87 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbXHEWE4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbXHEW3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761234AbXHEWE4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 18:04:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752601AbXHEWEr
+	id S1759274AbXHEW3h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 18:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXHEW32
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 18:04:47 -0400
-Received: from gate.crashing.org ([63.228.1.57]:47105 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754036AbXHEWEq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 18:04:46 -0400
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit
-	DMA	mapping"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
-       Olaf Hering <olh@suse.de>, stable@kernel.org,
+	Sun, 5 Aug 2007 18:29:28 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38327 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754175AbXHEW31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 18:29:27 -0400
+Date: Mon, 6 Aug 2007 00:29:37 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-In-Reply-To: <46B5824B.1000103@s5r6.in-berlin.de>
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-	 <46B4B3DC.7020609@shaw.ca>  <46B4B7C6.1040107@s5r6.in-berlin.de>
-	 <1186272926.938.8.camel@localhost.localdomain>
-	 <46B5824B.1000103@s5r6.in-berlin.de>
-Content-Type: text/plain
-Date: Mon, 06 Aug 2007 08:04:33 +1000
-Message-Id: <1186351473.938.21.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
+Message-ID: <20070805222937.GA23963@elf.ucw.cz>
+References: <200708051902.18801.toralf.foerster@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708051902.18801.toralf.foerster@gmx.de>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-05 at 09:54 +0200, Stefan Richter wrote:
-> Benjamin Herrenschmidt wrote:
-> >>> If setting 32-bit DMA mask fails on ppc64, that sounds like a problem
-> >>> with the DMA implementation on that architecture. There are enough cards
-> >>> out there that only support 32-bit DMA that this really needs to work..
-> >> Yes, could the PPC folks please have a look at it?  Thanks.
-> > 
-> > Smells like we may have a bug there. No worries though, all current PPC
-> > machines have an iommu that will not give out addresses above 32 bits
-> > anyway, but I'll double check what's up.
-> > 
-> > Do you see something in dmesg when that happens ?
+Hi!
+
+> It is a small - but IMHO nagging - regression between these 2 kernel versions.
 > 
-> There was nothing in Olaf's report, except for trouble in sbp2 _after_
-> the failure.  http://lkml.org/lkml/2007/8/1/344  (I don't have a PMac.)
+> To make a "software suspend" at this notebook ("suspend to RAM") you have
+> to press <Fn>+ <F4>. Pressing the <Fn>-Key after that wakes up the notenbook.
+> 
 
-Hrm, allright, that's a bit weird. Olaf machine has only 256M of RAM
-according to that dmesg, and thus, the kernel isn't enabling the iommu,
-we use the "trivial" version of the dma mapping ops.
+> If you hibernated the system ("suspend to disc"), you have to press the power
+> button to wake up the notebook.
 
-I suspect we have a bug in our imlementation of set_dma_mask though, in
-that it does the "dma_supported" check using the previous mask and not
-the one passed in :-)
-
-The implementation of dma_supported that we hit in the no-iommu case
-looks like that:
-
-static int dma_direct_dma_supported(struct device *dev, u64 mask)
-{
-	/* Could be improved to check for memory though it better be
-	 * done via some global so platforms can set the limit in case
-	 * they have limited DMA windows
-	 */
-	return mask >= DMA_32BIT_MASK;
-}
-
-So that should have worked. (The comment is a bit obscure, just ignore
-it for now).
-
-However, as I said above, our dma_set_mask() wrapper uses the wrong
-value (the old, not the new mask). But that still should have worked
-since the default dma mask for a PCI device is 0xffffffff....
-
-Thus at this stable, I'm a bit at a loss of why it didn't work, I'll
-have to test on one of those machines with some printk's in when I
-manage to get to work (dunno when, kid's sick so I may have to stay home
-today).
-
-BTW. Any reason why you don't set the DMA mask in the ohci driver rather
-than the sbp2 one ?
-
-Cheers,
-Ben.
+Yes, I seen similar reports. Does it happen in all shutdown mode and
+2.6.22? Does it happen   in platform mode in 2.6.19?
 
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
