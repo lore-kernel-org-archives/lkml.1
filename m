@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbXHEMod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbXHEMp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759630AbXHEMod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 08:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbXHEMoN
+	id S1759382AbXHEMp0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 08:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbXHEMpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 08:44:13 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:37954 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756219AbXHEMoL (ORCPT
+	Sun, 5 Aug 2007 08:45:13 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:57496 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754306AbXHEMpL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 08:44:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=jH8K5bbQLPjaD0fAq1zkCjeaksWZyNF696tOwEiaetvbjiw3mf/K/zYNZPW4i5rzbSVx2dCFjDQZJuJPBtdDRMWC42U1WdDx//AbDXoe/zlK1mT8hrk1juEwdSeAaVA9Kt/Eg47qXszCfcuPzAU3B6cLpNJyIFzTgdCBUE9dnbg=
-Message-ID: <6264d2ec0708050544m2b74f480q8b9dcdadca92c600@mail.gmail.com>
-Date: Sun, 5 Aug 2007 14:44:11 +0200
-From: "=?ISO-8859-1?Q?Thomas_Lang=E5s?=" <thomas.langaas@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Disassembling a binary-only kernel module
-Cc: thomas.langaas@gmail.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 5 Aug 2007 08:45:11 -0400
+Date: Sun, 5 Aug 2007 13:46:40 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Claudio Martins <ctpm@ist.utl.pt>, Jeff Garzik <jeff@garzik.org>,
+       =?UTF-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805134640.2c7d1140@the-village.bc.nu>
+In-Reply-To: <20070805072805.GB4414@elte.hu>
+References: <20070803123712.987126000@chello.nl>
+	<46B4E161.9080100@garzik.org>
+	<20070804224706.617500a0@the-village.bc.nu>
+	<200708050051.40758.ctpm@ist.utl.pt>
+	<20070805014926.400d0608@the-village.bc.nu>
+	<20070805072805.GB4414@elte.hu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please CC me, as I'm not subscribed to the list.
+> The only remotely valid compatibility argument would be Mutt - but even 
+> that handles it just fine. (we broke way more software via noexec)
 
-I've got a binary-only kernel module for a box I own (PowerPC-based),
-and I want to
-disassemble the module but I don't know much about tools for linux for
-doing this.
+And went through a sensible process of resolving it.
 
-So, what I'm asking about is just a few pointers in which tools I should use for
-the process.  (I've done a readelf for the initial insight on the module).
+And its not just mutt. HSM stuff stops working which is a big deal as
+stuff clogs up. The /tmp/ cleaning tools go wrong as well.
 
-In advance, thanks!
+These are big deals because you seem intent on using a large hammer to
+force a change that should be done properly by other means.
 
--- 
-Thomas
+The /tmp cleaning for example can probably be done other ways in future
+but the changes should be in place first.
+
