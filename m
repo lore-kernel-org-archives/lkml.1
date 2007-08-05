@@ -1,107 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbXHEPpR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXHEPxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757816AbXHEPpR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:45:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXHEPpE
+	id S1756925AbXHEPxV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXHEPxI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:45:04 -0400
-Received: from 1wt.eu ([62.212.114.60]:1173 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754076AbXHEPpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:45:03 -0400
-Date: Sun, 5 Aug 2007 17:43:37 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Axel Reinhold <axel@freakout.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
-Message-ID: <20070805154337.GA4716@1wt.eu>
-References: <200708050856.l758u4ou031651@bongo.freakout.de>
+	Sun, 5 Aug 2007 11:53:08 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:55147 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753924AbXHEPxG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 11:53:06 -0400
+Subject: Re: [PATCH][RESEND] Fix a potential NULL pointer deref in the
+	aic7xxx, ahc_print_register() function
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       "Justin T. Gibbs" <gibbs@scsiguy.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com>
+References: <200708042030.52405.jesper.juhl@gmail.com>
+	 <1186256627.3439.22.camel@localhost.localdomain>
+	 <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 05 Aug 2007 10:53:03 -0500
+Message-Id: <1186329183.3455.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708050856.l758u4ou031651@bongo.freakout.de>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 10:56:04AM +0200, Axel Reinhold wrote:
-> i found a bug in linux-2.4.35.
-> 
-> the bug produces a crashing kernel when compiled
-> with gcc >=4.2.0 and VIA C3 optimized -march=c3
-> (CONFIG_MCYRIXIII=y)
-> 
-> this issue was first discussed on the gcc bugzilla:
->  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=32264
-> 
-> and tracked down to the include/asm-i386/hw_irq.h
-> module with the help of the gcc guys:
-> 
-> (pluto at agmk dot net) wrote:
-> >yup, i see something new :)
+On Sun, 2007-08-05 at 17:36 +0200, Jesper Juhl wrote:
+> On 04/08/07, James Bottomley <James.Bottomley@steeleye.com> wrote:
+> > On Sat, 2007-08-04 at 20:30 +0200, Jesper Juhl wrote:
+> > > (resend of patch previously submitted on 28-Jul-2007 23:06)
+> > >
+> > >
+> > > Ehlo,
+> > >
+> > > The Coverity checker noticed that we have a potential NULL pointer
+> > > deref in drivers/scsi/aic7xxx/aic7xxx_core.c::ahc_print_register().
+> > > This patch handles it by adding the same test against NULL that is
+> > > used elsewhere in the same function.
 > >
-> >please look at line 12137 of i8259.i:
+> > It's on my list of things to look at ... but not very high.  I suspect
+> > it actually isn't triggerable, but if you can tell me how, it will save
+> > me from looking.
 > >
-> >__attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
-> >
-> >as you can see there is a semicolon after call_do_IRQ(void)
-> >and following asm statement isn't treated as a function body.
-> >in this way -O1 -f{no-}unit-at-a-time accidentally produces
-> >different code. it's not a gcc bug.
-> >
-> >linux-2.4.35/include/asm-i386/hw_irq.h
-> >contains these evil macros.
 > 
-> is there a chance to fix this?
-> these macros a far beyond my capabilities to fix.
+> Here's what Coverity reported :
+> ...
+> 6525 	int
+> 6526 	ahc_print_register(ahc_reg_parse_entry_t *table, u_int num_entries,
+> 6527 			   const char *name, u_int address, u_int value,
+> 6528 			   u_int *cur_column, u_int wrap_point)
+> 6529 	{
+> 6530 		int	printed;
+> 6531 		u_int	printed_mask;
+> 6532 	
+> 
+> Event var_compare_op: Added "cur_column" due to comparison "cur_column != 0"
+> Also see events: [var_deref_op]
+> At conditional (1): "cur_column != 0" taking false path
+> 
+> 6533 		if (cur_column != NULL && *cur_column >= wrap_point) {
+> 6534 			printf("\n");
+> 6535 			*cur_column = 0;
+> 6536 		}
+> 6537 		printed = printf("%s[0x%x]", name, value);
+> 
+> At conditional (2): "table == 0" taking true path
+> 
+> 6538 		if (table == NULL) {
+> 6539 			printed += printf(" ");
+> 
+> Event var_deref_op: Variable "cur_column" tracked as NULL was dereferenced.
+> Also see events: [var_compare_op]
+> 
+> 6540 			*cur_column += printed;
+> 6541 			return (printed);
+> 6542 		}
+> ...
+> 
+> So it requires a NULL 'table' and a != NULL 'cur_column' to trigger.
+> Whether or not that's actually possible I'm not sure, but it seems
+> safer to guard against it :)
+> 
+> 
+> By the way; if this can actually be triggered, then
+> ahd_print_register() has the same problem.
 
-Axel,
+But this is precisely the point.  A large number of drivers have purely
+internal functions, which this is.  Most often, because the API is
+purely internal to the driver, misuse is reported via BUG_ON (supposed
+to be picked up by the driver writer in their testing).  The problem
+with this is that we never do:
 
-I've reproduced it and posted the following explanation to GCC's
-bugzilla ; I think I can provide you with a simple fix very soon.
+BUG_ON(ptr==NULL);
 
-Cheers,
-Willy
+Because a simple use of the null pointer will also trigger the bug, so
+we don't need the check.
 
-----
+I suspect table == NULL requires cur_column != NULL as part of the
+internal API and there's no BUG_ON checking for it because the use of
+the pointer would be the BUG.
 
-Reproduced with trivial code. The reason is very simple : The asm code
-is emitted in the .data section, because due to the -fno-unit-at-a-time
-argument, the "interrupts" array is declared first and sets the current
-section to .data.
+If you blindly go checking for NULL and coping with it, you've actually
+weakened our internal API checking, which definitely isn't the object of
+the exercise.  Worse, becase we have no maintainer for this driver
+someone touching it could easily get this wrong and a subtle and much
+harder to find bug will be introduced.
 
-Interestingly, adding __attribute__ ((section(".text"))) before the
-function declaration does not change anything. But adding ".section .text\n"
-in the asm statement fixes it.
+So, as I said, if you can prove
 
-In fact, -fno-unit-at-a-time does not work on this code under gcc-4.2.1,
-while it works with gcc-4.1.1. However, using the recommended
--fno-toplevel-reorder argument fixes the problem. Also, if the "dummy"
-array below is declared before the asm statement, then even gcc-4.1.1
-emits the code in the .data section.
+table == NULL && cur_column == NULL
 
-In all cases, removing -fno-unit-at-a-time produces good code. I still
-suspect that because the behaviour is different between 4.1 and 4.2, it
-might be a regression in 4.2, but since its replacement works, I'm not
-sure it's worth investigating further. I'll work on a fix for linux-2.4.
+should be a genuine use case of the API then by all means, this can go
+in.
 
-Trivial example below :
+James
 
-/* the following code may go to .data if compiled with gcc >= 4.1 and
- * -fno-unit-at-a-time
- */
-void common_interrupt(void);
-__asm__( "\n"
-         ".align 4,0x90""\n"
-         "common_interrupt:\n\t"
-         "cld\n\t"
-);
-
-/* If dummy is not initialized, the code above goes into .text.
- * If dummy is initialized to zero, the code above goes into .bss
- * If dummy is initialized to non-zero, the code goes into .data
- * If dummy is declared before the code above, then it goes to .data
- * whatever the compiler.
- */
-int dummy[1] = { 1 };
 
