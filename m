@@ -1,130 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbXHEIEC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbXHEIEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbXHEIEC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 04:04:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXHEIDr
+	id S1759974AbXHEIEy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 04:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbXHEIEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 04:03:47 -0400
-Received: from styx.suse.cz ([82.119.242.94]:55800 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751838AbXHEIDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 04:03:44 -0400
-Date: Sun, 5 Aug 2007 10:02:50 +0200
-From: Vojtech Pavlik <vojtech@suse.cz>
-To: William Pettersson <william.pettersson@gmail.com>
-Cc: dtor@insightbb.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: ALPS touchpad with new Dell not recognised
-Message-ID: <20070805080250.GA8555@suse.cz>
-References: <46B03A42.3030708@gmail.com> <46B46DFA.7000909@gmail.com> <20070804190539.GB5110@suse.cz> <46B50189.8020107@gmail.com>
+	Sun, 5 Aug 2007 04:04:35 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:55631
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753799AbXHEIE2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 04:04:28 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage.
+Date: Sun, 5 Aug 2007 01:04:19 -0700
+User-Agent: KMail/1.9.5
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708031819.17039.phillips@phunq.net> <20070804163740.GB14175@2ka.mipt.ru>
+In-Reply-To: <20070804163740.GB14175@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46B50189.8020107@gmail.com>
-X-Bounce-Cookie: It's a lemon tree, dear Watson!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708050104.19596.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 08:45:29AM +1000, William Pettersson wrote:
-> Hi,
-> This patch adds support for the Alps touchpad on my Dell Vostro 1400 to
-> the linux kernel.
-> 
-> Signed-off-by: William Pettersson <william.pettersson@gmail.com>
-> 
-> Vojtech, I went over my debug info again with your thoughts in mind, and
-> you were right.  The highest bit is always set in the sync byte of the
-> protocol.  It must have been luck that it didn't drop sync while it was
-> testing.  So a mask and bit of 0xCF does work.  I then decided to go
-> through the logs more thoroughly, and determine if I could make this
-> mask more rigid.  Turns out that a bit of 0xCF and a mask of 0xFF also
-> works.
+On Saturday 04 August 2007 09:37, Evgeniy Polyakov wrote:
+> On Fri, Aug 03, 2007 at 06:19:16PM -0700, I wrote:
+> > To be sure, I am not very proud of this throttling mechanism for
+> > various reasons, but the thing is, _any_ throttling mechanism no
+> > matter how sucky solves the deadlock problem.  Over time I want to
+> > move the
+>
+> make_request_fn is always called in process context,
 
-Just one more question: Have you checked that the 0xcf doesn't change
-when you press any of the ALPS buttons? Including those associated with
-the passthrough? Some bits in the sync byte might still be mapped to
-these.
+Yes, as is submit_bio which calls it.  The decision re where it is best 
+to throttle, in submit_bio or in make_request_fn, has more to do with 
+system factoring, that is, is throttling something that _every_ block 
+device should have (yes I think) or is it a delicate, optional thing 
+that needs a tweakable algorithm per block device type (no I think).
 
-> I've also attached the output dumps.  The one labelled mouse.nosync.log
-> is the the one that I first worked on.  However, it was hard to see
-> where the start of the packets were, so I modified alps.c to give me the
-> output shown in alps-packets.log (I can submit this patch if you deem it
-> useful too).  It was once I did this that I saw straight away what the
-> bit0 had to be.  And then mouse.alps.log is just i8042.debug output
-> after my patch has been applied.
-> 
-> William
-> 
-> Vojtech Pavlik wrote:
-> > On Sat, Aug 04, 2007 at 10:15:54PM +1000, William Pettersson wrote:
-> >
-> >   
-> >> Hi LKML,
-> >> Thanks to Vojtech for some advice, I finally got something happening
-> >> with this.  Turns out I had to add support for a new model in alps.c,
-> >> the attached file does this successfully for my laptop.  It'd be nice to
-> >> have others test it, but I am yet to find anyone else who has this same
-> >> laptop, with the same mouse issues I have.
-> >>
-> >> With this patch, I now get a functioning touchpad, including side
-> >> scrolling, circle scrolling, corner taps etc.  However, I did have to
-> >> ramp the configuration numbers up significantly from my old Thinkpad
-> >> with its synaptics touchpad.
-> >>     
-> >
-> > That is normal. The ALPS's have very much different parameters -
-> > sensitivity, resolution, etc., so that the settings aren't easily
-> > comparable.
-> >
-> >   
-> >> Minspeed is now 0.8 and maxspeed is 10. 
-> >> Also the VertScrollDelta is 10.  I don't know whether these numbers are
-> >> crazy high, or just normal for the Alps though.
-> >>     
-> >
-> > I don't remember exactly myself - I'm only interested in the low level
-> > of the protocol - making sure the kernel delivers correctly decoded data
-> > to userspace.
-> >
-> > Please send the patch to Dmitry Torokhov, who is nowadays a maintainer
-> > of this driver and the input subsystem. And don't forget to add a
-> > description of the patch and a "Signed-off-by:" line.
-> >
-> > I'm quite surprised you needed the value of 0x4f, I'd expect the highest
-> > bit always set in the sync byte of the protocol. Can you send me (and
-> > dmitry) the dump data you gathered using i8042.debug?
-> >
-> > Thanks,
-> > 	Vojtech
-> >
-> >   
-> >> --- drivers/input/mouse/alps.c.old	2007-07-31 21:42:37.000000000 +1000
-> >> +++ drivers/input/mouse/alps.c	2007-08-04 21:45:43.000000000 +1000
-> >> @@ -53,6 +53,7 @@
-> >>  	{ { 0x20, 0x02, 0x0e },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
-> >>  	{ { 0x22, 0x02, 0x0a },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
-> >>  	{ { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
-> >> +	{ { 0x73, 0x02, 0x50 }, 0x4f, 0x4f, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
-> >>  };
-> >>     
-> >
-> >   
+The big worry I had was that by blocking on congestion in the 
+submit_bio/make_request_fn I might stuff up system-wide mm writeout.  
+But a while ago that part of the mm was tweaked (by Andrew if I recall 
+correctly) to use a pool of writeout threads and understand the concept 
+of one of them blocking on some block device, and not submit more 
+writeout to the same block device until the first thread finishes its 
+submission.  Meanwhile, other mm writeout threads carry on with other 
+block devices.
 
-> --- drivers/input/mouse/alps.c.old	2007-07-31 21:42:37.000000000 +1000
-> +++ drivers/input/mouse/alps.c	2007-08-05 08:34:00.000000000 +1000
-> @@ -53,6 +53,7 @@
->  	{ { 0x20, 0x02, 0x0e },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
->  	{ { 0x22, 0x02, 0x0a },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
->  	{ { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
-> +	{ { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
->  };
->  
->  /*
+> we can wait in it for memory in mempool. Although that means we
+> already in trouble. 
 
+Not at all.  This whole block writeout path needs to be written to run 
+efficiently even when normal system memory is completely gone.  All it 
+means when we wait on a mempool is that the block device queue is as 
+full as we are ever going to let it become, and that means the block 
+device is working as hard as it can (subject to a small caveat: for 
+some loads a device can work more efficiently if it can queue up larger 
+numbers of requests down at the physical elevators).
 
+By the way, ddsnap waits on a counting semaphore, not a mempool.  That 
+is because we draw our reserve memory from the global memalloc reserve, 
+not from a mempool.  And that is not only because it takes less code to 
+do so, but mainly because global pools as opposed to lots of little 
+special purpose pools seem like a good idea to me.  Though I will admit 
+that with our current scheme we need to allow for the total of the 
+maximum reserve requirements for all memalloc users in the memalloc 
+pool, so it does not actually save any memory vs dedicated pools.  We 
+could improve that if we wanted to, by having hard and soft reserve 
+requirements: the global reserve actually only needs to be as big as 
+the total of the hard requirements.  With this idea, if by some unlucky 
+accident every single pool user got itself maxed out at the same time, 
+we would still not exceed our share of the global reserve.  
+Under "normal" low memory situations, a block device would typically be 
+free to grab reserve memory up to its soft limit, allowing it to 
+optimize over a wider range of queued transactions.   My little idea 
+here is: allocating specific pages to a pool is kind of dumb, all we 
+really want to do is account precisely for the number of pages we are 
+allowed to draw from the global reserve.
 
+OK, I kind of digressed, but this all counts as explaining the details 
+of what Peter and I have been up to for the last year (longer for me).  
+At this point, we don't need to do the reserve accounting in the most 
+absolutely perfect way possible, we just need to get something minimal 
+in place to fix the current deadlock problems, then we can iteratively 
+improve it.
 
+> I agree, any kind of high-boundary leveling must be implemented in
+> device itself, since block layer does not know what device is at the
+> end and what it will need to process given block request.
 
--- 
-Vojtech Pavlik
-Director SuSE Labs
+I did not say the throttling has to be implemented in the device, only 
+that we did it there because it was easiest to code that up and try it 
+out (it worked).  This throttling really wants to live at a higher 
+level, possibly submit_bio()...bio->endio().  Someone at OLS (James 
+Bottomley?) suggested it would be better done at the request queue 
+layer, but I do not immediately see why that should be.  I guess this 
+is going to come down to somebody throwing out a patch for interested 
+folks to poke at.  But this detail is a fine point.  The big point is 
+to have _some_ throttling mechanism in place on the block IO path, 
+always.
+
+Device mapper in particular does not have any throttling itself: calling 
+submit_bio on a device mapper device directly calls the device mapper 
+bio dispatcher.  Default initialized block device queue do provide a 
+crude form of throttling based on limiting the number of requests.  
+This is insufficiently precise to do a good job in the long run, but it 
+works for now because the current gaggle of low level block drivers do 
+not have a lot of resource requirements and tend to behave fairly 
+predictably (except for some irritating issues re very slow devices 
+working in parallel with very fast devices, but... worry about that 
+later).  Network block drivers - for example your driver - do have 
+nontrivial resource requirements and they do not, as far as I can see, 
+have any form of throttling on the upstream side.  So unless you can 
+demonstrate I'm wrong (I would be more than happy about that) then we 
+are going to need to add some.
+
+Anyway, I digressed again.  _Every_ layer in a block IO stack needs to 
+have a reserve, if it consumes memory.  So we can't escape the question 
+of how big to make those reserves by trying to push it all down to the 
+lowest level, hoping that the low level device knows more about how 
+many requests it will have in flight.  For the time being, we will just 
+plug in some seat of the pants numbers in classic Linux fashion and 
+that will serve us until somebody gets around to inventing the one true 
+path discovery mechanism that can sniff around in the block IO stack 
+and figure out the optimal amount of system resources to reserve at 
+each level, which ought to be worth at least a master's thesis for 
+somebody.
+
+Regards,
+
+Daniel
