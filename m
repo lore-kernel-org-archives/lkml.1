@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759347AbXHETc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758199AbXHETrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759347AbXHETc4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 15:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbXHETcs
+	id S1758199AbXHETrx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 15:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbXHETrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 15:32:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59420 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752753AbXHETcs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 15:32:48 -0400
-Date: Sun, 5 Aug 2007 21:32:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jakob Oestergaard <jakob@unthought.net>, Jeff Garzik <jeff@garzik.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070805193231.GA21928@elte.hu>
-References: <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070805102021.GA4246@unthought.net> <46B5A996.5060006@garzik.org> <20070805105850.GC4246@unthought.net> <20070805124648.GA21173@elte.hu> <alpine.LFD.0.999.0708050944470.5037@woody.linux-foundation.org> <20070805190928.GA17433@elte.hu> <20070805202930.4ce62542@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070805202930.4ce62542@the-village.bc.nu>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 5 Aug 2007 15:47:45 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35080 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756220AbXHETro (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 15:47:44 -0400
+Subject: Re: lvcreate on 2.6.22.1: kernel tried to execute NX-protected page
+From: Arjan van de Ven <arjan@infradead.org>
+To: Juergen Kreileder <jk@blackdown.de>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
+In-Reply-To: <87y7gperd1.fsf@blackdown.de>
+References: <87y7gperd1.fsf@blackdown.de>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 05 Aug 2007 12:46:03 -0700
+Message-Id: <1186343163.25667.0.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > also add the CONFIG_DEFAULT_RELATIME kernel option, which makes 
-> > "norelatime" the default for all mounts without an extra kernel boot 
-> > option.
+On Sun, 2007-08-05 at 21:03 +0200, Juergen Kreileder wrote:
+> I've upgraded devmapper to 1.02.20 and lvm2 to 2.02.26.  Didn't help much,
+> I just got a the same BUG again:
 > 
-> Should be a mount option.
+> kernel tried to execute NX-protected page - exploit attempt? (uid: 0)
+> BUG: unable to handle kernel paging request at virtual address f492c1f8
 
-it is already a mount option too.
 
-> > +	relatime        [FS] default to enabled relatime updates on all
-> > +			filesystems.
-> > +
-> > +	relatime=       [FS] default to enabled/disabled relatime updates on
-> > +			all filesystems.
-> > +
-> 
-> Double patch
+I suspect this is a module that got unloaded but still had some function
+pointer registered somewhere.....
 
-no - it was not a double patch, i made all the common variants valid 
-boot options: "relatime", "relatime=0/1", "norelatime" and 
-"norelatime=0/1". Anyway, this is mooth, in the latest (v2) version 
-there's only a single boot parameter.
+do you know if/which module that could be?
+(one trick is to compile the kernel such that you don't allow modules to
+be unloaded at all; if that makes it work it's clearly the type of bug I
+described above)
 
-> > +config DEFAULT_RELATIME
-> > +	bool "Mount all filesystems with relatime by default"
-> > +	default y
-> 
-> Changes behaviour so probably should default n. Better yet it should 
-> be the mount option so its flexible and strongly encouraged for 
-> vendors.
 
-relatime is a mount option already. And distros can disable it if they 
-want. (they are conscious about their kernel config selections anyway.)
-
-> > +0
-> > +#endif
-> > +;
-> 
-> This ifdef mess would go away for a mount option
-
-i fixed that in v2.
-
-	Ingo
