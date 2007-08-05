@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbXHEPfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbXHEPfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758505AbXHEPfa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbXHEPfX
+	id S1755608AbXHEPfp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759480AbXHEPfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:35:23 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:57351 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbXHEPfW (ORCPT
+	Sun, 5 Aug 2007 11:35:33 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56513 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759368AbXHEPfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:35:22 -0400
-Subject: [PATCH RT] put in a relatively high number for rcu read lock upper
-	limit.
-From: Steven Rostedt <rostedt@goodmis.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070805150449.GA19418@linux.vnet.ibm.com>
-References: <1186289484.636.5.camel@localhost.localdomain>
-	 <1186290332.636.8.camel@localhost.localdomain>
-	 <20070805065948.GB515@elte.hu>
-	 <Pine.LNX.4.58.0708051019560.8421@gandalf.stny.rr.com>
-	 <20070805150449.GA19418@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Sun, 05 Aug 2007 11:35:00 -0400
-Message-Id: <1186328100.636.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 
-Content-Transfer-Encoding: 7bit
+	Sun, 5 Aug 2007 11:35:32 -0400
+Date: Sun, 5 Aug 2007 17:35:31 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: =?iso-8859-1?Q?J=F6rg_Hoffmann?= <jh2000@root24.eu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [Patch] panic.c
+In-Reply-To: <006701c7d775$53137cc0$6800a8c0@jhnotebook>
+Message-ID: <Pine.LNX.4.64.0708051731050.29913@fbirervta.pbzchgretzou.qr>
+References: <006701c7d775$53137cc0$6800a8c0@jhnotebook>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-1887113740-1186328131=:29913"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul and Ingo,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Should we just remove the upper limit check, or is something like this
-patch sound?
-
--- Steve
-
-When DEBUG_KERNEL is set, place an upper bound limit on the rcu read
-lock set to 100. If we go that deep, then a warn on will print.
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-Index: linux-2.6.23-rc1-rt7/kernel/rcupreempt.c
-===================================================================
---- linux-2.6.23-rc1-rt7.orig/kernel/rcupreempt.c	2007-08-05 11:25:38.000000000 -0400
-+++ linux-2.6.23-rc1-rt7/kernel/rcupreempt.c	2007-08-05 11:30:33.000000000 -0400
-@@ -50,6 +50,14 @@
- #include <linux/cpumask.h>
- #include <linux/rcupreempt_trace.h>
- 
-+#ifdef CONFIG_DEBUG_KERNEL
-+/* Picking 100 as a high enough limit on rcu read lock nesting. */
-+# define rcu_read_lock_check_upper_limit() \
-+		WARN_ON_ONCE(current->rcu_read_lock_nesting > 100);
-+#else
-+# define rcu_read_lock_check_upper_limit() do { } while(0)
-+#endif
-+
- /*
-  * PREEMPT_RCU data structures.
-  */
-@@ -129,9 +137,9 @@ void __rcu_read_lock(void)
- 			atomic_inc(current->rcu_flipctr2);
- 			smp_mb__after_atomic_inc();  /* might optimize out... */
- 		}
--	} else {
--		WARN_ON_ONCE(current->rcu_read_lock_nesting > NR_CPUS);
--	}
-+	} else
-+		rcu_read_lock_check_upper_limit();
-+
- 	local_irq_restore(oldirq);
- }
- 
+---699020219-1887113740-1186328131=:29913
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
 
+On Aug 5 2007 17:28, Jörg Hoffmann wrote:
+>Hello everybody,
+>(This is the first time i send in a patch, so correct me if Im doing
+>something wrong)
+
+See Documentation/SubmittingPatches. (And perhaps, U+0092 should be replaced by
+something visible ;-)
+
+>This patch causes the cpu to stop instead of using an endless loop (Im
+>not sure if this works with the watchdog so please take a review).
+>The idea behind this is to keep the power usage on panicd machines
+>(without auto-reboot) low. Another point is in an Virtual Machine
+>environment the process of the VM is using 100% of the host-cpu. This
+>would stuck other programs or VMs. This patch brings the VM to stop and
+>keeps the cpu usage below 1%.
+> 
+>I have tested the patch in an VM, the only change is mdelay(); to
+>cpu_idle(); it doesnt need more libs and should have no special
+>depencies to consider.
+
+cpu_idle() uses quite a lot of variables which may be invalid after a panic.
+
+Something similar has been mentioned previously,
+http://lkml.org/lkml/2006/6/19/303
+
+>The panic-blink doesnt work further so it might be removed if there is
+>no better way.
+> 
+>Maybe someone has an better idea for this problem
+> 
+
+	Jan
+-- 
+---699020219-1887113740-1186328131=:29913--
