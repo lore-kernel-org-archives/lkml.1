@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759783AbXHEXk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760621AbXHEXpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759783AbXHEXk0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 19:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXHEXkO
+	id S1760621AbXHEXpN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 19:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbXHEXpB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 19:40:14 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:12072 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755792AbXHEXkM (ORCPT
+	Sun, 5 Aug 2007 19:45:01 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50204 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751463AbXHEXpA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 19:40:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sf8ioRf9BMrfVUzHAJ8WIYcPY0yEOH4Tmzv5sMenJDVyhSrv0cAuOrilx8T5W+QMqE/lLOHBJOSfOjDzTQeXMNxDBwkmWQfwCUVUbtPGWQalDewKFfhhTqse2hubu4r5KsqkjgsvDbJRVqnhyPKuy7yaoJ9J9lXeQ+8FIkeCVcI=
-Message-ID: <b14e81f00708051640i7a48b3d9oe4b8fa8d863cde1@mail.gmail.com>
-Date: Sun, 5 Aug 2007 19:40:11 -0400
-From: "Michael Chang" <thenewme91@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: rtc max frequency setting
-Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       rtc-linux@googlegroups.com
-In-Reply-To: <46B5148E.50302@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 5 Aug 2007 19:45:00 -0400
+Date: Mon, 6 Aug 2007 09:43:56 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jakob Oestergaard <jakob@unthought.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805234356.GI31489@sgi.com>
+References: <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070805102021.GA4246@unthought.net> <46B5A996.5060006@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0708050042560.14443@fbirervta.pbzchgretzou.qr>
-	 <46B5148E.50302@zytor.com>
+In-Reply-To: <46B5A996.5060006@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/4/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Jan Engelhardt wrote:
-> > Hi,
+On Sun, Aug 05, 2007 at 06:42:30AM -0400, Jeff Garzik wrote:
+> Jakob Oestergaard wrote:
+> >Oh dear.
 > >
-> > with the old rtc.ko module, there was a /proc/sys/dev/rtc/max-user-freq
-> > that could be set. With rtc_cmos.ko (or the new rtc infrastructure in
-> > general), I am missing this file. Where can I set the max-user-freq now,
-> > or is this obsolete now? (mplayer prefers to have user-freq to be >= 1024.)
+> >Why not just make ext3 fsync() a no-op while you're at it?
 > >
->
-> Qemu wants something like this too.  Both of these really want something
-> else, which is a high-frequency userspace timer.
+> >Distros can turn it back on if it's needed...
+> >
+> >Of course I'm not serious, but like atime, fsync() is something one
+> 
+> No, they are nothing alike, and you are just making yourself look silly 
+> if you compare them.  fsync has to do with fundamental guarantees about 
+> data.
 
-For mplayer, you can use -softsleep, but that uses a lot of CPU, and
-you're probably already using a great deal of CPU for video decoding,
-so it might be less than optimal.
+Hi Jeff - just as a point to note, I think you should check the spec
+for fsync before stating that:
 
--softsleep
-Time  frames  by  repeatedly  checking the current time instead of
-asking the kernel to wake up MPlayer at the correct time.  Useful if
-your kernel timing is imprecise and you cannot use the RTC either.
-Comes at the price of higher CPU consumption.
+"It is explicitly intended that a null implementation is permitted."
 
-And apparently, the build of MPlayer[1] that I have doesn't need rtc,
-except on slower machines, according to the man page:
+and
 
--rtc (RTC only)
-Turns  on  usage  of the Linux RTC (realtime clock - /dev/rtc) as
-timing mechanism.  This wakes up the process every 1/1024 seconds to
-check the current time.  Useless with modern Linux kernels configured
-for desktop use as they already wake up the process  with  similar
-accuracy when using normal timed sleep.
+"... fsync() might or might not actually cause data to be written where it is
+safe from a power failure."
 
-[1] MPlayer dev-SVN-r23777-4.1.2 (C) 2000-2007 MPlayer Team
+http://www.opengroup.org/onlinepubs/009695399/functions/fsync.html
 
---
-Michael Chang
+So fsync() does not have to provide the fundamental guarantees you think
+it should.
 
-Please avoid sending me Word or PowerPoint attachments. Send me ODT,
-RTF, or HTML instead.
-See http://www.gnu.org/philosophy/no-word-attachments.html
-Thank you.
+Note - I'm not saying that this is at all sane (it's crazy, IMO), I'm just
+pointing out that a "nofsync" mount option to avoid fsync overhead is a
+legal thing to do....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
