@@ -1,123 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbXHEPxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbXHEPyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbXHEPxV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:53:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754094AbXHEPxI
+	id S1757857AbXHEPyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXHEPyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:53:08 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:55147 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753924AbXHEPxG (ORCPT
+	Sun, 5 Aug 2007 11:54:11 -0400
+Received: from hu-out-0506.google.com ([72.14.214.236]:31093 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753218AbXHEPyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:53:06 -0400
-Subject: Re: [PATCH][RESEND] Fix a potential NULL pointer deref in the
-	aic7xxx, ahc_print_register() function
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jesper Juhl <jesper.juhl@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       "Justin T. Gibbs" <gibbs@scsiguy.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com>
-References: <200708042030.52405.jesper.juhl@gmail.com>
-	 <1186256627.3439.22.camel@localhost.localdomain>
-	 <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 05 Aug 2007 10:53:03 -0500
-Message-Id: <1186329183.3455.13.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Sun, 5 Aug 2007 11:54:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=YT6Q0Q4PN8cpjvGneqwXxGvE//C6bRgcBdkep3hmwNq0dH6wxzzkmwLjXFpDnh/3gWhZGy3JMH9MTbSXA2/mB05Y4EYN4cleW7mXPJGBXVaromr/u/F9Y88RBNRnTzK+1sRqiAOGEQVgzaCuTAuGMHlCzw6TL0wSYCa2ml/4IkY=
+From: Jesper Juhl <jesper.juhl@gmail.com>
+To: "Justin T. Gibbs" <gibbs@scsiguy.com>
+Subject: Re: [PATCH][RESEND] Fix a potential NULL pointer deref in the aic7xxx, ahc_print_register() function
+Date: Sun, 5 Aug 2007 17:52:05 +0200
+User-Agent: KMail/1.9.7
+Cc: James Bottomley <James.Bottomley@steeleye.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Bottomley <jejb@kernel.org>, linux-scsi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>
+References: <200708042030.52405.jesper.juhl@gmail.com> <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com> <46B5EFE7.6090008@scsiguy.com>
+In-Reply-To: <46B5EFE7.6090008@scsiguy.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708051752.06003.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-08-05 at 17:36 +0200, Jesper Juhl wrote:
-> On 04/08/07, James Bottomley <James.Bottomley@steeleye.com> wrote:
-> > On Sat, 2007-08-04 at 20:30 +0200, Jesper Juhl wrote:
-> > > (resend of patch previously submitted on 28-Jul-2007 23:06)
-> > >
-> > >
-> > > Ehlo,
-> > >
-> > > The Coverity checker noticed that we have a potential NULL pointer
-> > > deref in drivers/scsi/aic7xxx/aic7xxx_core.c::ahc_print_register().
-> > > This patch handles it by adding the same test against NULL that is
-> > > used elsewhere in the same function.
-> >
-> > It's on my list of things to look at ... but not very high.  I suspect
-> > it actually isn't triggerable, but if you can tell me how, it will save
-> > me from looking.
-> >
+On Sunday 05 August 2007 17:42:31 Justin T. Gibbs wrote:
+> All of this logic was simplified back in '05 in the BSD drivers by adding
+> this to the top of the function:
 > 
-> Here's what Coverity reported :
-> ...
-> 6525 	int
-> 6526 	ahc_print_register(ahc_reg_parse_entry_t *table, u_int num_entries,
-> 6527 			   const char *name, u_int address, u_int value,
-> 6528 			   u_int *cur_column, u_int wrap_point)
-> 6529 	{
-> 6530 		int	printed;
-> 6531 		u_int	printed_mask;
-> 6532 	
+>         u_int   dummy_column;
+>   
+>         if (cur_column == NULL) {
+>                 dummy_column = 0;
+>                 cur_column = &dummy_column;
+>         }
 > 
-> Event var_compare_op: Added "cur_column" due to comparison "cur_column != 0"
-> Also see events: [var_deref_op]
-> At conditional (1): "cur_column != 0" taking false path
+> and then stripping out the cur_column == NULL checks in the routine.
 > 
-> 6533 		if (cur_column != NULL && *cur_column >= wrap_point) {
-> 6534 			printf("\n");
-> 6535 			*cur_column = 0;
-> 6536 		}
-> 6537 		printed = printf("%s[0x%x]", name, value);
-> 
-> At conditional (2): "table == 0" taking true path
-> 
-> 6538 		if (table == NULL) {
-> 6539 			printed += printf(" ");
-> 
-> Event var_deref_op: Variable "cur_column" tracked as NULL was dereferenced.
-> Also see events: [var_compare_op]
-> 
-> 6540 			*cur_column += printed;
-> 6541 			return (printed);
-> 6542 		}
-> ...
-> 
-> So it requires a NULL 'table' and a != NULL 'cur_column' to trigger.
-> Whether or not that's actually possible I'm not sure, but it seems
-> safer to guard against it :)
-> 
-> 
-> By the way; if this can actually be triggered, then
-> ahd_print_register() has the same problem.
 
-But this is precisely the point.  A large number of drivers have purely
-internal functions, which this is.  Most often, because the API is
-purely internal to the driver, misuse is reported via BUG_ON (supposed
-to be picked up by the driver writer in their testing).  The problem
-with this is that we never do:
+Thank you for that info.
 
-BUG_ON(ptr==NULL);
+James, if that sounds like a better way to deal with it to you, then 
+here's a patch to implement it.
 
-Because a simple use of the null pointer will also trigger the bug, so
-we don't need the check.
 
-I suspect table == NULL requires cur_column != NULL as part of the
-internal API and there's no BUG_ON checking for it because the use of
-the pointer would be the BUG.
 
-If you blindly go checking for NULL and coping with it, you've actually
-weakened our internal API checking, which definitely isn't the object of
-the exercise.  Worse, becase we have no maintainer for this driver
-someone touching it could easily get this wrong and a subtle and much
-harder to find bug will be introduced.
+Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+---
 
-So, as I said, if you can prove
+ drivers/scsi/aic7xxx/aic7xxx_core.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-table == NULL && cur_column == NULL
-
-should be a genuine use case of the API then by all means, this can go
-in.
-
-James
+diff --git a/drivers/scsi/aic7xxx/aic7xxx_core.c b/drivers/scsi/aic7xxx/aic7xxx_core.c
+index 75733b0..d1f3f25 100644
+--- a/drivers/scsi/aic7xxx/aic7xxx_core.c
++++ b/drivers/scsi/aic7xxx/aic7xxx_core.c
+@@ -6529,8 +6529,14 @@ ahc_print_register(ahc_reg_parse_entry_t *table, u_int num_entries,
+ {
+ 	int	printed;
+ 	u_int	printed_mask;
++	u_int	dummy_column;
+ 
+-	if (cur_column != NULL && *cur_column >= wrap_point) {
++	if (!cur_column) {
++		dummy_column = 0;
++		cur_column = &dummy_column;
++	}
++
++	if (*cur_column >= wrap_point) {
+ 		printf("\n");
+ 		*cur_column = 0;
+ 	}
+@@ -6565,8 +6571,7 @@ ahc_print_register(ahc_reg_parse_entry_t *table, u_int num_entries,
+ 		printed += printf(") ");
+ 	else
+ 		printed += printf(" ");
+-	if (cur_column != NULL)
+-		*cur_column += printed;
++	*cur_column += printed;
+ 	return (printed);
+ }
+ 
 
 
