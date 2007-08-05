@@ -1,40 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbXHEPCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbXHEPDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbXHEPCZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXHEPCN
+	id S1759602AbXHEPDI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbXHEPCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:02:13 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:44771 "EHLO 2ka.mipt.ru"
+	Sun, 5 Aug 2007 11:02:53 -0400
+Received: from thunk.org ([69.25.196.29]:36908 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753364AbXHEPCL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:02:11 -0400
-Date: Sun, 5 Aug 2007 19:01:55 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: Distributed storage.
-Message-ID: <20070805150154.GA32132@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708031741.18404.phillips@phunq.net> <20070804164438.GC14175@2ka.mipt.ru> <200708050106.58383.phillips@phunq.net>
-Mime-Version: 1.0
+	id S1752621AbXHEPCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 11:02:51 -0400
+Date: Sun, 5 Aug 2007 11:00:29 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805150029.GB28263@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+	akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+	tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+	richard@rsk.demon.co.uk
+References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <p73hcnen7w2.fsf@bingen.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708050106.58383.phillips@phunq.net>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <p73hcnen7w2.fsf@bingen.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 01:06:58AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
-> > DST original code worked as device mapper plugin too, but its two
-> > additional allocations (io and clone) per block request ended up for
-> > me as a show stopper.
-> 
-> Ah, sorry, I misread.  A show stopper in terms of efficiency, or in 
-> terms of deadlock?
+On Sun, Aug 05, 2007 at 02:26:53AM +0200, Andi Kleen wrote:
+> I always thought the right solution would be to just sync atime only
+> very very lazily. This means if a inode is only dirty because of an
+> atime update put it on a "only write out when there is nothing to do
+> or the memory is really needed" list.
 
-At least as in terms of efficiency. Device mapper lives in happy world
-where memory does not end and allocations are fast.
+As I've mentioend earlier, the memory balancing issues that arise when
+we add an "atime dirty" bit scare me a little.  It can be addressed,
+obviously, but at the cost of more code complexity.
 
--- 
-	Evgeniy Polyakov
+An alternative is to simply have a tunable parameter, via either a
+mount option or stashed in the superblock which controls atime's
+granularity guarantee.  That is, only update the atime if it is older
+than some set time that could be configurable as a mount option or in
+the superblock.  Most of the time, an HSM system simply wants to know
+if a file has been used sometime "recently", where recently might be
+measured in hours or in days.
+
+This is IMHO slightly better than relatime, since it keeps the spirit
+of the atime update, while keeping the performance impact to a very
+minimal (and tunable) level.
+
+						- Ted
+
+P.S.  Yet alternative is to specify noatime on an individual
+file/directory basis.  We've had this capability for a *long* time,
+and if a distro were to set noatime for all files in certain
+hierarchies (i.e., /usr/include) and certain top-level directories
+(since the chattr +A flag is inherited), I think folks would find that
+this would reduce the I/O traffic of noatime by a huge amount.  This
+also would be 100% POSIX compliant, since we are extending the
+filesystem and setting certain files to use it.  But if users want to
+know when was the last time they looked at a particular file in their
+home directory, they would still have that facility.
+
