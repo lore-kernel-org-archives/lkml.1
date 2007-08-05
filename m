@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763593AbXHCQOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763940AbXHCQO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763593AbXHCQOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 3 Aug 2007 12:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbXHCQOE
+	id S1763940AbXHCQO6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 3 Aug 2007 12:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759915AbXHCQOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 3 Aug 2007 12:14:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56962 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753923AbXHCQOD (ORCPT
+	Fri, 3 Aug 2007 12:14:49 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:49752 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757344AbXHCQOs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 3 Aug 2007 12:14:03 -0400
-Date: Fri, 3 Aug 2007 17:20:40 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: libata git tree, mbox queue status and contents
-Message-ID: <20070803172040.52853316@the-village.bc.nu>
-In-Reply-To: <46B35344.3090208@garzik.org>
-References: <46B35344.3090208@garzik.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Fri, 3 Aug 2007 12:14:48 -0400
+Subject: [PATCH] lpfc : lpfc_debugfs.c kmalloc + memset conversion to
+	kzalloc
+From: James Smart <James.Smart@Emulex.Com>
+Reply-To: James.Smart@Emulex.Com
+To: linux-scsi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+In-Reply-To: <46B34CA6.6010502@emulex.com>
+References: <200707311845.48807.m.kozlowski@tuxland.pl>
+	 <200707312027.55149.m.kozlowski@tuxland.pl>  <46B34CA6.6010502@emulex.com>
+Content-Type: text/plain
+Organization: Emulex Corporation
+Date: Sun, 05 Aug 2007 06:00:17 -0400
+Message-Id: <1186308017.2983.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Aug 2007 16:14:04.0201 (UTC) FILETIME=[4F8BD990:01C7D5E9]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * Alan: IORDY handling -- upstream whenever Alan is happy
+One more area, introduced by the lpfc 8.2.2 patches, that need the 
+  kmalloc+memset conversion.
 
-I'm happy with it from testing. Just a little worried about it going
-upstream mid -rc as it could have a weird side effect somewhere. I've
-verified an original pre ATA IDE drive with it too now 8)
+This patch to be applied atop the 8.2.2 patches.
 
-> * Alan: ACPI checks for 80wire cable -- upstream whenever Alan is happy
+-- james s
 
-Happy
 
-> * Albert: irq_on/off.  Really need to give this some thought.  Not sure 
-> I like where this model is going.  Polling and twiddling irq on/off 
-> should be kept to a minimum, because it's sorta an admission that the 
-> host state machine has broken down, and we need to bandaid.  Its a 
-> bandaid not a root-cause solution.
+Signed-off-by: James Smart <James.Smart@emulex.com>
 
-I think of it more as an admission that the IDE design is lacking in a
-few areas. No suprise as its an emulation of a 15 year old interface that
-was normally used polled.
 
-> * Ben Collins: cleanup HPA support.  Need to review and see what's 
-> needed today, from this patch.
+diff --git a/drivers/scsi/lpfc/lpfc_debugfs.c b/drivers/scsi/lpfc/lpfc_debugfs.c
+index 2e3c01b..ef99e2b 100644
+--- a/drivers/scsi/lpfc/lpfc_debugfs.c
++++ b/drivers/scsi/lpfc/lpfc_debugfs.c
+@@ -856,9 +856,9 @@ lpfc_debugfs_initialize(struct lpfc_vport *vport)
+ 			goto debug_failed;
+ 		}
+ 		if (!phba->slow_ring_trc) {
+-			phba->slow_ring_trc = kmalloc(
+-				(sizeof(struct lpfc_debugfs_trc) *
+-				lpfc_debugfs_max_slow_ring_trc),
++			phba->slow_ring_trc = kcalloc(
++				lpfc_debugfs_max_slow_ring_trc,
++				sizeof(struct lpfc_debugfs_trc),
+ 				GFP_KERNEL);
+ 			if (!phba->slow_ring_trc) {
+ 				lpfc_printf_vlog(vport, KERN_ERR, LOG_INIT,
+@@ -867,9 +867,6 @@ lpfc_debugfs_initialize(struct lpfc_vport *vport)
+ 				goto debug_failed;
+ 			}
+ 			atomic_set(&phba->slow_ring_trc_cnt, 0);
+-			memset(phba->slow_ring_trc, 0,
+-				(sizeof(struct lpfc_debugfs_trc) *
+-				lpfc_debugfs_max_slow_ring_trc));
+ 		}
+ 	}
+ 
 
-We need to track the HPA case Bartlomiej is working on with old IDE - one
-drive out there is reporting its geometry wrong.
+
