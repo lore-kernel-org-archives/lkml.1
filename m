@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761074AbXHEK3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762005AbXHEKmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761074AbXHEK3U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 06:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXHEK3K
+	id S1762005AbXHEKmz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 06:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755660AbXHEKmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 06:29:10 -0400
-Received: from unthought.net ([212.97.129.88]:3385 "EHLO unthought.net"
+	Sun, 5 Aug 2007 06:42:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52265 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754375AbXHEK3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 06:29:08 -0400
-X-Greylist: delayed 526 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Aug 2007 06:29:08 EDT
-Date: Sun, 5 Aug 2007 12:29:07 +0200
-From: Jakob Oestergaard <jakob@unthought.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Claudio Martins <ctpm@ist.utl.pt>,
-       Jeff Garzik <jeff@garzik.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+	id S1755312AbXHEKmq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 06:42:46 -0400
+Message-ID: <46B5A996.5060006@garzik.org>
+Date: Sun, 05 Aug 2007 06:42:30 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Jakob Oestergaard <jakob@unthought.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-mm@kvack.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
 Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070805102907.GB4246@unthought.net>
-Mail-Followup-To: Jakob Oestergaard <jakob@unthought.net>,
-	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Claudio Martins <ctpm@ist.utl.pt>, Jeff Garzik <jeff@garzik.org>,
-	=?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-	dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-	richard@rsk.demon.co.uk, david@lang.hm
-References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805072805.GB4414@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070805072805.GB4414@elte.hu>
-User-Agent: Mutt/1.5.9i
+References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070805102021.GA4246@unthought.net>
+In-Reply-To: <20070805102021.GA4246@unthought.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 09:28:05AM +0200, Ingo Molnar wrote:
+Jakob Oestergaard wrote:
+> Oh dear.
 > 
-> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> Why not just make ext3 fsync() a no-op while you're at it?
 > 
-> > >  Can you give examples of backup solutions that rely on atime being 
-> > > updated? I can understand backup tools using mtime/ctime for 
-> > > incremental backups (like tar + Amanda, etc), but I'm having trouble 
-> > > figuring out why someone would want to use atime for that.
-> > 
-> > HSM is the usual one, and to a large extent probably why Unix 
-> > originally had atime. Basically migrating less used files away so as 
-> > to keep the system disks tidy.
+> Distros can turn it back on if it's needed...
 > 
-> atime is used as a _hint_, at most and HSM sure works just fine on an 
-> atime-incapable filesystem too. So it's the same deal as "add user_xattr 
-> mount option to the filesystem to make Beagle index faster". It's now: 
-> "if you use HSM storage add the atime mount option to make it slightly 
-> more intelligent. Expect huge IO slowdowns though."
-> 
-> The only remotely valid compatibility argument would be Mutt - but even 
-> that handles it just fine. (we broke way more software via noexec)
+> Of course I'm not serious, but like atime, fsync() is something one
 
-I find it pretty normal to use tmpreaper to clear out unused files from
-certain types of semi-temporary directory structures. Those files are
-often only ever read. They'd start randomly disappearing while in use.
+No, they are nothing alike, and you are just making yourself look silly 
+if you compare them.  fsync has to do with fundamental guarantees about 
+data.
 
-But then again, maybe I'm the only guy on the planet who uses tmpreaper.
 
--- 
+> expects to work if it's there.  Disabling atime updates or making
+> fsync() a no-op will both result in silent failure which I am sure we
+> can agree is disasterous.
 
- / jakob
+<rolls eyes>  Climb down from hyperbole mountain.
+
+If you can show massive amounts of users that will actually be 
+negatively impacted, please present hard evidence.
+
+Otherwise all this is useless hot air.
+
+
+> Why on earth would you cripple the kernel defaults for ext3 (which is a
+> fine FS for boot/root filesystems), when the *fundamental* problem you
+> really want to solve lie much deeper in the implementation of the
+> filesystem?  Noatime doesn't solve the problem, it just makes it "less
+> horrible".
+
+atime updates -are- a fundamental problem, one you cannot solve by 
+tweaking filesystem implementations.  No matter how much you try to hide 
+or batch, atime dirties an inode each time on every read...  for a 
+feature a tiny minority of programs care about, much less depend on.
+
+Remember several filesystems lock atime to mtime, because they do not 
+have a concept of atime, and programs continue to work just fine.  We 
+already have field proof of how little atime matters in reality.
+
+	Jeff
+
 
