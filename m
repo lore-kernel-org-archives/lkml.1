@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbXHESAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759960AbXHESD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759834AbXHESAu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 14:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbXHESAj
+	id S1759960AbXHESD4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 14:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXHESDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 14:00:39 -0400
-Received: from gw.goop.org ([64.81.55.164]:50306 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbXHESAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 14:00:38 -0400
-Message-ID: <46B60FF4.3070208@goop.org>
-Date: Sun, 05 Aug 2007 10:59:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       James Smart <James.Smart@emulex.com>, Adrian Bunk <bunk@stusta.de>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
-       Mark Hindley <mark@hindley.org.uk>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions
-References: <46B5F74D.7010708@googlemail.com> <46B5FA39.5050907@googlemail.com>
-In-Reply-To: <46B5FA39.5050907@googlemail.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-2
+	Sun, 5 Aug 2007 14:03:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:38514 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbXHESDr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 14:03:47 -0400
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+From: Arjan van de Ven <arjan@infradead.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+In-Reply-To: <20070804214821.GC11150@thunk.org>
+References: <20070804103347.GA1956@elte.hu>
+	 <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	 <20070804163733.GA31001@elte.hu>
+	 <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
+	 <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org>
+	 <20070804192130.GA25346@elte.hu> <20070804192615.GA25600@lazybastard.org>
+	 <alpine.LFD.0.999.0708041246530.5037@woody.linux-foundation.org>
+	 <1186258399.2777.8.camel@laptopd505.fenrus.org>
+	 <20070804214821.GC11150@thunk.org>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 05 Aug 2007 11:01:18 -0700
+Message-Id: <1186336878.2777.15.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Virtualization
->
-> Subject         : drivers/net/xen-netfront.c: bogus code
-> References      : http://lkml.org/lkml/2007/7/22/256
-> Last known good : ?
-> Submitter       : Adrian Bunk <bunk@stusta.de>
-> Caused-By       : ?
-> Handled-By      : Jeremy Fitzhardinge <jeremy@goop.org>
-> Status          : unknown
->   
+On Sat, 2007-08-04 at 17:48 -0400, Theodore Tso wrote:
+> On Sat, Aug 04, 2007 at 01:13:19PM -0700, Arjan van de Ven wrote:
+> > there is another trick possible (more involved though, Al will have to
+> > jump in on that one I suspect): Have 2 types of "dirty inode" states;
+> > one is the current dirty state (meaning the full range of ext3
+> > transactions etc) and "lighter" state of "atime-dirty"; which will not
+> > do the background syncs or journal transactions (so if your machine
+> > crashes, you lose the atime update) but it does keep atime for most
+> > normal cases and keeps it standard compliant "except after a crash".
+> 
+> That would make us standards compliant (POSIX explicitly says that
+> what happens after a unclean shutdown is Unspecified) and it would
+> make things a heck of a lot faster.  However, there is a potential
+> problem which is that it will keep a large number of inodes pinned in
+> memory, which is its own problem.  So there would have to be some way
+> to force the atime updates to be merged when under memory pressure,
+> and and perhaps on some much longer background interval (i.e., every
+> hour or so).
 
-This is just a chunk of dead code.  It probably doesn't even affect the
-generated code.  I've got a patch here for it, and I'll probably post it
-in the next day or so, but this seems like a non-issue.
+on the journalling side this would be one transaction (not 5 milion)
+and... since inodes are grouped on disk, you can even get some better
+coalescing this way... 
 
-    J
+Wonder if we could do inode-grouping smartly; eg if we HAVE to write
+inode X, also write out the atime-dirty inodes in range X-Y to X+Y
+(where Y is some tunable) in the same IO..
+
+
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
