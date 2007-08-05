@@ -1,128 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761660AbXHEIwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761108AbXHEI56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761660AbXHEIwV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 04:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbXHEIwK
+	id S1761108AbXHEI56 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 04:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbXHEI5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 04:52:10 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:42078 "EHLO proxima.lp0.eu"
+	Sun, 5 Aug 2007 04:57:49 -0400
+Received: from 1wt.eu ([62.212.114.60]:1146 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756252AbXHEIwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 04:52:08 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=Wupg+0pWNOnRsBBclDfl9kf8TkQH9dmCU1ZNLGQzaF80Y/B8G2QC5Ko6Db4fX/UL0sikBo8zqzvWbZIFFwuGFs9WZiG9X99qLD7xcQ1A6FnVQlHYRUkV5/AJ4W34QuCr;
-Message-ID: <46B58FB4.6050207@simon.arlott.org.uk>
-Date: Sun, 05 Aug 2007 09:52:04 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: linux-pm@lists.linux-foundation.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: e1000 doesn't resume properly from standby (2.6.23-rc2)
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1755801AbXHEI5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 04:57:48 -0400
+Date: Sun, 5 Aug 2007 10:53:54 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805085354.GC6002@1wt.eu>
+References: <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805072141.GA4414@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070805072141.GA4414@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet Controller (Copper) (rev 01)
-        Subsystem: Intel Corp.: Unknown device 1012
-        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
-        Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
-        I/O ports at b000 [size=64]
-        Capabilities: [dc] Power Management version 2
-        Capabilities: [e4] PCI-X non-bridge device.
-        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+On Sun, Aug 05, 2007 at 09:21:41AM +0200, Ingo Molnar wrote:
+> 
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+> > With a Red Hat on if we can move from /dev/hda to /dev/sda in FC7 then 
+> > we can move from atime to noatime by default on FC8 with appropriate 
+> > release note warnings and having a couple of betas to find out what 
+> > other than mutt goes boom.
+> 
+> btw., Mutt does not go boom, i use it myself. It works just fine and 
+> notices new mails even on a noatime,nodiratime filesystem.
 
-00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet Controller (Copper) (rev 01)
-        Subsystem: Intel Corp.: Unknown device 1012
-        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
-        Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
-        I/O ports at b400 [size=64]
-        Capabilities: [dc] Power Management version 2
-        Capabilities: [e4] PCI-X non-bridge device.
-        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 Enable-
+IIRC, atime is used by mailers and by the shell to detect that new
+mail has arrived and report it only once if there are several intances
+watching the same mbox.
 
-[  950.132046] Stopping tasks ... done.
-[  950.459794] Suspending console(s)
-[  951.776277] pnp: Device 00:0c disabled.
-[  951.776673] pnp: Device 00:0a disabled.
-[  951.776984] pnp: Device 00:09 disabled.
-[  951.777306] pnp: Device 00:08 disabled.
-[  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-[  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
-[  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
-[  952.022243] ACPI handle has no context!
-[  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
-[  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
-[  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
-[  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
-[  952.282221] ACPI handle has no context!
-[  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
-[  952.537495] ACPI handle has no context!
+I too use mutt and noatime,nodiratime everywhere (same 10 year-old
+thinko), and the only side effect is that when I have a new mail,
+it is reported in all of my xterms until I read it, clearly something
+I can live with (and sometimes it's even desirable).
 
-[  956.857085] Back to C!
-[  957.295035] ACPI: Unable to turn cooling device [b18d0e00] 'off'
-[  957.521400] PCI: Setting latency timer of device 0000:00:01.0 to 64
-[  957.521478] ACPI: PCI Interrupt 0000:00:09.0[A] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
-[  957.532256] PM: Writing back config space on device 0000:00:0a.0 at offset f (was ff0100, writing ff0105)
-[  957.532277] PM: Writing back config space on device 0000:00:0a.0 at offset 8 (was 1, writing b001)
-[  957.532291] PM: Writing back config space on device 0000:00:0a.0 at offset 4 (was 4, writing e3020004)
-[  957.532299] PM: Writing back config space on device 0000:00:0a.0 at offset 3 (was 800000, writing 802008)
-[  957.532309] PM: Writing back config space on device 0000:00:0a.0 at offset 1 (was 2300000, writing 2300007)
-[  957.532339] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
-[  957.567251] PM: Writing back config space on device 0000:00:0a.1 at offset f (was ff0200, writing ff020c)
-[  957.567275] PM: Writing back config space on device 0000:00:0a.1 at offset 8 (was 1, writing b401)
-[  957.567290] PM: Writing back config space on device 0000:00:0a.1 at offset 4 (was 4, writing e3000004)
-[  957.567298] PM: Writing back config space on device 0000:00:0a.1 at offset 3 (was 800000, writing 802008)
-[  957.567308] PM: Writing back config space on device 0000:00:0a.1 at offset 1 (was 2300000, writing 2300007)
-[  957.567346] ACPI: PCI Interrupt 0000:00:0a.1[B] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.589975] ACPI: PCI Interrupt 0000:00:0b.0[A] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.600217] ACPI: PCI Interrupt 0000:00:0c.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  957.611230] ACPI: PCI Interrupt 0000:00:0c.1[B] -> Link [LNKB] -> GSI 11 (level, low) -> IRQ 11
-[  957.838282] ACPI: PCI Interrupt 0000:00:0c.2[C] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
-[  957.902166] ohci1394: fw-host0: OHCI-1394 1.0 (PCI): IRQ=[11]  MMIO=[e3046000-e30467ff]  Max Packet=[512]  IR/IT contexts=[4/8]
-[  957.911656] ACPI: PCI Interrupt 0000:00:11.1[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  957.911666] PCI: VIA VLink IRQ fixup for 0000:00:11.1, from 255 to 11
-[  957.922034] ACPI: PCI Interrupt 0000:00:11.2[D] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.933028] ACPI: PCI Interrupt 0000:00:11.3[D] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-[  957.944076] ACPI: PCI Interrupt 0000:00:11.5[C] -> Link [LNKC] -> GSI 5 (level, low) -> IRQ 5
-[  957.944091] PCI: Setting latency timer of device 0000:00:11.5 to 64
-[  957.946061] ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] -> GSI 11 (level, low) -> IRQ 11
-[  957.947464] pnp: Device 00:08 activated.
-[  957.948724] pnp: Device 00:09 activated.
-[  957.950635] pnp: Device 00:0a activated.
-[  957.950664] pnp: Failed to activate device 00:0b.
-[  957.951942] pnp: Device 00:0c activated.
-[  959.883939] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-[  961.866287] hde: selected mode 0x45
-[  965.310493] hdg: selected mode 0x45
-[  965.316152] hdh: selected mode 0x42
-[  969.135523] hda: selected mode 0x46
-[  973.454631] hdb: selected mode 0x45
-[  973.457179] hdc: selected mode 0x44
-[  973.459550] hdd: selected mode 0x42
-[  973.950474] Restarting tasks ... done.
-[  974.261357] agpgart: Found an AGP 2.0 compliant device at 0000:00:00.0.
-[  974.262099] agpgart: Putting AGP V2 device at 0000:00:00.0 into 4x mode
-[  974.262620] agpgart: Putting AGP V2 device at 0000:01:00.0 into 4x mode
-[  974.262894] [drm] Loading R200 Microcode
+In fact, mutt is pretty good at this. It updates atime and ctime itself
+as soon as it opens the mbox, so the shell is happy and only reports
+"you have mail" afterwards.
 
+Well, I hope we're not getting too much off-topic here...
 
-eth0 now doesn't receive anything - it's transmitting ok because 
-I can receive its packets on another host. It's also still getting 
-interrupts.
+Willy
 
-If I then ifconfig eth0 down and up, or change the MTU (since 
-that resets the link on e1000), it starts working again:
-
-[  993.926603] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex, Flow Control: RX/TX
-
-
-There's a link up at 959.883939 too...
-
--- 
-Simon Arlott
