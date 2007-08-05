@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761556AbXHEUSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760802AbXHEUYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761556AbXHEUSR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 16:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752755AbXHEUSI
+	id S1760802AbXHEUYv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 16:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXHEUYm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 16:18:08 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42385 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752019AbXHEUSG (ORCPT
+	Sun, 5 Aug 2007 16:24:42 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47672 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbXHEUYl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 16:18:06 -0400
-X-Sasl-enc: TdIvp4a+CgtJouth/Ul7I2C5ISFZkPjzC2hlCkELYPmv 1186345084
-Date: Sun, 5 Aug 2007 17:18:01 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org,
-       ibm-acpi-devel@lists.sourceforge.net,
-       =?iso-8859-1?Q?Ren=E9?= Treffer <treffer@in.tum.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [2.6.23 regression fix] fix thinkpad_acpi without hardware
-Message-ID: <20070805201801.GB16723@khazad-dum.debian.net>
-References: <20070805195354.GF3972@stusta.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070805195354.GF3972@stusta.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Sun, 5 Aug 2007 16:24:41 -0400
+Subject: Re: [patch] implement smarter atime updates support
+From: Arjan van de Ven <arjan@infradead.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jakob Oestergaard <jakob@unthought.net>, Jeff Garzik <jeff@garzik.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
+In-Reply-To: <20070805210446.57aa66f6@the-village.bc.nu>
+References: <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	 <20070804163733.GA31001@elte.hu>
+	 <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
+	 <46B4C0A8.1000902@garzik.org> <20070805102021.GA4246@unthought.net>
+	 <46B5A996.5060006@garzik.org> <20070805105850.GC4246@unthought.net>
+	 <20070805124648.GA21173@elte.hu>
+	 <alpine.LFD.0.999.0708050944470.5037@woody.linux-foundation.org>
+	 <20070805190928.GA17433@elte.hu> <20070805192226.GA20234@elte.hu>
+	 <1186343582.25667.3.camel@laptopd505.fenrus.org>
+	 <20070805210446.57aa66f6@the-village.bc.nu>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Sun, 05 Aug 2007 13:22:36 -0700
+Message-Id: <1186345356.25667.7.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 05 Aug 2007, Adrian Bunk wrote:
-> René Treffer reported that booting a CONFIG_THINKPAD_ACPI=y kernel on a 
-> machine without the hardware results in an Oops.
+On Sun, 2007-08-05 at 21:04 +0100, Alan Cox wrote:
+> O> you might want to add
+> > 
+> > 	/* 
+> > 	 * if the inode is dirty already, do the atime update since
+> > 	 * we'll be doing the disk IO anyway to clean the inode.
+> > 	 */
+> > 	if (inode->i_state & I_DIRTY)
+> > 		return 1;
 > 
-> The trace is thinkpad_acpi_module_init -> thinkpad_acpi_module_exit -> 
-> driver_remove_file -> sysfs_hash_and_remove.
-> 
-> The error handling if thinkpad_acpi_module_init() fails generally looks 
-> suspicious, but this patch at least fixes the common case if no hardware 
-> was found, and it seems in this case there isn't any cleanup 
-> actually required.
-> 
-> Broken by commit d5a2f2f1d68e2da538ac28540cddd9ccc733b001.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> This makes the actual result somewhat less predictable. Is that wise ?
+> Right now its clear what happens based on what user sequence of events
+> and that this is easily repeatable.
 
-NAK
+I can see the repeatability argument; on the flipside, having a system
+of "opportunistic atime", eg as good as you can go cheaply, but with
+minimum guarantees has some attraction as well. For example one could
+imagine a system where the inode gets it's atime updated anyway, just
+not flagged for writing back to disk. If it later undergoes some event
+that would cause it to go to disk, it gets preserved...
 
-Proper fix already sent to Len Brown, and already queued to be pulled by
-Linus.
+otoh that's even more unpredictable since VM pressure could drop this
+update early.
 
-Len, that'd be "ACPI: thinkpad-acpi: fix the module init failure path",
-http://thread.gmane.org/gmane.linux.acpi.devel/24413
+For the dirty case, such drawbacks don't exist; it's just one more step
+of "when we can cheaply".
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+
