@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759359AbXHESJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbXHESKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759359AbXHESJT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 14:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbXHESJI
+	id S1760839AbXHESKT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 14:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbXHESKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 14:09:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45974 "EHLO mx3.mail.elte.hu"
+	Sun, 5 Aug 2007 14:10:06 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42778 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752074AbXHESJH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 14:09:07 -0400
-Date: Sun, 5 Aug 2007 20:08:26 +0200
+	id S1752074AbXHESKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 14:10:04 -0400
+Date: Sun, 5 Aug 2007 20:09:41 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: J??rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Claudio Martins <ctpm@ist.utl.pt>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -21,65 +23,34 @@ Cc: J??rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
        trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
        richard@rsk.demon.co.uk, david@lang.hm
 Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070805180826.GD3244@elte.hu>
-References: <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805073709.GA6325@elte.hu> <20070805134328.1a4474dd@the-village.bc.nu> <20070805125433.GA22060@elte.hu> <20070805143708.279f51f8@the-village.bc.nu>
+Message-ID: <20070805180941.GE3244@elte.hu>
+References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805144645.GA28263@thunk.org> <20070805175547.GC3244@elte.hu> <46B60FFC.2000909@garzik.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070805143708.279f51f8@the-village.bc.nu>
+In-Reply-To: <46B60FFC.2000909@garzik.org>
 User-Agent: Mutt/1.5.14 (2007-02-12)
 X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.4815]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-> And you honestly think that putting it in Kconfig as well as allowing 
-> users to screw up horribly and creating incompatible defaults you
+> > yeah, i didnt mean to say that it is _always_ a big issue, but "only 
+> > a small number of files are read" is a very, very small minority of 
+> > even the database server world.
+> 
+> OTOH, consider a popular Linux task, web serving.  atime results in a 
+> lot of unnecessary disk traffic.
 
-So far you've not offered one realistic scenario of "screw up horribly". 
-People have been using noatime for a long time and there are no horror 
-stories about that. _Which_ OSS HSM software relies on atime?
-
-> can't test for in a user space app where it matters is going to 
-> *change* this.
-
-The patch i posted today adds /proc/sys/kernel/mount_with_atime. That 
-can be tested by user-space, if it truly cares about atime.
-
-> Do you really think anyone who said "noatime, compatibility, umm errr" 
-> is going to say "noatime, compatibility, but hey its in Kconfig lets 
-> do it". You argument doesn't hold up to minimal rational 
-> consideration. Posting to the distribution devel list with: "Its a 50% 
-> performance win, we need to fix these corner cases, here's a tmpwatch 
-> patch" is *exactly* what is needed to change it, and Kconfig options 
-> are irrelevant to that.
-
-i did exactly that 6 months ago, check your email folders. I went by the 
-"process". But it doesnt really matter anymore, Ubuntu has done the step 
-and Fedora will be forced to do it too. But it's sad that it took us 10 
-years. I'd like to remind you again:
-
-|| ...For me, I would say 50% is not enough to describe the _visible_ 
-|| benefits... Not talking any specific number but past 10sec-1min+ 
-|| lagging in X is history, it's gone and I really don't miss it that 
-|| much... :-) Cannot reproduce even a second long delay anymore in 
-|| window focusing under considerable load as it's basically 
-|| instantaneous (I can see that it's loaded but doesn't affect the 
-|| feeling of responsiveness I'm now getting), even on some loads that I 
-|| couldn't previously even dream of... [...]
-
-we really have to ask ourselves whether the "process" is correct if 
-advantages to the user of this order of magnitude can be brushed aside 
-with simple "this breaks binary-only HSM" and "it's not standards 
-compliant" arguments.
+it's a big, noticeable effect on 99% of the Linux boxes.
 
 	Ingo
