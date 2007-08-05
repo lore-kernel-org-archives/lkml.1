@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbXHEQjv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758179AbXHEQkL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760880AbXHEQjv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 12:39:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbXHEQjm
+	id S1758179AbXHEQkL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 12:40:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759951AbXHEQjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 12:39:42 -0400
-Received: from web33705.mail.mud.yahoo.com ([68.142.201.202]:29828 "HELO
-	web33705.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757058AbXHEQjl convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 12:39:41 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Aug 2007 12:39:40 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=makp38u6JeT9kCYScF1+OmhE8wFUuU4SM2so1ivD7BrE159/k7aFgLiwcUrTxt3khRZpFic7vDHpDSexSV8FtVWnY45wAf6UBx52RZBPBEDrPjt6nnvBy73i2hSrz+4I6quL5QIiEdDb5mL7fQI7z7yKRGpu1sJvXz/uR5D4z4g=;
-X-YMail-OSG: Bafg47IVM1kR1543xlL_e7sYpzleXwn8stm6HJ86O6EN9tsnoAaQ.0i.t5eZXYeFhwEAs0TA6UnIsBnWCt1NcwvtKtIjCcP.54K54DLtDQZR.0i8TRDlOsHoiiPb4w--
-X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.119
-Date: Sun, 5 Aug 2007 09:32:59 -0700 (PDT)
-From: Adnan Khaleel <akhaleel2001@yahoo.com>
-Subject: Page Cache Question
-To: linux-kernel@vger.kernel.org
+	Sun, 5 Aug 2007 12:39:45 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:43706 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757803AbXHEQjn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 12:39:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lEUW0B6NcTanxnDUwEjJiQfjbAA08JG2DlE1HpDqSsbZjdtx3hOMZWNrwwxUkp0Q120X9SAACNFD34B5zSCx793NoL91hkBdRNVFsVfD5AXVVW21iY7Cve75KHVvslVEx3hyGWhhy05wzXgshsZhDWCyhtv0ne9fGEjDtQbmNVA=
+Message-ID: <86802c440708050939t7853ad74w5f039d1478964857@mail.gmail.com>
+Date: Sun, 5 Aug 2007 09:39:43 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Muli Ben-Yehuda" <muli@il.ibm.com>
+Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       riku.seppala@kymp.net, "Andy Whitcroft" <apw@shadowen.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Jeff Garzik" <jeff@garzik.org>
+In-Reply-To: <20070805115457.GD19963@rhun.haifa.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Message-ID: <725937.57185.qm@web33705.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46B3A7BB.9000102@redhat.com> <200708041130.42038.ak@suse.de>
+	 <20070804093222.f0d7f3c7.akpm@linux-foundation.org>
+	 <200708050140.49590.ak@suse.de>
+	 <20070805050410.GB4960@rhun.haifa.ibm.com>
+	 <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com>
+	 <20070805075307.GA25890@rhun.haifa.ibm.com>
+	 <86802c440708050149u4c0ef4d8j7ea3478b07312525@mail.gmail.com>
+	 <20070805115457.GD19963@rhun.haifa.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 8/5/07, Muli Ben-Yehuda <muli@il.ibm.com> wrote:
+> On Sun, Aug 05, 2007 at 01:49:57AM -0700, Yinghai Lu wrote:
+>
+> > Can you change
+> > pci_scan_bus_with_sysdata(int busno)
+> > to
+> > pci_scan_bus_on_node(int bus, struct pci_ops *ops, int node)?
+>
+> Do you anticipate passing in a different pci_ops or node?
+> In any case please remember I am aiming for the minimal "obviously
+> correc" change for 2.6.23...
+>
+> > pci_scan_bus_with_sysdata(int busno) make me feel that i need feed one
+> > sysdata as on param for it.
+>
+> Yeah, lousy name, but the best I came up with. Runner up was
+> 'x86_pci_scan_bus', which is I think worse?
+>
+or
 
-I'm looking for a way to disable the page cache for an
-experimental NUMA system running the 2.6.17 kernel. I would prefer to
-only disable the page cache for my process and still have it be enabled
-by the rest of the system. Is there an easy way of doing this?
-Alternatively, I would be fine disabling the Page Cache altogether as well.
+pci_scan_bus_on_node(int bus, struct pci_ops *ops, int node)
+x86_pci_scan_root_bus(int bus)
+{
+  pci_scan_bus_on_node(bus, &pci_root_ops, -1);
+}
 
+i need node as one param for my patch later in irq.c and legacy.c
 
-
-Thanks
-
-
-
-AK
-
-
-
-
-
-
-       
-____________________________________________________________________________________
-Pinpoint customers who are looking for what you sell. 
-http://searchmarketing.yahoo.com/
+YH
