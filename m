@@ -1,36 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbXHEQ1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbXHEQ2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbXHEQ1m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 12:27:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbXHEQ1c
+	id S1759063AbXHEQ2B (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 12:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbXHEQ1m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 12:27:32 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:26502 "EHLO
+	Sun, 5 Aug 2007 12:27:42 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:26483 "EHLO
 	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752029AbXHEQ1b (ORCPT
+	with ESMTP id S1756115AbXHEQ1i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 12:27:31 -0400
+	Sun, 5 Aug 2007 12:27:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=SZ+jVWDD/sWgZ0aBymd3B+SHOzrqZ20R7KW6ZncIamQalD8Xy+q51yzWBAr1LcSC+JF1E7FbE922k5vmXe0FoXT7pImmiLD5qu5JBoq3RScYlSfodTYVL4P5nDC4bMllzdIQIp1qz0BGb2Nw5lVOxiDolJl9LhMCRIdkhL4iu+M=
-Message-ID: <46B5FA29.2070509@googlemail.com>
-Date: Sun, 05 Aug 2007 18:26:17 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=TmNVJ1oS3RLhEX+B7h/KiFiPLXAi2KezdMiSvOj3Hzh50X+nrK/kB23o6Z+wj2EWGr2UZtyciDH1wyTtxh/egPNRoxjN3EXDapmPMMVU7ckYksqIA0lmBq0K21Uqg/6/Wiq7vVqeMSBGZXw8t5wNXW/i6OFJx5KCuzJgcNHhdcs=
+Message-ID: <46B5FA32.50208@googlemail.com>
+Date: Sun, 05 Aug 2007 18:26:26 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Hugh Dickins <hugh@veritas.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
-       Denis Sadykov <denis.m.sadykov@intel.com>, dth <dth@dth.net>
-Subject: [1/3] 2.6.23-rc2: known regressions
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Andrew Clayton <andrew@digital-domain.net>,
+       Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
+       Florian Lohoff <flo@rfc822.org>, Uwe Bugla <uwe.bugla@gmx.de>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Meelis Roos <mroos@linux.ee>
+Subject: Re: [2/3] 2.6.23-rc2: known regressions
+References: <46B5F74D.7010708@googlemail.com>
+In-Reply-To: <46B5F74D.7010708@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -62,60 +61,56 @@ Trent Piepho                           2
 
 
 
-Unclassified
+FS
 
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
+Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+References      : http://lkml.org/lkml/2007/8/2/462
 Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Status          : problem is being debugged
-
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
-Last known good : ?
-Submitter       : Markus <lists4me@web.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Status          : problem is being debugged
-
-
-
-ACPI
-
-Subject         : 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
-References      : http://lkml.org/lkml/2007/8/2/24
-Last known good : ?
-Submitter       : Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
+Submitter       : Andrew Clayton <andrew@digital-domain.net>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : T60 ACPI issues/THINKPAD_ACPI_INPUT_ENABLED seems regressive
-References      : http://lkml.org/lkml/2007/8/1/198
-                  http://lkml.org/lkml/2007/8/1/176
-Last known good : ?
-Submitter       : Michael S. Tsirkin <mst@dev.mellanox.co.il>
-                  Hugh Dickins <hugh@veritas.com>
+
+
+Networking
+
+Subject         : IP v4 routing is broken
+References      : http://www.stardust.webpages.pl/files/tbf/bugs/bug_report01.txt
+Last known good : 2.6.22-git2
+Submitter       : Uwe Bugla <uwe.bugla@gmx.de>
 Caused-By       : ?
-Handled-By      : Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Status          : problem is being debugged
+Handled-By      : ?
+Status          : unknown
 
-
-
-CPUFREQ
-
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
+Subject         : sky2 boot crash in sky2_mac_intr
+References      : http://lkml.org/lkml/2007/7/24/91
 Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
+Submitter       : Florian Lohoff <flo@rfc822.org>
+Caused-By       : 
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
+Last known good : ?
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
+Status          : unknown
+
+
+
+Power management
+
+Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+References      : http://lkml.org/lkml/2007/8/4/39
+Last known good : ?
+Submitter       : Meelis Roos <mroos@linux.ee>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : unknown
 
 
 
