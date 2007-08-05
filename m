@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbXHEW3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760003AbXHEWhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759274AbXHEW3h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 18:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbXHEW32
+	id S1760003AbXHEWhR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 18:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbXHEWhE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 18:29:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38327 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754175AbXHEW31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 18:29:27 -0400
-Date: Mon, 6 Aug 2007 00:29:37 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
-Message-ID: <20070805222937.GA23963@elf.ucw.cz>
-References: <200708051902.18801.toralf.foerster@gmx.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708051902.18801.toralf.foerster@gmx.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+	Sun, 5 Aug 2007 18:37:04 -0400
+Received: from ms-smtp-02.nyroc.rr.com ([24.24.2.56]:52282 "EHLO
+	ms-smtp-02.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754718AbXHEWhC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 18:37:02 -0400
+Subject: Re: [BUG RT] WARNING: at kernel/sched.c:5071 2.6.23-rc1-rt7
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       RT <linux-rt-users@vger.kernel.org>,
+       "Paul E. McKenney" <paulmck@us.ibm.com>
+In-Reply-To: <20070805065646.GA515@elte.hu>
+References: <1186290816.636.14.camel@localhost.localdomain>
+	 <20070805065646.GA515@elte.hu>
+Content-Type: text/plain
+Date: Sun, 05 Aug 2007 18:36:46 -0400
+Message-Id: <1186353406.13885.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, 2007-08-05 at 08:56 +0200, Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> It is a small - but IMHO nagging - regression between these 2 kernel versions.
 > 
-> To make a "software suspend" at this notebook ("suspend to RAM") you have
-> to press <Fn>+ <F4>. Pressing the <Fn>-Key after that wakes up the notenbook.
+> > P.S. I really found out that the system becomes VERY non-responsive 
+> > when you run with both hard and softirqs as threads, but with 
+> > PREEMPT_NONE ;-)
 > 
+> hm. That's not supposed to happen. Could there be some wakeup or softirq 
+> processing problem?
+> 
+> 	Ingo
 
-> If you hibernated the system ("suspend to disc"), you have to press the power
-> button to wake up the notebook.
+Well, it happened right after I installed the ath driver (from
+http://svn.madwifi.org/trunk ).  But I've recompiled my system with
+PREEMPT_RT and it works fine now.  I can investigate it later, but I
+currently need this system working with a PREEMPT_RT kernel.
 
-Yes, I seen similar reports. Does it happen in all shutdown mode and
-2.6.22? Does it happen   in platform mode in 2.6.19?
+-- Steve
 
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
