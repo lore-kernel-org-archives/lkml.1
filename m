@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932607AbXHEAYi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932728AbXHEAmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932607AbXHEAYi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 4 Aug 2007 20:24:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765220AbXHEAYa
+	id S932728AbXHEAmc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 4 Aug 2007 20:42:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758797AbXHEAmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 4 Aug 2007 20:24:30 -0400
-Received: from smtp1.ist.utl.pt ([193.136.128.21]:47487 "EHLO smtp1.ist.utl.pt"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757686AbXHEAY3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 4 Aug 2007 20:24:29 -0400
-X-Greylist: delayed 1945 seconds by postgrey-1.27 at vger.kernel.org; Sat, 04 Aug 2007 20:24:29 EDT
-From: Claudio Martins <ctpm@ist.utl.pt>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Date: Sun, 5 Aug 2007 00:51:40 +0100
-User-Agent: KMail/1.9.7
-Cc: Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?q?J=F6rn_Engel?= <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu>
-In-Reply-To: <20070804224706.617500a0@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 4 Aug 2007 20:42:22 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:39628 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758309AbXHEAmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 4 Aug 2007 20:42:21 -0400
+Date: Sun, 5 Aug 2007 02:41:55 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: rtc-linux@googlegroups.com
+Cc: hpa@zytor.com, Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rtc-linux] Re: rtc max frequency setting
+Message-ID: <20070805024155.057d051d@i1501.lan.towertech.it>
+In-Reply-To: <46B5148E.50302@zytor.com>
+References: <Pine.LNX.4.64.0708050042560.14443@fbirervta.pbzchgretzou.qr>
+	<46B5148E.50302@zytor.com>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708050051.40758.ctpm@ist.utl.pt>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 04 August 2007, Alan Cox wrote:
->
-> Linux has never been a "suprise your kernel interfaces all just changed
-> today" kernel, nor a "gosh you upgraded and didn't notice your backups
-> broke" kernel.
->
+On Sat, 04 Aug 2007 17:06:38 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
- Can you give examples of backup solutions that rely on atime being updated?
-I can understand backup tools using mtime/ctime for incremental backups (like 
-tar + Amanda, etc), but I'm having trouble figuring out why someone would 
-want to use atime for that.
+> > with the old rtc.ko module, there was a /proc/sys/dev/rtc/max-user-freq 
+> > that could be set. With rtc_cmos.ko (or the new rtc infrastructure in 
+> > general), I am missing this file. Where can I set the max-user-freq now, 
+> > or is this obsolete now? (mplayer prefers to have user-freq to be >= 1024.)
+> > 
+> 
+> Qemu wants something like this too.  Both of these really want something
+> else, which is a high-frequency userspace timer.
+> 
+> What is the best way to do that on modern kernels?
 
- Best regards
+ The rtc class is missing sysfs interface to the maximum settable
+ value. I guess I'll have to add it. I should be able to find the time
+ in the next few days.
 
-Claudio
+ However, I agree that they both shold be using an userspace
+ high freq timer :)
+
+-- 
+
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
