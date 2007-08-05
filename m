@@ -1,106 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbXHEQF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758667AbXHEQFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbXHEQF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 12:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHEQFN
+	id S1758667AbXHEQFn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 12:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbXHEQFc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 12:05:13 -0400
-Received: from ns1.scsiguy.com ([70.89.174.89]:53368 "EHLO ns1.scsiguy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752073AbXHEQFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 12:05:11 -0400
-X-Greylist: delayed 1299 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Aug 2007 12:05:11 EDT
-Message-ID: <46B5EFE7.6090008@scsiguy.com>
-Date: Sun, 05 Aug 2007 09:42:31 -0600
-From: "Justin T. Gibbs" <gibbs@scsiguy.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Sun, 5 Aug 2007 12:05:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:40262 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757283AbXHEQFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 12:05:30 -0400
+X-Authenticated: #4463548
+X-Provags-ID: V01U2FsdGVkX1/zbVYex3PzCacL0o+/4ygAlQWuwMEztWHldn6Yfo
+	sMHhne0LmAuDIB
+From: Dimitrios Apostolou <jimis@gmx.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: high system cpu load during intense disk i/o
+Date: Sun, 5 Aug 2007 19:03:12 +0300
+User-Agent: KMail/1.9.7
+References: <200708031903.10063.jimis@gmx.net>
+In-Reply-To: <200708031903.10063.jimis@gmx.net>
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>
-CC: James Bottomley <James.Bottomley@steeleye.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Bottomley <jejb@kernel.org>, linux-scsi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RESEND] Fix a potential NULL pointer deref in the aic7xxx,
- ahc_print_register() function
-References: <200708042030.52405.jesper.juhl@gmail.com>	 <1186256627.3439.22.camel@localhost.localdomain> <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com>
-In-Reply-To: <9a8748490708050836m20b5dd38gf6a8968cd4b106f9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708051903.12414.jimis@gmx.net>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All of this logic was simplified back in '05 in the BSD drivers by adding
-this to the top of the function:
+Hello again,
 
-        u_int   dummy_column;
-  
-        if (cur_column == NULL) {
-                dummy_column = 0;
-                cur_column = &dummy_column;
-        }
+was my report so complicated? Perhaps I shouldn't have included so many 
+oprofile outputs. Anyway, if anyone wants to have a look, the most important 
+is two_discs_bad.txt oprofile output, attached on my original message. The 
+problem is 100% reproducible for me so I would appreciate if anyone told me 
+he has similar experiences. 
 
-and then stripping out the cur_column == NULL checks in the routine.
 
---
-Justin
+Thanks, 
+Dimitris
 
-Jesper Juhl wrote:
-> On 04/08/07, James Bottomley <James.Bottomley@steeleye.com> wrote:
->> On Sat, 2007-08-04 at 20:30 +0200, Jesper Juhl wrote:
->>> (resend of patch previously submitted on 28-Jul-2007 23:06)
->>>
->>>
->>> Ehlo,
->>>
->>> The Coverity checker noticed that we have a potential NULL pointer
->>> deref in drivers/scsi/aic7xxx/aic7xxx_core.c::ahc_print_register().
->>> This patch handles it by adding the same test against NULL that is
->>> used elsewhere in the same function.
->> It's on my list of things to look at ... but not very high.  I suspect
->> it actually isn't triggerable, but if you can tell me how, it will save
->> me from looking.
->>
-> 
-> Here's what Coverity reported :
-> ...
-> 6525 	int
-> 6526 	ahc_print_register(ahc_reg_parse_entry_t *table, u_int num_entries,
-> 6527 			   const char *name, u_int address, u_int value,
-> 6528 			   u_int *cur_column, u_int wrap_point)
-> 6529 	{
-> 6530 		int	printed;
-> 6531 		u_int	printed_mask;
-> 6532 	
-> 
-> Event var_compare_op: Added "cur_column" due to comparison "cur_column != 0"
-> Also see events: [var_deref_op]
-> At conditional (1): "cur_column != 0" taking false path
-> 
-> 6533 		if (cur_column != NULL && *cur_column >= wrap_point) {
-> 6534 			printf("\n");
-> 6535 			*cur_column = 0;
-> 6536 		}
-> 6537 		printed = printf("%s[0x%x]", name, value);
-> 
-> At conditional (2): "table == 0" taking true path
-> 
-> 6538 		if (table == NULL) {
-> 6539 			printed += printf(" ");
-> 
-> Event var_deref_op: Variable "cur_column" tracked as NULL was dereferenced.
-> Also see events: [var_compare_op]
-> 
-> 6540 			*cur_column += printed;
-> 6541 			return (printed);
-> 6542 		}
-> ...
-> 
-> So it requires a NULL 'table' and a != NULL 'cur_column' to trigger.
-> Whether or not that's actually possible I'm not sure, but it seems
-> safer to guard against it :)
-> 
-> 
-> By the way; if this can actually be triggered, then
-> ahd_print_register() has the same problem.
-> 
-> 
+
+
+On Friday 03 August 2007 19:03:09 Dimitrios Apostolou wrote:
+> Hello list,
+>
+> I have a P3, 256MB RAM system with 3 IDE disks attached, 2 identical
+> ones as hda and hdc (primary and secondary master), and the disc with
+> the OS partitions as primary slave hdb. For more info please refer to
+> the attached dmesg.txt. I attach several oprofile outputs that describe
+> various circumstances referenced later. The script I used to get them is
+> the attached script.sh.
+>
+> The problem was encountered when I started two processes doing heavy I/O
+> on hda and hdc, "badblocks -v -w /dev/hda" and "badblocks -v -w
+> /dev/hdc". At the beginning (two_discs.txt) everything was fine and
+> vmstat reported more than 90% iowait CPU load. However, after a while
+> (two_discs_bad.txt) that some cron jobs kicked in, the image changed
+> completely: the cpu load was now about 60% system, and the rest was user
+> cpu load possibly going to the simple cron jobs.
+>
+> Even though under normal circumstances (for example when running
+> badblocks on only one disc (one_disc.txt)) the cron jobs finish almost
+> instantaneously, this time they were simply never ending and every 10
+> minutes or so more and more jobs were being added to the process table.
+> One day later, the vmstat still reports about 60/40 system/user cpu load,
+> all processes still run (hundreds of them), and the load average is huge!
+>
+> Another day later the OOM killer kicks in and kills various processes,
+> however never touches any badblocks process. Indeed, manually suspending
+> one badblocks process remedies the situation: within some seconds the
+> process table is cleared from cron jobs, cpu usage is back to 2-3% user
+> and ~90% iowait and the system is normally responsive again. This
+> happens no matter which badblocks process I suspend, being hda or hdc.
+>
+> Any ideas about what could be wrong? I should note that the kernel is my
+> distro's default. As the problem seems to be scheduler specific I didn't
+> bother to compile a vanilla kernel, since the applied patches seem
+> irrelevant:
+>
+> http://archlinux.org/packages/4197/
+> http://cvs.archlinux.org/cgi-bin/viewcvs.cgi/kernels/kernel26/?cvsroot=Curr
+>ent&only_with_tag=CURRENT
+>
+>
+> Thank in advance,
+> Dimitris
+>
+>
+> P.S.1: Please CC me directly as I'm not subscribed
+>
+> P.S.2: Keep in mind that the problematic oprofile outputs probably refer
+> to much longer time than 5 sec, since due to high load the script was
+> taking long to complete.
+>
+> P.S.3: I couldn't find anywhere in kernel documentation that setting
+> nmi_watchdog=0 is neccessary for oprofile to work correctly. However,
+> Documentation/nmi_watchdog.txt mentions that oprofile should disable the
+> nmi_watchdog automatically, which doesn't happen with the latest kernel.
+
+
