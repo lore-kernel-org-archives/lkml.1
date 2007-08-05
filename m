@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757784AbXHEP1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756285AbXHEP1e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757784AbXHEP1F (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbXHEP0z
+	id S1756285AbXHEP1e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:27:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbXHEP10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:26:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35691 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752334AbXHEP0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:26:54 -0400
-Date: Sun, 5 Aug 2007 17:26:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: "Paul E. McKenney" <paulmck@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG  RT] - rcupreempt.c:133 on 2.6.23-rc1-rt7
-Message-ID: <20070805152627.GA14029@elte.hu>
-References: <1186289484.636.5.camel@localhost.localdomain> <1186290332.636.8.camel@localhost.localdomain> <20070805065948.GB515@elte.hu> <Pine.LNX.4.58.0708051019560.8421@gandalf.stny.rr.com>
+	Sun, 5 Aug 2007 11:27:26 -0400
+Received: from ag-out-0708.google.com ([72.14.246.250]:15507 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754329AbXHEP1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 11:27:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RIhc6JT2U5bcPK787JEdNEgKdA25ptJAoCMLakDB7F5kSZYM6ENEehUQhFVydPCI+fqV3ylMZzTXvZ5C9qZmcI2v971W9d9mNocC4mO6QsOJdrzSGj+R8BIsjnKMX/nqW2dI32Ke7CL3kLpwHZSG8dKi4a1XRdAfQBfZLKQqZtM=
+Message-ID: <9a8748490708050827p71e2abc1o9e29a87b76194d32@mail.gmail.com>
+Date: Sun, 5 Aug 2007 17:27:24 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH][RESEND] efficeon-agp leaks 'struct agp_bridge_data' in error paths of agp_efficeon_probe()
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Carlos Puchol" <cpglinux@puchol.com>, hpa@transmeta.com,
+       "David Airlie" <airlied@linux.ie>
+In-Reply-To: <46B54D76.6060300@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0708051019560.8421@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <200708042030.58259.jesper.juhl@gmail.com>
+	 <46B54D76.6060300@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/08/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Jesper Juhl wrote:
+> > (This is a resend of a patch originally submitted on 24-Jul-2007 00:14)
+> >
+> >
+> > Ok, this is something the coverity checker found (CID: 1813).
+> > I'm not at all intimate with this code, so I'm not sure if this
+> > attempt at a fix is correct (but at least it compiles).
+> >
+> > Please look it over and NACK if bad or merge if good ;-)
+> >
+>
+> Looks sensible to me.
+>
+Good. Thank you for taking a look.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> The code on line 133 is:
-> 
-> 	WARN_ON_ONCE(current->rcu_read_lock_nesting > NR_CPUS);
-> 
-> I have NR_CPUS set to 2 since the box I'm running this on only has 2 
-> cpus and I see no reason to waste more data structures.
-> 
-> Is rcu read lock nesting deeper than 2?
-
-ah, silly me - that should indeed be something fixed like 128.
-
-	Ingo
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
