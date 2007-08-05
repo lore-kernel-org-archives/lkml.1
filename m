@@ -1,64 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXHERYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755503AbXHERgl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbXHERYT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 13:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXHERYM
+	id S1755503AbXHERgl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 13:36:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbXHERge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 13:24:12 -0400
-Received: from web33710.mail.mud.yahoo.com ([68.142.201.207]:33224 "HELO
-	web33710.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752074AbXHERYM convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 13:24:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=MmKPbygU8IjwnIv5ATAPtZ3NT44yISEop/XCaS9EMe61LyPNnBMMNYsTHkja6VmgClEbpB9IjqYsdNZ2w/nUHid9qBJKs086lwQc2CW0Y0WvoFwRUt0msd4T5qqrb3GaZTciiAXFjFFmBZiTeO6nvcQU4a01xi0/4UIWhmaI8IQ=;
-X-YMail-OSG: cXmZOv4VM1nY8ysyzO_xJ4eKNBOvbC7TIe3ND4vv_Dc9ul0YkxvTD46N7KNeWhNvSDxbC3FLO_QH_SzgeTQ2AominDTmXo9ymz3Vc8_NImGf1MT5hcU-
-X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.119
-Date: Sun, 5 Aug 2007 10:24:08 -0700 (PDT)
-From: Adnan Khaleel <akhaleel2001@yahoo.com>
-Subject: Re: Page Cache question
-To: linux-kernel@vger.kernel.org
+	Sun, 5 Aug 2007 13:36:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53683 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751496AbXHERgd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 13:36:33 -0400
+Message-ID: <46B60A93.80107@garzik.org>
+Date: Sun, 05 Aug 2007 13:36:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 8BIT
-Message-ID: <970535.60395.qm@web33710.mail.mud.yahoo.com>
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Muli Ben-Yehuda <muli@il.ibm.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, riku.seppala@kymp.net,
+       Andy Whitcroft <apw@shadowen.org>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
+References: <46B3A7BB.9000102@redhat.com> <200708041130.42038.ak@suse.de>	 <20070804093222.f0d7f3c7.akpm@linux-foundation.org>	 <200708050140.49590.ak@suse.de>	 <20070805050410.GB4960@rhun.haifa.ibm.com>	 <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com>	 <20070805075307.GA25890@rhun.haifa.ibm.com>	 <86802c440708050149u4c0ef4d8j7ea3478b07312525@mail.gmail.com>	 <20070805115457.GD19963@rhun.haifa.ibm.com> <86802c440708050939t7853ad74w5f039d1478964857@mail.gmail.com>
+In-Reply-To: <86802c440708050939t7853ad74w5f039d1478964857@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So would it be possible to me to disable it for just a particular user space process?
-
-Adnan
-
-
-> I'm looking for a way to disable the page cache for an
-
-> experimental NUMA system running the 2.6.17 kernel. I would prefer to
-
-> only disable the page cache for my process and still have it be enabled
-
-> by the rest of the system. Is there an easy way of doing this?
-
-> Alternatively, I would be fine disabling the Page Cache altogether as well.
+Yinghai Lu wrote:
+> pci_scan_bus_on_node(int bus, struct pci_ops *ops, int node)
+> x86_pci_scan_root_bus(int bus)
+> {
+>   pci_scan_bus_on_node(bus, &pci_root_ops, -1);
+> }
+> 
+> i need node as one param for my patch later in irq.c and legacy.c
 
 
+It is a mistake to start coding NUMA details into pci scan functions.
 
-All user memory is in the page cache. Without it you could only run kernel
+Anywhere the current code does not set the NUMA node, set it to -1 or 
+some other default value.
 
-modules.
-
-
-
--Andi
-
--
+	Jeff
 
 
-
-
-
-       
-____________________________________________________________________________________
-Building a website is a piece of cake. Yahoo! Small Business gives you all the tools to get online.
-http://smallbusiness.yahoo.com/webhosting 
