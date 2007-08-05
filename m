@@ -1,174 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764428AbXHELHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbXHELJw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764428AbXHELHr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 07:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757377AbXHELHi
+	id S1760936AbXHELJw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 07:09:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbXHELJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 07:07:38 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:39753 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757102AbXHELHh (ORCPT
+	Sun, 5 Aug 2007 07:09:44 -0400
+Received: from eazy.amigager.de ([213.239.192.238]:59683 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754893AbXHELJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 07:07:37 -0400
-Date: Sun, 5 Aug 2007 16:37:46 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Keith Owens <kaos@sgi.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Takenori Nagano <t-nagano@ah.jp.nec.com>, k-miyoshi@cb.jp.nec.com,
-       Bernhard Walle <bwalle@suse.de>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] add kdump_after_notifier
-Message-ID: <20070805110746.GA12540@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <20070802112852.GA7054@in.ibm.com> <31687.1186113947@kao2.melbourne.sgi.com>
-Mime-Version: 1.0
+	Sun, 5 Aug 2007 07:09:44 -0400
+Date: Sun, 5 Aug 2007 13:09:42 +0200
+From: Tino Keitel <tino.keitel@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1: USB hard disk broken
+Message-ID: <20070805110942.GA26278@dose.home.local>
+Mail-Followup-To: linux-kernel@vger.kernel.org
+References: <20070725072343.GA3483@dose.home.local> <200707251024.37112.oliver@neukum.org> <20070725181312.GA5612@dose.home.local> <200707261006.41368.oliver@neukum.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <31687.1186113947@kao2.melbourne.sgi.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <200707261006.41368.oliver@neukum.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 02:05:47PM +1000, Keith Owens wrote:
-
-[..]
-> >Some thoughts on possible solutions for this problem.
-> >
-> >- Stop exporting panic_notifier_list list to modules. Audit the in kernel
-> >  users of panic_notifier_list. Let crash_kexec() run once all other users
-> >  of panic_notifier_list have been executed. This has fall side of breaking
-> >  down external modules using panic_notifier_list and at the same time
-> >  there is no gurantee that audited code will not run into the issues.
-> >
-> >- Continue with existing policy. If kdump is configured, panic_notifier_list
-> >  notifications will not be invoked. Any post panic action should be executed
-> >  in second kernel. There might be 1-2 odd cases like in kernel debugger
-> >  which still needs to be invoked in first kernel. These users should
-> >  explicitly put hooks in panic() routine and refrain from using
-> >  panic_notifier list.
-> >
-> >  One thing to keep in mind, doing things in second kernel might not be easy
-> >  as we have lost all the config data of the first kernel. For example,
-> >  if one wants to send a kernel crash event over network to a system
-> >  management software, he might have to pack in lot of software in 
-> >  second kernel's initrd.
-> >
-> >- Let the user decide if he wants to run panic_notifier_list after the
-> >  crash or not with the help of a /proc option as suggested by the
-> >  Takenori's patch. Fall side is, on what basis an enterprise user will
-> >  take a decision whether he wants to run the notifiers or not. My gut
-> >  feeling is that distro will end up setting this parameter as 1 by default,
-> >  which would mean first run panic notifiers and then run crash_kexec().
-> >
-> >- Make crash_kexec() a user of panic_notifier_list and let it run after all
-> >  the callback handlers have run. This will invariably reduce the reliability
-> >  of kdump.  
-> >
-> >Personally I believe that second solution should bring us best of both
-> >the worlds. Making sure post panic actions can be done more reliably at
-> >the same time making sure reliability of kdump is not compromised.
-> >
-> >Keith, do you see a value in second solution and would there be any
-> >reason why kdb hook can not be explicitly placed in panic(). There will
-> >not be many users like kdb. Rest of the users should end up performing
-> >post panic actions in second kernel. 
-> >
-> >Solutoin 3, can prove to be a stop gap solution but I think this will
-> >make situation confusing for customers at the same time everybody will
-> >try to take short route of performing post panic operations in first kernel.
-> >
-> >Thanks
-> >Vivek
+On Thu, Jul 26, 2007 at 10:06:40 +0200, Oliver Neukum wrote:
+> Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
+> > On Wed, Jul 25, 2007 at 10:24:36 +0200, Oliver Neukum wrote:
+> > > Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
+> > > > Hi,
+> > > > 
+> > > > I just tried 2.6.23-rc1 and shortly after the boot my external USB hard
+> > > > disk went mad.
+> > 
+> > [...]
+> > 
+> > > Please recompile with CONFIG_USB_DEBUG set.
+> > > 
+> > > 	Regards
+> > > 		Oliver
+> > 
+> > I tried, but it didn't happen again.
 > 
-> Do not concentrate on kdb alone.  The problem above applies to all the
-> RAS tools, not just kdb.
-> 
-> My stance is that _all_ the RAS tools (kdb, kgdb, nlkd, netdump, lkcd,
-> crash, kdump etc.) should be using a common interface that safely puts
-> the entire system in a stopped state and saves the state of each cpu.
-> Then each tool can do what it likes, instead of every RAS tool doing
-> its own thing and they all conflict with each other, which is why this
-> thread started.
-> 
+> Did you try with the old kernel again? This bug may be related to timing.
 
-Hi Keith,
+I tried again -rc1 without USB_DEBUG, and was able to reproduce the
+bug 2 times. At the second time, the kernel log shows this:
 
-Few thoughts. So there are two things there.
+2007-08-05_10:30:27.75572 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterli
+st error 0/-121
+2007-08-05_10:30:27.86576 kern.info: usb 1-6: reset high speed USB device using ehci_hcd and address 5
+2007-08-05_10:30:55.95293 kern.info: usb 1-6: USB disconnect, address 5
+2007-08-05_10:30:55.95300 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterlist error -108/-108
+2007-08-05_10:30:55.95310 kern.info: sd 4:0:0:0: [sdb] Result: hostbyte=0x07 driverbyte=0x00
+2007-08-05_10:30:55.95314 kern.warn: end_request: I/O error, dev sdb, sector 594818327
+2007-08-05_10:30:55.95321 kern.info: sd 4:0:0:0: [sdb] Result: hostbyte=0x07 driverbyte=0x00
+2007-08-05_10:30:55.95325 kern.warn: end_request: I/O error, dev sdb, sector 594818567
+2007-08-05_10:30:55.95331 kern.info: sd 4:0:0:0: [sdb] Result: hostbyte=0x07 driverbyte=0x00
+2007-08-05_10:30:55.95335 kern.warn: end_request: I/O error, dev sdb, sector 594818583
+2007-08-05_10:30:55.95342 kern.info: sd 4:0:0:0: [sdb] Result: hostbyte=0x07 driverbyte=0x00
+2007-08-05_10:30:55.95352 kern.warn: end_request: I/O error, dev sdb, sector 594818823
+2007-08-05_10:30:55.95356 kern.info: sd 4:0:0:0: [sdb] Result: hostbyte=0x07 driverbyte=0x00
+2007-08-05_10:30:55.95360 kern.warn: end_request: I/O error, dev sdb, sector 594818327
+2007-08-05_10:30:55.95455 kern.info: sd 4:0:0:0: [sdb] Result: hostbyte=0x07 driverbyte=0x00
+2007-08-05_10:30:55.95461 kern.warn: end_request: I/O error, dev sdb, sector 594818327
+2007-08-05_10:30:55.96972 kern.err: scsi 4:0:0:0: rejecting I/O to dead device
+2007-08-05_10:30:55.96977 kern.err: scsi 4:0:0:0: rejecting I/O to dead device
 
-- Create a common infrastructure which can be used by various RAS
-  tools and common functionality is not duplicated. For ex. functionality
-  for stopping cpus, saving register states etc.
+The "scatterlist" line wasn't there in the other cases. I'll try again
+with the latest git.
 
-- Create a infrastructure so that user can enforce the policy regarding
-  in what order various RAS tools should run.
-
-Last time patches did more of first thing. It had put lots of code
-and the only user of that code was kexec/kdump. Sometime motivation level
-is low regarding why to put so much of infrastructure code in if there
-are no users and it can potentially bring down the reliability of kdump.
-
-> It is not the kernel's job to decide which RAS tool runs first, second
-> etc., it is the user's decision to set that policy.  Different sites
-> will want different orders, some will say "go straight to kdump", other
-> sites will want to invoke a debugger first.  Sites must be able to
-> define that policy, but we hard code the policy into the kernel.
-> 
-> I proposed and wrote most of this common interface against 2.6.19-rc5.
-> See http://marc.info/?l=linux-arch&w=2&r=1&s=crash_stop&q=b, look for
-> crash_stop.  The crash_stop interface stops all the cpus, saves the
-> system state in a common format then runs an ordered list of RAS tools.
-> 
-
-Agreed. It would be great if during next posting one can also post the
-patches for exporting the policy decision to user space.
-
-Having said that, who do you think are potential RAS tools among
-which a user has to make a choice while determining the order. I
-can think of only two. Crash dump and debugger. 
-
-> The order that the RAS tools are run depends on the priority value that
-> each tool passes to register_die_notifier.  Currently each RAS tool
-> hard codes its priority but it is trivial to change the tools to make
-> that priority a parameter, passing the policy decision back to the
-> user, not the kernel.
-> 
-
-I have got some concerns here and that's what precisely the core
-point where this mail thread started. What does one do with die
-notifier and panic notifer list? Should RAS tools like debugger
-and crash dumpers register on this list and wait for their turn
-to execute?
-
-There are many other in kernel users who register on die or panic
-notifier list. Like heartbeat, IPMI,..... Given the fact that
-these symbols are exported, there will be proprietary users also
-for whom we never get a chance to see their code.
-
-Can one really trust all these users and let them run before
-any RAS tool gets the control? After the kernel crash, there
-is no gurantee regarding how many of these actions can be
-successfully completed. Probably in case of in kernel debuggers
-one can afford to do that but I think in case of kdump one
-should not as all these actions can be reliably performed
-in second kernel.
-
-To sum up, couple of options come to mind.
-
-- Register all the RAS tools on die notifier and panic
-  notifier lists with fairly high priority. Export list
-  of RAS tools to user space and allow users to decide the
-  order of execution and priority of RAS tools.
-
-- Create a separate RAS tool notifier list (ras_tool_notifer_list).
-  All the RAS tools register on this list. This list gets priority
-  over die or panic notifier list. User decides the oder of execution
-  of RAS tools. 
-
-  Here assumption is that above list will not be exported to modules.
-  All the RAS tools will be in kernel and they always get a priority
-  to inspect an event.
-
-What do others think?
-
-Thanks
-Vivek
+Regards,
+Tino
