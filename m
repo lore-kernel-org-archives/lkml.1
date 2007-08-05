@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761532AbXHEULg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbXHEUMB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761532AbXHEULg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 16:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbXHEUL3
+	id S1761969AbXHEUMB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 16:12:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbXHEULv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 16:11:29 -0400
-Received: from verein.lst.de ([213.95.11.210]:36520 "EHLO mail.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756750AbXHEUL2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 16:11:28 -0400
-Date: Sun, 5 Aug 2007 22:11:07 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@linux-foundation.org>,
+	Sun, 5 Aug 2007 16:11:51 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:51918 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757483AbXHEULu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 16:11:50 -0400
+X-Sasl-enc: ooh3NTY6EpCIK4wybJNaTUTHdyK9GbYcUx4uTtPgGYWb 1186344709
+Date: Sun, 5 Aug 2007 17:11:46 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ufs: move non-layout parts of ufs_fs.h to fs/ufs/
-Message-ID: <20070805201107.GA820@lst.de>
-References: <20070803140917.GA24385@lst.de> <20070804192431.GA12216@rain> <20070804193648.GV21089@ftp.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: Re: suspend/hibernation regression between 2.6.19 and 2.6.20 w/
+	Thinkpad T41
+Message-ID: <20070805201146.GA16723@khazad-dum.debian.net>
+References: <200708051902.18801.toralf.foerster@gmx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070804193648.GV21089@ftp.linux.org.uk>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200708051902.18801.toralf.foerster@gmx.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 04, 2007 at 08:36:49PM +0100, Al Viro wrote:
-> On Sat, Aug 04, 2007 at 11:24:31PM +0400, Evgeniy Dushistov wrote:
-> > Move prototypes and in-core structures to fs/ufs/ similar to what most
-> > other filesystems already do.
-> > 
-> > I made little modifications: move also ufs debug macros and
-> > mount options constants into fs/ufs/ufs.h, this stuff
-> > also private for ufs.
+On Sun, 05 Aug 2007, Toralf Förster wrote:
+> It is a small - but IMHO nagging - regression between these 2 kernel versions.
 > 
-> Is there any reason to have util.h included directly?  Or to have
-> it as a separate file and not a part of ufs.h, while we are at it...
+> To make a "software suspend" at this notebook ("suspend to RAM") you have
+> to press <Fn>+ <F4>. Pressing the <Fn>-Key after that wakes up the notenbook.
+> 
+> If you hibernated the system ("suspend to disc"), you have to press the power
+> button to wake up the notebook.
+> 
+> But now there is an issue if you want to wake up this notebook, after it was
+> suspended with <Fn>+<F4> again. It is now not possible to wake it up with <Fn>,
+> instead you have to press the power button as you would have it to do after a
+> hibernation.
+> 
+> This issue occures in the current 2.6.21 kernel too.
+> (all tested at a stable Gentoo system - also with git-kernel-versions).
 
-I didn't want to do too many different things at once, but getting
-rid of util.h sounds fine to me.
+I am at a loss of how thinkpad-acpi could in any way cause, or change, the
+firmware wake-up notification behaviour.
+
+That said, my T43 with 2.6.21 and latest-of-the-latest thinkpad-acpi wakes
+up from S3 just fine by pressing the "Fn" key and holding it down for ~2s.
+I didn't know it did that :-)  I always use the power button.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
