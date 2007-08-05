@@ -1,86 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757217AbXHESgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757610AbXHESlc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757217AbXHESgv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 14:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbXHESgm
+	id S1757610AbXHESlc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 14:41:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbXHESlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 14:36:42 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:40884 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751699AbXHESgl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 14:36:41 -0400
-Date: Sun, 5 Aug 2007 20:36:33 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, david@lang.hm,
-       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Adrian Bunk <bunk@stusta.de>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Subject: Re: [PATCH] create CONFIG_SUSPEND_UP_POSSIBLE
-Message-ID: <20070805183633.GA1758@elf.ucw.cz>
-References: <200707251238.50218.lenb@kernel.org> <200707302354.23237.lenb@kernel.org> <20070731063833.GD22419@elf.ucw.cz> <200708031523.19623.lenb@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 5 Aug 2007 14:41:24 -0400
+Received: from lazybastard.de ([212.112.238.170]:45162 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbXHESlY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 14:41:24 -0400
+Date: Sun, 5 Aug 2007 20:37:14 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, Willy Tarreau <w@1wt.eu>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805183714.GA31606@lazybastard.org>
+References: <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805072141.GA4414@elte.hu> <20070805085354.GC6002@1wt.eu> <20070805141708.GB25753@lazybastard.org> <1186336953.2777.17.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <200708031523.19623.lenb@kernel.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1186336953.2777.17.camel@laptopd505.fenrus.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2007-08-03 15:23:19, Len Brown wrote:
-> On Tuesday 31 July 2007 02:38, Pavel Machek wrote:
-> > Hi!
-> > 
-> > > Without this change, it is possible to build CONFIG_HIBERNATE
-> > > on all !SMP architectures, but not necessarily their SMP versions.
-> > 
-> > Did you want to say "CONFIG_SUSPEND"?
+On Sun, 5 August 2007 11:02:33 -0700, Arjan van de Ven wrote:
 > 
-> Yes.
-> 
-> > > I don't know for sure if the architecture list under SUSPEND_UP_POSSIBLE
-> > > is correct.  For now it simply matches the list for
-> > > SUSPEND_SMP_POSSIBLE.
-> > 
-> > I do not think it is.
-> > 
-> > > Signed-off-by: Len Brown <len.brown@intel.com>
-> > > ---
-> > >  Kconfig |    7 ++++++-
-> > >  1 file changed, 6 insertions(+), 1 deletion(-)
-> > > 
-> > > diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
-> > > index 412859f..ccf6576 100644
-> > > --- a/kernel/power/Kconfig
-> > > +++ b/kernel/power/Kconfig
-> > > @@ -72,6 +72,11 @@ config PM_TRACE
-> > >  	CAUTION: this option will cause your machine's real-time clock to be
-> > >  	set to an invalid time after a resume.
-> > >  
-> > > +config SUSPEND_UP_POSSIBLE
-> > > +	bool
-> > > +	depends on (X86 && !X86_VOYAGER) || (PPC64 && (PPC_PSERIES ||
-> > 
-> > At least ARM can do suspend, too... probably others. I was under
-> > impression that SUSPEND is "supported" by all the architectures, just
-> > some of them veto it at runtime (using pm_ops or how was it renamed).
-> 
-> The reason this entire thread started is because Linus, Jeff and others
-> said that they didn't want code magically compiled into their kernel
-> that they did not explicitly ask for -- even if the savings were small
-> and that kernel was already something rather beefy, such as ACPI+SMP.
-> 
-> The current code is simply broken, because it allows SUSPEND
-> on IA64 if UP, but not on SMP.  It should really be neither.
+> but does it work with relatime ?
 
-Actually, it should be both, AFAICT. Suspend infrastructure should be
-there, just returing -EINVAL... that's how it worked in 2.6.22 IIRC.
+Like a greased penguin.  I had to reboot with my ugly patch posted
+earlier in the patch to actually test it, though.  Relatime suffers from
+a distribution problem, nothing else.
 
-									Pavel
+Guess I should throw in a kernel compile test as well, just to get a
+feel for the performance.
+
+Jörn
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Homo Sapiens is a goal, not a description.
+-- unknown
