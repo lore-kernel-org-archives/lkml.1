@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757435AbXHEH5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbXHEIEC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757435AbXHEH5i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 03:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbXHEH5b
+	id S1758497AbXHEIEC (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 04:04:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbXHEIDr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 03:57:31 -0400
-Received: from mail.enyo.de ([212.9.189.167]:1242 "EHLO mail.enyo.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751838AbXHEH5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 03:57:31 -0400
-From: Florian Weimer <fw@deneb.enyo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070803123712.987126000@chello.nl>
-	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
-	<20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu>
-	<20070804103347.GA1956@elte.hu>
-	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
-	<20070804094119.81d8e533.akpm@linux-foundation.org>
-	<87wswbjejw.fsf@mid.deneb.enyo.de>
-	<20070804230007.30857453.akpm@linux-foundation.org>
-Date: Sun, 05 Aug 2007 09:57:02 +0200
-In-Reply-To: <20070804230007.30857453.akpm@linux-foundation.org> (Andrew
-	Morton's message of "Sat, 4 Aug 2007 23:00:07 -0700")
-Message-ID: <87r6miza5t.fsf@mid.deneb.enyo.de>
+	Sun, 5 Aug 2007 04:03:47 -0400
+Received: from styx.suse.cz ([82.119.242.94]:55800 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751838AbXHEIDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 04:03:44 -0400
+Date: Sun, 5 Aug 2007 10:02:50 +0200
+From: Vojtech Pavlik <vojtech@suse.cz>
+To: William Pettersson <william.pettersson@gmail.com>
+Cc: dtor@insightbb.com, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ALPS touchpad with new Dell not recognised
+Message-ID: <20070805080250.GA8555@suse.cz>
+References: <46B03A42.3030708@gmail.com> <46B46DFA.7000909@gmail.com> <20070804190539.GB5110@suse.cz> <46B50189.8020107@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B50189.8020107@gmail.com>
+X-Bounce-Cookie: It's a lemon tree, dear Watson!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton:
+On Sun, Aug 05, 2007 at 08:45:29AM +1000, William Pettersson wrote:
+> Hi,
+> This patch adds support for the Alps touchpad on my Dell Vostro 1400 to
+> the linux kernel.
+> 
+> Signed-off-by: William Pettersson <william.pettersson@gmail.com>
+> 
+> Vojtech, I went over my debug info again with your thoughts in mind, and
+> you were right.  The highest bit is always set in the sync byte of the
+> protocol.  It must have been luck that it didn't drop sync while it was
+> testing.  So a mask and bit of 0xCF does work.  I then decided to go
+> through the logs more thoroughly, and determine if I could make this
+> mask more rigid.  Turns out that a bit of 0xCF and a mask of 0xFF also
+> works.
 
->>  XFS overwrites that data with zeros upon reboot, which tends to
->> irritate users when it happens.
->
-> yup.
->
->> >From this point of view, data=ordered doesn't seem too bad.
->
-> If your computer is used by multiple users who don't trust each other,
-> sure.  That covers, what?  About 2% of machines?
+Just one more question: Have you checked that the 0xcf doesn't change
+when you press any of the ALPS buttons? Including those associated with
+the passthrough? Some bits in the sync byte might still be mapped to
+these.
 
-I wasn't concerned so much with security, but with user experience.
-For instance, some editors don't perform fsync-then-rename, but simply
-truncate the file when saving (because they want to preserve hard
-links).  With XFS, this tends to cause null bytes on crashes.  Since
-ext3 has got a much larger install base, this would result in lots of
-bug reports, I fear.
+> I've also attached the output dumps.  The one labelled mouse.nosync.log
+> is the the one that I first worked on.  However, it was hard to see
+> where the start of the packets were, so I modified alps.c to give me the
+> output shown in alps-packets.log (I can submit this patch if you deem it
+> useful too).  It was once I did this that I saw straight away what the
+> bit0 had to be.  And then mouse.alps.log is just i8042.debug output
+> after my patch has been applied.
+> 
+> William
+> 
+> Vojtech Pavlik wrote:
+> > On Sat, Aug 04, 2007 at 10:15:54PM +1000, William Pettersson wrote:
+> >
+> >   
+> >> Hi LKML,
+> >> Thanks to Vojtech for some advice, I finally got something happening
+> >> with this.  Turns out I had to add support for a new model in alps.c,
+> >> the attached file does this successfully for my laptop.  It'd be nice to
+> >> have others test it, but I am yet to find anyone else who has this same
+> >> laptop, with the same mouse issues I have.
+> >>
+> >> With this patch, I now get a functioning touchpad, including side
+> >> scrolling, circle scrolling, corner taps etc.  However, I did have to
+> >> ramp the configuration numbers up significantly from my old Thinkpad
+> >> with its synaptics touchpad.
+> >>     
+> >
+> > That is normal. The ALPS's have very much different parameters -
+> > sensitivity, resolution, etc., so that the settings aren't easily
+> > comparable.
+> >
+> >   
+> >> Minspeed is now 0.8 and maxspeed is 10. 
+> >> Also the VertScrollDelta is 10.  I don't know whether these numbers are
+> >> crazy high, or just normal for the Alps though.
+> >>     
+> >
+> > I don't remember exactly myself - I'm only interested in the low level
+> > of the protocol - making sure the kernel delivers correctly decoded data
+> > to userspace.
+> >
+> > Please send the patch to Dmitry Torokhov, who is nowadays a maintainer
+> > of this driver and the input subsystem. And don't forget to add a
+> > description of the patch and a "Signed-off-by:" line.
+> >
+> > I'm quite surprised you needed the value of 0x4f, I'd expect the highest
+> > bit always set in the sync byte of the protocol. Can you send me (and
+> > dmitry) the dump data you gathered using i8042.debug?
+> >
+> > Thanks,
+> > 	Vojtech
+> >
+> >   
+> >> --- drivers/input/mouse/alps.c.old	2007-07-31 21:42:37.000000000 +1000
+> >> +++ drivers/input/mouse/alps.c	2007-08-04 21:45:43.000000000 +1000
+> >> @@ -53,6 +53,7 @@
+> >>  	{ { 0x20, 0x02, 0x0e },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
+> >>  	{ { 0x22, 0x02, 0x0a },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
+> >>  	{ { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
+> >> +	{ { 0x73, 0x02, 0x50 }, 0x4f, 0x4f, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
+> >>  };
+> >>     
+> >
+> >   
 
-Without zeroing, the truncating editor might garble the file in a more
-obvious way, but you've got the security issue (and I agree that this
-is more of a PR issue).
+> --- drivers/input/mouse/alps.c.old	2007-07-31 21:42:37.000000000 +1000
+> +++ drivers/input/mouse/alps.c	2007-08-05 08:34:00.000000000 +1000
+> @@ -53,6 +53,7 @@
+>  	{ { 0x20, 0x02, 0x0e },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT }, /* XXX */
+>  	{ { 0x22, 0x02, 0x0a },	0xf8, 0xf8, ALPS_PASS | ALPS_DUALPOINT },
+>  	{ { 0x22, 0x02, 0x14 }, 0xff, 0xff, ALPS_PASS | ALPS_DUALPOINT }, /* Dell Latitude D600 */
+> +	{ { 0x73, 0x02, 0x50 }, 0xcf, 0xff, ALPS_FW_BK_1 } /* Dell Vostro 1400 */
+>  };
+>  
+>  /*
+
+
+
+
+
+-- 
+Vojtech Pavlik
+Director SuSE Labs
