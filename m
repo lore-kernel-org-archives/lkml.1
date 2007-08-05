@@ -1,99 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbXHEN7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXHEOAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760444AbXHEN7o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 09:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXHEN7g
+	id S1758605AbXHEOAY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 10:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbXHEOAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 09:59:36 -0400
-Received: from emerald.lightlink.com ([205.232.34.14]:11825 "EHLO
-	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751595AbXHEN7g (ORCPT
+	Sun, 5 Aug 2007 10:00:11 -0400
+Received: from rv-out-0910.google.com ([209.85.198.185]:3722 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbXHEOAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 09:59:36 -0400
-Date: Sun, 5 Aug 2007 09:55:00 -0400
-From: "Mark M. Hoffman" <mhoffman@lightlink.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: 2.6.23-rc1 regression: hwmon/w83627ehf: wrong fan speed
-Message-ID: <20070805135500.GF6221@jupiter.solarsys.private>
-References: <46B5B290.4040907@s5r6.in-berlin.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 5 Aug 2007 10:00:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=oGCkvb8HwdK7QFlOEexCMsFs3UWEQvsTJ6Vob/heNfDrejs3cxTK+gJrc+BjPJlHmqeQZFlmeQEivRimfQ5naBsH1b/IufbT+JFYCsBe9SUnvp5lq++x5Mj2bcyTXj9whn9sdQasfISP2SZEWcxaK1SYb4WENn+70XtyuRR/1R4=
+Message-ID: <3ae72650708050700p1fc2959epcc1e9307e3c64fed@mail.gmail.com>
+Date: Sun, 5 Aug 2007 16:00:08 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Alexey Dobriyan" <adobriyan@gmail.com>, "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] Off-by-one in /sys/module/*/refcnt
+Cc: akpm@osdl.org, gregkh@suse.de, linux-kernel@vger.kernel.org
+In-Reply-To: <20070805134923.GA5918@martell.zuzino.mipt.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46B5B290.4040907@s5r6.in-berlin.de>
-User-Agent: Mutt/1.4.2.3i
+References: <20070805134923.GA5918@martell.zuzino.mipt.ru>
+X-Google-Sender-Auth: 1e2118e89996e5ee
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stefan:
+On 8/5/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
+> Hell knows when this changed, but sysfs is lying about modules refcounts now.
+>
+> $ cat /sys/module/it87/refcnt
+> 4294967295
+> $ lsmod | grep ^it87
+> it87                   15756  0
+>
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> ---
+>
+>  kernel/module.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> --- a/kernel/module.c
+> +++ b/kernel/module.c
+> @@ -785,7 +785,7 @@ static ssize_t show_refcnt(struct module_attribute *mattr,
+>                            struct module *mod, char *buffer)
+>  {
+>         /* sysfs holds a reference */
+> -       return sprintf(buffer, "%u\n", module_refcount(mod)-1);
+> +       return sprintf(buffer, "%u\n", module_refcount(mod));
+>  }
 
-* Stefan Richter <stefanr@s5r6.in-berlin.de> [2007-08-05 13:20:48 +0200]:
-> Now that I booted from 2.6.22-rc5 to 2.6.23-rc2 I noticed that ksensors
-> displayed 1/16 of the actual speed of the CPU fan (correct is ca. 1400
-> RPM under light load) and 0 for the case fan (correct is ca. 480 RPM
-> under light load).
-> 
-> I reverted patch
-> 	hwmon/w83627ehf: No need to initialize fan_min
-> and the behaviour changed as follows:  ksensors displays the correct CPU
-> fan speed when loaded for the first time after the w83627ehf was loaded,
-> then drops to 1/16th the next time it refreshes the display.  (I
-> configured 30s update interval in ksensors.)  But the case fan's speed
-> is now correctly displayed all the time.  Ksensors' fan speed
-> multipliers are configured as 1.
-> 
-> I then also reverted
-> 	hwmon/w83627ehf: Be quiet when no chip is found
-> 	hwmon/w83627ehf: Export the thermal sensor types
-> 	hwmon/w83627ehf: Enable VBAT monitoring
-> 	hwmon/w83627ehf: Add support for the VID inputs
-> 	hwmon/w83627ehf: Fix timing issues
-> 	hwmon/w83627ehf: Add error messages for two error cases
-> one after another but it didn't change anything.  More surprisingly, if
-> I put all patches including "No need to initialize fan_min" back in, the
-> behaviour remains like after referting that single patch, i.e. wrong CPU
-> fan speed after first display update, correct case fan speed.  I didn't
-> reboot between tests though, I only unloaded and reloaded w83627ehf.
+It's likely caused by sysfs core changes, that opened attributes are
+no longer coupled to the refcount of modules. They used to take a
+reference.
 
-It's not always sufficient to just reload the driver, especially when it's an
-initialization problem as yours seems to be.  So what you're seeing there is
-not too surprising.
+The "holds a reference" comment should be removed along with your fix.
+Adding Tejun, to confirm this.
 
-> I wasn't able to revert
-> 	hwmon/w83627ehf: Convert to a platform driver
-> to something that compiles but I didn't try very hard.
-
-That's because a later patch removes the i2c-isa support on which this driver
-depends, prior to this patch.  If you can use git to back up, that would be
-easier.
-
-That said, I doubt the "Convert to a platform driver" is the problem.  It's
-more likely the patch before that:
-
-	hwmon/w83627ehf: Preserve speed reading when changing fan min
-
-I'll reexamine the patch series here.  If you have time, it would help if you
-could do a git bisect.  Use this command:
-
-$ git bisect start v2.6.23-rc2 v2.6.22-rc5 drivers/hwmon/w83627ehf.c
-
-Doing it this way will force you to reboot between tests; I think we would
-need that anyway.
-
-> Kernel messages when I load the drivers:
-> w83627ehf: unsupported chip ID: 0xffff
-> w83627ehf: Found W83627EHG chip at 0x290
-> The former message is normally suppressed by patch "Be quiet when no
-> chip is found".  Mainboard is an MSI 945GT Speedster-A4R, userland is
-> Gentoo's lm_sensors-2.10.1 and ksensors-0.7.3.
-> 
-> Booting back into 2.6.22-rc5 (which seems identical with 2.6.22 as far
-> as w83627ehf is concerned) brings back the correct fan speeds.
-
-Regards,
-
--- 
-Mark M. Hoffman
-mhoffman@lightlink.com
-
+Thanks,
+Kay
