@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbXHEPFD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbXHEPJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759284AbXHEPFD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:05:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbXHEPEy
+	id S1757914AbXHEPJV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbXHEPJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:04:54 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38428 "EHLO e1.ny.us.ibm.com"
+	Sun, 5 Aug 2007 11:09:05 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:50148 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbXHEPEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:04:53 -0400
-Date: Sun, 5 Aug 2007 08:04:49 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG  RT] - rcupreempt.c:133 on 2.6.23-rc1-rt7
-Message-ID: <20070805150449.GA19418@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1186289484.636.5.camel@localhost.localdomain> <1186290332.636.8.camel@localhost.localdomain> <20070805065948.GB515@elte.hu> <Pine.LNX.4.58.0708051019560.8421@gandalf.stny.rr.com>
-MIME-Version: 1.0
+	id S1752528AbXHEPJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 11:09:03 -0400
+Date: Sun, 5 Aug 2007 19:08:24 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Distributed storage.
+Message-ID: <20070805150824.GB32132@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708031819.17039.phillips@phunq.net> <20070804163740.GB14175@2ka.mipt.ru> <200708050104.19596.phillips@phunq.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0708051019560.8421@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200708050104.19596.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 10:24:15AM -0400, Steven Rostedt wrote:
-> 
-> --
-> 
-> On Sun, 5 Aug 2007, Ingo Molnar wrote:
-> 
-> >
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > > > I don't have time to look further now, and it's something that isn't
-> > > > easily reproducible (Well, it happened once out of two boots). If
-> > > > you need me to look further, or need a config or dmesg (I have
-> > > > both), then just give me a holler.
-> > >
-> > > Silly me. FYI, I was running with !PREEMPT_RT, but with Hard and
-> > > Softirqs as threads.  Must have copied the wrong config over :-/
-> >
-> > it's still not supposed to happen ... rcu read lock nesting that deep?
-> >
-> 
-> The code on line 133 is:
-> 
-> 	WARN_ON_ONCE(current->rcu_read_lock_nesting > NR_CPUS);
-> 
-> I have NR_CPUS set to 2 since the box I'm running this on only has
-> 2 cpus and I see no reason to waste more data structures.
-> 
-> Is rcu read lock nesting deeper than 2?
+Hi Daniel.
 
-In networking, I would not be at all surprised, given things like fib_trie
-and netfilter usage.  In addition, if rcu_read_lock() is called from
-hardirq or NMI/SMI, it is necessary to add the nesting levels in these
-environments as well.  In any case, rcu_read_lock() is freely nestable,
-so there is no penalty for nesting pretty deeply.  I must have missed this
-WARN_ON_ONCE() being added to rcu_read_lock() -- I did ack Daniel Walker's
-check for negative values of rcu_read_lock_nesting in rcu_read_unlock(),
-but saw no upper-limit checks.
+On Sun, Aug 05, 2007 at 01:04:19AM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> > we can wait in it for memory in mempool. Although that means we
+> > already in trouble. 
+> 
+> Not at all.  This whole block writeout path needs to be written to run 
+> efficiently even when normal system memory is completely gone.  All it 
+> means when we wait on a mempool is that the block device queue is as 
+> full as we are ever going to let it become, and that means the block 
+> device is working as hard as it can (subject to a small caveat: for 
+> some loads a device can work more efficiently if it can queue up larger 
+> numbers of requests down at the physical elevators).
 
-So, are you running into a situation where rcu_read_lock_nesting is
-growing unboundedly?
+If we are sleeping in memory pool, then we already do not have memory to
+complete previous requests, so we are in trouble. This can work for
+devices which do not require additional allocations (like usual local
+storage), but not for network connected ones.
 
-I would not expect the per-task nesting level to normally be a function
-of the number of CPUs -- unless one was doing some sort of nested scan
-of RCU-protected per-CPU data structures or some such.  So if you are
-adding this to your local build as a debug check, I would suggest a fixed
-limit -- but would -not- suggest putting such a check into a production
-build, at least not for a small limit.
+> > I agree, any kind of high-boundary leveling must be implemented in
+> > device itself, since block layer does not know what device is at the
+> > end and what it will need to process given block request.
+> 
+> I did not say the throttling has to be implemented in the device, only 
+> that we did it there because it was easiest to code that up and try it 
+> out (it worked).  This throttling really wants to live at a higher 
+> level, possibly submit_bio()...bio->endio().  Someone at OLS (James 
+> Bottomley?) suggested it would be better done at the request queue 
+> layer, but I do not immediately see why that should be.  I guess this 
+> is going to come down to somebody throwing out a patch for interested 
+> folks to poke at.  But this detail is a fine point.  The big point is 
+> to have _some_ throttling mechanism in place on the block IO path, 
+> always.
 
-							Thanx, Paul
+If not in device, then at least it should say to block layer about its
+limits. What about new function to register queue which will get maximum
+number of bios in flight and sleep in generic_make_request() when new
+bio is going to be submitted and it is about to exceed the limit?
+
+By default things will be like they are now, except additional
+non-atomic increment and branch in generic_make_request() and decrement
+and wake in bio_end_io()?
+
+I can cook up such a patch if idea worth efforts.
+
+-- 
+	Evgeniy Polyakov
