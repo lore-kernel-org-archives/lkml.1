@@ -1,65 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758605AbXHEOAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761751AbXHEOAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758605AbXHEOAY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 10:00:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757893AbXHEOAL
+	id S1761751AbXHEOAt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 10:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbXHEOAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 10:00:11 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:3722 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbXHEOAI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 10:00:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=oGCkvb8HwdK7QFlOEexCMsFs3UWEQvsTJ6Vob/heNfDrejs3cxTK+gJrc+BjPJlHmqeQZFlmeQEivRimfQ5naBsH1b/IufbT+JFYCsBe9SUnvp5lq++x5Mj2bcyTXj9whn9sdQasfISP2SZEWcxaK1SYb4WENn+70XtyuRR/1R4=
-Message-ID: <3ae72650708050700p1fc2959epcc1e9307e3c64fed@mail.gmail.com>
-Date: Sun, 5 Aug 2007 16:00:08 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Alexey Dobriyan" <adobriyan@gmail.com>, "Tejun Heo" <htejun@gmail.com>
-Subject: Re: [PATCH] Off-by-one in /sys/module/*/refcnt
-Cc: akpm@osdl.org, gregkh@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20070805134923.GA5918@martell.zuzino.mipt.ru>
+	Sun, 5 Aug 2007 10:00:40 -0400
+Received: from smtp5.pp.htv.fi ([213.243.153.39]:48481 "EHLO smtp5.pp.htv.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757565AbXHEOAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 10:00:39 -0400
+Date: Sun, 5 Aug 2007 17:00:37 +0300 (EEST)
+From: Timo Jantunen <jeti@welho.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ayaz Abdulla <aabdulla@nvidia.com>
+Subject: Re: 2.6.22.1: hang with forcedeth driver?
+In-Reply-To: <20070803122241.4d242978.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708051629170.6058@limbo>
+References: <Pine.LNX.4.64.0708021044260.6069@limbo>
+ <20070803122241.4d242978.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070805134923.GA5918@martell.zuzino.mipt.ru>
-X-Google-Sender-Auth: 1e2118e89996e5ee
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/5/07, Alexey Dobriyan <adobriyan@gmail.com> wrote:
-> Hell knows when this changed, but sysfs is lying about modules refcounts now.
->
-> $ cat /sys/module/it87/refcnt
-> 4294967295
-> $ lsmod | grep ^it87
-> it87                   15756  0
->
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
->
->  kernel/module.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> --- a/kernel/module.c
-> +++ b/kernel/module.c
-> @@ -785,7 +785,7 @@ static ssize_t show_refcnt(struct module_attribute *mattr,
->                            struct module *mod, char *buffer)
->  {
->         /* sysfs holds a reference */
-> -       return sprintf(buffer, "%u\n", module_refcount(mod)-1);
-> +       return sprintf(buffer, "%u\n", module_refcount(mod));
->  }
+On Fri, 3 Aug 2007, Andrew Morton wrote:
 
-It's likely caused by sysfs core changes, that opened attributes are
-no longer coupled to the refcount of modules. They used to take a
-reference.
+> On Thu, 2 Aug 2007 11:57:21 +0300 (EEST)
+> Timo Jantunen <jeti@welho.com> wrote:
+> 
+> > Heip!
+> > 
+> > I have had few total hangs with 2.6.22.1 kernel. Everything suddenly 
+> > freezes and nothing works (SysRq keys, pinging the machine from the 
+> > network.) Neither syslog nor netconsole have any relevant messages. I'm 99% 
+> > sure this didn't happen in 2.6.21.x kernels.
+> 
+> Try enabling the NMI watchdog?  (boot with nmi_watchdog=1 on the kernel
+> command line) (or maybe nmi_watchdog=2).
 
-The "holds a reference" comment should be removed along with your fix.
-Adding Tejun, to confirm this.
+nmi_watchdog=1 got me (in dmesg)
+Testing NMI watchdog ... CPU#0: NMI appears to be stuck (0->0)!
+CPU#1: NMI appears to be stuck (0->0)!
 
-Thanks,
-Kay
+nmi_watchdog=2 got me
+Testing NMI watchdog ... OK.
+
+In both cases, when the machine hanged, nothing happened and nothing more 
+was written to console, syslog or netconsole (with console Loglevel set to 
+9.)
+
+
+> otoh, I think NMI watchdog is always enabled on x86_64.  But the counts
+> aren't going up.  I forget what the story is there, apart from
+> lets-be-as-different-from-i386-as-we-can :(
+
+Like I said later I'm using i386 kernel.
+
+
+> > All hangs happened with relatively high network traffic (twice with mplayer 
+> > using remote display, once with high network fs activity). I copied 
+> > gigabytes of files over nfs but couldn't dupicatate the problem that way, 
+> > but OTOH I have also watched hours of video without problems so the problem 
+> > doesn't occur often. (In the mplayer case, the file I play is usually on 
+> > remote nfs disk, too.)
+> > 
+> > I started using mplayer from a text console and today I finally managed to 
+> > catch first bit of information. The machine hanged like before (even SysRq 
+> > keys don't print anything) but there was one console message:
+> > 
+> > eth0: too many iterations (6) in nv_nic_irq.
+> > 
+> > Looking at the sources, it seems when too much works happens in a single 
+> > interrupt, the driver tries to disable device interrupts (and prints above 
+> > message). It doesn't seem to be expecting the machine to hang afterwards.
+> > 
+> > I guess the quick fix for me is to increase max_interrupt_work value so it 
+> > doesn't get hit as easily.
+> 
+> Well.  A Key piece of information would be: did that help?
+
+I added forcedeth.max_interrupt_work=16 to the command line, and haven't 
+seen the problem after that. But I did hit the problem about once a week so 
+I can't say if it is gone for good yet.
+
+
+For the tests with NMI I used forcedeth.max_interrupt_work=2 and managed to 
+reproduce the problem in few minutes by copying from /dev/zero to nfs disk. 
+I also did it without any binary drivers loaded.
+
+
+As I see it there is two separate problems: that "too many iterations" 
+message and the fact the machine hangs after it. Since the same test was in 
+the previous kernel but I don't remember ever seeing it it is possible that 
+2.6.22 changed timings or something like that which made hitting the 
+default max_interrupt_work limit more likely.
+
+I can try to get 2.6.21.x hang with forcedeth.max_interrupt_work=2 if you 
+think that information is useful.
+
+
+> > I have nForce3 board and Athlon 64 X2 CPU (but using 32-bit kernel). I'm 
+> > using the built in ethernet with forcedeth driver. I also have ATI/AMD 
+> > binary drivers loaded, and at least in some of the cases, VMware host 
+> > drivers, too.
+
+//T
+
