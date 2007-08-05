@@ -1,53 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbXHEUlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762271AbXHEUl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbXHEUlm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 16:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759732AbXHEUlX
+	id S1762271AbXHEUl7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 16:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762010AbXHEUl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 16:41:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52470 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759493AbXHEUlW (ORCPT
+	Sun, 5 Aug 2007 16:41:26 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:47092 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761548AbXHEUlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 16:41:22 -0400
-Date: Sun, 5 Aug 2007 21:41:12 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070805204112.GC25107@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-	linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-	akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-	tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-	richard@rsk.demon.co.uk
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <p73hcnen7w2.fsf@bingen.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 5 Aug 2007 16:41:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=g+9Ex9T1hVPNS3vLHhNyvJ52BWBM2lS7XFpFjwE+M27lkHKgvDUJTEBA5yp5r0l8ChgCQizQntmpOic8N2x9ZjCrWtKEJZ9oi4MXs/drOYNEWDooYXeWUvCDmhSfl1lZNspWrxS8hOarqRYB0TboE6qdfbcXePOqieoMQy+gd04=
+Message-ID: <86802c440708051341q66aa1et3ea612beeab0f299@mail.gmail.com>
+Date: Sun, 5 Aug 2007 13:41:24 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
+Cc: "Muli Ben-Yehuda" <muli@il.ibm.com>, "Andi Kleen" <ak@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>, riku.seppala@kymp.net,
+       "Andy Whitcroft" <apw@shadowen.org>,
+       "Chuck Ebbert" <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <46B60A93.80107@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <p73hcnen7w2.fsf@bingen.suse.de>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+References: <46B3A7BB.9000102@redhat.com>
+	 <20070804093222.f0d7f3c7.akpm@linux-foundation.org>
+	 <200708050140.49590.ak@suse.de>
+	 <20070805050410.GB4960@rhun.haifa.ibm.com>
+	 <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com>
+	 <20070805075307.GA25890@rhun.haifa.ibm.com>
+	 <86802c440708050149u4c0ef4d8j7ea3478b07312525@mail.gmail.com>
+	 <20070805115457.GD19963@rhun.haifa.ibm.com>
+	 <86802c440708050939t7853ad74w5f039d1478964857@mail.gmail.com>
+	 <46B60A93.80107@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 02:26:53AM +0200, Andi Kleen wrote:
-> I always thought the right solution would be to just sync atime only
-> very very lazily. This means if a inode is only dirty because of an
-> atime update put it on a "only write out when there is nothing to do
-> or the memory is really needed" list.
+On 8/5/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Yinghai Lu wrote:
+> > pci_scan_bus_on_node(int bus, struct pci_ops *ops, int node)
+> > x86_pci_scan_root_bus(int bus)
+> > {
+> >   pci_scan_bus_on_node(bus, &pci_root_ops, -1);
+> > }
+> >
+> > i need node as one param for my patch later in irq.c and legacy.c
+>
+>
+> It is a mistake to start coding NUMA details into pci scan functions.
+>
+> Anywhere the current code does not set the NUMA node, set it to -1 or
+> some other default value.
 
-Which is the policy I implemented for XFS a while ago.
+Can you check
+http://lkml.org/lkml/2007/7/26/377
+http://lkml.org/lkml/2007/7/26/378
+http://lkml.org/lkml/2007/7/26/379
 
+it will make sure numa_node on device get correct value after pci scan.
+esp for k8 system with second peer root bus on second node.
+
+Thanks
+
+Yinghai Lu
