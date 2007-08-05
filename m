@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756789AbXHEPoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757816AbXHEPpR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756789AbXHEPoV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 11:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXHEPoM
+	id S1757816AbXHEPpR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 11:45:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752146AbXHEPpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 11:44:12 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:45567 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752538AbXHEPoL convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 11:44:11 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Tino Keitel <tino.keitel@gmx.de>, David Brownell <david-b@pacbell.net>
-Subject: Re: 2.6.23-rc1: USB hard disk broken
-Date: Sun, 5 Aug 2007 17:46:32 +0200
-User-Agent: KMail/1.9.7
+	Sun, 5 Aug 2007 11:45:04 -0400
+Received: from 1wt.eu ([62.212.114.60]:1173 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754076AbXHEPpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 11:45:03 -0400
+Date: Sun, 5 Aug 2007 17:43:37 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Axel Reinhold <axel@freakout.de>
 Cc: linux-kernel@vger.kernel.org
-References: <20070725072343.GA3483@dose.home.local> <200707261006.41368.oliver@neukum.org> <20070805110942.GA26278@dose.home.local>
-In-Reply-To: <20070805110942.GA26278@dose.home.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
+Message-ID: <20070805154337.GA4716@1wt.eu>
+References: <200708050856.l758u4ou031651@bongo.freakout.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708051746.32439.oliver@neukum.org>
+In-Reply-To: <200708050856.l758u4ou031651@bongo.freakout.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Sonntag 05 August 2007 schrieb Tino Keitel:
-> On Thu, Jul 26, 2007 at 10:06:40 +0200, Oliver Neukum wrote:
-> > Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
-> > > On Wed, Jul 25, 2007 at 10:24:36 +0200, Oliver Neukum wrote:
-> > > > Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
-> > > > > Hi,
-> > > > > 
-> > > > > I just tried 2.6.23-rc1 and shortly after the boot my external USB hard
-> > > > > disk went mad.
-> > > 
-> > > [...]
-> > > 
-> > > > Please recompile with CONFIG_USB_DEBUG set.
-> > > > 
-> > > >   Regards
-> > > >           Oliver
-> > > 
-> > > I tried, but it didn't happen again.
-> > 
-> > Did you try with the old kernel again? This bug may be related to timing.
+On Sun, Aug 05, 2007 at 10:56:04AM +0200, Axel Reinhold wrote:
+> i found a bug in linux-2.4.35.
 > 
-> I tried again -rc1 without USB_DEBUG, and was able to reproduce the
-> bug 2 times. At the second time, the kernel log shows this:
+> the bug produces a crashing kernel when compiled
+> with gcc >=4.2.0 and VIA C3 optimized -march=c3
+> (CONFIG_MCYRIXIII=y)
 > 
-> 2007-08-05_10:30:27.75572 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterli
-> st error 0/-121
-> 2007-08-05_10:30:27.86576 kern.info: usb 1-6: reset high speed USB device using ehci_hcd and address 5
-> 2007-08-05_10:30:55.95293 kern.info: usb 1-6: USB disconnect, address 5
-> 2007-08-05_10:30:55.95300 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterlist error -108/-108
+> this issue was first discussed on the gcc bugzilla:
+>  http://gcc.gnu.org/bugzilla/show_bug.cgi?id=32264
+> 
+> and tracked down to the include/asm-i386/hw_irq.h
+> module with the help of the gcc guys:
+> 
+> (pluto at agmk dot net) wrote:
+> >yup, i see something new :)
+> >
+> >please look at line 12137 of i8259.i:
+> >
+> >__attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
+> >
+> >as you can see there is a semicolon after call_do_IRQ(void)
+> >and following asm statement isn't treated as a function body.
+> >in this way -O1 -f{no-}unit-at-a-time accidentally produces
+> >different code. it's not a gcc bug.
+> >
+> >linux-2.4.35/include/asm-i386/hw_irq.h
+> >contains these evil macros.
+> 
+> is there a chance to fix this?
+> these macros a far beyond my capabilities to fix.
 
-David, does this error say anything to you?
+Axel,
 
-	Regards
-		Oliver
+I've reproduced it and posted the following explanation to GCC's
+bugzilla ; I think I can provide you with a simple fix very soon.
+
+Cheers,
+Willy
+
+----
+
+Reproduced with trivial code. The reason is very simple : The asm code
+is emitted in the .data section, because due to the -fno-unit-at-a-time
+argument, the "interrupts" array is declared first and sets the current
+section to .data.
+
+Interestingly, adding __attribute__ ((section(".text"))) before the
+function declaration does not change anything. But adding ".section .text\n"
+in the asm statement fixes it.
+
+In fact, -fno-unit-at-a-time does not work on this code under gcc-4.2.1,
+while it works with gcc-4.1.1. However, using the recommended
+-fno-toplevel-reorder argument fixes the problem. Also, if the "dummy"
+array below is declared before the asm statement, then even gcc-4.1.1
+emits the code in the .data section.
+
+In all cases, removing -fno-unit-at-a-time produces good code. I still
+suspect that because the behaviour is different between 4.1 and 4.2, it
+might be a regression in 4.2, but since its replacement works, I'm not
+sure it's worth investigating further. I'll work on a fix for linux-2.4.
+
+Trivial example below :
+
+/* the following code may go to .data if compiled with gcc >= 4.1 and
+ * -fno-unit-at-a-time
+ */
+void common_interrupt(void);
+__asm__( "\n"
+         ".align 4,0x90""\n"
+         "common_interrupt:\n\t"
+         "cld\n\t"
+);
+
+/* If dummy is not initialized, the code above goes into .text.
+ * If dummy is initialized to zero, the code above goes into .bss
+ * If dummy is initialized to non-zero, the code goes into .data
+ * If dummy is declared before the code above, then it goes to .data
+ * whatever the compiler.
+ */
+int dummy[1] = { 1 };
 
