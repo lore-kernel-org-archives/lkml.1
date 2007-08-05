@@ -1,92 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbXHEQQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbXHEQZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756889AbXHEQQZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 12:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbXHEQQR
+	id S1757186AbXHEQZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 12:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752029AbXHEQZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 12:16:17 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:57113 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752280AbXHEQQQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 12:16:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=LdQ66LdyFO27rX5GQXEJiFOOInFHclKxs8YFOnFnDFHLHzYH4aEAI+OVCUiKyQy0zgvBPwmTov23ohRmOEeCyYqJqMejcj2mV+9cM3Ai6P1VERo/JtYsPKGMfHgMpcVg;
-Message-ID: <46B5F7C9.6000006@simon.arlott.org.uk>
-Date: Sun, 05 Aug 2007 17:16:09 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Linux DVB <linux-dvb@linuxtv.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] DVB: remove bogus BUG_ON in videobuf_dvb_thread
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 5 Aug 2007 12:25:17 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:5636 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbXHEQZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 12:25:15 -0400
+Date: Sun, 5 Aug 2007 12:21:41 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: 2.6.23-rc1 regression: hwmon/w83627ehf: wrong fan speed
+Message-ID: <20070805162141.GI6221@jupiter.solarsys.private>
+References: <46B5B290.4040907@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B5B290.4040907@s5r6.in-berlin.de>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since videobuf_waiton is called with intr=1, it can return -EINTR and therefore 
-err may be non-zero. This happens when the system goes into the standby state.
+Hi Stefan:
 
-Without the BUG() occurring, there's no problem with standby mode while DVB 
-is being used.
+* Stefan Richter <stefanr@s5r6.in-berlin.de> [2007-08-05 13:20:48 +0200]:
+> Now that I booted from 2.6.22-rc5 to 2.6.23-rc2 I noticed that ksensors
+> displayed 1/16 of the actual speed of the CPU fan (correct is ca. 1400
+> RPM under light load) and 0 for the case fan (correct is ca. 480 RPM
+> under light load).
+> 
+> I reverted patch
+> 	hwmon/w83627ehf: No need to initialize fan_min
+> and the behaviour changed as follows:  ksensors displays the correct CPU
+> fan speed when loaded for the first time after the w83627ehf was loaded,
+> then drops to 1/16th the next time it refreshes the display.  (I
+> configured 30s update interval in ksensors.)  But the case fan's speed
+> is now correctly displayed all the time.  Ksensors' fan speed
+> multipliers are configured as 1.
+> 
+> I then also reverted
+> 	hwmon/w83627ehf: Be quiet when no chip is found
+> 	hwmon/w83627ehf: Export the thermal sensor types
+> 	hwmon/w83627ehf: Enable VBAT monitoring
+> 	hwmon/w83627ehf: Add support for the VID inputs
+> 	hwmon/w83627ehf: Fix timing issues
+> 	hwmon/w83627ehf: Add error messages for two error cases
+> one after another but it didn't change anything.  More surprisingly, if
+> I put all patches including "No need to initialize fan_min" back in, the
+> behaviour remains like after referting that single patch, i.e. wrong CPU
+> fan speed after first display update, correct case fan speed.  I didn't
+> reboot between tests though, I only unloaded and reloaded w83627ehf.
+> 
+> I wasn't able to revert
+> 	hwmon/w83627ehf: Convert to a platform driver
+> to something that compiles but I didn't try very hard.
+> 
+> Kernel messages when I load the drivers:
+> w83627ehf: unsupported chip ID: 0xffff
+> w83627ehf: Found W83627EHG chip at 0x290
+> The former message is normally suppressed by patch "Be quiet when no
+> chip is found".  Mainboard is an MSI 945GT Speedster-A4R, userland is
+> Gentoo's lm_sensors-2.10.1 and ksensors-0.7.3.
+> 
+> Booting back into 2.6.22-rc5 (which seems identical with 2.6.22 as far
+> as w83627ehf is concerned) brings back the correct fan speeds.
 
----
-int videobuf_waiton(struct videobuf_buffer *vb, int non_blocking, int intr);
+Does this patch (against v2.6.23-rc2) fix it?
 
-[  224.561803] Stopping tasks ... <0>------------[ cut here ]------------
-[  224.712939] kernel BUG at drivers/media/video/video-buf-dvb.c:59!
-[  224.712951] invalid opcode: 0000 [#1]
-[  224.712957] PREEMPT
-[  224.712969] Modules linked in:
-[  224.712985] CPU:    0
-[  224.712987] EIP:    0060:[<b03a0740>]    Not tainted VLI
-[  224.712989] EFLAGS: 00010286   (2.6.23-rc2-git #282)
-[  224.713019] EIP is at videobuf_dvb_thread+0x160/0x170
-[  224.713028] eax: fffffffc   ebx: 00000282   ecx: 00000000   edx: 00000000
-[  224.713038] esi: eeda63c0   edi: b1a1fa3c   ebp: ea82bfcc   esp: ea82bfb0
-[  224.713046] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-[  224.713055] Process saa7134[0] dvb (pid: 6649, ti=ea82a000 task=eb1d5550 task.ti=ea82a000)
-[  224.713064] Stack: 00000009 b011ec68 b1a1fa44 b1a1fb28 b1a1fa3c b03a05e0 fffffffc ea82bfe0
-[  224.713103]        b0135dec b0135d90 00000000 00000000 00000000 b0104e57 ea82fd70 00000000
-[  224.713140]        00000000 00000000 09010df7 862a0510
-[  224.713170] Call Trace:
-[  224.713178]  [<b0104fca>] show_trace_log_lvl+0x1a/0x30
-[  224.713206]  [<b010508b>] show_stack_log_lvl+0x8b/0xb0
-[  224.713220]  [<b01052d3>] show_registers+0x1c3/0x320
-[  224.713235]  [<b01055af>] die+0xff/0x210
-[  224.713248]  [<b0105751>] do_trap+0x91/0xd0
-[  224.713261]  [<b01059f8>] do_invalid_op+0x88/0xa0
-[  224.713274]  [<b052206a>] error_code+0x6a/0x70
-[  224.713296]  [<b0135dec>] kthread+0x5c/0x90
-[  224.713313]  [<b0104e57>] kernel_thread_helper+0x7/0x10
-[  224.713327]  =======================
-[  224.713335] Code: 8b 00 c7 04 24 c8 21 63 b0 89 44 24 04 e8 c9 29 d8 ff e9 cd fe ff ff 8b
-	07 c7 04 24 e8 21 63 b0 89 44 24 04 e8 b2 29 d8 ff eb c2 <0f> 0b eb fe 8d b6 00 00
-	00 00 8d bf 00 00 00 00 55 ba ea ff ff
-[  224.713590] EIP: [<b03a0740>] videobuf_dvb_thread+0x160/0x170 SS:ESP 0068:ea82bfb0
-[  224.713893] done.
+commit f15c50e703c14ff7d72c3cb34e8e55417476a290
+Author: Mark M. Hoffman <mhoffman@lightlink.com>
+Date:   Sun Aug 5 12:19:01 2007 -0400
 
- drivers/media/video/video-buf-dvb.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+    hwmon: read fan_div values during probe
+    
+    This patch forces the driver to read the fan divider values during early init.
+    Otherwise, a call to store_fan_min() could access uninitialized variables.
+    
+    Signed-off-by: Mark M. Hoffman <mhoffman@lightlink.com>
 
-diff --git a/drivers/media/video/video-buf-dvb.c b/drivers/media/video/video-buf-dvb.c
-index e617925..d2af82d 100644
---- a/drivers/media/video/video-buf-dvb.c
-+++ b/drivers/media/video/video-buf-dvb.c
-@@ -56,7 +56,6 @@ static int videobuf_dvb_thread(void *data)
- 				 struct videobuf_buffer, stream);
- 		list_del(&buf->stream);
- 		err = videobuf_waiton(buf,0,1);
--		BUG_ON(0 != err);
+diff --git a/drivers/hwmon/w83627ehf.c b/drivers/hwmon/w83627ehf.c
+index c51ae2e..bca7fbc 100644
+--- a/drivers/hwmon/w83627ehf.c
++++ b/drivers/hwmon/w83627ehf.c
+@@ -421,6 +421,31 @@ static void w83627ehf_write_fan_div(struct w83627ehf_data *data, int nr)
+ 	}
+ }
  
- 		/* no more feeds left or stop_feed() asked us to quit */
- 		if (0 == dvb->nfeeds)
++static void w83627ehf_update_fan_div(struct w83627ehf_data *data)
++{
++	int i;
++
++	i = w83627ehf_read_value(data, W83627EHF_REG_FANDIV1);
++	data->fan_div[0] = (i >> 4) & 0x03;
++	data->fan_div[1] = (i >> 6) & 0x03;
++	i = w83627ehf_read_value(data, W83627EHF_REG_FANDIV2);
++	data->fan_div[2] = (i >> 6) & 0x03;
++	i = w83627ehf_read_value(data, W83627EHF_REG_VBAT);
++	data->fan_div[0] |= (i >> 3) & 0x04;
++	data->fan_div[1] |= (i >> 4) & 0x04;
++	data->fan_div[2] |= (i >> 5) & 0x04;
++	if (data->has_fan & ((1 << 3) | (1 << 4))) {
++		i = w83627ehf_read_value(data, W83627EHF_REG_DIODE);
++		data->fan_div[3] = i & 0x03;
++		data->fan_div[4] = ((i >> 2) & 0x03)
++				 | ((i >> 5) & 0x04);
++	}
++	if (data->has_fan & (1 << 3)) {
++		i = w83627ehf_read_value(data, W83627EHF_REG_SMI_OVT);
++		data->fan_div[3] |= (i >> 5) & 0x04;
++	}
++}
++
+ static struct w83627ehf_data *w83627ehf_update_device(struct device *dev)
+ {
+ 	struct w83627ehf_data *data = dev_get_drvdata(dev);
+@@ -432,25 +457,7 @@ static struct w83627ehf_data *w83627ehf_update_device(struct device *dev)
+ 	if (time_after(jiffies, data->last_updated + HZ + HZ/2)
+ 	 || !data->valid) {
+ 		/* Fan clock dividers */
+-		i = w83627ehf_read_value(data, W83627EHF_REG_FANDIV1);
+-		data->fan_div[0] = (i >> 4) & 0x03;
+-		data->fan_div[1] = (i >> 6) & 0x03;
+-		i = w83627ehf_read_value(data, W83627EHF_REG_FANDIV2);
+-		data->fan_div[2] = (i >> 6) & 0x03;
+-		i = w83627ehf_read_value(data, W83627EHF_REG_VBAT);
+-		data->fan_div[0] |= (i >> 3) & 0x04;
+-		data->fan_div[1] |= (i >> 4) & 0x04;
+-		data->fan_div[2] |= (i >> 5) & 0x04;
+-		if (data->has_fan & ((1 << 3) | (1 << 4))) {
+-			i = w83627ehf_read_value(data, W83627EHF_REG_DIODE);
+-			data->fan_div[3] = i & 0x03;
+-			data->fan_div[4] = ((i >> 2) & 0x03)
+-					 | ((i >> 5) & 0x04);
+-		}
+-		if (data->has_fan & (1 << 3)) {
+-			i = w83627ehf_read_value(data, W83627EHF_REG_SMI_OVT);
+-			data->fan_div[3] |= (i >> 5) & 0x04;
+-		}
++		w83627ehf_update_fan_div(data);
+ 
+ 		/* Measured voltages and limits */
+ 		for (i = 0; i < data->in_num; i++) {
+@@ -1312,6 +1319,9 @@ static int __devinit w83627ehf_probe(struct platform_device *pdev)
+ 	if (!(i & (1 << 1)) && (!fan5pin))
+ 		data->has_fan |= (1 << 4);
+ 
++	/* Read fan clock dividers immediately */
++	w83627ehf_update_fan_div(data);
++
+ 	/* Register sysfs hooks */
+   	for (i = 0; i < ARRAY_SIZE(sda_sf3_arrays); i++)
+ 		if ((err = device_create_file(dev,
 -- 
-1.5.0.1
+Mark M. Hoffman
+mhoffman@lightlink.com
 
--- 
-Simon Arlott
