@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758262AbXHESuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759223AbXHESvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758262AbXHESuI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 14:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbXHESt4
+	id S1759223AbXHESvM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 14:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754933AbXHESu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 14:49:56 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:44073 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751918AbXHEStz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 14:49:55 -0400
-Date: Sun, 5 Aug 2007 20:50:08 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATH 1/1] Kexec jump - v2 - kexec jump
-Message-ID: <20070805185008.GD1758@elf.ucw.cz>
-References: <1184483639.1898.99.camel@caritas-dev.intel.com> <20070731095101.GA1774@elf.ucw.cz> <1185954978.1363.23.camel@caritas-dev.intel.com>
+	Sun, 5 Aug 2007 14:50:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60130 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754827AbXHESu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 14:50:57 -0400
+Date: Sun, 5 Aug 2007 14:44:08 -0400
+From: Dave Jones <davej@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070805184408.GB22639@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	J??rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+	dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+	richard@rsk.demon.co.uk, david@lang.hm
+References: <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805072141.GA4414@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1185954978.1363.23.camel@caritas-dev.intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070805072141.GA4414@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, Aug 05, 2007 at 09:21:41AM +0200, Ingo Molnar wrote:
+ > * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+ > 
+ > > With a Red Hat on if we can move from /dev/hda to /dev/sda in FC7 then 
+ > > we can move from atime to noatime by default on FC8 with appropriate 
+ > > release note warnings and having a couple of betas to find out what 
+ > > other than mutt goes boom.
+ > 
+ > btw., Mutt does not go boom, i use it myself. It works just fine and 
+ > notices new mails even on a noatime,nodiratime filesystem.
+ 
+It still fails miserably for me.
 
-> > > This patch implement the functionality of jumping from kexeced kernel
-> > > to original kernel.
-> > > 
-> > > A new reboot command named LINUX_REBOOT_CMD_KJUMP is defined to
-> > > trigger the jumping to (executing) the new kernel or jumping back to
-> > > the original kernel.
-> > 
-> > Could we get two reboot commands? Exec loaded kernel seems to be quite
-> > different operation than "jump back".
-> 
-> Exec loaded kernel for jumping back is also different from exec loaded
-> kernel normally.
-> 
-> Maybe the two reboot operations in kexec jump can be seen as "jump to"
-> and "jump back"?
+If I hit 'C' and '?' I get a list of my mail folders, with some of them
+marked 'N' if they have new mail.  Without atime, those N's never show
+up and every mbox looks like it has no new mail.
 
-Yes, that would be better.
+	Dave
 
-> Document will be added in next version too.
-> 
-> This parameter is used for kernel-to-kernel communication. But now, it
-> must be setup by user, as in usage guide.
-
-Thanks for your help :-).
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+http://www.codemonkey.org.uk
