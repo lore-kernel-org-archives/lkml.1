@@ -1,86 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756471AbXHERXN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXHERYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756471AbXHERXN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 13:23:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbXHERXC
+	id S1757136AbXHERYT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 13:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752236AbXHERYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 13:23:02 -0400
-Received: from main.gmane.org ([80.91.229.2]:47791 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751658AbXHERXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 13:23:00 -0400
-X-Injected-Via-Gmane: http://gmane.org/
+	Sun, 5 Aug 2007 13:24:12 -0400
+Received: from web33710.mail.mud.yahoo.com ([68.142.201.207]:33224 "HELO
+	web33710.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752074AbXHERYM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 13:24:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=MmKPbygU8IjwnIv5ATAPtZ3NT44yISEop/XCaS9EMe61LyPNnBMMNYsTHkja6VmgClEbpB9IjqYsdNZ2w/nUHid9qBJKs086lwQc2CW0Y0WvoFwRUt0msd4T5qqrb3GaZTciiAXFjFFmBZiTeO6nvcQU4a01xi0/4UIWhmaI8IQ=;
+X-YMail-OSG: cXmZOv4VM1nY8ysyzO_xJ4eKNBOvbC7TIe3ND4vv_Dc9ul0YkxvTD46N7KNeWhNvSDxbC3FLO_QH_SzgeTQ2AominDTmXo9ymz3Vc8_NImGf1MT5hcU-
+X-Mailer: YahooMailRC/651.41 YahooMailWebService/0.7.119
+Date: Sun, 5 Aug 2007 10:24:08 -0700 (PDT)
+From: Adnan Khaleel <akhaleel2001@yahoo.com>
+Subject: Re: Page Cache question
 To: linux-kernel@vger.kernel.org
-From: Brice Figureau <brice+lklm@daysofwonder.com>
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Date: Sun, 5 Aug 2007 17:22:43 +0000 (UTC)
-Message-ID: <loom.20070805T190600-28@post.gmane.org>
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu>
-Mime-Version: 1.0
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 213.41.177.193 (Mozilla/5.0 (Macintosh; U; Intel Mac OS X; en; rv:1.8.1.4) Gecko/20070509 Camino/1.5)
+Content-Transfer-Encoding: 8BIT
+Message-ID: <970535.60395.qm@web33710.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+So would it be possible to me to disable it for just a particular user space process?
 
-Ingo Molnar <mingo <at> elte.hu> writes:
-> * Linus Torvalds <torvalds <at> linux-foundation.org> wrote:
-> > On Fri, 3 Aug 2007, Peter Zijlstra wrote:
-> > > 
-> > > These patches aim to improve balance_dirty_pages() and directly address 
-> > > three issues:
-> > >   1) inter device starvation
-> > >   2) stacked device deadlocks
-> > >   3) inter process starvation
-> > 
-> > Ok, the patches certainly look pretty enough, and you fixed the only 
-> > thing I complained about last time (naming), so as far as I'm 
-> > concerned it's now just a matter of whether it *works* or not. I guess 
-> > being in -mm will help somewhat, but it would be good to have people 
-> > with several disks etc actively test this out.
-> 
-> There are positive reports in the never-ending "my system crawls like an 
-> XT when copying large files" bugzilla entry:
-> 
->  http://bugzilla.kernel.org/show_bug.cgi?id=7372
-> 
->[ snipped part of the bug report ]
-> 
-> so the whole problem area seems to be a "perfect storm" created by a 
-> combination of TCQ, IO scheduling and VM dirty handling weaknesses. Per 
-> device dirty throttling is a good step forward and it makes a very 
-> visible positive difference.
+Adnan
 
 
-Foreword: I'm the OP of bug #7372. 
+> I'm looking for a way to disable the page cache for an
 
-I just want to say/add that:
- 1) I'm running the per-bdi patch since about 30 days on a master mysql server
-under somewhat mild load without any adverse effect I could notice.
+> experimental NUMA system running the 2.6.17 kernel. I would prefer to
 
- 2) I _still_ don't get the "performances" of 2.6.17, but since that's the
-better combination I could get, I think there is IMHO progress in the right
-direction (to be compared to no progress since 2.6.18, that's better :-)).
+> only disable the page cache for my process and still have it be enabled
 
-To be honest, a vanilla 2.6.17 not tuned at all (ie vfs_cache_pressure and other
-knobs in /proc/sys/vm like swappiness and dirty_*) is still better than any
-other upcoming kernel I tested. Thus I still think 2.6.18 added a big regression
-(which unfortunately I couldn't find).
-Read the full bug report for any background information if needed.
+> by the rest of the system. Is there an easy way of doing this?
 
-Unfortunately it isn't practical to git-bisect my issue as the server is a
-production server that can't be rebooted/stopped whenever I want (and since I
-found workarounds of the issue...).
+> Alternatively, I would be fine disabling the Page Cache altogether as well.
 
-Thanks for showing interest in this issue.
 
-Please CC: me on any answers as I'm not subscribed to the list.
 
---
-Brice Figureau
+All user memory is in the page cache. Without it you could only run kernel
 
+modules.
+
+
+
+-Andi
+
+-
+
+
+
+
+
+       
+____________________________________________________________________________________
+Building a website is a piece of cake. Yahoo! Small Business gives you all the tools to get online.
+http://smallbusiness.yahoo.com/webhosting 
