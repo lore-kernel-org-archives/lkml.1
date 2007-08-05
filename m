@@ -1,40 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760942AbXHEVWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761729AbXHEVYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760942AbXHEVWo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 17:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752394AbXHEVWg
+	id S1761729AbXHEVYE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 17:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbXHEVXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 17:22:36 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57939 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752601AbXHEVWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 17:22:35 -0400
-To: Brice Figureau <brice+lklm@daysofwonder.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070803123712.987126000@chello.nl>
-	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
-	<20070804063217.GA25069@elte.hu>
-	<loom.20070805T190600-28@post.gmane.org>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 06 Aug 2007 00:17:00 +0200
-In-Reply-To: <loom.20070805T190600-28@post.gmane.org>
-Message-ID: <p734pjdmxsz.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Sun, 5 Aug 2007 17:23:51 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:39424
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751874AbXHEVXu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 17:23:50 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Subject: Re: Distributed storage.
+Date: Sun, 5 Aug 2007 14:23:45 -0700
+User-Agent: KMail/1.9.5
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708050104.19596.phillips@phunq.net> <20070805150824.GB32132@2ka.mipt.ru>
+In-Reply-To: <20070805150824.GB32132@2ka.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708051423.45484.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brice Figureau <brice+lklm@daysofwonder.com> writes:
-> 
->  2) I _still_ don't get the "performances" of 2.6.17, but since that's the
-> better combination I could get, I think there is IMHO progress in the right
-> direction (to be compared to no progress since 2.6.18, that's better :-)).
+On Sunday 05 August 2007 08:08, Evgeniy Polyakov wrote:
+> If we are sleeping in memory pool, then we already do not have memory
+> to complete previous requests, so we are in trouble.
 
-If you could characterize your workload well (e.g. how many disks,
-what file systems, what load on mysql) perhaps it would be possible
-to reproduce the problem with a test program or a mysql driver.
-Then it could be bisected.
+Not at all.  Any requests in flight are guaranteed to get the resources 
+they need to complete.  This is guaranteed by the combination of memory 
+reserve management and request queue throttling.  In logical terms, 
+reserve management plus queue throttling is necessary and sufficient to 
+prevent these deadlocks.  Conversely, the absence of either one allows 
+deadlock.
 
--Andi
+> This can work 
+> for devices which do not require additional allocations (like usual
+> local storage), but not for network connected ones.
+
+It works for network devices too, and also for a fancy device like 
+ddsnap, which is the moral equivalent of a filesystem implemented in 
+user space.
+
+> If not in device, then at least it should say to block layer about
+> its limits. What about new function to register queue...
+
+Yes, a new internal API is needed eventually.  However, no new api is 
+needed right at the moment because we can just hard code the reserve 
+sizes and queue limits and audit them by hand, which is not any more 
+sloppy than several other kernel subsystems.  The thing is, we need to 
+keep any obfuscating detail out of the initial patches because these 
+principles are hard enough to explain already without burying them in 
+hundreds of lines of API fluff.
+
+That said, the new improved API should probably not be a new way to 
+register, but a set of function calls you can use after the queue is 
+created, which follows the pattern of the existing queue API.
+
+> ...which will get 
+> maximum number of bios in flight and sleep in generic_make_request()
+> when new bio is going to be submitted and it is about to exceed the
+> limit?
+
+Exactly.  This is what ddsnap currently does and it works.  But we did 
+not change generic_make_request for this driver, instead we throttled 
+the driver from the time it makes a request to its user space server, 
+until the reply comes back.  We did it that way because it was easy and 
+was the only segment of the request lifeline that could not be fixed by 
+other means.  A proper solution for all block devices will move the 
+throttling up into generic_make_request, as you say below.
+
+> By default things will be like they are now, except additional
+> non-atomic increment and branch in generic_make_request() and
+> decrement and wake in bio_end_io()?
+
+->endio is called in interrupt context, so the accounting needs to be 
+atomic as far as I can see.
+
+We actually account the total number of bio pages in flight, otherwise 
+you would need to assume the largest possible bio and waste a huge 
+amount of reserve memory.  A counting semaphore works fine for this 
+purpose, with some slight inefficiency that is nigh on unmeasurable in 
+the block IO path.  What the semaphore does is make the patch small and 
+easy to understand, which is important at this point.
+
+> I can cook up such a patch if idea worth efforts.
+
+It is.  There are some messy details...  You need a place to store the 
+accounting variable/semaphore and need to be able to find that place 
+again in ->endio.  Trickier than it sounds, because of the unstructured 
+way drivers rewrite ->bi_bdev.   Peterz has already poked at this in a 
+number of different ways, typically involving backing_dev_info, which 
+seems like a good idea to me.
+
+A simple way to solve the stable accounting field issue is to add a new 
+pointer to struct bio that is owned by the top level submitter 
+(normally generic_make_request but not always) and is not affected by 
+any recursive resubmission.  Then getting rid of that field later 
+becomes somebody's summer project, which is not all that urgent because 
+struct bio is already bloated up with a bunch of dubious fields and is 
+a transient structure anyway.
+
+Regards,
+
+Daniel
