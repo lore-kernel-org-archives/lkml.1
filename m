@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765463AbXHFWrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932215AbXHFWsq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765463AbXHFWrt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761850AbXHFWrk
+	id S932215AbXHFWsq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:48:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762567AbXHFWsi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:47:40 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:38316
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761101AbXHFWrj (ORCPT
+	Mon, 6 Aug 2007 18:48:38 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:2846 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762387AbXHFWsh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:47:39 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-Date: Mon, 6 Aug 2007 15:47:30 -0700
-User-Agent: KMail/1.9.5
-Cc: Matt Mackall <mpm@selenic.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-References: <20070806102922.907530000@chello.nl> <20070806201257.GG11115@waste.org> <Pine.LNX.4.64.0708061315510.7603@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708061315510.7603@schroedinger.engr.sgi.com>
+	Mon, 6 Aug 2007 18:48:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qxk1xKv3p4/BaZlsO+dYWTzTQy/Onc++PlZOWSZ1k+eZYf+EyXlMfSielK10M0E97aHME0LVdmggmOv8p75Ay96jlZaVoKWYWejHY25rTlmn8BgzTmOv9hceWSdwS5lV+Scz9PgNx7YZcmSElJcX43dLo/P5JhNPHjUpWxE3kVc=
+Message-ID: <b6a2187b0708061548m67bf776cte28315e2e5c84d40@mail.gmail.com>
+Date: Tue, 7 Aug 2007 06:48:35 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Indan Zupancic" <indan@nul.nu>
+Subject: Re: Linux 2.6.23-rc2
+Cc: "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <39839.81.207.0.53.1186418772.squirrel@secure.samage.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708061547.30681.phillips@phunq.net>
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>
+	 <1186317610.5220.3.camel@daplas>
+	 <b6a2187b0708050626s15e1b7did73f638046c0dba3@mail.gmail.com>
+	 <Pine.LNX.4.64.0708061739100.13469@fbirervta.pbzchgretzou.qr>
+	 <b6a2187b0708060906k643a8a20jcb3ac33259993517@mail.gmail.com>
+	 <39839.81.207.0.53.1186418772.squirrel@secure.samage.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(What Peter already wrote, but in different words)
+On 8/7/07, Indan Zupancic <indan@nul.nu> wrote:
 
-On Monday 06 August 2007 13:19, Christoph Lameter wrote:
-> The solution may be as simple as configuring the reserves right and
-> avoid the unbounded memory allocations.
+> Does executing unicode_start, unicode_stop fixes it?
 
-Exactly.  That is what this patch set is about.  This is the part that 
-provides some hooks to extend the traditional reserves to be able to 
-handle some of the more difficult situations.
+Doesn't seem to fix it. Now that I've to type blinding, I realised
+that the text-console is about 1/20 of the whole screen size. If I
+hold on to ENTER key, I could see the screen scroll. But sometimes,
+the screen would just be blank and nothing shown. Whatever it is, I
+could still type "startx" to go into X.
 
-> That is possible if one 
-> would make sure that the network layer triggers reclaim once in a
-> while.
-
-No.  It does no good at all for network to do a bunch of work 
-reclaiming, then have some other random task (for example, a heavy 
-writer) swoop in and grab the reclaimed memory before net can use it.  
-Also, net allocates memory in interrupt context where shrink_caches is 
-not possible.  The correct solution is to _reserve_ the memory net 
-needs for vm writeout, which is in Peter's next patch set coming down 
-the pipe.
-
-Regards,
-
-Daniel
+Thanks,
+Jeff.
