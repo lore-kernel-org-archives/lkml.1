@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbXHFFg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759830AbXHFFkw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758805AbXHFFg5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 01:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752634AbXHFFgu
+	id S1759830AbXHFFkw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 01:40:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbXHFFkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 01:36:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42577 "EHLO mx3.mail.elte.hu"
+	Mon, 6 Aug 2007 01:40:45 -0400
+Received: from mga03.intel.com ([143.182.124.21]:38489 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752319AbXHFFgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 01:36:49 -0400
-Date: Mon, 6 Aug 2007 07:36:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jakob Oestergaard <jakob@unthought.net>, Jeff Garzik <jeff@garzik.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [patch] implement smarter atime updates support, v2
-Message-ID: <20070806053617.GB14881@elte.hu>
-References: <46B4C0A8.1000902@garzik.org> <20070805102021.GA4246@unthought.net> <46B5A996.5060006@garzik.org> <20070805105850.GC4246@unthought.net> <20070805124648.GA21173@elte.hu> <alpine.LFD.0.999.0708050944470.5037@woody.linux-foundation.org> <20070805190928.GA17433@elte.hu> <20070805192226.GA20234@elte.hu> <20070805192838.GA21704@elte.hu> <20070805204220.GB32217@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070805204220.GB32217@thunk.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751992AbXHFFko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 01:40:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,224,1183359600"; 
+   d="scan'208";a="259363296"
+Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org, "Mao, Bibo" <bibo.mao@intel.com>
+In-Reply-To: <m1myxdtc19.fsf@ebiederm.dsl.xmission.com>
+References: <1185851569.23149.25.camel@caritas-dev.intel.com>
+	 <m1myxdtc19.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 06 Aug 2007 13:40:38 +0800
+Message-Id: <1186378838.3769.27.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 06 Aug 2007 05:40:34.0280 (UTC) FILETIME=[4F1B6E80:01C7D7EC]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2007-07-31 at 12:47 +0800, Eric W. Biederman wrote:
+> Using efi_set_virtual means kdump doesn't work which means that no
+> one is going to use this in a prebuilt kernel.
 
-* Theodore Tso <tytso@mit.edu> wrote:
+It is possible to make kexec/kdump work with EFI virtual mode, in
+following ways:
 
-> On Sun, Aug 05, 2007 at 09:28:38PM +0200, Ingo Molnar wrote:
-> > 
-> > added the relatime_interval sysctl that allows the changing of the 
-> > atime update frequency. (default: 1 day / 86400 seconds)
-> 
-> What if you specify the interval as a per-mount option?  i.e.,
-> 
-> 	mount -o relatime=86400 /dev/sda2 /u1
-> 
-> If you had this, I don't think we would need the sysctl tuning 
-> parameter.
+1. Do not turn on EFI in kexeced kernel. That is, when kexec prepares
+the boot parameters for kexeced kernel, do not set boot parameter
+"EFI_LOADER_SIG" to be "EFIL". And, if the boot parameter
+"screen_info.orig_video_isVGA" is set to VIDEO_TYPE_EFI and other
+members of "screen_info" are set properly, the EFI framebuffer can work
+properly too. With this method, a EFI disabled kernel can be kexeced
+from a EFI enabled kernel. This is OK for kdump to work.
 
-it's much more flexible if there are _more_ options available. People 
-can thus make use of the feature earlier, use it even on distros that 
-dont support it yet, etc.
+2. If it is intended to kexec a EFI enabled kernel from a EFI enabled
+kernel, the same method as IA64 EFI virtual mode support can be used.
+That is, the memory area used by EFI runtime service is mapped to exact
+same address in both kernels, and the "efi_set_virtual" is not called in
+kexeced kernel. A fixmap area can be used to map memory mapped IO area
+of EFI runtime service, the code and data area of EFI runtime service
+are always mapped to same address in direct map area.
 
-	Ingo
+Best Regards,
+Huang Ying
