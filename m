@@ -1,80 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXHFPzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXHFP7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764999AbXHFPzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 11:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbXHFPzN
+	id S1754785AbXHFP7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 11:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbXHFP7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 11:55:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34714 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbXHFPzL (ORCPT
+	Mon, 6 Aug 2007 11:59:05 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3482 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750836AbXHFP7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 11:55:11 -0400
-Subject: Re: [PATCH] msleep() with hrtimers
-From: Arjan van de Ven <arjan@infradead.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <Pine.LNX.4.64.0708061159370.1817@scrub.home>
-References: <15327.1186166232@lwn.net>
-	 <Pine.LNX.4.64.0708032116340.1817@scrub.home>
-	 <1186170407.3153.8.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708032152060.1817@scrub.home>
-	 <1186185229.3153.11.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708040345530.1817@scrub.home>
-	 <1186255149.2777.3.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708060150270.1817@scrub.home>
-	 <1186360983.2697.8.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708060257010.1817@scrub.home>
-	 <1186378798.2697.10.camel@laptopd505.fenrus.org>
-	 <Pine.LNX.4.64.0708061159370.1817@scrub.home>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 06 Aug 2007 08:53:41 -0700
-Message-Id: <1186415621.2706.4.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+	Mon, 6 Aug 2007 11:59:04 -0400
+Message-ID: <46B74546.2090501@shadowen.org>
+Date: Mon, 06 Aug 2007 16:59:02 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Thomas Renninger <trenn@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: ACPI modpost failure in 2.6.23-rc1-git2
+References: <20070806114335.GA31368@shadowen.org> <6bffcb0e0708060453l372e15c2h703ede437b4d8935@mail.gmail.com>
+In-Reply-To: <6bffcb0e0708060453l372e15c2h703ede437b4d8935@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 12:03 +0200, Roman Zippel wrote:
-> Hi,
+Michal Piotrowski wrote:
+> Hi Andy,
 > 
-> On Sun, 5 Aug 2007, Arjan van de Ven wrote:
+> On 06/08/07, Andy Whitcroft <apw@shadowen.org> wrote:
+>> Between 2.6.23-rc1-git1 and 2.6.23-rc1-git2 we started getting the
+>> following fatal error during modpost on an x86_64 machine:
+>>
+>>   FATAL: drivers/acpi/video: sizeof(struct acpi_device_id)=20 is not a
+>>   modulo of the size of section __mod_acpi_device_table=48.
+>>   Fix definition of struct acpi_device_id in mod_devicetable.h
+>>   make[1]: *** [__modpost] Error 1
+>>
+>> This check seems to have been added as part of the following commit:
+>>
+>>   commit 29b71a1ca74491fab9fed09e9d835d840d042690
+>>   Author: Thomas Renninger <trenn@suse.de>
+>>   Date:   Mon Jul 23 14:43:51 2007 +0200
+>>
+>>       ACPI: autoload modules - Create ACPI alias interface
+>>
+>> Compiler version:
+>>   Reading specs from /usr/lib/gcc/i486-linux/3.4.4/specs
+>>   Configured with: ../src/configure -v
+>>   --enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr
+>>   --libexecdir=/usr/lib --with-gxx-include-dir=/usr/include/c++/3.4
+>>   --enable-shared --with-system-zlib --enable-nls
+>>   --without-included-gettext --program-suffix=-3.4 --enable-__cxa_atexit
+>>   --enable-libstdcxx-allocator=mt --enable-clocale=gnu
+>>   --enable-libstdcxx-debug --enable-java-gc=boehm --enable-java-awt=gtk
+>>   --disable-werror i486-linux
+>>   Thread model: posix
+>>   gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13sarge1)
+>>
+>> We are compiling a 64bit kernel on a machine with a pretty old
+>> userspace which is 32bit.
+>>
+>> Let me know if you need more info.
+>>
+>> -apw
 > 
-> > > There's no problem to provide a high resolution sleep, but there is also 
-> > > no reason to mess with msleep, don't fix what ain't broken...
-> > 
-> > John Corbet provided the patch because he had a problem with the current
-> > msleep... in that it didn't provide as good a common case as he
-> > wanted... so I think your statement is wrong ;)
+> similar to
 > 
-> Only under the assumptation, that msleep _must_ be "fixed" for all other 
-> current users too.
-> Give users a choice to use msleep or nanosleep, how do you know what's 
-> "best" for them?
+> Subject         : modpost bug breaks ia64 cross compilation
+> References      : http://lkml.org/lkml/2007/7/27/30
+>                   http://lkml.org/lkml/2007/7/27/418
+> Last known good : ?
+> Submitter       : Jan Dittmer <jdi@l4x.org>
+> Caused-By       : Thomas Renninger <trenn@suse.de>
+>                   commit 29b71a1ca74491fab9fed09e9d835d840d042690
+> Handled-By      : ?
+> Patch           : http://lkml.org/lkml/2007/8/2/211
+> Status          : patch was suggested
+> 
+> Please try this patch http://lkml.org/lkml/2007/8/2/211
 
-do you have any actual technical objections, or do you just hate
-hrtimers in general?
+Will do.  That is vile though.
 
-I really don't see what you hate so much about making the msleep()
-implementation provide a more precise (typical sleep time of 1msec
-rather than 20msec) behavior than the current one. Trying to distract
-that by proposing a very different API (working on a totally different
-time unit, while a lot of kernel users are using miliseconds; don't get
-me wrong, a usleep() and nsleep() might be useful if there's users that
-want to sleep in such times) is just trying to distract the issue.
+It feels like we should be generating this information in the kernel
+build and extracting it from the built kernel.
 
-So, let me ask a direct question: What do you think is specifically
-wrong about changing the msleep() implementation as is done here? The
-behavior is clearly an improvement, so what is your objection on the
-flipside?
-
--- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
-
+-apw
