@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbXHFJci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763315AbXHFJdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762873AbXHFJci (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760099AbXHFJcb
+	id S1763315AbXHFJdN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760791AbXHFJc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:32:31 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:41558 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756849AbXHFJca (ORCPT
+	Mon, 6 Aug 2007 05:32:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:39592 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760752AbXHFJc5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:32:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qSRNm3M5zTauqvMq9i66dx8HS0vfqxc3B1iDatAOkd6BKaslc8omdWcixYlVjeH1hojw7aXvBE7yAuXHdaSffqd9O27cFUf5YJFRX3f/+f5lbDplFjZPRpA9wZV7VDUFbR03QVfw5XK9CGW/GYVgRJYvqkmaQTyMz1s7a3qF4zs=
-Message-ID: <a8e1da0708060232i4e239406p3ee73b3a4b24d108@mail.gmail.com>
-Date: Mon, 6 Aug 2007 09:32:30 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: "Wim Van Sebroeck" <wim@iguana.be>
-Subject: Re: eurotechwdt will cause reboot
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <20070803062436.GA2652@infomag.infomag.iguana.be>
+	Mon, 6 Aug 2007 05:32:57 -0400
+Date: Mon, 6 Aug 2007 11:02:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
+Message-ID: <20070806090210.GA15329@atrey.karlin.mff.cuni.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com> <20070731110458.GA1777@elf.ucw.cz> <1185932071.1363.13.camel@caritas-dev.intel.com> <20070805185558.GE1758@elf.ucw.cz> <1186367486.527.5.camel@caritas-dev.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a8e1da0707312003s6000b02s95c90b5971dbbd51@mail.gmail.com>
-	 <20070801055845.GA2648@infomag.infomag.iguana.be>
-	 <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
-	 <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
-	 <20070803062436.GA2652@infomag.infomag.iguana.be>
+In-Reply-To: <1186367486.527.5.camel@caritas-dev.intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On 8/3/07, Wim Van Sebroeck <wim@iguana.be> wrote:
-> Hi Dave,
->
-> > Hi,
-> > News: 2.6.23-rc1-mm1 will reboot with eurotechwdt, but 2.6.23-rc1-mm2
-> > will not. do you need the config files?
-> >
-> > I will concentrate on this problem as well. Any hints how to debug?
->
-> Yes: make a diff file between the two versions and see what has changed.
-> If something changed on the eurotechwdt file then that is probably the
-> answer you are looking for.  Else it will mean that your problem is fixed
-> by other code and then we will have to find out which code did this.
->
-> I was reading the datasheet to see how the driver worked. But I think
-> we want to concentrate now first on what the difference is between the
-> -mm1 and -mm2. Luckily something fixed allready your problem. Now it would
-> be usefull to know what that was.
+Hi!
 
-Yes, I think I get the reason.
+> > Did the trick, I got the kernel to load, and it even attempted
+> > exec... but I got doublefault (or what is it?)
+> > 
+> > Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
+> > 
+> > Do I have to disable ACPI completely? I tried with acpi=off,
+> > nosmp... but problem does not seem device related.
+> 
+> It seems that the problem has nothing to do with device or ACPI. Can you
+> do a normal kexec? That is:
+> 
+> kexec -l <...>
+> kexec -e
+> 
+> or 
+> 
+> kexec -p <...>
+> ALT-SysRq-c to trigger a crash dump.
 
-The -mm1 kernel/irq/manage.c send a fake irq via handler in
-request_irq function. -mm2 surround it with  #ifdef CONFIG_DEBUG_SHIRQ
-/ #endif.
+...that was indeed a problem. I can do successful kexec, as long as I
+load bzImage (and not vmlinux). (Both kernels 2.6.22 and
+2.6.23-rc2-git). Problem is, I can only load bzImage using -l, attempt
+to load bzImage using -p results in 
 
-Regards
-dave
+"Could not find a free area of memory of 9000 bytes"
+locate_hole failed
+
+. Any ideas?
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
