@@ -1,75 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbXHFUh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934030AbXHFUhp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933610AbXHFUh0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbXHFUhK
+	id S934030AbXHFUhp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:37:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932856AbXHFUhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:37:10 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34765 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932261AbXHFUhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:37:09 -0400
-Message-ID: <46B78672.9090808@linux.vnet.ibm.com>
-Date: Mon, 06 Aug 2007 15:37:06 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-Reply-To: brking@linux.vnet.ibm.com
-User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
-MIME-Version: 1.0
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-CC: santil@us.ibm.com, jgarzik@pobox.com, netdev@vger.kernel.org,
+	Mon, 6 Aug 2007 16:37:14 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:38751 "EHLO
+	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932630AbXHFUhL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:37:11 -0400
+Date: Mon, 6 Aug 2007 17:36:38 -0300
+From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net/ibmveth.c: memset fix
-References: <200708062217.04361.m.kozlowski@tuxland.pl>
-In-Reply-To: <200708062217.04361.m.kozlowski@tuxland.pl>
-Content-Type: text/plain; charset=ISO-8859-2
+Subject: Re: [PATCH] i386: convert mm_context_t semaphore to a mutex
+Message-ID: <20070806173638.76235263@localhost>
+In-Reply-To: <p73vebslar5.fsf@bingen.suse.de>
+References: <20070803105540.4f85ae09@localhost>
+	<20070806074608.GA12415@elte.hu>
+	<20070806103615.4be4670f@localhost>
+	<p73vebslar5.fsf@bingen.suse.de>
+Organization: Mandriva
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i586-mandriva-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariusz Kozlowski wrote:
-> Hello,
-> 
-> 	Looks like memset() is zeroing wrong nr of bytes.
+Em 06 Aug 2007 21:32:29 +0200
+Andi Kleen <andi@firstfloor.org> escreveu:
 
-Good catch, however, I think we can just remove this memset altogether
-since the memory gets allocated via kzalloc.
+| "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br> writes:
+| > 
+| >  I'll manage to test it then. Do you have a test-case or has any
+| > suggestion?
+| 
+| LTP has some simple test cases for modify_ldt
 
--Brian
+ I've just ran them from a LTP suite from 2007/04/30:
 
+"""
+/usr/lib/ltp/testcases/kernel/syscalls/modify_ldt/ ./modify_ldt01 
+modify_ldt01    0  INFO  :  Enter block 1
+modify_ldt01    0  INFO  :  block 1 PASSED
+modify_ldt01    0  INFO  :  Exit block 1
+modify_ldt01    0  INFO  :  Enter block 2
+modify_ldt01    0  INFO  :  block 2 PASSED
+modify_ldt01    0  INFO  :  Exit block 2
+modify_ldt01    0  INFO  :  block 3 PASSED
+modify_ldt01    0  INFO  :  Exit block 3
+"""
 
-> 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  drivers/net/ibmveth.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- linux-2.6.23-rc1-mm2-a/drivers/net/ibmveth.c	2007-08-01 08:43:46.000000000 +0200
-> +++ linux-2.6.23-rc1-mm2-b/drivers/net/ibmveth.c	2007-08-06 20:34:44.000000000 +0200
-> @@ -963,7 +963,7 @@ static int __devinit ibmveth_probe(struc
->  {
->  	int rc, i;
->  	struct net_device *netdev;
-> -	struct ibmveth_adapter *adapter = NULL;
-> +	struct ibmveth_adapter *adapter;
-> 
->  	unsigned char *mac_addr_p;
->  	unsigned int *mcastFilterSize_p;
-> @@ -997,7 +997,7 @@ static int __devinit ibmveth_probe(struc
->  	SET_MODULE_OWNER(netdev);
-> 
->  	adapter = netdev->priv;
-> -	memset(adapter, 0, sizeof(adapter));
-> +	memset(adapter, 0, sizeof(*adapter));
->  	dev->dev.driver_data = netdev;
-> 
->  	adapter->vdev = dev;
-> -
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+"""
+/usr/lib/ltp/testcases/kernel/syscalls/modify_ldt/ ./modify_ldt02
+modify_ldt02    0  INFO  :  Enter block 1
+modify_ldt02    0  INFO  :  block 1 PASSED
+modify_ldt02    0  INFO  :  Exit block 1
+modify_ldt02    0  INFO  :  Enter block 2
+modify_ldt02    0  INFO  :  received signal: 11
+modify_ldt02    0  INFO  :  block 2 PASSED
+/usr/lib/ltp/testcases/kernel/syscalls/modify_ldt/ 
+"""
 
+ All passed it seems.
+
+ Btw, I've send the same patch for x86_64 to you too.
 
 -- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
+Luiz Fernando N. Capitulino
