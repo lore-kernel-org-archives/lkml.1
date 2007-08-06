@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764504AbXHFRsd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765465AbXHFRuK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764504AbXHFRsd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:48:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXHFRs0
+	id S1765465AbXHFRuK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:50:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXHFRt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:48:26 -0400
-Received: from 1wt.eu ([62.212.114.60]:1216 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755016AbXHFRs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:48:26 -0400
-Date: Mon, 6 Aug 2007 19:45:36 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-       Axel Reinhold <axel@freakout.de>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
-Message-ID: <20070806174536.GA12131@1wt.eu>
-References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu> <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org> <20070806132658.GE10999@1wt.eu> <46B75CD0.7080408@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B75CD0.7080408@zytor.com>
-User-Agent: Mutt/1.5.11
+	Mon, 6 Aug 2007 13:49:59 -0400
+Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58229 "EHLO
+	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757090AbXHFRt6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 13:49:58 -0400
+Message-ID: <46B75E8E.1040305@gmail.com>
+Date: Mon, 06 Aug 2007 19:46:54 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: Indan Zupancic <indan@nul.nu>
+CC: Ingo Molnar <mingo@elte.hu>, teresa@kvitka.net,
+       Andi Kleen <andi@firstfloor.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       CK Mailinglist <ck@vds.kolivas.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       dmitry.torokhov@gmail.com, dtor@mail.ru
+Subject: Re: Linux Kernel cfs scheduler and xorg kbd
+References: <p73abtbpk2s.fsf@bingen.suse.de> <46B06815.10200@gmail.com>    <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>    <46B0818F.10204@gmail.com>    <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>    <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com>    <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>    <20070801150939.GA24710@elte.hu>    <52091.81.207.0.53.1185982005.squirrel@secure.samage.net>    <20070806071200.GC5359@elte.hu> <46B71DBF.7000000@gmail.com> <46944.81.207.0.53.1186413575.squirrel@secure.samage.net>
+In-Reply-To: <46944.81.207.0.53.1186413575.squirrel@secure.samage.net>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 10:39:28AM -0700, H. Peter Anvin wrote:
-> Willy Tarreau wrote:
-> > 
-> > Just to enlighten me on the subject, could you please explain me
-> > what is wrong in the code ? Granted I found it awful, but even on
-> > the GCC-4.2 page where -fno-toplevel-reorder is explained, it is
-> > said that asm statements can be instantiated between functions
-> > blocks, which is exactly what is used here.
-> > 
-> 
-> A stray semicolon:
-> 
-> __attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
-> 
-> ... is actually a prototype followed by a top-level asm statement
-> (because of the semicolon), *not* a function with a single-statement
-> body (which is itself uglier than hell, use braces please...)
+On 08/06/2007 05:19 PM, Indan Zupancic wrote:
 
-I'm well aware of that, even in the example I wrote to reproduce the issue
-and posted to gcc's bugzilla, I clearly have one function prototype and a
-separate asm statement which contained a label with the function's name.
+[ Yes, OT, I'll shelve it after this ]
 
-So in my opinion, the code above is not buggy. It's dirty (though I did
-not find how to produce the equivalent in a different manner).
+> Anyway, if you want to experience a shock, try enabling xcomposite and
+> run xcompmgr -a or something. It's so wonderfully smooth (even though
+> some rendering seems slower than before, it's really worth it for me).
 
-Willy
+Don't believe I can -- using a Matrox Millenium G550 (driver mga) and 
+nothing I do seems to have an effect.
+
+Rene.
 
