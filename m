@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934103AbXHFXXQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765784AbXHFXaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934103AbXHFXXQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:23:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762788AbXHFXXE
+	id S1765784AbXHFXaJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764390AbXHFX34
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:23:04 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:29460 "EHLO
-	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762192AbXHFXXB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:23:01 -0400
-Date: Mon, 06 Aug 2007 17:22:52 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Few interrupts with NO_HZ
-In-reply-to: <fa.09fMUH3GW8WqIBDx7yLbNn+7hAo@ifi.uio.no>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Message-id: <46B7AD4C.1020806@shaw.ca>
+	Mon, 6 Aug 2007 19:29:56 -0400
+Received: from sp604003mt.neufgp.fr ([84.96.92.56]:53752 "EHLO smTp.neuf.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764400AbXHFX3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 19:29:55 -0400
+Date: Tue, 07 Aug 2007 00:29:40 +0200
+From: Vincent Legoll <vincent.legoll@gmail.com>
+Subject: [PATCH] - Add "def_bool" Kconfig format documentation
+To: zippel@linux-m68k.org
+Cc: linux-kernel@vger.kernel.org
+Reply-to: vincent.legoll@gmail.com
+Message-id: <1186439380.21014.9.camel@quad>
 MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.09fMUH3GW8WqIBDx7yLbNn+7hAo@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+X-Mailer: Evolution 2.10.2
+Content-type: text/plain
+Content-transfer-encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> Hi,
-> 
-> 
-> this more of an informational question. So:
-> 
-> kernel version is 2.6.22.1 on i686
-> 
-> /proc/uptime 
-> 9917.81 9140.90 (2h45m)
-> 
-> /proc/cpuinfo:
->            CPU0
->   0:        282   IO-APIC-edge      timer
-> 
-> this is kinda neat, I expected much more interrupts than just 282 since 
-> boot. What kernel code actually uses the irq0 timer?
+Hello,
 
-The kernel likely switched to using the local APIC timer after bootup..
+here is a small documentation patch for the KConfig file format
+"def_bool" type definition that was missing.
 
+I hope the patch is not mangled...
+
+>From 4742eb7a3169001304524e82a88ec1c94f70aa56 Mon Sep 17 00:00:00 2001
+From: Vincent Legoll <vincent.legoll@gmail.com>
+Date: Sat, 4 Aug 2007 16:50:06 +0200
+Subject: [PATCH] - Add "def_bool" Kconfig format documentation
+
+
+Signed-off-by: Vincent Legoll <vincent.legoll@gmail.com>
+---
+ Documentation/kbuild/kconfig-language.txt |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/kbuild/kconfig-language.txt b/Documentation/kbuild/kconfig-language.txt
+index 536d5bf..27b8af9 100644
+--- a/Documentation/kbuild/kconfig-language.txt
++++ b/Documentation/kbuild/kconfig-language.txt
+@@ -77,6 +77,14 @@ applicable everywhere (see syntax).
+   Optionally, dependencies only for this default value can be added
+with
+   "if".
+ 
++- boolean type definition with a default value: "def_bool" <expr>
++  So these two examples are equivalent:
++  
++    def_bool <expr>
++  and
++    bool
++    default <expr>
++  
+ - dependencies: "depends on"/"requires" <expr>
+   This defines a dependency for this menu entry. If multiple
+   dependencies are defined, they are connected with '&&'. Dependencies
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+1.5.2.4
+
+
 
