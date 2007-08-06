@@ -1,60 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764345AbXHFMed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXHFMe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764345AbXHFMed (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 08:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752841AbXHFMeY
+	id S1764999AbXHFMe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 08:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764275AbXHFMec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 08:34:24 -0400
-Received: from wa-out-1112.google.com ([209.85.146.180]:25743 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbXHFMeX (ORCPT
+	Mon, 6 Aug 2007 08:34:32 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:40499 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763584AbXHFMeY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 08:34:23 -0400
+	Mon, 6 Aug 2007 08:34:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LtCE7fqec6uzHIcW+knPuHhKuaI1lfdIS7qtBRe2xMl9yC73QD16CogvNiKAjY1bWAFMQXUb0MaGS5n6MZRgS3a6D3HMq4labTahZkzLw2Z7bMdDKCb8++rRkvNdRZyjwRJDQM6Xy+xtTypsIL2J7SDFrgwiw2zbqOyywYoAdp0=
-Message-ID: <b6a2187b0708060534r662f9507rdff51ffd650a74a0@mail.gmail.com>
-Date: Mon, 6 Aug 2007 20:34:20 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: Linux 2.6.23-rc2
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>
-In-Reply-To: <200708061326.25888.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+        h=received:subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Ln15NOfe9T+P9fMo5WizNjZ9/UONJ43Uwd70PYj+ccb/10s61tTTbUle+P50jad5B1EUcXCNVHNArvZV6F48XSIpNfa7pN2w0ZjdVNAckUzDGHdBIVe/Actdkj9KZE0I/qwsgcYP/9rDUzk6lyZ/Nj6uMrHUduo5yeFNqwp6zGg=
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+From: Michael Sedkowski <sedmich@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 14:34:18 +0200
+Message-Id: <1186403658.5397.12.camel@nx6310>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>
-	 <200708051847.12046.rjw@sisk.pl>
-	 <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com>
-	 <200708061326.25888.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/6/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-
-> This means it's not in the whitelist, AFAICS.
->
-> Similar machines are known to work with "--acpi_sleep=3" or with
-> "--acpi_sleep=1 --vbe_mode".
-
-Good news.
-
-"s2ram --force --acpi_sleep 1 --vbe_mode" works.
-
-I also tried "--acpi_sleep=3", but that doesn't work. Same
-text-console messed up.
+Some additional info:
+As I stated before I'm using a patched sysvinit package with patch from
+Debian bug 426224 with provide a patched hddown.c.
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=426224
 
 
-Tony, Peter, Linus, Rafael, thanks for all your help!!!
+Michael
 
-With this workaround, I'm all happy on 2.6.23-rc2.
-
-If there's anything else you want to try, please let me know.
-
-Thank you,
-Jeff.
