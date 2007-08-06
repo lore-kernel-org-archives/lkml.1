@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbXHFGzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761477AbXHFG54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761198AbXHFGzA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 02:55:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754011AbXHFGyx
+	id S1761477AbXHFG54 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 02:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753914AbXHFG5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 02:54:53 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45018 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753818AbXHFGyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 02:54:52 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>, Herbert Poetzl <herbert@13thfloor.at>,
-       Andrey Savochkin <saw@sw.ru>, Adrian Bunk <bunk@stusta.de>,
-       Cedric Le Goater <clg@fr.ibm.com>, Chris Wright <chrisw@sous-sol.org>,
-       Stephen Smalley <sds@tycho.nsa.gov>, James Morris <jmorris@namei.org>,
-       Andrew Morgan <agm@google.com>
-Subject: Re: CLONE_NEWUSER documentation
-References: <46B599C6.7040201@gmx.net>
-	<m1643ukviw.fsf@ebiederm.dsl.xmission.com> <46B6C180.3020004@gmx.net>
-Date: Mon, 06 Aug 2007 00:48:47 -0600
-In-Reply-To: <46B6C180.3020004@gmx.net> (Michael Kerrisk's message of "Mon, 06
-	Aug 2007 08:36:48 +0200")
-Message-ID: <m11wehkvjk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Mon, 6 Aug 2007 02:57:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:55771 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758077AbXHFG5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 02:57:47 -0400
+Date: Mon, 6 Aug 2007 08:57:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Claudio Martins <ctpm@ist.utl.pt>,
+       Jeff Garzik <jeff@garzik.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070806065712.GA2818@elte.hu>
+References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805072805.GB4414@elte.hu> <20070805134640.2c7d1140@the-village.bc.nu> <20070805125847.GC22060@elte.hu> <20070805132925.GA4089@1wt.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070805132925.GA4089@1wt.eu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Kerrisk <mtk-manpages@gmx.net> writes:
 
->
-> And again: is CLONE_NEWUSER (to be)implemented for unshare()?
+* Willy Tarreau <w@1wt.eu> wrote:
 
-They all should be.  Only the pid namespace (not yet merged) looks
-like a problem for unshare.
+> In your example above, maybe it's the opposite, users know they can 
+> keep a file in /tmp one more week by simply cat'ing it.
 
-> Thanks Eric.  I'm still not so clear though.  What is a user name space
-> intended to be, and how is it to be used?
->
-> Also, when will the implementation be complete?  If not by the 2.6.23 final
-> release, it seems unfortunate to expose this flag to userspace, since
-> further down the road, it will be difficult for userspace to tell whether
-> the kernel below it really supports the flag or not.  Or am I missing
-> something?
+sure - and i'm not arguing that noatime should the kernel-wide default. 
+In every single patch i sent it was a .config option (and a boot option 
+_and_ a sysctl option that i think you missed) that a user/distro 
+enables or disabled. But i think the /tmp argument is not very strong: 
+/tmp is fundamentally volatile, and you can grow dependencies on pretty 
+much _any_ aspect of the kernel. So the question isnt "is there impact" 
+(there is, at least for noatime), the question is "is it still worth 
+doing it".
 
-Currently the code depends on CONFIG_USER_NS it is CONFIG_EXPERIMENTAL
-and defaulting to N.
+> Changing the kernel in a non-easily reversible way is not kind to the 
+> users.
 
-So no one should be shipping a production with it enabled, hopefully
-that is enough, to avoid problems.  I think the current implementation
-is usable for some small subset of usable.
+none of my patches did any of that...
 
-The basic idea is so that you have different mappings between uid and
-gid values (i.e. /etc/passwd stuff) and struct user in the kernel.
-Allowing the kernel to know two users with the same uid are distinct.
+anyway, my latest patch doesnt do noatime, it does the "more intelligent 
+relatime" approach.
 
-When you combined all of the namespaces (and when the are finished)
-you have what is effective a chroot jail that looks like it has
-the kernel all to itself despite other programs running.
-
-Eric
+	Ingo
