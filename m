@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933743AbXHFNco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932395AbXHFNdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933743AbXHFNco (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765530AbXHFNbc
+	id S932395AbXHFNdb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765697AbXHFNdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:31:32 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:55747 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933615AbXHFNb3 (ORCPT
+	Mon, 6 Aug 2007 09:33:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53739 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763901AbXHFNdM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:31:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=MOAAYaMd/udK2SsPmASR6CdHIM/OokJIv6399tww3dhqNRPjUJXgKDBw9kA+M/ZbVIfRxOR/HQ5oZGOzjqH4JYPUbKuXkC+y+/HSzvXgK6HlZtUuq8nvFu4p3kvn/5NUOmk7lOBwhXz8c71zFto47mSurmeLHFr5MkE1RozPvuA=
-Message-ID: <ee9e417a0708060631h72595d28le9de0d13f21cb658@mail.gmail.com>
-Date: Mon, 6 Aug 2007 09:31:28 -0400
-From: "Russ Cox" <rsc@swtch.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix selector unit bug affecting some USB speakerphones
-In-Reply-To: <20070621234846.56F401E8C22@holo.morphisms.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 6 Aug 2007 09:33:12 -0400
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
+	workqueue infrastructure
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       Daniel Walker <dwalker@mvista.com>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1186406963.7182.13.camel@twins>
+References: <20070801201802.GA225@tv-sign.ru>
+	 <1186000468.2636.168.camel@imap.mvista.com>
+	 <20070801205053.GA263@tv-sign.ru>
+	 <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
+	 <20070801213422.GA280@tv-sign.ru>
+	 <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
+	 <20070801222201.GA316@tv-sign.ru>
+	 <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
+	 <20070802195049.GA361@tv-sign.ru> <20070806114954.GC1903@elte.hu>
+	 <20070806131814.GC91@tv-sign.ru>  <1186406963.7182.13.camel@twins>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 15:32:53 +0200
+Message-Id: <1186407173.7182.16.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070621234846.56F401E8C22@holo.morphisms.net>
-X-Google-Sender-Auth: 8f542412cf87b8f4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My reading of the maintainers file is that
-sound/usb/usbmixer.c belongs to perex@suse.cz
-but I got no response to this message, so I am
-resending it here.
+On Mon, 2007-08-06 at 15:29 +0200, Peter Zijlstra wrote:
+> On Mon, 2007-08-06 at 17:18 +0400, Oleg Nesterov wrote:
+> 
+> > Yes, I still disagree with the whole idea because I hope we can make
+> > something more simpler to solve the problem, but I must admit I don't
+> > quite understand what the problem is.
+> > 
+> > So, please consider a noise from my side as my attempt to help. And
+> > in fact, I am very curious about -rt tree, just I never had a time
+> > to study it :)
+> 
+> 
+> Well, the thing is, suppose we have 2 drivers both using keventd say a
+> NIC and some USB thingy.
+> 
+> Now the NIC is deemed important hand gets irq thread prio 90, and the
+> USB could not be cared less about and gets 10 (note that on -rt irq
+> handlers are threaded and run SCHED_FIFO).
+> 
+> So now you can get priority inversion in keventd. Say the USB thingy
+> schedules a work item which will be executed. Then during the execution
+> of this work the NIC will also schedule a work item. Now the NIC (fifo
+> 90) will have to wait for the USB work (fifo 10) to complete.
 
-Russ
+/me hits himself.
 
----------- Forwarded message ----------
-From: Russ Cox <rsc@swtch.com>
-Date: Jun 21, 2007 7:48 PM
-Subject: [PATCH] fix selector unit bug affecting some USB speakerphones
-To: perex@suse.cz
+of course today everything will run on whatever prio keventd ends up,
+regardless of the prio of the submitter.
 
-Following the suggestion in this thread:
-https://bugs.launchpad.net/ubuntu/+source/alsa-lib/+bug/26683
-the correct upper bound on desc[0] is 5 + num_ins not 6 + num_ins,
-because the index used later is 5+i, not 6+i.
+still this does not change the fundamental issue of a high prio piece of
+work waiting on a lower prio task.
 
-This change makes my Vosky Chatterbox speakerphone work.
-Apparently it also helps with the Minivox MV100.
+> The typical solution is priority inheritance, where the highest prio of
+> any waiter is propagated to the currently running work, so that it can
+> finish and get on with the more important work.
+> 
+> 
+> So these patches aimed to provide proper PI in the workqueue structure
+> to avoid this problem.
+> 
+> However as you rightly noted, this horribly breaks the barrier/flush
+> semantics.
+> 
+> I suspect most of the barrier/flush semantics could be replaced with
+> completions from specific work items. Doing this will be a lot of work
+> though.
+> 
+> I hope this rambling is not confusing you any further :-)
 
-Signed-off-by: Russ Cox <rsc@swtch.com>
-
----
- sound/usb/usbmixer.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/sound/usb/usbmixer.c b/sound/usb/usbmixer.c
-index 325d4b6..19776e7 100644
---- a/sound/usb/usbmixer.c
-+++ b/sound/usb/usbmixer.c
-@@ -1483,7 +1483,7 @@ static int parse_audio_selector_unit(struct
-mixer_build *state, int unitid, unsi
-        struct snd_kcontrol *kctl;
-        char **namelist;
-
--       if (! num_ins || desc[0] < 6 + num_ins) {
-+       if (! num_ins || desc[0] < 5 + num_ins) {
-                snd_printk(KERN_ERR "invalid SELECTOR UNIT descriptor
-%d\n", unitid);
-                return -EINVAL;
-        }
---
-1.4.4.2
