@@ -1,80 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763526AbXHFLH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbXHFLIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763526AbXHFLH0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762929AbXHFLGu
+	id S1764525AbXHFLIG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764368AbXHFLHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:06:50 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49324 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762874AbXHFLGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:06:49 -0400
-Date: Mon, 6 Aug 2007 12:44:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: Simon Arlott <simon@fire.lp0.eu>, linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: e1000 doesn't resume properly from standby (2.6.23-rc2)
-Message-ID: <20070806104456.GA1901@elf.ucw.cz>
-References: <46B58FB4.6050207@simon.arlott.org.uk> <46B68F08.60106@intel.com>
+	Mon, 6 Aug 2007 07:07:01 -0400
+Received: from hu-out-0506.google.com ([72.14.214.230]:40606 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764307AbXHFLHA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:07:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=tjUU+Jo+aW5pdILdmgf/dpLkwjovPfOMUHmSuFOQmne8T8L3pUmG25RV8tpnqICvClIWxBco6cE4OZ5niPH7oOHLE4QVoz8Bq+jsNFDQ0Oq4Z50Qn3w/Cdi7TyL1ezvXS3YW0w4+zzEYY9PGIA8y00jDx3xfrOAATuGUx0e+pa0=
+Message-ID: <46B700C7.5090801@gmail.com>
+Date: Mon, 06 Aug 2007 13:06:47 +0200
+From: dragoran <drago01@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B68F08.60106@intel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <46B6F75D.1070808@gmail.com> <20070806103553.GA16133@one.firstfloor.org>
+In-Reply-To: <20070806103553.GA16133@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Andi Kleen wrote:
+>> couldn't this be fixed by bumping idle tasks to middle while they hold a 
+>>     
+>
+> Usually to high.
+>
+> But it's all complicated and hasn't been done consistently
+> (there are real time mutexes in the -rt kernel for example, 
+> but there are lots of other locks and they have higher overhead too) 
+> and it's unclear we really want to do all this complexity anyways.
+>
+> Also as I said the problem could then still happen in user space
+> which then would all need to be fixed to handle PI too.
+>
+> In some cases the relationship is also not as simple as a single 
+> lock. And for IO handling it would be likely quite hard.
+>
+> I personally always found idle priorities quite dubious because
+> even if they worked reliable for the CPU they will clear your cache/
+> load your memory controller and impact all other programs because
+> of this. And for the disk they will cause additional seeks which are 
+> also very costly.
+>
+>   
+ok, thx so that means that the best that can be done for now is to run 
+beagle as best effort with prio 7 (like its done now).
 
-> >00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet 
-> >Controller (Copper) (rev 01)
-> >        Subsystem: Intel Corp.: Unknown device 1012
-> >        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
-> >        Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
-> >        I/O ports at b000 [size=64]
-> >        Capabilities: [dc] Power Management version 2
-> >        Capabilities: [e4] PCI-X non-bridge device.
-> >        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 
-> >        Enable-
-> >
-> >00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet 
-> >Controller (Copper) (rev 01)
-> >        Subsystem: Intel Corp.: Unknown device 1012
-> >        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
-> >        Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
-> >        I/O ports at b400 [size=64]
-> >        Capabilities: [dc] Power Management version 2
-> >        Capabilities: [e4] PCI-X non-bridge device.
-> >        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0 
-> >        Enable-
-> >
-> >[  950.132046] Stopping tasks ... done.
-> >[  950.459794] Suspending console(s)
-> >[  951.776277] pnp: Device 00:0c disabled.
-> >[  951.776673] pnp: Device 00:0a disabled.
-> >[  951.776984] pnp: Device 00:09 disabled.
-> >[  951.777306] pnp: Device 00:08 disabled.
-> >[  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-> >[  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
-> >[  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
-> >[  952.022243] ACPI handle has no context!
-> >[  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
-> >[  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
-> >[  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
-> >[  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
-> >[  952.282221] ACPI handle has no context!
-> >[  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
-> >[  952.537495] ACPI handle has no context!
-> >
-> >[  956.857085] Back to C!
 
-Are you sure that is standby? Looks like suspend-to-RAM to me.
-
-									Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
