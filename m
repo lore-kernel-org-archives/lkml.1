@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932420AbXHFSyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932625AbXHFSza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932420AbXHFSyS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbXHFSyB
+	id S932625AbXHFSza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759328AbXHFSzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:54:01 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:42498 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758703AbXHFSyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:54:00 -0400
-Message-ID: <46B76E23.7090102@garzik.org>
-Date: Mon, 06 Aug 2007 14:53:23 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Mon, 6 Aug 2007 14:55:21 -0400
+Received: from nf-out-0910.google.com ([64.233.182.185]:44305 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759114AbXHFSzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 14:55:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=rotZtwhB/Wxyg0lPUGpdxVsAvjMF3HeY+6gUTDi4J/XivhpXc/UBSjgvUMZAw2PSNQJJy6QAk6mBGdrv8YBeuAuVKJ/UQsF+qW1Bw50N6m5D0CcNoqJuU75WoAkNL6LNl296N88h+8ZD3vebB0O7HDcwkprb7oR57pymbsOcajY=
+Date: Mon, 6 Aug 2007 22:55:14 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] ifdef struct task_struct::security
+Message-ID: <20070806185514.GA5842@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Christoph Hellwig <hch@infradead.org>, J??rn Engel <joern@logfs.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804192615.GA25600@lazybastard.org> <20070804194259.GA25753@lazybastard.org> <20070805203602.GB25107@infradead.org> <46B7626C.6050403@redhat.com>
-In-Reply-To: <46B7626C.6050403@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> On 08/05/2007 04:36 PM, Christoph Hellwig wrote:
->> Umm, no f**king way.  atime selection is 100% policy and belongs into
->> userspace.  Add to that the problem that we can't actually re-enable
->> atimes because of the way the vfs-level mount flags API is designed.
->> Instead of doing such a fugly kernel patch just talk to the handfull
->> of distributions that matter to update their defaults.
+For those who don't care about CONFIG_SECURITY.
 
-> We already tried that here. The response: "If noatime is so great, why
-> isn't it the default in the kernel?"
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Yes, and around and around we go :/
+ include/linux/sched.h |    3 ++-
+ kernel/fork.c         |    2 ++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-	Jeff
-
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1086,8 +1086,9 @@ struct task_struct {
+ 	int (*notifier)(void *priv);
+ 	void *notifier_data;
+ 	sigset_t *notifier_mask;
+-	
++#ifdef CONFIG_SECURITY
+ 	void *security;
++#endif
+ 	struct audit_context *audit_context;
+ 	seccomp_t seccomp;
+ 
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1066,7 +1066,9 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	do_posix_clock_monotonic_gettime(&p->start_time);
+ 	p->real_start_time = p->start_time;
+ 	monotonic_to_bootbased(&p->real_start_time);
++#ifdef CONFIG_SECURITY
+ 	p->security = NULL;
++#endif
+ 	p->io_context = NULL;
+ 	p->io_wait = NULL;
+ 	p->audit_context = NULL;
 
