@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933129AbXHFOua@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933391AbXHFOwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933129AbXHFOua (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 10:50:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764118AbXHFOuV
+	id S933391AbXHFOwi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 10:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbXHFOw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 10:50:21 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:42613 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbXHFOuT (ORCPT
+	Mon, 6 Aug 2007 10:52:29 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41476 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752561AbXHFOw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 10:50:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=O1T49Sbna8CIGqgv4OCyOXGvVcNJUQzQPTN37ThgJN0B1v/Wo+e/Q3GTr+QNHYD68Rcn9p0tD1JFunNH2QwGLT+uOmy4nwigZsXL18NYSfFberwZIc7gi8KAbLfTor9x98uHRCpQloTuB8s8+nN9a9jYTRESifZf2UgIoYcZlu0=
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-From: Michael Sedkowski <sedmich@gmail.com>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org
-In-Reply-To: <20070806142339.GA31615@khazad-dum.debian.net>
-References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com>
-	 <46B6B006.6000100@gmail.com> <20070806142339.GA31615@khazad-dum.debian.net>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 06 Aug 2007 16:50:15 +0200
-Message-Id: <1186411815.4355.7.camel@nx6310>
+	Mon, 6 Aug 2007 10:52:28 -0400
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
+	workqueue infrastructure
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       Daniel Walker <dwalker@mvista.com>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070806144536.GA232@tv-sign.ru>
+References: <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
+	 <20070801213422.GA280@tv-sign.ru>
+	 <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
+	 <20070801222201.GA316@tv-sign.ru>
+	 <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
+	 <20070802195049.GA361@tv-sign.ru> <20070806114954.GC1903@elte.hu>
+	 <20070806131814.GC91@tv-sign.ru> <1186406963.7182.13.camel@twins>
+	 <1186407173.7182.16.camel@twins>  <20070806144536.GA232@tv-sign.ru>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 16:52:01 +0200
+Message-Id: <1186411921.7182.24.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 06-08-2007, Pn o godzinie 11:23 -0300, Henrique de Moraes Holschuh
-napisał(a):
-> On Mon, 06 Aug 2007, Tejun Heo wrote:
-> > Cc'ing Henrique.  Any ideas?
+On Mon, 2007-08-06 at 18:45 +0400, Oleg Nesterov wrote:
+> On 08/06, Peter Zijlstra wrote:
+
+> > still this does not change the fundamental issue of a high prio piece of
+> > work waiting on a lower prio task.
+>        ^^^^^^^
+> waiting. This is a "key" word, and this was my (perhaps wrong) point.
+
+Yeah, its having a higher prio item processed at a lower prio that is
+the problem. It might be delayed by less important issues.
+
+But I'm feeling a question wanting to jump out of your statement, I just
+fail to find it.
+
+> > > I suspect most of the barrier/flush semantics could be replaced with
+> > > completions from specific work items.
 > 
-> Check if /etc/init.d/halt is calling halt(8) with the -h flag.  If it is,
-> remove that -h flag.  Usually, there is a hddown variable that holds it, you
-> just need to get rid of it.
-> 
-> I don't know anything about a Sidux, though.
+> Hm. But this is exactly how it works?
 
-Well there is an -h variable:
-# Don't shut down drives if we're using RAID.
-	hddown="-h"
-	if grep -qs '^md.*active' /proc/mdstat
-	then
-		hddown=""
-	fi
-....
-log_action_msg "Will now halt"
-	halt -d -f $netdown $poweroff $hddown
-However removing it has no effect, the drive still spins down two times.
+Ah, I fail to be clear :-/
 
-Sidux is a Debian Unstable based distro with it's own set of patches
-including the shut down patch provided here:
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=426224
+Yes, barriers work by enqueueing work and waiting for that one work item
+to fall out, thereby knowing that all previous work has been completed.
 
-Michael
+My point was that most flushes are there to wait for a previously
+enqueued work item, and might as well wait for that one.
+
+Let me try to illustrate: a regular pattern is, we enqueue work A and
+then flush the whole queue to ensure A is processed. So instead of
+enqueueing A, then B in the barrier code, and wait for B to pop out, we
+might as well wait for A to begin with.
+
+
 
