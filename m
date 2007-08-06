@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933876AbXHFUd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933610AbXHFUh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933876AbXHFUd2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759390AbXHFUdU
+	id S933610AbXHFUh0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932564AbXHFUhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:33:20 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:43606 "EHLO mail.screens.ru"
+	Mon, 6 Aug 2007 16:37:10 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34765 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758262AbXHFUdT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:33:19 -0400
-X-Greylist: delayed 3609 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 16:33:19 EDT
-Date: Tue, 7 Aug 2007 00:33:26 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
-Message-ID: <20070806203326.GA188@tv-sign.ru>
-References: <20070802212009.GA516@tv-sign.ru> <20070806131345.3322c99e.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070806131345.3322c99e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	id S932261AbXHFUhJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:37:09 -0400
+Message-ID: <46B78672.9090808@linux.vnet.ibm.com>
+Date: Mon, 06 Aug 2007 15:37:06 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+Reply-To: brking@linux.vnet.ibm.com
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+CC: santil@us.ibm.com, jgarzik@pobox.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net/ibmveth.c: memset fix
+References: <200708062217.04361.m.kozlowski@tuxland.pl>
+In-Reply-To: <200708062217.04361.m.kozlowski@tuxland.pl>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06, Andrew Morton wrote:
->
-> On Fri, 3 Aug 2007 01:20:09 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
+Mariusz Kozlowski wrote:
+> Hello,
 > 
-> > 2. We are playing games with ->nsproxy->pid_ns. This code is bogus today, and
-> >    it has to be changed anyway when we really support pid namespaces, just
-> >    remove it.
->
-> This patch broke
+> 	Looks like memset() is zeroing wrong nr of bytes.
+
+Good catch, however, I think we can just remove this memset altogether
+since the memory gets allocated via kzalloc.
+
+-Brian
+
+
 > 
-> pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch.  This hunk:
+> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 > 
-> ***************
-> *** 908,915 ****
->   	if (unlikely(!tsk->pid))
->   		panic("Attempted to kill the idle task!");
->   	if (unlikely(tsk == child_reaper(tsk))) {
-> - 		if (tsk->nsproxy->pid_ns != &init_pid_ns)
-> - 			tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
->   		else
->   			panic("Attempted to kill init!");
->   	}
-> --- 908,916 ----
->   	if (unlikely(!tsk->pid))
->   		panic("Attempted to kill the idle task!");
->   	if (unlikely(tsk == child_reaper(tsk))) {
-> + 		if (task_active_pid_ns(tsk) != &init_pid_ns)
-> + 			task_active_pid_ns(tsk)->child_reaper =
-> + 					init_pid_ns.child_reaper;
->   		else
->   			panic("Attempted to kill init!");
->   	}
+>  drivers/net/ibmveth.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> has no place to live any more, so I just removed it.
+> --- linux-2.6.23-rc1-mm2-a/drivers/net/ibmveth.c	2007-08-01 08:43:46.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2-b/drivers/net/ibmveth.c	2007-08-06 20:34:44.000000000 +0200
+> @@ -963,7 +963,7 @@ static int __devinit ibmveth_probe(struc
+>  {
+>  	int rc, i;
+>  	struct net_device *netdev;
+> -	struct ibmveth_adapter *adapter = NULL;
+> +	struct ibmveth_adapter *adapter;
+> 
+>  	unsigned char *mac_addr_p;
+>  	unsigned int *mcastFilterSize_p;
+> @@ -997,7 +997,7 @@ static int __devinit ibmveth_probe(struc
+>  	SET_MODULE_OWNER(netdev);
+> 
+>  	adapter = netdev->priv;
+> -	memset(adapter, 0, sizeof(adapter));
+> +	memset(adapter, 0, sizeof(*adapter));
+>  	dev->dev.driver_data = netdev;
+> 
+>  	adapter->vdev = dev;
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Ah, thanks. I should have done this patch against -mm tree.
 
-I hope it is OK to drop this chunk of
-	pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch
-
-Because it can't work right now anyway, and Sukadev+Pavel already have
-new patches on top this one which make namespace switch actually work.
-
-Oleg.
-
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
