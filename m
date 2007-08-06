@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762674AbXHFD37@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762678AbXHFDe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762674AbXHFD37 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 23:29:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755310AbXHFD3w
+	id S1762678AbXHFDe3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 23:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759059AbXHFDeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 23:29:52 -0400
-Received: from mx2.suse.de ([195.135.220.15]:41345 "EHLO mx2.suse.de"
+	Sun, 5 Aug 2007 23:34:22 -0400
+Received: from waste.org ([66.93.16.53]:59006 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752559AbXHFD3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 23:29:51 -0400
-Date: Mon, 6 Aug 2007 05:29:49 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: lmbench ctxsw regression with CFS
-Message-ID: <20070806032949.GA16401@wotan.suse.de>
-References: <20070802021525.GC15595@wotan.suse.de> <alpine.LFD.0.999.0708011922500.3582@woody.linux-foundation.org> <20070802024132.GD15595@wotan.suse.de> <20070802071956.GA23300@elte.hu> <20070802073123.GB16744@wotan.suse.de> <20070802154447.GA13725@elte.hu> <20070803001447.GA14775@wotan.suse.de> <20070804065037.GA30816@elte.hu>
-Mime-Version: 1.0
+	id S1758948AbXHFDeV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 23:34:21 -0400
+Date: Sun, 5 Aug 2007 22:34:46 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Dave Boutcher <boutcher@cs.umn.edu>
+Cc: linux-kernel@vger.kernel.org, Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix /proc/pid/pagemap return length calculation
+Message-ID: <20070806033446.GU11115@waste.org>
+References: <18102.33131.876436.899189@gargle.gargle.HOWL>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070804065037.GA30816@elte.hu>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <18102.33131.876436.899189@gargle.gargle.HOWL>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 04, 2007 at 08:50:37AM +0200, Ingo Molnar wrote:
+On Sun, Aug 05, 2007 at 09:03:23PM -0500, Dave Boutcher wrote:
 > 
-> * Nick Piggin <npiggin@suse.de> wrote:
+> /proc/pid/pagemap has a header (usually 8 bytes) the length
+> of which needs to be compensated for when converting from
+> proc file offset to page number.  The calculation of the
+> starting page number (svpfn) compensates for this, but the
+> calculation of the ending page number (evpfn) does not, resulting
+> in reads returning 8 bytes more than were asked for and
+> nastily overwriting userspace memory.
+
+Does this mean you're running on a 64-bit arch? I'd already fixed this
+locally, but it was off by 4 for me.
+
+Acked-by: Matt Mackall <mpm@selenic.com>
+ 
+> Diffed against 2.6.23-rc1-mm2
 > 
-> > Oh good. Thanks for getting to the bottom of it. We have normally 
-> > disliked too much runtime tunables in the scheduler, so I assume these 
-> > are mostly going away or under a CONFIG option for 2.6.23? Or...?
+> Signed-off-by: Dave Boutcher <boutcher@cs.umn.edu>
+> ---
+>  fs/proc/task_mmu.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> yeah, they are all already under CONFIG_SCHED_DEBUG. (it's just that the 
-> add-on optimization is not upstream yet - the tunings are still being 
+> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+> index 4594f15..b2baeab 100644
+> --- a/fs/proc/task_mmu.c
+> +++ b/fs/proc/task_mmu.c
+> @@ -627,7 +627,7 @@ static ssize_t pagemap_read(struct file *file, char __user *buf,
+>  	addr = PAGE_SIZE * svpfn;
+>  	if ((svpfn + 1) * sizeof(unsigned long) != src)
+>  		goto out;
+> -	evpfn = min((src + count) / sizeof(unsigned long),
+> +	evpfn = min((src + count) / sizeof(unsigned long) - 1,
+>  		    ((~0UL) >> PAGE_SHIFT) + 1);
+>  	count = (evpfn - svpfn) * sizeof(unsigned long);
+>  	end = PAGE_SIZE * evpfn;
+> -- 
+> 1.4.4.2
 
-Ah, OK. So long as that goes upstream I'm happy... and it is good
-to see that with that patch, the base context switching performance
-_has_ actually gone up like I had hoped. Nice.
-
-
-> tested) Btw., with SCHED_DEBUG we now also have your domain-tree sysctl 
-> patch upstream, which has been in -mm for a near eternity.
-> 
-> > What CPU did you get these numbers on? Do the indirect calls hurt much 
-> > on those without an indirect predictor? (I'll try running some tests).
-> 
-> it was on an older Athlon64 X2. I never saw indirect calls really 
-> hurting on modern x86 CPUs - dont both CPU makers optimize them pretty 
-> efficiently? (as long as the target function is always the same - which 
-> it is here.)
-
-I think a lot of CPUs do. I think ia64 does not. It predicts
-based on the contents of a branch target register which has to
-be loaded I presume before instructoin fetch reaches the branch.
-I don't know if this would hurt or not.
-
-
-> > I must say that I don't really like the indirect calls a great deal, 
-> > and they could be eliminated just with a couple of branches and direct 
-> > calls.
-> 
-> yeah - i'll try that too. We can make the indirect call the uncommon 
-> case and a NULL pointer be the common case, combined with a 'default', 
-> direct function call. But i doubt it makes a big (or even measurable) 
-> difference.
-
-You might be right there.
+-- 
+Mathematics is the supreme nostalgia of our time.
