@@ -1,82 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933401AbXHFNbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933650AbXHFNbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933401AbXHFNbY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933107AbXHFNW4
+	id S933650AbXHFNbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbXHFN3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:22:56 -0400
-Received: from mga09.intel.com ([134.134.136.24]:53825 "EHLO mga09.intel.com"
+	Mon, 6 Aug 2007 09:29:34 -0400
+Received: from 1wt.eu ([62.212.114.60]:1213 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933094AbXHFNWy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:22:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,224,1183359600"; 
-   d="scan'208";a="114143926"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
-Date: Mon, 6 Aug 2007 21:22:46 +0800
-Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC2437517@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <20070806090210.GA15329@atrey.karlin.mff.cuni.cz>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
-Thread-Index: AcfYCHzv5YzKK5XmSsW0YN+vu3WsaAAI2r8g
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Jeremy Maitin-Shepard" <jbms@cmu.edu>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       "Andrew Morton" <akpm@linux-foundation.org>, <david@lang.hm>,
-       <linux-kernel@vger.kernel.org>, <linux-pm@lists.linux-foundation.org>,
-       "Kexec Mailing List" <kexec@lists.infradead.org>
-X-OriginalArrivalTime: 06 Aug 2007 13:22:49.0316 (UTC) FILETIME=[E27A1240:01C7D82C]
+	id S933314AbXHFN3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:29:33 -0400
+Date: Mon, 6 Aug 2007 15:26:58 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: Axel Reinhold <axel@freakout.de>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
+Message-ID: <20070806132658.GE10999@1wt.eu>
+References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu> <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Pavel Machek [mailto:pavel@ucw.cz]
->> > Did the trick, I got the kernel to load, and it even attempted
->> > exec... but I got doublefault (or what is it?)
->> >
->> > Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
->> >
->> > Do I have to disable ACPI completely? I tried with acpi=off,
->> > nosmp... but problem does not seem device related.
->>
->> It seems that the problem has nothing to do with device or ACPI. Can
-you
->> do a normal kexec? That is:
->>
->> kexec -l <...>
->> kexec -e
->>
->> or
->>
->> kexec -p <...>
->> ALT-SysRq-c to trigger a crash dump.
->
->...that was indeed a problem. I can do successful kexec, as long as I
->load bzImage (and not vmlinux). (Both kernels 2.6.22 and
->2.6.23-rc2-git). Problem is, I can only load bzImage using -l, attempt
->to load bzImage using -p results in
->
->"Could not find a free area of memory of 9000 bytes"
->locate_hole failed
->
->. Any ideas?
+On Mon, Aug 06, 2007 at 03:05:29PM +0200, Segher Boessenkool wrote:
+> >I still
+> >suspect that because the behaviour is different between 4.1 and 4.2, it
+> >might be a regression in 4.2,
+> 
+> The kernel code is wrong.  It might have accidentally worked
+> with GCC-4.1, but that doesn't mean GCC-4.2 has regressed.
+> Only supported features that stop working are regressions;
+> invalid code that stops working is, well, in the worst case
+> an improvement in diagnostics ;-)
 
-The Kexec-tools 1.101 can not deal with bzImage with "-p" properly. So
-vmlinux must be used with "-p". And the tricks previous mentioned must
-be used for normal kexec -p too. The example command line is as follow:
+Just to enlighten me on the subject, could you please explain me
+what is wrong in the code ? Granted I found it awful, but even on
+the GCC-4.2 page where -fno-toplevel-reorder is explained, it is
+said that asm statements can be instantiated between functions
+blocks, which is exactly what is used here.
 
-kexec -p --args-linux vmlinux --append="root=/dev/<xxx> ..."
+Also, I could reproduce the problem with gcc 4.1 by simply declaring
+the interrupts[] array before the asm statements. It looks like the
+asm statements simply continue in the next section as the previously
+instantiated block. Maybe ".section .text" should be explicitly noted
+in each asm statement, but that seems strange to me.
 
-Best Regards,
-Huang Ying
+Right now, I just removed -fno-unit-at-a-time which had been added
+only for gcc-3.4, and it fixed gcc-4.2 (and even 4.1 produces cleaner
+code after that).
+
+Regards,
+Willy
+
