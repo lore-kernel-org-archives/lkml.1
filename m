@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762476AbXHFIVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761280AbXHFI2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762476AbXHFIVm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 04:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759858AbXHFIVd
+	id S1761280AbXHFI2F (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 04:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbXHFI1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 04:21:33 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49201 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759846AbXHFIVc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 04:21:32 -0400
-Date: Mon, 6 Aug 2007 10:21:31 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Nathan Williams <ngwilliams@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_LICENSE usage
-In-Reply-To: <b4e196fa0708060053x65f0b1d3m50c62206cb65e016@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708061013540.1735@fbirervta.pbzchgretzou.qr>
-References: <b4e196fa0708060053x65f0b1d3m50c62206cb65e016@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Aug 2007 04:27:52 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:51025 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755925AbXHFI1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 04:27:50 -0400
+Date: Mon, 6 Aug 2007 12:25:35 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Distributed storage.
+Message-ID: <20070806082535.GB21909@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708050104.19596.phillips@phunq.net> <20070805150824.GB32132@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708051423.45484.phillips@phunq.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 05, 2007 at 02:23:45PM -0700, Daniel Phillips (phillips@phunq.net) wrote:
+> On Sunday 05 August 2007 08:08, Evgeniy Polyakov wrote:
+> > If we are sleeping in memory pool, then we already do not have memory
+> > to complete previous requests, so we are in trouble.
+> 
+> Not at all.  Any requests in flight are guaranteed to get the resources 
+> they need to complete.  This is guaranteed by the combination of memory 
+> reserve management and request queue throttling.  In logical terms, 
+> reserve management plus queue throttling is necessary and sufficient to 
+> prevent these deadlocks.  Conversely, the absence of either one allows 
+> deadlock.
 
-On Aug 6 2007 17:53, Nathan Williams wrote:
->Hi,
->
->I'm working on a driver for an ADSL modem which requires the use of a
->binary library from the chipset manufacturer.  All my source code is
->GPL, [...]
->I've given permission for the binary library file to be used with the GPL
->source code and be re-distributed with it.
->
->Is it correct to say that my driver is licensed under GPL with
->additional rights to use the binary library file?
+Only if you have two, which must be closely related to each other (i.e.
+each request  must have network reserve big enough to store data).
 
-[ Obligatory IANAL sticker. ]
+> > This can work 
+> > for devices which do not require additional allocations (like usual
+> > local storage), but not for network connected ones.
+> 
+> It works for network devices too, and also for a fancy device like 
+> ddsnap, which is the moral equivalent of a filesystem implemented in 
+> user space.
 
-Clear case for me IMHO. If your code is GPL (and which you emphasize
-with MODULE_LICENSE(GPL)) and then link in a binary blob, then the
-combined work becomes GPL, and you are required to hand out sources for
-it, including for the blob.
+With or without vm deadlock patches? I can not see how it can work, if
+network does not have a reserve and there is not free memory completely.
+If all systems have reserve then yes, it works good.
 
-I won't mention the gray possibilities because it is just evil in the
-first place to begin with.
+> > By default things will be like they are now, except additional
+> > non-atomic increment and branch in generic_make_request() and
+> > decrement and wake in bio_end_io()?
+> 
+> ->endio is called in interrupt context, so the accounting needs to be 
+> atomic as far as I can see.
 
->Additionally, I'm unsure of what is the meaning of
->
->"GPL and additional rights"     [GNU Public License v2 rights and more]
+Actually we only care about if there is a place in the queue or not - so
+it can be a flag. Actually non-atomic operations are ok, since having
+plus/minus couple of requests in flight does not change the picture, but
+allows not to introduce slow atomic operations in the fast path.
 
-I think (but I may be wrong) that e.g. "GPL+BSD" fall into this. (Which
-not change the fact that you are still obliged to comply with the GPL.)
+> We actually account the total number of bio pages in flight, otherwise 
+> you would need to assume the largest possible bio and waste a huge 
+> amount of reserve memory.  A counting semaphore works fine for this 
+> purpose, with some slight inefficiency that is nigh on unmeasurable in 
+> the block IO path.  What the semaphore does is make the patch small and 
+> easy to understand, which is important at this point.
 
->
->Thank you,
->Nathan
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
+Yes, it can be bio vectors.
 
-	Jan
+> > I can cook up such a patch if idea worth efforts.
+> 
+> It is.  There are some messy details...  You need a place to store the 
+> accounting variable/semaphore and need to be able to find that place 
+> again in ->endio.  Trickier than it sounds, because of the unstructured 
+> way drivers rewrite ->bi_bdev.   Peterz has already poked at this in a 
+> number of different ways, typically involving backing_dev_info, which 
+> seems like a good idea to me.
+
+We can demand that reserve is not per virtual device, but per real one -
+for example in case of distributed storage locally connected node should
+have much higher limit than network one, but having a per-virtual device
+reserve might end up with situation, when local node can proceed data,
+but no requests will be queued sine all requests below limit are in
+network node. In case of per real device limit there is no need to
+increase bio.
+
 -- 
+	Evgeniy Polyakov
