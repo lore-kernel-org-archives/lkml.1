@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbXHFAZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760840AbXHFAgi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761284AbXHFAZM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 20:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbXHFAY7
+	id S1760840AbXHFAgi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 20:36:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759333AbXHFAga
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 20:24:59 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51651 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758933AbXHFAY6 (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 20:24:58 -0400
-Date: Mon, 6 Aug 2007 10:24:13 +1000
-From: David Chinner <dgc@sgi.com>
-To: Florian Weimer <fw@deneb.enyo.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       neilb@suse.de, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com, richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070806002413.GJ31489@sgi.com>
-References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804094119.81d8e533.akpm@linux-foundation.org> <87wswbjejw.fsf@mid.deneb.enyo.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 5 Aug 2007 20:36:30 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:38722 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758933AbXHFAg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 20:36:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HVPk4cvuCMdJJzbYVhFjFhj9KwWywlIbltprsOtrFWiZbgziz5DcJ3xGwqjycdv3tiIiXnS2Ywv3T53+AuZ3d7BxL41l86hNPL5uMmj6dlEcKx+xH4pz19feYiYDXVcH8c8pDk/YE+v1d+pN9VpyBJl2+op0PGjPPXHbQnY8hx0=
+Message-ID: <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com>
+Date: Mon, 6 Aug 2007 08:36:28 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Linux 2.6.23-rc2
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>
+In-Reply-To: <200708051847.12046.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <87wswbjejw.fsf@mid.deneb.enyo.de>
-User-Agent: Mutt/1.4.2.1i
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>
+	 <1186317610.5220.3.camel@daplas>
+	 <b6a2187b0708050626s15e1b7did73f638046c0dba3@mail.gmail.com>
+	 <200708051847.12046.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Aug 04, 2007 at 09:16:35PM +0200, Florian Weimer wrote:
-> * Andrew Morton:
-> 
-> > The easy preventive is to mount with data=writeback.  Maybe that should
-> > have been the default.
-> 
-> The documentation I could find suggests that this may lead to a
-> security weakness (old data in blocks of a file that was grown just
-> before the crash leaks to a different user).  XFS overwrites that data
-> with zeros upon reboot, which tends to irritate users when it happens.
+On 8/6/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-XFS has never overwritten data on reboot. It leaves holes when the kernel has
-failed to write out data. A hole == zeros so XFS does not expose stale data in
-this situation. As it is, the underlying XFS problem (lack of synchronisation
-between inode size update and data writes has been mostly fixed in 2.6.22 by
-only updating the file size to be written to disk on data I/O completion.
+> What does 's2ram -i' say about your machine?
 
-FWIW, fsync() would prevent this from happening, but many application writers
-seem strangely reluctant to put fsync() calls into code to ensure the data
-they write is safely on disk.....
+This machine can be identified by:
+    sys_vendor   = "LENOVO"
+    sys_product  = "1702E7A"
+    sys_version  = "ThinkPad X60s"
+    bios_version = "7BETD0WW (2.11 )"
 
-Cheers,
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Thanks,
+Jeff.
