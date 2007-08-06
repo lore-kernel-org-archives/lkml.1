@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765738AbXHFOEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbXHFOFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765738AbXHFOEn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 10:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbXHFNz3
+	id S933154AbXHFOFP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 10:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933194AbXHFNzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:55:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36427 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 09:55:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36513 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765125AbXHFNzL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:55:11 -0400
-Date: Mon, 6 Aug 2007 09:55:06 -0400
-Message-Id: <200708061355.l76Dt6vI002365@dantu.rdu.redhat.com>
+	id S933020AbXHFNzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:55:23 -0400
+Date: Mon, 6 Aug 2007 09:55:22 -0400
+Message-Id: <200708061355.l76DtMew002395@dantu.rdu.redhat.com>
 From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 20/25] smbfs: call attr_kill_to_mode from smb_notify_change
+Subject: [PATCH 25/25] spufs: call attr_kill_to_mode from spufs_setattr
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-..seems unlikely that the sb mode would include a setuid bit, but I suppose
-it's possible.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 ---
- fs/smbfs/inode.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/cell/spufs/inode.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/fs/smbfs/inode.c b/fs/smbfs/inode.c
-index 73d1450..f42d191 100644
---- a/fs/smbfs/inode.c
-+++ b/fs/smbfs/inode.c
-@@ -675,6 +675,8 @@ smb_notify_change(struct dentry *dentry, struct iattr *attr)
- 	if (error)
- 		goto out;
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index b3d0dd1..d0f6b62 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -97,6 +97,7 @@ spufs_setattr(struct dentry *dentry, struct iattr *attr)
+ {
+ 	struct inode *inode = dentry->d_inode;
  
 +	attr_kill_to_mode(inode, attr);
-+
- 	if ((error = inode_change_ok(inode, attr)) < 0)
- 		goto out;
- 
+ 	if ((attr->ia_valid & ATTR_SIZE) &&
+ 	    (attr->ia_size != inode->i_size))
+ 		return -EINVAL;
 -- 
 1.5.2.2
 
