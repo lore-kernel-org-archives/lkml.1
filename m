@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbXHFKsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764343AbXHFKsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764576AbXHFKsS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:48:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763482AbXHFKpC
+	id S1764343AbXHFKsi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763584AbXHFKpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:45:02 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57604 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 06:45:06 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57624 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932518AbXHFKo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:44:59 -0400
-Message-Id: <20070806103659.319864000@chello.nl>
+	id S1763505AbXHFKpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:45:04 -0400
+Message-Id: <20070806103658.107883000@chello.nl>
 References: <20070806102922.907530000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 06 Aug 2007 12:29:30 +0200
+Date: Mon, 06 Aug 2007 12:29:24 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,72 +23,50 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Steve Dickson <SteveD@redhat.com>
-Subject: [PATCH 08/10] mm: serialize access to min_free_kbytes
-Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
+Subject: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Content-Disposition: inline; filename=global-ALLOC_NO_WATERMARKS.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a small race between the procfs caller and the memory hotplug caller
-of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
-another caller. Time to close the gap.
+Change ALLOC_NO_WATERMARK page allocation such that dipping into the reserves
+becomes a system wide event.
+
+This has the advantage that logic dealing with reserve pages need not be node
+aware (when we're this low on memory speed is usually not an issue).
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Christoph Lameter <clameter@sgi.com>
 ---
- mm/page_alloc.c |   16 +++++++++++++---
- 1 file changed, 13 insertions(+), 3 deletions(-)
+ mm/page_alloc.c |   15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
 Index: linux-2.6-2/mm/page_alloc.c
 ===================================================================
 --- linux-2.6-2.orig/mm/page_alloc.c
 +++ linux-2.6-2/mm/page_alloc.c
-@@ -101,6 +101,7 @@ static char * const zone_names[MAX_NR_ZO
- 	 "Movable",
- };
- 
-+static DEFINE_SPINLOCK(min_free_lock);
- int min_free_kbytes = 1024;
- 
- unsigned long __meminitdata nr_kernel_pages;
-@@ -3634,12 +3635,12 @@ static void setup_per_zone_lowmem_reserv
- }
- 
- /**
-- * setup_per_zone_pages_min - called when min_free_kbytes changes.
-+ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
-  *
-  * Ensures that the pages_{min,low,high} values for each zone are set correctly
-  * with respect to min_free_kbytes.
-  */
--void setup_per_zone_pages_min(void)
-+static void __setup_per_zone_pages_min(void)
- {
- 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
- 	unsigned long lowmem_pages = 0;
-@@ -3693,6 +3694,15 @@ void setup_per_zone_pages_min(void)
- 	calculate_totalreserve_pages();
- }
- 
-+void setup_per_zone_pages_min(void)
-+{
-+	unsigned long flags;
+@@ -1311,6 +1311,21 @@ restart:
+ rebalance:
+ 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+ nofail_alloc:
++		/*
++		 * break out of mempolicy boundaries
++		 */
++		zonelist = NODE_DATA(numa_node_id())->node_zonelists +
++			gfp_zone(gfp_mask);
 +
-+	spin_lock_irqsave(&min_free_lock, flags);
-+	__setup_per_zone_pages_min();
-+	spin_unlock_irqrestore(&min_free_lock, flags);
-+}
++		/*
++		 * Before going bare metal, try to get a page above the
++		 * critical threshold - ignoring CPU sets.
++		 */
++		page = get_page_from_freelist(gfp_mask, order, zonelist,
++				ALLOC_WMARK_MIN|ALLOC_HIGH|ALLOC_HARDER);
++		if (page)
++			goto got_pg;
 +
- /*
-  * Initialise min_free_kbytes.
-  *
-@@ -3728,7 +3738,7 @@ static int __init init_per_zone_pages_mi
- 		min_free_kbytes = 128;
- 	if (min_free_kbytes > 65536)
- 		min_free_kbytes = 65536;
--	setup_per_zone_pages_min();
-+	__setup_per_zone_pages_min();
- 	setup_per_zone_lowmem_reserve();
- 	return 0;
- }
+ 		/* go through the zonelist yet again, ignoring mins */
+ 		page = get_page_from_freelist(gfp_mask, order, zonelist,
+ 				ALLOC_NO_WATERMARKS);
 
 --
 
