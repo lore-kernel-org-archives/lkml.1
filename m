@@ -1,76 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXHFGiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755808AbXHFGie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761010AbXHFGiD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 02:38:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXHFGhw
+	id S1755808AbXHFGie (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 02:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762292AbXHFGiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 02:37:52 -0400
-Received: from gate.crashing.org ([63.228.1.57]:59003 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753825AbXHFGhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 02:37:51 -0400
-Subject: Re: What archs need flush_tlb_page() in handle_pte_fault() ?
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linux-mm@kvack.org
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Linux Arch list <linux-arch@vger.kernel.org>,
-       Linus Torvalds <torvalds@osdl.org>
-In-Reply-To: <1186018621.5495.558.camel@localhost.localdomain>
-References: <1186018621.5495.558.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 06 Aug 2007 16:37:42 +1000
-Message-Id: <1186382262.938.35.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 6 Aug 2007 02:38:22 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51726 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1762255AbXHFGiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 02:38:20 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX18JiNU3AU8JhDdABmv53sOhwltp4ARXenoI7+4He5
+	VKU7ejjbs+LaCd
+Message-ID: <46B6C177.8040405@gmx.net>
+Date: Mon, 06 Aug 2007 08:36:39 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "Serge E. Hallyn" <serue@us.ibm.com>, Kirill Korotaev <dev@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Andrey Savochkin <saw@sw.ru>,
+       Adrian Bunk <bunk@stusta.de>, Cedric Le Goater <clg@fr.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: CLONE_NEWUTS documentation
+References: <46B599CA.9030302@gmx.net> <m1abt6kvym.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1abt6kvym.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-02 at 11:37 +1000, Benjamin Herrenschmidt wrote:
-> Heya !
+
+
+Eric W. Biederman wrote:
+> Michael Kerrisk <mtk-manpages@gmx.net> writes:
 > 
-> In my page table accessor spring cleaning, one of my targets is
-> flush_tlb_page(). At this stage, it's only called by generic code in one
-> place (in addition to the asm-generic bits that use it to implement
-> missing accessors, but I'm taking care of those spearately) :
+>> Hello Serge,
+>>
+>> In 2.6.19, your patch to add support for CLONE_NEWUTS was included.  Is
+>> there there some for-userland-programmers documentation of this flag
+>> somewhere?  Would you be able to send some documentation to me (ideally as
+>> a patch to the clone.2 man page, but otherwise some plain text will do).
+>>
+>> If this flag is also supported for unshare(), then could you please send me
+>> a patch/text for that too?
+> 
+> Again a short summary
+> 
+> The utsname namespace encapsulates the global kernel identification stored
+> in struct utsname returned from uname(2).
+> 
+> It is a very trivial namespace but it allows you to set multiple hostnames
+> and nis domainnames on the same machine.
 
- .../...
+Thanks Eric.
 
-No reply, so I suppose I can rip it out ? :-)
+And a further question: is CLONE_NEWUTS implemented for unshare()?
 
-Thus any reason why that patch wouln't fly ? (not for 2.6.23 of course)
+Cheers,
 
-This removes the last occurence of flush_tlb_page() from generic code,
-thus making this hook now optional for architectures that don't use
-the helpers in asm-generic/pgtable.h
+Michael
 
-I couldn't find a case where this is actually needed, but I may well
-have missed something. If I did though, please tell me what. If an
-architecture need that call for obscure reason, it could be simply
-folded in that architecture's implementation ptep_set_access_flags().
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
-
-Index: linux-work/mm/memory.c
-===================================================================
---- linux-work.orig/mm/memory.c	2007-08-06 16:32:12.000000000 +1000
-+++ linux-work/mm/memory.c	2007-08-06 16:34:07.000000000 +1000
-@@ -2609,15 +2609,6 @@ static inline int handle_pte_fault(struc
- 	if (ptep_set_access_flags(vma, address, pte, entry, write_access)) {
- 		update_mmu_cache(vma, address, entry);
- 		lazy_mmu_prot_update(entry);
--	} else {
--		/*
--		 * This is needed only for protection faults but the arch code
--		 * is not yet telling us if this is a protection fault or not.
--		 * This still avoids useless tlb flushes for .text page faults
--		 * with threads.
--		 */
--		if (write_access)
--			flush_tlb_page(vma, address);
- 	}
- unlock:
- 	pte_unmap_unlock(pte, ptl);
-
-
+Want to help with man page maintenance?  Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages/
+read the HOWTOHELP file and grep the source files for 'FIXME'.
