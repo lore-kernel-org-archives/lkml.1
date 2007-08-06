@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933630AbXHFUyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765658AbXHFU44@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933630AbXHFUyz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbXHFUyr
+	id S1765658AbXHFU44 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:56:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbXHFU4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:54:47 -0400
-Received: from smtp118.sbc.mail.re3.yahoo.com ([66.196.96.91]:42483 "HELO
-	smtp118.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751447AbXHFUyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:54:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=PcfK2+FqYBf8Hl7xwuUB0OrmW1ioY3MlbBszT1q4sGa4EsGi0PCPpNrnIY0EBlioOQ8ralhq+hJVZwJKPI0YCCIuAHyndNmxuK1PUrGQviig6wl5dwpCYL1v9rZ62iA5cm85j0mzcfsswpCb78eqxcHKIBhpH7nKnld6ECjuGsc=  ;
-X-YMail-OSG: AjuGSGcVM1kzbx4hbxJTXe1wf.98xc6HBPW7evp_Vn46Mmi4W6o5_soK46uwCjLIjoeuE2zQJu1SiM9eFlinH3mhQkrwr.fzSoRqFMRVysQ27xhrKx1FwRTdaeeeN.gAevwOh05k5NM_fOk-
-From: David Brownell <david-b@pacbell.net>
-To: linux-pm@lists.linux-foundation.org
-Subject: Re: [linux-pm] Re: [PATCH] kexec: fix pci device initialization fail after kexec (2.6.23-rc2). (Related to e1000 doesn't resume properly from standby)
-Date: Mon, 6 Aug 2007 13:54:35 -0700
-User-Agent: KMail/1.9.6
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, "Joonwoo Park" <joonwpark81@gmail.com>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>
-References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com> <b25c3fa70708060850p26b7b3e6yb8a523a479c714c0@mail.gmail.com> <200708062048.37160.rjw@sisk.pl>
-In-Reply-To: <200708062048.37160.rjw@sisk.pl>
+	Mon, 6 Aug 2007 16:56:47 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:47408 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752350AbXHFU4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:56:47 -0400
+Message-ID: <46B78ADA.2000009@hp.com>
+Date: Mon, 06 Aug 2007 16:55:54 -0400
+From: Vlad Yasevich <vladislav.yasevich@hp.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200708061354.35648.david-b@pacbell.net>
+To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+Cc: lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
+Subject: Re: [PATCH] SCTP: IPv4 mapped addr not returned in SCTPv6 accept()
+References: <18087.57737.908842.337891@zeus.sw.starentnetworks.com>	<46A8E027.10802@hp.com>	<18088.61269.5608.925496@zeus.sw.starentnetworks.com>	<46A8F926.1070606@hp.com> <18103.35100.916194.803006@zeus.sw.starentnetworks.com>
+In-Reply-To: <18103.35100.916194.803006@zeus.sw.starentnetworks.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 August 2007, Rafael J. Wysocki wrote:
-> Section 5.4.1 of PCI PM 1.1. spec is about D3_hot.  Specifically, it says
-> that if a device in D3_hot is programmed to D0, it performs the equivalent of
-> a warm reset.  IOW, this is supposed to happen if the current state is D3_hot
-> and the targed state is D0, which is covered by the code snippet above.
+Dave Johnson wrote:
+> Vlad Yasevich writes:
+>> Ok.  First, this is a different bug, so I would prefer a separate patch.
+>> Also, I see the problem and it's ugly, but this solution is not really correct,
+>> both conceptually and code wise.
+>>
+>> Conceptually, the v4 code should never worry about V4-mapped addresses and shouldn't
+>> muck with them.  They are IPv6 addresses and there should be a clean separation.
+>>
+>> Code wise, the code in the __sctp_connect() is terrible.
+>>
+>> Does the attached patch work for you in this case.
+> 
+> Sorry about the confusion before, your patch to __sctp_connect()
+> fixes calls to getpeername() after connect() just fine.
+> 
+> I'll post a patch for the accept()/getpeername() case in a bit.
+> 
+> Acked-by: Dave Johnson <djohnson@sw.starentnetworks.com>
+> 
 
-Actually, it's *allowed* to do a warm reset.  Not required.
-And not all PCI devices will do such a reset.   Some of them
-will return to D0_initialized ... not D0_uninitialized (where
-uninitialized means "did the reset").
+I had time to tinker and pushed both patches already.  They were in
+the last pull that Dave Miller did.  I also tested both patches locally
+to make sure that they worked as supposed to.
 
-It's D3_cold where a (powerup) reset is *required*.
-
-A common example would be a USB host controller.  If one of
-those did a warm reset it'd trash all the connection state
-which was carefully retained during sleep ... and there'd be
-no point to supporting D3_hot rather than D3_cold.
-
-As a rule of thumb, it's probably safe to assume that if
-a device can generate wakeup events, it probably doesn't
-trash all of its state when it resumes from D3_hot.
-
-Of course, if it can generate wakeup events from D3_cold,
-the difference between Vaux and Vcc power wells comes into
-play.  The Vaux powered bits will retain state, while the
-stuff powered by Vcc gets a powerup reset.
-
-If it can't generate wakeup events, a PCI device has no
-particular need to retain state after D3.  Implementors
-can choose whichever is most convenient.
-
-- Dave
+-vlad
