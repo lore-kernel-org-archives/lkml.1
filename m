@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932697AbXHFTke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933532AbXHFTle@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932697AbXHFTke (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:40:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932756AbXHFTja
+	id S933532AbXHFTle (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:41:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXHFTl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:39:30 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:39361 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761828AbXHFTj3 (ORCPT
+	Mon, 6 Aug 2007 15:41:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53995 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751449AbXHFTlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:39:29 -0400
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
-	workqueue infrastructure
-From: Gregory Haskins <ghaskins@novell.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
+	Mon, 6 Aug 2007 15:41:25 -0400
+Date: Mon, 6 Aug 2007 20:48:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Dimitrios Apostolou <jimis@gmx.net>
+Cc: =?UTF-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20070806193314.GB101@tv-sign.ru>
-References: <1185992994.2636.142.camel@imap.mvista.com>
-	 <20070801201802.GA225@tv-sign.ru>
-	 <1186000468.2636.168.camel@imap.mvista.com>
-	 <20070801205053.GA263@tv-sign.ru>
-	 <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
-	 <20070801213422.GA280@tv-sign.ru>
-	 <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
-	 <20070801222201.GA316@tv-sign.ru>
-	 <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
-	 <20070802195049.GA361@tv-sign.ru>  <20070806193314.GB101@tv-sign.ru>
-Content-Type: text/plain
-Date: Mon, 06 Aug 2007 15:37:42 -0400
-Message-Id: <1186429062.21381.139.camel@ghaskins-t60p.haskins.net>
+Subject: Re: high system cpu load during intense disk i/o
+Message-ID: <20070806204853.6a693c4b@the-village.bc.nu>
+In-Reply-To: <46B773F6.7060603@gmx.net>
+References: <200708031903.10063.jimis@gmx.net>
+	<200708051903.12414.jimis@gmx.net>
+	<46B60FB7.8030301@interia.pl>
+	<200708052142.14630.jimis@gmx.net>
+	<46B748DE.1060108@interia.pl>
+	<46B773F6.7060603@gmx.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 23:33 +0400, Oleg Nesterov wrote:
+> > In Your oprofile output I find "acpi_pm_read" particulary interesting. 
+> > Unlike other VIA chipsets, which I know, Your doesn't use VLink to 
+> > connect northbridge to southbridge. Instead PCI bus connects these two. 
+> > As You probably know maximal PCI throughtput is 133MiB/s. In theory. In 
+> > practice probably less.
 
-> OK. I have to take my words back. I completely misunderstood why you
-> are doing this and which problems you are trying to solve, my bad.
+acpi_pm_read is capable of disappearing into  SMM traps which will make
+it look very slow.
 
-No problem man.  You found some legitimate problems too so your input is
-very much appreciated.
+> about 15MB/s for both disks. When reading I get about 30MB/s again from 
+> both disks. The other disk, the small one, is mostly idle, except for 
+> writing little bits and bytes now and then. Since the problem occurs 
+> when writing, 15MB/s is just too little I think for the PCI bus.
 
-> 
-> Perhaps, I am also wrong on the "work_struct's could be re-ordered"
-> issue. Yes, we can break the code which is currently correct, that
-> was my point. But I must admit, I can't imagine the "good" code mich
-> may suffer. Perhaps we can just document the change in behaviour, and
-> "deprecate" such a code.
-> 
-> The only objection (and you seem to agree) is that the "regular"
-> queue_work() should not always take the callers's priority as the
-> priority of work_struct.
+Its about right for some of the older VIA chipsets but if you are seeing
+speed loss then we need to know precisely which kernels the speed dropped
+at. Could be there is an I/O scheduling issue your system shows up or
+some kind of PCI bus contention when both disks are active at once.
 
-Agreed.  I think that is the right direction (assuming we can resolve
-the other problems, like the double queue+queue problem you brought up).
+> I have been ignoring these performance regressions because of no 
+> stability problems until now. So could it be that I'm reaching the 
+> 20MB/s driver limit and some requests take too long to be served?
 
-Regards,
--Greg
+Nope.
 
+Alan
