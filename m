@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbXHFJYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762821AbXHFJ2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762822AbXHFJYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760411AbXHFJYO
+	id S1762821AbXHFJ2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXHFJ2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:24:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41245 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760308AbXHFJYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:24:14 -0400
-Date: Mon, 6 Aug 2007 11:24:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: check_irq_resend warning from pdc202xx_new
-Message-ID: <20070806092405.GB30639@elte.hu>
-References: <46B59892.7040504@simon.arlott.org.uk> <200708061113.26137.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708061113.26137.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 6 Aug 2007 05:28:11 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:35266 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754921AbXHFJ2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 05:28:10 -0400
+Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of
+	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
+References: <200708051906.22865.rjw@sisk.pl>
+	 <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+qbqYYTwXoVvc/ZA0mqh"
+Date: Mon, 06 Aug 2007 11:29:51 +0200
+Message-Id: <1186392591.28655.35.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+--=-+qbqYYTwXoVvc/ZA0mqh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> commit 0fc4969b866671dfe39b1a9119d0fdc7ea0f63e5
-> 
-> This report also doesn't seem to help with ne2k-pci problem...
+On Mon, 2007-08-06 at 11:07 +0200, Pavel Machek wrote:
+> Hi!
+>=20
+> > +config SUSPEND_UP_POSSIBLE
+> > +	bool
+> > +	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
+> > +		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
+> > +		   || MIPS || SUPERH || FRV
+> > +	depends on !SMP
+> > +	default y
+>=20
+> I guess I'd rather left SUSPEND_UP_POSSIBLE to allways y (as it always
+> was), and let architectures that can't handle it  not return "mem"
+> from list of valid states...
 
-no, it doesnt, and that wasnt the purpose of that WARN_ON_ONCE() - the 
-purpose was to keep a temporary workaround ... temporary.
+Yeah, that's the utterly broken interface we used to have. Until I fixed
+it to have no valid states until architectures implement suspend_ops.
+Still, I disagree, why bother with compiling code that can't ever be
+used?
 
-	Ingo
+johannes
+
+--=-+qbqYYTwXoVvc/ZA0mqh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGtuoP/ETPhpq3jKURAtl9AKCZV5oFZ/uHnjhCSL+vgMo6fnub6gCeOiBY
+LxfwT9+1NwXAFkhhkWEfHyM=
+=oiNh
+-----END PGP SIGNATURE-----
+
+--=-+qbqYYTwXoVvc/ZA0mqh--
+
