@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934024AbXHFXbl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934202AbXHFXcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934024AbXHFXbl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932880AbXHFXbc
+	id S934202AbXHFXcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934098AbXHFXbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:31:32 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47339 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932819AbXHFXbb (ORCPT
+	Mon, 6 Aug 2007 19:31:45 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:53591 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933963AbXHFXbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:31:31 -0400
-Date: Tue, 7 Aug 2007 09:31:22 +1000
-From: David Chinner <dgc@sgi.com>
-To: Laurent Caron <lcaron@lncsa.fr>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Oops on 2.6.21 + DRBD + XFS
-Message-ID: <20070806233122.GW31489@sgi.com>
-References: <20070806093449.aebaisai@trusted.lncsa.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070806093449.aebaisai@trusted.lncsa.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 6 Aug 2007 19:31:40 -0400
+Date: Mon, 06 Aug 2007 17:31:31 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+In-reply-to: <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Michael Sedkowski <sedmich@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Message-id: <46B7AF53.1040307@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no>
+ <fa.mg6p0itaOQUo/t8deCaYpyqj6Nk@ifi.uio.no>
+ <fa.RxWYL8z8KktgL8LGZ/cTB2nI1Yc@ifi.uio.no>
+ <fa.AyyCtZ2yLjC5noHPHtmzn4ffhhE@ifi.uio.no>
+ <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no>
+ <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 09:38:19AM +0200, Laurent Caron wrote:
-> Hi,
+Tejun Heo wrote:
+> Michael Sedkowski wrote:
+>>> Hmmm... If the problem only shows up on nx6325, it might be that ACPI is
+>>> pulling unnecessary stunt.  Please apply the attached patch and report
+>>> when the disk spins down and up.
+>> Disk spins down on "Pre-shutdown prepare" and then goes up and down on
+>> "Power down".
 > 
-> I'm using an XFS filesystem over DRBD for a few weeks on this machine
-> and did experience an oops.
+> Oh... crap, so acpi wants to sync cache on shutdown.  I wonder whether
+> it spins down the disk correctly.  Does emergency unload count increase
+> after each power down?  Also, please post the result of 'dmidecode'.
 
-......
-> Aug  3 10:59:47 fileserv kernel: [<c0164be9>] cache_flusharray+0x59/0xd0 
-> Aug  3 10:59:47 fileserv kernel: [<c0164d2a>] kmem_cache_free+0x5a/0x70 
-> Aug  3 10:59:47 fileserv kernel: [<c025fa16>] xfs_finish_reclaim+0x36/0x170 
-> Aug  3 10:59:47 fileserv kernel: [<c026fe41>] xfs_fs_clear_inode+0x91/0xc0 
-> Aug  3 10:59:47 fileserv kernel: [<c017c063>] clear_inode+0x93/0x140 
-> Aug  3 10:59:47 fileserv kernel: [<c017c38a>] dispose_list+0x1a/0xd0 
+I know that my Compaq X1000-series laptop does do some kind of ACPI 
+games with the disk on ACPI power off (I assume it is putting the disk 
+in standby before power-off at least). It also does this if you boot 
+into DOS, GRUB, etc. and then hit the power button. Could be if the disk 
+is dumb enough to spin up for sync cache and standby when there is 
+nothing to flush, and the kernel does its own standby, this could cause 
+an extra spinup/down..
 
-Can you run with slab debugging turned on?
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
