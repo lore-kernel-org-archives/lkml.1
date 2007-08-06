@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbXHFRnd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765561AbXHFRo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765071AbXHFRnd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:43:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXHFRnX
+	id S1765561AbXHFRo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXHFRoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:43:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46454 "EHLO mx2.mail.elte.hu"
+	Mon, 6 Aug 2007 13:44:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47469 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751046AbXHFRnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:43:22 -0400
-Date: Mon, 6 Aug 2007 19:43:11 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] i386: convert mm_context_t semaphore to a mutex
-Message-ID: <20070806174311.GB26868@elte.hu>
-References: <20070803105540.4f85ae09@localhost> <20070806074608.GA12415@elte.hu> <20070806103615.4be4670f@localhost> <20070806152502.GA6988@elte.hu> <20070806141523.069b24b0@localhost>
+	id S1752019AbXHFRoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 13:44:10 -0400
+Message-ID: <46B75DD4.5080709@redhat.com>
+Date: Mon, 06 Aug 2007 13:43:48 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070806141523.069b24b0@localhost>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: =?UTF-8?B?TWFyY2luIMWabHVzYXJ6?= <marcin.slusarz@gmail.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+References: <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu>
+In-Reply-To: <20070806070300.GA4509@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br> wrote:
-
->  But I've managed to run wine with a game called 'Align-it!', and
-> I have the following result:
+On 08/06/2007 03:03 AM, Ingo Molnar wrote:
 > 
-> """
-> ~/tmp/ egrep -c 'modify_ldt' wine-strace.txt 
-> 46
-> ~/tmp/ 
-> """
+> But, since level types don't need this retriggers too much I think
+> this "don't mask interrupts by default" idea should be rethinked:
+> is there enough gain to risk such hard to diagnose errors?
+>   
 > 
->  I've checked the calls and none has failed. Not sure how good
-> this test is though.
 
-ok, this is certainly good enough.
+I reverted those masking changes in Fedora and the baffling problem
+with 3Com 3C905 network adapters went away.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Before, they would print:
 
-	Ingo
+eth0: transmit timed out, tx_status 00 status e601.
+  diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
+eth0: Interrupt posted but not delivered -- IRQ blocked by another device?
+  Flags; bus-master 1, dirty 295757(13) current 295757(13)
+  Transmit list 00000000 vs. f7150a20.
+  0: @f7150200  length 80000070 status 0c010070
+  1: @f71502a0  length 80000070 status 0c010070
+  2: @f7150340  length 8000005c status 0c01005c
+
+Now they just work, apparently...
+
+So why not just revert the change?
+
