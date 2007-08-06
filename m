@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbXHFHQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760444AbXHFHTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760500AbXHFHQR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 03:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXHFHQH
+	id S1760444AbXHFHTV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 03:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754157AbXHFHTH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 03:16:07 -0400
-Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:63796 "EHLO iris"
+	Mon, 6 Aug 2007 03:19:07 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:58507 "EHLO poczta.o2.pl"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751291AbXHFHQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 03:16:06 -0400
-Message-ID: <46B6CAC4.3080202@sw.ru>
-Date: Mon, 06 Aug 2007 11:16:20 +0400
-From: "Denis V. Lunev" <den@sw.ru>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: "Denis V. Lunev" <den@openvz.org>, dev@openvz.org,
-       akpm@linux-foundation.org, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci_get_device call from interrupt in reboot fixups
-References: <20070803103924.GA23786@iris.sw.ru> <20070804040806.GF23330@suse.de>
-In-Reply-To: <20070804040806.GF23330@suse.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	id S1753856AbXHFHTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 03:19:05 -0400
+Date: Mon, 6 Aug 2007 09:19:32 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
+Subject: Re: [patch (take 2)] genirq: fix simple and fasteoi irq handlers
+Message-ID: <20070806071932.GA1973@ff.dom.local>
+References: <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu> <20070806060723.GA981@ff.dom.local> <20070806061459.GA26046@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070806061459.GA26046@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Fri, Aug 03, 2007 at 02:39:24PM +0400, Denis V. Lunev wrote:
->> The following calltrace is possible now:
->>  handle_sysrq
->>    machine_emergency_restart
->>      mach_reboot_fixups
->>        pci_get_device
->>          pci_get_subsys
->> 	   down_read
->> The patch obtains PCI device during initialization to avoid bothering PCI
->> search engine in interrupt. Devices used in this code are not supposed to
->> be pluggable, so it looks safe to keep them.
+On Mon, Aug 06, 2007 at 08:14:59AM +0200, Ingo Molnar wrote:
 > 
-> What devices are supposed to be affected here?  Are you sure that they
-> can't be removed later?  Grabbing references here might mess with them
-> in the future.
-Right now the list is the following:
-static struct device_fixup fixups_table[] = {
-{ PCI_VENDOR_ID_CYRIX, PCI_DEVICE_ID_CYRIX_5530_LEGACY,
-cs5530a_warm_reset },
-{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, cs5536_warm_reset },
-};
+> * Jarek Poplawski <jarkao2@o2.pl> wrote:
+> 
+> > Subject: genirq: fix simple and fasteoi irq handlers
+> > 
+> > After the "genirq: do not mask interrupts by default" patch interrupts 
+> > should be disabled not immediately upon request, but after they 
+> > happen. But, handle_simple_irq() and handle_fasteoi_irq() can skip 
+> > this once or more if an irq is just serviced (IRQ_INPROGRESS), 
+> > possibly disrupting a driver's work.
+> 
+> nice fix. I think this is exactly the type of bug we were hoping to be 
+> able to identify and fix, and it could explain the regression in its 
+> entirety. The big question - does it fix Marcin's regression?
 
-Though, if the approach is not suitable, we can skip fixups if we came
-from sysrq.
+Alas, there still could be something more... To be more sure, even
+with this, there should be some debug printk (which could mess too),
+but I don't know how much patience (and similar boxes...) Marcin has.
+Of course, this "temporary fix" in -rc2 should give us more time.
+But, I think you should confirm this gain with levels (I mean there
+could be some saving on flag setting/ checking too). E.g. I've thought
+about adding another ioapic_chip struct for fasteoi without .retrigger
+(and maybe with .disable = .mask) maybe with some #ifdef CONFIG_...,
+but maybe there could be reconsidered IRQ_DELAYED_DISABLE too (but
+with this, there probably was a possibility to run this hw ->retrigger
+'by chance' too, so with some strange IO-APICS there would be still
+an unnecessary risk here).
 
-Regards,
-	Den
+The big question for me is still why this isn't more common: it seems
+some (most of?) IO-APICS have some safety against this?
+
+BTW: Marcin, if you're still willing to test anything (and your box is
+alive after my previous 'could not make any damage' patch - sorry!),
+this should be done with something before -rc2, so 2.6.22 or .23-rc1.
+
+Jarek P.
+
+PS: I've just read Marcin's messages - so, happily, it seems
+everybody's alive! Thanks.
