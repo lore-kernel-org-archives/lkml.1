@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXHFVnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbXHFVoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933289AbXHFVnx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 17:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXHFVnq
+	id S933605AbXHFVoX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 17:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXHFVoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 17:43:46 -0400
-Received: from gate.crashing.org ([63.228.1.57]:55769 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751664AbXHFVnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 17:43:45 -0400
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit
-	DMA	mapping"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olh@suse.de>
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
-       stable@kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070806115804.GA1734@suse.de>
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-	 <46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
-	 <1186272926.938.8.camel@localhost.localdomain>
-	 <46B5824B.1000103@s5r6.in-berlin.de>  <20070806115804.GA1734@suse.de>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 07:43:17 +1000
-Message-Id: <1186436597.938.71.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 6 Aug 2007 17:44:09 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1735 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753055AbXHFVoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 17:44:07 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] drivers/net/ibmveth.c: memset fix
+Date: Mon, 6 Aug 2007 23:44:03 +0200
+User-Agent: KMail/1.9.5
+Cc: brking@linux.vnet.ibm.com, santil@us.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200708062217.04361.m.kozlowski@tuxland.pl> <46B78672.9090808@linux.vnet.ibm.com> <46B78814.50508@pobox.com>
+In-Reply-To: <46B78814.50508@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708062344.03443.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 13:58 +0200, Olaf Hering wrote:
-> On Sun, Aug 05, Stefan Richter wrote:
-> 
-> > Benjamin Herrenschmidt wrote:
-> > >>> If setting 32-bit DMA mask fails on ppc64, that sounds like a problem
-> > >>> with the DMA implementation on that architecture. There are enough cards
-> > >>> out there that only support 32-bit DMA that this really needs to work..
-> > >> Yes, could the PPC folks please have a look at it?  Thanks.
-> > > 
-> > > Smells like we may have a bug there. No worries though, all current PPC
-> > > machines have an iommu that will not give out addresses above 32 bits
-> > > anyway, but I'll double check what's up.
-> > > 
-> > > Do you see something in dmesg when that happens ?
+> >> 	Looks like memset() is zeroing wrong nr of bytes.
 > > 
-> > There was nothing in Olaf's report, except for trouble in sbp2 _after_
-> > the failure.  http://lkml.org/lkml/2007/8/1/344  (I don't have a PMac.)
+> > Good catch, however, I think we can just remove this memset altogether
+> > since the memory gets allocated via kzalloc.
 > 
-> sbp2util_remove_command_orb_pool() does not check for lu->hi being NULL.
-> 
-> dev->dma_mask is NULL too, thats why dma_direct_dma_supported() returns
-> false, and dma_set_mask() will return -EIO.
+> Correct, that memset() is superfluous.
 
-Strange... PCI devices should never have a NULL dma mask. I wonder how
-we get there... 
+Ok. Then this should do it.
 
-Ben.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
+ drivers/net/ibmveth.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
+--- linux-2.6.23-rc1-mm2-a/drivers/net/ibmveth.c	2007-08-01 08:43:46.000000000 +0200
++++ linux-2.6.23-rc1-mm2-b/drivers/net/ibmveth.c	2007-08-06 23:32:13.000000000 +0200
+@@ -963,7 +963,7 @@ static int __devinit ibmveth_probe(struc
+ {
+ 	int rc, i;
+ 	struct net_device *netdev;
+-	struct ibmveth_adapter *adapter = NULL;
++	struct ibmveth_adapter *adapter;
+
+ 	unsigned char *mac_addr_p;
+ 	unsigned int *mcastFilterSize_p;
+@@ -997,7 +997,6 @@ static int __devinit ibmveth_probe(struc
+ 	SET_MODULE_OWNER(netdev);
+
+ 	adapter = netdev->priv;
+-	memset(adapter, 0, sizeof(adapter));
+ 	dev->dev.driver_data = netdev;
+
+ 	adapter->vdev = dev;
