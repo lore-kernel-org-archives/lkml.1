@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXHFWwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933380AbXHFWxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932768AbXHFWwe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763112AbXHFWwY
+	id S933380AbXHFWxY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763827AbXHFWxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:52:24 -0400
-Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:24306 "HELO
-	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761867AbXHFWwW (ORCPT
+	Mon, 6 Aug 2007 18:53:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:10385 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763112AbXHFWxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:52:22 -0400
-X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 18:52:22 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=sbcglobal.net;
-  h=Received:X-YMail-OSG:Mime-Version:Content-Type:Message-Id:Cc:Content-Transfer-Encoding:From:Subject:Date:To:X-Mailer;
-  b=piU05yk8ih2NNcBU9woND9jFs1uqfuvFrfii8uNtaMVz37dZ8GMbV/FdUQri2zeVHStfVdkvpzOW9UgNfS4xUI4uNeOluyRNyBrtsnaU0d8zTQNGIaffLiX5ZAiB9AvumL1gpiZl5j58r8itQUBN/8KaAA70GOEtYavqNmXY3wY=  ;
-X-YMail-OSG: 93go8o0VM1l7hbRJGmtI_D2u.AueoupBDPr8JflDSsVCw7vMdQHkzdTIz_IWfjFjQhgocHpjLbG96cujlbnPjYiz3jMNtjmz3D6mLI8Bo9M5Fg--
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <35B9865F-38B4-4603-A2B7-F4ABACE5520F@sbcglobal.net>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+	Mon, 6 Aug 2007 18:53:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=L/sar7werBGU0oi2jNduOHNLxekUYTpm2sH3imCyjTgKhQF5MALo4bQbIiudLerAAwImCRzjIgOvijZtNtKiUZaTob88XbngTBbi5Vk8UY/3tnN6Jk1f7RxMyzttABnlDqr+Pe19s0/ycAUTTLuBOWtV40hDh5UkDyIJ9CzfGs4=
+Message-ID: <b6a2187b0708061553q69f23586r770ae037c8c84c8d@mail.gmail.com>
+Date: Tue, 7 Aug 2007 06:53:14 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Linux 2.6.23-rc2
+Cc: "Indan Zupancic" <indan@nul.nu>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <46B75B79.3080604@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-From: Kevin K <k_krieser@sbcglobal.net>
-Subject: sending raw packets via PPP
-Date: Mon, 6 Aug 2007 17:45:39 -0500
-To: linux-ppp@vger.kernel.org
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>
+	 <1186317610.5220.3.camel@daplas>
+	 <b6a2187b0708050626s15e1b7did73f638046c0dba3@mail.gmail.com>
+	 <Pine.LNX.4.64.0708061739100.13469@fbirervta.pbzchgretzou.qr>
+	 <b6a2187b0708060906k643a8a20jcb3ac33259993517@mail.gmail.com>
+	 <39839.81.207.0.53.1186418772.squirrel@secure.samage.net>
+	 <46B75784.5030502@zytor.com>
+	 <59814.81.207.0.53.1186421522.squirrel@secure.samage.net>
+	 <46B75B79.3080604@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is it possible to send raw packets via ppp under Linux?
+On 8/7/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Indan Zupancic wrote:
+> >
+> > I thought he was using a VGA console, wouldn't that be in text mode?
+> >
+>
+> That is, exactly, the problem.  It should be, it's not.
 
-More specifically, in 2.4 series kernels such as RH's 2.4.21-47 kernel?
-
-I've trying to modify the DHCP 3.0.1 code provided with RH 3 so I can  
-send requests via a PPP connection (standard RS-232), and it is just  
-being dropped by the stack according to ifconfig and debug statements  
-in ppp_generic.c.
+The text-console is the VGA console right? I hope we're refering to
+the same thing. It's the first boot-up screen I get without going into
+X (startx). It's /dev/tty1.
 
 Thanks,
-Kevin
+Jeff.
