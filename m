@@ -1,64 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933435AbXHFXt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934291AbXHFXuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933435AbXHFXt1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933137AbXHFXtQ
+	id S934291AbXHFXuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933339AbXHFXuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:49:16 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52296 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S932623AbXHFXtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:49:15 -0400
-X-Authenticated: #4463548
-X-Provags-ID: V01U2FsdGVkX1/H9M5XbOjHsBovJbuYALfSWcmabugXxVmg04ecqG
-	6A3wB8Ar/Mzr5O
-Message-ID: <46B7C18E.1050008@gmx.net>
-Date: Tue, 07 Aug 2007 02:49:18 +0200
-From: Dimitrios Apostolou <jimis@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070301 SeaMonkey/1.0.8
+	Mon, 6 Aug 2007 19:50:08 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:45696
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933334AbXHFXuG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 19:50:06 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Date: Mon, 6 Aug 2007 16:49:55 -0700
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+References: <20070806102922.907530000@chello.nl> <200708061559.41680.phillips@phunq.net> <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: high system cpu load during intense disk i/o
-References: <200708031903.10063.jimis@gmx.net> <200708051903.12414.jimis@gmx.net> <46B60FB7.8030301@interia.pl> <200708052142.14630.jimis@gmx.net> <46B748DE.1060108@interia.pl> <46B773F6.7060603@gmx.net> <46B79CDE.2030709@interia.pl>
-In-Reply-To: <46B79CDE.2030709@interia.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708061649.56487.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafał Bilski wrote:
->> Hello Rafal,
-> Hello,
->> However I find it quite possible to have reached the throughput limit 
->> because of software (driver) problems. I have done various testing 
->> (mostly "hdparm -tT" with exactly the same PC and disks since about 
->> kernel 2.6.8 (maybe even earlier). I remember with certainty that read 
->> throughput the early days was about 50MB/s for each of the big disks, 
->> and combined with RAID 0 I got ~75MB/s. Those figures have been 
->> dropping gradually with each new kernel release and the situation 
->> today, with 2.6.22, is that hdparm gives maximum throughput 20MB/s for 
->> each disk, and for RAID 0 too!
-> Just tested (plain curiosity).
-> via82cxxx average result @533MHz:
-> /dev/hda:
-> Timing cached reads:   232 MB in  2.00 seconds = 115.93 MB/sec
-> Timing buffered disk reads:   64 MB in  3.12 seconds =  20.54 MB/sec
-> pata_via average result @533MHz:
-> /dev/sda:
-> Timing cached reads:   234 MB in  2.01 seconds = 116.27 MB/sec
-> Timing buffered disk reads:   82 MB in  3.05 seconds =  26.92 MB/sec
+On Monday 06 August 2007 16:14, Christoph Lameter wrote:
+> On Mon, 6 Aug 2007, Daniel Phillips wrote:
+> > Correct.  That is what the throttling part of these patches is
+> > about.
+>
+> Where are those patches?
 
-Interesting! I haven't tried libata myself on that system, I only have 
-remote access to it so I'm a bit afraid...
+Here is one user:
 
-Rafal, I hope that system you run hdparm on isn't the archlinux one! Is 
-it easy to load an old kernel (even two years old) and do the same test? 
-If it is, please let me know of the results.
+   http://zumastor.googlecode.com/svn/trunk/ddsnap/kernel/dm-ddsnap.c
+   down(&info->throttle_sem);
 
+Peter has another (swap over net).  A third is the network stack itself, 
+which is in the full patch set that Peter has posted a number of times 
+in the past but did not appear today because Peter broke the full patch 
+set up into multiple sets to make it all easier to understand.
 
-Thanks in advance,
-Dimitris
+> AFAICT: This patchset is not throttling processes but failing
+> allocations.
 
+Failing allocations?  Where do you see that?  As far as I can see, 
+Peter's patch set allows allocations to fail exactly where the user has 
+always specified they may fail, and in no new places.  If there is a 
+flaw in that logic, please let us know.
 
+What the current patch set actually does is allow some critical 
+allocations that would have failed or recursed into deadlock before to 
+succeed instead, allowing vm writeout to complete successfully.  You 
+may quibble with exactly how he accomplishes that, but preventing these 
+allocations from failing is not optional.
+
+> The patchset does not reconfigure the memory reserves as 
+> expected.
+
+What do you mean by that?  Expected by who?
+
+> Instead new reserve logic is added.
+
+Peter did not actually have to add a new layer of abstraction to 
+alloc_pages to impose order on the hardcoded hacks that currently live 
+in there to decide how far various callers can dig into reserves.  It 
+would probably help people understand this patch set if that part were 
+taken out for now and replaced with the original seat-of-the-pants two 
+line hack I had in the original.  But I do not see anything wrong with 
+what Peter has written there, it just takes a little more time to read.
+
+> And I suspect that we  
+> have the same issues as in earlier releases with various corner cases
+> not being covered.
+
+Do you have an example?
+
+> Code is added that is supposedly not used.
+
+What makes you think that?
+
+> If it  ever is on a large config then we are in very deep trouble by
+> the new code paths themselves that serialize things in order to give
+> some allocations precendence over the other allocations that are made
+> to fail ....
+
+You mean by allocating the reserve memory on the wrong node in NUMA?  
+That is on a code path that avoids destroying your machine performance 
+or killing the machine entirely as with current kernels, for which a 
+few cachelines pulled to another node is a small price to pay.  And you 
+are free to use your special expertise in NUMA to make those fallback 
+paths even more efficient, but first you need to understand what they 
+are doing and why.
+
+At your service for any more questions :-)
+
+Regards,
+
+Daniel
