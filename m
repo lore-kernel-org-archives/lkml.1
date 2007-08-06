@@ -1,188 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbXHFF5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760508AbXHFGHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759689AbXHFF5j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 01:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbXHFF5a
+	id S1760508AbXHFGHO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 02:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbXHFGG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 01:57:30 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:46597 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751594AbXHFF53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 01:57:29 -0400
-Date: Mon, 6 Aug 2007 11:27:18 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Jan Blunck <jblunck@suse.de>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 16/26] union-mount: Introduce union_mount structure
-Message-ID: <20070806055718.GA7489@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070730161323.100048969@weierstrass.suse.de> <20070730161324.628215686@weierstrass.suse.de>
-MIME-Version: 1.0
+	Mon, 6 Aug 2007 02:06:59 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:53359 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753121AbXHFGG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 02:06:57 -0400
+Date: Mon, 6 Aug 2007 08:07:24 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
+Subject: [patch (take 2)] genirq: fix simple and fasteoi irq handlers
+Message-ID: <20070806060723.GA981@ff.dom.local>
+References: <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070730161324.628215686@weierstrass.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070802201126.GA27000@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jul 30, 2007 at 06:13:39PM +0200, Jan Blunck wrote:
-> +
-> +int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
-> +		    struct vfsmount *dest_mnt, struct dentry *dest_dentry)
-> +{
-> +	struct union_mount *this, *um;
-> +
-> +	BUG_ON(!IS_MNT_UNION(mnt));
-> +
-> +	this = union_alloc(dentry, mnt, dest_dentry, dest_mnt);
-> +	if (!this)
-> +		return -ENOMEM;
-> +
-> +	spin_lock(&union_lock);
-> +	um = union_lookup(dentry, mnt);
-> +	if (um) {
-> +		BUG_ON((um->u_next.dentry != dest_dentry) ||
-> +		       (um->u_next.mnt != dest_mnt));
-> +		spin_unlock(&union_lock);
-> +		union_put(this);
-> +		return 0;
-> +	}
-> +	__union_hash(this);
-> +	spin_unlock(&union_lock);
-> +	return 0;
-> +}
+Hi,
 
-This breaks if we append to union stack from outside of the union.
-A particular case I hit is with a 3 layer union with a subdir union
-between topmost and bottom layer. Now if you create the same-named
-directory in the middle layer from outside of this union, you hit the
-above BUG_ON. The below patch fixes this and it applies on top of all of
-your patches.
+Sorry, guys! I tried to be so logical that I forgot to unmask my eyes.
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Regards,
+Jarek P.
+------------>
+(take 2)
 
-Direct additions to union stack from outside of the union is resulting in
-BUG_ON. But this is a valid case and hence needs to be supported. Modify
-append_to_union() to correctly handle this case.
+Subject: genirq: fix simple and fasteoi irq handlers
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+After the "genirq: do not mask interrupts by default" patch interrupts
+should be disabled not immediately upon request, but after they happen.
+But, handle_simple_irq() and handle_fasteoi_irq() can skip this once or
+more if an irq is just serviced (IRQ_INPROGRESS), possibly disrupting a
+driver's work.
+
+The main reason of problems here, pointing the broken patch and making
+the first patch which can fix this was done by Marcin Slusarz.
+Additional test patches of Thomas Gleixner and Ingo Molnar tested by
+Marcin Slusarz helped to narrow possible reasons even more. Thanks.
+
+PS: this patch fixes only one evident error here, but there could be
+more places affected by above-mentioned change in irq handling.
+
+PS 2:
+After rethinking, IMHO, there are two most probable scenarios here:
+
+1. After hw resend there could be a conflict between retriggered
+edge type irq and the next level type one: e.g. if this level type
+irq (io_apic is enabled then) is triggered while retriggered irq is
+serviced (IRQ_INPROGRESS) there is goto out with eoi, and probably
+the next such levels are triggered and looping, so probably kind of
+flood in io_apic until this retriggered edge service has ended. 
+2. There is something wrong with ioapic_retrigger_irq (less probable
+because this should be probably seen with 'normal' edge retriggers,
+but on the other hand, they could be less common).
+
+So, if there is #1, this fixed patch should work.
+
+But, since level types don't need this retriggers too much I think
+this "don't mask interrupts by default" idea should be rethinked:
+is there enough gain to risk such hard to diagnose errors?
+  
+So, IMHO, there should be at least possibility to turn this off for
+level types in config (it should be a visible option, so people could
+find & try this before writing for help or changing a network card).
+
+
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+
 ---
- fs/namei.c            |    8 +++++---
- fs/union.c            |   32 ++++++++++++++++++++++++--------
- include/linux/union.h |    4 ++--
- 3 files changed, 31 insertions(+), 13 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -512,7 +512,7 @@ static int __cache_lookup_union(struct n
- 		}
+diff -Nurp 2.6.23-rc1-/kernel/irq/chip.c 2.6.23-rc1/kernel/irq/chip.c
+--- 2.6.23-rc1-/kernel/irq/chip.c	2007-07-09 01:32:17.000000000 +0200
++++ 2.6.23-rc1/kernel/irq/chip.c	2007-08-05 21:49:46.000000000 +0200
+@@ -295,12 +295,11 @@ handle_simple_irq(unsigned int irq, stru
  
- 		/* now we know we found something "real"  */
--		append_to_union(last.mnt, last.dentry, nd->mnt, dentry);
-+		append_to_union(last.mnt, last.dentry, nd->mnt, dentry, 1);
+ 	spin_lock(&desc->lock);
  
- 		if (last.dentry != path->dentry)
- 			pathput(&last);
-@@ -789,7 +789,8 @@ static int __real_lookup_union(struct na
- 		}
+-	if (unlikely(desc->status & IRQ_INPROGRESS))
+-		goto out_unlock;
+ 	kstat_cpu(cpu).irqs[irq]++;
  
- 		/* now we know we found something "real" */
--		append_to_union(last.mnt, last.dentry, next.mnt, next.dentry);
-+		append_to_union(last.mnt, last.dentry,
-+				next.mnt, next.dentry, 1);
+ 	action = desc->action;
+-	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
++	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
++						 IRQ_DISABLED)))) {
+ 		if (desc->chip->mask)
+ 			desc->chip->mask(irq);
+ 		desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+@@ -318,6 +317,8 @@ handle_simple_irq(unsigned int irq, stru
  
- 		if (last.dentry != path->dentry)
- 			pathput(&last);
-@@ -1775,7 +1776,8 @@ static int __hash_lookup_union(struct na
- 		}
- 
- 		/* now we know we found something "real" */
--		append_to_union(last.mnt, last.dentry, next.mnt, next.dentry);
-+		append_to_union(last.mnt, last.dentry,
-+				next.mnt, next.dentry, 1);
- 
- 		if (last.dentry != path->dentry)
- 			pathput(&last);
---- a/fs/union.c
-+++ b/fs/union.c
-@@ -248,7 +248,8 @@ int is_unionized(struct dentry *dentry, 
+ 	spin_lock(&desc->lock);
+ 	desc->status &= ~IRQ_INPROGRESS;
++	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
++		desc->chip->unmask(irq);
+ out_unlock:
+ 	spin_unlock(&desc->lock);
  }
+@@ -392,18 +393,16 @@ handle_fasteoi_irq(unsigned int irq, str
  
- int append_to_union(struct vfsmount *mnt, struct dentry *dentry,
--		    struct vfsmount *dest_mnt, struct dentry *dest_dentry)
-+		    struct vfsmount *dest_mnt, struct dentry *dest_dentry,
-+		    int from_lookup)
- {
- 	struct union_mount *this, *um;
+ 	spin_lock(&desc->lock);
  
-@@ -264,11 +265,26 @@ int append_to_union(struct vfsmount *mnt
- 	spin_lock(&union_lock);
- 	um = union_lookup(dentry, mnt);
- 	if (um) {
--		BUG_ON((um->u_next.dentry != dest_dentry) ||
--		       (um->u_next.mnt != dest_mnt));
--		spin_unlock(&union_lock);
--		union_put(this);
--		return 0;
-+		if (um->u_next.dentry == dest_dentry &&
-+				um->u_next.mnt == dest_mnt) {
-+			spin_unlock(&union_lock);
-+			union_put(this);
-+			return 0;
-+		}
-+		if (from_lookup) {
-+			__union_unhash(um);
-+			list_del(&um->u_list);
-+			list_del(&um->u_unions);
-+			um->u_next.dentry->d_unionized--;
-+			spin_unlock(&union_lock);
-+			union_put(um);
-+			spin_lock(&union_lock);
-+		} else {
-+			BUG();
-+			spin_unlock(&union_lock);
-+			union_put(this);
-+			return 0;
-+		}
- 	}
- 	list_add(&this->u_list, &mnt->mnt_unions);
- 	list_add(&this->u_unions, &dentry->d_unions);
-@@ -451,7 +467,7 @@ int attach_mnt_union(struct vfsmount *mn
- 	if (!IS_MNT_UNION(mnt))
- 		return 0;
+-	if (unlikely(desc->status & IRQ_INPROGRESS))
+-		goto out;
+-
+ 	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
+ 	kstat_cpu(cpu).irqs[irq]++;
  
--	return append_to_union(mnt, mnt->mnt_root, dest_mnt, dest_dentry);
-+	return append_to_union(mnt, mnt->mnt_root, dest_mnt, dest_dentry, 0);
- }
+ 	/*
+-	 * If its disabled or no action available
++	 * If it's running, disabled or no action available
+ 	 * then mask it and get out of here:
+ 	 */
+ 	action = desc->action;
+-	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
++	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
++						 IRQ_DISABLED)))) {
+ 		desc->status |= IRQ_PENDING;
+ 		if (desc->chip->mask)
+ 			desc->chip->mask(irq);
+@@ -420,6 +419,8 @@ handle_fasteoi_irq(unsigned int irq, str
  
- void detach_mnt_union(struct vfsmount *mnt)
-@@ -941,7 +957,7 @@ struct dentry *union_create_topmost(stru
- 		UM_DEBUG_DENTRY(dentry);
+ 	spin_lock(&desc->lock);
+ 	desc->status &= ~IRQ_INPROGRESS;
++	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
++		desc->chip->unmask(irq);
+ out:
+ 	desc->chip->eoi(irq);
  
- 		res = append_to_union(nd->mnt, dentry, path->mnt,
--				      path->dentry);
-+				      path->dentry, 0);
- 		if (res) {
- 			dput(dentry);
- 			dentry = ERR_PTR(res);
---- a/include/linux/union.h
-+++ b/include/linux/union.h
-@@ -44,7 +44,7 @@ struct union_mount {
- 
- extern int is_unionized(struct dentry *, struct vfsmount *);
- extern int append_to_union(struct vfsmount *, struct dentry *,
--			   struct vfsmount *, struct dentry *);
-+			   struct vfsmount *, struct dentry *, int);
- extern int follow_union_down(struct vfsmount **, struct dentry **);
- extern int follow_union_mount(struct vfsmount **, struct dentry **);
- extern void __d_drop_unions(struct dentry *);
-@@ -65,7 +65,7 @@ extern int union_copyup(struct nameidata
- #define IS_UNION(x)			(0)
- #define IS_MNT_UNION(x)			(0)
- #define is_unionized(x, y)		(0)
--#define append_to_union(x1, y1, x2, y2)	({ BUG(); (0); })
-+#define append_to_union(x1, y1, x2, y2, z)	({ BUG(); (0); })
- #define follow_union_down(x, y)		({ (0); })
- #define follow_union_mount(x, y)	({ (0); })
- #define __d_drop_unions(x)		do { } while (0)
