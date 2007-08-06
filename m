@@ -1,42 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933453AbXHFN5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbXHFN5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933453AbXHFN5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764695AbXHFNy1
+	id S933218AbXHFN5n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932917AbXHFNyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:54:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36071 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932183AbXHFNyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:54:21 -0400
-Date: Mon, 6 Aug 2007 09:54:19 -0400
-Message-Id: <200708061354.l76DsJrB002280@dantu.rdu.redhat.com>
-From: Jeff Layton <jlayton@redhat.com>
-Subject: [PATCH 05/25] CIFS: call attr_kill_to_mode in cifs_setattr
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: linux-cifs-client@lists.samba.org
+	Mon, 6 Aug 2007 09:54:38 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:38511 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932691AbXHFNya (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:54:30 -0400
+Date: Mon, 6 Aug 2007 09:47:18 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070806094718.73a4539c@think.oraclecorp.com>
+In-Reply-To: <20070805150029.GB28263@thunk.org>
+References: <20070803123712.987126000@chello.nl>
+	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
+	<20070804063217.GA25069@elte.hu>
+	<20070804070737.GA940@elte.hu>
+	<20070804103347.GA1956@elte.hu>
+	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
+	<20070804163733.GA31001@elte.hu>
+	<p73hcnen7w2.fsf@bingen.suse.de>
+	<20070805150029.GB28263@thunk.org>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 5 Aug 2007 11:00:29 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
----
- fs/cifs/inode.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+> On Sun, Aug 05, 2007 at 02:26:53AM +0200, Andi Kleen wrote:
+> > I always thought the right solution would be to just sync atime only
+> > very very lazily. This means if a inode is only dirty because of an
+> > atime update put it on a "only write out when there is nothing to do
+> > or the memory is really needed" list.
+> 
+> As I've mentioend earlier, the memory balancing issues that arise when
+> we add an "atime dirty" bit scare me a little.  It can be addressed,
+> obviously, but at the cost of more code complexity.
 
-diff --git a/fs/cifs/inode.c b/fs/cifs/inode.c
-index dd41677..6fee1fa 100644
---- a/fs/cifs/inode.c
-+++ b/fs/cifs/inode.c
-@@ -1429,6 +1429,8 @@ int cifs_setattr(struct dentry *direntry, struct iattr *attrs)
- 	cifs_sb = CIFS_SB(direntry->d_inode->i_sb);
- 	pTcon = cifs_sb->tcon;
- 
-+	attr_kill_to_mode(direntry->d_inode, attrs);
-+
- 	if ((cifs_sb->mnt_cifs_flags & CIFS_MOUNT_NO_PERM) == 0) {
- 		/* check if we have permission to change attrs */
- 		rc = inode_change_ok(direntry->d_inode, attrs);
--- 
-1.5.2.2
+ext3 and reiser both use a dirty_inode method to make sure that we
+don't actually have dirty inodes.  This way, kswapd doesn't get stuck
+on the log and is able to do real work.
 
+It would be interesting to see a comparison of relatime with a kinoded
+that is willing to get stuck on the log.  The FS would need a few
+tweaks so that write_inode() could know if it really needed to log or
+not, but for testing you could just drop ext3_dirty_inode and have
+ext3_write_inode do real work.
+
+Then just change kswapd to kick a new kinoded and benchmark away.  A
+real patch would have to look for places where mark_inode_dirty was
+used and expected the dirty_inode callback to log things right away,
+but for testing its good enough.
+
+-chris
