@@ -1,45 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbXHFDUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762236AbXHFDZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761547AbXHFDUq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 23:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752132AbXHFDUh
+	id S1762236AbXHFDZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 23:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXHFDZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 23:20:37 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:33475 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbXHFDUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 23:20:36 -0400
-Date: Sun, 5 Aug 2007 20:20:31 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Thomas Gleixner <tglx@linutronix.de>,
-       RT <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH RT] put in a relatively high number for rcu read lock upper limit.
-Message-ID: <20070806032031.GE13916@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1186289484.636.5.camel@localhost.localdomain> <1186290332.636.8.camel@localhost.localdomain> <20070805065948.GB515@elte.hu> <Pine.LNX.4.58.0708051019560.8421@gandalf.stny.rr.com> <20070805150449.GA19418@linux.vnet.ibm.com> <1186328100.636.19.camel@localhost.localdomain> <20070805175310.GB3244@elte.hu>
+	Sun, 5 Aug 2007 23:25:13 -0400
+Received: from [212.12.190.118] ([212.12.190.118]:33426 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753351AbXHFDZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 23:25:12 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-fsdevel@vger.kernel.org
+Subject: [RFC] VFS: mnotify (was: [PATCH 00/23] per device dirty throttling -v8)
+Date: Mon, 6 Aug 2007 06:25:20 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070805175310.GB3244@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708060625.20917.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05, 2007 at 07:53:10PM +0200, Ingo Molnar wrote:
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > Paul and Ingo,
-> > 
-> > Should we just remove the upper limit check, or is something like this 
-> > patch sound?
-> 
-> i've changed the limit to 30 (the same depth limit is used by lockdep).
-> 
-> beyond that we could get stack overflow, etc.
+Jakob Oestergaard wrote:
+> Why on earth would you cripple the kernel defaults for ext3 (which is a
+> fine FS for boot/root filesystems), when the *fundamental* problem you
+> really want to solve lie much deeper in the implementation of the
+> filesystem?  Noatime doesn't solve the problem, it just makes it "less
+> horrible".
 
-Works for me!
+inotify could easily solve the atime problem, but it's got the drawback of 
+forcing the user to register each and every file/dir of interest, which 
+isn't really reasonable on TB-filesystems.
 
-						Thanx, Paul
+It could be feasible to introduce mnotify, which would notify the user of 
+meta changes, like atime, across the filesystem.  Something like mnotify 
+could also be helpful in CoW situations, provided it supported an in-sync 
+interface.
+
+
+Thanks!
+
+--
+Al
+
