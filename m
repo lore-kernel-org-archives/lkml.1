@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761767AbXHFHet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbXHFHoG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761767AbXHFHet (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 03:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbXHFHem
+	id S1760936AbXHFHoG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 03:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754795AbXHFHn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 03:34:42 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59384
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755294AbXHFHel (ORCPT
+	Mon, 6 Aug 2007 03:43:56 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:36899 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754489AbXHFHnz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 03:34:41 -0400
-Date: Mon, 06 Aug 2007 00:34:41 -0700 (PDT)
-Message-Id: <20070806.003441.41635922.davem@davemloft.net>
-To: jdi@l4x.org
-Cc: linux-kernel@vger.kernel.org, michal.k.k.piotrowski@gmail.com,
-       wli@holomorphy.com, chris@zankel.net, rth@twiddle.net
-Subject: Re: 2.6.23-rc2 cross compile regressions (alpha,sparc,xtensa)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <46B6CE6B.7010808@l4x.org>
-References: <46B6CE6B.7010808@l4x.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 6 Aug 2007 03:43:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mp3Z/TWILJQvFVv4M573UqEpg1DJL4E7HRgU1ISdmHVO1cpjTOZ8ptXrzB/0DwdAi+kI2I5MbxKkV6Kc4wPj/UXQ8apKMJMIMur+VdXPAiVI7mrexZ5mmt2ndmwunUnqH/nltVnzZosRu9jjyHKNgzPmxCIiuWwwPwK4cuCiuEA=
+Message-ID: <8734b7880708060043i125419e0w3db5d4431496985f@mail.gmail.com>
+Date: Mon, 6 Aug 2007 17:43:54 +1000
+From: "Lindsay Roberts" <lindsay.roberts.os@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH] fs: Add romfs version 2
+Cc: "Matt Mackall" <mpm@selenic.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
+In-Reply-To: <20070725184005.GD8225@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
+	 <20070717013635.d6d0b124.akpm@linux-foundation.org>
+	 <20070717192100.GE11166@waste.org>
+	 <8734b7880707172016v530ce775p108910f7baf9de8e@mail.gmail.com>
+	 <20070725184005.GD8225@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Dittmer <jdi@l4x.org>
-Date: Mon, 06 Aug 2007 09:31:55 +0200
+On 7/26/07, Pavel Machek <pavel@ucw.cz> wrote:
+> If the fs is read-only.. can we do some tail packing and get _both_
+> speed and space efficiency?
 
-> sparc/defconfig:
->   CC      init/main.o
-> In file included from include/linux/proc_fs.h:5,
->                  from init/main.c:14:
-> include/linux/fs.h:848: warning: `struct flock' declared inside parameter list
-> include/linux/fs.h:848: warning: its scope is only this definition or declaration, which is probably not what you want
-> include/linux/fs.h:850: warning: `struct flock' declared inside parameter list
-> include/linux/fs.h:853: warning: `struct flock64' declared inside parameter list
-> include/linux/fs.h:855: warning: `struct flock64' declared inside parameter list
-> init/main.c: In function `init_post':
-> init/main.c:782: error: `O_RDWR' undeclared (first use in this function)
-> init/main.c:782: error: (Each undeclared identifier is reported only once
-> init/main.c:782: error: for each function it appears in.)
-> make[2]: *** [init/main.o] Error 1
-> make[1]: *** [init] Error 2
-> make: *** [_all] Error 2
+You mean don't block align files of size less than 1k, and
+intelligently pack them into the gaps left by files that are aligned?
+Does seem that most noticeable performance issues occur on sequential
+reads of large files, this sounds like a good idea, but I would
+welcome comments on this.
 
-Fix below has already been submmited.
+Also I assume romfs currently has a small hidden benefit as a result
+of it storing its file data serially after the inode: the initial read
+of the inode reads and therefore caches the block containing the
+(initial) file data. Obviously with block aligned file data this only
+applies if sequential prefetching is performed. I'd be interested to
+know if this is an issue worth regarding.
 
-BTW, you'll have much better luck with reports like this if you
-direct them to the platform specific mailing list, which would
-be sparclinux@vger.kernel.org in this case.
-
-commit c8154c8a9aaf548ad91e413da8b319858e37bc52
-Author: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-Date:   Sat Aug 4 21:17:18 2007 -0700
-
-    [SPARC32]: Fix build.
-    
-    Correct incorrect removal of asm-generic/fcntl.h from asm-sparc/fcntl.h by
-    commit 6ba60d2195cd65d72eaf7ce3903a707c5bf20c7b.
-    
-    Signed-off-by: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
-
-diff --git a/include/asm-sparc/fcntl.h b/include/asm-sparc/fcntl.h
-index 7bbdfc7..5ec5463 100644
---- a/include/asm-sparc/fcntl.h
-+++ b/include/asm-sparc/fcntl.h
-@@ -32,5 +32,6 @@
- #define __ARCH_FLOCK_PAD	short __unused;
- #define __ARCH_FLOCK64_PAD	short __unused;
- 
-+#include <asm-generic/fcntl.h>
- 
- #endif
+-- Lindsay
