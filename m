@@ -1,65 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbXHFQOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbXHFQPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759937AbXHFQOs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 12:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752752AbXHFQOk
+	id S1762059AbXHFQPj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 12:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbXHFQPc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 12:14:40 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:18426 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752432AbXHFQOj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 12:14:39 -0400
-Message-ID: <46B748DE.1060108@interia.pl>
-Date: Mon, 06 Aug 2007 18:14:22 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+	Mon, 6 Aug 2007 12:15:32 -0400
+Received: from jan-robben.demon.nl ([83.160.142.71]:56679 "EHLO mail.robben.nu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbXHFQPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 12:15:31 -0400
+Message-ID: <46B7491F.2020105@gert.robben.nu>
+Date: Mon, 06 Aug 2007 18:15:27 +0200
+From: Gert Robben <lkml@gert.robben.nu>
+User-Agent: Icedove 1.5.0.12 (X11/20070607)
 MIME-Version: 1.0
-To: Dimitrios Apostolou <jimis@gmx.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: high system cpu load during intense disk i/o
-References: <200708031903.10063.jimis@gmx.net> <200708051903.12414.jimis@gmx.net> <46B60FB7.8030301@interia.pl> <200708052142.14630.jimis@gmx.net>
-In-Reply-To: <200708052142.14630.jimis@gmx.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: 5e5c4acc
+To: Takashi Iwai <tiwai@suse.de>
+CC: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       mjander@embedded.cl
+Subject: Re: [alsa-devel] PROBLEM: snd-au8830: dead after software suspend
+References: <46B3A4F5.2000708@gert.robben.nu>	<46B3C44D.7020801@gert.robben.nu>	<46B3CDA0.90804@gert.robben.nu> <s5h7io8er3n.wl%tiwai@suse.de>
+In-Reply-To: <s5h7io8er3n.wl%tiwai@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hello and thanks for your reply. 
-Hello again, 
-> The cron job that is running every 10 min on my system is mpop (a 
-> fetchmail-like program) and another running every 5 min is mrtg. Both 
-> normally finish within 1-2 seconds. 
-> 
-> The fact that these simple cron jobs don't finish ever is certainly because of 
-> the high system CPU load. If you see the two_discs_bad.txt which I attached 
-> on my original message, you'll see that *vmlinux*, and specifically the 
-> *scheduler*, take up most time. 
-> 
-> And the fact that this happens only when running two i/o processes but when 
-> running only one everything is absolutely snappy (not at all slow, see 
-> one_disc.txt), makes me sure that this is a kernel bug. I'd be happy to help 
-> but I need some guidance to pinpoint the problem. 
-In Your oprofile output I find "acpi_pm_read" particulary interesting. Unlike 
-other VIA chipsets, which I know, Your doesn't use VLink to connect northbridge 
-to southbridge. Instead PCI bus connects these two. As You probably know 
-maximal PCI throughtput is 133MiB/s. In theory. In practice probably less.
-ACPI registers are located on southbridge. This probably means that processor 
-needs access to PCI bus in order to read ACPI timer register.
-Now some math. 20GiB disk probably can send data at 20MiB/s rate. 200GiB 
-disk probably about 40MiB/s. So 20+2*40=100MiB/s. I think that this could 
-explain why simple inl() call takes so much time and why Your system isn't 
-very responsive.
-> Thanks, 
-> Dimitris
-Let me know if You find my theory amazing or amusing.
-Rafał
+Takashi Iwai wrote:
+> The below is an untested fix.  Give it a try.
+With the patch, things seem to be much better (but I'm no expert).
 
+The things remaining seem to be:
+- sound can't be heard
+- MPlayer gives an error, instead of doing nothing.
 
-----------------------------------------------------------------------
-Kobiety klamia o wiele skuteczniej niz mezczyzni.
-Sprawdz, jak sie na nich poznac
+I've enabled debugging, and did the following, without and with the patch:
+boot, mplayer start+pause, suspend, resume, mplayer unpause+exit+start+exit,
+rmmod.
 
->>>http://link.interia.pl/f1b16
+Below is an edited diff of the dmesges (printk's begin with a "k"),
+without and with the patch, with my comments added. I hope this is 
+enough info. If you need the full dmesges, let me know.
 
+Anyway, thanks for you work :)
+
+Gert Robben
+
+--- without patch
++++ with patch
+  initial boot:
+  k ACPI: PCI Interrupt 0000:00:11.0[A] -> GSI 19 (level, low) -> IRQ 19
+  k Vortex: init.... <3>ALSA sound/core/control.c:331: control 3:0:0:Play
+  k back PCM advanced processing:0 is already present
+  k done.
+-k PCI driver au8830 lacks driver specific resume support.
+  during suspend:
++k Vortex: shutdown...<6>done.
++k ACPI: PCI interrupt for device 0000:00:11.0 disabled
+  during resume:
++k PM: Writing back config space on device 0000:00:11.0 at offset 1 (was
+  k  2900007, writing 2900003)
+  k ACPI: PCI Interrupt 0000:00:11.0[A] -> GSI 19 (level, low) -> IRQ 19
++k Vortex: init.... <6>ata1.00: configured for UDMA/33
++k ALSA sound/core/control.c:331: control 3:0:0:Playback PCM advanced pr
+  k ocessing:0 is already present
++k done.
+  mplayer unpause:
++- gives mplayer error: alsa-lib: pcm_hw.c:612(snd_pcm_hw_pause) SNDRV_P
+    CM_IOCTL_PAUSE failed: File descriptor in bad state
+  - nothing else happens
+  mplayer exit:
++k vortex_adb_delroutes: route not found! 0x40
++k vortex_adb_delroutes: route not found! 0x2060
+  k src alarm
++k vortex_adb_delroutes: route not found! 0x41
++k vortex_adb_delroutes: route not found! 0x2161
+  k src alarm
+  mplayer start:
+-- nothing happens
++- mplayer seems to play fine, but no sound can be heard
+  rmmod:
+-k vortex: ac97 codec stuck busy
+-k vortex: ac97 codec stuck busy
+-k vortex: ac97 codec stuck busy
+-k vortex: ac97 codec stuck busy
+  k analog.c: 0 out of 0 reads (0%) on pci0000:00:11.0/gameport0 failed
+-k Vortex: shutdown...<3>mix ALARM 0
+-k mix ALARM 0
+-k mix ALARM 0
+-k mix ALARM 0
+-k mix ALARM 0
+-k mix ALARM 0
+-k done.
++k Vortex: shutdown...<6>done.
+  k ACPI: PCI interrupt for device 0000:00:11.0 disabled
