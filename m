@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933999AbXHFXAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934035AbXHFXBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933999AbXHFXAn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765586AbXHFXAZ
+	id S934035AbXHFXBX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763926AbXHFXBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:00:25 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41912 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765419AbXHFXAX (ORCPT
+	Mon, 6 Aug 2007 19:01:01 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:53056 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762263AbXHFXA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:00:23 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46B7A7E9.5080606@s5r6.in-berlin.de>
-Date: Tue, 07 Aug 2007 00:59:53 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.5) Gecko/20070804 SeaMonkey/1.1.3
+	Mon, 6 Aug 2007 19:00:59 -0400
+Message-ID: <46B7A7F4.2020205@zytor.com>
+Date: Mon, 06 Aug 2007 16:00:04 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Olaf Hering <olh@suse.de>, linuxppc-dev@ozlabs.org, stable@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce	32bit	DMA	mapping"
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no> <46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de> <1186272926.938.8.camel@localhost.localdomain> <46B5824B.1000103@s5r6.in-berlin.de> <1186351473.938.21.camel@localhost.localdomain> <20070806135124.GA2900@suse.de> <1186436848.938.75.camel@localhost.localdomain> <46B79F25.50205@s5r6.in-berlin.de> <46B79FD7.9020801@shaw.ca> <1186439529.938.95.camel@localhost.localdomain> <46B7A22D.4030909@shaw.ca>
-In-Reply-To: <46B7A22D.4030909@shaw.ca>
-X-Enigmail-Version: 0.95.1
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+CC: Indan Zupancic <indan@nul.nu>, Jan Engelhardt <jengelh@computergmbh.de>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.23-rc2
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>	 <b6a2187b0708050626s15e1b7did73f638046c0dba3@mail.gmail.com>	 <Pine.LNX.4.64.0708061739100.13469@fbirervta.pbzchgretzou.qr>	 <b6a2187b0708060906k643a8a20jcb3ac33259993517@mail.gmail.com>	 <39839.81.207.0.53.1186418772.squirrel@secure.samage.net>	 <46B75784.5030502@zytor.com>	 <59814.81.207.0.53.1186421522.squirrel@secure.samage.net>	 <46B75B79.3080604@zytor.com>	 <b6a2187b0708061553q69f23586r770ae037c8c84c8d@mail.gmail.com>	 <46B7A6B5.6000103@zytor.com> <b6a2187b0708061557i4471ed59n806e34e4296ad0a9@mail.gmail.com>
+In-Reply-To: <b6a2187b0708061557i4471ed59n806e34e4296ad0a9@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> I would agree, though, that sbp2 isn't really the place for setting
-> this, since the DMA mask is presently a property of the device, not of
-> the user..
+Jeff Chua wrote:
+> On 8/7/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+>> Does it show little penguins as the system boots?
+> 
+> No I don't have that. I'm not using a "splash" screen in grub2. And
+> funny thing is I don't get any problem up to 2.6.22.
+> 
 
-The mask that sbp2 set was because sbp2 has (in theory, not yet in
-practice) a _narrower requirement on address ranges than the chip_ ---
-hence it has (in theory) a narrower requirement on DMA mappings than the
-ohci1394 driver has.
+I asked you about AS THE KERNEL IS BOOTING, not what grub2 does.
 
-That's because sbp2 uses the controller in a special mode, as a bus
-bridge.  It is the only user of that feature among the higher-level IEEE
-1394 drivers.  No other IEEE 1394 application-layer software has this
-requirement.
+Anyway, I know you "didn't get any problems up to 2.6.22", which is why
+we're trying to debug this.
 
-(Well, debugging and forensic tools rely on that mode too, notably
-BenH's firescope, but this software runs remote, hence it's a different
-beast from sbp2.)
--- 
-Stefan Richter
--=====-=-=== =--- --===
-http://arcgraph.de/sr/
+Could you please post your dmesg output?
+
+	-hpa
