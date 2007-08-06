@@ -1,54 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765658AbXHFU44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764800AbXHFVFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765658AbXHFU44 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbXHFU4r
+	id S1764800AbXHFVFS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 17:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759140AbXHFVFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:56:47 -0400
-Received: from atlrel7.hp.com ([156.153.255.213]:47408 "EHLO atlrel7.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752350AbXHFU4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:56:47 -0400
-Message-ID: <46B78ADA.2000009@hp.com>
-Date: Mon, 06 Aug 2007 16:55:54 -0400
-From: Vlad Yasevich <vladislav.yasevich@hp.com>
-User-Agent: Thunderbird 2.0.0.4 (X11/20070604)
-MIME-Version: 1.0
-To: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-Cc: lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
-Subject: Re: [PATCH] SCTP: IPv4 mapped addr not returned in SCTPv6 accept()
-References: <18087.57737.908842.337891@zeus.sw.starentnetworks.com>	<46A8E027.10802@hp.com>	<18088.61269.5608.925496@zeus.sw.starentnetworks.com>	<46A8F926.1070606@hp.com> <18103.35100.916194.803006@zeus.sw.starentnetworks.com>
-In-Reply-To: <18103.35100.916194.803006@zeus.sw.starentnetworks.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Aug 2007 17:05:05 -0400
+Received: from ns1.coraid.com ([65.14.39.133]:13036 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757846AbXHFVFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 17:05:04 -0400
+From: "Ed L. Cashin" <ecashin@coraid.com>
+To: linux-kernel@vger.kernel.org
+Cc: ecashin@coraid.com, Greg K-H <greg@kroah.com>
+Date: Mon, 6 Aug 2007 16:56:13 -0400
+Subject: [PATCH] aoe: remove unecessary wrapper function
+Message-Id: <E1II9ji-0005jG-00@kokone.coraid.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Johnson wrote:
-> Vlad Yasevich writes:
->> Ok.  First, this is a different bug, so I would prefer a separate patch.
->> Also, I see the problem and it's ugly, but this solution is not really correct,
->> both conceptually and code wise.
->>
->> Conceptually, the v4 code should never worry about V4-mapped addresses and shouldn't
->> muck with them.  They are IPv6 addresses and there should be a clean separation.
->>
->> Code wise, the code in the __sctp_connect() is terrible.
->>
->> Does the attached patch work for you in this case.
-> 
-> Sorry about the confusion before, your patch to __sctp_connect()
-> fixes calls to getpeername() after connect() just fine.
-> 
-> I'll post a patch for the accept()/getpeername() case in a bit.
-> 
-> Acked-by: Dave Johnson <djohnson@sw.starentnetworks.com>
-> 
+We can just use skb_mac_header now, and we don't need
+a wrapper function to perform the cast.  Instead of
+requiring the reader to check aoe.h to look up what an
+aoe_hdr function does, I'd rather do without it.
+---
+ drivers/block/aoe/aoe.h    |    9 ---------
+ drivers/block/aoe/aoecmd.c |   14 +++++++-------
+ drivers/block/aoe/aoenet.c |    2 +-
+ 3 files changed, 8 insertions(+), 17 deletions(-)
 
-I had time to tinker and pushed both patches already.  They were in
-the last pull that Dave Miller did.  I also tested both patches locally
-to make sure that they worked as supposed to.
+diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
+index ba07f76..07f02f8 100644
+--- a/drivers/block/aoe/aoe.h
++++ b/drivers/block/aoe/aoe.h
+@@ -48,15 +48,6 @@ struct aoe_hdr {
+ 	__be32 tag;
+ };
+ 
+-#ifdef __KERNEL__
+-#include <linux/skbuff.h>
+-
+-static inline struct aoe_hdr *aoe_hdr(const struct sk_buff *skb)
+-{
+-	return (struct aoe_hdr *)skb_mac_header(skb);
+-}
+-#endif
+-
+ struct aoe_atahdr {
+ 	unsigned char aflags;
+ 	unsigned char errfeat;
+diff --git a/drivers/block/aoe/aoecmd.c b/drivers/block/aoe/aoecmd.c
+index 01fbdd3..8893a26 100644
+--- a/drivers/block/aoe/aoecmd.c
++++ b/drivers/block/aoe/aoecmd.c
+@@ -119,7 +119,7 @@ aoecmd_ata_rw(struct aoedev *d, struct frame *f)
+ 
+ 	/* initialize the headers & frame */
+ 	skb = f->skb;
+-	h = aoe_hdr(skb);
++	h = (struct aoe_hdr *) skb_mac_header(skb);
+ 	ah = (struct aoe_atahdr *) (h+1);
+ 	skb_put(skb, sizeof *h + sizeof *ah);
+ 	memset(h, 0, skb->len);
+@@ -208,7 +208,7 @@ aoecmd_cfg_pkts(ushort aoemajor, unsigned char aoeminor, struct sk_buff **tail)
+ 		skb->dev = ifp;
+ 		if (sl_tail == NULL)
+ 			sl_tail = skb;
+-		h = aoe_hdr(skb);
++		h = (struct aoe_hdr *) skb_mac_header(skb);
+ 		memset(h, 0, sizeof *h + sizeof *ch);
+ 
+ 		memset(h->dst, 0xff, sizeof h->dst);
+@@ -303,7 +303,7 @@ rexmit(struct aoedev *d, struct frame *f)
+ 	aoechr_error(buf);
+ 
+ 	skb = f->skb;
+-	h = aoe_hdr(skb);
++	h = (struct aoe_hdr *) skb_mac_header(skb);
+ 	ah = (struct aoe_atahdr *) (h+1);
+ 	f->tag = n;
+ 	h->tag = cpu_to_be32(n);
+@@ -532,7 +532,7 @@ aoecmd_ata_rsp(struct sk_buff *skb)
+ 	char ebuf[128];
+ 	u16 aoemajor;
+ 
+-	hin = aoe_hdr(skb);
++	hin = (struct aoe_hdr *) skb_mac_header(skb);
+ 	aoemajor = be16_to_cpu(get_unaligned(&hin->major));
+ 	d = aoedev_by_aoeaddr(aoemajor, hin->minor);
+ 	if (d == NULL) {
+@@ -564,7 +564,7 @@ aoecmd_ata_rsp(struct sk_buff *skb)
+ 	calc_rttavg(d, tsince(f->tag));
+ 
+ 	ahin = (struct aoe_atahdr *) (hin+1);
+-	hout = aoe_hdr(f->skb);
++	hout = (struct aoe_hdr *) skb_mac_header(f->skb);
+ 	ahout = (struct aoe_atahdr *) (hout+1);
+ 	buf = f->buf;
+ 
+@@ -698,7 +698,7 @@ aoecmd_ata_id(struct aoedev *d)
+ 
+ 	/* initialize the headers & frame */
+ 	skb = f->skb;
+-	h = aoe_hdr(skb);
++	h = (struct aoe_hdr *) skb_mac_header(skb);
+ 	ah = (struct aoe_atahdr *) (h+1);
+ 	skb_put(skb, sizeof *h + sizeof *ah);
+ 	memset(h, 0, skb->len);
+@@ -729,7 +729,7 @@ aoecmd_cfg_rsp(struct sk_buff *skb)
+ 	enum { MAXFRAMES = 16 };
+ 	u16 n;
+ 
+-	h = aoe_hdr(skb);
++	h = (struct aoe_hdr *) skb_mac_header(skb);
+ 	ch = (struct aoe_cfghdr *) (h+1);
+ 
+ 	/*
+diff --git a/drivers/block/aoe/aoenet.c b/drivers/block/aoe/aoenet.c
+index f9ddfda..d54bf3a 100644
+--- a/drivers/block/aoe/aoenet.c
++++ b/drivers/block/aoe/aoenet.c
+@@ -123,7 +123,7 @@ aoenet_rcv(struct sk_buff *skb, struct net_device *ifp, struct packet_type *pt,
+ 		goto exit;
+ 	skb_push(skb, ETH_HLEN);	/* (1) */
+ 
+-	h = aoe_hdr(skb);
++	h = (struct aoe_hdr *) skb_mac_header(skb);
+ 	n = be32_to_cpu(get_unaligned(&h->tag));
+ 	if ((h->verfl & AOEFL_RSP) == 0 || (n & 1<<31))
+ 		goto exit;
+-- 
+1.5.2.1
 
--vlad
