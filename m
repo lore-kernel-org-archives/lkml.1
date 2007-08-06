@@ -1,121 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765039AbXHFNnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765115AbXHFNsL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765039AbXHFNnB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760811AbXHFNmt
+	id S1765115AbXHFNsL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:48:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761539AbXHFNr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:42:49 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:7702 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbXHFNmr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:42:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=akf+E//J4FlPwZcoPqaaTQ04iVc34j3PYvj05d6mGXP2I70rZWYJhpZmGSoottoC059PgWMZMpkBN4tJncIcDRMnxoet8Oty87g0ef+SypXL1MLpuSFOY7mMQ7Xwx9dF5cw7sIJgJlGGPXAnfYvaItirZ1/WIEmr5iUGTwNnlbw=
-Message-ID: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com>
-Date: Mon, 6 Aug 2007 22:42:46 +0900
-From: "Joonwoo Park" <joonwpark81@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Kexec Mailing List" <kexec@lists.infradead.org>,
-       "Simon Arlott" <simon@fire.lp0.eu>
-Subject: [PATCH] kexec: fix pci device initialization fail after kexec (2.6.23-rc2). (Related to e1000 doesn't resume properly from standby)
-Cc: "Pavel Machek" <pavel@ucw.cz>, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       linux-pm@lists.linux-foundation.org, netdev@vger.kernel.org
+	Mon, 6 Aug 2007 09:47:56 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33494 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761706AbXHFNrz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:47:55 -0400
+Message-ID: <46B72688.8070303@redhat.com>
+Date: Mon, 06 Aug 2007 09:47:52 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jan Engelhardt <jengelh@computergmbh.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Few interrupts with NO_HZ
+References: <Pine.LNX.4.64.0708061247150.13469@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <Pine.LNX.4.64.0708061247150.13469@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-I think that the pci_set_power_state() has bug.
-The specification says that some delays is required.
+Jan Engelhardt wrote:
+> Hi,
+> 
+> 
+> this more of an informational question. So:
+> 
+> kernel version is 2.6.22.1 on i686
+> 
+> /proc/uptime 
+> 9917.81 9140.90 (2h45m)
+> 
+> /proc/cpuinfo:
+>            CPU0
+>   0:        282   IO-APIC-edge      timer
+> 
+> this is kinda neat, I expected much more interrupts than just 282 since 
+> boot. What kernel code actually uses the irq0 timer?
 
-Simon, please can I know whether it works to you?
-It is seems to the things are related.
+If you don't have an HPET (and most single-processor systems do not) the kernel 
+is probably using the PIT to wake the processor from low-power sleep states, 
+since the LAPIC timer is disabled in these states.  If your box is mostly idle, 
+you might want to use powertop to figure out why it's entering low power states 
+so infrequently.
 
-Joonwoo Park.
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 37c00f6..9f78064 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -493,8 +493,14 @@ pci_set_power_state(struct pci_dev *dev, pci_power_t state)
-   * restore at least the BARs so that the device will be
-   * accessible to its driver.
-   */
-- if (need_restore)
-+ if (need_restore) {
-+   /* The specification also says that "Must ensure that all of
-+    * its PCI signal drivers remain disabled for the duration of
-+    * the D3hot to D0 Uninitialized state transition".
-+    */
-+   msleep(10);
-    pci_restore_bars(dev);
-+ }
-
-  return 0;
- }
-
-
-2007/8/6, Simon Arlott <simon@fire.lp0.eu>:
-> On Mon, August 6, 2007 11:44, Pavel Machek wrote:
-> > Hi!
-> >
-> >> >00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet
-> >> >Controller (Copper) (rev 01)
-> >> >        Subsystem: Intel Corp.: Unknown device 1012
-> >> >        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
-> >> >        Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
-> >> >        I/O ports at b000 [size=64]
-> >> >        Capabilities: [dc] Power Management version 2
-> >> >        Capabilities: [e4] PCI-X non-bridge device.
-> >> >        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
-> >> >        Enable-
-> >> >
-> >> >00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet
-> >> >Controller (Copper) (rev 01)
-> >> >        Subsystem: Intel Corp.: Unknown device 1012
-> >> >        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
-> >> >        Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
-> >> >        I/O ports at b400 [size=64]
-> >> >        Capabilities: [dc] Power Management version 2
-> >> >        Capabilities: [e4] PCI-X non-bridge device.
-> >> >        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
-> >> >        Enable-
-> >> >
-> >> >[  950.132046] Stopping tasks ... done.
-> >> >[  950.459794] Suspending console(s)
-> >> >[  951.776277] pnp: Device 00:0c disabled.
-> >> >[  951.776673] pnp: Device 00:0a disabled.
-> >> >[  951.776984] pnp: Device 00:09 disabled.
-> >> >[  951.777306] pnp: Device 00:08 disabled.
-> >> >[  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
-> >> >[  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
-> >> >[  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
-> >> >[  952.022243] ACPI handle has no context!
-> >> >[  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
-> >> >[  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
-> >> >[  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
-> >> >[  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
-> >> >[  952.282221] ACPI handle has no context!
-> >> >[  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
-> >> >[  952.537495] ACPI handle has no context!
-> >> >
-> >> >[  956.857085] Back to C!
-> >
-> > Are you sure that is standby? Looks like suspend-to-RAM to me.
->
-> It's S1 (power-on suspend/standby), my BIOS/motherboard doesn't support S2 or S3.
->
-> --
-> Simon Arlott
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+	-- Chris
