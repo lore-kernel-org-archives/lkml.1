@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbXHFSaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932501AbXHFSbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932691AbXHFSaq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXHFSad
+	id S932501AbXHFSbw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:31:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXHFSbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:30:33 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4345 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755927AbXHFSac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:30:32 -0400
-Date: Mon, 6 Aug 2007 18:30:19 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Gautam Iyer <gautam@math.stanford.edu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Increased CPU usage after upgrading to 2.6.21
-Message-ID: <20070806183019.GA5761@ucw.cz>
-References: <20070718164347.GE9506@math.stanford.edu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070718164347.GE9506@math.stanford.edu>
-User-Agent: Mutt/1.5.9i
+	Mon, 6 Aug 2007 14:31:39 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:59387 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755190AbXHFSbg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 14:31:36 -0400
+To: jlayton@redhat.com
+CC: miklos@szeredi.hu, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, codalist@telemann.coda.cs.cmu.edu,
+       cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, zippel@linux-m68k.org,
+       xfs@oss.sgi.com, joel.becker@oracle.com, wli@holomorphy.com,
+       reiserfs-devel@vger.kernel.org, dhowells@redhat.com,
+       fuse-devel@lists.sourceforge.net, jffs-dev@axis.com,
+       user-mode-linux-user@lists.sourceforge.net,
+       v9fs-developer@lists.sourceforge.net, linux-ext4@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, ocfs2-devel@oss.oracle.com,
+       bfennema@falcon.csc.calpoly.edu
+In-reply-to: <20070806141333.0f54ab17.jlayton@redhat.com> (message from Jeff
+	Layton on Mon, 6 Aug 2007 14:13:33 -0400)
+Subject: Re: [fuse-devel] [PATCH 01/25] VFS: move attr_kill logic from
+ notify_change into helper function
+References: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com>
+	<E1II6cM-0004yj-00@dorka.pomaz.szeredi.hu> <20070806141333.0f54ab17.jlayton@redhat.com>
+Message-Id: <E1II7JR-0005BN-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 06 Aug 2007 20:28:17 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> > I agree with this change and fuse will make use of it as well.
+> > 
+> > Maybe instead of unconditionally moving attr_kill_to_mode() inside
+> > ->setattr() it could be made conditional based on an inode flag
+> > similarly to S_NOCMTIME.  Advantages:
+> > 
+> >  - no need to modify a lot of in-tree filesystems
+> >  - no silent breakage of out-of-tree fs
+> > 
+> > Actually I think the new flag would be used by exacly the same
+> > filesystems as S_NOCMTIME, so maybe it would make sense to rename
+> > S_NOCMTIME to something more generic (S_NOATTRUPDATE or whatever) and
+> > use that.
+> > 
+> > But that could still break out-of-tree fs, so a separate flag is
+> > probably better.
+> > 
+> 
+> In the past I've been told that adding new flags is something of a
+> "last resort". Since it's not strictly necessary to fix this then
+> it may be best to avoid that.
+> 
+> That said, if the concensus is that we need a transition mechanism,
+> then I'd be open to such a suggestion.
 
-> I recently upgraded from 2.6.19, and found the following issues:
-> 
->     1. 2.6.20 crashed and ran terribly on my system.
-> 
->     2. 2.6.21 runs on my system, but has a few issues: First, I noticed
->        that in 2.6.19 when my system was idle, Gkrellm would show my CPU
->        usage as 0%. In 2.6.21, when my system is idle, Gkrellm shows my
->        cpu usage as anything between 1 and 3%.
-> 
->        Second, I noticed that X sometimes crashes on resume (i.e. when I
->        wake my computer up after suspending to ram). Again, this happens
->        only *sometimes*, and is not consistently reproducible. I had no
->        issues with 2.6.19 (which I used for a long time).
-> 
->     3. For 2.6.22.1: The CPU usage issue is the same as above. I only
->        tested the kernel for a brief period of time (minutes), during
->        which I experienced no crash.
-> 
-> If you have any idea why my CPU usage is reported higher, please let me
-> know. I've attached the config files of both my kernels.
-> 
-> About the random crash: I'm not sure how to give you more info on it,
-> since I can't consistently reproduce it. Would you have any suggestions
-> on what I should do to trace the problem down?
+I think there's really no other choice here.
 
-Well, try suspend 50 times in a row to make it reproducible? Then try
-unloading modules...
+Your patch is changing the API in a very unsafe way, since there will
+be no error or warning on an unconverted fs.  And that could lead to
+security holes.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If we would rename the setattr method to setattr_new as well as
+changing it's behavior, that would be fine.  But I guess we do not
+want to do that.
+
+Miklos
