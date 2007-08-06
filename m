@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbXHFLNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763391AbXHFLRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763567AbXHFLNe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759337AbXHFLNY
+	id S1763391AbXHFLRU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXHFLRN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:13:24 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:53312 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958AbXHFLNX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:13:23 -0400
-Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of
-	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-In-Reply-To: <20070806102659.GB1875@elf.ucw.cz>
-References: <200708051906.22865.rjw@sisk.pl>
-	 <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
-	 <1186392591.28655.35.camel@johannes.berg>
-	 <20070806102659.GB1875@elf.ucw.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-mrJELG6XDpXKm7avtq0/"
-Date: Mon, 06 Aug 2007 13:15:17 +0200
-Message-Id: <1186398917.28655.69.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Mon, 6 Aug 2007 07:17:13 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55310 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752148AbXHFLRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:17:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Jeff Chua" <jeff.chua.linux@gmail.com>
+Subject: Re: Linux 2.6.23-rc2
+Date: Mon, 6 Aug 2007 13:26:25 +0200
+User-Agent: KMail/1.9.5
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "suspend-devel List" <suspend-devel@lists.sourceforge.net>
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com> <200708051847.12046.rjw@sisk.pl> <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com>
+In-Reply-To: <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708061326.25888.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday, 6 August 2007 02:36, Jeff Chua wrote:
+> On 8/6/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > What does 's2ram -i' say about your machine?
+> 
+> This machine can be identified by:
+>     sys_vendor   = "LENOVO"
+>     sys_product  = "1702E7A"
+>     sys_version  = "ThinkPad X60s"
+>     bios_version = "7BETD0WW (2.11 )"
 
---=-mrJELG6XDpXKm7avtq0/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This means it's not in the whitelist, AFAICS.
 
-On Mon, 2007-08-06 at 12:26 +0200, Pavel Machek wrote:
+Similar machines are known to work with "--acpi_sleep=3" or with
+"--acpi_sleep=1 --vbe_mode".
 
-> Well, so that it does not bitrot? This is few bytes, I'd say, and I
-> believe we have too many config options already.
+Greetings,
+Rafael
 
-This is not an option the user is ever going to see. I think I'd prefer
-having two new per-ARCH config symbols though:
-config SUSPEND_UP_POSSIBLE
-	depends on ARCH_SUSPEND_UP_POSSIBLE
 
-and then the architecture gets to define that when it can suspend.
-
-johannes
-
---=-mrJELG6XDpXKm7avtq0/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGtwLF/ETPhpq3jKURAlcOAJ9oVWMuve3lFO+jNDAUNnkXwDeGYQCeIQJR
-dXZuA0J+Jvb26OhTFAnG2Mc=
-=nD1a
------END PGP SIGNATURE-----
-
---=-mrJELG6XDpXKm7avtq0/--
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
