@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761521AbXHFC0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761619AbXHFCbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761521AbXHFC0U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 22:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753649AbXHFC0N
+	id S1761619AbXHFCbh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 22:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbXHFCba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 22:26:13 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:20789 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753330AbXHFC0L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 22:26:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LWQY8q66DwiPbQzGhosgF/8CHqyVwloaGY3pZ3vQth4zZCSIgunY02k77VZ+LQVi9BgBwUBCp/RT/vHdGMNhAM/mjKyEAP2OSDc9Meifx9khQtpvF/8fJ+mXz6KmESUYmMCwIzv3YuspP/Umpt1yEkp0/W0phSf95m7bF9Ns+q8=
-Message-ID: <8bd0f97a0708051926l63718982l4c991aebd817c94b@mail.gmail.com>
-Date: Sun, 5 Aug 2007 22:26:10 -0400
-From: "Mike Frysinger" <vapier.adi@gmail.com>
-To: bryan.wu@analog.com
-Subject: Re: [GIT PULL] Blackfin arch update for 2.6.23
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <1186366246.5609.4.camel@roc-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 5 Aug 2007 22:31:30 -0400
+Received: from mga02.intel.com ([134.134.136.20]:33967 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753179AbXHFCb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 22:31:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,223,1183359600"; 
+   d="scan'208";a="275035683"
+Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based
+	hibernation
+From: "Huang, Ying" <ying.huang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Kexec Mailing List <kexec@lists.infradead.org>
+In-Reply-To: <20070805185558.GE1758@elf.ucw.cz>
+References: <1184483593.1898.98.camel@caritas-dev.intel.com>
+	 <20070731110458.GA1777@elf.ucw.cz>
+	 <1185932071.1363.13.camel@caritas-dev.intel.com>
+	 <20070805185558.GE1758@elf.ucw.cz>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1186318969.16030.2.camel@roc-laptop>
-	 <8bd0f97a0708051904n294d5955r4dd801ca6b38b5a8@mail.gmail.com>
-	 <1186366246.5609.4.camel@roc-desktop>
+Date: Mon, 06 Aug 2007 10:31:26 +0800
+Message-Id: <1186367486.527.5.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 06 Aug 2007 02:31:21.0340 (UTC) FILETIME=[E03A43C0:01C7D7D1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/5/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> On Sun, 2007-08-05 at 22:04 -0400, Mike Frysinger wrote:
-> > On 8/5/07, Bryan Wu <bryan.wu@analog.com> wrote:
-> > > Bryan Wu (4):
-> > >       Blackfin SPI driver: Initial supporting BF54x in SPI driver
-> > >
-> > > Michael Hennerich (11):
-> > >       Blackfin arch: store labels so we later know who allocated GPIO/Peripheral resources
-> > >       Blackfin arch: add peripheral resource allocation support
-> > >       Blackfin arch: Add label to call new GPIO API
-> > >       Blackfin SPI driver: Make BF54x SPI work and add support for  portmux API
-> > >       Blackfin SPI driver: use new GPIO API and add error handling
-> >
-> > i think this is the sort of thing Linus wants left for initial merge windows ?
-> > -mike
->
-> Actually, this GPIO API has been added to the upstream in -RC1. In this
-> pull, Michael's patch just enable it in arch code and driver. And it is
-> tested at least 2-3 weeks, I think it is OK for the -RC merge.
->
-> And most our driver things are moved to depend on this new GPIO API. I
-> just wanna make thing easier to maintain.
+On Sun, 2007-08-05 at 20:55 +0200, Pavel Machek wrote:
+> Did the trick, I got the kernel to load, and it even attempted
+> exec... but I got doublefault (or what is it?)
+> 
+> Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
+> 
+> Do I have to disable ACPI completely? I tried with acpi=off,
+> nosmp... but problem does not seem device related.
 
-i was referring to the SPI stuff, not GPIO
--mike
+It seems that the problem has nothing to do with device or ACPI. Can you
+do a normal kexec? That is:
+
+kexec -l <...>
+kexec -e
+
+or 
+
+kexec -p <...>
+ALT-SysRq-c to trigger a crash dump.
+
+Best Regards,
+Huang Ying
