@@ -1,42 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbXHFKSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763594AbXHFKU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763576AbXHFKSR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbXHFKSF
+	id S1763594AbXHFKU0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762414AbXHFKUM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:18:05 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:36792 "EHLO smtp2.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762414AbXHFKSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:18:04 -0400
-Date: Mon, 6 Aug 2007 13:18:03 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-In-Reply-To: <200708051912.17342.rjw@sisk.pl>
-Message-ID: <Pine.SOC.4.64.0708061314380.7974@math.ut.ee>
-References: <Pine.SOC.4.64.0708041425020.26419@math.ut.ee> <200708050010.19338.rjw@sisk.pl>
- <Pine.SOC.4.64.0708051217340.11960@math.ut.ee> <200708051912.17342.rjw@sisk.pl>
+	Mon, 6 Aug 2007 06:20:12 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:42886 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762047AbXHFKUK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:20:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ELVZNCYkn+DNEXzQhKZ0KQOHZ54fuuZznMRiCJZqK1gaWiWt/NbDue5ZFKSeBXDcHtVQ8E9OqAL5ESz8PPY0qGeby26ZJVtFm14NgAArSw0475iz9cz5830A7IX5Dqm7dSU90qnrs4wZbG8OY6qgR/uf1yILuwE1a6v1rceX9I4=
+Message-ID: <1a297b360708060320m2e9aa419n1f043fb18d987850@mail.gmail.com>
+Date: Mon, 6 Aug 2007 14:20:10 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: [PATCH] msleep() with hrtimers
+Cc: "Arjan van de Ven" <arjan@infradead.org>,
+       "Jonathan Corbet" <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       "Thomas Gleixner" <tglx@linutronix.de>, akpm@linux-foundation.org,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0708061159370.1817@scrub.home>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <15327.1186166232@lwn.net>
+	 <Pine.LNX.4.64.0708032152060.1817@scrub.home>
+	 <1186185229.3153.11.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708040345530.1817@scrub.home>
+	 <1186255149.2777.3.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060150270.1817@scrub.home>
+	 <1186360983.2697.8.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060257010.1817@scrub.home>
+	 <1186378798.2697.10.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708061159370.1817@scrub.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm, with this .config SUSPEND_SMP cannot be set, because SMP is unset in it.
-> 
-> Can you please check if this warning is still present with the patch from
-> http://marc.info/?l=linux-kernel&m=118633307113052&w=2 applied?
+On 8/6/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+> Hi,
+>
+> On Sun, 5 Aug 2007, Arjan van de Ven wrote:
+>
+> > > There's no problem to provide a high resolution sleep, but there is also
+> > > no reason to mess with msleep, don't fix what ain't broken...
+> >
+> > John Corbet provided the patch because he had a problem with the current
+> > msleep... in that it didn't provide as good a common case as he
+> > wanted... so I think your statement is wrong ;)
+>
+> Only under the assumptation, that msleep _must_ be "fixed" for all other
+> current users too.
+> Give users a choice to use msleep or nanosleep, how do you know what's
+> "best" for them?
+>
 
-Hmm, does not apply to 2.6.23-rc2:
-2 out of 2 hunks FAILED -- saving rejects to file kernel/power/Kconfig.rej
-1 out of 1 hunk FAILED -- saving rejects to file arch/x86_64/Kconfig.rej
-1 out of 1 hunk FAILED -- saving rejects to file arch/arm/Kconfig.rej
-1 out of 1 hunk FAILED -- saving rejects to file arch/i386/Kconfig.rej
-1 out of 1 hunk FAILED -- saving rejects to file arch/powerpc/Kconfig.rej
+You mean to say, the granularity of msleep is in mS with a tolerance
+of +/- "n" mS whereas nanosleep would have the tolerance in nS ?
+(ignoring all the discussions about hrtimers and their internal
+design)
 
-It doesn't seem to touch arch/ppc/Kconfig but only arch/powerpc/Kconfig 
-- should it make any difference at all?
+I guess many people are/were confused on the aspect that, a msleep(1)
+meant sleep for a 1mS and nothing more. Well, this would explain, some
+of my hair raising incidents, if i understood you correctly.
 
--- 
-Meelis Roos (mroos@linux.ee)
+Since it is such a confusion, maybe it needs to be documented some
+place, that people don't fall into the same trap.
+
+Manu
