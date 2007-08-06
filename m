@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932496AbXHFTXO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760159AbXHFTbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932496AbXHFTXO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:23:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbXHFTWz
+	id S1760159AbXHFTbU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbXHFTbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:22:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46796 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753610AbXHFTWy (ORCPT
+	Mon, 6 Aug 2007 15:31:10 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:38285
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754329AbXHFTbJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:22:54 -0400
-Date: Mon, 6 Aug 2007 12:22:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: Mel Gorman <mel@csn.ul.ie>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] wait for page writeback when directly reclaiming
- contiguous areas
-Message-Id: <20070806122204.924fa0e9.akpm@linux-foundation.org>
-In-Reply-To: <7bdbf266c3f68dc57a9cf7469c2652a5@pinky>
-References: <exportbomb.1186077923@pinky>
-	<7bdbf266c3f68dc57a9cf7469c2652a5@pinky>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Aug 2007 15:31:09 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 00/10] foundations for reserve-based allocation
+Date: Mon, 6 Aug 2007 12:31:04 -0700
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+References: <20070806102922.907530000@chello.nl> <200708061035.18742.phillips@phunq.net> <1186424248.11797.66.camel@lappy>
+In-Reply-To: <1186424248.11797.66.camel@lappy>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708061231.04982.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 02 Aug 2007 19:18:43 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+On Monday 06 August 2007 11:17, Peter Zijlstra wrote:
+> And how do we know a page was taken out of the reserves?
 
-> @@ -458,8 +475,15 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  		if (page_mapped(page) || PageSwapCache(page))
->  			sc->nr_scanned++;
->  
-> -		if (PageWriteback(page))
-> -			goto keep_locked;
-> +		may_enter_fs = (sc->gfp_mask & __GFP_FS) ||
-> +			(PageSwapCache(page) && (sc->gfp_mask & __GFP_IO));
-> +
-> +		if (PageWriteback(page)) {
-> +			if (sync_writeback == PAGEOUT_IO_SYNC && may_enter_fs)
-> +				wait_on_page_writeback(page);
-> +			else
-> +				goto keep_locked;
-> +		}
+Why not return that in the low bit of the page address?  This is a 
+little more cache efficient, does not leave that odd footprint in the 
+page union and forces the caller to examine the 
+alloc_pages(...P_MEMALLOC) return, making it harder to overlook the 
+fact that it got a page out of reserve and forget to put one back 
+later.
 
-this bit could do with a comment explaining the design decisions, please.
+Regards,
+
+Daniel
