@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761819AbXHFUER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbXHFUJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761819AbXHFUER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764572AbXHFUDu
+	id S1763567AbXHFUJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:09:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbXHFUJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:03:50 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:55011 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763606AbXHFUDr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:03:47 -0400
-X-Greylist: delayed 1631 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 16:03:45 EDT
-Date: Mon,  6 Aug 2007 21:36:15 +0200
-Message-Id: <JMDAGF$E41775B89CFE6CA59D87D92B60DD7A0B@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+	Mon, 6 Aug 2007 16:09:20 -0400
+Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1761 "EHLO
+	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752140AbXHFUJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:09:19 -0400
+From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Subject: [PATCH] drivers/media/video/arv.c: fix memset in ioctl
+Date: Mon, 6 Aug 2007 22:09:17 +0200
+User-Agent: KMail/1.9.5
+Cc: v4l-dvb-maintainer@linuxtv.org, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "mingo" <mingo@elte.hu>
-Cc: "cebbert" <cebbert@redhat.com>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>, "jarkao2" <jarkao2@o2.pl>,
-       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
-       "alan" <alan@lxorguk.ukuu.org.uk>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 82.230.172.5
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708062209.17830.m.kozlowski@tuxland.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > Before, they would print:
-> > 
-> > eth0: transmit timed out, tx_status 00 status e601.
-> >   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
-> > eth0: Interrupt posted but not delivered -- IRQ blocked by another device?
-> >   Flags; bus-master 1, dirty 295757(13) current 295757(13)
-> >   Transmit list 00000000 vs. f7150a20.
-> >   0: @f7150200  length 80000070 status 0c010070
-> >   1: @f71502a0  length 80000070 status 0c010070
-> >   2: @f7150340  length 8000005c status 0c01005c
-> > 
-> > Now they just work, apparently...
-> 
-> could you please try the patch below? If this doesnt do the trick then i 
-> guess we need to revert that change.
+Hello,
 
-I confirm that the latest fedora kernel 2.6.22.1-41.fc7 (with the removal of [PATCH] genirq: do not mask interrupts by default) still work on my machine for 3 days.
+	Looks like memset() is zeroing wrong nr of bytes.
 
-Atm I'm still stressing the network (2 * 3com cards + 1 onboard nvidia card) to be sure.
+Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
 
-Jb
+ drivers/media/video/arv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-
-
+--- linux-2.6.23-rc1-mm2-a/drivers/media/video/arv.c	2007-08-01 08:43:47.000000000 +0200
++++ linux-2.6.23-rc1-mm2-b/drivers/media/video/arv.c	2007-08-06 20:36:00.000000000 +0200
+@@ -441,7 +441,7 @@ static int ar_do_ioctl(struct inode *ino
+ 	{
+ 		struct video_window *w = arg;
+ 		DEBUG(1, "VIDIOCGWIN:\n");
+-		memset(w, 0, sizeof(w));
++		memset(w, 0, sizeof(*w));
+ 		w->width = ar->width;
+ 		w->height = ar->height;
+ 		return 0;
