@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765566AbXHFVs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764237AbXHFVzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765566AbXHFVs7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 17:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757501AbXHFVsr
+	id S1764237AbXHFVzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 17:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756242AbXHFVzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 17:48:47 -0400
-Received: from elasmtp-spurfowl.atl.sa.earthlink.net ([209.86.89.66]:36714
-	"EHLO elasmtp-spurfowl.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758186AbXHFVsq (ORCPT
+	Mon, 6 Aug 2007 17:55:44 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:33837 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754222AbXHFVzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 17:48:46 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=D8XKvaQ4V+Y+zyOC3EOOh5Nf358FAaytjSpwyzZXFxhB9LjVgmpOZumdHUe3Gjgg;
-  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <000b01c7d873$76ce03c0$6501a8c0@earthlink.net>
-Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
-From: "Mitchell Erblich" <erblichs@earthlink.net>
-To: "Rene Herman" <rene.herman@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "\"T. J. Brumfield\"" <enderandrew@gmail.com>
-Subject: Re: about modularization
-Date: Mon, 6 Aug 2007 14:48:01 -0700
+	Mon, 6 Aug 2007 17:55:44 -0400
+Date: Mon, 6 Aug 2007 22:55:41 +0100
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Lee.Schermerhorn@hp.com,
+       clameter@sgi.com, kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Apply memory policies to top two highest zones when highest zone is ZONE_MOVABLE
+Message-ID: <20070806215541.GC6142@skynet.ie>
+References: <20070802172118.GD23133@skynet.ie> <200708040002.18167.ak@suse.de> <20070806121558.e1977ba5.akpm@linux-foundation.org> <200708062231.49247.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1106
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
-X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec796def738cda18bc701921b999a9856f94350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.164.93.68
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <200708062231.49247.ak@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rene,
+On (06/08/07 22:31), Andi Kleen didst pronounce:
+> 
+> > If correct, I would suggest merging the horrible hack for .23 then taking
+> > it out when we merge "grouping pages by mobility".  But what if we don't do
+> > that merge?
+> 
+> Or disable ZONE_MOVABLE until it is usable?
 
-    Of the uni-processor systems currently that can run Linux, I would not
-    doubt if  99.9999% percent are uni-cores. It will be probably
-    3-5 years minimum before the multi-core processors will have any
-    decent percentage of systems.
+It's usable now. The issue with policies only occurs if the user specifies
+kernelcore= or movablecore= on the command-line. Your language suggests
+that you believe policies are not applied when ZONE_MOVABLE is configured
+at build-time.
 
-    And I am not suggesting not supporting them. I am only suggesting
-   is wrt the schedular, bring the system up with a default schedular,
-   and then load additional functionality based on the hardware/software
-    requirements of the system.
+> I don't think we have the
+> infrastructure to really use it anyways, so it shouldn't make too much difference
+> in terms of features. And it's not that there is some sort of deadline
+> around for it. 
+> 
+> Or mark it CONFIG_EXPERIMENTAL with a warning that it'll break NUMA. But disabling 
+> is probably better.
+> 
 
-    Thus, the fallout MIGHT be a uni-processor CFS that would not migrate
-    tasks between multiple CPUs and as additional processors are brought
-    online, migration could be enabled, and gang type scheduling,  whatever
-    could be then used.
+Saying it breaks NUMA is a excessively strong language. It doesn't break
+policies in that they still get applied to the highest zone. If kernelcore=
+or movablecore= is not specified, the behaviour doesn't change.
 
+> Then for .24 or .25 a better solution can be developed.
+> 
 
-    IMO, if their is a fault (because of heat, etc) the user would rather
-bring
-    up the system in a degraded mode. Same reason applies to...
-    boot -s..
+The better solution in my mind is to always filter the zonelist instead
+of applying them only for MPOL_BIND zonelists as the hack does.
 
-    Mitchell Erblich
-------------------------------
+> I would prefer that instead of merging bandaid horrible hacks -- they have
+> a tendency to stay around.
 
-
-Rene Herman wrote:
->
-> On 08/06/2007 10:20 PM, Mitchell Erblich wrote:
->
-> >     Thus, a hybrid schedular approach could be taken
-> >     that would default to a single uni-processor schedular
->
-> What a brilliant idea in a world where buying a non multi core CPU is
-> getting to be only somewhat easier than a non SMT one...
->
-> Rene.
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
