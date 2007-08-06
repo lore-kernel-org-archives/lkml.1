@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763370AbXHFKox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763873AbXHFKpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763370AbXHFKox (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932249AbXHFKod
+	id S1763873AbXHFKpY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932252AbXHFKoe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:44:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57491 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 06:44:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57494 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932203AbXHFKoc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:44:32 -0400
-Message-Id: <20070806103659.119700000@chello.nl>
-References: <20070806102922.907530000@chello.nl>
+	id S932228AbXHFKod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:44:33 -0400
+Message-Id: <20070806102922.907530000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 06 Aug 2007 12:29:29 +0200
+Date: Mon, 06 Aug 2007 12:29:22 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,76 +22,49 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Steve Dickson <SteveD@redhat.com>
-Subject: [PATCH 07/10] mm: allow PF_MEMALLOC from softirq context
-Content-Disposition: inline; filename=mm-PF_MEMALLOC-softirq.patch
+Subject: [PATCH 00/10] foundations for reserve-based allocation
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow PF_MEMALLOC to be set in softirq context. When running softirqs from
-a borrowed context save current->flags, ksoftirqd will have its own 
-task_struct.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/sched.h |    4 ++++
- kernel/softirq.c      |    3 +++
- mm/page_alloc.c       |    7 ++++---
- 3 files changed, 11 insertions(+), 3 deletions(-)
+In the interrest of getting swap over network working and posting in smaller
+series, here is the first series.
 
-Index: linux-2.6-2/mm/page_alloc.c
-===================================================================
---- linux-2.6-2.orig/mm/page_alloc.c
-+++ linux-2.6-2/mm/page_alloc.c
-@@ -1239,9 +1239,10 @@ int gfp_to_alloc_flags(gfp_t gfp_mask)
- 		alloc_flags |= ALLOC_HARDER;
- 
- 	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
--		if (!in_interrupt() &&
--		    ((p->flags & PF_MEMALLOC) ||
--		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+		if (!in_irq() && (p->flags & PF_MEMALLOC))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+		else if (!in_interrupt() &&
-+				unlikely(test_thread_flag(TIF_MEMDIE)))
- 			alloc_flags |= ALLOC_NO_WATERMARKS;
- 	}
- 
-Index: linux-2.6-2/kernel/softirq.c
-===================================================================
---- linux-2.6-2.orig/kernel/softirq.c
-+++ linux-2.6-2/kernel/softirq.c
-@@ -211,6 +211,8 @@ asmlinkage void __do_softirq(void)
- 	__u32 pending;
- 	int max_restart = MAX_SOFTIRQ_RESTART;
- 	int cpu;
-+	unsigned long pflags = current->flags;
-+	current->flags &= ~PF_MEMALLOC;
- 
- 	pending = local_softirq_pending();
- 	account_system_vtime(current);
-@@ -249,6 +251,7 @@ restart:
- 
- 	account_system_vtime(current);
- 	_local_bh_enable();
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
- }
- 
- #ifndef __ARCH_HAS_DO_SOFTIRQ
-Index: linux-2.6-2/include/linux/sched.h
-===================================================================
---- linux-2.6-2.orig/include/linux/sched.h
-+++ linux-2.6-2/include/linux/sched.h
-@@ -1336,6 +1336,10 @@ static inline void put_task_struct(struc
- #define tsk_used_math(p) ((p)->flags & PF_USED_MATH)
- #define used_math() tsk_used_math(current)
- 
-+#define tsk_restore_flags(p, pflags, mask) \
-+	do {	(p)->flags &= ~(mask); \
-+		(p)->flags |= ((pflags) & (mask)); } while (0)
-+
- #ifdef CONFIG_SMP
- extern int set_cpus_allowed(struct task_struct *p, cpumask_t new_mask);
- #else
+This series lays the foundations needed to do reserve based allocation.
+Traditionally we have used mempools (and others like radix_tree_preload) to
+handle the problem.
+
+However this does not fit the network stack. It is built around variable
+sized allocations using kmalloc().
+
+This calls for a different approach.
+
+We want a guarantee for N bytes from kmalloc(), this translates to a demand
+on the slab allocator for 2*N+m (due to the power-of-two nature of kmalloc 
+slabs), where m is the meta-data needed by the allocator itself.
+
+The slab allocator then puts a demand of P pages on the page allocator.
+
+So we need functions translating our demanded kmalloc space into a page
+reserve limit, and then need to provide a reserve of pages.
+
+And we need to ensure that once we hit the reserve, the slab allocator honours
+the reserve's access. That is, a regular allocation may not get objects from
+a slab allocated from the reserves.
+
+There is already a page reserve, but it does not fully comply with our needs.
+For example, it does not guarantee a strict level (due to the relative nature
+of ALLOC_HIGH and ALLOC_HARDER). Hence we augment this reserve with a strict
+limit.
+
+Furthermore a new __GFP flag is added to allow easy access to the reserves
+along-side the existing PF_MEMALLOC.
+
+Users of this infrastructure will need to do the necessary bean counting to
+ensure they stay within the requested limits.
+
+NOTE: I have currently only implemented SLUB support, I'm still hoping
+at least one of the others will die soon and save me the trouble.
 
 --
 
