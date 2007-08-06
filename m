@@ -1,73 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXHFLHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764864AbXHFLIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932358AbXHFLHq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764132AbXHFLG6
+	id S1764864AbXHFLIi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764368AbXHFLIY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:06:58 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49320 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759225AbXHFLG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:06:57 -0400
-Date: Mon, 6 Aug 2007 11:55:04 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Len Brown <lenb@kernel.org>
-Cc: trenn@suse.de, Andi Kleen <andi@firstfloor.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
-       mjg59@srcf.ucam.org
-Subject: Re: 2.6.22 regression: thermal trip points
-Message-ID: <20070806095504.GA1934@elf.ucw.cz>
-References: <46B1988C.3090302@t-online.de> <20070802183830.GA4192@one.firstfloor.org> <1186139818.18821.590.camel@queen.suse.de> <200708031459.07108.lenb@kernel.org>
+	Mon, 6 Aug 2007 07:08:24 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:37681 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764307AbXHFLIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:08:22 -0400
+Date: Mon, 6 Aug 2007 16:38:18 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Jan Blunck <jblunck@suse.de>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [RFC 20/26] union-mount: Simple union-mount readdir implementation
+Message-ID: <20070806110818.GC7489@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070730161323.100048969@weierstrass.suse.de> <20070730161325.004086646@weierstrass.suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708031459.07108.lenb@kernel.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070730161325.004086646@weierstrass.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > If we have something like this, we could still discuss a config option,
-> > that also allows to increase trip points, marking it with "If you set
-> > this you can destroy your machine, you have been warned...". While this
-> > would not be an option for distributions to compile in, some people may
-> > come around the biggest hammer -> overriding DSDT.
-> > 
-> > I cannot promise, but I try to get this for 2.6.24.
+On Mon, Jul 30, 2007 at 06:13:43PM +0200, Jan Blunck wrote:
+> --- a/include/linux/union.h
+> +++ b/include/linux/union.h
+> @@ -53,6 +53,7 @@ extern void __shrink_d_unions(struct den
+>  extern int attach_mnt_union(struct vfsmount *, struct vfsmount *,
+>  			    struct dentry *);
+>  extern void detach_mnt_union(struct vfsmount *);
+> +extern int readdir_union(struct file *, void *, filldir_t);
 > 
-> I think if you are enamored with overriding trip points at SuSE,
-> that you should simply restore the original scheme as the "value add"
-> for SuSE kernels.  Seriously, I'm totally fine with that.
+>  #else /* CONFIG_UNION_MOUNT */
 > 
-> You should be aware, however, that (one of) the fundamental flaws
-> with that scheme, shared with what you describe above, is that the OS
-> can not actually change the trip points in the thermal sensor.
-> The sensor is going to trip at the temperature that _it_ thinks
+> @@ -69,5 +70,29 @@ extern void detach_mnt_union(struct vfsm
+>  #define detach_mnt_union(x)		do { } while (0)
+> 
+>  #endif	/* CONFIG_UNION_MOUNT */
+> +
+> +static inline int do_readdir(struct file *file, void *buf, filldir_t filler)
+> +{
+> +	struct inode *inode = file->f_path.dentry->d_inode;
+> +	int res;
+> +
+> +#ifdef CONFIG_UNION_MOUNT
+> +	if (IS_MNT_UNION(file->f_path.mnt))
+> +		res = readdir_union(file, buf, filler);
+> +	else
+> +#endif
+> +	{
+> +		mutex_lock(&inode->i_mutex);
+> +		res = -ENOENT;
+> +		if (!IS_DEADDIR(inode)) {
+> +			res = file->f_op->readdir(file, buf, filler);
+> +			file_accessed(file);
+> +		}
+> +		mutex_unlock(&inode->i_mutex);
+> +	}
+> +
+> +	return res;
+> +}
 
-Yep, you work around this one by enabling polling.
+Here you are doing readdir_union for all the directories under a union
+mount point, which is an overhead (building the readdir cache). Here is
+the fix:
 
-> This faking out the user, plus the fact that the BIOS does change
-> trip-points at run-time, made the original scheme fundamentally
-> unsound.  Further, I've not yet found a single system where use
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
-Yes, this one is uglier. But maybe "enable polling automatically +
-ignore any updates from bios" (+ maybe "only enable lowering") is
-better solution than "just remove the knob"? After all, "the knob" is
-still useful for debugging at least.
+Within a union mount point, there can be directories which don't have a
+union stack underneath them. And readdir() doesn't have to maintain a cache
+of dirents for such directories. But the current patch maintains the cache
+for such directories. Fix this.
 
-> of this scheme wasn't papering over some other problem.  For the
-> upstream kernel, I think it is more appropriate to expose and fix
-> the fundamental problems.  For distro kernels, I'm less concerned
-> if you hide bugs instead of fixing them.
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+---
+ fs/union.c            |   17 +++++++++++++++++
+ include/linux/union.h |   11 ++++++-----
+ 2 files changed, 23 insertions(+), 5 deletions(-)
 
-This is okay as long as you are willing to work around the fundamental
-problems in kernel. You are unable to _fix_ them. They are broken
-BIOSes.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--- a/fs/union.c
++++ b/fs/union.c
+@@ -366,6 +366,23 @@ int follow_union_mount(struct vfsmount *
+ }
+ 
+ /*
++ * is_dir_unioned - check if the directory represented by @mnt and @dentry
++ * has a union stack underneath.
++ *
++ * Returns true if a union stack exists at this directory level, else returns
++ * false.
++ */
++int is_dir_unioned(struct vfsmount *mnt, struct dentry *dentry)
++{
++	struct union_mount *um;
++
++	spin_lock(&union_lock);
++	um = union_lookup(dentry, mnt);
++	spin_unlock(&union_lock);
++	return um ? 1: 0;
++}
++
++/*
+  * This must be called when unhashing a dentry. This is called with dcache_lock
+  * and unhashes all unions this dentry is in.
+  */
+--- a/include/linux/union.h
++++ b/include/linux/union.h
+@@ -54,6 +54,7 @@ extern int attach_mnt_union(struct vfsmo
+ 			    struct dentry *);
+ extern void detach_mnt_union(struct vfsmount *);
+ extern int readdir_union(struct file *, void *, filldir_t);
++extern int is_dir_unioned(struct vfsmount *, struct dentry *);
+ extern int union_relookup_topmost(struct nameidata *, int);
+ extern struct dentry *union_create_topmost(struct nameidata *, struct qstr *,
+ 					   struct path *);
+@@ -82,13 +83,14 @@ extern int union_copyup(struct nameidata
+ 
+ static inline int do_readdir(struct file *file, void *buf, filldir_t filler)
+ {
+-	struct inode *inode = file->f_path.dentry->d_inode;
+ 	int res;
++	struct inode *inode = file->f_path.dentry->d_inode;
+ 
+ #ifdef CONFIG_UNION_MOUNT
+-	if (IS_MNT_UNION(file->f_path.mnt))
+-		res = readdir_union(file, buf, filler);
+-	else
++	if (IS_MNT_UNION(file->f_path.mnt)) {
++		if (is_dir_unioned(file->f_path.mnt, file->f_path.dentry))
++			res = readdir_union(file, buf, filler);
++	} else
+ #endif
+ 	{
+ 		mutex_lock(&inode->i_mutex);
+@@ -99,7 +101,6 @@ static inline int do_readdir(struct file
+ 		}
+ 		mutex_unlock(&inode->i_mutex);
+ 	}
+-
+ 	return res;
+ }
+ 
+Regards,
+Bharata.
