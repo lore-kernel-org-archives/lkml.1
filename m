@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbXHFKrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764576AbXHFKsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755918AbXHFKrs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932530AbXHFKpA
+	id S1764576AbXHFKsS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763482AbXHFKpC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:45:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57600 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 06:45:02 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57604 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932507AbXHFKo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:44:58 -0400
-Message-Id: <20070806103658.356795000@chello.nl>
+	id S932518AbXHFKo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:44:59 -0400
+Message-Id: <20070806103659.319864000@chello.nl>
 References: <20070806102922.907530000@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 06 Aug 2007 12:29:25 +0200
+Date: Mon, 06 Aug 2007 12:29:30 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,47 +23,72 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Steve Dickson <SteveD@redhat.com>
-Subject: [PATCH 03/10] mm: tag reseve pages
-Content-Disposition: inline; filename=page_alloc-reserve.patch
+Subject: [PATCH 08/10] mm: serialize access to min_free_kbytes
+Content-Disposition: inline; filename=mm-setup_per_zone_pages_min.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tag pages allocated from the reserves with a non-zero page->reserve.
+There is a small race between the procfs caller and the memory hotplug caller
+of setup_per_zone_pages_min(). Not a big deal, but the next patch will add yet
+another caller. Time to close the gap.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/mm_types.h |    1 +
- mm/page_alloc.c          |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ mm/page_alloc.c |   16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-Index: linux-2.6-2/include/linux/mm_types.h
-===================================================================
---- linux-2.6-2.orig/include/linux/mm_types.h
-+++ linux-2.6-2/include/linux/mm_types.h
-@@ -60,6 +60,7 @@ struct page {
- 	union {
- 		pgoff_t index;		/* Our offset within mapping. */
- 		void *freelist;		/* SLUB: freelist req. slab lock */
-+		int reserve;		/* page_alloc: page is a reserve page */
- 	};
- 	struct list_head lru;		/* Pageout list, eg. active_list
- 					 * protected by zone->lru_lock !
 Index: linux-2.6-2/mm/page_alloc.c
 ===================================================================
 --- linux-2.6-2.orig/mm/page_alloc.c
 +++ linux-2.6-2/mm/page_alloc.c
-@@ -1186,8 +1186,10 @@ zonelist_scan:
- 		}
+@@ -101,6 +101,7 @@ static char * const zone_names[MAX_NR_ZO
+ 	 "Movable",
+ };
  
- 		page = buffered_rmqueue(zonelist, zone, order, gfp_mask);
--		if (page)
-+		if (page) {
-+			page->reserve = (alloc_flags & ALLOC_NO_WATERMARKS);
- 			break;
-+		}
- this_zone_full:
- 		if (NUMA_BUILD)
- 			zlc_mark_zone_full(zonelist, z);
++static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
+ 
+ unsigned long __meminitdata nr_kernel_pages;
+@@ -3634,12 +3635,12 @@ static void setup_per_zone_lowmem_reserv
+ }
+ 
+ /**
+- * setup_per_zone_pages_min - called when min_free_kbytes changes.
++ * __setup_per_zone_pages_min - called when min_free_kbytes changes.
+  *
+  * Ensures that the pages_{min,low,high} values for each zone are set correctly
+  * with respect to min_free_kbytes.
+  */
+-void setup_per_zone_pages_min(void)
++static void __setup_per_zone_pages_min(void)
+ {
+ 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+@@ -3693,6 +3694,15 @@ void setup_per_zone_pages_min(void)
+ 	calculate_totalreserve_pages();
+ }
+ 
++void setup_per_zone_pages_min(void)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&min_free_lock, flags);
++	__setup_per_zone_pages_min();
++	spin_unlock_irqrestore(&min_free_lock, flags);
++}
++
+ /*
+  * Initialise min_free_kbytes.
+  *
+@@ -3728,7 +3738,7 @@ static int __init init_per_zone_pages_mi
+ 		min_free_kbytes = 128;
+ 	if (min_free_kbytes > 65536)
+ 		min_free_kbytes = 65536;
+-	setup_per_zone_pages_min();
++	__setup_per_zone_pages_min();
+ 	setup_per_zone_lowmem_reserve();
+ 	return 0;
+ }
 
 --
 
