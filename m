@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765046AbXHFTKd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbXHFTL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765046AbXHFTKd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:10:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757427AbXHFTKR
+	id S933381AbXHFTL0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbXHFTLS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:10:17 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37500 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753474AbXHFTKP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:10:15 -0400
-In-Reply-To: <200708011002.30962.m.kozlowski@tuxland.pl>
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708011002.30962.m.kozlowski@tuxland.pl>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <76e360562cd5b50bcd991026e5bead55@kernel.crashing.org>
-Content-Transfer-Encoding: 7bit
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       gregkh@suse.de, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-usb-devel@lists.sourceforge.net
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 2.6.23-rc1-mm2
-Date: Mon, 6 Aug 2007 21:08:56 +0200
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-X-Mailer: Apple Mail (2.623)
+	Mon, 6 Aug 2007 15:11:18 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52120 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754119AbXHFTLQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 15:11:16 -0400
+Date: Mon, 6 Aug 2007 12:11:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+In-Reply-To: <1186425063.11797.80.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0708061209230.7603@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl>  <20070806103658.107883000@chello.nl>
+  <Pine.LNX.4.64.0708061108430.25069@schroedinger.engr.sgi.com> 
+ <200708061121.50351.phillips@phunq.net> <1186425063.11797.80.camel@lappy>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Second issue as reported earilier allmodconfig fails to build on imac 
-> g3.
->
->   CC      arch/powerpc/kernel/lparmap.s
->   AS      arch/powerpc/kernel/head_64.o
-> lparmap.c: Assembler messages:
-> lparmap.c:84: Error: file number 1 already allocated
-> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
-> make: *** [arch/powerpc/kernel] Blad 2
+On Mon, 6 Aug 2007, Peter Zijlstra wrote:
 
-Please send me the full output of:
+> > > Shudder. That can just be a desaster for NUMA. Both performance wise
+> > > and logic wise. One cpuset being low on memory should not affect
+> > > applications in other cpusets.
+> 
+> Do note that these are only PF_MEMALLOC allocations that will break the
+> cpuset. And one can argue that these are not application allocation but
+> system allocations.
 
-gcc --version    (or whatever your gcc is called)
-ld --version
-ld --help        (I know no better way to get the supported binutils
-                   targets, and the default target)
-
-and the lparmap.s file.  You might want to skip sending it
-to the lists, it will be a bit big (and off-topic on most
-of those lists, anyway).
-
-
-Segher
+This is global, global locking etc etc. On a large NUMA system this will 
+cause significant delays. One fears that a livelock may result.
 
