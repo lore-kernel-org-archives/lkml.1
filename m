@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933154AbXHFVk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933289AbXHFVnx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933154AbXHFVk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 17:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXHFVjp
+	id S933289AbXHFVnx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 17:43:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbXHFVnq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 17:39:45 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:35551 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752632AbXHFVjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 17:39:44 -0400
-Message-ID: <46B79512.6090704@interia.pl>
-Date: Mon, 06 Aug 2007 23:39:30 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
-MIME-Version: 1.0
-To: Andreas Mohr <andi@lisas.de>
-Cc: David Edwards <powertop@dpe.lusars.net>, power@bughost.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: HPET force-enable investigations on Via VT8235
-References: <20070806204249.GA25957@rhlx01.hs-esslingen.de>
-In-Reply-To: <20070806204249.GA25957@rhlx01.hs-esslingen.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: 4f58cacc
+	Mon, 6 Aug 2007 17:43:46 -0400
+Received: from gate.crashing.org ([63.228.1.57]:55769 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbXHFVnp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 17:43:45 -0400
+Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit
+	DMA	mapping"
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olh@suse.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070806115804.GA1734@suse.de>
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
+	 <46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
+	 <1186272926.938.8.camel@localhost.localdomain>
+	 <46B5824B.1000103@s5r6.in-berlin.de>  <20070806115804.GA1734@suse.de>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 07:43:17 +1000
+Message-Id: <1186436597.938.71.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
-Hi, 
-> So, *please* (I'd *love* to get this working somehow):
-> whoever has a VT8235 and is listening here,
-> - give a "lspci -nn" (two 'n'!), to figure out details of chipset revision etc.
-> - give a "lspci -d 1106:3177 -xxx", to try to figure out whether there happen
->   to be additional magical "enable" bits to map in those HPET I/O areas which
->   some BIOS versions configure and some don't (that's my fragile theory
->   at least)
-> - oh, and don't forget to tell whether HPET works or not
-VT8235 does *NOT* have a HPET(*). Only part which has HPET is VT8237. It is device 
-00:17.0 too, but only 1106:3227 has HPET enable and memory base registers. 
-VT8235 one and only feature which doesn't have driver yet seems to be hardware 
-watchdog.
+On Mon, 2007-08-06 at 13:58 +0200, Olaf Hering wrote:
+> On Sun, Aug 05, Stefan Richter wrote:
 > 
-> Thanks a lot,
+> > Benjamin Herrenschmidt wrote:
+> > >>> If setting 32-bit DMA mask fails on ppc64, that sounds like a problem
+> > >>> with the DMA implementation on that architecture. There are enough cards
+> > >>> out there that only support 32-bit DMA that this really needs to work..
+> > >> Yes, could the PPC folks please have a look at it?  Thanks.
+> > > 
+> > > Smells like we may have a bug there. No worries though, all current PPC
+> > > machines have an iommu that will not give out addresses above 32 bits
+> > > anyway, but I'll double check what's up.
+> > > 
+> > > Do you see something in dmesg when that happens ?
+> > 
+> > There was nothing in Olaf's report, except for trouble in sbp2 _after_
+> > the failure.  http://lkml.org/lkml/2007/8/1/344  (I don't have a PMac.)
 > 
-> Andreas Mohr
-(*) Datasheet revision 2.03 March 16, 2005
-Regards
-Rafał
+> sbp2util_remove_command_orb_pool() does not check for lu->hi being NULL.
+> 
+> dev->dma_mask is NULL too, thats why dma_direct_dma_supported() returns
+> false, and dma_set_mask() will return -EIO.
 
+Strange... PCI devices should never have a NULL dma mask. I wonder how
+we get there... 
 
-----------------------------------------------------------------------
-Jak najszybciej dostac sie na wymarzona plaze?
-Znajdz trase ekspresowa
+Ben.
 
->>>http://link.interia.pl/f1b0c
 
