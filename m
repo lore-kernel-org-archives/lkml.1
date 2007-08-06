@@ -1,110 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765566AbXHFWSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765680AbXHFWXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765566AbXHFWSk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759592AbXHFWS3
+	id S1765680AbXHFWXA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbXHFWWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:18:29 -0400
-Received: from mu-out-0910.google.com ([209.85.134.189]:46676 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758362AbXHFWS1 (ORCPT
+	Mon, 6 Aug 2007 18:22:52 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:41371 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760029AbXHFWWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:18:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer;
-        b=H9yCROSoy1ZCM5kfaFjjBNvk8X02Pwgq+bCPYPmgWIdsHVhGS9rl2Uc1RYVM//LVHQjlwo55Q509/7V3taytg+2uO3zJVDixuFcbB3X9hVEa3WHGyB6fikoSGBwcLynNk/StjZz7eE3MddyOJIRm17h5i9mt4G+iyhjIdLZfQ90=
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-From: Michael Sedkowski <sedmich@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <46B76BBC.9010107@gmail.com>
-References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com>
-	 <1186411815.4355.7.camel@nx6310>
-	 <20070806150159.GC31615@khazad-dum.debian.net>
-	 <200708061732.03425.rjw@sisk.pl>  <46B75459.9020204@gmail.com>
-	 <1186424492.4355.1.camel@nx6310>  <46B76BBC.9010107@gmail.com>
-Content-Type: multipart/mixed; boundary="=-t2eGx1q4Z+KfnHIAkv8x"
-Date: Tue, 07 Aug 2007 00:18:18 +0200
-Message-Id: <1186438698.4402.6.camel@nx6310>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Mon, 6 Aug 2007 18:22:51 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46B79F25.50205@s5r6.in-berlin.de>
+Date: Tue, 07 Aug 2007 00:22:29 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.5) Gecko/20070804 SeaMonkey/1.1.3
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: Olaf Hering <olh@suse.de>, Robert Hancock <hancockr@shaw.ca>,
+       linuxppc-dev@ozlabs.org, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit	DMA	mapping"
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>	 <46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>	 <1186272926.938.8.camel@localhost.localdomain>	 <46B5824B.1000103@s5r6.in-berlin.de>	 <1186351473.938.21.camel@localhost.localdomain>	 <20070806135124.GA2900@suse.de> <1186436848.938.75.camel@localhost.localdomain>
+In-Reply-To: <1186436848.938.75.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.1
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Benjamin Herrenschmidt wrote:
+> Oh and, don't do the set_dma_mask() in sbp2, it has nothing to do there.
+> It should be in the ohci1394 driver.
 
---=-t2eGx1q4Z+KfnHIAkv8x
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+That's not quite right.  OHCI-1394 implementations can go beyond 4GB bus
+address space.  (Although I don't know if there are such implementations
+available.  At least there are two implementations which can set the
+so-called Physical Range bigger than 4GB.)
 
-Dnia 07-08-2007, Wt o godzinie 03:43 +0900, Tejun Heo napisał(a):
-> Does emergency unload count increase
-> after each power down? 
+Sbp2 however requires that everything which it DMA-maps resides in the
+Physical Range of the controller.  This way the CPU is not involved in
+most of the data transfers.  The OHCI-1394 controller acts as bus bridge
+between IEEE 1394 bus and local bus, with a 1:1 mapping of IEEE 1394 bus
+addresses to and from local bus addresses --- but not in the whole 48
+bits white IEEE 1394 bus address range, only in the
+implementation-dependent Physical Range.  The minimum Physical Range
+that all OHCI-1394 implementations guarantee is 4GB.  I could actually
+have set a bigger mask in sbp2 when the controller supports a
+programmable bigger range.
 
-I think I got it.
-Using smartctl I've done a test and shut down, then repeted the test.
-The only values that where diffrent are temperatures and
-Hardware_ECC_Recovered which rised by 6 points.
-However I have no idea which of those is the "emergency count"...
-Full results in attachment.
+So that's the story why that dma_set_mask went into sbp2:  Sbp2 wants
+mappings in a _subset_ of the OHCI-1394 controllers DMA range.
 
-Regards,
-Michael
-
---=-t2eGx1q4Z+KfnHIAkv8x
-Content-Disposition: attachment; filename=test
-Content-Type: text/plain; name=test; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
-  1 Raw_Read_Error_Rate     0x000f   117   100   006    Pre-fail  Always       -       126411939
-  3 Spin_Up_Time            0x0002   095   094   000    Old_age   Always       -       0
-  4 Start_Stop_Count        0x0033   098   098   020    Pre-fail  Always       -       2340
-  5 Reallocated_Sector_Ct   0x0033   100   100   036    Pre-fail  Always       -       0
-  7 Seek_Error_Rate         0x000f   081   060   030    Pre-fail  Always       -       135278157
-  9 Power_On_Hours          0x0032   096   096   000    Old_age   Always       -       3940
- 10 Spin_Retry_Count        0x0013   100   100   034    Pre-fail  Always       -       0
- 12 Power_Cycle_Count       0x0033   099   099   020    Pre-fail  Always       -       1643
-187 Unknown_Attribute       0x0032   100   100   000    Old_age   Always       -       0
-189 Unknown_Attribute       0x003a   100   100   000    Old_age   Always       -       0
-190 Temperature_Celsius     0x0022   056   049   045    Old_age   Always       -       757727276
-192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       388
-193 Load_Cycle_Count        0x0032   075   075   000    Old_age   Always       -       51636
-194 Temperature_Celsius     0x0022   044   051   000    Old_age   Always       -       44 (Lifetime Min/Max 0/8)
-195 Hardware_ECC_Recovered  0x001a   063   050   000    Old_age   Always       -       68925016
-197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       0
-198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       0
-199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-200 Multi_Zone_Error_Rate   0x0000   100   253   000    Old_age   Offline      -       0
-202 TA_Increase_Count       0x0032   100   253   000    Old_age   Always       -	0
-
-After shut down:
-
-ID# ATTRIBUTE_NAME          FLAG     VALUE WORST THRESH TYPE      UPDATED  WHEN_FAILED RAW_VALUE
-  1 Raw_Read_Error_Rate     0x000f   117   100   006    Pre-fail  Always       -       126411939
-  3 Spin_Up_Time            0x0002   095   094   000    Old_age   Always       -       0
-  4 Start_Stop_Count        0x0033   098   098   020    Pre-fail  Always       -       2342
-  5 Reallocated_Sector_Ct   0x0033   100   100   036    Pre-fail  Always       -       0
-  7 Seek_Error_Rate         0x000f   081   060   030    Pre-fail  Always       -       135286288
-  9 Power_On_Hours          0x0032   096   096   000    Old_age   Always       -       3940
- 10 Spin_Retry_Count        0x0013   100   100   034    Pre-fail  Always       -       0
- 12 Power_Cycle_Count       0x0033   099   099   020    Pre-fail  Always       -       1644
-187 Unknown_Attribute       0x0032   100   100   000    Old_age   Always       -       0
-189 Unknown_Attribute       0x003a   100   100   000    Old_age   Always       -       0
-190 Temperature_Celsius     0x0022   057   049   045    Old_age   Always       -       724172843
-192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age   Always       -       388
-193 Load_Cycle_Count        0x0032   075   075   000    Old_age   Always       -       51638
-194 Temperature_Celsius     0x0022   043   051   000    Old_age   Always       -       43 (Lifetime Min/Max 0/8)
-195 Hardware_ECC_Recovered  0x001a   069   050   000    Old_age   Always       -       71918457
-197 Current_Pending_Sector  0x0012   100   100   000    Old_age   Always       -       0
-198 Offline_Uncorrectable   0x0010   100   100   000    Old_age   Offline      -       0
-199 UDMA_CRC_Error_Count    0x003e   200   200   000    Old_age   Always       -       0
-200 Multi_Zone_Error_Rate   0x0000   100   253   000    Old_age   Offline      -       0
-202 TA_Increase_Count       0x0032   100   253   000    Old_age   Always       -       0
-
-
---=-t2eGx1q4Z+KfnHIAkv8x--
-
+Anyway.  For now I will simply go with what 2.6.23-rc has and what
+2.6.21 had:  No dma_set_mask anywhere in the 1394 subsystem.  We can
+revisit this whenever an actual need arises.
+-- 
+Stefan Richter
+-=====-=-=== =--- --==-
+http://arcgraph.de/sr/
