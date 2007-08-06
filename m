@@ -1,76 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933527AbXHFPeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933918AbXHFPe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933527AbXHFPeS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 11:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763015AbXHFPeG
+	id S933918AbXHFPe4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 11:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932913AbXHFPeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 11:34:06 -0400
-Received: from cluster-d.mailcontrol.com ([217.69.20.190]:39233 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754187AbXHFPeE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 11:34:04 -0400
-Message-ID: <46B73F18.5030109@csr.com>
-Date: Mon, 06 Aug 2007 16:32:40 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sdio: enhance IO_RW_EXTENDED support
-References: <11858961933491-git-send-email-david.vrabel@csr.com>	<20070804152304.65ed8f1b@poseidon.drzeus.cx>	<46B6F877.7060504@csr.com> <20070806171207.59fafa18@poseidon.drzeus.cx>
-In-Reply-To: <20070806171207.59fafa18@poseidon.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Aug 2007 15:32:41.0346 (UTC) FILETIME=[06E37E20:01C7D83F]
+	Mon, 6 Aug 2007 11:34:46 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48353 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764148AbXHFPeo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 11:34:44 -0400
+Date: Mon, 6 Aug 2007 19:36:55 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
+Message-ID: <20070806153655.GA245@tv-sign.ru>
+References: <20070801205053.GA263@tv-sign.ru> <1186002783.9513.228.camel@ghaskins-t60p.haskins.net> <20070801213422.GA280@tv-sign.ru> <1186005598.9513.261.camel@ghaskins-t60p.haskins.net> <20070801222201.GA316@tv-sign.ru> <1186012439.9513.321.camel@ghaskins-t60p.haskins.net> <20070802195049.GA361@tv-sign.ru> <1186400154.21381.40.camel@ghaskins-t60p.haskins.net> <20070806142616.GA210@tv-sign.ru> <1186412235.21381.82.camel@ghaskins-t60p.haskins.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186412235.21381.82.camel@ghaskins-t60p.haskins.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> On Mon, 06 Aug 2007 11:31:19 +0100
-> David Vrabel <david.vrabel@csr.com> wrote:
-> 
->> I would expect the block size to be set once per card, and never be
->> changed and thus it's not logically a per-transfer operation.  We
->> certainly wouldn't want to change the block size willy-nilly as it's
->> an expensive operation.
->>
-> 
-> Indeed. It would of course be optimized so that it doesn't change the
-> size needlessly.
-
-Drivers may care about the block size though so you can't have it
-changing behind their backs. e.g., they may need to pad data to a
-multiple of the block size.
-
->>> I suspect that some transactions might require a certain block size.
->>> But we could satisfy that by stating that any transfer small enough
->>> to fit into one block will not be split up.
->> I consider it unlikely that any card would want to do anything other
->> than always use the largest possible block size.
->>
-> 
-> I have a counter example. I have here a Marvell wifi card which needs a
-> firmware upload. And it seems to be rather picky about parameters
-> during that upload.
+On 08/06, Gregory Haskins wrote:
 >
-> I'm still experimenting with a clean way to do things for this card.
-> I'll get back to you. :)
+> On Mon, 2007-08-06 at 18:26 +0400, Oleg Nesterov wrote:
+> 
+> > Immediately, A inserts the work on CPU 1.
+> 
+> Well, if you didn't care about which CPU, that's true.  But suppose we
+> want to direct this specifically at CWQ for cpu 0.
 
-sdio_set_block_size(func, 64); /* ew, this card is fussy */
+please see below...
 
-download_firmware();
+> > It can livelock if other higher-priority threads add works to this wq
+> > repeteadly.
+> 
+> That's really starvation, though.  I agree with you that it is
+> technically possible to happen if the bandwidth of the higher priority
+> producer task is greater than the bandwidth of the consumer.  But note
+> that the RT priorities already forgo starvation avoidance, so IMO the
+> queue can here as well.  E.g. if the system designer runs a greedy app
+> at a high RT priority, it can starve as many lower priority items as it
+> wants anyway.  This is no different.
 
-sdio_set_block_size(func, func->max_blksize); /* Ahhh, back to the
-card's default */
+OK.
 
-If a card is fussy about the block size I don't think there's anything
-cleaner than specifying directly in the driver.
+> > > > Actually a niced (so that its priority is lower than cwq->thread's one)
+> > > > can deadlock. Suppose it does
+> > > > 
+> > > > 	lock(LOCK);
+> > > > 	flush_workueue(wq);
+> > > > 
+> > > > and we have a pending work_struct which does:
+> > > > 
+> > > > 	void work_handler(struct work_struct *self)
+> > > > 	{
+> > > > 		if (!try_lock(LOCK)) {
+> > > > 			// try again later...
+> > > > 			queue_work(wq, self);
+> > > > 			return;
+> > > > 		}
+> > > > 
+> > > > 		do_something();
+> > > > 	}
+> > > > 
+> > > > Deadlock.
+> > > 
+> > > That code is completely broken, so I don't think it matters much.  But
+> > > regardless, the new API changes will address that.
+> > 
+> > Sorry. This code is not very nice, but it is correct currently.
+> 
+> Well, the "trylock+requeue" avoids the obvious recursive deadlock, but
+> it introduces a more subtle error: the reschedule effectively bypasses
+> the flush.
 
-David
--- 
-David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
-CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
+this is OK, flush_workqueue() should only care about work_struct's that are
+already queued.
 
+> E.g. whatever work was being flushed was allowed to escape
+> out from behind the barrier.  If you don't care about the flush working,
+> why do it at all?
 
-.
+The caller of flush_workueue() doesn't necessary know we have such a work
+on list. It just wants to flush its own works.
+
+> But like I said, its moot...we will fix that condition at the API level
+> (or move away from overloading the workqueues)
+
+Oh, good :)
+
+> > Well, if we can use smp_call_() we don't need these complications?
+> 
+> With an RT99 or smp_call() solution, all invocations effectively preempt
+> whatever is running on the target CPU.  That is why I said it was the
+> opposite problem.  A low priority client can preempt a high-priority
+> task, which is just as bad as the current situation.
+
+Aha, now I see what another problem you are trying to solve. I had a false
+impression that might_sleep() is the issue.
+
+After reading the couple of Peter's emails, I guess I am starting to
+understand another issue. RT has irq threads, and they have different
+priorities. So, in that case I agree, it is natural to consider the work
+which was queued from the higher-priority irq thread as "more important".
+Yes?
+
+Oleg.
+
