@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763994AbXHFQ7B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764021AbXHFRDj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763994AbXHFQ7B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 12:59:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756172AbXHFQ6x
+	id S1764021AbXHFRDj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:03:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbXHFRD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 12:58:53 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:35973 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753433AbXHFQ6w (ORCPT
+	Mon, 6 Aug 2007 13:03:29 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:61981 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756843AbXHFRD1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 12:58:52 -0400
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
-	workqueue infrastructure
-From: Gregory Haskins <ghaskins@novell.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070806165007.GB4021@tv-sign.ru>
-References: <20070801213422.GA280@tv-sign.ru>
-	 <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
-	 <20070801222201.GA316@tv-sign.ru>
-	 <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
-	 <20070802195049.GA361@tv-sign.ru>
-	 <1186400154.21381.40.camel@ghaskins-t60p.haskins.net>
-	 <20070806142616.GA210@tv-sign.ru>
-	 <1186412235.21381.82.camel@ghaskins-t60p.haskins.net>
-	 <20070806153655.GA245@tv-sign.ru>
-	 <1186415403.21381.100.camel@ghaskins-t60p.haskins.net>
-	 <20070806165007.GB4021@tv-sign.ru>
-Content-Type: text/plain
-Date: Mon, 06 Aug 2007 12:57:07 -0400
-Message-Id: <1186419427.21381.123.camel@ghaskins-t60p.haskins.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Aug 2007 13:03:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type;
+        b=SRKGFd2APROC+VEwzn+rMQ9YVw/Ba6pV6cKBgs1Zo68jF52BzdTJvh2Q+myWGML31f3Pqj8prgRTXbf1ZbfTWZyge+d/gLeTUayfw2rPywacu5jEctciffn3CMkgJAR3+BfQKIJT9+7qbWrqChX5LcpPgZwllo+Zm4wUUcuyaTI=
+Message-ID: <46B75459.9020204@gmail.com>
+Date: Tue, 07 Aug 2007 02:03:21 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Michael Sedkowski <sedmich@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com> <1186411815.4355.7.camel@nx6310> <20070806150159.GC31615@khazad-dum.debian.net> <200708061732.03425.rjw@sisk.pl>
+In-Reply-To: <200708061732.03425.rjw@sisk.pl>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/mixed;
+ boundary="------------050005050003000101000908"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 20:50 +0400, Oleg Nesterov wrote:
-> Yes.
+This is a multi-part message in MIME format.
+--------------050005050003000101000908
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+
+Rafael J. Wysocki wrote:
+>>> Sidux is a Debian Unstable based distro with it's own set of patches
+>>> including the shut down patch provided here:
+>>> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=426224
+>> You'll probably have to ask Sidux what changes they made that could cause
+>> the double spin down, even if halt(8) is never passed the -h flag.
 > 
-> > Do you agree that if the context was the same there is a bug?  Or did I
-> > miss something else?
-> 
-> Yes sure. We can't expect we can "flush" work_struct with flush_workqueue()
-> unless we know it doesn't re-schedule itself.
+> Well, I've been observing the same behavior on nx6325 for some time and I
+> use openSUSE 10.2.  I think this is kernel-related.
 
-Agreed.
+Hmmm... If the problem only shows up on nx6325, it might be that ACPI is
+pulling unnecessary stunt.  Please apply the attached patch and report
+when the disk spins down and up.
 
-> 
-> OTOH, it is not the bug to call flush_workqueue() even if that work was
-> queued by us, it should complete.
+Thanks.
 
-Well, I guess it depends on the application but that would be highly
-unusual unless the flush was already superfluous to begin with.
-Typically you only call flush to ensure a strongly ordered operation.
-The reschedule defeats the strong ordering and thus would break anything
-that was dependent on it.
+-- 
+tejun
 
-But we are splitting hairs at this point since we both agree that the
-API as put forth in the PI patch was deficient ;)
+--------------050005050003000101000908
+Content-Type: text/x-patch;
+ name="shutdown-debug.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="shutdown-debug.patch"
 
--Greg
+diff --git a/kernel/sys.c b/kernel/sys.c
+index 449b81b..9578e3f 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -875,10 +875,20 @@ EXPORT_SYMBOL_GPL(kernel_halt);
+  */
+ void kernel_power_off(void)
+ {
++	printk(KERN_EMERG "XXX: pre-shutdown prepare\n");
+ 	kernel_shutdown_prepare(SYSTEM_POWER_OFF);
+-	if (pm_power_off_prepare)
++	printk(KERN_EMERG "XXX: post-shutdown prepare, sleeping 5\n");
++	ssleep(5);
++	if (pm_power_off_prepare) {
++		printk(KERN_EMERG "XXX: pre-power_off_prepare\n");
+ 		pm_power_off_prepare();
++		printk(KERN_EMERG "XXX: post-power_off_prepare, sleeping 5\n");
++		ssleep(5);
++	}
++	printk(KERN_EMERG "XXX: pre-sysdev_shutdown\n");
+ 	sysdev_shutdown();
++	printk(KERN_EMERG "XXX: post-sysdev_shutdown, sleeping 5\n");
++	ssleep(5);
+ 	printk(KERN_EMERG "Power down.\n");
+ 	machine_power_off();
+ }
 
+--------------050005050003000101000908--
