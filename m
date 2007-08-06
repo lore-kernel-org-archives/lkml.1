@@ -1,75 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933218AbXHFN5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933550AbXHFN6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933218AbXHFN5n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932917AbXHFNyi
+	id S933550AbXHFN6X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932230AbXHFNym
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:54:38 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:38511 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932691AbXHFNya (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:54:30 -0400
-Date: Mon, 6 Aug 2007 09:47:18 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070806094718.73a4539c@think.oraclecorp.com>
-In-Reply-To: <20070805150029.GB28263@thunk.org>
-References: <20070803123712.987126000@chello.nl>
-	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>
-	<20070804063217.GA25069@elte.hu>
-	<20070804070737.GA940@elte.hu>
-	<20070804103347.GA1956@elte.hu>
-	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
-	<20070804163733.GA31001@elte.hu>
-	<p73hcnen7w2.fsf@bingen.suse.de>
-	<20070805150029.GB28263@thunk.org>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 6 Aug 2007 09:54:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36123 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932573AbXHFNy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:54:28 -0400
+Date: Mon, 6 Aug 2007 09:54:22 -0400
+Message-Id: <200708061354.l76DsMrh002285@dantu.rdu.redhat.com>
+From: Jeff Layton <jlayton@redhat.com>
+Subject: [PATCH 06/25] coda: call attr_kill_to_mode from coda_setattr
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: codalist@TELEMANN.coda.cs.cmu.edu
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Aug 2007 11:00:29 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/coda/inode.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> On Sun, Aug 05, 2007 at 02:26:53AM +0200, Andi Kleen wrote:
-> > I always thought the right solution would be to just sync atime only
-> > very very lazily. This means if a inode is only dirty because of an
-> > atime update put it on a "only write out when there is nothing to do
-> > or the memory is really needed" list.
-> 
-> As I've mentioend earlier, the memory balancing issues that arise when
-> we add an "atime dirty" bit scare me a little.  It can be addressed,
-> obviously, but at the cost of more code complexity.
+diff --git a/fs/coda/inode.c b/fs/coda/inode.c
+index 342f4e0..c06d031 100644
+--- a/fs/coda/inode.c
++++ b/fs/coda/inode.c
+@@ -239,6 +239,7 @@ int coda_setattr(struct dentry *de, struct iattr *iattr)
+ 	memset(&vattr, 0, sizeof(vattr)); 
+ 
+ 	inode->i_ctime = CURRENT_TIME_SEC;
++	attr_kill_to_mode(inode, iattr);
+ 	coda_iattr_to_vattr(iattr, &vattr);
+ 	vattr.va_type = C_VNON; /* cannot set type */
+ 
+-- 
+1.5.2.2
 
-ext3 and reiser both use a dirty_inode method to make sure that we
-don't actually have dirty inodes.  This way, kswapd doesn't get stuck
-on the log and is able to do real work.
-
-It would be interesting to see a comparison of relatime with a kinoded
-that is willing to get stuck on the log.  The FS would need a few
-tweaks so that write_inode() could know if it really needed to log or
-not, but for testing you could just drop ext3_dirty_inode and have
-ext3_write_inode do real work.
-
-Then just change kswapd to kick a new kinoded and benchmark away.  A
-real patch would have to look for places where mark_inode_dirty was
-used and expected the dirty_inode callback to log things right away,
-but for testing its good enough.
-
--chris
