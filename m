@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932289AbXHFURV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932781AbXHFUSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932289AbXHFURV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758129AbXHFURI
+	id S932781AbXHFUSY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758941AbXHFUSP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:17:08 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:3391 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754846AbXHFURF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:17:05 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: santil@us.ibm.com, jgarzik@pobox.com
-Subject: [PATCH] drivers/net/ibmveth.c: memset fix
-Date: Mon, 6 Aug 2007 22:17:04 +0200
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Aug 2007 16:18:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44122 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757660AbXHFUSO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:18:14 -0400
+Date: Mon, 6 Aug 2007 22:18:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 03/10] mm: tag reseve pages
+Message-ID: <20070806201812.GA23635@one.firstfloor.org>
+References: <20070806102922.907530000@chello.nl> <20070806103658.356795000@chello.nl> <Pine.LNX.4.64.0708061111390.25069@schroedinger.engr.sgi.com> <p73r6mglaog.fsf@bingen.suse.de> <Pine.LNX.4.64.0708061143050.3152@schroedinger.engr.sgi.com> <1186426079.11797.88.camel@lappy> <20070806185926.GB22499@one.firstfloor.org> <20070806121053.baed9691.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708062217.04361.m.kozlowski@tuxland.pl>
+In-Reply-To: <20070806121053.baed9691.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, Aug 06, 2007 at 12:10:53PM -0700, Andrew Morton wrote:
+> On Mon, 6 Aug 2007 20:59:26 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+> 
+> > > precious page flag
+> > 
+> > I always cringe when I hear that. It's really more than node/sparsemem
+> > use too many bits. If we get rid of 32bit NUMA that problem would be
+> > gone for the node at least because it could be moved into the mostly
+> > unused upper 32bit part on 64bit architectures.
+> 
+> Removing 32-bit NUMA is attractive - NUMAQ we can probably live without,
+> not sure about summit.  But superh is starting to use NUMA now, due to
+> varying access times of various sorts of memory, and one can envisage other
+> embedded setups doing that.
 
-	Looks like memset() is zeroing wrong nr of bytes.
+They can just use phys_to_nid() or equivalent instead. Putting the node
+into the page flags is just a very minor optimization.  I doubt
+actually you could benchmark the difference. While in theory the
+hash lookup could be another cache miss in practice this should
+be already hot since it's used elsewhere.
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> Plus I don't think there are many flags left in the upper 32-bits.  ia64
+> swooped in and gobbled lots of them, although it's not immediately clear
+> how many were consumed.
 
- drivers/net/ibmveth.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Really?  They forgot to document it then.
 
---- linux-2.6.23-rc1-mm2-a/drivers/net/ibmveth.c	2007-08-01 08:43:46.000000000 +0200
-+++ linux-2.6.23-rc1-mm2-b/drivers/net/ibmveth.c	2007-08-06 20:34:44.000000000 +0200
-@@ -963,7 +963,7 @@ static int __devinit ibmveth_probe(struc
- {
- 	int rc, i;
- 	struct net_device *netdev;
--	struct ibmveth_adapter *adapter = NULL;
-+	struct ibmveth_adapter *adapter;
+Anyways, if they don't have enough bits left they can always just
+use the hash table and drop the node completely. Shouldn't make too much 
+difference and IA64 has gobs of cache anyways.
 
- 	unsigned char *mac_addr_p;
- 	unsigned int *mcastFilterSize_p;
-@@ -997,7 +997,7 @@ static int __devinit ibmveth_probe(struc
- 	SET_MODULE_OWNER(netdev);
+I'm actually thinking about a PG_arch_2 on x86_64 too. arch_1 is already
+used now but another one would be useful in c_p_a().
 
- 	adapter = netdev->priv;
--	memset(adapter, 0, sizeof(adapter));
-+	memset(adapter, 0, sizeof(*adapter));
- 	dev->dev.driver_data = netdev;
-
- 	adapter->vdev = dev;
+-Andi
