@@ -1,67 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933700AbXHFWj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765463AbXHFWrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933700AbXHFWj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761397AbXHFWjS
+	id S1765463AbXHFWrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761850AbXHFWrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:39:18 -0400
-Received: from os.inf.tu-dresden.de ([141.76.48.99]:60152 "EHLO
-	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761240AbXHFWjR (ORCPT
+	Mon, 6 Aug 2007 18:47:40 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:38316
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761101AbXHFWrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:39:17 -0400
-X-Greylist: delayed 2470 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 18:39:17 EDT
-Date: Mon, 6 Aug 2007 23:57:52 +0200
-From: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-To: =?UTF-8?Q?Rafa=C5=82?= Bilski <rafalbilski@interia.pl>
-Cc: Andreas Mohr <andi@lisas.de>, David Edwards <powertop@dpe.lusars.net>,
-       power@bughost.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: HPET force-enable investigations on Via VT8235
-Message-ID: <20070806235752.1e6c5653@laptop.hypervisor.org>
-In-Reply-To: <46B79512.6090704@interia.pl>
-References: <20070806204249.GA25957@rhlx01.hs-esslingen.de>
-	<46B79512.6090704@interia.pl>
-X-Mailer: X-Mailer 5.0 Gold
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_8xtzqQ+aMps5wZyMSKWGe5q;
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Mon, 6 Aug 2007 18:47:39 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Date: Mon, 6 Aug 2007 15:47:30 -0700
+User-Agent: KMail/1.9.5
+Cc: Matt Mackall <mpm@selenic.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+References: <20070806102922.907530000@chello.nl> <20070806201257.GG11115@waste.org> <Pine.LNX.4.64.0708061315510.7603@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708061315510.7603@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708061547.30681.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_8xtzqQ+aMps5wZyMSKWGe5q
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+(What Peter already wrote, but in different words)
 
-On Mon, 06 Aug 2007 23:39:30 +0200 Rafa=C5=82 Bilski (RB) wrote:
+On Monday 06 August 2007 13:19, Christoph Lameter wrote:
+> The solution may be as simple as configuring the reserves right and
+> avoid the unbounded memory allocations.
 
-RB> VT8235 does *NOT* have a HPET(*). Only part which has HPET is VT8237. It
-RB> is device 00:17.0 too, but only 1106:3227 has HPET enable and memory
-RB> base registers. VT8235 one and only feature which doesn't have driver
-RB> yet seems to be hardware watchdog.
-RB> (*) Datasheet revision 2.03 March 16, 2005
+Exactly.  That is what this patch set is about.  This is the part that 
+provides some hooks to extend the traditional reserves to be able to 
+handle some of the more difficult situations.
 
-We have an Asrock K7VT4A+ board with VT8235 southbridge in our lab and it
-does have an HPET. Just because the datasheet does not document HPET does
-not mean it is not implemented.
+> That is possible if one 
+> would make sure that the network layer triggers reclaim once in a
+> while.
 
-My guess is that newer revisions of VT8235 have HPET whereas older revisions
-do not. I'll get an lspci dump from our box tomorrow.
+No.  It does no good at all for network to do a bunch of work 
+reclaiming, then have some other random task (for example, a heavy 
+writer) swoop in and grab the reclaimed memory before net can use it.  
+Also, net allocates memory in interrupt context where shrink_caches is 
+not possible.  The correct solution is to _reserve_ the memory net 
+needs for vm writeout, which is in Peter's next patch set coming down 
+the pipe.
 
-Cheers,
+Regards,
 
-	- Udo
-
---Sig_8xtzqQ+aMps5wZyMSKWGe5q
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGt5lgnhRzXSM7nSkRAlL/AJ0QqeuCkwZu7V4420qKGmQNd4/frgCfbniR
-PfXF3KET355qejx6IIqW3cY=
-=QiGs
------END PGP SIGNATURE-----
-
---Sig_8xtzqQ+aMps5wZyMSKWGe5q--
+Daniel
