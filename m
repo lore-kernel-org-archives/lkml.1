@@ -1,82 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763600AbXHFKnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbXHFKog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763600AbXHFKnH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXHFKm4
+	id S932291AbXHFKog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbXHFKo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:42:56 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34109
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751688AbXHFKm4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:42:56 -0400
-Message-Id: <46B71781.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Mon, 06 Aug 2007 11:43:45 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
-       <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [PATCH] [34/58] x86_64: ia32entry adjustments
-References: <200707191154.642492000@suse.de>
- <20070719095520.2124414E06@wotan.suse.de> <469F7962.6020108@garzik.org>
-In-Reply-To: <469F7962.6020108@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 6 Aug 2007 06:44:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57453 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751669AbXHFKoZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:44:25 -0400
+Message-Id: <20070806103659.399233000@chello.nl>
+References: <20070806102922.907530000@chello.nl>
+User-Agent: quilt/0.45-1
+Date: Mon, 06 Aug 2007 12:29:31 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: [PATCH 09/10] mm: emergency pool
+Content-Disposition: inline; filename=mm-page_alloc-emerg.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Jeff Garzik <jeff@garzik.org> 19.07.07 16:46 >>>
->Andi Kleen wrote:
->> From: "Jan Beulich" <jbeulich@novell.com>
->> Consolidate the three 32-bit system call entry points so that they all
->> treat registers in similar ways.
->> 
->> Signed-off-by: Jan Beulich <jbeulich@novell.com>
->> Signed-off-by: Andi Kleen <ak@suse.de>
->> 
->>  arch/x86_64/ia32/ia32entry.S |    5 +++--
->>  1 file changed, 3 insertions(+), 2 deletions(-)
->> 
->> Index: linux/arch/x86_64/ia32/ia32entry.S
->> ===================================================================
->> --- linux.orig/arch/x86_64/ia32/ia32entry.S
->> +++ linux/arch/x86_64/ia32/ia32entry.S
->> @@ -104,7 +104,7 @@ ENTRY(ia32_sysenter_target)
->>  	pushq	%rax
->>  	CFI_ADJUST_CFA_OFFSET 8
->>  	cld
->> -	SAVE_ARGS 0,0,0
->> +	SAVE_ARGS 0,0,1
->>   	/* no need to do an access_ok check here because rbp has been
->>   	   32bit zero extended */ 
->>  1:	movl	(%rbp),%r9d
->> @@ -294,7 +294,7 @@ ia32_badarg:
->>   */ 				
->>  
->>  ENTRY(ia32_syscall)
->> -	CFI_STARTPROC	simple
->> +	CFI_STARTPROC32	simple
->>  	CFI_SIGNAL_FRAME
->>  	CFI_DEF_CFA	rsp,SS+8-RIP
->>  	/*CFI_REL_OFFSET	ss,SS-RIP*/
->> @@ -330,6 +330,7 @@ ia32_sysret:
->>  
->>  ia32_tracesys:			 
->>  	SAVE_REST
->> +	CLEAR_RREGS
->>  	movq $-ENOSYS,RAX(%rsp)	/* really needed? */
->>  	movq %rsp,%rdi        /* &pt_regs -> arg1 */
->>  	call syscall_trace_enter
->
->More comments and/or a less vague patch description would be nice.
->
->What registers?  What behavior is being made common?  Why?
+Provide means to reserve a specific amount of pages.
 
-I think the description says this quite well - which registers are being saved/
-cleared is being made consistent (not common).
+The emergency pool is separated from the min watermark because ALLOC_HARDER
+and ALLOC_HIGH modify the watermark in a relative way and thus do not ensure
+a strict minimum.
 
-Jan
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/mmzone.h |    3 +
+ mm/page_alloc.c        |   82 +++++++++++++++++++++++++++++++++++++++++++------
+ mm/vmstat.c            |    6 +--
+ 3 files changed, 78 insertions(+), 13 deletions(-)
+
+Index: linux-2.6-2/include/linux/mmzone.h
+===================================================================
+--- linux-2.6-2.orig/include/linux/mmzone.h
++++ linux-2.6-2/include/linux/mmzone.h
+@@ -191,7 +191,7 @@ enum zone_type {
+ 
+ struct zone {
+ 	/* Fields commonly accessed by the page allocator */
+-	unsigned long		pages_min, pages_low, pages_high;
++	unsigned long		pages_emerg, pages_min, pages_low, pages_high;
+ 	/*
+ 	 * We don't know if the memory that we're going to allocate will be freeable
+ 	 * or/and it will be released eventually, so to avoid totally wasting several
+@@ -589,6 +589,7 @@ int sysctl_min_unmapped_ratio_sysctl_han
+ 			struct file *, void __user *, size_t *, loff_t *);
+ int sysctl_min_slab_ratio_sysctl_handler(struct ctl_table *, int,
+ 			struct file *, void __user *, size_t *, loff_t *);
++int adjust_memalloc_reserve(int pages);
+ 
+ extern int numa_zonelist_order_handler(struct ctl_table *, int,
+ 			struct file *, void __user *, size_t *, loff_t *);
+Index: linux-2.6-2/mm/page_alloc.c
+===================================================================
+--- linux-2.6-2.orig/mm/page_alloc.c
++++ linux-2.6-2/mm/page_alloc.c
+@@ -103,6 +103,8 @@ static char * const zone_names[MAX_NR_ZO
+ 
+ static DEFINE_SPINLOCK(min_free_lock);
+ int min_free_kbytes = 1024;
++static DEFINE_MUTEX(var_free_mutex);
++int var_free_kbytes;
+ 
+ unsigned long __meminitdata nr_kernel_pages;
+ unsigned long __meminitdata nr_all_pages;
+@@ -1000,7 +1002,7 @@ int zone_watermark_ok(struct zone *z, in
+ 	if (alloc_flags & ALLOC_HARDER)
+ 		min -= min / 4;
+ 
+-	if (free_pages <= min + z->lowmem_reserve[classzone_idx])
++	if (free_pages <= min + z->lowmem_reserve[classzone_idx] + z->pages_emerg)
+ 		return 0;
+ 	for (o = 0; o < order; o++) {
+ 		/* At the next order, this order's pages become unavailable */
+@@ -1410,8 +1412,8 @@ nofail_alloc:
+ nopage:
+ 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
+ 		printk(KERN_WARNING "%s: page allocation failure."
+-			" order:%d, mode:0x%x\n",
+-			p->comm, order, gfp_mask);
++			" order:%d, mode:0x%x, alloc_flags:0x%x, pflags:0x%x\n",
++			p->comm, order, gfp_mask, alloc_flags, p->flags);
+ 		dump_stack();
+ 		show_mem();
+ 	}
+@@ -1625,9 +1627,9 @@ void show_free_areas(void)
+ 			"\n",
+ 			zone->name,
+ 			K(zone_page_state(zone, NR_FREE_PAGES)),
+-			K(zone->pages_min),
+-			K(zone->pages_low),
+-			K(zone->pages_high),
++			K(zone->pages_emerg + zone->pages_min),
++			K(zone->pages_emerg + zone->pages_low),
++			K(zone->pages_emerg + zone->pages_high),
+ 			K(zone_page_state(zone, NR_ACTIVE)),
+ 			K(zone_page_state(zone, NR_INACTIVE)),
+ 			K(zone->present_pages),
+@@ -3585,7 +3587,7 @@ static void calculate_totalreserve_pages
+ 			}
+ 
+ 			/* we treat pages_high as reserved pages. */
+-			max += zone->pages_high;
++			max += zone->pages_high + zone->pages_emerg;
+ 
+ 			if (max > zone->present_pages)
+ 				max = zone->present_pages;
+@@ -3642,7 +3644,8 @@ static void setup_per_zone_lowmem_reserv
+  */
+ static void __setup_per_zone_pages_min(void)
+ {
+-	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
++	unsigned pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
++	unsigned pages_emerg = var_free_kbytes >> (PAGE_SHIFT - 10);
+ 	unsigned long lowmem_pages = 0;
+ 	struct zone *zone;
+ 	unsigned long flags;
+@@ -3654,11 +3657,13 @@ static void __setup_per_zone_pages_min(v
+ 	}
+ 
+ 	for_each_zone(zone) {
+-		u64 tmp;
++		u64 tmp, tmp_emerg;
+ 
+ 		spin_lock_irqsave(&zone->lru_lock, flags);
+ 		tmp = (u64)pages_min * zone->present_pages;
+ 		do_div(tmp, lowmem_pages);
++		tmp_emerg = (u64)pages_emerg * zone->present_pages;
++		do_div(tmp_emerg, lowmem_pages);
+ 		if (is_highmem(zone)) {
+ 			/*
+ 			 * __GFP_HIGH and PF_MEMALLOC allocations usually don't
+@@ -3677,12 +3682,14 @@ static void __setup_per_zone_pages_min(v
+ 			if (min_pages > 128)
+ 				min_pages = 128;
+ 			zone->pages_min = min_pages;
++			zone->pages_emerg = min_pages;
+ 		} else {
+ 			/*
+ 			 * If it's a lowmem zone, reserve a number of pages
+ 			 * proportionate to the zone's size.
+ 			 */
+ 			zone->pages_min = tmp;
++			zone->pages_emerg = tmp_emerg;
+ 		}
+ 
+ 		zone->pages_low   = zone->pages_min + (tmp >> 2);
+@@ -3703,6 +3710,63 @@ void setup_per_zone_pages_min(void)
+ 	spin_unlock_irqrestore(&min_free_lock, flags);
+ }
+ 
++static void __adjust_memalloc_reserve(int pages)
++{
++	var_free_kbytes += pages << (PAGE_SHIFT - 10);
++	BUG_ON(var_free_kbytes < 0);
++	setup_per_zone_pages_min();
++}
++
++static int test_reserve_limits(void)
++{
++	struct zone *zone;
++	int node;
++
++	for_each_zone(zone)
++		wakeup_kswapd(zone, 0);
++
++	for_each_online_node(node) {
++		struct page *page = alloc_pages_node(node, GFP_KERNEL, 0);
++		if (!page)
++			return -ENOMEM;
++
++		__free_page(page);
++	}
++
++	return 0;
++}
++
++/**
++ *	adjust_memalloc_reserve - adjust the memalloc reserve
++ *	@pages: number of pages to add
++ *
++ *	It adds a number of pages to the memalloc reserve; if
++ *	the number was positive it kicks reclaim into action to
++ *	satisfy the higher watermarks.
++ *
++ *	returns -ENOMEM when it failed to satisfy the watermarks.
++ */
++int adjust_memalloc_reserve(int pages)
++{
++	int err = 0;
++
++	mutex_lock(&var_free_mutex);
++	__adjust_memalloc_reserve(pages);
++	if (pages > 0) {
++		err = test_reserve_limits();
++		if (err) {
++			__adjust_memalloc_reserve(-pages);
++			goto unlock;
++		}
++	}
++	printk(KERN_DEBUG "Emergency reserve: %d\n", var_free_kbytes);
++
++unlock:
++	mutex_unlock(&var_free_mutex);
++	return err;
++}
++EXPORT_SYMBOL_GPL(adjust_memalloc_reserve);
++
+ /*
+  * Initialise min_free_kbytes.
+  *
+Index: linux-2.6-2/mm/vmstat.c
+===================================================================
+--- linux-2.6-2.orig/mm/vmstat.c
++++ linux-2.6-2/mm/vmstat.c
+@@ -558,9 +558,9 @@ static int zoneinfo_show(struct seq_file
+ 			   "\n        spanned  %lu"
+ 			   "\n        present  %lu",
+ 			   zone_page_state(zone, NR_FREE_PAGES),
+-			   zone->pages_min,
+-			   zone->pages_low,
+-			   zone->pages_high,
++			   zone->pages_emerg + zone->pages_min,
++			   zone->pages_emerg + zone->pages_low,
++			   zone->pages_emerg + zone->pages_high,
+ 			   zone->pages_scanned,
+ 			   zone->nr_scan_active, zone->nr_scan_inactive,
+ 			   zone->spanned_pages,
+
+--
 
