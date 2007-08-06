@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763169AbXHFG7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762778AbXHFHA6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763169AbXHFG7X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 02:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758755AbXHFG6z
+	id S1762778AbXHFHA6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 03:00:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754502AbXHFHAq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 02:58:55 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49896 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758311AbXHFG6x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 02:58:53 -0400
-Date: Mon, 6 Aug 2007 08:58:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Diego Calleja <diegocg@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070806065834.GB2818@elte.hu>
-References: <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804224834.5187f9b7@the-village.bc.nu> <20070805071320.GC515@elte.hu> <20070805152231.aba9428a.diegocg@gmail.com>
+	Mon, 6 Aug 2007 03:00:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:26605 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753122AbXHFHAo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 03:00:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WxHGChdS8+Ys0Ya1pHAMEi9Nx/93PSaCACANQbBQA7F0b9pQHhfnvTygaBzNzUZgfV63G23eHElD2TIDSN9gzdYfszmk90pBlEv7uD1J9K5nftym68g8k8fydjaqZpKfvhC/DMUp2bpfPYaDSMA0z4bCti2WC1Xw8LYzSAJ1P2M=
+Message-ID: <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com>
+Date: Mon, 6 Aug 2007 09:00:44 +0200
+From: "=?ISO-8859-2?Q?Marcin_=A6lusarz?=" <marcin.slusarz@gmail.com>
+To: "Jarek Poplawski" <jarkao2@o2.pl>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070731132037.GC1046@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070805152231.aba9428a.diegocg@gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <alpine.LFD.0.999.0707241228291.3607@woody.linux-foundation.org>
+	 <1185322771.4175.102.camel@chaos>
+	 <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com>
+	 <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos>
+	 <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local>
+	 <20070726091254.GA8063@elte.hu>
+	 <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com>
+	 <20070731132037.GC1046@ff.dom.local>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2007/7/31, Jarek Poplawski <jarkao2@o2.pl>:
+> Marcin,
+>
+> I see you're quite busy, but if after testing this next Ingo's patch
+> you are alive yet, maybe you could try one more "idea"? No patch this
+> time, but if you could try this after adding boot option "noirqdebug"
+> (I'd like to be sure it's not about timinig after all).
+It didn't change anything. Network card still timed out.
 
-* Diego Calleja <diegocg@gmail.com> wrote:
-
-> > Measurements show that noatime helps 20-30% on regular desktop 
-> > workloads, easily 50% for kernel builds and much more than that (in 
-> > excess of 100%) for file-read-intense workloads. We cannot just walk
-> 
-> And as everybody knows in servers is a popular practice to disable it. 
-> According to an interview to the kernel.org admins....
-
-yeah - but i'd be surprised if more than 1% of all Linux servers out 
-there had noatime.
-
-> "Beyond that, Peter noted, "very little fancy is going on, and that is 
-> good because fancy is hard to maintain." He explained that the only 
-> fancy thing being done is that all filesystems are mounted noatime 
-> meaning that the system doesn't have to make writes to the filesystem 
-> for files which are simply being read, "that cut the load average in 
-> half."
-
-nice quote :-)
-
-> I bet that some people would consider such performance hit a bug...
-
-yeah.
-
-	Ingo
+Marcin
