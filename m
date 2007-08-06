@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763486AbXHFSSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765936AbXHFSSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763486AbXHFSSX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXHFSSP
+	id S1765936AbXHFSSy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756234AbXHFSSp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:18:15 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41076 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753053AbXHFSSO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:18:14 -0400
-X-Authenticated: #4463548
-X-Provags-ID: V01U2FsdGVkX1/Woap3E6LWFSLRYzi07XXSohvbKdj53n+d3MpyqI
-	f1ghv7eY/49hl7
-Message-ID: <46B773F6.7060603@gmx.net>
-Date: Mon, 06 Aug 2007 21:18:14 +0200
-From: Dimitrios Apostolou <jimis@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070301 SeaMonkey/1.0.8
+	Mon, 6 Aug 2007 14:18:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34917 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751699AbXHFSSo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 14:18:44 -0400
+Message-ID: <46B7626C.6050403@redhat.com>
+Date: Mon, 06 Aug 2007 14:03:24 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: high system cpu load during intense disk i/o
-References: <200708031903.10063.jimis@gmx.net> <200708051903.12414.jimis@gmx.net> <46B60FB7.8030301@interia.pl> <200708052142.14630.jimis@gmx.net> <46B748DE.1060108@interia.pl>
-In-Reply-To: <46B748DE.1060108@interia.pl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
+To: Christoph Hellwig <hch@infradead.org>, J??rn Engel <joern@logfs.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804192615.GA25600@lazybastard.org> <20070804194259.GA25753@lazybastard.org> <20070805203602.GB25107@infradead.org>
+In-Reply-To: <20070805203602.GB25107@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafał Bilski wrote:
->> Hello and thanks for your reply. 
-> Hello again,
->> The cron job that is running every 10 min on my system is mpop (a 
->> fetchmail-like program) and another running every 5 min is mrtg. Both 
->> normally finish within 1-2 seconds.
->> The fact that these simple cron jobs don't finish ever is certainly 
->> because of the high system CPU load. If you see the two_discs_bad.txt 
->> which I attached on my original message, you'll see that *vmlinux*, 
->> and specifically the *scheduler*, take up most time.
->> And the fact that this happens only when running two i/o processes but 
->> when running only one everything is absolutely snappy (not at all 
->> slow, see one_disc.txt), makes me sure that this is a kernel bug. I'd 
->> be happy to help but I need some guidance to pinpoint the problem. 
-> In Your oprofile output I find "acpi_pm_read" particulary interesting. 
-> Unlike other VIA chipsets, which I know, Your doesn't use VLink to 
-> connect northbridge to southbridge. Instead PCI bus connects these two. 
-> As You probably know maximal PCI throughtput is 133MiB/s. In theory. In 
-> practice probably less.
-> ACPI registers are located on southbridge. This probably means that 
-> processor needs access to PCI bus in order to read ACPI timer register.
-> Now some math. 20GiB disk probably can send data at 20MiB/s rate. 200GiB 
-> disk probably about 40MiB/s. So 20+2*40=100MiB/s. I think that this 
-> could explain why simple inl() call takes so much time and why Your 
-> system isn't very responsive.
->> Thanks, Dimitris
-> Let me know if You find my theory amazing or amusing.
+On 08/05/2007 04:36 PM, Christoph Hellwig wrote:
+> 
+> Umm, no f**king way.  atime selection is 100% policy and belongs into
+> userspace.  Add to that the problem that we can't actually re-enable
+> atimes because of the way the vfs-level mount flags API is designed.
+> Instead of doing such a fugly kernel patch just talk to the handfull
+> of distributions that matter to update their defaults.
+> 
 
-Hello Rafal,
-
-I find your theory very nice, but unfortunately I don't think it applies 
-here. As you can see from the vmstat outputs the write throughput is 
-about 15MB/s for both disks. When reading I get about 30MB/s again from 
-both disks. The other disk, the small one, is mostly idle, except for 
-writing little bits and bytes now and then. Since the problem occurs 
-when writing, 15MB/s is just too little I think for the PCI bus.
-
-However I find it quite possible to have reached the throughput limit 
-because of software (driver) problems. I have done various testing 
-(mostly "hdparm -tT" with exactly the same PC and disks since about 
-kernel 2.6.8 (maybe even earlier). I remember with certainty that read 
-throughput the early days was about 50MB/s for each of the big disks, 
-and combined with RAID 0 I got ~75MB/s. Those figures have been dropping 
-gradually with each new kernel release and the situation today, with 
-2.6.22, is that hdparm gives maximum throughput 20MB/s for each disk, 
-and for RAID 0 too!
-
-I have been ignoring these performance regressions because of no 
-stability problems until now. So could it be that I'm reaching the 
-20MB/s driver limit and some requests take too long to be served?
-
-
-Dimitris
+We already tried that here. The response: "If noatime is so great, why
+isn't it the default in the kernel?"
