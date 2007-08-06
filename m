@@ -1,78 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbXHFJSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762628AbXHFJVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762947AbXHFJSB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760204AbXHFJRu
+	id S1762628AbXHFJVj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760140AbXHFJVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:17:50 -0400
-Received: from nf-out-0910.google.com ([64.233.182.185]:14926 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760140AbXHFJRd (ORCPT
+	Mon, 6 Aug 2007 05:21:32 -0400
+Received: from web53809.mail.re2.yahoo.com ([206.190.36.204]:39758 "HELO
+	web53809.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754966AbXHFJVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:17:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=gZk6lNHScQSoOY5zp2/fVJtmtjYK/IOP+0F70RKY3tCrXI1Pm/7G7HceeX6NZNYidThCcZvO+VLLdCx9MT1zfuFzgCPvZqO0QQZcWYTLimQl+FyUGuwxliNOSUiuhK0mmV1yGJZWl3rDuf9wozwWf1ZRajSbwnxmvP8pYxu+WHc=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: check_irq_resend warning from pdc202xx_new
-Date: Mon, 6 Aug 2007 11:13:25 +0200
-User-Agent: KMail/1.9.6
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <46B59892.7040504@simon.arlott.org.uk>
-In-Reply-To: <46B59892.7040504@simon.arlott.org.uk>
+	Mon, 6 Aug 2007 05:21:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=RNuldoulYaO5jwlU8fb0d7+Xjm7H0hd2R+GCNWsJM1vTfC7Tfae1Pkl8Em/J3htyg3E/cmn9nUR1SszrSZ3z+N8DFQokfYMQAZ3jLqRhHCPjIgotERAyEQKIxq7XeERK0ddw/pNVV5fUAWiCsH3QK3WLfkOImETfL4RvGKmkSok=;
+X-YMail-OSG: GX5eKqIVM1kcFDI.yKNTXHAouzeFpxQlqOn.PQ48zOxfvXJAssP3vn6YuSczqSE8lA--
+Date: Mon, 6 Aug 2007 19:21:29 +1000 (EST)
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans for 2.6.23]
+To: david@lang.hm
+Cc: Rene Herman <rene.herman@gmail.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Ray Lee <ray-lk@madrabbit.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
+       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0708051916430.6905@asgard.lang.hm>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708061113.26137.bzolnier@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <997038.92524.qm@web53809.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-commit 0fc4969b866671dfe39b1a9119d0fdc7ea0f63e5
+--- david@lang.hm wrote:
 
-This report also doesn't seem to help with ne2k-pci problem...
+> On Mon, 6 Aug 2007, Nick Piggin wrote:
+> 
+> > david@lang.hm wrote:
+> >>  On Sun, 29 Jul 2007, Rene Herman wrote:
+> >> 
+> >> >  On 07/29/2007 01:41 PM, david@lang.hm wrote:
+> >> > 
+> >> > >  I agree that tinkering with the core VM code
+> should not be done 
+> >> > >  lightly,
+> >> > >   but this has been put through the proper
+> process and is stalled with 
+> >> > >   no
+> >> > >   hints on how to move forward.
+> >> > 
+> >> > 
+> >> >  It has not. Concerns that were raised (by
+> specifically Nick Piggin) 
+> >> >  weren't being addressed.
+> >>
+> >>
+> >>  I may have missed them, but what I saw from him
+> weren't specific issues,
+> >>  but instead a nebulous 'something better may
+> come along later'
+> >
+> > Something better, ie. the problems with page
+> reclaim being fixed.
+> > Why is that nebulous?
+> 
+> becouse that doesn't begin to address all the
+> benifits.
 
-On Sunday 05 August 2007, Simon Arlott wrote:
-> [   36.667137] PDC20269: IDE controller at PCI slot 0000:00:0b.0
-> [   36.667285] ACPI: PCI Interrupt 0000:00:0b.0[A] -> Link [LNKD] -> GSI 12 (level, low) -> IRQ 12
-> [   36.667450] PDC20269: chipset revision 2
-> [   36.677550] PDC20269: PLL input clock is 16652 kHz
-> [   36.707624] PDC20269: 100% native mode on irq 12
-> [   36.707683]     ide2: BM-DMA at 0xc800-0xc807, BIOS settings: hde:pio, hdf:pio
-> [   36.707848]     ide3: BM-DMA at 0xc808-0xc80f, BIOS settings: hdg:pio, hdh:pio
-> [   36.708021] Probing IDE interface ide2...
-> [   37.187497] hde: WDC WD1200PB-00FBA0, ATA DISK drive
-> [   38.181060] hde: selected mode 0x45
-> [   38.182293] ide2 at 0xb800-0xb807,0xbc02 on irq 12
-> [   38.182816] Probing IDE interface ide3...
-> [   38.828172] hdg: ST340810A, ATA DISK drive
-> [   39.922933] hdh: IDE DVD-ROM 16X, ATAPI CD/DVD-ROM drive
-> [   40.141733] WARNING: at kernel/irq/resend.c:70 check_irq_resend()
-> [   40.141788]  [<b0104fca>] show_trace_log_lvl+0x1a/0x30
-> [   40.141882]  [<b0104ff2>] show_trace+0x12/0x20
-> [   40.141964]  [<b0105105>] dump_stack+0x15/0x20
-> [   40.142044]  [<b014f09b>] check_irq_resend+0xab/0xb0
-> [   40.142135]  [<b014e754>] enable_irq+0xb4/0xc0
-> [   40.142216]  [<b03b138f>] probe_hwif+0x35f/0x4a0
-> [   40.142301]  [<b03b14df>] probe_hwif_init_with_fixup+0xf/0x90
-> [   40.142384]  [<b03b4523>] ide_setup_pci_device+0x83/0xb0
-> [   40.142468]  [<b03a99b8>] init_setup_pdcnew+0x8/0x10
-> [   40.142558]  [<b03a9ad2>] pdc202new_init_one+0x12/0x20
-> [   40.142640]  [<b06d76f2>] ide_scan_pcidev+0x42/0x70
-> [   40.142729]  [<b06d7747>] ide_scan_pcibus+0x27/0xf0
-> [   40.142811]  [<b06d763d>] probe_for_hwifs+0xd/0x20
-> [   40.142892]  [<b06d768c>] ide_init+0x3c/0x60
-> [   40.142972]  [<b06be939>] do_initcalls+0x49/0x1e0
-> [   40.143056]  [<b06beaec>] do_basic_setup+0x1c/0x30
-> [   40.143137]  [<b06beba5>] kernel_init+0x55/0xb0
-> [   40.143218]  [<b0104e57>] kernel_thread_helper+0x7/0x10
-> [   40.143300]  =======================
-> [   40.146267] hdg: selected mode 0x45
-> [   40.149171] hdh: selected mode 0x42
-> [   40.149548] ide3 at 0xc000-0xc007,0xc402 on irq 12
+What do you mean "address the benefits"? What I want
+to address is the page reclaim problems.
+
+
+> the approach of fixing page reclaim and updatedb is
+> pretending that if you 
+> only do everything right pages won't get pushed to
+> swap in the first 
+> place, and therefor swap prefetch won't be needed.
+
+You should read what I wrote.
+
+Anyway, the fact of the matter is that there are still
+fairly significant problems with page reclaim in this
+workload which I would like to see fixed.
+
+I personally still think some of the low hanging fruit
+*might* be better fixed before swap prefetch gets
+merged, but I've repeatedly said I'm sick of getting
+dragged back into the whole debate so I'm happy with
+whatever Andrew decides to do with it.
+
+I think it is sad to turn it off for laptops, if it
+really makes the "desktop" experience so much better.
+Surely for _most_ workloads we should be able to
+manage 1-2GB of RAM reasonably well.
+
+ 
+> this completely ignores the use case where the
+> swapping was exactly the 
+> right thing to do, but memory has been freed up from
+> a program exiting so 
+> that you couldnow fill that empty ram with data that
+> was swapped out.
+
+Yeah. However, merging patches (especially when
+changing heuristics, especially in page reclaim) is
+not about just thinking up a use-case that it works
+well for and telling people that they're putting their
+heads in the sand if they say anything against it.
+Read this thread and you'll find other examples of
+patches that have been around for as long or longer
+and also have some good use-cases and also have not
+been merged.
+
+
+
+      ____________________________________________________________________________________
+Yahoo!7 Mail has just got even bigger and better with unlimited storage on all webmail accounts. 
+http://au.docs.yahoo.com/mail/unlimitedstorage.html
