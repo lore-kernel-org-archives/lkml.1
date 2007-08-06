@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762821AbXHFJ2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbXHFJci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762821AbXHFJ2T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXHFJ2L
+	id S1762873AbXHFJci (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760099AbXHFJcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:28:11 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:35266 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754921AbXHFJ2K (ORCPT
+	Mon, 6 Aug 2007 05:32:31 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:41558 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756849AbXHFJca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:28:10 -0400
-Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of
-	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-In-Reply-To: <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
-References: <200708051906.22865.rjw@sisk.pl>
-	 <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+qbqYYTwXoVvc/ZA0mqh"
-Date: Mon, 06 Aug 2007 11:29:51 +0200
-Message-Id: <1186392591.28655.35.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+	Mon, 6 Aug 2007 05:32:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qSRNm3M5zTauqvMq9i66dx8HS0vfqxc3B1iDatAOkd6BKaslc8omdWcixYlVjeH1hojw7aXvBE7yAuXHdaSffqd9O27cFUf5YJFRX3f/+f5lbDplFjZPRpA9wZV7VDUFbR03QVfw5XK9CGW/GYVgRJYvqkmaQTyMz1s7a3qF4zs=
+Message-ID: <a8e1da0708060232i4e239406p3ee73b3a4b24d108@mail.gmail.com>
+Date: Mon, 6 Aug 2007 09:32:30 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Wim Van Sebroeck" <wim@iguana.be>
+Subject: Re: eurotechwdt will cause reboot
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070803062436.GA2652@infomag.infomag.iguana.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a8e1da0707312003s6000b02s95c90b5971dbbd51@mail.gmail.com>
+	 <20070801055845.GA2648@infomag.infomag.iguana.be>
+	 <a8e1da0707312322g4559a546xc357505b591f9e65@mail.gmail.com>
+	 <a8e1da0708021853y1eab0ee1v859ffdb9b35762a2@mail.gmail.com>
+	 <20070803062436.GA2652@infomag.infomag.iguana.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>On 8/3/07, Wim Van Sebroeck <wim@iguana.be> wrote:
+> Hi Dave,
+>
+> > Hi,
+> > News: 2.6.23-rc1-mm1 will reboot with eurotechwdt, but 2.6.23-rc1-mm2
+> > will not. do you need the config files?
+> >
+> > I will concentrate on this problem as well. Any hints how to debug?
+>
+> Yes: make a diff file between the two versions and see what has changed.
+> If something changed on the eurotechwdt file then that is probably the
+> answer you are looking for.  Else it will mean that your problem is fixed
+> by other code and then we will have to find out which code did this.
+>
+> I was reading the datasheet to see how the driver worked. But I think
+> we want to concentrate now first on what the difference is between the
+> -mm1 and -mm2. Luckily something fixed allready your problem. Now it would
+> be usefull to know what that was.
 
---=-+qbqYYTwXoVvc/ZA0mqh
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yes, I think I get the reason.
 
-On Mon, 2007-08-06 at 11:07 +0200, Pavel Machek wrote:
-> Hi!
->=20
-> > +config SUSPEND_UP_POSSIBLE
-> > +	bool
-> > +	depends on (X86 && !X86_VOYAGER) || (PPC32 && PPC_MPC52xx) \
-> > +		   || (PPC64 && (PPC_PSERIES || PPC_PMAC)) || ARM || BLACKFIN \
-> > +		   || MIPS || SUPERH || FRV
-> > +	depends on !SMP
-> > +	default y
->=20
-> I guess I'd rather left SUSPEND_UP_POSSIBLE to allways y (as it always
-> was), and let architectures that can't handle it  not return "mem"
-> from list of valid states...
+The -mm1 kernel/irq/manage.c send a fake irq via handler in
+request_irq function. -mm2 surround it with  #ifdef CONFIG_DEBUG_SHIRQ
+/ #endif.
 
-Yeah, that's the utterly broken interface we used to have. Until I fixed
-it to have no valid states until architectures implement suspend_ops.
-Still, I disagree, why bother with compiling code that can't ever be
-used?
-
-johannes
-
---=-+qbqYYTwXoVvc/ZA0mqh
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGtuoP/ETPhpq3jKURAtl9AKCZV5oFZ/uHnjhCSL+vgMo6fnub6gCeOiBY
-LxfwT9+1NwXAFkhhkWEfHyM=
-=oiNh
------END PGP SIGNATURE-----
-
---=-+qbqYYTwXoVvc/ZA0mqh--
-
+Regards
+dave
