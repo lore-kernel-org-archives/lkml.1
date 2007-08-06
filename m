@@ -1,190 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932298AbXHFKOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbXHFKQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932298AbXHFKOV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762218AbXHFKOO
+	id S1763473AbXHFKQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762353AbXHFKQi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:14:14 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:32868
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762188AbXHFKON convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:14:13 -0400
-Message-Id: <46B710C5.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Mon, 06 Aug 2007 11:15:01 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>, <linux-kernel@vger.kernel.org>,
-       <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [1/58] x86: Always flush pages in
-	change_page_attr
-References: <200707191154.642492000@suse.de>
- <20070719095444.CFAB114E04@wotan.suse.de>
-In-Reply-To: <20070719095444.CFAB114E04@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 6 Aug 2007 06:16:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51303 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762255AbXHFKQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:16:37 -0400
+To: dragoran <drago01@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+References: <46B6EDCB.6030806@gmail.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 06 Aug 2007 13:11:01 +0200
+In-Reply-To: <46B6EDCB.6030806@gmail.com>
+Message-ID: <p73zm14lxyy.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-But that is still wrong - you're again flushing the page table page rather than
-the data one. Fixing this was the purpose of the patch I had sent, plus the
-broken reference counting used by the reversion logic. Jan
+dragoran <drago01@gmail.com> writes:
 
->>> Andi Kleen <ak@suse.de> 19.07.07 11:54 >>>
+> Its possible to set the io priority using tools like ionice and syscalls.
+> But this works only as root.
+> Why can't a non root user change the priority of his processes to idle?
+> I understand that realtime priority requires root but why idle?
+> For instance the beagle trys to set its priority to idle but fails
+> because it does not run as root.
+> Any reason for this that I have missed? I can't think of a case where
+> setting the io priority to idle would have a negative impact for other
+> users or the whole system.
 
-Fix a bug introduced with the CLFLUSH changes: we must always flush pages
-changed in cpa(), not just when they are reverted.
+Very low priority can starve others when it holds some kernel resource
+needed by another task.  
 
-Reenable CLFLUSH usage with that now (it was temporarily disabled
-for .22) 
+Consider three tasks: one very low priority, one high priority: Low
+priority task holds some kernel resource, middle task eats as much CPU
+as it gets; high priority task wants to get the resource. High
+priority will need to wait for low running, which could take a long
+time. With true SCHED_IDLE (i believe the current implementation is
+not true) this could be never or at least a very long time.
 
-Add some BUG_ONs
+There are ways to defend against this problem (known as priority inheritance),
+but the kernel doesn't do them consistently. The same issue could also
+happen for user space managed resources.
 
-Contains fixes from  Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+For IO I suppose the same could happen too. e.g. low priority
+task wants to write out a page and keeps it locked until the IO 
+is finished. High priority task wants to access the page and has
+to wait until it is unlocked. Middle task generates an endless
+stream of IO that makes the idle priority writeout never finish.
 
-Signed-off-by: Andi Kleen <ak@suse.de>
+In general idle priorities are quite risky, even for root.
 
----
- arch/i386/mm/pageattr.c   |   20 +++++++++++++++++---
- arch/x86_64/mm/pageattr.c |   23 ++++++++++++++---------
- 2 files changed, 31 insertions(+), 12 deletions(-)
-
-Index: linux/arch/x86_64/mm/pageattr.c
-===================================================================
---- linux.orig/arch/x86_64/mm/pageattr.c
-+++ linux/arch/x86_64/mm/pageattr.c
-@@ -74,14 +74,12 @@ static void flush_kernel_map(void *arg)
- 	struct page *pg;
- 
- 	/* When clflush is available always use it because it is
--	   much cheaper than WBINVD. Disable clflush for now because
--	   the high level code is not ready yet */
--	if (1 || !cpu_has_clflush)
-+	   much cheaper than WBINVD. */
-+	if (!cpu_has_clflush)
- 		asm volatile("wbinvd" ::: "memory");
- 	else list_for_each_entry(pg, l, lru) {
- 		void *adr = page_address(pg);
--		if (cpu_has_clflush)
--			cache_flush_page(adr);
-+		cache_flush_page(adr);
- 	}
- 	__flush_tlb_all();
- }
-@@ -95,7 +93,8 @@ static LIST_HEAD(deferred_pages); /* pro
- 
- static inline void save_page(struct page *fpage)
- {
--	list_add(&fpage->lru, &deferred_pages);
-+	if (!test_and_set_bit(PG_arch_1, &fpage->flags))
-+		list_add(&fpage->lru, &deferred_pages);
- }
- 
- /* 
-@@ -129,9 +128,12 @@ __change_page_attr(unsigned long address
- 	pte_t *kpte; 
- 	struct page *kpte_page;
- 	pgprot_t ref_prot2;
-+
- 	kpte = lookup_address(address);
- 	if (!kpte) return 0;
- 	kpte_page = virt_to_page(((unsigned long)kpte) & PAGE_MASK);
-+	BUG_ON(PageLRU(kpte_page));
-+	BUG_ON(PageCompound(kpte_page));
- 	if (pgprot_val(prot) != pgprot_val(ref_prot)) { 
- 		if (!pte_huge(*kpte)) {
- 			set_pte(kpte, pfn_pte(pfn, prot));
-@@ -159,10 +161,9 @@ __change_page_attr(unsigned long address
- 	/* on x86-64 the direct mapping set at boot is not using 4k pages */
-  	BUG_ON(PageReserved(kpte_page));
- 
--	if (page_private(kpte_page) == 0) {
--		save_page(kpte_page);
-+	save_page(kpte_page);
-+	if (page_private(kpte_page) == 0)
- 		revert_page(address, ref_prot);
-- 	}
- 	return 0;
- } 
- 
-@@ -234,6 +235,10 @@ void global_flush_tlb(void)
- 	flush_map(&l);
- 
- 	list_for_each_entry_safe(pg, next, &l, lru) {
-+		list_del(&pg->lru);
-+		clear_bit(PG_arch_1, &pg->flags);
-+		if (page_private(pg) != 0)
-+			continue;
- 		ClearPagePrivate(pg);
- 		__free_page(pg);
- 	} 
-Index: linux/arch/i386/mm/pageattr.c
-===================================================================
---- linux.orig/arch/i386/mm/pageattr.c
-+++ linux/arch/i386/mm/pageattr.c
-@@ -82,7 +82,7 @@ static void flush_kernel_map(void *arg)
- 	struct page *p;
- 
- 	/* High level code is not ready for clflush yet */
--	if (0 && cpu_has_clflush) {
-+	if (cpu_has_clflush) {
- 		list_for_each_entry (p, lh, lru)
- 			cache_flush_page(p);
- 	} else if (boot_cpu_data.x86_model >= 4)
-@@ -136,6 +136,12 @@ static inline void revert_page(struct pa
- 			    ref_prot));
- }
- 
-+static inline void save_page(struct page *kpte_page)
-+{
-+	if (!test_and_set_bit(PG_arch_1, &kpte_page->flags))
-+		list_add(&kpte_page->lru, &df_list);
-+}
-+
- static int
- __change_page_attr(struct page *page, pgprot_t prot)
- { 
-@@ -150,6 +156,9 @@ __change_page_attr(struct page *page, pg
- 	if (!kpte)
- 		return -EINVAL;
- 	kpte_page = virt_to_page(kpte);
-+	BUG_ON(PageLRU(kpte_page));
-+	BUG_ON(PageCompound(kpte_page));
-+
- 	if (pgprot_val(prot) != pgprot_val(PAGE_KERNEL)) { 
- 		if (!pte_huge(*kpte)) {
- 			set_pte_atomic(kpte, mk_pte(page, prot)); 
-@@ -179,11 +188,11 @@ __change_page_attr(struct page *page, pg
- 	 * time (not via split_large_page) and in turn we must not
- 	 * replace it with a largepage.
- 	 */
-+
-+	save_page(kpte_page);
- 	if (!PageReserved(kpte_page)) {
- 		if (cpu_has_pse && (page_private(kpte_page) == 0)) {
--			ClearPagePrivate(kpte_page);
- 			paravirt_release_pt(page_to_pfn(kpte_page));
--			list_add(&kpte_page->lru, &df_list);
- 			revert_page(kpte_page, address);
- 		}
- 	}
-@@ -236,6 +245,11 @@ void global_flush_tlb(void)
- 	spin_unlock_irq(&cpa_lock);
- 	flush_map(&l);
- 	list_for_each_entry_safe(pg, next, &l, lru) {
-+		list_del(&pg->lru);
-+		clear_bit(PG_arch_1, &pg->flags);
-+		if (PageReserved(pg) || !cpu_has_pse || page_private(pg) != 0)
-+			continue;
-+		ClearPagePrivate(pg);
- 		__free_page(pg);
- 	}
- }
-
-_______________________________________________
-patches mailing list
-patches@x86-64.org 
-https://www.x86-64.org/mailman/listinfo/patches 
-
+-Andi
