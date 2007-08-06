@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764525AbXHFLIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932358AbXHFLHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764525AbXHFLIG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:08:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764368AbXHFLHB
+	id S932358AbXHFLHq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764132AbXHFLG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:07:01 -0400
-Received: from hu-out-0506.google.com ([72.14.214.230]:40606 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764307AbXHFLHA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:07:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=tjUU+Jo+aW5pdILdmgf/dpLkwjovPfOMUHmSuFOQmne8T8L3pUmG25RV8tpnqICvClIWxBco6cE4OZ5niPH7oOHLE4QVoz8Bq+jsNFDQ0Oq4Z50Qn3w/Cdi7TyL1ezvXS3YW0w4+zzEYY9PGIA8y00jDx3xfrOAATuGUx0e+pa0=
-Message-ID: <46B700C7.5090801@gmail.com>
-Date: Mon, 06 Aug 2007 13:06:47 +0200
-From: dragoran <drago01@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Mon, 6 Aug 2007 07:06:58 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:49320 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759225AbXHFLG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:06:57 -0400
+Date: Mon, 6 Aug 2007 11:55:04 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Len Brown <lenb@kernel.org>
+Cc: trenn@suse.de, Andi Kleen <andi@firstfloor.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Knut Petersen <Knut_Petersen@t-online.de>, linux-kernel@vger.kernel.org,
+       mjg59@srcf.ucam.org
+Subject: Re: 2.6.22 regression: thermal trip points
+Message-ID: <20070806095504.GA1934@elf.ucw.cz>
+References: <46B1988C.3090302@t-online.de> <20070802183830.GA4192@one.firstfloor.org> <1186139818.18821.590.camel@queen.suse.de> <200708031459.07108.lenb@kernel.org>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: allow non root users to set io priority "idle" ?
-References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <46B6F75D.1070808@gmail.com> <20070806103553.GA16133@one.firstfloor.org>
-In-Reply-To: <20070806103553.GA16133@one.firstfloor.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708031459.07108.lenb@kernel.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> couldn't this be fixed by bumping idle tasks to middle while they hold a 
->>     
->
-> Usually to high.
->
-> But it's all complicated and hasn't been done consistently
-> (there are real time mutexes in the -rt kernel for example, 
-> but there are lots of other locks and they have higher overhead too) 
-> and it's unclear we really want to do all this complexity anyways.
->
-> Also as I said the problem could then still happen in user space
-> which then would all need to be fixed to handle PI too.
->
-> In some cases the relationship is also not as simple as a single 
-> lock. And for IO handling it would be likely quite hard.
->
-> I personally always found idle priorities quite dubious because
-> even if they worked reliable for the CPU they will clear your cache/
-> load your memory controller and impact all other programs because
-> of this. And for the disk they will cause additional seeks which are 
-> also very costly.
->
->   
-ok, thx so that means that the best that can be done for now is to run 
-beagle as best effort with prio 7 (like its done now).
+Hi!
 
+> > If we have something like this, we could still discuss a config option,
+> > that also allows to increase trip points, marking it with "If you set
+> > this you can destroy your machine, you have been warned...". While this
+> > would not be an option for distributions to compile in, some people may
+> > come around the biggest hammer -> overriding DSDT.
+> > 
+> > I cannot promise, but I try to get this for 2.6.24.
+> 
+> I think if you are enamored with overriding trip points at SuSE,
+> that you should simply restore the original scheme as the "value add"
+> for SuSE kernels.  Seriously, I'm totally fine with that.
+> 
+> You should be aware, however, that (one of) the fundamental flaws
+> with that scheme, shared with what you describe above, is that the OS
+> can not actually change the trip points in the thermal sensor.
+> The sensor is going to trip at the temperature that _it_ thinks
 
+Yep, you work around this one by enabling polling.
+
+> This faking out the user, plus the fact that the BIOS does change
+> trip-points at run-time, made the original scheme fundamentally
+> unsound.  Further, I've not yet found a single system where use
+
+Yes, this one is uglier. But maybe "enable polling automatically +
+ignore any updates from bios" (+ maybe "only enable lowering") is
+better solution than "just remove the knob"? After all, "the knob" is
+still useful for debugging at least.
+
+> of this scheme wasn't papering over some other problem.  For the
+> upstream kernel, I think it is more appropriate to expose and fix
+> the fundamental problems.  For distro kernels, I'm less concerned
+> if you hide bugs instead of fixing them.
+
+This is okay as long as you are willing to work around the fundamental
+problems in kernel. You are unable to _fix_ them. They are broken
+BIOSes.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
