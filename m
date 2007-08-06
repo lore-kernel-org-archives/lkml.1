@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXHFSqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXHFSs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933760AbXHFSqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758466AbXHFSqh
+	id S933559AbXHFSs7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757099AbXHFSsu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:46:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40823 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758530AbXHFSqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:46:37 -0400
-In-Reply-To: <200708020440.l724edCT290676@shell01.TheWorld.com>
-References: <200708020440.l724edCT290676@shell01.TheWorld.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a650790070fdbccce792ea78776cf8a5@kernel.crashing.org>
+	Mon, 6 Aug 2007 14:48:50 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:60695
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757055AbXHFSss (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 14:48:48 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Date: Mon, 6 Aug 2007 11:48:43 -0700
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+References: <20070806102922.907530000@chello.nl> <200708061121.50351.phillips@phunq.net> <Pine.LNX.4.64.0708061141511.3152@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708061141511.3152@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Cc: matt@genesi-usa.com (Matt Sealey), linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Pegasos keyboard detection
-Date: Mon, 6 Aug 2007 20:45:52 +0200
-To: Alan Curry <pacman@TheWorld.com>
-X-Mailer: Apple Mail (2.623)
+Content-Disposition: inline
+Message-Id: <200708061148.43870.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> You don't need to patch Linux at all. In fact for silly things like 
->> this
->> I would recommend against it :)
+On Monday 06 August 2007 11:42, Christoph Lameter wrote:
+> On Mon, 6 Aug 2007, Daniel Phillips wrote:
+> > Currently your system likely would have died here, so ending up
+> > with a reserve page temporarily on the wrong node is already an
+> > improvement.
 >
-> If the workaround doesn't go into the kernel, everybody with affected
-> hardware has to individually find out about the bug (probably by 
-> experiencing
-> an annoying keyboardless boot) and fix it himself.
+> The system would have died? Why?
 
-That's one of the reasons why this should go into a bootwrapper.
+Because a block device may have deadlocked here, leaving the system 
+unable to clean dirty memory, or unable to load executables over the 
+network for example.
 
+> The application in the cpuset that ran out of memory should have died
+> not the system. 
 
-Segher
+If your "application" is a virtual block device then you can land in 
+deep doodoo.
 
+Regards,
+
+Daniel
