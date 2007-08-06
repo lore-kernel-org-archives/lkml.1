@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933697AbXHFW7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933933AbXHFXAC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933697AbXHFW7Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764766AbXHFW7L
+	id S933933AbXHFXAC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:00:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765001AbXHFW7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:59:11 -0400
-Received: from smtp1.Stanford.EDU ([171.67.22.28]:53007 "EHLO
-	smtp1.stanford.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764593AbXHFW7K (ORCPT
+	Mon, 6 Aug 2007 18:59:51 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:56436
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1764766AbXHFW7t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:59:10 -0400
-X-Greylist: delayed 1725 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 18:59:10 EDT
-Date: Mon, 6 Aug 2007 17:26:33 -0500
-From: Gautam Iyer <gautam@math.stanford.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Increased CPU usage after upgrading to 2.6.21
-Message-ID: <20070806222632.GI24652@math.stanford.edu>
-References: <20070718164347.GE9506@math.stanford.edu> <20070806183207.GB5761@ucw.cz>
+	Mon, 6 Aug 2007 18:59:49 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Christoph Lameter <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Date: Mon, 6 Aug 2007 15:59:41 -0700
+User-Agent: KMail/1.9.5
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+References: <20070806102922.907530000@chello.nl> <1186431992.7182.33.camel@twins> <Pine.LNX.4.64.0708061404300.3116@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0708061404300.3116@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070806183207.GB5761@ucw.cz>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Spam-Score: -101.1
-X-Scan-Signature: d3e02c565cd5ac634b2ff74b6ba3e13d
+Message-Id: <200708061559.41680.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 06:32:08PM +0000, Pavel Machek wrote:
+On Monday 06 August 2007 14:05, Christoph Lameter wrote:
+> > > That is possible if one
+> > > would make sure that the network layer triggers reclaim once in a
+> > > while.
+> >
+> > This does not make sense, we cannot reclaim from reclaim.
+>
+> But we should limit the amounts of allocation we do while performing
+> reclaim...
 
-> > PS: I'm using the kernel with Gentoo patchset. But I confirmed the above
-> >     persists with the vanilla kernels.
-> > 
-> > PPS: I also played around with the timer frequency, and premption model.
-> >      Would those make a difference to CPU usage?
-> 
-> Yes. Or rather, it will make accounting more accurate, so that you see
-> that 1% cpu usage, unlike previous kernels where something still ate
-> cpu but kernel did not know it.
+Correct.  That is what the throttling part of these patches is about.  
+In order to fix the vm writeout deadlock problem properly, two things 
+are necessary:
 
-Hi,
+  1) Throttle the vm writeout path to use a bounded amount of memory
 
-Thanks for your response.
+  2) Provide access to a sufficiently large amount of reserve memory for 
+each memory user in the vm writeout path
 
-Well, I now recompiled all the kernels I used with all possible
-permutations of these options (yes, that did take the better part of
-last week).
+You can understand every detail of this patch set and the following ones 
+coming from Peter in terms of those two requirements.
 
-I can confirm that under identical option for the preemption model, and
-timer frequency, the following happen:
+> F.e. refilling memory pools during reclaim should be disabled.
 
-    1. With 2.6.19 (gentoo-r5), the system claims to use 0% CPU when
-       idle.
+Actually, recursing into the vm should be disabled entirely but that is 
+a rather deeply ingrained part of mm culture we do not propose to 
+fiddle with just now.
 
-    2. With 2.6.21 (gentoo-r4), 2.6.22 (gentoo-r1) and the unmodified
-       2.6.22.1 kernel, the system claims to use between 1% and 3% CPU
-       when idle.
+Memory pools are refilled when the pool user frees some memory, not ever 
+by the mm.
 
-When I run "top", I see that all non-idle processes running claim to
-take 0% CPU (except occasionally the terminal I'm running top in, and
-top itself). The CPU line in the top output consistently claims
-something like
+Regards,
 
-    CPU(s): .3%us, 1.0%sy, ...
-
-I'm not sure if this is something I should be worried about or not,
-
-Thanks again,
-
-Gautam
-
--- 
-'Budget' -- A method for going broke methodically.
+Daniel
