@@ -1,61 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765561AbXHFRo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764504AbXHFRsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765561AbXHFRo0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXHFRoM
+	id S1764504AbXHFRsd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751038AbXHFRs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:44:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47469 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 13:48:26 -0400
+Received: from 1wt.eu ([62.212.114.60]:1216 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752019AbXHFRoK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:44:10 -0400
-Message-ID: <46B75DD4.5080709@redhat.com>
-Date: Mon, 06 Aug 2007 13:43:48 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: =?UTF-8?B?TWFyY2luIMWabHVzYXJ6?= <marcin.slusarz@gmail.com>,
-       Jarek Poplawski <jarkao2@o2.pl>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-References: <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu>
-In-Reply-To: <20070806070300.GA4509@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1755016AbXHFRs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 13:48:26 -0400
+Date: Mon, 6 Aug 2007 19:45:36 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       Axel Reinhold <axel@freakout.de>, linux-kernel@vger.kernel.org
+Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
+Message-ID: <20070806174536.GA12131@1wt.eu>
+References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu> <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org> <20070806132658.GE10999@1wt.eu> <46B75CD0.7080408@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B75CD0.7080408@zytor.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2007 03:03 AM, Ingo Molnar wrote:
+On Mon, Aug 06, 2007 at 10:39:28AM -0700, H. Peter Anvin wrote:
+> Willy Tarreau wrote:
+> > 
+> > Just to enlighten me on the subject, could you please explain me
+> > what is wrong in the code ? Granted I found it awful, but even on
+> > the GCC-4.2 page where -fno-toplevel-reorder is explained, it is
+> > said that asm statements can be instantiated between functions
+> > blocks, which is exactly what is used here.
+> > 
 > 
-> But, since level types don't need this retriggers too much I think
-> this "don't mask interrupts by default" idea should be rethinked:
-> is there enough gain to risk such hard to diagnose errors?
->   
+> A stray semicolon:
 > 
+> __attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
+> 
+> ... is actually a prototype followed by a top-level asm statement
+> (because of the semicolon), *not* a function with a single-statement
+> body (which is itself uglier than hell, use braces please...)
 
-I reverted those masking changes in Fedora and the baffling problem
-with 3Com 3C905 network adapters went away.
+I'm well aware of that, even in the example I wrote to reproduce the issue
+and posted to gcc's bugzilla, I clearly have one function prototype and a
+separate asm statement which contained a label with the function's name.
 
-Before, they would print:
+So in my opinion, the code above is not buggy. It's dirty (though I did
+not find how to produce the equivalent in a different manner).
 
-eth0: transmit timed out, tx_status 00 status e601.
-  diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
-eth0: Interrupt posted but not delivered -- IRQ blocked by another device?
-  Flags; bus-master 1, dirty 295757(13) current 295757(13)
-  Transmit list 00000000 vs. f7150a20.
-  0: @f7150200  length 80000070 status 0c010070
-  1: @f71502a0  length 80000070 status 0c010070
-  2: @f7150340  length 8000005c status 0c01005c
-
-Now they just work, apparently...
-
-So why not just revert the change?
+Willy
 
