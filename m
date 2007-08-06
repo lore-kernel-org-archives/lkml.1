@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765851AbXHFUoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932695AbXHFUs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765851AbXHFUoY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761877AbXHFUoN
+	id S932695AbXHFUs6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758505AbXHFUsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:44:13 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34654 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756084AbXHFUoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:44:11 -0400
-Message-ID: <46B78814.50508@pobox.com>
-Date: Mon, 06 Aug 2007 16:44:04 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Mon, 6 Aug 2007 16:48:51 -0400
+Received: from [12.38.223.190] ([12.38.223.190]:5674 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1758879AbXHFUsv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:48:51 -0400
 MIME-Version: 1.0
-To: brking@linux.vnet.ibm.com
-CC: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, santil@us.ibm.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers/net/ibmveth.c: memset fix
-References: <200708062217.04361.m.kozlowski@tuxland.pl> <46B78672.9090808@linux.vnet.ibm.com>
-In-Reply-To: <46B78672.9090808@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.1 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.1 points, 5.0 required)
+Message-ID: <18103.35100.916194.803006@zeus.sw.starentnetworks.com>
+Date: Mon, 6 Aug 2007 16:48:28 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: Vlad Yasevich <vladislav.yasevich@hp.com>
+Cc: lksctp-developers@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Srinivas Akkipeddi <sakkiped@starentnetworks.com>
+Subject: Re: [PATCH] SCTP: IPv4 mapped addr not returned in SCTPv6 accept()
+In-Reply-To: <46A8F926.1070606@hp.com>
+References: <18087.57737.908842.337891@zeus.sw.starentnetworks.com>
+	<46A8E027.10802@hp.com>
+	<18088.61269.5608.925496@zeus.sw.starentnetworks.com>
+	<46A8F926.1070606@hp.com>
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian King wrote:
-> Mariusz Kozlowski wrote:
->> Hello,
->>
->> 	Looks like memset() is zeroing wrong nr of bytes.
+Vlad Yasevich writes:
+> Ok.  First, this is a different bug, so I would prefer a separate patch.
+> Also, I see the problem and it's ugly, but this solution is not really correct,
+> both conceptually and code wise.
 > 
-> Good catch, however, I think we can just remove this memset altogether
-> since the memory gets allocated via kzalloc.
+> Conceptually, the v4 code should never worry about V4-mapped addresses and shouldn't
+> muck with them.  They are IPv6 addresses and there should be a clean separation.
+> 
+> Code wise, the code in the __sctp_connect() is terrible.
+> 
+> Does the attached patch work for you in this case.
 
-Correct, that memset() is superfluous.
+Sorry about the confusion before, your patch to __sctp_connect()
+fixes calls to getpeername() after connect() just fine.
 
-	Jeff
+I'll post a patch for the accept()/getpeername() case in a bit.
 
+Acked-by: Dave Johnson <djohnson@sw.starentnetworks.com>
 
+-- 
+Dave Johnson
+Starent Networks
 
