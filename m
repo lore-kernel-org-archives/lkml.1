@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbXHFKQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763576AbXHFKSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763473AbXHFKQp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762353AbXHFKQi
+	id S1763576AbXHFKSR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbXHFKSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:16:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51303 "EHLO mx1.suse.de"
+	Mon, 6 Aug 2007 06:18:05 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:36792 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762255AbXHFKQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:16:37 -0400
-To: dragoran <drago01@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: allow non root users to set io priority "idle" ?
-References: <46B6EDCB.6030806@gmail.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 06 Aug 2007 13:11:01 +0200
-In-Reply-To: <46B6EDCB.6030806@gmail.com>
-Message-ID: <p73zm14lxyy.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1762414AbXHFKSE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:18:04 -0400
+Date: Mon, 6 Aug 2007 13:18:03 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+In-Reply-To: <200708051912.17342.rjw@sisk.pl>
+Message-ID: <Pine.SOC.4.64.0708061314380.7974@math.ut.ee>
+References: <Pine.SOC.4.64.0708041425020.26419@math.ut.ee> <200708050010.19338.rjw@sisk.pl>
+ <Pine.SOC.4.64.0708051217340.11960@math.ut.ee> <200708051912.17342.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dragoran <drago01@gmail.com> writes:
+> Hmm, with this .config SUSPEND_SMP cannot be set, because SMP is unset in it.
+> 
+> Can you please check if this warning is still present with the patch from
+> http://marc.info/?l=linux-kernel&m=118633307113052&w=2 applied?
 
-> Its possible to set the io priority using tools like ionice and syscalls.
-> But this works only as root.
-> Why can't a non root user change the priority of his processes to idle?
-> I understand that realtime priority requires root but why idle?
-> For instance the beagle trys to set its priority to idle but fails
-> because it does not run as root.
-> Any reason for this that I have missed? I can't think of a case where
-> setting the io priority to idle would have a negative impact for other
-> users or the whole system.
+Hmm, does not apply to 2.6.23-rc2:
+2 out of 2 hunks FAILED -- saving rejects to file kernel/power/Kconfig.rej
+1 out of 1 hunk FAILED -- saving rejects to file arch/x86_64/Kconfig.rej
+1 out of 1 hunk FAILED -- saving rejects to file arch/arm/Kconfig.rej
+1 out of 1 hunk FAILED -- saving rejects to file arch/i386/Kconfig.rej
+1 out of 1 hunk FAILED -- saving rejects to file arch/powerpc/Kconfig.rej
 
-Very low priority can starve others when it holds some kernel resource
-needed by another task.  
+It doesn't seem to touch arch/ppc/Kconfig but only arch/powerpc/Kconfig 
+- should it make any difference at all?
 
-Consider three tasks: one very low priority, one high priority: Low
-priority task holds some kernel resource, middle task eats as much CPU
-as it gets; high priority task wants to get the resource. High
-priority will need to wait for low running, which could take a long
-time. With true SCHED_IDLE (i believe the current implementation is
-not true) this could be never or at least a very long time.
-
-There are ways to defend against this problem (known as priority inheritance),
-but the kernel doesn't do them consistently. The same issue could also
-happen for user space managed resources.
-
-For IO I suppose the same could happen too. e.g. low priority
-task wants to write out a page and keeps it locked until the IO 
-is finished. High priority task wants to access the page and has
-to wait until it is unlocked. Middle task generates an endless
-stream of IO that makes the idle priority writeout never finish.
-
-In general idle priorities are quite risky, even for root.
-
--Andi
+-- 
+Meelis Roos (mroos@linux.ee)
