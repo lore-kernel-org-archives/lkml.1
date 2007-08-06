@@ -1,128 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761446AbXHFQi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761904AbXHFQli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761446AbXHFQi0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 12:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753899AbXHFQiS
+	id S1761904AbXHFQli (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 12:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbXHFQl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 12:38:18 -0400
-Received: from mail.screens.ru ([213.234.233.54]:60258 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753780AbXHFQiR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 12:38:17 -0400
-Date: Mon, 6 Aug 2007 20:40:33 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
-       Daniel Walker <dwalker@mvista.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
-Message-ID: <20070806164033.GA4021@tv-sign.ru>
-References: <1186005598.9513.261.camel@ghaskins-t60p.haskins.net> <20070801222201.GA316@tv-sign.ru> <1186012439.9513.321.camel@ghaskins-t60p.haskins.net> <20070802195049.GA361@tv-sign.ru> <20070806114954.GC1903@elte.hu> <20070806131814.GC91@tv-sign.ru> <1186406963.7182.13.camel@twins> <1186407173.7182.16.camel@twins> <20070806144536.GA232@tv-sign.ru> <1186411921.7182.24.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1186411921.7182.24.camel@twins>
-User-Agent: Mutt/1.5.11
+	Mon, 6 Aug 2007 12:41:29 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:38081 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754432AbXHFQl3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 12:41:29 -0400
+Message-ID: <46B74F08.1050909@zytor.com>
+Date: Mon, 06 Aug 2007 09:40:40 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Jeff Chua <jeff.chua.linux@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       suspend-devel List <suspend-devel@lists.sourceforge.net>
+Subject: Re: Linux 2.6.23-rc2
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com> <200708051847.12046.rjw@sisk.pl> <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com> <200708061326.25888.rjw@sisk.pl>
+In-Reply-To: <200708061326.25888.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06, Peter Zijlstra wrote:
->
-> On Mon, 2007-08-06 at 18:45 +0400, Oleg Nesterov wrote:
-> > On 08/06, Peter Zijlstra wrote:
+Rafael J. Wysocki wrote:
+> On Monday, 6 August 2007 02:36, Jeff Chua wrote:
+>> On 8/6/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>
+>>> What does 's2ram -i' say about your machine?
+>> This machine can be identified by:
+>>     sys_vendor   = "LENOVO"
+>>     sys_product  = "1702E7A"
+>>     sys_version  = "ThinkPad X60s"
+>>     bios_version = "7BETD0WW (2.11 )"
 > 
-> > > > I suspect most of the barrier/flush semantics could be replaced with
-> > > > completions from specific work items.
-> > 
-> > Hm. But this is exactly how it works?
+> This means it's not in the whitelist, AFAICS.
 > 
-> Yes, barriers work by enqueueing work and waiting for that one work item
-> to fall out, thereby knowing that all previous work has been completed.
+> Similar machines are known to work with "--acpi_sleep=3" or with
+> "--acpi_sleep=1 --vbe_mode".
 > 
-> My point was that most flushes are there to wait for a previously
-> enqueued work item, and might as well wait for that one.
-> 
-> Let me try to illustrate: a regular pattern is, we enqueue work A and
-> then flush the whole queue to ensure A is processed. So instead of
-> enqueueing A, then B in the barrier code, and wait for B to pop out, we
-> might as well wait for A to begin with.
 
-This is a bit off-topic, but in that particular case we can do
+I'm not all that familiar with s2ram.  Any feel for why the behaviour
+would have changed from the old setup code at all?  Since the setup code
+isn't entered on resume from STR (unlike resume from STD), as far as I
+know, there can only be "some little bit of state" hanging around.
 
-	if (cancel_work_sync(&A))
-		A->func(&A);
+If not then perhaps we should try to get a dump of the real-mode state
+area for both kernels (which would need a patch, unfortunately.)
 
-unless we want to execute ->func() on another CPU of course. It is easy to
-implement flush_work() which waits for a single work_strcut, but it is not
-so useful when it comes to schedule_on_each_cpu().
-
-But I agree, flush_workqueue() should be avoided if possible. Not sure
-it makes sense, but we can do something like below.
-
-Oleg.
-
---- kernel/workqueue.c~	2007-07-28 16:58:17.000000000 +0400
-+++ kernel/workqueue.c	2007-08-06 20:33:25.000000000 +0400
-@@ -572,25 +572,54 @@ EXPORT_SYMBOL(schedule_delayed_work_on);
-  *
-  * schedule_on_each_cpu() is very slow.
-  */
-+
-+struct xxx
-+{
-+	atomic_t count;
-+	struct completion done;
-+	work_func_t func;
-+};
-+
-+struct yyy
-+{
-+	struct work_struct work;
-+	struct xxx *xxx;
-+};
-+
-+static void yyy_func(struct work_struct *work)
-+{
-+	struct xxx *xxx = container_of(work, struct yyy, work)->xxx;
-+	xxx->func(work);
-+
-+	if (atomic_dec_and_test(&xxx->count))
-+		complete(&xxx->done);
-+}
-+
- int schedule_on_each_cpu(work_func_t func)
- {
- 	int cpu;
--	struct work_struct *works;
-+	struct xxx xxx;
-+	struct yyy *works;
- 
--	works = alloc_percpu(struct work_struct);
-+	init_completion(&xxx.done);
-+	xxx.func = func;
-+
-+	works = alloc_percpu(struct yyy);
- 	if (!works)
- 		return -ENOMEM;
- 
- 	preempt_disable();		/* CPU hotplug */
-+	atomic_set(&xxx.count, num_online_cpus());
- 	for_each_online_cpu(cpu) {
--		struct work_struct *work = per_cpu_ptr(works, cpu);
-+		struct yyy *yyy = per_cpu_ptr(works, cpu);
- 
--		INIT_WORK(work, func);
--		set_bit(WORK_STRUCT_PENDING, work_data_bits(work));
--		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), work);
-+		yyy->xxx = &xxx;
-+		INIT_WORK(&yyy->work, yyy_func);
-+		set_bit(WORK_STRUCT_PENDING, work_data_bits(&yyy->work));
-+		__queue_work(per_cpu_ptr(keventd_wq->cpu_wq, cpu), &yyy->work);
- 	}
- 	preempt_enable();
--	flush_workqueue(keventd_wq);
-+	wait_for_completion(&xxx.done);
- 	free_percpu(works);
- 	return 0;
- }
-
+	-hpa
