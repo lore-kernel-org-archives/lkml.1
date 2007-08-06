@@ -1,48 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933761AbXHFWug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXHFWwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933761AbXHFWug (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763367AbXHFWuZ
+	id S932768AbXHFWwe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:52:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763112AbXHFWwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:50:25 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4310 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761022AbXHFWuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:50:24 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: acme@ghostprotocols.net, Jeff Garzik <jgarzik@pobox.com>
-Subject: [PATCH] drivers/net/wireless/wl3501_cs.c: remove redundant memset
-Date: Tue, 7 Aug 2007 00:50:22 +0200
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+	Mon, 6 Aug 2007 18:52:24 -0400
+Received: from smtp102.sbc.mail.re2.yahoo.com ([68.142.229.103]:24306 "HELO
+	smtp102.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761867AbXHFWwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 18:52:22 -0400
+X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 18:52:22 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=sbcglobal.net;
+  h=Received:X-YMail-OSG:Mime-Version:Content-Type:Message-Id:Cc:Content-Transfer-Encoding:From:Subject:Date:To:X-Mailer;
+  b=piU05yk8ih2NNcBU9woND9jFs1uqfuvFrfii8uNtaMVz37dZ8GMbV/FdUQri2zeVHStfVdkvpzOW9UgNfS4xUI4uNeOluyRNyBrtsnaU0d8zTQNGIaffLiX5ZAiB9AvumL1gpiZl5j58r8itQUBN/8KaAA70GOEtYavqNmXY3wY=  ;
+X-YMail-OSG: 93go8o0VM1l7hbRJGmtI_D2u.AueoupBDPr8JflDSsVCw7vMdQHkzdTIz_IWfjFjQhgocHpjLbG96cujlbnPjYiz3jMNtjmz3D6mLI8Bo9M5Fg--
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <35B9865F-38B4-4603-A2B7-F4ABACE5520F@sbcglobal.net>
+Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708070050.23158.m.kozlowski@tuxland.pl>
+From: Kevin K <k_krieser@sbcglobal.net>
+Subject: sending raw packets via PPP
+Date: Mon, 6 Aug 2007 17:45:39 -0500
+To: linux-ppp@vger.kernel.org
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Is it possible to send raw packets via ppp under Linux?
 
-	This memset() looks superfluous.
+More specifically, in 2.4 series kernels such as RH's 2.4.21-47 kernel?
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+I've trying to modify the DHCP 3.0.1 code provided with RH 3 so I can  
+send requests via a PPP connection (standard RS-232), and it is just  
+being dropped by the stack according to ifconfig and debug statements  
+in ppp_generic.c.
 
- drivers/net/wireless/wl3501_cs.c | 58885 -> 58858 (-27 bytes)
- drivers/net/wireless/wl3501_cs.o | 200252 -> 200000 (-252 bytes)
-
- drivers/net/wireless/wl3501_cs.c |    1 -
- 1 file changed, 1 deletion(-)
-
---- linux-2.6.23-rc1-mm2-a/drivers/net/wireless/wl3501_cs.c	2007-08-01 08:43:46.000000000 +0200
-+++ linux-2.6.23-rc1-mm2-b/drivers/net/wireless/wl3501_cs.c	2007-08-07 00:34:36.000000000 +0200
-@@ -1841,7 +1841,6 @@ static int wl3501_get_encode(struct net_
- 	tocopy = min_t(u8, len_keys, wrqu->encoding.length);
- 	tocopy = min_t(u8, tocopy, 100);
- 	wrqu->encoding.length = tocopy;
--	memset(extra, 0, tocopy);
- 	memcpy(extra, keys, tocopy);
- out:
- 	return rc;
+Thanks,
+Kevin
