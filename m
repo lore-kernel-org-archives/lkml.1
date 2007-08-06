@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764640AbXHFKte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764302AbXHFKwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764640AbXHFKte (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:49:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764720AbXHFKsk
+	id S1764302AbXHFKwV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752560AbXHFKwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:48:40 -0400
-Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34344
-	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764534AbXHFKsj convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:48:39 -0400
-Message-Id: <46B718DB.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
-Date: Mon, 06 Aug 2007 11:49:31 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
-Subject: Re: [patches] [PATCH] [1/58] x86: Always flush pages in
-	change_page_attr
-References: <200707191154.642492000@suse.de>
- <20070719095444.CFAB114E04@wotan.suse.de>
- <46B710C5.76E4.0078.0@novell.com> <200708061236.59195.ak@suse.de>
-In-Reply-To: <200708061236.59195.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Mon, 6 Aug 2007 06:52:13 -0400
+Received: from cluster-d.mailcontrol.com ([217.69.20.190]:52599 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756586AbXHFKwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:52:12 -0400
+X-Greylist: delayed 2816 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 06:52:12 EDT
+Message-ID: <46B6F22E.1020300@csr.com>
+Date: Mon, 06 Aug 2007 11:04:30 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: sdio: set the functions' block size
+References: <11858961933491-git-send-email-david.vrabel@csr.com>	<1185896193612-git-send-email-david.vrabel@csr.com> <20070804153040.73668e4e@poseidon.drzeus.cx>
+In-Reply-To: <20070804153040.73668e4e@poseidon.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 06 Aug 2007 10:04:30.0573 (UTC) FILETIME=[2E45F9D0:01C7D811]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Andi Kleen <ak@suse.de> 06.08.07 12:36 >>>
->On Monday 06 August 2007 12:15:01 Jan Beulich wrote:
->> But that is still wrong - you're again flushing the page table page rather than
->> the data one. Fixing this was the purpose of the patch I had sent, plus the
->> broken reference counting used by the reversion logic. Jan
->
->True. The problem is that we can't necessarily use the LRU list_head of the data
->pages though; e.g. when the page is mapped to user space.
->
->I guess we might need to go back to wbinvd again.
+Pierre Ossman wrote:
+> On Tue, 31 Jul 2007 16:36:32 +0100
+> David Vrabel <david.vrabel@csr.com> wrote:
+> 
+>> Prior to calling the driver's probe(), set the functions' block size
+>> to the largest that's supported by both the card and the driver.
+>>
+>> Signed-off-by: David Vrabel <david.vrabel@csr.com>
+>>
+> 
+> Why a maximum size for the driver?
 
-That was what my patch did, plus an attempt to avoid the wbinvd if all accumulated
-pages that have pending modifications are contiguous.
+For efficient use of the bus it is useful to pad transfers to a multiple
+of the block size.  I reckoned it was potentially beneficial for drivers
+to use smaller blocks so less padding was required.  However, after
+looking at some figures the per block overhead (28 clocks for a write)
+really does limit the transfer sizes where small block sizes is beneficial.
 
->What was the remaining problem of the reference counting? 
+I'll remove this.  Drivers can still override the block size by calling
+sdio_set_block_size() directly.
 
-The counter gets adjusted regardless of the current attribute in effect, e.g. if you
-change a page to PAGE_KERNEL that already happens to be PAGE_KERNEL, the
-counter still gets decremented, which in turn may result in reverting the containing
-2M/4M page prematurely. Likewise if a not-PAGE_KERNEL gets changed to another
-non-PAGE_KERNEL attribute, the counter would get incremented, likely preventing
-reverting the large page forever.
+David
+-- 
+David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
+CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
 
-Jan
 
+.
