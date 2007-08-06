@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXHFP7S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756592AbXHFQAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbXHFP7S (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 11:59:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbXHFP7F
+	id S1756592AbXHFQAV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 12:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXHFQAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 11:59:05 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3482 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbXHFP7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 11:59:04 -0400
-Message-ID: <46B74546.2090501@shadowen.org>
-Date: Mon, 06 Aug 2007 16:59:02 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Mon, 6 Aug 2007 12:00:01 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33527 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046AbXHFQAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 12:00:00 -0400
+Date: Mon, 6 Aug 2007 11:59:19 -0400
+From: Dave Jones <davej@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070806155919.GA21066@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	J??rn Engel <joern@logfs.org>, Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+	dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+	trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+	richard@rsk.demon.co.uk, david@lang.hm
+References: <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805072141.GA4414@elte.hu> <20070805184408.GB22639@redhat.com> <20070806063909.GB31321@elte.hu>
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Thomas Renninger <trenn@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Len Brown <len.brown@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: ACPI modpost failure in 2.6.23-rc1-git2
-References: <20070806114335.GA31368@shadowen.org> <6bffcb0e0708060453l372e15c2h703ede437b4d8935@mail.gmail.com>
-In-Reply-To: <6bffcb0e0708060453l372e15c2h703ede437b4d8935@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070806063909.GB31321@elte.hu>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Hi Andy,
-> 
-> On 06/08/07, Andy Whitcroft <apw@shadowen.org> wrote:
->> Between 2.6.23-rc1-git1 and 2.6.23-rc1-git2 we started getting the
->> following fatal error during modpost on an x86_64 machine:
->>
->>   FATAL: drivers/acpi/video: sizeof(struct acpi_device_id)=20 is not a
->>   modulo of the size of section __mod_acpi_device_table=48.
->>   Fix definition of struct acpi_device_id in mod_devicetable.h
->>   make[1]: *** [__modpost] Error 1
->>
->> This check seems to have been added as part of the following commit:
->>
->>   commit 29b71a1ca74491fab9fed09e9d835d840d042690
->>   Author: Thomas Renninger <trenn@suse.de>
->>   Date:   Mon Jul 23 14:43:51 2007 +0200
->>
->>       ACPI: autoload modules - Create ACPI alias interface
->>
->> Compiler version:
->>   Reading specs from /usr/lib/gcc/i486-linux/3.4.4/specs
->>   Configured with: ../src/configure -v
->>   --enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr
->>   --libexecdir=/usr/lib --with-gxx-include-dir=/usr/include/c++/3.4
->>   --enable-shared --with-system-zlib --enable-nls
->>   --without-included-gettext --program-suffix=-3.4 --enable-__cxa_atexit
->>   --enable-libstdcxx-allocator=mt --enable-clocale=gnu
->>   --enable-libstdcxx-debug --enable-java-gc=boehm --enable-java-awt=gtk
->>   --disable-werror i486-linux
->>   Thread model: posix
->>   gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13sarge1)
->>
->> We are compiling a 64bit kernel on a machine with a pretty old
->> userspace which is 32bit.
->>
->> Let me know if you need more info.
->>
->> -apw
-> 
-> similar to
-> 
-> Subject         : modpost bug breaks ia64 cross compilation
-> References      : http://lkml.org/lkml/2007/7/27/30
->                   http://lkml.org/lkml/2007/7/27/418
-> Last known good : ?
-> Submitter       : Jan Dittmer <jdi@l4x.org>
-> Caused-By       : Thomas Renninger <trenn@suse.de>
->                   commit 29b71a1ca74491fab9fed09e9d835d840d042690
-> Handled-By      : ?
-> Patch           : http://lkml.org/lkml/2007/8/2/211
-> Status          : patch was suggested
-> 
-> Please try this patch http://lkml.org/lkml/2007/8/2/211
+On Mon, Aug 06, 2007 at 08:39:09AM +0200, Ingo Molnar wrote:
+ > 
+ > * Dave Jones <davej@redhat.com> wrote:
+ > 
+ > >  > btw., Mutt does not go boom, i use it myself. It works just fine 
+ > >  > and notices new mails even on a noatime,nodiratime filesystem.
+ > >  
+ > > It still fails miserably for me.
+ > > 
+ > > If I hit 'C' and '?' I get a list of my mail folders, with some of 
+ > > them marked 'N' if they have new mail.  Without atime, those N's never 
+ > > show up and every mbox looks like it has no new mail.
+ > 
+ > does it work with the "atime on steroids" patch below? (no need to 
+ > configure anything, just apply the patch and go.)
 
-Will do.  That is vile though.
+people have reported that relatime does work, but my util-linux
+isn't new enough to support it, so I've never got it to work.
+I'll give your diff a try later, though as it seems to be
+equivalent I expect it'll work.
 
-It feels like we should be generating this information in the kernel
-build and extracting it from the built kernel.
+	Dave
 
--apw
+-- 
+http://www.codemonkey.org.uk
