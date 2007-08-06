@@ -1,92 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764261AbXHFLx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764570AbXHFLzM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764261AbXHFLx0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763217AbXHFLxT
+	id S1764570AbXHFLzM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:55:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763217AbXHFLy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:53:19 -0400
-Received: from rv-out-0910.google.com ([209.85.198.187]:42916 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754971AbXHFLxS (ORCPT
+	Mon, 6 Aug 2007 07:54:57 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:3931 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754971AbXHFLy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:53:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZxZdkivqkFKEsHrCBUHpq8/dxWCpq5c1/Vj7fHZbuMmIu4+MgddIne71WnXANVAKtxOoIJ67HZ7NCsVgz0PmFZo50TqItSeGjGoM9h+KmTwsh0tJ1VsXCSnJ1lBkVWnct1vOHCQ0XPAeSDCrqfkvOkv4h+ZWPS1/Z+WVyq0Tvh4=
-Message-ID: <6bffcb0e0708060453l372e15c2h703ede437b4d8935@mail.gmail.com>
-Date: Mon, 6 Aug 2007 13:53:16 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Andy Whitcroft" <apw@shadowen.org>
-Subject: Re: ACPI modpost failure in 2.6.23-rc1-git2
-Cc: "Thomas Renninger" <trenn@suse.de>, "Kay Sievers" <kay.sievers@vrfy.org>,
-       "Len Brown" <len.brown@intel.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070806114335.GA31368@shadowen.org>
+	Mon, 6 Aug 2007 07:54:56 -0400
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [RESEND][PATCH 1/3] ehea: Fix workqueue handling
+Date: Mon, 6 Aug 2007 13:54:29 +0200
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <20070806114335.GA31368@shadowen.org>
+X-Length: 1548
+Message-Id: <200708061354.30653.osstklei@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andy,
+Fix: Workqueue ehea_driver_wq was not destroyed
 
-On 06/08/07, Andy Whitcroft <apw@shadowen.org> wrote:
-> Between 2.6.23-rc1-git1 and 2.6.23-rc1-git2 we started getting the
-> following fatal error during modpost on an x86_64 machine:
->
->   FATAL: drivers/acpi/video: sizeof(struct acpi_device_id)=20 is not a
->   modulo of the size of section __mod_acpi_device_table=48.
->   Fix definition of struct acpi_device_id in mod_devicetable.h
->   make[1]: *** [__modpost] Error 1
->
-> This check seems to have been added as part of the following commit:
->
->   commit 29b71a1ca74491fab9fed09e9d835d840d042690
->   Author: Thomas Renninger <trenn@suse.de>
->   Date:   Mon Jul 23 14:43:51 2007 +0200
->
->       ACPI: autoload modules - Create ACPI alias interface
->
-> Compiler version:
->   Reading specs from /usr/lib/gcc/i486-linux/3.4.4/specs
->   Configured with: ../src/configure -v
->   --enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr
->   --libexecdir=/usr/lib --with-gxx-include-dir=/usr/include/c++/3.4
->   --enable-shared --with-system-zlib --enable-nls
->   --without-included-gettext --program-suffix=-3.4 --enable-__cxa_atexit
->   --enable-libstdcxx-allocator=mt --enable-clocale=gnu
->   --enable-libstdcxx-debug --enable-java-gc=boehm --enable-java-awt=gtk
->   --disable-werror i486-linux
->   Thread model: posix
->   gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13sarge1)
->
-> We are compiling a 64bit kernel on a machine with a pretty old
-> userspace which is 32bit.
->
-> Let me know if you need more info.
->
-> -apw
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 
-similar to
+---
+ drivers/net/ehea/ehea.h      |    2 +-
+ drivers/net/ehea/ehea_main.c |    1 +
+ 2 files changed, 2 insertions(+), 1 deletions(-)
 
-Subject         : modpost bug breaks ia64 cross compilation
-References      : http://lkml.org/lkml/2007/7/27/30
-                  http://lkml.org/lkml/2007/7/27/418
-Last known good : ?
-Submitter       : Jan Dittmer <jdi@l4x.org>
-Caused-By       : Thomas Renninger <trenn@suse.de>
-                  commit 29b71a1ca74491fab9fed09e9d835d840d042690
-Handled-By      : ?
-Patch           : http://lkml.org/lkml/2007/8/2/211
-Status          : patch was suggested
-
-Please try this patch http://lkml.org/lkml/2007/8/2/211
-
-Regards,
-Michal
-
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 8ee2c2c..d67f97b 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@
+ #include <asm/io.h>
+ 
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0072"
++#define DRV_VERSION	"EHEA_0073"
+ 
+ /* eHEA capability flags */
+ #define DLPAR_PORT_ADD_REM 1
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index 58702f5..d43ab0f 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -3099,6 +3099,7 @@ out:
+ 
+ static void __exit ehea_module_exit(void)
+ {
++	destroy_workqueue(ehea_driver_wq);
+ 	driver_remove_file(&ehea_driver.driver, &driver_attr_capabilities);
+ 	ibmebus_unregister_driver(&ehea_driver);
+ 	ehea_destroy_busmap();
 -- 
-LOG
-http://www.stardust.webpages.pl/log/
+1.5.2
+
+
