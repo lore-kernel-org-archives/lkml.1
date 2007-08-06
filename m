@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933381AbXHFTL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762842AbXHFTLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933381AbXHFTL0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753680AbXHFTLS
+	id S1762842AbXHFTLv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760951AbXHFTLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:11:18 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52120 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754119AbXHFTLQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:11:16 -0400
-Date: Mon, 6 Aug 2007 12:11:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-In-Reply-To: <1186425063.11797.80.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0708061209230.7603@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>  <20070806103658.107883000@chello.nl>
-  <Pine.LNX.4.64.0708061108430.25069@schroedinger.engr.sgi.com> 
- <200708061121.50351.phillips@phunq.net> <1186425063.11797.80.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 6 Aug 2007 15:11:39 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37527 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753680AbXHFTLi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 15:11:38 -0400
+In-Reply-To: <200708021214.51705.m.kozlowski@tuxland.pl>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708011002.30962.m.kozlowski@tuxland.pl> <18096.24918.111376.805855@cargo.ozlabs.ibm.com> <200708021214.51705.m.kozlowski@tuxland.pl>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e2ac1b1e51999a427fc2567071577f11@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
+       linuxppc-dev@ozlabs.org, linux-usb-devel@lists.sourceforge.net
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: 2.6.23-rc1-mm2
+Date: Mon, 6 Aug 2007 21:10:52 +0200
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Aug 2007, Peter Zijlstra wrote:
 
-> > > Shudder. That can just be a desaster for NUMA. Both performance wise
-> > > and logic wise. One cpuset being low on memory should not affect
-> > > applications in other cpusets.
-> 
-> Do note that these are only PF_MEMALLOC allocations that will break the
-> cpuset. And one can argue that these are not application allocation but
-> system allocations.
+On 2 aug 2007, at 12:14, Mariusz Kozlowski wrote:
 
-This is global, global locking etc etc. On a large NUMA system this will 
-cause significant delays. One fears that a livelock may result.
+>>> Second issue as reported earilier allmodconfig fails to build on 
+>>> imac g3.
+>>
+>> Do you really mean g3?  If so it's a 32-bit kernel and it shouldn't be
+>> building lparmap.s.
+
+It might be a bug nevertheless, there are more "issues" with
+the interesting way lparmap.s is built and used.
+
+
+Segher
 
