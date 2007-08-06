@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764822AbXHFKs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764640AbXHFKte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764822AbXHFKs5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763771AbXHFKsU
+	id S1764640AbXHFKte (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764720AbXHFKsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:48:20 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:40553 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755671AbXHFKsR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:48:17 -0400
-Date: Mon, 6 Aug 2007 19:46:44 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] genirq: support multiple interrupt priorities
-Message-ID: <20070806104644.GA4815@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-	linux-kernel@vger.kernel.org
-References: <20070806103027.GA4624@linux-sh.org> <20070806103609.GA17495@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Aug 2007 06:48:40 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:34344
+	"EHLO public.id2-vpn.continvity.gns.novell.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764534AbXHFKsj convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 06:48:39 -0400
+Message-Id: <46B718DB.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 HP
+Date: Mon, 06 Aug 2007 11:49:31 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andi Kleen" <ak@suse.de>
+Cc: <linux-kernel@vger.kernel.org>, <patches@x86-64.org>
+Subject: Re: [patches] [PATCH] [1/58] x86: Always flush pages in
+	change_page_attr
+References: <200707191154.642492000@suse.de>
+ <20070719095444.CFAB114E04@wotan.suse.de>
+ <46B710C5.76E4.0078.0@novell.com> <200708061236.59195.ak@suse.de>
+In-Reply-To: <200708061236.59195.ak@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070806103609.GA17495@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 12:36:09PM +0200, Ingo Molnar wrote:
-> * Paul Mundt <lethal@linux-sh.org> wrote:
-> > This is a simple patch for adding trivial interrupt priority support.
-> > 
-> > I've added a ->set_prio() to the irq_chip which is implemented 
-> > effectively the same way as ->set_type(), it's an optional component 
-> > for those that really care about it.
-> 
-> i have no fundamental objections but it would be nice to actually 
-> prototype this by implementing real priority support in the hardware: 
-> both the i8259A and the IO-APIC/local-apic has such IRQ prioritization 
-> features.
-> 
-I would not have written the patch if I did not have hardware that
-supported it. I suppose I can start with interfacing the x86 PICs if that
-makes it easier to swallow, though ;-)
+>>> Andi Kleen <ak@suse.de> 06.08.07 12:36 >>>
+>On Monday 06 August 2007 12:15:01 Jan Beulich wrote:
+>> But that is still wrong - you're again flushing the page table page rather than
+>> the data one. Fixing this was the purpose of the patch I had sent, plus the
+>> broken reference counting used by the reversion logic. Jan
+>
+>True. The problem is that we can't necessarily use the LRU list_head of the data
+>pages though; e.g. when the page is mapped to user space.
+>
+>I guess we might need to go back to wbinvd again.
 
-> > + * IRQF_PRIO_HIGH - Give IRQ a high priority
-> > + * IRQF_PRIO_LOW - Give IRQ a low priority
-> 
-> this should be a numeric scale. (Preferably in the 1-99 range (the 
-> hardware can then do a lower-resolution thing out of it), so that we can 
-> directly map this to IRQ threads and SCHED_FIFO priorities in -rt.)
-> 
-I don't disagree with that, but that makes it a little hard to pass in a
-priority at request_irq() time. These IRQF_PRIO_HIGH/LOW are only for
-such usage, the intent is to have a numeric value that's more meaningful
-to the underlying hardware passed on to set_irq_prio() otherwise.
+That was what my patch did, plus an attempt to avoid the wbinvd if all accumulated
+pages that have pending modifications are contiguous.
 
-In any event, there's no problem with doing that anyways, both
-IRQF_PRIO_HIGH and IRQF_PRIO_LOW are substantially above the 1-99 range
-that the mask can be tested for if the underlying controller isn't
-interested in mapping the 1-99 range to its own view of priorities.
-Presumably you want this numeric range also reflected in the irq_desc for
--rt? If so, I'll start hacking something up.
+>What was the remaining problem of the reference counting? 
+
+The counter gets adjusted regardless of the current attribute in effect, e.g. if you
+change a page to PAGE_KERNEL that already happens to be PAGE_KERNEL, the
+counter still gets decremented, which in turn may result in reverting the containing
+2M/4M page prematurely. Likewise if a not-PAGE_KERNEL gets changed to another
+non-PAGE_KERNEL attribute, the counter would get incremented, likely preventing
+reverting the large page forever.
+
+Jan
+
