@@ -1,78 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbXHFJhT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763001AbXHFJqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763328AbXHFJhT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:37:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXHFJhA
+	id S1763001AbXHFJqR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXHFJqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:37:00 -0400
-Received: from mail.gmx.net ([213.165.64.20]:37662 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1761454AbXHFJg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:36:57 -0400
-X-Authenticated: #5108953
-X-Provags-ID: V01U2FsdGVkX1/O8+ljQjTOk8/FRbygaY4CCLU3TCz1DbyMFzoIPW
-	9zAG42x9qWN6Zk
-From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
-Date: Mon, 6 Aug 2007 11:36:46 +0200
-User-Agent: KMail/1.9.5
-Cc: ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200708051902.18801.toralf.foerster@gmx.de> <20070805222937.GA23963@elf.ucw.cz>
-In-Reply-To: <20070805222937.GA23963@elf.ucw.cz>
+	Mon, 6 Aug 2007 05:46:00 -0400
+Received: from hu-out-0506.google.com ([72.14.214.236]:62576 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760373AbXHFJp7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 05:45:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=M41QddKI7iHRtDrLDJES9S/TgvZzZQabN4Sn2viUfmhQD7AVQDgkbLzZyL5fNYGhRy2CnVWOzjplUhw1P4YY2PoKk1JAoxmoBR9I3yRYu8p6MLiQHilCfuxt+HAGEsd5UZxfMbBfhsVL7tGct7cL4ceU0XUarCvnGerO4qzMwhA=
+Message-ID: <46B6EDCB.6030806@gmail.com>
+Date: Mon, 06 Aug 2007 11:45:47 +0200
+From: dragoran <drago01@gmail.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4569252.9UeqM23Iiz";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: linux-kernel@vger.kernel.org
+Subject: allow non root users to set io priority "idle" ?
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200708061136.50491.toralf.foerster@gmx.de>
-X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4569252.9UeqM23Iiz
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Its possible to set the io priority using tools like ionice and syscalls.
+But this works only as root.
+Why can't a non root user change the priority of his processes to idle?
+I understand that realtime priority requires root but why idle?
+For instance the beagle trys to set its priority to idle but fails 
+because it does not run as root.
+Any reason for this that I have missed? I can't think of a case where 
+setting the io priority to idle would have a negative impact for other 
+users or the whole system.
 
-Am Montag, 6. August 2007 00:29 schrieb Pavel Machek:
-> Yes, I seen similar reports. Does it happen in all shutdown mode and
-> 2.6.22? Does it happen   in platform mode in 2.6.19?
-
-I can reproduce this behaviour by doing the following with kernel 2.6.20 :
-
-1. <Fn>+<F4>   - the systems sleeps within RAM
-2. <Fn>             - the systems wakes up
-3. <Fn>+<F12> - the systems hibernates to disk
-4. <power>       - systems wakes up
-5. <Fn>+<F4>   - the systems sleeps within RAM
-
-Now pressing <Fn> doesn't wake up the system, I have to press the power but=
-ton
-for that instead.
-
-BTW I tried to test the latest git-sources -rc2 but the <Fn> keys do not wo=
-rk
-anymore with the thinkpad-acpi feature (neither as module nor if compiled i=
-nto).
-
-=2D-=20
-MfG/Sincerely
-
-Toralf F=F6rster
-
---nextPart4569252.9UeqM23Iiz
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGtuuvhyrlCH22naMRAiZqAKC7JnTqDwKWx7/VpfOrkcANXUEljwCgxmp6
-XRXNbBUK1S9wJYGxVXO61Sc=
-=VYkn
------END PGP SIGNATURE-----
-
---nextPart4569252.9UeqM23Iiz--
+P.S:
+Please CC me when replying.
