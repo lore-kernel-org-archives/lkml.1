@@ -1,56 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933650AbXHFNbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933689AbXHFNcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933650AbXHFNbw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932286AbXHFN3e
+	id S933689AbXHFNcW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933314AbXHFN3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:29:34 -0400
-Received: from 1wt.eu ([62.212.114.60]:1213 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933314AbXHFN3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:29:33 -0400
-Date: Mon, 6 Aug 2007 15:26:58 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Axel Reinhold <axel@freakout.de>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
-Message-ID: <20070806132658.GE10999@1wt.eu>
-References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu> <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org>
+	Mon, 6 Aug 2007 09:29:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:53702 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933332AbXHFN3f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:29:35 -0400
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
+	workqueue infrastructure
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Ingo Molnar <mingo@elte.hu>, Gregory Haskins <ghaskins@novell.com>,
+       Daniel Walker <dwalker@mvista.com>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070806131814.GC91@tv-sign.ru>
+References: <20070801201802.GA225@tv-sign.ru>
+	 <1186000468.2636.168.camel@imap.mvista.com>
+	 <20070801205053.GA263@tv-sign.ru>
+	 <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
+	 <20070801213422.GA280@tv-sign.ru>
+	 <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
+	 <20070801222201.GA316@tv-sign.ru>
+	 <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
+	 <20070802195049.GA361@tv-sign.ru> <20070806114954.GC1903@elte.hu>
+	 <20070806131814.GC91@tv-sign.ru>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 15:29:23 +0200
+Message-Id: <1186406963.7182.13.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 03:05:29PM +0200, Segher Boessenkool wrote:
-> >I still
-> >suspect that because the behaviour is different between 4.1 and 4.2, it
-> >might be a regression in 4.2,
+On Mon, 2007-08-06 at 17:18 +0400, Oleg Nesterov wrote:
+
+> Yes, I still disagree with the whole idea because I hope we can make
+> something more simpler to solve the problem, but I must admit I don't
+> quite understand what the problem is.
 > 
-> The kernel code is wrong.  It might have accidentally worked
-> with GCC-4.1, but that doesn't mean GCC-4.2 has regressed.
-> Only supported features that stop working are regressions;
-> invalid code that stops working is, well, in the worst case
-> an improvement in diagnostics ;-)
+> So, please consider a noise from my side as my attempt to help. And
+> in fact, I am very curious about -rt tree, just I never had a time
+> to study it :)
 
-Just to enlighten me on the subject, could you please explain me
-what is wrong in the code ? Granted I found it awful, but even on
-the GCC-4.2 page where -fno-toplevel-reorder is explained, it is
-said that asm statements can be instantiated between functions
-blocks, which is exactly what is used here.
 
-Also, I could reproduce the problem with gcc 4.1 by simply declaring
-the interrupts[] array before the asm statements. It looks like the
-asm statements simply continue in the next section as the previously
-instantiated block. Maybe ".section .text" should be explicitly noted
-in each asm statement, but that seems strange to me.
+Well, the thing is, suppose we have 2 drivers both using keventd say a
+NIC and some USB thingy.
 
-Right now, I just removed -fno-unit-at-a-time which had been added
-only for gcc-3.4, and it fixed gcc-4.2 (and even 4.1 produces cleaner
-code after that).
+Now the NIC is deemed important hand gets irq thread prio 90, and the
+USB could not be cared less about and gets 10 (note that on -rt irq
+handlers are threaded and run SCHED_FIFO).
 
-Regards,
-Willy
+So now you can get priority inversion in keventd. Say the USB thingy
+schedules a work item which will be executed. Then during the execution
+of this work the NIC will also schedule a work item. Now the NIC (fifo
+90) will have to wait for the USB work (fifo 10) to complete.
+
+The typical solution is priority inheritance, where the highest prio of
+any waiter is propagated to the currently running work, so that it can
+finish and get on with the more important work.
+
+
+So these patches aimed to provide proper PI in the workqueue structure
+to avoid this problem.
+
+However as you rightly noted, this horribly breaks the barrier/flush
+semantics.
+
+I suspect most of the barrier/flush semantics could be replaced with
+completions from specific work items. Doing this will be a lot of work
+though.
+
+I hope this rambling is not confusing you any further :-)
 
