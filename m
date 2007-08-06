@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761004AbXHFCSZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbXHFCZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761004AbXHFCSZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 22:18:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbXHFCSS
+	id S932106AbXHFCZe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 22:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbXHFCZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 22:18:18 -0400
-Received: from maggie.cs.pitt.edu ([130.49.220.148]:37281 "EHLO
-	maggie.cs.pitt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752845AbXHFCSS (ORCPT
+	Sun, 5 Aug 2007 22:25:20 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37982
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbXHFCZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 22:18:18 -0400
-X-Greylist: delayed 2534 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Aug 2007 22:18:17 EDT
-Message-ID: <46B67B03.1050008@cs.pitt.edu>
-Date: Sun, 05 Aug 2007 18:36:03 -0700
-From: Nevine AbouGhazaleh <nevine@cs.pitt.edu>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+	Sun, 5 Aug 2007 22:25:09 -0400
+Date: Sun, 5 Aug 2007 19:22:20 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Rene Herman <rene.herman@gmail.com>, Daniel Hazelton <dhazelton@enter.net>,
+       Mike Galbraith <efault@gmx.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Frank Kingswood <frank@kingswood-consulting.co.uk>,
+       Andi Kleen <andi@firstfloor.org>, Ray Lee <ray-lk@madrabbit.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>, ck list <ck@vds.kolivas.org>,
+       Paul Jackson <pj@sgi.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: RFT: updatedb "morning after" problem [was: Re: -mm merge plans
+ for 2.6.23]
+In-Reply-To: <46B6840B.8080006@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0708051916430.6905@asgard.lang.hm>
+References: <9a8748490707231608h453eefffx68b9c391897aba70@mail.gmail.com>
+ <20070727030040.0ea97ff7.akpm@linux-foundation.org> <1185531918.8799.17.camel@Homer.simpson.net>
+ <200707271345.55187.dhazelton@enter.net> <46AA3680.4010508@gmail.com>
+ <Pine.LNX.4.64.0707271239300.26221@asgard.lang.hm> <46AAEDEB.7040003@gmail.com>
+ <Pine.LNX.4.64.0707280138370.32476@asgard.lang.hm> <46AB166A.2000300@gmail.com>
+ <Pine.LNX.4.64.0707281349540.32476@asgard.lang.hm> <46AC6771.8080000@gmail.com>
+ <Pine.LNX.4.64.0707290420250.15835@asgard.lang.hm> <46AC9DC5.8070900@gmail.com>
+ <Pine.LNX.4.64.0707291405350.15835@asgard.lang.hm> <46B6840B.8080006@yahoo.com.au>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: suspend-to-disk using a SAS drive
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -101.665/8 BAYES_00,USER_IN_WHITELIST SA-version=3.000002
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am trying to suspend-to-disk using the Suspend2 modules. I am using an SSD drive connected through a SAS bus interface. The SSD acts as a boot disk.
-All read and write transactions to the drive works well during normal operation.  
-when I hibernate (suspend-to-disk).
+On Mon, 6 Aug 2007, Nick Piggin wrote:
 
-I get the following errors:
-------------------
-mptbase: ioc0: ERROR – Invalid IOC facts reply, msgLength=0 offset=6
-pnp: Failed to activate device 00:09.
-pnp: Failed to activate device 00:0a.
-------------
+> david@lang.hm wrote:
+>>  On Sun, 29 Jul 2007, Rene Herman wrote:
+>> 
+>> >  On 07/29/2007 01:41 PM, david@lang.hm wrote:
+>> > 
+>> > >  I agree that tinkering with the core VM code should not be done 
+>> > >  lightly,
+>> > >   but this has been put through the proper process and is stalled with 
+>> > >   no
+>> > >   hints on how to move forward.
+>> > 
+>> > 
+>> >  It has not. Concerns that were raised (by specifically Nick Piggin) 
+>> >  weren't being addressed.
+>>
+>>
+>>  I may have missed them, but what I saw from him weren't specific issues,
+>>  but instead a nebulous 'something better may come along later'
+>
+> Something better, ie. the problems with page reclaim being fixed.
+> Why is that nebulous?
 
-Immediately after these messages, Linux hangs as soon as it starts writing the image to the drive. showing the following output.
-------------------
-Writing Kernel and process data ...
-20%...
-------------------
+becouse that doesn't begin to address all the benifits.
 
+the approach of fixing page reclaim and updatedb is pretending that if you 
+only do everything right pages won't get pushed to swap in the first 
+place, and therefor swap prefetch won't be needed.
 
-When using KDB to trace the problem after the kernel hung.
+this completely ignores the use case where the swapping was exactly the 
+right thing to do, but memory has been freed up from a program exiting so 
+that you couldnow fill that empty ram with data that was swapped out.
 
-<ps> shows a running process: Ks2io
-
-when doing Back Trace for Ks2io wheen the kernel hangs, I get the following trace
---------------------
-_spin_unlock_irq+0xb
-thread_return+0x64
-_raw_spin_lock+ox90
-__mutex_up_process+0x10
-wake_up_process+0x10
-suspend_bio_write_page
-mutex_lock+0x2a
-flush_workqueue+0x51
-kblockd_flush+0x10
-do_bio_wait+0x1b
-suspend_bio_write_page
-suepend_bio_write_page+0x41
-suspend_compress_write_page+0x137
-worker_rw_loop
-worker_rw_loop+0x133
-worker_rw_loop
-kthread+0xf5
-schedule_tail_0x45
-child_rip+0x45
-worker_thread
-kthread
-child_rip 
---------------------
-
-It seems that the problem is when suspend2 tries to write to the SSD drive.
-I am not sure whether the problem is with the suspend2 module or the mpt driver? 
-I am using kernel 2.6.21.1 x86_64 with fedora core 5 x86_64. MPT driver 3.04
-Any insights/recommendations will be greatly appreciated.  
-
+David Lang
