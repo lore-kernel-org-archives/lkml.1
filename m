@@ -1,47 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762927AbXHFRnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765071AbXHFRnd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762927AbXHFRnA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXHFRmx
+	id S1765071AbXHFRnd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:43:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbXHFRnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:42:53 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:40043 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750836AbXHFRmw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:42:52 -0400
-Message-ID: <46B75CD0.7080408@zytor.com>
-Date: Mon, 06 Aug 2007 10:39:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 6 Aug 2007 13:43:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46454 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046AbXHFRnW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 13:43:22 -0400
+Date: Mon, 6 Aug 2007 19:43:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i386: convert mm_context_t semaphore to a mutex
+Message-ID: <20070806174311.GB26868@elte.hu>
+References: <20070803105540.4f85ae09@localhost> <20070806074608.GA12415@elte.hu> <20070806103615.4be4670f@localhost> <20070806152502.GA6988@elte.hu> <20070806141523.069b24b0@localhost>
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Segher Boessenkool <segher@kernel.crashing.org>,
-       Axel Reinhold <axel@freakout.de>, linux-kernel@vger.kernel.org
-Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
-References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu> <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org> <20070806132658.GE10999@1wt.eu>
-In-Reply-To: <20070806132658.GE10999@1wt.eu>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070806141523.069b24b0@localhost>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
+
+* Luiz Fernando N. Capitulino <lcapitulino@mandriva.com.br> wrote:
+
+>  But I've managed to run wine with a game called 'Align-it!', and
+> I have the following result:
 > 
-> Just to enlighten me on the subject, could you please explain me
-> what is wrong in the code ? Granted I found it awful, but even on
-> the GCC-4.2 page where -fno-toplevel-reorder is explained, it is
-> said that asm statements can be instantiated between functions
-> blocks, which is exactly what is used here.
+> """
+> ~/tmp/ egrep -c 'modify_ldt' wine-strace.txt 
+> 46
+> ~/tmp/ 
+> """
 > 
+>  I've checked the calls and none has failed. Not sure how good
+> this test is though.
 
-A stray semicolon:
+ok, this is certainly good enough.
 
-__attribute__((regparm(0))) void call_do_IRQ(void); __asm__(...
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-... is actually a prototype followed by a top-level asm statement
-(because of the semicolon), *not* a function with a single-statement
-body (which is itself uglier than hell, use braces please...)
-
-	-hpa
+	Ingo
