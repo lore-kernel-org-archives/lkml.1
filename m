@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbXHFPwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764999AbXHFPzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933955AbXHFPwQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 11:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933048AbXHFPv6
+	id S1764999AbXHFPzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 11:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753009AbXHFPzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 11:51:58 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34587 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932815AbXHFPv5 (ORCPT
+	Mon, 6 Aug 2007 11:55:13 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34714 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752215AbXHFPzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 11:51:57 -0400
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to
-	workqueue infrastructure
-From: Gregory Haskins <ghaskins@novell.com>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Daniel Walker <dwalker@mvista.com>, Peter Zijlstra <peterz@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070806153655.GA245@tv-sign.ru>
-References: <20070801205053.GA263@tv-sign.ru>
-	 <1186002783.9513.228.camel@ghaskins-t60p.haskins.net>
-	 <20070801213422.GA280@tv-sign.ru>
-	 <1186005598.9513.261.camel@ghaskins-t60p.haskins.net>
-	 <20070801222201.GA316@tv-sign.ru>
-	 <1186012439.9513.321.camel@ghaskins-t60p.haskins.net>
-	 <20070802195049.GA361@tv-sign.ru>
-	 <1186400154.21381.40.camel@ghaskins-t60p.haskins.net>
-	 <20070806142616.GA210@tv-sign.ru>
-	 <1186412235.21381.82.camel@ghaskins-t60p.haskins.net>
-	 <20070806153655.GA245@tv-sign.ru>
+	Mon, 6 Aug 2007 11:55:11 -0400
+Subject: Re: [PATCH] msleep() with hrtimers
+From: Arjan van de Ven <arjan@infradead.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <Pine.LNX.4.64.0708061159370.1817@scrub.home>
+References: <15327.1186166232@lwn.net>
+	 <Pine.LNX.4.64.0708032116340.1817@scrub.home>
+	 <1186170407.3153.8.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708032152060.1817@scrub.home>
+	 <1186185229.3153.11.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708040345530.1817@scrub.home>
+	 <1186255149.2777.3.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060150270.1817@scrub.home>
+	 <1186360983.2697.8.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060257010.1817@scrub.home>
+	 <1186378798.2697.10.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708061159370.1817@scrub.home>
 Content-Type: text/plain
-Date: Mon, 06 Aug 2007 11:50:03 -0400
-Message-Id: <1186415403.21381.100.camel@ghaskins-t60p.haskins.net>
+Organization: Intel International BV
+Date: Mon, 06 Aug 2007 08:53:41 -0700
+Message-Id: <1186415621.2706.4.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 19:36 +0400, Oleg Nesterov wrote:
-
-> > Well, the "trylock+requeue" avoids the obvious recursive deadlock, but
-> > it introduces a more subtle error: the reschedule effectively bypasses
-> > the flush.
+On Mon, 2007-08-06 at 12:03 +0200, Roman Zippel wrote:
+> Hi,
 > 
-> this is OK, flush_workqueue() should only care about work_struct's that are
-> already queued.
-
-Agreed.
-
+> On Sun, 5 Aug 2007, Arjan van de Ven wrote:
 > 
-> > E.g. whatever work was being flushed was allowed to escape
-> > out from behind the barrier.  If you don't care about the flush working,
-> > why do it at all?
+> > > There's no problem to provide a high resolution sleep, but there is also 
+> > > no reason to mess with msleep, don't fix what ain't broken...
+> > 
+> > John Corbet provided the patch because he had a problem with the current
+> > msleep... in that it didn't provide as good a common case as he
+> > wanted... so I think your statement is wrong ;)
 > 
-> The caller of flush_workueue() doesn't necessary know we have such a work
-> on list. It just wants to flush its own works.
+> Only under the assumptation, that msleep _must_ be "fixed" for all other 
+> current users too.
+> Give users a choice to use msleep or nanosleep, how do you know what's 
+> "best" for them?
 
-I was assuming that the work being flushed was submitted by the same
-context, but I think I see what you are saying now.  Essentially if that
-queued work was unrelated to the thread that was doing the flush, it
-doesn't care if it gets rescheduled.
+do you have any actual technical objections, or do you just hate
+hrtimers in general?
 
-Do you agree that if the context was the same there is a bug?  Or did I
-miss something else?
+I really don't see what you hate so much about making the msleep()
+implementation provide a more precise (typical sleep time of 1msec
+rather than 20msec) behavior than the current one. Trying to distract
+that by proposing a very different API (working on a totally different
+time unit, while a lot of kernel users are using miliseconds; don't get
+me wrong, a usleep() and nsleep() might be useful if there's users that
+want to sleep in such times) is just trying to distract the issue.
 
--Greg
+So, let me ask a direct question: What do you think is specifically
+wrong about changing the msleep() implementation as is done here? The
+behavior is clearly an improvement, so what is your objection on the
+flipside?
 
-
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
