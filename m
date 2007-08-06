@@ -1,87 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933157AbXHFSkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbXHFSkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933157AbXHFSkd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759042AbXHFSkP
+	id S933265AbXHFSkz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXHFSkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:40:15 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:49070
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758880AbXHFSkM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:40:12 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 00/10] foundations for reserve-based allocation
-Date: Mon, 6 Aug 2007 11:40:04 -0700
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
+	Mon, 6 Aug 2007 14:40:37 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:21353 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933167AbXHFSke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 14:40:34 -0400
+X-IronPort-AV: E=Sophos;i="4.19,225,1183359600"; 
+   d="scan'208";a="89579030"
+Subject: Re: NFSv4 poops itself
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-References: <20070806102922.907530000@chello.nl> <200708061035.18742.phillips@phunq.net> <1186424248.11797.66.camel@lappy>
-In-Reply-To: <1186424248.11797.66.camel@lappy>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+In-Reply-To: <20070806134030.GA5990@fieldses.org>
+References: <46A9EAB0.3090306@garzik.org>
+	 <1185543187.6586.10.camel@localhost> <1185556178.6586.40.camel@localhost>
+	 <46AA2872.9040800@garzik.org> <1185557340.6586.51.camel@localhost>
+	 <20070803191336.GA14682@fieldses.org>  <20070806134030.GA5990@fieldses.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708061140.05002.phillips@phunq.net>
+Organization: Network Appliance Inc
+Date: Mon, 06 Aug 2007 14:40:32 -0400
+Message-Id: <1186425632.6616.50.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 06 Aug 2007 18:40:33.0007 (UTC) FILETIME=[455277F0:01C7D859]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 August 2007 11:17, Peter Zijlstra wrote:
-> lim_{n -> inf} (2^(n+1)/((2^n)+1)) = 2^lim_{n -> inf} ((n+1)-n) = 2^1 
-= 2
+On Mon, 2007-08-06 at 09:40 -0400, J. Bruce Fields wrote:
+> On Fri, Aug 03, 2007 at 03:13:36PM -0400, J. Bruce Fields wrote:
+> > On Fri, Jul 27, 2007 at 01:29:00PM -0400, Trond Myklebust wrote:
+> > > On Fri, 2007-07-27 at 13:16 -0400, Jeff Garzik wrote:
+> > > > Trond Myklebust wrote:
+> > > > > Jeff and Bruce, could you please try to reproduce the problem after
+> > > > > either applying patches 001 to 004 or just the single NFS_ALL patch
+> > > > > from 
+> > > > > 
+> > > > >    http://client.linux-nfs.org/Linux-2.6.x/2.6.23-rc1/
+> > > > 
+> > > > 
+> > > > It's not easily reproducible here.  Any hints on triggering the behavior?
+> > > 
+> > > I suspect that the problem may involve mixing O_RDWR with O_RDONLY
+> > > and/or O_WRONLY file access. Bruce might have a better suggestion,
+> > > though.
+> > 
+> > I haven't done any more work to identify when exactly the problem is
+> > triggered, but I did confirm that I could reproduce the problem reliably
+> > with current git, but *not* with current git plus your 4-patch nfs-all.
+> 
+> And that result still holds after using the patched kernel for several
+> more hours.
 
-Glad I asked :-)
-
-> > Patch [3/10] adds a new field to struct page.
->
-> No it doesn't.
-
-True.  It is not immediately obvious from the declaration that the 
-overloaded field is always freed up before anybody else needs to use 
-the union.
-
-> >   I do not think this is
-> > necessary.   Allocating a page from reserve does not make it
-> > special. All we care about is that the total number of pages taken
-> > out of reserve is balanced by the total pages freed by a user of
-> > the reserve.
->
-> And how do we know a page was taken out of the reserves?
->
-> This is done by looking at page->reserve (overload of page->index)
-> and this value can be destroyed as soon as its observed. It is in a
-> sense an extra return value.
-
-Ah I see.  I used to let alloc_pages fail then repeat the allocation 
-with __GFP_MEMALLOC set, which was easy but stupidly repetitious.  Your 
-technique is better, though returning the status in the page still 
-looks a little funny.  This is really about saving a page flag, no?
-
-> > We do care about slab fragmentation in the sense that a slab page
-> > may be pinned in the slab by an unprivileged allocation and so that
-> > page may never be returned to the global page reserve.
->
-> A slab page obtained from the reseserve will never serve an object to
-> an unprivilidged allocation.
->
-> >   One way to solve this is
-> > to have a per slabpage flag indicating the page came from reserve,
-> > and prevent mixing of privileged and unprivileged allocations on
-> > such a page.
->
-> is done.
-
-Serves me right for not reading that bit.  So the score for that round 
-is: peterz 3, phillips 0 ;-)
-
-Regards,
-
-Daniel
+Thanks Bruce!
+  Trond
