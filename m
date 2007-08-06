@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765200AbXHFRUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765407AbXHFRUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765200AbXHFRUA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758197AbXHFRTw
+	id S1765407AbXHFRUi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762387AbXHFRUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:19:52 -0400
-Received: from waste.org ([66.93.16.53]:56111 "EHLO waste.org"
+	Mon, 6 Aug 2007 13:20:18 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45752 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757291AbXHFRTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:19:51 -0400
-Date: Mon, 6 Aug 2007 12:20:03 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Lindsay Roberts <lindsay.roberts.os@gmail.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, celinux-dev@tree.celinuxforum.org
-Subject: Re: [PATCH] fs: Add romfs version 2
-Message-ID: <20070806172002.GW11115@waste.org>
-References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com> <20070717013635.d6d0b124.akpm@linux-foundation.org> <20070717192100.GE11166@waste.org> <8734b7880707172016v530ce775p108910f7baf9de8e@mail.gmail.com> <20070725184005.GD8225@ucw.cz> <8734b7880708060043i125419e0w3db5d4431496985f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8734b7880708060043i125419e0w3db5d4431496985f@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1760137AbXHFRUQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 13:20:16 -0400
+In-Reply-To: <20070801005640.327226db@the-village.bc.nu>
+References: <20070725165318.5331.23795.stgit@localhost.localdomain> <20070725165326.5331.19920.stgit@localhost.localdomain> <46A78322.3080607@ru.mvista.com> <46A78E3F.1030904@ru.mvista.com> <a414f3b506b7802a717e6e2c08befd1e@kernel.crashing.org> <20070801005640.327226db@the-village.bc.nu>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6546254b267f6d7df93d8df27c6dcfb4@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: linux-kernel@vger.kernel.org, Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Vitaly Bordug <vitb@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] [POWERPC] MPC8349E-mITX: use platform IDE driver for CF	interface
+Date: Mon, 6 Aug 2007 19:19:56 +0200
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 05:43:54PM +1000, Lindsay Roberts wrote:
-> On 7/26/07, Pavel Machek <pavel@ucw.cz> wrote:
-> > If the fs is read-only.. can we do some tail packing and get _both_
-> > speed and space efficiency?
-> 
-> You mean don't block align files of size less than 1k, and
-> intelligently pack them into the gaps left by files that are aligned?
-> Does seem that most noticeable performance issues occur on sequential
-> reads of large files, this sounds like a good idea, but I would
-> welcome comments on this.
-> 
-> Also I assume romfs currently has a small hidden benefit as a result
-> of it storing its file data serially after the inode: the initial read
-> of the inode reads and therefore caches the block containing the
-> (initial) file data. Obviously with block aligned file data this only
-> applies if sequential prefetching is performed. I'd be interested to
-> know if this is an issue worth regarding.
+>> The hardware is called (E)IDE, the protocol is called ATA.
+>> Or that's what I was told -- I think there's some historic
+>> revisionism involved, too.
+>
+> ATA is the interface and standards for the ANSI standards based disk
+> attachment. IDE "Integrated Drive Electronics" is a marketing name used
+> to cover all sorts of ST412 compatible-ish early interfaces that moved
+> the brains onto the disk. IDE doesn't really mean much but "brains on
+> disk", ATA is a real standard.
 
-It seems to me that the initial design goals of romfs were:
+Thanks for refreshing my memory.
 
-a) space efficiency
-b) simplicity
+We will have to support both names in OF device tree nodes, since
+both names are used in many existing device trees.  For new nodes
+with no precedent, like this "mmio-ide", let's require the more
+correct "ata" name.
 
-..with performance basically ignored. On an actual ROM-backed
-filesystem, alignment doesn't help you until it becomes large enough
-that you can execute pages in place.
 
-And I don't think your reproduceability concern was even on the radar.
-So naming a new filesystem romfs which has the priorities:
+Segher
 
-a) performance
-b) reproduceability
-
-seems like it's going to disappoint and confuse people who were
-aligned with the original goals.
-
--- 
-Mathematics is the supreme nostalgia of our time.
