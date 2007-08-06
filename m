@@ -1,68 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933592AbXHFUT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932733AbXHFUXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933592AbXHFUT4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764427AbXHFUT3
+	id S932733AbXHFUXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761625AbXHFUXJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:19:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59855 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764200AbXHFUT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:19:27 -0400
-Date: Mon, 6 Aug 2007 13:19:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Daniel Phillips <phillips@phunq.net>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-In-Reply-To: <20070806201257.GG11115@waste.org>
-Message-ID: <Pine.LNX.4.64.0708061315510.7603@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl> <200708061121.50351.phillips@phunq.net>
- <Pine.LNX.4.64.0708061141511.3152@schroedinger.engr.sgi.com>
- <200708061148.43870.phillips@phunq.net> <Pine.LNX.4.64.0708061150270.7603@schroedinger.engr.sgi.com>
- <20070806201257.GG11115@waste.org>
+	Mon, 6 Aug 2007 16:23:09 -0400
+Received: from antonio.urjc.es ([193.147.184.24]:33805 "EHLO antonio.urjc.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761512AbXHFUXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 16:23:07 -0400
+Message-ID: <46B7832B.6010808@urjc.es>
+Date: Mon, 06 Aug 2007 22:23:07 +0200
+From: Javier Pello <javier.pello@urjc.es>
+Organization: Universidad Rey Juan Carlos
+User-Agent: Thunderbird 2.0.0.0 (X11/20070503)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
+	notified
+References: <46B37CF7.2020803@urjc.es> 
+	<20070806142451.5d28d41c@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070806142451.5d28d41c@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain;
+	charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender DNS name whitelisted, not delayed by 
+	milter-greylist-2.0.2 (antonio.urjc.es [193.147.184.24]); Mon, 06 Aug 2007 
+	22:22:36 +0200 (CEST)
+X-imss-version: 2.047
+X-imss-result: Passed
+X-imss-scanInfo: M:B L:E SM:2
+X-imss-tmaseResult: TT:1 TS:-19.9525 TC:1F TRN:54 TV:3.6.1039(15346.003)
+X-imss-scores: Clean:100.00000 C:0 M:0 S:0 R:0
+X-imss-settings: Baseline:1 C:1 M:1 S:1 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Aug 2007, Matt Mackall wrote:
-
-> > > Because a block device may have deadlocked here, leaving the system 
-> > > unable to clean dirty memory, or unable to load executables over the 
-> > > network for example.
-> > 
-> > So this is a locking problem that has not been taken care of?
+On Mon, 06 Aug 2007, Cornelia Huck wrote:
+> > 1. The first part changes kobject_uevent_env in lib/kobject_uevent.c
+> > to report a failure if both netlink_broadcast (if applicable) and
+> > call_usermodehelper fail to send the event to userspace. Nothing
+> > in the kernel seems to care about the return value of
+> > kobject_uevent_env, so this should not break anything.
 > 
-> No.
+> Famous last words ;) I recall that things broke when the driver core
+> tried to care about the return code of kobject_uevent(), so this may
+> work if you check just in your special case.
+
+I have hunted down all calls to kobject_uevent/kobject_uevent_env and
+they are all statements (return value discarded). My intention is to
+only add a check in request_firmware.
+
+> > 2. The second part changes _request_firmware in
+> > drivers/base/firmware_class.c to actually check the return value
+> > of kobject_uevent and skip the loading_timeout delay if the
+> > loading event was not delivered to userspace at all.
 > 
-> It's very simple:
-> 
-> 1) memory becomes full
+> Note that kobject_uevent() returns 0 if the event has been filtered.
 
-We do have limits to avoid memory getting too full.
+Oops, yes, I had not noticed. This brings another point: When should
+kobject_uevent return a "failure"? The code, as it is, only returns a
+failure when things are really wrong (out of memory, etc.), and
+returns success when the event was simply dropped. This is reasonable
+behaviour, but it prevents callers from knowing whether the event was
+actually delivered (which is what request_firmware needs). On the
+other hand, my patch tries to make nondelivery an error, but on
+second thoughts that could prevent the caller from telling hard
+errors from simple nondelivery. I can think of two possibilities
+to sort this out:
 
-> 2) we try to free memory by paging or swapping
-> 3) I/O requires a memory allocation which fails because memory is full
-> 4) box dies because it's unable to dig itself out of OOM
-> 
-> Most I/O paths can deal with this by having a mempool for their I/O
-> needs. For network I/O, this turns out to be prohibitively hard due to
-> the complexity of the stack.
+- kobject_uevent returns an error code both on a hard error and
+on nondelivery; the error codes for both situations are different,
+so the caller can tell them apart.
 
-The common solution is to have a reserve (min_free_kbytes). The problem 
-with the network stack seems to be that the amount of reserve needed 
-cannot be predicted accurately.
+- kobject_uevent returns an error code (<0) only on a hard error,
+returns 0 on nondelivery and 1 on delivery; this makes things
+even clearer.
 
-The solution may be as simple as configuring the reserves right and 
-avoid the unbounded memory allocations. That is possible if one 
-would make sure that the network layer triggers reclaim once in a 
-while.
+I am biased towards the latter. Of course, we can do anything as
+the return value is actually never used, but I would still like
+to know other opinions about what the right thing is.
+
+> It would be better if you sent the patches seperately.
+> [...]
+> Maybe add a small comment here?
+
+Thank you for your suggestions. I will prepare a new version of
+the patch and send it as a followup to this message as soon as
+I decide about the return value of kobject_uevent.
+
+Javier
+
+
+
