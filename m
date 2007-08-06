@@ -1,128 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933288AbXHFW5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933849AbXHFW5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933288AbXHFW5c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763547AbXHFW5Z
+	id S933849AbXHFW5w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933451AbXHFW5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:57:25 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:52790 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763204AbXHFW5Y (ORCPT
+	Mon, 6 Aug 2007 18:57:34 -0400
+Received: from rv-out-0910.google.com ([209.85.198.187]:49774 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933297AbXHFW5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:57:24 -0400
-Date: Mon, 6 Aug 2007 23:57:18 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Lee.Schermerhorn@hp.com, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Apply memory policies to top two highest zones when highest zone is ZONE_MOVABLE
-Message-ID: <20070806225718.GA16209@skynet.ie>
-References: <20070802172118.GD23133@skynet.ie> <200708040002.18167.ak@suse.de> <20070806121558.e1977ba5.akpm@linux-foundation.org> <20070806214812.GB6142@skynet.ie> <Pine.LNX.4.64.0708061519420.4263@schroedinger.engr.sgi.com>
+	Mon, 6 Aug 2007 18:57:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lQ4GNtW+1O03ITL0bGYcfKDWjsbuGGw+xQ/XykGboAhfdiVL7p8mzQeXVa1X03rLhaL5qB8u4it7uuVy1cX6oJ5U1t+eKbPfRsVG5Gp0DnWbGHgeW7g4XPw+jUEF6kP2ROXmSXaVj9MetQTlJSi5s83xm3MPI6GMGyS3obJNkDw=
+Message-ID: <b6a2187b0708061557i4471ed59n806e34e4296ad0a9@mail.gmail.com>
+Date: Tue, 7 Aug 2007 06:57:32 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: Linux 2.6.23-rc2
+Cc: "Indan Zupancic" <indan@nul.nu>,
+       "Jan Engelhardt" <jengelh@computergmbh.de>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>
+In-Reply-To: <46B7A6B5.6000103@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708061519420.4263@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>
+	 <b6a2187b0708050626s15e1b7did73f638046c0dba3@mail.gmail.com>
+	 <Pine.LNX.4.64.0708061739100.13469@fbirervta.pbzchgretzou.qr>
+	 <b6a2187b0708060906k643a8a20jcb3ac33259993517@mail.gmail.com>
+	 <39839.81.207.0.53.1186418772.squirrel@secure.samage.net>
+	 <46B75784.5030502@zytor.com>
+	 <59814.81.207.0.53.1186421522.squirrel@secure.samage.net>
+	 <46B75B79.3080604@zytor.com>
+	 <b6a2187b0708061553q69f23586r770ae037c8c84c8d@mail.gmail.com>
+	 <46B7A6B5.6000103@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (06/08/07 15:31), Christoph Lameter didst pronounce:
-> On Mon, 6 Aug 2007, Mel Gorman wrote:
-> 
-> > > So where do we stand on this?  We made a mess of NUMA policies, and merging
-> > > "grouping pages by mobility" would fix that mess, only we're not sure that
-> > > we want to merge those and it's too late for 2.6.23 anwyay?
-> > > 
-> > 
-> > Grouping pages by mobility would still apply polciies only to
-> > ZONE_MOVABLE when it is configured. What grouping pages by mobility
-> > would relieve is much of the motivation to configure ZONE_MOVABLE at all
-> > for hugepages. The zone has such attributes as being useful to
-> 
-> Ultimately ZONE_MOVABLE can be removed. AFAIK ZONE_MOVABLE is a temporary 
-> stepping stone to address concerns of about defrag reliability. Somehow 
-> the stepping stone got into .23 without the real thing.
-> 
-> An additional issue with the current ZONE_MOVABLE in .23 is that the 
-> tentative association of ZONE_MOVABLE with HIGHMEM also makes use of large 
-> pages by SLUB not possible.
-> 
+On 8/7/07, H. Peter Anvin <hpa@zytor.com> wrote:
 
-Pretty much. The use of ZONE_MOVABLE really only applies to hugepages
-and potentially memory hot-remove right now.
+> Does it show little penguins as the system boots?
 
-> > There are patches in the works that change zonelists from having multiple
-> > zonelists to only having only one zonelist per node that is filtered based
-> > on the allocation flags. The place this filtering happens is the same as what
-> > the "hack" is currently doing. The cost of filtering should be offset by the
-> > reduced size of the node structure and tests with kernbench, hackbench and
-> > tbench seem to confirm that. This will bring the hack into being line with
-> > what we wanted with policies in the first place because things like MPOL_BIND
-> > will try nodes in node-local order instead of node-numeric order as it does
-> > currently.
-> 
-> I'd like to see that patch.
->  
+No I don't have that. I'm not using a "splash" screen in grub2. And
+funny thing is I don't get any problem up to 2.6.22.
 
-I'll find the time to get it implemented this week. I've been
-prioritising anything that looked like a bug recently so it languished
-on the TODO pile.
-
-> > >From there, we can eliminate policy_zone altogether by applying policies
-> > to all zones but forcing a situation where MPOL_BIND will always contain
-> > one node that GFP_KERNEL allocations can be satisified from. For example,
-> > if I have a NUMAQ that only has ZONE_NORMAL on node 0 and a user tries to
-> > bind to nodes 2+3, they will really bind to nodes 0,2,3 so that GFP_KERNEL
-> > allocations on that process will not return NULL. Alternatively, we could
-> > have mbind return a failure if it doesn't include a node that can satisfy
-> > GFP_KERNEL allocations. Either of these options seem more sensible than
-> > sometimes applying policies and other times not applying them.
-> 
-> We would still need to check on which nodes which zones area available. 
-> Zones that are not available on all zones would need to be exempt from 
-> policies. Maybe one could define an upper boundary of zones that are 
-> policed? On NUMAQ zones up to ZONE_NORMAL would be under policy. On x86_64 
-> this may only include ZONE_DMA. A similar thing would occur on ia64 with 
-> the 4G DMA zone. Maybe policy_zone could become configurable?
->  
-
-A sensible upper-boundary would be if GFP_KERNEL can be used on zones within
-that that node or not. gfp_zone(GFP_KERNEL) provides that sort of information
-and would resolve to ZONE_NORMAL on NUMAQ, ZONE_DMA on ia64 etc. Prehaps
-that would not work out for GFP_DMA32, I'm not 100% sure at the moment
-(it's late and this is meant to be a holiday, sue me :) )
-
-This discussion is independent of one-zonelist-per-node which is the
-stepping stone between where we are now and getting rid of policy_zone
-altogether.
-
-> > I'm for merging the hack for 2.6.23 and having one-zonelist-per-node
-> > ready for 2.6.24. If there is much fear that the hack will persist for too
-> 
-> Why not for .23? It does not seem to be too much code?
-> 
-
-I'm working under the assumption that if it's not a bug-fix, you can't
-get it in after the merge window closes. I've seen complaints before where
-"bug-fixes" were adding features which one-zonelist-per-node may be preceived
-by some people to be. Perhaps the rules will flex for this patch when it comes
-out, perhaps not. I made the assumption that the least invasive bug-fix was
-sensible outside of the merge window and that's what this hack is.
-
-> > long, I'm ok with applying policies only to ZONE_MOVABLE when kernelcore=
-> > is specified on the command line as one-zonelist-per-node can fix the same
-> > problem. Ultimately if we agree on patches to eliminate policy_zone altogether,
-> > the problem becomes moot as it no longer exists.
-> 
-> We cannot have a kernel release with broken mempolicy. We either need the 
-> patch here or the one-zonelist patch for .23.
-
-I'll get a sensible version of one-zonelist ASAP. Prehaps we'll end up
-just going with that altogether if no performance issues are evident in
-testing.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Thanks,
+Jeff.
