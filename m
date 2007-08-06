@@ -1,51 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764658AbXHFSaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932691AbXHFSaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764658AbXHFSaU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbXHFSaF
+	id S932691AbXHFSaq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755190AbXHFSad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:30:05 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:48145 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752564AbXHFSaB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:30:01 -0400
-Subject: Re: [PATCH 03/10] mm: tag reseve pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0708061111390.25069@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>
-	 <20070806103658.356795000@chello.nl>
-	 <Pine.LNX.4.64.0708061111390.25069@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 06 Aug 2007 20:28:20 +0200
-Message-Id: <1186424900.11797.76.camel@lappy>
+	Mon, 6 Aug 2007 14:30:33 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4345 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755927AbXHFSac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 14:30:32 -0400
+Date: Mon, 6 Aug 2007 18:30:19 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Gautam Iyer <gautam@math.stanford.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Increased CPU usage after upgrading to 2.6.21
+Message-ID: <20070806183019.GA5761@ucw.cz>
+References: <20070718164347.GE9506@math.stanford.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070718164347.GE9506@math.stanford.edu>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 11:11 -0700, Christoph Lameter wrote:
-> On Mon, 6 Aug 2007, Peter Zijlstra wrote:
-> 
-> > ===================================================================
-> > --- linux-2.6-2.orig/include/linux/mm_types.h
-> > +++ linux-2.6-2/include/linux/mm_types.h
-> > @@ -60,6 +60,7 @@ struct page {
-> >  	union {
+Hi!
 
-	^^^^^^^^^^
-> >  		pgoff_t index;		/* Our offset within mapping. */
-> >  		void *freelist;		/* SLUB: freelist req. slab lock */
-> > +		int reserve;		/* page_alloc: page is a reserve page */
+> I recently upgraded from 2.6.19, and found the following issues:
 > 
-> Extending page struct ???
+>     1. 2.6.20 crashed and ran terribly on my system.
+> 
+>     2. 2.6.21 runs on my system, but has a few issues: First, I noticed
+>        that in 2.6.19 when my system was idle, Gkrellm would show my CPU
+>        usage as 0%. In 2.6.21, when my system is idle, Gkrellm shows my
+>        cpu usage as anything between 1 and 3%.
+> 
+>        Second, I noticed that X sometimes crashes on resume (i.e. when I
+>        wake my computer up after suspending to ram). Again, this happens
+>        only *sometimes*, and is not consistently reproducible. I had no
+>        issues with 2.6.19 (which I used for a long time).
+> 
+>     3. For 2.6.22.1: The CPU usage issue is the same as above. I only
+>        tested the kernel for a brief period of time (minutes), during
+>        which I experienced no crash.
+> 
+> If you have any idea why my CPU usage is reported higher, please let me
+> know. I've attached the config files of both my kernels.
+> 
+> About the random crash: I'm not sure how to give you more info on it,
+> since I can't consistently reproduce it. Would you have any suggestions
+> on what I should do to trace the problem down?
 
+Well, try suspend 50 times in a row to make it reproducible? Then try
+unloading modules...
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
