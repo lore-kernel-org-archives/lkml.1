@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762816AbXHFKlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763346AbXHFKmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762816AbXHFKlQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 06:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbXHFKlE
+	id S1763346AbXHFKmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 06:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbXHFKmI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 06:41:04 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:56099 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750763AbXHFKlB (ORCPT
+	Mon, 6 Aug 2007 06:42:08 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49368 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752444AbXHFKmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 06:41:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iiX8V/jTkmM5yoRq3pDJcS1seRjwYzII4BJDHnS7GcomjDLq7Pke7hbwfbPBEqaVHzqiIDRXoroH8fW+Q6hXx3MYIiPE+ZI2aMCr2vkDkjAwAJMZ+m9X5E8fgZw70i7+8NzPgKZzVTTPhA176CoS61wzFTs67hoMcTSMFxJlI8A=
-Message-ID: <3efb10970708060341s65c53a8bk81a99ce615b668fb@mail.gmail.com>
-Date: Mon, 6 Aug 2007 12:41:00 +0200
-From: "Remy Bohmer" <linux@bohmer.net>
-To: "Nathan Williams" <ngwilliams@gmail.com>
-Subject: Re: MODULE_LICENSE usage
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <b4e196fa0708060053x65f0b1d3m50c62206cb65e016@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Aug 2007 06:42:08 -0400
+Date: Mon, 6 Aug 2007 12:42:06 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070806104206.GB16133@one.firstfloor.org>
+References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <p73hcnen7w2.fsf@bingen.suse.de> <20070805204112.GC25107@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <b4e196fa0708060053x65f0b1d3m50c62206cb65e016@mail.gmail.com>
-X-Google-Sender-Auth: 303a00f76dd55084
+In-Reply-To: <20070805204112.GC25107@infradead.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Nathan,
+On Sun, Aug 05, 2007 at 09:41:12PM +0100, Christoph Hellwig wrote:
+> On Sun, Aug 05, 2007 at 02:26:53AM +0200, Andi Kleen wrote:
+> > I always thought the right solution would be to just sync atime only
+> > very very lazily. This means if a inode is only dirty because of an
+> > atime update put it on a "only write out when there is nothing to do
+> > or the memory is really needed" list.
+> 
+> Which is the policy I implemented for XFS a while ago.
 
-There has been a lot of discussion about this in the past.
-Read for example this thread: http://lkml.org/lkml/2006/12/13/370
-This will probably clears some things up.
+How would that work? I didn't think XFS had separate inode lists.
 
-Remy
-
-2007/8/6, Nathan Williams <ngwilliams@gmail.com>:
-> Hi,
->
-> I'm working on a driver for an ADSL modem which requires the use of a
-> binary library from the chipset manufacturer.  All my source code is
-> GPL, so that others are free to distribute and modify the driver.
-> After asking the FSF for advice and working through their FAQ, I've
-> given permission for the binary library file to be used with the GPL
-> source code and be re-distributed with it.
->
-> I would like to know if I'm permitted to use MODULE_LICENSE("GPL") in my module.
->
-> Additionally, I'm unsure of what is the meaning of
->
-> "GPL and additional rights"     [GNU Public License v2 rights and more]
->
-> Is it correct to say that my driver is licensed under GPL with
-> additional rights to use the binary library file?
->
-> Thank you,
-> Nathan
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-Andi
