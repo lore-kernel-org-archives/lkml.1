@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933657AbXHFTPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbXHFTQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933657AbXHFTPe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbXHFTP0
+	id S933831AbXHFTQX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbXHFTP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:15:26 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:60466
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758100AbXHFTPZ (ORCPT
+	Mon, 6 Aug 2007 15:15:58 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57501 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757660AbXHFTPz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:15:25 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-Date: Mon, 6 Aug 2007 12:15:16 -0700
+	Mon, 6 Aug 2007 15:15:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michael Sedkowski <sedmich@gmail.com>
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+Date: Mon, 6 Aug 2007 21:25:25 +0200
 User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-References: <20070806102922.907530000@chello.nl> <200708061148.43870.phillips@phunq.net> <Pine.LNX.4.64.0708061150270.7603@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708061150270.7603@schroedinger.engr.sgi.com>
+Cc: Tejun Heo <htejun@gmail.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com> <46B75459.9020204@gmail.com> <1186424492.4355.1.camel@nx6310>
+In-Reply-To: <1186424492.4355.1.camel@nx6310>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200708061215.16427.phillips@phunq.net>
+Message-Id: <200708062125.26387.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 August 2007 11:51, Christoph Lameter wrote:
-> On Mon, 6 Aug 2007, Daniel Phillips wrote:
-> > On Monday 06 August 2007 11:42, Christoph Lameter wrote:
-> > > On Mon, 6 Aug 2007, Daniel Phillips wrote:
-> > > > Currently your system likely would have died here, so ending up
-> > > > with a reserve page temporarily on the wrong node is already an
-> > > > improvement.
-> > >
-> > > The system would have died? Why?
-> >
-> > Because a block device may have deadlocked here, leaving the system
-> > unable to clean dirty memory, or unable to load executables over
-> > the network for example.
->
-> So this is a locking problem that has not been taken care of?
+On Monday, 6 August 2007 20:21, Michael Sedkowski wrote:
+> Dnia 07-08-2007, Wt o godzinie 02:03 +0900, Tejun Heo napisał(a):
+> > Rafael J. Wysocki wrote:
+> > >>> Sidux is a Debian Unstable based distro with it's own set of patches
+> > >>> including the shut down patch provided here:
+> > >>> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=426224
+> > >> You'll probably have to ask Sidux what changes they made that could cause
+> > >> the double spin down, even if halt(8) is never passed the -h flag.
+> > > 
+> > > Well, I've been observing the same behavior on nx6325 for some time and I
+> > > use openSUSE 10.2.  I think this is kernel-related.
+> > 
+> > Hmmm... If the problem only shows up on nx6325, it might be that ACPI is
+> > pulling unnecessary stunt.  Please apply the attached patch and report
+> > when the disk spins down and up.
+> > 
+> > Thanks.
+> > 
+> 
+> Disk spins down on "Pre-shutdown prepare" and then goes up and down on
+> "Power down".
 
-A deadlock problem that we used to call memory recursion deadlock, aka: 
-somebody in the vm writeout path needs to allocate memory, but there is 
-no memory, so vm writeout stops forever.
+Same thing on my box.
 
-Regards,
+In kernel_shutdown_prepare(SYSTEM_POWER_OFF) we call device_shutdown(), so it
+looks like the drive is powered off by one driver's .shutdown() routine.
 
-Daniel
+Greetings,
+Rafael
+
+
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
