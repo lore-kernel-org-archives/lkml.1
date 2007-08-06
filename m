@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933831AbXHFTQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933916AbXHFTQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933831AbXHFTQX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760508AbXHFTP6
+	id S933916AbXHFTQk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933665AbXHFTQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:15:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:57501 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757660AbXHFTPz convert rfc822-to-8bit (ORCPT
+	Mon, 6 Aug 2007 15:16:14 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52808 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933406AbXHFTQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:15:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michael Sedkowski <sedmich@gmail.com>
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-Date: Mon, 6 Aug 2007 21:25:25 +0200
-User-Agent: KMail/1.9.5
-Cc: Tejun Heo <htejun@gmail.com>, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com> <46B75459.9020204@gmail.com> <1186424492.4355.1.camel@nx6310>
-In-Reply-To: <1186424492.4355.1.camel@nx6310>
+	Mon, 6 Aug 2007 15:16:12 -0400
+Date: Mon, 6 Aug 2007 12:16:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 03/10] mm: tag reseve pages
+In-Reply-To: <20070806121053.baed9691.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708061212550.7603@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl> <20070806103658.356795000@chello.nl>
+ <Pine.LNX.4.64.0708061111390.25069@schroedinger.engr.sgi.com>
+ <p73r6mglaog.fsf@bingen.suse.de> <Pine.LNX.4.64.0708061143050.3152@schroedinger.engr.sgi.com>
+ <1186426079.11797.88.camel@lappy> <20070806185926.GB22499@one.firstfloor.org>
+ <20070806121053.baed9691.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708062125.26387.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 6 August 2007 20:21, Michael Sedkowski wrote:
-> Dnia 07-08-2007, Wt o godzinie 02:03 +0900, Tejun Heo napisał(a):
-> > Rafael J. Wysocki wrote:
-> > >>> Sidux is a Debian Unstable based distro with it's own set of patches
-> > >>> including the shut down patch provided here:
-> > >>> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=426224
-> > >> You'll probably have to ask Sidux what changes they made that could cause
-> > >> the double spin down, even if halt(8) is never passed the -h flag.
-> > > 
-> > > Well, I've been observing the same behavior on nx6325 for some time and I
-> > > use openSUSE 10.2.  I think this is kernel-related.
-> > 
-> > Hmmm... If the problem only shows up on nx6325, it might be that ACPI is
-> > pulling unnecessary stunt.  Please apply the attached patch and report
-> > when the disk spins down and up.
-> > 
-> > Thanks.
-> > 
-> 
-> Disk spins down on "Pre-shutdown prepare" and then goes up and down on
-> "Power down".
+On Mon, 6 Aug 2007, Andrew Morton wrote:
 
-Same thing on my box.
+> Plus I don't think there are many flags left in the upper 32-bits.  ia64
+> swooped in and gobbled lots of them, although it's not immediately clear
+> how many were consumed.
 
-In kernel_shutdown_prepare(SYSTEM_POWER_OFF) we call device_shutdown(), so it
-looks like the drive is powered off by one driver's .shutdown() routine.
-
-Greetings,
-Rafael
+IA64 uses one of these bits for the uncached allocator.  10 bits used for 
+the node. Sparsemem may use some of the rest.
 
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+
