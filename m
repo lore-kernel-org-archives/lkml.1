@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933201AbXHFWea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933575AbXHFWfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933201AbXHFWea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 18:34:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762549AbXHFWeV
+	id S933575AbXHFWfq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 18:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763315AbXHFWfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 18:34:21 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:4818 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762271AbXHFWeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 18:34:20 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: 2.6.23-rc1-mm2
-Date: Tue, 7 Aug 2007 00:34:18 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       gregkh@suse.de, paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-usb-devel@lists.sourceforge.net
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708062134.16643.m.kozlowski@tuxland.pl> <236b147ed4a92945baa3c6b29e7e5f31@kernel.crashing.org>
-In-Reply-To: <236b147ed4a92945baa3c6b29e7e5f31@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200708070034.19193.m.kozlowski@tuxland.pl>
+	Mon, 6 Aug 2007 18:35:37 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:53660 "EHLO
+	pd3mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762939AbXHFWfh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 18:35:37 -0400
+Date: Mon, 06 Aug 2007 16:35:25 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce	32bit	DMA	mapping"
+In-reply-to: <1186439529.938.95.camel@localhost.localdomain>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, Olaf Hering <olh@suse.de>,
+       linuxppc-dev@ozlabs.org, stable@kernel.org,
+       linux-kernel@vger.kernel.org
+Message-id: <46B7A22D.4030909@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
+ <46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
+ <1186272926.938.8.camel@localhost.localdomain>
+ <46B5824B.1000103@s5r6.in-berlin.de>
+ <1186351473.938.21.camel@localhost.localdomain>
+ <20070806135124.GA2900@suse.de>
+ <1186436848.938.75.camel@localhost.localdomain>
+ <46B79F25.50205@s5r6.in-berlin.de> <46B79FD7.9020801@shaw.ca>
+ <1186439529.938.95.camel@localhost.localdomain>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >>> Second issue as reported earilier allmodconfig fails to build on imac
-> >>> g3.
-> >>>
-> >>>   CC      arch/powerpc/kernel/lparmap.s
-> >>>   AS      arch/powerpc/kernel/head_64.o
-> >>> lparmap.c: Assembler messages:
-> >>> lparmap.c:84: Error: file number 1 already allocated
-> >>> make[1]: *** [arch/powerpc/kernel/head_64.o] Blad 1
-> >>> make: *** [arch/powerpc/kernel] Blad 2
-> >>
-> >> Please send me the full output of:
-> >>
-> >> gcc --version    (or whatever your gcc is called)
-> >> ld --version
-> >> ld --help        (I know no better way to get the supported binutils
-> >>                    targets, and the default target)
-> >>
-> >> and the lparmap.s file.  You might want to skip sending it
-> >> to the lists, it will be a bit big (and off-topic on most
-> >> of those lists, anyway).
-> >
-> > Well ... its 66kB. Not that bad. Please find it attached.
-> > Needed gcc and ld info below.
+Benjamin Herrenschmidt wrote:
+> On Mon, 2007-08-06 at 16:25 -0600, Robert Hancock wrote:
+>>> Anyway.  For now I will simply go with what 2.6.23-rc has and what
+>>> 2.6.21 had:  No dma_set_mask anywhere in the 1394 subsystem.  We can
+>>> revisit this whenever an actual need arises.
+>> Not sure this is a very good idea. This seems rather likely to fail on
+>> x86_64 machines with >4GB of RAM for example.. 
 > 
-> Thanks.
+> Would it ? Isn't the default DMA mask for PCI devices set to 32 bits
+> anyway ? In which case, swiotlb will take care of the matter.
 > 
-> It seems like things go wrong when lparmap.s is generated with
-> (DWARF) debug info; could you try building it (manually) with -g0
-> added on the end of the compile line, and see if head_64.o compiles
-> okay for you then?  If so, I'll prepare a proper patch for it, I
-> have a similar one (also for lparmap!) in my queue already...
+> Cheers,
+> Ben.
 
-Ok it worked. I had to add -g0 to Makefile under arch/powerpc/kernel because
--g0 was added before -g and didn't have any effect when adding to Makefile
-in top dir. But yes - it compiles now.
+Hmm, that's true, yes. Suppose it shouldn't be a problem then.
 
-Thanks,
+I would agree, though, that sbp2 isn't really the place for setting 
+this, since the DMA mask is presently a property of the device, not of 
+the user..
 
-	Mariusz
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
+
