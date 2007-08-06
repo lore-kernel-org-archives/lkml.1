@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763584AbXHFLgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXHFLhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763584AbXHFLgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbXHFLg3
+	id S1764001AbXHFLhd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759225AbXHFLhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:36:29 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:55354 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757509AbXHFLg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:36:28 -0400
-Date: Mon, 6 Aug 2007 13:36:45 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
-Message-ID: <20070806113644.GA1790@elf.ucw.cz>
-References: <200708051906.22865.rjw@sisk.pl> <20070806090713.GC15329@atrey.karlin.mff.cuni.cz> <1186392591.28655.35.camel@johannes.berg> <20070806102659.GB1875@elf.ucw.cz> <1186398917.28655.69.camel@johannes.berg>
+	Mon, 6 Aug 2007 07:37:21 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:57594 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753862AbXHFLhU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
+	h=Received:Received:Message-ID:In-Reply-To:References:Date:Subject:From:To:Cc:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:Importance;
+	b=lebsBJ7GFpsUKtzTc5xc0a01UDNx4VLOZSa/npwf/4GAALcLcFTaESWW7hXPW4/iFLbw5fUOSF4fKLdsiiXsQvmTJ2qW5YQ/i8a5jSzVBHXQnWkcHD7OkbRvPK4z6qdH;
+Message-ID: <1977.simon.1186400234@5ec7c279.invalid>
+In-Reply-To: <20070806104456.GA1901@elf.ucw.cz>
+References: <46B58FB4.6050207@simon.arlott.org.uk> <46B68F08.60106@intel.com>
+    <20070806104456.GA1901@elf.ucw.cz>
+Date: Mon, 6 Aug 2007 12:37:14 +0100
+Subject: Re: e1000 doesn't resume properly from standby (2.6.23-rc2)
+From: "Simon Arlott" <simon@fire.lp0.eu>
+To: "Pavel Machek" <pavel@ucw.cz>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       linux-pm@lists.linux-foundation.org,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+User-Agent: SquirrelMail/1.4.10a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1186398917.28655.69.camel@johannes.berg>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2007-08-06 13:15:17, Johannes Berg wrote:
-> On Mon, 2007-08-06 at 12:26 +0200, Pavel Machek wrote:
-> 
-> > Well, so that it does not bitrot? This is few bytes, I'd say, and I
-> > believe we have too many config options already.
-> 
-> This is not an option the user is ever going to see. I think I'd
-> prefer
+On Mon, August 6, 2007 11:44, Pavel Machek wrote:
+> Hi!
+>
+>> >00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet
+>> >Controller (Copper) (rev 01)
+>> >        Subsystem: Intel Corp.: Unknown device 1012
+>> >        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
+>> >        Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
+>> >        I/O ports at b000 [size=64]
+>> >        Capabilities: [dc] Power Management version 2
+>> >        Capabilities: [e4] PCI-X non-bridge device.
+>> >        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
+>> >        Enable-
+>> >
+>> >00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet
+>> >Controller (Copper) (rev 01)
+>> >        Subsystem: Intel Corp.: Unknown device 1012
+>> >        Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
+>> >        Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
+>> >        I/O ports at b400 [size=64]
+>> >        Capabilities: [dc] Power Management version 2
+>> >        Capabilities: [e4] PCI-X non-bridge device.
+>> >        Capabilities: [f0] Message Signalled Interrupts: 64bit+ Queue=0/0
+>> >        Enable-
+>> >
+>> >[  950.132046] Stopping tasks ... done.
+>> >[  950.459794] Suspending console(s)
+>> >[  951.776277] pnp: Device 00:0c disabled.
+>> >[  951.776673] pnp: Device 00:0a disabled.
+>> >[  951.776984] pnp: Device 00:09 disabled.
+>> >[  951.777306] pnp: Device 00:08 disabled.
+>> >[  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
+>> >[  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
+>> >[  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
+>> >[  952.022243] ACPI handle has no context!
+>> >[  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
+>> >[  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
+>> >[  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
+>> >[  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
+>> >[  952.282221] ACPI handle has no context!
+>> >[  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
+>> >[  952.537495] ACPI handle has no context!
+>> >
+>> >[  956.857085] Back to C!
+>
+> Are you sure that is standby? Looks like suspend-to-RAM to me.
 
-Ok, option that users can't set is probably not evil.
+It's S1 (power-on suspend/standby), my BIOS/motherboard doesn't support S2 or S3.
 
-> having two new per-ARCH config symbols though:
-> config SUSPEND_UP_POSSIBLE
-> 	depends on ARCH_SUSPEND_UP_POSSIBLE
-> 
-> and then the architecture gets to define that when it can suspend.
-
-Looks like a plan.
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Simon Arlott
