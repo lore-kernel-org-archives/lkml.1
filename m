@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765557AbXHFNs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765867AbXHFNtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765557AbXHFNs7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761970AbXHFNss
+	id S1765867AbXHFNtY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762033AbXHFNst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:48:48 -0400
-Received: from perninha.conectiva.com.br ([200.140.247.100]:42156 "EHLO
+	Mon, 6 Aug 2007 09:48:49 -0400
+Received: from perninha.conectiva.com.br ([200.140.247.100]:42166 "EHLO
 	perninha.conectiva.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761539AbXHFNsr (ORCPT
+	with ESMTP id S1754260AbXHFNss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:48:47 -0400
-Date: Mon, 6 Aug 2007 10:34:58 -0300
+	Mon, 6 Aug 2007 09:48:48 -0400
+Date: Mon, 6 Aug 2007 10:36:15 -0300
 From: "Luiz Fernando N. Capitulino" <lcapitulino@mandriva.com.br>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] i386: convert mm_context_t semaphore to a mutex
-Message-ID: <20070806103458.4b35c90d@localhost>
+Message-ID: <20070806103615.4be4670f@localhost>
 In-Reply-To: <20070806074608.GA12415@elte.hu>
 References: <20070803105540.4f85ae09@localhost>
 	<20070806074608.GA12415@elte.hu>
