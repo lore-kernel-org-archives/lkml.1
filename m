@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763315AbXHFJdN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763328AbXHFJhT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763315AbXHFJdN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:33:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760791AbXHFJc6
+	id S1763328AbXHFJhT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:37:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXHFJhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:32:58 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.31.123]:39592 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760752AbXHFJc5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:32:57 -0400
-Date: Mon, 6 Aug 2007 11:02:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Huang, Ying" <ying.huang@intel.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, nigel@nigel.suspend2.net,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Jeremy Maitin-Shepard <jbms@cmu.edu>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, david@lang.hm,
-       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Kexec Mailing List <kexec@lists.infradead.org>
-Subject: Re: [PATH 0/1] Kexec jump - v2 - the first step to kexec based hibernation
-Message-ID: <20070806090210.GA15329@atrey.karlin.mff.cuni.cz>
-References: <1184483593.1898.98.camel@caritas-dev.intel.com> <20070731110458.GA1777@elf.ucw.cz> <1185932071.1363.13.camel@caritas-dev.intel.com> <20070805185558.GE1758@elf.ucw.cz> <1186367486.527.5.camel@caritas-dev.intel.com>
+	Mon, 6 Aug 2007 05:37:00 -0400
+Received: from mail.gmx.net ([213.165.64.20]:37662 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1761454AbXHFJg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 05:36:57 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX1/O8+ljQjTOk8/FRbygaY4CCLU3TCz1DbyMFzoIPW
+	9zAG42x9qWN6Zk
+From: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
+Date: Mon, 6 Aug 2007 11:36:46 +0200
+User-Agent: KMail/1.9.5
+Cc: ibm-acpi@hmh.eng.br, ibm-acpi-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+References: <200708051902.18801.toralf.foerster@gmx.de> <20070805222937.GA23963@elf.ucw.cz>
+In-Reply-To: <20070805222937.GA23963@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1186367486.527.5.camel@caritas-dev.intel.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart4569252.9UeqM23Iiz";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708061136.50491.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--nextPart4569252.9UeqM23Iiz
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> > Did the trick, I got the kernel to load, and it even attempted
-> > exec... but I got doublefault (or what is it?)
-> > 
-> > Int 6: ... EIP: c4739906. Address is in reserve_bootmem_core.
-> > 
-> > Do I have to disable ACPI completely? I tried with acpi=off,
-> > nosmp... but problem does not seem device related.
-> 
-> It seems that the problem has nothing to do with device or ACPI. Can you
-> do a normal kexec? That is:
-> 
-> kexec -l <...>
-> kexec -e
-> 
-> or 
-> 
-> kexec -p <...>
-> ALT-SysRq-c to trigger a crash dump.
+Am Montag, 6. August 2007 00:29 schrieb Pavel Machek:
+> Yes, I seen similar reports. Does it happen in all shutdown mode and
+> 2.6.22? Does it happen   in platform mode in 2.6.19?
 
-...that was indeed a problem. I can do successful kexec, as long as I
-load bzImage (and not vmlinux). (Both kernels 2.6.22 and
-2.6.23-rc2-git). Problem is, I can only load bzImage using -l, attempt
-to load bzImage using -p results in 
+I can reproduce this behaviour by doing the following with kernel 2.6.20 :
 
-"Could not find a free area of memory of 9000 bytes"
-locate_hole failed
+1. <Fn>+<F4>   - the systems sleeps within RAM
+2. <Fn>             - the systems wakes up
+3. <Fn>+<F12> - the systems hibernates to disk
+4. <power>       - systems wakes up
+5. <Fn>+<F4>   - the systems sleeps within RAM
 
-. Any ideas?
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Now pressing <Fn> doesn't wake up the system, I have to press the power but=
+ton
+for that instead.
+
+BTW I tried to test the latest git-sources -rc2 but the <Fn> keys do not wo=
+rk
+anymore with the thinkpad-acpi feature (neither as module nor if compiled i=
+nto).
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+
+--nextPart4569252.9UeqM23Iiz
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBGtuuvhyrlCH22naMRAiZqAKC7JnTqDwKWx7/VpfOrkcANXUEljwCgxmp6
+XRXNbBUK1S9wJYGxVXO61Sc=
+=VYkn
+-----END PGP SIGNATURE-----
+
+--nextPart4569252.9UeqM23Iiz--
