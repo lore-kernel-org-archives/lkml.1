@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759443AbXHFSLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765812AbXHFSMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759443AbXHFSLl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 14:11:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbXHFSLa
+	id S1765812AbXHFSMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 14:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbXHFSLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 14:11:30 -0400
-Received: from outbound-mail-73.bluehost.com ([69.89.20.8]:57465 "HELO
-	outbound-mail-73.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753827AbXHFSL2 (ORCPT
+	Mon, 6 Aug 2007 14:11:55 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50310 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753373AbXHFSLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 14:11:28 -0400
-X-Greylist: delayed 1639 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 14:11:28 EDT
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH -mm] 2/2: PCI: disable decode of IO/memory during BAR sizing
-Date: Mon, 6 Aug 2007 10:11:41 -0700
-User-Agent: KMail/1.9.7
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+	Mon, 6 Aug 2007 14:11:54 -0400
+Date: Mon, 6 Aug 2007 11:11:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <465CF804.9070907@shaw.ca>
-In-Reply-To: <465CF804.9070907@shaw.ca>
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 03/10] mm: tag reseve pages
+In-Reply-To: <20070806103658.356795000@chello.nl>
+Message-ID: <Pine.LNX.4.64.0708061111390.25069@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl> <20070806103658.356795000@chello.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708061011.42363.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 76.103.130.182 authed with jbarnes@virtuousgeek.org}
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - box128.bluehost.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [642 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - virtuousgeek.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, May 29, 2007 9:05 pm Robert Hancock wrote:
-> Change PCI BAR sizing to disable the decode of memory or IO, as
-> appropriate, while we are writing the all-ones value to the BAR to
-> determine the size. If this is not done, the device may spuriously
-> decode accesses to memory areas it should not. On some Intel PCI
-> Express chipsets, this breaks MMCONFIG configuration space access,
-> since the memory the graphics card ends up decoding during this
-> period overlaps the MMCONFIG area, and thus it steals the accesses to
-> the area to do any other configuration space access, including
-> changing the BAR back to its previous value.
->
-> However, don't do this disabling on host bridge devices, as it is
-> reported that some of them do silly things like disable CPU to RAM
-> access if this is done.
->
-> Based on an original patch by Jesse Barnes.
->
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
+On Mon, 6 Aug 2007, Peter Zijlstra wrote:
 
-Robert, the PCI patches for fixing up MCFG detection/usage and probing 
-should go through Greg.  Can you resend so we don't miss 2.6.24 this 
-time?  (I was really hoping this stuff would get into 2.6.23, but 
-apparently none of the right people were Cc'd at the right time... 
-damn.)
+> ===================================================================
+> --- linux-2.6-2.orig/include/linux/mm_types.h
+> +++ linux-2.6-2/include/linux/mm_types.h
+> @@ -60,6 +60,7 @@ struct page {
+>  	union {
+>  		pgoff_t index;		/* Our offset within mapping. */
+>  		void *freelist;		/* SLUB: freelist req. slab lock */
+> +		int reserve;		/* page_alloc: page is a reserve page */
 
-You can add my sign-off to this one too.
-
-Thanks,
-Jesse
+Extending page struct ???
