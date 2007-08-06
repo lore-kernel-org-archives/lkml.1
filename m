@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762010AbXHFBDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760021AbXHFBUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762010AbXHFBDh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 5 Aug 2007 21:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbXHFBD2
+	id S1760021AbXHFBUh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 5 Aug 2007 21:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbXHFBU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 5 Aug 2007 21:03:28 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2708 "EHLO scrub.xs4all.nl"
+	Sun, 5 Aug 2007 21:20:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53112 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752065AbXHFBD1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 5 Aug 2007 21:03:27 -0400
-Date: Mon, 6 Aug 2007 03:03:50 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, akpm@linux-foundation.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] msleep() with hrtimers
-In-Reply-To: <1186360983.2697.8.camel@laptopd505.fenrus.org>
-Message-ID: <Pine.LNX.4.64.0708060257010.1817@scrub.home>
-References: <15327.1186166232@lwn.net>  <Pine.LNX.4.64.0708032116340.1817@scrub.home>
-  <1186170407.3153.8.camel@laptopd505.fenrus.org>  <Pine.LNX.4.64.0708032152060.1817@scrub.home>
-  <1186185229.3153.11.camel@laptopd505.fenrus.org>  <Pine.LNX.4.64.0708040345530.1817@scrub.home>
-  <1186255149.2777.3.camel@laptopd505.fenrus.org>  <Pine.LNX.4.64.0708060150270.1817@scrub.home>
- <1186360983.2697.8.camel@laptopd505.fenrus.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752158AbXHFBU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 5 Aug 2007 21:20:27 -0400
+Date: Mon, 6 Aug 2007 03:20:25 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Cc: Martin Bligh <mbligh@mbligh.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Eric Whitney <eric.whitney@hp.com>
+Subject: Re: [rfc] balance-on-fork NUMA placement
+Message-ID: <20070806012025.GA9265@wotan.suse.de>
+References: <20070731054142.GB11306@wotan.suse.de> <200707311114.09284.ak@suse.de> <20070801002313.GC31006@wotan.suse.de> <46B0C8A3.8090506@mbligh.org> <1185993169.5059.79.camel@localhost> <46B10E9B.2030907@mbligh.org> <20070802013631.GA15595@wotan.suse.de> <46B22383.5020109@mbligh.org> <20070803002010.GB14775@wotan.suse.de> <20070803201013.GA12874@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070803201013.GA12874@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, Aug 03, 2007 at 01:10:13PM -0700, Suresh B wrote:
+> On Fri, Aug 03, 2007 at 02:20:10AM +0200, Nick Piggin wrote:
+> > On Thu, Aug 02, 2007 at 11:33:39AM -0700, Martin Bligh wrote:
+> > > Nick Piggin wrote:
+> > > >On Wed, Aug 01, 2007 at 03:52:11PM -0700, Martin Bligh wrote:
+> > > >>>And so forth.  Initial forks will balance.  If the children refuse to
+> > > >>>die, forks will continue to balance.  If the parent starts seeing short
+> > > >>>lived children, fork()s will eventually start to stay local.  
+> > > >>Fork without exec is much more rare than without. Optimising for
+> > > >>the uncommon case is the Wrong Thing to Do (tm). What we decided
+> > > >
+> > > >It's only the wrong thing to do if it hurts the common case too
+> > > >much. Considering we _already_ balance on exec, then adding another
+> > > >balance on fork is not going to introduce some order of magnitude
+> > > >problem -- at worst it would be 2x but it really isn't too slow
+> > > >anyway (at least nobody complained when we added it).
+> > > >
+> > > >One place where we found it helps is clone for threads.
+> > > >
+> > > >If we didn't do such a bad job at keeping tasks together with their
+> > > >local memory, then we might indeed reduce some of the balance-on-crap
+> > > >and increase the aggressiveness of periodic balancing.
+> > > >
+> > > >Considering we _already_ balance on fork/clone, I don't know what
+> > > >your argument is against this patch is? Doing the balance earlier
+> > > >and allocating more stuff on the local node is surely not a bad
+> > > >idea.
+> > > 
+> > > I don't know who turned that on ;-( I suspect nobody bothered
+> > > actually measuring it at the time though, or used some crap
+> > > benchmark like stream to do so. It should get reverted.
+> > 
+> > So you have numbers to show it hurts? I tested some things where it
+> > is not supposed to help, and it didn't make any difference. Nobody
+> > else noticed either.
+> > 
+> > If the cost of doing the double balance is _really_ that painful,
+> > then we ccould skip balance-on-exec for domains with balance-on-fork
+> > set.
+> 
+> Nick, Even if it is not painful, can we skip balance-on-exec if
+> balance-on-fork is set. There is no need for double balance, right?
 
-On Sun, 5 Aug 2007, Arjan van de Ven wrote:
+I guess we could. There is no need for the double balance if the exec
+happens immediately after the fork which is surely the common case. I
+think there can be some other weird cases (eg multi-threaded code) that
+does funny things though...
 
-> Timers are course resolution that is highly HZ-value dependent. For
-> cases where you want a finer resolution, the kernel now has a way to
-> provide that functionality... so why not use the quality of service this
-> provides..
 
-We're going in circles here. We have two different timer APIs for a 
-reason, only because hrtimer provide better resolution, doesn't 
-automatically make them the better generic timer.
-There's no problem to provide a high resolution sleep, but there is also 
-no reason to mess with msleep, don't fix what ain't broken...
+> Especially with the optimization you are trying to do with this patch,
+> balance-on-exec may lead to wrong decision making this optimization
+> not work as expected.
 
-bye, Roman
+That's true.
+
