@@ -1,220 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbXHFGZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXHFGiD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760779AbXHFGZe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 02:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753825AbXHFGZY
+	id S1761010AbXHFGiD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 02:38:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXHFGhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 02:25:24 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:45606 "EHLO proxima.lp0.eu"
+	Mon, 6 Aug 2007 02:37:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59003 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753722AbXHFGZX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 02:25:23 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=fire.lp0.eu;
-	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:CC:Subject:References:In-Reply-To:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
-	b=HTrIfMNo+egPO3y+MmJ66k+zHBtTXjAEypw4FuGuFBhlyK3HybuGabwHb3bevDHEi8caULHMq4fb6gqQxgO9sWfC//3xOr20Phd24pXcieaWtac9ZXL6wxugvulBify8;
-Message-ID: <46B6BECA.4070102@simon.arlott.org.uk>
-Date: Mon, 06 Aug 2007 07:25:14 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-CC: linux-pm@lists.linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: e1000 doesn't resume properly from standby (2.6.23-rc2)
-References: <46B58FB4.6050207@simon.arlott.org.uk> <46B68F08.60106@intel.com>
-In-Reply-To: <46B68F08.60106@intel.com>
-X-Enigmail-Version: 0.95.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8
+	id S1753825AbXHFGhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 02:37:51 -0400
+Subject: Re: What archs need flush_tlb_page() in handle_pte_fault() ?
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linux-mm@kvack.org
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Linux Arch list <linux-arch@vger.kernel.org>,
+       Linus Torvalds <torvalds@osdl.org>
+In-Reply-To: <1186018621.5495.558.camel@localhost.localdomain>
+References: <1186018621.5495.558.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 16:37:42 +1000
+Message-Id: <1186382262.938.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/08/07 04:01, Kok, Auke wrote:
-> Simon Arlott wrote:
->> 00:0a.0 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet
->> Controller (Copper) (rev 01)
->>         Subsystem: Intel Corp.: Unknown device 1012
->>         Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 5
->>         Memory at e3020000 (64-bit, non-prefetchable) [size=128K]
->>         I/O ports at b000 [size=64]
->>         Capabilities: [dc] Power Management version 2
->>         Capabilities: [e4] PCI-X non-bridge device.
->>         Capabilities: [f0] Message Signalled Interrupts: 64bit+
->> Queue=0/0 Enable-
->>
->> 00:0a.1 Ethernet controller: Intel Corp. 82546EB Gigabit Ethernet
->> Controller (Copper) (rev 01)
->>         Subsystem: Intel Corp.: Unknown device 1012
->>         Flags: bus master, 66Mhz, medium devsel, latency 32, IRQ 12
->>         Memory at e3000000 (64-bit, non-prefetchable) [size=128K]
->>         I/O ports at b400 [size=64]
->>         Capabilities: [dc] Power Management version 2
->>         Capabilities: [e4] PCI-X non-bridge device.
->>         Capabilities: [f0] Message Signalled Interrupts: 64bit+
->> Queue=0/0 Enable-
->>
->> [  950.132046] Stopping tasks ... done.
->> [  950.459794] Suspending console(s)
->> [  951.776277] pnp: Device 00:0c disabled.
->> [  951.776673] pnp: Device 00:0a disabled.
->> [  951.776984] pnp: Device 00:09 disabled.
->> [  951.777306] pnp: Device 00:08 disabled.
->> [  951.777786] ACPI: PCI interrupt for device 0000:00:11.5 disabled
->> [  951.995359] ACPI: PCI interrupt for device 0000:00:11.3 disabled
->> [  952.006094] ACPI: PCI interrupt for device 0000:00:11.2 disabled
->> [  952.022243] ACPI handle has no context!
->> [  952.033068] ACPI: PCI interrupt for device 0000:00:0c.2 disabled
->> [  952.044086] ACPI: PCI interrupt for device 0000:00:0c.1 disabled
->> [  952.055083] ACPI: PCI interrupt for device 0000:00:0c.0 disabled
->> [  952.282211] ACPI: PCI interrupt for device 0000:00:0a.1 disabled
->> [  952.282221] ACPI handle has no context!
->> [  952.537474] ACPI: PCI interrupt for device 0000:00:0a.0 disabled
->> [  952.537495] ACPI handle has no context!
->>
->> [  956.857085] Back to C!
->> [  957.295035] ACPI: Unable to turn cooling device [b18d0e00] 'off'
->> [  957.521400] PCI: Setting latency timer of device 0000:00:01.0 to 64
->> [  957.521478] ACPI: PCI Interrupt 0000:00:09.0[A] -> Link [LNKB] ->
->> GSI 11 (level, low) -> IRQ 11
->> [  957.532256] PM: Writing back config space on device 0000:00:0a.0 at
->> offset f (was ff0100, writing ff0105)
->> [  957.532277] PM: Writing back config space on device 0000:00:0a.0 at
->> offset 8 (was 1, writing b001)
->> [  957.532291] PM: Writing back config space on device 0000:00:0a.0 at
->> offset 4 (was 4, writing e3020004)
->> [  957.532299] PM: Writing back config space on device 0000:00:0a.0 at
->> offset 3 (was 800000, writing 802008)
->> [  957.532309] PM: Writing back config space on device 0000:00:0a.0 at
->> offset 1 (was 2300000, writing 2300007)
->> [  957.532339] ACPI: PCI Interrupt 0000:00:0a.0[A] -> Link [LNKC] ->
->> GSI 5 (level, low) -> IRQ 5
->> [  957.567251] PM: Writing back config space on device 0000:00:0a.1 at
->> offset f (was ff0200, writing ff020c)
->> [  957.567275] PM: Writing back config space on device 0000:00:0a.1 at
->> offset 8 (was 1, writing b401)
->> [  957.567290] PM: Writing back config space on device 0000:00:0a.1 at
->> offset 4 (was 4, writing e3000004)
->> [  957.567298] PM: Writing back config space on device 0000:00:0a.1 at
->> offset 3 (was 800000, writing 802008)
->> [  957.567308] PM: Writing back config space on device 0000:00:0a.1 at
->> offset 1 (was 2300000, writing 2300007)
->> [  957.567346] ACPI: PCI Interrupt 0000:00:0a.1[B] -> Link [LNKD] ->
->> GSI 12 (level, low) -> IRQ 12
->> [  957.589975] ACPI: PCI Interrupt 0000:00:0b.0[A] -> Link [LNKD] ->
->> GSI 12 (level, low) -> IRQ 12
->> [  957.600217] ACPI: PCI Interrupt 0000:00:0c.0[A] -> Link [LNKA] ->
->> GSI 11 (level, low) -> IRQ 11
->> [  957.611230] ACPI: PCI Interrupt 0000:00:0c.1[B] -> Link [LNKB] ->
->> GSI 11 (level, low) -> IRQ 11
->> [  957.838282] ACPI: PCI Interrupt 0000:00:0c.2[C] -> Link [LNKC] ->
->> GSI 5 (level, low) -> IRQ 5
->> [  957.902166] ohci1394: fw-host0: OHCI-1394 1.0 (PCI): IRQ=[11] 
->> MMIO=[e3046000-e30467ff]  Max Packet=[512]  IR/IT contexts=[4/8]
->> [  957.911656] ACPI: PCI Interrupt 0000:00:11.1[A] -> Link [LNKA] ->
->> GSI 11 (level, low) -> IRQ 11
->> [  957.911666] PCI: VIA VLink IRQ fixup for 0000:00:11.1, from 255 to 11
->> [  957.922034] ACPI: PCI Interrupt 0000:00:11.2[D] -> Link [LNKD] ->
->> GSI 12 (level, low) -> IRQ 12
->> [  957.933028] ACPI: PCI Interrupt 0000:00:11.3[D] -> Link [LNKD] ->
->> GSI 12 (level, low) -> IRQ 12
->> [  957.944076] ACPI: PCI Interrupt 0000:00:11.5[C] -> Link [LNKC] ->
->> GSI 5 (level, low) -> IRQ 5
->> [  957.944091] PCI: Setting latency timer of device 0000:00:11.5 to 64
->> [  957.946061] ACPI: PCI Interrupt 0000:01:00.0[A] -> Link [LNKA] ->
->> GSI 11 (level, low) -> IRQ 11
->> [  957.947464] pnp: Device 00:08 activated.
->> [  957.948724] pnp: Device 00:09 activated.
->> [  957.950635] pnp: Device 00:0a activated.
->> [  957.950664] pnp: Failed to activate device 00:0b.
->> [  957.951942] pnp: Device 00:0c activated.
->> [  959.883939] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps
->> Full Duplex, Flow Control: RX/TX
->> [  961.866287] hde: selected mode 0x45
->> [  965.310493] hdg: selected mode 0x45
->> [  965.316152] hdh: selected mode 0x42
->> [  969.135523] hda: selected mode 0x46
->> [  973.454631] hdb: selected mode 0x45
->> [  973.457179] hdc: selected mode 0x44
->> [  973.459550] hdd: selected mode 0x42
->> [  973.950474] Restarting tasks ... done.
->> [  974.261357] agpgart: Found an AGP 2.0 compliant device at
->> 0000:00:00.0.
->> [  974.262099] agpgart: Putting AGP V2 device at 0000:00:00.0 into 4x
->> mode
->> [  974.262620] agpgart: Putting AGP V2 device at 0000:01:00.0 into 4x
->> mode
->> [  974.262894] [drm] Loading R200 Microcode
->>
->>
->> eth0 now doesn't receive anything - it's transmitting ok because I can
->> receive its packets on another host. It's also still getting interrupts.
->>
->> If I then ifconfig eth0 down and up, or change the MTU (since that
->> resets the link on e1000), it starts working again:
->>
->> [  993.926603] e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps
->> Full Duplex, Flow Control: RX/TX
->>
->>
->> There's a link up at 959.883939 too...
+On Thu, 2007-08-02 at 11:37 +1000, Benjamin Herrenschmidt wrote:
+> Heya !
 > 
-> 
-> OK, I'll try to look into this coming week.
-> 
-> Can you run `ethtool -d ethX` immediately after resuming and post that
-> output? it might help to know that upfront.
+> In my page table accessor spring cleaning, one of my targets is
+> flush_tlb_page(). At this stage, it's only called by generic code in one
+> place (in addition to the asm-generic bits that use it to implement
+> missing accessors, but I'm taking care of those spearately) :
 
-MAC Registers
--------------
-0x00000: CTRL (Device control register)  0x18F00249
-      Endian mode (buffers):             little
-      Link reset:                        reset
-      Set link up:                       1
-      Invert Loss-Of-Signal:             no
-      Receive flow control:              enabled
-      Transmit flow control:             enabled
-      VLAN mode:                         disabled
-      Auto speed detect:                 disabled
-      Speed select:                      1000Mb/s
-      Force speed:                       no
-      Force duplex:                      no
-0x00008: STATUS (Device status register) 0x0000C383
-      Duplex:                            full
-      Link up:                           link config
-      TBI mode:                          disabled
-      Link speed:                        1000Mb/s
-      Bus type:                          PCI
-      Bus speed:                         33MHz
-      Bus width:                         32-bit
-0x00100: RCTL (Receive control register) 0x02018022
-      Receiver:                          enabled
-      Store bad packets:                 disabled
-      Unicast promiscuous:               disabled
-      Multicast promiscuous:             disabled
-      Long packet:                       enabled
-      Descriptor minimum threshold size: 1/2
-      Broadcast accept mode:             accept
-      VLAN filter:                       disabled
-      Cononical form indicator:          disabled
-      Discard pause frames:              filtered
-      Pass MAC control frames:           don't pass
-      Receive buffer size:               16384
-0x02808: RDLEN (Receive desc length)     0x00001000
-0x02810: RDH   (Receive desc head)       0x00000000
-0x02818: RDT   (Receive desc tail)       0x00000000
-0x02820: RDTR  (Receive delay timer)     0x00000000
-0x00400: TCTL (Transmit ctrl register)   0x0103F0FA
-      Transmitter:                       enabled
-      Pad short packets:                 enabled
-      Software XOFF Transmission:        disabled
-      Re-transmit on late collision:     enabled
-0x03808: TDLEN (Transmit desc length)    0x00001000
-0x03810: TDH   (Transmit desc head)      0x0000005C
-0x03818: TDT   (Transmit desc tail)      0x0000005C
-0x03820: TIDV  (Transmit delay timer)    0x00000008
-PHY type:                                M88
+ .../...
 
--- 
-Simon Arlott
+No reply, so I suppose I can rip it out ? :-)
+
+Thus any reason why that patch wouln't fly ? (not for 2.6.23 of course)
+
+This removes the last occurence of flush_tlb_page() from generic code,
+thus making this hook now optional for architectures that don't use
+the helpers in asm-generic/pgtable.h
+
+I couldn't find a case where this is actually needed, but I may well
+have missed something. If I did though, please tell me what. If an
+architecture need that call for obscure reason, it could be simply
+folded in that architecture's implementation ptep_set_access_flags().
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Index: linux-work/mm/memory.c
+===================================================================
+--- linux-work.orig/mm/memory.c	2007-08-06 16:32:12.000000000 +1000
++++ linux-work/mm/memory.c	2007-08-06 16:34:07.000000000 +1000
+@@ -2609,15 +2609,6 @@ static inline int handle_pte_fault(struc
+ 	if (ptep_set_access_flags(vma, address, pte, entry, write_access)) {
+ 		update_mmu_cache(vma, address, entry);
+ 		lazy_mmu_prot_update(entry);
+-	} else {
+-		/*
+-		 * This is needed only for protection faults but the arch code
+-		 * is not yet telling us if this is a protection fault or not.
+-		 * This still avoids useless tlb flushes for .text page faults
+-		 * with threads.
+-		 */
+-		if (write_access)
+-			flush_tlb_page(vma, address);
+ 	}
+ unlock:
+ 	pte_unmap_unlock(pte, ptl);
+
+
