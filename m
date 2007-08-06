@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765184AbXHFNQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765371AbXHFNQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765184AbXHFNQF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764114AbXHFNPz
+	id S1765371AbXHFNQa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764114AbXHFNQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:15:55 -0400
-Received: from 1wt.eu ([62.212.114.60]:1206 "EHLO 1wt.eu"
+	Mon, 6 Aug 2007 09:16:21 -0400
+Received: from mail.screens.ru ([213.234.233.54]:38827 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764092AbXHFNPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:15:54 -0400
-Date: Mon, 6 Aug 2007 15:12:15 +0200
-From: Willy Tarreau <w@1wt.eu>
+	id S1764089AbXHFNQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:16:20 -0400
+Date: Mon, 6 Aug 2007 17:18:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Claudio Martins <ctpm@ist.utl.pt>,
-       Jeff Garzik <jeff@garzik.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070806131215.GC10999@1wt.eu>
-References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805072805.GB4414@elte.hu> <20070805134640.2c7d1140@the-village.bc.nu> <20070805125847.GC22060@elte.hu> <20070805132925.GA4089@1wt.eu> <20070806065712.GA2818@elte.hu>
+Cc: Gregory Haskins <ghaskins@novell.com>, Daniel Walker <dwalker@mvista.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-rt-users@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
+Message-ID: <20070806131814.GC91@tv-sign.ru>
+References: <20070801201802.GA225@tv-sign.ru> <1186000468.2636.168.camel@imap.mvista.com> <20070801205053.GA263@tv-sign.ru> <1186002783.9513.228.camel@ghaskins-t60p.haskins.net> <20070801213422.GA280@tv-sign.ru> <1186005598.9513.261.camel@ghaskins-t60p.haskins.net> <20070801222201.GA316@tv-sign.ru> <1186012439.9513.321.camel@ghaskins-t60p.haskins.net> <20070802195049.GA361@tv-sign.ru> <20070806114954.GC1903@elte.hu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070806065712.GA2818@elte.hu>
+In-Reply-To: <20070806114954.GC1903@elte.hu>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 08:57:12AM +0200, Ingo Molnar wrote:
-> 
-> * Willy Tarreau <w@1wt.eu> wrote:
-> 
-> > In your example above, maybe it's the opposite, users know they can 
-> > keep a file in /tmp one more week by simply cat'ing it.
-> 
-> sure - and i'm not arguing that noatime should the kernel-wide default. 
-> In every single patch i sent it was a .config option (and a boot option 
-> _and_ a sysctl option that i think you missed) that a user/distro 
-> enables or disabled. But i think the /tmp argument is not very strong: 
-> /tmp is fundamentally volatile, and you can grow dependencies on pretty 
-> much _any_ aspect of the kernel. So the question isnt "is there impact" 
-> (there is, at least for noatime), the question is "is it still worth 
-> doing it".
-> 
-> > Changing the kernel in a non-easily reversible way is not kind to the 
-> > users.
-> 
-> none of my patches did any of that...
+Gregory, Ingo,
 
-I did not notice you talked about a sysctl. A sysctl provides the ability
-to switch the behaviour without rebooting, while both the config option
-and the command line require a reboot.
+On 08/06, Ingo Molnar wrote:
+> 
+> * Oleg Nesterov <oleg@tv-sign.ru> wrote:
+> 
+> > On 08/01, Gregory Haskins wrote:
+> > >
+> > > On Thu, 2007-08-02 at 02:22 +0400, Oleg Nesterov wrote:
+> > > 
+> > > > No,
+> > > 
+> > > You sure are a confident one ;)
+> > 
+> > Yeah, this is a rare case when I am very sure I am right ;)
+> > 
+> > I strongly believe you guys take a _completely_ wrong approach. 
+> > queue_work() should _not_ take the priority of the caller into 
+> > account, this is bogus.
+> 
+> Oleg, i'd like to make it sure that the role of Gregory Haskins is clear 
+> here: he submitted some new infrastructure into the -rt tree, and i 
+> reviewed that but found it quite complex and duplicative and suggested 
+> him to think about enhancing workqueues with priority properties - which 
+> might or might not make sense.
+> 
+> It is not the intention of the -rt project to pester any upstream 
+> maintainer with -rt issues if that upstream maintainer is not interested 
+> in it ... so please just forget about all this if you are not interested 
+> in it, we'll sort it out within -rt. Thanks,
 
-> anyway, my latest patch doesnt do noatime, it does the "more intelligent 
-> relatime" approach.
+I am not trying to sabotage these changes, and I am sorry if it looked
+that way.
 
-... which is not equivalent noatime in the initial example.
+I jumped into this discuassion because both patches I saw (Daniel's and
+Gregory's) were very wrong technically.
 
-Regards,
-Willy
+Yes, I still disagree with the whole idea because I hope we can make
+something more simpler to solve the problem, but I must admit I don't
+quite understand what the problem is.
+
+So, please consider a noise from my side as my attempt to help. And
+in fact, I am very curious about -rt tree, just I never had a time
+to study it :)
+
+Oleg.
 
