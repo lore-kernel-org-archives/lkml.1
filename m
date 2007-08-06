@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755500AbXHFE5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbXHFFAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755500AbXHFE5T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 00:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbXHFE5J
+	id S1756905AbXHFFAV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 01:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbXHFFAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 00:57:09 -0400
-Received: from 207.47.19.6.static.nextweb.net ([207.47.19.6]:17137 "EHLO
-	ex1.resilience.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751776AbXHFE5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 00:57:08 -0400
-X-Greylist: delayed 972 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 00:57:08 EDT
-Date: Mon, 6 Aug 2007 12:35:51 +0800
-From: Jerry Jiang <wjiang@resilience.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-Message-Id: <20070806123551.a6c3c154.wjiang@resilience.com>
-In-Reply-To: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
-Organization: Resilience
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 6 Aug 2007 01:00:09 -0400
+Received: from mail.cs.umn.edu ([128.101.36.202]:38560 "EHLO mail.cs.umn.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751871AbXHFFAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 01:00:08 -0400
+X-Greylist: delayed 8880 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 01:00:07 EDT
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 Aug 2007 04:40:44.0125 (UTC) FILETIME=[F33540D0:01C7D7E3]
+Message-ID: <18102.43459.440189.123024@gargle.gargle.HOWL>
+Date: Sun, 5 Aug 2007 23:55:31 -0500
+To: Matt Mackall <mpm@selenic.com>
+Cc: Dave Boutcher <boutcher@cs.umn.edu>, linux-kernel@vger.kernel.org,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix /proc/pid/pagemap return length calculation
+In-Reply-To: <20070806033446.GU11115@waste.org>
+References: <18102.33131.876436.899189@gargle.gargle.HOWL>
+	<20070806033446.GU11115@waste.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+From: boutcher@cs.umn.edu (Dave Boutcher)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there some feedback on this point ?
+On Sun, 5 Aug 2007 22:34:46 -0500, Matt Mackall <mpm@selenic.com> said:
+> 
+> On Sun, Aug 05, 2007 at 09:03:23PM -0500, Dave Boutcher wrote:
+>> 
+>> /proc/pid/pagemap has a header (usually 8 bytes) the length
+>> of which needs to be compensated for when converting from
+>> proc file offset to page number.  The calculation of the
+>> starting page number (svpfn) compensates for this, but the
+>> calculation of the ending page number (evpfn) does not, resulting
+>> in reads returning 8 bytes more than were asked for and
+>> nastily overwriting userspace memory.
+> 
+> Does this mean you're running on a 64-bit arch? I'd already fixed this
+> locally, but it was off by 4 for me.
+> 
+> Acked-by: Matt Mackall <mpm@selenic.com>
 
-Thank you
-./Jerry
+Yeah, and there is going to be at least one more patch coming, since
+with this fix, which is a righteous fix, things don't get copied up to
+user space correctly since some other code was dependent on the borken 
+length :-)
 
-On Sun, 1 Jul 2007 08:49:37 -0400 (EDT)
-"Robert P. J. Day" <rpjday@mindspring.com> wrote:
+I like the /proc/xxx/pagemap function though...thanks for writing it.
 
-> 
->   prompted by the earlier post on "volatile"s, is there a reason that
-> most atomic_t typedefs use volatile int's, while the rest don't?
-> 
-> $ grep "typedef.*struct"  $(find . -name atomic.h)
-> ./include/asm-v850/atomic.h:typedef struct { int counter; } atomic_t;
-> ./include/asm-mips/atomic.h:typedef struct { volatile int counter; } atomic_t;
-> ./include/asm-mips/atomic.h:typedef struct { volatile long counter; } atomic64_t;
-> ...
-> 
->   etc, etc.  just curious.
-> 
-> rday
-> -- 
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
-> 
-> http://fsdev.net/wiki/index.php?title=Main_Page
-> ========================================================================
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-> 
+Dave B
