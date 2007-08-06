@@ -1,60 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764915AbXHFTcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764567AbXHFTdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764915AbXHFTcH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761512AbXHFTbc
+	id S1764567AbXHFTdX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbXHFTdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:31:32 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35899 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761018AbXHFTb0 (ORCPT
+	Mon, 6 Aug 2007 15:33:14 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:59626 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755278AbXHFTdO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:31:26 -0400
-Date: Mon, 6 Aug 2007 20:37:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, J??rn Engel <joern@logfs.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-ID: <20070806203710.39bdc42e@the-village.bc.nu>
-In-Reply-To: <46B7626C.6050403@redhat.com>
-References: <20070804070737.GA940@elte.hu>
-	<20070804103347.GA1956@elte.hu>
-	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
-	<20070804163733.GA31001@elte.hu>
-	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
-	<46B4C0A8.1000902@garzik.org>
-	<20070804191205.GA24723@lazybastard.org>
-	<20070804192130.GA25346@elte.hu>
-	<20070804192615.GA25600@lazybastard.org>
-	<20070804194259.GA25753@lazybastard.org>
-	<20070805203602.GB25107@infradead.org>
-	<46B7626C.6050403@redhat.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 6 Aug 2007 15:33:14 -0400
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Daniel Phillips <phillips@phunq.net>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0708061209230.7603@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl>
+	 <20070806103658.107883000@chello.nl>
+	 <Pine.LNX.4.64.0708061108430.25069@schroedinger.engr.sgi.com>
+	 <200708061121.50351.phillips@phunq.net> <1186425063.11797.80.camel@lappy>
+	 <Pine.LNX.4.64.0708061209230.7603@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 21:31:30 +0200
+Message-Id: <1186428690.11797.96.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We already tried that here. The response: "If noatime is so great, why
-> isn't it the default in the kernel?"
+On Mon, 2007-08-06 at 12:11 -0700, Christoph Lameter wrote:
+> On Mon, 6 Aug 2007, Peter Zijlstra wrote:
+> 
+> > > > Shudder. That can just be a desaster for NUMA. Both performance wise
+> > > > and logic wise. One cpuset being low on memory should not affect
+> > > > applications in other cpusets.
+> > 
+> > Do note that these are only PF_MEMALLOC allocations that will break the
+> > cpuset. And one can argue that these are not application allocation but
+> > system allocations.
+> 
+> This is global, global locking etc etc. On a large NUMA system this will 
+> cause significant delays. One fears that a livelock may result.
 
-Ok so we have a pile of people @redhat.com sitting on linux-kernel
-complaining about Red Hat distributions not taking it up. Guys - can
-we just fix it internally please like sensible folk ?
+The only new lock is in SLUB, and I'm not aware of any regular
+PF_MEMALLOC paths using slab allocations, but I'll instrument the
+regular reclaim path to verify this.
 
-Ingo's latest 'not quite noatime' seems to cure mutt/tmpwatch so it might
-finally make sense to do so.
+The functionality this is aimed at is swap over network, and I doubt
+you'll be enabling that on these machines.
 
-Alan
+
