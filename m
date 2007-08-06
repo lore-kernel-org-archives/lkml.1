@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933113AbXHFPgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934202AbXHFPgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933113AbXHFPgH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 11:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbXHFPfz
+	id S934202AbXHFPgr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 11:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934020AbXHFPgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 11:35:55 -0400
-Received: from mail.screens.ru ([213.234.233.54]:48402 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754187AbXHFPfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 11:35:54 -0400
-Date: Mon, 6 Aug 2007 19:38:16 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Daniel Walker <dwalker@mvista.com>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] RT: Add priority-queuing and priority-inheritance to workqueue infrastructure
-Message-ID: <20070806153816.GA265@tv-sign.ru>
-References: <1186005598.9513.261.camel@ghaskins-t60p.haskins.net> <20070801222201.GA316@tv-sign.ru> <1186012439.9513.321.camel@ghaskins-t60p.haskins.net> <20070802195049.GA361@tv-sign.ru> <20070806114954.GC1903@elte.hu> <20070806131814.GC91@tv-sign.ru> <1186406963.7182.13.camel@twins> <1186407173.7182.16.camel@twins> <20070806144536.GA232@tv-sign.ru> <1186412689.21381.91.camel@ghaskins-t60p.haskins.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 6 Aug 2007 11:36:14 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:48247
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934002AbXHFPgL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 11:36:11 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH] Documentation/make/headers_install.txt
+Date: Mon, 6 Aug 2007 11:36:02 -0400
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+References: <200708041307.18578.rob@landley.net> <20070804200525.GA21961@uranus.ravnborg.org>
+In-Reply-To: <20070804200525.GA21961@uranus.ravnborg.org>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <1186412689.21381.91.camel@ghaskins-t60p.haskins.net>
-User-Agent: Mutt/1.5.11
+Message-Id: <200708061036.02604.rob@landley.net>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06, Gregory Haskins wrote:
+On Saturday 04 August 2007 3:05:25 pm Sam Ravnborg wrote:
+> On Sat, Aug 04, 2007 at 02:07:18PM -0400, Rob Landley wrote:
+> > From: Rob Landley <rob@landley.net>
+> >
+> > Signed-off-by: Rob Landley <rob@landley.net>
+> >
+> > Some documentation for "make headers_install".
+> >
+> > ---
+> >
+> > Earlier discussion was at http://lkml.org/lkml/2007/6/22/7 and I
+> > believe I've responded to all of David's comments.
+> >
+> > --- /dev/null	2007-04-23 10:59:00.000000000 -0500
+> > +++ linux-2.6/Documentation/make/headers_install.txt	2007-08-04
+> > 13:04:51.000000000 -0500
 >
-> On Mon, 2007-08-06 at 18:45 +0400, Oleg Nesterov wrote:
-> > On 08/06, Peter Zijlstra wrote:
-> 
-> > > 
-> > > still this does not change the fundamental issue of a high prio piece of
-> > > work waiting on a lower prio task.
-> >        ^^^^^^^
-> > waiting. This is a "key" word, and this was my (perhaps wrong) point.
-> 
-> Actually, I think Peter is making a really important point here.
+> Any specific reason not to include this in Documentation/kbuild?
+> I would prefer to have all kernel build stuff in one directory and
+> we have Documentation/kbuild now.
 
-Yes. Please see another email I just sent.
+That directory contains internal implementation details of the kernel 
+makefiles, and is not about how to use them if you don't plan to modify them.  
+This document is about how people can use one of the commands listed in "make 
+help", and is not about modifying the make files.  It's a different category 
+of documentation.  (Ideally, kbuild would go under make.)
 
-> "Waiting" can be defined in more ways than the REQUEST/RESPONSE pattern
-> that I have been rambling about.
-> 
-> Using Peters NIC vs USB example:  What if a NIC driver is using a
-> workqueue as a bottom-half mechanism for its RX packet queuing.  In a
-> nice RT environment it would be highly ideal if we allow the deferred
-> work to complete with respect to the priority that was assigned to the
-> subsystem.
-> 
-> So while the submitter isn't technically blocking on the work, the
-> application that is receiving packets is now subject to the arbitrary
-> priority of the keventd as opposed to the NIC irq.  Thus there is still
-> "waiting" being subject to inversion, its just not in a REQUEST/RESPONSE
-> pattern.
+That said, I don't really care where it goes, so if you prefer kbuild I can 
+drop it there.  The organization of Documentation/ is fairly irrelevant to me 
+at this point.
 
-Oleg.
+Like most documentation, this file needs to be linked to from more than one 
+place: it needs to be brought to the attention of people building their own 
+linux-from-scratch style systems (the "what's in a linux root filesystem" 
+section of the index I'm building), it should be linked from a "building the 
+kernel" page (what kinds of output can the build produce), there should be 
+a "make help" page with hotlinks to the individual commands (like this and 
+menuconfig) that have more extensive documentation, etc.
 
+Trying to do that in Documentation would be a pain.  (Lots of symlinks with no 
+explanatory text?  Lots of files called "index.txt" in each directory 
+reinventing Gopher, pointing you at a directory other than the one you're in 
+and hoping nothing ever moves?)
+
+> 	Sam
+
+Rob
+-- 
+"One of my most productive days was throwing away 1000 lines of code."
+  - Ken Thompson.
