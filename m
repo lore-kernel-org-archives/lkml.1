@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbXHFOrH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933129AbXHFOua@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764926AbXHFOrH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 10:47:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762765AbXHFOq4
+	id S933129AbXHFOua (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 10:50:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764118AbXHFOuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 10:46:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56492 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761442AbXHFOqz convert rfc822-to-8bit (ORCPT
+	Mon, 6 Aug 2007 10:50:21 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:42613 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbXHFOuT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 10:46:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Mon, 6 Aug 2007 10:50:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=O1T49Sbna8CIGqgv4OCyOXGvVcNJUQzQPTN37ThgJN0B1v/Wo+e/Q3GTr+QNHYD68Rcn9p0tD1JFunNH2QwGLT+uOmy4nwigZsXL18NYSfFberwZIc7gi8KAbLfTor9x98uHRCpQloTuB8s8+nN9a9jYTRESifZf2UgIoYcZlu0=
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+From: Michael Sedkowski <sedmich@gmail.com>
 To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
-Date: Mon, 6 Aug 2007 16:56:16 +0200
-User-Agent: KMail/1.9.5
-Cc: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>,
-       Pavel Machek <pavel@ucw.cz>, ibm-acpi-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-References: <200708051902.18801.toralf.foerster@gmx.de> <200708061136.50491.toralf.foerster@gmx.de> <20070806143631.GB31615@khazad-dum.debian.net>
-In-Reply-To: <20070806143631.GB31615@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708061656.17027.rjw@sisk.pl>
+Cc: Tejun Heo <htejun@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org
+In-Reply-To: <20070806142339.GA31615@khazad-dum.debian.net>
+References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com>
+	 <46B6B006.6000100@gmail.com> <20070806142339.GA31615@khazad-dum.debian.net>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 06 Aug 2007 16:50:15 +0200
+Message-Id: <1186411815.4355.7.camel@nx6310>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 6 August 2007 16:36, Henrique de Moraes Holschuh wrote:
-> On Mon, 06 Aug 2007, Toralf Förster wrote:
-> > Am Montag, 6. August 2007 00:29 schrieb Pavel Machek:
-> > > Yes, I seen similar reports. Does it happen in all shutdown mode and
-> > > 2.6.22? Does it happen   in platform mode in 2.6.19?
-> > 
-> > I can reproduce this behaviour by doing the following with kernel 2.6.20 :
-> > 
-> > 1. <Fn>+<F4>   - the systems sleeps within RAM
-> > 2. <Fn>             - the systems wakes up
-> > 3. <Fn>+<F12> - the systems hibernates to disk
-> > 4. <power>       - systems wakes up
-> > 5. <Fn>+<F4>   - the systems sleeps within RAM
-> > 
-> > Now pressing <Fn> doesn't wake up the system, I have to press the power button
-> > for that instead.
+Dnia 06-08-2007, Pn o godzinie 11:23 -0300, Henrique de Moraes Holschuh
+napisaÅ‚(a):
+> On Mon, 06 Aug 2007, Tejun Heo wrote:
+> > Cc'ing Henrique.  Any ideas?
 > 
-> The resume path for suspend to disk is very different (for the firmware, at
-> least) than the resume path from sleep-to-RAM.  One of them goes through a
-> system shutdown and cold boot (S5) or whatever-boot (S4 - who knows if it is
-> the same as a cold boot in a given thinkpad model? It doesn't have to be!).
+> Check if /etc/init.d/halt is calling halt(8) with the -h flag.  If it is,
+> remove that -h flag.  Usually, there is a hddown variable that holds it, you
+> just need to get rid of it.
 > 
-> The firmware *knows* when you press Fn+F4/FN+F12, and recalls that. That's
-> why you can't get multiple hot key presses from pressing Fn+F4 or FN+F12
-> until you actually do an ACPI wake-up.
-> 
-> While you are just doing S3, all that state is preserved without fuss. But
-> S5 does not preserve anything, and S4 is anyone's guess.  Numerous thinkpad
-> BIOS fixes in the past were releated to such problems, so if you are not
-> using the latest BIOS for your model, your first duty is to upgrade it and
-> try again.
-> 
-> IMHO, probably some ACPI state is being lost by the BIOS because of the
-> sleep-to-disk.  I don't know how sleep-to-disk plays with the ACPI NV areas,
-> and ACPI data areas from the BIOS, so I can't help much there.
+> I don't know anything about a Sidux, though.
 
-We have the problem that ACPI is already initialized by the boot kernel before
-the hibernation image is loaded, so there's a chance that the saved state
-information will be lost.
+Well there is an -h variable:
+# Don't shut down drives if we're using RAID.
+	hddown="-h"
+	if grep -qs '^md.*active' /proc/mdstat
+	then
+		hddown=""
+	fi
+....
+log_action_msg "Will now halt"
+	halt -d -f $netdown $poweroff $hddown
+However removing it has no effect, the drive still spins down two times.
 
-Greetings,
-Rafael
+Sidux is a Debian Unstable based distro with it's own set of patches
+including the shut down patch provided here:
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=426224
 
+Michael
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
