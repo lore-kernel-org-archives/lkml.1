@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbXHFTsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934019AbXHFTs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933455AbXHFTsA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbXHFTrw
+	id S934019AbXHFTs1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933585AbXHFTsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:47:52 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:43043 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756594AbXHFTrv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:47:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=hBhdfR9EjkWCrLLIw7XadUug4J6Xqc8AfRrDb1tYsCaKzXykhsMyDJEmSI5lVeRIjY9UP/mUtFxEDfJZ/9Q9Z2C2mN+GklV2cIwzG4zMPZTe50hM+J1tBpJgUe9hIVVyY0rX6iGnVYPfSaXjwOMvGVuldBxj215xXrl3yuvaitA=
-Date: Mon, 6 Aug 2007 23:47:45 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, akpm@osdl.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH v2] Off-by-one in /sys/module/*/refcnt
-Message-ID: <20070806194745.GB5842@martell.zuzino.mipt.ru>
-References: <20070805134923.GA5918@martell.zuzino.mipt.ru> <3ae72650708050700p1fc2959epcc1e9307e3c64fed@mail.gmail.com> <46B6B22C.1020609@gmail.com>
+	Mon, 6 Aug 2007 15:48:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41225 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932250AbXHFTr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 15:47:59 -0400
+Message-ID: <46B77AB3.40006@redhat.com>
+Date: Mon, 06 Aug 2007 15:46:59 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B6B22C.1020609@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Christoph Hellwig <hch@infradead.org>, J??rn Engel <joern@logfs.org>,
+       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070804070737.GA940@elte.hu>	<20070804103347.GA1956@elte.hu>	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>	<20070804163733.GA31001@elte.hu>	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>	<46B4C0A8.1000902@garzik.org>	<20070804191205.GA24723@lazybastard.org>	<20070804192130.GA25346@elte.hu>	<20070804192615.GA25600@lazybastard.org>	<20070804194259.GA25753@lazybastard.org>	<20070805203602.GB25107@infradead.org>	<46B7626C.6050403@redhat.com> <20070806203710.39bdc42e@the-village.bc.nu>
+In-Reply-To: <20070806203710.39bdc42e@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sysfs internals were changed to not pin module in question.
+On 08/06/2007 03:37 PM, Alan Cox wrote:
+>> We already tried that here. The response: "If noatime is so great, why
+>> isn't it the default in the kernel?"
+> 
+> Ok so we have a pile of people @redhat.com sitting on linux-kernel
+> complaining about Red Hat distributions not taking it up. Guys - can
+> we just fix it internally please like sensible folk ?
+> 
+> Ingo's latest 'not quite noatime' seems to cure mutt/tmpwatch so it might
+> finally make sense to do so.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
-
- kernel/module.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
-
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -784,8 +784,7 @@ EXPORT_SYMBOL_GPL(symbol_put_addr);
- static ssize_t show_refcnt(struct module_attribute *mattr,
- 			   struct module *mod, char *buffer)
- {
--	/* sysfs holds a reference */
--	return sprintf(buffer, "%u\n", module_refcount(mod)-1);
-+	return sprintf(buffer, "%u\n", module_refcount(mod));
- }
- 
- static struct module_attribute refcnt = {
+Do we report max(ctime, mtime) as the atime by default when noatime
+is set or do we still need that to be done?
 
