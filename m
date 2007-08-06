@@ -1,98 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765494AbXHFRfh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765619AbXHFRgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765494AbXHFRfh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:35:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753302AbXHFRfa
+	id S1765619AbXHFRgf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758862AbXHFRg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:35:30 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:60812
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750823AbXHFRf3 (ORCPT
+	Mon, 6 Aug 2007 13:36:26 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:44718 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753302AbXHFRgZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:35:29 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 00/10] foundations for reserve-based allocation
-Date: Mon, 6 Aug 2007 10:35:18 -0700
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-References: <20070806102922.907530000@chello.nl>
-In-Reply-To: <20070806102922.907530000@chello.nl>
+	Mon, 6 Aug 2007 13:36:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=GjOcarmr2I8iHHTRaVmY35xC3Bz98Fk9UuMDnAq9Z55Q5IP6aRXt7FA5ETXxHDXUIeQE0rZ3cSSkXC6LLmdHrS/mS2ABt7xcw9oVHX9pmWBVn0bNEDtkqRlg2P8xok+C5zVMQde86Q/PBFR8PSeJ2J59WX++Y7Euvdy/H73YCWw=
+Message-ID: <46B75C0E.8010007@gmail.com>
+Date: Tue, 07 Aug 2007 02:36:14 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: Daniel J Blueman <daniel.blueman@gmail.com>, Mark Lord <lkml@rtr.ca>,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: ICH8 CF timeout (regression)...
+References: <6278d2220708020348k26ac2293v648442f2281eca70@mail.gmail.com>	<46B20D6B.1060506@gmail.com>	<6278d2220708021411q17cdc151p79922e5dab74add4@mail.gmail.com>	<46B25DE1.4050105@rtr.ca>	<6278d2220708030322h2c779fa3o1e2e2d9c83ff62e8@mail.gmail.com>	<46B30651.9030505@gmail.com>	<6278d2220708031538s4a57f126ybfa0486816de4401@mail.gmail.com>	<46B41706.4080008@gmail.com> <20070806102836.ea157fed.kristen.c.accardi@intel.com>
+In-Reply-To: <20070806102836.ea157fed.kristen.c.accardi@intel.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708061035.18742.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 August 2007 03:29, Peter Zijlstra wrote:
-> In the interrest of getting swap over network working and posting in
-> smaller series, here is the first series.
->
-> This series lays the foundations needed to do reserve based
-> allocation. Traditionally we have used mempools (and others like
-> radix_tree_preload) to handle the problem.
->
-> However this does not fit the network stack. It is built around
-> variable sized allocations using kmalloc().
->
-> This calls for a different approach.
->
-> We want a guarantee for N bytes from kmalloc(), this translates to a
-> demand on the slab allocator for 2*N+m (due to the power-of-two
-> nature of kmalloc slabs), where m is the meta-data needed by the
-> allocator itself.
+Kristen Carlson Accardi wrote:
+> In the data sheet in section 5.15.2.3 it describes a value of map.mv of
+> 1 as meaning that the SATA controller is emulating the logical secondary
+> channel, and the PATA channel will be the primary.  For a value of
+> map.mv == 2, we have the SATA controller being primary, and the PATA
+> is secondary.  So, if I'm understanding the way ata_piix does mapping, 
+> it seems like for a value of 2, we should have [p0, p2, ide, ide] and 
+> for a value of 1 we should have [ide, ide, p0, p2] - although for ICH8M 
+> it seems like 1 should not be a valid value. My reading the ICH8 spec is 
+> that ICH8M only implements a map value of 2, and 1 should be reserved 
+> (see section 12.1.33).
 
-Where does the 2* come from?  Isn't it exp2(ceil(log2(N + m)))?
+Alright, thanks a lot.
 
-> The slab allocator then puts a demand of P pages on the page
-> allocator.
->
-> So we need functions translating our demanded kmalloc space into a
-> page reserve limit, and then need to provide a reserve of pages.
-> 
-> And we need to ensure that once we hit the reserve, the slab
-> allocator honours the reserve's access. That is, a regular allocation
-> may not get objects from a slab allocated from the reserves.
-
-Patch [3/10] adds a new field to struct page.  I do not think this is 
-necessary.   Allocating a page from reserve does not make it special.  
-All we care about is that the total number of pages taken out of 
-reserve is balanced by the total pages freed by a user of the reserve.
-
-We do care about slab fragmentation in the sense that a slab page may be 
-pinned in the slab by an unprivileged allocation and so that page may 
-never be returned to the global page reserve.  One way to solve this is 
-to have a per slabpage flag indicating the page came from reserve, and 
-prevent mixing of privileged and unprivileged allocations on such a 
-page.
-
-> There is already a page reserve, but it does not fully comply with
-> our needs. For example, it does not guarantee a strict level (due to
-> the relative nature of ALLOC_HIGH and ALLOC_HARDER). Hence we augment
-> this reserve with a strict limit.
->
-> Furthermore a new __GFP flag is added to allow easy access to the
-> reserves along-side the existing PF_MEMALLOC.
->
-> Users of this infrastructure will need to do the necessary bean
-> counting to ensure they stay within the requested limits.
-
-This patch set is _way_ less intimidating than its predecessor.  
-However, I see we have entered the era of sets of patch sets, since it 
-is impossible to understand the need for this allocation infrastructure 
-without reading the dependent network patch set.  Waiting with 
-breathless anticipation.
-
-Regards,
-
-Daniel
+-- 
+tejun
