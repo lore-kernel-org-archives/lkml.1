@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbXHFLnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763958AbXHFLrY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbXHFLnv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXHFLnn
+	id S1763958AbXHFLrY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:47:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754000AbXHFLrR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:43:43 -0400
-Received: from 41.150.104.212.access.eclipse.net.uk ([212.104.150.41]:39982
-	"EHLO localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753958AbXHFLnn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:43:43 -0400
-Date: Mon, 6 Aug 2007 12:43:35 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-To: Thomas Renninger <trenn@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       Len Brown <len.brown@intel.com>
-Cc: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@shadowen.org>
-Subject: ACPI modpost failure in 2.6.23-rc1-git2
-Message-ID: <20070806114335.GA31368@shadowen.org>
+	Mon, 6 Aug 2007 07:47:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:55439 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753670AbXHFLrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:47:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
+Date: Mon, 6 Aug 2007 13:56:22 +0200
+User-Agent: KMail/1.9.5
+Cc: Johannes Berg <johannes@sipsolutions.net>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+References: <200708051906.22865.rjw@sisk.pl> <1186398917.28655.69.camel@johannes.berg> <20070806113644.GA1790@elf.ucw.cz>
+In-Reply-To: <20070806113644.GA1790@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200708061356.23030.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Between 2.6.23-rc1-git1 and 2.6.23-rc1-git2 we started getting the
-following fatal error during modpost on an x86_64 machine:
+On Monday, 6 August 2007 13:36, Pavel Machek wrote:
+> On Mon 2007-08-06 13:15:17, Johannes Berg wrote:
+> > On Mon, 2007-08-06 at 12:26 +0200, Pavel Machek wrote:
+> > 
+> > > Well, so that it does not bitrot? This is few bytes, I'd say, and I
+> > > believe we have too many config options already.
+> > 
+> > This is not an option the user is ever going to see. I think I'd
+> > prefer
+> 
+> Ok, option that users can't set is probably not evil.
+> 
+> > having two new per-ARCH config symbols though:
+> > config SUSPEND_UP_POSSIBLE
+> > 	depends on ARCH_SUSPEND_UP_POSSIBLE
+> > 
+> > and then the architecture gets to define that when it can suspend.
+> 
+> Looks like a plan.
 
-  FATAL: drivers/acpi/video: sizeof(struct acpi_device_id)=20 is not a
-  modulo of the size of section __mod_acpi_device_table=48.
-  Fix definition of struct acpi_device_id in mod_devicetable.h
-  make[1]: *** [__modpost] Error 1
+Hmm, why don't we do the $subject change first (the advantage if it is that
+the patch is ready) and then move the necessary definitions to the arch level?
 
-This check seems to have been added as part of the following commit:
+Greetings,
+Rafael
 
-  commit 29b71a1ca74491fab9fed09e9d835d840d042690
-  Author: Thomas Renninger <trenn@suse.de>
-  Date:   Mon Jul 23 14:43:51 2007 +0200
 
-      ACPI: autoload modules - Create ACPI alias interface
-
-Compiler version:
-  Reading specs from /usr/lib/gcc/i486-linux/3.4.4/specs
-  Configured with: ../src/configure -v
-  --enable-languages=c,c++,java,f77,pascal,objc,ada,treelang --prefix=/usr
-  --libexecdir=/usr/lib --with-gxx-include-dir=/usr/include/c++/3.4
-  --enable-shared --with-system-zlib --enable-nls
-  --without-included-gettext --program-suffix=-3.4 --enable-__cxa_atexit
-  --enable-libstdcxx-allocator=mt --enable-clocale=gnu
-  --enable-libstdcxx-debug --enable-java-gc=boehm --enable-java-awt=gtk
-  --disable-werror i486-linux
-  Thread model: posix
-  gcc version 3.4.4 20050314 (prerelease) (Debian 3.4.3-13sarge1)
-
-We are compiling a 64bit kernel on a machine with a pretty old
-userspace which is 32bit.
-
-Let me know if you need more info.
-
--apw
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
