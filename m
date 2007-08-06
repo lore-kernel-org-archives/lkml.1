@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbXHFQG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbXHFQHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbXHFQG7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 12:06:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbXHFQGs
+	id S1758862AbXHFQHl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 12:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbXHFQHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 12:06:48 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:18607 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbXHFQGs convert rfc822-to-8bit (ORCPT
+	Mon, 6 Aug 2007 12:07:22 -0400
+Received: from smtp111.sbc.mail.re2.yahoo.com ([68.142.229.94]:29851 "HELO
+	smtp111.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752179AbXHFQHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 12:06:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Ncb+/rZzfEs3g9K3vb1kn6QEfzGUynWkwCKzVUhmk2rNBJbEr0zI6GAd21LHF2hvOnWjd4r9TxQPuDTsbwwvXolHsMr32PlZpMZp2HM8V2CX/uRK/76XaSjQwh/VsK6EjRZ76H/hclXF03xPW7jt1C9yI7wfsTscWGwbJ1j7iUQ=
-Message-ID: <b6a2187b0708060906k643a8a20jcb3ac33259993517@mail.gmail.com>
-Date: Tue, 7 Aug 2007 00:06:46 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: "Jan Engelhardt" <jengelh@computergmbh.de>
-Subject: Re: Linux 2.6.23-rc2
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0708061739100.13469@fbirervta.pbzchgretzou.qr>
+	Mon, 6 Aug 2007 12:07:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=HaLSbpTVbS7CXmf0Cu5r90HcqVUZJKTAD6r/QFoulMHbOB/GuM2cdeg1o8KOSL8P7ewi3sNN6ph/XsoXKmpu7ou+anJFWcTQAzk0s4TvyTl+cG88Cp6lhHKE2R4x/M2S/YW+S6gaEeREp6+4yX4nN31pnkalzXbr5AMar1nxPu4=  ;
+From: David Brownell <david-b@pacbell.net>
+To: "Mike Frysinger" <vapier.adi@gmail.com>, bryan.wu@analog.com
+Subject: Re: [GIT PULL] Blackfin arch update for 2.6.23
+Date: Mon, 6 Aug 2007 09:07:02 -0700
+User-Agent: KMail/1.9.6
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+References: <1186318969.16030.2.camel@roc-laptop> <8bd0f97a0708051904n294d5955r4dd801ca6b38b5a8@mail.gmail.com>
+In-Reply-To: <8bd0f97a0708051904n294d5955r4dd801ca6b38b5a8@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com>
-	 <1186317610.5220.3.camel@daplas>
-	 <b6a2187b0708050626s15e1b7did73f638046c0dba3@mail.gmail.com>
-	 <Pine.LNX.4.64.0708061739100.13469@fbirervta.pbzchgretzou.qr>
+Message-Id: <200708060907.02506.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/6/07, Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Sunday 05 August 2007, Mike Frysinger wrote:
+> On 8/5/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > Bryan Wu (4):
+> >       Blackfin SPI driver: Initial supporting BF54x in SPI driver
+> >
+> > Michael Hennerich (11):
+> >       Blackfin arch: store labels so we later know who allocated GPIO/Peripheral resources
+> >       Blackfin arch: add peripheral resource allocation support
+> >       Blackfin arch: Add label to call new GPIO API
+> >       Blackfin SPI driver: Make BF54x SPI work and add support for portmux API
+> >       Blackfin SPI driver: use new GPIO API and add error handling
+> 
+> i think this is the sort of thing Linus wants left for initial merge windows ?
 
-> >            ÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿÿ
-> That looks pretty much like all-one-bits (ÿ = 255).
-> What about vcsa1 (use hexdump -C)?
+What, merging patches that have never even been seen by the relevant
+subsystem maintainer(s)?
 
-# hexdump -C /dev/vcsa1
-00000000  19 50 00 18 ff ff ff ff  ff ff ff ff ff ff ff ff  |.P..............|
-00000010  ff ff ff ff ff ff ff ff  ff ff ff ff ff ff ff ff  |................|
-*
-00000fa0  ff ff ff ff                                       |....|
-00000fa4
+I've never seen any of those SPI patches before, and am not inclined
+to try plucking three of them out of a composite patch for a separate
+review ...
 
-Yep, it's all one's.
+Same goes for GPIO, for that matter.  It's harder to goof those up,
+but it's still possible.  If those were reviewed I personally might
+be inclined to OK merges after RC1; GPIOs get used almost everywhere.
+(Pretty much as Bryan commented...)  Those look more like portmux
+changes than GPIO changes though.
 
-And once "s2ram" (without parameter) is executed, there's no way to
-restore back the console in text-mode even using "s2ram --force
---acpi_sleep 1 --vbe_mode" until a "suspend-to-disk" or a reboot.
-
-"s2ram --force --acpi_sleep 1 --vbe_mode"  will only work on
-non-messed-up-console.
-
-
-Thanks,
-Jeff.
+- Dave
