@@ -1,71 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764622AbXHFNCX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764823AbXHFNFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764622AbXHFNCX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:02:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753038AbXHFNCO
+	id S1764823AbXHFNFu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763541AbXHFNFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:02:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40638 "EHLO mx2.suse.de"
+	Mon, 6 Aug 2007 09:05:43 -0400
+Received: from gate.crashing.org ([63.228.1.57]:45022 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752883AbXHFNCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:02:13 -0400
-Date: Mon, 6 Aug 2007 15:02:10 +0200
-From: Olaf Hering <olh@suse.de>
-To: Andrew Morton <akpm@osdl.org>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] do not export /usr/include/scsi in make headers_install
-Message-ID: <20070806130210.GA2239@suse.de>
-References: <20070806124546.GA2117@suse.de> <20070806125212.GB12896@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070806125212.GB12896@infradead.org>
-X-DOS: I got your 640K Real Mode Right Here Buddy!
-X-Homeland-Security: You are not supposed to read this line! You are a terrorist!
-User-Agent: Mutt und vi sind doch schneller als Notes (und GroupWise)
+	id S1754934AbXHFNFm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:05:42 -0400
+In-Reply-To: <20070805154337.GA4716@1wt.eu>
+References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org>
+Content-Transfer-Encoding: 7bit
+Cc: Axel Reinhold <axel@freakout.de>, linux-kernel@vger.kernel.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
+Date: Mon, 6 Aug 2007 15:05:29 +0200
+To: Willy Tarreau <w@1wt.eu>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, Christoph Hellwig wrote:
+> I still
+> suspect that because the behaviour is different between 4.1 and 4.2, it
+> might be a regression in 4.2,
 
-> On Mon, Aug 06, 2007 at 02:45:46PM +0200, Olaf Hering wrote:
-> > 
-> > glibc and make headers_install_all provide /usr/include/scsi
-> > One of them has to go.
-> > 
-> > A quick diff shows no differences, expect:
-> 
-> ..
-> 
-> > Which copy should be provided by a distributor?
-> 
-> The glibc one of course.  The kernel scsi.h should never have been
-> added to the list of exportable headers.  
-
-/usr/include/scsi is provided by glibc.
-Remove the scsi export from make headers_install target.
+The kernel code is wrong.  It might have accidentally worked
+with GCC-4.1, but that doesn't mean GCC-4.2 has regressed.
+Only supported features that stop working are regressions;
+invalid code that stops working is, well, in the worst case
+an improvement in diagnostics ;-)
 
 
-Signed-off-by: Olaf Hering <olh@suse.de>
+Segher
 
----
- include/Kbuild      |    1 -
- include/scsi/Kbuild |    4 ----
- 2 files changed, 5 deletions(-)
-
---- a/include/Kbuild
-+++ b/include/Kbuild
-@@ -1,6 +1,5 @@
- header-y += asm-generic/
- header-y += linux/
--header-y += scsi/
- header-y += sound/
- header-y += mtd/
- header-y += rdma/
---- a/include/scsi/Kbuild
-+++ /dev/null
-@@ -1,4 +0,0 @@
--header-y += scsi.h
--
--unifdef-y += scsi_ioctl.h
--unifdef-y += sg.h
