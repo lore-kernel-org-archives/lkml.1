@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765462AbXHFVTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763617AbXHFVTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765462AbXHFVTc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 17:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755649AbXHFVTU
+	id S1763617AbXHFVTu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 17:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765776AbXHFVTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 17:19:20 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45566 "EHLO mx1.redhat.com"
+	Mon, 6 Aug 2007 17:19:34 -0400
+Received: from 1wt.eu ([62.212.114.60]:1224 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753063AbXHFVTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 17:19:18 -0400
-Message-ID: <46B79047.4060402@redhat.com>
-Date: Mon, 06 Aug 2007 17:19:03 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
-CC: mingo <mingo@elte.hu>, "marcin.slusarz" <marcin.slusarz@gmail.com>,
-       jarkao2 <jarkao2@o2.pl>, tglx <tglx@linutronix.de>,
-       torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-References: <JMDDIG$C8916D611655799A77AD19198F8EDA75@xandmail.com>
-In-Reply-To: <JMDDIG$C8916D611655799A77AD19198F8EDA75@xandmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	id S1765361AbXHFVTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 17:19:33 -0400
+Date: Mon, 6 Aug 2007 23:16:31 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Axel Reinhold <axel@freakout.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Kernel Bug in 2.4.35 when compiled gcc>=4.2.0 and -march=c3
+Message-ID: <20070806211631.GA14501@1wt.eu>
+References: <200708050856.l758u4ou031651@bongo.freakout.de> <20070805154337.GA4716@1wt.eu> <44e819389656d1465e70ce2e99fb7640@kernel.crashing.org> <20070806132658.GE10999@1wt.eu> <46B75CD0.7080408@zytor.com> <20070806174536.GA12131@1wt.eu> <46B761EC.2050803@zytor.com> <ebf06e6c083df46dabc15454dcd89362@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ebf06e6c083df46dabc15454dcd89362@kernel.crashing.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2007 04:42 PM, Jean-Baptiste Vignaud wrote:
-> Mmm, bad news, after 4 hours of intensive network stressing, one of the 2 3com card failed with the latest fedora kernel.
+On Mon, Aug 06, 2007 at 11:15:08PM +0200, Segher Boessenkool wrote:
+> >Well, top-level assembly is usually nasty.  Setting the section in the
+> >assembly statement as you said is probably the only thing you *can* do.
 > 
-> Aug  6 22:31:09 loki kernel: NETDEV WATCHDOG: eth2: transmit timed out
-> Aug  6 22:31:09 loki kernel: eth2: transmit timed out, tx_status 00 status e601.
-> Aug  6 22:31:09 loki kernel:   diagnostics: net 0ccc media 8880 dma 0000003a fifo 8000
-> Aug  6 22:31:09 loki kernel: eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
-> Aug  6 22:31:09 loki kernel:   Flags; bus-master 1, dirty 26085000(8) current 26085000(8)
-> Aug  6 22:31:09 loki kernel:   Transmit list 00000000 vs. ffff81007c807700.
+> You'll probably need to (at the end of the asm block) restore
+> the current section to what it was before (".previous"), too.
+
+Didn't know about this one, thanks for the hint !
+
+> >I don't think there is any requirement that top-level assembly
+> >statements get the section set to .text on their behalf.
 > 
-> Stressing eth2 by copying large files on a samba on share and eth0 by downloading big files on the internet.
+> Correct.
+> 
+> 
+> Segher
 
-So even the full revert doesn't fix the 3Com driver, it just makes it less
-likely to do that.
+Regards,
+Willy
 
-The other patch probably won't be any better -- I'd guess there's some
-kind of IRQ handling bug in that driver.
