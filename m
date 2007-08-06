@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933522AbXHFOJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764990AbXHFOX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933522AbXHFOJX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 10:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbXHFOJE
+	id S1764990AbXHFOX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 10:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762759AbXHFOXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 10:09:04 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53383 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754701AbXHFOJD (ORCPT
+	Mon, 6 Aug 2007 10:23:46 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:48940 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762192AbXHFOXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 10:09:03 -0400
-Date: Mon, 6 Aug 2007 10:09:00 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Miles Lane <miles.lane@gmail.com>
-cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] 2.6.23-rc1-mm2 + cpufreq patch + hot-fixes --
- [<f8ea528f>] usb_stor_scan_thread+0xbd/0x15a [usb_storage]
-In-Reply-To: <a44ae5cd0708040518vfcf671p7ef1c6d89e330d89@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0708061007350.3265-100000@iolanthe.rowland.org>
+	Mon, 6 Aug 2007 10:23:44 -0400
+X-Sasl-enc: JGavlJ36uiHjXyIgc4z+5IfYiuzQP1SPtr8Gb7zGbxyS 1186410223
+Date: Mon, 6 Aug 2007 11:23:39 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Micha?? sed <sedmich@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+Message-ID: <20070806142339.GA31615@khazad-dum.debian.net>
+References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com> <46B6B006.6000100@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B6B006.6000100@gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 4 Aug 2007, Miles Lane wrote:
+On Mon, 06 Aug 2007, Tejun Heo wrote:
+> Cc'ing Henrique.  Any ideas?
 
-> Initializing USB Mass Storage driver...
-> usb-storage 4-3:1.0: usb_probe_interface
-> usb-storage 4-3:1.0: usb_probe_interface - got id
-> scsi2 : SCSI emulation for USB Mass Storage devices
-> usbcore: registered new interface driver usb-storage
-> usb-storage: device found at 2
-> usb-storage: waiting for device to settle before scanning
-> schedule_timeout: wrong timeout value f8ea51d2
->  [<c01080ab>] show_trace_log_lvl+0x12/0x25
->  [<c0108a9e>] show_trace+0xd/0x10
->  [<c0108bac>] dump_stack+0x16/0x18
->  [<c031e31e>] schedule_timeout+0x2c/0x8b
->  [<f8ea528f>] usb_stor_scan_thread+0xbd/0x15a [usb_storage]
->  [<c0139d64>] kthread+0x3b/0x63
->  [<c0107c63>] kernel_thread_helper+0x7/0x10
->  =======================
+Check if /etc/init.d/halt is calling halt(8) with the -h flag.  If it is,
+remove that -h flag.  Usually, there is a hddown variable that holds it, you
+just need to get rid of it.
 
-Does this happen repeatably?
+I don't know anything about a Sidux, though.
 
-Did you set usb-storage's delay_use parameter to something peculiar?
-
-Alan Stern
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
