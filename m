@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765465AbXHFRuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765784AbXHFRu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765465AbXHFRuK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 13:50:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754701AbXHFRt7
+	id S1765784AbXHFRu4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 13:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758380AbXHFRuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 13:49:59 -0400
-Received: from smtpq1.groni1.gr.home.nl ([213.51.130.200]:58229 "EHLO
-	smtpq1.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757090AbXHFRt6 (ORCPT
+	Mon, 6 Aug 2007 13:50:44 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:53193 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754701AbXHFRum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 13:49:58 -0400
-Message-ID: <46B75E8E.1040305@gmail.com>
-Date: Mon, 06 Aug 2007 19:46:54 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
-To: Indan Zupancic <indan@nul.nu>
-CC: Ingo Molnar <mingo@elte.hu>, teresa@kvitka.net,
-       Andi Kleen <andi@firstfloor.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       CK Mailinglist <ck@vds.kolivas.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dmitry.torokhov@gmail.com, dtor@mail.ru
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-References: <p73abtbpk2s.fsf@bingen.suse.de> <46B06815.10200@gmail.com>    <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>    <46B0818F.10204@gmail.com>    <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>    <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com>    <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>    <20070801150939.GA24710@elte.hu>    <52091.81.207.0.53.1185982005.squirrel@secure.samage.net>    <20070806071200.GC5359@elte.hu> <46B71DBF.7000000@gmail.com> <46944.81.207.0.53.1186413575.squirrel@secure.samage.net>
-In-Reply-To: <46944.81.207.0.53.1186413575.squirrel@secure.samage.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+	Mon, 6 Aug 2007 13:50:42 -0400
+To: jlayton@redhat.com
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       codalist@TELEMANN.coda.cs.cmu.edu, cluster-devel@redhat.com,
+       jfs-discussion@lists.sourceforge.net, mikulas@artax.karlin.mff.cuni.cz,
+       zippel@linux-m68k.org, xfs@oss.sgi.com, joel.becker@oracle.com,
+       wli@holomorphy.com, reiserfs-devel@vger.kernel.org, dhowells@redhat.com,
+       fuse-devel@lists.sourceforge.net, jffs-dev@axis.com,
+       user-mode-linux-user@lists.sourceforge.net,
+       v9fs-developer@lists.sourceforge.net, linux-ext4@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, ocfs2-devel@oss.oracle.com,
+       bfennema@falcon.csc.calpoly.edu
+In-reply-to: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com> (message from
+	Jeff Layton on Mon, 6 Aug 2007 09:54:06 -0400)
+Subject: Re: [fuse-devel] [PATCH 01/25] VFS: move attr_kill logic from
+	notify_change into helper function
+References: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com>
+Message-Id: <E1II6cM-0004yj-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 06 Aug 2007 19:43:46 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2007 05:19 PM, Indan Zupancic wrote:
+> Separate the handling of the local ia_valid bitmask from the one in
+> attr->ia_valid. This allows us to hand off the actual handling of the
+> ATTR_KILL_* flags to the .setattr i_op when one is defined.
+> 
+> notify_change still needs to process those flags for the local ia_valid
+> variable, since it uses that to decide whether to return early, and to pass
+> a (hopefully) appropriate bitmask to fsnotify_change.
 
-[ Yes, OT, I'll shelve it after this ]
+I agree with this change and fuse will make use of it as well.
 
-> Anyway, if you want to experience a shock, try enabling xcomposite and
-> run xcompmgr -a or something. It's so wonderfully smooth (even though
-> some rendering seems slower than before, it's really worth it for me).
+Maybe instead of unconditionally moving attr_kill_to_mode() inside
+->setattr() it could be made conditional based on an inode flag
+similarly to S_NOCMTIME.  Advantages:
 
-Don't believe I can -- using a Matrox Millenium G550 (driver mga) and 
-nothing I do seems to have an effect.
+ - no need to modify a lot of in-tree filesystems
+ - no silent breakage of out-of-tree fs
 
-Rene.
+Actually I think the new flag would be used by exacly the same
+filesystems as S_NOCMTIME, so maybe it would make sense to rename
+S_NOCMTIME to something more generic (S_NOATTRUPDATE or whatever) and
+use that.
 
+But that could still break out-of-tree fs, so a separate flag is
+probably better.
+
+Miklos
