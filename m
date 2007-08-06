@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760299AbXHFHOE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760500AbXHFHQR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760299AbXHFHOE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 03:14:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbXHFHNz
+	id S1760500AbXHFHQR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 03:16:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbXHFHQH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 03:13:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58494 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751291AbXHFHNy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 03:13:54 -0400
-Date: Mon, 6 Aug 2007 09:13:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Beauchemin, Mark" <Mark.Beauchemin@sycamorenet.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       David Miller <davem@davemloft.net>
-Subject: Re: [PATCH -rt] Preemption problem in kernel RT Patch
-Message-ID: <20070806071345.GD5359@elte.hu>
-References: <77B279EC7347F341A6AE891AA6AD68E93142D1@ranchero.sycamorenet.com> <77B279EC7347F341A6AE891AA6AD68E93142D2@ranchero.sycamorenet.com>
+	Mon, 6 Aug 2007 03:16:07 -0400
+Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:63796 "EHLO iris"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751291AbXHFHQG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 03:16:06 -0400
+Message-ID: <46B6CAC4.3080202@sw.ru>
+Date: Mon, 06 Aug 2007 11:16:20 +0400
+From: "Denis V. Lunev" <den@sw.ru>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070803)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <77B279EC7347F341A6AE891AA6AD68E93142D2@ranchero.sycamorenet.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 1.0
-X-ELTE-SpamLevel: s
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
-	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
-	[score: 0.5000]
+To: Greg KH <gregkh@suse.de>
+CC: "Denis V. Lunev" <den@openvz.org>, dev@openvz.org,
+       akpm@linux-foundation.org, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pci_get_device call from interrupt in reboot fixups
+References: <20070803103924.GA23786@iris.sw.ru> <20070804040806.GF23330@suse.de>
+In-Reply-To: <20070804040806.GF23330@suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+> On Fri, Aug 03, 2007 at 02:39:24PM +0400, Denis V. Lunev wrote:
+>> The following calltrace is possible now:
+>>  handle_sysrq
+>>    machine_emergency_restart
+>>      mach_reboot_fixups
+>>        pci_get_device
+>>          pci_get_subsys
+>> 	   down_read
+>> The patch obtains PCI device during initialization to avoid bothering PCI
+>> search engine in interrupt. Devices used in this code are not supposed to
+>> be pluggable, so it looks safe to keep them.
+> 
+> What devices are supposed to be affected here?  Are you sure that they
+> can't be removed later?  Grabbing references here might mess with them
+> in the future.
+Right now the list is the following:
+static struct device_fixup fixups_table[] = {
+{ PCI_VENDOR_ID_CYRIX, PCI_DEVICE_ID_CYRIX_5530_LEGACY,
+cs5530a_warm_reset },
+{ PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_CS5536_ISA, cs5536_warm_reset },
+};
 
-* Beauchemin, Mark <Mark.Beauchemin@sycamorenet.com> wrote:
+Though, if the approach is not suitable, we can skip fixups if we came
+from sysrq.
 
-> sorry..  I sent the wrong patch file.  There was a warning in the 
-> other one.
-
-> -       int                     xmit_lock_owner;
-> +#ifdef CONFIG_PREEMPT_RT
-> +       void *                  xmit_lock_owner;
-> +#else
-> +       int                     xmit_lock_owner;
-> +#endif
-
-could you please change this to use 'current' (instead of the CPU 
-number) as the xmit_lock_owner unconditionally? That results in much 
-fewer #ifdefs and far cleaner code.
-
-	Ingo
+Regards,
+	Den
