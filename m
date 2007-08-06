@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763391AbXHFLRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763995AbXHFLUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763391AbXHFLRU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 07:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753958AbXHFLRN
+	id S1763995AbXHFLUw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 07:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756743AbXHFLUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 07:17:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:55310 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752148AbXHFLRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 07:17:11 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Jeff Chua" <jeff.chua.linux@gmail.com>
-Subject: Re: Linux 2.6.23-rc2
-Date: Mon, 6 Aug 2007 13:26:25 +0200
-User-Agent: KMail/1.9.5
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "suspend-devel List" <suspend-devel@lists.sourceforge.net>
-References: <Pine.LNX.4.64.0708052005550.3772@boston.corp.fedex.com> <200708051847.12046.rjw@sisk.pl> <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com>
-In-Reply-To: <b6a2187b0708051736u74879b9cp9e638364a5b1628e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708061326.25888.rjw@sisk.pl>
+	Mon, 6 Aug 2007 07:20:43 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:51502 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958AbXHFLUm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 07:20:42 -0400
+Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of
+	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <1186398917.28655.69.camel@johannes.berg>
+References: <200708051906.22865.rjw@sisk.pl>
+	 <20070806090713.GC15329@atrey.karlin.mff.cuni.cz>
+	 <1186392591.28655.35.camel@johannes.berg>
+	 <20070806102659.GB1875@elf.ucw.cz>
+	 <1186398917.28655.69.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-SOplHz4CNfeIuhKF+5Sk"
+Date: Mon, 06 Aug 2007 13:22:42 +0200
+Message-Id: <1186399362.28655.72.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 6 August 2007 02:36, Jeff Chua wrote:
-> On 8/6/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> 
-> > What does 's2ram -i' say about your machine?
-> 
-> This machine can be identified by:
->     sys_vendor   = "LENOVO"
->     sys_product  = "1702E7A"
->     sys_version  = "ThinkPad X60s"
->     bios_version = "7BETD0WW (2.11 )"
 
-This means it's not in the whitelist, AFAICS.
+--=-SOplHz4CNfeIuhKF+5Sk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Similar machines are known to work with "--acpi_sleep=3" or with
-"--acpi_sleep=1 --vbe_mode".
+On Mon, 2007-08-06 at 13:15 +0200, Johannes Berg wrote:
 
-Greetings,
-Rafael
+> config SUSPEND_UP_POSSIBLE
+> 	depends on ARCH_SUSPEND_UP_POSSIBLE
+>=20
+> and then the architecture gets to define that when it can suspend.
 
+In fact, just doing
+	depends on (ARCH_SUSPEND_UP_POSSIBLE && !SMP) || (ARCH_SUSPEND_SMP_POSSIBL=
+E && SMP)
 
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+would probably be good instead of doing the intermediate
+SUSPEND_UP_POSSIBLE and SUSPEND_SMP_POSSIBLE. The reason I like this
+better is that we don't have a central editing point where patches
+conflict causing unnecessary problems. But both are much better than
+what we have now anyway :)
+
+johannes
+
+--=-SOplHz4CNfeIuhKF+5Sk
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGtwSC/ETPhpq3jKURAsauAJwO1qbIxGXE/0dJnhf0t4fDC0k8eACgtn/3
+wdCXqNU8li3blQwkoiLEF6U=
+=FL19
+-----END PGP SIGNATURE-----
+
+--=-SOplHz4CNfeIuhKF+5Sk--
+
