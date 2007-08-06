@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764035AbXHFUDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761819AbXHFUER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764035AbXHFUDq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbXHFUDi
+	id S1761819AbXHFUER (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:04:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764572AbXHFUDu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:03:38 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:60363 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752074AbXHFUDi (ORCPT
+	Mon, 6 Aug 2007 16:03:50 -0400
+Received: from mail.xandmail.com ([212.155.184.97]:55011 "EHLO
+	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763606AbXHFUDr convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:03:38 -0400
-Date: Mon, 6 Aug 2007 13:03:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Denis V. Lunev" <den@openvz.org>
-Cc: dev@openvz.org, gregkh@suse.de, devel@openvz.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pci_get_device call from interrupt in reboot fixups
-Message-Id: <20070806130326.87415ad0.akpm@linux-foundation.org>
-In-Reply-To: <20070803103924.GA23786@iris.sw.ru>
-References: <20070803103924.GA23786@iris.sw.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 6 Aug 2007 16:03:47 -0400
+X-Greylist: delayed 1631 seconds by postgrey-1.27 at vger.kernel.org; Mon, 06 Aug 2007 16:03:45 EDT
+Date: Mon,  6 Aug 2007 21:36:15 +0200
+Message-Id: <JMDAGF$E41775B89CFE6CA59D87D92B60DD7A0B@xandmail.com>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+MIME-Version: 1.0
+X-Sensitivity: 3
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
+To: "mingo" <mingo@elte.hu>
+Cc: "cebbert" <cebbert@redhat.com>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>, "jarkao2" <jarkao2@o2.pl>,
+       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "shemminger" <shemminger@linux-foundation.org>,
+       "linux-net" <linux-net@vger.kernel.org>,
+       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
+       "alan" <alan@lxorguk.ukuu.org.uk>
+X-XaM3-API-Version: 4.2(R3) (B21)
+X-type: 0
+X-SenderIP: 82.230.172.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007 14:39:24 +0400 "Denis V. Lunev" <den@openvz.org> wrote:
-
-> The following calltrace is possible now:
->  handle_sysrq
->    machine_emergency_restart
->      mach_reboot_fixups
->        pci_get_device
->          pci_get_subsys
-> 	   down_read
-> The patch obtains PCI device during initialization to avoid bothering PCI
-> search engine in interrupt. Devices used in this code are not supposed to
-> be pluggable, so it looks safe to keep them.
+> * Chuck Ebbert <cebbert@redhat.com> wrote:
 > 
-
-hm.
-
+> > Before, they would print:
+> > 
+> > eth0: transmit timed out, tx_status 00 status e601.
+> >   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
+> > eth0: Interrupt posted but not delivered -- IRQ blocked by another device?
+> >   Flags; bus-master 1, dirty 295757(13) current 295757(13)
+> >   Transmit list 00000000 vs. f7150a20.
+> >   0: @f7150200  length 80000070 status 0c010070
+> >   1: @f71502a0  length 80000070 status 0c010070
+> >   2: @f7150340  length 8000005c status 0c01005c
+> > 
+> > Now they just work, apparently...
 > 
-> diff --git a/arch/i386/kernel/reboot_fixups.c b/arch/i386/kernel/reboot_fixups.c
-> index 03e1cce..873ad55 100644
-> --- a/arch/i386/kernel/reboot_fixups.c
-> +++ b/arch/i386/kernel/reboot_fixups.c
-> @@ -37,6 +37,7 @@ struct device_fixup {
->  	unsigned int vendor;
->  	unsigned int device;
->  	void (*reboot_fixup)(struct pci_dev *);
-> +	struct pci_dev *dev;
->  };
->  
->  static struct device_fixup fixups_table[] = {
-> @@ -49,20 +50,35 @@ static struct device_fixup fixups_table[] = {
->   * is a fixup, we call it and we expect to never return from it. if we
->   * do return, we keep looking and then eventually fall back to the
->   * standard mach_reboot on return.
-> + *
-> + * Unfortunately, this code can be called from an interrupt and it is
-> + * impossible to get PCI device directly. So, lets prepare the list
-> + * beforehand.
+> could you please try the patch below? If this doesnt do the trick then i 
+> guess we need to revert that change.
 
-This comment should tell the reader which interrupt path that is (ie: sysrq-B).
+I confirm that the latest fedora kernel 2.6.22.1-41.fc7 (with the removal of [PATCH] genirq: do not mask interrupts by default) still work on my machine for 3 days.
 
->   */
->  void mach_reboot_fixups(void)
->  {
->  	struct device_fixup *cur;
-> -	struct pci_dev *dev;
->  	int i;
->  
->  	for (i=0; i < ARRAY_SIZE(fixups_table); i++) {
->  		cur = &(fixups_table[i]);
-> -		dev = pci_get_device(cur->vendor, cur->device, NULL);
-> -		if (!dev)
-> +		if (cur->dev == NULL)
->  			continue;
->  
-> -		cur->reboot_fixup(dev);
-> +		cur->reboot_fixup(cur->dev);
-> +	}
-> +}
-> +
-> +int mach_fixup_init(void)
-> +{
-> +	struct device_fixup *cur;
-> +	int i;
-> +
-> +	for (i=0; i < ARRAY_SIZE(fixups_table); i++) {
-> +		cur = &(fixups_table[i]);
-> +		cur->dev = pci_get_device(cur->vendor, cur->device, NULL);
->  	}
-> +	return 0;
->  }
->  
-> +module_init(mach_fixup_init);
+Atm I'm still stressing the network (2 * 3com cards + 1 onboard nvidia card) to be sure.
 
-I'm not sure that we want to make core PCI code capable of being called
-from interrupt context just for the sake of sysrq-B.  It adds complexity
-and maintenance hassles for something which is largely a debugging feature.
+Jb
 
-otoh, the patch is faily simple-looking and people _do_ use sysrq-B fairly
-often so I guess we'll find out if we break it again.
 
-otoh2, perhaps we can find some quicky hack on the sysrq patch to shut up
-the might_sleep() warnings (which I presume is the only problem which is
-presently being exhibited?).  Something like the unpleasant
-oops_in_progress, perhaps.
 
-Greg, any preferences?
