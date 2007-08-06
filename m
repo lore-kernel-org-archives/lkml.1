@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764924AbXHFMtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765038AbXHFMwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764924AbXHFMtZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 08:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763947AbXHFMtS
+	id S1765038AbXHFMwX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 08:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763636AbXHFMwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 08:49:18 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:49176 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753921AbXHFMtR (ORCPT
+	Mon, 6 Aug 2007 08:52:14 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48913 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754141AbXHFMwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 08:49:17 -0400
-Date: Mon, 6 Aug 2007 07:49:14 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "Serge E. Hallyn" <serue@us.ibm.com>, Kirill Korotaev <dev@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Andrey Savochkin <saw@sw.ru>,
-       Adrian Bunk <bunk@stusta.de>, Cedric Le Goater <clg@fr.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: CLONE_NEWUTS documentation
-Message-ID: <20070806124914.GB23642@sergelap.austin.ibm.com>
-References: <46B599CA.9030302@gmx.net> <m1abt6kvym.fsf@ebiederm.dsl.xmission.com> <46B6C177.8040405@gmx.net>
-MIME-Version: 1.0
+	Mon, 6 Aug 2007 08:52:13 -0400
+Date: Mon, 6 Aug 2007 13:52:12 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Olaf Hering <olh@suse.de>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       libc-alpha@sources.redhat.com
+Subject: Re: glibc and make headers_install_all provide /usr/include/scsi
+Message-ID: <20070806125212.GB12896@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Olaf Hering <olh@suse.de>, linux-scsi@vger.kernel.org,
+	linux-kernel@vger.kernel.org, libc-alpha@sources.redhat.com
+References: <20070806124546.GA2117@suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B6C177.8040405@gmx.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070806124546.GA2117@suse.de>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Michael Kerrisk (mtk-manpages@gmx.net):
+On Mon, Aug 06, 2007 at 02:45:46PM +0200, Olaf Hering wrote:
 > 
+> glibc and make headers_install_all provide /usr/include/scsi
+> One of them has to go.
 > 
-> Eric W. Biederman wrote:
-> > Michael Kerrisk <mtk-manpages@gmx.net> writes:
-> > 
-> >> Hello Serge,
-> >>
-> >> In 2.6.19, your patch to add support for CLONE_NEWUTS was included.  Is
-> >> there there some for-userland-programmers documentation of this flag
-> >> somewhere?  Would you be able to send some documentation to me (ideally as
-> >> a patch to the clone.2 man page, but otherwise some plain text will do).
-> >>
-> >> If this flag is also supported for unshare(), then could you please send me
-> >> a patch/text for that too?
-> > 
-> > Again a short summary
-> > 
-> > The utsname namespace encapsulates the global kernel identification stored
-> > in struct utsname returned from uname(2).
-> > 
-> > It is a very trivial namespace but it allows you to set multiple hostnames
-> > and nis domainnames on the same machine.
-> 
-> Thanks Eric.
-> 
-> And a further question: is CLONE_NEWUTS implemented for unshare()?
+> A quick diff shows no differences, expect:
 
-Yes, it is.  And unlike CLONE_FS but like CONE_NEWNS, it has the same
-meaning for unshare as for clone.
+..
 
-thanks,
--serge
+> Which copy should be provided by a distributor?
+
+The glibc one of course.  The kernel scsi.h should never have been
+added to the list of exportable headers.  
+
