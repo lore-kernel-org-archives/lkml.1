@@ -1,176 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765353AbXHFUm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932773AbXHFUn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765353AbXHFUm6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 16:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759830AbXHFUmn
+	id S932773AbXHFUn2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 16:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765214AbXHFUm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 16:42:43 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:55472 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759578AbXHFUml convert rfc822-to-8bit (ORCPT
+	Mon, 6 Aug 2007 16:42:56 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58305 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764200AbXHFUmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 16:42:41 -0400
-Date: Mon,  6 Aug 2007 22:42:15 +0200
-Message-Id: <JMDDIG$C8916D611655799A77AD19198F8EDA75@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+	Mon, 6 Aug 2007 16:42:54 -0400
+Date: Mon, 6 Aug 2007 22:42:49 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: David Edwards <powertop@dpe.lusars.net>
+Cc: power@bughost.org, Thomas Gleixner <tglx@linutronix.de>,
+       "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>,
+       linux-kernel@vger.kernel.org
+Subject: HPET force-enable investigations on Via VT8235 (was: Re: extra
+	timer interrupt + konqueror)
+Message-ID: <20070806204249.GA25957@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "mingo" <mingo@elte.hu>
-Cc: "cebbert" <cebbert@redhat.com>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>, "jarkao2" <jarkao2@o2.pl>,
-       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
-       "alan" <alan@lxorguk.ukuu.org.uk>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 82.230.172.5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708041253520.18298@fortytwo.lusars.net>
+X-Priority: none
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mmm, bad news, after 4 hours of intensive network stressing, one of the 2 3com card failed with the latest fedora kernel.
+[CC'd LKML for broader testing]
 
-Aug  6 22:31:09 loki kernel: NETDEV WATCHDOG: eth2: transmit timed out
-Aug  6 22:31:09 loki kernel: eth2: transmit timed out, tx_status 00 status e601.
-Aug  6 22:31:09 loki kernel:   diagnostics: net 0ccc media 8880 dma 0000003a fifo 8000
-Aug  6 22:31:09 loki kernel: eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
-Aug  6 22:31:09 loki kernel:   Flags; bus-master 1, dirty 26085000(8) current 26085000(8)
-Aug  6 22:31:09 loki kernel:   Transmit list 00000000 vs. ffff81007c807700.
+Hi,
 
-Stressing eth2 by copying large files on a samba on share and eth0 by downloading big files on the internet.
+On Sat, Aug 04, 2007 at 12:58:20PM -0400, David Edwards wrote:
+> Andreas Mohr wrote:
+> >> Same for "hpet-force-enable-on-vt8235-37-chipsets.patch" (I use this
+> >> one on my Asrock P4VT8+ motherboard (VT8237 based) with no pb).
+> >
+> > What!?!?!?
+> > Why did nobody tell me that VT8235 *does* actually have a HPET
+> > implementation? ;)
+> > I've been investigating this during a couple evenings some months ago,
+> > with apparently negative result for my VT8235 (blank I/O area at the
+> > place where VT8237 has its HPET, and I wasn't able to activate anything),
+> > which I then reported on LKML.
+> > And now you report that one found that it's actually possible. Yay!!
+> 
+> Erm... Don't get too excited. The HPET patch does not enable the HPET on 
+> my VT8235 (EPIA ME-6000 mini-itx board), so it may not be universally 
+> functional.
+> 
+> > I'm going to test this patch on my EPOX 8K5A2+ (VT8235, i.e. PCI ID 0x3177).
+> 
+> Cool. Let me know if it works for you. :)
 
-Jb
+Err... nope. :((
 
-> 
-> * Chuck Ebbert <cebbert@redhat.com> wrote:
-> 
-> > Before, they would print:
-> > 
-> > eth0: transmit timed out, tx_status 00 status e601.
-> >   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
-> > eth0: Interrupt posted but not delivered -- IRQ blocked by another device?
-> >   Flags; bus-master 1, dirty 295757(13) current 295757(13)
-> >   Transmit list 00000000 vs. f7150a20.
-> >   0: @f7150200  length 80000070 status 0c010070
-> >   1: @f71502a0  length 80000070 status 0c010070
-> >   2: @f7150340  length 8000005c status 0c01005c
-> > 
-> > Now they just work, apparently...
-> 
-> could you please try the patch below? If this doesnt do the trick then i 
-> guess we need to revert that change.
-> 
-> 	Ingo
-> 
-> ------------>
-> (take 2)
-> 
-> Subject: genirq: fix simple and fasteoi irq handlers
-> 
-> After the "genirq: do not mask interrupts by default" patch interrupts
-> should be disabled not immediately upon request, but after they happen.
-> But, handle_simple_irq() and handle_fasteoi_irq() can skip this once or
-> more if an irq is just serviced (IRQ_INPROGRESS), possibly disrupting a
-> driver's work.
-> 
-> The main reason of problems here, pointing the broken patch and making
-> the first patch which can fix this was done by Marcin Slusarz.
-> Additional test patches of Thomas Gleixner and Ingo Molnar tested by
-> Marcin Slusarz helped to narrow possible reasons even more. Thanks.
-> 
-> PS: this patch fixes only one evident error here, but there could be
-> more places affected by above-mentioned change in irq handling.
-> 
-> PS 2:
-> After rethinking, IMHO, there are two most probable scenarios here:
-> 
-> 1. After hw resend there could be a conflict between retriggered
-> edge type irq and the next level type one: e.g. if this level type
-> irq (io_apic is enabled then) is triggered while retriggered irq is
-> serviced (IRQ_INPROGRESS) there is goto out with eoi, and probably
-> the next such levels are triggered and looping, so probably kind of
-> flood in io_apic until this retriggered edge service has ended. 
-> 2. There is something wrong with ioapic_retrigger_irq (less probable
-> because this should be probably seen with 'normal' edge retriggers,
-> but on the other hand, they could be less common).
-> 
-> So, if there is #1, this fixed patch should work.
-> 
-> But, since level types don't need this retriggers too much I think
-> this "don't mask interrupts by default" idea should be rethinked:
-> is there enough gain to risk such hard to diagnose errors?
->   
-> So, IMHO, there should be at least possibility to turn this off for
-> level types in config (it should be a visible option, so people could
-> find & try this before writing for help or changing a network card).
-> 
-> 
-> Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
-> 
-> ---
-> 
-> diff -Nurp 2.6.23-rc1-/kernel/irq/chip.c 2.6.23-rc1/kernel/irq/chip.c
-> --- 2.6.23-rc1-/kernel/irq/chip.c	2007-07-09 01:32:17.000000000 +0200
-> +++ 2.6.23-rc1/kernel/irq/chip.c	2007-08-05 21:49:46.000000000 +0200
-> @@ -295,12 +295,11 @@ handle_simple_irq(unsigned int irq, stru
->  
->  	spin_lock(&desc->lock);
->  
-> -	if (unlikely(desc->status & IRQ_INPROGRESS))
-> -		goto out_unlock;
->  	kstat_cpu(cpu).irqs[irq]++;
->  
->  	action = desc->action;
-> -	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
-> +	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
-> +						 IRQ_DISABLED)))) {
->  		if (desc->chip->mask)
->  			desc->chip->mask(irq);
->  		desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
-> @@ -318,6 +317,8 @@ handle_simple_irq(unsigned int irq, stru
->  
->  	spin_lock(&desc->lock);
->  	desc->status &= ~IRQ_INPROGRESS;
-> +	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
-> +		desc->chip->unmask(irq);
->  out_unlock:
->  	spin_unlock(&desc->lock);
->  }
-> @@ -392,18 +393,16 @@ handle_fasteoi_irq(unsigned int irq, str
->  
->  	spin_lock(&desc->lock);
->  
-> -	if (unlikely(desc->status & IRQ_INPROGRESS))
-> -		goto out;
-> -
->  	desc->status &= ~(IRQ_REPLAY | IRQ_WAITING);
->  	kstat_cpu(cpu).irqs[irq]++;
->  
->  	/*
-> -	 * If its disabled or no action available
-> +	 * If it's running, disabled or no action available
->  	 * then mask it and get out of here:
->  	 */
->  	action = desc->action;
-> -	if (unlikely(!action || (desc->status & IRQ_DISABLED))) {
-> +	if (unlikely(!action || (desc->status & (IRQ_INPROGRESS |
-> +						 IRQ_DISABLED)))) {
->  		desc->status |= IRQ_PENDING;
->  		if (desc->chip->mask)
->  			desc->chip->mask(irq);
-> @@ -420,6 +419,8 @@ handle_fasteoi_irq(unsigned int irq, str
->  
->  	spin_lock(&desc->lock);
->  	desc->status &= ~IRQ_INPROGRESS;
-> +	if (!(desc->status & IRQ_DISABLED) && desc->chip->unmask)
-> +		desc->chip->unmask(irq);
->  out:
->  	desc->chip->eoi(irq);
->  
-> 
+I've added the full 2.6.23-rc1-hrt1 patchset
+(http://www.tglx.de/projects/hrtimers/2.6.23-rc1/patch-2.6.23-rc1-hrt1.patch),
+and I do get the "Failed to force enable HPET",
+so I know it's running that function, however it fails
+since the 0x80 bit is NOT set after the force-enable
+(which sadly happens to match my experience during my much earlier efforts
+to try to get HPET to work on this board).
 
+So, *please* (I'd *love* to get this working somehow):
+whoever has a VT8235 and is listening here,
+- give a "lspci -nn" (two 'n'!), to figure out details of chipset revision etc.
+- give a "lspci -d 1106:3177 -xxx", to try to figure out whether there happen
+  to be additional magical "enable" bits to map in those HPET I/O areas which
+  some BIOS versions configure and some don't (that's my fragile theory
+  at least)
+- oh, and don't forget to tell whether HPET works or not
+
+For my system (again, it's EPOX 8K5A2+ with VT8235):
+
+root@andi:/usr/src/linux-2.6.23-rc1-hrt1# lspci -nn
+00:00.0 Host bridge [0600]: VIA Technologies, Inc. VT8366/A/7 [Apollo
+KT266/A/333] [1106:3099]
+00:01.0 PCI bridge [0604]: VIA Technologies, Inc. VT8366/A/7 [Apollo
+KT266/A/333 AGP] [1106:b099]
+00:09.0 FireWire (IEEE 1394) [0c00]: Duet Technologies Unknown device
+[1306:3044] (rev 46)
+00:0a.0 Multimedia audio controller [0401]: Aureal Semiconductor Vortex
+2 [12eb:0002] (rev fe)
+00:0c.0 Ethernet controller [0200]: Intel Corporation 82557/8/9
+[Ethernet Pro 100] [8086:1229] (rev 08)
+00:0d.0 Multimedia audio controller [0401]: Aztech System Ltd 3328 Audio
+[122d:50dc] (rev 10)
+00:10.0 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB
+1.1 Controller [1106:3038] (rev 80)
+00:10.1 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB
+1.1 Controller [1106:3038] (rev 80)
+00:10.2 USB Controller [0c03]: VIA Technologies, Inc. VT82xxxxx UHCI USB
+1.1 Controller [1106:3038] (rev 80)
+00:10.3 USB Controller [0c03]: VIA Technologies, Inc. USB 2.0
+[1106:3104] (rev 82)
+00:11.0 ISA bridge [0601]: VIA Technologies, Inc. VT8235 ISA Bridge
+[1106:3177]
+00:11.1 IDE interface [0101]: VIA Technologies, Inc.
+VT82C586A/B/VT82C686/A/B/VT823x/A/C PIPC Bus Master IDE [1106:0571] (rev
+06)
+00:11.5 Multimedia audio controller [0401]: VIA Technologies, Inc.
+VT8233/A/8235/8237 AC97 Audio Controller [1106:3059] (rev 50)
+00:12.0 Ethernet controller [0200]: VIA Technologies, Inc. VT6102
+[Rhine-II] [1106:3065] (rev 74)
+01:00.0 VGA compatible controller [0300]: ATI Technologies Inc Radeon
+RV250 If [Radeon 9000] [1002:4966] (rev 01)
+01:00.1 Display controller [0380]: ATI Technologies Inc Radeon RV250
+[Radeon 9000] (Secondary) [1002:496e] (rev 01)
+
+root@andi:/usr/src/linux-2.6.23-rc1-hrt1# lspci -d 1106:3177 -xxx
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
+00: 06 11 77 31 87 00 10 02 00 00 01 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 06 11 77 31
+30: 00 00 00 00 c0 00 00 00 00 00 00 00 00 00 00 00
+40: 44 00 f8 0b 00 00 00 00 0c 20 00 00 04 00 0a 08
+50: 81 1d 09 00 00 20 22 20 43 80 00 00 00 00 f0 40
+60: 00 00 00 00 00 00 02 04 00 00 00 00 00 00 00 00
+70: 06 11 77 31 00 00 00 00 00 00 00 00 20 00 00 00
+80: 20 84 59 00 ba 10 00 00 01 40 00 00 da 10 00 00
+90: 00 4a 00 88 a0 40 03 00 00 b7 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 01 50 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 04 08 02 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 03 00 00 00 00 00 00 00 00 00
+
+Thanks a lot,
+
+Andreas Mohr
