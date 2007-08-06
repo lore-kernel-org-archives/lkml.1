@@ -1,43 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761421AbXHFGK1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761107AbXHFGPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761421AbXHFGK1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 02:10:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbXHFGKP
+	id S1761107AbXHFGPf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 02:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbXHFGPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 02:10:15 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43699 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbXHFGKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 02:10:13 -0400
-Date: Mon, 6 Aug 2007 11:40:26 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Michael Kerrisk <mtk-manpages@gmx.net>
-Cc: dgc@sgi.com, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: fallocate() man page - darft 2
-Message-ID: <20070806061026.GA10448@amitarora.in.ibm.com>
-References: <20070713123816.GA18000@amitarora.in.ibm.com> <20070713124601.GA22961@amitarora.in.ibm.com> <20070714082342.174830@gmx.net> <20070716053235.GA10945@amitarora.in.ibm.com> <46A44629.3090107@gmx.net> <20070723131039.GA29198@amitarora.in.ibm.com> <46AE3F8A.6040404@gmx.net> <20070802173653.GA13816@amitarora.in.ibm.com> <46B318B9.7020107@gmx.net>
-Mime-Version: 1.0
+	Mon, 6 Aug 2007 02:15:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57704 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753333AbXHFGPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 02:15:21 -0400
+Date: Mon, 6 Aug 2007 08:14:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Gabriel C <nix.or.die@googlemail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
+Subject: Re: [patch (take 2)] genirq: fix simple and fasteoi irq handlers
+Message-ID: <20070806061459.GA26046@elte.hu>
+References: <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <46B20E47.6020403@googlemail.com> <20070802201126.GA27000@elte.hu> <20070806060723.GA981@ff.dom.local>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B318B9.7020107@gmx.net>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070806060723.GA981@ff.dom.local>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 03, 2007 at 01:59:53PM +0200, Michael Kerrisk wrote:
-> > <Amit>
-> > There is a typo above. We have "file system" repeated twice in above
-> > sentence. Second one should be "file".
-> > </Amit>
-> 
-> Thanks for catching that.
-> 
-> Okay -- it seems that this page is pretty much ready for publication,
-> right?  I'll hold off for a bit, until nearer the end of the 2.6.23 cycle.
 
-I agree. Thanks!
+* Jarek Poplawski <jarkao2@o2.pl> wrote:
 
---
-Regards,
-Amit Arora
+> Subject: genirq: fix simple and fasteoi irq handlers
+> 
+> After the "genirq: do not mask interrupts by default" patch interrupts 
+> should be disabled not immediately upon request, but after they 
+> happen. But, handle_simple_irq() and handle_fasteoi_irq() can skip 
+> this once or more if an irq is just serviced (IRQ_INPROGRESS), 
+> possibly disrupting a driver's work.
+
+nice fix. I think this is exactly the type of bug we were hoping to be 
+able to identify and fix, and it could explain the regression in its 
+entirety. The big question - does it fix Marcin's regression?
+
+	Ingo
