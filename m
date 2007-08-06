@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763001AbXHFJqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763402AbXHFJrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763001AbXHFJqR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 05:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXHFJqA
+	id S1763402AbXHFJrS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 05:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761498AbXHFJrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 05:46:00 -0400
-Received: from hu-out-0506.google.com ([72.14.214.236]:62576 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760373AbXHFJp7 (ORCPT
+	Mon, 6 Aug 2007 05:47:09 -0400
+Received: from 81-174-11-161.static.ngi.it ([81.174.11.161]:33951 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760599AbXHFJrI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 05:45:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=M41QddKI7iHRtDrLDJES9S/TgvZzZQabN4Sn2viUfmhQD7AVQDgkbLzZyL5fNYGhRy2CnVWOzjplUhw1P4YY2PoKk1JAoxmoBR9I3yRYu8p6MLiQHilCfuxt+HAGEsd5UZxfMbBfhsVL7tGct7cL4ceU0XUarCvnGerO4qzMwhA=
-Message-ID: <46B6EDCB.6030806@gmail.com>
-Date: Mon, 06 Aug 2007 11:45:47 +0200
-From: dragoran <drago01@gmail.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
+	Mon, 6 Aug 2007 05:47:08 -0400
+Date: Mon, 6 Aug 2007 11:48:54 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
 To: linux-kernel@vger.kernel.org
-Subject: allow non root users to set io priority "idle" ?
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Message-ID: <20070806094854.GC354@enneenne.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.16 (2007-06-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: [RFC] Dynamic boot logo
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Its possible to set the io priority using tools like ionice and syscalls.
-But this works only as root.
-Why can't a non root user change the priority of his processes to idle?
-I understand that realtime priority requires root but why idle?
-For instance the beagle trys to set its priority to idle but fails 
-because it does not run as root.
-Any reason for this that I have missed? I can't think of a case where 
-setting the io priority to idle would have a negative impact for other 
-users or the whole system.
+Hello,
 
-P.S:
-Please CC me when replying.
+I'd like to have some suggestions from you about how I can implement
+the "dynamic boot logo" feature in Linux reading the logo image from
+the flash memory.
+
+In my custom board, using u-boot I read a compressed BMP from the
+flash memory and then I use it to display the logo, so users just have
+to change flash content in order to change their boot logo without
+recompiling u-boot.
+
+Could it be possible in Linux also? Which could be, in your opinion,
+the best way to solve this problem?
+
+Thanks in advance,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
