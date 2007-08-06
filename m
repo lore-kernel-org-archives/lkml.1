@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933702AbXHFXao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934024AbXHFXbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933702AbXHFXao (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764134AbXHFXaQ
+	id S934024AbXHFXbl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932880AbXHFXbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:30:16 -0400
-Received: from sccrmhc14.comcast.net ([204.127.200.84]:51319 "EHLO
-	sccrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1765923AbXHFXaL (ORCPT
+	Mon, 6 Aug 2007 19:31:32 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47339 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932819AbXHFXbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:30:11 -0400
-MIME-Version: 1.0
+	Mon, 6 Aug 2007 19:31:31 -0400
+Date: Tue, 7 Aug 2007 09:31:22 +1000
+From: David Chinner <dgc@sgi.com>
+To: Laurent Caron <lcaron@lncsa.fr>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Oops on 2.6.21 + DRBD + XFS
+Message-ID: <20070806233122.GW31489@sgi.com>
+References: <20070806093449.aebaisai@trusted.lncsa.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18103.44797.529894.786033@gargle.gargle.HOWL>
-Date: Mon, 6 Aug 2007 19:30:05 -0400
-To: Kevin K <k_krieser@sbcglobal.net>
-Cc: linux-ppp@vger.kernel.org,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sending raw packets via PPP
-In-Reply-To: Kevin K's message of 6 August 2007 17:45:39
-References: <35B9865F-38B4-4603-A2B7-F4ABACE5520F@sbcglobal.net>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-From: James Carlson <carlsonj@workingcode.com>
+Content-Disposition: inline
+In-Reply-To: <20070806093449.aebaisai@trusted.lncsa.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin K writes:
-> Is it possible to send raw packets via ppp under Linux?
+On Mon, Aug 06, 2007 at 09:38:19AM +0200, Laurent Caron wrote:
+> Hi,
 > 
-> More specifically, in 2.4 series kernels such as RH's 2.4.21-47 kernel?
-> 
-> I've trying to modify the DHCP 3.0.1 code provided with RH 3 so I can  
-> send requests via a PPP connection (standard RS-232), and it is just  
-> being dropped by the stack according to ifconfig and debug statements  
-> in ppp_generic.c.
+> I'm using an XFS filesystem over DRBD for a few weeks on this machine
+> and did experience an oops.
 
-I'm not sure what sort of "raw" packets you're talking about (IP raw
-or something else), but you shouldn't need to send any raw packets to
-do this.  DHCP runs over UDP, and, unlike Ethernet, there's no link
-layer addressing to worry about.
+......
+> Aug  3 10:59:47 fileserv kernel: [<c0164be9>] cache_flusharray+0x59/0xd0 
+> Aug  3 10:59:47 fileserv kernel: [<c0164d2a>] kmem_cache_free+0x5a/0x70 
+> Aug  3 10:59:47 fileserv kernel: [<c025fa16>] xfs_finish_reclaim+0x36/0x170 
+> Aug  3 10:59:47 fileserv kernel: [<c026fe41>] xfs_fs_clear_inode+0x91/0xc0 
+> Aug  3 10:59:47 fileserv kernel: [<c017c063>] clear_inode+0x93/0x140 
+> Aug  3 10:59:47 fileserv kernel: [<c017c38a>] dispose_list+0x1a/0xd0 
 
+Can you run with slab debugging turned on?
+
+Cheers,
+
+Dave.
 -- 
-James Carlson         42.703N 71.076W         <carlsonj@workingcode.com>
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
