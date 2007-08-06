@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764964AbXHFNN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765184AbXHFNQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764964AbXHFNN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 09:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763801AbXHFNNW
+	id S1765184AbXHFNQF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 09:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764114AbXHFNPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 09:13:22 -0400
-Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:33444 "EHLO
-	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754249AbXHFNNV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 09:13:21 -0400
-Message-ID: <46B71DBF.7000000@gmail.com>
-Date: Mon, 06 Aug 2007 15:10:23 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
-MIME-Version: 1.0
+	Mon, 6 Aug 2007 09:15:55 -0400
+Received: from 1wt.eu ([62.212.114.60]:1206 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764092AbXHFNPy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 09:15:54 -0400
+Date: Mon, 6 Aug 2007 15:12:15 +0200
+From: Willy Tarreau <w@1wt.eu>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Indan Zupancic <indan@nul.nu>, teresa@kvitka.net,
-       Andi Kleen <andi@firstfloor.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       CK Mailinglist <ck@vds.kolivas.org>,
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Claudio Martins <ctpm@ist.utl.pt>,
+       Jeff Garzik <jeff@garzik.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dmitry.torokhov@gmail.com, dtor@mail.ru
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-References: <p73abtbpk2s.fsf@bingen.suse.de> <46B06815.10200@gmail.com> <46470.81.207.0.53.1185971693.squirrel@secure.samage.net> <46B0818F.10204@gmail.com> <49653.81.207.0.53.1185973640.squirrel@secure.samage.net> <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com> <46850.81.207.0.53.1185980760.squirrel@secure.samage.net> <20070801150939.GA24710@elte.hu> <52091.81.207.0.53.1185982005.squirrel@secure.samage.net> <20070806071200.GC5359@elte.hu>
-In-Reply-To: <20070806071200.GC5359@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070806131215.GC10999@1wt.eu>
+References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt> <20070805014926.400d0608@the-village.bc.nu> <20070805072805.GB4414@elte.hu> <20070805134640.2c7d1140@the-village.bc.nu> <20070805125847.GC22060@elte.hu> <20070805132925.GA4089@1wt.eu> <20070806065712.GA2818@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070806065712.GA2818@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2007 09:12 AM, Ingo Molnar wrote:
-
-> * Indan Zupancic <indan@nul.nu> wrote:
+On Mon, Aug 06, 2007 at 08:57:12AM +0200, Ingo Molnar wrote:
 > 
->> All right, how would you debug it? Give us some insight in how to 
->> solve hard to trigger, happens at most only a few times a day, 
->> annoying input bug? I thought the mouse warping was fixed after 23-rc1 
->> and that input locking patch, but alas, the third day it happened 
->> again.
+> * Willy Tarreau <w@1wt.eu> wrote:
 > 
-> i've got no idea how to debug such input bugs best, but, as a starting 
-> point, i've Cc:-ed the current maintainer of the input subsystem :-)
+> > In your example above, maybe it's the opposite, users know they can 
+> > keep a file in /tmp one more week by simply cat'ing it.
+> 
+> sure - and i'm not arguing that noatime should the kernel-wide default. 
+> In every single patch i sent it was a .config option (and a boot option 
+> _and_ a sysctl option that i think you missed) that a user/distro 
+> enables or disabled. But i think the /tmp argument is not very strong: 
+> /tmp is fundamentally volatile, and you can grow dependencies on pretty 
+> much _any_ aspect of the kernel. So the question isnt "is there impact" 
+> (there is, at least for noatime), the question is "is it still worth 
+> doing it".
+> 
+> > Changing the kernel in a non-easily reversible way is not kind to the 
+> > users.
+> 
+> none of my patches did any of that...
 
-FWIW, I haven't experienced my "stuck delete" key anymore -- "since using 
-CFS v19.1", but that might very well just be coincedence. If anyone 
-wants/needs me to, I'll try to debug it, but for now I seem to be fine again.
+I did not notice you talked about a sysctl. A sysctl provides the ability
+to switch the behaviour without rebooting, while both the config option
+and the command line require a reboot.
 
-Now all I need to know is whether or not moving thunderbird's windows around 
-is expected to leave such an enormous non-repainting visual trail on the 
-screen...
+> anyway, my latest patch doesnt do noatime, it does the "more intelligent 
+> relatime" approach.
 
-I believe I'm concluding that I'm not all together fond of the "new" modular 
-X.org.
+... which is not equivalent noatime in the initial example.
 
-Rene.
+Regards,
+Willy
 
