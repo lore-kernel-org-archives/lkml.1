@@ -1,62 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933532AbXHFTle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933754AbXHFTmD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933532AbXHFTle (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 15:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757826AbXHFTl0
+	id S933754AbXHFTmD (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 15:42:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756651AbXHFTlw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 15:41:26 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53995 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751449AbXHFTlZ (ORCPT
+	Mon, 6 Aug 2007 15:41:52 -0400
+Received: from master.altlinux.org ([62.118.250.235]:3851 "EHLO
+	master.altlinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760790AbXHFTlu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 15:41:25 -0400
-Date: Mon, 6 Aug 2007 20:48:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Dimitrios Apostolou <jimis@gmx.net>
-Cc: =?UTF-8?B?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: high system cpu load during intense disk i/o
-Message-ID: <20070806204853.6a693c4b@the-village.bc.nu>
-In-Reply-To: <46B773F6.7060603@gmx.net>
-References: <200708031903.10063.jimis@gmx.net>
-	<200708051903.12414.jimis@gmx.net>
-	<46B60FB7.8030301@interia.pl>
-	<200708052142.14630.jimis@gmx.net>
-	<46B748DE.1060108@interia.pl>
-	<46B773F6.7060603@gmx.net>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Mon, 6 Aug 2007 15:41:50 -0400
+Date: Mon, 6 Aug 2007 23:41:22 +0400
+From: Sergey Vlasov <vsu@altlinux.ru>
+To: "Lindsay Roberts" <lindsay.roberts.os@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fs: Add romfs version 2
+Message-Id: <20070806234122.d6c82f24.vsu@altlinux.ru>
+In-Reply-To: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
+References: <8734b7880707122301m400294d4nf12072f949c95fa4@mail.gmail.com>
+X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; x86_64-alt-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__6_Aug_2007_23_41_23_+0400_p+1Hc3e=bLxusi8w"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > In Your oprofile output I find "acpi_pm_read" particulary interesting. 
-> > Unlike other VIA chipsets, which I know, Your doesn't use VLink to 
-> > connect northbridge to southbridge. Instead PCI bus connects these two. 
-> > As You probably know maximal PCI throughtput is 133MiB/s. In theory. In 
-> > practice probably less.
+--Signature=_Mon__6_Aug_2007_23_41_23_+0400_p+1Hc3e=bLxusi8w
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-acpi_pm_read is capable of disappearing into  SMM traps which will make
-it look very slow.
+On Fri, 13 Jul 2007 16:01:48 +1000 Lindsay Roberts wrote:
 
-> about 15MB/s for both disks. When reading I get about 30MB/s again from 
-> both disks. The other disk, the small one, is mostly idle, except for 
-> writing little bits and bytes now and then. Since the problem occurs 
-> when writing, 15MB/s is just too little I think for the PCI bus.
+> * Increases romfs partition size limit from 2GB to 4GB.
 
-Its about right for some of the older VIA chipsets but if you are seeing
-speed loss then we need to know precisely which kernels the speed dropped
-at. Could be there is an I/O scheduling issue your system shows up or
-some kind of PCI bus contention when both disks are active at once.
+This should be a separate patch.
 
-> I have been ignoring these performance regressions because of no 
-> stability problems until now. So could it be that I'm reaching the 
-> 20MB/s driver limit and some requests take too long to be served?
+> * Adds new derivative of romfs filesystem (rom2fs) with
+>   block aligned regular file data to bring performance
+>   parity with ext2/3. This is about 225% of the read
+>   speed of the existing romfs.
+>
+> Signed-off-by: Lindsay Roberts <lindsay.roberts.os@gmail.com>
+> ---
+> genromfs patch available at http://rom2fs.googlepages.com .
+>
+>  Documentation/filesystems/romfs.txt |   34 +++++--
+>  fs/romfs/inode.c                    |  195 +++++++++++++++++++++++++++++------
+>  include/linux/romfs_fs.h            |    1 +
+>  3 files changed, 187 insertions(+), 43 deletions(-)
+>
+> diff --git a/Documentation/filesystems/romfs.txt
+> b/Documentation/filesystems/romfs.txt
+> index 2d2a7b2..170b1cc 100644
+> --- a/Documentation/filesystems/romfs.txt
+> +++ b/Documentation/filesystems/romfs.txt
+> @@ -7,6 +7,10 @@ similar feature, and even the possibility of a small
+> kernel, with a
+>  file system which doesn't take up useful memory from the router
+>  functions in the basement of your office.
+>
+> +The romfs version 2 filesystem is a slight derivation created to fix
+> +performance issues with file data unaligned to logical disk blocks.
+> +It differs only in its placement of regular file data.
+> +
+>  For comparison, both the older minix and xiafs (the latter is now
+>  defunct) filesystems, compiled as module need more than 20000 bytes,
+>  while romfs is less than a page, about 4000 bytes (assuming i586
+> @@ -18,7 +22,10 @@ with romfs, it needed 3079 blocks.
+>
+>  To create such a file system, you'll need a user program named
+>  genromfs.  It is available via anonymous ftp on sunsite.unc.edu and
+> -its mirrors, in the /pub/Linux/system/recovery/ directory.
+> +its mirrors, in the /pub/Linux/system/recovery/ directory, as well as
+> +at the sourceforge project http://romfs.sourceforge.net/ . A genromfs
+> +patch to support version 2 is available at
+> +http://rom2fs.googlepages.com/ .
+>
+>  As the name suggests, romfs could be also used (space-efficiently) on
+>  various read-only media, like (E)EPROM disks if someone will have the
+> @@ -43,6 +50,11 @@ from the network, and you will have all the
+> tools/modules available
+>  from a nearby server, so you don't want to carry two disks for this
+>  purpose, just because it won't fit into ext2.
+>
+> +romfs also has a secondary use in reproducibility. The absence of
+> +both timestamps and permission information coupled with the read-only
+> +nature of the file system gives it amazing capability as a byte
+> +reproducible medium for a given directory structure.
 
-Nope.
+Not sure about this - the placement of file headers in romfs is
+completely unspecified (a linked list is used), file names in
+directories are not required to be in a sorted order...  Of course, a
+particular genromfs implementation could always produce the same
+bytestream for a given set of files, but the format itself does not
+really have any particular advantages.
 
-Alan
+> +
+>  romfs operates on block devices as you can expect, and the underlying
+>  structure is very simple.  Every accessible structure begins on 16
+>  byte boundaries for fast access.  The minimum space a file will take
+> @@ -50,7 +62,8 @@ is 32 bytes (this is an empty file, with a less than
+> 16 character
+>  name).  The maximum overhead for any non-empty file is the header, and
+>  the 16 byte padding for the name and the contents, also 16+14+15 = 45
+>  bytes.  This is quite rare however, since most file names are longer
+> -than 3 bytes, and shorter than 15 bytes.
+> +than 3 bytes, and shorter than 15 bytes. romfs version 2 adds
+> +additional overhead in order to align file data to (1k) disk blocks.
+>
+>  The layout of the filesystem is the following:
+>
+> @@ -59,7 +72,7 @@ offset	    content
+>  	+---+---+---+---+
+>    0	| - | r | o | m |  \
+>  	+---+---+---+---+	The ASCII representation of those bytes
+> -  4	| 1 | f | s | - |  /	(i.e. "-rom1fs-")
+> +  4	| 1 | f | s | - |  /	(i.e. "-rom1fs-" or "-rom2fs-")
+>  	+---+---+---+---+
+>    8	|   full size	|	The number of accessible bytes in this fs.
+>  	+---+---+---+---+
+> @@ -101,8 +114,10 @@ offset	    content
+>   16	| file name     |	The zero terminated name of the file,
+>  	:               :	padded to 16 byte boundary
+>  	+---+---+---+---+
+> - xx	| file data	|
+> -	:		:
+> + xx	| file data	|       In the case of romfs version 2 - regular
+> +	:		:       files, this offset is padded to the next
+> +                                1024 byte block relative to the start of
+> +                                the filesystem.
+
+You add padding between the file header and data.  But you can also
+add padding before the file header to make it end on a block boundary;
+I don't see any requirement that the next file header must be placed
+immediately after the previous file data (the header contains an
+explicit pointer to the next file header in the directory).  The only
+file header which has a fixed position is the first file header in the
+root directory - but it should be the "." entry, which does not
+contain any data and therefore does not require alignment; all other
+file headers can be placed at arbitrary positions.
+
+And if you add padding before file headers, you do not need to change
+the filesystem format at all - just check ROMFS_I(i)->i_dataoffset in
+romfs_read_inode() and select your new aops if the offset is
+appropriately aligned.  This way you will get perfect compatibility in
+both directions - a filesystem with aligned file data will just
+perform faster with a patched kernel.  And genromfs could even choose
+to align only some files (e.g., bigger than some threshold).
+
+[...]
+
+--Signature=_Mon__6_Aug_2007_23_41_23_+0400_p+1Hc3e=bLxusi8w
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.1 (GNU/Linux)
+
+iD8DBQFGt3lmW82GfkQfsqIRAl1eAJ9nrFfzTQMzCJp6BqGSvLzbz5EZKQCghr/S
+kMrVCC9SqPzabyrJVxZLPx8=
+=Dqc2
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__6_Aug_2007_23_41_23_+0400_p+1Hc3e=bLxusi8w--
