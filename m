@@ -1,54 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937948AbXHGWC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967558AbXHGWDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937948AbXHGWC3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966616AbXHGVhN
+	id S967558AbXHGWDv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937521AbXHGViG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:37:13 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:55800 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966596AbXHGVhI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:37:08 -0400
-Date: Tue, 7 Aug 2007 23:37:06 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Greg KH <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Ingo Molnar <mingo@elte.hu>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [2.6.22.2 review 09/84] Fix rfkill IRQ flags.
-In-Reply-To: <20070807204308.GJ23028@kroah.com>
-Message-ID: <Pine.LNX.4.64.0708072336030.26397@fbirervta.pbzchgretzou.qr>
-References: <20070807204034.882009319@mini.kroah.org> <20070807204308.GJ23028@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Aug 2007 17:38:06 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:35298 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S937512AbXHGViE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:38:04 -0400
+Date: Wed, 8 Aug 2007 01:37:49 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>,
+       Johannes Berg <johannes@sipsolutions.net>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] 2.6.23-rc1-mm2
+Message-ID: <20070807213749.GA461@tv-sign.ru>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de> <20070803093830.39852a01.akpm@linux-foundation.org> <1186160608.7255.10.camel@localhost> <20070803172137.GA3783@tv-sign.ru> <1186520929.6625.12.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186520929.6625.12.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Aug 7 2007 13:43, Greg KH wrote:
+On 08/07, Trond Myklebust wrote:
 >
->added this 64-bit bug:
->
->        ....
->	unsigned int flags;
->
-> 	spin_lock_irqsave(&task->lock, flags);
->        ....
->
->irq 'flags' must be unsigned long, not unsigned int. The -rt tree has
->strict checks about this on 64-bit so this triggered a build failure.
+> On Fri, 2007-08-03 at 21:21 +0400, Oleg Nesterov wrote:
+> > On 08/03, Trond Myklebust wrote:
+> > > I'll have a look at this. I suspect that most if not all of our calls to
+> > > run_workqueue()/flush_scheduled_work() can now be replaced by more
+> > > targeted calls to cancel_work_sync() and cancel_delayed_work_sync().
+> > 
+> > Yes, please, if possible.
+> 
+> All the NFS and SUNRPC cases appear to be trivial. IOW: the only reason
+> for the flush_workqueue()/flush_scheduled_work() calls was to ensure
+> that the cancel_work()/cancel_delayed_work() calls preceding them have
+> completed. Nevertheless I've split the conversion into two patches,
+> since one touches only the NFS code, whereas the other touches the
+> SUNRPC client and server code.
+> 
+> The two patches have been tested, and appear to work...
 
-Since the check is a compile-time one, would not it be good to add
-it to the regular linux tree too?
+Great!
 
+>  void
+>  nfs4_kill_renewd(struct nfs_client *clp)
+>  {
+>  	down_read(&clp->cl_sem);
+> -	cancel_delayed_work(&clp->cl_renewd);
+> +	cancel_delayed_work_sync(&clp->cl_renewd);
+>  	up_read(&clp->cl_sem);
+> -	flush_scheduled_work();
+>  }
 
-	Jan
--- 
+this looks unsafe to me, the window is very small, but afaics this can
+deadlock if called when nfs4_renew_state() has already started, but didn't
+take ->cl_sem yet.
+
+Can't we avoid taking clp->cl_sem here?
+
+Btw, unless I missed something, the code without this patch looks incorrect
+too: cancel_delayed_work() can fail if the timer expired, but the ->cl_renewd
+didn't run yet. In that case nfs4_renew_state() can run and re-schedule itself
+after flush_scheduled_work() returns.
+
+Oleg.
+
