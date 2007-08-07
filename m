@@ -1,18 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965966AbXHGVVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965921AbXHGVWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965966AbXHGVVz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762735AbXHGU4H
+	id S965921AbXHGVWc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965071AbXHGU4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:56:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59811 "EHLO
+	Tue, 7 Aug 2007 16:56:10 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59835 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935458AbXHGUz7 (ORCPT
+	with ESMTP id S965044AbXHGU4H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:55:59 -0400
-Date: Tue, 7 Aug 2007 13:48:25 -0700
+	Tue, 7 Aug 2007 16:56:07 -0400
+Date: Tue, 7 Aug 2007 13:48:29 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+       Serge van Thillo <nulleke@hotmail.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,131 +23,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [2.6.22.2 review 66/84] cfq-iosched: fix async queue behaviour
-Message-ID: <20070807204825.GP23028@kroah.com>
+       Tejun Heo <htejun@gmail.com>
+Subject: [2.6.22.2 review 67/84] libata: add FUJITSU MHV2080BH to NCQ
+	blacklist
+Message-ID: <20070807204829.GQ23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cfq-iosched-fix-async-queue-behaviour.patch"
+Content-Disposition: inline; filename="libata-add-fujitsu-mhv2080bh-to-ncq-blacklist.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
+From: Tejun Heo <htejun@gmail.com>
 
-With the cfq_queue hash removal, we inadvertently got rid of the
-async queue sharing. This was not intentional, in fact CFQ purposely
-shares the async queue per priority level to get good merging for
-async writes.
+Please warmly welcome the first member from FUJITSU to the prestigious
+NCQ spurious completion club.
 
-So put some logic in cfq_get_queue() to track the shared queues.
+This is reported by Serge Van Thillo in bugzilla bug 8730.
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+  http://bugzilla.kernel.org/show_bug.cgi?id=8730
+
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: Serge van Thillo <nulleke@hotmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- block/cfq-iosched.c    |   39 ++++++++++++++++++++++++++++++++++++---
- include/linux/ioprio.h |    6 ++++--
- 2 files changed, 40 insertions(+), 5 deletions(-)
+ drivers/ata/libata-core.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -92,6 +92,8 @@ struct cfq_data {
- 	struct cfq_queue *active_queue;
- 	struct cfq_io_context *active_cic;
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3800,6 +3800,7 @@ static const struct ata_blacklist_entry 
+ 	{ "HTS541612J9SA00",	"SBDIC7JP",	ATA_HORKAGE_NONCQ, },
+ 	{ "Hitachi HTS541616J9SA00", "SB4OC70P", ATA_HORKAGE_NONCQ, },
+ 	{ "WDC WD740ADFD-00NLR1", NULL,		ATA_HORKAGE_NONCQ, },
++	{ "FUJITSU MHV2080BH",	"00840028",	ATA_HORKAGE_NONCQ, },
  
-+	struct cfq_queue *async_cfqq[IOPRIO_BE_NR];
-+
- 	struct timer_list idle_class_timer;
+ 	/* Devices with NCQ limits */
  
- 	sector_t last_position;
-@@ -1351,8 +1353,8 @@ static void cfq_ioc_set_ioprio(struct io
- }
- 
- static struct cfq_queue *
--cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct task_struct *tsk,
--	      gfp_t gfp_mask)
-+cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
-+		     struct task_struct *tsk, gfp_t gfp_mask)
- {
- 	struct cfq_queue *cfqq, *new_cfqq = NULL;
- 	struct cfq_io_context *cic;
-@@ -1405,12 +1407,35 @@ retry:
- 	if (new_cfqq)
- 		kmem_cache_free(cfq_pool, new_cfqq);
- 
--	atomic_inc(&cfqq->ref);
- out:
- 	WARN_ON((gfp_mask & __GFP_WAIT) && !cfqq);
- 	return cfqq;
- }
- 
-+static struct cfq_queue *
-+cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct task_struct *tsk,
-+	      gfp_t gfp_mask)
-+{
-+	const int ioprio = task_ioprio(tsk);
-+	struct cfq_queue *cfqq = NULL;
-+
-+	if (!is_sync)
-+		cfqq = cfqd->async_cfqq[ioprio];
-+	if (!cfqq)
-+		cfqq = cfq_find_alloc_queue(cfqd, is_sync, tsk, gfp_mask);
-+
-+	/*
-+	 * pin the queue now that it's allocated, scheduler exit will prune it
-+	 */
-+	if (!is_sync && !cfqd->async_cfqq[ioprio]) {
-+		atomic_inc(&cfqq->ref);
-+		cfqd->async_cfqq[ioprio] = cfqq;
-+	}
-+
-+	atomic_inc(&cfqq->ref);
-+	return cfqq;
-+}
-+
- /*
-  * We drop cfq io contexts lazily, so we may find a dead one.
-  */
-@@ -2019,6 +2044,7 @@ static void cfq_exit_queue(elevator_t *e
- {
- 	struct cfq_data *cfqd = e->elevator_data;
- 	request_queue_t *q = cfqd->queue;
-+	int i;
- 
- 	cfq_shutdown_timer_wq(cfqd);
- 
-@@ -2035,6 +2061,13 @@ static void cfq_exit_queue(elevator_t *e
- 		__cfq_exit_single_io_context(cfqd, cic);
- 	}
- 
-+	/*
-+	 * Put the async queues
-+	 */
-+	for (i = 0; i < IOPRIO_BE_NR; i++)
-+		if (cfqd->async_cfqq[i])
-+			cfq_put_queue(cfqd->async_cfqq[i]);
-+
- 	spin_unlock_irq(q->queue_lock);
- 
- 	cfq_shutdown_timer_wq(cfqd);
---- a/include/linux/ioprio.h
-+++ b/include/linux/ioprio.h
-@@ -47,8 +47,10 @@ enum {
- #define IOPRIO_NORM	(4)
- static inline int task_ioprio(struct task_struct *task)
- {
--	WARN_ON(!ioprio_valid(task->ioprio));
--	return IOPRIO_PRIO_DATA(task->ioprio);
-+	if (ioprio_valid(task->ioprio))
-+		return IOPRIO_PRIO_DATA(task->ioprio);
-+
-+	return IOPRIO_NORM;
- }
- 
- static inline int task_nice_ioprio(struct task_struct *task)
 
 -- 
