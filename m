@@ -1,90 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934275AbXHGNSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934422AbXHGNS4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934275AbXHGNSi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761586AbXHGNSb
+	id S934422AbXHGNS4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:18:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933566AbXHGNSo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:18:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51615 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1760437AbXHGNSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:18:30 -0400
-X-Authenticated: #4463548
-X-Provags-ID: V01U2FsdGVkX18WaZlNU5YWWQdbcbWVtRa3zGsyMZDcOB7GQjeGtt
-	M0NcpEV/ReRUp5
-From: Dimitrios Apostolou <jimis@gmx.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: high system cpu load during intense disk i/o
-Date: Tue, 7 Aug 2007 16:15:43 +0300
-User-Agent: KMail/1.9.7
-Cc: =?utf-8?q?Rafa=C5=82_Bilski?= <rafalbilski@interia.pl>,
-       linux-kernel@vger.kernel.org
-References: <200708031903.10063.jimis@gmx.net> <46B7BF67.8010506@gmx.net> <20070807013708.406a22fd@the-village.bc.nu>
-In-Reply-To: <20070807013708.406a22fd@the-village.bc.nu>
+	Tue, 7 Aug 2007 09:18:44 -0400
+Received: from smtpq1.tilbu1.nb.home.nl ([213.51.146.200]:48000 "EHLO
+	smtpq1.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934320AbXHGNSl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 09:18:41 -0400
+Message-ID: <46B87069.50204@gmail.com>
+Date: Tue, 07 Aug 2007 15:15:21 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Arjan van de Ven <arjan@infradead.org>
+CC: Kyle Moffett <mrmacman_g4@mac.com>, Indan Zupancic <indan@nul.nu>,
+       teresa@kvitka.net, Andi Kleen <andi@firstfloor.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       CK Mailinglist <ck@vds.kolivas.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux Kernel cfs scheduler and xorg kbd
+References: <1185827130.26459.16.camel@xtower.fri>	 <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com>	 <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de>	 <46B06815.10200@gmail.com>	 <46470.81.207.0.53.1185971693.squirrel@secure.samage.net>	 <46B0818F.10204@gmail.com>	 <49653.81.207.0.53.1185973640.squirrel@secure.samage.net>	 <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com>	 <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>	 <F4037195-194E-4265-9653-ED964CBA41E0@mac.com> <1186466758.2700.2.camel@laptopd505.fenrus.org>
+In-Reply-To: <1186466758.2700.2.camel@laptopd505.fenrus.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708071615.44452.jimis@gmx.net>
-X-Y-GMX-Trusted: 0
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 August 2007 03:37:08 Alan Cox wrote:
-> > > acpi_pm_read is capable of disappearing into  SMM traps which will make
-> > > it look very slow.
-> >
-> > what is an SMM trap? I googled a bit but didn't get it...
->
-> One of the less documented bits of the PC architecture. It is possible to
-> arrange that the CPU jumps into a special mode when triggered by some
-> specific external event. Originally this was used for stuff like APM and
-> power management but some laptops use it for stuff like faking the
-> keyboard interface and the Geode uses it for tons of stuff.
->
-> As SMM mode is basically invisible to the OS what oprofile and friends
-> see isn't what really occurs. So you see
->
-> 	pci write -> some address
->
-> you don't then see
->
-> 	SMM
-> 	CPU saves processor state
-> 	Lots of code runs (eg i2c polling the battery)
-> 	code executes RSM
->
-> 	Back to the OS
->
-> and the next visible profile point. This can make an I/O operation look
-> really slow even if it isn't the I/O which is slow.
+On 08/07/2007 08:05 AM, Arjan van de Ven wrote:
 
-I always thought x86 is becoming a really dirty architecture. I now think it 
-is even uglier. :-p Thank you for the thorough explanation. 
+[ stuck keys ]
 
->
-> > the reason I'm talking about a "software driver limit" is because I am
-> > sure about some facts:
-> > - The disks can reach very high speeds (60 MB/s on other systems with
-> > udma5)
->
-> Is UDMA5 being selected firstly ?
+> the last time I saw something like this it was a BIOS that kept doing 
+> USB->PS/2 emulation even when the kernel was running.. that caused great 
+> havoc somehow...
+> 
+> those who are seeing this... is it all on a USB keyboard? If so, is the 
+> bios set to do PS/2 emulation (sometimes called USB legacy emulation) ??
 
-What the kernel selects by default is udma4 (66MB/s). I tried forcing udma5 
-(100MB/s) with hdparm even though I think my chipset doesn't support it, and 
-indeed there was a difference! After repetitive tests udma4 gives 20MB/s, 
-udma5 gives 22MB/s. I'm mostly surprised however that I could even set this 
-option.
+No, as far as reported into this thread, it's all been PS/2. We can leave 
+this thread be though. It's nothing to do with CFS and is a non-debuggable 
+problem sofar unfortunately. Although very present at the start of this 
+thread, I haven't experienced my stuck delete key since. Teresa and Indan 
+have the same problem (well, "non-problem" that is). If it's still lurking 
+somewhere, we'll see it resurface at some point.
 
->
-> > So what is left? Probably only the corresponding kernel module.
->
-> Unlikely to be the disk driver as that really hasn't changed tuning for a
-> very long time. I/O scheduler interactions are however very possible.
-
-I'm now trying to use the new libata driver and see what happens... 
-
-
-Thanks, 
-Dimitris
+Rene.
