@@ -1,113 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934079AbXHGQKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934738AbXHGQMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934079AbXHGQKt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 12:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755160AbXHGQKl
+	id S934738AbXHGQMU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 12:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbXHGQMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 12:10:41 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:1318 "EHLO Perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751781AbXHGQKk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 12:10:40 -0400
-Subject: Re: + remove-current-defines-and-uses-of-pr_err-add-pr_emerg.patch
-	added to -mm tree
-From: Joe Perches <joe@perches.com>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: jengelh@computergmbh.de, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mm-commits@vger.kernel.org, adaplas@pol.net,
-       greg@kroah.com, jeff@garzik.org
-In-Reply-To: <0H03p0ll.1186246070.5043630.khali@localhost>
-References: <0H03p0ll.1186246070.5043630.khali@localhost>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 09:10:16 -0700
-Message-Id: <1186503016.5983.20.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 12:12:08 -0400
+Received: from smtp120.sbc.mail.re3.yahoo.com ([66.196.96.93]:36886 "HELO
+	smtp120.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750723AbXHGQMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 12:12:06 -0400
+X-YMail-OSG: bx0JrCoVM1nECeRz5B7dvu30kya7IvDkJ8F5uuoiXQMv4wo_5MWtUb8N9H2Pdpoy_X0uBCmNYkCMDi8Ljd.x2j7iN2XV3U6kyHGq0C_bCedMqkM_7M87lZEAUOT9PZRm6ilAePNceArMaw--
+Date: Tue, 7 Aug 2007 11:12:02 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ifdef struct task_struct::security
+Message-ID: <20070807161202.GA23135@vino.hallyn.com>
+References: <20070807150529.GA22447@vino.hallyn.com> <716107.45286.qm@web36607.mail.mud.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <716107.45286.qm@web36607.mail.mud.yahoo.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-08-04 at 18:47 +0200, Jean Delvare wrote:
-> On 8/4/2007, "Jan Engelhardt" <jengelh@computergmbh.de> wrote: 
-> >Ugh. What do we have printk for then? I do not like this.
-> >For pr_debug() it makes sense because its semantics change with
-> >-DDEBUG and -UDEBUG, but for these pr_()s it does not seem so.
-> I think I agree with Jan here, I see no fundamental need for these
-> additional macros. But if they are really added, then they should follow
-> the same standard as pr_debug() and pr_info(), that is: no "\n" added
-> automatically. Otherwise this will become quite messy.
+Quoting Casey Schaufler (casey@schaufler-ca.com):
+> 
+> --- "Serge E. Hallyn" <serge@hallyn.com> wrote:
+> 
+> > Quoting Andrew Morton (akpm@linux-foundation.org):
+> > > On Mon, 6 Aug 2007 15:31:12 -0500 "Serge E. Hallyn" <serge@hallyn.com>
+> > wrote:
+> > > 
+> > > > Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> > > > > For those who don't care about CONFIG_SECURITY.
+> > > > 
+> > > > I'm quite sure we started that way, but the ifdefs were considered
+> > > > too much of an eyesore.
+> > > 
+> > > argh, y'all stop top-posting at me.
+> > 
+> > (Hmm, I'm replying at the point in the email I'm replying to.  Is what
+> > I'm doing in this current email ok - i.e the one you replied to looked
+> > like pure top-posting - or do you actually want pure bottom posting?)
+> > 
+> > > > If this is now acceptable, then the same thing might be considered
+> > > > for inode->i_security, kern_ipc_perm.security, etc.  Getting rid of
+> > > > just the task->security seems overly half-hearted.
+> > > > 
+> > > > -serge
+> > > > 
+> > > > > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> > > > > ---
+> > > > > 
+> > > > >  include/linux/sched.h |    3 ++-
+> > > > >  kernel/fork.c         |    2 ++
+> > > > >  2 files changed, 4 insertions(+), 1 deletion(-)
+> > > > > 
+> > > > > --- a/include/linux/sched.h
+> > > > > +++ b/include/linux/sched.h
+> > > > > @@ -1086,8 +1086,9 @@ struct task_struct {
+> > > > >  	int (*notifier)(void *priv);
+> > > > >  	void *notifier_data;
+> > > > >  	sigset_t *notifier_mask;
+> > > > > -	
+> > > > > +#ifdef CONFIG_SECURITY
+> > > > >  	void *security;
+> > > > > +#endif
+> > > > >  	struct audit_context *audit_context;
+> > > > >  	seccomp_t seccomp;
+> > > > >  
+> > > > > --- a/kernel/fork.c
+> > > > > +++ b/kernel/fork.c
+> > > > > @@ -1066,7 +1066,9 @@ static struct task_struct *copy_process(unsigned
+> > long clone_flags,
+> > > > >  	do_posix_clock_monotonic_gettime(&p->start_time);
+> > > > >  	p->real_start_time = p->start_time;
+> > > > >  	monotonic_to_bootbased(&p->real_start_time);
+> > > > > +#ifdef CONFIG_SECURITY
+> > > > >  	p->security = NULL;
+> > > > > +#endif
+> > > > >  	p->io_context = NULL;
+> > > > >  	p->io_wait = NULL;
+> > > > >  	p->audit_context = NULL;
+> > > > > 
+> > > 
+> > > I think it's OK.  Removing 4 or 8 bytes from the task_struct is a decent
+> > win,
+> > > and an ifdef at the definition site (unavoidable) and at a single
+> > > initialisation site where there are lots of other similar ifdefs is pretty
+> > > minimal hurt.
+> > 
+> > Then how about making it depend on CONFIG_SECURITY_SELINUX?  It's the
+> > only LSM actually using that field right now.  (As more come along, we
+> > can use a hidden CONFIG_SECURITY_ATTRS or somesuch bool select'ed by
+> > LSMs which need it)
+> 
+> I would greatly appreciate it if you didn't add yet another place
+> that requires deselinuxifation by anyone wanting to try something else.
+> The question is whether there is any LSM, not whether there is selinux.
+> Yes, I know that there are no other LSMs upstream today. I hope to
+> change that before too long, and dealing with places where the code is
+> using the LSM==SELinux assumption is tiresome.
 
-2 reasons:
+So jump straight to using CONFIG_SECURITY_USE_LABELS or whatever, as I
+mentioned.
 
-This change will eventually isolate multiple line
-printk messages and allow easier insertion of 
-
-printk_block_start
-printks
-printk_block_end
-
-so that multiple line messages are kept together
-in the message logs.
-
-and I've done tree-wide patches for single line
-
-printk(KERN_\(emerg|alert|notice|crit\),
-
-(about 2000) and fixed several dozen lines without \n
-or things like "KERN_<level> /n msg"
-
-Here's the perl script I used.
-
-It's imperfect of course.  There are comments with
-embedded semicolons where it fails, and #defines
-aren't substituted too well.
-
-if ($#ARGV < 2) {
-    print "usage: KERN_<level> pr_<level> files...\n";
-    exit;
-}
-
-for ($i=2; $i <= $#ARGV; $i++) {
-    PrintkSearchReplace($ARGV[$i], $ARGV[0], $ARGV[1]);
-}
-
-sub PrintkSearchReplace{
-    my($file, $search, $replace) = @_;
-
-    my $orig = "";
-    local($/);
-    open(my $fh, $file) or die "File not found '$file'\n";
-    $orig = <$fh>;
-    close(my $fh);
-
-    my $parts = $orig;
-    my $whole = "";
-    @segments = split(/\;/, $parts);
-    foreach $line (@segments) {
-
-	if ($whole ne "") {
-	    $whole = $whole . "\;";
-	}
-
-	my $origline = $line;
-
-	if ($line =~ m/\bprintk\s*\(\s*${search}\s*.*\".*\\n\s*\"/ms) {
-	    
-	    $line =~ s/\bprintk\s*\(\s*${search}\s*([^\"]*)\"/${replace}\(\1\"/ms;
-	    $line =~ s/\\n\s*\"\s*/\"/ms;
-
-	    print "${file}: changed:\n" . $origline . "\;" . "\nto:\n" . $line . "\;" . "\n" ;
-
-	}
-	$whole = $whole . $line;
-    }
-
-    if ($orig ne $whole) {
-	open(my $fh, ">${file}") or die "Could not open '$file'\n";
-	print $fh $whole;
-	close(my $fh);
-    }
-
-}
-
-
+-serge
