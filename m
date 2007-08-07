@@ -1,75 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934272AbXHGNkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934605AbXHGNmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934272AbXHGNkX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762253AbXHGNkJ
+	id S934605AbXHGNmW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbXHGNmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:40:09 -0400
-Received: from mailout04.sul.t-online.de ([194.25.134.18]:56527 "EHLO
-	mailout04.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760582AbXHGNkG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:40:06 -0400
-Message-ID: <46B86FC1.7050601@t-online.de>
-Date: Tue, 07 Aug 2007 15:12:33 +0200
-From: Bernd Schmidt <bernds_cb1@t-online.de>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070804)
+	Tue, 7 Aug 2007 09:42:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60959 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757928AbXHGNmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 09:42:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Joonwoo Park" <joonwpark81@gmail.com>
+Subject: Re: [PATCH] kexec: fix pci device initialization fail after kexec (2.6.23-rc2). (Related to e1000 doesn't resume properly from standby)
+Date: Tue, 7 Aug 2007 15:51:20 +0200
+User-Agent: KMail/1.9.5
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Simon Arlott" <simon@fire.lp0.eu>, "Pavel Machek" <pavel@ucw.cz>,
+       "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       linux-pm@lists.linux-foundation.org, linux-pci@atrey.karlin.mff.cuni.cz,
+       David Brownell <david-b@pacbell.net>
+References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com> <200708062048.37160.rjw@sisk.pl> <b25c3fa70708062130v5176fa9fu4b9300e6a313cf2f@mail.gmail.com>
+In-Reply-To: <b25c3fa70708062130v5176fa9fu4b9300e6a313cf2f@mail.gmail.com>
 MIME-Version: 1.0
-To: David Howells <dhowells@redhat.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>
-Subject: Re: [PATCH] NOMMU: Separate out VMAs
-References: <46695F6D.5050600@t-online.de> <8772.1186149811@redhat.com>
-In-Reply-To: <8772.1186149811@redhat.com>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-ID: ZqsepOZdQe2lXR-aUzuApDNkZTBmuGdUVODznpsIbt3b7kvH2FOXEl
-X-TOI-MSGID: 1c31eafc-4d29-42a6-8d99-32d33e1e8781
+Content-Disposition: inline
+Message-Id: <200708071551.21264.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells wrote:
-> Here's a preview of my patch to give each process a separate list of VMAs
-> under NOMMU mode, just as under MMU mode.  Could you have a look over it
-> please?
-
-I've managed to apply it to our Blackfin tree and started looking at it.
-
-> Could you also see if you get a memory leak on the blackfin CPU?  I see a leak
-> when I use this patch, but I'm not sure whether it's this patch, or whether
-> it's something else in the arch that is suppressed without this patch.
+On Tuesday, 7 August 2007 06:30, Joonwoo Park wrote:
+> 2007/8/7, Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Monday, 6 August 2007 17:50, Joonwoo Park wrote:
+> > > 2007/8/6, Rafael J. Wysocki <rjw@sisk.pl>:
+> > > > On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
+> > > > > Hi.
+> > > > > I think that the pci_set_power_state() has bug.
+> > > > > The specification says that some delays is required.
+> > > >
+> > > > And they are in place, AFAICS (from drivers/pci/pci.c):
+> > > >
+> > > >        /* Mandatory power management transition delays */
+> > > >        /* see PCI PM 1.1 5.6.1 table 18 */
+> > > >        if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
+> > > >                msleep(pci_pm_d3_delay);
+> > > >        else if (state == PCI_D2 || dev->current_state == PCI_D2)
+> > > >                udelay(200);
+> > > >
+> > >
+> > > The problem is occurred when state is 'PCI_D0', so those codes can't cover it.
+> > > But pci pm specification 5.4.1 says that when programmed to D0 the
+> > > equivalent of a warm reset, delay for the duration of the D3hot to D0
+> > > Uninitialized state
+> > > transition (10ms) to pci signal drivers remain disabled is required.
+> >
+> > Section 5.4.1 of PCI PM 1.1. spec is about D3_hot.  Specifically, it says
+> > that if a device in D3_hot is programmed to D0, it performs the equivalent of
+> > a warm reset.  IOW, this is supposed to happen if the current state is D3_hot
+> > and the targed state is D0, which is covered by the code snippet above.
 > 
-> As far as I can tell by page counting there shouldn't be a leak.
+> IMHO, it is seems to the spec says just *programmed  to D0* not
+> *programmed from D3hot to D0*.
 
-There is a leak:
+But the title of the section is "Software Accessible D3 (D3hot)", isn't it?
 
-root:~> while true; do
-> cat /proc/buddyinfo
-> sleep 1
-> done
-Node 0, zone      DMA     20      1      1      1      0      1      1
-    1      0      0      0      1      2      0
-Node 0, zone      DMA     32      1      1      0      0      0      1
-    0      0      0      0      1      2      0
-Node 0, zone      DMA     47      1      1      1      1      0      0
-    1      1      1      1      0      2      0
-Node 0, zone      DMA     62      1      1      0      1      1      1
-    1      0      1      1      0      2      0
-Node 0, zone      DMA     77      1      1      1      0      0      1
-    0      0      1      1      0      2      0
-Node 0, zone      DMA     92      1      1      0      0      1      0
-    1      1      0      1      0      2      0
-Node 0, zone      DMA    107      1      1      1      1      1      1
-    1      0      0      1      0      2      0
-Node 0, zone      DMA    122      1      1      0      1      0      1
-    0      0      0      1      0      2      0
-Node 0, zone      DMA    137      1      1      1      0      1      0
-    1      1      1      0      0      2      0
-... and so on.  It's a strange pattern of fragmentation, as if it keeps
-allocating 8k pages and freeing one half of them.
+And the first paragraph of the section is
 
-Will play with this some more.  Thanks!
+"Functions in D3hot must respond to configuration space accesses as long as
+power and clock are supplied so that they can be returned to D0 by software."
+
+If this doesn't imply D3hot to D0 transition being discussed in the next
+paragraph, then I don't know what it's there for.
+
+> Actually, I got current_state UNKNOWN and state PCI_D0 after kexec's
+> start new kernel with dual port 82546EB fiber ethernet card.
+
+IMO, pci_set_power_state() is correct and your problem is related to something
+else.
+
+Greetings,
+Rafael
 
 
-Bernd
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
