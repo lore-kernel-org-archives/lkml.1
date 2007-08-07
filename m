@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934461AbXHGPi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXHGPjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934461AbXHGPi5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 11:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbXHGPis
+	id S934502AbXHGPjz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 11:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXHGPjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 11:38:48 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:40589 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755697AbXHGPir (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 11:38:47 -0400
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <46B88B91.4050703@garzik.org>
-References: <1186248703.3439.20.camel@localhost.localdomain>
-	 <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
-	 <1186458941.6637.44.camel@localhost.localdomain>
-	 <20070807001429.f8cb3b22.akpm@linux-foundation.org>
-	 <1186496712.3414.17.camel@localhost.localdomain>
-	 <46B88B91.4050703@garzik.org>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 10:38:44 -0500
-Message-Id: <1186501124.3414.32.camel@localhost.localdomain>
+	Tue, 7 Aug 2007 11:39:45 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:54618 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753448AbXHGPjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 11:39:44 -0400
+Date: Tue, 7 Aug 2007 19:39:27 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Steve Wise <swise@opengridcomputing.com>
+Cc: Roland Dreier <rdreier@cisco.com>, "David S. Miller" <davem@davemloft.net>,
+       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Sean Hefty <sean.hefty@intel.com>,
+       OpenFabrics General <general@lists.openfabrics.org>
+Subject: Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports from the host TCP port space.
+Message-ID: <20070807153927.GA28648@2ka.mipt.ru>
+References: <46B883B5.8040702@opengridcomputing.com> <20070807145441.GA24895@2ka.mipt.ru> <46B88A75.3040004@opengridcomputing.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46B88A75.3040004@opengridcomputing.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-07 at 11:11 -0400, Jeff Garzik wrote:
-> James Bottomley wrote:
-> > The initial bsg submit went via the block git tree ... which I believe
-> > you have in -mm.  We only started taking the updates via the scsi tree
+On Tue, Aug 07, 2007 at 10:06:29AM -0500, Steve Wise (swise@opengridcomputing.com) wrote:
+> >On Tue, Aug 07, 2007 at 09:37:41AM -0500, Steve Wise 
+> >(swise@opengridcomputing.com) wrote:
+> >>+static int cma_get_tcp_port(struct rdma_id_private *id_priv)
+> >>+{
+> >>+	int ret;
+> >>+	struct socket *sock;
+> >>+
+> >>+	ret = sock_create_kern(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);
+> >>+	if (ret)
+> >>+		return ret;
+> >>+	ret = sock->ops->bind(sock,
+> >>+			  (struct socketaddr 
+> >>*)&id_priv->id.route.addr.src_addr,
+> >>+			  ip_addr_size(&id_priv->id.route.addr.src_addr));
+> >
+> >If get away from talks about broken offloading, this one will result in
+> >the case, when usual network dataflow can enter private rdma land, i.e.
+> >after bind succeeded this socket is accessible via any other network
+> >device. Is it inteded?
+> >And this is quite noticeble overhead per rdma connection, btw.
+> >
 > 
-> Seven hours before you posted this, in 
-> <20070807001429.f8cb3b22.akpm@linux-foundation.org>, Andrew already 
-> noted it was not in -mm.
-> 
-> A trivial examination of the broken-out mm patches backs up the absence 
->   of Jens' block tree, too.
-> 
-> So let's put this myth / bad assumption to rest, shall we?
+> I'm not sure I understand your question?  What do you mean by 
+> "accessible"?  The intention is to _just_ reserve the addr/port.  
 
-Sorry ... I just assumed from the fact that it had been in the block git
-tree for six months that it was also in -mm.
+Above RDMA ->bind() ends up with tcp_v4_get_port(), which will only add
+socket into bhash, but it is only accessible for new sockets created for
+listening connections or expilicit bind, network traffic checks only
+listening and establised hashes, which are not affected by above change,
+so it was false alarm from my side. It does allow to 'grab' a port and
+forbid its possible reuse.
 
-> > Yes ... particularly in large trees like SCSI, there's the maintainer
-> > "bugger if I don't mail it out now I don't get it in for another three
-> > months" factor.
-> 
-> That factor always exists.  It's not confined to SCSI or large trees. 
-> It's basic the nature of the merge window.  Nothing new or shocking here.
-> 
-> 
-> > bsg had actually been sitting in the block tree since 2.6.21, so it had
-> > followed the delayed merge rule ... it just seems that it didn't get
-> > enough integration testing in that six months.  This is what I consider
-> 
-> It didn't get integration testing, at least in part, because it did not 
-> hit our official pre-release tree.  Quoth Andrew:
-> > I pulled git-scsi-misc on July 19 and there was no bsg code in there at
-> > all.  I pulled again on July 20 and all the bsg code was in mainline.
-> 
-> 
-> 
-> > I don't disagree; my point is that bsg did follow this rule (in fact it
-> 
-> Evidence says otherwise.
-
-It followed the rule of trying to stabilise outside mainline ... it just
-didn't get sufficient integration testing.
-
-> > I wouldn't call bsg half baked ... it was very carefully matured.  There
-> > were just a few integration issues.
-> 
-> I wouldn't call bsg carefully matured, if in addition to not really 
-> gracing -mm with its presence, the userland API structure is still 
-> getting changes on July 29, 2007 (0c6a89ba640d28e1dcd7fd1a217d2cfb92ae4953).
-
-This would be the ABI change I talked about in the previous emails.
-
-So would this problem have been fixed simply by adding the missing block
-tree to -mm?
-
-James
-
-
+-- 
+	Evgeniy Polyakov
