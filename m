@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756236AbXHGGzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756716AbXHGG4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756236AbXHGGzs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 02:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbXHGGzk
+	id S1756716AbXHGG4S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 02:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753964AbXHGG4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 02:55:40 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:43937
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751384AbXHGGzk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 02:55:40 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Diego Calleja <diegocg@gmail.com>
-Subject: Re: [ck] Re: Linus 2.6.23-rc1
-Date: Mon, 6 Aug 2007 23:55:26 -0700
-User-Agent: KMail/1.9.5
-Cc: Bill Huey (hui) <billh@gnuppy.monkey.org>,
-       jos poortvliet <jos@mijnkamer.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>, ck@vds.kolivas.org,
-       Michael Chang <thenewme91@gmail.com>,
-       Kasper Sandberg <lkml@metanurb.dk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.999.0707221351030.3607@woody.linux-foundation.org> <20070728200705.GF32582@gnuppy.monkey.org> <20070728230609.43273a75.diegocg@gmail.com>
-In-Reply-To: <20070728230609.43273a75.diegocg@gmail.com>
+	Tue, 7 Aug 2007 02:56:04 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:13674 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753945AbXHGG4D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 02:56:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=CC+uDl+kgPbGMa0ajSjkpqujhzpOHjC0Iy3/4ytGx49Zw/qJ8cbQGJDWt63KupzwFykoJlNUodutI0riLOHoaUAmt4ZQFqE5tSbihEMamUYPO1DBzynflhoEtreqYH2mkd8Kpj0v1cQK+2e51vUZ2d42qdiJVTwevLYpfRUN1Uk=
+Message-ID: <a8e1da0708062356g7f6f23c3pb17c4324ec71e515@mail.gmail.com>
+Date: Tue, 7 Aug 2007 06:56:02 +0000
+From: "Dave Young" <hidave.darkstar@gmail.com>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: unable to handle kernel NULL pointer dereference in qla2x00_read_nvram_data
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1186457339.4688.213.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708062355.26383.phillips@phunq.net>
+References: <1186456912.4688.209.camel@ymzhang>
+	 <1186457339.4688.213.camel@ymzhang>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 July 2007 14:06, Diego Calleja wrote:
-> El Sat, 28 Jul 2007 13:07:05 -0700, Bill Huey (hui) escribió:
-> The main problem is clearly that no scheduler was clearly better than
-> the other. This remembers me of the LVM2/MD vs EVMS in the 2.5 days -
-> both of them were good enought, but only one of them could be merged.
-> The difference is that EVMS developers didn't get that annoyed, and
-> not only they didn't quit but they continued developing their
-> userspace tools to make it work with the solution included in the
-> kernel
-> > (http://lwn.net/Articles/14714/) 
+>On 8/7/07, Zhang, Yanmin <yanmin_zhang@linux.intel.com> wrote:
+> On Tue, 2007-08-07 at 11:21 +0800, Zhang, Yanmin wrote:
+> > Did someone see the same issue? My machine has a qla fiber card.
+> >
+> > This error is triggered because parameter buf of qla2x00_read_nvram_data
+> > is 0.
+> Sorry for missing kernel info. I used kernel 2.6.23-rc2. My machine is
+> a x86_64, but I installed i386 os on it.
+>
+> If I disable CONFIG_SCSI_QLOGIC_1280 and CONFIG_SCSI_QLA_FC in kernel config,
+> kernel could boot.
+Hi,
+what version of kernel do you use?
+I read the code, maybe 23-rc1-mm2 fixed the bug.
+-mm2 add the code to alloc nvram buffer.
 
-Not that I want to be in this thread, particularly since it is already 
-two weeks stale, but your take on the EVMS story is incorrect.  The 
-EVMS developers (that is, Kevin) sent out a nice, conciliatory email, 
-the project sputtered on for a while, then basically died.
-
-    http://marc.info/?l=evms-devel&m=118240945708775&w=2
-
-Bill is right.  People who know people are right.  A lot of good talent 
-has been lost to Linux over the years because of various, perhaps good 
-intentioned, gaffs.  The thing is, if you contribute to a project like 
-Linux for fun, when it stops being fun you walk.
-
-Regards,
-
-Daniel
+Regards
+dave
