@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935311AbXHGVCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936257AbXHGVDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935311AbXHGVCw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964953AbXHGUvn
+	id S936257AbXHGVDg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965012AbXHGUvz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:51:43 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56361 "EHLO
+	Tue, 7 Aug 2007 16:51:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56375 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964945AbXHGUvm (ORCPT
+	with ESMTP id S965001AbXHGUvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:51:42 -0400
-Date: Tue, 7 Aug 2007 13:45:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [2.6.22.2 review 33/84] splice: fix double page unlock
-Message-ID: <20070807204539.GH23028@kroah.com>
-References: <20070807204034.882009319@mini.kroah.org>
-MIME-Version: 1.0
+	Tue, 7 Aug 2007 16:51:51 -0400
+Date: Tue, 7 Aug 2007 21:51:49 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       v9fs-developer@lists.sourceforge.net, zippel@linux-m68k.org,
+       dhowells@redhat.com, linux-cifs-client@lists.samba.org,
+       codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
+       linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       cluster-devel@redhat.com, user-mode-linux-user@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
+       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 01/25] VFS: move attr_kill logic from notify_change into helper function
+Message-ID: <20070807205145.GB30159@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jeff Layton <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+	zippel@linux-m68k.org, dhowells@redhat.com,
+	linux-cifs-client@lists.samba.org,
+	codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
+	linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+	cluster-devel@redhat.com,
+	user-mode-linux-user@lists.sourceforge.net,
+	mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
+	jffs-dev@axis.com, jfs-discussion@lists.sourceforge.net,
+	ocfs2-devel@oss.oracle.com, reiserfs-devel@vger.kernel.org,
+	bfennema@falcon.csc.calpoly.edu, xfs@oss.sgi.com
+References: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="splice-fix-double-page-unlock.patch"
-In-Reply-To: <20070807204157.GA23028@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+In-Reply-To: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jens Axboe <jens.axboe@oracle.com>
+> +void attr_kill_to_mode(struct inode *inode, struct iattr *attr)
 
-If add_to_page_cache_lru() fails, the page will not be locked. But
-splice jumps to an error path that does a page release and unlock,
-causing a BUG() in unlock_page().
+This function badly needs a kerneldoc description.  Also I can't say
+I like the name a lot, but without a clearly better idea I should
+probably not complain :)
 
-Fix this by adding one more label that just releases the page. This bug
-was actually triggered on EL5 by gurudas pai <gurudas.pai@oracle.com>
-using fio.
+We should at least add a generic_ prefix to indicate it's a generic
+helper valid for most filesystem (and the kerneldoc comment can explain
+the details)
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/splice.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -601,7 +601,7 @@ find_page:
- 		ret = add_to_page_cache_lru(page, mapping, index,
- 					    GFP_KERNEL);
- 		if (unlikely(ret))
--			goto out;
-+			goto out_release;
- 	}
- 
- 	ret = mapping->a_ops->prepare_write(file, page, offset, offset+this_len);
-@@ -657,8 +657,9 @@ find_page:
- 	 */
- 	mark_page_accessed(page);
- out:
--	page_cache_release(page);
- 	unlock_page(page);
-+out_release:
-+	page_cache_release(page);
- out_ret:
- 	return ret;
- }
-
--- 
