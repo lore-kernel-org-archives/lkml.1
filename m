@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935144AbXHGTIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbXHGTPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935144AbXHGTIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 15:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXHGTIo
+	id S1760853AbXHGTPk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 15:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752870AbXHGTPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 15:08:44 -0400
-Received: from mail.tmr.com ([64.65.253.246]:58198 "EHLO gaimboi.tmr.com"
+	Tue, 7 Aug 2007 15:15:31 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:57812 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751022AbXHGTIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 15:08:43 -0400
-Message-ID: <46B8C382.1070106@tmr.com>
-Date: Tue, 07 Aug 2007 15:09:54 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1751095AbXHGTPa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 15:15:30 -0400
+Date: Wed, 8 Aug 2007 00:44:30 +0530
+From: Dipankar Sarma <dipankar@in.ibm.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       mingo@elte.hu, akpm@linux-foundation.org, josht@linux.vnet.ibm.com,
+       tytso@us.ibm.com, dvhltc@us.ibm.com, tglx@linutronix.de
+Subject: Re: [PATCH 4/4 RFC] RCU: synchronize_sched() without migration
+Message-ID: <20070807191429.GA31719@in.ibm.com>
+Reply-To: dipankar@in.ibm.com
+References: <20070807183946.GA32110@linux.vnet.ibm.com> <20070807185226.GD10068@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Ingo Molnar <mingo@elte.hu>, J??rn Engel <joern@logfs.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070804070737.GA940@elte.hu>	<20070804103347.GA1956@elte.hu>	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>	<20070804163733.GA31001@elte.hu>	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>	<46B4C0A8.1000902@garzik.org>	<20070804191205.GA24723@lazybastard.org>	<20070804192130.GA25346@elte.hu>	<20070804211156.5f600d80@the-village.bc.nu>	<20070804202830.GA4538@elte.hu>	<20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu>
-In-Reply-To: <20070804225121.5c7b66e0@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807185226.GD10068@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> i cannot over-emphasise how much of a deal it is in practice. Atime 
->> updates are by far the biggest IO performance deficiency that Linux has 
->> today. Getting rid of atime updates would give us more everyday Linux 
->> performance than all the pagecache speedups of the past 10 years, 
->> _combined_.
->>
->> it's also perhaps the most stupid Unix design idea of all times. Unix is 
->> really nice and well done, but think about this a bit:
+On Tue, Aug 07, 2007 at 11:52:26AM -0700, Paul E. McKenney wrote:
+> The combination of CPU hotplug and PREEMPT_RCU has resulted in deadlocks
+> due to the migration-based implementation of synchronize_sched() in -rt.
+> This experimental patch maps synchronize_sched() back onto Classic RCU,
+> eliminating the migration, thus hopefully also eliminating the deadlocks.
+> It is not clear that this is a good long-term approach, but it will at
+> least permit people doing CPU hotplug in -rt kernels additional wiggle
+> room in their design and implementation.
 > 
-> Think about the user for a moment instead. 
+> The basic approach is to cause the -rt kernel to incorporate rcuclassic.c
+> as well as rcupreempt.c, but to #ifdef out the conflicting portions of
+> rcuclassic.c so that only the code needed to implement synchronize_sched()
+> remains in a PREEMPT_RT build.  Invocations of grace-period detection
+> from the scheduling-clock interrupt go to rcuclassic.c, which then invokes
+> the corresponding functions in rcupreempt.c (with _rt suffix added to
+> keep the linker happy).  Also applies the RCU_SOFTIRQ to classic RCU.
+> The bulk of this patch just moves code around.
 > 
-> Do things right. The job of the kernel is not to "correct" for
-> distribution policy decisions. The distributions need to change policy.
-> You do that by showing the distributions the numbers. 
-> 
-> With a Red Hat on if we can move from /dev/hda to /dev/sda in FC7 then we
-> can move from atime to noatime by default on FC8 with appropriate release
-> note warnings and having a couple of betas to find out what other than
-> mutt goes boom.
+> If this patch does turn out to be the right approach, the #ifdefs in
+> kernel/rcuclassic.c might be dealt with.  ;-)
 
-Is there really enough benefit between relatime and noatime to justify 
-that? If atime doesn't get updated at all it *will* impact operations, 
-and unless there's a real performance gain the path which provides at 
-least nominal POSIX compliance seems best.
+I think the right thing to do would be to fix cpu hotplug to
+use a simple reference count, as the latest patches Gautham
+is working on. That simplifies the implementation from the
+earlier version with a per-cpu reference counter with RCU.
+No freezer, no lock.
 
-Plauger's law of least astonishment.
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Thanks
+Dipankar
