@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966271AbXHGV2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966112AbXHGV30@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966271AbXHGV2v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965169AbXHGU5j
+	id S966112AbXHGV30 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:29:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965202AbXHGU5y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:57:39 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:60014 "EHLO
+	Tue, 7 Aug 2007 16:57:54 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60032 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965159AbXHGU5i (ORCPT
+	with ESMTP id S965088AbXHGU5x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:57:38 -0400
-Date: Tue, 7 Aug 2007 13:49:26 -0700
+	Tue, 7 Aug 2007 16:57:53 -0400
+Date: Tue, 7 Aug 2007 13:49:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,86 +21,44 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@lists.netfilter.org>,
        "David S. Miller" <davem@davemloft.net>,
-       Yasuyuki KOZAKAI <yasuyuki.kozakai@toshiba.co.jp>,
-       Adrian Bunk <bunk@stusta.de>, Patrick McHardy <kaber@trash.net>
-Subject: [2.6.22.2 review 78/84] nf_conntrack: dont track locally generated
-	special ICMP error
-Message-ID: <20070807204926.GB23028@kroah.com>
+       Marcus Meissner <meissner@suse.de>
+Subject: [2.6.22.2 review 79/84] IPV6: /proc/net/anycast6 unbalanced
+	inet6_dev refcnt
+Message-ID: <20070807204929.GC23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nf_conntrack-don-t-track-locally-generated-special-icmp-error.patch"
+Content-Disposition: inline; filename="proc-net-anycast6-unbalanced-inet6_dev-refcnt.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yasuyuki Kozakai <yasuyuki.kozakai@toshiba.co.jp>
+From: David Stevens <dlstevens@us.ibm.com>
 
-[NETFILTER]: nf_conntrack: don't track locally generated special ICMP error
+Reading /proc/net/anycast6 when there is no anycast address
+on an interface results in an ever-increasing inet6_dev reference
+count, as well as a reference to the netdevice you can't get rid of.
 
-The conntrack assigned to locally generated ICMP error is usually the one
-assigned to the original packet which has caused the error. But if
-the original packet is handled as invalid by nf_conntrack, no conntrack
-is assigned to the original packet. Then nf_ct_attach() cannot assign
-any conntrack to the ICMP error packet. In that case the current
-nf_conntrack_icmp assigns appropriate conntrack to it. But the current
-code mistakes the direction of the packet. As a result, NAT code mistakes
-the address to be mangled.
-
-To fix the bug, this changes nf_conntrack_icmp not to assign conntrack
-to such ICMP error. Actually no address is necessary to be mangled
-in this case.
-
-Spotted by Jordan Russell.
-
-Signed-off-by: Yasuyuki Kozakai <yasuyuki.kozakai@toshiba.co.jp>
-
-Upstream commit ID: 130e7a83d7ec8c5c673225e0fa8ea37b1ed507a5
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Marcus Meissner <meissner@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/netfilter/nf_conntrack_proto_icmp.c |   22 +++++-----------------
- 1 file changed, 5 insertions(+), 17 deletions(-)
+ net/ipv6/anycast.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
-+++ b/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
-@@ -189,25 +189,13 @@ icmp_error_message(struct sk_buff *skb,
- 
- 	h = nf_conntrack_find_get(&innertuple, NULL);
- 	if (!h) {
--		/* Locally generated ICMPs will match inverted if they
--		   haven't been SNAT'ed yet */
--		/* FIXME: NAT code has to handle half-done double NAT --RR */
--		if (hooknum == NF_IP_LOCAL_OUT)
--			h = nf_conntrack_find_get(&origtuple, NULL);
--
--		if (!h) {
--			DEBUGP("icmp_error_message: no match\n");
--			return -NF_ACCEPT;
--		}
--
--		/* Reverse direction from that found */
--		if (NF_CT_DIRECTION(h) == IP_CT_DIR_REPLY)
--			*ctinfo += IP_CT_IS_REPLY;
--	} else {
--		if (NF_CT_DIRECTION(h) == IP_CT_DIR_REPLY)
--			*ctinfo += IP_CT_IS_REPLY;
-+		DEBUGP("icmp_error_message: no match\n");
-+		return -NF_ACCEPT;
+--- a/net/ipv6/anycast.c
++++ b/net/ipv6/anycast.c
+@@ -66,6 +66,7 @@ ip6_onlink(struct in6_addr *addr, struct
+ 				break;
+ 		}
+ 		read_unlock_bh(&idev->lock);
++		in6_dev_put(idev);
  	}
- 
-+	if (NF_CT_DIRECTION(h) == IP_CT_DIR_REPLY)
-+		*ctinfo += IP_CT_IS_REPLY;
-+
- 	/* Update skb to refer to this connection */
- 	skb->nfct = &nf_ct_tuplehash_to_ctrack(h)->ct_general;
- 	skb->nfctinfo = *ctinfo;
+ 	rcu_read_unlock();
+ 	return onlink;
 
 -- 
