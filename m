@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765725AbXHGA7I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765607AbXHGBYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765725AbXHGA7I (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 20:59:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764321AbXHGA66
+	id S1765607AbXHGBYb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 21:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbXHGBYV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 20:58:58 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:33430 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764214AbXHGA65 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 20:58:57 -0400
-Date: Tue, 7 Aug 2007 01:58:48 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: David Chinner <dgc@sgi.com>
-Cc: Laurent Caron <lcaron@lncsa.fr>, linux-kernel@vger.kernel.org
-Subject: Re: Oops on 2.6.21 + DRBD + XFS
-Message-ID: <20070807005848.GA13793@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	David Chinner <dgc@sgi.com>, Laurent Caron <lcaron@lncsa.fr>,
-	linux-kernel@vger.kernel.org
-References: <20070806093449.aebaisai@trusted.lncsa.com> <20070806233122.GW31489@sgi.com>
-Mime-Version: 1.0
+	Mon, 6 Aug 2007 21:24:21 -0400
+Received: from ns1.suse.de ([195.135.220.2]:48946 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753898AbXHGBYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 21:24:20 -0400
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
+       stable@kernel.org, linux-kernel@vger.kernel.org,
+       Olaf Hering <olh@suse.de>
+Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit	DMA	mapping"
+References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
+	<46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
+	<1186272926.938.8.camel@localhost.localdomain>
+	<46B5824B.1000103@s5r6.in-berlin.de>
+	<1186351473.938.21.camel@localhost.localdomain>
+	<20070806135124.GA2900@suse.de>
+	<1186436848.938.75.camel@localhost.localdomain>
+	<46B79F25.50205@s5r6.in-berlin.de> <46B79FD7.9020801@shaw.ca>
+	<46B7A537.9020807@s5r6.in-berlin.de>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 07 Aug 2007 04:18:43 +0200
+In-Reply-To: <46B7A537.9020807@s5r6.in-berlin.de>
+Message-ID: <p73bqdkccjg.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070806233122.GW31489@sgi.com>
-User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 09:31:22AM +1000, David Chinner wrote:
-> On Mon, Aug 06, 2007 at 09:38:19AM +0200, Laurent Caron wrote:
-> > Hi,
-> > 
-> > I'm using an XFS filesystem over DRBD for a few weeks on this machine
-> > and did experience an oops.
+Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
 > 
-> ......
-> > Aug  3 10:59:47 fileserv kernel: [<c0164be9>] cache_flusharray+0x59/0xd0 
-> > Aug  3 10:59:47 fileserv kernel: [<c0164d2a>] kmem_cache_free+0x5a/0x70 
-> > Aug  3 10:59:47 fileserv kernel: [<c025fa16>] xfs_finish_reclaim+0x36/0x170 
-> > Aug  3 10:59:47 fileserv kernel: [<c026fe41>] xfs_fs_clear_inode+0x91/0xc0 
-> > Aug  3 10:59:47 fileserv kernel: [<c017c063>] clear_inode+0x93/0x140 
-> > Aug  3 10:59:47 fileserv kernel: [<c017c38a>] dispose_list+0x1a/0xd0 
-> 
-> Can you run with slab debugging turned on?
+>   1.) The ieee1394 subsystem is known to work on x86_64 with more than 4
+> GB RAM, 
 
-And please upgrade to a recent kernel.  I'm pretty sure drbd doesn't
-like the useage of slab memory for bios in older xfs versions.
+It's actually ~3+GB where memory above the 4GB barrier starts appearing.
+In some extreme cases even for 2+GB. 
+
+> so I gather that architecture code already sets a proper DMA
+> mask for all those 32bit PCI OHCI-1394 implementations out there.
+
+If you don't set a DMA mask then the default is always 4GB.
+
+-Andi
