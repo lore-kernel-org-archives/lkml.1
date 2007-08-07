@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756052AbXHGHUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXHGHUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756052AbXHGHUd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 03:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbXHGHTy
+	id S1758546AbXHGHUr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 03:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755984AbXHGHT4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 03:19:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:33986 "EHLO ozlabs.org"
+	Tue, 7 Aug 2007 03:19:56 -0400
+Received: from ozlabs.org ([203.10.76.45]:33990 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754789AbXHGHTx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 03:19:53 -0400
+	id S1754789AbXHGHTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 03:19:55 -0400
 To: Linux Memory Management <linux-mm@kvack.org>
 CC: <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 07 Aug 2007 17:19:46 +1000
-Subject: [RFC/PATCH 1/12] remove frv usage of flush_tlb_pgtables()
+Date: Tue, 07 Aug 2007 17:19:47 +1000
+Subject: [RFC/PATCH 3/12] Add MMF_DEAD flag to mm_struct being torn down
 In-Reply-To: <1186471185.826251.312410898174.qpush@grosgo>
-Message-Id: <20070807071952.E421FDDE09@ozlabs.org>
+Message-Id: <20070807071954.1C634DDE1C@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-frv is the last user in the tree of that dubious hook, and it's my
-understanding that it's not even needed. It's only called by memory.c
-free_pgd_range() which is always called within an mmu_gather, and
-tlb_flush() on frv will do a flush_tlb_mm(), which from my reading
-of the code, seems to do what flush_tlb_ptables() does, which is
-to clear the cached PGE.
+This adds a flag to mm_struct that is set when the mm is being
+torn down. It's needed by my next patch disconnecting sparc64
+tlb flushing from the mmu_gather in order to let the later
+become a stack based structure. In general, that flag provides
+the information that is in tlb->fullmm but more easily accessible
+to all page table accessors.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- include/asm-frv/tlbflush.h |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ include/linux/sched.h |    2 ++
+ kernel/fork.c         |    1 +
+ mm/mmap.c             |    3 +++
+ 3 files changed, 6 insertions(+)
 
-Index: linux-work/include/asm-frv/tlbflush.h
+Index: linux-work/include/linux/sched.h
 ===================================================================
---- linux-work.orig/include/asm-frv/tlbflush.h	2007-07-27 09:40:38.000000000 +1000
-+++ linux-work/include/asm-frv/tlbflush.h	2007-07-27 09:43:17.000000000 +1000
-@@ -57,8 +57,7 @@ do {								\
- #define __flush_tlb_global()			flush_tlb_all()
- #define flush_tlb()				flush_tlb_all()
- #define flush_tlb_kernel_range(start, end)	flush_tlb_all()
--#define flush_tlb_pgtables(mm,start,end) \
--	asm volatile("movgs %0,scr0 ! movgs %0,scr1" :: "r"(ULONG_MAX) : "memory");
-+#define flush_tlb_pgtables(mm,start,end)	do { } while(0)
+--- linux-work.orig/include/linux/sched.h	2007-08-02 11:25:34.000000000 +1000
++++ linux-work/include/linux/sched.h	2007-08-02 11:39:44.000000000 +1000
+@@ -366,6 +366,8 @@ extern int get_dumpable(struct mm_struct
+ #define MMF_DUMP_FILTER_DEFAULT \
+ 	((1 << MMF_DUMP_ANON_PRIVATE) |	(1 << MMF_DUMP_ANON_SHARED))
  
- #else
++#define MMF_DEAD          	6  /* mm is being destroyed */
++
+ struct mm_struct {
+ 	struct vm_area_struct * mmap;		/* list of VMAs */
+ 	struct rb_root mm_rb;
+Index: linux-work/mm/mmap.c
+===================================================================
+--- linux-work.orig/mm/mmap.c	2007-08-02 11:25:35.000000000 +1000
++++ linux-work/mm/mmap.c	2007-08-02 11:39:44.000000000 +1000
+@@ -2025,6 +2025,9 @@ void exit_mmap(struct mm_struct *mm)
+ 	unsigned long nr_accounted = 0;
+ 	unsigned long end;
  
++	/* Mark the MM as dead */
++	__set_bit(MMF_DEAD, &mm->flags);
++
+ 	/* mm's last user has gone, and its about to be pulled down */
+ 	arch_exit_mmap(mm);
+ 
+Index: linux-work/kernel/fork.c
+===================================================================
+--- linux-work.orig/kernel/fork.c	2007-07-22 10:26:48.000000000 +1000
++++ linux-work/kernel/fork.c	2007-08-02 11:39:44.000000000 +1000
+@@ -336,6 +336,7 @@ static struct mm_struct * mm_init(struct
+ 	INIT_LIST_HEAD(&mm->mmlist);
+ 	mm->flags = (current->mm) ? current->mm->flags
+ 				  : MMF_DUMP_FILTER_DEFAULT;
++	__clear_bit(MMF_DEAD, &mm->flags);
+ 	mm->core_waiters = 0;
+ 	mm->nr_ptes = 0;
+ 	set_mm_counter(mm, file_rss, 0);
