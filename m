@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937546AbXHGViK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937628AbXHGVit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937546AbXHGViK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936828AbXHGVMg
+	id S937628AbXHGVit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936902AbXHGVNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:12:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55262 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936822AbXHGVMf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:12:35 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
-Subject: [PATCH 05/25] sysfs: In sysfs_lookup don't open code sysfs_find_dirent
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 07 Aug 2007 15:12:02 -0600
-In-Reply-To: <m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 07 Aug 2007 15:11:16 -0600")
-Message-ID: <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 7 Aug 2007 17:13:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45810 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S936896AbXHGVNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:13:22 -0400
+X-Authenticated: #24879014
+X-Provags-ID: V01U2FsdGVkX189T557Dxc9AyjDjYn7TE7liXivksJeH1yj7Wh1YM
+	gEXAcwLT9tYxGb
+Message-ID: <46B8E05C.8080405@gmx.net>
+Date: Tue, 07 Aug 2007 23:13:00 +0200
+From: Michael Kerrisk <mtk-manpages@gmx.net>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Ollie Wild <aaw@google.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: execve manpage changes
+References: <65dd6fd50708061738pabd807tb26d38641cc5e7e2@mail.gmail.com> <65dd6fd50708061746p2a460fe5p24f1068c36ef5c40@mail.gmail.com>
+In-Reply-To: <65dd6fd50708061746p2a460fe5p24f1068c36ef5c40@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ollie Wild wrote:
+> Michael,
+> 
+> Per our previous discussion, here are the updates to the execve(2)
+> manpage resulting from the variable length argument support patch in
+> linux-2.6.23-rc1.  The execve API is unmodified.  However, the
+> following should be noted in the "Notes" section.
+> 
+> Prior to linux-2.6.23, the memory used to store the environment and
+> argument list strings was limited to 32 (MAX_ARG_PAGES) pages.  On
+> most architectures, the page size is 4kB, leading to a maximum size of
+> 128kB.
+> 
+> In linux-2.6.23 and later, most architectures support a size limit
+> derived from the current RLIMIT_STACK setting (see getrlimit(2)).  For
+> these architectures, the total size is limited to 1/4 the allowed
+> stack size, the limit per string is 32 pages (MAX_ARG_STRLEN), and the
+> maximum number of strings is 0x7FFFFFFF.  Architectures with no memory
+> management unit are excepted: they maintain the pre-2.6.23 limit.
 
-This is a small cleanup patch that makes the code just
-a little bit cleaner.
+Hello Ollie,
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/sysfs/dir.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
+Thanks.  I'll see that this material makes it into a man pages release 
+closer to the 2.6.23 final release.
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 39df3ce..2721e36 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -754,9 +754,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
- 
- 	mutex_lock(&sysfs_mutex);
- 
--	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
--		if (sysfs_type(sd) && !strcmp(sd->s_name, dentry->d_name.name))
--			break;
-+	sd = sysfs_find_dirent(parent_sd, dentry->d_name.name);
- 
- 	/* no such entry */
- 	if (!sd)
--- 
-1.5.1.1.181.g2de0
+Cheers,
 
+Michael
