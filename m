@@ -1,110 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933805AbXHGCEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933701AbXHGCIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933805AbXHGCEY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 22:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933014AbXHGCDh
+	id S933701AbXHGCIP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 22:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762877AbXHGCH7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 22:03:37 -0400
-Received: from ik-out-1112.google.com ([66.249.90.176]:34224 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933724AbXHGCDf (ORCPT
+	Mon, 6 Aug 2007 22:07:59 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:15834 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752448AbXHGCH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 22:03:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=VjHlR4VeNLOcQNuVvZpib+OAX5/c29/9Paf3p11wc4VOStrO8AFUeoQ01XEMSf3o+Pb0L8gPTm9tMHIqoWQgHcVHNV4UCke7KOcYgm0R+eJk94gJXaFZvzf0EeXzvJS30MfODNkQKwTnHE9OA2BYAvjKyhni3C0XwGE9I7MpjW0=
-Message-ID: <f56c1ba00708061903u42d1d502h80eb706920208aa6@mail.gmail.com>
-Date: Mon, 6 Aug 2007 22:03:31 -0400
-From: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Andi Kleen" <andi@firstfloor.org>
-Subject: [PATCH 2/2] PAT support for write combining in pci_mmap_page_range
-Cc: loic@myri.com, brice@myri.com, cedric.augonnet@ens-lyon.org
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_80023_27036495.1186452211851"
+	Mon, 6 Aug 2007 22:07:58 -0400
+X-IronPort-AV: i="4.19,226,1183348800"; 
+   d="scan'208"; a="47620083:sNHT27060908"
+Subject: Re: [GIT PULL] Blackfin arch update for 2.6.23
+From: Bryan Wu <bryan.wu@analog.com>
+Reply-To: bryan.wu@analog.com
+To: David Brownell <david-b@pacbell.net>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, bryan.wu@analog.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200708060907.02506.david-b@pacbell.net>
+References: <1186318969.16030.2.camel@roc-laptop>
+	 <8bd0f97a0708051904n294d5955r4dd801ca6b38b5a8@mail.gmail.com>
+	 <200708060907.02506.david-b@pacbell.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Analog Devices, Ltd.
+Date: Tue, 07 Aug 2007 10:06:38 +0800
+Message-Id: <1186452398.6413.13.camel@roc-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 07 Aug 2007 02:07:56.0612 (UTC) FILETIME=[C55B8840:01C7D897]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_80023_27036495.1186452211851
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 2007-08-06 at 09:07 -0700, David Brownell wrote:
+> On Sunday 05 August 2007, Mike Frysinger wrote:
+> > On 8/5/07, Bryan Wu <bryan.wu@analog.com> wrote:
+> > > Bryan Wu (4):
+> > >       Blackfin SPI driver: Initial supporting BF54x in SPI driver
+> > >
+> > > Michael Hennerich (11):
+> > >       Blackfin arch: store labels so we later know who allocated GPIO/Peripheral resources
+> > >       Blackfin arch: add peripheral resource allocation support
+> > >       Blackfin arch: Add label to call new GPIO API
+> > >       Blackfin SPI driver: Make BF54x SPI work and add support for portmux API
+> > >       Blackfin SPI driver: use new GPIO API and add error handling
+> > 
+> > i think this is the sort of thing Linus wants left for initial merge windows ?
+> 
+> What, merging patches that have never even been seen by the relevant
+> subsystem maintainer(s)?
+> 
+> I've never seen any of those SPI patches before, and am not inclined
+> to try plucking three of them out of a composite patch for a separate
+> review ...
+> 
 
+Yeah, although the Blackfin on-chip SPI driver is originally developed
+by Luke Yang, currently it is maintained by me. Sorry for this missing,
+I will send driver update patches
+to related subsystem maintainers in LKML.
 
+> Same goes for GPIO, for that matter.  It's harder to goof those up,
+> but it's still possible.  If those were reviewed I personally might
+> be inclined to OK merges after RC1; GPIOs get used almost everywhere.
+> (Pretty much as Bryan commented...)  Those look more like portmux
+> changes than GPIO changes though.
 
-------=_Part_80023_27036495.1186452211851
-Content-Type: text/x-diff; name=pat-2.patch; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f51qs4jy
-Content-Disposition: attachment; filename="pat-2.patch"
+Actually, I wanna to obey the merge window policy, but there are some
+many changes in my local tree related to GPIO, silicon anomaly (common
+fixing). So I choose GPIO changes in this git-pull, thanks for your
+understanding situation.
 
-QWRkcyBzdXBwb3J0IGZvciB3cml0ZS1jb21iaW5pbmcgaW4gcGNpX21tYXBfcGFnZV9yYW5nZSB1
-c2luZyBQQVQ2LgoKU29tZSBkaXN0aW5jdGlvbiBoYXMgdG8gYmUgbWFkZSBiZXR3ZWVuIGh1Z2Ug
-cGFnZXMgYW5kIG5vcm1hbCBwYWdlcyBzaW5jZQp0aGUgcG9zaXRpb24gb2YgdGhlIGJpdCBlbmNv
-ZGluZyBQQVQgZGVwZW5kcyBvbiB0aGF0LgoKU2lnbmVkLW9mZi1ieTogQ2VkcmljIEF1Z29ubmV0
-IDxjZWRyaWMuYXVnb25uZXRAZW5zLWx5b24ub3JnPgpDQzogTG9pYyBQcnlsbGkgPGxvaWNAbXly
-aS5jb20+CkNDOiBCcmljZSBHb2dsaW4gPGJyaWNlQG15cmkuY29tPgkKLS0tCmRpZmYgLXVyTiAy
-LjYuMjMtcmMyL2FyY2gvaTM4Ni9wY2kvaTM4Ni5jIDIuNi4yMy1yYzItcGF0L2FyY2gvaTM4Ni9w
-Y2kvaTM4Ni5jCi0tLSAyLjYuMjMtcmMyL2FyY2gvaTM4Ni9wY2kvaTM4Ni5jCTIwMDctMDctMzEg
-MTA6NDg6NTguMDAwMDAwMDAwIC0wNDAwCisrKyAyLjYuMjMtcmMyLXBhdC9hcmNoL2kzODYvcGNp
-L2kzODYuYwkyMDA3LTA4LTA2IDE4OjE5OjE4LjAwMDAwMDAwMCAtMDQwMApAQCAtMjk5LDEzICsy
-OTksMjAgQEAKIAkgKiBhZGRyZXNzIG9uIHRoaXMgcGxhdGZvcm0uCiAJICovCiAJcHJvdCA9IHBn
-cHJvdF92YWwodm1hLT52bV9wYWdlX3Byb3QpOwotCWlmIChib290X2NwdV9kYXRhLng4NiA+IDMp
-Ci0JCXByb3QgfD0gX1BBR0VfUENEIHwgX1BBR0VfUFdUOwotCXZtYS0+dm1fcGFnZV9wcm90ID0g
-X19wZ3Byb3QocHJvdCk7CiAKLQkvKiBXcml0ZS1jb21iaW5lIHNldHRpbmcgaXMgaWdub3JlZCwg
-aXQgaXMgY2hhbmdlZCB2aWEgdGhlIG10cnIKLQkgKiBpbnRlcmZhY2VzIG9uIHRoaXMgcGxhdGZv
-cm0uCisJLyogVW5sZXNzIFBBVCBpcyBlbmFibGluZyB3cml0ZSBjb21iaW5pbmcsIGl0IGlzIGhl
-cmUgaWdub3JlZCBhbmQKKwkgKiBjaGFuZ2VkIHZpYSB0aGUgbXRyciBpbnRlcmZhY2VzIG9uIHRo
-aXMgcGxhdGZvcm0uCiAJICovCisJaWYgKGNwdV9oYXNfcGF0ICYmIHdyaXRlX2NvbWJpbmUpIHsK
-KwkJLyogUEFUIGJpdCBpcyBub3QgdGhlIHNhbWUgaWYgd2UgaGF2ZSBodWdlIHBhZ2VzICovCisJ
-CXZtYS0+dm1fcGFnZV9wcm90ID0KKwkJCV9fcGdwcm90X3djKHByb3QsICh2bWEtPnZtX2ZsYWdz
-ICYgVk1fSFVHRVRMQikpOworCX0gZWxzZSB7CisJCWlmIChib290X2NwdV9kYXRhLng4NiA+IDMp
-CisJCQlwcm90IHw9IF9QQUdFX1BDRCB8IF9QQUdFX1BXVDsKKwkJdm1hLT52bV9wYWdlX3Byb3Qg
-PSBfX3BncHJvdChwcm90KTsKKwl9CisKIAlpZiAoaW9fcmVtYXBfcGZuX3JhbmdlKHZtYSwgdm1h
-LT52bV9zdGFydCwgdm1hLT52bV9wZ29mZiwKIAkJCSAgICAgICB2bWEtPnZtX2VuZCAtIHZtYS0+
-dm1fc3RhcnQsCiAJCQkgICAgICAgdm1hLT52bV9wYWdlX3Byb3QpKQpkaWZmIC11ck4gMi42LjIz
-LXJjMi9pbmNsdWRlL2FzbS1pMzg2L3BndGFibGUuaCAyLjYuMjMtcmMyLXBhdC9pbmNsdWRlL2Fz
-bS1pMzg2L3BndGFibGUuaAotLS0gMi42LjIzLXJjMi9pbmNsdWRlL2FzbS1pMzg2L3BndGFibGUu
-aAkyMDA3LTA4LTA2IDE1OjE3OjEyLjAwMDAwMDAwMCAtMDQwMAorKysgMi42LjIzLXJjMi1wYXQv
-aW5jbHVkZS9hc20taTM4Ni9wZ3RhYmxlLmgJMjAwNy0wOC0wNiAxODozMzo0OC4wMDAwMDAwMDAg
-LTA0MDAKQEAgLTExOSw2ICsxMTksMTIgQEAKICNkZWZpbmUgX1BBR0VfVU5VU0VEMgkweDQwMAog
-I2RlZmluZSBfUEFHRV9VTlVTRUQzCTB4ODAwCiAKKy8qIGRlZmluZWQgZm9yIHdyaXRlIGNvbWJp
-bmluZyBzdXBwb3J0IHdpdGggUEFUIGVuYWJsZWQgKi8KKyNkZWZpbmUgX1BBR0VfUEFUNgkJMHgw
-ODgJCS8qIFBBVDYgZm9yIDRLIHBhZ2VzICovCisjZGVmaW5lIF9QQUdFX1BBVDZfSFVHRQkJMHgx
-MDA4CQkvKiBQQVQ2IGZvciBodWdlIHBhZ2VzICovCisjZGVmaW5lIF9QQUdFX1dSX0NNQgkJX1BB
-R0VfUEFUNgorI2RlZmluZSBfUEFHRV9XUl9DTUJfSFVHRQlfUEFHRV9QQVQ2X0hVR0UKKwogLyog
-SWYgX1BBR0VfUFJFU0VOVCBpcyBjbGVhciwgd2UgdXNlIHRoZXNlOiAqLwogI2RlZmluZSBfUEFH
-RV9GSUxFCTB4MDQwCS8qIG5vbmxpbmVhciBmaWxlIG1hcHBpbmcsIHNhdmVkIFBURTsgdW5zZXQ6
-c3dhcCAqLwogI2RlZmluZSBfUEFHRV9QUk9UTk9ORQkweDA4MAkvKiBpZiB0aGUgdXNlciBtYXBw
-ZWQgaXQgd2l0aCBQUk9UX05PTkU7CkBAIC0xNzEsNiArMTc3LDExIEBACiAjZGVmaW5lIFBBR0Vf
-S0VSTkVMX0xBUkdFCV9fcGdwcm90KF9fUEFHRV9LRVJORUxfTEFSR0UpCiAjZGVmaW5lIFBBR0Vf
-S0VSTkVMX0xBUkdFX0VYRUMJX19wZ3Byb3QoX19QQUdFX0tFUk5FTF9MQVJHRV9FWEVDKQogCisj
-ZGVmaW5lIF9fcGdwcm90X3djKGZsYWcsIGlzX2h1Z2VfcGFnZSkJCQkJXAorCShfX3BncHJvdCgo
-aXNfaHVnZV9wYWdlKSA/CQkJCVwKKwkJKChmbGFnKSAmICh+X1BBR0VfUFdUKSkgfCBfUEFHRV9X
-Ul9DTUJfSFVHRSA6CVwKKwkJKChmbGFnKSAmICh+X1BBR0VfUFdUKSkgfCBfUEFHRV9XUl9DTUIp
-ICkKKwogLyoKICAqIFRoZSBpMzg2IGNhbid0IGRvIHBhZ2UgcHJvdGVjdGlvbiBmb3IgZXhlY3V0
-ZSwgYW5kIGNvbnNpZGVycyB0aGF0CiAgKiB0aGUgc2FtZSBhcmUgcmVhZC4gQWxzbywgd3JpdGUg
-cGVybWlzc2lvbnMgaW1wbHkgcmVhZCBwZXJtaXNzaW9ucy4KZGlmZiAtdXJOIDIuNi4yMy1yYzIv
-aW5jbHVkZS9hc20teDg2XzY0L3BndGFibGUuaCAyLjYuMjMtcmMyLXBhdC9pbmNsdWRlL2FzbS14
-ODZfNjQvcGd0YWJsZS5oCi0tLSAyLjYuMjMtcmMyL2luY2x1ZGUvYXNtLXg4Nl82NC9wZ3RhYmxl
-LmgJMjAwNy0wOC0wNiAxNToxNzoxNS4wMDAwMDAwMDAgLTA0MDAKKysrIDIuNi4yMy1yYzItcGF0
-L2luY2x1ZGUvYXNtLXg4Nl82NC9wZ3RhYmxlLmgJMjAwNy0wOC0wNiAxODoyOToyOC4wMDAwMDAw
-MDAgLTA0MDAKQEAgLTE2NCw2ICsxNjQsMTMgQEAKICNkZWZpbmUgX1BBR0VfR0xPQkFMCTB4MTAw
-CS8qIEdsb2JhbCBUTEIgZW50cnkgKi8KIAogI2RlZmluZSBfUEFHRV9QUk9UTk9ORQkweDA4MAkv
-KiBJZiBub3QgcHJlc2VudCAqLworCisvKiBkZWZpbmVkIGZvciB3cml0ZSBjb21iaW5pbmcgc3Vw
-cG9ydCB3aXRoIFBBVCBlbmFibGVkICovCisjZGVmaW5lIF9QQUdFX1BBVDYJCTB4MDg4CQkvKiBQ
-QVQ2IGZvciA0SyBwYWdlcyAqLworI2RlZmluZSBfUEFHRV9QQVQ2X0hVR0UJCTB4MTAwOAkJLyog
-UEFUNiBmb3IgaHVnZSBwYWdlcyAqLworI2RlZmluZSBfUEFHRV9XUl9DTUIJCV9QQUdFX1BBVDYK
-KyNkZWZpbmUgX1BBR0VfV1JfQ01CX0hVR0UJX1BBR0VfUEFUNl9IVUdFCisKICNkZWZpbmUgX1BB
-R0VfTlggICAgICAgIChfQUMoMSxVTCk8PF9QQUdFX0JJVF9OWCkKIAogI2RlZmluZSBfUEFHRV9U
-QUJMRQkoX1BBR0VfUFJFU0VOVCB8IF9QQUdFX1JXIHwgX1BBR0VfVVNFUiB8IF9QQUdFX0FDQ0VT
-U0VEIHwgX1BBR0VfRElSVFkpCkBAIC0xOTYsNiArMjAzLDExIEBACiAjZGVmaW5lIF9fUEFHRV9L
-RVJORUxfTEFSR0VfRVhFQyBcCiAJKF9fUEFHRV9LRVJORUxfRVhFQyB8IF9QQUdFX1BTRSkKIAor
-I2RlZmluZSBfX3BncHJvdF93YyhmbGFnLCBpc19odWdlX3BhZ2UpCQkJCVwKKwkoX19wZ3Byb3Qo
-KGlzX2h1Z2VfcGFnZSkgPwkJCQlcCisJCSgoZmxhZykgJiAofl9QQUdFX1BXVCkpIHwgX1BBR0Vf
-V1JfQ01CX0hVR0UgOglcCisJCSgoZmxhZykgJiAofl9QQUdFX1BXVCkpIHwgX1BBR0VfV1JfQ01C
-KSkKKwogI2RlZmluZSBNQUtFX0dMT0JBTCh4KSBfX3BncHJvdCgoeCkgfCBfUEFHRV9HTE9CQUwp
-CiAKICNkZWZpbmUgUEFHRV9LRVJORUwgTUFLRV9HTE9CQUwoX19QQUdFX0tFUk5FTCkK
-------=_Part_80023_27036495.1186452211851--
+I will remove the SPI driver patch from this GIT-PULL, a new GIT-PULL
+will be requested. 
+(Frankly speaking, I am afraid of being added to Linus's shit-list for
+the next few releases, -:(( ).
+
+Thanks a lot, Mike and David. 
+Best Regards,
+
+- Bryan Wu
