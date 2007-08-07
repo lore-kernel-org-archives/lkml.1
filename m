@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934936AbXHGPdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934461AbXHGPi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934936AbXHGPdp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 11:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756609AbXHGPdi
+	id S934461AbXHGPi5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 11:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756420AbXHGPis
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 11:33:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35183 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755012AbXHGPdh (ORCPT
+	Tue, 7 Aug 2007 11:38:48 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:40589 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755697AbXHGPir (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 11:33:37 -0400
-Date: Tue, 7 Aug 2007 17:33:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       =?iso-8859-1?Q?C=E9dric?= Augonnet <cedric.augonnet@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: PAT support for i386 and x86_64
-Message-ID: <20070807153335.GA1958@one.firstfloor.org>
-References: <6278d2220708070534t7096e579uef2ddbb2c997daa6@mail.gmail.com> <20070807141042.GB952@one.firstfloor.org> <6278d2220708070826h2613dd7dr6e3b8001fba3441a@mail.gmail.com>
+	Tue, 7 Aug 2007 11:38:47 -0400
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <46B88B91.4050703@garzik.org>
+References: <1186248703.3439.20.camel@localhost.localdomain>
+	 <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
+	 <1186458941.6637.44.camel@localhost.localdomain>
+	 <20070807001429.f8cb3b22.akpm@linux-foundation.org>
+	 <1186496712.3414.17.camel@localhost.localdomain>
+	 <46B88B91.4050703@garzik.org>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 10:38:44 -0500
+Message-Id: <1186501124.3414.32.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6278d2220708070826h2613dd7dr6e3b8001fba3441a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 04:26:06PM +0100, Daniel J Blueman wrote:
-> (Intel IA32 ASDM 3A 10-47) "a WC page must never be aliased to a
-> cacheable page because WC writes may not check the processor caches."
-
-Yes that is what we're trying to avoid, but it is far more complicated
-than you think.
-
-> This is not talking about corrupting the cache generally, but data
-> hitting a PCI target twice by (ie) a broken driver.
-
-This can end up with data corruption, machine checks or 
-a broken device. All happened.
-
-> > > barrier will hamper progress we do see, as it has done already for
-> > > years.
-> >
-> > Because it's not simple and nobody has done it properly yet.
+On Tue, 2007-08-07 at 11:11 -0400, Jeff Garzik wrote:
+> James Bottomley wrote:
+> > The initial bsg submit went via the block git tree ... which I believe
+> > you have in -mm.  We only started taking the updates via the scsi tree
 > 
-> Providing only UC and WC types and documenting aliasing problems is
-> what is required here.
+> Seven hours before you posted this, in 
+> <20070807001429.f8cb3b22.akpm@linux-foundation.org>, Andrew already 
+> noted it was not in -mm.
+> 
+> A trivial examination of the broken-out mm patches backs up the absence 
+>   of Jens' block tree, too.
+> 
+> So let's put this myth / bad assumption to rest, shall we?
 
-At least the direct mapping needs to be changed too and any mapping
-comming from other sources (/sys/bus/pci, /dev/mem etc.) 
-Otherwise you get the dangerous illegal aliases.
+Sorry ... I just assumed from the fact that it had been in the block git
+tree for six months that it was also in -mm.
 
-The chances of a driver getting this right even when documented
-are very small.
+> > Yes ... particularly in large trees like SCSI, there's the maintainer
+> > "bugger if I don't mail it out now I don't get it in for another three
+> > months" factor.
+> 
+> That factor always exists.  It's not confined to SCSI or large trees. 
+> It's basic the nature of the merge window.  Nothing new or shocking here.
+> 
+> 
+> > bsg had actually been sitting in the block tree since 2.6.21, so it had
+> > followed the delayed merge rule ... it just seems that it didn't get
+> > enough integration testing in that six months.  This is what I consider
+> 
+> It didn't get integration testing, at least in part, because it did not 
+> hit our official pre-release tree.  Quoth Andrew:
+> > I pulled git-scsi-misc on July 19 and there was no bsg code in there at
+> > all.  I pulled again on July 20 and all the bsg code was in mainline.
+> 
+> 
+> 
+> > I don't disagree; my point is that bsg did follow this rule (in fact it
+> 
+> Evidence says otherwise.
 
-BTW i had some prototype patches to address some of this,
-but they need much more work to handle all this properly.
-Just reprogramming the PAT registers is really the smallest issue.
-The IA64 port has done some of the work as an example, unfortunately they
-use a strange memory mapping scheme that cannot be easily moved
-over. iirc Bjorn identified over 10 potential sources of cache aliases
-that all needed to be addressed in the end.
+It followed the rule of trying to stabilise outside mainline ... it just
+didn't get sufficient integration testing.
 
--Andi
+> > I wouldn't call bsg half baked ... it was very carefully matured.  There
+> > were just a few integration issues.
+> 
+> I wouldn't call bsg carefully matured, if in addition to not really 
+> gracing -mm with its presence, the userland API structure is still 
+> getting changes on July 29, 2007 (0c6a89ba640d28e1dcd7fd1a217d2cfb92ae4953).
+
+This would be the ABI change I talked about in the previous emails.
+
+So would this problem have been fixed simply by adding the missing block
+tree to -mm?
+
+James
+
 
