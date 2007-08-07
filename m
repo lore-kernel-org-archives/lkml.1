@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761125AbXHGJcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbXHGJh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761125AbXHGJcT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757827AbXHGJcF
+	id S1759618AbXHGJh5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbXHGJhs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:32:05 -0400
-Received: from rv-out-0910.google.com ([209.85.198.191]:42086 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754815AbXHGJcD (ORCPT
+	Tue, 7 Aug 2007 05:37:48 -0400
+Received: from purr.warmcat.com ([87.106.142.209]:45568 "EHLO
+	mailserver.mog.warmcat.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756784AbXHGJhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:32:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=P2+78CQxiiypd2m6ZUowIB1YSyTz+d4ZVe7akE1s9ll/n5pQLq5QRfYTiNd32lVfRBIXg2bLj4ax8JkqSkKk+QXOk+QHlBQ8ogFLzH1pkms551pZz6h59YrL1KiLDKUjS8SoDgP948Q1cyBL/k3qwiRVwZsif4g6sippxsKa244=
-Message-ID: <46B83C0B.8050902@gmail.com>
-Date: Tue, 07 Aug 2007 18:31:55 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Tue, 7 Aug 2007 05:37:47 -0400
+X-Greylist: delayed 1277 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Aug 2007 05:37:47 EDT
+From: warmcat <andy@warmcat.com>
+Subject: [PATCH] belkin_sa: avoid divide by zero error
+To: linux-kernel@vger.kernel.org
+Date: Tue, 07 Aug 2007 10:04:04 +0100
+Message-ID: <20070807090404.11845.25399.stgit@localhost>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: Michael Sedkowski <sedmich@gmail.com>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com>	 <1186411815.4355.7.camel@nx6310>	 <20070806150159.GC31615@khazad-dum.debian.net>	 <200708061732.03425.rjw@sisk.pl>  <46B75459.9020204@gmail.com>	 <1186424492.4355.1.camel@nx6310>  <46B76BBC.9010107@gmail.com>	 <1186438698.4402.6.camel@nx6310>  <46B817AB.30105@gmail.com> <1186478319.3705.3.camel@nx6310>
-In-Reply-To: <1186478319.3705.3.camel@nx6310>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Sedkowski wrote:
-> Dnia 07-08-2007, Wt o godzinie 15:56 +0900, Tejun Heo napisał(a):
->> 192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age
->> Always       -       388
->>
->> I think this is the one.  You can test it by forcefully powering off
->> the
->> machine (press power button for several secs or disconnect AC and
->> battery) and see whether the count increases.
->>
-> When I forcefully power off using the power button the raw value [last
-> one] rise by 1 point from 389 to 390. When I power off normally with
-> linux it remains constant.
-> Now could some one please explain to me what does that mean and am I in
-> danger of data loss?
+From: None <None>
 
-So, the ACPI routine puts the disk into the standby mode before powering
-off.  That's good.
+The belkin_sa module has a problem coping with a 0 return from tty_get_baud_rate() --
+the subsequent BELKIN_SA_BAUD macro 
 
-On power off, the r/w heads in a disk should be unloaded (parked).  This
-is usually achieved by either putting the disk into standby/sleep mode
-during shutdown.  However, all modern disks can automatically unload
-their heads when the power is removed abruptly.  This is called
-emergency unload.  Emergency unload does shorten the lifespan of the
-disk but you don't have to worry too much about it.  Disks are designed
-to withstand certain number of emergency unloads.
+drivers/usb/serial/belkin_sa.h:#define BELKIN_SA_BAUD(b) (230400/b)
 
--- 
-tejun
+performs a divide with it leading to the following divide error:
+
+usb 3-1: Belkin / Peracom / GoHubs USB Serial Adapter converter now attached to ttyUSB0
+PM: Adding info for No Bus:usbdev3.3_ep81
+PM: Adding info for No Bus:usbdev3.3_ep01
+PM: Adding info for No Bus:usbdev3.3_ep82
+divide error: 0000 [#1]
+SMP
+Modules linked in: vfat fat iwl3945 mac80211 cfg80211 belkin_sa usbserial usb_storage autofs4 vmnet(P) vmmon(P) aes nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink xt_tcpudp iptable_filter ip_tables x_tables cpufreq_ondemand acpi_cpufreq video output sbs button dock battery ac arc4 snd_hda_intel ecb blkcipher snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss sr_mod snd_mixer_oss rtc_cmos cdrom iTCO_wdt iTCO_vendor_support snd_pcm rtc_core snd_timer serio_raw b44 ssb rtc_lib parport ata_piix snd soundcore snd_page_alloc mii ata_generic sg ahci libata sd_mod scsi_mod ext3 jbd mbcache ehci_hcd ohci_hcd uhci_hcd
+CPU:    1
+EIP:    0060:[<f8dd1747>]    Tainted: P        VLI
+EFLAGS: 00010246   (2.6.23-rc1 #1)
+EIP is at belkin_sa_set_termios+0x18e/0x5b9 [belkin_sa]
+eax: 00038400   ebx: 00000000   ecx: 00000000   edx: 00000000
+esi: 00038400   edi: 00001cb2   ebp: de49adb0   esp: de49ad6c
+ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+Process minicom (pid: 7306, ti=de49a000 task=eed6c3b0 task.ti=de49a000)
+Stack: d85c74f0 00000046 00000002 00000001 d85c74f0 d85c74f0 00000246 c887c658
+       00000001 00000cb0 00000001 00000084 00000000 d01b58c0 f6ba10e0 de49ade8
+       de49ae40 de49add0 f8e2526b d85c74b8 ca6e6dbc de49ae40 d85c746c eded72e8
+Call Trace:
+ [<c0405f35>] show_trace_log_lvl+0x1a/0x2f
+ [<c0405fe5>] show_stack_log_lvl+0x9b/0xa3
+ [<c04061a5>] show_registers+0x1b8/0x289
+ [<c0406389>] die+0x113/0x246
+ [<c0622f98>] do_trap+0x8a/0xa3
+ [<c04068dc>] do_divide_error+0x85/0x8f
+ [<c0622d6a>] error_code+0x72/0x78
+ [<f8e2526b>] serial_set_termios+0x86/0x8d [usbserial]
+ [<c0542d33>] set_termios+0x309/0x34c
+ [<c0542ece>] n_tty_ioctl+0x158/0x4ba
+ [<c054030b>] tty_ioctl+0xc78/0xcd6
+ [<c048aea0>] do_ioctl+0x50/0x67
+ [<c048b100>] vfs_ioctl+0x249/0x25c
+ [<c048b15c>] sys_ioctl+0x49/0x61
+ [<c0404ed2>] sysenter_past_esp+0x5f/0x99
+ =======================
+Code: 85 c0 79 14 c7 44 24 04 67 1c dd f8 c7 04 24 d4 1e dd f8 e8 96 99 65 c7 8b 46 04 be 00 84 03 00 e8 47 11 77 c7 31 d2 89 c1 89 f0 <f7> f1 66 85 c0 89 c1 b8 01 00 00 00 0f 44 c8 8b 45 d8 85 db 8b
+EIP: [<f8dd1747>] belkin_sa_set_termios+0x18e/0x5b9 [belkin_sa] SS:ESP 0068:de49ad6c
+
+The small patch below should take care of this situation.  Note that my kernel was tainted (vmware)
+but the problem will occur if tty_get_baud_rate() ever returns zero and should be taken care of.
+
+Signed-off-by: Andy Green <andy@warmcat.com>
+CC: William Greathouse <wgreathouse@smva.com>
+CC: Greg Kroah-Hartman <greg@kroah.com>
+---
+
+ drivers/usb/serial/belkin_sa.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/usb/serial/belkin_sa.c b/drivers/usb/serial/belkin_sa.c
+index e67ce25..86724e8 100644
+--- a/drivers/usb/serial/belkin_sa.c
++++ b/drivers/usb/serial/belkin_sa.c
+@@ -383,6 +383,10 @@ static void belkin_sa_set_termios (struct usb_serial_port *port, struct ktermios
+ 	}
+ 
+ 	baud = tty_get_baud_rate(port->tty);
++	if (baud == 0) {
++		dbg("%s - tty_get_baud_rate says 0 baud", __FUNCTION__);
++		return;
++	}
+ 	urb_value = BELKIN_SA_BAUD(baud);
+ 	/* Clip to maximum speed */
+ 	if (urb_value == 0)
+
