@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965035AbXHGUyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964927AbXHGU40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965035AbXHGUyW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935448AbXHGUsx
+	id S964927AbXHGU40 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935465AbXHGUtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:48:53 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56125 "EHLO
+	Tue, 7 Aug 2007 16:49:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56168 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935446AbXHGUsv (ORCPT
+	with ESMTP id S935431AbXHGUtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:48:51 -0400
-Date: Tue, 7 Aug 2007 13:44:34 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [2.6.22.2 review 19/84] Fix TCP IPV6 MD5 bug.
-Message-ID: <20070807204434.GT23028@kroah.com>
-References: <20070807204034.882009319@mini.kroah.org>
-MIME-Version: 1.0
+	Tue, 7 Aug 2007 16:49:16 -0400
+Date: Tue, 7 Aug 2007 21:49:09 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       v9fs-developer@lists.sourceforge.net, zippel@linux-m68k.org,
+       dhowells@redhat.com, linux-cifs-client@lists.samba.org,
+       codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
+       linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       cluster-devel@redhat.com, user-mode-linux-user@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
+       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into individual setattr functions (RESEND)
+Message-ID: <20070807204909.GA30159@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Jeff Layton <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+	zippel@linux-m68k.org, dhowells@redhat.com,
+	linux-cifs-client@lists.samba.org,
+	codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
+	linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+	cluster-devel@redhat.com,
+	user-mode-linux-user@lists.sourceforge.net,
+	mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com,
+	jffs-dev@axis.com, jfs-discussion@lists.sourceforge.net,
+	ocfs2-devel@oss.oracle.com, reiserfs-devel@vger.kernel.org,
+	bfennema@falcon.csc.calpoly.edu, xfs@oss.sgi.com
+References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-tcp-ipv6-md5-bug.patch"
-In-Reply-To: <20070807204157.GA23028@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+In-Reply-To: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+First thanks a lot for doing this work, it's been long needed.
 
-[TCPv6] MD5SIG: Ensure to reset allocation count to avoid panic.
-
-After clearing all passwords for IPv6 peers, we need to
-set allocation count to zero as well as we free the storage.
-Otherwise, we panic when a user trys to (re)add a password.
-
-Discovered and fixed by MIYAJIMA Mitsuharu <miyajima.mitsuharu@anchor.jp>.
-
-Signed-off-by: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/ipv6/tcp_ipv6.c |    1 +
- 1 file changed, 1 insertion(+)
-
---- a/net/ipv6/tcp_ipv6.c
-+++ b/net/ipv6/tcp_ipv6.c
-@@ -644,6 +644,7 @@ static int tcp_v6_md5_do_del(struct sock
- 			if (tp->md5sig_info->entries6 == 0) {
- 				kfree(tp->md5sig_info->keys6);
- 				tp->md5sig_info->keys6 = NULL;
-+				tp->md5sig_info->alloced6 = 0;
- 
- 				tcp_free_md5sig_pool();
- 
-
--- 
+Second please don't send out that many patches.  We encourage people
+to split things into small patches when the changes are logially
+separated.  Which these are not - it's a flag day change (which btw
+is fine despite the rants soe people spewed in reply to this), so it
+should be one single patch. (Or one for all mainline filesystems +
+one per fs only in -mm to make Andrew's life a little easier if you
+really care.)
