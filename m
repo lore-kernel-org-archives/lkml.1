@@ -1,70 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXHGWRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936713AbXHGWTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965527AbXHGWRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965385AbXHGWQt
+	id S936713AbXHGWTM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934431AbXHGWSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 18:16:49 -0400
-Received: from livid.absolutedigital.net ([66.92.46.173]:54210 "EHLO
-	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965384AbXHGWQq (ORCPT
+	Tue, 7 Aug 2007 18:18:16 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:48795 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935604AbXHGWSN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:16:46 -0400
-Date: Tue, 7 Aug 2007 18:15:37 -0400 (EDT)
-From: Cal Peake <cp@absolutedigital.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Chuck Ebbert <cebbert@redhat.com>, Gabriel C <nix.or.die@googlemail.com>,
-       Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: ACPI on Averatec 2370
-In-Reply-To: <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708071803570.28199@lancer.cnet.absolutedigital.net>
-References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
- <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
- <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
- <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net>
- <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net>
- <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
- <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net>
- <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
+	Tue, 7 Aug 2007 18:18:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qXBn15DbJdQJ7T7+MCyCMjuxqTK0NLWkNjbWVjWnDieT18CU6OE52p2GBBgu2ivIfYQIY5tS688YZtqvGNjZqMFGmJ36wWW+J9WLdyx9H1D+EuBRJ8QDjuksw5ZFexE25wFJyuNigAefUXqNC9Equ8LxHVE39TvJN9IQgAedIRQ=
+Message-ID: <f6ca9fed0708071518m159e0ef8vc2d8482913afbea6@mail.gmail.com>
+Date: Wed, 8 Aug 2007 00:18:12 +0200
+From: dragoran <drago01@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: allow non root users to set io priority "idle" ?
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <f6ca9fed0708071435h31531279gb6ea0fc760be98df@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de>
+	 <46B6F75D.1070808@gmail.com>
+	 <20070806103553.GA16133@one.firstfloor.org>
+	 <20070807204449.GA5245@kernel.dk>
+	 <f6ca9fed0708071435h31531279gb6ea0fc760be98df@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 3 Aug 2007, Linus Torvalds wrote:
+so there is no real reason not to allow it for non root users?
+removing the check is easy (3 lines) ....
+or are there any other issues/problems?
 
-> > MSR_K8_ENABLE_C1E lo == 0x04c14015
-> > MSR_K8_ENABLE_C1E hi == 0x00000000
-> > lo & ENABLE_C1E_MASK == 0
-> 
-> And yeah, that claims that C1E is not on, but:
-> 
-> > amd_apic_timer_broken: forcing return value of 1
-
-So it seems my initial debugging report was, err, incomplete. I failed to 
-notice that the amd_apic_timer_broken function was getting called twice, 
-once for each core.
-
-The second call shows this:
-
-  MSR_K8_ENABLE_C1E == 0x14c14015
-
-which causes our ENABLE_C1E_MASK check to be true and thus properly 
-return 1 from the function. So when we call the above function from 
-init_amd we prolly need to do a
-
-  set_bit(X86_FEATURE_LAPIC_TIMER_BROKEN, c->x86_capability);
-
-for each core if any of them happen to return true upon checking for a 
-broken timer.
-
-Andi, does that seem right?
-
--- 
-Cal Peake
-
+(resend sorry for the top post stupid gmail ;) )
