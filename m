@@ -1,68 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbXHGIXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758809AbXHGIXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbXHGIXJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbXHGIWz
+	id S1758809AbXHGIXl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbXHGIXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:22:55 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:46020 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753724AbXHGIWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:22:52 -0400
-Date: Tue, 7 Aug 2007 10:23:21 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070807082321.GB2120@ff.dom.local>
-References: <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com>
+	Tue, 7 Aug 2007 04:23:30 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52333 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756310AbXHGIX2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 04:23:28 -0400
+Date: Tue, 7 Aug 2007 17:24:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-ia64@vger.kernel.org, "tony.luck@intel.com" <tony.luck@intel.com>,
+       "Zoltan.Menyhart@bull.net" <Zoltan.Menyhart@bull.net>,
+       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [BUGFIX][PATCH] flush icache before set_pte() in ia64 take7, [0/2]
+Message-Id: <20070807172458.59931ef2.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: multipart/mixed;
+ boundary="Multipart=_Tue__7_Aug_2007_17_24_58_+0900_pcJYkuCVtbCZzNkI"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 09:46:36AM +0200, Marcin ¦lusarz wrote:
-> 2007/8/6, Ingo Molnar <mingo@elte.hu>:
-> > (..)
-> > please try Jarek's second patch too - there was a missing unmask.
-> >
-> >         Ingo
-> >
-> > -------------->
-> > Subject: genirq: fix simple and fasteoi irq handlers
-> > From: Jarek Poplawski <jarkao2@o2.pl>
-...
-> Network card still locks up (tested on 2.6.22.1). I had to upload more
-> data than usual (~350 MB vs ~1-100 MB) to trigger that bug but it
-> might be a coincidence...
+This is a multi-part message in MIME format.
 
-Thanks! It's a good news after all - it would be really strange why
-this place doesn't hit more people (it seems there is some safety
-elsewhere for this).
+--Multipart=_Tue__7_Aug_2007_17_24_58_+0900_pcJYkuCVtbCZzNkI
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-BTW: I hope, this previous Thomas' patch with Ingo's warning to resend.c
-(with a warning), had no problems with a similar load?
+This patch set is for fixing SIGILL trouble in NFS by adding
+sync_icache_dcache() before set_pte(). (see patches for detail)
+Tested with my NUMA box and works well.
 
-So, once more, I would suspect hw retrigger code. Ingo, IMHO, this
-patch for testing HARDIRQS_SW_RESEND could be reworked, so that
-desc->chip->retrigger() is done only for eadges and the tasklet only
-for levels. BTW, I think this current warning in the "temporary" is
-is too early - we don't know if after this the ->retrigger() will
-take place.
+Chanves V6 -> V7
+- dropped add-on patches for cpu family handling.
 
-Regards,
-Jarek P.
+For this post, I wrote an easy test for this SIGILL/NFS problem.
+Please verify.
 
-PS: Marcin, if you need a break in this testing let us know!
-I think the main idea of this bug is known enough.
+This is my result.
+==
+Distro: RHEL5.
+CPU: Montecito 1.4GHz, 4 sockets, 8core.
+
+NFS + Montecito + 2.6.23-rc2
+23 SIGILLS in 1000 trial
+
+ext3 + Montecito + 2.6.23-rc2
+0 erros in 1000 trial
+
+NFS + Itanium2(model2 revision2) + 2.6.23-rc2
+0 errors in 1000 trial
+
+NFS + Montecito + 2.6.23-rc2 + patch.
+0 errors in 1000 trial
+==
+
+Thanks,
+-Kame
+
+--Multipart=_Tue__7_Aug_2007_17_24_58_+0900_pcJYkuCVtbCZzNkI
+Content-Type: application/x-gtar;
+ name="nfstest.tgz"
+Content-Disposition: attachment;
+ filename="nfstest.tgz"
+Content-Transfer-Encoding: base64
+
+H4sIAAgxuEYAA+3Wb28TRx4A4Lz1foppyrUO5I+dOPZdUzghSNvogKsKlaprkbW1J2SLY1vrTQil
+fPebtQM4OTikE6Gt7vm9yD47OzszOzO/ccaHsyrOqq2VK4xWil6vd35tn1+359fzWGm3urvd1k5r
+p7O70mpv9zrtlbB7lYN6FSezKi9DWHmaH8df82f5u+q97/mfNMbn638/fxoPi1G8ij7qBe52u+9c
+/53d7vn6p3Xf2Unr3+m00/q3rmIwl+P/fP3v3Ln5ZDDI7nx17/bXD8PNsPEky0ejL0K9KaZ5VcVy
+nGWjvHwS+/EsDjYHX4RBGfMq9pcKp6Ossbn11vKldhaNbg7CcnNZ41rzzp21kP7Oh7AWNibLnb/t
+nbAxmlZHqbdhlg1GMR9/kTXK47BxuKg8Wa58obHs957tP168yv/FNF9NH+/J/3a32zvP/3Z7p9Op
+87/V68j/jxGfFuPB6GQYw5ezalhMNo9uZW+KzrPsYuGseDLOR5fKquGo+PlS2eAozl/N4tk8k08n
+xXApNZv1/dpedt5J//ikimf9Ksyv6ST69tE33+3fvtu///2j/R/6Bw8OHh3cvnfwr/3v9rLs02H6
+sRrHcP/2D/1FtYeNdjfL5l1cL0/Gs+aCqbe17EXWGExP+rNY1c3ns6d7WWM0GT8JqcbNcL1Z+/pa
+qprK+/07337fT738s/lZXXXtddnD/UfNYrgeXhfPP7BuNT9Mgymq583WepgVv8bJYfN1f2tLL2xd
+D8/yogqHkzLUu64K17eyxsXvH00GT1PPtetXLj48GV96vDSb6fbl+QSkFSpGo/5RPh6OYtksxlVd
+NJ+Hw2mZbg+bacFiWa6H1YcHXx/cuxfKOIjFaRyGTz5ZrRuOZ0XVbC/arN8/zovxvKHU4WA9DI5S
+ztSTe/rj43m79aNiabxVSPhxaXkev5nzy8WLxgZ7i1bSzM3SquTVpGjOO2g/TsNIsz3fds3FeNcv
+feN/TtWliUpfnia9WaSWW3uhCF/O+0m6cWMtpPE30rCKx+lp/RGvm1r8ojU/q7+leLweHnxfd11v
+r7Sq8zfqtl+mwY1inM7n630r9u5hLPX7yyTN9nKn8xkoY3WS0qhVL8oHy/9X5//y7+sHa/w8/tv5
+3+l0et105i/O/1anlf4XbLV3t3e2nf8fI04no7xK//eHOvfO9rK3HtLZi/rp87R9n6edexZuhDYz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMz
+MzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzMzO/zS+zlSuM8eGsirNq
+67v923fv719NH60U3U5npdXupei+uZ7H7nZnpd3q7nZb273ebis9b3V22iuhdTXDuRgnsyovQ/gY
+Xf0R4+HB1wf37oUyTsvJ8GQQyzAZh/uTcRUHRTXZevDVwyxrb4bB5HhajGKojopZmMUq/Pw8/OU4
+fxpDPhpl25thOsoHMXxe76VpXlWxHH8e8vFwUdJPu2xzdvR53XbNbGczlCfjsPQsy5ZuQuokH/6S
+liYOQzUJfw2D6UmYPU/3x6F5EE5mcbi5lh0chueTk3CUn8YwyssnafCfhslhXXm2nkYU81lMX/as
+LKqYZSGEpdGlNjduXSh4/epmlj2af+ZRHI1CMT6dPI2z0E4bNVRlkY9m8w9LMzYpq9nitViWkzK9
+t/GP/Dheab5+6HiV//PZnw3KYlqlBfiwfdQ53tvdfWf+d3Z2X+V/p7e7nZ5vd3Z35P/HiE8/2fq5
+GG/VCTiMg5RFMWwUKd1PxtXNessvl853+c1Wlj07qs+CH8O1eb2w8aQKrfB4LwwnWSMOjiahHW6F
+rXSiDLZS0m6dHm8Ny8m0P8gHR3FWJ+I8Nrcu5OPr8jJWN6/9PWsUh3UX6S5sjOOig+oojrNGYzGQ
+a/PLjfrnctHr6n5dsJo1DoussfiExQg36jqLKncn47h6PvBsmG6ybPFgnseLBsKi5exPlcj/Y7zK
+/0EZ8yr258doP57FweZ09KH6WOR/b3Httc+v22/yf7t1nv+tTmt+TnR77Y+d/0/Tyf1r/ix/V733
+Pf+TRsr/k1k5PwOmsRxl2WQax81vbj+4e29/PazeuLW0Iwara+G338KwiGF1kI/HkyrUtcOFKntZ
+Ni2LdCos2girp5NRXtXnRV14tvfTOFW5XKMYLjXSrO/X3lLvRX3zfNHCteJma+/8IGpeK8KX4W91
+rIUXWePiWz9Vb/6Znr/auFbcuFH/X32x3sv5w997PYQQQoiPEf8GI6L1KQBwEgA=
+
+--Multipart=_Tue__7_Aug_2007_17_24_58_+0900_pcJYkuCVtbCZzNkI--
+
