@@ -1,94 +1,337 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967527AbXHGVzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbXHGV4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967527AbXHGVzD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966578AbXHGVce
+	id S1752496AbXHGV4G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759085AbXHGVcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:32:34 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60826 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966538AbXHGVcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:32:36 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50036 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966545AbXHGVcc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Aug 2007 17:32:32 -0400
-Message-ID: <46B8E4EB.1040208@garzik.org>
-Date: Tue, 07 Aug 2007 17:32:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: [PATCH 20/25] sysfs: Rename Support multiple superblocks
+References: <11860582832964-git-send-email-htejun@gmail.com>
+	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
+	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
+	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Tue, 07 Aug 2007 15:31:18 -0600
+In-Reply-To: <m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Tue, 07 Aug 2007 15:29:23 -0600")
+Message-ID: <m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Jesper Juhl <jesper.juhl@gmail.com>, Kyle McMartin <kyle@mcmartin.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>, Valerie Henson <val@nmt.edu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       tulip-users@lists.sourceforge.net, david@lang.hm,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH][RESEND] Semi-pointless NULL test in uli526x driver
-References: <200708042032.12317.jesper.juhl@gmail.com>	 <46B8E2BE.1050408@garzik.org> <9a8748490708071428i7aa2289bi90045a8b07fbf816@mail.gmail.com>
-In-Reply-To: <9a8748490708071428i7aa2289bi90045a8b07fbf816@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesper Juhl wrote:
-> On 07/08/07, Jeff Garzik <jeff@garzik.org> wrote:
->> Jesper Juhl wrote:
->>> (resending previously submitted patch from 16/7-2007 22:40)
->>>
->>>
->>> Hi,
->>>
->>> In drivers/net/tulip/uli526x.c::uli526x_interrupt() there's a test
->>> of the function argument 'void *dev_id' against NULL. But that
->>> test is pretty pointless, since if ever 'dev_id' is NULL we'll
->>> already have crashed inside "netdev_priv(dev)".
->>>
->>> I don't think dev_id can ever actually be NULL, so the whole block
->>> inside "if (!dev) {" could probably just go away. But I guess
->>> there's a good reason someone put that ULI526X_DBUG() in there - and
->>> if 'dev_id' /can/ actually be NULL then it's nice to have and in
->>> that case this patch actually fixes a possible crash (hence the
->>> version number update).
->>> So I guess that in this case we should just move the
->>> "db = netdev_priv(dev)" assignment past that NULL test. That's what
->>> this patch does.
->>>
->>> Found by the Coverity checker.
->>> Compile tested.
->>>
->>>
->>> PS. Please keep me on Cc when replying.
->>>
->>>
->>> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
->> Just remove the dev==NULL test...
->>
-> 
-> Hmm, it would seem there's some disagreement about that :
-> 
-> On 04/08/07, Kyle McMartin <kyle@mcmartin.ca> wrote:
-> ...
->> It *can* be null, in the case of another handler being registered on the
->> same irq number, passing NULL for the cookie.
->>
->> Ack. Will apply.
->>
->> Regards,
->>         Kyle
->>
-> 
-> I'll let you and Kyle fight it out :-)
 
+This patch modifies the sysfs_rename_dir and sysfs_move_dir
+to support multiple sysfs dentry trees rooted in different
+sysfs superblocks.
 
-My official opinion (for net drivers and ATA at least):  It is pointless 
-having such a check in the hottest of driver hot paths, since a large 
-majority of drivers do not have such a check.
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/dir.c |  193 +++++++++++++++++++++++++++++++++++++++-----------------
+ 1 files changed, 136 insertions(+), 57 deletions(-)
 
-It is better to fix the extremely rare oddball that passes NULL to 
-request_irq(), than to update all drivers to be slower due to the oddballs.
-
-	Jeff
-
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index ac45523..34eabf4 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -855,42 +855,113 @@ struct dentry *sysfs_get_dentry(struct super_block *sb, struct sysfs_dirent *sd)
+ 	return dentry;
+ }
+ 
++struct sysfs_rename_struct {
++	struct list_head list;
++	struct dentry *old_dentry;
++	struct dentry *new_dentry;
++	struct dentry *old_parent;
++	struct dentry *new_parent;
++};
++
++static void post_rename(struct list_head *head)
++{
++	struct sysfs_rename_struct *srs;
++	while (!list_empty(head)) {
++		srs = list_entry(head->next, struct sysfs_rename_struct, list);
++		dput(srs->old_dentry);
++		dput(srs->new_dentry);
++		dput(srs->old_parent);
++		dput(srs->new_parent);
++		list_del(&srs->list);
++		kfree(srs);
++	}
++}
++
++static int prep_rename(struct list_head *head,
++	struct sysfs_dirent *sd, struct sysfs_dirent *new_parent_sd,
++	const char *name)
++{
++	struct sysfs_rename_struct *srs;
++	struct super_block *sb;
++	struct dentry *dentry;
++	int error;
++
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		dentry = sysfs_get_dentry(sb, sd);
++		if (!dentry)
++			continue;
++		if (IS_ERR(dentry)) {
++			error = PTR_ERR(dentry);
++			goto err_out;
++		}
++
++		srs = kzalloc(sizeof(*srs), GFP_KERNEL);
++		if (!srs) {
++			dput(dentry);
++			goto err_out;
++		}
++
++		INIT_LIST_HEAD(&srs->list);
++		list_add(head, &srs->list);
++		srs->old_dentry = dentry;
++		srs->old_parent = dget(dentry->d_parent);
++
++		dentry = sysfs_get_dentry(sb, new_parent_sd);
++		if (IS_ERR(dentry)) {
++			error = PTR_ERR(dentry);
++			goto err_out;
++		}
++		srs->new_parent = dentry;
++
++		error = -ENOMEM;
++		dentry = d_alloc_name(srs->new_parent, name);
++		if (!dentry)
++			goto err_out;
++		srs->new_dentry = dentry;
++	}
++	return 0;
++
++err_out:
++	post_rename(head);
++	return error;
++}
++
++
+ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ {
+ 	struct sysfs_dirent *sd = kobj->sd;
+-	struct dentry *parent = NULL;
+-	struct dentry *old_dentry = NULL, *new_dentry = NULL;
++	struct list_head todo;
++	struct sysfs_rename_struct *srs;
++	struct inode *parent_inode = NULL;
+ 	const char *dup_name = NULL;
+ 	int error;
+ 
++	INIT_LIST_HEAD(&todo);
+ 	mutex_lock(&sysfs_rename_mutex);
+ 
+ 	error = 0;
+ 	if (strcmp(sd->s_name, new_name) == 0)
+ 		goto out;	/* nothing to rename */
+ 
+-	/* get the original dentry */
+-	old_dentry = sysfs_get_dentry(sysfs_sb, sd);
+-	if (IS_ERR(old_dentry)) {
+-		error = PTR_ERR(old_dentry);
+-		goto out;
+-	}
++	sysfs_grab_supers();
++	error = prep_rename(&todo, sd, sd->s_parent, new_name);
++	if (error)
++		goto out_release;
+ 
+-	parent = old_dentry->d_parent;
++	error = -ENOMEM;
++	mutex_lock(&sysfs_mutex);
++	parent_inode = sysfs_get_inode(sd->s_parent);
++	mutex_unlock(&sysfs_mutex);
++	if (!parent_inode)
++		goto out_release;
+ 
+-	/* lock parent and get dentry for new name */
+-	mutex_lock(&parent->d_inode->i_mutex);
++	mutex_lock(&parent_inode->i_mutex);
+ 	mutex_lock(&sysfs_mutex);
+ 
+ 	error = -EEXIST;
+ 	if (sysfs_find_dirent(sd->s_parent, new_name))
+ 		goto out_unlock;
+ 
+-	error = -ENOMEM;
+-	new_dentry = d_alloc_name(parent, new_name);
+-	if (!new_dentry)
+-		goto out_unlock;
+-
+ 	/* rename kobject and sysfs_dirent */
+ 	error = -ENOMEM;
+ 	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
+@@ -901,23 +972,25 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+ 	if (error)
+ 		goto out_unlock;
+ 
+-	mutex_lock(&sysfs_mutex);
+ 	dup_name = sd->s_name;
+ 	sd->s_name = new_name;
+-	mutex_unlock(&sysfs_mutex);
+ 
+ 	/* rename */
+-	d_add(new_dentry, NULL);
+-	d_move(old_dentry, new_dentry);
++	list_for_each_entry(srs, &todo, list) {
++		d_add(srs->new_dentry, NULL);
++		d_move(srs->old_dentry, srs->new_dentry);
++	}
+ 
+ 	error = 0;
+- out_unlock:
++out_unlock:
+ 	mutex_unlock(&sysfs_mutex);
+-	mutex_unlock(&parent->d_inode->i_mutex);
++	mutex_unlock(&parent_inode->i_mutex);
+ 	kfree(dup_name);
+-	dput(old_dentry);
+-	dput(new_dentry);
+- out:
++out_release:
++	iput(parent_inode);
++	post_rename(&todo);
++	sysfs_release_supers();
++out:
+ 	mutex_unlock(&sysfs_rename_mutex);
+ 	return error;
+ }
+@@ -926,10 +999,12 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+ {
+ 	struct sysfs_dirent *sd = kobj->sd;
+ 	struct sysfs_dirent *new_parent_sd;
+-	struct dentry *old_parent, *new_parent = NULL;
+-	struct dentry *old_dentry = NULL, *new_dentry = NULL;
++	struct list_head todo;
++	struct sysfs_rename_struct *srs;
++	struct inode *old_parent_inode = NULL, *new_parent_inode = NULL;
+ 	int error;
+ 
++	INIT_LIST_HEAD(&todo);
+ 	mutex_lock(&sysfs_rename_mutex);
+ 	BUG_ON(!sd->s_parent);
+ 	new_parent_sd = new_parent_kobj->sd ? new_parent_kobj->sd : &sysfs_root;
+@@ -938,24 +1013,29 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
+ 	if (sd->s_parent == new_parent_sd)
+ 		goto out;	/* nothing to move */
+ 
+-	/* get dentries */
+-	old_dentry = sysfs_get_dentry(sysfs_sb, sd);
+-	if (IS_ERR(old_dentry)) {
+-		error = PTR_ERR(old_dentry);
+-		goto out;
+-	}
+-	old_parent = old_dentry->d_parent;
++	sysfs_grab_supers();
++	error = prep_rename(&todo, sd, new_parent_sd, sd->s_name);
++	if (error)
++		goto out_release;
+ 
+-	new_parent = sysfs_get_dentry(sysfs_sb, new_parent_sd);
+-	if (IS_ERR(new_parent)) {
+-		error = PTR_ERR(new_parent);
+-		goto out;
+-	}
++	error = -ENOMEM;
++	mutex_lock(&sysfs_mutex);
++	old_parent_inode = sysfs_get_inode(sd->s_parent);
++	mutex_unlock(&sysfs_mutex);
++	if (!old_parent_inode)
++		goto out_release;
++
++	error = -ENOMEM;
++	mutex_lock(&sysfs_mutex);
++	new_parent_inode = sysfs_get_inode(new_parent_sd);
++	mutex_unlock(&sysfs_mutex);
++	if (!new_parent_inode)
++		goto out_release;
+ 
+ again:
+-	mutex_lock(&old_parent->d_inode->i_mutex);
+-	if (!mutex_trylock(&new_parent->d_inode->i_mutex)) {
+-		mutex_unlock(&old_parent->d_inode->i_mutex);
++	mutex_lock(&old_parent_inode->i_mutex);
++	if (!mutex_trylock(&new_parent_inode->i_mutex)) {
++		mutex_unlock(&old_parent_inode->i_mutex);
+ 		goto again;
+ 	}
+ 	mutex_lock(&sysfs_mutex);
+@@ -964,15 +1044,11 @@ again:
+ 	if (sysfs_find_dirent(new_parent_sd, sd->s_name))
+ 		goto out_unlock;
+ 
+-	error = -ENOMEM;
+-	new_dentry = d_alloc_name(new_parent, sd->s_name);
+-	if (!new_dentry)
+-		goto out_unlock;
+-
+ 	error = 0;
+-	d_add(new_dentry, NULL);
+-	d_move(old_dentry, new_dentry);
+-	dput(new_dentry);
++	list_for_each_entry(srs, &todo, list) {
++		d_add(srs->new_dentry, NULL);
++		d_move(srs->old_dentry, srs->new_dentry);
++	}
+ 
+ 	/* Remove from old parent's list and insert into new parent's list. */
+ 	sysfs_unlink_sibling(sd);
+@@ -981,14 +1057,17 @@ again:
+ 	sd->s_parent = new_parent_sd;
+ 	sysfs_link_sibling(sd);
+ 
+- out_unlock:
++out_unlock:
+ 	mutex_unlock(&sysfs_mutex);
+-	mutex_unlock(&new_parent->d_inode->i_mutex);
+-	mutex_unlock(&old_parent->d_inode->i_mutex);
+- out:
+-	dput(new_parent);
+-	dput(old_dentry);
+-	dput(new_dentry);
++	mutex_unlock(&new_parent_inode->i_mutex);
++	mutex_unlock(&old_parent_inode->i_mutex);
++
++out_release:
++	iput(new_parent_inode);
++	iput(old_parent_inode);
++	post_rename(&todo);
++	sysfs_release_supers();
++out:
+ 	mutex_unlock(&sysfs_rename_mutex);
+ 	return error;
+ }
+-- 
+1.5.1.1.181.g2de0
 
