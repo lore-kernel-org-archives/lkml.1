@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758837AbXHGJNB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbXHGJPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758837AbXHGJNB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:13:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbXHGJMu
+	id S1759595AbXHGJPF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbXHGJOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:12:50 -0400
-Received: from swsoft-mipt-nat.sw.ru ([195.214.233.10]:56778 "EHLO iris"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751367AbXHGJMu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:12:50 -0400
-Date: Tue, 7 Aug 2007 13:13:18 +0400
-From: "Denis V. Lunev" <den@openvz.org>
-To: den@openvz.org, dev@openvz.org, akpm@linux-foundation.org, gregkh@suse.de
-Cc: devel@openvz.org, linux-kernel@vger.kernel.org, xemul@openvz.org
-Subject: [PATCH] pci_get_device call from interrupt in reboot fixups
-	(description fixed)
-Message-ID: <20070807091318.GA14417@iris.sw.ru>
+	Tue, 7 Aug 2007 05:14:55 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:17433 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757409AbXHGJOy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 05:14:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QCOhZ96yGx6EmiQnz54UosSSkes1m+dlQwUV5Km940nX2droxCSifqWnW5ZzcNTfqX4VQ2FoaXh5gC6ADYxfBhsZd6VRl8JcjAMGioEST5M9QVuxf+exMbUm4z5Y3/cIDoEjo1uLfVWQW+QsfavQamZ4u9EAgtoPlaV9MVGekrE=
+Message-ID: <52d486620708070214y4957e5b2ud34aa3252bf92c9@mail.gmail.com>
+Date: Tue, 7 Aug 2007 12:14:53 +0300
+From: "Amit Kucheria" <kucheria.amit@gmail.com>
+To: "Pete Zaitcev" <zaitcev@redhat.com>
+Subject: Re: [PATCH] USB: Only enable autosuspend by default on certain device classes
+Cc: "Chuck Ebbert" <cebbert@redhat.com>,
+       "Matthew Garrett" <mjg59@srcf.ucam.org>,
+       "Oliver Neukum" <oliver@neukum.org>, "Rogan Dawes" <lists@dawes.za.net>,
+       "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       "David Brownell" <david-b@pacbell.net>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net
+In-Reply-To: <20070803125618.36ea1b2f.zaitcev@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org>
+	 <20070803112824.GA16802@srcf.ucam.org>
+	 <200708031344.03282.oliver@neukum.org>
+	 <20070803120418.GB16802@srcf.ucam.org> <46B31F03.80908@dawes.za.net>
+	 <20070803123253.GA17725@srcf.ucam.org>
+	 <20070803174435.GA17053@suse.de>
+	 <20070803174810.GA23241@srcf.ucam.org> <46B38211.4030004@redhat.com>
+	 <20070803125618.36ea1b2f.zaitcev@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following calltrace is possible now:
- handle_sysrq
-   machine_emergency_restart
-     mach_reboot_fixups
-       pci_get_device
-         pci_get_subsys
-	   down_read
-The patch skips reboot fixup if called from sysrq-B code.
+On 8/3/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
 
-Signed-off-by: Denis V. Lunev <den@openvz.org>
----
- reboot_fixups.c |    6 ++++++
-  1 file changed, 6 insertions(+)
+> I am wondering if Ubuntu has better user reporting, so if Matthew
+> complains, it really means something.
 
---- ./arch/i386/kernel/reboot_fixups.c.fixup2	2007-08-07 12:30:30.000000000 +0400
-+++ ./arch/i386/kernel/reboot_fixups.c	2007-08-07 12:31:22.000000000 +0400
-@@ -11,6 +11,7 @@
- #include <asm/delay.h>
- #include <linux/pci.h>
- #include <linux/reboot_fixups.h>
-+#include <linux/interrupt.h>
- 
- static void cs5530a_warm_reset(struct pci_dev *dev)
- {
-@@ -43,6 +44,11 @@ void mach_reboot_fixups(void)
- 	struct pci_dev *dev;
- 	int i;
- 
-+	/* we can be called from sysrq-B code. In such a case it is
-+	 * prohibited to dig PCI */
-+	if (in_interrupt())
-+		return;
-+
- 	for (i=0; i < ARRAY_SIZE(fixups_table); i++) {
- 		cur = &(fixups_table[i]);
- 		dev = pci_get_device(cur->vendor, cur->device, NULL);
+https://bugs.launchpad.net/bugs/85488
+
+Most of the current quirks list was assembled by Oliver from this thread IIRC.
+
+/Amit
+
+--
+Amit Kucheria, Linux developer
