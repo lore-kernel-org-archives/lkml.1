@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760991AbXHGJqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761937AbXHGJsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760991AbXHGJqs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758270AbXHGJqk
+	id S1761937AbXHGJsy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758609AbXHGJsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:46:40 -0400
-Received: from mail.gmx.net ([213.165.64.20]:58076 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758133AbXHGJqj convert rfc822-to-8bit (ORCPT
+	Tue, 7 Aug 2007 05:48:46 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:59092 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758542AbXHGJsp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:46:39 -0400
-X-Authenticated: #4463548
-X-Provags-ID: V01U2FsdGVkX19vbvUT9ZNv9kJpAieUyKfw1FeBFIMoScpdpdYgt9
-	ZTp9dGyRsQ+X2S
-From: Dimitrios Apostolou <jimis@gmx.net>
-To: =?utf-8?q?Rafa=C5=82_Bilski?= <rafalbilski@interia.pl>
-Subject: Re: high system cpu load during intense disk i/o
-Date: Tue, 7 Aug 2007 12:43:51 +0300
-User-Agent: KMail/1.9.7
-Cc: linux-kernel@vger.kernel.org
-References: <200708031903.10063.jimis@gmx.net> <46B7C18E.1050008@gmx.net> <46B83560.2060107@interia.pl>
-In-Reply-To: <46B83560.2060107@interia.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708071243.52430.jimis@gmx.net>
-X-Y-GMX-Trusted: 0
+	Tue, 7 Aug 2007 05:48:45 -0400
+Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of
+	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <200708061356.23030.rjw@sisk.pl>
+References: <200708051906.22865.rjw@sisk.pl>
+	 <1186398917.28655.69.camel@johannes.berg>
+	 <20070806113644.GA1790@elf.ucw.cz>  <200708061356.23030.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DLw5ronqpyv8r4EOMP/u"
+Date: Tue, 07 Aug 2007 11:42:36 +0200
+Message-Id: <1186479756.4067.23.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.3 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 August 2007 12:03:28 Rafał Bilski wrote:
-> >> Just tested (plain curiosity).
-> >> via82cxxx average result @533MHz:
-> >> /dev/hda:
-> >> Timing cached reads:   232 MB in  2.00 seconds = 115.93 MB/sec
-> >> Timing buffered disk reads:   64 MB in  3.12 seconds =  20.54 MB/sec
-> >> pata_via average result @533MHz:
-> >> /dev/sda:
-> >> Timing cached reads:   234 MB in  2.01 seconds = 116.27 MB/sec
-> >> Timing buffered disk reads:   82 MB in  3.05 seconds =  26.92 MB/sec
-> >
-> > Interesting! I haven't tried libata myself on that system, I only have
-> > remote access to it so I'm a bit afraid...
->
-> Just change root=/dev/hda1 to append="root=/dev/sda1" in lilo.conf.
-> And change fstab. If You don't change "/" then system will go into single
-> user mode after reboot.
->
-> > Rafal, I hope that system you run hdparm on isn't the archlinux one! Is
-> > it easy to load an old kernel (even two years old) and do the same test?
-> > If it is, please let me know of the results.
->
-> I don't think it is possible. If I remember right kernel can't be older
-> then glibc kernel headers.
-> Btw. My disk is 20GB 2,5" ATA33. I wonder how 26MB/s is possible. I don't
-> expect more.
 
-Aha! So perhaps libata gives even greater performance benefit for better 
-drives. I'll try to get local access to my PC and try it. Thanks. 
+--=-DLw5ronqpyv8r4EOMP/u
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, 2007-08-06 at 13:56 +0200, Rafael J. Wysocki wrote:
+> On Monday, 6 August 2007 13:36, Pavel Machek wrote:
+> > On Mon 2007-08-06 13:15:17, Johannes Berg wrote:
+> > > On Mon, 2007-08-06 at 12:26 +0200, Pavel Machek wrote:
+> > >=20
+> > > > Well, so that it does not bitrot? This is few bytes, I'd say, and I
+> > > > believe we have too many config options already.
+> > >=20
+> > > This is not an option the user is ever going to see. I think I'd
+> > > prefer
+> >=20
+> > Ok, option that users can't set is probably not evil.
+> >=20
+> > > having two new per-ARCH config symbols though:
+> > > config SUSPEND_UP_POSSIBLE
+> > > 	depends on ARCH_SUSPEND_UP_POSSIBLE
+> > >=20
+> > > and then the architecture gets to define that when it can suspend.
+> >=20
+> > Looks like a plan.
+>=20
+> Hmm, why don't we do the $subject change first (the advantage if it is th=
+at
+> the patch is ready) and then move the necessary definitions to the arch l=
+evel?
 
-Dimitris
+Sounds good to me as well, that way we already have the basic stuff in
+place. Hey, we could even migrate over slowly by making
+SUSPEND_UP_POSSIBLE depend on ARCH_SUSPEND_UP_POSSIBLE *and* all the
+arches that support it right now.
+
+johannes
+
+--=-DLw5ronqpyv8r4EOMP/u
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGuD6M/ETPhpq3jKURAsiEAJ9+Yj79xkHtYaFNqrv0K9IFe05PKgCcDr6u
+ynIkSWkktvmStBdUjKR9BgU=
+=p2UK
+-----END PGP SIGNATURE-----
+
+--=-DLw5ronqpyv8r4EOMP/u--
 
