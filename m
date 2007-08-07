@@ -1,88 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936679AbXHGWYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937077AbXHGWYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936679AbXHGWYA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934679AbXHGWXX
+	id S937077AbXHGWYf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932492AbXHGWXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 18:23:23 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56118 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760342AbXHGWXR (ORCPT
+	Tue, 7 Aug 2007 18:23:46 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:57856 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934547AbXHGWXn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:23:17 -0400
-Date: Tue, 7 Aug 2007 15:23:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Rafa=5F=5F?= Bilski <rafalbilski@interia.pl>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Remove bdput from do_open() in fs/block_dev.c
-Message-Id: <20070807152306.d4ef89a3.akpm@linux-foundation.org>
-In-Reply-To: <46B4F432.4020408@interia.pl>
-References: <46B4F432.4020408@interia.pl>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Aug 2007 18:23:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=c16zg4ZdGa/19pDqR+r3n9M5TrTxAsgp0G/H5khK4/wLQ7+R5zJM8s0lYXJ0FeVX6hIKLtLw+YXFTVqS3juWtsYX7HPHTV+mMe6YPAX6MC9gs9BkfmEK7TiRo+cJWz0gs/+OkchJAc39juJffBGazTNBpU8k2fSxsjNKIz7WGlw=
+Message-ID: <3ae72650708071523s24d80ae4v2590c50aea04c850@mail.gmail.com>
+Date: Wed, 8 Aug 2007 00:23:42 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Chuck Ebbert" <cebbert@redhat.com>
+Subject: Re: 2.6.22: pcspkr driver no longer loads automatically
+Cc: "Jeff Garzik" <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Dmitry Torokhov" <dtor@insightbb.com>
+In-Reply-To: <46B8E773.5020406@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46B8C8FA.9020100@redhat.com> <46B8D984.7040602@garzik.org>
+	 <46B8E773.5020406@redhat.com>
+X-Google-Sender-Auth: b5294a09edbf2969
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 04 Aug 2007 23:48:34 +0200
-Rafa__ Bilski <rafalbilski@interia.pl> wrote:
+On 8/7/07, Chuck Ebbert <cebbert@redhat.com> wrote:
+> On 08/07/2007 04:43 PM, Jeff Garzik wrote:
+> > Chuck Ebbert wrote:
+> >> With no other changes but a kernel upgrade, the pcspkr driver
+> >> doesn't load automatically anymore. No changes to that driver
+> >> jump out, so where else could the problem be? Something to
+> >> do with the device class changes maybe?
+> >
+> > This has long been a problem for me on Fedora, long before 2.6.22.  I
+> > would never ever have the glorious system beeps, unless I built the
+> > module into my kernel.
+> >
+> > I would look into distro areas and see why it's not getting loaded.
+> >
+>
+> Seems to be some kind of udev / hal magic loading it. With 2.6.20/21
+> it worked for most people, now it seems totally broken. Maybe we should
+> just load it unconditionally.
 
-> I mistyped
-> # echo /dev/hdc1 >/sys/module/block2mtd/parameters/block2mt
-> instead of sdc1. There is no /dev/hdc1. I have DVD-ROM as /dev/hdc.
-> # dmesg
-> block2mtd: version $Revision: 1.30 $
-> block2mtd: error: cannot open device /dev/hdc1
-> Looks right, but tray is locked. And it doesn't want to get out.
-> # eject
-> hdc: irq timeout: status=0xd0 { Busy }
-> ide: failed opcode was: unknown
-> WARNING: at kernel/irq/resend.c:70 check_irq_resend()
->  [<c013444b>] check_irq_resend+0xab/0xc0
->  [<c0133e2a>] enable_irq+0x4a/0xa0
->  [<c02c26e7>] ide_error+0x47/0xa0
->  [<c02d1e60>] cdrom_newpc_intr+0x0/0x300
->  [<c02c2bc0>] ide_timer_expiry+0x1e0/0x2d0
->  [<c02c29e0>] ide_timer_expiry+0x0/0x2d0
->  [<c011b986>] run_timer_softirq+0x116/0x160
->  [<c0127e75>] hrtimer_interrupt+0x165/0x1a0
->  [<c0118772>] __do_softirq+0x42/0x90
->  [<c01187e6>] do_softirq+0x26/0x30
->  [<c0118aaa>] irq_exit+0x5a/0x60
->  [<c0104817>] do_IRQ+0x47/0x80
->  [<c0102c23>] common_interrupt+0x23/0x30
->  [<c0281a46>] acpi_processor_idle+0x162/0x380
->  [<c0100d0e>] cpu_idle+0x4e/0x70
->  [<c0524ac5>] start_kernel+0x1f5/0x240
->  [<c05243a0>] unknown_bootoption+0x0/0x1e0
->  =======================
-> 
-> Removing bdput from do_open() in fs/block_dev.c seems 
-> to be a cure for irq timeout.
-> 
-> Signed-off-by: Rafa__ Bilski <rafalbilski@interia.pl>
-> --- 
-> diff --git a/fs/block_dev.c b/fs/block_dev.c 
-> --- a/fs/block_dev.c
-> +++ b/fs/block_dev.c
-> @@ -1120,7 +1120,6 @@ static int do_open(struct block_device *
->  	disk = get_gendisk(bdev->bd_dev, &part);
->  	if (!disk) {
->  		unlock_kernel();
-> -		bdput(bdev);
->  		return ret;
->  	}
->  	owner = disk->fops->owner;
-> 
+It doesn't have any aliases, so seems it was never autoloaded.
+It's like mousedev, and should probably just be built-in.
 
->From my reading, this patch will fix the blkdev_get() error path, but will
-break the blkdev_open() path.
-
-It could be that we also need to add a bdput() into blkdev_open() if
-do_open() failed (to balance blkdev_open()'s bd_acquire()).
-
-It's pretty damn ugly that do_open() attempts to fix up the caller's
-refcounting.
-
+Kay
