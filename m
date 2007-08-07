@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934431AbXHGNY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933280AbXHGN2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934431AbXHGNY1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761225AbXHGNYU
+	id S933280AbXHGN2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbXHGN2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:24:20 -0400
-Received: from el-out-1112.google.com ([209.85.162.183]:28930 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758310AbXHGNYT (ORCPT
+	Tue, 7 Aug 2007 09:28:03 -0400
+Received: from sceptre.pobox.com ([207.106.133.20]:59018 "EHLO
+	sceptre.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbXHGN2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:24:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=DsoTBsvTOkA7rTEk5iGueKsXx5n2VYa9qCUve/YuTlSGuIdI3SMF+H2l12eCGKrbwCHNzPipTIw0h7mJtfM0Tlme9nJH+mSwyTUTgKR/IjzNZYDa7notxxWUdnk+iMvpv5cqTy/hwwxEJMTXQd9DuVlR8Gf77RsbnDT73d6xoLY=
-Message-ID: <4727185d0708070624q72f8660bif37074036c1401a5@mail.gmail.com>
-Date: Tue, 7 Aug 2007 15:24:17 +0200
-From: "Vincent Legoll" <vincent.legoll@gmail.com>
-To: "Willy Tarreau" <w@1wt.eu>
-Subject: [PATCH] 2.4.35 compilation failed in LVM
-Cc: linux-kernel@vger.kernel.org
+	Tue, 7 Aug 2007 09:28:00 -0400
+Message-ID: <46B87357.8040802@hp.com>
+Date: Tue, 07 Aug 2007 09:27:51 -0400
+From: "Alan D. Brunelle" <Alan.Brunelle@hp.com>
+Reply-To: Alan.Brunelle@hp.com
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_38222_7453949.1186493057618"
+Cc: Jens Axboe <jens.axboe@oracle.com>, btrace <linux-btrace@vger.kernel.org>,
+       dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix remap handling by blktrace
+Content-Type: multipart/mixed;
+ boundary="------------060602090101050504070809"
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_38222_7453949.1186493057618
-Content-Type: text/plain; charset=ISO-8859-1
+This is a multi-part message in MIME format.
+--------------060602090101050504070809
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-Hello,
 
-I tried to get 2.4.35 to compile on a file server I manage, and got that:
 
-gcc -D__KERNEL__ -I/usr/src/linux-2.4/include -Wall
--Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing
--fno-common -fno-builtin-sprintf -fomit-frame-pointer
--Wno-pointer-sign -pipe -mpreferred-stack-boundary=2 -march=i686
--fno-unit-at-a-time -DMODULE -DMODVERSIONS -include
-/usr/src/linux-2.4/include/linux/modversions.h  -nostdinc -iwithprefix
-include -DKBUILD_BASENAME=lvm  -c -o lvm.o lvm.c
-lvm.c:397: error: static declaration of 'vg_count' follows non-static
-declaration
-lvm-internal.h:48: error: previous declaration of 'vg_count' was here
+--------------060602090101050504070809
+Content-Type: text/x-patch;
+ name="0001-Fix-remap-handling-by-blktrace.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Fix-remap-handling-by-blktrace.patch"
 
-looking in the 2.4.35 patch, this has been modified, is there already
-a fix for that ?
 
-Reverting the attached patch hunk fixed the compilation for me...
+This patch provides more information concerning REMAP operations on block
+IOs. The additional information provides clearer details at the user level,
+and supports post-processing analysis in btt.
 
--- 
-Vincent Legoll
+o  Adds in partition remaps on the same device.
+o  Fixed up the remap information in DM to be in the right order
+o  Sent up mapped-from and mapped-to device information
 
-------=_Part_38222_7453949.1186493057618
-Content-Type: application/octet-stream; name=patch-fix-lvm-compil
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f52f3ogh
-Content-Disposition: attachment; filename="patch-fix-lvm-compil"
+Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvbWQvbHZtLWludGVybmFsLmggYi9kcml2ZXJzL21kL2x2bS1p
-bnRlcm5hbC5oCmluZGV4IGFjYTg2MzIuLmY5NTA2OWUgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvbWQv
-bHZtLWludGVybmFsLmgKKysrIGIvZHJpdmVycy9tZC9sdm0taW50ZXJuYWwuaApAQCAtNDUsNiAr
-NDUsNyBAQCBleHRlcm4gaW50IGxvYWR0aW1lOwogZXh0ZXJuIGNvbnN0IGNoYXIgKmNvbnN0IGx2
-bV9uYW1lOwogCiAKK2V4dGVybiB1aW50IHZnX2NvdW50OwogZXh0ZXJuIHZnX3QgKnZnW107CiBl
-eHRlcm4gc3RydWN0IGZpbGVfb3BlcmF0aW9ucyBsdm1fY2hyX2ZvcHM7CiAK
-------=_Part_38222_7453949.1186493057618--
+---
+ block/ll_rw_blk.c            |    4 ++++
+ drivers/md/dm.c              |    4 ++--
+ include/linux/blktrace_api.h |    3 ++-
+ 3 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index 8c2caff..a15845c 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -3047,6 +3047,10 @@ static inline void blk_partition_remap(struct bio *bio)
+ 
+ 		bio->bi_sector += p->start_sect;
+ 		bio->bi_bdev = bdev->bd_contains;
++
++		blk_add_trace_remap(bdev_get_queue(bio->bi_bdev), bio,
++				    bdev->bd_dev, bio->bi_sector,
++				    bio->bi_sector - p->start_sect);
+ 	}
+ }
+ 
+diff --git a/drivers/md/dm.c b/drivers/md/dm.c
+index 141ff9f..2120155 100644
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -580,8 +580,8 @@ static void __map_bio(struct dm_target *ti, struct bio *clone,
+ 		/* the bio has been remapped so dispatch it */
+ 
+ 		blk_add_trace_remap(bdev_get_queue(clone->bi_bdev), clone,
+-				    tio->io->bio->bi_bdev->bd_dev, sector,
+-				    clone->bi_sector);
++				    tio->io->bio->bi_bdev->bd_dev,
++				    clone->bi_sector, sector);
+ 
+ 		generic_make_request(clone);
+ 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
+diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+index 90874a5..7b5d56b 100644
+--- a/include/linux/blktrace_api.h
++++ b/include/linux/blktrace_api.h
+@@ -105,7 +105,7 @@ struct blk_io_trace {
+  */
+ struct blk_io_trace_remap {
+ 	__be32 device;
+-	u32 __pad;
++	__be32 device_from;
+ 	__be64 sector;
+ };
+ 
+@@ -272,6 +272,7 @@ static inline void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+ 		return;
+ 
+ 	r.device = cpu_to_be32(dev);
++	r.device_from = cpu_to_be32(bio->bi_bdev->bd_dev);
+ 	r.sector = cpu_to_be64(to);
+ 
+ 	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
+
+--------------060602090101050504070809--
