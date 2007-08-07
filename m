@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934385AbXHGUn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934628AbXHGUpN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934385AbXHGUn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756471AbXHGUnv
+	id S934628AbXHGUpN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:45:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbXHGUo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:43:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54059 "EHLO mail.dvmed.net"
+	Tue, 7 Aug 2007 16:44:59 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:3851 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757576AbXHGUnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:43:50 -0400
-Message-ID: <46B8D984.7040602@garzik.org>
-Date: Tue, 07 Aug 2007 16:43:48 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S1755871AbXHGUo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 16:44:58 -0400
+Date: Tue, 7 Aug 2007 22:44:51 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: dragoran <drago01@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+Message-ID: <20070807204449.GA5245@kernel.dk>
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <46B6F75D.1070808@gmail.com> <20070806103553.GA16133@one.firstfloor.org>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: 2.6.22: pcspkr driver no longer loads automatically
-References: <46B8C8FA.9020100@redhat.com>
-In-Reply-To: <46B8C8FA.9020100@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070806103553.GA16133@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> With no other changes but a kernel upgrade, the pcspkr driver
-> doesn't load automatically anymore. No changes to that driver
-> jump out, so where else could the problem be? Something to
-> do with the device class changes maybe?
+On Mon, Aug 06 2007, Andi Kleen wrote:
+> > couldn't this be fixed by bumping idle tasks to middle while they hold a 
+> 
+> Usually to high.
+> 
+> But it's all complicated and hasn't been done consistently
+> (there are real time mutexes in the -rt kernel for example, 
+> but there are lots of other locks and they have higher overhead too) 
+> and it's unclear we really want to do all this complexity anyways.
+> 
+> Also as I said the problem could then still happen in user space
+> which then would all need to be fixed to handle PI too.
+> 
+> In some cases the relationship is also not as simple as a single 
+> lock. And for IO handling it would be likely quite hard.
+> 
+> I personally always found idle priorities quite dubious because
+> even if they worked reliable for the CPU they will clear your cache/
+> load your memory controller and impact all other programs because
+> of this. And for the disk they will cause additional seeks which are 
+> also very costly.
 
-This has long been a problem for me on Fedora, long before 2.6.22.  I 
-would never ever have the glorious system beeps, unless I built the 
-module into my kernel.
+But that is why the idle priority implementation in CFQ adds a grace
+period before idle prio tasks are run. So that concern should not be an
+issue, if so the grace period needs to be enlarged. That at least covers
+the seek side of things. If idle io tasks run, then the IO load on the
+system must be very low to zero. Hence other IO relevant resource
+contention isn't an iissue.
 
-I would look into distro areas and see why it's not getting loaded.
-
-	Jeff
-
-
+-- 
+Jens Axboe
 
