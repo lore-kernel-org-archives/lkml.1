@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761937AbXHGJsy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761512AbXHGJwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761937AbXHGJsy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:48:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758609AbXHGJsq
+	id S1761512AbXHGJwa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757647AbXHGJwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:48:46 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:59092 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758542AbXHGJsp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:48:45 -0400
-Subject: Re: [linux-pm] Re: [Resend][PATCH] PM: Fix dependencies of
-	CONFIG_SUSPEND and CONFIG_HIBERNATION (updated)
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, Andi Kleen <ak@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 7 Aug 2007 05:52:18 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:47975 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756677AbXHGJwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 05:52:17 -0400
+Date: Tue, 7 Aug 2007 11:52:46 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Russell King <rmk@arm.linux.org.uk>
-In-Reply-To: <200708061356.23030.rjw@sisk.pl>
-References: <200708051906.22865.rjw@sisk.pl>
-	 <1186398917.28655.69.camel@johannes.berg>
-	 <20070806113644.GA1790@elf.ucw.cz>  <200708061356.23030.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-DLw5ronqpyv8r4EOMP/u"
-Date: Tue, 07 Aug 2007 11:42:36 +0200
-Message-Id: <1186479756.4067.23.camel@johannes.berg>
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070807095246.GB3223@ff.dom.local>
+References: <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com> <20070807082321.GB2120@ff.dom.local> <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 07, 2007 at 11:37:01AM +0200, Marcin ¦lusarz wrote:
+> 2007/8/7, Jarek Poplawski <jarkao2@o2.pl>:
+> > On Tue, Aug 07, 2007 at 09:46:36AM +0200, Marcin ¦lusarz wrote:
+> > > Network card still locks up (tested on 2.6.22.1). I had to upload more
+> > > data than usual (~350 MB vs ~1-100 MB) to trigger that bug but it
+> > > might be a coincidence...
+> >
+> > Thanks! It's a good news after all - it would be really strange why
+> > this place doesn't hit more people (it seems there is some safety
+> > elsewhere for this).
+> >
+> > BTW: I hope, this previous Thomas' patch with Ingo's warning to resend.c
+> > (with a warning), had no problems with a similar load?
+> I always tested on 500-600 MB "dataset"
+> 
+> > PS: Marcin, if you need a break in this testing let us know!
+> No, i don't need a break. I'll have more time in next weeks.
 
---=-DLw5ronqpyv8r4EOMP/u
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Great! So, I'll try to send a patch with _SW_RESEND in a few hours,
+if Ingo doesn't prepare something for you.
 
-On Mon, 2007-08-06 at 13:56 +0200, Rafael J. Wysocki wrote:
-> On Monday, 6 August 2007 13:36, Pavel Machek wrote:
-> > On Mon 2007-08-06 13:15:17, Johannes Berg wrote:
-> > > On Mon, 2007-08-06 at 12:26 +0200, Pavel Machek wrote:
-> > >=20
-> > > > Well, so that it does not bitrot? This is few bytes, I'd say, and I
-> > > > believe we have too many config options already.
-> > >=20
-> > > This is not an option the user is ever going to see. I think I'd
-> > > prefer
-> >=20
-> > Ok, option that users can't set is probably not evil.
-> >=20
-> > > having two new per-ARCH config symbols though:
-> > > config SUSPEND_UP_POSSIBLE
-> > > 	depends on ARCH_SUSPEND_UP_POSSIBLE
-> > >=20
-> > > and then the architecture gets to define that when it can suspend.
-> >=20
-> > Looks like a plan.
->=20
-> Hmm, why don't we do the $subject change first (the advantage if it is th=
-at
-> the patch is ready) and then move the necessary definitions to the arch l=
-evel?
-
-Sounds good to me as well, that way we already have the basic stuff in
-place. Hey, we could even migrate over slowly by making
-SUSPEND_UP_POSSIBLE depend on ARCH_SUSPEND_UP_POSSIBLE *and* all the
-arches that support it right now.
-
-johannes
-
---=-DLw5ronqpyv8r4EOMP/u
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGuD6M/ETPhpq3jKURAsiEAJ9+Yj79xkHtYaFNqrv0K9IFe05PKgCcDr6u
-ynIkSWkktvmStBdUjKR9BgU=
-=p2UK
------END PGP SIGNATURE-----
-
---=-DLw5ronqpyv8r4EOMP/u--
-
+Thanks,
+Jarek P.
