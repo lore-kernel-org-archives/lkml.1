@@ -1,149 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967402AbXHGVyd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967527AbXHGVzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967402AbXHGVyd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:54:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966429AbXHGVao
+	id S967527AbXHGVzD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966578AbXHGVce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:30:44 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50029 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966337AbXHGVam (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:30:42 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
-Subject: [PATCH 15/25] vfs: Remove lookup_one_len_kern
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 07 Aug 2007 15:25:05 -0600
-In-Reply-To: <m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 07 Aug 2007 15:23:57 -0600")
-Message-ID: <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 7 Aug 2007 17:32:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60826 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966538AbXHGVcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:32:32 -0400
+Message-ID: <46B8E4EB.1040208@garzik.org>
+Date: Tue, 07 Aug 2007 17:32:27 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jesper Juhl <jesper.juhl@gmail.com>, Kyle McMartin <kyle@mcmartin.ca>
+CC: Andrew Morton <akpm@linux-foundation.org>, Valerie Henson <val@nmt.edu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       tulip-users@lists.sourceforge.net, david@lang.hm,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH][RESEND] Semi-pointless NULL test in uli526x driver
+References: <200708042032.12317.jesper.juhl@gmail.com>	 <46B8E2BE.1050408@garzik.org> <9a8748490708071428i7aa2289bi90045a8b07fbf816@mail.gmail.com>
+In-Reply-To: <9a8748490708071428i7aa2289bi90045a8b07fbf816@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jesper Juhl wrote:
+> On 07/08/07, Jeff Garzik <jeff@garzik.org> wrote:
+>> Jesper Juhl wrote:
+>>> (resending previously submitted patch from 16/7-2007 22:40)
+>>>
+>>>
+>>> Hi,
+>>>
+>>> In drivers/net/tulip/uli526x.c::uli526x_interrupt() there's a test
+>>> of the function argument 'void *dev_id' against NULL. But that
+>>> test is pretty pointless, since if ever 'dev_id' is NULL we'll
+>>> already have crashed inside "netdev_priv(dev)".
+>>>
+>>> I don't think dev_id can ever actually be NULL, so the whole block
+>>> inside "if (!dev) {" could probably just go away. But I guess
+>>> there's a good reason someone put that ULI526X_DBUG() in there - and
+>>> if 'dev_id' /can/ actually be NULL then it's nice to have and in
+>>> that case this patch actually fixes a possible crash (hence the
+>>> version number update).
+>>> So I guess that in this case we should just move the
+>>> "db = netdev_priv(dev)" assignment past that NULL test. That's what
+>>> this patch does.
+>>>
+>>> Found by the Coverity checker.
+>>> Compile tested.
+>>>
+>>>
+>>> PS. Please keep me on Cc when replying.
+>>>
+>>>
+>>> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>> Just remove the dev==NULL test...
+>>
+> 
+> Hmm, it would seem there's some disagreement about that :
+> 
+> On 04/08/07, Kyle McMartin <kyle@mcmartin.ca> wrote:
+> ...
+>> It *can* be null, in the case of another handler being registered on the
+>> same irq number, passing NULL for the cookie.
+>>
+>> Ack. Will apply.
+>>
+>> Regards,
+>>         Kyle
+>>
+> 
+> I'll let you and Kyle fight it out :-)
 
-Now that sysfs no longer uses lookup_one_len_kern the function has
-no users so remove it from the kernel.  Making namei.c just a little
-easier to read.
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/namei.c            |   46 +++++++++++-----------------------------------
- include/linux/namei.h |    1 -
- 2 files changed, 11 insertions(+), 36 deletions(-)
+My official opinion (for net drivers and ATA at least):  It is pointless 
+having such a check in the hottest of driver hot paths, since a large 
+majority of drivers do not have such a check.
 
-diff --git a/fs/namei.c b/fs/namei.c
-index a83160a..69d3304 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1273,7 +1273,12 @@ int __user_path_lookup_open(const char __user *name, unsigned int lookup_flags,
- 	return err;
- }
- 
--static inline struct dentry *__lookup_hash_kern(struct qstr *name, struct dentry *base, struct nameidata *nd)
-+/*
-+ * Restricted form of lookup. Doesn't follow links, single-component only,
-+ * needs parent already locked. Doesn't follow mounts.
-+ * SMP-safe.
-+ */
-+static inline struct dentry * __lookup_hash(struct qstr *name, struct dentry *base, struct nameidata *nd)
- {
- 	struct dentry *dentry;
- 	struct inode *inode;
-@@ -1281,6 +1286,11 @@ static inline struct dentry *__lookup_hash_kern(struct qstr *name, struct dentry
- 
- 	inode = base->d_inode;
- 
-+	err = permission(inode, MAY_EXEC, nd);
-+	dentry = ERR_PTR(err);
-+	if (err)
-+		goto out;
-+
- 	/*
- 	 * See if the low-level filesystem might want
- 	 * to use its own hash..
-@@ -1308,29 +1318,6 @@ out:
- 	return dentry;
- }
- 
--/*
-- * Restricted form of lookup. Doesn't follow links, single-component only,
-- * needs parent already locked. Doesn't follow mounts.
-- * SMP-safe.
-- */
--static inline struct dentry * __lookup_hash(struct qstr *name, struct dentry *base, struct nameidata *nd)
--{
--	struct dentry *dentry;
--	struct inode *inode;
--	int err;
--
--	inode = base->d_inode;
--
--	err = permission(inode, MAY_EXEC, nd);
--	dentry = ERR_PTR(err);
--	if (err)
--		goto out;
--
--	dentry = __lookup_hash_kern(name, base, nd);
--out:
--	return dentry;
--}
--
- static struct dentry *lookup_hash(struct nameidata *nd)
- {
- 	return __lookup_hash(&nd->last, nd->dentry, nd);
-@@ -1369,17 +1356,6 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
- 	return __lookup_hash(&this, base, NULL);
- }
- 
--struct dentry *lookup_one_len_kern(const char *name, struct dentry *base, int len)
--{
--	int err;
--	struct qstr this;
--
--	err = __lookup_one_len(name, &this, base, len);
--	if (err)
--		return ERR_PTR(err);
--	return __lookup_hash_kern(&this, base, NULL);
--}
--
- int fastcall __user_walk_fd(int dfd, const char __user *name, unsigned flags,
- 			    struct nameidata *nd)
- {
-diff --git a/include/linux/namei.h b/include/linux/namei.h
-index 6c38efb..36e5690 100644
---- a/include/linux/namei.h
-+++ b/include/linux/namei.h
-@@ -82,7 +82,6 @@ extern struct file *nameidata_to_filp(struct nameidata *nd, int flags);
- extern void release_open_intent(struct nameidata *);
- 
- extern struct dentry * lookup_one_len(const char *, struct dentry *, int);
--extern struct dentry *lookup_one_len_kern(const char *, struct dentry *, int);
- 
- extern int follow_down(struct vfsmount **, struct dentry **);
- extern int follow_up(struct vfsmount **, struct dentry **);
--- 
-1.5.1.1.181.g2de0
+It is better to fix the extremely rare oddball that passes NULL to 
+request_irq(), than to update all drivers to be slower due to the oddballs.
+
+	Jeff
+
 
