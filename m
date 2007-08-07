@@ -1,106 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXHGWK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964857AbXHGWLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937046AbXHGWK6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937485AbXHGV6a
+	id S964857AbXHGWLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937468AbXHGWCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:58:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:41001 "EHLO mail.goop.org"
+	Tue, 7 Aug 2007 18:02:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54517 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935878AbXHGV61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:58:27 -0400
-Message-ID: <46B8EA9A.5020704@goop.org>
-Date: Tue, 07 Aug 2007 14:56:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	id S937940AbXHGWCV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 18:02:21 -0400
+Message-ID: <46B8EBD8.9080101@redhat.com>
+Date: Tue, 07 Aug 2007 18:02:00 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: [PATCH] xen-netfront: remove dead code
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=UTF-8
+To: Chris Friesen <cfriesen@nortel.com>
+CC: Jerry Jiang <wjiang@resilience.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain> <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com> <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com> <46B8DDF3.7050008@nortel.com> <46B8E1D3.8050501@redhat.com> <46B8E64E.7010708@nortel.com>
+In-Reply-To: <46B8E64E.7010708@nortel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch removes some residual dead code left over from removing the
-"flip" receive mode.  This patch doesn't change the generated output
-at all, since gcc already realized it was dead.
+Chris Friesen wrote:
+> Chris Snook wrote:
+> 
+>> That's why we define atomic_read like so:
+>>
+>> #define atomic_read(v)          ((v)->counter)
+>>
+>> This avoids the aliasing problem, because the compiler must 
+>> de-reference the pointer every time, which requires a memory fetch.
+> 
+> Can you guarantee that the pointer dereference cannot be optimised away 
+> on any architecture?  Without other restrictions, a suficiently 
+> intelligent optimiser could notice that the address of v doesn't change 
+> in the loop and the destination is never written within the loop, so the 
+> read could be hoisted out of the loop.
 
-This resolves the "regression" reported by Adrian.
+That would be a compiler bug.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Adrian Bunk <bunk@stusta.de>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> Even now, powerpc (as an example) defines atomic_t as:
+> 
+> typedef struct { volatile int counter; } atomic_t
+> 
+> 
+> That volatile is there precisely to force the compiler to dereference it 
+> every single time.
 
----
- drivers/net/xen-netfront.c |   37 ++-----------------------------------
- 1 file changed, 2 insertions(+), 35 deletions(-)
+On most superscalar architectures, including powerpc, multiple instructions can 
+be in flight simultaneously, potentially even reading and writing the same data. 
+  When the compiler detects data dependencies within a thread of execution, it 
+will do the right thing.  Putting the volatile keyword in here instructs the 
+compiler to serialize accesses to this data even if it does not detect dependencies.
 
-===================================================================
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -209,11 +209,9 @@ static void xennet_alloc_rx_buffers(stru
- 	struct page *page;
- 	int i, batch_target, notify;
- 	RING_IDX req_prod = np->rx.req_prod_pvt;
--	struct xen_memory_reservation reservation;
- 	grant_ref_t ref;
- 	unsigned long pfn;
- 	void *vaddr;
--	int nr_flips;
- 	struct xen_netif_rx_request *req;
- 
- 	if (unlikely(!netif_carrier_ok(dev)))
-@@ -263,7 +261,7 @@ no_skb:
- 		np->rx_target = np->rx_max_target;
- 
-  refill:
--	for (nr_flips = i = 0; ; i++) {
-+	for (i = 0; ; i++) {
- 		skb = __skb_dequeue(&np->rx_batch);
- 		if (skb == NULL)
- 			break;
-@@ -292,38 +290,7 @@ no_skb:
- 		req->gref = ref;
- 	}
- 
--	if (nr_flips != 0) {
--		reservation.extent_start = np->rx_pfn_array;
--		reservation.nr_extents   = nr_flips;
--		reservation.extent_order = 0;
--		reservation.address_bits = 0;
--		reservation.domid        = DOMID_SELF;
--
--		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
--			/* After all PTEs have been zapped, flush the TLB. */
--			np->rx_mcl[i-1].args[MULTI_UVMFLAGS_INDEX] =
--				UVMF_TLB_FLUSH|UVMF_ALL;
--
--			/* Give away a batch of pages. */
--			np->rx_mcl[i].op = __HYPERVISOR_memory_op;
--			np->rx_mcl[i].args[0] = XENMEM_decrease_reservation;
--			np->rx_mcl[i].args[1] = (unsigned long)&reservation;
--
--			/* Zap PTEs and give away pages in one big
--			 * multicall. */
--			(void)HYPERVISOR_multicall(np->rx_mcl, i+1);
--
--			/* Check return status of HYPERVISOR_memory_op(). */
--			if (unlikely(np->rx_mcl[i].result != i))
--				panic("Unable to reduce memory reservation\n");
--		} else {
--			if (HYPERVISOR_memory_op(XENMEM_decrease_reservation,
--						 &reservation) != i)
--				panic("Unable to reduce memory reservation\n");
--		}
--	} else {
--		wmb();		/* barrier so backend seens requests */
--	}
-+	wmb();		/* barrier so backend seens requests */
- 
- 	/* Above is a suitable barrier to ensure backend will see requests. */
- 	np->rx.req_prod_pvt = req_prod + i;
+It's worth noting that all of the SMP architectures which lack the volatile 
+keyword in their atomic_t definition inherit memory access semantics from ISAs 
+that predate the advent of heavily-pipelined superscalar design.  i386 and 
+x86_64 get theirs from at least as far back as the 8086.  I believe s390(x) 
+inherits this from the s/370 ISA.  These ISAs assume strictly serialized memory 
+access, and anything binary-compatible with them must enforce this in hardware, 
+even at the expense of performance.  Modern ISAs that lack legacy baggage do 
+away with this guarantee, putting the burden on the compiler to enforce 
+serialization.  When the compiler can't detect that it's needed, we use volatile 
+to inform it explicitly.
 
+	-- Chris
