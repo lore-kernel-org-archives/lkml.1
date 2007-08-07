@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbXHGN6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934459AbXHGN7H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933989AbXHGN6t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbXHGN6i
+	id S934459AbXHGN7H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:59:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933594AbXHGN6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:58:38 -0400
-Received: from mo11.iij4u.or.jp ([210.138.174.79]:44257 "EHLO mo11.iij4u.or.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759999AbXHGN6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:58:36 -0400
-Date: Tue, 7 Aug 2007 22:58:24 +0900
-To: akpm@linux-foundation.org
-Cc: James.Bottomley@SteelEye.com, torvalds@linux-foundation.org,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-From: FUJITA Tomonori <tomof@acm.org>
-In-Reply-To: <20070807001429.f8cb3b22.akpm@linux-foundation.org>
-References: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
-	<1186458941.6637.44.camel@localhost.localdomain>
-	<20070807001429.f8cb3b22.akpm@linux-foundation.org>
+	Tue, 7 Aug 2007 09:58:44 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:41211 "EHLO jazzhorn.ncsc.mil"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764131AbXHGN6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 09:58:42 -0400
+Subject: Re: [PATCH 1/1] file capabilities: clear fcaps on inode change (v2)
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, KaiGai Kohei <kaigai@kaigai.gr.jp>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070806185231.GA21550@sergelap.austin.ibm.com>
+References: <20070806185231.GA21550@sergelap.austin.ibm.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 07 Aug 2007 09:57:02 -0400
+Message-Id: <1186495022.26457.44.camel@moss-spartans.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20070806162823P.tomof@acm.org>
-X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007 00:14:29 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Mon, 06 Aug 2007 22:55:41 -0500 James Bottomley <James.Bottomley@SteelEye.com> wrote:
+On Mon, 2007-08-06 at 13:52 -0500, Serge E. Hallyn wrote:
+> >From 1376764cbb54243f088cf00c39000c4f4418f461 Mon Sep 17 00:00:00 2001
+> From: Serge E. Hallyn <serue@us.ibm.com>
+> Date: Mon, 6 Aug 2007 14:20:06 -0400
+> Subject: [PATCH 1/1] file capabilities: clear fcaps on inode change (v2)
 > 
-> > The real root cause of all of this is that there's no tree I can
-> > persuade all the interested parties to test that includes all of these
-> > features.  In spite of the fact they've all been incubating in -mm for
-> > at least 3 months, no-one apparently tested all the features together
-> > until 2.6.23-rc1 was released, so then we're scrambling to address the
-> > issues as they arise.
+> When a file with posix capabilities is overwritten, the
+> file capabilities, like a setuid bit, should be removed.
 > 
-> I pulled git-scsi-misc on July 19 and there was no bsg code in there at
-> all.  I pulled again on July 20 and all the bsg code was in mainline.  So
-> it appears that the bsg code went mailing-list -> mainline in less than 24
-> hours, so there wasn't a lot of opportunity for -mm testing there.
+> This patch introduces security_inode_killpriv().  This is
+> currently only defined for capability, and is called when
+> an inode is changed to inform the security module that
+> it may want to clear out any privilege attached to that inode.
+> The capability module checks whether any file capabilities
+> are defined for the inode, and, if so, clears them.
+> 
+> Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+> ---
+>  fs/attr.c                |    7 +++++++
+>  fs/nfsd/vfs.c            |    4 ++--
+>  fs/open.c                |    3 ++-
+>  fs/splice.c              |    4 ++++
+>  include/linux/fs.h       |    1 +
+>  include/linux/security.h |   18 ++++++++++++++++++
+>  mm/filemap.c             |    5 +++++
+>  security/capability.c    |    1 +
+>  security/commoncap.c     |   27 +++++++++++++++++++++++++++
+>  security/dummy.c         |    6 ++++++
+>  security/security.c      |    5 +++++
+>  11 files changed, 78 insertions(+), 3 deletions(-)
+> 
 
-bsg was merged via Jens' branch. After that, I asked James to send
-some fixes via the scsi-rc-fixes.
+> diff --git a/security/capability.c b/security/capability.c
+> index dc2b66c..e23864e 100644
+> --- a/security/capability.c
+> +++ b/security/capability.c
+> @@ -37,6 +37,7 @@ static struct security_operations capability_ops = {
+>  
+>  	.inode_setxattr =		cap_inode_setxattr,
+>  	.inode_removexattr =		cap_inode_removexattr,
+> +	.inode_removexattr =		cap_inode_killpriv,
 
+s/inode_removexattr/inode_killpriv/
 
-> A lot of the stupid it-doesn't-compile stuff would have been fixed in -mm,
-> but more substantial problems might not have been picked up.  But one can
-> say that about anything.
+Also, doesn't SELinux then need to define a corresponding hook function
+to call the secondary module?  Otherwise, it will fall back to the dummy
+implementation and stacking selinux + capabilities with file caps won't
+yield the right behavior.
 
-My mistake. I should have sent bsg to -mm. Sorry about that.
+-- 
+Stephen Smalley
+National Security Agency
+
