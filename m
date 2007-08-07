@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbXHGIvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXHGIw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759938AbXHGIvO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757570AbXHGIu6
+	id S1760089AbXHGIw7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757717AbXHGIwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:50:58 -0400
-Received: from doppler.zen.co.uk ([212.23.3.27]:50341 "EHLO doppler.zen.co.uk"
+	Tue, 7 Aug 2007 04:52:51 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:60944 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757569AbXHGIu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:50:57 -0400
-Message-ID: <46B8317B.40305@gmail.com>
-Date: Tue, 07 Aug 2007 09:46:51 +0100
-From: Matt Keenan <tank.en.mate@gmail.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	id S1757570AbXHGIwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 04:52:50 -0400
+Message-ID: <46B832D0.5030803@free.fr>
+Date: Tue, 07 Aug 2007 10:52:32 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
 MIME-Version: 1.0
-To: Kevin K <k_krieser@sbcglobal.net>
-CC: James Carlson <carlsonj@workingcode.com>, linux-ppp@vger.kernel.org,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sending raw packets via PPP
-References: <35B9865F-38B4-4603-A2B7-F4ABACE5520F@sbcglobal.net> <18103.44797.529894.786033@gargle.gargle.HOWL> <E210D1E9-9265-48EE-91BB-E6027547F01E@sbcglobal.net>
-In-Reply-To: <E210D1E9-9265-48EE-91BB-E6027547F01E@sbcglobal.net>
-Content-Type: text/plain; charset=UTF-8
+To: paulmck@linux.vnet.ibm.com
+CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, tglx@linutronix.de
+Subject: Re: Old -rt patches
+References: <46B0B7A4.8060805@free.fr> <46B6E210.9090502@free.fr> <20070806144158.GA9309@linux.vnet.ibm.com>
+In-Reply-To: <20070806144158.GA9309@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Originating-Heisenberg-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin K wrote:
->
-> On Aug 6, 2007, at 6:30 PM, James Carlson wrote:
->
->> Kevin K writes:
->>> Is it possible to send raw packets via ppp under Linux?
->>>
->>> More specifically, in 2.4 series kernels such as RH's 2.4.21-47 kernel?
->>>
->>> I've trying to modify the DHCP 3.0.1 code provided with RH 3 so I can
->>> send requests via a PPP connection (standard RS-232), and it is just
->>> being dropped by the stack according to ifconfig and debug statements
->>> in ppp_generic.c.
->>
->> I'm not sure what sort of "raw" packets you're talking about (IP raw
->> or something else), but you shouldn't need to send any raw packets to
->> do this.  DHCP runs over UDP, and, unlike Ethernet, there's no link
->> layer addressing to worry about.
->
-> I was basing the raw mode on comments in the DHCP source code about
-> problems in older Linux kernels with sending packets to
-> 255.255.255.255 via normal IP.  The DHCP source code therefore wants
-> to send raw packets (SOCKET_PACKET) (down to the ethernet addressing
-> info).  I guess I thought I would need to do this too to fit in with
-> the existing source code.
->
-> I'll give it a try to see whether packets sent to 255.255.255.255 can
-> make it to ppp with the IP address unchanged.
-You shouldn't need to run DHCP over PPP, PPP uses LCP to configure
-connections. I suspect the only time you would need to run DHCP over a
-PPP link is if you had a DHCP proxy run the request over the PPP link,
-but that sounds way more complicated than what you are looking for. Have
-a quick look at
-http://www.cisco.com/univercd/cc/td/doc/cisintwk/ito_doc/ppp.htm that
-should bring you up to speed on how PPP works. You will probably find
-that LCP does everything you need. If you really need some of the
-functionality of DHCP (such as setting up WINS servers et al) you might
-find that you need to hack a way to do this.
+Paul E. McKenney wrote:
 
-Matt
+> John Sigler wrote:
+> 
+>> I wrote a Linux app where I need high-resolution timers. I went all the 
+>> way and installed the -rt patch, which includes the -hrt patches, as far 
+>> as I understand.
+>>
+>> Since I could not afford to change kernels with every new release, I 
+>> decided to track the 2.6.20 branch (arbitrarily).
+>>
+>> At this point I'm using 2.6.20.7-rt8 (-rt8 was the last patch to the 
+>> 2.6.20 branch). (I see 2.6.20 is already up to .15)
+>>
+>> I see a lot of patches going into the -rt patch, but development moved 
+>> on to 2.6.21, then 2.6.22, and now 2.6.23, following mainline.
+>>
+>> I'm not a kernel hacker, so I don't claim to understand the patches, but 
+>> the comments sound like a few bugs are fixed here and there. I can't 
+>> tell whether these bugs also exist in previous kernels or only appeared 
+>> in newer kernels. Even if I knew, I probably wouldn't have the expertise 
+>> to back-port the patch.
+>>
+>> I'm seeing weird behavior in my app, when it has been running 2-4 days. 
+>> The timers start to act out, and all hell breaks loose. Basically, I 
+>> have no idea what's going on...
+>>
+>> My question is: is it possible that there is a bug in 2.6.20-rt8 that 
+>> has been fixed in subsequent -rt patches (there's a 2.6.21.6-rt21 and a 
+>> 2.6.22.1-rt9)? In other words, if I give 2.6.21.6-rt8 or 2.6.22.1-rt9 a 
+>> spin, is it possible that my weird behavior disappears?
+>>
+>> I'm not saying that it's impossible for the bug to be in my app, but the 
+>> app is small enough that I'm fairly confident there's no problem there.
+> 
+> Would you be willing to post your app so people could try to reproduce
+> your bug?
+
+Hello Paul,
+
+I cannot provide the app "as is" (I fear the paranoid PHB would 
+spontaneously combust). If time permits, I will try to make a small 
+testcase to exhibit the problem.
+
+Regards.
