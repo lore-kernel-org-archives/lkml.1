@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935569AbXHGUxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935811AbXHGUxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935569AbXHGUxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935101AbXHGUs3
+	id S935811AbXHGUxt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:53:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935412AbXHGUsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:48:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56078 "EHLO
+	Tue, 7 Aug 2007 16:48:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56094 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935245AbXHGUs1 (ORCPT
+	with ESMTP id S935409AbXHGUsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:48:27 -0400
-Date: Tue, 7 Aug 2007 13:44:10 -0700
+	Tue, 7 Aug 2007 16:48:38 -0400
+Date: Tue, 7 Aug 2007 13:44:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,100 +21,76 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Alexander Shmelev <ashmelev@task.sun.mcst.ru>,
+       Mark Fortescue <mark@mtfhpc.demon.co.uk>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [2.6.22.2 review 17/84] Fix sparc32 memset()
-Message-ID: <20070807204410.GR23028@kroah.com>
+Subject: [2.6.22.2 review 18/84] Fix sparc32 udelay() rounding errors.
+Message-ID: <20070807204414.GS23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-sparc32-memset.patch"
+Content-Disposition: inline; filename="fix-sparc32-udelay-rounding-errors.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Shmelev <ashmelev@task.sun.mcst.ru>
 
-[SPARC32]: Fix bug in sparc optimized memset.
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
 
-Sparc optimized memset (arch/sparc/lib/memset.S) does not fill last
-byte of the memory area, if area size is less than 8 bytes and start
-address is not word (4-bytes) aligned.
+[SPARC32]: Fix rounding errors in ndelay/udelay implementation.
 
-Here is code chunk where bug located:
-/* %o0 - memory address, %o1 - size, %g3 - value */
-8:
-     add    %o0, 1, %o0
-    subcc    %o1, 1, %o1
-    bne,a    8b
-     stb %g3, [%o0 - 1]
+__ndelay and __udelay have not been delayung >= specified time.
+The problem with __ndelay has been tacked down to the rounding of the
+multiplier constant. By changing this, delays > app 18us are correctly
+calculated.
+The problem with __udelay has also been tracked down to rounding issues.
+Changing the multiplier constant (to match that used in sparc64) corrects
+for large delays and adding in a rounding constant corrects for trunctaion
+errors in the claculations.
+Many short delays will return without looping. This is not an error as there
+is the fixed delay of doing all the maths to calculate the loop count.
 
-This code should write byte every loop iteration, but last time delay
-instruction stb is not executed because branch instruction sets
-"annul" bit.
-
-Patch replaces bne,a by bne instruction.
-
-Error can be reproduced by simple kernel module:
-
---------------------
-#include <linux/module.h>
-#include <linux/config.h>
-#include <linux/kernel.h>
-#include <linux/errno.h>
-#include <string.h>
-
-static void do_memset(void **p, int size)
-{
-        memset(p, 0x00, size);
-}
-
-static int __init memset_test_init(void)
-{
-    char fooc[8];
-    int *fooi;
-    memset(fooc, 0xba, sizeof(fooc));
-
-    do_memset((void**)(fooc + 3), 1);
-
-    fooi = (int*) fooc;
-    printk("%08X %08X\n", fooi[0], fooi[1]);
-
-    return -1;
-}
-
-static void __exit memset_test_cleanup(void)
-{
-    return;
-}
-
-module_init(memset_test_init);
-module_exit(memset_test_cleanup);
-
-MODULE_LICENSE("GPL");
-EXPORT_NO_SYMBOLS;
-------------------------
-
-Signed-off-by: Alexander Shmelev <ashmelev@task.sun.mcst.ru>
+Signed-off-by: Mark Fortescue <mark@mtfhpc.demon.co.uk>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/sparc/lib/memset.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/sparc/kernel/entry.S |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
---- a/arch/sparc/lib/memset.S
-+++ b/arch/sparc/lib/memset.S
-@@ -162,7 +162,7 @@ __bzero:
- 8:
- 	 add	%o0, 1, %o0
- 	subcc	%o1, 1, %o1
--	bne,a	8b
-+	bne	8b
- 	 EX(stb	%g3, [%o0 - 1], add %o1, 1)
- 0:
- 	retl
+--- a/arch/sparc/kernel/entry.S
++++ b/arch/sparc/kernel/entry.S
+@@ -1749,8 +1749,8 @@ fpload:
+ __ndelay:
+ 	save	%sp, -STACKFRAME_SZ, %sp
+ 	mov	%i0, %o0
+-	call	.umul
+-	 mov	0x1ad, %o1		! 2**32 / (1 000 000 000 / HZ)
++	call	.umul			! round multiplier up so large ns ok
++	 mov	0x1ae, %o1		! 2**32 / (1 000 000 000 / HZ)
+ 	call	.umul
+ 	 mov	%i1, %o1		! udelay_val
+ 	ba	delay_continue
+@@ -1760,11 +1760,17 @@ __ndelay:
+ __udelay:
+ 	save	%sp, -STACKFRAME_SZ, %sp
+ 	mov	%i0, %o0
+-	sethi	%hi(0x10c6), %o1
++	sethi	%hi(0x10c7), %o1	! round multiplier up so large us ok
+ 	call	.umul
+-	 or	%o1, %lo(0x10c6), %o1	! 2**32 / 1 000 000
++	 or	%o1, %lo(0x10c7), %o1	! 2**32 / 1 000 000
+ 	call	.umul
+ 	 mov	%i1, %o1		! udelay_val
++	sethi	%hi(0x028f4b62), %l0	! Add in rounding constant * 2**32,
++	or	%g0, %lo(0x028f4b62), %l0
++	addcc	%o0, %l0, %o0		! 2**32 * 0.009 999
++	bcs,a	3f
++	 add	%o1, 0x01, %o1
++3:
+ 	call	.umul
+ 	 mov	HZ, %o0			! >>32 earlier for wider range
+ 
 
 -- 
