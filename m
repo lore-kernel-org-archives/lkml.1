@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934502AbXHGPjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934999AbXHGPlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934502AbXHGPjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 11:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXHGPjp
+	id S934999AbXHGPlG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 11:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbXHGPkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 11:39:45 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:54618 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbXHGPjo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 11:39:44 -0400
-Date: Tue, 7 Aug 2007 19:39:27 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Steve Wise <swise@opengridcomputing.com>
-Cc: Roland Dreier <rdreier@cisco.com>, "David S. Miller" <davem@davemloft.net>,
-       netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Sean Hefty <sean.hefty@intel.com>,
-       OpenFabrics General <general@lists.openfabrics.org>
-Subject: Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports from the host TCP port space.
-Message-ID: <20070807153927.GA28648@2ka.mipt.ru>
-References: <46B883B5.8040702@opengridcomputing.com> <20070807145441.GA24895@2ka.mipt.ru> <46B88A75.3040004@opengridcomputing.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B88A75.3040004@opengridcomputing.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 7 Aug 2007 11:40:52 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:37018 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbXHGPkv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 11:40:51 -0400
+Message-ID: <46B89260.8000405@linux.vnet.ibm.com>
+Date: Tue, 07 Aug 2007 10:40:16 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+Reply-To: brking@linux.vnet.ibm.com
+User-Agent: Thunderbird 1.5.0.12 (X11/20060911)
+MIME-Version: 1.0
+To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+CC: Jeff Garzik <jgarzik@pobox.com>, santil@us.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] drivers/net/ibmveth.c: memset fix
+References: <200708062217.04361.m.kozlowski@tuxland.pl> <46B78672.9090808@linux.vnet.ibm.com> <46B78814.50508@pobox.com> <200708062344.03443.m.kozlowski@tuxland.pl>
+In-Reply-To: <200708062344.03443.m.kozlowski@tuxland.pl>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 10:06:29AM -0500, Steve Wise (swise@opengridcomputing.com) wrote:
-> >On Tue, Aug 07, 2007 at 09:37:41AM -0500, Steve Wise 
-> >(swise@opengridcomputing.com) wrote:
-> >>+static int cma_get_tcp_port(struct rdma_id_private *id_priv)
-> >>+{
-> >>+	int ret;
-> >>+	struct socket *sock;
-> >>+
-> >>+	ret = sock_create_kern(AF_INET, SOCK_STREAM, IPPROTO_TCP, &sock);
-> >>+	if (ret)
-> >>+		return ret;
-> >>+	ret = sock->ops->bind(sock,
-> >>+			  (struct socketaddr 
-> >>*)&id_priv->id.route.addr.src_addr,
-> >>+			  ip_addr_size(&id_priv->id.route.addr.src_addr));
-> >
-> >If get away from talks about broken offloading, this one will result in
-> >the case, when usual network dataflow can enter private rdma land, i.e.
-> >after bind succeeded this socket is accessible via any other network
-> >device. Is it inteded?
-> >And this is quite noticeble overhead per rdma connection, btw.
-> >
+Mariusz Kozlowski wrote:
+>>>> 	Looks like memset() is zeroing wrong nr of bytes.
+>>> Good catch, however, I think we can just remove this memset altogether
+>>> since the memory gets allocated via kzalloc.
+>> Correct, that memset() is superfluous.
 > 
-> I'm not sure I understand your question?  What do you mean by 
-> "accessible"?  The intention is to _just_ reserve the addr/port.  
+> Ok. Then this should do it.
 
-Above RDMA ->bind() ends up with tcp_v4_get_port(), which will only add
-socket into bhash, but it is only accessible for new sockets created for
-listening connections or expilicit bind, network traffic checks only
-listening and establised hashes, which are not affected by above change,
-so it was false alarm from my side. It does allow to 'grab' a port and
-forbid its possible reuse.
+Acked-by: Brian King <brking@linux.vnet.ibm.com>
+
+> 
+> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+> 
+>  drivers/net/ibmveth.c |    3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+> 
+> --- linux-2.6.23-rc1-mm2-a/drivers/net/ibmveth.c	2007-08-01 08:43:46.000000000 +0200
+> +++ linux-2.6.23-rc1-mm2-b/drivers/net/ibmveth.c	2007-08-06 23:32:13.000000000 +0200
+> @@ -963,7 +963,7 @@ static int __devinit ibmveth_probe(struc
+>  {
+>  	int rc, i;
+>  	struct net_device *netdev;
+> -	struct ibmveth_adapter *adapter = NULL;
+> +	struct ibmveth_adapter *adapter;
+> 
+>  	unsigned char *mac_addr_p;
+>  	unsigned int *mcastFilterSize_p;
+> @@ -997,7 +997,6 @@ static int __devinit ibmveth_probe(struc
+>  	SET_MODULE_OWNER(netdev);
+> 
+>  	adapter = netdev->priv;
+> -	memset(adapter, 0, sizeof(adapter));
+>  	dev->dev.driver_data = netdev;
+> 
+>  	adapter->vdev = dev;
+> -
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 
 -- 
-	Evgeniy Polyakov
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
