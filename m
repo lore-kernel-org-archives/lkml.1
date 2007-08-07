@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965213AbXHGVnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936940AbXHGVnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965213AbXHGVnJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937011AbXHGVTM
+	id S936940AbXHGVnp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937060AbXHGVTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:19:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45884 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936995AbXHGVTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:19:10 -0400
-Message-ID: <46B8E1C1.8040903@garzik.org>
-Date: Tue, 07 Aug 2007 17:18:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 7 Aug 2007 17:19:19 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:48894 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937053AbXHGVTQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:19:16 -0400
+Date: Tue, 7 Aug 2007 14:18:47 -0700
+From: Greg KH <greg@kroah.com>
+To: Niels <zorglub_olsen@hotmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Problems with USB disk
+Message-ID: <20070807211847.GA25391@kroah.com>
+References: <f9akh8$ori$1@sea.gmane.org>
 MIME-Version: 1.0
-To: Jay Cliburn <jacliburn@bellsouth.net>
-CC: mingo@elte.hu, csnook@redhat.com, atl1-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       nando@ccrma.Stanford.EDU, tglx@linutronix.de, brbrofsvl@gmail.com
-Subject: Re: [PATCH] atl1: use spin_trylock_irqsave()
-References: <11859268222715-git-send-email-jacliburn@bellsouth.net>
-In-Reply-To: <11859268222715-git-send-email-jacliburn@bellsouth.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f9akh8$ori$1@sea.gmane.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jay Cliburn wrote:
-> From: Ingo Molnar <mingo@elte.hu>
+On Tue, Aug 07, 2007 at 10:26:15PM +0200, Niels wrote:
+> Hi,
 > 
-> use the simpler spin_trylock_irqsave() API to get the adapter lock.
+> I'm having problems with a new 500 GB USB disk. It works, but sometimes I
+> get these in dmesg:
 > 
-> [ this is also a fix for -rt where adapter->lock is a sleeping lock. ]
 > 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Signed-off-by: Jay Cliburn <jacliburn@bellsouth.net>
-> ---
->  drivers/net/atl1/atl1_main.c |    4 +---
->  1 files changed, 1 insertions(+), 3 deletions(-)
+> usb 1-3: reset high speed USB device using ehci_hcd and address 2
+> usb 5-1: USB disconnect, address 2
+> drivers/usb/class/usblp.c: usblp0: removed
+> sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
+> : ASC=0x4 ASCQ=0x2
+> end_request: I/O error, dev sda, sector 254148215
+> sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
+> : ASC=0x4 ASCQ=0x2
+> end_request: I/O error, dev sda, sector 252434023
+> EXT3-fs error (device sda1): ext3_find_entry: reading directory #15761836
+> offset 0
+> 
+> 
+> There's also a printer connected. This is on a pci/usb2 card. When the above
+> happens, I get I/O errors. When I mount the drive next, there are errors
+> and often missing files. Quite annoying!
+> 
+> Kernel is 2.6.21
+> 
+> What's going on?
 
-applied to #upstream-fixes
+You have a low voltage issue, or a bad cable.  The device is
+electronically disconnecting itself.  Try using a externally-powered
+hub, or a new cable.
 
+thanks,
 
+greg k-h
