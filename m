@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934778AbXHGOZo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXHGO03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934778AbXHGOZo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 10:25:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759965AbXHGOZU
+	id S1761541AbXHGO03 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 10:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXHGO0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 10:25:20 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:9919 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbXHGOZR (ORCPT
+	Tue, 7 Aug 2007 10:26:12 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:51237 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751008AbXHGO0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 10:25:17 -0400
-Date: Tue, 7 Aug 2007 16:26:18 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Javier Pello <javier.pello@urjc.es>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not
- notified
-Message-ID: <20070807162618.3814ff78@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <46B87ACA.7010501@urjc.es>
-References: <46B37CF7.2020803@urjc.es>
-	<20070806142451.5d28d41c@gondolin.boeb
- lingen.de.ibm.com>
-	<46B7832B.6010808@urjc.es>
-	<20070807125844.4d756b04@gondo
- 	l	in.boeblingen.de.ibm.com>
-	<3ae72650708070446y6452d13jb7cd802119dab3ce@mail .gmail.com>
-	<20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
-	<46B869C6.3090708@urjc.es>
-	<1186491472.3611.33.camel@lov.localdomain>
-	<46B87ACA.7010501@urjc.es>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 10:26:11 -0400
+X-Sasl-enc: ExVcRj/TdGr3qccKijk4pk1hq7ooidkPqNyweKu7HHUt 1186496769
+Date: Tue, 7 Aug 2007 11:26:07 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: ibm-acpi-devel@lists.sourceforge.net,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: refcounting problems with ibm_acpi but acpi=off
+Message-ID: <20070807142607.GA7414@khazad-dum.debian.net>
+References: <20070807104500.GA1684@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807104500.GA1684@elf.ucw.cz>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Aug 2007 15:59:38 +0200,
-Javier Pello <javier.pello@urjc.es> wrote:
-
-> On Tue, 07 Aug 2007, Kay Sievers wrote:
+On Tue, 07 Aug 2007, Pavel Machek wrote:
+> Perhaps this is needed?
+> 								Pavel
 > 
-> > If you don't have modules and the initial request fails, how do you
-> > load the firmware later?
+> diff --git a/drivers/acpi/ibm_acpi.c b/drivers/acpi/ibm_acpi.c
+> index a664f2b..654a124 100644
+> --- a/drivers/acpi/ibm_acpi.c
+> +++ b/drivers/acpi/ibm_acpi.c
+> @@ -2695,6 +2695,9 @@ static void acpi_ibm_exit(void)
+>  {
+>  	int i;
+>  
+> +	if (acpi_disabled)
+> +		return;
+> +
+>  	for (i = ARRAY_SIZE(ibms) - 1; i >= 0; i--)
+>  		ibm_exit(&ibms[i]);
+>  
 > 
-> I trigger a rebinding of the device to the driver in an init file:
-> # echo -n [device] >/sys/.../bind
 
-So it is indeed that this driver wants to fail its probe if it cannot
-get the firmware. A possibilty to achieve a similar effect would be to
-use request_firmware_nowait() and to call device_release_driver() from
-the callback if no firmware is loaded. (This would imply a split of
-that driver's probe function into two stages.)
+Indeed it is required, my bad.
 
-> 
-> > The real fix would be to change the driver not to block in the
-> > firmware request and use async version of firmware loading. The
-> > whole firmware class with its silly timeout is just a piece of
-> > crap, that needs to be replaced.
-> 
-> I don't think that would be a real fix. You've done away with the
-> kernel blocking, but the timeout is still there, only that in the
-> background, and my point is still true: it is useless to wait at
-> all if userspace didn't receive the event. Waiting asynchronously
-> is less annoying than waiting synchronously, but equally useless.
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
-Well, at least it doesn't block the whole probing process... although
-this waiting is indeed useless.
+Do you want me to forward a git patch to Len brown?
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
