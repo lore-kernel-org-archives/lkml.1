@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765459AbXHGAqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbXHGAwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765459AbXHGAqv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 20:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763046AbXHGAqn
+	id S934051AbXHGAwV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 20:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763046AbXHGAwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 20:46:43 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:36190 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758184AbXHGAqm (ORCPT
+	Mon, 6 Aug 2007 20:52:09 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:49878 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764136AbXHGAwH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 20:46:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=lWjRkwnzm+QriLfI3woPw+UsS5gcXbDKwUnIW8Sh/kM1+3NYKn0N551ARK1y00zlp
-	gOWCSO6TLheKdD4wtBTWw==
-Message-ID: <65dd6fd50708061746p2a460fe5p24f1068c36ef5c40@mail.gmail.com>
-Date: Mon, 6 Aug 2007 17:46:28 -0700
-From: "Ollie Wild" <aaw@google.com>
-To: mtk-manpages@gmx.net
-Subject: execve manpage changes
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <65dd6fd50708061738pabd807tb26d38641cc5e7e2@mail.gmail.com>
+	Mon, 6 Aug 2007 20:52:07 -0400
+Date: Mon, 6 Aug 2007 17:51:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+In-Reply-To: <1186248703.3439.20.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
+References: <1186248703.3439.20.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <65dd6fd50708061738pabd807tb26d38641cc5e7e2@mail.gmail.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael,
 
-Per our previous discussion, here are the updates to the execve(2)
-manpage resulting from the variable length argument support patch in
-linux-2.6.23-rc1.  The execve API is unmodified.  However, the
-following should be noted in the "Notes" section.
 
-Prior to linux-2.6.23, the memory used to store the environment and
-argument list strings was limited to 32 (MAX_ARG_PAGES) pages.  On
-most architectures, the page size is 4kB, leading to a maximum size of
-128kB.
+On Sat, 4 Aug 2007, James Bottomley wrote:
+>
+> This is mainly bug fixes ... there's one or two features completions
+> that have been delayed pending ack and review to do with bsg (headers
+> and passthrough) but these are really required to complete already
+> upstream code.
 
-In linux-2.6.23 and later, most architectures support a size limit
-derived from the current RLIMIT_STACK setting (see getrlimit(2)).  For
-these architectures, the total size is limited to 1/4 the allowed
-stack size, the limit per string is 32 pages (MAX_ARG_STRLEN), and the
-maximum number of strings is 0x7FFFFFFF.  Architectures with no memory
-management unit are excepted: they maintain the pre-2.6.23 limit.
+James, this is the last time *ever* I apply patches from you after -rc1.
 
-Ollie
+You used to have serious problems with the merge window, but for a few 
+releases you then seemed to "get it" and got on with the program.
+
+But now it's back to "anythign goes", apparently. And I'm going to take a 
+hard-line approach with you now. 
+
+For SCSI merges, if I don't get the first pull request in the FIRST week 
+of the merge window, don't bother sending one later, unless it's pure 
+fixes and regressions.
+
+And after -rc1, I don't want to see crap like this:
+
+	 46 files changed, 2837 insertions(+), 2050 deletions(-)
+
+because that simply is *not* appropriate after -rc1, much less -rc2.
+
+So I pulled, but I wanted to make it very clear that I'm very unhappy with 
+you right now, and you're on my shit-list for the next few releases. Get 
+the changes in before -rc1, or just *wait*. If they aren't ready before 
+the merge window opens, they simply shouldn't be merged at all.
+
+		Linus
