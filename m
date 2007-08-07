@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936028AbXHGWRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965527AbXHGWRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936028AbXHGWRY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965448AbXHGWQq
+	id S965527AbXHGWRu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965385AbXHGWQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 7 Aug 2007 18:16:49 -0400
+Received: from livid.absolutedigital.net ([66.92.46.173]:54210 "EHLO
+	mx2.absolutedigital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965384AbXHGWQq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Aug 2007 18:16:46 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:32834 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965238AbXHGWQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:16:43 -0400
-Date: Tue, 7 Aug 2007 18:13:49 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       v9fs-developer@lists.sourceforge.net, zippel@linux-m68k.org,
-       dhowells@redhat.com, linux-cifs-client@lists.samba.org,
-       codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
-       linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       cluster-devel@redhat.com, user-mode-linux-user@lists.sourceforge.net,
-       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
-       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
-       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into
- individual setattr functions (RESEND)
-Message-Id: <20070807181349.5d4175c7.jlayton@redhat.com>
-In-Reply-To: <20070807204909.GA30159@infradead.org>
-References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
-	<20070807204909.GA30159@infradead.org>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Date: Tue, 7 Aug 2007 18:15:37 -0400 (EDT)
+From: Cal Peake <cp@absolutedigital.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Chuck Ebbert <cebbert@redhat.com>, Gabriel C <nix.or.die@googlemail.com>,
+       Frank Hale <frankhale@gmail.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
+       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>
+Subject: Re: ACPI on Averatec 2370
+In-Reply-To: <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708071803570.28199@lancer.cnet.absolutedigital.net>
+References: <5ebbd9b50707291105w316f98e5h3fa17204c9119a2f@mail.gmail.com>
+ <46ACD8DB.2020108@googlemail.com> <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net>
+ <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net>
+ <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net>
+ <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net>
+ <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net>
+ <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007 21:49:09 +0100
-Christoph Hellwig <hch@infradead.org> wrote:
+On Fri, 3 Aug 2007, Linus Torvalds wrote:
 
-> First thanks a lot for doing this work, it's been long needed.
+> > MSR_K8_ENABLE_C1E lo == 0x04c14015
+> > MSR_K8_ENABLE_C1E hi == 0x00000000
+> > lo & ENABLE_C1E_MASK == 0
 > 
-> Second please don't send out that many patches.  We encourage people
-> to split things into small patches when the changes are logially
-> separated.  Which these are not - it's a flag day change (which btw
-> is fine despite the rants soe people spewed in reply to this), so it
-> should be one single patch. (Or one for all mainline filesystems +
-> one per fs only in -mm to make Andrew's life a little easier if you
-> really care.)
+> And yeah, that claims that C1E is not on, but:
+> 
+> > amd_apic_timer_broken: forcing return value of 1
 
-Thanks. I debated about how best to split these up. A coworker
-mentioned that Andrew had tossed him back a single patch that
-touched several mainline filesystems and asked him to break it 
-up. I took that to mean that the patches should generally be split
-out, but I guess I took that too far ;-)
+So it seems my initial debugging report was, err, incomplete. I failed to 
+notice that the amd_apic_timer_broken function was getting called twice, 
+once for each core.
+
+The second call shows this:
+
+  MSR_K8_ENABLE_C1E == 0x14c14015
+
+which causes our ENABLE_C1E_MASK check to be true and thus properly 
+return 1 from the function. So when we call the above function from 
+init_amd we prolly need to do a
+
+  set_bit(X86_FEATURE_LAPIC_TIMER_BROKEN, c->x86_capability);
+
+for each core if any of them happen to return true upon checking for a 
+broken timer.
+
+Andi, does that seem right?
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+Cal Peake
+
