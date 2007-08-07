@@ -1,150 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937404AbXHGVvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967056AbXHGVvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937404AbXHGVvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966259AbXHGV2n
+	id S967056AbXHGVvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966241AbXHGV3C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:28:43 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50014 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966254AbXHGV2l (ORCPT
+	Tue, 7 Aug 2007 17:29:02 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:15054 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966231AbXHGV3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:28:41 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
-Subject: [PATCH 17/25] sysfs: Rewrite rename in terms of sysfs dirents
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 07 Aug 2007 15:27:33 -0600
-In-Reply-To: <m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 07 Aug 2007 15:26:28 -0600")
-Message-ID: <m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 7 Aug 2007 17:29:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=YXfewfKbFzkqNLGUfjaEoV9tHdvsF7vfuzqJ7FlWS8m6R8UG0XZexY3xsgEI/5JG/r1FKOwj0xygkN2CWX/dcJ/QnrvoSyUwswQlFVePEKQP4tbaNoqoLlipehrQ5Az/48K94O5RlwYM5nrfFEq5hZfHqYVwaadZlewKKFdq4F8=
+Message-ID: <9a8748490708071428i7aa2289bi90045a8b07fbf816@mail.gmail.com>
+Date: Tue, 7 Aug 2007 23:28:58 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: [PATCH][RESEND] Semi-pointless NULL test in uli526x driver
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Valerie Henson" <val@nmt.edu>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       tulip-users@lists.sourceforge.net, "Kyle McMartin" <kyle@mcmartin.ca>,
+       david@lang.hm, "Grant Grundler" <grundler@parisc-linux.org>
+In-Reply-To: <46B8E2BE.1050408@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708042032.12317.jesper.juhl@gmail.com>
+	 <46B8E2BE.1050408@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 07/08/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Jesper Juhl wrote:
+> > (resending previously submitted patch from 16/7-2007 22:40)
+> >
+> >
+> > Hi,
+> >
+> > In drivers/net/tulip/uli526x.c::uli526x_interrupt() there's a test
+> > of the function argument 'void *dev_id' against NULL. But that
+> > test is pretty pointless, since if ever 'dev_id' is NULL we'll
+> > already have crashed inside "netdev_priv(dev)".
+> >
+> > I don't think dev_id can ever actually be NULL, so the whole block
+> > inside "if (!dev) {" could probably just go away. But I guess
+> > there's a good reason someone put that ULI526X_DBUG() in there - and
+> > if 'dev_id' /can/ actually be NULL then it's nice to have and in
+> > that case this patch actually fixes a possible crash (hence the
+> > version number update).
+> > So I guess that in this case we should just move the
+> > "db = netdev_priv(dev)" assignment past that NULL test. That's what
+> > this patch does.
+> >
+> > Found by the Coverity checker.
+> > Compile tested.
+> >
+> >
+> > PS. Please keep me on Cc when replying.
+> >
+> >
+> > Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>
+> Just remove the dev==NULL test...
+>
 
-This patch rewrites sysfs_rename_dir to perform it's checks
-as much as possible on the underlying sysfs_dirents instead
-of the contents of the dcache.  It turns out that this version
-is a little simpler, and a little more like the rest of
-the sysfs directory modification code.
+Hmm, it would seem there's some disagreement about that :
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/sysfs/dir.c |   36 ++++++++++++++++--------------------
- 1 files changed, 16 insertions(+), 20 deletions(-)
+On 04/08/07, Kyle McMartin <kyle@mcmartin.ca> wrote:
+...
+>
+> It *can* be null, in the case of another handler being registered on the
+> same irq number, passing NULL for the cookie.
+>
+> Ack. Will apply.
+>
+> Regards,
+>         Kyle
+>
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 1d53c2a..3228f5a 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -855,7 +855,7 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
- 
- int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- {
--	struct sysfs_dirent *sd;
-+	struct sysfs_dirent *sd = kobj->sd;
- 	struct dentry *parent = NULL;
- 	struct dentry *old_dentry = NULL, *new_dentry = NULL;
- 	const char *dup_name = NULL;
-@@ -863,42 +863,41 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 
- 	mutex_lock(&sysfs_rename_mutex);
- 
-+	error = 0;
-+	if (strcmp(sd->s_name, new_name) == 0)
-+		goto out;	/* nothing to rename */
-+
- 	/* get the original dentry */
--	sd = kobj->sd;
- 	old_dentry = sysfs_get_dentry(sd);
- 	if (IS_ERR(old_dentry)) {
- 		error = PTR_ERR(old_dentry);
--		goto out_dput;
-+		goto out;
- 	}
- 
- 	parent = old_dentry->d_parent;
- 
- 	/* lock parent and get dentry for new name */
- 	mutex_lock(&parent->d_inode->i_mutex);
-+	mutex_lock(&sysfs_mutex);
- 
--	new_dentry = lookup_one_len(new_name, parent, strlen(new_name));
--	if (IS_ERR(new_dentry)) {
--		error = PTR_ERR(new_dentry);
--		goto out_unlock;
--	}
--
--	error = -EINVAL;
--	if (old_dentry == new_dentry)
-+	error = -EEXIST;
-+	if (sysfs_find_dirent(sd->s_parent, new_name))
- 		goto out_unlock;
- 
--	error = -EEXIST;
--	if (new_dentry->d_inode)
-+	error = -ENOMEM;
-+	new_dentry = d_alloc_name(parent, new_name);
-+	if (!new_dentry)
- 		goto out_unlock;
- 
- 	/* rename kobject and sysfs_dirent */
- 	error = -ENOMEM;
- 	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
- 	if (!new_name)
--		goto out_drop;
-+		goto out_unlock;
- 
- 	error = kobject_set_name(kobj, "%s", new_name);
- 	if (error)
--		goto out_drop;
-+		goto out_unlock;
- 
- 	mutex_lock(&sysfs_mutex);
- 	dup_name = sd->s_name;
-@@ -910,16 +909,13 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 	d_move(old_dentry, new_dentry);
- 
- 	error = 0;
--	goto out_unlock;
--
-- out_drop:
--	d_drop(new_dentry);
-  out_unlock:
-+	mutex_unlock(&sysfs_mutex);
- 	mutex_unlock(&parent->d_inode->i_mutex);
-- out_dput:
- 	kfree(dup_name);
- 	dput(old_dentry);
- 	dput(new_dentry);
-+ out:
- 	mutex_unlock(&sysfs_rename_mutex);
- 	return error;
- }
+I'll let you and Kyle fight it out :-)
+
 -- 
-1.5.1.1.181.g2de0
-
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
