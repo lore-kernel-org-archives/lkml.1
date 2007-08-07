@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbXHGTvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757190AbXHGTvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbXHGTvT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 15:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXHGTvJ
+	id S1757190AbXHGTvw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 15:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbXHGTvn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 15:51:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57926 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751874AbXHGTvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 15:51:08 -0400
-To: Noah Watkins <nwatkins@ittc.ku.edu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
-       "systemtap@sourceware.org" <systemtap@sourceware.org>
-Subject: Re: [patch 0/1] extending low-level markers
-References: <20070801215723.GA10470@ittc.ku.edu>
-	<20070802164437.GA27003@Krystal> <20070802183251.GA15216@ittc.ku.edu>
-	<20070802190211.GA12124@Krystal> <20070802193106.GC15216@ittc.ku.edu>
-	<20070802193851.GA15883@Krystal> <20070802195837.GD15216@ittc.ku.edu>
-From: fche@redhat.com (Frank Ch. Eigler)
-Date: 07 Aug 2007 15:50:37 -0400
-In-Reply-To: <20070802195837.GD15216@ittc.ku.edu>
-Message-ID: <y0m4pjbxgxe.fsf@ton.toronto.redhat.com>
-User-Agent: Gnus/5.0808 (Gnus v5.8.8) Emacs/21.3
+	Tue, 7 Aug 2007 15:51:43 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:55244 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbXHGTvm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 15:51:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gHybSHdWHrExFiLezCGjft+cn2I+i1Ki9lGe0V1FoRuBAoOYVskO2sf+DBSin1w4ENIeg8ogkt4zNYJho9hlJdxLmZ+cUqZdz2zltUFSSj3nU3coX6Ue2/+KBhS3Pc4xal+WOfMDx2QlxpPjs0W2356JMc/U1Sj8J02mrIvBnSs=
+Message-ID: <9a8748490708071251l72d1e564u3f0d3bd5b6e4110d@mail.gmail.com>
+Date: Tue, 7 Aug 2007 21:51:40 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "David Chinner" <dgc@sgi.com>
+Subject: Re: [PATCH][RESEND] fix a potential NULL pointer deref in XFS on failed mount.
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, xfs-masters@oss.sgi.com
+In-Reply-To: <20070806005214.GK31489@sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200708042030.21375.jesper.juhl@gmail.com>
+	 <20070806005214.GK31489@sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Noah Watkins <nwatkins@ittc.ku.edu> writes:
+On 06/08/07, David Chinner <dgc@sgi.com> wrote:
+> On Sat, Aug 04, 2007 at 08:30:21PM +0200, Jesper Juhl wrote:
+> > Back in 2006 (2006-10-31 to be specific, reposted on 2006-11-16), I
+> > submitted a patch to fix a potential NULL pointer deref in XFS on
+> > failed mount.
+>
+> Already checked into xfs-dev tree. Will go to next mainline merge.
+>
+> http://oss.sgi.com/archives/xfs/2007-08/msg00030.html
+>
 
-> [...]
-> The locks are aquired and released in each _start and _end marker, so
-> the equilibrium is not a issue.
+Ok. Thanks a lot for the feedback David.
 
-But it becomes an issue should preemption, or control flow upset such
-as an early return or recursion, occurs between the start and end
-markers.
-
-> A more sane example is the insertion of values into a histogram. Instead
-> of the instrumenation point logging the values and having the histogram
-> constructed during a post-process step, data structures implemented the
-> histogrm are associated with the instrumenation point. The lock protects
-> this structure in a more intuitive way than the interval example.
-
-A better way may be to do what we do in systemtap scripts: in a
-interval-start type probe, store the start value in a table indexed by
-thread-id and nesting-level; in the interval-end type probe, find the
-corresponding value, compute the difference (as appropriate), and
-store the result only then into your long-term lookup table.  This
-approach requires *no locks* to survive between start & end: the
-probes remain atomic.
-
-> I think most of problems involving non atomicity of the
-> connection/disconnection of probes can be accomplished by good house
-> keeping and settings things up in phases which insure consistency.
-
-A marker callback can take shortcuts, I guess, if it allows itself to
-make assumptions about the ways it can be called.
-
-I scanned over the thread, but still haven't seen a specific argument
-for extra marker-type annotations that would relate to this issue.
-What tool would need to scan the available markers, and how would
-extra information allow it to do its job?
-
-- FChE
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
