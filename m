@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbXHGSd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbXHGSgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759134AbXHGSd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 14:33:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752433AbXHGSdt
+	id S1760201AbXHGSgQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 14:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbXHGSgE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 14:33:49 -0400
-Received: from smtp.nokia.com ([131.228.20.170]:30201 "EHLO
-	mgw-ext11.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752302AbXHGSds convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 14:33:48 -0400
-Subject: [PATCH] hexdump: use const notation
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Date: Tue, 07 Aug 2007 21:33:40 +0300
-Message-Id: <1186511620.19606.20.camel@sauron>
+	Tue, 7 Aug 2007 14:36:04 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:45725 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754404AbXHGSgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 14:36:03 -0400
+Date: Tue, 7 Aug 2007 22:36:09 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Paul E McKenney <paulmck@us.ibm.com>
+Subject: Re: Cpu-Hotplug and Real-Time
+Message-ID: <20070807183609.GA81@tv-sign.ru>
+References: <20070807131216.GA20424@in.ibm.com> <20070807151336.GA507@tv-sign.ru> <20070807173336.GA4472@linux-os.sc.intel.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 07 Aug 2007 18:33:40.0181 (UTC) FILETIME=[79ABF850:01C7D921]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807173336.GA4472@linux-os.sc.intel.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial fix: mark the buffer to hexdump as const so callers could avoid
-casting their const buffers when calling print_hex_dump().
+On 08/07, Venki Pallipadi wrote:
+>
+> On Tue, Aug 07, 2007 at 07:13:36PM +0400, Oleg Nesterov wrote:
+> > 
+> > As for kthread_bind(), I think wait_task_inactive+set_task_cpu is just
+> > an optimization, and easy to "fix":
+> > 
+> > --- kernel/kthread.c	2007-07-28 16:58:17.000000000 +0400
+> > +++ /proc/self/fd/0	2007-08-07 18:56:54.248073547 +0400
+> > @@ -166,10 +166,7 @@ void kthread_bind(struct task_struct *k,
+> >  		WARN_ON(1);
+> >  		return;
+> >  	}
+> > -	/* Must have done schedule() in kthread() before we set_task_cpu */
+> > -	wait_task_inactive(k);
+> > -	set_task_cpu(k, cpu);
+> > -	k->cpus_allowed = cpumask_of_cpu(cpu);
+> > +	set_cpus_allowed(current, cpumask_of_cpu(cpu));
+> >  }
+> >  EXPORT_SYMBOL(kthread_bind);
+> > 
+> 
+> Not sure whether set_cpus_allowed() will work here. Looks like, it needs the
+> CPU to be online during the call and in kthread_bind() case CPU may be offline.
 
-The patch is really trivial and I suggest to consider it as a fix
-(it fixes GCC warnings) and push it to current tree.
+Aah, you are right, of course.
 
+Thanks,
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 4300bb4..b4f5b81 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -224,7 +224,7 @@ extern void hex_dump_to_buffer(const void *buf, size_t len,
- 				char *linebuf, size_t linebuflen, bool ascii);
- extern void print_hex_dump(const char *level, const char *prefix_str,
- 				int prefix_type, int rowsize, int groupsize,
--				void *buf, size_t len, bool ascii);
-+				const void *buf, size_t len, bool ascii);
- extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
- 			void *buf, size_t len);
- #define hex_asc(x)	"0123456789abcdef"[x]
-diff --git a/lib/hexdump.c b/lib/hexdump.c
-index 473f5ae..16f2e29 100644
---- a/lib/hexdump.c
-+++ b/lib/hexdump.c
-@@ -145,9 +145,9 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
-  */
- void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
- 			int rowsize, int groupsize,
--			void *buf, size_t len, bool ascii)
-+			const void *buf, size_t len, bool ascii)
- {
--	u8 *ptr = buf;
-+	const u8 *ptr = buf;
- 	int i, linelen, remaining = len;
- 	unsigned char linebuf[200];
- 
-
-
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+Oleg.
 
