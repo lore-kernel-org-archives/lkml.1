@@ -1,30 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbXHGFNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbXHGFTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933234AbXHGFNy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 01:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbXHGFNp
+	id S1763459AbXHGFTN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 01:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbXHGFS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 01:13:45 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53320 "EHLO
+	Tue, 7 Aug 2007 01:18:59 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:55848 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751513AbXHGFNp (ORCPT
+	by vger.kernel.org with ESMTP id S1751513AbXHGFS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 01:13:45 -0400
-Date: Mon, 6 Aug 2007 22:12:52 -0700
+	Tue, 7 Aug 2007 01:18:58 -0400
+Date: Mon, 6 Aug 2007 22:18:24 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: mel@skynet.ie (Mel Gorman)
-Cc: Andi Kleen <ak@suse.de>, Lee.Schermerhorn@hp.com, clameter@sgi.com,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Apply memory policies to top two highest zones when
- highest zone is ZONE_MOVABLE
-Message-Id: <20070806221252.aa1e9048.akpm@linux-foundation.org>
-In-Reply-To: <20070806215541.GC6142@skynet.ie>
-References: <20070802172118.GD23133@skynet.ie>
-	<200708040002.18167.ak@suse.de>
-	<20070806121558.e1977ba5.akpm@linux-foundation.org>
-	<200708062231.49247.ak@suse.de>
-	<20070806215541.GC6142@skynet.ie>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
+Message-Id: <20070806221824.22a78312.akpm@linux-foundation.org>
+In-Reply-To: <20070806203326.GA188@tv-sign.ru>
+References: <20070802212009.GA516@tv-sign.ru>
+	<20070806131345.3322c99e.akpm@linux-foundation.org>
+	<20070806203326.GA188@tv-sign.ru>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -32,26 +30,91 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Aug 2007 22:55:41 +0100 mel@skynet.ie (Mel Gorman) wrote:
+On Tue, 7 Aug 2007 00:33:26 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> On (06/08/07 22:31), Andi Kleen didst pronounce:
+> On 08/06, Andrew Morton wrote:
+> >
+> > On Fri, 3 Aug 2007 01:20:09 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
 > > 
-> > > If correct, I would suggest merging the horrible hack for .23 then taking
-> > > it out when we merge "grouping pages by mobility".  But what if we don't do
-> > > that merge?
+> > > 2. We are playing games with ->nsproxy->pid_ns. This code is bogus today, and
+> > >    it has to be changed anyway when we really support pid namespaces, just
+> > >    remove it.
+> >
+> > This patch broke
 > > 
-> > Or disable ZONE_MOVABLE until it is usable?
+> > pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch.  This hunk:
+> > 
+> > ***************
+> > *** 908,915 ****
+> >   	if (unlikely(!tsk->pid))
+> >   		panic("Attempted to kill the idle task!");
+> >   	if (unlikely(tsk == child_reaper(tsk))) {
+> > - 		if (tsk->nsproxy->pid_ns != &init_pid_ns)
+> > - 			tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
+> >   		else
+> >   			panic("Attempted to kill init!");
+> >   	}
+> > --- 908,916 ----
+> >   	if (unlikely(!tsk->pid))
+> >   		panic("Attempted to kill the idle task!");
+> >   	if (unlikely(tsk == child_reaper(tsk))) {
+> > + 		if (task_active_pid_ns(tsk) != &init_pid_ns)
+> > + 			task_active_pid_ns(tsk)->child_reaper =
+> > + 					init_pid_ns.child_reaper;
+> >   		else
+> >   			panic("Attempted to kill init!");
+> >   	}
+> > 
+> > has no place to live any more, so I just removed it.
 > 
-> It's usable now. The issue with policies only occurs if the user specifies
-> kernelcore= or movablecore= on the command-line. Your language suggests
-> that you believe policies are not applied when ZONE_MOVABLE is configured
-> at build-time.
+> Ah, thanks. I should have done this patch against -mm tree.
+> 
+> I hope it is OK to drop this chunk of
+> 	pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch
+> 
+> Because it can't work right now anyway, and Sukadev+Pavel already have
+> new patches on top this one which make namespace switch actually work.
+> 
 
-So..  the problem which we're fixing here is only present when someone
-use kernelcore=.  This is in fact an argument for _not_ merging the
-horrible-hack.
+OK, well I had to make a bit of on-the-fly adjustment to
+pid-namespaces-rename-child_reaper-function.patch as well.
 
-How commonly do we expect people to specify kernelcore=?  If "not much" then
-it isn't worth adding the __alloc_pages() overhead?
+The diff-of-the-diff is:
 
-(It's a pretty darn small overhead, I must say)
+@@ -48,7 +48,7 @@
+ diff -puN kernel/exit.c~pid-namespaces-rename-child_reaper-function kernel/exit.c
+ --- a/kernel/exit.c~pid-namespaces-rename-child_reaper-function
+ +++ a/kernel/exit.c
+-@@ -694,7 +694,7 @@ forget_original_parent(struct task_struc
++@@ -683,7 +683,7 @@ forget_original_parent(struct task_struc
+  	do {
+  		reaper = next_thread(reaper);
+  		if (reaper == father) {
+@@ -57,19 +57,10 @@
+  			break;
+  		}
+  	} while (reaper->exit_state);
+-@@ -907,7 +907,7 @@ fastcall NORET_TYPE void do_exit(long co
+- 		panic("Aiee, killing interrupt handler!");
+- 	if (unlikely(!tsk->pid))
+- 		panic("Attempted to kill the idle task!");
+--	if (unlikely(tsk == child_reaper(tsk))) {
+-+	if (unlikely(tsk == task_child_reaper(tsk))) {
+- 		if (task_active_pid_ns(tsk) != &init_pid_ns)
+- 			task_active_pid_ns(tsk)->child_reaper =
+- 					init_pid_ns.child_reaper;
+ diff -puN kernel/signal.c~pid-namespaces-rename-child_reaper-function kernel/signal.c
+
+Hopefully people can re-review and retest what's there in next -mm.
+
+Or if that's too much work or too risky, option b) is to drop
+handle-the-multi-threaded-inits-exit-properly.patch, go back to the
+2.6.23-rc1-mm2 versions of
+pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch and
+pid-namespaces-rename-child_reaper-function.patch and to ask Oleg to cook a 2.6.23-rc1-mm2 version of handle-the-multi-threaded-inits-exit-properly.patch.
+
+The downside of this approach is that
+handle-the-multi-threaded-inits-exit-properly.patch looks more 2.6.24-ready
+than all the container stuff (based just on overall impact and
+speculativeness)
+
