@@ -1,96 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934198AbXHGPZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934759AbXHGP0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934198AbXHGPZB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 11:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbXHGPYv
+	id S934759AbXHGP0S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 11:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbXHGP0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 11:24:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39114 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752948AbXHGPYu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 11:24:50 -0400
-Message-ID: <46B88EBF.3010903@garzik.org>
-Date: Tue, 07 Aug 2007 11:24:47 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 7 Aug 2007 11:26:09 -0400
+Received: from nf-out-0910.google.com ([64.233.182.188]:57968 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751430AbXHGP0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 11:26:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oQrDfU2OGCVNs1i6PQicY7VYJyEcNSHt9PU0n3lweP5vA//RtaPJky83o/0ySNBeYGVTmY9jLN05mSKLRwYkzbVeEunOl7xFey0u8f43/m6dIHMj4nyKJecTjuYpnFabAo4qlVwT9lwx9VC3Dzeq2+vZO92HXD38JQQIKzUZ7mI=
+Message-ID: <6278d2220708070826h2613dd7dr6e3b8001fba3441a@mail.gmail.com>
+Date: Tue, 7 Aug 2007 16:26:06 +0100
+From: "Daniel J Blueman" <daniel.blueman@gmail.com>
+To: "Andi Kleen" <andi@firstfloor.org>
+Subject: Re: PAT support for i386 and x86_64
+Cc: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070807141042.GB952@one.firstfloor.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: James Bottomley <James.Bottomley@SteelEye.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-References: <1186248703.3439.20.camel@localhost.localdomain>	<alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>	<1186458941.6637.44.camel@localhost.localdomain> <20070807001429.f8cb3b22.akpm@linux-foundation.org>
-In-Reply-To: <20070807001429.f8cb3b22.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <6278d2220708070534t7096e579uef2ddbb2c997daa6@mail.gmail.com>
+	 <20070807141042.GB952@one.firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 06 Aug 2007 22:55:41 -0500 James Bottomley <James.Bottomley@SteelEye.com> wrote:
->> I really, *really* think we need a pre-release tree that consists of all
->> the upstream targetted features (i.e. all of the for the next merge
->> window git trees) and nothing else.
-> 
-> That *is* -mm.  The vast majority of -mm is the 75-odd subsystem trees. 
+On 07/08/07, Andi Kleen <andi@firstfloor.org> wrote:
+> > What cases did you have in mind?
+>
+> Mainly mapping memory which is rather tricky.
 
-Not quite.
+Yes, I'm talking about memory-mapping PCI memory regions; however I
+can't see other immediate uses. Then maybe it's acceptable to document
+that - for now - we need to hand out mappings which have consistent
+PAT indexes, which would be natural in all cases I've seen with
+processes writing/bursting to registers in PCI memory space.
 
--mm is git trees plus an amazing amount of random patches that turned up 
-on LKML, a lot of which is not destined for kernel release 2.6.(X+1) or 
-2.6.(X+2),
+> > From current Intel 64 and IA-32 Architectures Software Developer's Manual
+> > Volume 3A: System Programming Guide, section 10.5.2:
+>
+> If you look at the detailed table it's not that simple.
 
+Ignoring the N/A PPro and PII table, the various combinations of MTRR
+and PAT entries (table 10-7) again show expected safe behaviour. We
+don't worry about WP MTRRs, since BIOSes and Linux don't set that, and
+we are practically only interested in WC and UC access, which we get
+irrespective of the MTRR type covering that region.
 
-> Plus, an *amazing* amount of stuff turns up in the git trees which was
-> committed just a few days prior to the merge window opening, or even after
-> it opening.
+A number of vendors (graphics, HPC etc) implement and use their own
+PAT mechanisms, so defining only WC and UC covers all the cases.
 
-Yes :(  That's a tough problem to solve, too.
+> > > Then there are old CPU errata that need to be handled etc.
+> >
+> > I don't see a problem with having CONFIG_PAT depend on P4/Athlon or
+> > newer to avoid such workarounds for now. Better to have something
+> > there which works in (only) 80% of the cases, than nothing at all.
+>
+> Agreed, but the patch doesn't do that.
 
-Deadlines always motivate people, and so -- as in almost every other 
-software project I've worked with -- everybody seems to submit their 
-work on the day of the deadline.
+Noted for later.
 
-Realistically, for the merge window to work perfectly, each step down 
-the maintainership ladder needs to have time to review and integrate the 
-changes destined for that merge window.  Ideally, people would do all 
-this work beforehand, so that each step up the ladder has time prior to 
-merge window for review and testing.
+> > > You didn't solve all that at all. If it was as simple as your patch
+> > > we would have long done it already.
+> >
+> > Perhaps this feature can be marked as WIP to allow this to move
+> > forward while corner-cases are worked out. Adding such a go/no-go
+>
+> We're not going to have potentially cache corrupting features
+> as WIP. The last time one such bug took months to track down.
 
-But that's just not software engineers as we know them ;-)
+A driver that hands out mappings to the same PCI memory address with
+different access ordering seems broken by design (due to PCI BARs
+being strictly prefetchable or not). Again vendors implement their own
+PAT mechanics which are consistent about access types.
 
+(Intel IA32 ASDM 3A 10-47) "a WC page must never be aliased to a
+cacheable page because WC writes may not check the processor caches."
 
->>  The lack of a tree like this that we could have
->> persuaded people to test for the last month is what's causing us to
->> scramble like this at the closure of the merge window.
-> 
-> Nope.  The scramble is caused by subsystem maintainers jamming stuff into
-> mainline at the last minute so they don't have to sit on it for the next
-> two months.
+This is not talking about corrupting the cache generally, but data
+hitting a PCI target twice by (ie) a broken driver.
 
-Indeed.  Particularly in this case, where bsg didn't really grace -mm at 
-all.
+> > barrier will hamper progress we do see, as it has done already for
+> > years.
+>
+> Because it's not simple and nobody has done it properly yet.
 
+Providing only UC and WC types and documenting aliasing problems is
+what is required here.
 
-> Look.  If we're serious about this then the rule needs to be something like
-> 
->   If it wasn't committed to your tree *at least* two weeks prior to the
->   2.6.x merge window opening, it shouldn't go into 2.6.x.
-> 
-> People are not presently observing this sort of discipline by a metric
-> mile.  And I'm not sure that we should, really.
+> > The PCI ordering config option years ago was a similar case, since
+> > various drivers didn't issue wmb()s until they were fixed up.
+>
+> wmb alone is not enough for PCI ordering.
 
-My goal AT A MINIMUM with netdev and libata is to get stuff in at least 
-one -mm release prior to merge window opening (though preferably a 
-longer lead time than that).  Of course, reality intrudes, but that's my 
-goal.
+(not the point in question)
 
-And I think it's a reasonable goal to push upon others (but I'm biased:))
-
-	Jeff
-
-
+> -Andi
+-- 
+Daniel J Blueman
