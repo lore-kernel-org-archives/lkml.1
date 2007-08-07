@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965417AbXHGVcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937184AbXHGVdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965417AbXHGVcp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935941AbXHGU7H
+	id S937184AbXHGVdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936229AbXHGVCx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:59:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37716 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935939AbXHGU7F (ORCPT
+	Tue, 7 Aug 2007 17:02:53 -0400
+Received: from zrtps0kn.nortel.com ([47.140.192.55]:45738 "EHLO
+	zrtps0kn.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936225AbXHGVCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:59:05 -0400
-Date: Tue, 7 Aug 2007 13:45:50 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, adobriyan@sw.ru
-Subject: [2.6.22.2 review 35/84] Fix leak on /proc/lockdep_stats
-Message-ID: <20070807204550.GK23028@kroah.com>
-References: <20070807204034.882009319@mini.kroah.org>
+	Tue, 7 Aug 2007 17:02:51 -0400
+Message-ID: <46B8DDF3.7050008@nortel.com>
+Date: Tue, 07 Aug 2007 15:02:43 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-leak-on-proc-lockdep_stats.patch"
-In-Reply-To: <20070807204157.GA23028@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+To: Chris Snook <csnook@redhat.com>
+CC: Jerry Jiang <wjiang@resilience.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain> <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com> <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com>
+In-Reply-To: <46B8D6D7.2020206@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Aug 2007 21:02:46.0793 (UTC) FILETIME=[4E449F90:01C7D936]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Snook wrote:
 
-From: Alexey Dobriyan <adobriyan@sw.ru>
+> But if you're not using SMP, the only way you get a race condition is if 
+> your compiler is reordering instructions that have side effects which 
+> are invisible to the compiler.  This can happen with MMIO registers, but 
+> it's not an issue with an atomic_t we're declaring in real memory.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+I refer back to the interrupt handler case.  Suppose we have:
 
----
- kernel/lockdep_proc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+while(!atomic_read(flag))
+  	continue;
 
---- a/kernel/lockdep_proc.c
-+++ b/kernel/lockdep_proc.c
-@@ -339,7 +339,7 @@ static const struct file_operations proc
- 	.open		= lockdep_stats_open,
- 	.read		= seq_read,
- 	.llseek		= seq_lseek,
--	.release	= seq_release,
-+	.release	= single_release,
- };
- 
- static int __init lockdep_proc_init(void)
+where flag is an atomic_t that is set in an interrupt handler, the 
+volatile may be necessary on some architectures to force the compiler to 
+re-read "flag" each time through the loop.
 
--- 
+Without the "volatile", the compiler could be perfectly within its 
+rights to evaluate "flag" once and create an infinite loop.
+
+Now I'm not trying to say that we should explictly use "volatile" in 
+common code, but that it is possible that it is required within the 
+arch-specific atomic_t accessors even on uniprocessor systems.
+
+Chris
