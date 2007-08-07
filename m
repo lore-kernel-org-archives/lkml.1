@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758269AbXHGUhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbXHGUk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758269AbXHGUhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764877AbXHGUha
+	id S1757075AbXHGUk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXHGUkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:37:30 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43219 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934822AbXHGUh3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:37:29 -0400
-Date: Tue, 7 Aug 2007 13:37:24 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Mel Gorman <mel@skynet.ie>, Andi Kleen <ak@suse.de>,
-       Lee.Schermerhorn@hp.com, kamezawa.hiroyu@jp.fujitsu.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Apply memory policies to top two highest zones when
- highest zone is ZONE_MOVABLE
-In-Reply-To: <20070807111430.f35c03c0.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708071334430.3430@schroedinger.engr.sgi.com>
-References: <20070802172118.GD23133@skynet.ie> <200708040002.18167.ak@suse.de>
- <20070806121558.e1977ba5.akpm@linux-foundation.org> <200708062231.49247.ak@suse.de>
- <20070806215541.GC6142@skynet.ie> <20070806221252.aa1e9048.akpm@linux-foundation.org>
- <20070807165546.GA7603@skynet.ie> <20070807111430.f35c03c0.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Aug 2007 16:40:17 -0400
+Received: from main.gmane.org ([80.91.229.2]:56248 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754178AbXHGUkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 16:40:15 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Niels <zorglub_olsen@hotmail.com>
+Subject: Problems with USB disk
+Date: Tue, 07 Aug 2007 22:26:15 +0200
+Message-ID: <f9akh8$ori$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 62.79.44.136.adsl.gl.tiscali.dk
+User-Agent: KNode/0.10.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007, Andrew Morton wrote:
+Hi,
 
-> > It's even more constrained than that. It only applies to the MPOL_BIND
-> > policy when kernelcore= is specified. The other policies work the same
-> > as they ever did.
-> 
-> so.. should we forget about merging the horrible-hack?
-
-Support MPOL_BIND is a basic NUMA feature. This is going to make .23 
-unusable for us if kernelcore= is used. If we cannot use kernelcore then 
-NUMA systems cannot use the features that depend on kernelcore.
+I'm having problems with a new 500 GB USB disk. It works, but sometimes I
+get these in dmesg:
 
 
+usb 1-3: reset high speed USB device using ehci_hcd and address 2
+usb 5-1: USB disconnect, address 2
+drivers/usb/class/usblp.c: usblp0: removed
+sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
+: ASC=0x4 ASCQ=0x2
+end_request: I/O error, dev sda, sector 254148215
+sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
+: ASC=0x4 ASCQ=0x2
+end_request: I/O error, dev sda, sector 252434023
+EXT3-fs error (device sda1): ext3_find_entry: reading directory #15761836
+offset 0
+
+
+There's also a printer connected. This is on a pci/usb2 card. When the above
+happens, I get I/O errors. When I mount the drive next, there are errors
+and often missing files. Quite annoying!
+
+Kernel is 2.6.21
+
+What's going on?
+
+
+Thanks,
+Niels
 
