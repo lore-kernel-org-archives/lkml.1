@@ -1,77 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935041AbXHGW4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936420AbXHGW51@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935041AbXHGW4m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbXHGW4d
+	id S936420AbXHGW51 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:57:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934695AbXHGW5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 18:56:33 -0400
-Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:39111 "EHLO
-	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756968AbXHGW4b (ORCPT
+	Tue, 7 Aug 2007 18:57:04 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:2312 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934515AbXHGW5A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:56:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=earthlink.net;
-  b=IcYLip5pf8aU0Q07bQdaQD5h2WAzgE2a5FT+Rs7Sn5KQK2Eta8+/J1spp1GVaYZT;
-  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
-Message-ID: <000501c7d945$f30af1a0$6501a8c0@earthlink.net>
-Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
-From: "Mitchell Erblich" <erblichs@earthlink.net>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Question: RT schedular : task_tick_rt(struct rq *rq, struct task_struct *p) : decreases overhead when  rq->nr_running == 1
-Date: Tue, 7 Aug 2007 15:54:41 -0700
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2800.1106
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
-X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec79490ec1cb95f0c0c5a81925b8270f1702350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.164.93.14
+	Tue, 7 Aug 2007 18:57:00 -0400
+Date: Wed, 8 Aug 2007 01:56:35 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
+       riku.seppala@kymp.net, Andy Whitcroft <apw@shadowen.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
+Message-ID: <20070807225635.GJ4278@rhun.haifa.ibm.com>
+References: <46B3A7BB.9000102@redhat.com> <200708041130.42038.ak@suse.de> <20070804093222.f0d7f3c7.akpm@linux-foundation.org> <200708050140.49590.ak@suse.de> <20070805050410.GB4960@rhun.haifa.ibm.com> <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com> <20070805075307.GA25890@rhun.haifa.ibm.com> <20070807154911.5fe93b40.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807154911.5fe93b40.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar and group,
+On Tue, Aug 07, 2007 at 03:49:11PM -0700, Andrew Morton wrote:
 
-If their is a single RT task on this rq, then why not just reset the
-timeslice and return??? Just MAYBE decreasing re-scheduling
-overhead..
+> I am sooooooo tired of this thing.  Andi, someone, can we for heaven's
+> sake please just get it all sorted out?
 
-Thus,,,,
+With regards to the sysdata conversion: Riku says he cannot test new
+kernel. I haven't heard anything from Andy Whitcroft. It passes all of
+my tests and what we have now is obviously broken... I think we should
+put the fix in.
 
-After
-    p->time_slice = static_prio_timeslice(p->static_prio);
-
-Why isn't their a check like
-    if  (rq->nr_running == 1)
-         return;
-
-Which world remove the need for any recheduling
-or requeue'ing...
-
-Mitchell Erblich
-FYI: below is believed to be a snap of the current/ orig func
------------------------------
-
-
-+static void task_tick_rt(struct rq *rq, struct task_struct *p)
-+{
-+ /*
-+  * RR tasks need a special form of timeslice management.
-+  * FIFO tasks have no timeslices.
-+  */
-+ if (p->policy != SCHED_RR)
-+  return;
-+
-+ if (--p->time_slice)
-+  return;
-+
-+ p->time_slice = static_prio_timeslice(p->static_prio);
-+ set_tsk_need_resched(p);
-+
-+ /* put it at the end of the queue: */
-+ requeue_task_rt(rq, p);
-+}
+Cheers,
+Muli
