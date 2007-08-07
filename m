@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966405AbXHGVab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966344AbXHGVbE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966405AbXHGVab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935289AbXHGU6W
+	id S966344AbXHGVbE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:31:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965146AbXHGU62
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:58:22 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37658 "EHLO
+	Tue, 7 Aug 2007 16:58:28 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37665 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965201AbXHGU6R (ORCPT
+	with ESMTP id S965250AbXHGU6Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:58:17 -0400
-Date: Tue, 7 Aug 2007 13:49:36 -0700
+	Tue, 7 Aug 2007 16:58:25 -0400
+Date: Tue, 7 Aug 2007 13:49:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,104 +21,216 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Netfilter Development Mailinglist 
-	<netfilter-devel@lists.netfilter.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Patrick McHardy <kaber@trash.net>
-Subject: [2.6.22.2 review 81/84] Netfilter: Fix logging regression
-Message-ID: <20070807204936.GE23028@kroah.com>
+       Oliver Neukum <oneukum@suse.de>
+Subject: [2.6.22.2 review 82/84] USB: fix for ftdi_sio quirk handling
+Message-ID: <20070807204939.GF23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-fix-logging-regression.patch"
+Content-Disposition: inline; filename="usb-fix-for-ftdi_sio-quirk-handling.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick McHardy <kaber@trash.net>
+From: Oliver Neukum <oliver@neukum.org>
 
-[NETFILTER]: Fix logging regression
+this one fixes an oops with quirky ftdi_sio devices. As it fixes a
+regression, I propose that it be included in 2.6.22
 
-Loading one of the LOG target fails if a different target has already
-registered itself as backend for the same family. This can affect the
-ipt_LOG and ipt_ULOG modules when both are loaded.
-
-Reported and tested by: <t.artem@mailcity.com>
-Upstream-commit: 7e2acc7e
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/bridge/netfilter/ebt_log.c  |    6 ++----
- net/bridge/netfilter/ebt_ulog.c |    8 ++------
- net/ipv4/netfilter/ipt_LOG.c    |    6 ++----
- net/ipv6/netfilter/ip6t_LOG.c   |    6 ++----
- 4 files changed, 8 insertions(+), 18 deletions(-)
+ drivers/usb/serial/ftdi_sio.c |  104 +++++++++++++++++-------------------------
+ 1 file changed, 44 insertions(+), 60 deletions(-)
 
---- a/net/bridge/netfilter/ebt_log.c
-+++ b/net/bridge/netfilter/ebt_log.c
-@@ -196,10 +196,8 @@ static int __init ebt_log_init(void)
- 	ret = ebt_register_watcher(&log);
- 	if (ret < 0)
- 		return ret;
--	ret = nf_log_register(PF_BRIDGE, &ebt_log_logger);
--	if (ret < 0 && ret != -EEXIST)
--		ebt_unregister_watcher(&log);
--	return ret;
-+	nf_log_register(PF_BRIDGE, &ebt_log_logger);
-+	return 0;
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -271,26 +271,58 @@ static int debug;
+ static __u16 vendor = FTDI_VID;
+ static __u16 product;
+ 
++struct ftdi_private {
++	ftdi_chip_type_t chip_type;
++				/* type of the device, either SIO or FT8U232AM */
++	int baud_base;		/* baud base clock for divisor setting */
++	int custom_divisor;	/* custom_divisor kludge, this is for baud_base (different from what goes to the chip!) */
++	__u16 last_set_data_urb_value ;
++				/* the last data state set - needed for doing a break */
++        int write_offset;       /* This is the offset in the usb data block to write the serial data -
++				 * it is different between devices
++				 */
++	int flags;		/* some ASYNC_xxxx flags are supported */
++	unsigned long last_dtr_rts;	/* saved modem control outputs */
++        wait_queue_head_t delta_msr_wait; /* Used for TIOCMIWAIT */
++	char prev_status, diff_status;        /* Used for TIOCMIWAIT */
++	__u8 rx_flags;		/* receive state flags (throttling) */
++	spinlock_t rx_lock;	/* spinlock for receive state */
++	struct delayed_work rx_work;
++	struct usb_serial_port *port;
++	int rx_processed;
++	unsigned long rx_bytes;
++
++	__u16 interface;	/* FT2232C port interface (0 for FT232/245) */
++
++	int force_baud;		/* if non-zero, force the baud rate to this value */
++	int force_rtscts;	/* if non-zero, force RTS-CTS to always be enabled */
++
++	spinlock_t tx_lock;	/* spinlock for transmit state */
++	unsigned long tx_bytes;
++	unsigned long tx_outstanding_bytes;
++	unsigned long tx_outstanding_urbs;
++};
++
+ /* struct ftdi_sio_quirk is used by devices requiring special attention. */
+ struct ftdi_sio_quirk {
+ 	int (*probe)(struct usb_serial *);
+-	void (*setup)(struct usb_serial *); /* Special settings during startup. */
++	void (*port_probe)(struct ftdi_private *); /* Special settings for probed ports. */
+ };
+ 
+ static int   ftdi_olimex_probe		(struct usb_serial *serial);
+-static void  ftdi_USB_UIRT_setup	(struct usb_serial *serial);
+-static void  ftdi_HE_TIRA1_setup	(struct usb_serial *serial);
++static void  ftdi_USB_UIRT_setup	(struct ftdi_private *priv);
++static void  ftdi_HE_TIRA1_setup	(struct ftdi_private *priv);
+ 
+ static struct ftdi_sio_quirk ftdi_olimex_quirk = {
+ 	.probe	= ftdi_olimex_probe,
+ };
+ 
+ static struct ftdi_sio_quirk ftdi_USB_UIRT_quirk = {
+-	.setup = ftdi_USB_UIRT_setup,
++	.port_probe = ftdi_USB_UIRT_setup,
+ };
+ 
+ static struct ftdi_sio_quirk ftdi_HE_TIRA1_quirk = {
+-	.setup = ftdi_HE_TIRA1_setup,
++	.port_probe = ftdi_HE_TIRA1_setup,
+ };
+ 
+ /*
+@@ -567,38 +599,6 @@ static const char *ftdi_chip_name[] = {
+ #define THROTTLED		0x01
+ #define ACTUALLY_THROTTLED	0x02
+ 
+-struct ftdi_private {
+-	ftdi_chip_type_t chip_type;
+-				/* type of the device, either SIO or FT8U232AM */
+-	int baud_base;		/* baud base clock for divisor setting */
+-	int custom_divisor;	/* custom_divisor kludge, this is for baud_base (different from what goes to the chip!) */
+-	__u16 last_set_data_urb_value ;
+-				/* the last data state set - needed for doing a break */
+-        int write_offset;       /* This is the offset in the usb data block to write the serial data -
+-				 * it is different between devices
+-				 */
+-	int flags;		/* some ASYNC_xxxx flags are supported */
+-	unsigned long last_dtr_rts;	/* saved modem control outputs */
+-        wait_queue_head_t delta_msr_wait; /* Used for TIOCMIWAIT */
+-	char prev_status, diff_status;        /* Used for TIOCMIWAIT */
+-	__u8 rx_flags;		/* receive state flags (throttling) */
+-	spinlock_t rx_lock;	/* spinlock for receive state */
+-	struct delayed_work rx_work;
+-	struct usb_serial_port *port;
+-	int rx_processed;
+-	unsigned long rx_bytes;
+-
+-	__u16 interface;	/* FT2232C port interface (0 for FT232/245) */
+-
+-	int force_baud;		/* if non-zero, force the baud rate to this value */
+-	int force_rtscts;	/* if non-zero, force RTS-CTS to always be enabled */
+-
+-	spinlock_t tx_lock;	/* spinlock for transmit state */
+-	unsigned long tx_bytes;
+-	unsigned long tx_outstanding_bytes;
+-	unsigned long tx_outstanding_urbs;
+-};
+-
+ /* Used for TIOCMIWAIT */
+ #define FTDI_STATUS_B0_MASK	(FTDI_RS0_CTS | FTDI_RS0_DSR | FTDI_RS0_RI | FTDI_RS0_RLSD)
+ #define FTDI_STATUS_B1_MASK	(FTDI_RS_BI)
+@@ -609,7 +609,6 @@ struct ftdi_private {
+ 
+ /* function prototypes for a FTDI serial converter */
+ static int  ftdi_sio_probe	(struct usb_serial *serial, const struct usb_device_id *id);
+-static int  ftdi_sio_attach		(struct usb_serial *serial);
+ static void ftdi_shutdown		(struct usb_serial *serial);
+ static int  ftdi_sio_port_probe	(struct usb_serial_port *port);
+ static int  ftdi_sio_port_remove	(struct usb_serial_port *port);
+@@ -663,7 +662,6 @@ static struct usb_serial_driver ftdi_sio
+ 	.ioctl =		ftdi_ioctl,
+ 	.set_termios =		ftdi_set_termios,
+ 	.break_ctl =		ftdi_break_ctl,
+-	.attach =		ftdi_sio_attach,
+ 	.shutdown =		ftdi_shutdown,
+ };
+ 
+@@ -1198,6 +1196,8 @@ static int ftdi_sio_probe (struct usb_se
+ static int ftdi_sio_port_probe(struct usb_serial_port *port)
+ {
+ 	struct ftdi_private *priv;
++	struct ftdi_sio_quirk *quirk = usb_get_serial_data(port->serial);
++
+ 
+ 	dbg("%s",__FUNCTION__);
+ 
+@@ -1214,6 +1214,9 @@ static int ftdi_sio_port_probe(struct us
+ 	   than queue a task to deliver them */
+ 	priv->flags = ASYNC_LOW_LATENCY;
+ 
++	if (quirk && quirk->port_probe)
++		quirk->port_probe(priv);
++
+ 	/* Increase the size of read buffers */
+ 	kfree(port->bulk_in_buffer);
+ 	port->bulk_in_buffer = kmalloc (BUFSZ, GFP_KERNEL);
+@@ -1244,29 +1247,13 @@ static int ftdi_sio_port_probe(struct us
+ 	return 0;
  }
  
- static void __exit ebt_log_fini(void)
---- a/net/bridge/netfilter/ebt_ulog.c
-+++ b/net/bridge/netfilter/ebt_ulog.c
-@@ -308,12 +308,8 @@ static int __init ebt_ulog_init(void)
- 	else if ((ret = ebt_register_watcher(&ulog)))
- 		sock_release(ebtulognl->sk_socket);
+-/* attach subroutine */
+-static int ftdi_sio_attach (struct usb_serial *serial)
+-{
+-	/* Check for device requiring special set up. */
+-	struct ftdi_sio_quirk *quirk = usb_get_serial_data(serial);
+-
+-	if (quirk && quirk->setup)
+-		quirk->setup(serial);
+-
+-	return 0;
+-} /* ftdi_sio_attach */
+-
+-
+ /* Setup for the USB-UIRT device, which requires hardwired
+  * baudrate (38400 gets mapped to 312500) */
+ /* Called from usbserial:serial_probe */
+-static void ftdi_USB_UIRT_setup (struct usb_serial *serial)
++static void ftdi_USB_UIRT_setup (struct ftdi_private *priv)
+ {
+-	struct ftdi_private *priv;
+-
+ 	dbg("%s",__FUNCTION__);
  
--	if (nf_log_register(PF_BRIDGE, &ebt_ulog_logger) < 0) {
--		printk(KERN_WARNING "ebt_ulog: not logging via ulog "
--		       "since somebody else already registered for PF_BRIDGE\n");
--		/* we cannot make module load fail here, since otherwise
--		 * ebtables userspace would abort */
--	}
-+	if (ret == 0)
-+		nf_log_register(PF_BRIDGE, &ebt_ulog_logger);
+-	priv = usb_get_serial_port_data(serial->port[0]);
+ 	priv->flags |= ASYNC_SPD_CUST;
+ 	priv->custom_divisor = 77;
+ 	priv->force_baud = B38400;
+@@ -1274,13 +1261,10 @@ static void ftdi_USB_UIRT_setup (struct 
  
- 	return ret;
- }
---- a/net/ipv4/netfilter/ipt_LOG.c
-+++ b/net/ipv4/netfilter/ipt_LOG.c
-@@ -477,10 +477,8 @@ static int __init ipt_log_init(void)
- 	ret = xt_register_target(&ipt_log_reg);
- 	if (ret < 0)
- 		return ret;
--	ret = nf_log_register(PF_INET, &ipt_log_logger);
--	if (ret < 0 && ret != -EEXIST)
--		xt_unregister_target(&ipt_log_reg);
--	return ret;
-+	nf_log_register(PF_INET, &ipt_log_logger);
-+	return 0;
- }
+ /* Setup for the HE-TIRA1 device, which requires hardwired
+  * baudrate (38400 gets mapped to 100000) and RTS-CTS enabled.  */
+-static void ftdi_HE_TIRA1_setup (struct usb_serial *serial)
++static void ftdi_HE_TIRA1_setup (struct ftdi_private *priv)
+ {
+-	struct ftdi_private *priv;
+-
+ 	dbg("%s",__FUNCTION__);
  
- static void __exit ipt_log_fini(void)
---- a/net/ipv6/netfilter/ip6t_LOG.c
-+++ b/net/ipv6/netfilter/ip6t_LOG.c
-@@ -490,10 +490,8 @@ static int __init ip6t_log_init(void)
- 	ret = xt_register_target(&ip6t_log_reg);
- 	if (ret < 0)
- 		return ret;
--	ret = nf_log_register(PF_INET6, &ip6t_logger);
--	if (ret < 0 && ret != -EEXIST)
--		xt_unregister_target(&ip6t_log_reg);
--	return ret;
-+	nf_log_register(PF_INET6, &ip6t_logger);
-+	return 0;
- }
- 
- static void __exit ip6t_log_fini(void)
+-	priv = usb_get_serial_port_data(serial->port[0]);
+ 	priv->flags |= ASYNC_SPD_CUST;
+ 	priv->custom_divisor = 240;
+ 	priv->force_baud = B38400;
 
 -- 
