@@ -1,36 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965300AbXHGWQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936028AbXHGWRY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965300AbXHGWQk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758495AbXHGWQ3
+	id S936028AbXHGWRY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:17:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965448AbXHGWQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 18:16:29 -0400
-Received: from rwcrmhc15.comcast.net ([204.127.192.85]:60028 "EHLO
-	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757061AbXHGWQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:16:27 -0400
-Message-ID: <46B9014E.5020209@wolfmountaingroup.com>
-Date: Tue, 07 Aug 2007 17:33:34 -0600
-From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Fedora/1.7.8-2
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: paul.pinault@disk91.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Data corruption
-References: <200708072007.27343.paul.pinault@disk91.com>
-In-Reply-To: <200708072007.27343.paul.pinault@disk91.com>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+	Tue, 7 Aug 2007 18:16:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:32834 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965238AbXHGWQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 18:16:43 -0400
+Date: Tue, 7 Aug 2007 18:13:49 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       v9fs-developer@lists.sourceforge.net, zippel@linux-m68k.org,
+       dhowells@redhat.com, linux-cifs-client@lists.samba.org,
+       codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
+       linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
+       cluster-devel@redhat.com, user-mode-linux-user@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
+       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       xfs@oss.sgi.com
+Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into
+ individual setattr functions (RESEND)
+Message-Id: <20070807181349.5d4175c7.jlayton@redhat.com>
+In-Reply-To: <20070807204909.GA30159@infradead.org>
+References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
+	<20070807204909.GA30159@infradead.org>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 7 Aug 2007 21:49:09 +0100
+Christoph Hellwig <hch@infradead.org> wrote:
 
-Check for the errata on the disk device you are using from the 
-manufacturer and see if there are recovery issues with ECC
-detection.   I saw a similiar issue with Maxtor drives at one point and 
-it turned out to be a bad batch of microcode on the drive
-itself with random data errors when ECC was enabled.
+> First thanks a lot for doing this work, it's been long needed.
+> 
+> Second please don't send out that many patches.  We encourage people
+> to split things into small patches when the changes are logially
+> separated.  Which these are not - it's a flag day change (which btw
+> is fine despite the rants soe people spewed in reply to this), so it
+> should be one single patch. (Or one for all mainline filesystems +
+> one per fs only in -mm to make Andrew's life a little easier if you
+> really care.)
 
-Jeff
+Thanks. I debated about how best to split these up. A coworker
+mentioned that Andrew had tossed him back a single patch that
+touched several mainline filesystems and asked him to break it 
+up. I took that to mean that the patches should generally be split
+out, but I guess I took that too far ;-)
+
+-- 
+Jeff Layton <jlayton@redhat.com>
