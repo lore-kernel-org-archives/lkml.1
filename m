@@ -1,64 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937779AbXHGVoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966876AbXHGVoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937779AbXHGVoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937158AbXHGVTk
+	id S966876AbXHGVoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965660AbXHGVTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:19:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39158 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937151AbXHGVTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:19:37 -0400
-Message-ID: <46B8E1D3.8050501@redhat.com>
-Date: Tue, 07 Aug 2007 17:19:15 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 7 Aug 2007 17:19:55 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42911 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964989AbXHGVTy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:19:54 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: [PATCH 10/25] sysfs: Rewrite sysfs_get_dentry in terms of __sysfs_get_dentry
+References: <11860582832964-git-send-email-htejun@gmail.com>
+	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
+	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Tue, 07 Aug 2007 15:18:27 -0600
+In-Reply-To: <m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Tue, 07 Aug 2007 15:17:33 -0600")
+Message-ID: <m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Jerry Jiang <wjiang@resilience.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain> <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com> <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com> <46B8DDF3.7050008@nortel.com>
-In-Reply-To: <46B8DDF3.7050008@nortel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Chris Snook wrote:
-> 
->> But if you're not using SMP, the only way you get a race condition is 
->> if your compiler is reordering instructions that have side effects 
->> which are invisible to the compiler.  This can happen with MMIO 
->> registers, but it's not an issue with an atomic_t we're declaring in 
->> real memory.
-> 
-> I refer back to the interrupt handler case.  Suppose we have:
-> 
-> while(!atomic_read(flag))
->      continue;
-> 
-> where flag is an atomic_t that is set in an interrupt handler, the 
-> volatile may be necessary on some architectures to force the compiler to 
-> re-read "flag" each time through the loop.
-> 
-> Without the "volatile", the compiler could be perfectly within its 
-> rights to evaluate "flag" once and create an infinite loop.
-> 
-> Now I'm not trying to say that we should explictly use "volatile" in 
-> common code, but that it is possible that it is required within the 
-> arch-specific atomic_t accessors even on uniprocessor systems.
-> 
-> Chris
 
-That's why we define atomic_read like so:
+This removes the last major user of s_dentry and makes
+the locking in sysfs_get_dentry much simpler.  Hopefully
+leading to more readable and maintainable code.
 
-#define atomic_read(v)          ((v)->counter)
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/dir.c |   23 ++++++-----------------
+ 1 files changed, 6 insertions(+), 17 deletions(-)
 
-This avoids the aliasing problem, because the compiler must de-reference the 
-pointer every time, which requires a memory fetch.  This is usually fast thanks 
-to caching, and hardware cache invalidation enforces correctness when it does 
-change.
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 59a9ce8..adb1b01 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -809,19 +809,15 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 	struct dentry *parent_dentry, *dentry;
+ 	int i, depth;
+ 
+-	/* Find the first parent which has valid s_dentry and get the
+-	 * dentry.
++	/* Find the first parent which has valid dentry.
+ 	 */
+ 	mutex_lock(&sysfs_mutex);
+- restart0:
+-	spin_lock(&sysfs_assoc_lock);
+- restart1:
+-	spin_lock(&dcache_lock);
++ restart:
+ 
+ 	dentry = NULL;
+ 	depth = 0;
+ 	cur = sd;
+-	while (!cur->s_dentry || !cur->s_dentry->d_inode) {
++	while (!(dentry = __sysfs_get_dentry(sysfs_sb, cur))) {
+ 		if (cur->s_flags & SYSFS_FLAG_REMOVED) {
+ 			dentry = ERR_PTR(-ENOENT);
+ 			depth = 0;
+@@ -830,11 +826,6 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 		cur = cur->s_parent;
+ 		depth++;
+ 	}
+-	if (!IS_ERR(dentry))
+-		dentry = dget_locked(cur->s_dentry);
+-
+-	spin_unlock(&dcache_lock);
+-	spin_unlock(&sysfs_assoc_lock);
+ 
+ 	/* from the found dentry, look up depth times */
+ 	while (depth--) {
+@@ -847,7 +838,7 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 		 */
+ 		if (i != depth) {
+ 			dput(dentry);
+-			goto restart0;
++			goto restart;
+ 		}
+ 
+ 		sysfs_get(cur);
+@@ -866,18 +857,16 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
+ 		}
+ 
+ 		mutex_lock(&sysfs_mutex);
+-		spin_lock(&sysfs_assoc_lock);
+ 
+ 		/* This, again, can happen if tree structure has
+ 		 * changed and we looked up the wrong thing.  Restart.
+ 		 */
+-		if (cur->s_dentry != dentry) {
++		if (dentry->d_fsdata != cur) {
+ 			dput(dentry);
+ 			sysfs_put(cur);
+-			goto restart1;
++			goto restart;
+ 		}
+ 
+-		spin_unlock(&sysfs_assoc_lock);
+ 
+ 		sysfs_put(cur);
+ 	}
+-- 
+1.5.1.1.181.g2de0
 
