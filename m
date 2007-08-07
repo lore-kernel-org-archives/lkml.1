@@ -1,72 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760404AbXHGXJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXHGXJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760404AbXHGXJO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 19:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758008AbXHGXI5
+	id S964868AbXHGXJl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 19:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765176AbXHGXJ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 19:08:57 -0400
-Received: from pat.uio.no ([129.240.10.15]:42416 "EHLO pat.uio.no"
+	Tue, 7 Aug 2007 19:09:26 -0400
+Received: from webmail.nxs.nl ([217.115.197.26]:43978 "EHLO webmail.nxs.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758169AbXHGXI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 19:08:56 -0400
-Subject: Re: [NFS] 2.6.23-rc1-mm2
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>,
-       Johannes Berg <johannes@sipsolutions.net>, nfs@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070807222042.GA553@tv-sign.ru>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	 <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de>
-	 <20070803093830.39852a01.akpm@linux-foundation.org>
-	 <1186160608.7255.10.camel@localhost> <20070803172137.GA3783@tv-sign.ru>
-	 <1186520929.6625.12.camel@heimdal.trondhjem.org>
-	 <20070807213749.GA461@tv-sign.ru>
-	 <1186524314.6625.29.camel@heimdal.trondhjem.org>
-	 <20070807222042.GA553@tv-sign.ru>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 19:08:27 -0400
-Message-Id: <1186528107.6625.71.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.107)
-X-UiO-Scanned: DF0C2614DFEE5410E8E7CE12ACAA4FC80CF1AB72
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 40 total 3142110 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1764800AbXHGXJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 19:09:25 -0400
+X-Greylist: delayed 1541 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Aug 2007 19:09:24 EDT
+Message-ID: <50598.213.84.80.149.1186526621.squirrel@webmail.nxs.nl>
+Date: Wed, 8 Aug 2007 00:43:41 +0200 (CEST)
+Subject: Inconsistent execve SIGTRAP-ing after ptraced child's 
+     PTRACE_TRACEME.
+From: "Eelis van der Weegen" <lkml@contacts.eelis.net>
+To: linux-kernel@vger.kernel.org
+Reply-To: lkml@contacts.eelis.net
+User-Agent: SquirrelMail/1.4.8
+MIME-Version: 1.0
+Content-Type: multipart/mixed;boundary="----=_20070808004341_63024"
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 02:20 +0400, Oleg Nesterov wrote:
+------=_20070808004341_63024
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-> But. nfs4_renew_state() checks list_empty(&clp->cl_superblocks) under
-> clp->cl_sem? So, if it is possible that clp->cl_renewd was scheduled
-> at the time when nfs4_kill_renewd(), we can deadlock, no? Because
-> nfs4_renew_state() needs clp->cl_sem to complete, but nfs4_kill_renewd()
-> holds this sem, and waits for nfs4_renew_state() completion.
+How can a parent process intercepting a ptraced child's system calls using
+PTRACE_SYSCALL know which SIGTRAP's are system call entries and which are system
+call exits?
 
-They both take read locks, which means that they can take them
-simultaneously. AFAICS, the deadlock can only occur if something manages
-to insert a request for a write lock after nfs4_kill_renewd() takes its
-read lock, but before nfs4_renew_state() takes its read lock:
+Since there does not seem to be a way for the parent to get this information
+from the system, ptrace examples floating around on the web generally use a
+boolean in_syscall flag that they toggle at each SIGTRAP. This mechanism seems
+perfectly adequate, but for it to work correctly the flag must obviously be
+appropriately initialized, and that is where things get vague.
 
-1) nfs4_kill_renewd()		2) nfs4_renew_state()		3) somebody else
--------------------             ------------------		-------------
-read lock
-wait on (2) to complete
-								write lock <waits on (1)>
-				read lock <waits on (3),
-					because rw_semaphores
-					don't allow a read lock
-					request to jump a write
-					lock request>
+Let's assume that the child's ptrace-ing begins after it first does
+PTRACE_TRACEME and then calls execve. According to the ptrace man page, after
+doing PTRACE_TRACEME "all subsequent calls to exec() by this process will cause
+a SIGTRAP to be sent to it, giving the parent a chance to gain control before
+the new program begins execution". The problem is that this does not specify
+whether the parent will see SIGTRAP's for both entry to and exit from execve, or
+only for exit from it. To my great surprise, I observed both behaviors on actual
+machines (in particular, I observed the former on an x86_64 dual core machine).
 
-however as I explained earlier, the only process that can take a write
-lock is the reclaimer daemon, but we _know_ that cannot be running (for
-one thing, the reference count on nfs_client is zero, for the other,
-there are no superblocks).
+This inconsistency foils the in_syscall flag approach, as there is no way to
+know whether the parent should initialize that flag to true or false (since
+apparently both can occur). Hence, my question is: is this behavior intentional?
+Should there not be a guarantee that /either/ only the execve exit, /or/ both
+entry and exit, are SIGTRAPed?
 
-Cheers
-  Trond
+I have attached a testcase program. On some machines (2.6.18.8-0.5-default #1
+SMP x86_64, and a 2.6.18.8-0.3-default #1 SMP i686) it shows only one initial
+execve occurence, while on another (2.6.18-8.1.8.el5 #1 SMP x86_64, dual core)
+it shows two.
+
+Regards,
+
+Eelis
+
+------=_20070808004341_63024
+Content-Type: text/x-csrc; name="ptracetest.c"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="ptracetest.c"
+
+
+#include <assert.h>
+#include <sys/ptrace.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <syscall.h>
+#include <sys/reg.h>
+#include <stdio.h>
+
+#ifdef __x86_64__
+#define SYSCALL_OFF (ORIG_RAX * 8)
+#else
+#define SYSCALL_OFF (ORIG_EAX * 4)
+#endif
+
+int main()
+{
+  pid_t const child = fork();
+
+  if (child == -1) perror("fork failed");
+
+  if(child == 0)
+  {
+    ptrace(PTRACE_TRACEME, 0, NULL, NULL);
+    execl("/usr/bin/whoami", "whoami", NULL);
+    perror("execl failed");
+  }
+  
+  for(;;)
+  {
+    int status;
+    wait(&status);
+
+    if(WIFEXITED(status)) break;
+
+    assert(WIFSTOPPED(status) && WSTOPSIG(status) == SIGTRAP);
+
+    long const syscall = ptrace(PTRACE_PEEKUSER, child, SYSCALL_OFF, NULL);
+    printf("%ld ", syscall);
+
+    ptrace(PTRACE_SYSCALL, child, NULL, NULL);
+  }
+
+  printf("\n");
+
+  return 0;
+}
+------=_20070808004341_63024--
+
 
