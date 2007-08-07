@@ -1,126 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbXHGGel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbXHGGit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbXHGGel (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 02:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752206AbXHGGee
+	id S1755229AbXHGGit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 02:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752196AbXHGGil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 02:34:34 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:57932 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751920AbXHGGed (ORCPT
+	Tue, 7 Aug 2007 02:38:41 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:41279 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbXHGGik (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 02:34:33 -0400
-Date: Mon, 6 Aug 2007 23:34:31 -0700
-From: sukadev@us.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@tv-sign.ru>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
-Message-ID: <20070807063431.GB23036@us.ibm.com>
-References: <20070802212009.GA516@tv-sign.ru> <20070806131345.3322c99e.akpm@linux-foundation.org> <20070806203326.GA188@tv-sign.ru> <20070806221824.22a78312.akpm@linux-foundation.org>
+	Tue, 7 Aug 2007 02:38:40 -0400
+Subject: Re: [PATCH/RFC] allow mapping from block-device-file to sysfs
+	entry.
+From: Arjan van de Ven <arjan@infradead.org>
+To: Neil Brown <neilb@suse.de>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <18104.3098.696484.970773@notabene.brown>
+References: <18104.3098.696484.970773@notabene.brown>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 06 Aug 2007 23:37:03 -0700
+Message-Id: <1186468623.2700.4.camel@laptopd505.fenrus.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070806221824.22a78312.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-Operating-System: Linux 2.0.32 on an i486
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton [akpm@linux-foundation.org] wrote:
-| On Tue, 7 Aug 2007 00:33:26 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-| 
-| > On 08/06, Andrew Morton wrote:
-| > >
-| > > On Fri, 3 Aug 2007 01:20:09 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-| > > 
-| > > > 2. We are playing games with ->nsproxy->pid_ns. This code is bogus today, and
-| > > >    it has to be changed anyway when we really support pid namespaces, just
-| > > >    remove it.
-| > >
-| > > This patch broke
-| > > 
-| > > pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch.  This hunk:
-| > > 
-| > > ***************
-| > > *** 908,915 ****
-| > >   	if (unlikely(!tsk->pid))
-| > >   		panic("Attempted to kill the idle task!");
-| > >   	if (unlikely(tsk == child_reaper(tsk))) {
-| > > - 		if (tsk->nsproxy->pid_ns != &init_pid_ns)
-| > > - 			tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
-| > >   		else
-| > >   			panic("Attempted to kill init!");
-| > >   	}
-| > > --- 908,916 ----
-| > >   	if (unlikely(!tsk->pid))
-| > >   		panic("Attempted to kill the idle task!");
-| > >   	if (unlikely(tsk == child_reaper(tsk))) {
-| > > + 		if (task_active_pid_ns(tsk) != &init_pid_ns)
-| > > + 			task_active_pid_ns(tsk)->child_reaper =
-| > > + 					init_pid_ns.child_reaper;
-| > >   		else
-| > >   			panic("Attempted to kill init!");
-| > >   	}
-| > > 
-| > > has no place to live any more, so I just removed it.
-| > 
-| > Ah, thanks. I should have done this patch against -mm tree.
-| > 
-| > I hope it is OK to drop this chunk of
-| > 	pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch
-| > 
-| > Because it can't work right now anyway, and Sukadev+Pavel already have
-| > new patches on top this one which make namespace switch actually work.
-| > 
-| 
-| OK, well I had to make a bit of on-the-fly adjustment to
-| pid-namespaces-rename-child_reaper-function.patch as well.
-| 
-| The diff-of-the-diff is:
-| 
-| @@ -48,7 +48,7 @@
-|  diff -puN kernel/exit.c~pid-namespaces-rename-child_reaper-function kernel/exit.c
-|  --- a/kernel/exit.c~pid-namespaces-rename-child_reaper-function
-|  +++ a/kernel/exit.c
-| -@@ -694,7 +694,7 @@ forget_original_parent(struct task_struc
-| +@@ -683,7 +683,7 @@ forget_original_parent(struct task_struc
-|   	do {
-|   		reaper = next_thread(reaper);
-|   		if (reaper == father) {
-| @@ -57,19 +57,10 @@
-|   			break;
-|   		}
-|   	} while (reaper->exit_state);
-| -@@ -907,7 +907,7 @@ fastcall NORET_TYPE void do_exit(long co
-| - 		panic("Aiee, killing interrupt handler!");
-| - 	if (unlikely(!tsk->pid))
-| - 		panic("Attempted to kill the idle task!");
-| --	if (unlikely(tsk == child_reaper(tsk))) {
-| -+	if (unlikely(tsk == task_child_reaper(tsk))) {
-| - 		if (task_active_pid_ns(tsk) != &init_pid_ns)
-| - 			task_active_pid_ns(tsk)->child_reaper =
-| - 					init_pid_ns.child_reaper;
-|  diff -puN kernel/signal.c~pid-namespaces-rename-child_reaper-function kernel/signal.c
-| 
-| Hopefully people can re-review and retest what's there in next -mm.
-| 
-| Or if that's too much work or too risky, option b) is to drop
-| handle-the-multi-threaded-inits-exit-properly.patch, go back to the
-| 2.6.23-rc1-mm2 versions of
-| pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch and
-| pid-namespaces-rename-child_reaper-function.patch and to ask Oleg to cook a 2.6.23-rc1-mm2 version of handle-the-multi-threaded-inits-exit-properly.patch.
-| 
-| The downside of this approach is that
-| handle-the-multi-threaded-inits-exit-properly.patch looks more 2.6.24-ready
-| than all the container stuff (based just on overall impact and
-| speculativeness)
+On Tue, 2007-08-07 at 16:07 +1000, Neil Brown wrote:
+> Suppose that in a program I have an open file descriptor for a device,
+> and I want to find the /sys/block information for this device.
+> There is currently no direct way to do this.  I need to read
+>    /sys/block/*/dev, /sys/block/*/*/dev
+> and match major/minor numbers with the result from fstat.
+> 
+> I would like a more direct mechanism.
+> 
+> The following patch is a proposal for such a mechanism.
+> 
+> It provides an 'ioctl' which returns then 'name' of the device, as
+> generated by bdevname.  This is the same name that is used to create
+> entries in sysfs.
+> For a partition of a device, it returns 'device/partition'.
 
-Well, if it will help, we can drop these two patches from -mm, take Oleg's
-patch and I can then resend these along with other pid ns patches. 
 
-	pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch.
-	pid-namespaces-rename-child_reaper-function.patch
-Suka
+how about returning the entire path relative to the start of sysfs? That
+way, if things move or something you're tolerant against that....
+
+(I'd not be against making this a generic IOCTL for every device, a
+SYSFSLOCATION kind of ioctl... it's by no means block specific...)
+
+
