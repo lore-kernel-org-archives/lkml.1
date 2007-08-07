@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbXHGECe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbXHGEJW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbXHGECe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 00:02:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbXHGECY
+	id S1756614AbXHGEJW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 00:09:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbXHGEJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 00:02:24 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52718 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750695AbXHGECX (ORCPT
+	Tue, 7 Aug 2007 00:09:12 -0400
+Received: from rv-out-0910.google.com ([209.85.198.188]:62308 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbXHGEJL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 00:02:23 -0400
-Date: Mon, 6 Aug 2007 21:01:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-In-Reply-To: <1186458941.6637.44.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.999.0708062059030.5037@woody.linux-foundation.org>
-References: <1186248703.3439.20.camel@localhost.localdomain> 
- <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
- <1186458941.6637.44.camel@localhost.localdomain>
+	Tue, 7 Aug 2007 00:09:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=T2AOC+t7xe90A6Xglo3W6VRf5zsPOpfHhHLZxppE6ICFDB3dgJc3w8tTE33JTC05evmbN8y7tJBqvvxHOu8d+BthazVedunYn2Y0iDiD3SgEU5gCE4gLqsUXi+3Zf9AhGvpNUNL1n2jZmE2/KEz54EqCAIbLAWrw8V6cuCu+wi8=
+Message-ID: <46B7F059.3030403@gmail.com>
+Date: Tue, 07 Aug 2007 13:08:57 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Alexey Dobriyan <adobriyan@gmail.com>
+CC: Kay Sievers <kay.sievers@vrfy.org>, akpm@osdl.org, gregkh@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] Off-by-one in /sys/module/*/refcnt
+References: <20070805134923.GA5918@martell.zuzino.mipt.ru> <3ae72650708050700p1fc2959epcc1e9307e3c64fed@mail.gmail.com> <46B6B22C.1020609@gmail.com> <20070806194745.GB5842@martell.zuzino.mipt.ru>
+In-Reply-To: <20070806194745.GB5842@martell.zuzino.mipt.ru>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alexey Dobriyan wrote:
+> sysfs internals were changed to not pin module in question.
+> 
+> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
+Acked-by: Tejun Heo <htejun@gmail.com>
 
-On Mon, 6 Aug 2007, James Bottomley wrote:
->
-> Confused ... you did get the first pull request in the first week.
-
-Here's the problem. Let me repeat it again:
-
-> > And after -rc1, I don't want to see crap like this:
-> > 
-> > 	 46 files changed, 2837 insertions(+), 2050 deletions(-)
-
-It DOES NOT MATTER if I get a first pull request in the first week, if 
-that pull request is purely cosmetic, and is followed by stuff that 
-*should* have been in the merge window four weeks afterwards.
-
-> OK ... that's arguable.
-
-There's nothing arguable at all about it.
-
-If you have 5000 lines of changes, that's not a "bugfix" any more. That's 
-a big damn change, and it should have happened in the merge window. Or if 
-it doesn't make it in time, in the *next* merge window.
-
-			Linus
+-- 
+tejun
