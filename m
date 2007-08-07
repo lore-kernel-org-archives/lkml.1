@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbXHGJPF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbXHGJP2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759595AbXHGJPF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:15:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757425AbXHGJOz
+	id S1760841AbXHGJP2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:15:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758546AbXHGJPB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:14:55 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:17433 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757409AbXHGJOy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:14:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QCOhZ96yGx6EmiQnz54UosSSkes1m+dlQwUV5Km940nX2droxCSifqWnW5ZzcNTfqX4VQ2FoaXh5gC6ADYxfBhsZd6VRl8JcjAMGioEST5M9QVuxf+exMbUm4z5Y3/cIDoEjo1uLfVWQW+QsfavQamZ4u9EAgtoPlaV9MVGekrE=
-Message-ID: <52d486620708070214y4957e5b2ud34aa3252bf92c9@mail.gmail.com>
-Date: Tue, 7 Aug 2007 12:14:53 +0300
-From: "Amit Kucheria" <kucheria.amit@gmail.com>
-To: "Pete Zaitcev" <zaitcev@redhat.com>
-Subject: Re: [PATCH] USB: Only enable autosuspend by default on certain device classes
-Cc: "Chuck Ebbert" <cebbert@redhat.com>,
-       "Matthew Garrett" <mjg59@srcf.ucam.org>,
-       "Oliver Neukum" <oliver@neukum.org>, "Rogan Dawes" <lists@dawes.za.net>,
-       "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       "David Brownell" <david-b@pacbell.net>,
-       "Alan Stern" <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20070803125618.36ea1b2f.zaitcev@redhat.com>
+	Tue, 7 Aug 2007 05:15:01 -0400
+Received: from mail.gmx.net ([213.165.64.20]:33524 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1758470AbXHGJPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 05:15:00 -0400
+Cc: Thomas Gleixner <tglx@linutronix.de>, rdunlap@xenotime.net, hch@lst.de,
+       stable@kernel.org, drepper@redhat.com, davidel@xmailserver.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Tue, 07 Aug 2007 11:14:58 +0200
+From: "Michael Kerrisk" <mtk-manpages@gmx.net>
+In-Reply-To: <20070807003613.f0333b49.akpm@linux-foundation.org>
+Message-ID: <20070807091458.23920@gmx.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+References: <46A44B7D.3030700@gmx.net>
+	<20070722233826.20efa6e5.akpm@linux-foundation.org>
+	<46A7940B.4070901@gmx.net>
+	<20070725151252.8d2d5141.akpm@linux-foundation.org>
+	<46B81745.9010409@gmx.net> <20070807003613.f0333b49.akpm@linux-foundation.org>
+Subject: Re: Problems with timerfd()
+To: Andrew Morton <akpm@linux-foundation.org>
+X-Authenticated: #24879014
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX187JRpXmQQ7UeXdVeIqLf8m24tbVNfzAdflnwDYOI
+ ztxfDl+YxbxyMf2ypWigzykN1ujwhzBqmGUQ== 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.44L0.0708022240250.1043-100000@netrider.rowland.org>
-	 <20070803112824.GA16802@srcf.ucam.org>
-	 <200708031344.03282.oliver@neukum.org>
-	 <20070803120418.GB16802@srcf.ucam.org> <46B31F03.80908@dawes.za.net>
-	 <20070803123253.GA17725@srcf.ucam.org>
-	 <20070803174435.GA17053@suse.de>
-	 <20070803174810.GA23241@srcf.ucam.org> <46B38211.4030004@redhat.com>
-	 <20070803125618.36ea1b2f.zaitcev@redhat.com>
+X-GMX-UID: KgqBc2NEeWUoKc7+CHRzGEAxU3U4N09R
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/3/07, Pete Zaitcev <zaitcev@redhat.com> wrote:
+> On Tue, 07 Aug 2007 08:55:01 +0200 Michael Kerrisk <mtk-manpages@gmx.net>
+> wrote:
+> 
+> > I'm working on the changes to timerfd(), but must admit I am struggling
+> > to understand some of the kernel code for working with userspace timers
+> > (e.g., in kernel/posix-timers.c).
+> 
+> Join the club.
 
-> I am wondering if Ubuntu has better user reporting, so if Matthew
-> complains, it really means something.
+Ahhh good to know I'm not the only one challeged by the code.
 
-https://bugs.launchpad.net/bugs/85488
+> >  Can you suggest anyone who could provide assistance?
+> 
+> The code was originally contributed by George Anzinger.  
 
-Most of the current quirks list was assembled by Oliver from this thread IIRC.
+Yes, I pinged George a week or so back, but got no response.
+(I think he's more or less retired nowadays.)
 
-/Amit
+> He has moved on
+> and Thomas Gleixner now does most work in there.  I'd expect that Thomas
+> is
+> your guy, but he is nearing the end of a two-week vacation and will
+> presumably return to an akpm-sized inbox, so I'd give him a little time 
+> ;)
 
---
-Amit Kucheria, Linux developer
+Thanks -- Thomas CCed on this reply.
+
+Unfortunately I myself go on holiday on Saturday for two weeks.
+All of these holidays (I guess that Davide is only back in another
+1.5 weeks or so) start to make the chances of getting change
+in during the .23-rc window look tight...
+
+Cheers,
+
+Michael
+-- 
+Michael Kerrisk
+maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+
+Want to help with man page maintenance?  
+Grab the latest tarball at
+http://www.kernel.org/pub/linux/docs/manpages , 
+read the HOWTOHELP file and grep the source 
+files for 'FIXME'.
+
