@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965275AbXHGVgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966644AbXHGVgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965275AbXHGVgN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936600AbXHGVLH
+	id S966644AbXHGVgt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936783AbXHGVL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:11:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55245 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935419AbXHGVLE (ORCPT
+	Tue, 7 Aug 2007 17:11:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57583 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936594AbXHGVLz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:11:04 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
-Subject: [PATCH 03/25] sysfs: Use kill_anon_super
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 07 Aug 2007 15:10:27 -0600
-In-Reply-To: <m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 07 Aug 2007 15:08:50 -0600")
-Message-ID: <m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 7 Aug 2007 17:11:55 -0400
+Date: Tue, 7 Aug 2007 14:11:10 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [2.6.22.2 review 00/84] 2.6.22.2 -stable review
+Message-ID: <20070807211110.GA25067@kroah.com>
+References: <20070807204157.GA23028@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807204157.GA23028@kroah.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 07, 2007 at 01:41:57PM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.22.2 release.
+> There are 84 patches in this series, all will be posted as a response to
+> this one.  If anyone has any issues with these being applied, please let
+> us know.  If anyone is a maintainer of the proper subsystem, and wants
+> to add a Signed-off-by: line to the patch, please respond with it.
 
-Since sysfs no longer stores fs directory information in the dcache
-on a permanent basis kill_litter_super it is inappropriate and actively
-wrong.  It will decrement the count on all dentries left in the
-dcache before trying to free them.
+Rolled up patch can be found at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.22.2-rc1.gz
 
-At the moment this is not biting us only because we never unmount sysfs.
+thanks,
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/sysfs/mount.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
-index 919eaaf..d1094c6 100644
---- a/fs/sysfs/mount.c
-+++ b/fs/sysfs/mount.c
-@@ -72,7 +72,7 @@ static int sysfs_get_sb(struct file_system_type *fs_type,
- static struct file_system_type sysfs_fs_type = {
- 	.name		= "sysfs",
- 	.get_sb		= sysfs_get_sb,
--	.kill_sb	= kill_litter_super,
-+	.kill_sb	= kill_anon_super,
- };
- 
- int __init sysfs_init(void)
--- 
-1.5.1.1.181.g2de0
-
+greg k-h
