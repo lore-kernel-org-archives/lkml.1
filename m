@@ -1,58 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937628AbXHGVit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937682AbXHGVje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937628AbXHGVit (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936902AbXHGVNX
+	id S937682AbXHGVje (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965514AbXHGVNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:13:23 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45810 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S936896AbXHGVNW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:13:22 -0400
-X-Authenticated: #24879014
-X-Provags-ID: V01U2FsdGVkX189T557Dxc9AyjDjYn7TE7liXivksJeH1yj7Wh1YM
-	gEXAcwLT9tYxGb
-Message-ID: <46B8E05C.8080405@gmx.net>
-Date: Tue, 07 Aug 2007 23:13:00 +0200
-From: Michael Kerrisk <mtk-manpages@gmx.net>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 7 Aug 2007 17:13:55 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42700 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965503AbXHGVNv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:13:51 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: [PATCH 06/25] sysfs: Simplify readdir.
+References: <11860582832964-git-send-email-htejun@gmail.com>
+	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
+	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Tue, 07 Aug 2007 15:13:14 -0600
+In-Reply-To: <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Tue, 07 Aug 2007 15:12:02 -0600")
+Message-ID: <m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Ollie Wild <aaw@google.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: execve manpage changes
-References: <65dd6fd50708061738pabd807tb26d38641cc5e7e2@mail.gmail.com> <65dd6fd50708061746p2a460fe5p24f1068c36ef5c40@mail.gmail.com>
-In-Reply-To: <65dd6fd50708061746p2a460fe5p24f1068c36ef5c40@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ollie Wild wrote:
-> Michael,
-> 
-> Per our previous discussion, here are the updates to the execve(2)
-> manpage resulting from the variable length argument support patch in
-> linux-2.6.23-rc1.  The execve API is unmodified.  However, the
-> following should be noted in the "Notes" section.
-> 
-> Prior to linux-2.6.23, the memory used to store the environment and
-> argument list strings was limited to 32 (MAX_ARG_PAGES) pages.  On
-> most architectures, the page size is 4kB, leading to a maximum size of
-> 128kB.
-> 
-> In linux-2.6.23 and later, most architectures support a size limit
-> derived from the current RLIMIT_STACK setting (see getrlimit(2)).  For
-> these architectures, the total size is limited to 1/4 the allowed
-> stack size, the limit per string is 32 pages (MAX_ARG_STRLEN), and the
-> maximum number of strings is 0x7FFFFFFF.  Architectures with no memory
-> management unit are excepted: they maintain the pre-2.6.23 limit.
 
-Hello Ollie,
+At some point someone wrote sysfs_readdir to insert a cursor
+into the list of sysfs_dirents to ensure that sysfs_readdir would
+restart properly.  That works but it is complex code and tends
+to be expensive.
 
-Thanks.  I'll see that this material makes it into a man pages release 
-closer to the 2.6.23 final release.
+The same effect can be achieved by keeping the sysfs_dirents in
+inode order and using the inode number as the f_pos.  Then
+when we restart we just have to find the first dirent whose inode
+number is equal or greater then the last sysfs_dirent we attempted
+to return.
 
-Cheers,
+Removing the sysfs directory cursor also allows the remove of
+all of the mysterious checks for sysfs_type(sd) != 0.   Which
+were nonbovious checks to see if a cursor was in a directory list.
 
-Michael
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/dir.c |  175 ++++++++++++++------------------------------------------
+ 1 files changed, 44 insertions(+), 131 deletions(-)
+
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 2721e36..ef99883 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -33,10 +33,20 @@ static DEFINE_IDA(sysfs_ino_ida);
+ static void sysfs_link_sibling(struct sysfs_dirent *sd)
+ {
+ 	struct sysfs_dirent *parent_sd = sd->s_parent;
++	struct sysfs_dirent **pos;
+ 
+ 	BUG_ON(sd->s_sibling);
+-	sd->s_sibling = parent_sd->s_children;
+-	parent_sd->s_children = sd;
++
++	/* Store directory entries in order by ino.  This allows
++	 * readdir to properly restart without having to add a
++	 * cursor into the s_children list.
++	 */
++	for (pos = &parent_sd->s_children; *pos; pos = &(*pos)->s_sibling) {
++		if (sd->s_ino < (*pos)->s_ino)
++			break;
++	}
++	sd->s_sibling = *pos;
++	*pos = sd;
+ }
+ 
+ /**
+@@ -657,7 +667,7 @@ struct sysfs_dirent *sysfs_find_dirent(struct sysfs_dirent *parent_sd,
+ 	struct sysfs_dirent *sd;
+ 
+ 	for (sd = parent_sd->s_children; sd; sd = sd->s_sibling)
+-		if (sysfs_type(sd) && !strcmp(sd->s_name, name))
++		if (!strcmp(sd->s_name, name))
+ 			return sd;
+ 	return NULL;
+ }
+@@ -809,7 +819,7 @@ static void __sysfs_remove_dir(struct sysfs_dirent *dir_sd)
+ 	while (*pos) {
+ 		struct sysfs_dirent *sd = *pos;
+ 
+-		if (sysfs_type(sd) && sysfs_type(sd) != SYSFS_DIR)
++		if (sysfs_type(sd) != SYSFS_DIR)
+ 			sysfs_remove_one(&acxt, sd);
+ 		else
+ 			pos = &(*pos)->s_sibling;
+@@ -974,37 +984,6 @@ again:
+ 	return error;
+ }
+ 
+-static int sysfs_dir_open(struct inode *inode, struct file *file)
+-{
+-	struct dentry * dentry = file->f_path.dentry;
+-	struct sysfs_dirent * parent_sd = dentry->d_fsdata;
+-	struct sysfs_dirent * sd;
+-
+-	sd = sysfs_new_dirent("_DIR_", 0, 0);
+-	if (sd) {
+-		mutex_lock(&sysfs_mutex);
+-		sd->s_parent = sysfs_get(parent_sd);
+-		sysfs_link_sibling(sd);
+-		mutex_unlock(&sysfs_mutex);
+-	}
+-
+-	file->private_data = sd;
+-	return sd ? 0 : -ENOMEM;
+-}
+-
+-static int sysfs_dir_close(struct inode *inode, struct file *file)
+-{
+-	struct sysfs_dirent * cursor = file->private_data;
+-
+-	mutex_lock(&sysfs_mutex);
+-	sysfs_unlink_sibling(cursor);
+-	mutex_unlock(&sysfs_mutex);
+-
+-	release_sysfs_dirent(cursor);
+-
+-	return 0;
+-}
+-
+ /* Relationship between s_mode and the DT_xxx types */
+ static inline unsigned char dt_type(struct sysfs_dirent *sd)
+ {
+@@ -1015,117 +994,51 @@ static int sysfs_readdir(struct file * filp, void * dirent, filldir_t filldir)
+ {
+ 	struct dentry *dentry = filp->f_path.dentry;
+ 	struct sysfs_dirent * parent_sd = dentry->d_fsdata;
+-	struct sysfs_dirent *cursor = filp->private_data;
+-	struct sysfs_dirent **pos;
++	struct sysfs_dirent *pos;
+ 	ino_t ino;
+-	int i = filp->f_pos;
+ 
+-	switch (i) {
+-		case 0:
+-			ino = parent_sd->s_ino;
+-			if (filldir(dirent, ".", 1, i, ino, DT_DIR) < 0)
+-				break;
++	if (filp->f_pos == 0) {
++		ino = parent_sd->s_ino;
++		if (filldir(dirent, ".", 1, filp->f_pos, ino, DT_DIR) == 0)
+ 			filp->f_pos++;
+-			i++;
+-			/* fallthrough */
+-		case 1:
+-			if (parent_sd->s_parent)
+-				ino = parent_sd->s_parent->s_ino;
+-			else
+-				ino = parent_sd->s_ino;
+-			if (filldir(dirent, "..", 2, i, ino, DT_DIR) < 0)
+-				break;
++	}
++	if (filp->f_pos == 1) {
++		if (parent_sd->s_parent)
++			ino = parent_sd->s_parent->s_ino;
++		else
++			ino = parent_sd->s_ino;
++		if (filldir(dirent, "..", 2, filp->f_pos, ino, DT_DIR) == 0)
+ 			filp->f_pos++;
+-			i++;
+-			/* fallthrough */
+-		default:
+-			mutex_lock(&sysfs_mutex);
+-
+-			pos = &parent_sd->s_children;
+-			while (*pos != cursor)
+-				pos = &(*pos)->s_sibling;
+-
+-			/* unlink cursor */
+-			*pos = cursor->s_sibling;
+-
+-			if (filp->f_pos == 2)
+-				pos = &parent_sd->s_children;
+-
+-			for ( ; *pos; pos = &(*pos)->s_sibling) {
+-				struct sysfs_dirent *next = *pos;
+-				const char * name;
+-				int len;
+-
+-				if (!sysfs_type(next))
+-					continue;
+-
+-				name = next->s_name;
+-				len = strlen(name);
+-				ino = next->s_ino;
+-
+-				if (filldir(dirent, name, len, filp->f_pos, ino,
+-						 dt_type(next)) < 0)
+-					break;
+-
+-				filp->f_pos++;
+-			}
++	}
++	if ((filp->f_pos > 1) && (filp->f_pos < UINT_MAX)) {
++		mutex_lock(&sysfs_mutex);
+ 
+-			/* put cursor back in */
+-			cursor->s_sibling = *pos;
+-			*pos = cursor;
++		/* Skip the dentries we have already reported */
++		pos = parent_sd->s_children;
++		while (pos && (filp->f_pos > pos->s_ino))
++			pos = pos->s_sibling;
+ 
+-			mutex_unlock(&sysfs_mutex);
+-	}
+-	return 0;
+-}
++		for ( ; pos; pos = pos->s_sibling) {
++			const char * name;
++			int len;
+ 
+-static loff_t sysfs_dir_lseek(struct file * file, loff_t offset, int origin)
+-{
+-	struct dentry * dentry = file->f_path.dentry;
++			name = pos->s_name;
++			len = strlen(name);
++			filp->f_pos = ino = pos->s_ino;
+ 
+-	switch (origin) {
+-		case 1:
+-			offset += file->f_pos;
+-		case 0:
+-			if (offset >= 0)
++			if (filldir(dirent, name, len, filp->f_pos, ino,
++					 dt_type(pos)) < 0)
+ 				break;
+-		default:
+-			return -EINVAL;
+-	}
+-	if (offset != file->f_pos) {
+-		mutex_lock(&sysfs_mutex);
+-
+-		file->f_pos = offset;
+-		if (file->f_pos >= 2) {
+-			struct sysfs_dirent *sd = dentry->d_fsdata;
+-			struct sysfs_dirent *cursor = file->private_data;
+-			struct sysfs_dirent **pos;
+-			loff_t n = file->f_pos - 2;
+-
+-			sysfs_unlink_sibling(cursor);
+-
+-			pos = &sd->s_children;
+-			while (n && *pos) {
+-				struct sysfs_dirent *next = *pos;
+-				if (sysfs_type(next))
+-					n--;
+-				pos = &(*pos)->s_sibling;
+-			}
+-
+-			cursor->s_sibling = *pos;
+-			*pos = cursor;
+ 		}
+-
++		if (!pos)
++			filp->f_pos = UINT_MAX;
+ 		mutex_unlock(&sysfs_mutex);
+ 	}
+-
+-	return offset;
++	return 0;
+ }
+ 
++
+ const struct file_operations sysfs_dir_operations = {
+-	.open		= sysfs_dir_open,
+-	.release	= sysfs_dir_close,
+-	.llseek		= sysfs_dir_lseek,
+ 	.read		= generic_read_dir,
+ 	.readdir	= sysfs_readdir,
+ };
+-- 
+1.5.1.1.181.g2de0
+
