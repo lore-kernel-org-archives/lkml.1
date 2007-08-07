@@ -1,127 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbXHGMKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763310AbXHGMKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761903AbXHGMKZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 08:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXHGMKO
+	id S1763310AbXHGMKp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 08:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXHGMKe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 08:10:14 -0400
-Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:53211 "EHLO
-	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755313AbXHGMKL (ORCPT
+	Tue, 7 Aug 2007 08:10:34 -0400
+Received: from usish.com ([210.5.144.202]:34414 "EHLO sr-smtp.usish.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1762313AbXHGMKb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 08:10:11 -0400
-From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Subject: Re: [NFS] 2.6.23-rc1-mm2
-Date: Tue, 7 Aug 2007 14:09:30 +0200
-User-Agent: KMail/1.9.5
-Cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, Neil Brown <neilb@suse.de>,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708061305.37208.marc.dietrich@ap.physik.uni-giessen.de> <1186417445.6616.23.camel@localhost>
-In-Reply-To: <1186417445.6616.23.camel@localhost>
+	Tue, 7 Aug 2007 08:10:31 -0400
+X-Greylist: delayed 8357 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Aug 2007 08:10:29 EDT
+From: "sam song" <sam_song@usish.com>
+To: "'Tejun Heo'" <htejun@gmail.com>
+Cc: "'Michael Sedkowski'" <sedmich@gmail.com>,
+       "'Rafael J. Wysocki'" <rjw@sisk.pl>,
+       "'Henrique de Moraes Holschuh'" <hmh@hmh.eng.br>,
+       <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       <linux-acpi@vger.kernel.org>
+References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com>	 
+	<1186411815.4355.7.camel@nx6310>	 
+	<20070806150159.GC31615@khazad-dum.debian.net>	 
+	<200708061732.03425.rjw@sisk.pl>  <46B75459.9020204@gmail.com>	 
+	<1186424492.4355.1.camel@nx6310>  <46B76BBC.9010107@gmail.com>	 
+	<1186438698.4402.6.camel@nx6310>  <46B817AB.30105@gmail.com> 
+	<1186478319.3705.3.camel@nx6310> <46B83C0B.8050902@gmail.com>
+Subject: =?utf-8?Q?=E7=AD=94=E5=A4=8D=3A_Disk_spin_down_issue_on_s?=
+	=?utf-8?Q?hut_down=2Fsuspend_to_disk?=
+Date: Tue, 7 Aug 2007 17:51:52 +0800
+Message-ID: <000601c7d8d8$959c9130$5f39a8c0@usish.com.cn>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708071409.39012.marc.dietrich@ap.physik.uni-giessen.de>
-X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
-X-HRZ-JLUG-MailScanner: No virus found
-X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
+	charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 11
+Thread-Index: AcfY1dxcw084fTglQWG01roIsiEjnAAAfNlw
+In-Reply-To: <46B83C0B.8050902@gmail.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3138
+X-imss-version: 2.047
+X-imss-result: Passed
+X-imss-scanInfo: M:P L:N SM:0
+X-imss-tmaseResult: TT:0 TS:0.0000 TC:00 TRN:0 TV:3.6.1039(15346.003)
+X-imss-scores: Clean:99.90000 C:2 M:3 S:5 R:5
+X-imss-settings: Baseline:1 C:2 M:3 S:4 R:1 (0.0000 0.0000)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Monday 06 August 2007 18:24 schrieb Trond Myklebust:
-> On Mon, 2007-08-06 at 13:05 +0200, Marc Dietrich wrote:
-> > Hi,
-> >
-> > > (...)
-> >
-> > just booting into X is enough.
-> >
-> > I applied the patch, but now I get:
-> >
-> > =================================
-> > [ INFO: inconsistent lock state ]
-> > 2.6.23-rc1-mm2 #4
-> > ---------------------------------
-> > inconsistent {softirq-on-W} -> {in-softirq-W} usage.
-> > swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
-> >  (rpc_credcache_lock){-+..}, at: [<c01dc487>]
-> > _atomic_dec_and_lock+0x17/0x60 {softirq-on-W} state was registered at:
-> >   [<c013e870>] __lock_acquire+0x650/0x1030
-> >   [<c013f2b1>] lock_acquire+0x61/0x80
-> >   [<c02db9ac>] _spin_lock+0x2c/0x40
-> >   [<c01dc487>] _atomic_dec_and_lock+0x17/0x60
-> >   [<dced55fd>] put_rpccred+0x5d/0x100 [sunrpc]
-> >   [<dced56c1>] rpcauth_unbindcred+0x21/0x60 [sunrpc]
-> >   [<dced3fd4>] a0 [sunrpc]
-> >   [<dcecefe0>] rpc_call_sync+0x30/0x40 [sunrpc]
-> >   [<dcedc73b>] rpcb_register+0xdb/0x180 [sunrpc]
-> >   [<dced65b3>] svc_register+0x93/0x160 [sunrpc]
-> >   [<dced6ebe>] __svc_create+0x1ee/0x220 [sunrpc]
-> >   [<dced7053>] svc_create+0x13/0x20 [sunrpc]
-> >   [<dcf6d722>] nfs_callback_up+0x82/0x120 [nfs]
-> >   [<dcf48f36>] nfs_get_client+0x176/0x390 [nfs]
-> >   [<dcf49181>] nfs4_set_client+0x31/0x190 [nfs]
-> >   [<dcf49983>] nfs4_create_server+0x63/0x3b0 [nfs]
-> >   [<dcf52426>] nfs4_get_sb+0x346/0x5b0 [nfs]
-> >   [<c017b444>] vfs_kern_mount+0x94/0x110
-> >   [<c0190a62>] do_mount+0x1f2/0x7d0
-> >   [<c01910a6>] sys_mount+0x66/0xa0
-> >   [<c0104046>] syscall_call+0x7/0xb
-> >   [<ffffffff>] 0xffffffff
-> > irq event stamp: 5277830
-> > hardirqs last  enabled at (5277830): [<c017530a>]
-> > kmem_cache_free+0x8a/0xc0 hardirqs last disabled at (5277829):
-> > [<c01752d2>] kmem_cache_free+0x52/0xc0 softirqs last  enabled at
-> > (5277798): [<c0124173>] __do_softirq+0xa3/0xc0 softirqs last disabled at
-> > (5277817): [<c01241d7>] do_softirq+0x47/0x50
-> >
-> > other info that might help us debug this:
-> > no locks held by swapper/0.
-> >
-> > stack backtrace:
-> >  [<c0104fda>] show_trace_log_lvl+0x1a/0x30
-> >  [<c0105c02>] show_trace+0x12/0x20
-> >  [<c0105d15>] dump_stack+0x15/0x20
-> >  [<c013ccc3>] print_usage_bug+0x153/0x160
-> >  [<c013d8b9>] mark_lock+0x449/0x620
-> >  [<c013e824>] __lock_acquire+0x604/0x1030
-> >  [<c013f2b1>] lock_acquire+0x61/0x80
-> >  [<c02db9ac>] _spin_lock+0x2c/0x40
-> >  [<c01dc487>] _atomic_dec_and_lock+0x17/0x60
-> >  [<dced55fd>] put_rpccred+0x5d/0x100 [sunrpc]
-> >  [<dcf6bf83>] nfs_free_delegation_callback+0x13/0x20 [nfs]
-> >  [<c012f9ea>] __rcu_process_callbacks+0x6a/0x1c0
-> >  [<c012fb52>] rcu_process_callbacks+0x12/0x30
-> >  [<c0124218>] tasklet_action+0x38/0x80
-> >  [<c0124125>] __do_softirq+0x55/0xc0
-> >  [<c01241d7>] do_softirq+0x47/0x50
-> >  [<c0124605>] irq_exit+0x35/0x40
-> >  [<c0112463>] smp_apic_timer_interrupt+0x43/0x80
-> >  [<c0104a77>] apic_timer_interrupt+0x33/0x38
-> >  [<c02690df>] cpuidle_idle_call+0x6f/0x90
-> >  [<c01023c3>] cpu_idle+0x43/0x70
-> >  [<c02d8c27>] rest_init+0x47/0x50
-> >  [<c03bcb6a>] start_kernel+0x22a/0x2b0
-> >  [<00000000>] 0x0
-> >  =======================
->
-> That is a different matter. I assume this patch should suffice to fix
-> the above problem.
->
-> Trond
+Tejun Heo wrote:
+> Michael Sedkowski wrote:
+> > Dnia 07-08-2007, Wt o godzinie 15:56 +0900, Tejun Heo napisał(a):
+> >> 192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age
+> >> Always       -       388
+[snip]
+> On power off, the r/w heads in a disk should be unloaded (parked).  This
+> is usually achieved by either putting the disk into standby/sleep mode
+> during shutdown.  However, all modern disks can automatically unload
+> their heads when the power is removed abruptly.  This is called
+> emergency unload.  Emergency unload does shorten the lifespan of the
+> disk but you don't have to worry too much about it.  Disks are designed
+> to withstand certain number of emergency unloads.
 
-yes - it does.
+Out of interest, does Power-Off_Retract_Count attribute only record emergency unloads
+rather than normal power off by Linux shutdown command?
 
-thanks.
+Thanks in advance,
 
-Marc
+Sam
 
-
--- 
-	"Our cause has a sacred nature."
-		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
-World War", 1928
