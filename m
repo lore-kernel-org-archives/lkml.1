@@ -1,44 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934605AbXHGWKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937046AbXHGWK6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934605AbXHGWKH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936890AbXHGV56
+	id S937046AbXHGWK6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:10:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937485AbXHGV6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:57:58 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50631 "EHLO mail.dvmed.net"
+	Tue, 7 Aug 2007 17:58:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:41001 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937780AbXHGV5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:57:54 -0400
-Message-ID: <46B8EADE.3030705@garzik.org>
-Date: Tue, 07 Aug 2007 17:57:50 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	id S935878AbXHGV61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:58:27 -0400
+Message-ID: <46B8EA9A.5020704@goop.org>
+Date: Tue, 07 Aug 2007 14:56:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-CC: linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, romieu@fr.zoreil.com,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 76] drivers/net/via-velocity.c: mostly kmalloc + memset
- conversion to kcalloc
-References: <200707311845.48807.m.kozlowski@tuxland.pl> <200708010011.50979.m.kozlowski@tuxland.pl>
-In-Reply-To: <200708010011.50979.m.kozlowski@tuxland.pl>
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Subject: [PATCH] xen-netfront: remove dead code
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mariusz Kozlowski wrote:
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  drivers/net/via-velocity.c | 88263 -> 88120 (-143 bytes)
->  drivers/net/via-velocity.o | 254264 -> 253828 (-436 bytes)
-> 
->  drivers/net/via-velocity.c |   24 ++++++++++--------------
->  1 file changed, 10 insertions(+), 14 deletions(-)
+This patch removes some residual dead code left over from removing the
+"flip" receive mode.  This patch doesn't change the generated output
+at all, since gcc already realized it was dead.
 
-applied
+This resolves the "regression" reported by Adrian.
 
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Adrian Bunk <bunk@stusta.de>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+
+---
+ drivers/net/xen-netfront.c |   37 ++-----------------------------------
+ 1 file changed, 2 insertions(+), 35 deletions(-)
+
+===================================================================
+--- a/drivers/net/xen-netfront.c
++++ b/drivers/net/xen-netfront.c
+@@ -209,11 +209,9 @@ static void xennet_alloc_rx_buffers(stru
+ 	struct page *page;
+ 	int i, batch_target, notify;
+ 	RING_IDX req_prod = np->rx.req_prod_pvt;
+-	struct xen_memory_reservation reservation;
+ 	grant_ref_t ref;
+ 	unsigned long pfn;
+ 	void *vaddr;
+-	int nr_flips;
+ 	struct xen_netif_rx_request *req;
+ 
+ 	if (unlikely(!netif_carrier_ok(dev)))
+@@ -263,7 +261,7 @@ no_skb:
+ 		np->rx_target = np->rx_max_target;
+ 
+  refill:
+-	for (nr_flips = i = 0; ; i++) {
++	for (i = 0; ; i++) {
+ 		skb = __skb_dequeue(&np->rx_batch);
+ 		if (skb == NULL)
+ 			break;
+@@ -292,38 +290,7 @@ no_skb:
+ 		req->gref = ref;
+ 	}
+ 
+-	if (nr_flips != 0) {
+-		reservation.extent_start = np->rx_pfn_array;
+-		reservation.nr_extents   = nr_flips;
+-		reservation.extent_order = 0;
+-		reservation.address_bits = 0;
+-		reservation.domid        = DOMID_SELF;
+-
+-		if (!xen_feature(XENFEAT_auto_translated_physmap)) {
+-			/* After all PTEs have been zapped, flush the TLB. */
+-			np->rx_mcl[i-1].args[MULTI_UVMFLAGS_INDEX] =
+-				UVMF_TLB_FLUSH|UVMF_ALL;
+-
+-			/* Give away a batch of pages. */
+-			np->rx_mcl[i].op = __HYPERVISOR_memory_op;
+-			np->rx_mcl[i].args[0] = XENMEM_decrease_reservation;
+-			np->rx_mcl[i].args[1] = (unsigned long)&reservation;
+-
+-			/* Zap PTEs and give away pages in one big
+-			 * multicall. */
+-			(void)HYPERVISOR_multicall(np->rx_mcl, i+1);
+-
+-			/* Check return status of HYPERVISOR_memory_op(). */
+-			if (unlikely(np->rx_mcl[i].result != i))
+-				panic("Unable to reduce memory reservation\n");
+-		} else {
+-			if (HYPERVISOR_memory_op(XENMEM_decrease_reservation,
+-						 &reservation) != i)
+-				panic("Unable to reduce memory reservation\n");
+-		}
+-	} else {
+-		wmb();		/* barrier so backend seens requests */
+-	}
++	wmb();		/* barrier so backend seens requests */
+ 
+ 	/* Above is a suitable barrier to ensure backend will see requests. */
+ 	np->rx.req_prod_pvt = req_prod + i;
 
