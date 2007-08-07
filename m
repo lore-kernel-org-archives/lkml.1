@@ -1,49 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765607AbXHGBYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765408AbXHGBcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765607AbXHGBYb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 21:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbXHGBYV
+	id S1765408AbXHGBcu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 21:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbXHGBcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 21:24:21 -0400
-Received: from ns1.suse.de ([195.135.220.2]:48946 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753898AbXHGBYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 21:24:20 -0400
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Robert Hancock <hancockr@shaw.ca>, linuxppc-dev@ozlabs.org,
-       stable@kernel.org, linux-kernel@vger.kernel.org,
-       Olaf Hering <olh@suse.de>
-Subject: Re: [PATCH 2.6.22.y] ieee1394: revert "sbp2: enforce 32bit	DMA	mapping"
-References: <fa.Qn3Snqoik3hhnxcA6HqjGV0Yzck@ifi.uio.no>
-	<46B4B3DC.7020609@shaw.ca> <46B4B7C6.1040107@s5r6.in-berlin.de>
-	<1186272926.938.8.camel@localhost.localdomain>
-	<46B5824B.1000103@s5r6.in-berlin.de>
-	<1186351473.938.21.camel@localhost.localdomain>
-	<20070806135124.GA2900@suse.de>
-	<1186436848.938.75.camel@localhost.localdomain>
-	<46B79F25.50205@s5r6.in-berlin.de> <46B79FD7.9020801@shaw.ca>
-	<46B7A537.9020807@s5r6.in-berlin.de>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 07 Aug 2007 04:18:43 +0200
-In-Reply-To: <46B7A537.9020807@s5r6.in-berlin.de>
-Message-ID: <p73bqdkccjg.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	Mon, 6 Aug 2007 21:32:41 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:1595 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751015AbXHGBck (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 21:32:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=uAgw9E4Tbsd+Jae4qYAbu7LT6sJ+LkNyv7Fa7xX/DRKx0eRnwoNQ/jAPQT8XiNo2sK3kSbGx2bLmlhxESMYaZ3c2tTGngawBRkFRv7Q4MEXLuF7YkA85kc9ni7SaFtK/D3mTNdN2Sx45HLO8dV0j6erQoiijXtFxKTbxbixOZ14=
+Date: Mon, 6 Aug 2007 21:32:33 -0400
+From: Steven Walter <stevenrwalter@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: mchehab@infradead.org
+Subject: [PATCH] V4L: Add additional ioctls to compat_ioctl32
+Message-ID: <20070807013233.GA14202@dervierte>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
-> 
->   1.) The ieee1394 subsystem is known to work on x86_64 with more than 4
-> GB RAM, 
+With the addition of these ioctls, I'm able to watch TV with a 32-bit version
+of tvtime on x86_64
+---
+ drivers/media/video/compat_ioctl32.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-It's actually ~3+GB where memory above the 4GB barrier starts appearing.
-In some extreme cases even for 2+GB. 
+diff --git a/drivers/media/video/compat_ioctl32.c b/drivers/media/video/compat_ioctl32.c
+index f065ad1..cefd138 100644
+--- a/drivers/media/video/compat_ioctl32.c
++++ b/drivers/media/video/compat_ioctl32.c
+@@ -848,6 +848,8 @@ long v4l_compat_ioctl32(struct file *file, unsigned int cmd, unsigned long arg)
+ 	case VIDIOCSFREQ32:
+ 	case VIDIOCGAUDIO:
+ 	case VIDIOCSAUDIO:
++	case VIDIOCGVBIFMT:
++	case VIDIOCSVBIFMT:
+ #endif
+ 	case VIDIOC_QUERYCAP:
+ 	case VIDIOC_ENUM_FMT:
+@@ -874,7 +876,10 @@ long v4l_compat_ioctl32(struct file *file, unsigned int cmd, unsigned long arg)
+ 	case VIDIOC_ENUMINPUT:
+ 	case VIDIOC_ENUMINPUT32:
+ 	case VIDIOC_G_CTRL:
++	case VIDIOC_S_CTRL:
+ 	case VIDIOC_S_CTRL32:
++	case VIDIOC_S_FREQUENCY:
++	case VIDIOC_G_FREQUENCY:
+ 	case VIDIOC_QUERYCTRL:
+ 	case VIDIOC_G_INPUT32:
+ 	case VIDIOC_S_INPUT32:
+-- 
+1.5.3.rc2
 
-> so I gather that architecture code already sets a proper DMA
-> mask for all those 32bit PCI OHCI-1394 implementations out there.
 
-If you don't set a DMA mask then the default is always 4GB.
-
--Andi
+-- 
+-Steven Walter <stevenrwalter@gmail.com>
+"A human being should be able to change a diaper, plan an invasion,
+butcher a hog, conn a ship, design a building, write a sonnet, balance
+accounts, build a wall, set a bone, comfort the dying, take orders,
+give orders, cooperate, act alone, solve equations, analyze a new
+problem, pitch manure, program a computer, cook a tasty meal, fight
+efficiently, die gallantly. Specialization is for insects."
+   -Robert Heinlein
