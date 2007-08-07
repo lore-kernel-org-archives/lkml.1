@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966122AbXHGV2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966271AbXHGV2v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966122AbXHGV2W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965137AbXHGU51
+	id S966271AbXHGV2v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:28:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965169AbXHGU5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:57:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59995 "EHLO
+	Tue, 7 Aug 2007 16:57:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:60014 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965080AbXHGU5Z (ORCPT
+	with ESMTP id S965159AbXHGU5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:57:25 -0400
-Date: Tue, 7 Aug 2007 13:49:23 -0700
+	Tue, 7 Aug 2007 16:57:38 -0400
+Date: Tue, 7 Aug 2007 13:49:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,126 +21,86 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ville Tervo <ville.tervo@nokia.com>,
-       Marcel Holtmann <marcel@holtmann.org>
-Subject: [2.6.22.2 review 77/84] Keep rfcomm_dev on the list until it is
-	freed
-Message-ID: <20070807204923.GA23028@kroah.com>
+       Netfilter Development Mailinglist 
+	<netfilter-devel@lists.netfilter.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Yasuyuki KOZAKAI <yasuyuki.kozakai@toshiba.co.jp>,
+       Adrian Bunk <bunk@stusta.de>, Patrick McHardy <kaber@trash.net>
+Subject: [2.6.22.2 review 78/84] nf_conntrack: dont track locally generated
+	special ICMP error
+Message-ID: <20070807204926.GB23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="keep-rfcomm_dev-on-the-list-until-it-is-freed.patch"
+Content-Disposition: inline; filename="nf_conntrack-don-t-track-locally-generated-special-icmp-error.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ville Tervo <ville.tervo@nokia.com>
+From: Yasuyuki Kozakai <yasuyuki.kozakai@toshiba.co.jp>
 
-This patch changes the RFCOMM TTY release process so that the TTY is kept
-on the list until it is really freed. A new device flag is used to keep
-track of released TTYs.
+[NETFILTER]: nf_conntrack: don't track locally generated special ICMP error
 
-Signed-off-by: Ville Tervo <ville.tervo@nokia.com>
-Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+The conntrack assigned to locally generated ICMP error is usually the one
+assigned to the original packet which has caused the error. But if
+the original packet is handled as invalid by nf_conntrack, no conntrack
+is assigned to the original packet. Then nf_ct_attach() cannot assign
+any conntrack to the ICMP error packet. In that case the current
+nf_conntrack_icmp assigns appropriate conntrack to it. But the current
+code mistakes the direction of the packet. As a result, NAT code mistakes
+the address to be mangled.
+
+To fix the bug, this changes nf_conntrack_icmp not to assign conntrack
+to such ICMP error. Actually no address is necessary to be mangled
+in this case.
+
+Spotted by Jordan Russell.
+
+Signed-off-by: Yasuyuki Kozakai <yasuyuki.kozakai@toshiba.co.jp>
+
+Upstream commit ID: 130e7a83d7ec8c5c673225e0fa8ea37b1ed507a5
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/net/bluetooth/rfcomm.h |    1 +
- net/bluetooth/rfcomm/tty.c     |   30 ++++++++++++++++++++++--------
- 2 files changed, 23 insertions(+), 8 deletions(-)
+ net/ipv4/netfilter/nf_conntrack_proto_icmp.c |   22 +++++-----------------
+ 1 file changed, 5 insertions(+), 17 deletions(-)
 
---- a/include/net/bluetooth/rfcomm.h
-+++ b/include/net/bluetooth/rfcomm.h
-@@ -323,6 +323,7 @@ int  rfcomm_connect_ind(struct rfcomm_se
- #define RFCOMM_RELEASE_ONHUP  1
- #define RFCOMM_HANGUP_NOW     2
- #define RFCOMM_TTY_ATTACHED   3
-+#define RFCOMM_TTY_RELEASED   4
+--- a/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
++++ b/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
+@@ -189,25 +189,13 @@ icmp_error_message(struct sk_buff *skb,
  
- struct rfcomm_dev_req {
- 	s16      dev_id;
---- a/net/bluetooth/rfcomm/tty.c
-+++ b/net/bluetooth/rfcomm/tty.c
-@@ -95,6 +95,10 @@ static void rfcomm_dev_destruct(struct r
- 
- 	BT_DBG("dev %p dlc %p", dev, dlc);
- 
-+	write_lock_bh(&rfcomm_dev_lock);
-+	list_del_init(&dev->list);
-+	write_unlock_bh(&rfcomm_dev_lock);
-+
- 	rfcomm_dlc_lock(dlc);
- 	/* Detach DLC if it's owned by this dev */
- 	if (dlc->owner == dev)
-@@ -156,8 +160,13 @@ static inline struct rfcomm_dev *rfcomm_
- 	read_lock(&rfcomm_dev_lock);
- 
- 	dev = __rfcomm_dev_get(id);
--	if (dev)
--		rfcomm_dev_hold(dev);
-+
-+	if (dev) {
-+		if (test_bit(RFCOMM_TTY_RELEASED, &dev->flags))
-+			dev = NULL;
-+		else
-+			rfcomm_dev_hold(dev);
-+	}
- 
- 	read_unlock(&rfcomm_dev_lock);
- 
-@@ -265,6 +274,12 @@ out:
- 
- 	dev->tty_dev = tty_register_device(rfcomm_tty_driver, dev->id, NULL);
- 
-+	if (IS_ERR(dev->tty_dev)) {
-+		list_del(&dev->list);
-+		kfree(dev);
-+		return PTR_ERR(dev->tty_dev);
-+	}
-+
- 	return dev->id;
- }
- 
-@@ -272,10 +287,7 @@ static void rfcomm_dev_del(struct rfcomm
- {
- 	BT_DBG("dev %p", dev);
- 
--	write_lock_bh(&rfcomm_dev_lock);
--	list_del_init(&dev->list);
--	write_unlock_bh(&rfcomm_dev_lock);
+ 	h = nf_conntrack_find_get(&innertuple, NULL);
+ 	if (!h) {
+-		/* Locally generated ICMPs will match inverted if they
+-		   haven't been SNAT'ed yet */
+-		/* FIXME: NAT code has to handle half-done double NAT --RR */
+-		if (hooknum == NF_IP_LOCAL_OUT)
+-			h = nf_conntrack_find_get(&origtuple, NULL);
 -
-+	set_bit(RFCOMM_TTY_RELEASED, &dev->flags);
- 	rfcomm_dev_put(dev);
- }
+-		if (!h) {
+-			DEBUGP("icmp_error_message: no match\n");
+-			return -NF_ACCEPT;
+-		}
+-
+-		/* Reverse direction from that found */
+-		if (NF_CT_DIRECTION(h) == IP_CT_DIR_REPLY)
+-			*ctinfo += IP_CT_IS_REPLY;
+-	} else {
+-		if (NF_CT_DIRECTION(h) == IP_CT_DIR_REPLY)
+-			*ctinfo += IP_CT_IS_REPLY;
++		DEBUGP("icmp_error_message: no match\n");
++		return -NF_ACCEPT;
+ 	}
  
-@@ -329,7 +341,7 @@ static int rfcomm_create_dev(struct sock
- 	if (copy_from_user(&req, arg, sizeof(req)))
- 		return -EFAULT;
- 
--	BT_DBG("sk %p dev_id %id flags 0x%x", sk, req.dev_id, req.flags);
-+	BT_DBG("sk %p dev_id %d flags 0x%x", sk, req.dev_id, req.flags);
- 
- 	if (req.flags != NOCAP_FLAGS && !capable(CAP_NET_ADMIN))
- 		return -EPERM;
-@@ -370,7 +382,7 @@ static int rfcomm_release_dev(void __use
- 	if (copy_from_user(&req, arg, sizeof(req)))
- 		return -EFAULT;
- 
--	BT_DBG("dev_id %id flags 0x%x", req.dev_id, req.flags);
-+	BT_DBG("dev_id %d flags 0x%x", req.dev_id, req.flags);
- 
- 	if (!(dev = rfcomm_dev_get(req.dev_id)))
- 		return -ENODEV;
-@@ -419,6 +431,8 @@ static int rfcomm_get_dev_list(void __us
- 
- 	list_for_each(p, &rfcomm_dev_list) {
- 		struct rfcomm_dev *dev = list_entry(p, struct rfcomm_dev, list);
-+		if (test_bit(RFCOMM_TTY_RELEASED, &dev->flags))
-+			continue;
- 		(di + n)->id      = dev->id;
- 		(di + n)->flags   = dev->flags;
- 		(di + n)->state   = dev->dlc->state;
++	if (NF_CT_DIRECTION(h) == IP_CT_DIR_REPLY)
++		*ctinfo += IP_CT_IS_REPLY;
++
+ 	/* Update skb to refer to this connection */
+ 	skb->nfct = &nf_ct_tuplehash_to_ctrack(h)->ct_general;
+ 	skb->nfctinfo = *ctinfo;
 
 -- 
