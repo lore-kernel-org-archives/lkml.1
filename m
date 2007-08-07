@@ -1,52 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXHGUEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763038AbXHGUFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759410AbXHGUEP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbXHGUEE
+	id S1763038AbXHGUFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755542AbXHGUFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:04:04 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45707 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754584AbXHGUEC (ORCPT
+	Tue, 7 Aug 2007 16:05:38 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:48406 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754858AbXHGUFh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:04:02 -0400
-Date: Tue, 7 Aug 2007 21:02:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: "Nathan Williams" <ngwilliams@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: MODULE_LICENSE usage
-Message-ID: <20070807210207.0206df05@the-village.bc.nu>
-In-Reply-To: <m3k5s75eyb.fsf@maximus.localdomain>
-References: <b4e196fa0708060053x65f0b1d3m50c62206cb65e016@mail.gmail.com>
-	<MDEHLPKNGKAHNMBLJOLKOEOJFOAC.davids@webmaster.com>
-	<b4e196fa0708062029x681fafe7hc493c774a936cdf3@mail.gmail.com>
-	<m3k5s75eyb.fsf@maximus.localdomain>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Tue, 7 Aug 2007 16:05:37 -0400
+Date: Tue, 7 Aug 2007 13:05:02 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Javier Pello <javier.pello@urjc.es>
+Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
+ notified
+Message-Id: <20070807130502.615d0112.akpm@linux-foundation.org>
+In-Reply-To: <46B37CF7.2020803@urjc.es>
+References: <46B37CF7.2020803@urjc.es>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> People around here use Alcatel/Thomson "Speedtouch" and Sagem
-> "Fast" USB ADSLs. Linux has open-source drivers for both.
-> USB seems like an advantage in this case, too - you can connect
-> to any machine including non-PCI small network storage servers
-> with non-x86 CPU.
+On Fri, 03 Aug 2007 21:07:35 +0200
+Javier Pello <javier.pello@urjc.es> wrote:
 
-In this part of the world external boxes are cheaper than PCI cards. The
-PCI cards are also usually avoided even by windows people as many of them
-do a lot of DSL processing using the main CPU and trash gaming
-performance as a result.
+> Hi,
+> 
+> I have prepared a patch that makes request_firmware skip the usual
+> grace period that it gives firmware images to show up, if it determines
+> that userspace was not notified at all.
+> 
+> When request_firmware is called, it sends an event to userspace to
+> ask for the firmware image that is needed, and then it installs a
+> timeout so that it will not wait forever for the image. However,
+> if userspace did not receive the event at all (no /sbin/hotplug,
+> for instance), then having the kernel wait is pointless. This is
+> particularly true during boot, when the wait is done synchronously
+> and the whole kernel freezes for a minute.
+> 
+> The attached patch fixes this by making _request_firmware check whether
+> the firmware loading event was succesfully sent to userspace, and skip
+> the timeout if it has not. The patch comes in two parts:
+> 
+> 1. The first part changes kobject_uevent_env in lib/kobject_uevent.c
+> to report a failure if both netlink_broadcast (if applicable) and
+> call_usermodehelper fail to send the event to userspace. Nothing in
+> the kernel seems to care about the return value of kobject_uevent_env,
+> so this should not break anything.
+> 
+> 2. The second part changes _request_firmware in
+> drivers/base/firmware_class.c to actually check the return value of
+> kobject_uevent and skip the loading_timeout delay if the loading event
+> was not delivered to userspace at all.
+> 
+> The patches apply cleanly against 2.6.23-rc1. Any suggestions or feedback
+> will be welcome.
+> 
+> ---
+> diff -u linux-2.6.22/lib/kobject_uevent.c linux-2.6.22-p/lib/kobject_uevent.c
+> --- linux-2.6.22/lib/kobject_uevent.c	2007-07-09 01:32:17.000000000 +0200
+> +++ linux-2.6.22-p/lib/kobject_uevent.c	2007-07-18 20:17:10.000000000 +0200
+> @@ -186,7 +186,8 @@
+>  			}
+>  
+>  			NETLINK_CB(skb).dst_group = 1;
+> -			netlink_broadcast(uevent_sock, skb, 0, 1, GFP_KERNEL);
+> +			retval = netlink_broadcast(uevent_sock, skb, 0, 1,
+> +						GFP_KERNEL);
+>  		}
+>  	}
+>  #endif
+> @@ -198,7 +199,18 @@
+>  		argv [0] = uevent_helper;
+>  		argv [1] = (char *)subsystem;
+>  		argv [2] = NULL;
+> -		call_usermodehelper (argv[0], argv, envp, UMH_WAIT_EXEC);
+> +#if defined(CONFIG_NET)
+> +		if (retval) {
+> +			retval = call_usermodehelper (argv[0], argv, envp,
+> +						UMH_WAIT_EXEC);
+> +		} else {
+> +			call_usermodehelper (argv[0], argv, envp,
+> +						UMH_WAIT_EXEC);
+> +		}
+> +#else
+> +		retval = call_usermodehelper (argv[0], argv, envp,
+> +						UMH_WAIT_EXEC);
+> +#endif
+>  	}
+>  
+>  exit:
 
-If they do this in the library btw please remember that you can't use the
-FPU/MMX/etc registers in kernel on x86 Linux.
+If uevent_helper[0] is \0 then this function can return success, even
+though it didn't deliver anything to userspace.
 
-> Hopefully you have a x86-64 version of the library as well.
+I suppose that's correct behaviour: the operator configured the system to
+disable the hotplug callout.  However in this scenario, the firmware laoder
+will still needlessly implement the grace period.
 
-And PowerPC .. and ...
-
+It's probably not worth worrying about.
