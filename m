@@ -1,615 +1,365 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbXHGHVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758362AbXHGHVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758012AbXHGHVD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 03:21:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756123AbXHGHT5
+	id S1758362AbXHGHVa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 03:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbXHGHT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 03:19:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:33988 "EHLO ozlabs.org"
+	Tue, 7 Aug 2007 03:19:59 -0400
+Received: from ozlabs.org ([203.10.76.45]:33992 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754024AbXHGHTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 03:19:55 -0400
+	id S1755791AbXHGHT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 03:19:56 -0400
 To: Linux Memory Management <linux-mm@kvack.org>
 CC: <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 07 Aug 2007 17:19:47 +1000
-Subject: [RFC/PATCH 2/12] remove flush_tlb_pgtables
+Date: Tue, 07 Aug 2007 17:19:48 +1000
+Subject: [RFC/PATCH 4/12] disconnect sparc64 tlb flush from mmu_gather
 In-Reply-To: <1186471185.826251.312410898174.qpush@grosgo>
-Message-Id: <20070807071953.829F5DDE11@ozlabs.org>
+Message-Id: <20070807071954.B6201DDDFA@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After my frv patch, nobody uses flush_tlb_pgtables anymore, this patch
-removes all remaining traces of it from all archs.
+sparc64 current tlb flush needs it's per-cpu list of vaddr's. This
+patch disconnect that from the mmu_gather, allowing sparc64 to use
+the generic implementation of the later for now.
+
+This is somewhat temporary. It allows to keep sparc64 working while
+I'm doing surgery on mmu_gather. Once the later goes fully stack
+based and provide a non-percpu way of storing the page list along
+with arch specific informations, I'll be able to reconnect sparc64
+to it (and get rid of the get_cpu/put_cpu and associated preempt
+disabling).
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- Documentation/cachetlb.txt       |   29 +++--------------------------
- include/asm-alpha/tlbflush.h     |   11 -----------
- include/asm-arm/tlbflush.h       |    5 -----
- include/asm-avr32/tlbflush.h     |    7 -------
- include/asm-blackfin/tlbflush.h  |    6 ------
- include/asm-cris/tlbflush.h      |    7 -------
- include/asm-frv/tlbflush.h       |    2 --
- include/asm-h8300/tlbflush.h     |    6 ------
- include/asm-i386/tlbflush.h      |    7 -------
- include/asm-ia64/tlbflush.h      |   13 -------------
- include/asm-m32r/tlbflush.h      |    3 ---
- include/asm-m68k/tlbflush.h      |   10 ----------
- include/asm-m68knommu/tlbflush.h |    6 ------
- include/asm-mips/tlbflush.h      |    7 -------
- include/asm-parisc/tlbflush.h    |    4 ----
- include/asm-powerpc/tlbflush.h   |   11 -----------
- include/asm-s390/tlbflush.h      |    7 -------
- include/asm-sh/tlbflush.h        |    6 ------
- include/asm-sh64/tlbflush.h      |    4 ----
- include/asm-sparc/tlbflush.h     |    6 ------
- include/asm-sparc64/tlbflush.h   |    7 -------
- include/asm-um/tlbflush.h        |    6 ------
- include/asm-v850/tlbflush.h      |    6 ------
- include/asm-x86_64/tlbflush.h    |    9 ---------
- include/asm-xtensa/tlbflush.h    |   11 -----------
- mm/memory.c                      |    3 ---
- 26 files changed, 3 insertions(+), 196 deletions(-)
+ arch/sparc64/kernel/smp.c      |    2 
+ arch/sparc64/mm/tlb.c          |   43 ++++++++++--------
+ arch/sparc64/mm/tsb.c          |    6 +-
+ arch/sparc64/mm/ultra.S        |   12 ++---
+ include/asm-sparc64/system.h   |    2 
+ include/asm-sparc64/tlb.h      |   95 +++++++++--------------------------------
+ include/asm-sparc64/tlbflush.h |    4 -
+ 7 files changed, 59 insertions(+), 105 deletions(-)
 
-Index: linux-work/include/asm-alpha/tlbflush.h
+Index: linux-work/arch/sparc64/mm/tlb.c
 ===================================================================
---- linux-work.orig/include/asm-alpha/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-alpha/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -92,17 +92,6 @@ flush_tlb_other(struct mm_struct *mm)
- 	if (*mmc) *mmc = 0;
- }
+--- linux-work.orig/arch/sparc64/mm/tlb.c	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/arch/sparc64/mm/tlb.c	2007-07-27 18:06:44.000000000 +1000
+@@ -19,35 +19,38 @@
  
--/* Flush a specified range of user mapping page tables from TLB.
--   Although Alpha uses VPTE caches, this can be a nop, as Alpha does
--   not have finegrained tlb flushing, so it will flush VPTE stuff
--   during next flush_tlb_range.  */
--
--static inline void
--flush_tlb_pgtables(struct mm_struct *mm, unsigned long start,
--		   unsigned long end)
--{
--}
--
- #ifndef CONFIG_SMP
- /* Flush everything (kernel mapping may also have changed
-    due to vmalloc/vfree).  */
-Index: linux-work/include/asm-arm/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-arm/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-arm/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -463,11 +463,6 @@ extern void flush_tlb_kernel_range(unsig
-  */
- extern void update_mmu_cache(struct vm_area_struct *vma, unsigned long addr, pte_t pte);
+ /* Heavily inspired by the ppc64 code.  */
  
--/*
-- * ARM processors do not cache TLB tables in RAM.
-- */
--#define flush_tlb_pgtables(mm,start,end)	do { } while (0)
--
- #endif
+-DEFINE_PER_CPU(struct mmu_gather, mmu_gathers) = { 0, };
++DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
++DEFINE_PER_CPU(struct tlb_batch, tlb_batch);
  
- #endif /* CONFIG_MMU */
-Index: linux-work/include/asm-avr32/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-avr32/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-avr32/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -19,7 +19,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
- extern void flush_tlb(void);
- extern void flush_tlb_all(void);
-@@ -29,12 +28,6 @@ extern void flush_tlb_range(struct vm_ar
- extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long page);
- extern void __flush_tlb_page(unsigned long asid, unsigned long page);
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	/* Nothing to do */
--}
--
- extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
- 
- #endif /* __ASM_AVR32_TLBFLUSH_H */
-Index: linux-work/include/asm-blackfin/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-blackfin/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-blackfin/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -53,10 +53,4 @@ static inline void flush_tlb_kernel_page
- 	BUG();
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	BUG();
--}
--
- #endif
-Index: linux-work/include/asm-cris/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-cris/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-cris/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -38,13 +38,6 @@ static inline void flush_tlb_range(struc
- 	flush_tlb_mm(vma->vm_mm);
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--                                      unsigned long start, unsigned long end)
--{
--        /* CRIS does not keep any page table caches in TLB */
--}
--
--
- static inline void flush_tlb(void)
+-void flush_tlb_pending(void)
++void __flush_tlb_pending(struct tlb_batch *mp)
  {
- 	flush_tlb_mm(current->mm);
-Index: linux-work/include/asm-frv/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-frv/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-frv/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -57,7 +57,6 @@ do {								\
- #define __flush_tlb_global()			flush_tlb_all()
- #define flush_tlb()				flush_tlb_all()
- #define flush_tlb_kernel_range(start, end)	flush_tlb_all()
--#define flush_tlb_pgtables(mm,start,end)	do { } while(0)
- 
- #else
- 
-@@ -66,7 +65,6 @@ do {								\
- #define flush_tlb_mm(mm)			BUG()
- #define flush_tlb_page(vma,addr)		BUG()
- #define flush_tlb_range(mm,start,end)		BUG()
--#define flush_tlb_pgtables(mm,start,end)	BUG()
- #define flush_tlb_kernel_range(start, end)	BUG()
- 
- #endif
-Index: linux-work/include/asm-h8300/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-h8300/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-h8300/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -52,10 +52,4 @@ static inline void flush_tlb_kernel_page
- 	BUG();
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	BUG();
--}
+-	struct mmu_gather *mp = &__get_cpu_var(mmu_gathers);
 -
- #endif /* _H8300_TLBFLUSH_H */
-Index: linux-work/include/asm-i386/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-i386/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-i386/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -78,7 +78,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  *  - flush_tlb_others(cpumask, mm, va) flushes a TLBs on other cpus
-  *
-  * ..but the i386 has somewhat limited tlb flushing capabilities,
-@@ -166,10 +165,4 @@ static inline void flush_tlb_kernel_rang
- 	flush_tlb_all();
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	/* i386 does not keep any page table caches in TLB */
--}
+-	preempt_disable();
 -
- #endif /* _I386_TLBFLUSH_H */
-Index: linux-work/include/asm-ia64/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-ia64/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-ia64/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -84,19 +84,6 @@ flush_tlb_page (struct vm_area_struct *v
- }
+-	if (mp->tlb_nr) {
++	if (mp->nr) {
+ 		flush_tsb_user(mp);
  
- /*
-- * Flush the TLB entries mapping the virtually mapped linear page
-- * table corresponding to address range [START-END).
-- */
--static inline void
--flush_tlb_pgtables (struct mm_struct *mm, unsigned long start, unsigned long end)
--{
--	/*
--	 * Deprecated.  The virtual page table is now flushed via the normal gather/flush
--	 * interface (see tlb.h).
--	 */
--}
--
--/*
-  * Flush the local TLB. Invoked from another cpu using an IPI.
-  */
+ 		if (CTX_VALID(mp->mm->context)) {
  #ifdef CONFIG_SMP
-Index: linux-work/include/asm-m32r/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-m32r/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-m32r/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -12,7 +12,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
- 
- extern void local_flush_tlb_all(void);
-@@ -93,8 +92,6 @@ static __inline__ void __flush_tlb_all(v
- 	);
- }
- 
--#define flush_tlb_pgtables(mm, start, end)	do { } while (0)
--
- extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
- 
- #endif	/* _ASM_M32R_TLBFLUSH_H */
-Index: linux-work/include/asm-m68k/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-m68k/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-m68k/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -92,11 +92,6 @@ static inline void flush_tlb_kernel_rang
- 	flush_tlb_all();
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--}
--
+-			smp_flush_tlb_pending(mp->mm, mp->tlb_nr,
++			smp_flush_tlb_pending(mp->mm, mp->nr,
+ 					      &mp->vaddrs[0]);
  #else
- 
- 
-@@ -219,11 +214,6 @@ static inline void flush_tlb_kernel_page
- 	sun3_put_segmap (addr & ~(SUN3_PMEG_SIZE - 1), SUN3_INVALID_PMEG);
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--}
--
+-			__flush_tlb_pending(CTX_HWBITS(mp->mm->context),
+-					    mp->tlb_nr, &mp->vaddrs[0]);
++			local_flush_tlb_pending(CTX_HWBITS(mp->mm->context),
++						mp->nr, &mp->vaddrs[0]);
  #endif
+ 		}
+-		mp->tlb_nr = 0;
++		mp->nr = 0;
+ 	}
++}
++
++void flush_tlb_pending(void)
++{
++	struct tlb_batch *mp = &get_cpu_var(tlb_batch);
  
- #endif /* _M68K_TLBFLUSH_H */
-Index: linux-work/include/asm-m68knommu/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-m68knommu/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-m68knommu/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -52,10 +52,4 @@ static inline void flush_tlb_kernel_page
- 	BUG();
+-	preempt_enable();
++	__flush_tlb_pending(mp);
++	put_cpu_var(tlb_batch);
  }
  
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	BUG();
--}
--
- #endif /* _M68KNOMMU_TLBFLUSH_H */
-Index: linux-work/include/asm-mips/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-mips/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-mips/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -11,7 +11,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
- extern void local_flush_tlb_all(void);
- extern void local_flush_tlb_mm(struct mm_struct *mm);
-@@ -45,10 +44,4 @@ extern void flush_tlb_one(unsigned long 
- 
- #endif /* CONFIG_SMP */
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--	unsigned long start, unsigned long end)
--{
--	/* Nothing to do on MIPS.  */
--}
--
- #endif /* __ASM_TLBFLUSH_H */
-Index: linux-work/include/asm-parisc/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-parisc/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-parisc/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -57,10 +57,6 @@ static inline void flush_tlb_mm(struct m
- #endif
- }
- 
--extern __inline__ void flush_tlb_pgtables(struct mm_struct *mm, unsigned long start, unsigned long end)
--{
--}
-- 
- static inline void flush_tlb_page(struct vm_area_struct *vma,
- 	unsigned long addr)
+ void tlb_batch_add(struct mm_struct *mm, unsigned long vaddr, pte_t *ptep, pte_t orig)
  {
-Index: linux-work/include/asm-powerpc/tlbflush.h
+-	struct mmu_gather *mp = &__get_cpu_var(mmu_gathers);
++	struct tlb_batch *mp;
+ 	unsigned long nr;
+ 
+ 	vaddr &= PAGE_MASK;
+@@ -79,13 +82,17 @@ void tlb_batch_add(struct mm_struct *mm,
+ 
+ no_cache_flush:
+ 
+-	if (mp->fullmm)
++	if (test_bit(MMF_DEAD, &mm->flags))
+ 		return;
+ 
+-	nr = mp->tlb_nr;
++	/* we are called with enough spinlocks held to make
++	 * preempt disable useless here
++	 */
++	mp = &__get_cpu_var(tlb_batch);
++	nr = mp->nr;
+ 
+ 	if (unlikely(nr != 0 && mm != mp->mm)) {
+-		flush_tlb_pending();
++		__flush_tlb_pending(mp);
+ 		nr = 0;
+ 	}
+ 
+@@ -93,7 +100,7 @@ no_cache_flush:
+ 		mp->mm = mm;
+ 
+ 	mp->vaddrs[nr] = vaddr;
+-	mp->tlb_nr = ++nr;
++	mp->nr = ++nr;
+ 	if (nr >= TLB_BATCH_NR)
+-		flush_tlb_pending();
++		__flush_tlb_pending(mp);
+ }
+Index: linux-work/arch/sparc64/mm/tsb.c
 ===================================================================
---- linux-work.orig/include/asm-powerpc/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-powerpc/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -8,7 +8,6 @@
-  *  - flush_tlb_page_nohash(vma, vmaddr) flushes one page if SW loaded TLB
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  *
-  *  This program is free software; you can redistribute it and/or
-  *  modify it under the terms of the GNU General Public License
-@@ -173,15 +172,5 @@ extern void __flush_hash_table_range(str
-  */
- extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
+--- linux-work.orig/arch/sparc64/mm/tsb.c	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/arch/sparc64/mm/tsb.c	2007-07-27 18:06:44.000000000 +1000
+@@ -47,11 +47,11 @@ void flush_tsb_kernel_range(unsigned lon
+ 	}
+ }
+ 
+-static void __flush_tsb_one(struct mmu_gather *mp, unsigned long hash_shift, unsigned long tsb, unsigned long nentries)
++static void __flush_tsb_one(struct tlb_batch *mp, unsigned long hash_shift, unsigned long tsb, unsigned long nentries)
+ {
+ 	unsigned long i;
+ 
+-	for (i = 0; i < mp->tlb_nr; i++) {
++	for (i = 0; i < mp->nr; i++) {
+ 		unsigned long v = mp->vaddrs[i];
+ 		unsigned long tag, ent, hash;
+ 
+@@ -65,7 +65,7 @@ static void __flush_tsb_one(struct mmu_g
+ 	}
+ }
+ 
+-void flush_tsb_user(struct mmu_gather *mp)
++void flush_tsb_user(struct tlb_batch *mp)
+ {
+ 	struct mm_struct *mm = mp->mm;
+ 	unsigned long nentries, base, flags;
+Index: linux-work/arch/sparc64/mm/ultra.S
+===================================================================
+--- linux-work.orig/arch/sparc64/mm/ultra.S	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/arch/sparc64/mm/ultra.S	2007-07-27 18:06:44.000000000 +1000
+@@ -52,8 +52,8 @@ __flush_tlb_mm:		/* 18 insns */
+ 	nop
+ 
+ 	.align		32
+-	.globl		__flush_tlb_pending
+-__flush_tlb_pending:	/* 26 insns */
++	.globl		local_flush_tlb_pending
++local_flush_tlb_pending:	/* 26 insns */
+ 	/* %o0 = context, %o1 = nr, %o2 = vaddrs[] */
+ 	rdpr		%pstate, %g7
+ 	sllx		%o1, 3, %o1
+@@ -346,8 +346,8 @@ cheetah_patch_cachetlbops:
+ 	call		tlb_patch_one
+ 	 mov		19, %o2
+ 
+-	sethi		%hi(__flush_tlb_pending), %o0
+-	or		%o0, %lo(__flush_tlb_pending), %o0
++	sethi		%hi(local_flush_tlb_pending), %o0
++	or		%o0, %lo(local_flush_tlb_pending), %o0
+ 	sethi		%hi(__cheetah_flush_tlb_pending), %o1
+ 	or		%o1, %lo(__cheetah_flush_tlb_pending), %o1
+ 	call		tlb_patch_one
+@@ -699,8 +699,8 @@ hypervisor_patch_cachetlbops:
+ 	call		tlb_patch_one
+ 	 mov		10, %o2
+ 
+-	sethi		%hi(__flush_tlb_pending), %o0
+-	or		%o0, %lo(__flush_tlb_pending), %o0
++	sethi		%hi(local_flush_tlb_pending), %o0
++	or		%o0, %lo(local_flush_tlb_pending), %o0
+ 	sethi		%hi(__hypervisor_flush_tlb_pending), %o1
+ 	or		%o1, %lo(__hypervisor_flush_tlb_pending), %o1
+ 	call		tlb_patch_one
+Index: linux-work/include/asm-sparc64/tlb.h
+===================================================================
+--- linux-work.orig/include/asm-sparc64/tlb.h	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/include/asm-sparc64/tlb.h	2007-07-27 18:06:44.000000000 +1000
+@@ -7,62 +7,38 @@
+ #include <asm/tlbflush.h>
+ #include <asm/mmu_context.h>
+ 
+-#define TLB_BATCH_NR	192
++#define tlb_flush(mp)					\
++do {							\
++	if (!test_bit(MMF_DEAD, &mp->mm->flags))	\
++		flush_tlb_pending();			\
++} while(0)
  
 -/*
-- * This is called in munmap when we have freed up some page-table
-- * pages.  We don't need to do anything here, there's nothing special
-- * about our page-table pages.  -- paulus
+- * For UP we don't need to worry about TLB flush
+- * and page free order so much..
 - */
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--}
+-#ifdef CONFIG_SMP
+-  #define FREE_PTE_NR	506
+-  #define tlb_fast_mode(bp) ((bp)->pages_nr == ~0U)
+-#else
+-  #define FREE_PTE_NR	1
+-  #define tlb_fast_mode(bp) 1
+-#endif
++#include <asm-generic/tlb.h>
++
++#define TLB_BATCH_NR	192
+ 
+-struct mmu_gather {
++struct tlb_batch {
+ 	struct mm_struct *mm;
+-	unsigned int pages_nr;
+-	unsigned int need_flush;
+-	unsigned int fullmm;
+-	unsigned int tlb_nr;
+ 	unsigned long vaddrs[TLB_BATCH_NR];
+-	struct page *pages[FREE_PTE_NR];
++	unsigned int nr;
+ };
 -
- #endif /*__KERNEL__ */
- #endif /* _ASM_POWERPC_TLBFLUSH_H */
-Index: linux-work/include/asm-s390/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-s390/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-s390/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -14,7 +14,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
- 
- /*
-@@ -152,10 +151,4 @@ static inline void flush_tlb_range(struc
- 
- #endif
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--                                      unsigned long start, unsigned long end)
--{
--        /* S/390 does not keep any page table caches in TLB */
--}
--
- #endif /* _S390_TLBFLUSH_H */
-Index: linux-work/include/asm-sh/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-sh/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-sh/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -9,7 +9,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
- extern void local_flush_tlb_all(void);
- extern void local_flush_tlb_mm(struct mm_struct *mm);
-@@ -47,9 +46,4 @@ extern void flush_tlb_one(unsigned long 
- 
- #endif /* CONFIG_SMP */
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	/* Nothing to do */
--}
- #endif /* __ASM_SH_TLBFLUSH_H */
-Index: linux-work/include/asm-sh64/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-sh64/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-sh64/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -20,10 +20,6 @@ extern void flush_tlb_mm(struct mm_struc
- extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
- 			    unsigned long end);
- extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long page);
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--}
- 
- extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
- 
-Index: linux-work/include/asm-sparc/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-sparc/tlbflush.h	2007-07-27 10:37:48.000000000 +1000
-+++ linux-work/include/asm-sparc/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -13,7 +13,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
+-DECLARE_PER_CPU(struct mmu_gather, mmu_gathers);
++DECLARE_PER_CPU(struct tlb_batch, tlb_batch);
  
  #ifdef CONFIG_SMP
-@@ -42,11 +41,6 @@ BTFIXUPDEF_CALL(void, flush_tlb_mm, stru
- BTFIXUPDEF_CALL(void, flush_tlb_range, struct vm_area_struct *, unsigned long, unsigned long)
- BTFIXUPDEF_CALL(void, flush_tlb_page, struct vm_area_struct *, unsigned long)
+ extern void smp_flush_tlb_pending(struct mm_struct *,
+ 				  unsigned long, unsigned long *);
+ #endif
  
--// Thanks to Anton Blanchard, our pagetables became uncached in 2.4. Wee!
--// extern void flush_tlb_pgtables(struct mm_struct *mm,
--//     unsigned long start, unsigned long end);
--#define flush_tlb_pgtables(mm, start, end)	do{ }while(0)
+-extern void __flush_tlb_pending(unsigned long, unsigned long, unsigned long *);
++extern void local_flush_tlb_pending(unsigned long, unsigned long, unsigned long *);
++extern void __flush_tlb_pending(struct tlb_batch *mp);
+ extern void flush_tlb_pending(void);
+ 
+-static inline struct mmu_gather *tlb_gather_mmu(struct mm_struct *mm, unsigned int full_mm_flush)
+-{
+-	struct mmu_gather *mp = &get_cpu_var(mmu_gathers);
 -
- #define flush_tlb_all() BTFIXUP_CALL(flush_tlb_all)()
- #define flush_tlb_mm(mm) BTFIXUP_CALL(flush_tlb_mm)(mm)
- #define flush_tlb_range(vma,start,end) BTFIXUP_CALL(flush_tlb_range)(vma,start,end)
+-	BUG_ON(mp->tlb_nr);
+-
+-	mp->mm = mm;
+-	mp->pages_nr = num_online_cpus() > 1 ? 0U : ~0U;
+-	mp->fullmm = full_mm_flush;
+-
+-	return mp;
+-}
+-
+-
+-static inline void tlb_flush_mmu(struct mmu_gather *mp)
++/* for use by _switch() */
++static inline void check_flush_tlb_pending(void)
+ {
+-	if (mp->need_flush) {
+-		free_pages_and_swap_cache(mp->pages, mp->pages_nr);
+-		mp->pages_nr = 0;
+-		mp->need_flush = 0;
+-	}
+-
++	struct tlb_batch *mp = &__get_cpu_var(tlb_batch);
++	if (mp->nr)
++		__flush_tlb_pending(mp);
+ }
+ 
+ #ifdef CONFIG_SMP
+@@ -72,39 +48,10 @@ extern void smp_flush_tlb_mm(struct mm_s
+ #define do_flush_tlb_mm(mm) __flush_tlb_mm(CTX_HWBITS(mm->context), SECONDARY_CONTEXT)
+ #endif
+ 
+-static inline void tlb_finish_mmu(struct mmu_gather *mp, unsigned long start, unsigned long end)
+-{
+-	tlb_flush_mmu(mp);
+-
+-	if (mp->fullmm)
+-		mp->fullmm = 0;
+-	else
+-		flush_tlb_pending();
+-
+-	/* keep the page table cache within bounds */
+-	check_pgt_cache();
+-
+-	put_cpu_var(mmu_gathers);
+-}
+-
+-static inline void tlb_remove_page(struct mmu_gather *mp, struct page *page)
+-{
+-	if (tlb_fast_mode(mp)) {
+-		free_page_and_swap_cache(page);
+-		return;
+-	}
+-	mp->need_flush = 1;
+-	mp->pages[mp->pages_nr++] = page;
+-	if (mp->pages_nr >= FREE_PTE_NR)
+-		tlb_flush_mmu(mp);
+-}
+-
+-#define tlb_remove_tlb_entry(mp,ptep,addr) do { } while (0)
+-#define pte_free_tlb(mp,ptepage) pte_free(ptepage)
+-#define pmd_free_tlb(mp,pmdp) pmd_free(pmdp)
+-#define pud_free_tlb(tlb,pudp) __pud_free_tlb(tlb,pudp)
++#define __tlb_remove_tlb_entry(mp,ptep,addr) do { } while (0)
++#define __pte_free_tlb(mp,ptepage) pte_free(ptepage)
++#define __pmd_free_tlb(mp,pmdp) pmd_free(pmdp)
+ 
+-#define tlb_migrate_finish(mm)	do { } while (0)
+ #define tlb_start_vma(tlb, vma) do { } while (0)
+ #define tlb_end_vma(tlb, vma)	do { } while (0)
+ 
 Index: linux-work/include/asm-sparc64/tlbflush.h
 ===================================================================
---- linux-work.orig/include/asm-sparc64/tlbflush.h	2007-07-27 10:37:49.000000000 +1000
-+++ linux-work/include/asm-sparc64/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -41,11 +41,4 @@ do {	flush_tsb_kernel_range(start,end); 
+--- linux-work.orig/include/asm-sparc64/tlbflush.h	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/include/asm-sparc64/tlbflush.h	2007-07-27 18:06:44.000000000 +1000
+@@ -5,9 +5,9 @@
+ #include <asm/mmu_context.h>
  
- #endif /* ! CONFIG_SMP */
+ /* TSB flush operations. */
+-struct mmu_gather;
++struct tlb_batch;
+ extern void flush_tsb_kernel_range(unsigned long start, unsigned long end);
+-extern void flush_tsb_user(struct mmu_gather *mp);
++extern void flush_tsb_user(struct tlb_batch *mp);
  
--static inline void flush_tlb_pgtables(struct mm_struct *mm, unsigned long start, unsigned long end)
--{
--	/* We don't use virtual page tables for TLB miss processing
--	 * any more.  Nowadays we use the TSB.
--	 */
--}
--
- #endif /* _SPARC64_TLBFLUSH_H */
-Index: linux-work/include/asm-um/tlbflush.h
+ /* TLB flush operations. */
+ 
+Index: linux-work/arch/sparc64/kernel/smp.c
 ===================================================================
---- linux-work.orig/include/asm-um/tlbflush.h	2007-07-27 10:37:49.000000000 +1000
-+++ linux-work/include/asm-um/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -18,7 +18,6 @@
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_kernel_vm() flushes the kernel vm area
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  */
+--- linux-work.orig/arch/sparc64/kernel/smp.c	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/arch/sparc64/kernel/smp.c	2007-07-27 18:06:44.000000000 +1000
+@@ -1142,7 +1142,7 @@ void smp_flush_tlb_pending(struct mm_str
+ 				      ctx, nr, (unsigned long) vaddrs,
+ 				      mm->cpu_vm_mask);
  
- extern void flush_tlb_all(void);
-@@ -42,9 +41,4 @@ extern void flush_tlb_kernel_vm(void);
- extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
- extern void __flush_tlb_one(unsigned long addr);
+-	__flush_tlb_pending(ctx, nr, vaddrs);
++	local_flush_tlb_pending(ctx, nr, vaddrs);
  
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--}
--
- #endif
-Index: linux-work/include/asm-v850/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-v850/tlbflush.h	2007-07-27 10:37:49.000000000 +1000
-+++ linux-work/include/asm-v850/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -61,10 +61,4 @@ static inline void flush_tlb_kernel_page
- 	BUG ();
+ 	put_cpu();
  }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	BUG ();
--}
--
- #endif /* __V850_TLBFLUSH_H__ */
-Index: linux-work/include/asm-x86_64/tlbflush.h
+Index: linux-work/include/asm-sparc64/system.h
 ===================================================================
---- linux-work.orig/include/asm-x86_64/tlbflush.h	2007-07-27 10:37:49.000000000 +1000
-+++ linux-work/include/asm-x86_64/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -31,7 +31,6 @@ static inline void __flush_tlb_all(void)
-  *  - flush_tlb_page(vma, vmaddr) flushes one page
-  *  - flush_tlb_range(vma, start, end) flushes a range of pages
-  *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
-- *  - flush_tlb_pgtables(mm, start, end) flushes a range of page tables
-  *
-  * x86-64 can only flush individual pages or full VMs. For a range flush
-  * we always do the full VM. Might be worth trying if for a small
-@@ -98,12 +97,4 @@ static inline void flush_tlb_kernel_rang
- 	flush_tlb_all();
- }
- 
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--				      unsigned long start, unsigned long end)
--{
--	/* x86_64 does not keep any page table caches in a software TLB.
--	   The CPUs do in their hardware TLBs, but they are handled
--	   by the normal TLB flushing algorithms. */
--}
--
- #endif /* _X8664_TLBFLUSH_H */
-Index: linux-work/include/asm-xtensa/tlbflush.h
-===================================================================
---- linux-work.orig/include/asm-xtensa/tlbflush.h	2007-07-27 10:37:49.000000000 +1000
-+++ linux-work/include/asm-xtensa/tlbflush.h	2007-07-27 10:38:23.000000000 +1000
-@@ -41,17 +41,6 @@ extern void flush_tlb_range(struct vm_ar
- 
- #define flush_tlb_kernel_range(start,end) flush_tlb_all()
- 
--
--/* This is calld in munmap when we have freed up some page-table pages.
-- * We don't need to do anything here, there's nothing special about our
-- * page-table pages.
-- */
--
--static inline void flush_tlb_pgtables(struct mm_struct *mm,
--                                      unsigned long start, unsigned long end)
--{
--}
--
- /* TLB operations. */
- 
- static inline unsigned long itlb_probe(unsigned long addr)
-Index: linux-work/mm/memory.c
-===================================================================
---- linux-work.orig/mm/memory.c	2007-07-27 10:37:49.000000000 +1000
-+++ linux-work/mm/memory.c	2007-07-27 10:38:23.000000000 +1000
-@@ -259,9 +259,6 @@ void free_pgd_range(struct mmu_gather **
- 			continue;
- 		free_pud_range(*tlb, pgd, addr, next, floor, ceiling);
- 	} while (pgd++, addr = next, addr != end);
--
--	if (!(*tlb)->fullmm)
--		flush_tlb_pgtables((*tlb)->mm, start, end);
- }
- 
- void free_pgtables(struct mmu_gather **tlb, struct vm_area_struct *vma,
-Index: linux-work/Documentation/cachetlb.txt
-===================================================================
---- linux-work.orig/Documentation/cachetlb.txt	2007-07-27 10:38:44.000000000 +1000
-+++ linux-work/Documentation/cachetlb.txt	2007-07-27 10:39:00.000000000 +1000
-@@ -87,30 +87,7 @@ changes occur:
- 
- 	This is used primarily during fault processing.
- 
--5) void flush_tlb_pgtables(struct mm_struct *mm,
--			   unsigned long start, unsigned long end)
--
--   The software page tables for address space 'mm' for virtual
--   addresses in the range 'start' to 'end-1' are being torn down.
--
--   Some platforms cache the lowest level of the software page tables
--   in a linear virtually mapped array, to make TLB miss processing
--   more efficient.  On such platforms, since the TLB is caching the
--   software page table structure, it needs to be flushed when parts
--   of the software page table tree are unlinked/freed.
--
--   Sparc64 is one example of a platform which does this.
--
--   Usually, when munmap()'ing an area of user virtual address
--   space, the kernel leaves the page table parts around and just
--   marks the individual pte's as invalid.  However, if very large
--   portions of the address space are unmapped, the kernel frees up
--   those portions of the software page tables to prevent potential
--   excessive kernel memory usage caused by erratic mmap/mmunmap
--   sequences.  It is at these times that flush_tlb_pgtables will
--   be invoked.
--
--6) void update_mmu_cache(struct vm_area_struct *vma,
-+5) void update_mmu_cache(struct vm_area_struct *vma,
- 			 unsigned long address, pte_t pte)
- 
- 	At the end of every page fault, this routine is invoked to
-@@ -123,7 +100,7 @@ changes occur:
- 	translations for software managed TLB configurations.
- 	The sparc64 port currently does this.
- 
--7) void tlb_migrate_finish(struct mm_struct *mm)
-+6) void tlb_migrate_finish(struct mm_struct *mm)
- 
- 	This interface is called at the end of an explicit
- 	process migration. This interface provides a hook
-@@ -133,7 +110,7 @@ changes occur:
- 	The ia64 sn2 platform is one example of a platform
- 	that uses this interface.
- 
--8) void lazy_mmu_prot_update(pte_t pte)
-+7) void lazy_mmu_prot_update(pte_t pte)
- 	This interface is called whenever the protection on
- 	any user PTEs change.  This interface provides a notification
- 	to architecture specific code to take appropriate action.
+--- linux-work.orig/include/asm-sparc64/system.h	2007-07-27 18:06:08.000000000 +1000
++++ linux-work/include/asm-sparc64/system.h	2007-07-27 18:06:44.000000000 +1000
+@@ -151,7 +151,7 @@ do {	if (test_thread_flag(TIF_PERFCTR)) 
+ 		current_thread_info()->kernel_cntd0 += (unsigned int)(__tmp);\
+ 		current_thread_info()->kernel_cntd1 += ((__tmp) >> 32);	\
+ 	}								\
+-	flush_tlb_pending();						\
++	check_flush_tlb_pending();					\
+ 	save_and_clear_fpu();						\
+ 	/* If you are tempted to conditionalize the following */	\
+ 	/* so that ASI is only written if it changes, think again. */	\
