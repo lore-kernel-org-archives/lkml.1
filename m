@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbXHGKdm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761117AbXHGKkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762011AbXHGKdm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 06:33:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757855AbXHGKde
+	id S1761117AbXHGKkz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 06:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXHGKkr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 06:33:34 -0400
-Received: from sccrmhc15.comcast.net ([63.240.77.85]:55704 "EHLO
-	sccrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755794AbXHGKdd (ORCPT
+	Tue, 7 Aug 2007 06:40:47 -0400
+Received: from rv-out-0910.google.com ([209.85.198.190]:7368 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755653AbXHGKkq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 06:33:33 -0400
+	Tue, 7 Aug 2007 06:40:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Ji9mOzlC0WANClCMGspOF0Mnt7HGHtVQnQxiWgCbtnSjU3fQJV/WQvDqDnnVLaObdvL0ru0mXZLESzhOfnN5mC+Vsn9imFpzYBOa4HiRovN3RgbkPk+OAt+ncvWAZ6z/qBamGnqB0C+IY4OVOvOrTBZYPaADga8dstBADKbvz4s=
+Message-ID: <1a297b360708070340i1096a64bp3390aa7272ce9bba@mail.gmail.com>
+Date: Tue, 7 Aug 2007 14:40:45 +0400
+From: "Manu Abraham" <abraham.manu@gmail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH] msleep() with hrtimers
+Cc: "Roman Zippel" <zippel@linux-m68k.org>, "Jonathan Corbet" <corbet@lwn.net>,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       akpm@linux-foundation.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1186415621.2706.4.camel@laptopd505.fenrus.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18104.19062.720829.179955@gargle.gargle.HOWL>
-Date: Tue, 7 Aug 2007 06:33:26 -0400
-To: Christopher Fowler <cfowler@outpostsentinel.com>
-Cc: Kevin K <k_krieser@sbcglobal.net>, linux-ppp@vger.kernel.org,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: sending raw packets via PPP
-In-Reply-To: Christopher Fowler's message of 6 August 2007 20:32:29
-References: <35B9865F-38B4-4603-A2B7-F4ABACE5520F@sbcglobal.net>
-	<18103.44797.529894.786033@gargle.gargle.HOWL>
-	<E210D1E9-9265-48EE-91BB-E6027547F01E@sbcglobal.net>
-	<1186446749.29150.40.camel@shuttle.linxdev.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-From: James Carlson <carlsonj@workingcode.com>
+Content-Disposition: inline
+References: <15327.1186166232@lwn.net>
+	 <1186185229.3153.11.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708040345530.1817@scrub.home>
+	 <1186255149.2777.3.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060150270.1817@scrub.home>
+	 <1186360983.2697.8.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060257010.1817@scrub.home>
+	 <1186378798.2697.10.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708061159370.1817@scrub.home>
+	 <1186415621.2706.4.camel@laptopd505.fenrus.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christopher Fowler writes:
-> On Mon, 2007-08-06 at 19:24 -0500, Kevin K wrote:
-> > The DHCP source code therefore wants  
-> > to send raw packets (SOCKET_PACKET) (down to the ethernet addressing  
-> > info).  
-> 
-> I can imagine that would be the case.  The box requesting the DHCP
-> address has no IP address.
+Hi Arjan,
 
-That's not always true.  DHCP works fine on systems that already have
-IP addresses -- address leasing is an _optional_ part of the protocol.
-You can use DHCPINFORM to retrieve configuration parameters alone if
-you already have an address.
+On 8/6/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Mon, 2007-08-06 at 12:03 +0200, Roman Zippel wrote:
+> > Hi,
+> >
+> > On Sun, 5 Aug 2007, Arjan van de Ven wrote:
+> >
+> > > > There's no problem to provide a high resolution sleep, but there is also
+> > > > no reason to mess with msleep, don't fix what ain't broken...
+> > >
+> > > John Corbet provided the patch because he had a problem with the current
+> > > msleep... in that it didn't provide as good a common case as he
+> > > wanted... so I think your statement is wrong ;)
+> >
+> > Only under the assumptation, that msleep _must_ be "fixed" for all other
+> > current users too.
+> > Give users a choice to use msleep or nanosleep, how do you know what's
+> > "best" for them?
+>
+> do you have any actual technical objections, or do you just hate
+> hrtimers in general?
+>
+> I really don't see what you hate so much about making the msleep()
+> implementation provide a more precise (typical sleep time of 1msec
+> rather than 20msec) behavior than the current one. Trying to distract
+> that by proposing a very different API (working on a totally different
+> time unit, while a lot of kernel users are using miliseconds; don't get
+> me wrong, a usleep() and nsleep() might be useful if there's users that
+> want to sleep in such times) is just trying to distract the issue.
+>
+> So, let me ask a direct question: What do you think is specifically
+> wrong about changing the msleep() implementation as is done here? The
+> behavior is clearly an improvement, so what is your objection on the
+> flipside?
+>
 
-Note that address assignment is technically optional in PPP (IPCP) as
-well, so it would be possible to refuse IPCP addresses and then use
-DHCP to acquire the needed information.  It'd be strange to do, though.
+I think there could be a flipside based on what Roman said, but it is
+my guess only.
+currently wherever msleep is used now it sleeps with an ambiguous amount.
 
--- 
-James Carlson         42.703N 71.076W         <carlsonj@workingcode.com>
+Eventhough the ambiguous sleep period is not appreciable, fixing
+msleep might have a bad side effect. ie, drivers which would be
+sleeping for a specified period would sleep less, just as compared to
+the more precise sleep.
+
+I think, it would be hard to fix, such breakages. Maybe a newer sleep
+method would be much better, such that it doesn't cause any breakage.
