@@ -1,70 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbXHGKIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760357AbXHGKNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbXHGKIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 06:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756330AbXHGKIh
+	id S1760357AbXHGKNf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 06:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbXHGKN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 06:08:37 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:50203 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753384AbXHGKIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 06:08:36 -0400
-Date: Tue, 7 Aug 2007 12:09:05 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070807100905.GC3223@ff.dom.local>
-References: <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <46B75DD4.5080709@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B75DD4.5080709@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 7 Aug 2007 06:13:26 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:34635 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755319AbXHGKNZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 06:13:25 -0400
+To: trond.myklebust@fys.uio.no
+CC: miklos@szeredi.hu, jlayton@redhat.com, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, mikulas@artax.karlin.mff.cuni.cz,
+       zippel@linux-m68k.org, joel.becker@oracle.com, wli@holomorphy.com,
+       dhowells@redhat.com, bfennema@falcon.csc.calpoly.edu
+In-reply-to: <E1III7U-0006ju-00@dorka.pomaz.szeredi.hu> (message from Miklos
+	Szeredi on Tue, 07 Aug 2007 08:00:40 +0200)
+Subject: Re: [fuse-devel] [PATCH 01/25] VFS: move attr_kill logic from
+	notify_change into helper function
+References: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com>
+	 <E1II6cM-0004yj-00@dorka.pomaz.szeredi.hu>
+	 <20070806141333.0f54ab17.jlayton@redhat.com>
+	 <E1II7JR-0005BN-00@dorka.pomaz.szeredi.hu>
+	 <1186427063.6616.59.camel@localhost>
+	 <E1II8Nw-0005XH-00@dorka.pomaz.szeredi.hu> <1186435419.6616.136.camel@localhost> <E1III7U-0006ju-00@dorka.pomaz.szeredi.hu>
+Message-Id: <E1IILwa-0007Eq-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 07 Aug 2007 12:05:40 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 01:43:48PM -0400, Chuck Ebbert wrote:
-> On 08/06/2007 03:03 AM, Ingo Molnar wrote:
-> > 
-> > But, since level types don't need this retriggers too much I think
-> > this "don't mask interrupts by default" idea should be rethinked:
-> > is there enough gain to risk such hard to diagnose errors?
-> >   
-> > 
-> 
-> I reverted those masking changes in Fedora and the baffling problem
-> with 3Com 3C905 network adapters went away.
-> 
-> Before, they would print:
-> 
-> eth0: transmit timed out, tx_status 00 status e601.
->   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
-> eth0: Interrupt posted but not delivered -- IRQ blocked by another device?
->   Flags; bus-master 1, dirty 295757(13) current 295757(13)
->   Transmit list 00000000 vs. f7150a20.
->   0: @f7150200  length 80000070 status 0c010070
->   1: @f71502a0  length 80000070 status 0c010070
->   2: @f7150340  length 8000005c status 0c01005c
-> 
-> Now they just work, apparently...
-> 
-> So why not just revert the change?
-> 
+There's another way to deal with this in NFS and fuse, without having
+to change the API:
 
-Ingo has written about such possibility. But, it would be good
-to know which precisely place is to blame, as well. Since this
-diagnosing takes time, I think Chuck is right, and maybe at least
-this temporary patch for resend.c without this warning, should
-be recomended for stables (2.6.21 and 2.6.22)?
+ - remove suid/sgid bits from i_mode, when refreshing the inode attributes
+ - store the removed bits (or the original mode)  in the fs' inode strucure
+ - in ->getattr() restore the original mode into the returned stat
 
-Jarek P.
+This way the VFS believes, that the inode does not in fact have the
+suid/sgid bits and so won't call ->setattr() unnecessarily.
+
+I've tested a similar change in fuse for working around unneeded check
+for the directory sticky bit.
+
+Yes, this is cheating the interface, but there's a deeper level where
+it makes sense: the VFS should not be checking _any_ inode attribute
+besides the file type, since they can change at any moment, and the
+VFS might be using stale data without having first properly
+revalidated it.
+
+Miklos
