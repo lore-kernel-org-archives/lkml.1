@@ -1,100 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbXHGIha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbXHGIlB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758573AbXHGIha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbXHGIhU
+	id S1758348AbXHGIlB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:41:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbXHGIkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:37:20 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:15992 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756242AbXHGIhR (ORCPT
+	Tue, 7 Aug 2007 04:40:51 -0400
+Received: from cm135.gamma145.maxonline.com.sg ([202.156.145.135]:59486 "EHLO
+	kerndev.sin.redhat.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753724AbXHGIku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:37:17 -0400
-Message-ID: <46B82F2B.7010704@interia.pl>
-Date: Tue, 07 Aug 2007 10:36:59 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070802)
+	Tue, 7 Aug 2007 04:40:50 -0400
+Date: Tue, 7 Aug 2007 16:40:48 +0800
+From: Eugene Teo <eugeneteo@kernel.sg>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: [ALSA] seq: resource leak fix and various code cleanups
+Message-ID: <20070807084048.GA5205@kernel.sg>
+Reply-To: Eugene Teo <eugeneteo@kernel.sg>
 MIME-Version: 1.0
-To: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
-Cc: Andreas Mohr <andi@lisas.de>, David Edwards <powertop@dpe.lusars.net>,
-       power@bughost.org, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: HPET force-enable investigations on Via VT8235
-References: <20070806204249.GA25957@rhlx01.hs-esslingen.de>	<46B79512.6090704@interia.pl> <20070806235752.1e6c5653@laptop.hypervisor.org>
-In-Reply-To: <20070806235752.1e6c5653@laptop.hypervisor.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-EMID: dd00cacc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> RB> VT8235 does *NOT* have a HPET(*). Only part which has HPET is VT8237. It
-> RB> is device 00:17.0 too, but only 1106:3227 has HPET enable and memory
-> RB> base registers. VT8235 one and only feature which doesn't have driver
-> RB> yet seems to be hardware watchdog.
-> RB> (*) Datasheet revision 2.03 March 16, 2005
-> 
-> We have an Asrock K7VT4A+ board with VT8235 southbridge in our lab and it
-> does have an HPET. Just because the datasheet does not document HPET does
-> not mean it is not implemented.
-> 
-> My guess is that newer revisions of VT8235 have HPET whereas older revisions
-> do not. I'll get an lspci dump from our box tomorrow.
-Indeed datasheet lies. I have VIA EPIA M10000 Rev. B motherboard.
-% uname -r
-2.6.23-rc1-hrt1
+This patch fixes:
+1) a resource leak (CID: 1817)
+2) various code cleanups
 
-% dmesg | grep -i hpet
-Force enabled HPET at base address 0xfed00000
-hpet clockevent registered
-hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-hpet0: 3 32-bit timers, 14318180 Hz
-Time: hpet clocksource has been installed.
+Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
+---
+ sound/core/seq/oss/seq_oss_init.c   |   29 ++++++++++++++++++-----------
+ sound/core/seq/oss/seq_oss_writeq.c |    6 ++++--
+ 2 files changed, 22 insertions(+), 13 deletions(-)
 
-% cat /proc/timer_list
-[...]
-Tick Device: mode:     1
-Clock Event Device: hpet
- max_delta_ns:   2147483647
- min_delta_ns:   3352
- mult:           61496110
- shift:          32
- mode:           3
- next_event:     672664000000 nsecs
- set_next_event: hpet_legacy_next_event
- set_mode:       hpet_legacy_set_mode
- event_handler:  hrtimer_interrupt
-
-00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
-	Subsystem: VIA Technologies, Inc. Unknown device aa01
-	Flags: bus master, stepping, medium devsel, latency 0
-	Capabilities: [c0] Power Management version 2
-00: 06 11 77 31 87 00 10 02 00 00 01 06 00 00 80 00
-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-20: 00 00 00 00 00 00 00 00 00 00 00 00 06 11 01 aa
-30: 00 00 00 00 c0 00 00 00 00 00 00 00 00 00 00 00
-40: 45 00 f0 00 00 00 00 00 0c 20 00 00 44 00 0a 08
-50: 81 1d 09 00 00 b0 a5 30 03 00 00 00 00 00 00 00
-60: 00 00 00 00 00 00 00 04 80 00 d0 fe 00 00 00 00
-70: 06 11 01 aa 00 00 00 00 00 00 00 00 20 00 00 00
-80: 20 84 59 00 b2 30 00 00 01 04 00 00 00 18 00 00
-90: 00 1f 50 88 b0 c0 00 00 00 97 00 00 00 00 00 00
-a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-c0: 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00
-d0: 01 05 01 00 00 00 00 00 00 00 00 00 00 00 00 00
-e0: 00 00 00 00 14 88 00 00 00 00 00 00 00 00 00 00
-f0: 00 00 00 00 00 00 16 00 00 00 00 00 01 00 00 00
-
-> Cheers,
-> 
-> 	- Udo
-Regards
-Rafał
-
-
-----------------------------------------------------------------------
-Plaza plazy nierowna
-Kliknij
->>>http://link.interia.pl/f1af7
+diff --git a/sound/core/seq/oss/seq_oss_init.c b/sound/core/seq/oss/seq_oss_init.c
+index ca5a2ed..c9b95c3 100644
+--- a/sound/core/seq/oss/seq_oss_init.c
++++ b/sound/core/seq/oss/seq_oss_init.c
+@@ -176,7 +176,8 @@ snd_seq_oss_open(struct file *file, int level)
+ 	int i, rc;
+ 	struct seq_oss_devinfo *dp;
+ 
+-	if ((dp = kzalloc(sizeof(*dp), GFP_KERNEL)) == NULL) {
++	dp = kzalloc(sizeof(*dp), GFP_KERNEL);
++	if (dp == NULL) {
+ 		snd_printk(KERN_ERR "can't malloc device info\n");
+ 		return -ENOMEM;
+ 	}
+@@ -188,8 +189,8 @@ snd_seq_oss_open(struct file *file, int level)
+ 	}
+ 	if (i >= SNDRV_SEQ_OSS_MAX_CLIENTS) {
+ 		snd_printk(KERN_ERR "too many applications\n");
+-		kfree(dp);
+-		return -ENOMEM;
++		rc = -ENOMEM;
++		goto _error;
+ 	}
+ 
+ 	dp->index = i;
+@@ -211,14 +212,16 @@ snd_seq_oss_open(struct file *file, int level)
+ 
+ 	/* create port */
+ 	debug_printk(("create new port\n"));
+-	if ((rc = create_port(dp)) < 0) {
++	rc = create_port(dp);
++	if (rc < 0) {
+ 		snd_printk(KERN_ERR "can't create port\n");
+ 		goto _error;
+ 	}
+ 
+ 	/* allocate queue */
+ 	debug_printk(("allocate queue\n"));
+-	if ((rc = alloc_seq_queue(dp)) < 0)
++	rc = alloc_seq_queue(dp);
++	if (rc < 0)
+ 		goto _error;
+ 
+ 	/* set address */
+@@ -235,7 +238,8 @@ snd_seq_oss_open(struct file *file, int level)
+ 	/* initialize read queue */
+ 	debug_printk(("initialize read queue\n"));
+ 	if (is_read_mode(dp->file_mode)) {
+-		if ((dp->readq = snd_seq_oss_readq_new(dp, maxqlen)) == NULL) {
++		dp->readq = snd_seq_oss_readq_new(dp, maxqlen);
++		if (dp->readq == NULL) {
+ 			rc = -ENOMEM;
+ 			goto _error;
+ 		}
+@@ -253,7 +257,8 @@ snd_seq_oss_open(struct file *file, int level)
+ 
+ 	/* initialize timer */
+ 	debug_printk(("initialize timer\n"));
+-	if ((dp->timer = snd_seq_oss_timer_new(dp)) == NULL) {
++	dp->timer = snd_seq_oss_timer_new(dp);
++	if (dp->timer == NULL) {
+ 		snd_printk(KERN_ERR "can't alloc timer\n");
+ 		rc = -ENOMEM;
+ 		goto _error;
+@@ -276,11 +281,13 @@ snd_seq_oss_open(struct file *file, int level)
+ 	return 0;
+ 
+  _error:
+-	snd_seq_oss_synth_cleanup(dp);
+-	snd_seq_oss_midi_cleanup(dp);
+-	i = dp->queue;
++	snd_seq_oss_writeq_delete(dp->writeq);
++	snd_seq_oss_readq_delete(dp->readq);
++	delete_seq_queue(dp->queue);
+ 	delete_port(dp);
+-	delete_seq_queue(i);
++	snd_seq_oss_midi_cleanup(dp);
++	snd_seq_oss_synth_cleanup(dp);
++	kfree(dp);
+ 
+ 	return rc;
+ }
+diff --git a/sound/core/seq/oss/seq_oss_writeq.c b/sound/core/seq/oss/seq_oss_writeq.c
+index 5c84956..2174248 100644
+--- a/sound/core/seq/oss/seq_oss_writeq.c
++++ b/sound/core/seq/oss/seq_oss_writeq.c
+@@ -63,8 +63,10 @@ snd_seq_oss_writeq_new(struct seq_oss_devinfo *dp, int maxlen)
+ void
+ snd_seq_oss_writeq_delete(struct seq_oss_writeq *q)
+ {
+-	snd_seq_oss_writeq_clear(q);	/* to be sure */
+-	kfree(q);
++	if (q) {
++		snd_seq_oss_writeq_clear(q);	/* to be sure */
++		kfree(q);
++	}
+ }
+ 
+ 
 
