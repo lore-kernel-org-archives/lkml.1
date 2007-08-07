@@ -1,195 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936320AbXHGVfE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937593AbXHGVfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936320AbXHGVfE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:35:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936527AbXHGVJw
+	id S937593AbXHGVfj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936597AbXHGVKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:09:52 -0400
-Received: from pat.uio.no ([129.240.10.15]:38381 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936612AbXHGVJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:09:50 -0400
-Subject: Re: [NFS] 2.6.23-rc1-mm2
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Oleg Nesterov <oleg@tv-sign.ru>, Neil Brown <neilb@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>,
-       Neil Brown <neilb@suse.de>, Johannes Berg <johannes@sipsolutions.net>,
-       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20070803172137.GA3783@tv-sign.ru>
-References: <20070731230932.a9459617.akpm@linux-foundation.org>
-	 <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de>
-	 <20070803093830.39852a01.akpm@linux-foundation.org>
-	 <1186160608.7255.10.camel@localhost>  <20070803172137.GA3783@tv-sign.ru>
-Content-Type: multipart/mixed; boundary="=-DhVLaiptBvrBCxg63kbS"
-Date: Tue, 07 Aug 2007 17:08:48 -0400
-Message-Id: <1186520929.6625.12.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.108)
-X-UiO-Scanned: 1AA6EC4B02935CC8FE0ECA8A7B24841BA1EBC902
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 80 total 3141315 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Tue, 7 Aug 2007 17:10:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55240 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936672AbXHGVKm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:10:42 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: [PATCH 01/25] sysfs: Move all of inode initialization into sysfs_init_inode
+References: <11860582832964-git-send-email-htejun@gmail.com>
+	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
+Date: Tue, 07 Aug 2007 15:08:07 -0600
+In-Reply-To: <m1643rkqb6.fsf@ebiederm.dsl.xmission.com> (Eric W. Biederman's
+	message of "Tue, 07 Aug 2007 15:06:21 -0600")
+Message-ID: <m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-DhVLaiptBvrBCxg63kbS
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-
-On Fri, 2007-08-03 at 21:21 +0400, Oleg Nesterov wrote:
-> On 08/03, Trond Myklebust wrote:
-> > I'll have a look at this. I suspect that most if not all of our calls to
-> > run_workqueue()/flush_scheduled_work() can now be replaced by more
-> > targeted calls to cancel_work_sync() and cancel_delayed_work_sync().
-> 
-> Yes, please, if possible.
-
-All the NFS and SUNRPC cases appear to be trivial. IOW: the only reason
-for the flush_workqueue()/flush_scheduled_work() calls was to ensure
-that the cancel_work()/cancel_delayed_work() calls preceding them have
-completed. Nevertheless I've split the conversion into two patches,
-since one touches only the NFS code, whereas the other touches the
-SUNRPC client and server code.
-
-The two patches have been tested, and appear to work...
-
-Trond
-
-
-
---=-DhVLaiptBvrBCxg63kbS
-Content-Disposition: inline; filename=linux-2.6.23-007-nfs_dont_call_flush_workqueue.dif
-Content-Type: message/rfc822; name=linux-2.6.23-007-nfs_dont_call_flush_workqueue.dif
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Tue, 7 Aug 2007 15:28:33 -0400
-NFS: Replace flush_scheduled_work with cancel_work_sync() and friends
-Subject: No Subject
-Message-Id: <1186520901.6625.10.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-This will avoid deadlocks of the form:
-
-stack backtrace:
- [<c0104fda>] show_trace_log_lvl+0x1a/0x30
- [<c0105c02>] show_trace+0x12/0x20
- [<c0105d15>] dump_stack+0x15/0x20
- [<c013ee42>] __lock_acquire+0xc22/0x1030
- [<c013f2b1>] lock_acquire+0x61/0x80
- [<c012edd9>] flush_workqueue+0x49/0x70
- [<c012ee0d>] flush_scheduled_work+0xd/0x10
- [<dcf55c0c>] nfs_release_automount_timer+0x2c/0x30 [nfs]
- [<dcf45d8e>] nfs_free_server+0x9e/0xd0 [nfs]
- [<dcf4e626>] nfs_kill_super+0x16/0x20 [nfs]
- [<c017b38d>] deactivate_super+0x7d/0xa0
- [<c018f94b>] mntput_no_expire+0x4b/0x80
- [<c018fd94>] expire_mount_list+0xe4/0x140
- [<c0191219>] mark_mounts_for_expiry+0x99/0xb0
- [<dcf55d1d>] nfs_expire_automounts+0xd/0x40 [nfs]
- [<c012e61b>] run_workqueue+0x12b/0x1e0
- [<c012f05b>] worker_thread+0x9b/0x100
- [<c0131c72>] kthread+0x42/0x70
- [<c0104c0f>] kernel_thread_helper+0x7/0x18
- =======================
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
 ---
+ fs/sysfs/dir.c   |   37 -------------------------------------
+ fs/sysfs/inode.c |   48 +++++++++++++++++++++++++++++++++++++++++++++---
+ fs/sysfs/mount.c |    5 -----
+ 3 files changed, 45 insertions(+), 45 deletions(-)
 
- fs/nfs/namespace.c  |    6 ++----
- fs/nfs/nfs4renewd.c |    5 ++---
- 2 files changed, 4 insertions(+), 7 deletions(-)
-
-diff --git a/fs/nfs/namespace.c b/fs/nfs/namespace.c
-index 7f86e65..aea76d0 100644
---- a/fs/nfs/namespace.c
-+++ b/fs/nfs/namespace.c
-@@ -175,10 +175,8 @@ static void nfs_expire_automounts(struct work_struct *work)
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 3e5acc4..ae06f4a 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -746,24 +746,12 @@ int sysfs_create_dir(struct kobject * kobj)
+ 	return error;
+ }
  
- void nfs_release_automount_timer(void)
+-static int sysfs_count_nlink(struct sysfs_dirent *sd)
+-{
+-	struct sysfs_dirent *child;
+-	int nr = 0;
+-
+-	for (child = sd->s_children; child; child = child->s_sibling)
+-		if (sysfs_type(child) == SYSFS_DIR)
+-			nr++;
+-	return nr + 2;
+-}
+-
+ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+ 				struct nameidata *nd)
  {
--	if (list_empty(&nfs_automount_list)) {
--		cancel_delayed_work(&nfs_automount_task);
--		flush_scheduled_work();
+ 	struct dentry *ret = NULL;
+ 	struct sysfs_dirent *parent_sd = dentry->d_parent->d_fsdata;
+ 	struct sysfs_dirent *sd;
+-	struct bin_attribute *bin_attr;
+ 	struct inode *inode;
+ 
+ 	mutex_lock(&sysfs_mutex);
+@@ -783,31 +771,6 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+ 		goto out_unlock;
+ 	}
+ 
+-	if (inode->i_state & I_NEW) {
+-		/* initialize inode according to type */
+-		switch (sysfs_type(sd)) {
+-		case SYSFS_DIR:
+-			inode->i_op = &sysfs_dir_inode_operations;
+-			inode->i_fop = &sysfs_dir_operations;
+-			inode->i_nlink = sysfs_count_nlink(sd);
+-			break;
+-		case SYSFS_KOBJ_ATTR:
+-			inode->i_size = PAGE_SIZE;
+-			inode->i_fop = &sysfs_file_operations;
+-			break;
+-		case SYSFS_KOBJ_BIN_ATTR:
+-			bin_attr = sd->s_elem.bin_attr.bin_attr;
+-			inode->i_size = bin_attr->size;
+-			inode->i_fop = &bin_fops;
+-			break;
+-		case SYSFS_KOBJ_LINK:
+-			inode->i_op = &sysfs_symlink_inode_operations;
+-			break;
+-		default:
+-			BUG();
+-		}
 -	}
-+	if (list_empty(&nfs_automount_list))
-+		cancel_delayed_work_sync(&nfs_automount_task);
- }
+-
+ 	sysfs_instantiate(dentry, inode);
+ 	sysfs_attach_dentry(sd, dentry);
  
- /*
-diff --git a/fs/nfs/nfs4renewd.c b/fs/nfs/nfs4renewd.c
-index 0505ca1..3ea352d 100644
---- a/fs/nfs/nfs4renewd.c
-+++ b/fs/nfs/nfs4renewd.c
-@@ -127,16 +127,15 @@ nfs4_schedule_state_renewal(struct nfs_client *clp)
- void
- nfs4_renewd_prepare_shutdown(struct nfs_server *server)
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index e74224e..aefc346 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -123,8 +123,22 @@ static inline void set_inode_attr(struct inode * inode, struct iattr * iattr)
+  */
+ static struct lock_class_key sysfs_inode_imutex_key;
+ 
++static int sysfs_count_nlink(struct sysfs_dirent *sd)
++{
++	struct sysfs_dirent *child;
++	int nr = 0;
++
++	for (child = sd->s_children; child; child = child->s_sibling)
++		if (sysfs_type(child) == SYSFS_DIR)
++			nr++;
++
++	return nr + 2;
++}
++
+ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
  {
--	flush_scheduled_work();
-+	cancel_delayed_work(&server->nfs_client->cl_renewd);
++	struct bin_attribute *bin_attr;
++
+ 	inode->i_blocks = 0;
+ 	inode->i_mapping->a_ops = &sysfs_aops;
+ 	inode->i_mapping->backing_dev_info = &sysfs_backing_dev_info;
+@@ -140,6 +154,37 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ 		set_inode_attr(inode, sd->s_iattr);
+ 	} else
+ 		set_default_inode_attr(inode, sd->s_mode);
++
++
++	/* initialize inode according to type */
++	switch (sysfs_type(sd)) {
++	case SYSFS_ROOT:
++		inode->i_op = &sysfs_dir_inode_operations;
++		inode->i_fop = &sysfs_dir_operations;
++		inc_nlink(inode); /* directory, account for "." */
++		break;
++	case SYSFS_DIR:
++		inode->i_op = &sysfs_dir_inode_operations;
++		inode->i_fop = &sysfs_dir_operations;
++		inode->i_nlink = sysfs_count_nlink(sd);
++		break;
++	case SYSFS_KOBJ_ATTR:
++		inode->i_size = PAGE_SIZE;
++		inode->i_fop = &sysfs_file_operations;
++		break;
++	case SYSFS_KOBJ_BIN_ATTR:
++		bin_attr = sd->s_elem.bin_attr.bin_attr;
++		inode->i_size = bin_attr->size;
++		inode->i_fop = &bin_fops;
++		break;
++	case SYSFS_KOBJ_LINK:
++		inode->i_op = &sysfs_symlink_inode_operations;
++		break;
++	default:
++		BUG();
++	}
++
++	unlock_new_inode(inode);
  }
  
- void
- nfs4_kill_renewd(struct nfs_client *clp)
+ /**
+@@ -181,9 +226,6 @@ void sysfs_instantiate(struct dentry *dentry, struct inode *inode)
  {
- 	down_read(&clp->cl_sem);
--	cancel_delayed_work(&clp->cl_renewd);
-+	cancel_delayed_work_sync(&clp->cl_renewd);
- 	up_read(&clp->cl_sem);
--	flush_scheduled_work();
+ 	BUG_ON(!dentry || dentry->d_inode);
+ 
+-	if (inode->i_state & I_NEW)
+-		unlock_new_inode(inode);
+-
+ 	d_instantiate(dentry, inode);
  }
  
- /*
-
---=-DhVLaiptBvrBCxg63kbS
-Content-Disposition: inline; filename=linux-2.6.23-008-sunrpc_dont_call_flush_workqueue.dif
-Content-Type: message/rfc822; name=linux-2.6.23-008-sunrpc_dont_call_flush_workqueue.dif
-
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Tue, 7 Aug 2007 15:33:01 -0400
-SUNRPC: Replace flush_workqueue() with cancel_work_sync() and friends
-Subject: No Subject
-Message-Id: <1186520901.6625.11.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- net/sunrpc/cache.c    |    3 +--
- net/sunrpc/rpc_pipe.c |    3 +--
- 2 files changed, 2 insertions(+), 4 deletions(-)
-
-diff --git a/net/sunrpc/cache.c b/net/sunrpc/cache.c
-index 01c3c41..ebe344f 100644
---- a/net/sunrpc/cache.c
-+++ b/net/sunrpc/cache.c
-@@ -371,8 +371,7 @@ int cache_unregister(struct cache_detail *cd)
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 0c016e1..919eaaf 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -50,11 +50,6 @@ static int sysfs_fill_super(struct super_block *sb, void *data, int silent)
+ 		return -ENOMEM;
  	}
- 	if (list_empty(&cache_list)) {
- 		/* module must be being unloaded so its safe to kill the worker */
--		cancel_delayed_work(&cache_cleaner);
--		flush_scheduled_work();
-+		cancel_delayed_work_sync(&cache_cleaner);
- 	}
- 	return 0;
- }
-diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
-index 650af06..669e12a 100644
---- a/net/sunrpc/rpc_pipe.c
-+++ b/net/sunrpc/rpc_pipe.c
-@@ -132,8 +132,7 @@ rpc_close_pipes(struct inode *inode)
- 		rpci->nwriters = 0;
- 		if (ops->release_pipe)
- 			ops->release_pipe(inode);
--		cancel_delayed_work(&rpci->queue_timeout);
--		flush_workqueue(rpciod_workqueue);
-+		cancel_delayed_work_sync(&rpci->queue_timeout);
- 	}
- 	rpc_inode_setowner(inode, NULL);
- 	mutex_unlock(&inode->i_mutex);
-
---=-DhVLaiptBvrBCxg63kbS--
+ 
+-	inode->i_op = &sysfs_dir_inode_operations;
+-	inode->i_fop = &sysfs_dir_operations;
+-	inc_nlink(inode); /* directory, account for "." */
+-	unlock_new_inode(inode);
+-
+ 	/* instantiate and link root dentry */
+ 	root = d_alloc_root(inode);
+ 	if (!root) {
+-- 
+1.5.1.1.181.g2de0
 
