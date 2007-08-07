@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757075AbXHGUk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933594AbXHGUm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757075AbXHGUk1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXHGUkR
+	id S933594AbXHGUm2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754874AbXHGUmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:40:17 -0400
-Received: from main.gmane.org ([80.91.229.2]:56248 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754178AbXHGUkP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:40:15 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Niels <zorglub_olsen@hotmail.com>
-Subject: Problems with USB disk
-Date: Tue, 07 Aug 2007 22:26:15 +0200
-Message-ID: <f9akh8$ori$1@sea.gmane.org>
-Mime-Version: 1.0
+	Tue, 7 Aug 2007 16:42:21 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44342 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756947AbXHGUmU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 16:42:20 -0400
+Date: Tue, 7 Aug 2007 13:41:57 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [2.6.22.2 review 00/84] 2.6.22.2 -stable review
+Message-ID: <20070807204157.GA23028@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: 62.79.44.136.adsl.gl.tiscali.dk
-User-Agent: KNode/0.10.5
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+So sorry for the delay in getting the .22.y release out, my appologies.
+I think I've gotten all the patches that people have sent us, _and_ are
+already in Linus's tree.  If you have sent us stuff that I have missed,
+please resend.  If you have sent us patches that are not in Linus's tree
+yet, please be sure to notify us when they do go into his tree in order
+for us to be able to add them to the next review cycle.
 
-I'm having problems with a new 500 GB USB disk. It works, but sometimes I
-get these in dmesg:
+This is the start of the stable review cycle for the 2.6.22.2 release.
+There are 84 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-usb 1-3: reset high speed USB device using ehci_hcd and address 2
-usb 5-1: USB disconnect, address 2
-drivers/usb/class/usblp.c: usblp0: removed
-sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
-: ASC=0x4 ASCQ=0x2
-end_request: I/O error, dev sda, sector 254148215
-sd 0:0:0:0: Device not ready: <6>: Sense Key : 0x2 [current]
-: ASC=0x4 ASCQ=0x2
-end_request: I/O error, dev sda, sector 252434023
-EXT3-fs error (device sda1): ext3_find_entry: reading directory #15761836
-offset 0
+Responses should be made by August 9, 2007 19:00:00 UTC.  Anything
+received after that time might be too late.
 
+thanks,
 
-There's also a printer connected. This is on a pci/usb2 card. When the above
-happens, I get I/O errors. When I mount the drive next, there are errors
-and often missing files. Quite annoying!
-
-Kernel is 2.6.21
-
-What's going on?
-
-
-Thanks,
-Niels
+greg k-h
 
