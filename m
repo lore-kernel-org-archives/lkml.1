@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937143AbXHGWvB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935041AbXHGW4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937143AbXHGWvB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:51:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759329AbXHGWuu
+	id S935041AbXHGW4m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758320AbXHGW4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 18:50:50 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:57948 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759013AbXHGWus (ORCPT
+	Tue, 7 Aug 2007 18:56:33 -0400
+Received: from elasmtp-kukur.atl.sa.earthlink.net ([209.86.89.65]:39111 "EHLO
+	elasmtp-kukur.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756968AbXHGW4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:50:48 -0400
-Date: Tue, 7 Aug 2007 15:49:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
-       riku.seppala@kymp.net, Andy Whitcroft <apw@shadowen.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
-Message-Id: <20070807154911.5fe93b40.akpm@linux-foundation.org>
-In-Reply-To: <20070805075307.GA25890@rhun.haifa.ibm.com>
-References: <46B3A7BB.9000102@redhat.com>
-	<200708041130.42038.ak@suse.de>
-	<20070804093222.f0d7f3c7.akpm@linux-foundation.org>
-	<200708050140.49590.ak@suse.de>
-	<20070805050410.GB4960@rhun.haifa.ibm.com>
-	<86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com>
-	<20070805075307.GA25890@rhun.haifa.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Aug 2007 18:56:31 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=earthlink.net;
+  b=IcYLip5pf8aU0Q07bQdaQD5h2WAzgE2a5FT+Rs7Sn5KQK2Eta8+/J1spp1GVaYZT;
+  h=Received:Message-ID:Reply-To:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE:X-ELNK-Trace:X-Originating-IP;
+Message-ID: <000501c7d945$f30af1a0$6501a8c0@earthlink.net>
+Reply-To: "Mitchell Erblich" <erblichs@earthlink.net>
+From: "Mitchell Erblich" <erblichs@earthlink.net>
+To: "Ingo Molnar" <mingo@elte.hu>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Question: RT schedular : task_tick_rt(struct rq *rq, struct task_struct *p) : decreases overhead when  rq->nr_running == 1
+Date: Tue, 7 Aug 2007 15:54:41 -0700
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1106
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1106
+X-ELNK-Trace: 074f60c55517ea841aa676d7e74259b7b3291a7d08dfec79490ec1cb95f0c0c5a81925b8270f1702350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 68.164.93.14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 5 Aug 2007 10:53:07 +0300
-Muli Ben-Yehuda <muli@il.ibm.com> wrote:
+Ingo Molnar and group,
 
-> This patch finishes the i386 and x86-64 ->sysdata conversion and
-> hopefully also fixes Riku's and Andy's observed bugs. It is based on
-> Yinghai Lu's and Andy Whitcroft's patches (thanks!) with some changes:
-> 
-> - introduce pci_scan_bus_with_sysdata() and use it instead of
->   pci_scan_bus() where appropriate. pci_scan_bus_with_sysdata() will
->   allocate the sysdata structure and then call pci_scan_bus().
-> - always allocate pci_sysdata dynamically. The whole point of this
->   sysdata work is to make it easy to do root-bus specific things
->   (e.g., support PCI domains and IOMMU's). I dislike using a default
->   struct pci_sysdata in some places and a dynamically allocated
->   pci_sysdata elsewhere - the potential for someone indavertantly
->   changing the default structure is too high.
-> - this patch only makes the minimal changes necessary, i.e., the NUMA node is
->   always initialized to -1. Patches to do the right thing with regards
->   to the NUMA node can build on top of this (either add a 'node'
->   parameter to pci_scan_bus_with_sysdata() or just update the node
->   when it becomes known).
-> 
-> The patch was compile tested with various configurations (e.g., NUMAQ,
-> VISWS) and run-time tested on i386 and x86-64. Unfortunately none of
-> my machines exhibited the bugs so caveat emptor.
-> 
-> Andy, could you please see if this fixes the NUMA issues you've seen?
-> Riku, does this fix "pci=noacpi" on your laptop?
+If their is a single RT task on this rq, then why not just reset the
+timeslice and return??? Just MAYBE decreasing re-scheduling
+overhead..
 
-I am sooooooo tired of this thing.  Andi, someone, can we for heaven's
-sake please just get it all sorted out?
+Thus,,,,
 
-I dropped two of Yinghai's patches which conflicted with this, and then
-two more which looked like they depended on the dropped ones.
+After
+    p->time_slice = static_prio_timeslice(p->static_prio);
+
+Why isn't their a check like
+    if  (rq->nr_running == 1)
+         return;
+
+Which world remove the need for any recheduling
+or requeue'ing...
+
+Mitchell Erblich
+FYI: below is believed to be a snap of the current/ orig func
+-----------------------------
+
+
++static void task_tick_rt(struct rq *rq, struct task_struct *p)
++{
++ /*
++  * RR tasks need a special form of timeslice management.
++  * FIFO tasks have no timeslices.
++  */
++ if (p->policy != SCHED_RR)
++  return;
++
++ if (--p->time_slice)
++  return;
++
++ p->time_slice = static_prio_timeslice(p->static_prio);
++ set_tsk_need_resched(p);
++
++ /* put it at the end of the queue: */
++ requeue_task_rt(rq, p);
++}
