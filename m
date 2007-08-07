@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765688AbXHGN5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbXHGN6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765688AbXHGN5t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbXHGN5l
+	id S933989AbXHGN6t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758310AbXHGN6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:57:41 -0400
-Received: from mx1.suse.de ([195.135.220.2]:39589 "EHLO mx1.suse.de"
+	Tue, 7 Aug 2007 09:58:38 -0400
+Received: from mo11.iij4u.or.jp ([210.138.174.79]:44257 "EHLO mo11.iij4u.or.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753881AbXHGN5k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:57:40 -0400
-Date: Tue, 7 Aug 2007 15:57:39 +0200 (CEST)
-From: Michael Matz <matz@suse.de>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Olaf Hering <olh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] remove strict ansi check from __u64 in asm/types.h
-In-Reply-To: <8bd0f97a0708061713y75651621u8b2e57b1be5a61c8@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0708071556000.23011@wotan.suse.de>
-References: <20070806172331.GA8102@suse.de> <46B75D3B.6080101@zytor.com>
- <8bd0f97a0708061713y75651621u8b2e57b1be5a61c8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1759999AbXHGN6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 09:58:36 -0400
+Date: Tue, 7 Aug 2007 22:58:24 +0900
+To: akpm@linux-foundation.org
+Cc: James.Bottomley@SteelEye.com, torvalds@linux-foundation.org,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+From: FUJITA Tomonori <tomof@acm.org>
+In-Reply-To: <20070807001429.f8cb3b22.akpm@linux-foundation.org>
+References: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
+	<1186458941.6637.44.camel@localhost.localdomain>
+	<20070807001429.f8cb3b22.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20070806162823P.tomof@acm.org>
+X-Dispatcher: imput version 20050308(IM148)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 7 Aug 2007 00:14:29 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Mon, 6 Aug 2007, Mike Frysinger wrote:
-
-> On 8/6/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> > Olaf Hering wrote:
-> > >
-> > > Remove the __STRICT_ANSI__ check from the __u64/__s64 declaration on
-> > > 32bit targets.
-> > >
-> > > Here is the reason why we think the check should be relaxed:
-> >
-> > I think the fact that "long long" was made official C in C99 is good
-> > enough.  Flagging them as __extension__ is okay, I guess, but something
-> > like this should definitely go in.
+> On Mon, 06 Aug 2007 22:55:41 -0500 James Bottomley <James.Bottomley@SteelEye.com> wrote:
 > 
-> the patch we (Gentoo) tried posting a while ago never saw any response:
-> http://sources.gentoo.org/viewcvs.py/*checkout*/gentoo/src/patchsets/gentoo-headers/2.6.22/35_all_c99-types.patch?rev=1.2
+> > The real root cause of all of this is that there's no tree I can
+> > persuade all the interested parties to test that includes all of these
+> > features.  In spite of the fact they've all been incubating in -mm for
+> > at least 3 months, no-one apparently tested all the features together
+> > until 2.6.23-rc1 was released, so then we're scrambling to address the
+> > issues as they arise.
+> 
+> I pulled git-scsi-misc on July 19 and there was no bsg code in there at
+> all.  I pulled again on July 20 and all the bsg code was in mainline.  So
+> it appears that the bsg code went mailing-list -> mainline in less than 24
+> hours, so there wasn't a lot of opportunity for -mm testing there.
 
-That would still make it not work with programs compiled with just -ansi 
-or -std=c90 (both being equivalent) with -pedantic added.  There still are 
-such.  Only for that case is the __extension__ prefix necessary.
+bsg was merged via Jens' branch. After that, I asked James to send
+some fixes via the scsi-rc-fixes.
 
 
-Ciao,
-Michael.
+> A lot of the stupid it-doesn't-compile stuff would have been fixed in -mm,
+> but more substantial problems might not have been picked up.  But one can
+> say that about anything.
+
+My mistake. I should have sent bsg to -mm. Sorry about that.
