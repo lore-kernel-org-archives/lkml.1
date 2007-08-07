@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759737AbXHGH03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXHGHdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759737AbXHGH03 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 03:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbXHGH0K
+	id S1757594AbXHGHdk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 03:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXHGHda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 03:26:10 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:55539 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754929AbXHGH0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 03:26:06 -0400
-Date: Tue, 7 Aug 2007 09:26:35 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Jean-Baptiste Vignaud <vignaud@xandmail.fr>, mingo <mingo@elte.hu>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
-       torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070807072635.GA2120@ff.dom.local>
-References: <JMDDIG$C8916D611655799A77AD19198F8EDA75@xandmail.com> <46B79047.4060402@redhat.com>
+	Tue, 7 Aug 2007 03:33:30 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:41125 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754032AbXHGHd3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 03:33:29 -0400
+Date: Tue, 7 Aug 2007 00:32:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: sukadev@us.ibm.com
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
+Message-Id: <20070807003228.60d047b4.akpm@linux-foundation.org>
+In-Reply-To: <20070807063431.GB23036@us.ibm.com>
+References: <20070802212009.GA516@tv-sign.ru>
+	<20070806131345.3322c99e.akpm@linux-foundation.org>
+	<20070806203326.GA188@tv-sign.ru>
+	<20070806221824.22a78312.akpm@linux-foundation.org>
+	<20070807063431.GB23036@us.ibm.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B79047.4060402@redhat.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 05:19:03PM -0400, Chuck Ebbert wrote:
-> On 08/06/2007 04:42 PM, Jean-Baptiste Vignaud wrote:
-> > Mmm, bad news, after 4 hours of intensive network stressing, one of the 2 3com card failed with the latest fedora kernel.
-> > 
-> > Aug  6 22:31:09 loki kernel: NETDEV WATCHDOG: eth2: transmit timed out
-> > Aug  6 22:31:09 loki kernel: eth2: transmit timed out, tx_status 00 status e601.
-> > Aug  6 22:31:09 loki kernel:   diagnostics: net 0ccc media 8880 dma 0000003a fifo 8000
-> > Aug  6 22:31:09 loki kernel: eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
-> > Aug  6 22:31:09 loki kernel:   Flags; bus-master 1, dirty 26085000(8) current 26085000(8)
-> > Aug  6 22:31:09 loki kernel:   Transmit list 00000000 vs. ffff81007c807700.
-> > 
-> > Stressing eth2 by copying large files on a samba on share and eth0 by downloading big files on the internet.
+On Mon, 6 Aug 2007 23:34:31 -0700 sukadev@us.ibm.com wrote:
+
+> | The downside of this approach is that
+> | handle-the-multi-threaded-inits-exit-properly.patch looks more 2.6.24-ready
+> | than all the container stuff (based just on overall impact and
+> | speculativeness)
 > 
-> So even the full revert doesn't fix the 3Com driver, it just makes it less
-> likely to do that.
+> Well, if it will help, we can drop these two patches from -mm, take Oleg's
+> patch and I can then resend these along with other pid ns patches. 
 > 
-> The other patch probably won't be any better -- I'd guess there's some
-> kind of IRQ handling bug in that driver.
-> 
+> 	pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch.
+> 	pid-namespaces-rename-child_reaper-function.patch
 
-I don't know how fast are these 3com chips regarding these 8390
-described by Alan, and how are irqs shared on Jean-Baptiste's box,
-but I'm surprised they could have worked sharing interrupts and
-without such time outs before this change in 2.6.21. It seems some
-of those older chips, because of slowness, could have transmit
-problems even without irq sharing. So, IMHO, if possible, there
-should be never irq sharing enabled between two (or more) drivers
-using both disable_irq.
-
-These time out problems were reported long time ago, but I think
-it would be nice if this thread could at least remove these new
-problems reported only after 2.6.21, which it seems is possible
-now, after Marcin's diagnose: by reverting the whole 2.6.21 patch
-or by this current temporary patch in 2.6.23-rc2's resend.c.
-It would be nice if you could try this patch too.
-
-BTW: Jean-Babtiste, could you send or point to you current configs?
-I mean at least proc/interrupts, but with dmesg and .config it would
-be even better. (I assume this last report was about the revert patch
-mentioned by Chuck, not the one below your message?)
-
-Regards,
-Jarek P.
+I'm reasonably sure that what I ended up with is OK.  I'll send those two
+out again for double-checking, please.
