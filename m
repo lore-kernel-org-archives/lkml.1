@@ -1,92 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937106AbXHGVTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937187AbXHGVTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937106AbXHGVTX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964899AbXHGUzu
+	id S937187AbXHGVTr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964942AbXHGUzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:55:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59780 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964887AbXHGUzq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:55:46 -0400
-Date: Tue, 7 Aug 2007 13:48:19 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, vatsa@in.ibm.com, mschmidt@redhat.com,
-       oleg@tv-sign.ru
-Subject: [2.6.22.2 review 64/84] destroy_workqueue() can livelock
-Message-ID: <20070807204819.GN23028@kroah.com>
-References: <20070807204034.882009319@mini.kroah.org>
+	Tue, 7 Aug 2007 16:55:52 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:5149 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S964916AbXHGUzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 16:55:47 -0400
+Date: Tue, 7 Aug 2007 22:55:38 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Daniel Phillips <phillips@phunq.net>
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Distributed storage.
+Message-ID: <20070807205538.GB5245@kernel.dk>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk> <200708071124.56859.phillips@phunq.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="destroy_workqueue-can-livelock.patch"
-In-Reply-To: <20070807204157.GA23028@kroah.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+In-Reply-To: <200708071124.56859.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 07 2007, Daniel Phillips wrote:
+> On Tuesday 07 August 2007 05:05, Jens Axboe wrote:
+> > On Sun, Aug 05 2007, Daniel Phillips wrote:
+> > > A simple way to solve the stable accounting field issue is to add a
+> > > new pointer to struct bio that is owned by the top level submitter
+> > > (normally generic_make_request but not always) and is not affected
+> > > by any recursive resubmission.  Then getting rid of that field
+> > > later becomes somebody's summer project, which is not all that
+> > > urgent because struct bio is already bloated up with a bunch of
+> > > dubious fields and is a transient structure anyway.
+> >
+> > Thanks for your insights. Care to detail what bloat and dubious
+> > fields struct bio has?
+> 
+> First obvious one I see is bi_rw separate from bi_flags.  Front_size and 
+> back_size smell dubious.  Is max_vecs really necessary?  You could 
 
-From: Oleg Nesterov <oleg@tv-sign.ru>
+I don't like structure bloat, but I do like nice design. Overloading is
+a necessary evil sometimes, though. Even today, there isn't enough room
+to hold bi_rw and bi_flags in the same variable on 32-bit archs, so that
+concern can be scratched. If you read bio.h, that much is obvious.
 
-Pointed out by Michal Schmidt <mschmidt@redhat.com>.
+If you check up on the iommu virtual merging, you'll understand the
+front and back size members. They may smell dubious to you, but please
+take the time to understand why it looks the way it does.
 
-The bug was introduced in 2.6.22 by me.
+> reasonably assume bi_vcnt rounded up to a power of two and bury the 
+> details of making that work behind wrapper functions to change the 
+> number of bvecs, if anybody actually needs that.  Bi_endio and 
 
-cleanup_workqueue_thread() does flush_cpu_workqueue(cwq) in a loop until
-->worklist becomes empty.  This is live-lockable, a re-niced caller can get
-CPU after wake_up() and insert a new barrier before the lower-priority
-cwq->thread has a chance to clear ->current_work.
+Changing the number of bvecs is integral to how bio buildup current
+works.
 
-Change cleanup_workqueue_thread() to do flush_cpu_workqueue(cwq) only once.
- We can rely on the fact that run_workqueue() won't return until it flushes
-all works.  So it is safe to call kthread_stop() after that, the "should
-stop" request won't be noticed until run_workqueue() returns.
+> bi_destructor could be combined.  I don't see a lot of users of bi_idx, 
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Michal Schmidt <mschmidt@redhat.com>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+bi_idx is integral to partial io completions.
 
----
- kernel/workqueue.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+> that looks like a soft target.  See what happened to struct page when a 
+> couple of folks got serious about attacking it, some really deep hacks 
+> were done to pare off a few bytes here and there.  But struct bio as a 
+> space waster is not nearly in the same ballpark.
 
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -739,18 +739,17 @@ static void cleanup_workqueue_thread(str
- 	if (cwq->thread == NULL)
- 		return;
- 
-+	flush_cpu_workqueue(cwq);
- 	/*
--	 * If the caller is CPU_DEAD the single flush_cpu_workqueue()
--	 * is not enough, a concurrent flush_workqueue() can insert a
--	 * barrier after us.
-+	 * If the caller is CPU_DEAD and cwq->worklist was not empty,
-+	 * a concurrent flush_workqueue() can insert a barrier after us.
-+	 * However, in that case run_workqueue() won't return and check
-+	 * kthread_should_stop() until it flushes all work_struct's.
- 	 * When ->worklist becomes empty it is safe to exit because no
- 	 * more work_structs can be queued on this cwq: flush_workqueue
- 	 * checks list_empty(), and a "normal" queue_work() can't use
- 	 * a dead CPU.
- 	 */
--	while (flush_cpu_workqueue(cwq))
--		;
--
- 	kthread_stop(cwq->thread);
- 	cwq->thread = NULL;
- }
+So show some concrete patches and examples, hand waving and assumptions
+is just a waste of everyones time.
+
+> It would be interesting to see if bi_bdev could be made read only.  
+> Generally, each stage in the block device stack knows what the next 
+> stage is going to be, so why do we have to write that in the bio?  For 
+> error reporting from interrupt context?  Anyway, if Evgeniy wants to do 
+> the patch, I will happily unload the task of convincing you that random 
+> fields are/are not needed in struct bio :-)
+
+It's a trade off, otherwise you'd have to pass the block device around a
+lot. And it's, again, a design issue. A bio contains destination
+information, that means device/offset/size information. I'm all for
+shaving structure bytes where it matters, but not for the sake of
+sacrificing code stability or design. I consider struct bio quite lean
+and have worked hard to keep it that way. In fact, iirc, the only
+addition to struct bio since 2001 is the iommu front/back size members.
+And I resisted those for quite a while.
 
 -- 
+Jens Axboe
+
