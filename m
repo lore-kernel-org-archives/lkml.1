@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934865AbXHGTBo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935010AbXHGTDx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934865AbXHGTBo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 15:01:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756546AbXHGTBg
+	id S935010AbXHGTDx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 15:03:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbXHGTDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 15:01:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:48299 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756490AbXHGTBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 15:01:36 -0400
-Message-ID: <46B8C18D.7040902@garzik.org>
-Date: Tue, 07 Aug 2007 15:01:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 7 Aug 2007 15:03:45 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:32849 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756546AbXHGTDo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 15:03:44 -0400
+Date: Tue, 7 Aug 2007 21:03:57 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Ollie Wild <aaw@google.com>, Andrew Morton <akpm@osdl.org>,
+       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch 3/3] mm: variable length argument support
+Message-ID: <20070807190357.GA31139@aepfle.de>
+References: <20070613100334.635756997@chello.nl> <20070613100835.014096712@chello.nl>
 MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] remove genhd.h from header exports
-References: <20070807184722.GA31015@aepfle.de>
-In-Reply-To: <20070807184722.GA31015@aepfle.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070613100835.014096712@chello.nl>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Hering wrote:
-> remove linux/genhd.h from make headers_install
-> 
-> It contains no userinterfaces, only the msdos partition table layout and some
-> numbers. And it became finally unusable with the CONFIG_BLOCK addition.
-> 
-> Remove it from the Kconfig list, and remove the __KERNEL__ checks.
-> Move #include block up
-> remove unused inclusion of linux/major.h
-> 
-> compile tested with ppc64_defconfig
-> 
-> 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+On Wed, Jun 13, Peter Zijlstra wrote:
 
-AFAICS the proper fix is to undo the CONFIG_BLOCK breakage, not make the 
-header unusable.
+> From: Ollie Wild <aaw@google.com>
+> 
+> Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
+> from the old mm into the new mm.
 
-	Jeff
+> +++ linux-2.6-2/include/linux/binfmts.h	2007-06-13 11:52:46.000000000 +0200
+> @@ -6,11 +6,13 @@
+>  struct pt_regs;
+>  
+>  /*
+> - * MAX_ARG_PAGES defines the number of pages allocated for arguments
+> - * and envelope for the new program. 32 should suffice, this gives
+> - * a maximum env+arg of 128kB w/4KB pages!
+> + * These are the maximum length and maximum number of strings passed to the
+> + * execve() system call.  MAX_ARG_STRLEN is essentially random but serves to
+> + * prevent the kernel from being unduly impacted by misaddressed pointers.
+> + * MAX_ARG_STRINGS is chosen to fit in a signed 32-bit integer.
+>   */
+> -#define MAX_ARG_PAGES 32
+> +#define MAX_ARG_STRLEN (PAGE_SIZE * 32)
+> +#define MAX_ARG_STRINGS 0x7FFFFFFF
 
-
-
+This adds a new usage of PAGE_SIZE to an exported header.
+How can this be fixed for 2.6.23?
