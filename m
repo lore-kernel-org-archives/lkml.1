@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935612AbXHGXzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935404AbXHGX5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935612AbXHGXzx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 19:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbXHGXzl
+	id S935404AbXHGX5a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 19:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbXHGX5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 19:55:41 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:52376 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934337AbXHGXzV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 19:55:21 -0400
-X-Sasl-enc: kXYi1OC4TeBHC2oVryxqWELD0237Sc+I9whwyYAalJBb 1186530919
-Date: Tue, 7 Aug 2007 20:55:16 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: ibm-acpi-devel@lists.sourceforge.net,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: refcounting problems with ibm_acpi but acpi=off
-Message-ID: <20070807235516.GD2139@khazad-dum.debian.net>
-References: <20070807104500.GA1684@elf.ucw.cz> <20070807142607.GA7414@khazad-dum.debian.net> <20070807214058.GA4413@elf.ucw.cz>
+	Tue, 7 Aug 2007 19:57:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36566 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754513AbXHGX5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 19:57:20 -0400
+Message-ID: <46B906DD.5000501@redhat.com>
+Date: Tue, 07 Aug 2007 19:57:17 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070807214058.GA4413@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: paul.pinault@disk91.com
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Data corruption
+References: <200708072007.27343.paul.pinault@disk91.com>
+In-Reply-To: <200708072007.27343.paul.pinault@disk91.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Aug 2007, Pavel Machek wrote:
-> > > --- a/drivers/acpi/ibm_acpi.c
-> > > +++ b/drivers/acpi/ibm_acpi.c
-> > > @@ -2695,6 +2695,9 @@ static void acpi_ibm_exit(void)
-> > >  {
-> > >  	int i;
-> > >  
-> > > +	if (acpi_disabled)
-> > > +		return;
-> > > +
-> > >  	for (i = ARRAY_SIZE(ibms) - 1; i >= 0; i--)
-> > >  		ibm_exit(&ibms[i]);
-> > >  
-> > > 
-> > 
-> > Indeed it is required, my bad.
-> > 
-> > Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-> > 
-> > Do you want me to forward a git patch to Len brown?
+paul wrote:
+> Since 2-3 month I have some random data corruption on my Linux server, after 
+> checking disks independently (i'm using raid1on 2 sata disk, the problem is 
+> the same w/o raid) and memory, hardware simce to be out of cause...
 > 
-> Yes, please. Hmm, seems like at least asus_acpi is affected by same problem.
+> Here is my problem:
+> => head --bytes=300m  /dev/urandom > test
+> => for i in `seq 0 9` ; do cp test test$i ; done
+> => md5sum test*
+> I got : 
+> 014666c728c9e3b8299579fae499864a  test
+> 014666c728c9e3b8299579fae499864a  test0
+> 333fd93d093ac612cd8d5f65628f734e  test1
+> 1ab6ee68c6a7d9ff5a05f9d63f0f6df6  test2
+> 96e96483e3175a59c9c05b6720514e1e  test3
+> 014666c728c9e3b8299579fae499864a  test4
+> b24dbccc9f4831f8825ab4a55a3be4aa  test5
+> 8493efc9c14e4b5c162ac23696fbc16a  test6
+> 6a5f4301f66d0379049d79d0e14e2a87  test7
+> 2c81cfa1c3a03aba134574922ee5d75c  test8
+> 2ea15c8392bfd0123472a80125bb3abe  test9
+> 
+> ^^^ that sounds really bad for my data :(
 
-I just tested it, and thinkpad-acpi with all accepted patches by Len is not
-affected by this problem, only some versions of ibm-acpi is.  So there's
-nothing to send to Len.
+It does indeed.  Can you try comparing the data to see precisely how much 
+differs between the versions?  md5sums don't distinguish between a single-bit 
+error and a block or page-sized error, but the distinction is critical in 
+determining what broke.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Can you reproduce this on a recent upstream baremetal (non-Xen) kernel?  If so, 
+does it go away when you boot with mem=3000M?
+
+	-- Chris
