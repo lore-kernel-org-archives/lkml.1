@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbXHGJVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759220AbXHGJ35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760785AbXHGJVx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbXHGJVl
+	id S1759220AbXHGJ35 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbXHGJ3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:21:41 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:35382 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756250AbXHGJVj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:21:39 -0400
-Date: Tue,  7 Aug 2007 11:21:07 +0200
-Message-Id: <JMECN8$607C5E77E84D2F80DCAAB4CFEB5A6346@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "jarkao2" <jarkao2@o2.pl>
-Cc: "cebbert" <cebbert@redhat.com>, "mingo" <mingo@elte.hu>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
-       "alan" <alan@lxorguk.ukuu.org.uk>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 212.155.184.109
+	Tue, 7 Aug 2007 05:29:47 -0400
+Received: from mga09.intel.com ([134.134.136.24]:17287 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752918AbXHGJ3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 05:29:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,228,1183359600"; 
+   d="scan'208";a="114530184"
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+From: "Huang, Ying" <ying.huang@intel.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <m1r6mnnpj8.fsf@ebiederm.dsl.xmission.com>
+References: <1185851583.23149.30.camel@caritas-dev.intel.com>
+	 <m1r6mptcc8.fsf@ebiederm.dsl.xmission.com>
+	 <1185865087.23149.50.camel@caritas-dev.intel.com>
+	 <m1r6mnnpj8.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 07 Aug 2007 17:29:44 +0800
+Message-Id: <1186478984.3769.46.camel@caritas-dev.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2 
+X-OriginalArrivalTime: 07 Aug 2007 09:29:36.0194 (UTC) FILETIME=[7856DA20:01C7D8D5]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> > * interrupts (i use irqbalance, but problem was the same without)
+On Thu, 2007-08-02 at 01:16 +0800, Eric W. Biederman wrote:
+> > The parameters are rearranged, because the pointer is too small. For
+> > example, the EFI system table pointer is 8 bytes in x86_64, while it
+> is
+> > 4 bytes in i386.
 > 
-> I wonder if you tried without SMP too?
+> Ok.  I see what is happening.  When the documentation is for arch/i386
+> unsigned long is 4 bytes, and you are using unsigned long to mean 8
+> bytes.  For an 8 byte fields please just spell out the size as 8
+> bytes.
 
-No i did not. Do you think that this can be a problem ?
-To test with no SMP, do i need to recompile kernel or is there a kernel parameter ?
+Ok. Will do in the next version.
+> 
+> How does EFI handle 32bit/64bit compatibility?  In particular
+> how do I load a 32bit kernel on machine with a 64bit EFI?  Can
+> it be done?
+> 
+Because the EFI memory map is converted to E820 map in bootloader now,
+it is possible to load 32bit kernel on machine with a 64bit EFI. But it
+is almost impossible to call EFI runtime service in 32bit kernel. But I
+think EFI runtime service is not essential in this situation, because
+the raw hardware can be used too.
 
-....
-
-> BTW, Jean-Baptiste and Chuck - it seems, unless you have too much
-> time, there is no use for testing my "genirq: fix simple and fasteoi
-> irq handlers" patch.
-
-Well i just  tested 2.6.23-rc1 with your patch and copied (using smbclient) big files :
-
-Aug  7 11:11:53 loki kernel: NETDEV WATCHDOG: eth2: transmit timed out
-Aug  7 11:11:53 loki kernel: eth2: transmit timed out, tx_status 00 status e601.
-Aug  7 11:11:53 loki kernel:   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
-Aug  7 11:11:53 loki kernel: eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
-Aug  7 11:11:53 loki kernel:   Flags; bus-master 1, dirty 93481(9) current 93481(9)
-Aug  7 11:11:53 loki kernel:   Transmit list 00000000 vs. ffff81007be977a0.
-Aug  7 11:11:53 loki kernel:   0: @ffff81007be97200  length 8000005f status 0001005f
-Aug  7 11:11:53 loki kernel:   1: @ffff81007be972a0  length 8000005f status 0001005f
-Aug  7 11:11:53 loki kernel:   2: @ffff81007be97340  length 8000005f status 0001005f
-Aug  7 11:11:53 loki kernel:   3: @ffff81007be973e0  length 8000005f status 0001005f
-Aug  7 11:11:53 loki kernel:   4: @ffff81007be97480  length 8000003c status 0001003c
-Aug  7 11:11:53 loki kernel:   5: @ffff81007be97520  length 8000003c status 0001003c
-Aug  7 11:11:53 loki kernel:   6: @ffff81007be975c0  length 8000003c status 0001003c
-Aug  7 11:11:53 loki kernel:   7: @ffff81007be97660  length 8000003c status 8001003c
-Aug  7 11:11:53 loki kernel:   8: @ffff81007be97700  length 8000003c status 8001003c
-Aug  7 11:11:53 loki kernel:   9: @ffff81007be977a0  length 8000002a status 0001002a
-Aug  7 11:11:53 loki kernel:   10: @ffff81007be97840  length 8000003a status 0001003a
-Aug  7 11:11:53 loki kernel:   11: @ffff81007be978e0  length 8000005f status 0001005f
-Aug  7 11:11:53 loki kernel:   12: @ffff81007be97980  length 800000be status 0c0100be
-Aug  7 11:11:53 loki kernel:   13: @ffff81007be97a20  length 800000be status 0c0100be
-Aug  7 11:11:53 loki kernel:   14: @ffff81007be97ac0  length 8000005f status 0001005f
-Aug  7 11:11:53 loki kernel:   15: @ffff81007be97b60  length 8000005f status 0001005f
-
-Thanks;
-
-Jb
-
+Best Regards,
+Huang Ying
