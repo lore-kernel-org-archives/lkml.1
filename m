@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934506AbXHGObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934823AbXHGOb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934506AbXHGObT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 10:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754195AbXHGObJ
+	id S934823AbXHGOb7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 10:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbXHGObt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 10:31:09 -0400
-Received: from 1wt.eu ([62.212.114.60]:1233 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753489AbXHGObI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 10:31:08 -0400
-Date: Tue, 7 Aug 2007 16:27:14 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Vincent Legoll <vincent.legoll@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 2.4.35 compilation failed in LVM
-Message-ID: <20070807142714.GA20056@1wt.eu>
-References: <4727185d0708070624q72f8660bif37074036c1401a5@mail.gmail.com>
+	Tue, 7 Aug 2007 10:31:49 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:58090 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754195AbXHGObr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 10:31:47 -0400
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0708062059030.5037@woody.linux-foundation.org>
+References: <1186248703.3439.20.camel@localhost.localdomain>
+	 <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
+	 <1186458941.6637.44.camel@localhost.localdomain>
+	 <alpine.LFD.0.999.0708062059030.5037@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 09:31:46 -0500
+Message-Id: <1186497106.3414.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4727185d0708070624q72f8660bif37074036c1401a5@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:24:17PM +0200, Vincent Legoll wrote:
-> Hello,
+On Mon, 2007-08-06 at 21:01 -0700, Linus Torvalds wrote:
 > 
-> I tried to get 2.4.35 to compile on a file server I manage, and got that:
+> On Mon, 6 Aug 2007, James Bottomley wrote:
+> >
+> > Confused ... you did get the first pull request in the first week.
 > 
-> gcc -D__KERNEL__ -I/usr/src/linux-2.4/include -Wall
-> -Wstrict-prototypes -Wno-trigraphs -O2 -fno-strict-aliasing
-> -fno-common -fno-builtin-sprintf -fomit-frame-pointer
-> -Wno-pointer-sign -pipe -mpreferred-stack-boundary=2 -march=i686
-> -fno-unit-at-a-time -DMODULE -DMODVERSIONS -include
-> /usr/src/linux-2.4/include/linux/modversions.h  -nostdinc -iwithprefix
-> include -DKBUILD_BASENAME=lvm  -c -o lvm.o lvm.c
-> lvm.c:397: error: static declaration of 'vg_count' follows non-static
-> declaration
-> lvm-internal.h:48: error: previous declaration of 'vg_count' was here
+> Here's the problem. Let me repeat it again:
 > 
-> looking in the 2.4.35 patch, this has been modified, is there already
-> a fix for that ?
+> > > And after -rc1, I don't want to see crap like this:
+> > > 
+> > > 	 46 files changed, 2837 insertions(+), 2050 deletions(-)
+> 
+> It DOES NOT MATTER if I get a first pull request in the first week, if 
+> that pull request is purely cosmetic, and is followed by stuff that 
+> *should* have been in the merge window four weeks afterwards.
+> 
+> > OK ... that's arguable.
+> 
+> There's nothing arguable at all about it.
+> 
+> If you have 5000 lines of changes, that's not a "bugfix" any more. That's 
+> a big damn change, and it should have happened in the merge window. Or if 
+> it doesn't make it in time, in the *next* merge window.
 
-Yes, the fix is already queued in -git for 2.4.35.1 :
+I'm not arguing that the bug fix piece wasn't too big (although
+realistically, line counts are only a guide not a rule.  If we discover
+something like a calling convention bug in SCSI [reversed kmalloc
+arguments, say], I could see a huge patch to fix all of the call
+sites) ... I've said I'll take responsibility for that and fix it.
 
-   http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.35.y.git;a=commitdiff_plain;h=0a1b1818b031b46e3755f12f5cff76df7a0661a8
+I'm arguing that a too strict an interpretation of bugfix only post -rc1
+will damage feature stabilisation.  Please think carefully about this.
+If we go out in a released kernel with a problematic user space ABI, we
+end up being committed to it forever.
 
-Best regards,
-Willy
+James
+
 
