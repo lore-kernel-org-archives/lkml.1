@@ -1,47 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbXHGS2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbXHGSab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757998AbXHGS2j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 14:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXHGS2c
+	id S1758443AbXHGSab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 14:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbXHGSaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 14:28:32 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:42350 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751792AbXHGS2c (ORCPT
+	Tue, 7 Aug 2007 14:30:23 -0400
+Received: from ausmtp04.au.ibm.com ([202.81.18.152]:35252 "EHLO
+	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbXHGSaV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 14:28:32 -0400
-Date: Tue, 7 Aug 2007 20:28:40 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linux-kernel@vger.kernel.org
-Subject: CONFIG_SWAP=n failes to compile due to linux/pagemap.h issues
-Message-ID: <20070807182840.GA30866@aepfle.de>
+	Tue, 7 Aug 2007 14:30:21 -0400
+Message-ID: <46B8BA33.7020800@linux.vnet.ibm.com>
+Date: Wed, 08 Aug 2007 00:00:11 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Organization: IBM
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+CC: YAMAMOTO Takashi <yamamoto@valinux.co.jp>, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ebiederm@xmission.com, containers@lists.osdl.org,
+       akpm@linux-foundation.org, xemul@openvz.org, menage@google.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: [-mm PATCH 6/9] Memory controller add per container LRU and reclaim
+ (v4)
+References: <20070727201041.31565.14803.sendpatchset@balbir-laptop> <20070731051459.E827E1BF77B@siro.lan> <46AF314C.7030404@linux.vnet.ibm.com>
+In-Reply-To: <46AF314C.7030404@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
--Werror-implicit-function-declaration made it finally into mainline,
-thats ok.
 
-But now CONFIG_SWAP=n fails to compile, at least on powerpc:
+Vaidyanathan Srinivasan wrote:
+> 
+> YAMAMOTO Takashi wrote:
+>>> +unsigned long mem_container_isolate_pages(unsigned long nr_to_scan,
+>>> +					struct list_head *dst,
+>>> +					unsigned long *scanned, int order,
+>>> +					int mode, struct zone *z,
+>>> +					struct mem_container *mem_cont,
+>>> +					int active)
+>>> +{
+>>> +	unsigned long nr_taken = 0;
+>>> +	struct page *page;
+>>> +	unsigned long scan;
+>>> +	LIST_HEAD(mp_list);
+>>> +	struct list_head *src;
+>>> +	struct meta_page *mp;
+>>> +
+>>> +	if (active)
+>>> +		src = &mem_cont->active_list;
+>>> +	else
+>>> +		src = &mem_cont->inactive_list;
+>>> +
+>>> +	for (scan = 0; scan < nr_to_scan && !list_empty(src); scan++) {
+>>> +		mp = list_entry(src->prev, struct meta_page, lru);
+>> what prevents another thread from freeing mp here?
+> 
+> mem_cont->lru_lock protects the list and validity of mp.  If we hold
+> mem_cont->lru_lock for this entire loop, then we preserve the validity
+> of mp.  However that will be holding up container charge and uncharge.
+> 
+> This entire routing is called with zone->lru_lock held by the caller.
+>  So within a zone, this routine is serialized.
+> 
+> However page uncharge may race with isolate page.  But will that lead
+> to any corruption of the list?  We may be holding the lock for too
+> much time just to be on the safe side.
+> 
+> Please allow us some time to verify whether this is indeed inadequate
+> locking that will lead to corruption of the list.
 
-include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
-include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
-include/asm-generic/tlb.h: In function 'tlb_remove_page':
-include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
+I did few runs and checked for ref_cnt on meta_page and there seems to
+be a race between isolate pages and uncharge.  We will probably have
+to increase the ref_cnt on meta_page while we are isolating it.  I am
+trying to see if we can solve the problem by manipulating the ref_cnt
+on the meta_page.
 
-tlb_flush_mmu() calls free_pages_and_swap_cache(),
-which calls free_pages_and_swap_cache() in linux/swap.h
+--Vaidy
 
-A commend was added to the free_pages_and_swap_cache define the last
-time this issue came up. sparc can not use linux/pagemap.h in swap.h.
-http://lkml.org/lkml/2005/7/8/140
-http://lkml.org/lkml/2005/8/6/72
-
-So, how can this be finally resolved?
-Does CONFIG_SWAP=n compile anywhere right now?
-
-google found a workaround(?), akpm queued it up: http://lkml.org/lkml/2007/7/19/14
+> Thanks for pointing out this situation.
+> --Vaidy
+> 
+>>> +		spin_lock(&mem_cont->lru_lock);
+>>> +		if (mp)
+>>> +			page = mp->page;
+>>> +		spin_unlock(&mem_cont->lru_lock);
+>>> +		if (!mp)
+>>> +			continue;
+>> YAMAMOTO Takashi
+>> _______________________________________________
+>> Containers mailing list
+>> Containers@lists.linux-foundation.org
+>> https://lists.linux-foundation.org/mailman/listinfo/containers
+>>
+> _______________________________________________
+> Containers mailing list
+> Containers@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/containers
+> 
