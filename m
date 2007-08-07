@@ -1,120 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763459AbXHGFTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764898AbXHGFZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763459AbXHGFTN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 01:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbXHGFS7
+	id S1764898AbXHGFZa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 01:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756744AbXHGFZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 01:18:59 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55848 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751513AbXHGFS6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 01:18:58 -0400
-Date: Mon, 6 Aug 2007 22:18:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Sukadev Bhattiprolu <sukadev@us.ibm.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC, PATCH] handle the multi-threaded init's exit() properly
-Message-Id: <20070806221824.22a78312.akpm@linux-foundation.org>
-In-Reply-To: <20070806203326.GA188@tv-sign.ru>
-References: <20070802212009.GA516@tv-sign.ru>
-	<20070806131345.3322c99e.akpm@linux-foundation.org>
-	<20070806203326.GA188@tv-sign.ru>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Tue, 7 Aug 2007 01:25:16 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:53278 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755346AbXHGFZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 01:25:13 -0400
+Subject: Re: [EXT4 set 8][PATCH 1/1]Add journal checksums
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Girish Shilamkar <girish@clusterfs.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@clusterfs.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <1185951857.3875.6.camel@dhcp4.linsyssoft.com>
+References: <1183275505.4010.136.camel@localhost.localdomain>
+	 <20070710231601.798304e0.akpm@linux-foundation.org>
+	 <1184154399.3867.44.camel@dhcp4.linsyssoft.com>
+	 <1185951857.3875.6.camel@dhcp4.linsyssoft.com>
+Content-Type: text/plain
+Organization: IBM Linux Technology Center
+Date: Mon, 06 Aug 2007 22:25:08 -0700
+Message-Id: <1186464308.4303.146.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007 00:33:26 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-
-> On 08/06, Andrew Morton wrote:
-> >
-> > On Fri, 3 Aug 2007 01:20:09 +0400 Oleg Nesterov <oleg@tv-sign.ru> wrote:
-> > 
-> > > 2. We are playing games with ->nsproxy->pid_ns. This code is bogus today, and
-> > >    it has to be changed anyway when we really support pid namespaces, just
-> > >    remove it.
-> >
-> > This patch broke
-> > 
-> > pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch.  This hunk:
-> > 
-> > ***************
-> > *** 908,915 ****
-> >   	if (unlikely(!tsk->pid))
-> >   		panic("Attempted to kill the idle task!");
-> >   	if (unlikely(tsk == child_reaper(tsk))) {
-> > - 		if (tsk->nsproxy->pid_ns != &init_pid_ns)
-> > - 			tsk->nsproxy->pid_ns->child_reaper = init_pid_ns.child_reaper;
-> >   		else
-> >   			panic("Attempted to kill init!");
-> >   	}
-> > --- 908,916 ----
-> >   	if (unlikely(!tsk->pid))
-> >   		panic("Attempted to kill the idle task!");
-> >   	if (unlikely(tsk == child_reaper(tsk))) {
-> > + 		if (task_active_pid_ns(tsk) != &init_pid_ns)
-> > + 			task_active_pid_ns(tsk)->child_reaper =
-> > + 					init_pid_ns.child_reaper;
-> >   		else
-> >   			panic("Attempted to kill init!");
-> >   	}
-> > 
-> > has no place to live any more, so I just removed it.
+On Wed, 2007-08-01 at 12:34 +0530, Girish Shilamkar wrote:
+> On Wed, 2007-07-11 at 17:16 +0530, Girish Shilamkar wrote:
 > 
-> Ah, thanks. I should have done this patch against -mm tree.
-> 
-> I hope it is OK to drop this chunk of
-> 	pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch
-> 
-> Because it can't work right now anyway, and Sukadev+Pavel already have
-> new patches on top this one which make namespace switch actually work.
-> 
+> > I will make the changes and send an incremental patch.
+> > 
+> Hi,
+> 	I have made the changes and attached the incremental patch as per the
+> review.
 
-OK, well I had to make a bit of on-the-fly adjustment to
-pid-namespaces-rename-child_reaper-function.patch as well.
+Thanks,
 
-The diff-of-the-diff is:
+I merged your changes to ext4-patch-queue.
 
-@@ -48,7 +48,7 @@
- diff -puN kernel/exit.c~pid-namespaces-rename-child_reaper-function kernel/exit.c
- --- a/kernel/exit.c~pid-namespaces-rename-child_reaper-function
- +++ a/kernel/exit.c
--@@ -694,7 +694,7 @@ forget_original_parent(struct task_struc
-+@@ -683,7 +683,7 @@ forget_original_parent(struct task_struc
-  	do {
-  		reaper = next_thread(reaper);
-  		if (reaper == father) {
-@@ -57,19 +57,10 @@
-  			break;
-  		}
-  	} while (reaper->exit_state);
--@@ -907,7 +907,7 @@ fastcall NORET_TYPE void do_exit(long co
-- 		panic("Aiee, killing interrupt handler!");
-- 	if (unlikely(!tsk->pid))
-- 		panic("Attempted to kill the idle task!");
---	if (unlikely(tsk == child_reaper(tsk))) {
--+	if (unlikely(tsk == task_child_reaper(tsk))) {
-- 		if (task_active_pid_ns(tsk) != &init_pid_ns)
-- 			task_active_pid_ns(tsk)->child_reaper =
-- 					init_pid_ns.child_reaper;
- diff -puN kernel/signal.c~pid-namespaces-rename-child_reaper-function kernel/signal.c
-
-Hopefully people can re-review and retest what's there in next -mm.
-
-Or if that's too much work or too risky, option b) is to drop
-handle-the-multi-threaded-inits-exit-properly.patch, go back to the
-2.6.23-rc1-mm2 versions of
-pid-namespaces-define-and-use-task_active_pid_ns-wrapper.patch and
-pid-namespaces-rename-child_reaper-function.patch and to ask Oleg to cook a 2.6.23-rc1-mm2 version of handle-the-multi-threaded-inits-exit-properly.patch.
-
-The downside of this approach is that
-handle-the-multi-threaded-inits-exit-properly.patch looks more 2.6.24-ready
-than all the container stuff (based just on overall impact and
-speculativeness)
+Mingming
 
