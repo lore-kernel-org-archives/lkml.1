@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbXHGRRL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934412AbXHGRVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934279AbXHGRRL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 13:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758639AbXHGRQ4
+	id S934412AbXHGRVq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 13:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760250AbXHGRVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 13:16:56 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:42283 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758346AbXHGRQz convert rfc822-to-8bit (ORCPT
+	Tue, 7 Aug 2007 13:21:39 -0400
+Received: from cluster-d.mailcontrol.com ([217.69.20.190]:39226 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757266AbXHGRVi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 13:16:55 -0400
-Date: Tue,  7 Aug 2007 19:16:33 +0200
-Message-Id: <JMEYNL$38C71F6F1D25A7CE82B12729A59CF244@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+	Tue, 7 Aug 2007 13:21:38 -0400
+Message-ID: <46B8A9DA.9030804@csr.com>
+Date: Tue, 07 Aug 2007 18:20:26 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "jarkao2" <jarkao2@o2.pl>
-Cc: "cebbert" <cebbert@redhat.com>, "mingo" <mingo@elte.hu>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
-       "alan" <alan@lxorguk.ukuu.org.uk>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 82.230.172.5
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/4] sdio: set the functions' block size
+References: <11858961933491-git-send-email-david.vrabel@csr.com>	<20070804152304.65ed8f1b@poseidon.drzeus.cx>	<46B6F877.7060504@csr.com>	<20070806171207.59fafa18@poseidon.drzeus.cx>	<46B73F18.5030109@csr.com>	<20070806220145.66b97559@poseidon.drzeus.cx>	<46B86ADB.90000@csr.com>	<46B86B88.5050009@csr.com> <20070807153800.734a6cbf@poseidon.drzeus.cx>
+In-Reply-To: <20070807153800.734a6cbf@poseidon.drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Aug 2007 17:20:33.0496 (UTC) FILETIME=[4300F580:01C7D917]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, Aug 07, 2007 at 11:21:07AM +0200, Jean-Baptiste Vignaud wrote:
-> > 
-> > > > * interrupts (i use irqbalance, but problem was the same without)
-> > >
-> > > I wonder if you tried without SMP too?
-> > 
-> > No i did not. Do you think that this can be a problem ?
-> > To test with no SMP, do i need to recompile kernel or is there a kernel parameter ?
+Pierre Ossman wrote:
+> On Tue, 07 Aug 2007 13:54:32 +0100
+> David Vrabel <david.vrabel@csr.com> wrote:
 > 
-> It's always better to exclude any complications if it's possible.
-> Yes, there is the kernel parameter for this: nosmp. So, if you
-> have some time to spare I think 2.6.23-rc2 with this nosmp
-> could be an interesting option.
+>>  
+>> Index: mmc/drivers/mmc/core/sdio.c
+>> ===================================================================
+>> --- mmc.orig/drivers/mmc/core/sdio.c	2007-08-07
+>> 00:38:33.000000000 +0100 +++ mmc/drivers/mmc/core/sdio.c
+>> 2007-08-07 07:17:29.000000000 +0100 @@ -53,6 +53,7 @@
+>>  {
+>>  	int ret;
+>>  	struct sdio_func *func;
+>> +	unsigned block_size;
+>>  
+>>  	BUG_ON(fn > SDIO_MAX_FUNCS);
+>>  
+>> @@ -70,6 +71,15 @@
+>>  	if (ret)
+>>  		goto fail;
+>>  
+>> +	/*
+>> +	 * Set the function's block size to the largest supported by
+>> +	 * both the function and the host.
+>> +	 */
+>> +	block_size = min(func->max_blksize,
+>> func->card->host->max_blk_size);
+>> +	ret = sdio_set_block_size(func, block_size);
+>> +	if (ret)
+>> +		goto fail;
+>> +
+>>  	card->sdio_func[fn - 1] = func;
+>>  
+>>  	return 0;
+> 
+> This is probably better done in the sdio_enable_func().
 
-So this afternoon i compiled 2.6.23-rc2 with same options as 2.6.23-rc1 and edited grub.conf to add nosmp but after reboot the box did not responded. Back home, i saw that the kernel failed because it was unable to find the partitions (mdadm failed, then LVM). After a few tests, removing nosmp let the kernel boot correctly. It seems that even the fedora provided kernels have the same behavior (well at least 2.6.22.1-41.fc7).
+I don't think so. A driver might enable/disable a function multiple
+times but there's no need to set the block size every time.
 
-Jb
+It may be best to move setting the block size back to before the probe
+so a driver can be sure the block size is something sensible.  Consider
+a failed probe that called sdio_set_block_size() -- this will currently
+mess up drivers probed later.
 
+David
+-- 
+David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
+CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
+
+
+.
