@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbXHGTpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbXHGTvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761870AbXHGTpJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 15:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbXHGTo5
+	id S1758458AbXHGTvT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 15:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbXHGTvJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 15:44:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55031 "EHLO mx1.redhat.com"
+	Tue, 7 Aug 2007 15:51:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57926 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753242AbXHGTo5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 15:44:57 -0400
-Date: Tue, 7 Aug 2007 15:44:37 -0400 (EDT)
-From: Chip Coldwell <coldwell@redhat.com>
-To: Vivek Goyal <vgoyal@in.ibm.com>
-cc: Martin Wilck <martin.wilck@fujitsu-siemens.com>,
-       Haren Myneni <hbabu@us.ibm.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
-In-Reply-To: <20070807142928.GA18839@in.ibm.com>
-Message-ID: <Pine.LNX.4.64.0708071540090.20769@bogart.boston.redhat.com>
-References: <46B73955.2080007@fujitsu-siemens.com> <20070807142928.GA18839@in.ibm.com>
+	id S1751874AbXHGTvI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 15:51:08 -0400
+To: Noah Watkins <nwatkins@ittc.ku.edu>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org,
+       "systemtap@sourceware.org" <systemtap@sourceware.org>
+Subject: Re: [patch 0/1] extending low-level markers
+References: <20070801215723.GA10470@ittc.ku.edu>
+	<20070802164437.GA27003@Krystal> <20070802183251.GA15216@ittc.ku.edu>
+	<20070802190211.GA12124@Krystal> <20070802193106.GC15216@ittc.ku.edu>
+	<20070802193851.GA15883@Krystal> <20070802195837.GD15216@ittc.ku.edu>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: 07 Aug 2007 15:50:37 -0400
+In-Reply-To: <20070802195837.GD15216@ittc.ku.edu>
+Message-ID: <y0m4pjbxgxe.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.0808 (Gnus v5.8.8) Emacs/21.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007, Vivek Goyal wrote:
+Noah Watkins <nwatkins@ittc.ku.edu> writes:
 
-> On Mon, Aug 06, 2007 at 05:08:05PM +0200, Martin Wilck wrote:
-> 
-> > 1. If, under SMP, the IO-APIC logical destination field is
-> >    set by the IRQ balancing code to one of the "other"
-> >    CPUs (i.e. not the crashing_cpu), and an IRQ arrives
-> >    on the respective pin after that CPU has shut down
-> >    its local APIC (but before the IO-APIC pin is masked)
-> >    the IRQ message can't be delivered.
-> 
-> Point 1 and Point 2 seems to be same.
-> 
-> > 
-> > 2. The crashing CPU itself disables its local APIC
-> >    before the IO-APIC, leaving a short time window
-> >    where the IOAPIC can receive IRQs, but not
-> >    deliver them.
-> > 
-> 
-> I doubut that it would be the issue. Looking at intel IOAPIC (82093AA)
-> documentation, it says that IRR bit of IOAPIC will be set only if
-> destination CPU has accepted the interrupt.
+> [...]
+> The locks are aquired and released in each _start and _end marker, so
+> the equilibrium is not a issue.
 
-I think you mean "destination Local APIC has accepted the interrupt"
-above.  The Intel documentation cited above contains this text on page
-12:
+But it becomes an issue should preemption, or control flow upset such
+as an early return or recursion, occurs between the start and end
+markers.
 
-    For level triggered interrupts, this bit is set to 1 when local
-    APIC(s) accept the level interrupt sent by the IOAPIC. The Remote
-    IRR bit is set to 0 when an EOI message with a matching interrupt
-    vector is received from a local APIC.
+> A more sane example is the insertion of values into a histogram. Instead
+> of the instrumenation point logging the values and having the histogram
+> constructed during a post-process step, data structures implemented the
+> histogrm are associated with the instrumenation point. The lock protects
+> this structure in a more intuitive way than the interval example.
 
-The following text is from the IA-64 documentation ...
+A better way may be to do what we do in systemtap scripts: in a
+interval-start type probe, store the start value in a table indexed by
+thread-id and nesting-level; in the interval-end type probe, find the
+corresponding value, compute the difference (as appropriate), and
+store the result only then into your long-term lookup table.  This
+approach requires *no locks* to survive between start & end: the
+probes remain atomic.
 
-    Any interrupt that is received by the processor is kept pending
-    and recorded in the Interrupt Request Register (IRR). If the
-    processor is not servicing an interrupt, then the contents of the
-    TPR determines whether the processor will accept a pending
-    interrupt depending on the priority of the interrupt compared to
-    the current TPR. If the interrupt has a higher priority, then the
-    processor is interrupted, otherwise the interrupt is kept pending.
+> I think most of problems involving non atomicity of the
+> connection/disconnection of probes can be accomplished by good house
+> keeping and settings things up in phases which insure consistency.
 
-So, I think if the CPU has interrupts disabled, but the Local APIC
-does not, the IRR could get set.  I guess we need to be sure to turn
-off the Local APIC first before disabling interrupts in the CPU.
+A marker callback can take shortcuts, I guess, if it allows itself to
+make assumptions about the ways it can be called.
 
-Chip
+I scanned over the thread, but still haven't seen a specific argument
+for extra marker-type annotations that would relate to this issue.
+What tool would need to scan the available markers, and how would
+extra information allow it to do its job?
 
--- 
-Charles M. "Chip" Coldwell
-Senior Software Engineer
-Red Hat, Inc
-978-392-2426
-
+- FChE
