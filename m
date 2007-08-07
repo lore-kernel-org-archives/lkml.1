@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935026AbXHGUqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935156AbXHGUqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935026AbXHGUqe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935063AbXHGUqB
+	id S935156AbXHGUqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935145AbXHGUqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:46:01 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51245 "EHLO
+	Tue, 7 Aug 2007 16:46:12 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51262 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935026AbXHGUp7 (ORCPT
+	with ESMTP id S935119AbXHGUqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:45:59 -0400
-Date: Tue, 7 Aug 2007 13:42:45 -0700
+	Tue, 7 Aug 2007 16:46:11 -0400
+Date: Tue, 7 Aug 2007 13:42:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
        Patrick McHardy <kaber@trash.net>,
-       Ranko Zivojnovic <ranko@spidernet.net>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [2.6.22.2 review 03/84] Fix TC deadlock.
-Message-ID: <20070807204245.GD23028@kroah.com>
+Subject: [2.6.22.2 review 04/84] Fix IPCOMP crashes.
+Message-ID: <20070807204250.GE23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-tc-deadlock.patch"
+Content-Disposition: inline; filename="fix-ipcomp-crashes.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -39,61 +38,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Patrick McHardy <kaber@trash.net>
 
-[NET_SCHED]: Revert "avoid transmit softirq on watchdog wakeup" optimization
+[XFRM]: Fix crash introduced by struct dst_entry reordering
 
-As noticed by Ranko Zivojnovic <ranko@spidernet.net>, calling qdisc_run
-from the timer handler can result in deadlock:
+XFRM expects xfrm_dst->u.next to be same pointer as dst->next, which
+was broken by the dst_entry reordering in commit 1e19e02c~, causing
+an oops in xfrm_bundle_ok when walking the bundle upwards.
 
-> CPU#0
->
-> qdisc_watchdog() fires and gets dev->queue_lock
-> qdisc_run()...qdisc_restart()...
-> -> releases dev->queue_lock and enters dev_hard_start_xmit()
->
-> CPU#1
->
-> tc del qdisc dev ...
-> qdisc_graft()...dev_graft_qdisc()...dev_deactivate()...
-> -> grabs dev->queue_lock ...
->
-> qdisc_reset()...{cbq,hfsc,htb,netem,tbf}_reset()...qdisc_watchdog_cancel()...
-> -> hrtimer_cancel() - waiting for the qdisc_watchdog() to exit, while still
->		        holding dev->queue_lock
->
-> CPU#0
->
-> dev_hard_start_xmit() returns ...
-> -> wants to get dev->queue_lock(!)
->
-> DEADLOCK!
-
-The entire optimization is a bit questionable IMO, it moves potentially
-large parts of NET_TX_SOFTIRQ work to TIMER_SOFTIRQ/HRTIMER_SOFTIRQ,
-which kind of defeats the separation of them.
+Kill xfrm_dst->u.next and change the only user to use dst->next instead.
 
 Signed-off-by: Patrick McHardy <kaber@trash.net>
-Acked-by: Ranko Zivojnovic <ranko@spidernet.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/sch_api.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ include/net/xfrm.h     |    1 -
+ net/xfrm/xfrm_policy.c |    2 +-
+ 2 files changed, 1 insertion(+), 2 deletions(-)
 
---- a/net/sched/sch_api.c
-+++ b/net/sched/sch_api.c
-@@ -290,11 +290,7 @@ static enum hrtimer_restart qdisc_watchd
+--- a/include/net/xfrm.h
++++ b/include/net/xfrm.h
+@@ -577,7 +577,6 @@ static inline int xfrm_sec_ctx_match(str
+ struct xfrm_dst
+ {
+ 	union {
+-		struct xfrm_dst		*next;
+ 		struct dst_entry	dst;
+ 		struct rtable		rt;
+ 		struct rt6_info		rt6;
+--- a/net/xfrm/xfrm_policy.c
++++ b/net/xfrm/xfrm_policy.c
+@@ -2141,7 +2141,7 @@ int xfrm_bundle_ok(struct xfrm_policy *p
+ 		if (last == first)
+ 			break;
  
- 	wd->qdisc->flags &= ~TCQ_F_THROTTLED;
- 	smp_wmb();
--	if (spin_trylock(&dev->queue_lock)) {
--		qdisc_run(dev);
--		spin_unlock(&dev->queue_lock);
--	} else
--		netif_schedule(dev);
-+	netif_schedule(dev);
+-		last = last->u.next;
++		last = (struct xfrm_dst *)last->u.dst.next;
+ 		last->child_mtu_cached = mtu;
+ 	}
  
- 	return HRTIMER_NORESTART;
- }
 
 -- 
