@@ -1,82 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbXHGCD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765794AbXHGCDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933608AbXHGCD1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 22:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932503AbXHGCDS
+	id S1765794AbXHGCDu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 22:03:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933610AbXHGCD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 22:03:18 -0400
+	Mon, 6 Aug 2007 22:03:28 -0400
 Received: from py-out-1112.google.com ([64.233.166.182]:28571 "EHLO
 	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932492AbXHGCDR (ORCPT
+	with ESMTP id S933525AbXHGCDZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 22:03:17 -0400
+	Mon, 6 Aug 2007 22:03:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=fxKxQUl4QKpQE7uUBLVNv7yJYHLPvUjq3M2RTEKn8tpLVNJYBpU/q/cTMTdurx36uhSlZPs6eXa1GQlm3lThStfDaWcb2HD2ZcMCGNtx2F1h03gfj/8Dnf4FOTARMZIYvQ4rICTF8fWqlYMzCY6fmA4KVPA+JfTTDAZ/HjGlO/o=
-Message-ID: <f56c1ba00708061903r29baea3dj6b57032be5820983@mail.gmail.com>
-Date: Mon, 6 Aug 2007 22:03:15 -0400
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
+        b=A9BzyeSrSibNxv2X5TVE1Xc8h6EThqzAh4SB3YCJJPdGpzqGkKWY9OzAymD2axaXAg3+PcYe9Ho+JUAgZxJzBag3dccT3IJTo0AoTidAJ0Jn5MCQThN/d6qvcbsDscosMtZwkvwiyJGaEIfZU7TlahywQoi9z+uQPlxvl25XVOM=
+Message-ID: <f56c1ba00708061903g356b5151w467cb9680919642c@mail.gmail.com>
+Date: Mon, 6 Aug 2007 22:03:24 -0400
 From: "=?ISO-8859-1?Q?C=E9dric_Augonnet?=" <cedric.augonnet@gmail.com>
 To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
        "Andrew Morton" <akpm@osdl.org>, "Andi Kleen" <andi@firstfloor.org>
-Subject: [PATCH 0/2] PAT support for i386 and x86_64
+Subject: [PATCH 1/2] PAT setting write combining on PAT6 at boot time
 Cc: loic@myri.com, brice@myri.com, cedric.augonnet@ens-lyon.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_80019_24974897.1186452204535"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+------=_Part_80019_24974897.1186452204535
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-For quite a while now, there as been numerous attempt to introduce support for
-Page Attribute Table (PAT) in the Linux kernel, whereas most other OS already
-have some support for this feature. Such a proposition popping up periodically,
-perhaps it would be an opportunity to fix that lack for once.
 
-  PAT actually makes life much easier for people needing to use write-combining
-(WC) attribute. Indeed the only solution yet available is MTRRs, which are not
-as flexible as PAT is.
-  Indeed, even if they both allow to set memory types on memory regions, MTRRs
-are intended to be used on a physical memory range, while PAT makes possible
-to set such memory type based on a linear address mapping. The actual problem
-with MTRR is that the BIOS usually covers physical RAM with write-back (WB),
-and that MTRRs should not be overlapped.
-  Using write-combining feature is sometimes crucial for performance of driver
-for which writes operation on the bus are critical. High-speed networking
-drivers such as myri10ge would take benefit of using PAT instead of MTRRs.
-Video drivers using frame-buffers could also avoid using MTRRs that way.
 
-  PAT6 can be a candidate for that purpose. Not only for backward compatibility
-reasons, but also as various errata concerning PAT would end up by having the
-PAT bit ignored, therefore if we use PAT6, when such an error occurs we would
-have an uncached area, which means it would at worst not be effective, thus
-resolving the issues raised in http://lkml.org/lkml/2004/4/13/102 .
+------=_Part_80019_24974897.1186452204535
+Content-Type: text/x-diff; name=pat-1.patch; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f51ql1ys
+Content-Disposition: attachment; filename="pat-1.patch"
 
- *******
-
- Back to 2.4.20, Terence Ripperda already submitted such a proposal for PAT
- support in
-   - http://lkml.org/lkml/2003/5/20/131
- himself refering to
-   - http://www.ussg.iu.edu/hypermail/linux/kernel/0303.1/0606.html
-
- In 2005, Eric W. Biederman submitted another similar patch :
-   - http://lkml.org/lkml/2005/8/29/226
-
- More recently, there have been numerous threads dealing with MTRR issues,
- some of them suggesting that there should actually be some support for PAT.
- See for instance :
-   - http://lkml.org/lkml/2007/6/6/333
-
- *******
-
- I therefore propose here a set of 2 patches to add some support for
- write-combining using PAT :
-
- [PATCH 1/2] - [PAT] Setting write combining on PAT6 at boot time
- [PATCH 2/2] - [PAT] Support for write combining in pci_mmap_page_range
-
-Kind regards,
-Cedric
+VGhpcyBzZXRzIFBBVDYgdG8gd3JpdGUgY29tYmluaW5nIGR1cmluZyBib290IG9uIGkzODYgYW5k
+IHg4Nl82NAoKU2lnbmVkLW9mZi1ieTogQ2VkcmljIEF1Z29ubmV0IDxjZWRyaWMuYXVnb25uZXRA
+ZW5zLWx5b24ub3JnPgpDQzogTG9pYyBQcnlsbGkgPGxvaWNAbXlyaS5jb20+CkNDOiBCcmljZSBH
+b2dsaW4gPGJyaWNlQG15cmkuY29tPgotLS0KZGlmZiAtdXJOIDIuNi4yMy1yYzIvYXJjaC9pMzg2
+L2tlcm5lbC9jcHUvTWFrZWZpbGUgMi42LjIzLXJjMi1wYXQvYXJjaC9pMzg2L2tlcm5lbC9jcHUv
+TWFrZWZpbGUKLS0tIDIuNi4yMy1yYzIvYXJjaC9pMzg2L2tlcm5lbC9jcHUvTWFrZWZpbGUJMjAw
+Ny0wOC0wNiAxNToxNjoxNi4wMDAwMDAwMDAgLTA0MDAKKysrIDIuNi4yMy1yYzItcGF0L2FyY2gv
+aTM4Ni9rZXJuZWwvY3B1L01ha2VmaWxlCTIwMDctMDgtMDYgMTc6NDQ6MzYuMDAwMDAwMDAwIC0w
+NDAwCkBAIC0xMSw2ICsxMSw3IEBACiBvYmoteQkrPQlpbnRlbC5vIGludGVsX2NhY2hlaW5mby5v
+IGFkZG9uX2NwdWlkX2ZlYXR1cmVzLm8KIG9iai15CSs9CW5leGdlbi5vCiBvYmoteQkrPQl1bWMu
+bworb2JqLXkJKz0JcGF0Lm8KIAogb2JqLSQoQ09ORklHX1g4Nl9NQ0UpCSs9CW1jaGVjay8KIApk
+aWZmIC11ck4gMi42LjIzLXJjMi9hcmNoL2kzODYva2VybmVsL2NwdS9wYXQuYyAyLjYuMjMtcmMy
+LXBhdC9hcmNoL2kzODYva2VybmVsL2NwdS9wYXQuYwotLS0gMi42LjIzLXJjMi9hcmNoL2kzODYv
+a2VybmVsL2NwdS9wYXQuYwkxOTY5LTEyLTMxIDE5OjAwOjAwLjAwMDAwMDAwMCAtMDUwMAorKysg
+Mi42LjIzLXJjMi1wYXQvYXJjaC9pMzg2L2tlcm5lbC9jcHUvcGF0LmMJMjAwNy0wOC0wNiAxODox
+NjozNy4wMDAwMDAwMDAgLTA0MDAKQEAgLTAsMCArMSwzNiBAQAorLyoKKyAqIHg4NiBQYWdlIEF0
+dHJpYnV0ZSBUYWJsZSAoUEFUKSBzdXBwb3J0LgorICogQ29weXJpZ2h0IChDKSAyMDA3IENlZHJp
+YyBBdWdvbm5ldC4KKyAqICAgICAgICAgICAoQykgMjAwNyBNeXJpY29tLCBJbmMuCisgKiAgICAg
+ICAgICAgKEMpIDIwMDMgSmVmZiBIYXJ0bWFubgorICogICAgICAgICAgIChDKSAyMDAxIEplZmYg
+SGFydG1hbm4KKyAqLworCisjaW5jbHVkZSA8bGludXgvaW5pdC5oPgorI2luY2x1ZGUgPGxpbnV4
+L2tlcm5lbC5oPgorI2luY2x1ZGUgPGxpbnV4L3NtcC5oPgorI2luY2x1ZGUgPGxpbnV4L2lvLmg+
+CisjaW5jbHVkZSA8YXNtL3BhdC5oPgorI2luY2x1ZGUgPGFzbS9jcHVmZWF0dXJlLmg+CisKK3N0
+YXRpYyBpbmxpbmUgdm9pZAorZW5hYmxlX3BhdF9vbl9jcHUodm9pZCAqaW5mbykKK3sKKwl1aW50
+MzJfdCBsb3c7CisJdWludDMyX3QgaGlnaDsKKworCS8qIHVzZSBQQVQgNiBmb3Igd3JpdGUgY29t
+YmluaW5nICovCisJcmRtc3IoTVNSX0NSX1BBVCwgbG93LCBoaWdoKTsKKwlpZiAoKGhpZ2ggJiAw
+eGZmMDAwMCkgIT0gMHgwMTAwMDApIHsKKwkJaGlnaCA9IChoaWdoICYgMHhmZjAwZmZmZikgfCAw
+eDAwMDEwMDAwOworCQl3cm1zcihNU1JfQ1JfUEFULCBsb3csIGhpZ2gpOworCX0KK30KKwordm9p
+ZCBfX2luaXQKK3BhdF9pbml0KHZvaWQpCit7CisJLyogZW5hYmxlIFBBVCBpcyBDUFUgc3VwcG9y
+dHMgaXQgKi8KKwlpZiAoY3B1X2hhc19wYXQpCisJCW9uX2VhY2hfY3B1KGVuYWJsZV9wYXRfb25f
+Y3B1LCAwLCAwLCAxKTsKK30KZGlmZiAtdXJOIDIuNi4yMy1yYzIvYXJjaC9pMzg2L2tlcm5lbC9z
+ZXR1cC5jIDIuNi4yMy1yYzItcGF0L2FyY2gvaTM4Ni9rZXJuZWwvc2V0dXAuYwotLS0gMi42LjIz
+LXJjMi9hcmNoL2kzODYva2VybmVsL3NldHVwLmMJMjAwNy0wOC0wNiAxNToxNjoxNy4wMDAwMDAw
+MDAgLTA0MDAKKysrIDIuNi4yMy1yYzItcGF0L2FyY2gvaTM4Ni9rZXJuZWwvc2V0dXAuYwkyMDA3
+LTA4LTA2IDE3OjQ0OjM2LjAwMDAwMDAwMCAtMDQwMApAQCAtNjIsNiArNjIsNyBAQAogI2luY2x1
+ZGUgPGFzbS92bWkuaD4KICNpbmNsdWRlIDxzZXR1cF9hcmNoLmg+CiAjaW5jbHVkZSA8Ymlvc19l
+YmRhLmg+CisjaW5jbHVkZSA8YXNtL3BhdC5oPgogCiAvKiBUaGlzIHZhbHVlIGlzIHNldCB1cCBi
+eSB0aGUgZWFybHkgYm9vdCBjb2RlIHRvIHBvaW50IHRvIHRoZSB2YWx1ZQogICAgaW1tZWRpYXRl
+bHkgYWZ0ZXIgdGhlIGJvb3QgdGltZSBwYWdlIHRhYmxlcy4gIEl0IGNvbnRhaW5zIGEgKnBoeXNp
+Y2FsKgpAQCAtNjUwLDQgKzY1MSw1IEBACiAJY29uc3dpdGNocCA9ICZkdW1teV9jb247CiAjZW5k
+aWYKICNlbmRpZgorCXBhdF9pbml0KCk7CiB9CmRpZmYgLXVyTiAyLjYuMjMtcmMyL2FyY2gveDg2
+XzY0L2tlcm5lbC9NYWtlZmlsZSAyLjYuMjMtcmMyLXBhdC9hcmNoL3g4Nl82NC9rZXJuZWwvTWFr
+ZWZpbGUKLS0tIDIuNi4yMy1yYzIvYXJjaC94ODZfNjQva2VybmVsL01ha2VmaWxlCTIwMDctMDgt
+MDYgMTU6MTY6MjcuMDAwMDAwMDAwIC0wNDAwCisrKyAyLjYuMjMtcmMyLXBhdC9hcmNoL3g4Nl82
+NC9rZXJuZWwvTWFrZWZpbGUJMjAwNy0wOC0wNiAxNzo0NDozNi4wMDAwMDAwMDAgLTA0MDAKQEAg
+LTE2LDYgKzE2LDcgQEAKIG9iai0kKENPTkZJR19YODZfTUNFX0lOVEVMKQkrPSBtY2VfaW50ZWwu
+bwogb2JqLSQoQ09ORklHX1g4Nl9NQ0VfQU1EKQkrPSBtY2VfYW1kLm8KIG9iai0kKENPTkZJR19N
+VFJSKQkJKz0gLi4vLi4vaTM4Ni9rZXJuZWwvY3B1L210cnIvCitvYmoteQkJCQkrPSBwYXQubwog
+b2JqLSQoQ09ORklHX0FDUEkpCQkrPSBhY3BpLwogb2JqLSQoQ09ORklHX1g4Nl9NU1IpCQkrPSBt
+c3Iubwogb2JqLSQoQ09ORklHX01JQ1JPQ09ERSkJCSs9IG1pY3JvY29kZS5vCkBAIC02MSwzICs2
+Miw0IEBACiBhbHRlcm5hdGl2ZS15CQkJKz0gLi4vLi4vaTM4Ni9rZXJuZWwvYWx0ZXJuYXRpdmUu
+bwogcGNzcGVha2VyLXkJCQkrPSAuLi8uLi9pMzg2L2tlcm5lbC9wY3NwZWFrZXIubwogcGVyZmN0
+ci13YXRjaGRvZy15CQkrPSAuLi8uLi9pMzg2L2tlcm5lbC9jcHUvcGVyZmN0ci13YXRjaGRvZy5v
+CitwYXQteQkJCQkrPSAuLi8uLi9pMzg2L2tlcm5lbC9jcHUvcGF0Lm8KZGlmZiAtdXJOIDIuNi4y
+My1yYzIvYXJjaC94ODZfNjQva2VybmVsL3NldHVwLmMgMi42LjIzLXJjMi1wYXQvYXJjaC94ODZf
+NjQva2VybmVsL3NldHVwLmMKLS0tIDIuNi4yMy1yYzIvYXJjaC94ODZfNjQva2VybmVsL3NldHVw
+LmMJMjAwNy0wOC0wNiAxNToxNjoyNy4wMDAwMDAwMDAgLTA0MDAKKysrIDIuNi4yMy1yYzItcGF0
+L2FyY2gveDg2XzY0L2tlcm5lbC9zZXR1cC5jCTIwMDctMDgtMDYgMTc6NDQ6MzYuMDAwMDAwMDAw
+IC0wNDAwCkBAIC02NCw2ICs2NCw3IEBACiAjaW5jbHVkZSA8YXNtL251bWEuaD4KICNpbmNsdWRl
+IDxhc20vc2VjdGlvbnMuaD4KICNpbmNsdWRlIDxhc20vZG1pLmg+CisjaW5jbHVkZSA8YXNtL3Bh
+dC5oPgogCiAvKgogICogTWFjaGluZSBzZXR1cC4uCkBAIC00MTYsNiArNDE3LDcgQEAKIAljb25z
+d2l0Y2hwID0gJmR1bW15X2NvbjsKICNlbmRpZgogI2VuZGlmCisJcGF0X2luaXQoKTsKIH0KIAog
+c3RhdGljIGludCBfX2NwdWluaXQgZ2V0X21vZGVsX25hbWUoc3RydWN0IGNwdWluZm9feDg2ICpj
+KQpkaWZmIC11ck4gMi42LjIzLXJjMi9pbmNsdWRlL2FzbS1pMzg2L2NwdWZlYXR1cmUuaCAyLjYu
+MjMtcmMyLXBhdC9pbmNsdWRlL2FzbS1pMzg2L2NwdWZlYXR1cmUuaAotLS0gMi42LjIzLXJjMi9p
+bmNsdWRlL2FzbS1pMzg2L2NwdWZlYXR1cmUuaAkyMDA3LTA4LTA2IDE1OjE3OjEyLjAwMDAwMDAw
+MCAtMDQwMAorKysgMi42LjIzLXJjMi1wYXQvaW5jbHVkZS9hc20taTM4Ni9jcHVmZWF0dXJlLmgJ
+MjAwNy0wOC0wNiAxNzo0NDozNi4wMDAwMDAwMDAgLTA0MDAKQEAgLTE2NCw2ICsxNjQsNyBAQAog
+I2RlZmluZSBjcHVfaGFzX3BlYnMgCQlib290X2NwdV9oYXMoWDg2X0ZFQVRVUkVfUEVCUykKICNk
+ZWZpbmUgY3B1X2hhc19jbGZsdXNoCQlib290X2NwdV9oYXMoWDg2X0ZFQVRVUkVfQ0xGTFNIKQog
+I2RlZmluZSBjcHVfaGFzX2J0cyAJCWJvb3RfY3B1X2hhcyhYODZfRkVBVFVSRV9CVFMpCisjZGVm
+aW5lIGNwdV9oYXNfcGF0CQlib290X2NwdV9oYXMoWDg2X0ZFQVRVUkVfUEFUKQogCiAjZW5kaWYg
+LyogX19BU01fSTM4Nl9DUFVGRUFUVVJFX0ggKi8KIApkaWZmIC11ck4gMi42LjIzLXJjMi9pbmNs
+dWRlL2FzbS1pMzg2L3BhdC5oIDIuNi4yMy1yYzItcGF0L2luY2x1ZGUvYXNtLWkzODYvcGF0LmgK
+LS0tIDIuNi4yMy1yYzIvaW5jbHVkZS9hc20taTM4Ni9wYXQuaAkxOTY5LTEyLTMxIDE5OjAwOjAw
+LjAwMDAwMDAwMCAtMDUwMAorKysgMi42LjIzLXJjMi1wYXQvaW5jbHVkZS9hc20taTM4Ni9wYXQu
+aAkyMDA3LTA4LTA2IDE4OjI2OjExLjAwMDAwMDAwMCAtMDQwMApAQCAtMCwwICsxLDMyIEBACisv
+KgorICogeDg2IFBhZ2UgQXR0cmlidXRlIFRhYmxlIChQQVQpIHN1cHBvcnQuCisgKiBDb3B5cmln
+aHQgKEMpIDIwMDcgQ2VkcmljIEF1Z29ubmV0LgorICogICAgICAgICAgIChDKSAyMDA3IE15cmlj
+b20sIEluYy4KKyAqICAgICAgICAgICAoQykgMjAwMyBKZWZmIEhhcnRtYW5uCisgKiAgICAgICAg
+ICAgKEMpIDIwMDEgSmVmZiBIYXJ0bWFubgorICovCisKKyNpZm5kZWYgX0xJTlVYX1BBVF9ICisj
+ZGVmaW5lIF9MSU5VWF9QQVRfSAorCisjZGVmaW5lCU1TUl9DUl9QQVQJMHgyNzcKKworLyoKKyAq
+ICAgT25jZSBQQVQgaXMgZW5hYmxlZCB1c2luZyBwYXRfaW5pdCBvbiBlYWNoIENQVSx3ZSBzaG91
+bGQgaGF2ZSB0aGUKKyAqIGZvbGxvd2luZyBsYXlvdXQgOiB0aGUgZmlyc3QgZm91ciBhcmUgbm90
+IGNoYW5nZWQgZm9yIGJhY2t3YXJkCisgKiBjb21wYXRpYmlsaXR5IHdpdGggcHJvY2Vzc29ycyBu
+b3QgaW1wbGVtZW50aW5nIFBBVCAuIFBBVCA2IGlzIGNoYW5nZWQKKyAqIHRvIHdyaXRlIGNvbWJp
+bmluZyBtb2RlLgorICoKKyAqICAgCVBBVCAwIDogV0IJCSBQQVQgNCA6IFdCCisgKiAgIAlQQVQg
+MSA6IFdUCQkgUEFUIDUgOiBXVAorICogICAJUEFUIDIgOiBVQy0JCSBQQVQgNiA6IFdDCisgKiAg
+IAlQQVQgMyA6IFVDCQkgUEFUIDcgOiBVQy0KKyAqCisgKi8KKworLyoKKyAqIFRoaXMgZnVuY3Rp
+b24gZW5hYmxlcyB3cml0ZSBjb21iaW5pbmcgb24gUEFUNiBvbiBlYWNoIENQVS4KKyAqLworZXh0
+ZXJuIHZvaWQgcGF0X2luaXQodm9pZCk7CisKKyNlbmRpZgpkaWZmIC11ck4gMi42LjIzLXJjMi9p
+bmNsdWRlL2FzbS14ODZfNjQvcGF0LmggMi42LjIzLXJjMi1wYXQvaW5jbHVkZS9hc20teDg2XzY0
+L3BhdC5oCi0tLSAyLjYuMjMtcmMyL2luY2x1ZGUvYXNtLXg4Nl82NC9wYXQuaAkxOTY5LTEyLTMx
+IDE5OjAwOjAwLjAwMDAwMDAwMCAtMDUwMAorKysgMi42LjIzLXJjMi1wYXQvaW5jbHVkZS9hc20t
+eDg2XzY0L3BhdC5oCTIwMDctMDgtMDYgMTc6NDQ6MzYuMDAwMDAwMDAwIC0wNDAwCkBAIC0wLDAg
+KzEsNiBAQAorI2lmbmRlZiAgX0xJTlVYX1BBVF9YODZfNjRfSAorI2RlZmluZSAgX0xJTlVYX1BB
+VF9YODZfNjRfSAorCisjaW5jbHVkZSA8YXNtLWkzODYvcGF0Lmg+CisKKyNlbmRpZgo=
+------=_Part_80019_24974897.1186452204535--
