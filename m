@@ -1,104 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935056AbXHGRy4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934563AbXHGSIc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935056AbXHGRy4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 13:54:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762313AbXHGRyt
+	id S934563AbXHGSIc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 14:08:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759275AbXHGSIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 13:54:49 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:36519 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758967AbXHGRys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 13:54:48 -0400
-Date: Tue, 7 Aug 2007 19:54:45 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/4] sdio: set the functions' block size
-Message-ID: <20070807195445.62d107e2@poseidon.drzeus.cx>
-In-Reply-To: <46B8A9DA.9030804@csr.com>
-References: <11858961933491-git-send-email-david.vrabel@csr.com>
-	<20070804152304.65ed8f1b@poseidon.drzeus.cx>
-	<46B6F877.7060504@csr.com>
-	<20070806171207.59fafa18@poseidon.drzeus.cx>
-	<46B73F18.5030109@csr.com>
-	<20070806220145.66b97559@poseidon.drzeus.cx>
-	<46B86ADB.90000@csr.com>
-	<46B86B88.5050009@csr.com>
-	<20070807153800.734a6cbf@poseidon.drzeus.cx>
-	<46B8A9DA.9030804@csr.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Aug 2007 14:08:23 -0400
+Received: from nds154-200.nds.lab.novell.com ([151.155.154.200]:6913 "EHLO
+	lsg.lab.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755174AbXHGSIW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 14:08:22 -0400
+X-Greylist: delayed 1467 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Aug 2007 14:08:22 EDT
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [PATCH] Workaround for rq->lock deadlock
+To: linux-rt-users@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, dwalker@mvista.com, mingo@elte.hu,
+       ghaskins@novell.com
+Date: Tue, 07 Aug 2007 11:43:55 -0600
+Message-ID: <20070807173827.3210.85330.stgit@lsg>
+User-Agent: StGIT/0.12.1
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Aug 2007 18:20:26 +0100
-David Vrabel <david.vrabel@csr.com> wrote:
+The following patch converts double_lock_balance to a full DP alogorithm to
+work around a deadlock in the scheduler when running on an 8-way SMP system.
 
-> Pierre Ossman wrote:
-> > On Tue, 07 Aug 2007 13:54:32 +0100
-> > David Vrabel <david.vrabel@csr.com> wrote:
-> > 
-> >>  
-> >> Index: mmc/drivers/mmc/core/sdio.c
-> >> ===================================================================
-> >> --- mmc.orig/drivers/mmc/core/sdio.c	2007-08-07
-> >> 00:38:33.000000000 +0100 +++ mmc/drivers/mmc/core/sdio.c
-> >> 2007-08-07 07:17:29.000000000 +0100 @@ -53,6 +53,7 @@
-> >>  {
-> >>  	int ret;
-> >>  	struct sdio_func *func;
-> >> +	unsigned block_size;
-> >>  
-> >>  	BUG_ON(fn > SDIO_MAX_FUNCS);
-> >>  
-> >> @@ -70,6 +71,15 @@
-> >>  	if (ret)
-> >>  		goto fail;
-> >>  
-> >> +	/*
-> >> +	 * Set the function's block size to the largest supported
-> >> by
-> >> +	 * both the function and the host.
-> >> +	 */
-> >> +	block_size = min(func->max_blksize,
-> >> func->card->host->max_blk_size);
-> >> +	ret = sdio_set_block_size(func, block_size);
-> >> +	if (ret)
-> >> +		goto fail;
-> >> +
-> >>  	card->sdio_func[fn - 1] = func;
-> >>  
-> >>  	return 0;
-> > 
-> > This is probably better done in the sdio_enable_func().
-> 
-> I don't think so. A driver might enable/disable a function multiple
-> times but there's no need to set the block size every time.
-> 
+I think the original algorithm in this function is technically correct.  So
+really this patch is plastering over another lurking issue.  However, it does
+fix the observed deadlock on our systems here so I thought I would at least
+share the discovery.
 
-Why would it want to do that?
+The actual problem is probably related to a code path which takes
+task_rq_locks without using the balancer code.  It might also be a race
+between an rq_lock and something else. TBD
 
-Anyway, as long as cur_blksz is preserved, sdio_set_block_size() can
-easily filter out redundant calls. No need to compromise in the rest of
-the code for that.
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 
-In the patch I sent, the block size is set the first time is needed.
-Wouldn't that avoid all problems?
+---
 
-> It may be best to move setting the block size back to before the probe
-> so a driver can be sure the block size is something sensible.
-> Consider a failed probe that called sdio_set_block_size() -- this
-> will currently mess up drivers probed later.
-> 
+ kernel/sched.c |   19 ++++++++++++-------
+ 1 files changed, 12 insertions(+), 7 deletions(-)
 
-Right, or remove the lock in the variant I proposed.
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6f2cf6a..e946e3f 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2507,14 +2507,19 @@ static int double_lock_balance(struct rq *this_rq, struct rq *busiest)
+ 		BUG_ON(1);
+ 	}
+ 	if (unlikely(!spin_trylock(&busiest->lock))) {
+-		if (busiest < this_rq) {
+-			spin_unlock(&this_rq->lock);
+-			spin_lock(&busiest->lock);
+-			spin_lock(&this_rq->lock);
++		struct rq *rq_l =  busiest < this_rq ? busiest : this_rq;
++		struct rq *rq_h =  busiest > this_rq ? busiest : this_rq;
+ 
+-			return 1;
+-		} else
+-			spin_lock(&busiest->lock);
++		spin_unlock(&this_rq->lock);
++
++		while (1) {
++			if (spin_trylock(&rq_l->lock)) {
++				if (spin_trylock(&rq_h->lock))
++					return 1;
++				else
++					spin_unlock(&rq_l->lock);
++			}
++		}
+ 	}
+ 	return 0;
+ }
 
-Rgds
--- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
