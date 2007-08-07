@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765833AbXHGVAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936078AbXHGVBE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765833AbXHGVAb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754404AbXHGUu1
+	id S936078AbXHGVBE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:01:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964935AbXHGUuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:50:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56275 "EHLO
+	Tue, 7 Aug 2007 16:50:39 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56295 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964891AbXHGUuZ (ORCPT
+	with ESMTP id S964930AbXHGUuh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:50:25 -0400
-Date: Tue, 7 Aug 2007 13:45:07 -0700
+	Tue, 7 Aug 2007 16:50:37 -0400
+Date: Tue, 7 Aug 2007 13:45:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Hans Verkuil <hverkuil@xs4all.nl>,
        Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [2.6.22.2 review 28/84] V4L: ivtv: fix broken VBI output support
-Message-ID: <20070807204506.GC23028@kroah.com>
+Subject: [2.6.22.2 review 29/84] V4L: ivtv: fix DMA timeout when capturing
+	VBI + another stream
+Message-ID: <20070807204510.GD23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="v4l-ivtv-fix-broken-vbi-output-support.patch"
+Content-Disposition: inline; filename="v4l-ivtv-fix-dma-timeout-when-capturing-vbi-another-stream.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -38,12 +39,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hans Verkuil <hverkuil@xs4all.nl>
 
-The old service_set_out setting was still tested, even though it no longer
-was ever set and was in fact obsolete. This meant that everything that was
-written to /dev/vbi16 was ignored. Removed the service_set_out variable
-altogether and now it works again.
+The VBI DMA is handled in a special way and is marked with a bit.
+However, that bit was set at the wrong time and could be cleared
+by mistake if a PCM (or other) DMA request would arrive before the
+VBI DMA was completed. So on completion of the VBI DMA the driver
+no longer knew that that DMA transfer was for VBI data. And this
+in turn caused havoc with the card's DMA engine.
 
-(cherry picked from commit 47fd3ba9fc62d23a985f4969719c3091438d21c5)
+(cherry picked from commit dd1e729d63f74a0b6290ca417bafd3fd8665db50)
 
 Signed-off-by: Hans Verkuil <hverkuil@xs4all.nl>
 Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org>
@@ -51,73 +54,38 @@ Signed-off-by: Michael Krufky <mkrufky@linuxtv.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/ivtv/ivtv-driver.h |    1 -
- drivers/media/video/ivtv/ivtv-vbi.c    |   31 +++++++++++--------------------
- 2 files changed, 11 insertions(+), 21 deletions(-)
+ drivers/media/video/ivtv/ivtv-irq.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
---- a/drivers/media/video/ivtv/ivtv-driver.h
-+++ b/drivers/media/video/ivtv/ivtv-driver.h
-@@ -650,7 +650,6 @@ struct vbi_info {
- 	/* convenience pointer to sliced struct in vbi_in union */
- 	struct v4l2_sliced_vbi_format *sliced_in;
- 	u32 service_set_in;
--	u32 service_set_out;
- 	int insert_mpeg;
+--- a/drivers/media/video/ivtv/ivtv-irq.c
++++ b/drivers/media/video/ivtv/ivtv-irq.c
+@@ -403,6 +403,11 @@ static void ivtv_dma_enc_start(struct iv
+ 	/* Mark last buffer size for Interrupt flag */
+ 	s->SGarray[s->SG_length - 1].size |= cpu_to_le32(0x80000000);
  
- 	/* Buffer for the maximum of 2 * 18 * packet_size sliced VBI lines.
---- a/drivers/media/video/ivtv/ivtv-vbi.c
-+++ b/drivers/media/video/ivtv/ivtv-vbi.c
-@@ -219,31 +219,23 @@ ssize_t ivtv_write_vbi(struct ivtv *itv,
- 	int found_cc = 0;
- 	int cc_pos = itv->vbi.cc_pos;
- 
--	if (itv->vbi.service_set_out == 0)
--		return -EPERM;
--
- 	while (count >= sizeof(struct v4l2_sliced_vbi_data)) {
- 		switch (p->id) {
- 		case V4L2_SLICED_CAPTION_525:
--			if (p->id == V4L2_SLICED_CAPTION_525 &&
--			    p->line == 21 &&
--			    (itv->vbi.service_set_out &
--				V4L2_SLICED_CAPTION_525) == 0) {
--				break;
--			}
--			found_cc = 1;
--			if (p->field) {
--				cc[2] = p->data[0];
--				cc[3] = p->data[1];
--			} else {
--				cc[0] = p->data[0];
--				cc[1] = p->data[1];
-+			if (p->line == 21) {
-+				found_cc = 1;
-+				if (p->field) {
-+					cc[2] = p->data[0];
-+					cc[3] = p->data[1];
-+				} else {
-+					cc[0] = p->data[0];
-+					cc[1] = p->data[1];
-+				}
- 			}
- 			break;
- 
- 		case V4L2_SLICED_VPS:
--			if (p->line == 16 && p->field == 0 &&
--			    (itv->vbi.service_set_out & V4L2_SLICED_VPS)) {
-+			if (p->line == 16 && p->field == 0) {
- 				itv->vbi.vps[0] = p->data[2];
- 				itv->vbi.vps[1] = p->data[8];
- 				itv->vbi.vps[2] = p->data[9];
-@@ -255,8 +247,7 @@ ssize_t ivtv_write_vbi(struct ivtv *itv,
- 			break;
- 
- 		case V4L2_SLICED_WSS_625:
--			if (p->line == 23 && p->field == 0 &&
--			    (itv->vbi.service_set_out & V4L2_SLICED_WSS_625)) {
-+			if (p->line == 23 && p->field == 0) {
- 				/* No lock needed for WSS */
- 				itv->vbi.wss = p->data[0] | (p->data[1] << 8);
- 				itv->vbi.wss_found = 1;
++	if (s->type == IVTV_ENC_STREAM_TYPE_VBI)
++		set_bit(IVTV_F_I_ENC_VBI, &itv->i_flags);
++	else
++		clear_bit(IVTV_F_I_ENC_VBI, &itv->i_flags);
++
+ 	if (ivtv_use_pio(s)) {
+ 		for (i = 0; i < s->SG_length; i++) {
+ 			s->PIOarray[i].src = le32_to_cpu(s->SGarray[i].src);
+@@ -597,7 +602,6 @@ static void ivtv_irq_enc_start_cap(struc
+ 				data[0], data[1], data[2]);
+ 		return;
+ 	}
+-	clear_bit(IVTV_F_I_ENC_VBI, &itv->i_flags);
+ 	s = &itv->streams[ivtv_stream_map[data[0]]];
+ 	if (!stream_enc_dma_append(s, data)) {
+ 		set_bit(ivtv_use_pio(s) ? IVTV_F_S_PIO_PENDING : IVTV_F_S_DMA_PENDING, &s->s_flags);
+@@ -634,7 +638,6 @@ static void ivtv_irq_enc_vbi_cap(struct 
+ 	   then start a DMA request for just the VBI data. */
+ 	if (!stream_enc_dma_append(s, data) &&
+ 			!test_bit(IVTV_F_S_STREAMING, &s_mpg->s_flags)) {
+-		set_bit(IVTV_F_I_ENC_VBI, &itv->i_flags);
+ 		set_bit(ivtv_use_pio(s) ? IVTV_F_S_PIO_PENDING : IVTV_F_S_DMA_PENDING, &s->s_flags);
+ 	}
+ }
 
 -- 
