@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934051AbXHGAwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765725AbXHGA7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934051AbXHGAwV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 20:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763046AbXHGAwJ
+	id S1765725AbXHGA7I (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 20:59:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764321AbXHGA66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 20:52:09 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:49878 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764136AbXHGAwH (ORCPT
+	Mon, 6 Aug 2007 20:58:58 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:33430 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764214AbXHGA65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 20:52:07 -0400
-Date: Mon, 6 Aug 2007 17:51:57 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
-In-Reply-To: <1186248703.3439.20.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
-References: <1186248703.3439.20.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 6 Aug 2007 20:58:57 -0400
+Date: Tue, 7 Aug 2007 01:58:48 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: David Chinner <dgc@sgi.com>
+Cc: Laurent Caron <lcaron@lncsa.fr>, linux-kernel@vger.kernel.org
+Subject: Re: Oops on 2.6.21 + DRBD + XFS
+Message-ID: <20070807005848.GA13793@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	David Chinner <dgc@sgi.com>, Laurent Caron <lcaron@lncsa.fr>,
+	linux-kernel@vger.kernel.org
+References: <20070806093449.aebaisai@trusted.lncsa.com> <20070806233122.GW31489@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070806233122.GW31489@sgi.com>
+User-Agent: Mutt/1.4.2.3i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Aug 07, 2007 at 09:31:22AM +1000, David Chinner wrote:
+> On Mon, Aug 06, 2007 at 09:38:19AM +0200, Laurent Caron wrote:
+> > Hi,
+> > 
+> > I'm using an XFS filesystem over DRBD for a few weeks on this machine
+> > and did experience an oops.
+> 
+> ......
+> > Aug  3 10:59:47 fileserv kernel: [<c0164be9>] cache_flusharray+0x59/0xd0 
+> > Aug  3 10:59:47 fileserv kernel: [<c0164d2a>] kmem_cache_free+0x5a/0x70 
+> > Aug  3 10:59:47 fileserv kernel: [<c025fa16>] xfs_finish_reclaim+0x36/0x170 
+> > Aug  3 10:59:47 fileserv kernel: [<c026fe41>] xfs_fs_clear_inode+0x91/0xc0 
+> > Aug  3 10:59:47 fileserv kernel: [<c017c063>] clear_inode+0x93/0x140 
+> > Aug  3 10:59:47 fileserv kernel: [<c017c38a>] dispose_list+0x1a/0xd0 
+> 
+> Can you run with slab debugging turned on?
 
-
-On Sat, 4 Aug 2007, James Bottomley wrote:
->
-> This is mainly bug fixes ... there's one or two features completions
-> that have been delayed pending ack and review to do with bsg (headers
-> and passthrough) but these are really required to complete already
-> upstream code.
-
-James, this is the last time *ever* I apply patches from you after -rc1.
-
-You used to have serious problems with the merge window, but for a few 
-releases you then seemed to "get it" and got on with the program.
-
-But now it's back to "anythign goes", apparently. And I'm going to take a 
-hard-line approach with you now. 
-
-For SCSI merges, if I don't get the first pull request in the FIRST week 
-of the merge window, don't bother sending one later, unless it's pure 
-fixes and regressions.
-
-And after -rc1, I don't want to see crap like this:
-
-	 46 files changed, 2837 insertions(+), 2050 deletions(-)
-
-because that simply is *not* appropriate after -rc1, much less -rc2.
-
-So I pulled, but I wanted to make it very clear that I'm very unhappy with 
-you right now, and you're on my shit-list for the next few releases. Get 
-the changes in before -rc1, or just *wait*. If they aren't ready before 
-the merge window opens, they simply shouldn't be merged at all.
-
-		Linus
+And please upgrade to a recent kernel.  I'm pretty sure drbd doesn't
+like the useage of slab memory for bios in older xfs versions.
