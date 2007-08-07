@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934349AbXHGOFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbXHGOIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934349AbXHGOFb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 10:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbXHGOFY
+	id S933989AbXHGOIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 10:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbXHGOIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 10:05:24 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:51352 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754937AbXHGOFX (ORCPT
+	Tue, 7 Aug 2007 10:08:31 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:46564 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754567AbXHGOIa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 10:05:23 -0400
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
-	notified
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Javier Pello <javier.pello@urjc.es>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <46B87ACA.7010501@urjc.es>
-References: <46B37CF7.2020803@urjc.es>
-	 <20070806142451.5d28d41c@gondolin.boeb lingen.de.ibm.com>
-	 <46B7832B.6010808@urjc.es>
-	 <20070807125844.4d756b04@gondo  l	in.boeblingen.de.ibm.com>
-	 <3ae72650708070446y6452d13jb7cd802119dab3ce@mail .gmail.com>
-	 <20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
-	 <46B869C6.3090708@urjc.es> <1186491472.3611.33.camel@lov.localdomain>
-	 <46B87ACA.7010501@urjc.es>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 16:08:25 +0200
-Message-Id: <1186495705.3611.39.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/FJcMrIPjXtCzSRo0hp8unq8ANgR4Vu0nDLue
- j1k1k81lu8KA8Ha7oS0k43k8yhuO/UJlUmBQFO0+A6wMhbIjhF
- RqU6jBO9dl4Rwl6uZ9lm6zVlrlIjO15
+	Tue, 7 Aug 2007 10:08:30 -0400
+Date: Tue, 7 Aug 2007 09:08:27 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] file capabilities: clear fcaps on inode change (v2)
+Message-ID: <20070807140827.GB8286@sergelap.austin.ibm.com>
+References: <20070806185231.GA21550@sergelap.austin.ibm.com> <Pine.LNX.4.64.0708070640160.31104@us.intercode.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708070640160.31104@us.intercode.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Tue, 2007-08-07 at 15:59 +0200, Javier Pello wrote:
-> On Tue, 07 Aug 2007, Kay Sievers wrote:
+Quoting James Morris (jmorris@namei.org):
+> On Mon, 6 Aug 2007, Serge E. Hallyn wrote:
 > 
-> > If you don't have modules and the initial request fails, how do you
-> > load the firmware later?
+> > +	err = security_inode_killpriv(out->f_path.dentry, LSM_NEED_LOCK);
+> > +	if (err)
+> > +		return err;
+> > +
+> >  	err = should_remove_suid(out->f_path.dentry);
+> >  	if (unlikely(err)) {
+> >  		mutex_lock(&inode->i_mutex);
 > 
-> I trigger a rebinding of the device to the driver in an init file:
-> # echo -n [device] >/sys/.../bind
+> It seems hackish to pass a needlock arg to an API, and that that we'll end 
+> up with some conceptually similar call-outs for both caps and setuid.
 > 
-> > The real fix would be to change the driver not to block in the
-> > firmware request and use async version of firmware loading. The
-> > whole firmware class with its silly timeout is just a piece of
-> > crap, that needs to be replaced.
+> How about encapsulating this stuff so that there's something like:
 > 
-> I don't think that would be a real fix. You've done away with the
-> kernel blocking, but the timeout is still there, only that in the
-> background, and my point is still true: it is useless to wait at
-> all if userspace didn't receive the event. Waiting asynchronously
-> is less annoying than waiting synchronously, but equally useless.
+> 
+> 	err = should_remove_privs();
+> 	if (err)
+> 		remove_privs();
+> 
+> with
+> 
+> void remove_privs()
+> {
+> 	mutex_lock();
+> 	__remove_privs();
+> 	mutex_unlock();
+> }
+> 
+> and then __remove_privs() handles the logic for all file privileges, 
+> including at this stage suid and the LSM call for file caps ?
 
-Nope, you would just fulfill in a completely generic way all outstanding
-requests when you are ready. All requests are all nicely grouped and
-visible in sysfs. There would be no need of coding your own device
-specific rebind. No timeout is needed or wanted, all requests would stay
-until userspace has handled them successfully or canceled them.
+The problem is that the suid bit is not removed in all cases
+when the file caps need to be removed.  In particular, if
+capable(CAP_FSETID), then the suid bit is retained.
 
-Kay
+I suppose we could change those semantics, but then we'd the code still
+doesn't flow quite right for what you suggest - should_remove_suid()
+just checks whether the suid bit is set (and the process is !capable(CAP_FSETID),
+not whether a change has happened requiring suid change.  That is
+already assumed to be the case.
 
+If your main objection is to the LSM_NEED_LOCK argument, we could of
+course just grab the mutex around security_inode_killpriv(out->f_path.dentry)
+in fs/splice.c:generic_file_splice_write().
+
+And I suppose we can in fact get rid of ATTR_KILL_PRIV.  I had just
+put it there to split up the code a bit to make it clearer - which I
+do think it does.
+
+Shall I resend without the LSM_NEED_LOCK, or do you still want a more
+fundamental change?
+
+thanks,
+-serge
