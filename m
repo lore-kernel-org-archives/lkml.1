@@ -1,236 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966344AbXHGVbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966510AbXHGVbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966344AbXHGVbE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965146AbXHGU62
+	id S966510AbXHGVbf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:31:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965273AbXHGU6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:58:28 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37665 "EHLO
+	Tue, 7 Aug 2007 16:58:38 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37683 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965250AbXHGU6Z (ORCPT
+	with ESMTP id S965270AbXHGU6g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:58:25 -0400
-Date: Tue, 7 Aug 2007 13:49:39 -0700
+	Tue, 7 Aug 2007 16:58:36 -0400
+Date: Tue, 7 Aug 2007 13:49:43 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oliver Neukum <oneukum@suse.de>
-Subject: [2.6.22.2 review 82/84] USB: fix for ftdi_sio quirk handling
-Message-ID: <20070807204939.GF23028@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, gmurray@webwayone.co.uk, jirislaby@gmail.com
+Subject: [2.6.22.2 review 83/84] sx: switch subven and subid values
+Message-ID: <20070807204943.GG23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-for-ftdi_sio-quirk-handling.patch"
+Content-Disposition: inline; filename="sx-switch-subven-and-subid-values.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oliver Neukum <oliver@neukum.org>
 
-this one fixes an oops with quirky ftdi_sio devices. As it fixes a
-regression, I propose that it be included in 2.6.22
+From: Jiri Slaby <jirislaby@gmail.com>
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
+sx.c is failing to locate Graham's card.
+
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: Graham Murray <gmurray@webwayone.co.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/ftdi_sio.c |  104 +++++++++++++++++-------------------------
- 1 file changed, 44 insertions(+), 60 deletions(-)
+ drivers/char/sx.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/usb/serial/ftdi_sio.c
-+++ b/drivers/usb/serial/ftdi_sio.c
-@@ -271,26 +271,58 @@ static int debug;
- static __u16 vendor = FTDI_VID;
- static __u16 product;
- 
-+struct ftdi_private {
-+	ftdi_chip_type_t chip_type;
-+				/* type of the device, either SIO or FT8U232AM */
-+	int baud_base;		/* baud base clock for divisor setting */
-+	int custom_divisor;	/* custom_divisor kludge, this is for baud_base (different from what goes to the chip!) */
-+	__u16 last_set_data_urb_value ;
-+				/* the last data state set - needed for doing a break */
-+        int write_offset;       /* This is the offset in the usb data block to write the serial data -
-+				 * it is different between devices
-+				 */
-+	int flags;		/* some ASYNC_xxxx flags are supported */
-+	unsigned long last_dtr_rts;	/* saved modem control outputs */
-+        wait_queue_head_t delta_msr_wait; /* Used for TIOCMIWAIT */
-+	char prev_status, diff_status;        /* Used for TIOCMIWAIT */
-+	__u8 rx_flags;		/* receive state flags (throttling) */
-+	spinlock_t rx_lock;	/* spinlock for receive state */
-+	struct delayed_work rx_work;
-+	struct usb_serial_port *port;
-+	int rx_processed;
-+	unsigned long rx_bytes;
-+
-+	__u16 interface;	/* FT2232C port interface (0 for FT232/245) */
-+
-+	int force_baud;		/* if non-zero, force the baud rate to this value */
-+	int force_rtscts;	/* if non-zero, force RTS-CTS to always be enabled */
-+
-+	spinlock_t tx_lock;	/* spinlock for transmit state */
-+	unsigned long tx_bytes;
-+	unsigned long tx_outstanding_bytes;
-+	unsigned long tx_outstanding_urbs;
-+};
-+
- /* struct ftdi_sio_quirk is used by devices requiring special attention. */
- struct ftdi_sio_quirk {
- 	int (*probe)(struct usb_serial *);
--	void (*setup)(struct usb_serial *); /* Special settings during startup. */
-+	void (*port_probe)(struct ftdi_private *); /* Special settings for probed ports. */
+--- a/drivers/char/sx.c
++++ b/drivers/char/sx.c
+@@ -2721,9 +2721,9 @@ static void __devexit sx_pci_remove(stru
+    its because the standard requires it. So check for SUBVENDOR_ID. */
+ static struct pci_device_id sx_pci_tbl[] = {
+ 	{ PCI_VENDOR_ID_SPECIALIX, PCI_DEVICE_ID_SPECIALIX_SX_XIO_IO8,
+-		.subvendor = 0x0200,.subdevice = PCI_ANY_ID },
++		.subvendor = PCI_ANY_ID, .subdevice = 0x0200 },
+ 	{ PCI_VENDOR_ID_SPECIALIX, PCI_DEVICE_ID_SPECIALIX_SX_XIO_IO8,
+-		.subvendor = 0x0300,.subdevice = PCI_ANY_ID },
++		.subvendor = PCI_ANY_ID, .subdevice = 0x0300 },
+ 	{ 0 }
  };
  
- static int   ftdi_olimex_probe		(struct usb_serial *serial);
--static void  ftdi_USB_UIRT_setup	(struct usb_serial *serial);
--static void  ftdi_HE_TIRA1_setup	(struct usb_serial *serial);
-+static void  ftdi_USB_UIRT_setup	(struct ftdi_private *priv);
-+static void  ftdi_HE_TIRA1_setup	(struct ftdi_private *priv);
- 
- static struct ftdi_sio_quirk ftdi_olimex_quirk = {
- 	.probe	= ftdi_olimex_probe,
- };
- 
- static struct ftdi_sio_quirk ftdi_USB_UIRT_quirk = {
--	.setup = ftdi_USB_UIRT_setup,
-+	.port_probe = ftdi_USB_UIRT_setup,
- };
- 
- static struct ftdi_sio_quirk ftdi_HE_TIRA1_quirk = {
--	.setup = ftdi_HE_TIRA1_setup,
-+	.port_probe = ftdi_HE_TIRA1_setup,
- };
- 
- /*
-@@ -567,38 +599,6 @@ static const char *ftdi_chip_name[] = {
- #define THROTTLED		0x01
- #define ACTUALLY_THROTTLED	0x02
- 
--struct ftdi_private {
--	ftdi_chip_type_t chip_type;
--				/* type of the device, either SIO or FT8U232AM */
--	int baud_base;		/* baud base clock for divisor setting */
--	int custom_divisor;	/* custom_divisor kludge, this is for baud_base (different from what goes to the chip!) */
--	__u16 last_set_data_urb_value ;
--				/* the last data state set - needed for doing a break */
--        int write_offset;       /* This is the offset in the usb data block to write the serial data -
--				 * it is different between devices
--				 */
--	int flags;		/* some ASYNC_xxxx flags are supported */
--	unsigned long last_dtr_rts;	/* saved modem control outputs */
--        wait_queue_head_t delta_msr_wait; /* Used for TIOCMIWAIT */
--	char prev_status, diff_status;        /* Used for TIOCMIWAIT */
--	__u8 rx_flags;		/* receive state flags (throttling) */
--	spinlock_t rx_lock;	/* spinlock for receive state */
--	struct delayed_work rx_work;
--	struct usb_serial_port *port;
--	int rx_processed;
--	unsigned long rx_bytes;
--
--	__u16 interface;	/* FT2232C port interface (0 for FT232/245) */
--
--	int force_baud;		/* if non-zero, force the baud rate to this value */
--	int force_rtscts;	/* if non-zero, force RTS-CTS to always be enabled */
--
--	spinlock_t tx_lock;	/* spinlock for transmit state */
--	unsigned long tx_bytes;
--	unsigned long tx_outstanding_bytes;
--	unsigned long tx_outstanding_urbs;
--};
--
- /* Used for TIOCMIWAIT */
- #define FTDI_STATUS_B0_MASK	(FTDI_RS0_CTS | FTDI_RS0_DSR | FTDI_RS0_RI | FTDI_RS0_RLSD)
- #define FTDI_STATUS_B1_MASK	(FTDI_RS_BI)
-@@ -609,7 +609,6 @@ struct ftdi_private {
- 
- /* function prototypes for a FTDI serial converter */
- static int  ftdi_sio_probe	(struct usb_serial *serial, const struct usb_device_id *id);
--static int  ftdi_sio_attach		(struct usb_serial *serial);
- static void ftdi_shutdown		(struct usb_serial *serial);
- static int  ftdi_sio_port_probe	(struct usb_serial_port *port);
- static int  ftdi_sio_port_remove	(struct usb_serial_port *port);
-@@ -663,7 +662,6 @@ static struct usb_serial_driver ftdi_sio
- 	.ioctl =		ftdi_ioctl,
- 	.set_termios =		ftdi_set_termios,
- 	.break_ctl =		ftdi_break_ctl,
--	.attach =		ftdi_sio_attach,
- 	.shutdown =		ftdi_shutdown,
- };
- 
-@@ -1198,6 +1196,8 @@ static int ftdi_sio_probe (struct usb_se
- static int ftdi_sio_port_probe(struct usb_serial_port *port)
- {
- 	struct ftdi_private *priv;
-+	struct ftdi_sio_quirk *quirk = usb_get_serial_data(port->serial);
-+
- 
- 	dbg("%s",__FUNCTION__);
- 
-@@ -1214,6 +1214,9 @@ static int ftdi_sio_port_probe(struct us
- 	   than queue a task to deliver them */
- 	priv->flags = ASYNC_LOW_LATENCY;
- 
-+	if (quirk && quirk->port_probe)
-+		quirk->port_probe(priv);
-+
- 	/* Increase the size of read buffers */
- 	kfree(port->bulk_in_buffer);
- 	port->bulk_in_buffer = kmalloc (BUFSZ, GFP_KERNEL);
-@@ -1244,29 +1247,13 @@ static int ftdi_sio_port_probe(struct us
- 	return 0;
- }
- 
--/* attach subroutine */
--static int ftdi_sio_attach (struct usb_serial *serial)
--{
--	/* Check for device requiring special set up. */
--	struct ftdi_sio_quirk *quirk = usb_get_serial_data(serial);
--
--	if (quirk && quirk->setup)
--		quirk->setup(serial);
--
--	return 0;
--} /* ftdi_sio_attach */
--
--
- /* Setup for the USB-UIRT device, which requires hardwired
-  * baudrate (38400 gets mapped to 312500) */
- /* Called from usbserial:serial_probe */
--static void ftdi_USB_UIRT_setup (struct usb_serial *serial)
-+static void ftdi_USB_UIRT_setup (struct ftdi_private *priv)
- {
--	struct ftdi_private *priv;
--
- 	dbg("%s",__FUNCTION__);
- 
--	priv = usb_get_serial_port_data(serial->port[0]);
- 	priv->flags |= ASYNC_SPD_CUST;
- 	priv->custom_divisor = 77;
- 	priv->force_baud = B38400;
-@@ -1274,13 +1261,10 @@ static void ftdi_USB_UIRT_setup (struct 
- 
- /* Setup for the HE-TIRA1 device, which requires hardwired
-  * baudrate (38400 gets mapped to 100000) and RTS-CTS enabled.  */
--static void ftdi_HE_TIRA1_setup (struct usb_serial *serial)
-+static void ftdi_HE_TIRA1_setup (struct ftdi_private *priv)
- {
--	struct ftdi_private *priv;
--
- 	dbg("%s",__FUNCTION__);
- 
--	priv = usb_get_serial_port_data(serial->port[0]);
- 	priv->flags |= ASYNC_SPD_CUST;
- 	priv->custom_divisor = 240;
- 	priv->force_baud = B38400;
 
 -- 
