@@ -1,109 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934291AbXHFXuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXHGAKR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934291AbXHFXuZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933339AbXHFXuI
+	id S933803AbXHGAKR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 20:10:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXHGAKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:50:08 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:45696
+	Mon, 6 Aug 2007 20:10:03 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:52210
 	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933334AbXHFXuG (ORCPT
+	by vger.kernel.org with ESMTP id S933140AbXHGAKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:50:06 -0400
+	Mon, 6 Aug 2007 20:10:00 -0400
 From: Daniel Phillips <phillips@phunq.net>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-Date: Mon, 6 Aug 2007 16:49:55 -0700
+To: Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 00/10] foundations for reserve-based allocation
+Date: Mon, 6 Aug 2007 17:09:54 -0700
 User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <clameter@sgi.com>,
        Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Steve Dickson <SteveD@redhat.com>
-References: <20070806102922.907530000@chello.nl> <200708061559.41680.phillips@phunq.net> <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl> <20070806202323.GH11115@waste.org>
+In-Reply-To: <20070806202323.GH11115@waste.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708061649.56487.phillips@phunq.net>
+Message-Id: <200708061709.54924.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 06 August 2007 16:14, Christoph Lameter wrote:
-> On Mon, 6 Aug 2007, Daniel Phillips wrote:
-> > Correct.  That is what the throttling part of these patches is
-> > about.
+Hi Matt,
+
+On Monday 06 August 2007 13:23, Matt Mackall wrote:
+> On Mon, Aug 06, 2007 at 12:29:22PM +0200, Peter Zijlstra wrote:
+> > In the interrest of getting swap over network working and posting
+> > in smaller series, here is the first series.
+> >
+> > This series lays the foundations needed to do reserve based
+> > allocation. Traditionally we have used mempools (and others like
+> > radix_tree_preload) to handle the problem.
+> >
+> > However this does not fit the network stack. It is built around
+> > variable sized allocations using kmalloc().
+> >
+> > This calls for a different approach.
 >
-> Where are those patches?
+> One wonders if containers are a possible solution. I can already
+> solve this problem with virtualization: have one VM manage all the
+> network I/O and export the device as a simpler virtual block device
+> to other VMs. Provided this VM isn't doing any "real" work and is
+> sized appropriately, it won't get wedged. Since the other VMs now
+> submit I/O through the simpler block interface, they can avoid
+> getting wedged with the standard mempool approach.
 
-Here is one user:
+The patch set posted today amounts to hardly any new bytes of code at 
+all, and the other necessary bits coming down the pipe are not much 
+heavier.  Compare to dedicating a whole VM to supressing just one of 
+the symptoms.  Much better just to cure the disease and save your VM 
+for a more noble purpose.
 
-   http://zumastor.googlecode.com/svn/trunk/ddsnap/kernel/dm-ddsnap.c
-   down(&info->throttle_sem);
+> If we can run nbd and friends inside their own container that can
+> give similar isolation, we might not need to add this other
+> complexity.
 
-Peter has another (swap over net).  A third is the network stack itself, 
-which is in the full patch set that Peter has posted a number of times 
-in the past but did not appear today because Peter broke the full patch 
-set up into multiple sets to make it all easier to understand.
+This patch set fixes a severe problem that is so far unfixed in spite of 
+a number of attempts, and does it in a simple way that translates into 
+a small amount of code.  If it comes across as complex, that is a 
+matter of presentation and tweaking.  Subtle, yes, but not complex.
 
-> AFAICT: This patchset is not throttling processes but failing
-> allocations.
+> Just food for thought. I haven't looked closely enough at the
+> containers implementations yet to determine whether this is possible
+> or if the overhead in performance or complexity is acceptable.
 
-Failing allocations?  Where do you see that?  As far as I can see, 
-Peter's patch set allows allocations to fail exactly where the user has 
-always specified they may fail, and in no new places.  If there is a 
-flaw in that logic, please let us know.
-
-What the current patch set actually does is allow some critical 
-allocations that would have failed or recursed into deadlock before to 
-succeed instead, allowing vm writeout to complete successfully.  You 
-may quibble with exactly how he accomplishes that, but preventing these 
-allocations from failing is not optional.
-
-> The patchset does not reconfigure the memory reserves as 
-> expected.
-
-What do you mean by that?  Expected by who?
-
-> Instead new reserve logic is added.
-
-Peter did not actually have to add a new layer of abstraction to 
-alloc_pages to impose order on the hardcoded hacks that currently live 
-in there to decide how far various callers can dig into reserves.  It 
-would probably help people understand this patch set if that part were 
-taken out for now and replaced with the original seat-of-the-pants two 
-line hack I had in the original.  But I do not see anything wrong with 
-what Peter has written there, it just takes a little more time to read.
-
-> And I suspect that we  
-> have the same issues as in earlier releases with various corner cases
-> not being covered.
-
-Do you have an example?
-
-> Code is added that is supposedly not used.
-
-What makes you think that?
-
-> If it  ever is on a large config then we are in very deep trouble by
-> the new code paths themselves that serialize things in order to give
-> some allocations precendence over the other allocations that are made
-> to fail ....
-
-You mean by allocating the reserve memory on the wrong node in NUMA?  
-That is on a code path that avoids destroying your machine performance 
-or killing the machine entirely as with current kernels, for which a 
-few cachelines pulled to another node is a small price to pay.  And you 
-are free to use your special expertise in NUMA to make those fallback 
-paths even more efficient, but first you need to understand what they 
-are doing and why.
-
-At your service for any more questions :-)
+Immensely more overhead than Peter's patches.
 
 Regards,
 
