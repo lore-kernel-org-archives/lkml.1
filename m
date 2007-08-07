@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936539AbXHGV5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbXHGV61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936539AbXHGV5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936546AbXHGVem
+	id S1756819AbXHGV61 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937563AbXHGVfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:34:42 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:60856 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935814AbXHGVej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:34:39 -0400
-Message-ID: <46B8E56A.104@garzik.org>
-Date: Tue, 07 Aug 2007 17:34:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 7 Aug 2007 17:35:31 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:42835 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937558AbXHGVf3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:35:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mOYIfgHBeS2PEZohbudVY6RZoQOjqvC6r974YtVBCgGMk9gozIGV0024fB8Vql7Ivv91mEvOToRnD04G9ntJTjZ6nT8Z5LlqbbtzGQ/z/8TMNVYdHoh4RhDqHQb15Q9oD3ZX7xWYKXe86rZ6kiNgnB1Xp6ax5Mm7mlrlA63B/bo=
+Message-ID: <f6ca9fed0708071435h31531279gb6ea0fc760be98df@mail.gmail.com>
+Date: Tue, 7 Aug 2007 23:35:27 +0200
+From: dragoran <drago01@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: allow non root users to set io priority "idle" ?
+Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070807204449.GA5245@kernel.dk>
 MIME-Version: 1.0
-To: Thomas Klein <osstklei@de.ibm.com>
-CC: Christoph Raisch <raisch@de.ibm.com>,
-       Jan-Bernd Themann <ossthema@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
-       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
-Subject: Re: [RESEND][PATCH 1/3] ehea: Fix workqueue handling
-References: <200708061354.30653.osstklei@de.ibm.com>
-In-Reply-To: <200708061354.30653.osstklei@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Disposition: inline
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de>
+	 <46B6F75D.1070808@gmail.com>
+	 <20070806103553.GA16133@one.firstfloor.org>
+	 <20070807204449.GA5245@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Klein wrote:
-> Fix: Workqueue ehea_driver_wq was not destroyed
-> 
-> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
-> 
-> ---
->  drivers/net/ehea/ehea.h      |    2 +-
->  drivers/net/ehea/ehea_main.c |    1 +
->  2 files changed, 2 insertions(+), 1 deletions(-)
+so there is no real reason not to allow it for non root users?
+removing the check is easy (3 lines) ....
+or are there any other issues/problems?
 
-applied 1-3 to #upstream-fixes
-
-
+On 8/7/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> On Mon, Aug 06 2007, Andi Kleen wrote:
+> > > couldn't this be fixed by bumping idle tasks to middle while they hold a
+> >
+> > Usually to high.
+> >
+> > But it's all complicated and hasn't been done consistently
+> > (there are real time mutexes in the -rt kernel for example,
+> > but there are lots of other locks and they have higher overhead too)
+> > and it's unclear we really want to do all this complexity anyways.
+> >
+> > Also as I said the problem could then still happen in user space
+> > which then would all need to be fixed to handle PI too.
+> >
+> > In some cases the relationship is also not as simple as a single
+> > lock. And for IO handling it would be likely quite hard.
+> >
+> > I personally always found idle priorities quite dubious because
+> > even if they worked reliable for the CPU they will clear your cache/
+> > load your memory controller and impact all other programs because
+> > of this. And for the disk they will cause additional seeks which are
+> > also very costly.
+>
+> But that is why the idle priority implementation in CFQ adds a grace
+> period before idle prio tasks are run. So that concern should not be an
+> issue, if so the grace period needs to be enlarged. That at least covers
+> the seek side of things. If idle io tasks run, then the IO load on the
+> system must be very low to zero. Hence other IO relevant resource
+> contention isn't an iissue.
+>
+> --
+> Jens Axboe
+>
+>
