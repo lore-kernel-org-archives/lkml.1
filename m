@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935360AbXHGUtz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964787AbXHGUue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935360AbXHGUtz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935292AbXHGUr3
+	id S964787AbXHGUue (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:50:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935152AbXHGUrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:47:29 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51408 "EHLO
+	Tue, 7 Aug 2007 16:47:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51421 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935289AbXHGUr1 (ORCPT
+	with ESMTP id S935319AbXHGUrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:47:27 -0400
-Date: Tue, 7 Aug 2007 13:43:49 -0700
+	Tue, 7 Aug 2007 16:47:36 -0400
+Date: Tue, 7 Aug 2007 13:43:52 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,229 +21,82 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Ranko Zivojnovic <ranko@spidernet.net>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [2.6.22.2 review 11/84] gen estimator deadlock fix
-Message-ID: <20070807204349.GL23028@kroah.com>
+Subject: [2.6.22.2 review 12/84] Fix error queue socket lookup in ipv6
+Message-ID: <20070807204352.GM23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="gen-estimator-deadlock-fix.patch"
+Content-Disposition: inline; filename="fix-error-queue-socket-lookup-in-ipv6.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ranko Zivojnovic <ranko@spidernet.net>
+From: Dmitry Butskoy <dmitry@butskoy.name>
 
-[NET]: gen_estimator deadlock fix
+[IPV6]: MSG_ERRQUEUE messages do not pass to connected raw sockets
 
--Fixes ABBA deadlock noted by Patrick McHardy <kaber@trash.net>:
+From: Dmitry Butskoy <dmitry@butskoy.name>
 
-> There is at least one ABBA deadlock, est_timer() does:
-> read_lock(&est_lock)
-> spin_lock(e->stats_lock) (which is dev->queue_lock)
->
-> and qdisc_destroy calls htb_destroy under dev->queue_lock, which
-> calls htb_destroy_class, then gen_kill_estimator and this
-> write_locks est_lock.
+Taken from http://bugzilla.kernel.org/show_bug.cgi?id=8747
 
-To fix the ABBA deadlock the rate estimators are now kept on an rcu list.
+Problem Description:
 
--The est_lock changes the use from protecting the list to protecting
-the update to the 'bstat' pointer in order to avoid NULL dereferencing.
+It is related to the possibility to obtain MSG_ERRQUEUE messages from the udp
+and raw sockets, both connected and unconnected.
 
--The 'interval' member of the gen_estimator structure removed as it is
-not needed.
+There is a little typo in net/ipv6/icmp.c code, which prevents such messages
+to be delivered to the errqueue of the correspond raw socket, when the socket
+is CONNECTED.  The typo is due to swap of local/remote addresses.
 
-Signed-off-by: Ranko Zivojnovic <ranko@spidernet.net>
+Consider __raw_v6_lookup() function from net/ipv6/raw.c. When a raw socket is
+looked up usual way, it is something like:
+
+sk = __raw_v6_lookup(sk, nexthdr, daddr, saddr, IP6CB(skb)->iif);
+
+where "daddr" is a destination address of the incoming packet (IOW our local
+address), "saddr" is a source address of the incoming packet (the remote end).
+
+But when the raw socket is looked up for some icmp error report, in
+net/ipv6/icmp.c:icmpv6_notify() , daddr/saddr are obtained from the echoed
+fragment of the "bad" packet, i.e.  "daddr" is the original destination
+address of that packet, "saddr" is our local address.  Hence, for
+icmpv6_notify() must use "saddr, daddr" in its arguments, not "daddr, saddr"
+...
+
+Steps to reproduce:
+
+Create some raw socket, connect it to an address, and cause some error
+situation: f.e. set ttl=1 where the remote address is more than 1 hop to reach.
+Set IPV6_RECVERR .
+Then send something and wait for the error (f.e. poll() with POLLERR|POLLIN).
+You should receive "time exceeded" icmp message (because of "ttl=1"), but the
+socket do not receive it.
+
+If you do not connect your raw socket, you will receive MSG_ERRQUEUE
+successfully.  (The reason is that for unconnected socket there are no actual
+checks for local/remote addresses).
+
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/core/gen_estimator.c |   81 ++++++++++++++++++++++++++++-------------------
- 1 file changed, 49 insertions(+), 32 deletions(-)
+ net/ipv6/icmp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/core/gen_estimator.c
-+++ b/net/core/gen_estimator.c
-@@ -79,27 +79,27 @@
+--- a/net/ipv6/icmp.c
++++ b/net/ipv6/icmp.c
+@@ -604,7 +604,7 @@ static void icmpv6_notify(struct sk_buff
  
- struct gen_estimator
- {
--	struct gen_estimator	*next;
-+	struct list_head	list;
- 	struct gnet_stats_basic	*bstats;
- 	struct gnet_stats_rate_est	*rate_est;
- 	spinlock_t		*stats_lock;
--	unsigned		interval;
- 	int			ewma_log;
- 	u64			last_bytes;
- 	u32			last_packets;
- 	u32			avpps;
- 	u32			avbps;
-+	struct rcu_head		e_rcu;
- };
- 
- struct gen_estimator_head
- {
- 	struct timer_list	timer;
--	struct gen_estimator	*list;
-+	struct list_head	list;
- };
- 
- static struct gen_estimator_head elist[EST_MAX_INTERVAL+1];
- 
--/* Estimator array lock */
-+/* Protects against NULL dereference */
- static DEFINE_RWLOCK(est_lock);
- 
- static void est_timer(unsigned long arg)
-@@ -107,13 +107,17 @@ static void est_timer(unsigned long arg)
- 	int idx = (int)arg;
- 	struct gen_estimator *e;
- 
--	read_lock(&est_lock);
--	for (e = elist[idx].list; e; e = e->next) {
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(e, &elist[idx].list, list) {
- 		u64 nbytes;
- 		u32 npackets;
- 		u32 rate;
- 
- 		spin_lock(e->stats_lock);
-+		read_lock(&est_lock);
-+		if (e->bstats == NULL)
-+			goto skip;
-+
- 		nbytes = e->bstats->bytes;
- 		npackets = e->bstats->packets;
- 		rate = (nbytes - e->last_bytes)<<(7 - idx);
-@@ -125,12 +129,14 @@ static void est_timer(unsigned long arg)
- 		e->last_packets = npackets;
- 		e->avpps += ((long)rate - (long)e->avpps) >> e->ewma_log;
- 		e->rate_est->pps = (e->avpps+0x1FF)>>10;
-+skip:
-+		read_unlock(&est_lock);
- 		spin_unlock(e->stats_lock);
- 	}
- 
--	if (elist[idx].list != NULL)
-+	if (!list_empty(&elist[idx].list))
- 		mod_timer(&elist[idx].timer, jiffies + ((HZ<<idx)/4));
--	read_unlock(&est_lock);
-+	rcu_read_unlock();
- }
- 
- /**
-@@ -147,12 +153,17 @@ static void est_timer(unsigned long arg)
-  * &rate_est with the statistics lock grabed during this period.
-  *
-  * Returns 0 on success or a negative error code.
-+ *
-+ * NOTE: Called under rtnl_mutex
-  */
- int gen_new_estimator(struct gnet_stats_basic *bstats,
--	struct gnet_stats_rate_est *rate_est, spinlock_t *stats_lock, struct rtattr *opt)
-+		      struct gnet_stats_rate_est *rate_est,
-+		      spinlock_t *stats_lock,
-+		      struct rtattr *opt)
- {
- 	struct gen_estimator *est;
- 	struct gnet_estimator *parm = RTA_DATA(opt);
-+	int idx;
- 
- 	if (RTA_PAYLOAD(opt) < sizeof(*parm))
- 		return -EINVAL;
-@@ -164,7 +175,7 @@ int gen_new_estimator(struct gnet_stats_
- 	if (est == NULL)
- 		return -ENOBUFS;
- 
--	est->interval = parm->interval + 2;
-+	idx = parm->interval + 2;
- 	est->bstats = bstats;
- 	est->rate_est = rate_est;
- 	est->stats_lock = stats_lock;
-@@ -174,20 +185,25 @@ int gen_new_estimator(struct gnet_stats_
- 	est->last_packets = bstats->packets;
- 	est->avpps = rate_est->pps<<10;
- 
--	est->next = elist[est->interval].list;
--	if (est->next == NULL) {
--		init_timer(&elist[est->interval].timer);
--		elist[est->interval].timer.data = est->interval;
--		elist[est->interval].timer.expires = jiffies + ((HZ<<est->interval)/4);
--		elist[est->interval].timer.function = est_timer;
--		add_timer(&elist[est->interval].timer);
-+	if (!elist[idx].timer.function) {
-+		INIT_LIST_HEAD(&elist[idx].list);
-+		setup_timer(&elist[idx].timer, est_timer, idx);
- 	}
--	write_lock_bh(&est_lock);
--	elist[est->interval].list = est;
--	write_unlock_bh(&est_lock);
-+
-+	if (list_empty(&elist[idx].list))
-+		mod_timer(&elist[idx].timer, jiffies + ((HZ<<idx)/4));
-+
-+	list_add_rcu(&est->list, &elist[idx].list);
- 	return 0;
- }
- 
-+static void __gen_kill_estimator(struct rcu_head *head)
-+{
-+	struct gen_estimator *e = container_of(head,
-+					struct gen_estimator, e_rcu);
-+	kfree(e);
-+}
-+
- /**
-  * gen_kill_estimator - remove a rate estimator
-  * @bstats: basic statistics
-@@ -195,31 +211,32 @@ int gen_new_estimator(struct gnet_stats_
-  *
-  * Removes the rate estimator specified by &bstats and &rate_est
-  * and deletes the timer.
-+ *
-+ * NOTE: Called under rtnl_mutex
-  */
- void gen_kill_estimator(struct gnet_stats_basic *bstats,
- 	struct gnet_stats_rate_est *rate_est)
- {
- 	int idx;
--	struct gen_estimator *est, **pest;
-+	struct gen_estimator *e, *n;
- 
- 	for (idx=0; idx <= EST_MAX_INTERVAL; idx++) {
--		int killed = 0;
--		pest = &elist[idx].list;
--		while ((est=*pest) != NULL) {
--			if (est->rate_est != rate_est || est->bstats != bstats) {
--				pest = &est->next;
-+
-+		/* Skip non initialized indexes */
-+		if (!elist[idx].timer.function)
-+			continue;
-+
-+		list_for_each_entry_safe(e, n, &elist[idx].list, list) {
-+			if (e->rate_est != rate_est || e->bstats != bstats)
- 				continue;
--			}
- 
- 			write_lock_bh(&est_lock);
--			*pest = est->next;
-+			e->bstats = NULL;
- 			write_unlock_bh(&est_lock);
- 
--			kfree(est);
--			killed++;
-+			list_del_rcu(&e->list);
-+			call_rcu(&e->e_rcu, __gen_kill_estimator);
- 		}
--		if (killed && elist[idx].list == NULL)
--			del_timer(&elist[idx].timer);
- 	}
- }
- 
+ 	read_lock(&raw_v6_lock);
+ 	if ((sk = sk_head(&raw_v6_htable[hash])) != NULL) {
+-		while((sk = __raw_v6_lookup(sk, nexthdr, daddr, saddr,
++		while ((sk = __raw_v6_lookup(sk, nexthdr, saddr, daddr,
+ 					    IP6CB(skb)->iif))) {
+ 			rawv6_err(sk, skb, NULL, type, code, inner_offset, info);
+ 			sk = sk_next(sk);
 
 -- 
