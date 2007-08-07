@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935185AbXHGUqR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935026AbXHGUqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935185AbXHGUqR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:46:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934892AbXHGUpv
+	id S935026AbXHGUqe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935063AbXHGUqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:45:51 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:51229 "EHLO
+	Tue, 7 Aug 2007 16:46:01 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51245 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934857AbXHGUpt (ORCPT
+	with ESMTP id S935026AbXHGUp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:45:49 -0400
-Date: Tue, 7 Aug 2007 13:42:40 -0700
+	Tue, 7 Aug 2007 16:45:59 -0400
+Date: Tue, 7 Aug 2007 13:42:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -21,48 +21,79 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, bunk@stusta.de,
-       Ilpo J?rvinen <ilpo.jarvinen@helsinki.fi>,
+       Patrick McHardy <kaber@trash.net>,
+       Ranko Zivojnovic <ranko@spidernet.net>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [2.6.22.2 review 02/84] TCP FRTO retransmit bug fix
-Message-ID: <20070807204240.GC23028@kroah.com>
+Subject: [2.6.22.2 review 03/84] Fix TC deadlock.
+Message-ID: <20070807204245.GD23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=unknown-8bit
-Content-Disposition: inline; filename="tcp-frto-retransmit-bug-fix.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="fix-tc-deadlock.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-[TCP]: Verify the presence of RETRANS bit when leaving FRTO
+From: Patrick McHardy <kaber@trash.net>
 
-For yet unknown reason, something cleared SACKED_RETRANS bit
-underneath FRTO.
+[NET_SCHED]: Revert "avoid transmit softirq on watchdog wakeup" optimization
 
-Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+As noticed by Ranko Zivojnovic <ranko@spidernet.net>, calling qdisc_run
+from the timer handler can result in deadlock:
+
+> CPU#0
+>
+> qdisc_watchdog() fires and gets dev->queue_lock
+> qdisc_run()...qdisc_restart()...
+> -> releases dev->queue_lock and enters dev_hard_start_xmit()
+>
+> CPU#1
+>
+> tc del qdisc dev ...
+> qdisc_graft()...dev_graft_qdisc()...dev_deactivate()...
+> -> grabs dev->queue_lock ...
+>
+> qdisc_reset()...{cbq,hfsc,htb,netem,tbf}_reset()...qdisc_watchdog_cancel()...
+> -> hrtimer_cancel() - waiting for the qdisc_watchdog() to exit, while still
+>		        holding dev->queue_lock
+>
+> CPU#0
+>
+> dev_hard_start_xmit() returns ...
+> -> wants to get dev->queue_lock(!)
+>
+> DEADLOCK!
+
+The entire optimization is a bit questionable IMO, it moves potentially
+large parts of NET_TX_SOFTIRQ work to TIMER_SOFTIRQ/HRTIMER_SOFTIRQ,
+which kind of defeats the separation of them.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Acked-by: Ranko Zivojnovic <ranko@spidernet.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp_input.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ net/sched/sch_api.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -1398,7 +1398,9 @@ static void tcp_enter_frto_loss(struct s
- 		 * waiting for the first ACK and did not get it)...
- 		 */
- 		if ((tp->frto_counter == 1) && !(flag&FLAG_DATA_ACKED)) {
--			tp->retrans_out += tcp_skb_pcount(skb);
-+			/* For some reason this R-bit might get cleared? */
-+			if (TCP_SKB_CB(skb)->sacked & TCPCB_SACKED_RETRANS)
-+				tp->retrans_out += tcp_skb_pcount(skb);
- 			/* ...enter this if branch just for the first segment */
- 			flag |= FLAG_DATA_ACKED;
- 		} else {
+--- a/net/sched/sch_api.c
++++ b/net/sched/sch_api.c
+@@ -290,11 +290,7 @@ static enum hrtimer_restart qdisc_watchd
+ 
+ 	wd->qdisc->flags &= ~TCQ_F_THROTTLED;
+ 	smp_wmb();
+-	if (spin_trylock(&dev->queue_lock)) {
+-		qdisc_run(dev);
+-		spin_unlock(&dev->queue_lock);
+-	} else
+-		netif_schedule(dev);
++	netif_schedule(dev);
+ 
+ 	return HRTIMER_NORESTART;
+ }
 
 -- 
