@@ -1,24 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933585AbXHGFJZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933234AbXHGFNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933585AbXHGFJZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 01:09:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbXHGFJR
+	id S933234AbXHGFNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 01:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbXHGFNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 01:09:17 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:34325 "EHLO
+	Tue, 7 Aug 2007 01:13:45 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:53320 "EHLO
 	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755055AbXHGFJQ (ORCPT
+	by vger.kernel.org with ESMTP id S1751513AbXHGFNp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 01:09:16 -0400
-Date: Mon, 6 Aug 2007 22:08:33 -0700
+	Tue, 7 Aug 2007 01:13:45 -0400
+Date: Mon, 6 Aug 2007 22:12:52 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ifdef struct task_struct::security
-Message-Id: <20070806220833.4040f861.akpm@linux-foundation.org>
-In-Reply-To: <20070806203112.GA12726@vino.hallyn.com>
-References: <20070806185514.GA5842@martell.zuzino.mipt.ru>
-	<20070806203112.GA12726@vino.hallyn.com>
+To: mel@skynet.ie (Mel Gorman)
+Cc: Andi Kleen <ak@suse.de>, Lee.Schermerhorn@hp.com, clameter@sgi.com,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Apply memory policies to top two highest zones when
+ highest zone is ZONE_MOVABLE
+Message-Id: <20070806221252.aa1e9048.akpm@linux-foundation.org>
+In-Reply-To: <20070806215541.GC6142@skynet.ie>
+References: <20070802172118.GD23133@skynet.ie>
+	<200708040002.18167.ak@suse.de>
+	<20070806121558.e1977ba5.akpm@linux-foundation.org>
+	<200708062231.49247.ak@suse.de>
+	<20070806215541.GC6142@skynet.ie>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,71 +32,26 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Aug 2007 15:31:12 -0500 "Serge E. Hallyn" <serge@hallyn.com> wrote:
+On Mon, 6 Aug 2007 22:55:41 +0100 mel@skynet.ie (Mel Gorman) wrote:
 
-> Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> > For those who don't care about CONFIG_SECURITY.
-> 
-> I'm quite sure we started that way, but the ifdefs were considered
-> too much of an eyesore.
-
-argh, y'all stop top-posting at me.
-
-> If this is now acceptable, then the same thing might be considered
-> for inode->i_security, kern_ipc_perm.security, etc.  Getting rid of
-> just the task->security seems overly half-hearted.
-> 
-> -serge
-> 
-> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> > ---
+> On (06/08/07 22:31), Andi Kleen didst pronounce:
 > > 
-> >  include/linux/sched.h |    3 ++-
-> >  kernel/fork.c         |    2 ++
-> >  2 files changed, 4 insertions(+), 1 deletion(-)
+> > > If correct, I would suggest merging the horrible hack for .23 then taking
+> > > it out when we merge "grouping pages by mobility".  But what if we don't do
+> > > that merge?
 > > 
-> > --- a/include/linux/sched.h
-> > +++ b/include/linux/sched.h
-> > @@ -1086,8 +1086,9 @@ struct task_struct {
-> >  	int (*notifier)(void *priv);
-> >  	void *notifier_data;
-> >  	sigset_t *notifier_mask;
-> > -	
-> > +#ifdef CONFIG_SECURITY
-> >  	void *security;
-> > +#endif
-> >  	struct audit_context *audit_context;
-> >  	seccomp_t seccomp;
-> >  
-> > --- a/kernel/fork.c
-> > +++ b/kernel/fork.c
-> > @@ -1066,7 +1066,9 @@ static struct task_struct *copy_process(unsigned long clone_flags,
-> >  	do_posix_clock_monotonic_gettime(&p->start_time);
-> >  	p->real_start_time = p->start_time;
-> >  	monotonic_to_bootbased(&p->real_start_time);
-> > +#ifdef CONFIG_SECURITY
-> >  	p->security = NULL;
-> > +#endif
-> >  	p->io_context = NULL;
-> >  	p->io_wait = NULL;
-> >  	p->audit_context = NULL;
-> > 
+> > Or disable ZONE_MOVABLE until it is usable?
+> 
+> It's usable now. The issue with policies only occurs if the user specifies
+> kernelcore= or movablecore= on the command-line. Your language suggests
+> that you believe policies are not applied when ZONE_MOVABLE is configured
+> at build-time.
 
-I think it's OK.  Removing 4 or 8 bytes from the task_struct is a decent win,
-and an ifdef at the definition site (unavoidable) and at a single
-initialisation site where there are lots of other similar ifdefs is pretty
-minimal hurt.
+So..  the problem which we're fixing here is only present when someone
+use kernelcore=.  This is in fact an argument for _not_ merging the
+horrible-hack.
 
+How commonly do we expect people to specify kernelcore=?  If "not much" then
+it isn't worth adding the __alloc_pages() overhead?
 
-
-In fact, looking through all those "= 0" and "= NULL" statements in
-copy_process() makes one wonder whether we should be memsetting that guy to
-zero then selectively copying things out of current, rather than the
-present vice-versa.
-
-A possibly-neat way of doing this would be to move all the task_struct fields which
-are zeroed in copy_process() into a separate anonymous struct in
-task_struct, then wipe only that in copy_process().  One would need to be
-careful about the hand-arranged grouping which has been done in the
-task_struct however.
-
+(It's a pretty darn small overhead, I must say)
