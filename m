@@ -1,88 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbXHGIsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbXHGItj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758639AbXHGIsZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbXHGIsQ
+	id S1759454AbXHGItj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbXHGItc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:48:16 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:51931 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756784AbXHGIsP (ORCPT
+	Tue, 7 Aug 2007 04:49:32 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:11961 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756320AbXHGItb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:48:15 -0400
-Message-ID: <46B83109.8060808@netcom.eu>
-Date: Tue, 07 Aug 2007 10:44:57 +0200
-From: David Engraf <david.engraf@netcom.eu>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
+	Tue, 7 Aug 2007 04:49:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=IXSQzoFo2Y0TItWMg0pRY45MrlAEiQqPZBVQ1vPdwqcFUmHYwvWmvzrzWUgpM0ZEmgwadxTcD8Owfx8yzyoyZH6EH0EtTDktvn0bv2jodduFnXzYA24f+bsdpFNGcFCHIpEIFKa/y9kYo+HRMGLEpFUMkIf9Iq3KhCcamUvt/uE=
+From: Christoph Pfister <christophpfister@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+Subject: Re: BUG: soft lockup detected on CPU#0!
+Date: Tue, 7 Aug 2007 10:49:23 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <19a3b7a80707251241t1cb5389ak8e5e3b27af2bde41@mail.gmail.com> <6bffcb0e0707271230s1f3f3c63w8ccdd8a0945e706a@mail.gmail.com> <19a3b7a80707271304g231860b8g690a32b12cac5835@mail.gmail.com>
+In-Reply-To: <19a3b7a80707271304g231860b8g690a32b12cac5835@mail.gmail.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Greg KH <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
-       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
- we the driver is configured
-References: <Pine.LNX.4.44L0.0708031101530.2597-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0708031101530.2597-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19OuhSdazCNzqhpZKa5+ns46CNuC60hQSABhCb
- MiVK7Qk9rZo9L5E/sQDso0GfeCuTEurAMduRsgbvZ3M7pLKfDe
- updm3+juEafYLlm8Uc4VQ==
+Content-Disposition: inline
+Message-Id: <200708071049.23226.christophpfister@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You said your Intel board has also problems with the handoff.
-Could you try the follwing patch, because the EHCI documentation
-says that the OS must set the EHCI_USBLEGSUP_OS bit and then
-wait until EHCI_USBLEGSUP_BIOS is cleared. The kernel never
-uses the EHCI_USBLEGSUP_OS flag at the moment.
-On my system there is no change, but maybe this patch works on
-your system.
+Hi Michal,
 
-Thanks
-David Engraf
-
-linux-2.6.22.1
-
-diff -puN drivers/usb/host/pci-quirks_orig.c drivers/usb/host/pci-quirks.c
-
---- drivers/usb/host/pci-quirks_orig.c    2007-07-10 20:56:30.000000000
-+0200
-+++ drivers/usb/host/pci-quirks.c    2007-08-07 10:38:33.000000000 +0200
-@@ -268,6 +268,8 @@ static void __devinit quirk_usb_disable_
-                  * handoff..
-                  */
-                 pci_write_config_byte(pdev, offset + 3, 1);
-+
-+                pci_write_config_byte(pdev, offset, cap |
-EHCI_USBLEGSUP_OS);
-             }
- 
-             /* if boot firmware now owns EHCI, spin till
-
-
-Alan Stern schrieb:
-> On Fri, 3 Aug 2007, David Engraf wrote:
+Am Freitag, 27. Juli 2007 22:04 schrieb Christoph Pfister:
+> Hi Michal,
 >
->   
->> So we have hardware which has problems when we are not doing the
->> handoff, and hardware which has
->> problems when we are  doing the handoff...
->>     
->
-> What hardware has problems when we do the handoff?  Your system and 
-> mine experience a delay, but it doesn't break anything.
->
->   
->> What is the best way to solve the problem? Maybe a kernel parameter, a
->> config flag or an automatic
->> hardware dependent check of the system?
->> In fact it is hard to find a solution which works for both as long as
->> the hardware has this bugs.
->>     
->
-> If we really need it, I say we should use a Kconfig flag.
->
-> Alan Stern
->
->   
+> 2007/7/27, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>:
+> > Hi Christoph,
+> >
+> > On 25/07/07, Christoph Pfister <christophpfister@gmail.com> wrote:
+> > > Hi,
+> > >
+> > > After burning a dvd I had to eject it and found that message in dmesg.
+> > > Syslog snippet and dmesg attached.
+> > > System is 2.6.21 (debian version), running a p4, issue reproducible.
+> >
+> > Does this happen on the latest -stable?
+> > http://eu.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
 
+Doesn't happen there anymore.
+
+> I'm on holiday really soon - but will try when I'm back :)
+>
+> > > Thanks for taking care of this,
+> > >
+> > > Christoph
+> >
+> > Regards,
+> > Michal
+>
+> Christoph
+
+Thanks,
+
+Christoph
