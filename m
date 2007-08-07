@@ -1,87 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbXHGK5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760867AbXHGLLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbXHGK5t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 06:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758151AbXHGK5l
+	id S1760867AbXHGLLz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 07:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757787AbXHGLLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 06:57:41 -0400
-Received: from mtagate1.de.ibm.com ([195.212.29.150]:29092 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758063AbXHGK5k (ORCPT
+	Tue, 7 Aug 2007 07:11:46 -0400
+Received: from os.inf.tu-dresden.de ([141.76.48.99]:59885 "EHLO
+	os.inf.tu-dresden.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755653AbXHGLLp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 06:57:40 -0400
-Date: Tue, 7 Aug 2007 12:58:44 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Javier Pello <javier.pello@urjc.es>
-Cc: linux-kernel@vger.kernel.org, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not
- notified
-Message-ID: <20070807125844.4d756b04@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <46B7832B.6010808@urjc.es>
-References: <46B37CF7.2020803@urjc.es>
-	<20070806142451.5d28d41c@gondolin.boeblingen.de.ibm.com>
-	<46B7832B.6010808@urjc.es>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Tue, 7 Aug 2007 07:11:45 -0400
+Date: Tue, 7 Aug 2007 13:11:31 +0200
+From: "Udo A. Steinberg" <us15@os.inf.tu-dresden.de>
+To: Andreas Mohr <andi@lisas.de>
+Cc: =?UTF-8?Q?Rafa=C5=82?= Bilski <rafalbilski@interia.pl>,
+       David Edwards <powertop@dpe.lusars.net>, power@bughost.org,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: HPET force-enable investigations on Via VT8235
+Message-ID: <20070807131131.163b09fc@laptop.hypervisor.org>
+In-Reply-To: <20070806235752.1e6c5653@laptop.hypervisor.org>
+References: <20070806204249.GA25957@rhlx01.hs-esslingen.de>
+	<46B79512.6090704@interia.pl>
+	<20070806235752.1e6c5653@laptop.hypervisor.org>
+X-Mailer: X-Mailer 5.0 Gold
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_S2pIXm23yAW7Ja/STIvZ9Ed";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 06 Aug 2007 22:23:07 +0200,
-Javier Pello <javier.pello@urjc.es> wrote:
+--Sig_S2pIXm23yAW7Ja/STIvZ9Ed
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> > > 2. The second part changes _request_firmware in
-> > > drivers/base/firmware_class.c to actually check the return value
-> > > of kobject_uevent and skip the loading_timeout delay if the
-> > > loading event was not delivered to userspace at all.
-> > 
-> > Note that kobject_uevent() returns 0 if the event has been filtered.
-> 
-> Oops, yes, I had not noticed. This brings another point: When should
-> kobject_uevent return a "failure"? The code, as it is, only returns a
-> failure when things are really wrong (out of memory, etc.), and
-> returns success when the event was simply dropped. This is reasonable
-> behaviour, but it prevents callers from knowing whether the event was
-> actually delivered (which is what request_firmware needs). On the
-> other hand, my patch tries to make nondelivery an error, but on
-> second thoughts that could prevent the caller from telling hard
-> errors from simple nondelivery.
+On Mon, 6 Aug 2007 23:57:52 +0200 Udo A. Steinberg (UAS) wrote:
 
-You could say that not delivering is caused by a hard error when trying
-to deliver, though. OTOH, filtering an event is certainly not an error.
+UAS> My guess is that newer revisions of VT8235 have HPET whereas older
+UAS> revisions do not. I'll get an lspci dump from our box tomorrow.
 
-> I can think of two possibilities
-> to sort this out:
-> 
-> - kobject_uevent returns an error code both on a hard error and
-> on nondelivery; the error codes for both situations are different,
-> so the caller can tell them apart.
+Here is the lspci dump from our K7VT4A+ board, where HPET works.
 
-Tough. For example, both today's kobject_uevent() and
-call_usermodehelper() may return -ENOMEM.
+00:00.0 Host bridge: VIA Technologies, Inc. VT8377 [KT400/KT600 AGP] Host B=
+ridge (rev 80)
+00:01.0 PCI bridge: VIA Technologies, Inc. VT8237 PCI Bridge
+00:10.0 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Contr=
+oller (rev 80)
+00:10.1 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Contr=
+oller (rev 80)
+00:10.2 USB Controller: VIA Technologies, Inc. VT82xxxxx UHCI USB 1.1 Contr=
+oller (rev 80)
+00:10.3 USB Controller: VIA Technologies, Inc. USB 2.0 (rev 82)
+00:11.0 ISA bridge: VIA Technologies, Inc. VT8235 ISA Bridge
+00:11.1 IDE interface: VIA Technologies, Inc. VT82C586A/B/VT82C686/A/B/VT82=
+3x/A/C PIPC Bus Master IDE (rev 06)
+00:11.5 Multimedia audio controller: VIA Technologies, Inc. VT8233/A/8235/8=
+237 AC97 Audio Controller (rev 50)
+00:12.0 Ethernet controller: VIA Technologies, Inc. VT6102 [Rhine-II] (rev =
+74)
+01:00.0 VGA compatible controller: ATI Technologies Inc Radeon RV100 QY [Ra=
+deon 7000/VE]
 
-> 
-> - kobject_uevent returns an error code (<0) only on a hard error,
-> returns 0 on nondelivery and 1 on delivery; this makes things
-> even clearer.
+00:11.0 0601: 1106:3177
+00: 06 11 77 31 87 00 10 02 00 00 01 06 00 00 80 00
+10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 49 18 77 31
+30: 00 00 00 00 c0 00 00 00 00 00 00 00 00 00 00 00
+40: 44 00 78 00 00 00 00 00 0c 01 00 00 44 00 08 08
+50: 81 1d 09 00 00 00 00 00 43 00 ff 01 00 00 04 08
+60: 00 00 00 00 10 00 02 04 00 00 00 00 00 00 00 00
+70: 49 18 77 31 00 00 00 00 00 00 00 00 10 00 00 00
+80: 20 84 59 00 9a 10 00 00 01 08 00 00 04 18 00 00
+90: 00 77 d8 00 b4 c5 08 00 10 92 00 00 00 00 00 00
+a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+c0: 01 00 02 00 00 00 00 00 00 00 00 00 00 00 00 00
+d0: 01 04 01 00 00 00 00 00 00 00 00 00 00 00 00 00
+e0: 00 00 00 00 04 08 c0 00 00 00 00 00 00 00 00 00
+f0: 00 00 00 00 00 00 16 00 00 00 00 00 01 00 00 00
 
-Hm, I have an aversion against tri-state return values :( OTOH, a)
-callers generally don't care and b) it is in line with how
-kobject_uevent() is defined if !CONFIG_HOTPLUG.
+Cheers,
 
-- Use an extra parameter in which successful delivery can be indicated.
-Make this
-int kobject_uevent_env_check(struct kobject *kobject,
-			     enum kobject_action action,
-			     char *envp[], int delivered);
-so existing callers that don't care don't have to be changed.
+	- Udo
 
-> 
-> I am biased towards the latter. Of course, we can do anything as
-> the return value is actually never used, but I would still like
-> to know other opinions about what the right thing is.
+--Sig_S2pIXm23yAW7Ja/STIvZ9Ed
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGuFNknhRzXSM7nSkRAqpDAJ43gH9JEtaLpvVxFzow4JcPQ6N0nQCfZawj
+D2psOYuPIw3Qgm0wg91csGI=
+=/LXS
+-----END PGP SIGNATURE-----
+
+--Sig_S2pIXm23yAW7Ja/STIvZ9Ed--
