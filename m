@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937187AbXHGVTr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965788AbXHGVUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937187AbXHGVTr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:19:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964942AbXHGUzw
+	id S965788AbXHGVUX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935747AbXHGUzz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:55:52 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:5149 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964916AbXHGUzr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 16:55:55 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59783 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964929AbXHGUzr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 7 Aug 2007 16:55:47 -0400
-Date: Tue, 7 Aug 2007 22:55:38 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Distributed storage.
-Message-ID: <20070807205538.GB5245@kernel.dk>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk> <200708071124.56859.phillips@phunq.net>
+Date: Tue, 7 Aug 2007 13:48:12 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, jdike@linux.intel.com, blaisorblade@yahoo.it,
+       jdike@addtoit.com
+Subject: [2.6.22.2 review 62/84] uml: limit request size on COWed devices
+Message-ID: <20070807204812.GL23028@kroah.com>
+References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708071124.56859.phillips@phunq.net>
+Content-Disposition: inline; filename="uml-limit-request-size-on-cowed-devices.patch"
+In-Reply-To: <20070807204157.GA23028@kroah.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07 2007, Daniel Phillips wrote:
-> On Tuesday 07 August 2007 05:05, Jens Axboe wrote:
-> > On Sun, Aug 05 2007, Daniel Phillips wrote:
-> > > A simple way to solve the stable accounting field issue is to add a
-> > > new pointer to struct bio that is owned by the top level submitter
-> > > (normally generic_make_request but not always) and is not affected
-> > > by any recursive resubmission.  Then getting rid of that field
-> > > later becomes somebody's summer project, which is not all that
-> > > urgent because struct bio is already bloated up with a bunch of
-> > > dubious fields and is a transient structure anyway.
-> >
-> > Thanks for your insights. Care to detail what bloat and dubious
-> > fields struct bio has?
-> 
-> First obvious one I see is bi_rw separate from bi_flags.  Front_size and 
-> back_size smell dubious.  Is max_vecs really necessary?  You could 
 
-I don't like structure bloat, but I do like nice design. Overloading is
-a necessary evil sometimes, though. Even today, there isn't enough room
-to hold bi_rw and bi_flags in the same variable on 32-bit archs, so that
-concern can be scratched. If you read bio.h, that much is obvious.
+From: Jeff Dike <jdike@addtoit.com>
 
-If you check up on the iommu virtual merging, you'll understand the
-front and back size members. They may smell dubious to you, but please
-take the time to understand why it looks the way it does.
+COWed devices can't handle more than 32 (64 on x86_64) sectors in one request
+due to the size of the bitmap being carried around in the io_thread_req.
 
-> reasonably assume bi_vcnt rounded up to a power of two and bury the 
-> details of making that work behind wrapper functions to change the 
-> number of bvecs, if anybody actually needs that.  Bi_endio and 
+Enforce that by telling the block layer not to put too many sectors in
+requests to COWed devices.
 
-Changing the number of bvecs is integral to how bio buildup current
-works.
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+Cc: Paolo 'Blaisorblade' Giarrusso <blaisorblade@yahoo.it>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-> bi_destructor could be combined.  I don't see a lot of users of bi_idx, 
+---
+ arch/um/drivers/ubd_kern.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
-bi_idx is integral to partial io completions.
-
-> that looks like a soft target.  See what happened to struct page when a 
-> couple of folks got serious about attacking it, some really deep hacks 
-> were done to pare off a few bytes here and there.  But struct bio as a 
-> space waster is not nearly in the same ballpark.
-
-So show some concrete patches and examples, hand waving and assumptions
-is just a waste of everyones time.
-
-> It would be interesting to see if bi_bdev could be made read only.  
-> Generally, each stage in the block device stack knows what the next 
-> stage is going to be, so why do we have to write that in the bio?  For 
-> error reporting from interrupt context?  Anyway, if Evgeniy wants to do 
-> the patch, I will happily unload the task of convincing you that random 
-> fields are/are not needed in struct bio :-)
-
-It's a trade off, otherwise you'd have to pass the block device around a
-lot. And it's, again, a design issue. A bio contains destination
-information, that means device/offset/size information. I'm all for
-shaving structure bytes where it matters, but not for the sake of
-sacrificing code stability or design. I consider struct bio quite lean
-and have worked hard to keep it that way. In fact, iirc, the only
-addition to struct bio since 2001 is the iommu front/back size members.
-And I resisted those for quite a while.
+--- a/arch/um/drivers/ubd_kern.c
++++ b/arch/um/drivers/ubd_kern.c
+@@ -712,6 +712,8 @@ static int ubd_add(int n, char **error_o
+ 	ubd_dev->queue->queuedata = ubd_dev;
+ 
+ 	blk_queue_max_hw_segments(ubd_dev->queue, MAX_SG);
++	if(ubd_dev->cow.file != NULL)
++		blk_queue_max_sectors(ubd_dev->queue, 8 * sizeof(long));
+ 	err = ubd_disk_register(MAJOR_NR, ubd_dev->size, n, &ubd_gendisk[n]);
+ 	if(err){
+ 		*error_out = "Failed to register device";
 
 -- 
-Jens Axboe
-
