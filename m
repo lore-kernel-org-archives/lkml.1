@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbXHGEkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763172AbXHGEuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762149AbXHGEkf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 00:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753428AbXHGEk1
+	id S1763172AbXHGEuv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 00:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbXHGEum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 00:40:27 -0400
-Received: from smtpout.mac.com ([17.250.248.175]:62433 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753292AbXHGEk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 00:40:26 -0400
-In-Reply-To: <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>
-References: <1185827130.26459.16.camel@xtower.fri> <6bffcb0e0707301549t6be3cd97y27726f5421bb7680@mail.gmail.com> <20070801064816.GC10134@elte.hu> <p73abtbpk2s.fsf@bingen.suse.de> <46B06815.10200@gmail.com> <46470.81.207.0.53.1185971693.squirrel@secure.samage.net> <46B0818F.10204@gmail.com> <49653.81.207.0.53.1185973640.squirrel@secure.samage.net> <46B08B95.2010405@kvitka.net> <46B09190.1070201@gmail.com> <46850.81.207.0.53.1185980760.squirrel@secure.samage.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-X-Priority: 3 (Normal)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F4037195-194E-4265-9653-ED964CBA41E0@mac.com>
-Cc: Rene Herman <rene.herman@gmail.com>, teresa@kvitka.net,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       CK Mailinglist <ck@vds.kolivas.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Tue, 7 Aug 2007 00:50:42 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:38051 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753583AbXHGEul (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 00:50:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=Jq8quCzRs3t0Ujb9asJJOjcZhFKx1JTqIPuRn78zeZ5zdmRc1e4p7D0ki5dEOZJEPsTReuMutbOp8or9fk85YQrp4kZneEr7BicRYBuz7Jg9Sm9A3BB1hV5ef2P9Ihyioi6hNsiJxITSvpu1GbiyATVge9enDUujc9ANRLkdqMk=
+Message-ID: <a12e65340708062150n7ad30752sbf365b4c49fe6a82@mail.gmail.com>
+Date: Tue, 7 Aug 2007 13:50:39 +0900
+From: "Toshiyuki Okamoto" <okamoso@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: IPsec IPv4 over IPv6 Problem: No route to host
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Linux Kernel cfs scheduler and xorg kbd
-Date: Tue, 7 Aug 2007 00:40:21 -0400
-To: Indan Zupancic <indan@nul.nu>
-X-Mailer: Apple Mail (2.752.2)
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Aug 01, 2007, at 11:06:00, Indan Zupancic wrote:
-> Different programs, different keys "stuck", so hard to tell. The  
-> amount the pressed key is repeated differs too, from double to  
-> hundreds.
->
-> As an apparently separate problem my mouse warps once in a while  
-> too, and that's not totally fixed yet, neither with that locking  
-> patch. Throw in that two of my USB ports stopped working after a  
-> rare power outage, I didn't totally trust my hardware any more,  
-> hence my initial reluctance to report these problems.
->
-> We could have independent problems with more or less the same  
-> symptoms, at least Teresa's problem seems much worse than ours, and  
-> if you and Ingo only experience a stuck delete key, it might be  
-> something else.
+Problem about IPsec IPv4 over IPv6, which is included in kernel 2.6.21.
 
-Well I've just seen an FC box (6? 7?) running a 2.6.18-ish which  
-reliably experiences the same problem (randomly stuck keys), so I  
-doubt very much it's CFS.  Basically keys will somewhat randomly  
-repeat 6-7 times, mainly depending on how fast you're typing (the  
-intern using the box typed somewhat slowly and didn't trigger it  
-much, but when I borrowed his keyboard I could reliably trigger it  
-once every 5 sec or so.  Unfortunately I don't have access to that  
-box anymore, so I can't really debug the problem.
+A IPv6 global address is assigned for eth1 by DHCPv6 IA-PD. This case,
+IPsec SA is successfully established but packets cannot been sent to WAN.
 
-Cheers,
-Kyle Moffett
+I do ping, this error occured:
 
+ $ ping: sendmsg: No route to host
+
+Do someone know about this issue ?
+
+Network is figured below:
+　LAN                 WAN                 LAN
+   |------ GW-1 -------|
+   | eth1        eth0  |
+                       |------ GW-2 -------|
+                       |  eth0       eth1  |
+                                           |
+・GW-1
+eth0      Link encap:Ethernet  HWaddr 00:11:43:AC:60:AF
+          inet6 addr: fe80::211:43ff:feac:60af/64 Scope:Link
+
+eth1      Link encap:Ethernet  HWaddr 00:90:CC:DE:8B:EE
+          inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
+          inet6 addr: 2001:1::290:ccff:fede:8bee/64 Scope:Global
+          inet6 addr: fe80::290:ccff:fede:8bee/64 Scope:Link
+
+
+・GW-2
+eth0      Link encap:Ethernet  HWaddr 00:11:43:AB:00:8A
+          inet6 addr: fe80::211:43ff:feab:8a/64 Scope:Link
+
+eth1      Link encap:Ethernet  HWaddr 00:90:CC:DE:89:F7
+          inet addr:192.168.2.1  Bcast:192.168.2.255  Mask:255.255.255.0
+          inet6 addr: 2001:2::290:ccff:fede:89f7/64 Scope:Global
+          inet6 addr: fe80::290:ccff:fede:89f7/64 Scope:Link
+
+After IKE daemon (racoon2) is booted on GW-1/2, I do ping from GW-1:
+ $ ping -I 192.168.1.1 192.168.2.1
+This case, IKE sequence is successfully done, and IPsec SA is registered.
+but ping packet isn't been sent with error above.
+
+The case IPv6 global address is assigned to eth0 manually,
+IPv4 over IPv6 packet is sent successfully.
+ping6 between GW-1 and GW-2 is okay.
+
+I suspect that IPv6 routing table is not loaded or invalid.
+
+I tried that IPv6 global address is assigned to eth0 manually (which
+prefix is varied to GW1/eth0 from GW2/eth0 with appropriate routing
+set),
+ IPv4 over IPv6 packet is not sent successfully.
