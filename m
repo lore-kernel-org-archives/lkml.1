@@ -1,90 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXHGHlQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbXHGHpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbXHGHlQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 03:41:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbXHGHlF
+	id S1757570AbXHGHpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 03:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXHGHpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 03:41:05 -0400
-Received: from rv-out-0910.google.com ([209.85.198.185]:11635 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755297AbXHGHlD (ORCPT
+	Tue, 7 Aug 2007 03:45:43 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:54605 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754528AbXHGHpm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 03:41:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=r+Tu0Mu8IFvwJFPOT8gXaPJc2iu5QZkMe4SwGFGy5GtkJ9ibyKm47b5Ae0vcdrNdONa4ubjfb5VCGBQmOSREQ7ve2m7aRS+FWKP7pQemOeZT17EmwvCxqZxVsEDs84qzBSMSgFoqOudKjTXtQWbLgl7sgQXOl4sE+1YBSGfxl2w=
-Message-ID: <3ae72650708070041s52861b7dr484cacf98353a3c6@mail.gmail.com>
-Date: Tue, 7 Aug 2007 09:41:02 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Neil Brown" <neilb@suse.de>
-Subject: Re: [PATCH/RFC] allow mapping from block-device-file to sysfs entry.
-Cc: "Arjan van de Ven" <arjan@infradead.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <18104.7056.369176.547630@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Tue, 7 Aug 2007 03:45:42 -0400
+Date: Tue, 7 Aug 2007 00:44:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>, "Denis V. Lunev" <den@sw.ru>,
+       "Denis V. Lunev" <den@openvz.org>, dev@openvz.org, devel@openvz.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pci_get_device call from interrupt in reboot fixups
+Message-Id: <20070807004455.b634c5d0.akpm@linux-foundation.org>
+In-Reply-To: <20070807002437.0e7b9ee5.akpm@linux-foundation.org>
+References: <20070803103924.GA23786@iris.sw.ru>
+	<20070804040806.GF23330@suse.de>
+	<46B6CAC4.3080202@sw.ru>
+	<20070807024910.GB13657@suse.de>
+	<20070807002437.0e7b9ee5.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <18104.3098.696484.970773@notabene.brown>
-	 <1186468623.2700.4.camel@laptopd505.fenrus.org>
-	 <18104.7056.369176.547630@notabene.brown>
-X-Google-Sender-Auth: 8aac70ab1581acac
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/7/07, Neil Brown <neilb@suse.de> wrote:
-> On Monday August 6, arjan@infradead.org wrote:
-> > On Tue, 2007-08-07 at 16:07 +1000, Neil Brown wrote:
-> > > Suppose that in a program I have an open file descriptor for a device,
-> > > and I want to find the /sys/block information for this device.
-> > > There is currently no direct way to do this.  I need to read
-> > >    /sys/block/*/dev, /sys/block/*/*/dev
-> > > and match major/minor numbers with the result from fstat.
-> > >
-> > > I would like a more direct mechanism.
+On Tue, 7 Aug 2007 00:24:37 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-  $ udevinfo --query=path --name=sda
-  /block/sda
+> > Andrew, I really don't want to change the PCI core to handle this, as we
+> > finally fixed a lot of issues with drivers trying to walk these lists
+> > from interrupt context.  So if you want to just hide the warning message
+> > as we are shutting down, that's fine with me.  Or just don't do the
+> > fixups.  But grabbing a reference to the pci device is unsafe in my
+> > opinion and I do not want to do that.
+> > 
+> 
+> OK, good decision ;)
+> 
+> One approach would be for some brave soul to pick his way through
+> the reboot code and ensure that we are correctly and reliably setting
+> system_state to SYSTEM_RESTART, then test that in __might_sleep().
+> 
+> But this does suppress somewhat-useful debugging just because of sysrq-B
+> and I really wouldn't want to utilise the horrid system_state any more that
+> we are presently doing.  I think on balance that it would be better if we
+> could do something more targetted, like modify emergency_restart() to test
+> in_interrupt() and to then apologetically set some well-named global flag
+> which will shut up __might_sleep().  Pretty foul, but I can't think of
+> anything better.
 
-> > > The following patch is a proposal for such a mechanism.
-> > >
-> > > It provides an 'ioctl' which returns then 'name' of the device, as
-> > > generated by bdevname.  This is the same name that is used to create
-> > > entries in sysfs.
-> > > For a partition of a device, it returns 'device/partition'.
-> >
-> >
-> > how about returning the entire path relative to the start of sysfs? That
-> > way, if things move or something you're tolerant against that....
->
-> That makes a lot of sense.
-> So it would return "block/sda/sda1" now,
+ok, this might be better.  How about we just stop calling mach_reboot_fixups()
+at sysrq-B time?
 
-Every devpath always starts with a '/' in the kernel, its kind of
-weird, but we should not introduce a new variation of it. :)
-
-> but one day that might change
-> to "class/block/sda/sda1" or some-such.
-
-It will start with /devices/..., like:
-  /sys/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/sda/sda1
-
-> > (I'd not be against making this a generic IOCTL for every device, a
-> > SYSFSLOCATION kind of ioctl... it's by no means block specific...)
-> >
->
-> That too seems very sensible.  Only it's harder to choose a 'generic'
-> ioctl request number than to choose a block-specific one :-)
->
-> We would also need a somewhat longer buffer.  The longest
-> /sys/**/dev
-> path on my test machine is
-> /sys/devices/pci0000:00/0000:00:1d.0/usb2/2-1/2-1:1.1/usb_endpoint/usbdev2.2_ep82/dev
->
-> So at least 80 chars.  Probably 256 would do....
-
-They can be definitely longer than than 256, probably not longer than
-512 today, but you can't be sure about that.
-
-Thanks,
-Kay
+> > >>  handle_sysrq
+> > >>    machine_emergency_restart
+> > >>      mach_reboot_fixups
+> > >>        pci_get_device
+> > >>          pci_get_subsys
+> > >> 	   down_read
