@@ -1,72 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbXHGV61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937076AbXHGV7B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbXHGV61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937563AbXHGVfb
+	id S937076AbXHGV7B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:59:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937517AbXHGVfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:35:31 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:42835 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S937558AbXHGVf3 (ORCPT
+	Tue, 7 Aug 2007 17:35:44 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56938 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937601AbXHGVfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:35:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mOYIfgHBeS2PEZohbudVY6RZoQOjqvC6r974YtVBCgGMk9gozIGV0024fB8Vql7Ivv91mEvOToRnD04G9ntJTjZ6nT8Z5LlqbbtzGQ/z/8TMNVYdHoh4RhDqHQb15Q9oD3ZX7xWYKXe86rZ6kiNgnB1Xp6ax5Mm7mlrlA63B/bo=
-Message-ID: <f6ca9fed0708071435h31531279gb6ea0fc760be98df@mail.gmail.com>
-Date: Tue, 7 Aug 2007 23:35:27 +0200
-From: dragoran <drago01@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: allow non root users to set io priority "idle" ?
-Cc: "Andi Kleen" <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070807204449.GA5245@kernel.dk>
+	Tue, 7 Aug 2007 17:35:42 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: [PATCH 22/25] sysfs: sysfs_uptdate_file handle multiple superblocks
+References: <11860582832964-git-send-email-htejun@gmail.com>
+	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
+	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1myx3ghdt.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Tue, 07 Aug 2007 15:34:11 -0600
+In-Reply-To: <m1myx3ghdt.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Tue, 07 Aug 2007 15:32:46 -0600")
+Message-ID: <m1ir7rghbg.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de>
-	 <46B6F75D.1070808@gmail.com>
-	 <20070806103553.GA16133@one.firstfloor.org>
-	 <20070807204449.GA5245@kernel.dk>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-so there is no real reason not to allow it for non root users?
-removing the check is easy (3 lines) ....
-or are there any other issues/problems?
 
-On 8/7/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> On Mon, Aug 06 2007, Andi Kleen wrote:
-> > > couldn't this be fixed by bumping idle tasks to middle while they hold a
-> >
-> > Usually to high.
-> >
-> > But it's all complicated and hasn't been done consistently
-> > (there are real time mutexes in the -rt kernel for example,
-> > but there are lots of other locks and they have higher overhead too)
-> > and it's unclear we really want to do all this complexity anyways.
-> >
-> > Also as I said the problem could then still happen in user space
-> > which then would all need to be fixed to handle PI too.
-> >
-> > In some cases the relationship is also not as simple as a single
-> > lock. And for IO handling it would be likely quite hard.
-> >
-> > I personally always found idle priorities quite dubious because
-> > even if they worked reliable for the CPU they will clear your cache/
-> > load your memory controller and impact all other programs because
-> > of this. And for the disk they will cause additional seeks which are
-> > also very costly.
->
-> But that is why the idle priority implementation in CFQ adds a grace
-> period before idle prio tasks are run. So that concern should not be an
-> issue, if so the grace period needs to be enlarged. That at least covers
-> the seek side of things. If idle io tasks run, then the IO load on the
-> system must be very low to zero. Hence other IO relevant resource
-> contention isn't an iissue.
->
-> --
-> Jens Axboe
->
->
+Teach sysfs_update_file how to handle multiple sysfs
+superblocks.  Again we are just iterating over the superblocks
+to so all of the filesystem modification notifications work
+as expected.
+
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/sysfs/file.c |   35 +++++++++++++++++++++--------------
+ 1 files changed, 21 insertions(+), 14 deletions(-)
+
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index cff054f..1e6f9df 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -462,7 +462,8 @@ EXPORT_SYMBOL_GPL(sysfs_add_file_to_group);
+ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
+ {
+ 	struct sysfs_dirent *victim_sd = NULL;
+-	struct dentry *victim = NULL;
++	struct super_block *sb;
++	struct dentry *victim;
+ 	int rc;
+ 
+ 	rc = -ENOENT;
+@@ -471,21 +472,27 @@ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
+ 		goto out;
+ 
+ 	mutex_lock(&sysfs_rename_mutex);
+-	victim = sysfs_get_dentry(sysfs_sb, victim_sd);
+-	mutex_unlock(&sysfs_rename_mutex);
+-	if (IS_ERR(victim)) {
+-		rc = PTR_ERR(victim);
+-		victim = NULL;
+-		goto out;
++	sysfs_grab_supers();
++	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
++		victim = sysfs_get_dentry(sb, victim_sd);
++		if (!victim)
++			continue;
++		if (IS_ERR(victim)) {
++			rc = PTR_ERR(victim);
++			victim = NULL;
++			goto out_unlock;
++		}
++		mutex_lock(&victim->d_inode->i_mutex);
++		victim->d_inode->i_mtime = CURRENT_TIME;
++		fsnotify_modify(victim);
++		mutex_unlock(&victim->d_inode->i_mutex);
++		rc = 0;
++		dput(victim);
+ 	}
+-
+-	mutex_lock(&victim->d_inode->i_mutex);
+-	victim->d_inode->i_mtime = CURRENT_TIME;
+-	fsnotify_modify(victim);
+-	mutex_unlock(&victim->d_inode->i_mutex);
+-	rc = 0;
++ out_unlock:
++	sysfs_release_supers();
++	mutex_unlock(&sysfs_rename_mutex);
+  out:
+-	dput(victim);
+ 	sysfs_put(victim_sd);
+ 	return rc;
+ }
+-- 
+1.5.1.1.181.g2de0
+
