@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759906AbXHGUZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932487AbXHGU2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759906AbXHGUZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 16:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbXHGUZm
+	id S932487AbXHGU2R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 16:28:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbXHGU2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:25:42 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:32765 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755175AbXHGUZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:25:41 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:message-id:date:from:to:subject:cc:in-reply-to:
-	mime-version:content-type:content-transfer-encoding:
-	content-disposition:references;
-	b=S6bPavQp/BhCy48NKilo4qvn+A46mqlQjus4/73IYLbCDR5n3GeRHyJxjl64oy+so
-	aehKaNaSTLqBS4SH/r4Iw==
-Message-ID: <6599ad830708071325s4a633effj6fca2c79d734ece1@mail.gmail.com>
-Date: Tue, 7 Aug 2007 13:25:26 -0700
-From: "Paul Menage" <menage@google.com>
-To: "Peter Zijlstra" <a.p.zijlstra@chello.nl>
-Subject: Re: [ckrm-tech] Circular Locking Dependency Chain detected in containers code
-Cc: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       "Srivatsa Vaddagiri" <vatsa@linux.vnet.ibm.com>,
-       ckrm-tech@lists.sourceforge.net
-In-Reply-To: <1186518208.11797.176.camel@lappy>
+	Tue, 7 Aug 2007 16:28:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45596 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752448AbXHGU2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 16:28:02 -0400
+Date: Tue, 7 Aug 2007 16:27:58 -0400
+From: Dave Jones <davej@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: GPL / MPL license issues.
+Message-ID: <20070807202758.GA1937@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070807062600.GH31148@linux.vnet.ibm.com>
-	 <6599ad830708071310i4fa7a98age169e2d650421d8b@mail.gmail.com>
-	 <1186518208.11797.176.camel@lappy>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/7/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
-> The typical annotation would be using spin_lock_nested/mutex_lock_nested
-> with a non-0 nesting level for this one case.
->
+There are a number of files in the kernel that have in their
+headers a notice that the file is under the Mozilla Public License,
+which alone, is incompatible with the GPL.
 
-OK, I'll look into this when I get back from vacation.
+This itself is fine, as long as the resulting code claims
+to be Dual MPL/GPL, however there are a few cases where this
+doesn't seem to be happening.
 
-Thanks,
+drivers/pcmcia/soc_common.c gets linked into
+drivers/pcmcia/pxa2xx_core.o, which seems to end up with
+a module license of "GPL".
 
-Paul
+ricoh.h and o2micro.h are MPL, yet get included in
+drivers/pcmcia/yenta_socket.c which ends up as a "GPL" module.
+
+drivers/pcmcia/i82365.h is MPL, yet gets included in the following
+GPL only drivers ..
+ drivers/pcmcia/i82092.c
+ drivers/pcmcia/pd6729.c
+ drivers/pcmcia/vrc4171_card.c
+ drivers/pcmcia/yenta_socket.c
+
+drivers/pcmcia/pd6729.c is MODULE_LICENSE("GPL"), yet includes
+the MPL'd 'cirrus.h'
+
+drivers/serial/serial_cs.c labels itself as MPL/GPL, yet
+has a MODULE_LICENSE("GPL").
+
+drivers/scsi/pcmcia/qlogic_stub.c does the same.
+
+I may have missed some others, but this is what turned up from
+some simple grepping.
+
+I've got patches fixing up some of the simpler cases changing
+the "GPL" to "Dual MPL/GPL", but I want to be sure I'm not
+barking up the wrong tree first.
+
+comments?
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
