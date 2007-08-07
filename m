@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759542AbXHGI1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbXHGIaS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759542AbXHGI1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbXHGI12
+	id S1759048AbXHGIaS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:30:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756897AbXHGIaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:27:28 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:43384 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752853AbXHGI11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:27:27 -0400
-Message-ID: <46B82CDD.7020503@free.fr>
-Date: Tue, 07 Aug 2007 10:27:09 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, tglx@linutronix.de
-Subject: Re: Old -rt patches
-References: <46B0B7A4.8060805@free.fr>  <46B6E210.9090502@free.fr> <1186466508.22044.8.camel@imap.mvista.com>
-In-Reply-To: <1186466508.22044.8.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 04:30:07 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51223 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756795AbXHGIaG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 04:30:06 -0400
+Date: Tue, 7 Aug 2007 10:30:04 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: =?iso-8859-1?Q?C=E9dric?= Augonnet <cedric.augonnet@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Andi Kleen <andi@firstfloor.org>,
+       loic@myri.com, brice@myri.com, cedric.augonnet@ens-lyon.org
+Subject: Re: [PATCH 0/2] PAT support for i386 and x86_64
+Message-ID: <20070807083004.GB30085@one.firstfloor.org>
+References: <f56c1ba00708061903r29baea3dj6b57032be5820983@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f56c1ba00708061903r29baea3dj6b57032be5820983@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-
-> John Sigler wrote:
+On Mon, Aug 06, 2007 at 10:03:15PM -0400, Cédric Augonnet wrote:
+> Hi all,
 > 
->> Would anyone care to comment?
-> 
-> I'm not sure if this is the answer that you're looking for, but yes you
-> certainly will find fixed bug is older version of the tree.
+> For quite a while now, there as been numerous attempt to introduce support for
+> Page Attribute Table (PAT) in the Linux kernel, whereas most other OS already
+> have some support for this feature. Such a proposition popping up periodically,
+> perhaps it would be an opportunity to fix that lack for once.
 
-I am not a kernel hacker, therefore I can only imagine how complex it is 
-to bring real-time to Linux. For some reason, I had come to believe that 
-the case of a single CPU without dynticks had been "solved" in the more 
-recent kernels (say 2.6.20), and that development had moved on, and was 
-now active in more "complex" areas like SMP/multi-core, dynticks, etc.
+The trouble is you need to avoid conflicting attributes, otherwise
+you risk cache corruption. This means the direct mapping needs to be fixed
+up and the kernel needs to keep track of the ranges to prevent conflicts.
 
->> Perhaps I could also test a different strategy, such as xenomai?
->> http://www.xenomai.org/
-> 
-> If it's a kernel bug it's not going to matter if you use a xenomai skin
-> or not.. If you use some other real time layer that might fix it ..
+Also when there is already a MTRR it might not work due to the complicated
+rules of MTRR<->PAT interaction.
 
-*If* it is a bug in the -rt patch, then Adeos/Xenomai coupled with a 
-vanilla Linux kernel should not be affected by the same bug. Unless my 
-logic is broken somewhere.
+Then there are old CPU errata that need to be handled etc.
 
-> you really need to test your app on a current version of the kernel ..
-> We as developers generally don't support out dated trees..
+There are also some other issues.
 
-This is the part I don't understand. I work for a tiny company with 
-limited resources. It's infeasible for me to track every new kernel 
-release and upgrade every time. I need to pick a kernel version that has 
-the functionality we need, test it thoroughly with my app, and then 
-never touch that kernel again.
+You didn't solve all that at all. If it was as simple as your patch
+we would have long done it already.
 
-Unless I am mistaken, some people (like Thomas) have been deploying 
-systems based on PREEMPT_RT (or just -hrt) in indutrial settings for a 
-long time. (As far back as 2.6.15?) Obviously many bugs have been fixed 
-since then, which means that these versions contained many bugs.
+-Andi
 
-How does one react when an important bug in found in a system that is 
-already in the field? Do they provide a way to upgrade the kernel (like 
-consumer-grade network routers)? Do they replace the complete system?
-
-Regards.
