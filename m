@@ -1,76 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761592AbXHGSnZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbXHGSrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761592AbXHGSnZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 14:43:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751802AbXHGSnR
+	id S1761969AbXHGSrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 14:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbXHGSrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 14:43:17 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:53636 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbXHGSnQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 14:43:16 -0400
-Date: Tue, 7 Aug 2007 11:43:14 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-rt-users@vger.kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       dipankar@in.ibm.com, josht@linux.vnet.ibm.com, tytso@us.ibm.com,
-       dvhltc@us.ibm.com, tglx@linutronix.de
-Subject: [PATCH 1/4 RFC] RCU: Fix barriers
-Message-ID: <20070807184314.GB10068@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070807183946.GA32110@linux.vnet.ibm.com>
+	Tue, 7 Aug 2007 14:47:10 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:43815 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220AbXHGSrJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 14:47:09 -0400
+Date: Tue, 7 Aug 2007 20:47:22 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] remove genhd.h from header exports
+Message-ID: <20070807184722.GA31015@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070807183946.GA32110@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix rcu_barrier() to work properly in preemptive kernel environment.
-Also, the ordering of callback must be preserved while moving
-callbacks to another CPU during CPU hotplug.
 
-Signed-off-by: Dipankar Sarma <dipankar@in.ibm.com>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+remove linux/genhd.h from make headers_install
+
+It contains no userinterfaces, only the msdos partition table layout and some
+numbers. And it became finally unusable with the CONFIG_BLOCK addition.
+
+Remove it from the Kconfig list, and remove the __KERNEL__ checks.
+Move #include block up
+remove unused inclusion of linux/major.h
+
+compile tested with ppc64_defconfig
+
+
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
+
 ---
+ include/linux/Kbuild  |    1 -
+ include/linux/genhd.h |   37 ++++++-------------------------------
+ 2 files changed, 6 insertions(+), 32 deletions(-)
 
- rcuclassic.c |    2 +-
- rcupdate.c   |   10 ++++++++++
- 2 files changed, 11 insertions(+), 1 deletion(-)
-
-diff -urpNa -X dontdiff linux-2.6.22-a-splitclassic/kernel/rcuclassic.c linux-2.6.22-b-fixbarriers/kernel/rcuclassic.c
---- linux-2.6.22-a-splitclassic/kernel/rcuclassic.c	2007-07-19 15:03:51.000000000 -0700
-+++ linux-2.6.22-b-fixbarriers/kernel/rcuclassic.c	2007-07-19 17:10:46.000000000 -0700
-@@ -349,9 +349,9 @@ static void __rcu_offline_cpu(struct rcu
- 	if (rcp->cur != rcp->completed)
- 		cpu_quiet(rdp->cpu, rcp);
- 	spin_unlock_bh(&rcp->lock);
-+	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail);
- 	rcu_move_batch(this_rdp, rdp->curlist, rdp->curtail);
- 	rcu_move_batch(this_rdp, rdp->nxtlist, rdp->nxttail);
--	rcu_move_batch(this_rdp, rdp->donelist, rdp->donetail);
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -204,7 +204,6 @@ unifdef-y += futex.h
+ unifdef-y += fs.h
+ unifdef-y += gameport.h
+ unifdef-y += generic_serial.h
+-unifdef-y += genhd.h
+ unifdef-y += gfs2_ondisk.h
+ unifdef-y += hayesesp.h
+ unifdef-y += hdlcdrv.h
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -9,9 +9,14 @@
+  *		<drew@colorado.edu>
+  */
+ 
++#ifdef CONFIG_BLOCK
+ #include <linux/types.h>
++#include <linux/device.h>
++#include <linux/smp.h>
++#include <linux/string.h>
++#include <linux/fs.h>
++#include <linux/workqueue.h>
+ 
+-#ifdef CONFIG_BLOCK
+ 
+ enum {
+ /* These three have identical behaviour; use the second one if DOS FDISK gets
+@@ -43,31 +48,6 @@ enum {
+ 	UNIXWARE_PARTITION = 0x63,	/* Same as GNU_HURD and SCO Unix */
+ };
+ 
+-#ifndef __KERNEL__
+-
+-struct partition {
+-	unsigned char boot_ind;		/* 0x80 - active */
+-	unsigned char head;		/* starting head */
+-	unsigned char sector;		/* starting sector */
+-	unsigned char cyl;		/* starting cylinder */
+-	unsigned char sys_ind;		/* What partition type */
+-	unsigned char end_head;		/* end head */
+-	unsigned char end_sector;	/* end sector */
+-	unsigned char end_cyl;		/* end cylinder */
+-	unsigned int start_sect;	/* starting sector counting from 0 */
+-	unsigned int nr_sects;		/* nr of sectors in partition */
+-} __attribute__((packed));
+-
+-#endif
+-
+-#ifdef __KERNEL__
+-#include <linux/major.h>
+-#include <linux/device.h>
+-#include <linux/smp.h>
+-#include <linux/string.h>
+-#include <linux/fs.h>
+-#include <linux/workqueue.h>
+-
+ struct partition {
+ 	unsigned char boot_ind;		/* 0x80 - active */
+ 	unsigned char head;		/* starting head */
+@@ -260,8 +240,6 @@ static inline void set_capacity(struct g
+ 	disk->capacity = size;
  }
  
- static void rcu_offline_cpu(int cpu)
-diff -urpNa -X dontdiff linux-2.6.22-a-splitclassic/kernel/rcupdate.c linux-2.6.22-b-fixbarriers/kernel/rcupdate.c
---- linux-2.6.22-a-splitclassic/kernel/rcupdate.c	2007-07-19 14:19:03.000000000 -0700
-+++ linux-2.6.22-b-fixbarriers/kernel/rcupdate.c	2007-07-19 17:13:31.000000000 -0700
-@@ -115,7 +115,17 @@ void rcu_barrier(void)
- 	mutex_lock(&rcu_barrier_mutex);
- 	init_completion(&rcu_barrier_completion);
- 	atomic_set(&rcu_barrier_cpu_count, 0);
-+	/*
-+	 * The queueing of callbacks in all CPUs must be atomic with
-+	 * respect to RCU, otherwise one CPU may queue a callback,
-+	 * wait for a grace period, decrement barrier count and call
-+	 * complete(), while other CPUs have not yet queued anything.
-+	 * So, we need to make sure that grace periods cannot complete
-+	 * until all the callbacks are queued.
-+	 */
-+	rcu_read_lock();
- 	on_each_cpu(rcu_barrier_func, NULL, 0, 1);
-+	rcu_read_unlock();
- 	wait_for_completion(&rcu_barrier_completion);
- 	mutex_unlock(&rcu_barrier_mutex);
+-#endif  /*  __KERNEL__  */
+-
+ #ifdef CONFIG_SOLARIS_X86_PARTITION
+ 
+ #define SOLARIS_X86_NUMSLICE	16
+@@ -405,7 +383,6 @@ struct unixware_disklabel {
+ #   define MINIX_NR_SUBPARTITIONS  4
+ #endif /* CONFIG_MINIX_SUBPARTITION */
+ 
+-#ifdef __KERNEL__
+ 
+ #define ADDPART_FLAG_NONE	0
+ #define ADDPART_FLAG_RAID	1
+@@ -435,8 +412,6 @@ static inline struct block_device *bdget
+ 	return bdget(MKDEV(disk->major, disk->first_minor) + index);
  }
+ 
+-#endif
+-
+ #else /* CONFIG_BLOCK */
+ 
+ static inline void printk_all_partitions(void) { }
