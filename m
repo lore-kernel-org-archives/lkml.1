@@ -1,45 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938130AbXHGWGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966434AbXHGWHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938130AbXHGWGw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935568AbXHGVn1
+	id S966434AbXHGWHf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966915AbXHGVpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:43:27 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48088 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935433AbXHGVnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:43:25 -0400
-Message-ID: <46B8E773.5020406@redhat.com>
-Date: Tue, 07 Aug 2007 17:43:15 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Tue, 7 Aug 2007 17:45:04 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:56814 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966001AbXHGVpA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:45:00 -0400
+Date: Tue, 7 Aug 2007 23:44:58 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Greg KH <gregkh@suse.de>
+cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, davi@haxent.com.br, mtk-manpages@gmx.net,
+       davidel@xmailserver.org
+Subject: Re: [2.6.22.2 review 26/84] make timerfd return a u64 and fix the
+ __put_user
+In-Reply-To: <20070807204459.GA23028@kroah.com>
+Message-ID: <Pine.LNX.4.64.0708072343390.26397@fbirervta.pbzchgretzou.qr>
+References: <20070807204034.882009319@mini.kroah.org> <20070807204459.GA23028@kroah.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dtor@insightbb.com>
-Subject: Re: 2.6.22: pcspkr driver no longer loads automatically
-References: <46B8C8FA.9020100@redhat.com> <46B8D984.7040602@garzik.org>
-In-Reply-To: <46B8D984.7040602@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/07/2007 04:43 PM, Jeff Garzik wrote:
-> Chuck Ebbert wrote:
->> With no other changes but a kernel upgrade, the pcspkr driver
->> doesn't load automatically anymore. No changes to that driver
->> jump out, so where else could the problem be? Something to
->> do with the device class changes maybe?
-> 
-> This has long been a problem for me on Fedora, long before 2.6.22.  I
-> would never ever have the glorious system beeps, unless I built the
-> module into my kernel.
-> 
-> I would look into distro areas and see why it's not getting loaded.
-> 
 
-Seems to be some kind of udev / hal magic loading it. With 2.6.20/21
-it worked for most people, now it seems totally broken. Maybe we should
-just load it unconditionally.
+On Aug 7 2007 13:44, Greg KH wrote:
+>--- a/fs/timerfd.c
+>+++ b/fs/timerfd.c
+>@@ -95,7 +95,7 @@ static ssize_t timerfd_read(struct file 
+> {
+> 	struct timerfd_ctx *ctx = file->private_data;
+> 	ssize_t res;
+>-	u32 ticks = 0;
+>+	u64 ticks = 0;
+> 	DECLARE_WAITQUEUE(wait, current);
+> 
+> 	if (count < sizeof(ticks))
+>@@ -130,7 +130,7 @@ static ssize_t timerfd_read(struct file 
+> 			 * callback to avoid DoS attacks specifying a very
+> 			 * short timer period.
+> 			 */
+>-			ticks = (u32)
+>+			ticks = (u64)
+> 				hrtimer_forward(&ctx->tmr,
+> 						hrtimer_cb_get_time(&ctx->tmr),
+> 						ctx->tintv);
+
+[ Minor: Cast is not strictly required; hrtimer_forward()s result is
+autopromoted/demoted to the type of @ticks. ]
+
+
+
+	Jan
+-- 
