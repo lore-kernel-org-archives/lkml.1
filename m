@@ -1,104 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935457AbXHGXMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHGXOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935457AbXHGXMQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 19:12:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756485AbXHGXMB
+	id S935412AbXHGXOn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 19:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbXHGXOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 19:12:01 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:51119 "EHLO mx1.redhat.com"
+	Tue, 7 Aug 2007 19:14:35 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:49475 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756577AbXHGXL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 19:11:59 -0400
-Date: Wed, 8 Aug 2007 01:11:56 +0200
-From: Karel Zak <kzak@redhat.com>
-To: List util-linux-ng <util-linux-ng@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng 2.13-rc3
-Message-ID: <20070807231156.GB3185@petra.dvoda.cz>
+	id S1751521AbXHGXOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 19:14:34 -0400
+Date: Wed, 8 Aug 2007 03:14:37 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>,
+       Johannes Berg <johannes@sipsolutions.net>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] 2.6.23-rc1-mm2
+Message-ID: <20070807231437.GA1004@tv-sign.ru>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de> <20070803093830.39852a01.akpm@linux-foundation.org> <1186160608.7255.10.camel@localhost> <20070803172137.GA3783@tv-sign.ru> <1186520929.6625.12.camel@heimdal.trondhjem.org> <20070807213749.GA461@tv-sign.ru> <1186524314.6625.29.camel@heimdal.trondhjem.org> <20070807222042.GA553@tv-sign.ru> <1186528107.6625.71.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <1186528107.6625.71.camel@heimdal.trondhjem.org>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/07, Trond Myklebust wrote:
+>
+> On Wed, 2007-08-08 at 02:20 +0400, Oleg Nesterov wrote:
+> 
+> > But. nfs4_renew_state() checks list_empty(&clp->cl_superblocks) under
+> > clp->cl_sem? So, if it is possible that clp->cl_renewd was scheduled
+> > at the time when nfs4_kill_renewd(), we can deadlock, no? Because
+> > nfs4_renew_state() needs clp->cl_sem to complete, but nfs4_kill_renewd()
+> > holds this sem, and waits for nfs4_renew_state() completion.
+> 
+> They both take read locks,
 
-The third util-linux-ng 2.13 release candidate is available at
+Aaaaaaaaaah. Please ignore me, thanks!
 
-    ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/
+> which means that they can take them
+> simultaneously. AFAICS, the deadlock can only occur if something manages
+> to insert a request for a write lock after nfs4_kill_renewd() takes its
+> read lock, but before nfs4_renew_state() takes its read lock:
+> 
+> 1) nfs4_kill_renewd()		2) nfs4_renew_state()		3) somebody else
+> -------------------             ------------------		-------------
+> read lock
+> wait on (2) to complete
+> 								write lock <waits on (1)>
+> 				read lock <waits on (3),
+> 					because rw_semaphores
+> 					don't allow a read lock
+> 					request to jump a write
+> 					lock request>
+> 
+> however as I explained earlier, the only process that can take a write
+> lock is the reclaimer daemon, but we _know_ that cannot be running (for
+> one thing, the reference count on nfs_client is zero, for the other,
+> there are no superblocks).
 
-Feedback and bug reports, as always, are welcomed.
+Oleg.
 
-    Karel
-
-
-v2.13-rc3 changelog:
-~~~~~~~~~~~~~~~~~~~
-
-agetty:
-   - 8 bit characters on the Linux console lead to input corruption  [Moritz Muehlenhoff]
-   - fix short malloc in initstring handling  [LaMont Jones]
-blockdev:
-   - fix "blockdev --getsz" for large devices  [Karel Zak]
-   - use LU and LLU for BLKGETSIZE and BLKGETSIZE64  [Karel Zak]
-build-sys:
-   - add ${AC,AP,AM,AH}_OPTS to autogen.sh  [Karel Zak]
-   - add warning when libuuid is not found  [Karel Zak]
-   - fix directories in EXTRA_DIST  [Karel Zak]
-   - missing header when NLS is disabled  [Gabriel Barazer]
-   - release++  [Karel Zak]
-   - remove asm/page.h test  [Karel Zak]
-cytune:
-   - remove linux/tty.h inclusion  [Karel Zak]
-disk-utils:
-   - let mkfs tools open with O_EXCL  [Matthias Koenig]
-docs:
-   - add rdev(8) between deprecated utils  [Karel Zak]
-fdisk:
-   - add support for udev persistent device names  [Matthias Koenig]
-   - cleanup partname.c  [Karel Zak]
-ionice:
-   - cleanup usage for idle class  [Matthias Koenig]
-logger:
-   - use snprintf instead of sprintf in logger.c  [LaMont Jones]
-look:
-   - man page clarification  [Pádraig Brady]
-mkfs:
-   - remove nonsense from man page  [Karel Zak]
-mkswap:
-   - default to V1 in any case  [Matthias Koenig]
-   - fix signedness problems and remove obsolete code  [Karel Zak]
-mount:
-   - fix -f -o remount  [Karel Zak]
-   - fix incorrect behavior when more than one fs type is specified  [Attila Áfra]
-   - mention hfsplus in mount manpage  [LaMont Jones]
-   - should set proper permissions on locktime  [Flávio Leitner]
-   - update xfs mount options  [Matthias Koenig]
-po:
-   - update po/ stuff  [Karel Zak]
-rdev:
-   - should be delivered on amd64 as well as i386.  [LaMont Jones]
-readprofile:
-   - fix on ppc64  [Matthias Koenig]
-script:
-   - fix race conditions  [Karel Zak]
-   - improve quiet mode  [Karel Zak]
-swapoff:
-   - correctly handle UUID= and LABEL= identifiers  [LaMont Jones]
-swapon:
-   - cleanup fsprobe_*() usage  [Karel Zak]
-tests:
-   - add license notices, change from gplv2-only to gplv2-or-later  [Karel Zak]
-   - add script(1) race condition test  [Karel Zak]
-   - add warning "For development purpose only."  [Karel Zak]
-   - use $AWK based on configure results  [Karel Zak]
-   - use relative paths when sourcing files  [Mike Frysinger]
-
-- manpage typos  [LaMont Jones]
-- remove hardcoded package name from some utils  [Karel Zak]
-
-
-
--- 
- Karel Zak  <kzak@redhat.com>
