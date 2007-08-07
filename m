@@ -1,54 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760582AbXHGJSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbXHGJVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760582AbXHGJSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 05:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757927AbXHGJSq
+	id S1760785AbXHGJVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 05:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbXHGJVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 05:18:46 -0400
-Received: from nf-out-0910.google.com ([64.233.182.191]:11645 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757863AbXHGJSo (ORCPT
+	Tue, 7 Aug 2007 05:21:41 -0400
+Received: from mail.xandmail.com ([212.155.184.97]:35382 "EHLO
+	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756250AbXHGJVj convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 05:18:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=cbYaRKwHm+w+OdkMB7yz2OwVuwh2EpVkIyOYemlWZsKkDybwSyl3FEnQV8mYt+XUqe5zLghx4vNF9tA3/9W89ltDExMEy3DS1qbueFVNiv9pDowsfPHCN1zjEZcl/exs/fcmLq78ouM3fBDwKOjkyxG7/Qt7wpU5iGs6kcHU9N8=
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-From: Michael Sedkowski <sedmich@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <46B817AB.30105@gmail.com>
-References: <838f88840708051428p3d65ff42w627af4bc38f57de3@mail.gmail.com>
-	 <1186411815.4355.7.camel@nx6310>
-	 <20070806150159.GC31615@khazad-dum.debian.net>
-	 <200708061732.03425.rjw@sisk.pl>  <46B75459.9020204@gmail.com>
-	 <1186424492.4355.1.camel@nx6310>  <46B76BBC.9010107@gmail.com>
-	 <1186438698.4402.6.camel@nx6310>  <46B817AB.30105@gmail.com>
+	Tue, 7 Aug 2007 05:21:39 -0400
+Date: Tue,  7 Aug 2007 11:21:07 +0200
+Message-Id: <JMECN8$607C5E77E84D2F80DCAAB4CFEB5A6346@xandmail.com>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+MIME-Version: 1.0
+X-Sensitivity: 3
 Content-Type: text/plain; charset=utf-8
-Date: Tue, 07 Aug 2007 11:18:39 +0200
-Message-Id: <1186478319.3705.3.camel@nx6310>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 8BIT
+From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
+To: "jarkao2" <jarkao2@o2.pl>
+Cc: "cebbert" <cebbert@redhat.com>, "mingo" <mingo@elte.hu>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
+       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "shemminger" <shemminger@linux-foundation.org>,
+       "linux-net" <linux-net@vger.kernel.org>,
+       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
+       "alan" <alan@lxorguk.ukuu.org.uk>
+X-XaM3-API-Version: 4.2(R3) (B21)
+X-type: 0
+X-SenderIP: 212.155.184.109
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dnia 07-08-2007, Wt o godzinie 15:56 +0900, Tejun Heo napisał(a):
-> 192 Power-Off_Retract_Count 0x0032   100   100   000    Old_age
-> Always       -       388
+
+> > * interrupts (i use irqbalance, but problem was the same without)
 > 
-> I think this is the one.  You can test it by forcefully powering off
-> the
-> machine (press power button for several secs or disconnect AC and
-> battery) and see whether the count increases.
-> 
-When I forcefully power off using the power button the raw value [last
-one] rise by 1 point from 389 to 390. When I power off normally with
-linux it remains constant.
-Now could some one please explain to me what does that mean and am I in
-danger of data loss?
+> I wonder if you tried without SMP too?
+
+No i did not. Do you think that this can be a problem ?
+To test with no SMP, do i need to recompile kernel or is there a kernel parameter ?
+
+....
+
+> BTW, Jean-Baptiste and Chuck - it seems, unless you have too much
+> time, there is no use for testing my "genirq: fix simple and fasteoi
+> irq handlers" patch.
+
+Well i just  tested 2.6.23-rc1 with your patch and copied (using smbclient) big files :
+
+Aug  7 11:11:53 loki kernel: NETDEV WATCHDOG: eth2: transmit timed out
+Aug  7 11:11:53 loki kernel: eth2: transmit timed out, tx_status 00 status e601.
+Aug  7 11:11:53 loki kernel:   diagnostics: net 0ccc media 8880 dma 0000003a fifo 0000
+Aug  7 11:11:53 loki kernel: eth2: Interrupt posted but not delivered -- IRQ blocked by another device?
+Aug  7 11:11:53 loki kernel:   Flags; bus-master 1, dirty 93481(9) current 93481(9)
+Aug  7 11:11:53 loki kernel:   Transmit list 00000000 vs. ffff81007be977a0.
+Aug  7 11:11:53 loki kernel:   0: @ffff81007be97200  length 8000005f status 0001005f
+Aug  7 11:11:53 loki kernel:   1: @ffff81007be972a0  length 8000005f status 0001005f
+Aug  7 11:11:53 loki kernel:   2: @ffff81007be97340  length 8000005f status 0001005f
+Aug  7 11:11:53 loki kernel:   3: @ffff81007be973e0  length 8000005f status 0001005f
+Aug  7 11:11:53 loki kernel:   4: @ffff81007be97480  length 8000003c status 0001003c
+Aug  7 11:11:53 loki kernel:   5: @ffff81007be97520  length 8000003c status 0001003c
+Aug  7 11:11:53 loki kernel:   6: @ffff81007be975c0  length 8000003c status 0001003c
+Aug  7 11:11:53 loki kernel:   7: @ffff81007be97660  length 8000003c status 8001003c
+Aug  7 11:11:53 loki kernel:   8: @ffff81007be97700  length 8000003c status 8001003c
+Aug  7 11:11:53 loki kernel:   9: @ffff81007be977a0  length 8000002a status 0001002a
+Aug  7 11:11:53 loki kernel:   10: @ffff81007be97840  length 8000003a status 0001003a
+Aug  7 11:11:53 loki kernel:   11: @ffff81007be978e0  length 8000005f status 0001005f
+Aug  7 11:11:53 loki kernel:   12: @ffff81007be97980  length 800000be status 0c0100be
+Aug  7 11:11:53 loki kernel:   13: @ffff81007be97a20  length 800000be status 0c0100be
+Aug  7 11:11:53 loki kernel:   14: @ffff81007be97ac0  length 8000005f status 0001005f
+Aug  7 11:11:53 loki kernel:   15: @ffff81007be97b60  length 8000005f status 0001005f
+
+Thanks;
+
+Jb
 
