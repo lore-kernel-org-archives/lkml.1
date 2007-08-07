@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756609AbXHGTVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934295AbXHGTXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756609AbXHGTVS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 15:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757410AbXHGTUw
+	id S934295AbXHGTXz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 15:23:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbXHGTXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 15:20:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54073 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756607AbXHGTUv (ORCPT
+	Tue, 7 Aug 2007 15:23:46 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:64715 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754605AbXHGTXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 15:20:51 -0400
-Date: Tue, 7 Aug 2007 12:20:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, Ollie Wild <aaw@google.com>,
-       Ingo Molnar <mingo@elte.hu>, Andi Kleen <ak@suse.de>
-Subject: Re: [patch 3/3] mm: variable length argument support
-Message-Id: <20070807122008.fcd175d6.akpm@linux-foundation.org>
-In-Reply-To: <20070807190357.GA31139@aepfle.de>
-References: <20070613100334.635756997@chello.nl>
-	<20070613100835.014096712@chello.nl>
-	<20070807190357.GA31139@aepfle.de>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 7 Aug 2007 15:23:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=ZHMNemcG2r3MzY9hcPWrhqIx94Iwa31y9qfq8ctboDh07CpBJUbNn70Fgn9PdJdben4fEjZrEjk51scxsdT96lmFlqtaTwpYPNMfrtw0bkw+Yh0AhPywp6ElRsTi6iFsrUho8G/jzclKsKkdod/x9A6HxLFhlWRUkS7qGN4j4Hc=
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+From: Michael Sedkowski <sedmich@gmail.com>
+To: trenn@suse.de
+Cc: Tejun Heo <htejun@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <1186497925.8780.78.camel@queen.suse.de>
+References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no>
+	 <fa.mg6p0itaOQUo/t8deCaYpyqj6Nk@ifi.uio.no>
+	 <fa.RxWYL8z8KktgL8LGZ/cTB2nI1Yc@ifi.uio.no>
+	 <fa.AyyCtZ2yLjC5noHPHtmzn4ffhhE@ifi.uio.no>
+	 <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no>
+	 <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no> <46B7AF53.1040307@shaw.ca>
+	 <46B8140E.3000509@gmail.com>  <1186497925.8780.78.camel@queen.suse.de>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 21:23:38 +0200
+Message-Id: <1186514618.5622.9.camel@nx6310>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007 21:03:57 +0200
-Olaf Hering <olaf@aepfle.de> wrote:
+I did some additional checking today...
+On kernels prior to 2.6.22 line, the bug exists and manifests itself
+exactly the same way. However, when I removed the "-h" flag
+from /etc/init.d/halt, the drive spins down only once on "Power down"
+message and there is no sign of the bug and the emergency unload count
+remains constant. I've verified this on kernels 2.6.21.6; 2.6.20.4;
+2.6.18-4-686-Etch.
+The obvious conclusion is that something must have changed it the 2.6.22
+kernels, so that removing the "-h" has no effect.
+I dunno if my observations are of any value, but I thought You should
+know...
 
-> On Wed, Jun 13, Peter Zijlstra wrote:
-> 
-> > From: Ollie Wild <aaw@google.com>
-> > 
-> > Remove the arg+env limit of MAX_ARG_PAGES by copying the strings directly
-> > from the old mm into the new mm.
-> 
-> > +++ linux-2.6-2/include/linux/binfmts.h	2007-06-13 11:52:46.000000000 +0200
-> > @@ -6,11 +6,13 @@
-> >  struct pt_regs;
-> >  
-> >  /*
-> > - * MAX_ARG_PAGES defines the number of pages allocated for arguments
-> > - * and envelope for the new program. 32 should suffice, this gives
-> > - * a maximum env+arg of 128kB w/4KB pages!
-> > + * These are the maximum length and maximum number of strings passed to the
-> > + * execve() system call.  MAX_ARG_STRLEN is essentially random but serves to
-> > + * prevent the kernel from being unduly impacted by misaddressed pointers.
-> > + * MAX_ARG_STRINGS is chosen to fit in a signed 32-bit integer.
-> >   */
-> > -#define MAX_ARG_PAGES 32
-> > +#define MAX_ARG_STRLEN (PAGE_SIZE * 32)
-> > +#define MAX_ARG_STRINGS 0x7FFFFFFF
-> 
-> This adds a new usage of PAGE_SIZE to an exported header.
-> How can this be fixed for 2.6.23?
+Regards,
+Michael
 
-Put #ifdef __KERNEL__ around it?
