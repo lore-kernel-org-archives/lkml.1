@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762702AbXHGLrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbXHGL6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762702AbXHGLrG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 07:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbXHGLq6
+	id S1759285AbXHGL6u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 07:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753898AbXHGL6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 07:46:58 -0400
-Received: from wa-out-1112.google.com ([209.85.146.183]:9530 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759448AbXHGLq5 (ORCPT
+	Tue, 7 Aug 2007 07:58:44 -0400
+Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:38701 "EHLO
+	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbXHGL6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 07:46:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=m6OI3AOEUaGiexxxzwqr1GYkQTGyxPBu4PiLsRnW19oDghMMLmvUDzyqIdIGYFhn0sFuuZ5xf6dHFEU45ytnfwLHUz+zWoWpk7GjqtIF1ATFeYqM7IFL7L1KlcL93dzUwzUvWcwsjX8MG4LYq9gU9KpWU9hb10/LXb+kXWqh4JY=
-Message-ID: <3ae72650708070446y6452d13jb7cd802119dab3ce@mail.gmail.com>
-Date: Tue, 7 Aug 2007 13:46:55 +0200
-From: "Kay Sievers" <kay.sievers@vrfy.org>
-To: "Cornelia Huck" <cornelia.huck@de.ibm.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not notified
-Cc: "Javier Pello" <javier.pello@urjc.es>, linux-kernel@vger.kernel.org,
-       "Greg KH" <greg@kroah.com>
-In-Reply-To: <20070807125844.4d756b04@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46B37CF7.2020803@urjc.es>
-	 <20070806142451.5d28d41c@gondolin.boeblingen.de.ibm.com>
-	 <46B7832B.6010808@urjc.es>
-	 <20070807125844.4d756b04@gondolin.boeblingen.de.ibm.com>
-X-Google-Sender-Auth: cd180399d3c3b4a4
+	Tue, 7 Aug 2007 07:58:42 -0400
+To: jlayton@redhat.com
+CC: miklos@szeredi.hu, trond.myklebust@fys.uio.no,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       mikulas@artax.karlin.mff.cuni.cz, zippel@linux-m68k.org,
+       joel.becker@oracle.com, wli@holomorphy.com, dhowells@redhat.com,
+       bfennema@falcon.csc.calpoly.edu
+In-reply-to: <20070807072729.71f15109.jlayton@redhat.com> (message from Jeff
+	Layton on Tue, 7 Aug 2007 07:27:29 -0400)
+Subject: Re: [fuse-devel] [PATCH 01/25] VFS: move attr_kill logic from
+ notify_change into helper function
+References: <200708061354.l76Ds6sq002260@dantu.rdu.redhat.com>
+	<E1II6cM-0004yj-00@dorka.pomaz.szeredi.hu>
+	<20070806141333.0f54ab17.jlayton@redhat.com>
+	<E1II7JR-0005BN-00@dorka.pomaz.szeredi.hu>
+	<1186427063.6616.59.camel@localhost>
+	<E1II8Nw-0005XH-00@dorka.pomaz.szeredi.hu>
+	<1186435419.6616.136.camel@localhost>
+	<E1III7U-0006ju-00@dorka.pomaz.szeredi.hu> <20070807072729.71f15109.jlayton@redhat.com>
+Message-Id: <E1IINct-0007Se-00@dorka.pomaz.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Tue, 07 Aug 2007 13:53:27 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/7/07, Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> On Mon, 06 Aug 2007 22:23:07 +0200,
-> Javier Pello <javier.pello@urjc.es> wrote:
->
-> > > > 2. The second part changes _request_firmware in
-> > > > drivers/base/firmware_class.c to actually check the return value
-> > > > of kobject_uevent and skip the loading_timeout delay if the
-> > > > loading event was not delivered to userspace at all.
-> > >
-> > > Note that kobject_uevent() returns 0 if the event has been filtered.
-> >
-> > Oops, yes, I had not noticed. This brings another point: When should
-> > kobject_uevent return a "failure"? The code, as it is, only returns a
-> > failure when things are really wrong (out of memory, etc.), and
-> > returns success when the event was simply dropped. This is reasonable
-> > behaviour, but it prevents callers from knowing whether the event was
-> > actually delivered (which is what request_firmware needs). On the
-> > other hand, my patch tries to make nondelivery an error, but on
-> > second thoughts that could prevent the caller from telling hard
-> > errors from simple nondelivery.
->
-> You could say that not delivering is caused by a hard error when trying
-> to deliver, though. OTOH, filtering an event is certainly not an error.
->
-> > I can think of two possibilities
-> > to sort this out:
-> >
-> > - kobject_uevent returns an error code both on a hard error and
-> > on nondelivery; the error codes for both situations are different,
-> > so the caller can tell them apart.
->
-> Tough. For example, both today's kobject_uevent() and
-> call_usermodehelper() may return -ENOMEM.
->
-> >
-> > - kobject_uevent returns an error code (<0) only on a hard error,
-> > returns 0 on nondelivery and 1 on delivery; this makes things
-> > even clearer.
->
-> Hm, I have an aversion against tri-state return values :( OTOH, a)
-> callers generally don't care and b) it is in line with how
-> kobject_uevent() is defined if !CONFIG_HOTPLUG.
->
-> - Use an extra parameter in which successful delivery can be indicated.
-> Make this
-> int kobject_uevent_env_check(struct kobject *kobject,
->                              enum kobject_action action,
->                              char *envp[], int delivered);
-> so existing callers that don't care don't have to be changed.
+> On the other hand, the filesystem writers here are declaring their own
+> setattr operation. Is it unreasonable for them to take responsibility
+> for handling this too? 
 
-How do you check if events have been "handled"? None of the recent
-distros uses /sbin/hotplug anymore. Netlink events are broadcasted,
-but no failure in delivery doesn't mean anything like "handled", or
-delivered to the right instance. Even if you check that the netlink
-socket has listeners, that wouldn't be sufficient to tell that is is
-handled.
+We have about half of all the in-tree filesystems declaring
+->setattr(), and out of those only two that we know would use this.
+Others haven't commented, which proably means, they just don't care
+about this issue.
 
-Thanks,
-Kay
+And even if most of them would make use of this feature, a inode flag
+or filesystem flag for a smooth and backward compatible migration is
+just so much better than risking to break filesystems.
+
+And yes, I'm thinking about in-tree filesystems as well.  I'm sure you
+did a thorough audit of all filesystems, but we are all human and can
+make mistakes.  It is _always_ safer to not change an API which could
+cause silent breakage.  And IMO, that's far more important than the
+beauty of an interface (and ->setattr() is not beautiful with or
+without an inode flag).
+
+> Another alternative might be to rename notify_change(). I don't really
+> like gratuitously breaking the API, though, and that function is
+> referenced in a lot of documentation. Changing it might be confusing...
+
+Oh no.  I'd like less breakage not more.
+
+Miklos
