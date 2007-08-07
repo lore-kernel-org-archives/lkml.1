@@ -1,89 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXHGVVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965966AbXHGVVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965908AbXHGVVZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXHGU4E
+	id S965966AbXHGVVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762735AbXHGU4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:56:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59799 "EHLO
+	Tue, 7 Aug 2007 16:56:07 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59811 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935746AbXHGUzy (ORCPT
+	with ESMTP id S935458AbXHGUz7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:55:54 -0400
-Date: Tue, 7 Aug 2007 13:48:22 -0700
+	Tue, 7 Aug 2007 16:55:59 -0400
+Date: Tue, 7 Aug 2007 13:48:25 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       torvalds@linux-foundation.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, adaplas@pol.net,
-       michal.k.k.piotrowski@gmail.com, bunk@stusta.de
-Subject: [2.6.22.2 review 65/84] drivers/video/macmodes.c:mac_find_mode()
-	mustnt be __devinit
-Message-ID: <20070807204822.GO23028@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [2.6.22.2 review 66/84] cfq-iosched: fix async queue behaviour
+Message-ID: <20070807204825.GP23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="drivers-video-macmodes.c-mac_find_mode-mustn-t-be-__devinit.patch"
+Content-Disposition: inline; filename="cfq-iosched-fix-async-queue-behaviour.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jens Axboe <jens.axboe@oracle.com>
 
-From: Adrian Bunk <bunk@stusta.de>
+With the cfq_queue hash removal, we inadvertently got rid of the
+async queue sharing. This was not intentional, in fact CFQ purposely
+shares the async queue per priority level to get good merging for
+async writes.
 
-If it's EXPORT_SYMBOL'ed it can't be __devinit.
+So put some logic in cfq_get_queue() to track the shared queues.
 
-Reported by Mikael Pettersson.
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Cc: "Antonino A. Daplas" <adaplas@pol.net>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/macmodes.c |    5 ++---
- drivers/video/macmodes.h |    8 ++++----
- 2 files changed, 6 insertions(+), 7 deletions(-)
+ block/cfq-iosched.c    |   39 ++++++++++++++++++++++++++++++++++++---
+ include/linux/ioprio.h |    6 ++++--
+ 2 files changed, 40 insertions(+), 5 deletions(-)
 
---- a/drivers/video/macmodes.c
-+++ b/drivers/video/macmodes.c
-@@ -369,9 +369,8 @@ EXPORT_SYMBOL(mac_map_monitor_sense);
-  *
-  */
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -92,6 +92,8 @@ struct cfq_data {
+ 	struct cfq_queue *active_queue;
+ 	struct cfq_io_context *active_cic;
  
--int __devinit mac_find_mode(struct fb_var_screeninfo *var,
--			    struct fb_info *info, const char *mode_option,
--			    unsigned int default_bpp)
-+int mac_find_mode(struct fb_var_screeninfo *var, struct fb_info *info,
-+		  const char *mode_option, unsigned int default_bpp)
++	struct cfq_queue *async_cfqq[IOPRIO_BE_NR];
++
+ 	struct timer_list idle_class_timer;
+ 
+ 	sector_t last_position;
+@@ -1351,8 +1353,8 @@ static void cfq_ioc_set_ioprio(struct io
+ }
+ 
+ static struct cfq_queue *
+-cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct task_struct *tsk,
+-	      gfp_t gfp_mask)
++cfq_find_alloc_queue(struct cfq_data *cfqd, int is_sync,
++		     struct task_struct *tsk, gfp_t gfp_mask)
  {
-     const struct fb_videomode *db = NULL;
-     unsigned int dbsize = 0;
---- a/drivers/video/macmodes.h
-+++ b/drivers/video/macmodes.h
-@@ -55,10 +55,10 @@ extern int mac_vmode_to_var(int vmode, i
- extern int mac_var_to_vmode(const struct fb_var_screeninfo *var, int *vmode,
- 			    int *cmode);
- extern int mac_map_monitor_sense(int sense);
--extern int __devinit mac_find_mode(struct fb_var_screeninfo *var,
--				   struct fb_info *info,
--				   const char *mode_option,
--				   unsigned int default_bpp);
-+extern int mac_find_mode(struct fb_var_screeninfo *var,
-+			 struct fb_info *info,
-+			 const char *mode_option,
-+			 unsigned int default_bpp);
+ 	struct cfq_queue *cfqq, *new_cfqq = NULL;
+ 	struct cfq_io_context *cic;
+@@ -1405,12 +1407,35 @@ retry:
+ 	if (new_cfqq)
+ 		kmem_cache_free(cfq_pool, new_cfqq);
  
+-	atomic_inc(&cfqq->ref);
+ out:
+ 	WARN_ON((gfp_mask & __GFP_WAIT) && !cfqq);
+ 	return cfqq;
+ }
  
-     /*
++static struct cfq_queue *
++cfq_get_queue(struct cfq_data *cfqd, int is_sync, struct task_struct *tsk,
++	      gfp_t gfp_mask)
++{
++	const int ioprio = task_ioprio(tsk);
++	struct cfq_queue *cfqq = NULL;
++
++	if (!is_sync)
++		cfqq = cfqd->async_cfqq[ioprio];
++	if (!cfqq)
++		cfqq = cfq_find_alloc_queue(cfqd, is_sync, tsk, gfp_mask);
++
++	/*
++	 * pin the queue now that it's allocated, scheduler exit will prune it
++	 */
++	if (!is_sync && !cfqd->async_cfqq[ioprio]) {
++		atomic_inc(&cfqq->ref);
++		cfqd->async_cfqq[ioprio] = cfqq;
++	}
++
++	atomic_inc(&cfqq->ref);
++	return cfqq;
++}
++
+ /*
+  * We drop cfq io contexts lazily, so we may find a dead one.
+  */
+@@ -2019,6 +2044,7 @@ static void cfq_exit_queue(elevator_t *e
+ {
+ 	struct cfq_data *cfqd = e->elevator_data;
+ 	request_queue_t *q = cfqd->queue;
++	int i;
+ 
+ 	cfq_shutdown_timer_wq(cfqd);
+ 
+@@ -2035,6 +2061,13 @@ static void cfq_exit_queue(elevator_t *e
+ 		__cfq_exit_single_io_context(cfqd, cic);
+ 	}
+ 
++	/*
++	 * Put the async queues
++	 */
++	for (i = 0; i < IOPRIO_BE_NR; i++)
++		if (cfqd->async_cfqq[i])
++			cfq_put_queue(cfqd->async_cfqq[i]);
++
+ 	spin_unlock_irq(q->queue_lock);
+ 
+ 	cfq_shutdown_timer_wq(cfqd);
+--- a/include/linux/ioprio.h
++++ b/include/linux/ioprio.h
+@@ -47,8 +47,10 @@ enum {
+ #define IOPRIO_NORM	(4)
+ static inline int task_ioprio(struct task_struct *task)
+ {
+-	WARN_ON(!ioprio_valid(task->ioprio));
+-	return IOPRIO_PRIO_DATA(task->ioprio);
++	if (ioprio_valid(task->ioprio))
++		return IOPRIO_PRIO_DATA(task->ioprio);
++
++	return IOPRIO_NORM;
+ }
+ 
+ static inline int task_nice_ioprio(struct task_struct *task)
 
 -- 
