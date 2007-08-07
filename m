@@ -1,62 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760844AbXHGMJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761903AbXHGMKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760844AbXHGMJh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 08:09:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbXHGMJa
+	id S1761903AbXHGMKZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 08:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756346AbXHGMKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 08:09:30 -0400
-Received: from mtagate5.de.ibm.com ([195.212.29.154]:25044 "EHLO
-	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754358AbXHGMJ3 (ORCPT
+	Tue, 7 Aug 2007 08:10:14 -0400
+Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:53211 "EHLO
+	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755313AbXHGMKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 08:09:29 -0400
-Date: Tue, 7 Aug 2007 14:10:30 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Kay Sievers" <kay.sievers@vrfy.org>
-Cc: "Javier Pello" <javier.pello@urjc.es>, linux-kernel@vger.kernel.org,
-       "Greg KH" <greg@kroah.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not
- notified
-Message-ID: <20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <3ae72650708070446y6452d13jb7cd802119dab3ce@mail.gmail.com>
-References: <46B37CF7.2020803@urjc.es>
-	<20070806142451.5d28d41c@gondolin.boeblingen.de.ibm.com>
-	<46B7832B.6010808@urjc.es>
-	<20070807125844.4d756b04@gondolin.boeblingen.de.ibm.com>
-	<3ae72650708070446y6452d13jb7cd802119dab3ce@mail.gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Aug 2007 08:10:11 -0400
+From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Subject: Re: [NFS] 2.6.23-rc1-mm2
+Date: Tue, 7 Aug 2007 14:09:30 +0200
+User-Agent: KMail/1.9.5
+Cc: Johannes Berg <johannes@sipsolutions.net>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, Neil Brown <neilb@suse.de>,
+       nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708061305.37208.marc.dietrich@ap.physik.uni-giessen.de> <1186417445.6616.23.camel@localhost>
+In-Reply-To: <1186417445.6616.23.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708071409.39012.marc.dietrich@ap.physik.uni-giessen.de>
+X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
+X-HRZ-JLUG-MailScanner: No virus found
+X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007 13:46:55 +0200,
-"Kay Sievers" <kay.sievers@vrfy.org> wrote:
+Am Monday 06 August 2007 18:24 schrieb Trond Myklebust:
+> On Mon, 2007-08-06 at 13:05 +0200, Marc Dietrich wrote:
+> > Hi,
+> >
+> > > (...)
+> >
+> > just booting into X is enough.
+> >
+> > I applied the patch, but now I get:
+> >
+> > =================================
+> > [ INFO: inconsistent lock state ]
+> > 2.6.23-rc1-mm2 #4
+> > ---------------------------------
+> > inconsistent {softirq-on-W} -> {in-softirq-W} usage.
+> > swapper/0 [HC0[0]:SC1[1]:HE1:SE0] takes:
+> >  (rpc_credcache_lock){-+..}, at: [<c01dc487>]
+> > _atomic_dec_and_lock+0x17/0x60 {softirq-on-W} state was registered at:
+> >   [<c013e870>] __lock_acquire+0x650/0x1030
+> >   [<c013f2b1>] lock_acquire+0x61/0x80
+> >   [<c02db9ac>] _spin_lock+0x2c/0x40
+> >   [<c01dc487>] _atomic_dec_and_lock+0x17/0x60
+> >   [<dced55fd>] put_rpccred+0x5d/0x100 [sunrpc]
+> >   [<dced56c1>] rpcauth_unbindcred+0x21/0x60 [sunrpc]
+> >   [<dced3fd4>] a0 [sunrpc]
+> >   [<dcecefe0>] rpc_call_sync+0x30/0x40 [sunrpc]
+> >   [<dcedc73b>] rpcb_register+0xdb/0x180 [sunrpc]
+> >   [<dced65b3>] svc_register+0x93/0x160 [sunrpc]
+> >   [<dced6ebe>] __svc_create+0x1ee/0x220 [sunrpc]
+> >   [<dced7053>] svc_create+0x13/0x20 [sunrpc]
+> >   [<dcf6d722>] nfs_callback_up+0x82/0x120 [nfs]
+> >   [<dcf48f36>] nfs_get_client+0x176/0x390 [nfs]
+> >   [<dcf49181>] nfs4_set_client+0x31/0x190 [nfs]
+> >   [<dcf49983>] nfs4_create_server+0x63/0x3b0 [nfs]
+> >   [<dcf52426>] nfs4_get_sb+0x346/0x5b0 [nfs]
+> >   [<c017b444>] vfs_kern_mount+0x94/0x110
+> >   [<c0190a62>] do_mount+0x1f2/0x7d0
+> >   [<c01910a6>] sys_mount+0x66/0xa0
+> >   [<c0104046>] syscall_call+0x7/0xb
+> >   [<ffffffff>] 0xffffffff
+> > irq event stamp: 5277830
+> > hardirqs last  enabled at (5277830): [<c017530a>]
+> > kmem_cache_free+0x8a/0xc0 hardirqs last disabled at (5277829):
+> > [<c01752d2>] kmem_cache_free+0x52/0xc0 softirqs last  enabled at
+> > (5277798): [<c0124173>] __do_softirq+0xa3/0xc0 softirqs last disabled at
+> > (5277817): [<c01241d7>] do_softirq+0x47/0x50
+> >
+> > other info that might help us debug this:
+> > no locks held by swapper/0.
+> >
+> > stack backtrace:
+> >  [<c0104fda>] show_trace_log_lvl+0x1a/0x30
+> >  [<c0105c02>] show_trace+0x12/0x20
+> >  [<c0105d15>] dump_stack+0x15/0x20
+> >  [<c013ccc3>] print_usage_bug+0x153/0x160
+> >  [<c013d8b9>] mark_lock+0x449/0x620
+> >  [<c013e824>] __lock_acquire+0x604/0x1030
+> >  [<c013f2b1>] lock_acquire+0x61/0x80
+> >  [<c02db9ac>] _spin_lock+0x2c/0x40
+> >  [<c01dc487>] _atomic_dec_and_lock+0x17/0x60
+> >  [<dced55fd>] put_rpccred+0x5d/0x100 [sunrpc]
+> >  [<dcf6bf83>] nfs_free_delegation_callback+0x13/0x20 [nfs]
+> >  [<c012f9ea>] __rcu_process_callbacks+0x6a/0x1c0
+> >  [<c012fb52>] rcu_process_callbacks+0x12/0x30
+> >  [<c0124218>] tasklet_action+0x38/0x80
+> >  [<c0124125>] __do_softirq+0x55/0xc0
+> >  [<c01241d7>] do_softirq+0x47/0x50
+> >  [<c0124605>] irq_exit+0x35/0x40
+> >  [<c0112463>] smp_apic_timer_interrupt+0x43/0x80
+> >  [<c0104a77>] apic_timer_interrupt+0x33/0x38
+> >  [<c02690df>] cpuidle_idle_call+0x6f/0x90
+> >  [<c01023c3>] cpu_idle+0x43/0x70
+> >  [<c02d8c27>] rest_init+0x47/0x50
+> >  [<c03bcb6a>] start_kernel+0x22a/0x2b0
+> >  [<00000000>] 0x0
+> >  =======================
+>
+> That is a different matter. I assume this patch should suffice to fix
+> the above problem.
+>
+> Trond
 
-> > - Use an extra parameter in which successful delivery can be indicated.
-> > Make this
-> > int kobject_uevent_env_check(struct kobject *kobject,
-> >                              enum kobject_action action,
-> >                              char *envp[], int delivered);
-> > so existing callers that don't care don't have to be changed.
-> 
-> How do you check if events have been "handled"? None of the recent
-> distros uses /sbin/hotplug anymore. Netlink events are broadcasted,
-> but no failure in delivery doesn't mean anything like "handled", or
-> delivered to the right instance. Even if you check that the netlink
-> socket has listeners, that wouldn't be sufficient to tell that is is
-> handled.
+yes - it does.
 
-You can't check if it's been handled, yes; but you can certainly check
-if you delivered it. I guess Javier wants to exclude the cases where
-userspace didn't have any chance to handle it.
+thanks.
 
-Javier: Do you have an idea how common the case "we broadcasted, but
-nobody listened so we got a timeout" is? If the usual reason for the
-timeout is that firmware was requested before a listener showed up, I'm
-not sure whether that check is worth it...
+Marc
+
+
+-- 
+	"Our cause has a sacred nature."
+		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
+World War", 1928
