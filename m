@@ -1,87 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934605AbXHGNmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934694AbXHGNm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934605AbXHGNmW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbXHGNmO
+	id S934694AbXHGNm5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932819AbXHGNms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:42:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60959 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757928AbXHGNmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:42:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Joonwoo Park" <joonwpark81@gmail.com>
-Subject: Re: [PATCH] kexec: fix pci device initialization fail after kexec (2.6.23-rc2). (Related to e1000 doesn't resume properly from standby)
-Date: Tue, 7 Aug 2007 15:51:20 +0200
-User-Agent: KMail/1.9.5
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Simon Arlott" <simon@fire.lp0.eu>, "Pavel Machek" <pavel@ucw.cz>,
-       "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       linux-pm@lists.linux-foundation.org, linux-pci@atrey.karlin.mff.cuni.cz,
-       David Brownell <david-b@pacbell.net>
-References: <b25c3fa70708060642w1b3a326q792a81fdaa3036c5@mail.gmail.com> <200708062048.37160.rjw@sisk.pl> <b25c3fa70708062130v5176fa9fu4b9300e6a313cf2f@mail.gmail.com>
-In-Reply-To: <b25c3fa70708062130v5176fa9fu4b9300e6a313cf2f@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 7 Aug 2007 09:42:48 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44927 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932625AbXHGNmr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 09:42:47 -0400
+Date: Tue, 7 Aug 2007 15:42:45 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4] sdio: extend sdio_readsb() and friends to handle
+ any length of buffer
+Message-ID: <20070807154245.6e85f621@poseidon.drzeus.cx>
+In-Reply-To: <46B86BB0.4000100@csr.com>
+References: <11858961933491-git-send-email-david.vrabel@csr.com>
+	<20070804152304.65ed8f1b@poseidon.drzeus.cx>
+	<46B6F877.7060504@csr.com>
+	<20070806171207.59fafa18@poseidon.drzeus.cx>
+	<46B73F18.5030109@csr.com>
+	<20070806220145.66b97559@poseidon.drzeus.cx>
+	<46B86ADB.90000@csr.com>
+	<46B86BB0.4000100@csr.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708071551.21264.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 7 August 2007 06:30, Joonwoo Park wrote:
-> 2007/8/7, Rafael J. Wysocki <rjw@sisk.pl>:
-> > On Monday, 6 August 2007 17:50, Joonwoo Park wrote:
-> > > 2007/8/6, Rafael J. Wysocki <rjw@sisk.pl>:
-> > > > On Monday, 6 August 2007 15:42, Joonwoo Park wrote:
-> > > > > Hi.
-> > > > > I think that the pci_set_power_state() has bug.
-> > > > > The specification says that some delays is required.
-> > > >
-> > > > And they are in place, AFAICS (from drivers/pci/pci.c):
-> > > >
-> > > >        /* Mandatory power management transition delays */
-> > > >        /* see PCI PM 1.1 5.6.1 table 18 */
-> > > >        if (state == PCI_D3hot || dev->current_state == PCI_D3hot)
-> > > >                msleep(pci_pm_d3_delay);
-> > > >        else if (state == PCI_D2 || dev->current_state == PCI_D2)
-> > > >                udelay(200);
-> > > >
-> > >
-> > > The problem is occurred when state is 'PCI_D0', so those codes can't cover it.
-> > > But pci pm specification 5.4.1 says that when programmed to D0 the
-> > > equivalent of a warm reset, delay for the duration of the D3hot to D0
-> > > Uninitialized state
-> > > transition (10ms) to pci signal drivers remain disabled is required.
-> >
-> > Section 5.4.1 of PCI PM 1.1. spec is about D3_hot.  Specifically, it says
-> > that if a device in D3_hot is programmed to D0, it performs the equivalent of
-> > a warm reset.  IOW, this is supposed to happen if the current state is D3_hot
-> > and the targed state is D0, which is covered by the code snippet above.
+On Tue, 07 Aug 2007 13:55:12 +0100
+David Vrabel <david.vrabel@csr.com> wrote:
+
+> sdio: extend sdio_readsb() and friends to handle any length of buffer
 > 
-> IMHO, it is seems to the spec says just *programmed  to D0* not
-> *programmed from D3hot to D0*.
+> Extend sdio_readsb(), sdio_writesb(), sdio_memcpy_fromio(), and
+> sdio_memcpy_toio() to handle any length of buffer by splitting the
+> transfer into several IO_RW_EXTENDED commands. Typically, a transfer
+> would be split into a single block mode transfer followed by a byte
+> mode transfer for the remainder.
+> 
+> For this to work the block size must be limited to the maximum size
+> of a byte mode transfer (512 bytes).  This limitation could be
+> revisited if there are any cards out there that require a block size
+> > 512.
+> 
+> host->max_seg_size <= host->max_req_size so there's no need to check
+> both when determining the maximum data size for a single command.
+> 
+> Signed-off-by: David Vrabel <david.vrabel@csr.com>
+> ---
+> Index: mmc/drivers/mmc/core/sdio_io.c
+> ===================================================================
+> --- mmc.orig/drivers/mmc/core/sdio_io.c	2007-08-07
+> 07:27:31.000000000 +0100 +++ mmc/drivers/mmc/core/sdio_io.c
+> 2007-08-07 07:35:02.000000000 +0100 @@ -153,6 +153,13 @@
+>  {
+>  	int ret;
+>  
+> +	/* The standard permits block sizes up to 2048 bytes, but
+> +	 * sdio_readsb() etc. can only work with block size <= 512.
+> */
+> +	if (blksz > 512) {
+> +		blksz = 512;
+> +		dev_warn(&func->dev, "block size limited to 512
+> bytes\n");
+> +	}
+> +
 
-But the title of the section is "Software Accessible D3 (D3hot)", isn't it?
+I'm not sure about not returning an error here. What if a driver calls
+it and relies on being able to transfer >512 blocks?
 
-And the first paragraph of the section is
+>  	ret = mmc_io_rw_direct(func->card, 1, 0,
+>  		SDIO_FBR_BASE(func->num) + SDIO_FBR_BLKSIZE,
+>  		blksz & 0xff, NULL);
+> @@ -227,6 +234,48 @@
+>  
+>  EXPORT_SYMBOL_GPL(sdio_writeb);
+>  
+> +/* Split an arbitrarily sized data transfer into several
+> + * IO_RW_EXTENDED commands. */
+> +static int sdio_io_rw_ext_helper(struct sdio_func *func, int write,
+> +	unsigned fn, unsigned addr, int incr_addr, u8 *buf, unsigned
+> size) +{
+> +	unsigned remainder = size;
+> +	unsigned max_blocks;
+> +	int ret;
+> +
 
-"Functions in D3hot must respond to configuration space accesses as long as
-power and clock are supplied so that they can be returned to D0 by software."
+We need to check support for block transfers here as well.
 
-If this doesn't imply D3hot to D0 transition being discussed in the next
-paragraph, then I don't know what it's there for.
+Also, the parameter fn is redundant.
 
-> Actually, I got current_state UNKNOWN and state PCI_D0 after kexec's
-> start new kernel with dual port 82546EB fiber ethernet card.
+> @@ -109,18 +109,22 @@
+>  	cmd.opcode = SD_IO_RW_EXTENDED;
+>  	cmd.arg = write ? 0x80000000 : 0x00000000;
+>  	cmd.arg |= fn << 28;
+> -	cmd.arg |= bang ? 0x00000000 : 0x04000000;
+> +	cmd.arg |= incr_addr ? 0x04000000 : 0x00000000;
+>  	cmd.arg |= addr << 9;
+> -	cmd.arg |= (size == 512) ? 0 : size;
+> +	if (blocks > 1) {
 
-IMO, pci_set_power_state() is correct and your problem is related to something
-else.
+|| blksz > 512
 
-Greetings,
-Rafael
-
-
+Rgds
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
