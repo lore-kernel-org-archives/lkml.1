@@ -1,65 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbXHGSYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXHGSZ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752496AbXHGSYE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 14:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXHGSXm
+	id S1757304AbXHGSZ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 14:25:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXHGSZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 14:23:42 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1039 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbXHGSXk (ORCPT
+	Tue, 7 Aug 2007 14:25:11 -0400
+Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:41258
+	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751047AbXHGSZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 14:23:40 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: RE: MODULE_LICENSE usage
-Date: Tue, 7 Aug 2007 11:22:49 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKOEGKFPAC.davids@webmaster.com>
+	Tue, 7 Aug 2007 14:25:09 -0400
+From: Daniel Phillips <phillips@phunq.net>
+To: Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Distributed storage.
+Date: Tue, 7 Aug 2007 11:24:56 -0700
+User-Agent: KMail/1.9.5
+Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk>
+In-Reply-To: <20070807120523.GX5245@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <b4e196fa0708062029x681fafe7hc493c774a936cdf3@mail.gmail.com>
-x-mimeole: Produced By Microsoft MimeOLE V6.00.2900.3138
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 07 Aug 2007 11:23:35 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 07 Aug 2007 11:23:37 -0700
+Content-Disposition: inline
+Message-Id: <200708071124.56859.phillips@phunq.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 07 August 2007 05:05, Jens Axboe wrote:
+> On Sun, Aug 05 2007, Daniel Phillips wrote:
+> > A simple way to solve the stable accounting field issue is to add a
+> > new pointer to struct bio that is owned by the top level submitter
+> > (normally generic_make_request but not always) and is not affected
+> > by any recursive resubmission.  Then getting rid of that field
+> > later becomes somebody's summer project, which is not all that
+> > urgent because struct bio is already bloated up with a bunch of
+> > dubious fields and is a transient structure anyway.
+>
+> Thanks for your insights. Care to detail what bloat and dubious
+> fields struct bio has?
 
-> My company has been given documentation and the library source under
-> the terms of an NDA with the chipset manufacturer.  We are permitted
-> to compile the library and distribute the resultant binary blob, but
-> not release the source to the library.
+First obvious one I see is bi_rw separate from bi_flags.  Front_size and 
+back_size smell dubious.  Is max_vecs really necessary?  You could 
+reasonably assume bi_vcnt rounded up to a power of two and bury the 
+details of making that work behind wrapper functions to change the 
+number of bvecs, if anybody actually needs that.  Bi_endio and 
+bi_destructor could be combined.  I don't see a lot of users of bi_idx, 
+that looks like a soft target.  See what happened to struct page when a 
+couple of folks got serious about attacking it, some really deep hacks 
+were done to pare off a few bytes here and there.  But struct bio as a 
+space waster is not nearly in the same ballpark.
 
-> The binary blob is linked into the driver we have written.  We don't
-> distribute this compiled module, customers are given the driver source
-> and the library blob, which they compile themselves.
+It would be interesting to see if bi_bdev could be made read only.  
+Generally, each stage in the block device stack knows what the next 
+stage is going to be, so why do we have to write that in the bio?  For 
+error reporting from interrupt context?  Anyway, if Evgeniy wants to do 
+the patch, I will happily unload the task of convincing you that random 
+fields are/are not needed in struct bio :-)
 
-Make absolutely 100% sure that your driver source code is not a derivative
-work of any existing kernel code. If it is, you may be violating the
-copyright of that code just by distributing the source to your driver. If
-your driver takes sufficient protectable elements both from the kernel and
-the library, it cannot be distributed in source code form.
+Regards,
 
-I would definitely consult a good lawyer to make sure you aren't breaking
-any of the rules.
-
-As for the MODULE_LICENSE tag, if it's supposed to indicate the library the
-module is under after it's compiled, it's definitely not GPL or GPL with
-additional rights. Since you can't get the source code to the entire module
-and can't distribute the binary, it's under a proprietary license.
-
-DS
-
-
+Daniel
