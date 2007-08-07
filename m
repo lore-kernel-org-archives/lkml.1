@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937345AbXHGVZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965995AbXHGV0G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937345AbXHGVZb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761611AbXHGU4h
+	id S965995AbXHGV0G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:26:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935729AbXHGU4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:56:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59909 "EHLO
+	Tue, 7 Aug 2007 16:56:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59927 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964959AbXHGU4f (ORCPT
+	with ESMTP id S935554AbXHGU4p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:56:35 -0400
-Date: Tue, 7 Aug 2007 13:49:07 -0700
+	Tue, 7 Aug 2007 16:56:45 -0400
+Date: Tue, 7 Aug 2007 13:49:10 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>
@@ -21,14 +21,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Milan Broz <mbroz@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Stefan Bader <shbader@de.ibm.com>,
        Alasdair G Kergon <agk@redhat.com>
-Subject: [2.6.22.2 review 72/84] dm snapshot: permit invalid activation
-Message-ID: <20070807204907.GV23028@kroah.com>
+Subject: [2.6.22.2 review 73/84] dm: disable barriers
+Message-ID: <20070807204910.GW23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="dm-snapshot-permit-invalid-activation.patch"
+Content-Disposition: inline; filename="dm-disable-barriers.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
@@ -36,66 +36,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Milan Broz <mbroz@redhat.com>
+From: Stefan Bader <shbader@de.ibm.com>
 
-Allow invalid snapshots to be activated instead of failing.
+This patch causes device-mapper to reject any barrier requests.  This is done
+since most of the targets won't handle this correctly anyway.  So until the
+situation improves it is better to reject these requests at the first place.
+Since barrier requests won't get to the targets, the checks there can be
+removed.
 
-This allows userspace to reinstate any given snapshot state - for
-example after an unscheduled reboot - and clean up the invalid snapshot
-at its leisure.
-
-Signed-off-by: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Stefan Bader <shbader@de.ibm.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- drivers/md/dm-exception-store.c |   11 ++++++-----
- drivers/md/dm-snap.c            |    5 ++++-
- 2 files changed, 10 insertions(+), 6 deletions(-)
+ drivers/md/dm-crypt.c |    3 ---
+ drivers/md/dm-mpath.c |    3 ---
+ drivers/md/dm-snap.c  |    6 ------
+ drivers/md/dm.c       |    9 +++++++++
+ 4 files changed, 9 insertions(+), 12 deletions(-)
 
---- a/drivers/md/dm-exception-store.c
-+++ b/drivers/md/dm-exception-store.c
-@@ -457,11 +457,6 @@ static int persistent_read_metadata(stru
- 		/*
- 		 * Sanity checks.
- 		 */
--		if (!ps->valid) {
--			DMWARN("snapshot is marked invalid");
--			return -EINVAL;
--		}
--
- 		if (ps->version != SNAPSHOT_DISK_VERSION) {
- 			DMWARN("unable to handle snapshot disk version %d",
- 			       ps->version);
-@@ -469,6 +464,12 @@ static int persistent_read_metadata(stru
- 		}
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -943,9 +943,6 @@ static int crypt_map(struct dm_target *t
+ 	struct crypt_config *cc = ti->private;
+ 	struct crypt_io *io;
  
- 		/*
-+		 * Metadata are valid, but snapshot is invalidated
-+		 */
-+		if (!ps->valid)
-+			return 1;
-+
-+		/*
- 		 * Read the metadata.
- 		 */
- 		r = read_exceptions(ps);
+-	if (bio_barrier(bio))
+-		return -EOPNOTSUPP;
+-
+ 	io = mempool_alloc(cc->io_pool, GFP_NOIO);
+ 	io->target = ti;
+ 	io->base_bio = bio;
+--- a/drivers/md/dm-mpath.c
++++ b/drivers/md/dm-mpath.c
+@@ -798,9 +798,6 @@ static int multipath_map(struct dm_targe
+ 	struct mpath_io *mpio;
+ 	struct multipath *m = (struct multipath *) ti->private;
+ 
+-	if (bio_barrier(bio))
+-		return -EOPNOTSUPP;
+-
+ 	mpio = mempool_alloc(m->mpio_pool, GFP_NOIO);
+ 	dm_bio_record(&mpio->details, bio);
+ 
 --- a/drivers/md/dm-snap.c
 +++ b/drivers/md/dm-snap.c
-@@ -522,9 +522,12 @@ static int snapshot_ctr(struct dm_target
+@@ -887,9 +887,6 @@ static int snapshot_map(struct dm_target
+ 	if (!s->valid)
+ 		return -EIO;
  
- 	/* Metadata must only be loaded into one table at once */
- 	r = s->store.read_metadata(&s->store);
--	if (r) {
-+	if (r < 0) {
- 		ti->error = "Failed to read snapshot metadata";
- 		goto bad6;
-+	} else if (r > 0) {
-+		s->valid = 0;
-+		DMWARN("Snapshot is marked invalid.");
- 	}
+-	if (unlikely(bio_barrier(bio)))
+-		return -EOPNOTSUPP;
+-
+ 	/* FIXME: should only take write lock if we need
+ 	 * to copy an exception */
+ 	down_write(&s->lock);
+@@ -1160,9 +1157,6 @@ static int origin_map(struct dm_target *
+ 	struct dm_dev *dev = (struct dm_dev *) ti->private;
+ 	bio->bi_bdev = dev->bdev;
  
- 	bio_list_init(&s->queued_bios);
+-	if (unlikely(bio_barrier(bio)))
+-		return -EOPNOTSUPP;
+-
+ 	/* Only tell snapshots if this is a write */
+ 	return (bio_rw(bio) == WRITE) ? do_origin(dev, bio) : DM_MAPIO_REMAPPED;
+ }
+--- a/drivers/md/dm.c
++++ b/drivers/md/dm.c
+@@ -802,6 +802,15 @@ static int dm_request(request_queue_t *q
+ 	int rw = bio_data_dir(bio);
+ 	struct mapped_device *md = q->queuedata;
+ 
++	/*
++	 * There is no use in forwarding any barrier request since we can't
++	 * guarantee it is (or can be) handled by the targets correctly.
++	 */
++	if (unlikely(bio_barrier(bio))) {
++		bio_endio(bio, bio->bi_size, -EOPNOTSUPP);
++		return 0;
++	}
++
+ 	down_read(&md->io_lock);
+ 
+ 	disk_stat_inc(dm_disk(md), ios[rw]);
 
 -- 
