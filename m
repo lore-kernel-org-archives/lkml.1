@@ -1,86 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933705AbXHGMzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbXHGMzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933705AbXHGMzd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 08:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbXHGMy4
+	id S933989AbXHGMzw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 08:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbXHGMzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 08:54:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:50857 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759632AbXHGMyx (ORCPT
+	Tue, 7 Aug 2007 08:55:40 -0400
+Received: from cluster-d.mailcontrol.com ([217.69.20.190]:59192 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933764AbXHGMzh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 08:54:53 -0400
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
-	notified
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Javier Pello <javier.pello@urjc.es>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-In-Reply-To: <46B869C6.3090708@urjc.es>
-References: <46B37CF7.2020803@urjc.es>
-	 <20070806142451.5d28d41c@gondolin.boeb lingen.de.ibm.com>
-	 <46B7832B.6010808@urjc.es>
-	 <20070807125844.4d756b04@gondo l	in.boeblingen.de.ibm.com>
-	 <3ae72650708070446y6452d13jb7cd802119dab3ce@mail .gmail.com>
-	 <20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
-	 <46B869C6.3090708@urjc.es>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 14:57:52 +0200
-Message-Id: <1186491472.3611.33.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18Twq7T2G/04psRQViOPTulV0/Y9Dt/eCRZmkZ
- CJiuYT1kP6f7SCJJQm3v/AG6LTcyccD6ITUPAyGZzAAN47AS5o
- AeT2VOXSS8YiMQax05aYXVD1PSLPoOw
+	Tue, 7 Aug 2007 08:55:37 -0400
+Message-ID: <46B86B60.5020600@csr.com>
+Date: Tue, 07 Aug 2007 13:53:52 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: linux-kernel@vger.kernel.org
+Subject: [patch 1/4] sdio: parameterize SDIO FBR register defines
+References: <11858961933491-git-send-email-david.vrabel@csr.com>	<20070804152304.65ed8f1b@poseidon.drzeus.cx>	<46B6F877.7060504@csr.com>	<20070806171207.59fafa18@poseidon.drzeus.cx>	<46B73F18.5030109@csr.com> <20070806220145.66b97559@poseidon.drzeus.cx> <46B86ADB.90000@csr.com>
+In-Reply-To: <46B86ADB.90000@csr.com>
+Content-Type: multipart/mixed;
+ boundary="------------040606030902030202030207"
+X-OriginalArrivalTime: 07 Aug 2007 12:53:58.0467 (UTC) FILETIME=[05393930:01C7D8F2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------040606030902030202030207
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-On Tue, 2007-08-07 at 14:47 +0200, Javier Pello wrote:
-> On Tue, 07 Aug 2007, Cornelia Huck wrote:
-> 
-> > On Tue, 7 Aug 2007 13:46:55 +0200,
-> > "Kay Sievers" <kay.sievers@vrfy.org> wrote:
-> > > How do you check if events have been "handled"? None of the recent
-> > > distros uses /sbin/hotplug anymore. Netlink events are broadcasted,
-> > > but no failure in delivery doesn't mean anything like "handled", or
-> > > delivered to the right instance. Even if you check that the netlink
-> > > socket has listeners, that wouldn't be sufficient to tell that is
-> > > handled.
-> > 
-> > You can't check if it's been handled, yes; but you can certainly check
-> > if you delivered it. I guess Javier wants to exclude the cases where
-> > userspace didn't have any chance to handle it.
-> 
-> That's right. There's no way to know if userspace does handle the event
-> after reception, and that's why we have a timeout (so we don't wait
-> forever), but we can be sure that userspace won't handle an event that
-> wasn't received. We want to be conservative here: if there is any
-> chance that the event was received, we set the timeout and wait.
-> 
-> > Javier: Do you have an idea how common the case "we broadcasted, but
-> > nobody listened so we got a timeout" is? If the usual reason for the
-> > timeout is that firmware was requested before a listener showed up,
-> > I'm not sure whether that check is worth it...
-> 
-> I don't know how common this is in general, but in my box it happens
-> (or rather happened, until I patched it) once per boot. I've got a
-> device that requires some firmware during initialisation. I always
-> build the driver into the kernel (I don't like modules for things
-> that are permanently attached to the computer), and that means that
-> it tries to initialise before the rootfs is mounted (there's no
-> initramfs). Before the patch, the kernel would hang for a minute
-> in request_firmware during each boot, which was rather annoying,
-> and that is the reason why I decided to fix it.
+-- 
+David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
+CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
 
-If you don't have modules and the initial request fails, how do you load
-the firmware later?
 
-The real fix would be to change the driver not to block in the firmware
-request and use async version of firmware loading. The whole firmware
-class with its silly timeout is just a piece of crap, that needs to be
-replaced.
+.
 
-Kay
+--------------040606030902030202030207
+Content-Type: text/x-patch;
+ name="sdio-parameterize-sdio-fbr-register-defines.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline; filename="sdio-parameterize-sdio-fbr-register-defines.patch"
 
+sdio: parameterize SDIO FBR register defines
+
+Signed-off-by: David Vrabel <david.vrabel@csr.com>
+---
+Index: mmc/drivers/mmc/core/sdio.c
+===================================================================
+--- mmc.orig/drivers/mmc/core/sdio.c	2007-08-06 14:37:30.000000000 +0100
++++ mmc/drivers/mmc/core/sdio.c	2007-08-06 17:30:14.000000000 +0100
+@@ -30,7 +30,7 @@
+ 	unsigned char data;
+ 
+ 	ret = mmc_io_rw_direct(func->card, 0, 0,
+-		func->num * 0x100 + SDIO_FBR_STD_IF, 0, &data);
++		SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF, 0, &data);
+ 	if (ret)
+ 		goto out;
+ 
+@@ -38,7 +38,7 @@
+ 
+ 	if (data == 0x0f) {
+ 		ret = mmc_io_rw_direct(func->card, 0, 0,
+-			func->num * 0x100 + SDIO_FBR_STD_IF_EXT, 0, &data);
++			SDIO_FBR_BASE(func->num) + SDIO_FBR_STD_IF_EXT, 0, &data);
+ 		if (ret)
+ 			goto out;
+ 	}
+Index: mmc/drivers/mmc/core/sdio_cis.c
+===================================================================
+--- mmc.orig/drivers/mmc/core/sdio_cis.c	2007-08-06 14:37:30.000000000 +0100
++++ mmc/drivers/mmc/core/sdio_cis.c	2007-08-06 17:31:02.000000000 +0100
+@@ -250,7 +250,7 @@
+ 			fn = 0;
+ 
+ 		ret = mmc_io_rw_direct(card, 0, 0,
+-				       fn * 0x100 + SDIO_FBR_CIS + i, 0, &x);
++			SDIO_FBR_BASE(fn) + SDIO_FBR_CIS + i, 0, &x);
+ 		if (ret)
+ 			return ret;
+ 		ptr |= x << (i * 8);
+Index: mmc/include/linux/mmc/sdio.h
+===================================================================
+--- mmc.orig/include/linux/mmc/sdio.h	2007-08-06 14:37:35.000000000 +0100
++++ mmc/include/linux/mmc/sdio.h	2007-08-06 17:29:21.000000000 +0100
+@@ -132,6 +132,8 @@
+  * Function Basic Registers (FBR)
+  */
+ 
++#define SDIO_FBR_BASE(f)	((f) * 0x100) /* base of function f's FBRs */
++
+ #define SDIO_FBR_STD_IF		0x00
+ 
+ #define  SDIO_FBR_SUPPORTS_CSA	0x40	/* supports Code Storage Area */
+
+--------------040606030902030202030207--
