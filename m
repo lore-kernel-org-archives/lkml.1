@@ -1,137 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933756AbXHGDaY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934015AbXHGDzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933756AbXHGDaY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 23:30:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933485AbXHGD3u
+	id S934015AbXHGDzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 23:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765884AbXHGDzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 23:29:50 -0400
-Received: from mga05.intel.com ([192.55.52.89]:19874 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933402AbXHGD3s (ORCPT
+	Mon, 6 Aug 2007 23:55:45 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:52316 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1765797AbXHGDzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 23:29:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,227,1183359600"; 
-   d="scan'208";a="277642410"
-Subject: Re: unable to handle kernel NULL pointer dereference in
-	qla2x00_read_nvram_data
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1186456912.4688.209.camel@ymzhang>
-References: <1186456912.4688.209.camel@ymzhang>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 07 Aug 2007 11:28:59 +0800
-Message-Id: <1186457339.4688.213.camel@ymzhang>
+	Mon, 6 Aug 2007 23:55:44 -0400
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
+References: <1186248703.3439.20.camel@localhost.localdomain>
+	 <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 06 Aug 2007 22:55:41 -0500
+Message-Id: <1186458941.6637.44.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-07 at 11:21 +0800, Zhang, Yanmin wrote:
-> Did someone see the same issue? My machine has a qla fiber card.
+On Mon, 2007-08-06 at 17:51 -0700, Linus Torvalds wrote:
 > 
-> This error is triggered because parameter buf of qla2x00_read_nvram_data
-> is 0.
-Sorry for missing kernel info. I used kernel 2.6.23-rc2. My machine is
-a x86_64, but I installed i386 os on it.
+> On Sat, 4 Aug 2007, James Bottomley wrote:
+> >
+> > This is mainly bug fixes ... there's one or two features completions
+> > that have been delayed pending ack and review to do with bsg (headers
+> > and passthrough) but these are really required to complete already
+> > upstream code.
+> 
+> James, this is the last time *ever* I apply patches from you after -rc1.
+> 
+> You used to have serious problems with the merge window, but for a few 
+> releases you then seemed to "get it" and got on with the program.
+> 
+> But now it's back to "anythign goes", apparently. And I'm going to take a 
+> hard-line approach with you now. 
+> 
+> For SCSI merges, if I don't get the first pull request in the FIRST week 
+> of the merge window, don't bother sending one later, unless it's pure 
+> fixes and regressions.
 
-If I disable CONFIG_SCSI_QLOGIC_1280 and CONFIG_SCSI_QLA_FC in kernel config,
-kernel could boot.
+Confused ... you did get the first pull request in the first week.  That
+was this:
+
+                           Subject: 
+[GIT PATCH] first SCSI merge for
+2.6.22
+                              Date: 
+        Sun, 15 Jul 2007 10:24:17
+-0500
+190 files changed, 21725 insertions(+), 26337 deletions(-)
+
+Then there was the last piece before the merge window closed:
+
+                           Subject: 
+[GIT PATCH] final piece of the SCSI
+merge for 2.6.22
+                              Date: 
+        Sun, 22 Jul 2007 13:28:53
+-0500
+74 files changed, 3649 insertions(+), 1295 deletions(-)
 
 
+
+> And after -rc1, I don't want to see crap like this:
 > 
-> --yanmin
+> 	 46 files changed, 2837 insertions(+), 2050 deletions(-)
 > 
-> **********************Console log************************
+> because that simply is *not* appropriate after -rc1, much less -rc2.
 > 
-> 
-> scsi 0:0:8:0: Processor         SUPER    GEM359 REV001    1.09 PQ: 0
-> ANSI: 2
->  target0:0:8: asynchronous
->  target0:0:8: Beginning Domain Validation
->  target0:0:8: Ending Domain Validation
-> ACPI: PCI Interrupt 0000:04:02.1[B] -> GSI 17 (level, low) -> IRQ 18
-> scsi1 : Adaptec AIC79XX PCI-X SCSI HBA DRIVER, Rev 3.0
->         <Adaptec AIC7902 Ultra320 SCSI adapter>
->         aic7902: Ultra320 Wide Channel B, SCSI Id=7, PCI-X 67-100Mhz,
-> 512 SCBs
-> Adaptec aacraid driver 1.1-5[2449]-ms
-> aic94xx: Adaptec aic94xx SAS/SATA driver version 1.0.3 loaded
-> QLogic Fibre Channel HBA Driver
-> ACPI: PCI Interrupt 0000:05:01.0[A] -> GSI 16 (level, low) -> IRQ 16
-> qla2xxx 0000:05:01.0: Found an ISP2312, irq 16, iobase 0xf8862000
-> qla2xxx 0000:05:01.0: Configuring PCI space...
-> qla2xxx 0000:05:01.0: Configure NVRAM parameters...
-> BUG: unable to handle kernel NULL pointer dereference at virtual address
-> 00000000
->  printing eip:
-> c04347db
-> *pde = 00000000
-> Oops: 0002 [#1]
-> SMP 
-> Modules linked in:
-> CPU:    5
-> EIP:    0060:[<c04347db>]    Not tainted VLI
-> EFLAGS: 00010202   (2.6.23-rc2 #1)
-> EIP is at qla2x00_read_nvram_data+0x25/0x56
-> eax: 00005349   ebx: 00000000   ecx: 042d8138   edx: 0000007d
-> esi: f7d9a34c   edi: 00000001   ebp: 00000001   esp: f7e85d98
-> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-> Process swapper (pid: 1, ti=f7e84000 task=f7e82000 task.ti=f7e84000)
-> Stack: 00000000 c04347b6 00000000 f7d9a34c 00000000 c0425737 00000100
-> 00000008 
->        f7dc0000 00000000 00000000 00000024 f7d9a34c f7d9a34c f7d9a34c
-> c39cc000 
->        c398b13c f7d9a34c f7d9a34c f8862000 c0423db8 c06cbd17 c06ca4b9
-> c398b13c    
-> Call Trace:
-> 
->  [<c04347b6>] qla2x00_read_nvram_data+0x0/0x56
-> 
->  [<c0425737>] qla2x00_nvram_config+0x7e/0x765
-> 
->  [<c0423db8>] qla2x00_initialize_adapter+0x113/0x226
-> 
->  [<c04208e1>] qla2x00_probe_one+0x8ea/0xcb9
-> 
->  [<c01aa54b>] sysfs_ilookup_test+0x0/0xd
-> 
->  [<c0181acf>] ifind+0x8c/0x93
-> 
->  [<c01aa54b>] sysfs_ilookup_test+0x0/0xd
-> 
->  [<c01aba78>] sysfs_create_link+0xf1/0x149
-> 
->  [<c02d7252>] pci_match_device+0x84/0xa4
-> 
->  [<c02d72be>] pci_device_probe+0x36/0x57
-> 
->  [<c034fc17>] driver_probe_device+0xe1/0x15f
-> 
->  [<c034fd3b>] __driver_attach+0x0/0xab
-> 
->  [<c034fdae>] __driver_attach+0x73/0xab
-> 
->  [<c034f174>] bus_for_each_dev+0x37/0x59
-> 
->  [<c034fa6f>] driver_attach+0x16/0x18
-> 
->  [<c034fd3b>] __driver_attach+0x0/0xab
-> 
->  [<c034f45e>] bus_add_driver+0x6d/0x170
-> 
->  [<c02d73fa>] __pci_register_driver+0x53/0x7f
-> 
->  [<c07df181>] qla2x00_module_init+0xd4/0xfe
-> 
->  [<c07be477>] kernel_init+0x14d/0x2af
-> 
->  [<c05a39ad>] _spin_unlock_irq+0x5/0x7
->  [<c0124469>] schedule_tail+0x37/0x91
->  [<c0104d32>] 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> So I pulled, but I wanted to make it very clear that I'm very unhappy with 
+> you right now, and you're on my shit-list for the next few releases. Get 
+> the changes in before -rc1, or just *wait*. If they aren't ready before 
+> the merge window opens, they simply shouldn't be merged at all.
+
+OK ... that's arguable.  This one is larger than I like because of the
+lpfc bug fix patch ... I accept I need to do a better job getting these
+into the merge window via the scsi-misc tree.  So I will accept the "too
+big" criticism and try to manage the driver maintainers better.
+
+However, I won't accept the "not bug fixes only" criticism at -rc1.  The
+problem is that we're trying to stabilise a new feature: bsg.
+Unfortunately, the closure of the merge window was really the first time
+anyone got to play with all of these features together.  The non-bug fix
+changes around bsg have been trying to achieve stability.  The problem
+is that there were a few fairly problematic pieces: dependence on
+non-modular SCSI; SG header layout and driver implementation.  What we
+really don't want is to have a problematic API baked in stone because we
+can't do anything other than bug fix updates once the merge window
+closes.
+
+The real root cause of all of this is that there's no tree I can
+persuade all the interested parties to test that includes all of these
+features.  In spite of the fact they've all been incubating in -mm for
+at least 3 months, no-one apparently tested all the features together
+until 2.6.23-rc1 was released, so then we're scrambling to address the
+issues as they arise.
+
+I really, *really* think we need a pre-release tree that consists of all
+the upstream targetted features (i.e. all of the for the next merge
+window git trees) and nothing else.  -mm doesn't really satisfy this,
+because it has so much other stuff that the people I need to get testing
+this don't trust it.  The lack of a tree like this that we could have
+persuaded people to test for the last month is what's causing us to
+scramble like this at the closure of the merge window.
+
+James
+
+
