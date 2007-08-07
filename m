@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966369AbXHGV3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966405AbXHGVab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966369AbXHGV3w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965147AbXHGU6G
+	id S966405AbXHGVab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935289AbXHGU6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:58:06 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:37644 "EHLO
+	Tue, 7 Aug 2007 16:58:22 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37658 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753242AbXHGU6E (ORCPT
+	with ESMTP id S965201AbXHGU6R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:58:04 -0400
-Date: Tue, 7 Aug 2007 13:49:33 -0700
+	Tue, 7 Aug 2007 16:58:17 -0400
+Date: Tue, 7 Aug 2007 13:49:36 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -21,41 +20,105 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
        Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [2.6.22.2 review 80/84] sysfs: release mutex when kmalloc() failed
-	in sysfs_open_file().
-Message-ID: <20070807204933.GD23028@kroah.com>
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Netfilter Development Mailinglist 
+	<netfilter-devel@lists.netfilter.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Patrick McHardy <kaber@trash.net>
+Subject: [2.6.22.2 review 81/84] Netfilter: Fix logging regression
+Message-ID: <20070807204936.GE23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sysfs-release-mutex-when-kmalloc-failed-in-sysfs_open_file.patch"
+Content-Disposition: inline; filename="netfilter-fix-logging-regression.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Patrick McHardy <kaber@trash.net>
 
-From: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>
+[NETFILTER]: Fix logging regression
 
+Loading one of the LOG target fails if a different target has already
+registered itself as backend for the same family. This can affect the
+ipt_LOG and ipt_ULOG modules when both are loaded.
 
+Reported and tested by: <t.artem@mailcity.com>
+Upstream-commit: 7e2acc7e
 
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- fs/sysfs/file.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/bridge/netfilter/ebt_log.c  |    6 ++----
+ net/bridge/netfilter/ebt_ulog.c |    8 ++------
+ net/ipv4/netfilter/ipt_LOG.c    |    6 ++----
+ net/ipv6/netfilter/ip6t_LOG.c   |    6 ++----
+ 4 files changed, 8 insertions(+), 18 deletions(-)
 
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -283,6 +283,7 @@ static int sysfs_open_file(struct inode 
- 	mutex_lock(&inode->i_mutex);
- 	if (!(set = inode->i_private)) {
- 		if (!(set = inode->i_private = kmalloc(sizeof(struct sysfs_buffer_collection), GFP_KERNEL))) {
-+			mutex_unlock(&inode->i_mutex);
- 			error = -ENOMEM;
- 			goto Done;
- 		} else {
+--- a/net/bridge/netfilter/ebt_log.c
++++ b/net/bridge/netfilter/ebt_log.c
+@@ -196,10 +196,8 @@ static int __init ebt_log_init(void)
+ 	ret = ebt_register_watcher(&log);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = nf_log_register(PF_BRIDGE, &ebt_log_logger);
+-	if (ret < 0 && ret != -EEXIST)
+-		ebt_unregister_watcher(&log);
+-	return ret;
++	nf_log_register(PF_BRIDGE, &ebt_log_logger);
++	return 0;
+ }
+ 
+ static void __exit ebt_log_fini(void)
+--- a/net/bridge/netfilter/ebt_ulog.c
++++ b/net/bridge/netfilter/ebt_ulog.c
+@@ -308,12 +308,8 @@ static int __init ebt_ulog_init(void)
+ 	else if ((ret = ebt_register_watcher(&ulog)))
+ 		sock_release(ebtulognl->sk_socket);
+ 
+-	if (nf_log_register(PF_BRIDGE, &ebt_ulog_logger) < 0) {
+-		printk(KERN_WARNING "ebt_ulog: not logging via ulog "
+-		       "since somebody else already registered for PF_BRIDGE\n");
+-		/* we cannot make module load fail here, since otherwise
+-		 * ebtables userspace would abort */
+-	}
++	if (ret == 0)
++		nf_log_register(PF_BRIDGE, &ebt_ulog_logger);
+ 
+ 	return ret;
+ }
+--- a/net/ipv4/netfilter/ipt_LOG.c
++++ b/net/ipv4/netfilter/ipt_LOG.c
+@@ -477,10 +477,8 @@ static int __init ipt_log_init(void)
+ 	ret = xt_register_target(&ipt_log_reg);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = nf_log_register(PF_INET, &ipt_log_logger);
+-	if (ret < 0 && ret != -EEXIST)
+-		xt_unregister_target(&ipt_log_reg);
+-	return ret;
++	nf_log_register(PF_INET, &ipt_log_logger);
++	return 0;
+ }
+ 
+ static void __exit ipt_log_fini(void)
+--- a/net/ipv6/netfilter/ip6t_LOG.c
++++ b/net/ipv6/netfilter/ip6t_LOG.c
+@@ -490,10 +490,8 @@ static int __init ip6t_log_init(void)
+ 	ret = xt_register_target(&ip6t_log_reg);
+ 	if (ret < 0)
+ 		return ret;
+-	ret = nf_log_register(PF_INET6, &ip6t_logger);
+-	if (ret < 0 && ret != -EEXIST)
+-		xt_unregister_target(&ip6t_log_reg);
+-	return ret;
++	nf_log_register(PF_INET6, &ip6t_logger);
++	return 0;
+ }
+ 
+ static void __exit ip6t_log_fini(void)
 
 -- 
