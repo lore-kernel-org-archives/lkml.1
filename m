@@ -1,45 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934336AbXHGPvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934439AbXHGP5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934336AbXHGPvU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 11:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761617AbXHGPvK
+	id S934439AbXHGP5o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 11:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754075AbXHGP5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 11:51:10 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:40268 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755864AbXHGPvJ (ORCPT
+	Tue, 7 Aug 2007 11:57:36 -0400
+Received: from web36607.mail.mud.yahoo.com ([209.191.85.24]:23204 "HELO
+	web36607.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751781AbXHGP5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 11:51:09 -0400
-Message-ID: <46B894E4.4010501@nortel.com>
-Date: Tue, 07 Aug 2007 09:51:00 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 7 Aug 2007 11:57:35 -0400
+X-YMail-OSG: ipdS1t4VM1mtCUtSvvDOMIENnjL3Jii7Ola.CIIQP6I8b.8uljc9frkJonKaM9Hy6bgBbOtueg--
+X-RocketYMMF: rancidfat
+Date: Tue, 7 Aug 2007 08:57:34 -0700 (PDT)
+From: Casey Schaufler <casey@schaufler-ca.com>
+Reply-To: casey@schaufler-ca.com
+Subject: Re: [PATCH] ifdef struct task_struct::security
+To: "Serge E. Hallyn" <serge@hallyn.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070807150529.GA22447@vino.hallyn.com>
 MIME-Version: 1.0
-To: Chris Snook <csnook@redhat.com>
-CC: Jerry Jiang <wjiang@resilience.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain> <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com>
-In-Reply-To: <46B72C58.5030502@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Aug 2007 15:51:03.0410 (UTC) FILETIME=[C22EDD20:01C7D90A]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <716107.45286.qm@web36607.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Snook wrote:
 
-> If your architecture doesn't support SMP, the volatile keyword doesn't 
-> do anything except add a useless memory fetch.
+--- "Serge E. Hallyn" <serge@hallyn.com> wrote:
 
-I was under the impression that there were other cases as well 
-(interrupt handlers, for instance) where the value could be modified 
-"behind the back" of the current code.
+> Quoting Andrew Morton (akpm@linux-foundation.org):
+> > On Mon, 6 Aug 2007 15:31:12 -0500 "Serge E. Hallyn" <serge@hallyn.com>
+> wrote:
+> > 
+> > > Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> > > > For those who don't care about CONFIG_SECURITY.
+> > > 
+> > > I'm quite sure we started that way, but the ifdefs were considered
+> > > too much of an eyesore.
+> > 
+> > argh, y'all stop top-posting at me.
+> 
+> (Hmm, I'm replying at the point in the email I'm replying to.  Is what
+> I'm doing in this current email ok - i.e the one you replied to looked
+> like pure top-posting - or do you actually want pure bottom posting?)
+> 
+> > > If this is now acceptable, then the same thing might be considered
+> > > for inode->i_security, kern_ipc_perm.security, etc.  Getting rid of
+> > > just the task->security seems overly half-hearted.
+> > > 
+> > > -serge
+> > > 
+> > > > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> > > > ---
+> > > > 
+> > > >  include/linux/sched.h |    3 ++-
+> > > >  kernel/fork.c         |    2 ++
+> > > >  2 files changed, 4 insertions(+), 1 deletion(-)
+> > > > 
+> > > > --- a/include/linux/sched.h
+> > > > +++ b/include/linux/sched.h
+> > > > @@ -1086,8 +1086,9 @@ struct task_struct {
+> > > >  	int (*notifier)(void *priv);
+> > > >  	void *notifier_data;
+> > > >  	sigset_t *notifier_mask;
+> > > > -	
+> > > > +#ifdef CONFIG_SECURITY
+> > > >  	void *security;
+> > > > +#endif
+> > > >  	struct audit_context *audit_context;
+> > > >  	seccomp_t seccomp;
+> > > >  
+> > > > --- a/kernel/fork.c
+> > > > +++ b/kernel/fork.c
+> > > > @@ -1066,7 +1066,9 @@ static struct task_struct *copy_process(unsigned
+> long clone_flags,
+> > > >  	do_posix_clock_monotonic_gettime(&p->start_time);
+> > > >  	p->real_start_time = p->start_time;
+> > > >  	monotonic_to_bootbased(&p->real_start_time);
+> > > > +#ifdef CONFIG_SECURITY
+> > > >  	p->security = NULL;
+> > > > +#endif
+> > > >  	p->io_context = NULL;
+> > > >  	p->io_wait = NULL;
+> > > >  	p->audit_context = NULL;
+> > > > 
+> > 
+> > I think it's OK.  Removing 4 or 8 bytes from the task_struct is a decent
+> win,
+> > and an ifdef at the definition site (unavoidable) and at a single
+> > initialisation site where there are lots of other similar ifdefs is pretty
+> > minimal hurt.
+> 
+> Then how about making it depend on CONFIG_SECURITY_SELINUX?  It's the
+> only LSM actually using that field right now.  (As more come along, we
+> can use a hidden CONFIG_SECURITY_ATTRS or somesuch bool select'ed by
+> LSMs which need it)
 
-It seems like this would fall more into the case of the arch providing 
-guarantees when using locked/atomic access rather than anything 
-SMP-related, no?.
+I would greatly appreciate it if you didn't add yet another place
+that requires deselinuxifation by anyone wanting to try something else.
+The question is whether there is any LSM, not whether there is selinux.
+Yes, I know that there are no other LSMs upstream today. I hope to
+change that before too long, and dealing with places where the code is
+using the LSM==SELinux assumption is tiresome.
 
-Chris
+
+Casey Schaufler
+casey@schaufler-ca.com
