@@ -1,67 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbXHGItj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbXHGIvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbXHGItj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757295AbXHGItc
+	id S1759938AbXHGIvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757570AbXHGIu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:49:32 -0400
-Received: from fk-out-0910.google.com ([209.85.128.188]:11961 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756320AbXHGItb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:49:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=IXSQzoFo2Y0TItWMg0pRY45MrlAEiQqPZBVQ1vPdwqcFUmHYwvWmvzrzWUgpM0ZEmgwadxTcD8Owfx8yzyoyZH6EH0EtTDktvn0bv2jodduFnXzYA24f+bsdpFNGcFCHIpEIFKa/y9kYo+HRMGLEpFUMkIf9Iq3KhCcamUvt/uE=
-From: Christoph Pfister <christophpfister@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Subject: Re: BUG: soft lockup detected on CPU#0!
-Date: Tue, 7 Aug 2007 10:49:23 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org
-References: <19a3b7a80707251241t1cb5389ak8e5e3b27af2bde41@mail.gmail.com> <6bffcb0e0707271230s1f3f3c63w8ccdd8a0945e706a@mail.gmail.com> <19a3b7a80707271304g231860b8g690a32b12cac5835@mail.gmail.com>
-In-Reply-To: <19a3b7a80707271304g231860b8g690a32b12cac5835@mail.gmail.com>
+	Tue, 7 Aug 2007 04:50:58 -0400
+Received: from doppler.zen.co.uk ([212.23.3.27]:50341 "EHLO doppler.zen.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757569AbXHGIu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 04:50:57 -0400
+Message-ID: <46B8317B.40305@gmail.com>
+Date: Tue, 07 Aug 2007 09:46:51 +0100
+From: Matt Keenan <tank.en.mate@gmail.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kevin K <k_krieser@sbcglobal.net>
+CC: James Carlson <carlsonj@workingcode.com>, linux-ppp@vger.kernel.org,
+       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: sending raw packets via PPP
+References: <35B9865F-38B4-4603-A2B7-F4ABACE5520F@sbcglobal.net> <18103.44797.529894.786033@gargle.gargle.HOWL> <E210D1E9-9265-48EE-91BB-E6027547F01E@sbcglobal.net>
+In-Reply-To: <E210D1E9-9265-48EE-91BB-E6027547F01E@sbcglobal.net>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708071049.23226.christophpfister@gmail.com>
+X-Originating-Heisenberg-IP: [82.69.27.224]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michal,
-
-Am Freitag, 27. Juli 2007 22:04 schrieb Christoph Pfister:
-> Hi Michal,
+Kevin K wrote:
 >
-> 2007/7/27, Michal Piotrowski <michal.k.k.piotrowski@gmail.com>:
-> > Hi Christoph,
-> >
-> > On 25/07/07, Christoph Pfister <christophpfister@gmail.com> wrote:
-> > > Hi,
-> > >
-> > > After burning a dvd I had to eject it and found that message in dmesg.
-> > > Syslog snippet and dmesg attached.
-> > > System is 2.6.21 (debian version), running a p4, issue reproducible.
-> >
-> > Does this happen on the latest -stable?
-> > http://eu.kernel.org/pub/linux/kernel/v2.6/linux-2.6.22.1.tar.bz2
-
-Doesn't happen there anymore.
-
-> I'm on holiday really soon - but will try when I'm back :)
+> On Aug 6, 2007, at 6:30 PM, James Carlson wrote:
 >
-> > > Thanks for taking care of this,
-> > >
-> > > Christoph
-> >
-> > Regards,
-> > Michal
+>> Kevin K writes:
+>>> Is it possible to send raw packets via ppp under Linux?
+>>>
+>>> More specifically, in 2.4 series kernels such as RH's 2.4.21-47 kernel?
+>>>
+>>> I've trying to modify the DHCP 3.0.1 code provided with RH 3 so I can
+>>> send requests via a PPP connection (standard RS-232), and it is just
+>>> being dropped by the stack according to ifconfig and debug statements
+>>> in ppp_generic.c.
+>>
+>> I'm not sure what sort of "raw" packets you're talking about (IP raw
+>> or something else), but you shouldn't need to send any raw packets to
+>> do this.  DHCP runs over UDP, and, unlike Ethernet, there's no link
+>> layer addressing to worry about.
 >
-> Christoph
+> I was basing the raw mode on comments in the DHCP source code about
+> problems in older Linux kernels with sending packets to
+> 255.255.255.255 via normal IP.  The DHCP source code therefore wants
+> to send raw packets (SOCKET_PACKET) (down to the ethernet addressing
+> info).  I guess I thought I would need to do this too to fit in with
+> the existing source code.
+>
+> I'll give it a try to see whether packets sent to 255.255.255.255 can
+> make it to ppp with the IP address unchanged.
+You shouldn't need to run DHCP over PPP, PPP uses LCP to configure
+connections. I suspect the only time you would need to run DHCP over a
+PPP link is if you had a DHCP proxy run the request over the PPP link,
+but that sounds way more complicated than what you are looking for. Have
+a quick look at
+http://www.cisco.com/univercd/cc/td/doc/cisintwk/ito_doc/ppp.htm that
+should bring you up to speed on how PPP works. You will probably find
+that LCP does everything you need. If you really need some of the
+functionality of DHCP (such as setting up WINS servers et al) you might
+find that you need to hack a way to do this.
 
-Thanks,
-
-Christoph
+Matt
