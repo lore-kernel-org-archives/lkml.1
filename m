@@ -1,83 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbXHGMzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933705AbXHGMzd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932349AbXHGMzG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 08:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758668AbXHGMyv
+	id S933705AbXHGMzd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 08:55:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760770AbXHGMy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 08:54:51 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:59598 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754024AbXHGMyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 08:54:49 -0400
-Date: Tue, 7 Aug 2007 14:55:18 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070807125518.GA4669@ff.dom.local>
-References: <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com> <20070807082321.GB2120@ff.dom.local> <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com> <20070807095246.GB3223@ff.dom.local> <20070807121339.GA3946@ff.dom.local>
+	Tue, 7 Aug 2007 08:54:56 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:50857 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759632AbXHGMyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 08:54:53 -0400
+Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not 
+	notified
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Javier Pello <javier.pello@urjc.es>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
+       Greg KH <greg@kroah.com>
+In-Reply-To: <46B869C6.3090708@urjc.es>
+References: <46B37CF7.2020803@urjc.es>
+	 <20070806142451.5d28d41c@gondolin.boeb lingen.de.ibm.com>
+	 <46B7832B.6010808@urjc.es>
+	 <20070807125844.4d756b04@gondo l	in.boeblingen.de.ibm.com>
+	 <3ae72650708070446y6452d13jb7cd802119dab3ce@mail .gmail.com>
+	 <20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
+	 <46B869C6.3090708@urjc.es>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 14:57:52 +0200
+Message-Id: <1186491472.3611.33.camel@lov.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070807121339.GA3946@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.11.6.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18Twq7T2G/04psRQViOPTulV0/Y9Dt/eCRZmkZ
+ CJiuYT1kP6f7SCJJQm3v/AG6LTcyccD6ITUPAyGZzAAN47AS5o
+ AeT2VOXSS8YiMQax05aYXVD1PSLPoOw
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 02:13:39PM +0200, Jarek Poplawski wrote:
-> On Tue, Aug 07, 2007 at 11:52:46AM +0200, Jarek Poplawski wrote:
-> > On Tue, Aug 07, 2007 at 11:37:01AM +0200, Marcin ¦lusarz wrote:
-...
-> > > No, i don't need a break. I'll have more time in next weeks.
+
+On Tue, 2007-08-07 at 14:47 +0200, Javier Pello wrote:
+> On Tue, 07 Aug 2007, Cornelia Huck wrote:
+> 
+> > On Tue, 7 Aug 2007 13:46:55 +0200,
+> > "Kay Sievers" <kay.sievers@vrfy.org> wrote:
+> > > How do you check if events have been "handled"? None of the recent
+> > > distros uses /sbin/hotplug anymore. Netlink events are broadcasted,
+> > > but no failure in delivery doesn't mean anything like "handled", or
+> > > delivered to the right instance. Even if you check that the netlink
+> > > socket has listeners, that wouldn't be sufficient to tell that is
+> > > handled.
 > > 
-> > Great! So, I'll try to send a patch with _SW_RESEND in a few hours,
-> > if Ingo doesn't prepare something for you.
+> > You can't check if it's been handled, yes; but you can certainly check
+> > if you delivered it. I guess Javier wants to exclude the cases where
+> > userspace didn't have any chance to handle it.
 > 
-> So, the let's try this idea yet: modified Ingo's "x86: activate
-> HARDIRQS_SW_RESEND" patch.
-> (Don't forget about make oldconfig before make.)
-> For testing only.
+> That's right. There's no way to know if userspace does handle the event
+> after reception, and that's why we have a timeout (so we don't wait
+> forever), but we can be sure that userspace won't handle an event that
+> wasn't received. We want to be conservative here: if there is any
+> chance that the event was received, we set the timeout and wait.
 > 
-> Cheers,
-> Jarek P.
+> > Javier: Do you have an idea how common the case "we broadcasted, but
+> > nobody listened so we got a timeout" is? If the usual reason for the
+> > timeout is that firmware was requested before a listener showed up,
+> > I'm not sure whether that check is worth it...
 > 
-> PS: alas there was not even time for "compile checking"...
+> I don't know how common this is in general, but in my box it happens
+> (or rather happened, until I patched it) once per boot. I've got a
+> device that requires some firmware during initialisation. I always
+> build the driver into the kernel (I don't like modules for things
+> that are permanently attached to the computer), and that means that
+> it tries to initialise before the rootfs is mounted (there's no
+> initramfs). Before the patch, the kernel would hang for a minute
+> in request_firmware during each boot, which was rather annoying,
+> and that is the reason why I decided to fix it.
 
-And here is one more patch to test the same idea (chip->retrigger()).
-Let's try i386 way! (I hope I will not be arrested for this...)
-(Should be tested without any previous patches.)
+If you don't have modules and the initial request fails, how do you load
+the firmware later?
 
-Jarek P.
+The real fix would be to change the driver not to block in the firmware
+request and use async version of firmware loading. The whole firmware
+class with its silly timeout is just a piece of crap, that needs to be
+replaced.
 
-PS: as above
+Kay
 
----
-
-diff -Nurp 2.6.22.1-/arch/x86_64/kernel/io_apic.c 2.6.22.1/arch/x86_64/kernel/io_apic.c
---- 2.6.22.1-/arch/x86_64/kernel/io_apic.c	2007-07-09 01:32:17.000000000 +0200
-+++ 2.6.22.1/arch/x86_64/kernel/io_apic.c	2007-08-07 14:37:45.000000000 +0200
-@@ -1311,15 +1311,8 @@ static unsigned int startup_ioapic_irq(u
- static int ioapic_retrigger_irq(unsigned int irq)
- {
- 	struct irq_cfg *cfg = &irq_cfg[irq];
--	cpumask_t mask;
--	unsigned long flags;
--
--	spin_lock_irqsave(&vector_lock, flags);
--	cpus_clear(mask);
--	cpu_set(first_cpu(cfg->domain), mask);
- 
--	send_IPI_mask(mask, cfg->vector);
--	spin_unlock_irqrestore(&vector_lock, flags);
-+	send_IPI_self(cfg->vector);
- 
- 	return 1;
- }
