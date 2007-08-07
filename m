@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934290AbXHGTIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935144AbXHGTIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934290AbXHGTIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 15:08:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753789AbXHGTHv
+	id S935144AbXHGTIw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 15:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbXHGTIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 15:07:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37127 "EHLO hera.kernel.org"
+	Tue, 7 Aug 2007 15:08:44 -0400
+Received: from mail.tmr.com ([64.65.253.246]:58198 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751833AbXHGTHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 15:07:49 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Richard Knutsson <ricknu-0@student.ltu.se>
-Subject: Re: [PATCH] sonypi: Fix initialization warning
-Date: Tue, 7 Aug 2007 15:07:32 -0400
-User-Agent: KMail/1.9.5
-Cc: trenn@suse.de, Ben Collins <bcollins@ubuntu.com>,
-       linux-acpi@vger.kernel.org, Stelian Pop <stelian@popies.net>,
-       linux-kernel@vger.kernel.org
-References: <46B61F70.90005@student.ltu.se> <1186343443.3858.46.camel@fanta4.site> <46B62CFE.2010404@student.ltu.se>
-In-Reply-To: <46B62CFE.2010404@student.ltu.se>
+	id S1751022AbXHGTIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 15:08:43 -0400
+Message-ID: <46B8C382.1070106@tmr.com>
+Date: Tue, 07 Aug 2007 15:09:54 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Ingo Molnar <mingo@elte.hu>, J??rn Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070804070737.GA940@elte.hu>	<20070804103347.GA1956@elte.hu>	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>	<20070804163733.GA31001@elte.hu>	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>	<46B4C0A8.1000902@garzik.org>	<20070804191205.GA24723@lazybastard.org>	<20070804192130.GA25346@elte.hu>	<20070804211156.5f600d80@the-village.bc.nu>	<20070804202830.GA4538@elte.hu>	<20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu>
+In-Reply-To: <20070804225121.5c7b66e0@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708071507.33141.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 05 August 2007 16:03, Richard Knutsson wrote:
-> Thomas Renninger wrote:
-> > On Sun, 2007-08-05 at 21:05 +0200, Richard Knutsson wrote:
-> >   
-> >> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
-> >> ---
-> >> Got this from the compiler (gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)):
-> >> drivers/char/sonypi.c:1153: warning: initialization from incompatible pointer type
-> >>
-> >>
-> >> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
-> >> index 73037a4..2dcd519 100644
-> >> --- a/drivers/char/sonypi.c
-> >> +++ b/drivers/char/sonypi.c
-> >> @@ -1147,10 +1147,15 @@ static int sonypi_acpi_remove(struct acpi_device *device, int type)
-> >>  	return 0;
-> >>  }
-> >>  
-> >> +static const struct acpi_device_id sonypi_acpi_driver_ids[] = {
-> >> +        {ACPI_PROCESSOR_HID, 0},
-> >>     
-> > This is wrong. You need to take the HID the driver should match for, in
-> > this case: {"SNY6001", 0 },
-> >   
+Alan Cox wrote:
+>> i cannot over-emphasise how much of a deal it is in practice. Atime 
+>> updates are by far the biggest IO performance deficiency that Linux has 
+>> today. Getting rid of atime updates would give us more everyday Linux 
+>> performance than all the pagecache speedups of the past 10 years, 
+>> _combined_.
+>>
+>> it's also perhaps the most stupid Unix design idea of all times. Unix is 
+>> really nice and well done, but think about this a bit:
+> 
+> Think about the user for a moment instead. 
+> 
+> Do things right. The job of the kernel is not to "correct" for
+> distribution policy decisions. The distributions need to change policy.
+> You do that by showing the distributions the numbers. 
+> 
+> With a Red Hat on if we can move from /dev/hda to /dev/sda in FC7 then we
+> can move from atime to noatime by default on FC8 with appropriate release
+> note warnings and having a couple of betas to find out what other than
+> mutt goes boom.
 
-like this?
+Is there really enough benefit between relatime and noatime to justify 
+that? If atime doesn't get updated at all it *will* impact operations, 
+and unless there's a real performance gain the path which provides at 
+least nominal POSIX compliance seems best.
 
-http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commitdiff;h=f7b88ccb63188e775fe02e746c39ed177741cfc7;hp=11604ecf6fb9c2ab0152fbddb7ea2724438ef76e
+Plauger's law of least astonishment.
 
-http://marc.info/?l=linux-acpi&m=118618043526395&w=2
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
