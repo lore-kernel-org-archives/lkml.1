@@ -1,136 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbXHGIlB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758639AbXHGIsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348AbXHGIlB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 04:41:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbXHGIkv
+	id S1758639AbXHGIsZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 04:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbXHGIsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 04:40:51 -0400
-Received: from cm135.gamma145.maxonline.com.sg ([202.156.145.135]:59486 "EHLO
-	kerndev.sin.redhat.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753724AbXHGIku (ORCPT
+	Tue, 7 Aug 2007 04:48:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:51931 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756784AbXHGIsP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 04:40:50 -0400
-Date: Tue, 7 Aug 2007 16:40:48 +0800
-From: Eugene Teo <eugeneteo@kernel.sg>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [ALSA] seq: resource leak fix and various code cleanups
-Message-ID: <20070807084048.GA5205@kernel.sg>
-Reply-To: Eugene Teo <eugeneteo@kernel.sg>
+	Tue, 7 Aug 2007 04:48:15 -0400
+Message-ID: <46B83109.8060808@netcom.eu>
+Date: Tue, 07 Aug 2007 10:44:57 +0200
+From: David Engraf <david.engraf@netcom.eu>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Greg KH <gregkh@suse.de>, linux-pci@atrey.karlin.mff.cuni.cz,
+       linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH] USB BIOS early handoff only when the
+ we the driver is configured
+References: <Pine.LNX.4.44L0.0708031101530.2597-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0708031101530.2597-100000@iolanthe.rowland.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19OuhSdazCNzqhpZKa5+ns46CNuC60hQSABhCb
+ MiVK7Qk9rZo9L5E/sQDso0GfeCuTEurAMduRsgbvZ3M7pLKfDe
+ updm3+juEafYLlm8Uc4VQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes:
-1) a resource leak (CID: 1817)
-2) various code cleanups
+You said your Intel board has also problems with the handoff.
+Could you try the follwing patch, because the EHCI documentation
+says that the OS must set the EHCI_USBLEGSUP_OS bit and then
+wait until EHCI_USBLEGSUP_BIOS is cleared. The kernel never
+uses the EHCI_USBLEGSUP_OS flag at the moment.
+On my system there is no change, but maybe this patch works on
+your system.
 
-Signed-off-by: Eugene Teo <eugeneteo@kernel.sg>
----
- sound/core/seq/oss/seq_oss_init.c   |   29 ++++++++++++++++++-----------
- sound/core/seq/oss/seq_oss_writeq.c |    6 ++++--
- 2 files changed, 22 insertions(+), 13 deletions(-)
+Thanks
+David Engraf
 
-diff --git a/sound/core/seq/oss/seq_oss_init.c b/sound/core/seq/oss/seq_oss_init.c
-index ca5a2ed..c9b95c3 100644
---- a/sound/core/seq/oss/seq_oss_init.c
-+++ b/sound/core/seq/oss/seq_oss_init.c
-@@ -176,7 +176,8 @@ snd_seq_oss_open(struct file *file, int level)
- 	int i, rc;
- 	struct seq_oss_devinfo *dp;
+linux-2.6.22.1
+
+diff -puN drivers/usb/host/pci-quirks_orig.c drivers/usb/host/pci-quirks.c
+
+--- drivers/usb/host/pci-quirks_orig.c    2007-07-10 20:56:30.000000000
++0200
++++ drivers/usb/host/pci-quirks.c    2007-08-07 10:38:33.000000000 +0200
+@@ -268,6 +268,8 @@ static void __devinit quirk_usb_disable_
+                  * handoff..
+                  */
+                 pci_write_config_byte(pdev, offset + 3, 1);
++
++                pci_write_config_byte(pdev, offset, cap |
+EHCI_USBLEGSUP_OS);
+             }
  
--	if ((dp = kzalloc(sizeof(*dp), GFP_KERNEL)) == NULL) {
-+	dp = kzalloc(sizeof(*dp), GFP_KERNEL);
-+	if (dp == NULL) {
- 		snd_printk(KERN_ERR "can't malloc device info\n");
- 		return -ENOMEM;
- 	}
-@@ -188,8 +189,8 @@ snd_seq_oss_open(struct file *file, int level)
- 	}
- 	if (i >= SNDRV_SEQ_OSS_MAX_CLIENTS) {
- 		snd_printk(KERN_ERR "too many applications\n");
--		kfree(dp);
--		return -ENOMEM;
-+		rc = -ENOMEM;
-+		goto _error;
- 	}
- 
- 	dp->index = i;
-@@ -211,14 +212,16 @@ snd_seq_oss_open(struct file *file, int level)
- 
- 	/* create port */
- 	debug_printk(("create new port\n"));
--	if ((rc = create_port(dp)) < 0) {
-+	rc = create_port(dp);
-+	if (rc < 0) {
- 		snd_printk(KERN_ERR "can't create port\n");
- 		goto _error;
- 	}
- 
- 	/* allocate queue */
- 	debug_printk(("allocate queue\n"));
--	if ((rc = alloc_seq_queue(dp)) < 0)
-+	rc = alloc_seq_queue(dp);
-+	if (rc < 0)
- 		goto _error;
- 
- 	/* set address */
-@@ -235,7 +238,8 @@ snd_seq_oss_open(struct file *file, int level)
- 	/* initialize read queue */
- 	debug_printk(("initialize read queue\n"));
- 	if (is_read_mode(dp->file_mode)) {
--		if ((dp->readq = snd_seq_oss_readq_new(dp, maxqlen)) == NULL) {
-+		dp->readq = snd_seq_oss_readq_new(dp, maxqlen);
-+		if (dp->readq == NULL) {
- 			rc = -ENOMEM;
- 			goto _error;
- 		}
-@@ -253,7 +257,8 @@ snd_seq_oss_open(struct file *file, int level)
- 
- 	/* initialize timer */
- 	debug_printk(("initialize timer\n"));
--	if ((dp->timer = snd_seq_oss_timer_new(dp)) == NULL) {
-+	dp->timer = snd_seq_oss_timer_new(dp);
-+	if (dp->timer == NULL) {
- 		snd_printk(KERN_ERR "can't alloc timer\n");
- 		rc = -ENOMEM;
- 		goto _error;
-@@ -276,11 +281,13 @@ snd_seq_oss_open(struct file *file, int level)
- 	return 0;
- 
-  _error:
--	snd_seq_oss_synth_cleanup(dp);
--	snd_seq_oss_midi_cleanup(dp);
--	i = dp->queue;
-+	snd_seq_oss_writeq_delete(dp->writeq);
-+	snd_seq_oss_readq_delete(dp->readq);
-+	delete_seq_queue(dp->queue);
- 	delete_port(dp);
--	delete_seq_queue(i);
-+	snd_seq_oss_midi_cleanup(dp);
-+	snd_seq_oss_synth_cleanup(dp);
-+	kfree(dp);
- 
- 	return rc;
- }
-diff --git a/sound/core/seq/oss/seq_oss_writeq.c b/sound/core/seq/oss/seq_oss_writeq.c
-index 5c84956..2174248 100644
---- a/sound/core/seq/oss/seq_oss_writeq.c
-+++ b/sound/core/seq/oss/seq_oss_writeq.c
-@@ -63,8 +63,10 @@ snd_seq_oss_writeq_new(struct seq_oss_devinfo *dp, int maxlen)
- void
- snd_seq_oss_writeq_delete(struct seq_oss_writeq *q)
- {
--	snd_seq_oss_writeq_clear(q);	/* to be sure */
--	kfree(q);
-+	if (q) {
-+		snd_seq_oss_writeq_clear(q);	/* to be sure */
-+		kfree(q);
-+	}
- }
- 
- 
+             /* if boot firmware now owns EHCI, spin till
+
+
+Alan Stern schrieb:
+> On Fri, 3 Aug 2007, David Engraf wrote:
+>
+>   
+>> So we have hardware which has problems when we are not doing the
+>> handoff, and hardware which has
+>> problems when we are  doing the handoff...
+>>     
+>
+> What hardware has problems when we do the handoff?  Your system and 
+> mine experience a delay, but it doesn't break anything.
+>
+>   
+>> What is the best way to solve the problem? Maybe a kernel parameter, a
+>> config flag or an automatic
+>> hardware dependent check of the system?
+>> In fact it is hard to find a solution which works for both as long as
+>> the hardware has this bugs.
+>>     
+>
+> If we really need it, I say we should use a Kconfig flag.
+>
+> Alan Stern
+>
+>   
 
