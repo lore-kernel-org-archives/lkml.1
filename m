@@ -1,130 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbXHGHWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759105AbXHGHWq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759281AbXHGHWd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 03:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757612AbXHGHUE
+	id S1759105AbXHGHWq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 03:22:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbXHGHUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 03:20:04 -0400
-Received: from ozlabs.org ([203.10.76.45]:33992 "EHLO ozlabs.org"
+	Tue, 7 Aug 2007 03:20:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:33997 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756140AbXHGHT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 03:19:58 -0400
+	id S1756317AbXHGHT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 03:19:59 -0400
 To: Linux Memory Management <linux-mm@kvack.org>
 CC: <linux-kernel@vger.kernel.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 07 Aug 2007 17:19:50 +1000
-Subject: [RFC/PATCH 7/12] ia64 tracks freed page tables addresses
+Date: Tue, 07 Aug 2007 17:19:51 +1000
+Subject: [RFC/PATCH 8/12] remove ptep_get_and_clear_full
 In-Reply-To: <1186471185.826251.312410898174.qpush@grosgo>
-Message-Id: <20070807071957.763E0DDDFA@ozlabs.org>
+Message-Id: <20070807071958.0FE4EDDE11@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Until now, ia64 pretty much relied on the start/end arguments
-passed to tlb_finish_mmu() to flush the virtual page tables.
-
-Not only these tend to provide larger ranges than necessary,
-but keeping track in the callers is a pain and I intend to remove
-those from my mmu_gather rework.
-
-This patch uses the newly added "address" arguemnt to pte_free_tlb()
-to track the actual range covered by freed page tables and uses
-that to perform the actual freeing.
+This patch removes it, instead, the arch implementations that
+care use the new MMF_DEAD flag in the mm_struct.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
- include/asm-ia64/tlb.h |   24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+NOTE: I'm not necessarily convinced yet this is the right approach,
+but I needed to get rid of it because my current new batch structure
+doesn't have this fullmm field anymore.
 
-Index: linux-work/include/asm-ia64/tlb.h
+However, I'm thinking about putting it back in and replacing
+ptep_get_and_clear with a tlb_get_and_clear_pte() which would
+take a batch as an argument instead once I'm done moving all
+page table walkers to use the batch for TLB operations.
+
+ include/asm-generic/pgtable.h |    9 ---------
+ include/asm-i386/pgtable.h    |   17 +++++++----------
+ include/asm-x86_64/pgtable.h  |    8 ++++----
+ mm/memory.c                   |    3 +--
+ 4 files changed, 12 insertions(+), 25 deletions(-)
+
+Index: linux-work/include/asm-generic/pgtable.h
 ===================================================================
---- linux-work.orig/include/asm-ia64/tlb.h	2007-08-06 16:15:18.000000000 +1000
-+++ linux-work/include/asm-ia64/tlb.h	2007-08-06 16:15:18.000000000 +1000
-@@ -61,6 +61,8 @@ struct mmu_gather {
- 	unsigned char		need_flush;	/* really unmapped some PTEs? */
- 	unsigned long		start_addr;
- 	unsigned long		end_addr;
-+	unsigned long		start_pgtable;
-+	unsigned long		end_pgtable;
- 	struct page 		*pages[FREE_PTE_NR];
- };
+--- linux-work.orig/include/asm-generic/pgtable.h	2007-08-07 16:19:14.000000000 +1000
++++ linux-work/include/asm-generic/pgtable.h	2007-08-07 16:19:19.000000000 +1000
+@@ -58,15 +58,6 @@
+ })
+ #endif
  
-@@ -72,8 +74,10 @@ DECLARE_PER_CPU(struct mmu_gather, mmu_g
-  * freed pages that where gathered up to this point.
-  */
- static inline void
--ia64_tlb_flush_mmu (struct mmu_gather *tlb, unsigned long start, unsigned long end)
-+ia64_tlb_flush_mmu (struct mmu_gather *tlb)
- {
-+	unsigned long start = tlb->start_addr;
-+	unsigned long end = tlb->end_addr;
- 	unsigned int nr;
- 
- 	if (!tlb->need_flush)
-@@ -107,7 +111,10 @@ ia64_tlb_flush_mmu (struct mmu_gather *t
- 		/* flush the address range from the tlb: */
- 		flush_tlb_range(&vma, start, end);
- 		/* now flush the virt. page-table area mapping the address range: */
--		flush_tlb_range(&vma, ia64_thash(start), ia64_thash(end));
-+		if (tlb->start_pgtable < tlb->end_pgtable)
-+			flush_tlb_range(&vma,
-+					ia64_thash(tlb->start_pgtable),
-+					ia64_thash(tlb->end_pgtable));
- 	}
- 
- 	/* lastly, release the freed pages */
-@@ -115,7 +122,7 @@ ia64_tlb_flush_mmu (struct mmu_gather *t
- 	if (!tlb_fast_mode(tlb)) {
- 		unsigned long i;
- 		tlb->nr = 0;
--		tlb->start_addr = ~0UL;
-+		tlb->start_addr = tlb->start_pgtable = ~0UL;
- 		for (i = 0; i < nr; ++i)
- 			free_page_and_swap_cache(tlb->pages[i]);
- 	}
-@@ -145,7 +152,7 @@ tlb_gather_mmu (struct mm_struct *mm, un
- 	 */
- 	tlb->nr = (num_online_cpus() == 1) ? ~0U : 0;
- 	tlb->fullmm = full_mm_flush;
--	tlb->start_addr = ~0UL;
-+	tlb->start_addr = tlb->start_pgtable = ~0UL;
- 	return tlb;
- }
- 
-@@ -160,7 +167,7 @@ tlb_finish_mmu (struct mmu_gather *tlb, 
- 	 * Note: tlb->nr may be 0 at this point, so we can't rely on tlb->start_addr and
- 	 * tlb->end_addr.
- 	 */
--	ia64_tlb_flush_mmu(tlb, start, end);
-+	ia64_tlb_flush_mmu(tlb);
- 
- 	/* keep the page table cache within bounds */
- 	check_pgt_cache();
-@@ -184,7 +191,7 @@ tlb_remove_page (struct mmu_gather *tlb,
- 	}
- 	tlb->pages[tlb->nr++] = page;
- 	if (tlb->nr >= FREE_PTE_NR)
--		ia64_tlb_flush_mmu(tlb, tlb->start_addr, tlb->end_addr);
-+		ia64_tlb_flush_mmu(tlb);
- }
- 
+-#ifndef __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
+-#define ptep_get_and_clear_full(__mm, __address, __ptep, __full)	\
+-({									\
+-	pte_t __pte;							\
+-	__pte = ptep_get_and_clear((__mm), (__address), (__ptep));	\
+-	__pte;								\
+-})
+-#endif
+-
  /*
-@@ -194,7 +201,7 @@ tlb_remove_page (struct mmu_gather *tlb,
- static inline void
- __tlb_remove_tlb_entry (struct mmu_gather *tlb, pte_t *ptep, unsigned long address)
- {
--	if (tlb->start_addr == ~0UL)
-+	if (tlb->start_addr > address)
- 		tlb->start_addr = address;
- 	tlb->end_addr = address + PAGE_SIZE;
- }
-@@ -213,6 +220,9 @@ do {							\
- #define pte_free_tlb(tlb, ptep, addr)			\
- do {							\
- 	tlb->need_flush = 1;				\
-+	if (tlb->start_pgtable > addr)			\
-+		tlb->start_pgtable = addr;		\
-+	tlb->end_pgtable = (addr + PMD_SIZE) & PMD_MASK;\
- 	__pte_free_tlb(tlb, ptep, addr);		\
- } while (0)
+  * Some architectures may be able to avoid expensive synchronization
+  * primitives when modifications are made to PTE's which are already
+Index: linux-work/include/asm-i386/pgtable.h
+===================================================================
+--- linux-work.orig/include/asm-i386/pgtable.h	2007-08-07 16:20:05.000000000 +1000
++++ linux-work/include/asm-i386/pgtable.h	2007-08-07 16:22:05.000000000 +1000
+@@ -311,15 +311,9 @@ static inline pte_t native_local_ptep_ge
+ })
  
+ #define __HAVE_ARCH_PTEP_GET_AND_CLEAR
+-static inline pte_t ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+-{
+-	pte_t pte = native_ptep_get_and_clear(ptep);
+-	pte_update(mm, addr, ptep);
+-	return pte;
+-}
+-
+-#define __HAVE_ARCH_PTEP_GET_AND_CLEAR_FULL
+-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
++static inline pte_t __ptep_get_and_clear(struct mm_struct *mm,
++					 unsigned long addr, pte_t *ptep,
++					 int full)
+ {
+ 	pte_t pte;
+ 	if (full) {
+@@ -329,10 +323,13 @@ static inline pte_t ptep_get_and_clear_f
+ 		 */
+ 		pte = native_local_ptep_get_and_clear(ptep);
+ 	} else {
+-		pte = ptep_get_and_clear(mm, addr, ptep);
++		pte = native_ptep_get_and_clear(ptep);
++		pte_update(mm, addr, ptep);
+ 	}
+ 	return pte;
+ }
++#define ptep_get_and_clear(mm, addr, ptep)				\
++	__ptep_get_and_clear(mm, addr, ptep, test_bit(MMF_DEAD, &mm->flags))
+ 
+ #define __HAVE_ARCH_PTEP_SET_WRPROTECT
+ static inline void ptep_set_wrprotect(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
+Index: linux-work/include/asm-x86_64/pgtable.h
+===================================================================
+--- linux-work.orig/include/asm-x86_64/pgtable.h	2007-08-07 16:22:23.000000000 +1000
++++ linux-work/include/asm-x86_64/pgtable.h	2007-08-07 16:23:14.000000000 +1000
+@@ -102,21 +102,21 @@ static inline void pgd_clear (pgd_t * pg
+ 	set_pgd(pgd, __pgd(0));
+ }
+ 
+-#define ptep_get_and_clear(mm,addr,xp)	__pte(xchg(&(xp)->pte, 0))
+-
+ struct mm_struct;
+ 
+-static inline pte_t ptep_get_and_clear_full(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
++static inline pte_t __ptep_get_and_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep, int full)
+ {
+ 	pte_t pte;
+ 	if (full) {
+ 		pte = *ptep;
+ 		*ptep = __pte(0);
+ 	} else {
+-		pte = ptep_get_and_clear(mm, addr, ptep);
++		__pte(xchg(&(xp)->pte, 0))
+ 	}
+ 	return pte;
+ }
++#define ptep_get_and_clear(mm, addr, ptep)				\
++	__ptep_get_and_clear(mm, addr, ptep, test_bit(MMF_DEAD, &mm->flags))
+ 
+ #define pte_same(a, b)		((a).pte == (b).pte)
+ 
+Index: linux-work/mm/memory.c
+===================================================================
+--- linux-work.orig/mm/memory.c	2007-08-07 16:18:43.000000000 +1000
++++ linux-work/mm/memory.c	2007-08-07 16:18:48.000000000 +1000
+@@ -658,8 +658,7 @@ static unsigned long zap_pte_range(struc
+ 				     page->index > details->last_index))
+ 					continue;
+ 			}
+-			ptent = ptep_get_and_clear_full(mm, addr, pte,
+-							tlb->fullmm);
++			ptent = ptep_get_and_clear(mm, addr, pte);
+ 			tlb_remove_tlb_entry(tlb, pte, addr);
+ 			if (unlikely(!page))
+ 				continue;
