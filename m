@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXHGSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757998AbXHGS2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbXHGSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751628AbXHGSZL
+	id S1757998AbXHGS2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 14:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXHGS2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 14:25:11 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:41258
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751047AbXHGSZJ (ORCPT
+	Tue, 7 Aug 2007 14:28:32 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:42350 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751792AbXHGS2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 14:25:09 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Distributed storage.
-Date: Tue, 7 Aug 2007 11:24:56 -0700
-User-Agent: KMail/1.9.5
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk>
-In-Reply-To: <20070807120523.GX5245@kernel.dk>
+	Tue, 7 Aug 2007 14:28:32 -0400
+Date: Tue, 7 Aug 2007 20:28:40 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linux-kernel@vger.kernel.org
+Subject: CONFIG_SWAP=n failes to compile due to linux/pagemap.h issues
+Message-ID: <20070807182840.GA30866@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200708071124.56859.phillips@phunq.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 07 August 2007 05:05, Jens Axboe wrote:
-> On Sun, Aug 05 2007, Daniel Phillips wrote:
-> > A simple way to solve the stable accounting field issue is to add a
-> > new pointer to struct bio that is owned by the top level submitter
-> > (normally generic_make_request but not always) and is not affected
-> > by any recursive resubmission.  Then getting rid of that field
-> > later becomes somebody's summer project, which is not all that
-> > urgent because struct bio is already bloated up with a bunch of
-> > dubious fields and is a transient structure anyway.
->
-> Thanks for your insights. Care to detail what bloat and dubious
-> fields struct bio has?
 
-First obvious one I see is bi_rw separate from bi_flags.  Front_size and 
-back_size smell dubious.  Is max_vecs really necessary?  You could 
-reasonably assume bi_vcnt rounded up to a power of two and bury the 
-details of making that work behind wrapper functions to change the 
-number of bvecs, if anybody actually needs that.  Bi_endio and 
-bi_destructor could be combined.  I don't see a lot of users of bi_idx, 
-that looks like a soft target.  See what happened to struct page when a 
-couple of folks got serious about attacking it, some really deep hacks 
-were done to pare off a few bytes here and there.  But struct bio as a 
-space waster is not nearly in the same ballpark.
+-Werror-implicit-function-declaration made it finally into mainline,
+thats ok.
 
-It would be interesting to see if bi_bdev could be made read only.  
-Generally, each stage in the block device stack knows what the next 
-stage is going to be, so why do we have to write that in the bio?  For 
-error reporting from interrupt context?  Anyway, if Evgeniy wants to do 
-the patch, I will happily unload the task of convincing you that random 
-fields are/are not needed in struct bio :-)
+But now CONFIG_SWAP=n fails to compile, at least on powerpc:
 
-Regards,
+include/asm-generic/tlb.h: In function 'tlb_flush_mmu':
+include/asm-generic/tlb.h:76: error: implicit declaration of function 'release_pages'
+include/asm-generic/tlb.h: In function 'tlb_remove_page':
+include/asm-generic/tlb.h:105: error: implicit declaration of function 'page_cache_release'
 
-Daniel
+tlb_flush_mmu() calls free_pages_and_swap_cache(),
+which calls free_pages_and_swap_cache() in linux/swap.h
+
+A commend was added to the free_pages_and_swap_cache define the last
+time this issue came up. sparc can not use linux/pagemap.h in swap.h.
+http://lkml.org/lkml/2005/7/8/140
+http://lkml.org/lkml/2005/8/6/72
+
+So, how can this be finally resolved?
+Does CONFIG_SWAP=n compile anywhere right now?
+
+google found a workaround(?), akpm queued it up: http://lkml.org/lkml/2007/7/19/14
