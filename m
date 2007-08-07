@@ -1,96 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937008AbXHGWTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937298AbXHGWUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937008AbXHGWTo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 18:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935328AbXHGWSo
+	id S937298AbXHGWUr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 18:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756791AbXHGWUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 18:18:44 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35577 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S935535AbXHGWSl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 18:18:41 -0400
-Date: Tue, 7 Aug 2007 15:18:36 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Daniel Phillips <phillips@phunq.net>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-In-Reply-To: <200708061649.56487.phillips@phunq.net>
-Message-ID: <Pine.LNX.4.64.0708071513290.3683@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl> <200708061559.41680.phillips@phunq.net>
- <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com>
- <200708061649.56487.phillips@phunq.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 7 Aug 2007 18:20:35 -0400
+Received: from x346.tv-sign.ru ([89.108.83.215]:33261 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760847AbXHGWUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 18:20:34 -0400
+Date: Wed, 8 Aug 2007 02:20:42 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>,
+       Johannes Berg <johannes@sipsolutions.net>, nfs@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [NFS] 2.6.23-rc1-mm2
+Message-ID: <20070807222042.GA553@tv-sign.ru>
+References: <20070731230932.a9459617.akpm@linux-foundation.org> <200708031301.01569.marc.dietrich@ap.physik.uni-giessen.de> <20070803093830.39852a01.akpm@linux-foundation.org> <1186160608.7255.10.camel@localhost> <20070803172137.GA3783@tv-sign.ru> <1186520929.6625.12.camel@heimdal.trondhjem.org> <20070807213749.GA461@tv-sign.ru> <1186524314.6625.29.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186524314.6625.29.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Aug 2007, Daniel Phillips wrote:
-
-> > AFAICT: This patchset is not throttling processes but failing
-> > allocations.
+On 08/07, Trond Myklebust wrote:
+>
+> On Wed, 2007-08-08 at 01:37 +0400, Oleg Nesterov wrote:
+> > On 08/07, Trond Myklebust wrote:
+> > >
+> > > On Fri, 2007-08-03 at 21:21 +0400, Oleg Nesterov wrote:
+> > > > On 08/03, Trond Myklebust wrote:
+> > > > > I'll have a look at this. I suspect that most if not all of our calls to
+> > > > > run_workqueue()/flush_scheduled_work() can now be replaced by more
+> > > > > targeted calls to cancel_work_sync() and cancel_delayed_work_sync().
+> > > > 
+> > > > Yes, please, if possible.
+> > > 
+> > > All the NFS and SUNRPC cases appear to be trivial. IOW: the only reason
+> > > for the flush_workqueue()/flush_scheduled_work() calls was to ensure
+> > > that the cancel_work()/cancel_delayed_work() calls preceding them have
+> > > completed. Nevertheless I've split the conversion into two patches,
+> > > since one touches only the NFS code, whereas the other touches the
+> > > SUNRPC client and server code.
+> > > 
+> > > The two patches have been tested, and appear to work...
+> > 
+> > Great!
+> > 
+> > >  void
+> > >  nfs4_kill_renewd(struct nfs_client *clp)
+> > >  {
+> > >  	down_read(&clp->cl_sem);
+> > > -	cancel_delayed_work(&clp->cl_renewd);
+> > > +	cancel_delayed_work_sync(&clp->cl_renewd);
+> > >  	up_read(&clp->cl_sem);
+> > > -	flush_scheduled_work();
+> > >  }
+> > 
+> > this looks unsafe to me, the window is very small, but afaics this can
+> > deadlock if called when nfs4_renew_state() has already started, but didn't
+> > take ->cl_sem yet.
 > 
-> Failing allocations?  Where do you see that?  As far as I can see, 
-> Peter's patch set allows allocations to fail exactly where the user has 
-> always specified they may fail, and in no new places.  If there is a 
-> flaw in that logic, please let us know.
+> Not really. We have removed the nfs_client from the public lists, and we
+> are guaranteed that there are no more active superblocks attached to it
+> so nothing can call the reclaimer routine (which is the only routine
+> that takes a write lock on clp->cl_sem).
 
-See the code added to slub: Allocations are satisfied from the reserve 
-patch or they are failing.
+Thanks for your explanation. Not that I was able to understand, nfs is a
+black magic to me :)
 
-> > The patchset does not reconfigure the memory reserves as 
-> > expected.
+But. nfs4_renew_state() checks list_empty(&clp->cl_superblocks) under
+clp->cl_sem? So, if it is possible that clp->cl_renewd was scheduled
+at the time when nfs4_kill_renewd(), we can deadlock, no? Because
+nfs4_renew_state() needs clp->cl_sem to complete, but nfs4_kill_renewd()
+holds this sem, and waits for nfs4_renew_state() completion.
+
+> > Btw, unless I missed something, the code without this patch looks incorrect
+> > too: cancel_delayed_work() can fail if the timer expired, but the ->cl_renewd
+> > didn't run yet. In that case nfs4_renew_state() can run and re-schedule itself
+> > after flush_scheduled_work() returns.
 > 
-> What do you mean by that?  Expected by who?
+> No, that should not be possible. Again, see above: there are no active
+> superblocks, so clp->cl_superblocks is empty.
 
-What would be expected it some recalculation of min_freekbytes?
+Yes, thanks. I missed "goto out" in nfs4_renew_state().
 
-> > And I suspect that we  
-> > have the same issues as in earlier releases with various corner cases
-> > not being covered.
-> 
-> Do you have an example?
+Oleg.
 
-Try NUMA constraints and zone limitations.
- 
-> > Code is added that is supposedly not used.
-> 
-> What makes you think that?
-
-Because the argument is that performance does not matter since the code 
-patchs are not used.
-
-> > If it  ever is on a large config then we are in very deep trouble by
-> > the new code paths themselves that serialize things in order to give
-> > some allocations precendence over the other allocations that are made
-> > to fail ....
-> 
-> You mean by allocating the reserve memory on the wrong node in NUMA?  
-
-No I mean all 1024 processors of our system running into this fail/succeed 
-thingy that was added.
-
-> That is on a code path that avoids destroying your machine performance 
-> or killing the machine entirely as with current kernels, for which a 
-
-As far as I know from our systems: The current kernels do not kill the 
-machine if the reserves are configured the right way.
-
-> few cachelines pulled to another node is a small price to pay.  And you 
-> are free to use your special expertise in NUMA to make those fallback 
-> paths even more efficient, but first you need to understand what they 
-> are doing and why.
-
-There is your problem. The justification is not clear at all and the 
-solution likely causes unrelated problems.
-
-
- 
