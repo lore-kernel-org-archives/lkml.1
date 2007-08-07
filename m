@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbXHGEJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757985AbXHGEMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756614AbXHGEJW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 00:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750782AbXHGEJM
+	id S1757985AbXHGEMg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 00:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750983AbXHGEM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 00:09:12 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:62308 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbXHGEJL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 00:09:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=T2AOC+t7xe90A6Xglo3W6VRf5zsPOpfHhHLZxppE6ICFDB3dgJc3w8tTE33JTC05evmbN8y7tJBqvvxHOu8d+BthazVedunYn2Y0iDiD3SgEU5gCE4gLqsUXi+3Zf9AhGvpNUNL1n2jZmE2/KEz54EqCAIbLAWrw8V6cuCu+wi8=
-Message-ID: <46B7F059.3030403@gmail.com>
-Date: Tue, 07 Aug 2007 13:08:57 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>, akpm@osdl.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] Off-by-one in /sys/module/*/refcnt
-References: <20070805134923.GA5918@martell.zuzino.mipt.ru> <3ae72650708050700p1fc2959epcc1e9307e3c64fed@mail.gmail.com> <46B6B22C.1020609@gmail.com> <20070806194745.GB5842@martell.zuzino.mipt.ru>
-In-Reply-To: <20070806194745.GB5842@martell.zuzino.mipt.ru>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 00:12:29 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:51155 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750789AbXHGEM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 00:12:28 -0400
+Date: Tue, 7 Aug 2007 06:13:45 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Nico Erfurth <masta@perlgolf.de>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH 2.6.22] Adding drivers/usb/misc/iowarrior.c to the Makefile
+Message-ID: <20070807041345.GB1971@uranus.ravnborg.org>
+References: <46B23DB0.5010702@perlgolf.de> <20070802212701.GA4326@uranus.ravnborg.org> <20070807030156.GB14310@suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807030156.GB14310@suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan wrote:
-> sysfs internals were changed to not pin module in question.
+On Mon, Aug 06, 2007 at 08:01:56PM -0700, Greg KH wrote:
+> On Thu, Aug 02, 2007 at 11:27:01PM +0200, Sam Ravnborg wrote:
+> > On Thu, Aug 02, 2007 at 10:25:20PM +0200, Nico Erfurth wrote:
+> > > This patch adds the new iowarrior module to the Makefile in drivers/usb.
+> > > Currently the module isn't build unless another driver from usb/misc is
+> > > selected.
+> > 
+> > Can we please just always vist misc like this:
+> > obj-y := misc/
+> > 
+> > Then we do not need to repeat this stuff in both
+> > drivers/usb/Makefile and drivers/usb/misc/Makefile
 > 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> For some reason, we didn't do that because people were upset at us going
+> into these directories when they didn't have any usb misc devices
+> selected?  Or something like that, I really can't remember anymore.
+> 
+> But if you think it would be best to do that, I'd be glad to make the
+> change.
+Please do - we have too much duplication between the two files now.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
-
--- 
-tejun
+	Sam
