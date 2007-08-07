@@ -1,120 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965860AbXHGVUs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXHGVVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965860AbXHGVUs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:20:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbXHGU4A
+	id S965908AbXHGVVZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964888AbXHGU4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 16:56:00 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:59786 "EHLO
+	Tue, 7 Aug 2007 16:56:04 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:59799 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935683AbXHGUzt (ORCPT
+	with ESMTP id S935746AbXHGUzy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 16:55:49 -0400
-Date: Tue, 7 Aug 2007 13:48:15 -0700
+	Tue, 7 Aug 2007 16:55:54 -0400
+Date: Tue, 7 Aug 2007 13:48:22 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       torvalds@linux-foundation.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
        Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
        Chris Wedgwood <reviews@ml.cw.f00f.org>,
        Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Stelian Pop <stelian@popies.net>, Len Brown <lenb@kernel.org>,
-       Andrei Paskevich <andrei@capet.iut-fbleau.fr>,
-       Mattia Dongili <malattia@linux.it>
-Subject: [2.6.22.2 review 63/84] sony-laptop: fix bug in event handling
-Message-ID: <20070807204815.GM23028@kroah.com>
+       Domenico Andreoli <cavokz@gmail.com>, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, adaplas@pol.net,
+       michal.k.k.piotrowski@gmail.com, bunk@stusta.de
+Subject: [2.6.22.2 review 65/84] drivers/video/macmodes.c:mac_find_mode()
+	mustnt be __devinit
+Message-ID: <20070807204822.GO23028@kroah.com>
 References: <20070807204034.882009319@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sony-laptop-fix-bug-in-event-handling.patch"
+Content-Disposition: inline; filename="drivers-video-macmodes.c-mac_find_mode-mustn-t-be-__devinit.patch"
 In-Reply-To: <20070807204157.GA23028@kroah.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mattia Dongili <malattia@linux.it>
 
-The rewritten event reading code from sonypi was absolutely wrong,
-this patche makes things functional for type2 and type1 models.
+From: Adrian Bunk <bunk@stusta.de>
 
-Cc: Andrei Paskevich <andrei@capet.iut-fbleau.fr>
-Signed-off-by: Mattia Dongili <malattia@linux.it>
+If it's EXPORT_SYMBOL'ed it can't be __devinit.
+
+Reported by Mikael Pettersson.
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Cc: "Antonino A. Daplas" <adaplas@pol.net>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/sony-laptop.c |   30 ++++++++++++++++++++++--------
- 1 file changed, 22 insertions(+), 8 deletions(-)
+ drivers/video/macmodes.c |    5 ++---
+ drivers/video/macmodes.h |    8 ++++----
+ 2 files changed, 6 insertions(+), 7 deletions(-)
 
---- a/drivers/misc/sony-laptop.c
-+++ b/drivers/misc/sony-laptop.c
-@@ -908,7 +908,9 @@ static struct acpi_driver sony_nc_driver
- #define SONYPI_DEVICE_TYPE2	0x00000002
- #define SONYPI_DEVICE_TYPE3	0x00000004
+--- a/drivers/video/macmodes.c
++++ b/drivers/video/macmodes.c
+@@ -369,9 +369,8 @@ EXPORT_SYMBOL(mac_map_monitor_sense);
+  *
+  */
  
--#define SONY_PIC_EV_MASK	0xff
-+#define SONYPI_TYPE1_OFFSET	0x04
-+#define SONYPI_TYPE2_OFFSET	0x12
-+#define SONYPI_TYPE3_OFFSET	0x12
- 
- struct sony_pic_ioport {
- 	struct acpi_resource_io	io;
-@@ -922,6 +924,7 @@ struct sony_pic_irq {
- 
- struct sony_pic_dev {
- 	int			model;
-+	u16			evport_offset;
- 	u8			camera_power;
- 	u8			bluetooth_power;
- 	u8			wwan_power;
-@@ -1998,20 +2001,17 @@ end:
- static irqreturn_t sony_pic_irq(int irq, void *dev_id)
+-int __devinit mac_find_mode(struct fb_var_screeninfo *var,
+-			    struct fb_info *info, const char *mode_option,
+-			    unsigned int default_bpp)
++int mac_find_mode(struct fb_var_screeninfo *var, struct fb_info *info,
++		  const char *mode_option, unsigned int default_bpp)
  {
- 	int i, j;
--	u32 port_val = 0;
- 	u8 ev = 0;
- 	u8 data_mask = 0;
- 	u8 device_event = 0;
+     const struct fb_videomode *db = NULL;
+     unsigned int dbsize = 0;
+--- a/drivers/video/macmodes.h
++++ b/drivers/video/macmodes.h
+@@ -55,10 +55,10 @@ extern int mac_vmode_to_var(int vmode, i
+ extern int mac_var_to_vmode(const struct fb_var_screeninfo *var, int *vmode,
+ 			    int *cmode);
+ extern int mac_map_monitor_sense(int sense);
+-extern int __devinit mac_find_mode(struct fb_var_screeninfo *var,
+-				   struct fb_info *info,
+-				   const char *mode_option,
+-				   unsigned int default_bpp);
++extern int mac_find_mode(struct fb_var_screeninfo *var,
++			 struct fb_info *info,
++			 const char *mode_option,
++			 unsigned int default_bpp);
  
- 	struct sony_pic_dev *dev = (struct sony_pic_dev *) dev_id;
  
--	acpi_os_read_port(dev->cur_ioport->io.minimum, &port_val,
--			dev->cur_ioport->io.address_length);
--	ev = port_val & SONY_PIC_EV_MASK;
--	data_mask = 0xff & (port_val >> (dev->cur_ioport->io.address_length - 8));
-+	ev = inb_p(dev->cur_ioport->io.minimum);
-+	data_mask = inb_p(dev->cur_ioport->io.minimum + dev->evport_offset);
- 
--	dprintk("event (0x%.8x [%.2x] [%.2x]) at port 0x%.4x\n",
--			port_val, ev, data_mask, dev->cur_ioport->io.minimum);
-+	dprintk("event ([%.2x] [%.2x]) at port 0x%.4x(+0x%.2x)\n",
-+			ev, data_mask, dev->cur_ioport->io.minimum, dev->evport_offset);
- 
- 	if (ev == 0x00 || ev == 0xff)
- 		return IRQ_HANDLED;
-@@ -2102,6 +2102,20 @@ static int sony_pic_add(struct acpi_devi
- 	spic_dev.model = sony_pic_detect_device_type();
- 	mutex_init(&spic_dev.lock);
- 
-+	/* model specific characteristics */
-+	switch(spic_dev.model) {
-+		case SONYPI_DEVICE_TYPE1:
-+			spic_dev.evport_offset = SONYPI_TYPE1_OFFSET;
-+			break;
-+		case SONYPI_DEVICE_TYPE3:
-+			spic_dev.evport_offset = SONYPI_TYPE3_OFFSET;
-+			break;
-+		case SONYPI_DEVICE_TYPE2:
-+		default:
-+			spic_dev.evport_offset = SONYPI_TYPE2_OFFSET;
-+			break;
-+	}
-+
- 	/* read _PRS resources */
- 	result = sony_pic_possible_resources(device);
- 	if (result) {
+     /*
 
 -- 
