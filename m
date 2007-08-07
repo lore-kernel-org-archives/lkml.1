@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934319AbXHGRaA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934391AbXHGRhy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934319AbXHGRaA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 13:30:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757928AbXHGR3u
+	id S934391AbXHGRhy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 13:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758232AbXHGRhp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 13:29:50 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:32926 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756964AbXHGR3t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 13:29:49 -0400
-Subject: Re: Hang on 8-way with 2.6.23-rc2-rt2
-From: Gregory Haskins <ghaskins@novell.com>
-To: Daniel Walker <dwalker@mvista.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1186506217.22044.38.camel@imap.mvista.com>
-References: <1186427253.21381.135.camel@ghaskins-t60p.haskins.net>
-	 <1186506217.22044.38.camel@imap.mvista.com>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 13:27:57 -0400
-Message-Id: <1186507677.21381.191.camel@ghaskins-t60p.haskins.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 13:37:45 -0400
+Received: from mail.acc.umu.se ([130.239.18.156]:34903 "EHLO mail.acc.umu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757928AbXHGRho (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 13:37:44 -0400
+X-Greylist: delayed 1945 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Aug 2007 13:37:44 EDT
+Date: Tue, 7 Aug 2007 19:05:14 +0200
+From: David Weinehall <tao@kernel.org>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>
+Subject: Re: Linux 2.6.23-rc2
+Message-ID: <20070807170513.GF20404@vasa.acc.umu.se>
+Mail-Followup-To: Jeff Chua <jeff.chua.linux@gmail.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	lkml <linux-kernel@vger.kernel.org>,
+	"Antonino A. Daplas" <adaplas@gmail.com>
+References: <alpine.LFD.0.999.0708032031480.5037@woody.linux-foundation.org> <b6a2187b0708032213r476204fbh917d3d6672c70528@mail.gmail.com> <b6a2187b0708032234r6ad41be4u5d8142b0b199fcc1@mail.gmail.com> <b6a2187b0708040652l28e9d5aal2cc898f8006906f2@mail.gmail.com> <alpine.LFD.0.999.0708040900170.5037@woody.linux-foundation.org> <46B4C011.8090802@zytor.com> <b6a2187b0708041937u41f3911ap3f1af6115b797d6b@mail.gmail.com> <46B53FDF.5020806@zytor.com> <b6a2187b0708050452m1b1b5c5ck163f64a26686d3cc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b6a2187b0708050452m1b1b5c5ck163f64a26686d3cc@mail.gmail.com>
+X-Editor: Vi Improved <http://www.vim.org/>
+X-Accept-Language: Swedish, English
+X-GPG-Fingerprint: 7ACE 0FB0 7A74 F994 9B36  E1D1 D14E 8526 DC47 CA16
+X-GPG-Key: http://www.acc.umu.se/~tao/files/pub_dc47ca16.gpg.asc
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-07 at 10:03 -0700, Daniel Walker wrote:
-
-> Could you drop the following config options and test again?
+On Sun, Aug 05, 2007 at 07:52:07PM +0800, Jeff Chua wrote:
+> On 8/5/07, H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> #
-> # Processor type and features
-> #
-> CONFIG_TICK_ONESHOT=y
-> CONFIG_NO_HZ=y
-> CONFIG_HIGH_RES_TIMERS=y
+> > Okay, since you're using VGA console this means suspend-to-ram isn't
+> > restoring the mode.
+> > Does it matter if you suspend from inside X or not?
 > 
+> Just tested it. It doesn't matter... text console still messed up. X
+> is ok after resume.
 
-Will do.
+Try adding acpi_sleep=s3_bios to your kernel boot options and see if it
+helps.
 
-I have a patch which works around the issue too, which I will forward
-momentarily.  It appears as though there is a deadlock either between
-two task_rq_locks, or between a task_rq_lock and something else.  The
-patch I wrote changes the "double_lock_balance()" function to a full DP
-algorithm under contention.  Technically I think the original
-implementation was correct which is why my patch is really a workaround:
-I think its just plastering over the real issue.  But in any case, the
-8-way system is no longer slow and no longer nmi_watchdog/softlockups on
-me(*).  Perhaps it will at least help in finding the root cause.
 
-Regards,
--Greg
-
-(*) There are still issues on the 8-way once we get passed this
-scheduler problem, however.
-
+Regards: David
+-- 
+ /) David Weinehall <tao@acc.umu.se> /) Northern lights wander      (\
+//  Maintainer of the v2.0 kernel   //  Dance across the winter sky //
+\)  http://www.acc.umu.se/~tao/    (/   Full colour fire           (/
