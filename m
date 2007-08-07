@@ -1,46 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760035AbXHGMFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760844AbXHGMJh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760035AbXHGMFg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 08:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXHGMF2
+	id S1760844AbXHGMJh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 08:09:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbXHGMJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 08:05:28 -0400
-Received: from brick.kernel.dk ([87.55.233.238]:24450 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753898AbXHGMF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 08:05:27 -0400
-Date: Tue, 7 Aug 2007 14:05:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Daniel Phillips <phillips@phunq.net>
-Cc: Evgeniy Polyakov <johnpol@2ka.mipt.ru>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Distributed storage.
-Message-ID: <20070807120523.GX5245@kernel.dk>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708050104.19596.phillips@phunq.net> <20070805150824.GB32132@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200708051423.45484.phillips@phunq.net>
+	Tue, 7 Aug 2007 08:09:30 -0400
+Received: from mtagate5.de.ibm.com ([195.212.29.154]:25044 "EHLO
+	mtagate5.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754358AbXHGMJ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 08:09:29 -0400
+Date: Tue, 7 Aug 2007 14:10:30 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: "Kay Sievers" <kay.sievers@vrfy.org>
+Cc: "Javier Pello" <javier.pello@urjc.es>, linux-kernel@vger.kernel.org,
+       "Greg KH" <greg@kroah.com>
+Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not
+ notified
+Message-ID: <20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <3ae72650708070446y6452d13jb7cd802119dab3ce@mail.gmail.com>
+References: <46B37CF7.2020803@urjc.es>
+	<20070806142451.5d28d41c@gondolin.boeblingen.de.ibm.com>
+	<46B7832B.6010808@urjc.es>
+	<20070807125844.4d756b04@gondolin.boeblingen.de.ibm.com>
+	<3ae72650708070446y6452d13jb7cd802119dab3ce@mail.gmail.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 05 2007, Daniel Phillips wrote:
-> A simple way to solve the stable accounting field issue is to add a new 
-> pointer to struct bio that is owned by the top level submitter 
-> (normally generic_make_request but not always) and is not affected by 
-> any recursive resubmission.  Then getting rid of that field later 
-> becomes somebody's summer project, which is not all that urgent because 
-> struct bio is already bloated up with a bunch of dubious fields and is 
-> a transient structure anyway.
+On Tue, 7 Aug 2007 13:46:55 +0200,
+"Kay Sievers" <kay.sievers@vrfy.org> wrote:
 
-Thanks for your insights. Care to detail what bloat and dubious fields
-struct bio has?
+> > - Use an extra parameter in which successful delivery can be indicated.
+> > Make this
+> > int kobject_uevent_env_check(struct kobject *kobject,
+> >                              enum kobject_action action,
+> >                              char *envp[], int delivered);
+> > so existing callers that don't care don't have to be changed.
+> 
+> How do you check if events have been "handled"? None of the recent
+> distros uses /sbin/hotplug anymore. Netlink events are broadcasted,
+> but no failure in delivery doesn't mean anything like "handled", or
+> delivered to the right instance. Even if you check that the netlink
+> socket has listeners, that wouldn't be sufficient to tell that is is
+> handled.
 
-And we don't add temporary fields out of laziness, hoping that "someone"
-will later kill it again and rewrite it in a nicer fashion. Hint: that
-never happens, bloat sticks.
+You can't check if it's been handled, yes; but you can certainly check
+if you delivered it. I guess Javier wants to exclude the cases where
+userspace didn't have any chance to handle it.
 
--- 
-Jens Axboe
-
+Javier: Do you have an idea how common the case "we broadcasted, but
+nobody listened so we got a timeout" is? If the usual reason for the
+timeout is that firmware was requested before a listener showed up, I'm
+not sure whether that check is worth it...
