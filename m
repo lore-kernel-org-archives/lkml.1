@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933898AbXHGRId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934279AbXHGRRL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933898AbXHGRId (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 13:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbXHGRIY
+	id S934279AbXHGRRL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 13:17:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758639AbXHGRQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 13:08:24 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:1390 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754575AbXHGRIX (ORCPT
+	Tue, 7 Aug 2007 13:16:56 -0400
+Received: from mail.xandmail.com ([212.155.184.97]:42283 "EHLO
+	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758346AbXHGRQz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 13:08:23 -0400
-Subject: Re: Hang on 8-way with 2.6.23-rc2-rt2
-From: Daniel Walker <dwalker@mvista.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-rt-users@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1186427253.21381.135.camel@ghaskins-t60p.haskins.net>
-References: <1186427253.21381.135.camel@ghaskins-t60p.haskins.net>
-Content-Type: text/plain
-Date: Tue, 07 Aug 2007 10:03:37 -0700
-Message-Id: <1186506217.22044.38.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 13:16:55 -0400
+Date: Tue,  7 Aug 2007 19:16:33 +0200
+Message-Id: <JMEYNL$38C71F6F1D25A7CE82B12729A59CF244@xandmail.com>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+MIME-Version: 1.0
+X-Sensitivity: 3
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
+To: "jarkao2" <jarkao2@o2.pl>
+Cc: "cebbert" <cebbert@redhat.com>, "mingo" <mingo@elte.hu>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
+       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "shemminger" <shemminger@linux-foundation.org>,
+       "linux-net" <linux-net@vger.kernel.org>,
+       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
+       "alan" <alan@lxorguk.ukuu.org.uk>
+X-XaM3-API-Version: 4.2(R3) (B21)
+X-type: 0
+X-SenderIP: 82.230.172.5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 15:07 -0400, Gregory Haskins wrote:
-> Hi Ingo,
->   I think there is a latent race condition somewhere in the code.  We
-> find that -rt works on our 4-way (and under) systems, but have problems
-> on our 8-ways.
+> On Tue, Aug 07, 2007 at 11:21:07AM +0200, Jean-Baptiste Vignaud wrote:
+> > 
+> > > > * interrupts (i use irqbalance, but problem was the same without)
+> > >
+> > > I wonder if you tried without SMP too?
+> > 
+> > No i did not. Do you think that this can be a problem ?
+> > To test with no SMP, do i need to recompile kernel or is there a kernel parameter ?
 > 
-> If you run without nmi_watchdog, the system will sometimes boot (but
-> very very very slow), and sometimes it will softlockup.  If you turn on
-> nmi_watchdog, the system detects a hang (probably at the point where the
-> system gets really slow without it).  We notice no problems on the
-> 4-ways.
-> 
-> The system where we can reproduce this is a Dell 690 with Dual 2Ghz
-> Quad-core Xeon 5335s.  I've attached some relevant info.  Let me know if
-> you need more.
+> It's always better to exclude any complications if it's possible.
+> Yes, there is the kernel parameter for this: nosmp. So, if you
+> have some time to spare I think 2.6.23-rc2 with this nosmp
+> could be an interesting option.
 
-Could you drop the following config options and test again?
+So this afternoon i compiled 2.6.23-rc2 with same options as 2.6.23-rc1 and edited grub.conf to add nosmp but after reboot the box did not responded. Back home, i saw that the kernel failed because it was unable to find the partitions (mdadm failed, then LVM). After a few tests, removing nosmp let the kernel boot correctly. It seems that even the fedora provided kernels have the same behavior (well at least 2.6.22.1-41.fc7).
 
-#
-# Processor type and features
-#
-CONFIG_TICK_ONESHOT=y
-CONFIG_NO_HZ=y
-CONFIG_HIGH_RES_TIMERS=y
-
-(btw, added LKML to the CC list ..)
-
-Daniel
+Jb
 
