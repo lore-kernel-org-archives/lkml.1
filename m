@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967431AbXHGVxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967402AbXHGVyd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967431AbXHGVxu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966051AbXHGVaj
+	id S967402AbXHGVyd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:54:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966429AbXHGVao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:30:39 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50028 "EHLO
+	Tue, 7 Aug 2007 17:30:44 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50029 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966237AbXHGVag (ORCPT
+	with ESMTP id S966337AbXHGVam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:30:36 -0400
+	Tue, 7 Aug 2007 17:30:42 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Greg KH <greg@kroah.com>
 Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
        cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
        Tejun Heo <htejun@gmail.com>,
        Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
-Subject: [PATCH 19/25] sysfs: sysfs_get_dentry add a sb parameter
+Subject: [PATCH 15/25] vfs: Remove lookup_one_len_kern
 References: <11860582832964-git-send-email-htejun@gmail.com>
 	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
 	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
@@ -33,14 +33,10 @@ References: <11860582832964-git-send-email-htejun@gmail.com>
 	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
 	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
 	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 07 Aug 2007 15:29:23 -0600
-In-Reply-To: <m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 07 Aug 2007 15:28:10 -0600")
-Message-ID: <m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Tue, 07 Aug 2007 15:25:05 -0600
+In-Reply-To: <m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Tue, 07 Aug 2007 15:23:57 -0600")
+Message-ID: <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -48,109 +44,106 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-In preparation for multiple mounts of sysfs add a superblock parameter to
-sysfs_get_dentry.
+Now that sysfs no longer uses lookup_one_len_kern the function has
+no users so remove it from the kernel.  Making namei.c just a little
+easier to read.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/sysfs/dir.c   |   12 +++++++-----
- fs/sysfs/file.c  |    4 ++--
- fs/sysfs/sysfs.h |    2 +-
- 3 files changed, 10 insertions(+), 8 deletions(-)
+ fs/namei.c            |   46 +++++++++++-----------------------------------
+ include/linux/namei.h |    1 -
+ 2 files changed, 11 insertions(+), 36 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 94d705a..ac45523 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -805,6 +805,7 @@ out:
+diff --git a/fs/namei.c b/fs/namei.c
+index a83160a..69d3304 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1273,7 +1273,12 @@ int __user_path_lookup_open(const char __user *name, unsigned int lookup_flags,
+ 	return err;
+ }
  
- /**
-  *	sysfs_get_dentry - get dentry for the given sysfs_dirent
-+ *	@sb: superblock of the dentry to return
-  *	@sd: sysfs_dirent of interest
-  *
-  *	Get dentry for @sd.  Dentry is looked up if currently not
-@@ -817,8 +818,9 @@ out:
-  *
-  *	RETURNS:
-  *	Pointer to found dentry on success, ERR_PTR() value on error.
-+ *	NULL if the sysfs dentry does not appear in the specified superblock
-  */
--struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
-+struct dentry *sysfs_get_dentry(struct super_block *sb, struct sysfs_dirent *sd)
+-static inline struct dentry *__lookup_hash_kern(struct qstr *name, struct dentry *base, struct nameidata *nd)
++/*
++ * Restricted form of lookup. Doesn't follow links, single-component only,
++ * needs parent already locked. Doesn't follow mounts.
++ * SMP-safe.
++ */
++static inline struct dentry * __lookup_hash(struct qstr *name, struct dentry *base, struct nameidata *nd)
  {
- 	struct sysfs_dirent *cur;
- 	struct dentry *parent_dentry, *dentry;
-@@ -827,7 +829,7 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
- 	 */
- 	dentry = NULL;
- 	cur = sd;
--	while (!(dentry = __sysfs_get_dentry(sysfs_sb, cur))) {
-+	while (!(dentry = __sysfs_get_dentry(sb, cur))) {
- 		if (cur->s_flags & SYSFS_FLAG_REMOVED) {
- 			dentry = ERR_PTR(-ENOENT);
- 			break;
-@@ -868,7 +870,7 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
- 		goto out;	/* nothing to rename */
+ 	struct dentry *dentry;
+ 	struct inode *inode;
+@@ -1281,6 +1286,11 @@ static inline struct dentry *__lookup_hash_kern(struct qstr *name, struct dentry
  
- 	/* get the original dentry */
--	old_dentry = sysfs_get_dentry(sd);
-+	old_dentry = sysfs_get_dentry(sysfs_sb, sd);
- 	if (IS_ERR(old_dentry)) {
- 		error = PTR_ERR(old_dentry);
- 		goto out;
-@@ -937,14 +939,14 @@ int sysfs_move_dir(struct kobject *kobj, struct kobject *new_parent_kobj)
- 		goto out;	/* nothing to move */
+ 	inode = base->d_inode;
  
- 	/* get dentries */
--	old_dentry = sysfs_get_dentry(sd);
-+	old_dentry = sysfs_get_dentry(sysfs_sb, sd);
- 	if (IS_ERR(old_dentry)) {
- 		error = PTR_ERR(old_dentry);
- 		goto out;
- 	}
- 	old_parent = old_dentry->d_parent;
++	err = permission(inode, MAY_EXEC, nd);
++	dentry = ERR_PTR(err);
++	if (err)
++		goto out;
++
+ 	/*
+ 	 * See if the low-level filesystem might want
+ 	 * to use its own hash..
+@@ -1308,29 +1318,6 @@ out:
+ 	return dentry;
+ }
  
--	new_parent = sysfs_get_dentry(new_parent_sd);
-+	new_parent = sysfs_get_dentry(sysfs_sb, new_parent_sd);
- 	if (IS_ERR(new_parent)) {
- 		error = PTR_ERR(new_parent);
- 		goto out;
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index fe783ea..f954b9f 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -471,7 +471,7 @@ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
- 		goto out;
+-/*
+- * Restricted form of lookup. Doesn't follow links, single-component only,
+- * needs parent already locked. Doesn't follow mounts.
+- * SMP-safe.
+- */
+-static inline struct dentry * __lookup_hash(struct qstr *name, struct dentry *base, struct nameidata *nd)
+-{
+-	struct dentry *dentry;
+-	struct inode *inode;
+-	int err;
+-
+-	inode = base->d_inode;
+-
+-	err = permission(inode, MAY_EXEC, nd);
+-	dentry = ERR_PTR(err);
+-	if (err)
+-		goto out;
+-
+-	dentry = __lookup_hash_kern(name, base, nd);
+-out:
+-	return dentry;
+-}
+-
+ static struct dentry *lookup_hash(struct nameidata *nd)
+ {
+ 	return __lookup_hash(&nd->last, nd->dentry, nd);
+@@ -1369,17 +1356,6 @@ struct dentry *lookup_one_len(const char *name, struct dentry *base, int len)
+ 	return __lookup_hash(&this, base, NULL);
+ }
  
- 	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(victim_sd);
-+	victim = sysfs_get_dentry(sysfs_sb, victim_sd);
- 	mutex_unlock(&sysfs_rename_mutex);
- 	if (IS_ERR(victim)) {
- 		rc = PTR_ERR(victim);
-@@ -512,7 +512,7 @@ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- 		goto out;
+-struct dentry *lookup_one_len_kern(const char *name, struct dentry *base, int len)
+-{
+-	int err;
+-	struct qstr this;
+-
+-	err = __lookup_one_len(name, &this, base, len);
+-	if (err)
+-		return ERR_PTR(err);
+-	return __lookup_hash_kern(&this, base, NULL);
+-}
+-
+ int fastcall __user_walk_fd(int dfd, const char __user *name, unsigned flags,
+ 			    struct nameidata *nd)
+ {
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 6c38efb..36e5690 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -82,7 +82,6 @@ extern struct file *nameidata_to_filp(struct nameidata *nd, int flags);
+ extern void release_open_intent(struct nameidata *);
  
- 	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(victim_sd);
-+	victim = sysfs_get_dentry(sysfs_sb, victim_sd);
- 	mutex_unlock(&sysfs_rename_mutex);
- 	if (IS_ERR(victim)) {
- 		rc = PTR_ERR(victim);
-diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
-index 8156ccb..6de7e2b 100644
---- a/fs/sysfs/sysfs.h
-+++ b/fs/sysfs/sysfs.h
-@@ -63,7 +63,7 @@ extern struct file_system_type sysfs_fs_type;
- void sysfs_grab_supers(void);
- void sysfs_release_supers(void);
+ extern struct dentry * lookup_one_len(const char *, struct dentry *, int);
+-extern struct dentry *lookup_one_len_kern(const char *, struct dentry *, int);
  
--extern struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd);
-+extern struct dentry *sysfs_get_dentry(struct super_block *sb, struct sysfs_dirent *sd);
- extern struct sysfs_dirent *sysfs_get_active(struct sysfs_dirent *sd);
- extern void sysfs_put_active(struct sysfs_dirent *sd);
- extern struct sysfs_dirent *sysfs_get_active_two(struct sysfs_dirent *sd);
+ extern int follow_down(struct vfsmount **, struct dentry **);
+ extern int follow_up(struct vfsmount **, struct dentry **);
 -- 
 1.5.1.1.181.g2de0
 
