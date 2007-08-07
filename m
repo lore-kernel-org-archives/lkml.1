@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934656AbXHGNiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934272AbXHGNkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934656AbXHGNiX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 09:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934603AbXHGNiF
+	id S934272AbXHGNkX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 09:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762253AbXHGNkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 09:38:05 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51323 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934151AbXHGNiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 09:38:02 -0400
-Date: Tue, 7 Aug 2007 15:38:00 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/4] sdio: set the functions' block size
-Message-ID: <20070807153800.734a6cbf@poseidon.drzeus.cx>
-In-Reply-To: <46B86B88.5050009@csr.com>
-References: <11858961933491-git-send-email-david.vrabel@csr.com>
-	<20070804152304.65ed8f1b@poseidon.drzeus.cx>
-	<46B6F877.7060504@csr.com>
-	<20070806171207.59fafa18@poseidon.drzeus.cx>
-	<46B73F18.5030109@csr.com>
-	<20070806220145.66b97559@poseidon.drzeus.cx>
-	<46B86ADB.90000@csr.com>
-	<46B86B88.5050009@csr.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 7 Aug 2007 09:40:09 -0400
+Received: from mailout04.sul.t-online.de ([194.25.134.18]:56527 "EHLO
+	mailout04.sul.t-online.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760582AbXHGNkG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 09:40:06 -0400
+Message-ID: <46B86FC1.7050601@t-online.de>
+Date: Tue, 07 Aug 2007 15:12:33 +0200
+From: Bernd Schmidt <bernds_cb1@t-online.de>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070804)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Wu, Bryan" <Bryan.Wu@analog.com>
+Subject: Re: [PATCH] NOMMU: Separate out VMAs
+References: <46695F6D.5050600@t-online.de> <8772.1186149811@redhat.com>
+In-Reply-To: <8772.1186149811@redhat.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-ID: ZqsepOZdQe2lXR-aUzuApDNkZTBmuGdUVODznpsIbt3b7kvH2FOXEl
+X-TOI-MSGID: 1c31eafc-4d29-42a6-8d99-32d33e1e8781
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Aug 2007 13:54:32 +0100
-David Vrabel <david.vrabel@csr.com> wrote:
+David Howells wrote:
+> Here's a preview of my patch to give each process a separate list of VMAs
+> under NOMMU mode, just as under MMU mode.  Could you have a look over it
+> please?
 
->  
-> Index: mmc/drivers/mmc/core/sdio.c
-> ===================================================================
-> --- mmc.orig/drivers/mmc/core/sdio.c	2007-08-07
-> 00:38:33.000000000 +0100 +++ mmc/drivers/mmc/core/sdio.c
-> 2007-08-07 07:17:29.000000000 +0100 @@ -53,6 +53,7 @@
->  {
->  	int ret;
->  	struct sdio_func *func;
-> +	unsigned block_size;
->  
->  	BUG_ON(fn > SDIO_MAX_FUNCS);
->  
-> @@ -70,6 +71,15 @@
->  	if (ret)
->  		goto fail;
->  
-> +	/*
-> +	 * Set the function's block size to the largest supported by
-> +	 * both the function and the host.
-> +	 */
-> +	block_size = min(func->max_blksize,
-> func->card->host->max_blk_size);
-> +	ret = sdio_set_block_size(func, block_size);
-> +	if (ret)
-> +		goto fail;
-> +
->  	card->sdio_func[fn - 1] = func;
->  
->  	return 0;
+I've managed to apply it to our Blackfin tree and started looking at it.
 
-This is probably better done in the sdio_enable_func().
+> Could you also see if you get a memory leak on the blackfin CPU?  I see a leak
+> when I use this patch, but I'm not sure whether it's this patch, or whether
+> it's something else in the arch that is suppressed without this patch.
+> 
+> As far as I can tell by page counting there shouldn't be a leak.
 
-We also need to check that the card actually supports block io.
+There is a leak:
 
--- 
-     -- Pierre Ossman
+root:~> while true; do
+> cat /proc/buddyinfo
+> sleep 1
+> done
+Node 0, zone      DMA     20      1      1      1      0      1      1
+    1      0      0      0      1      2      0
+Node 0, zone      DMA     32      1      1      0      0      0      1
+    0      0      0      0      1      2      0
+Node 0, zone      DMA     47      1      1      1      1      0      0
+    1      1      1      1      0      2      0
+Node 0, zone      DMA     62      1      1      0      1      1      1
+    1      0      1      1      0      2      0
+Node 0, zone      DMA     77      1      1      1      0      0      1
+    0      0      1      1      0      2      0
+Node 0, zone      DMA     92      1      1      0      0      1      0
+    1      1      0      1      0      2      0
+Node 0, zone      DMA    107      1      1      1      1      1      1
+    1      0      0      1      0      2      0
+Node 0, zone      DMA    122      1      1      0      1      0      1
+    0      0      0      1      0      2      0
+Node 0, zone      DMA    137      1      1      1      0      1      0
+    1      1      1      0      0      2      0
+... and so on.  It's a strange pattern of fragmentation, as if it keeps
+allocating 8k pages and freeing one half of them.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+Will play with this some more.  Thanks!
+
+
+Bernd
