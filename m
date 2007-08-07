@@ -1,70 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934064AbXHFXin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934158AbXHFXkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934064AbXHFXin (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 19:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933201AbXHFXie
+	id S934158AbXHFXkZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 19:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933121AbXHFXkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 19:38:34 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:47463 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933197AbXHFXid (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 19:38:33 -0400
-Message-ID: <46B7B045.5070607@gmail.com>
-Date: Tue, 07 Aug 2007 01:35:33 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Mon, 6 Aug 2007 19:40:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:39942 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S932953AbXHFXkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 6 Aug 2007 19:40:07 -0400
+X-Authenticated: #4463548
+X-Provags-ID: V01U2FsdGVkX18dNCksrbEdJMNK/elE9mALWygh85kO1v3EshcNtb
+	kdWMUJ4bvjN7M6
+Message-ID: <46B7BF67.8010506@gmx.net>
+Date: Tue, 07 Aug 2007 02:40:07 +0200
+From: Dimitrios Apostolou <jimis@gmx.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070301 SeaMonkey/1.0.8
 MIME-Version: 1.0
-To: Mitchell Erblich <erblichs@earthlink.net>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "T. J. Brumfield" <enderandrew@gmail.com>
-Subject: Re: about modularization
-References: <000b01c7d873$76ce03c0$6501a8c0@earthlink.net>
-In-Reply-To: <000b01c7d873$76ce03c0$6501a8c0@earthlink.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: high system cpu load during intense disk i/o
+References: <200708031903.10063.jimis@gmx.net>	<200708051903.12414.jimis@gmx.net>	<46B60FB7.8030301@interia.pl>	<200708052142.14630.jimis@gmx.net>	<46B748DE.1060108@interia.pl>	<46B773F6.7060603@gmx.net> <20070806204853.6a693c4b@the-village.bc.nu>
+In-Reply-To: <20070806204853.6a693c4b@the-village.bc.nu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/06/2007 11:48 PM, Mitchell Erblich wrote:
+Hi Alan,
 
-> Of the uni-processor systems currently that can run Linux, I would not 
-> doubt if 99.9999% percent are uni-cores.
+Alan Cox wrote:
+>>> In Your oprofile output I find "acpi_pm_read" particulary interesting. 
+>>> Unlike other VIA chipsets, which I know, Your doesn't use VLink to 
+>>> connect northbridge to southbridge. Instead PCI bus connects these two. 
+>>> As You probably know maximal PCI throughtput is 133MiB/s. In theory. In 
+>>> practice probably less.
+> 
+> acpi_pm_read is capable of disappearing into  SMM traps which will make
+> it look very slow.
 
-s/can// and I would. s/uni-processor// additionally and I'd assure you it's 
-untrue. s/uni-cores/non-smt uni-cores/ and I'd do the same.
+what is an SMM trap? I googled a bit but didn't get it...
 
-> It will be probably 3-5 years minimum before the multi-core processors
-> will have any decent percentage of systems.
+> 
+>> about 15MB/s for both disks. When reading I get about 30MB/s again from 
+>> both disks. The other disk, the small one, is mostly idle, except for 
+>> writing little bits and bytes now and then. Since the problem occurs 
+>> when writing, 15MB/s is just too little I think for the PCI bus.
+> 
+> Its about right for some of the older VIA chipsets but if you are seeing
+> speed loss then we need to know precisely which kernels the speed dropped
+> at. Could be there is an I/O scheduling issue your system shows up or
+> some kind of PCI bus contention when both disks are active at once.
 
-Which is also approximately the same timeframe in which one might consider 
-currently developped kernels obsolete for deployment by the way...
+I am sure throughput kept diminishing little by little with many 2.6 
+releases, and that it wasn't a major regression on a specific version. 
+Unfortunately I cannot backup my words with measurements from older 
+kernels right now, since the system is hard to boot with such (new udev, 
+new glibc). However I promise I'll test in the future (probably using 
+old liveCDs) and come back then with proof.
 
-> And I am not suggesting not supporting them. I am only suggesting is wrt
-> the schedular, bring the system up with a default schedular, and then
-> load additional functionality based on the hardware/software requirements
-> of the system.
+> 
+>> I have been ignoring these performance regressions because of no 
+>> stability problems until now. So could it be that I'm reaching the 
+>> 20MB/s driver limit and some requests take too long to be served?
+> 
+> Nope.
 
-But why? First, look at the number of #ifdef CONFIG_SMP in the scheduler 
-code -- the Linux kernel already has seperate UP/SMP schedulers selected 
-through CONFIG_SMP. Embedded can certainly use its own !CONFIG_SMP kernels, 
-for Linux servers SMP is the norm today and for the desktop/home, SMP 
-probably already _also_ is the norm today, what with multi-core and HT 
-(which needs different things than real SMP does, but is also certainly not 
-UP). And if it isn't, it will be tomorrow and stay that way for the 
-forseeable future.
+the reason I'm talking about a "software driver limit" is because I am 
+sure about some facts:
+- The disks can reach very high speeds (60 MB/s on other systems with udma5)
+- The chipset on this specific motherboard can reach much higher 
+numbers, as was measured with old kernels.
+- No cable problems (have been changed), no strange dmesg output.
 
-[ snip ]
+So what is left? Probably only the corresponding kernel module.
 
-> IMO, if their is a fault (because of heat, etc) the user would rather 
-> bring up the system in a degraded mode. Same reason applies to... boot
-> -s..
 
-To what? I don't understand this comment. You are optimizing for the case of 
-a dead CPU? Why would the user care if he'd be running the most optimal 
-scheduler for the situation when his box is limping along anyway?
-
-Rene.
+Thanks,
+Dimitris
 
