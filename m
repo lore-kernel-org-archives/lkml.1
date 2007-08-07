@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965796AbXHGVp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967020AbXHGVqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965796AbXHGVp3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965827AbXHGVVT
+	id S967020AbXHGVqi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936998AbXHGVXS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:21:19 -0400
-Received: from mail.tmr.com ([64.65.253.246]:58272 "EHLO gaimboi.tmr.com"
+	Tue, 7 Aug 2007 17:23:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54054 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965901AbXHGVVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:21:18 -0400
-Message-ID: <46B8E227.1010300@tmr.com>
-Date: Tue, 07 Aug 2007 17:20:39 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S937205AbXHGVXP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:23:15 -0400
+Message-ID: <46B8E2BE.1050408@garzik.org>
+Date: Tue, 07 Aug 2007 17:23:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-To: Claudio Martins <ctpm@ist.utl.pt>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?J=F6rn_Engel?= <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Valerie Henson <val@nmt.edu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070803123712.987126000@chello.nl> <46B4E161.9080100@garzik.org> <20070804224706.617500a0@the-village.bc.nu> <200708050051.40758.ctpm@ist.utl.pt>
-In-Reply-To: <200708050051.40758.ctpm@ist.utl.pt>
+       tulip-users@lists.sourceforge.net, Kyle McMartin <kyle@mcmartin.ca>,
+       david@lang.hm, Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: [PATCH][RESEND] Semi-pointless NULL test in uli526x driver
+References: <200708042032.12317.jesper.juhl@gmail.com>
+In-Reply-To: <200708042032.12317.jesper.juhl@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Claudio Martins wrote:
-> On Saturday 04 August 2007, Alan Cox wrote:
->> Linux has never been a "suprise your kernel interfaces all just changed
->> today" kernel, nor a "gosh you upgraded and didn't notice your backups
->> broke" kernel.
->>
+Jesper Juhl wrote:
+> (resending previously submitted patch from 16/7-2007 22:40)
 > 
->  Can you give examples of backup solutions that rely on atime being updated?
-> I can understand backup tools using mtime/ctime for incremental backups (like 
-> tar + Amanda, etc), but I'm having trouble figuring out why someone would 
-> want to use atime for that.
 > 
-Programs which migrate unused files or delete them are the usual cases.
+> Hi,
+> 
+> In drivers/net/tulip/uli526x.c::uli526x_interrupt() there's a test 
+> of the function argument 'void *dev_id' against NULL. But that 
+> test is pretty pointless, since if ever 'dev_id' is NULL we'll 
+> already have crashed inside "netdev_priv(dev)".
+> 
+> I don't think dev_id can ever actually be NULL, so the whole block 
+> inside "if (!dev) {" could probably just go away. But I guess 
+> there's a good reason someone put that ULI526X_DBUG() in there - and
+> if 'dev_id' /can/ actually be NULL then it's nice to have and in 
+> that case this patch actually fixes a possible crash (hence the 
+> version number update). 
+> So I guess that in this case we should just move the 
+> "db = netdev_priv(dev)" assignment past that NULL test. That's what 
+> this patch does.
+> 
+> Found by the Coverity checker.
+> Compile tested.
+> 
+> 
+> PS. Please keep me on Cc when replying.
+> 
+> 
+> Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Just remove the dev==NULL test...
+
+Thanks,
+
+	Jeff
+
+
+
