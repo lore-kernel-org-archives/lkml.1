@@ -1,84 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbXHGAKR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933936AbXHGANk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933803AbXHGAKR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 6 Aug 2007 20:10:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933148AbXHGAKD
+	id S933936AbXHGANk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 6 Aug 2007 20:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933273AbXHGANd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 6 Aug 2007 20:10:03 -0400
-Received: from dsl081-085-152.lax1.dsl.speakeasy.net ([64.81.85.152]:52210
-	"EHLO moonbase.phunq.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933140AbXHGAKA (ORCPT
+	Mon, 6 Aug 2007 20:13:33 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:22374 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932895AbXHGANc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 6 Aug 2007 20:10:00 -0400
-From: Daniel Phillips <phillips@phunq.net>
-To: Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 00/10] foundations for reserve-based allocation
-Date: Mon, 6 Aug 2007 17:09:54 -0700
-User-Agent: KMail/1.9.5
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <clameter@sgi.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-References: <20070806102922.907530000@chello.nl> <20070806202323.GH11115@waste.org>
-In-Reply-To: <20070806202323.GH11115@waste.org>
+	Mon, 6 Aug 2007 20:13:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VYw6l1pl5hMbUeyX009zsxT/QlyB0bmjOT+pLzumJFGFWIVDodD3CWXahVFVkTuD27dRp/Mg8D9oFNRWnExfEVcnPuaKrbFgMQ59DPjgg1BFXCNJ1C17OuaxvPMIsTKi61stfjW7P9N3qovjHWZtzyIorKugLSnmJlP5O9aMR8o=
+Message-ID: <8bd0f97a0708061713y75651621u8b2e57b1be5a61c8@mail.gmail.com>
+Date: Mon, 6 Aug 2007 20:13:30 -0400
+From: "Mike Frysinger" <vapier.adi@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] remove strict ansi check from __u64 in asm/types.h
+Cc: "Olaf Hering" <olh@suse.de>, linux-kernel@vger.kernel.org,
+       "Michael Matz" <matz@suse.de>
+In-Reply-To: <46B75D3B.6080101@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708061709.54924.phillips@phunq.net>
+References: <20070806172331.GA8102@suse.de> <46B75D3B.6080101@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt,
-
-On Monday 06 August 2007 13:23, Matt Mackall wrote:
-> On Mon, Aug 06, 2007 at 12:29:22PM +0200, Peter Zijlstra wrote:
-> > In the interrest of getting swap over network working and posting
-> > in smaller series, here is the first series.
+On 8/6/07, H. Peter Anvin <hpa@zytor.com> wrote:
+> Olaf Hering wrote:
 > >
-> > This series lays the foundations needed to do reserve based
-> > allocation. Traditionally we have used mempools (and others like
-> > radix_tree_preload) to handle the problem.
+> > Remove the __STRICT_ANSI__ check from the __u64/__s64 declaration on
+> > 32bit targets.
 > >
-> > However this does not fit the network stack. It is built around
-> > variable sized allocations using kmalloc().
-> >
-> > This calls for a different approach.
+> > Here is the reason why we think the check should be relaxed:
 >
-> One wonders if containers are a possible solution. I can already
-> solve this problem with virtualization: have one VM manage all the
-> network I/O and export the device as a simpler virtual block device
-> to other VMs. Provided this VM isn't doing any "real" work and is
-> sized appropriately, it won't get wedged. Since the other VMs now
-> submit I/O through the simpler block interface, they can avoid
-> getting wedged with the standard mempool approach.
+> I think the fact that "long long" was made official C in C99 is good
+> enough.  Flagging them as __extension__ is okay, I guess, but something
+> like this should definitely go in.
 
-The patch set posted today amounts to hardly any new bytes of code at 
-all, and the other necessary bits coming down the pipe are not much 
-heavier.  Compare to dedicating a whole VM to supressing just one of 
-the symptoms.  Much better just to cure the disease and save your VM 
-for a more noble purpose.
-
-> If we can run nbd and friends inside their own container that can
-> give similar isolation, we might not need to add this other
-> complexity.
-
-This patch set fixes a severe problem that is so far unfixed in spite of 
-a number of attempts, and does it in a simple way that translates into 
-a small amount of code.  If it comes across as complex, that is a 
-matter of presentation and tweaking.  Subtle, yes, but not complex.
-
-> Just food for thought. I haven't looked closely enough at the
-> containers implementations yet to determine whether this is possible
-> or if the overhead in performance or complexity is acceptable.
-
-Immensely more overhead than Peter's patches.
-
-Regards,
-
-Daniel
+the patch we (Gentoo) tried posting a while ago never saw any response:
+http://sources.gentoo.org/viewcvs.py/*checkout*/gentoo/src/patchsets/gentoo-headers/2.6.22/35_all_c99-types.patch?rev=1.2
+-mike
