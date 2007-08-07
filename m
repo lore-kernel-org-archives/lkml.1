@@ -1,88 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765817AbXHGPLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934941AbXHGPMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765817AbXHGPLo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 11:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763005AbXHGPLV
+	id S934941AbXHGPMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 11:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758464AbXHGPMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 11:11:21 -0400
-Received: from x346.tv-sign.ru ([89.108.83.215]:53282 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763195AbXHGPLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 11:11:19 -0400
-Date: Tue, 7 Aug 2007 19:13:36 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org, Dipankar Sarma <dipankar@in.ibm.com>,
-       Paul E McKenney <paulmck@us.ibm.com>
-Subject: Re: Cpu-Hotplug and Real-Time
-Message-ID: <20070807151336.GA507@tv-sign.ru>
-References: <20070807131216.GA20424@in.ibm.com>
-Mime-Version: 1.0
+	Tue, 7 Aug 2007 11:12:13 -0400
+Received: from smtp121.sbc.mail.re3.yahoo.com ([66.196.96.94]:25483 "HELO
+	smtp121.sbc.mail.re3.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757680AbXHGPMM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 11:12:12 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 07 Aug 2007 11:12:11 EDT
+X-YMail-OSG: o5UckrcVM1kJbQXnxcNDAEH7Pd3Uw8__x7b1N.puZMQbZUZiVIoG7JoI_FK6aQH_iXilwa47UqaWiLc6waDk.pfSM6BxVi_h433VxQp92blBQ1wLYuX5gmbZcw0lNBwWD6GEa4hwtRi9orM-
+Date: Tue, 7 Aug 2007 10:05:29 -0500
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Serge E. Hallyn" <serge@hallyn.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ifdef struct task_struct::security
+Message-ID: <20070807150529.GA22447@vino.hallyn.com>
+References: <20070806185514.GA5842@martell.zuzino.mipt.ru> <20070806203112.GA12726@vino.hallyn.com> <20070806220833.4040f861.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070807131216.GA20424@in.ibm.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070806220833.4040f861.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/07, Gautham R Shenoy wrote:
->
-> After some debugging, I saw that the hang occured because
-> the high prio process was stuck in a loop doing yield() inside
-> wait_task_inactive(). Description follows:
+Quoting Andrew Morton (akpm@linux-foundation.org):
+> On Mon, 6 Aug 2007 15:31:12 -0500 "Serge E. Hallyn" <serge@hallyn.com> wrote:
 > 
-> Say a high-prio task (A) does a kthread_create(B),
-> followed by a kthread_bind(B, cpu1). At this moment, 
-> only cpu0 is online.
+> > Quoting Alexey Dobriyan (adobriyan@gmail.com):
+> > > For those who don't care about CONFIG_SECURITY.
+> > 
+> > I'm quite sure we started that way, but the ifdefs were considered
+> > too much of an eyesore.
 > 
-> Now, immediately after being created, B would
-> do a 
-> complete(&create->started) [kernel/kthread.c: kthread()], 
-> before scheduling itself out.
-> 
-> This complete() will wake up kthreadd, which had spawned B.
-> It is possible that during the wakeup, kthreadd might preempt B.
-> Thus, B is still on the runqueue, and not yet called schedule().
-> 
-> kthreadd, will inturn do a 
-> complete(&create->done); [kernel/kthread.c: create_kthread()]
-> which will wake up the thread which had called kthread_create().
-> In our case it's task A, which will run immediately, since its priority
-> is higher.
-> 
-> A will now call kthread_bind(B, cpu1).
-> kthread_bind(), calls wait_task_inactive(B), to ensures that 
-> B has scheduled itself out.
-> 
-> B is still on the runqueue, so A calls yield() in wait_task_inactive().
-> But since A is the task with the highest prio, scheduler schedules it
-> back again.
-> 
-> Thus B never gets to run to schedule itself out.
-> A loops waiting for B to schedule out leading  to system hang.
+> argh, y'all stop top-posting at me.
 
-As for kthread_bind(), I think wait_task_inactive+set_task_cpu is just
-an optimization, and easy to "fix":
+(Hmm, I'm replying at the point in the email I'm replying to.  Is what
+I'm doing in this current email ok - i.e the one you replied to looked
+like pure top-posting - or do you actually want pure bottom posting?)
 
---- kernel/kthread.c	2007-07-28 16:58:17.000000000 +0400
-+++ /proc/self/fd/0	2007-08-07 18:56:54.248073547 +0400
-@@ -166,10 +166,7 @@ void kthread_bind(struct task_struct *k,
- 		WARN_ON(1);
- 		return;
- 	}
--	/* Must have done schedule() in kthread() before we set_task_cpu */
--	wait_task_inactive(k);
--	set_task_cpu(k, cpu);
--	k->cpus_allowed = cpumask_of_cpu(cpu);
-+	set_cpus_allowed(current, cpumask_of_cpu(cpu));
- }
- EXPORT_SYMBOL(kthread_bind);
+> > If this is now acceptable, then the same thing might be considered
+> > for inode->i_security, kern_ipc_perm.security, etc.  Getting rid of
+> > just the task->security seems overly half-hearted.
+> > 
+> > -serge
+> > 
+> > > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> > > ---
+> > > 
+> > >  include/linux/sched.h |    3 ++-
+> > >  kernel/fork.c         |    2 ++
+> > >  2 files changed, 4 insertions(+), 1 deletion(-)
+> > > 
+> > > --- a/include/linux/sched.h
+> > > +++ b/include/linux/sched.h
+> > > @@ -1086,8 +1086,9 @@ struct task_struct {
+> > >  	int (*notifier)(void *priv);
+> > >  	void *notifier_data;
+> > >  	sigset_t *notifier_mask;
+> > > -	
+> > > +#ifdef CONFIG_SECURITY
+> > >  	void *security;
+> > > +#endif
+> > >  	struct audit_context *audit_context;
+> > >  	seccomp_t seccomp;
+> > >  
+> > > --- a/kernel/fork.c
+> > > +++ b/kernel/fork.c
+> > > @@ -1066,7 +1066,9 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+> > >  	do_posix_clock_monotonic_gettime(&p->start_time);
+> > >  	p->real_start_time = p->start_time;
+> > >  	monotonic_to_bootbased(&p->real_start_time);
+> > > +#ifdef CONFIG_SECURITY
+> > >  	p->security = NULL;
+> > > +#endif
+> > >  	p->io_context = NULL;
+> > >  	p->io_wait = NULL;
+> > >  	p->audit_context = NULL;
+> > > 
+> 
+> I think it's OK.  Removing 4 or 8 bytes from the task_struct is a decent win,
+> and an ifdef at the definition site (unavoidable) and at a single
+> initialisation site where there are lots of other similar ifdefs is pretty
+> minimal hurt.
 
-But I think we have another case. An RT ptracer can share the same CPU
-with ptracee. The latter sets TASK_STOPPED, unlocks ->siglock, and takes
-a preemption. Ptracer does ptrace_check_attach(), sees TASK_STOPPED, and
-yields in wait_task_inactive.
+Then how about making it depend on CONFIG_SECURITY_SELINUX?  It's the
+only LSM actually using that field right now.  (As more come along, we
+can use a hidden CONFIG_SECURITY_ATTRS or somesuch bool select'ed by
+LSMs which need it)
 
-Oleg.
+Using CONFIG_SECURITY means that if you compile with SECURITY=n, you get
+the capability module but no task->security.  If you compile with
+SECURITY=y but no modules, you get the dummy module and a
+task->security field!
 
+> In fact, looking through all those "= 0" and "= NULL" statements in
+> copy_process() makes one wonder whether we should be memsetting that guy to
+> zero then selectively copying things out of current, rather than the
+> present vice-versa.
+> 
+> A possibly-neat way of doing this would be to move all the task_struct fields which
+> are zeroed in copy_process() into a separate anonymous struct in
+> task_struct, then wipe only that in copy_process().  One would need to be
+> careful about the hand-arranged grouping which has been done in the
+> task_struct however.
+
+thanks,
+-serge
