@@ -1,124 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934456AbXHGV4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936539AbXHGV5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934456AbXHGV4v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 17:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759863AbXHGVd4
+	id S936539AbXHGV5h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 17:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936546AbXHGVem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 17:33:56 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:56929 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936546AbXHGVdy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 17:33:54 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, satyam@infradead.org,
-       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
-       Tejun Heo <htejun@gmail.com>,
-       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
-Subject: [PATCH 21/25] sysfs: sysfs_chmod_file handle multiple superblocks
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Tue, 07 Aug 2007 15:32:46 -0600
-In-Reply-To: <m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Tue, 07 Aug 2007 15:31:18 -0600")
-Message-ID: <m1myx3ghdt.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Tue, 7 Aug 2007 17:34:42 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60856 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935814AbXHGVej (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 17:34:39 -0400
+Message-ID: <46B8E56A.104@garzik.org>
+Date: Tue, 07 Aug 2007 17:34:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Thomas Klein <osstklei@de.ibm.com>
+CC: Christoph Raisch <raisch@de.ibm.com>,
+       Jan-Bernd Themann <ossthema@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+Subject: Re: [RESEND][PATCH 1/3] ehea: Fix workqueue handling
+References: <200708061354.30653.osstklei@de.ibm.com>
+In-Reply-To: <200708061354.30653.osstklei@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thomas Klein wrote:
+> Fix: Workqueue ehea_driver_wq was not destroyed
+> 
+> Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+> 
+> ---
+>  drivers/net/ehea/ehea.h      |    2 +-
+>  drivers/net/ehea/ehea_main.c |    1 +
+>  2 files changed, 2 insertions(+), 1 deletions(-)
 
-Teach sysfs_chmod_file how to handle multiple sysfs
-superblocks.  We need to iterate over each superblock
-so that we give all of the appropriate filesystem modification
-notifications.
+applied 1-3 to #upstream-fixes
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- fs/sysfs/file.c |   41 +++++++++++++++++++++++++----------------
- 1 files changed, 25 insertions(+), 16 deletions(-)
-
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index f954b9f..cff054f 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -501,7 +501,8 @@ int sysfs_update_file(struct kobject * kobj, const struct attribute * attr)
- int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- {
- 	struct sysfs_dirent *victim_sd = NULL;
--	struct dentry *victim = NULL;
-+	struct super_block *sb;
-+	struct dentry *victim;
- 	struct inode * inode;
- 	struct iattr newattrs;
- 	int rc;
-@@ -512,22 +513,30 @@ int sysfs_chmod_file(struct kobject *kobj, struct attribute *attr, mode_t mode)
- 		goto out;
- 
- 	mutex_lock(&sysfs_rename_mutex);
--	victim = sysfs_get_dentry(sysfs_sb, victim_sd);
--	mutex_unlock(&sysfs_rename_mutex);
--	if (IS_ERR(victim)) {
--		rc = PTR_ERR(victim);
--		victim = NULL;
--		goto out;
-+	sysfs_grab_supers();
-+	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
-+		victim = sysfs_get_dentry(sb, victim_sd);
-+		if (!victim)
-+			continue;
-+		if (IS_ERR(victim)) {
-+			rc = PTR_ERR(victim);
-+			victim = NULL;
-+			goto out_unlock;
-+		}
-+
-+		inode = victim->d_inode;
-+		mutex_lock(&inode->i_mutex);
-+		newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
-+		newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
-+		rc = notify_change(victim, &newattrs);
-+		mutex_unlock(&inode->i_mutex);
-+
-+		dput(victim);
- 	}
--
--	inode = victim->d_inode;
--	mutex_lock(&inode->i_mutex);
--	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
--	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
--	rc = notify_change(victim, &newattrs);
--	mutex_unlock(&inode->i_mutex);
-- out:
--	dput(victim);
-+out_unlock:
-+	sysfs_release_supers();
-+	mutex_unlock(&sysfs_rename_mutex);
-+out:
- 	sysfs_put(victim_sd);
- 	return rc;
- }
--- 
-1.5.1.1.181.g2de0
 
