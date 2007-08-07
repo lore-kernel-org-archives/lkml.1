@@ -1,37 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbXHGOTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934206AbXHGOVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933989AbXHGOTP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 10:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbXHGOTA
+	id S934206AbXHGOVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 10:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755833AbXHGOVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 10:19:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34394 "EHLO mx2.redhat.com"
+	Tue, 7 Aug 2007 10:21:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37800 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753489AbXHGOTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 10:19:00 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <46B87590.60208@t-online.de>
-References: <46B87590.60208@t-online.de> <23249.1186492623@redhat.com> <46B86FC1.7050601@t-online.de> <46695F6D.5050600@t-online.de> <8772.1186149811@redhat.com> <23350.1186492903@redhat.com>
-To: Bernd Schmidt <bernds_cb1@t-online.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Wu, Bryan" <Bryan.Wu@analog.com>
-Subject: Re: [PATCH] NOMMU: Separate out VMAs
-X-Mailer: MH-E 8.0.3; nmh 1.2-20070115cvs; GNU Emacs 22.1.50
-Date: Tue, 07 Aug 2007 15:03:34 +0100
-Message-ID: <25818.1186495414@redhat.com>
+	id S1754937AbXHGOVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 10:21:24 -0400
+Message-ID: <46B87FDE.3050309@garzik.org>
+Date: Tue, 07 Aug 2007 10:21:18 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: FUJITA Tomonori <tomof@acm.org>
+CC: akpm@linux-foundation.org, James.Bottomley@SteelEye.com,
+       torvalds@linux-foundation.org, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] scsi bug fixes for 2.6.23-rc2
+References: <alpine.LFD.0.999.0708061748240.5037@woody.linux-foundation.org>	<1186458941.6637.44.camel@localhost.localdomain>	<20070807001429.f8cb3b22.akpm@linux-foundation.org> <20070806162823P.tomof@acm.org>
+In-Reply-To: <20070806162823P.tomof@acm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bernd Schmidt <bernds_cb1@t-online.de> wrote:
+FUJITA Tomonori wrote:
+> On Tue, 7 Aug 2007 00:14:29 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+>> On Mon, 06 Aug 2007 22:55:41 -0500 James Bottomley <James.Bottomley@SteelEye.com> wrote:
+>>
+>>> The real root cause of all of this is that there's no tree I can
+>>> persuade all the interested parties to test that includes all of these
+>>> features.  In spite of the fact they've all been incubating in -mm for
+>>> at least 3 months, no-one apparently tested all the features together
+>>> until 2.6.23-rc1 was released, so then we're scrambling to address the
+>>> issues as they arise.
+>> I pulled git-scsi-misc on July 19 and there was no bsg code in there at
+>> all.  I pulled again on July 20 and all the bsg code was in mainline.  So
+>> it appears that the bsg code went mailing-list -> mainline in less than 24
+>> hours, so there wasn't a lot of opportunity for -mm testing there.
+> 
+> bsg was merged via Jens' branch. After that, I asked James to send
+> some fixes via the scsi-rc-fixes.
 
-> This probably wants to be dependent on something like MAP_TRIM_EXCESS.
+ISTR that Jens doesn't regularly push / get picked up by -mm?  That 
+seems like an easy problem to solve.
 
-Hmmm...  In the interests of not adding more flags, I wonder if mremap()
-should be used for that, with a global setting for mmaps made by binfmts as
-they can't really be shrunk afterwards if they're shareable.
+	Jeff
 
-David
+
+
+
