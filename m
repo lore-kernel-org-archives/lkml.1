@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753188AbXHHEG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbXHHEPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753188AbXHHEG3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 00:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbXHHEGS
+	id S1754493AbXHHEPp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 00:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXHHEPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 00:06:18 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:36507 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750706AbXHHEGQ (ORCPT
+	Wed, 8 Aug 2007 00:15:35 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:56431 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750734AbXHHEPd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 00:06:16 -0400
-X-Sasl-enc: mkLH8xDRo5vDhHp/xlxNT1J51CDsuBHuznr6L72LwC41 1186545975
-Date: Wed, 8 Aug 2007 01:06:07 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: Tejun Heo <htejun@gmail.com>, Michael Sedkowski <sedmich@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-Message-ID: <20070808040607.GA16466@khazad-dum.debian.net>
-References: <fa.kWUtPRLMmU/fKL6dyOOVKsSM0fg@ifi.uio.no> <fa.EbjjD+/NapKvm3jfMLnkxumomC0@ifi.uio.no> <fa.dm4O1sGL4RetYq2szbwwJT3cf2c@ifi.uio.no> <fa.7tYfpSdE8/lmfK5ulSN+/6TRSbw@ifi.uio.no> <fa.R1sVaL6mATofNd18aEZgwlczb8M@ifi.uio.no> <fa.Z030SpvZYAHux0f8UtlnJwatsvY@ifi.uio.no> <46B90AE0.2070403@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46B90AE0.2070403@shaw.ca>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+	Wed, 8 Aug 2007 00:15:33 -0400
+Date: Tue, 7 Aug 2007 21:14:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] msleep() with hrtimers
+Message-Id: <20070807211401.7078c12d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0708080535140.1817@scrub.home>
+References: <15327.1186166232@lwn.net>
+	<20070807124009.9f6c2247.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0708080115020.1817@scrub.home>
+	<20070807162940.74f536f8.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0708080535140.1817@scrub.home>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 07 Aug 2007, Robert Hancock wrote:
->> You *do* have to worry about it in any box you turn off daily.  Desktop
->> HDs will croak fast in that scenario, laptop HDs less so, but still too
->> fast.  A very good laptop HD can last about 20k emergency unloads (this
->> is a unit that can do about 600k normal unloads in its lifetime).
->> Desktop and server HDs don't even come close to those numbers, last time
->> I checked.
->
-> It only matters on hard drives which actually use load-unload heads. Lots
-> of desktop/server drives (perhaps some laptop ones as well) still use
-> contact start/stop, which doesn't remove the heads from the platters on
+On Wed, 8 Aug 2007 05:47:02 +0200 (CEST) Roman Zippel <zippel@linux-m68k.org> wrote:
 
-I am not so sure about that.
+> 
+> 
+> On Tue, 7 Aug 2007, Andrew Morton wrote:
+> 
+> > On Wed, 8 Aug 2007 01:16:49 +0200 (CEST)
+> > Roman Zippel <zippel@linux-m68k.org> wrote:
+> > 
+> > > Hi,
+> > > 
+> > > On Tue, 7 Aug 2007, Andrew Morton wrote:
+> > > 
+> > > > I'd be surprised if there was significant overhead - the maximum frequency
+> > > > at which msleep() can be called is 1000Hz.  We'd need an awful lot of
+> > > > overhead for that to cause problems, surely?
+> > > > 
+> > > > <thinks he's missing something again>
+> > > 
+> > > _Anybody_ has yet to answer what's wrong with adding a nanosleep() and 
+> > > using that instead.
+> > > 
+> > 
+> > You mean that the implementation could be simplified if msleep() were to
+> > simply call do_nanosleep()?
+> 
+> The current msleep is fine and doesn't need any "fixing".
+> Not all the world is i386, _please_ keep hrtimer usage where it's 
+> required. Simple timer should be given preference unless the higher 
+> resolution is really needed, which is not the case here.
 
-Please correct me if I am wrong, but contact stop in an emergency retract
-shakes the head assembly badly as well. It subjects the head assembly to
-higher acceleration than a normal seek, and a nasty impulse at impact with
-the stopper.  And I very much doubt it is nice to the heads to slide into
-the parking zone at high speed and hit the bumper while over it.
+Hang on.  Having msleep(1) sleep for 20 milliseconds is really awful
+behaviour.  Possibly worse is the fact that with other configs, it will
+delay for eight milliseconds.  Or two.  That's an order of magnitude of
+unpredictability which can actually cause driver breakage.
 
-Unless I missed something, I don't why an emergency retract would not be as
-big a problem as an emergency unload.
+Fixing that *bug* is a good thing.  I see no reason why we should "keep
+hrtimer usage where it is required"?  The implementation details are hidden
+from the caller.
 
-Maybe we should hunt down some proper datasheets for drives lacking head
-load/unload technology, and check what they say about emergency unloads...
+It seems to be a sensible change to me and I fail to understand the
+objection.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+> so below is a nanosleep implementation based 
+> on Jonathan's patch. This will user give a choice, so there is no need to 
+> force all users to use hrtimer for a simple sleep.
+
+But apart from needlessly fattening the kernel API, that leaves us in the
+current situation where an unknown number of the msleep() callers actually
+care that they are calling a function which by a huge margin fails to do
+what they are asking it to do.  It will take a long time to hunt down all
+the problematic callsites and migrate them to nanosleep().
+
