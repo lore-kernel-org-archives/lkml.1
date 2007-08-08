@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935012AbXHHOZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932953AbXHHO2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935012AbXHHOZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934712AbXHHOYp
+	id S932953AbXHHO2u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbXHHO2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:24:45 -0400
-Received: from fk-out-0910.google.com ([209.85.128.190]:60537 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935375AbXHHOYn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:24:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=B5V0mXX++99NZVa3hL7Dm70mnT4uf7RlyIhMjjxftE+RfXuWtkUothxdqeEWXHAQBAmOjXaMcADHVFAKPgsHUHpzMK+GbjBtfq7G+lOJhOkuOoiwTD5FkJsSEZxOf5yXTod8OuNwXnCj4iRGdHQu53q4BNWwGFnXTBgzURw/SCo=
-Message-ID: <5d6222a80708080724i67117252y95ac5443c46160d3@mail.gmail.com>
-Date: Wed, 8 Aug 2007 11:24:41 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Arjan van de Ven" <arjan@infradead.org>
-Subject: Re: [PATCH 21/25] [PATCH] export cpu_gdt_descr
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <1186572745.2862.5.camel@laptopd505.fenrus.org>
+	Wed, 8 Aug 2007 10:28:41 -0400
+Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:38336 "EHLO
+	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753294AbXHHO2k convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:28:40 -0400
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+Organization: CSE Semaphore
+To: Paul Fulghum <paulkf@microgate.com>
+Subject: Re: Serial buffer memory leak
+Date: Wed, 8 Aug 2007 16:28:36 +0200
+User-Agent: KMail/1.9.5
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+References: <200708081158.06843.laurentp@cse-semaphore.com> <20070808144532.5e3a1998@the-village.bc.nu> <1186582307.3394.3.camel@x2.microgate.com>
+In-Reply-To: <1186582307.3394.3.camel@x2.microgate.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <11865468043920-git-send-email-gcosta@redhat.com>
-	 <118654680831-git-send-email-gcosta@redhat.com>
-	 <11865468122642-git-send-email-gcosta@redhat.com>
-	 <11865468162812-git-send-email-gcosta@redhat.com>
-	 <1186546820708-git-send-email-gcosta@redhat.com>
-	 <11865468243612-git-send-email-gcosta@redhat.com>
-	 <11865468321629-git-send-email-gcosta@redhat.com>
-	 <11865468362401-git-send-email-gcosta@redhat.com>
-	 <1186572745.2862.5.camel@laptopd505.fenrus.org>
+Message-Id: <200708081628.36897.laurentp@cse-semaphore.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Wed, 2007-08-08 at 01:19 -0300, Glauber de Oliveira Costa wrote:
-> > With paravirualization, hypervisors needs to handle the gdt,
-> > that was right to this point only used at very early
-> > inialization code. Hypervisors are commonly modules, so make
-> > it an export
+On Wednesday 08 August 2007 16:11, Paul Fulghum wrote:
+> On Wed, 2007-08-08 at 14:45 +0100, Alan Cox wrote:
+> > > I'm not familiar enough with the tty code to decide what the proper fix
+> > > should be. I'll try to write a patch if someone could point me in the
+> > > right direction.
 > >
+> > Something like this perhaps ?
 >
-> the GDT is so deeply internal that this really ought to be a _GPL
-> export..
+> That looks good, a little better than the solution
+> I was first considering. I'm compiling now.
 
-Yes, Arjan, I agree. Thanks for noticing it.
+The patch fixes the problem (at least under the test conditions that lead me 
+to discover it in the first place). Thanks Alan.
 
+> This was a nasty bug for me to introduce :-(
+> Good work in finding this Laurent.
+
+Thanks. It was a lot of work troubleshooting the problem. The bug report I got 
+was along the lines of "after the 256th incoming modem call, the application 
+doesn't receive data payloads anymore, but AT commands are still answered". I 
+guess the challenge is what made it fun.
 
 -- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+Laurent Pinchart
+CSE Semaphore Belgium
 
-"The less confident you are, the more serious you have to act."
+Chaussée de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
