@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935144AbXHHAoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935615AbXHHAqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935144AbXHHAoT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 20:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758672AbXHHAoF
+	id S935615AbXHHAqQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 20:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759885AbXHHApz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 20:44:05 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50881 "EHLO mail.dvmed.net"
+	Tue, 7 Aug 2007 20:45:55 -0400
+Received: from pat.uio.no ([129.240.10.15]:53306 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756977AbXHHAoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 20:44:04 -0400
-Message-ID: <46B911C4.8010909@garzik.org>
-Date: Tue, 07 Aug 2007 20:43:48 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Muli Ben-Yehuda <muli@il.ibm.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>, Andi Kleen <ak@suse.de>,
-       riku.seppala@kymp.net, Andy Whitcroft <apw@shadowen.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
-References: <46B3A7BB.9000102@redhat.com> <200708041130.42038.ak@suse.de> <20070804093222.f0d7f3c7.akpm@linux-foundation.org> <200708050140.49590.ak@suse.de> <20070805050410.GB4960@rhun.haifa.ibm.com> <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com> <20070805075307.GA25890@rhun.haifa.ibm.com> <20070807154911.5fe93b40.akpm@linux-foundation.org> <20070807225635.GJ4278@rhun.haifa.ibm.com>
-In-Reply-To: <20070807225635.GJ4278@rhun.haifa.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1758731AbXHHApw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 20:45:52 -0400
+Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into
+	individual setattr functions (RESEND)
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Layton <jlayton@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+       zippel@linux-m68k.org, dhowells@redhat.com,
+       linux-cifs-client@lists.samba.org, codalist@TELEMANN.coda.cs.cmu.edu,
+       joel.becker@oracle.com, linux-ext4@vger.kernel.org,
+       fuse-devel@lists.sourceforge.net, cluster-devel@redhat.com,
+       user-mode-linux-user@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
+       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
+       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
+       xfs@oss.sgi.com
+In-Reply-To: <20070807171501.e31c4a97.akpm@linux-foundation.org>
+References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
+	 <20070807171501.e31c4a97.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 07 Aug 2007 20:45:34 -0400
+Message-Id: <1186533934.6625.91.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.105)
+X-UiO-Scanned: 5DD508554BB32E554F9CCDFECDEC7B1A489F08D0
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 289 total 3142576 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Muli Ben-Yehuda wrote:
-> On Tue, Aug 07, 2007 at 03:49:11PM -0700, Andrew Morton wrote:
+On Tue, 2007-08-07 at 17:15 -0700, Andrew Morton wrote:
+
+> Is there any way in which we can prevent these problems?  Say
+
+The problem here is that we occasionally DO need to add new flags, and
+yes, they MAY be security related. The whole reason why we're now having
+to change the semantics of setattr is because somebody tried to hack
+their way around the write+suid issue.
+
+I suspect we will see the exact same thing will happen again in a couple
+of years with Serge's ATTR_KILL_PRIV flag.
+
+> - rename something so that unconverted filesystems will reliably fail to
+>   compile?
 > 
->> I am sooooooo tired of this thing.  Andi, someone, can we for heaven's
->> sake please just get it all sorted out?
-> 
-> With regards to the sysdata conversion: Riku says he cannot test new
-> kernel. I haven't heard anything from Andy Whitcroft. It passes all of
-> my tests and what we have now is obviously broken... I think we should
-> put the fix in.
+> - leave existing filesystems alone, but add a new
+>   inode_operations.setattr_jeff, which the networked filesytems can
+>   implement, and teach core vfs to call setattr_jeff in preference to
+>   setattr?
 
-Strongly agreed.  It overall fixes bugs that existing _before_ the 
-sysdata stuff went in.
+If you really need to know that the filesystem is handling the flags,
+then how about instead having ->setattr() return something which
+indicates which flags it actually handled? That is likely to be a far
+more intrusive change, but it is one which is future-proof.
 
-It was clear the NUMA node was /not initialized/ in all cases, and I 
-think it's quite unfair to revert the sysdata stuff because of 
-pre-existing bugs (that we are fixing right now anyway).
-
-	Jeff
-
-
+Trond
 
