@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765018AbXHHWWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764316AbXHHWXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765018AbXHHWWk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759496AbXHHWWT
+	id S1764316AbXHHWXo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbXHHWXg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:22:19 -0400
-Received: from DSL022.labridge.com ([206.117.136.22]:2334 "EHLO Perches.com"
+	Wed, 8 Aug 2007 18:23:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48674 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758646AbXHHWWR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:22:17 -0400
-Subject: Re: + remove-current-defines-and-uses-of-pr_err-add-pr_emerg.patch
-	added to -mm tree
-From: Joe Perches <joe@perches.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       mm-commits@vger.kernel.org, adaplas@pol.net, greg@kroah.com,
-       jeff@garzik.org
-In-Reply-To: <Pine.LNX.4.64.0708082345320.10387@fbirervta.pbzchgretzou.qr>
-References: <tI4NY5SL.1186153543.0764100.khali@localhost>
-	 <1186179369.13852.36.camel@localhost>
-	 <20070807131949.fa060048.akpm@linux-foundation.org>
-	 <20070808220226.1dc03a67@hyperion.delvare>
-	 <1186605086.11897.67.camel@localhost>
-	 <Pine.LNX.4.64.0708082237210.10387@fbirervta.pbzchgretzou.qr>
-	 <1186608977.3073.30.camel@localhost>
-	 <Pine.LNX.4.64.0708082345320.10387@fbirervta.pbzchgretzou.qr>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 15:21:53 -0700
-Message-Id: <1186611713.3073.41.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
-Content-Transfer-Encoding: 7bit
+	id S1758012AbXHHWXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:23:35 -0400
+Date: Thu, 9 Aug 2007 00:23:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: akpm@linux-foundation.org
+Cc: gdavis@mvista.com, linux-kernel@vger.kernel.org
+Subject: Re: -
+	fix-local_irq_-macro-definition-thinkos-for-the-trace_irqflags_support-case.patch
+	removed from -mm tree
+Message-ID: <20070808222322.GB16238@elte.hu>
+References: <200708082117.l78LHgL9030537@imap1.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200708082117.l78LHgL9030537@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 23:57 +0200, Jan Engelhardt wrote:
-> fs/freevxfs/vxfs_bmap.c:line 169 (near "case VXFS_TYPED_DATA_DEV4")
-> 
->                         printk(KERN_INFO "\n\nTYPED_DEV4 detected!\n");
-> Seems normal.
 
-The second output log line of the first printk isn't prefixed
-with KERN_INFO.  It's output with log_level_unknown.
+* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
 
-> So it looks like your regex has some false positives.
-> (which nothing can be done about - the 61 must be hand-sorted)
+> This patch was dropped because it had testing failures
 
-Must have copy/pasted the wrong regex
+> -# define raw_local_irq_disable()	local_irq_disable()
+> -# define raw_local_irq_enable()		local_irq_enable()
+> -# define raw_local_irq_save(flags)	local_irq_save(flags)
+> -# define raw_local_irq_restore(flags)	local_irq_restore(flags)
+> +# define local_irq_disable()		raw_local_irq_disable()
+> +# define local_irq_enable()		raw_local_irq_enable()
+> +# define local_irq_save(flags)		raw_local_irq_save(flags)
+> +# define local_irq_restore(flags)	raw_local_irq_restore(flags)
+>  #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
 
-$ egrep -r "printk[[:space:]]*\([[:space:]]*KERN.*\\\n[A-JL-Za-jl-z[:space:]]" --include=*.[ch] * | wc -l
-61
+hm, indeed: an #ifdef LOCKDEP_SUPPORT has to be added around these 4 
+macros. That will make this build fine on non-lockdep architectures too. 
+Sorry, i should have noticed this!
 
-> [My idea is above]
-
-Any sequence of printks can be interleaved.  I don't see
-how your suggestion changes that.
-
-> >Maybe an external tool to reassemble complete messages from
-> >prefixed {{cookie}} message logs would be fine for awhile.
-> >
-> >Perhaps something like:
-> >
-> >cookie = printk_block_start()
-> >printk_block[s](cookie)
-> >printk_block_end(cookie)?
-> >
-> >where printk_block emits cookie when multiple cookies
-> >are active.
-> 
-> How is this supposed to work? Are you suggesting that the printk buffer is
-> locked?
-
-No, just another identifier placed into logs that allow messages
-to be reassembled into something readable when multiple printk_block's
-are active.
-
-> Now, if you hold the output of a printk block until it's _end()
-> counterpart is executed, the user does not get any output when the
-> machine locks up during the for loop.
-
-External tool scans logs.  No blocking or delay in output.
-
-cheers,  Joe
-
+	Ingo
