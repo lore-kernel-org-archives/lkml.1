@@ -1,294 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762298AbXHHFco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935097AbXHHFdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762298AbXHHFco (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 01:32:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762172AbXHHFcH
+	id S935097AbXHHFdS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 01:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762419AbXHHFcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 01:32:07 -0400
-Received: from mail.suse.de ([195.135.220.2]:48537 "EHLO mx1.suse.de"
+	Wed, 8 Aug 2007 01:32:08 -0400
+Received: from ns.suse.de ([195.135.220.2]:48544 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757786AbXHHFbu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 01:31:50 -0400
-Message-Id: <20070808053018.177143000@suse.de>
+	id S1761648AbXHHFbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 01:31:53 -0400
+Message-Id: <20070808053022.519538000@suse.de>
 References: <20070808052842.451400000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 07 Aug 2007 22:28:44 -0700
+Date: Tue, 07 Aug 2007 22:28:45 -0700
 From: tonyj@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: gregkh@suse.de, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [patch 2/6] Convert from class_device to device in drivers/char
-Content-Disposition: inline; filename=char_misc.patch
+Subject: [patch 3/6] Convert from class_device to device for hwmon
+Content-Disposition: inline; filename=hwmon.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert from class_device to device in drivers/char.
+Convert from class_device to device for hwmon_device_register/unregister
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 
 ---
- drivers/char/dsp56k.c            |    4 ++--
- drivers/char/ip2/ip2main.c       |   12 ++++++------
- drivers/char/ipmi/ipmi_devintf.c |    6 +++---
- drivers/char/istallion.c         |    8 +++-----
- drivers/char/lp.c                |    5 ++---
- drivers/char/pcmcia/cm4000_cs.c  |    5 ++---
- drivers/char/pcmcia/cm4040_cs.c  |    5 ++---
- drivers/char/snsc.c              |    3 +--
- drivers/char/stallion.c          |    7 +++----
- drivers/char/tipar.c             |    6 +++---
- drivers/char/viotape.c           |   10 +++++-----
- 11 files changed, 32 insertions(+), 39 deletions(-)
+ drivers/hwmon/hwmon.c |   27 +++++++++++++--------------
+ include/linux/hwmon.h |    4 ++--
+ 2 files changed, 15 insertions(+), 16 deletions(-)
 
---- a/drivers/char/viotape.c
-+++ b/drivers/char/viotape.c
-@@ -951,10 +951,10 @@ static int viotape_probe(struct vio_dev 
- 	state[i].cur_part = 0;
- 	for (j = 0; j < MAX_PARTITIONS; ++j)
- 		state[i].part_stat_rwi[j] = VIOT_IDLE;
--	class_device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i), NULL,
-+	device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i),
- 			"iseries!vt%d", i);
--	class_device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i | 0x80),
--			NULL, "iseries!nvt%d", i);
-+	device_create(tape_class, NULL, MKDEV(VIOTAPE_MAJOR, i | 0x80),
-+			"iseries!nvt%d", i);
- 	printk(VIOTAPE_KERN_INFO "tape iseries/vt%d is iSeries "
- 			"resource %10.10s type %4.4s, model %3.3s\n",
- 			i, viotape_unitinfo[i].rsrcname,
-@@ -966,8 +966,8 @@ static int viotape_remove(struct vio_dev
+--- a/drivers/hwmon/hwmon.c
++++ b/drivers/hwmon/hwmon.c
+@@ -28,17 +28,17 @@ static DEFINE_IDR(hwmon_idr);
+ static DEFINE_SPINLOCK(idr_lock);
+ 
+ /**
+- * hwmon_device_register - register w/ hwmon sysfs class
++ * hwmon_device_register - register w/ hwmon
+  * @dev: the device to register
+  *
+- * hwmon_device_unregister() must be called when the class device is no
++ * hwmon_device_unregister() must be called when the device is no
+  * longer needed.
+  *
+- * Returns the pointer to the new struct class device.
++ * Returns the pointer to the new device.
+  */
+-struct class_device *hwmon_device_register(struct device *dev)
++struct device *hwmon_device_register(struct device *dev)
  {
- 	int i = vdev->unit_address;
+-	struct class_device *cdev;
++	struct device *hwdev;
+ 	int id, err;
  
--	class_device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i | 0x80));
--	class_device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i));
-+	device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i | 0x80));
-+	device_destroy(tape_class, MKDEV(VIOTAPE_MAJOR, i));
- 	return 0;
- }
+ again:
+@@ -55,34 +55,33 @@ again:
+ 		return ERR_PTR(err);
  
---- a/drivers/char/ipmi/ipmi_devintf.c
-+++ b/drivers/char/ipmi/ipmi_devintf.c
-@@ -865,7 +865,7 @@ static void ipmi_new_smi(int if_num, str
- 	entry->dev = dev;
+ 	id = id & MAX_ID_MASK;
+-	cdev = class_device_create(hwmon_class, NULL, MKDEV(0,0), dev,
+-					HWMON_ID_FORMAT, id);
++	hwdev = device_create(hwmon_class, dev, MKDEV(0,0), HWMON_ID_FORMAT, id);
  
- 	mutex_lock(&reg_list_mutex);
--	class_device_create(ipmi_class, NULL, dev, device, "ipmi%d", if_num);
-+	device_create(ipmi_class, device, dev, "ipmi%d", if_num);
- 	list_add(&entry->link, &reg_list);
- 	mutex_unlock(&reg_list_mutex);
- }
-@@ -883,7 +883,7 @@ static void ipmi_smi_gone(int if_num)
- 			break;
- 		}
- 	}
--	class_device_destroy(ipmi_class, dev);
-+	device_destroy(ipmi_class, dev);
- 	mutex_unlock(&reg_list_mutex);
- }
- 
-@@ -938,7 +938,7 @@ static __exit void cleanup_ipmi(void)
- 	mutex_lock(&reg_list_mutex);
- 	list_for_each_entry_safe(entry, entry2, &reg_list, link) {
- 		list_del(&entry->link);
--		class_device_destroy(ipmi_class, entry->dev);
-+		device_destroy(ipmi_class, entry->dev);
- 		kfree(entry);
- 	}
- 	mutex_unlock(&reg_list_mutex);
---- a/drivers/char/pcmcia/cm4000_cs.c
-+++ b/drivers/char/pcmcia/cm4000_cs.c
-@@ -1864,8 +1864,7 @@ static int cm4000_probe(struct pcmcia_de
- 		return ret;
+-	if (IS_ERR(cdev)) {
++	if (IS_ERR(hwdev)) {
+ 		spin_lock(&idr_lock);
+ 		idr_remove(&hwmon_idr, id);
+ 		spin_unlock(&idr_lock);
  	}
  
--	class_device_create(cmm_class, NULL, MKDEV(major, i), NULL,
--			    "cmm%d", i);
-+	device_create(cmm_class, NULL, MKDEV(major, i), "cmm%d", i);
- 
- 	return 0;
+-	return cdev;
++	return hwdev;
  }
-@@ -1889,7 +1888,7 @@ static void cm4000_detach(struct pcmcia_
- 	dev_table[devno] = NULL;
- 	kfree(dev);
  
--	class_device_destroy(cmm_class, MKDEV(major, devno));
-+	device_destroy(cmm_class, MKDEV(major, devno));
- 
- 	return;
- }
---- a/drivers/char/pcmcia/cm4040_cs.c
-+++ b/drivers/char/pcmcia/cm4040_cs.c
-@@ -642,8 +642,7 @@ static int reader_probe(struct pcmcia_de
- 		return ret;
- 	}
- 
--	class_device_create(cmx_class, NULL, MKDEV(major, i), NULL,
--			    "cmx%d", i);
-+	device_create(cmx_class, NULL, MKDEV(major, i), "cmx%d", i);
- 
- 	return 0;
- }
-@@ -666,7 +665,7 @@ static void reader_detach(struct pcmcia_
- 	dev_table[devno] = NULL;
- 	kfree(dev);
- 
--	class_device_destroy(cmx_class, MKDEV(major, devno));
-+	device_destroy(cmx_class, MKDEV(major, devno));
- 
- 	return;
- }
---- a/drivers/char/stallion.c
-+++ b/drivers/char/stallion.c
-@@ -4778,9 +4778,8 @@ static int __init stallion_module_init(v
- 	if (IS_ERR(stallion_class))
- 		printk("STALLION: failed to create class\n");
- 	for (i = 0; i < 4; i++)
--		class_device_create(stallion_class, NULL,
--				    MKDEV(STL_SIOMEMMAJOR, i), NULL,
--				    "staliomem%d", i);
-+		device_create(stallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
-+			      "staliomem%d", i);
- 
- 	return 0;
- err_unrtty:
-@@ -4816,7 +4815,7 @@ static void __exit stallion_module_exit(
- 	}
- 
- 	for (i = 0; i < 4; i++)
--		class_device_destroy(stallion_class, MKDEV(STL_SIOMEMMAJOR, i));
-+		device_destroy(stallion_class, MKDEV(STL_SIOMEMMAJOR, i));
- 	unregister_chrdev(STL_SIOMEMMAJOR, "staliomem");
- 	class_destroy(stallion_class);
- 
---- a/drivers/char/snsc.c
-+++ b/drivers/char/snsc.c
-@@ -441,8 +441,7 @@ scdrv_init(void)
- 				continue;
- 			}
- 
--			class_device_create(snsc_class, NULL, dev, NULL,
--						"%s", devname);
-+			device_create(snsc_class, NULL, dev, "%s", devname);
- 
- 			ia64_sn_irtr_intr_enable(scd->scd_nasid,
- 						 0 /*ignored */ ,
---- a/drivers/char/istallion.c
-+++ b/drivers/char/istallion.c
-@@ -4624,9 +4624,8 @@ static int __init istallion_module_init(
- 
- 	istallion_class = class_create(THIS_MODULE, "staliomem");
- 	for (i = 0; i < 4; i++)
--		class_device_create(istallion_class, NULL,
--				MKDEV(STL_SIOMEMMAJOR, i),
--				NULL, "staliomem%d", i);
-+		device_create(istallion_class, NULL, MKDEV(STL_SIOMEMMAJOR, i),
-+			      "staliomem%d", i);
- 
- 	return 0;
- err_deinit:
-@@ -4659,8 +4658,7 @@ static void __exit istallion_module_exit
- 	unregister_chrdev(STL_SIOMEMMAJOR, "staliomem");
- 
- 	for (j = 0; j < 4; j++)
--		class_device_destroy(istallion_class, MKDEV(STL_SIOMEMMAJOR,
--					j));
-+		device_destroy(istallion_class, MKDEV(STL_SIOMEMMAJOR, j));
- 	class_destroy(istallion_class);
- 
- 	pci_unregister_driver(&stli_pcidriver);
---- a/drivers/char/dsp56k.c
-+++ b/drivers/char/dsp56k.c
-@@ -513,7 +513,7 @@ static int __init dsp56k_init_driver(voi
- 		err = PTR_ERR(dsp56k_class);
- 		goto out_chrdev;
- 	}
--	class_device_create(dsp56k_class, NULL, MKDEV(DSP56K_MAJOR, 0), NULL, "dsp56k");
-+	device_create(dsp56k_class, NULL, MKDEV(DSP56K_MAJOR, 0), "dsp56k");
- 
- 	printk(banner);
- 	goto out;
-@@ -527,7 +527,7 @@ module_init(dsp56k_init_driver);
- 
- static void __exit dsp56k_cleanup_driver(void)
+ /**
+  * hwmon_device_unregister - removes the previously registered class device
+  *
+- * @cdev: the class device to destroy
++ * @dev: the class device to destroy
+  */
+-void hwmon_device_unregister(struct class_device *cdev)
++void hwmon_device_unregister(struct device *dev)
  {
--	class_device_destroy(dsp56k_class, MKDEV(DSP56K_MAJOR, 0));
-+	device_destroy(dsp56k_class, MKDEV(DSP56K_MAJOR, 0));
- 	class_destroy(dsp56k_class);
- 	unregister_chrdev(DSP56K_MAJOR, "dsp56k");
+ 	int id;
+ 
+-	if (likely(sscanf(cdev->class_id, HWMON_ID_FORMAT, &id) == 1)) {
+-		class_device_unregister(cdev);
++	if (likely(sscanf(dev->bus_id, HWMON_ID_FORMAT, &id) == 1)) {
++		device_unregister(dev);
+ 		spin_lock(&idr_lock);
+ 		idr_remove(&hwmon_idr, id);
+ 		spin_unlock(&idr_lock);
+ 	} else
+-		dev_dbg(cdev->dev,
++		dev_dbg(dev->parent,
+ 			"hwmon_device_unregister() failed: bad class ID!\n");
  }
---- a/drivers/char/lp.c
-+++ b/drivers/char/lp.c
-@@ -799,8 +799,7 @@ static int lp_register(int nr, struct pa
- 	if (reset)
- 		lp_reset(nr);
  
--	class_device_create(lp_class, NULL, MKDEV(LP_MAJOR, nr), port->dev,
--				"lp%d", nr);
-+	device_create(lp_class, port->dev, MKDEV(LP_MAJOR, nr), "lp%d", nr);
+--- a/include/linux/hwmon.h
++++ b/include/linux/hwmon.h
+@@ -16,9 +16,9 @@
  
- 	printk(KERN_INFO "lp%d: using %s (%s).\n", nr, port->name, 
- 	       (port->irq == PARPORT_IRQ_NONE)?"polling":"interrupt-driven");
-@@ -971,7 +970,7 @@ static void lp_cleanup_module (void)
- 		if (lp_table[offset].dev == NULL)
- 			continue;
- 		parport_unregister_device(lp_table[offset].dev);
--		class_device_destroy(lp_class, MKDEV(LP_MAJOR, offset));
-+		device_destroy(lp_class, MKDEV(LP_MAJOR, offset));
- 	}
- 	class_destroy(lp_class);
- }
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -411,8 +411,8 @@ cleanup_module(void)
- 			iiResetDelay( i2BoardPtrTable[i] );
- 			/* free io addresses and Tibet */
- 			release_region( ip2config.addr[i], 8 );
--			class_device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i));
--			class_device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i + 1));
-+			device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i));
-+			device_destroy(ip2_class, MKDEV(IP2_IPL_MAJOR, 4 * i + 1));
- 		}
- 		/* Disable and remove interrupt handler. */
- 		if ( (ip2config.irq[i] > 0) && have_requested_irq(ip2config.irq[i]) ) {	
-@@ -718,12 +718,12 @@ ip2_loadmain(int *iop, int *irqp, unsign
- 			}
+ #include <linux/device.h>
  
- 			if ( NULL != ( pB = i2BoardPtrTable[i] ) ) {
--				class_device_create(ip2_class, NULL,
-+				device_create(ip2_class, NULL,
- 						MKDEV(IP2_IPL_MAJOR, 4 * i),
--						NULL, "ipl%d", i);
--				class_device_create(ip2_class, NULL,
-+						"ipl%d", i);
-+				device_create(ip2_class, NULL,
- 						MKDEV(IP2_IPL_MAJOR, 4 * i + 1),
--						NULL, "stat%d", i);
-+						"stat%d", i);
+-struct class_device *hwmon_device_register(struct device *dev);
++struct device *hwmon_device_register(struct device *dev);
  
- 			    for ( box = 0; box < ABS_MAX_BOXES; ++box )
- 			    {
---- a/drivers/char/tipar.c
-+++ b/drivers/char/tipar.c
-@@ -441,8 +441,8 @@ tipar_register(int nr, struct parport *p
- 		goto out;
- 	}
+-void hwmon_device_unregister(struct class_device *cdev);
++void hwmon_device_unregister(struct device *dev);
  
--	class_device_create(tipar_class, NULL, MKDEV(TIPAR_MAJOR,
--			TIPAR_MINOR + nr), port->dev, "par%d", nr);
-+	device_create(tipar_class, port->dev, MKDEV(TIPAR_MAJOR,
-+			TIPAR_MINOR + nr), "par%d", nr);
- 
- 	/* Display informations */
- 	pr_info("tipar%d: using %s (%s)\n", nr, port->name, (port->irq ==
-@@ -534,7 +534,7 @@ tipar_cleanup_module(void)
- 		if (table[i].dev == NULL)
- 			continue;
- 		parport_unregister_device(table[i].dev);
--		class_device_destroy(tipar_class, MKDEV(TIPAR_MAJOR, i));
-+		device_destroy(tipar_class, MKDEV(TIPAR_MAJOR, i));
- 	}
- 	class_destroy(tipar_class);
- 
+ /* Scale user input to sensible values */
+ static inline int SENSORS_LIMIT(long value, long low, long high)
 
 -- 
