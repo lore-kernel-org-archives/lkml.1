@@ -1,59 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938032AbXHHVPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938263AbXHHVQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938032AbXHHVPV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965021AbXHHVOm
+	id S938263AbXHHVQo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934637AbXHHVQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:14:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:31728 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964833AbXHHVOk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:14:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QOT+lsmUtzOyMM0xqK71vIIt+gIzIpUqbyGZSaSZrZVAhCCfVMmY32CECGq+KwfrhvQ9fuJtF1GtvOQ2JFgE9R6Kqvz5KrWlk+N8JjrtvXAAFYzg+iG3VAmuBKMc8dxszixrQTAxGZTcbNoRlwOlPSFTSQs0I5R97jZEnDWZcaA=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: [PATCH] Fix format specifier in Documentation/vm/slabinfo.c
-Date: Wed, 8 Aug 2007 23:12:29 +0200
-User-Agent: KMail/1.9.7
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Wed, 8 Aug 2007 17:16:36 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:39183 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934577AbXHHVQf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 17:16:35 -0400
+From: Darren Hart <dvhltc@us.ibm.com>
+Organization: IBM Linux Technology Center
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH RT] Only run softirqs from the irq thread if the irq affinity is set to 1 CPU
+Date: Wed, 8 Aug 2007 14:16:27 -0700
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, RT <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+References: <1186605752.29097.18.camel@localhost.localdomain>
+In-Reply-To: <1186605752.29097.18.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708082312.30156.jesper.juhl@gmail.com>
+Message-Id: <200708081416.27500.dvhltc@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wednesday 08 August 2007 13:42:32 you wrote:
+> Ingo and Thomas,
+>
+> John and I have been discussing all the "run softirq from IRQ thread"
+> lately and discovered something nasty.
+>
+> Now it is a nice optimization to run softirqs from the IRQ thread, but
+> it may not be feasible because of the semantics of the IRQ thread
+> compared with the softirq thread. Namely, the softirq thread is bound to
+> a single CPU and the IRQ thread is not.
+>
+> We use to think that it would be fine to simply bind an IRQ thread to a
+> single CPU, either at the start of the IRQ thread code, or just while it
+> is running the softirq code.  But this has a major flaw as John Stultz
+> discovered.
+>
+> If a RT hog that is of higher priority than the IRQ thread preempts the
+> IRQ thread while it is bound to the CPU (more likely with the latest
+> code that always binds the IRQ thread to 1 CPU), then that IRQ is, in
+> essence, masked.  That means no more actions will be taken place by that
+> IRQ while the RT thread is running.  Normally, one would expect, that if
+> the IRQ has its affinity set to all CPUS, if a RT thread were to preempt
+> the IRQ thread and run for a long time, it would be expected that the
+> IRQ thread would migrate to another CPU and finish. Letting more
+> interrupts from the IRQ line in (remember that the IRQ line is masked
+> until the IRQ finishes its handler).
+>
+> This patch will only run the softirq functions if the IRQ thread and the
+> softirq thread have the same priority **and** the IRQ thread is already
+> bound to a single CPU.  If we are running on UP or the IRQ thread is
+> bound to a single CPU, we already have the possibility of having a RT
+> hog starve the IRQ.  But we should not add that scenario when the IRQ
+> thread has its affinity set to run on other CPUS that don't have RT hogs
+> on them.
 
-There's a little problem in Documentation/vm/slabinfo.c
-The code is using "%d" in a printf() call to print an 'unsigned long'.
-This patch corrects it to use "%lu" instead.
+It seems to me that this patch will reduce the frequency of irqd/softirqd 
+starvation, but the core problem still exists: softirq tasks can't migrate to 
+other CPUs to perform their work if a higher priority task preempts them.  
+I'm wondering if we want to keep special casing things to minimize the 
+problem or not - seems to me the worst case is still the same - and isn't the 
+worst case the only case that matters (for -rt)?
 
-
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
-
- Documentation/vm/slabinfo.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/Documentation/vm/slabinfo.c b/Documentation/vm/slabinfo.c
-index d4f21ff..1af7bd5 100644
---- a/Documentation/vm/slabinfo.c
-+++ b/Documentation/vm/slabinfo.c
-@@ -396,7 +396,7 @@ void report(struct slabinfo *s)
- 	if (strcmp(s->name, "*") == 0)
- 		return;
- 
--	printf("\nSlabcache: %-20s  Aliases: %2d Order : %2d Objects: %d\n",
-+	printf("\nSlabcache: %-20s  Aliases: %2d Order : %2d Objects: %lu\n",
- 		s->name, s->aliases, s->order, s->objects);
- 	if (s->hwcache_align)
- 		printf("** Hardware cacheline aligned\n");
-
-
+-- 
+Darren Hart
+IBM Linux Technology Center
+Realtime Linux Team
