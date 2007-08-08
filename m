@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965146AbXHHRgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937232AbXHHRgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965146AbXHHRgG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760230AbXHHRfs
+	id S937232AbXHHRgg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965120AbXHHRgA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:35:48 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:43784
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756866AbXHHRfr (ORCPT
+	Wed, 8 Aug 2007 13:36:00 -0400
+Received: from smtp.nokia.com ([131.228.20.172]:34315 "EHLO
+	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762945AbXHHRf6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:35:47 -0400
-Subject: Re: Serial buffer memory leak
-From: Paul Fulghum <paulkf@microgate.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Laurent Pinchart <laurentp@cse-semaphore.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070808163217.2f59fe84@the-village.bc.nu>
-References: <200708081158.06843.laurentp@cse-semaphore.com>
-	 <20070808144532.5e3a1998@the-village.bc.nu>
-	 <1186582307.3394.3.camel@x2.microgate.com>
-	 <200708081628.36897.laurentp@cse-semaphore.com>
-	 <1186584775.3508.13.camel@x2.microgate.com>
-	 <20070808161606.32a40793@the-village.bc.nu>
-	 <20070808163217.2f59fe84@the-village.bc.nu>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 12:35:37 -0500
-Message-Id: <1186594537.3413.7.camel@x2.microgate.com>
+	Wed, 8 Aug 2007 13:35:58 -0400
+Subject: Re: [Patch 05/18] fs/logfs/dir.c
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
+Cc: akpm@osdl.org, Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, linux-fsdevel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <20070808171554.GV15319@lazybastard.org>
+References: <20070808161234.GB15319@lazybastard.org>
+	 <20070808161626.GG15319@lazybastard.org> <1186592854.19606.49.camel@sauron>
+	 <20070808171554.GV15319@lazybastard.org>
+Content-Type: text/plain; charset=utf-8
+Date: Wed, 08 Aug 2007 20:34:34 +0300
+Message-Id: <1186594474.19606.52.camel@sauron>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 08 Aug 2007 17:34:34.0609 (UTC) FILETIME=[62C25E10:01C7D9E2]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 16:32 +0100, Alan Cox wrote:
-
-> Ok try this for size folks. Use tty->flags bits for the flush status.
-> Wait for the flag to clear again before returning
-> Fix the doc error noted
-> Fix flush of empty queue leaving stale flushpending
+On Wed, 2007-08-08 at 19:15 +0200, Jörn Engel wrote:
+> On Wed, 8 August 2007 20:07:34 +0300, Artem Bityutskiy wrote:
+> > On Wed, 2007-08-08 at 18:16 +0200, Jörn Engel wrote:
+> > > +static inline void logfs_inc_count(struct inode *inode)
+> > > +{
+> > > +	inode->i_nlink++;
+> > > +	mark_inode_dirty_sync(inode);
+> > > +}
+> > > +
+> > > +static inline void logfs_dec_count(struct inode *inode)
+> > > +{
+> > > +	inode->i_nlink--;
+> > > +	mark_inode_dirty_sync(inode);
+> > > +}
+> > include/linux/fs.h: inode_inc_link_count() inode_dec_link_count() do
+> > this. Although not sure they exist in the old kernel your patches are
+> > against.
 > 
+> Almost, they call mark_inode_dirty() instead of mark_inode_dirty_sync().
+> I wonder if that's necessary.
 > 
-> Signed-off-by: Alan Cox <alan@redhat.com>
+Ah, right, it is necessary as long as you do not have write-back
+implemented, sure. Pardon :-)
 
-It looks good and clean.
-
-I compiled and tested the patch with interleaved
-tcflush() and read() calls, allowing random amounts
-of receive data to accumulate between each call.
-
-Acked-by: Paul Fulghum <paulkf@microgate.com>
-
-Thanks,
-Paul
-
---
-Paul Fulghum
-Microgate Systems, Ltd
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
