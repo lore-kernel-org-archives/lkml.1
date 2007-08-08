@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762633AbXHHM0C@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762506AbXHHMdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762633AbXHHM0C (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:26:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755360AbXHHMZy
+	id S1762506AbXHHMdD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:33:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXHHMcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:25:54 -0400
-Received: from anchor-post-35.mail.demon.net ([194.217.242.85]:3173 "EHLO
-	anchor-post-35.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754670AbXHHMZx (ORCPT
+	Wed, 8 Aug 2007 08:32:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38537 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752998AbXHHMcw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:25:53 -0400
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-From: richard kennedy <richard@rsk.demon.co.uk>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       torvalds@linux-foundation.org
-In-Reply-To: <20070803123712.987126000@chello.nl>
-References: <20070803123712.987126000@chello.nl>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 13:25:47 +0100
-Message-Id: <1186575947.3106.23.camel@castor.rsk.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-2.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 08:32:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
+Date: Wed, 8 Aug 2007 14:42:12 +0200
+User-Agent: KMail/1.9.5
+Cc: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>,
+       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <200708051902.18801.toralf.foerster@gmx.de> <200708081122.55036.toralf.foerster@gmx.de> <20070808120416.GA554@khazad-dum.debian.net>
+In-Reply-To: <20070808120416.GA554@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708081442.12641.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-08-03 at 14:37 +0200, Peter Zijlstra wrote:
-> Per device dirty throttling patches
+On Wednesday, 8 August 2007 14:04, Henrique de Moraes Holschuh wrote:
+> On Wed, 08 Aug 2007, Toralf Förster wrote:
+> > Am Dienstag, 7. August 2007 17:38 schrieb Rafael J. Wysocki:
+> > > Actually, you don't need the patch above, just do
+> > > "echo shutdown > /sys/power/disk" before the hibernation (or use
+> > > BTW, can you please try this patch before you do that:
+> > > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc2/patches/19-ACPI-Enable-GPEs-before-_WAK-is-called.patch
+> > 
+> > This patch applied at commit cfee47f doesn't solve the regression.
+> > 
+> > > 
+> > > So place "echo shutdown > /sys/power/disk" before that into your script.
+> > yep, that works for me.
 > 
-> These patches aim to improve balance_dirty_pages() and directly address three
-> issues:
->   1) inter device starvation
->   2) stacked device deadlocks
->   3) inter process starvation
-<snip>
-Hi Peter,
-I've been testing your patch with a simple test case that copies a 3GB
-file from sda -> sda, and copies a 1GB file from sda -> sdb.
-the script is roughly this :-
+> FYI, some other thinkpad models break badly if you use shutdown instead of
+> platform.  Sound goes away on wake, etc.
+> 
+> I am still very suspicious that the way we do wake-from-suspend-to-disk is
+> to blame... 
 
-dd bs=64k if=[sda]/data3g of=[sda]/temp_data3g &
-sleep 60
-dd bs=64k if=[sda]/data1g of=[sdb]/temp_data1g &
-wait
-sleep 200
+Yes, that's one possible reason.
 
-On my amd64x2 desktop machine where sda is a sata 250 GB drive & sdb is
-an ide 300 GB drive.
+We also don't enter S4 in the right way, AFAICS, but the infrastructure
+allowing us to change that is only in -mm.  Anyway, here's the patch to fix
+that (it's on top of some other patches, but the link to them is given in the
+message): http://lkml.org/lkml/2007/8/7/316
 
-Running this test 5 times gives
-2.6.23-rc1-mm2
-1GB copy MB/s	3GB copy MB/s
-16.2		16.1
-15.2		14.6
-17.3		14.6
-18.0		14.5
-19.0		14.6
+> I wish we loaded the kernel just once, maybe from the boot loader.
 
-2.6.23-rc1-mm2+pddt_patch
-1GB copy MB/s	3GB copy MB/s
-23.0		14.7
-24.0		14.6
-20.4		14.8
-22.6		14.5
-23.2		14.5
+Well, that's not so easy.  That will work for the bare image, but if we want it
+to be compressed and/or encrypted, then the boot loader will need to
+contain all of the necessary code.
 
-This is on a standard desktop machine so there are lots of other
-processes running on it, and although there is a degree of variability
-in the numbers,they are very repeatable and your patch always out
-performs the stock mm2.
-looks good to me
+I may be doable by using a special boot kernel with ACPI disabled and only
+as many drivers as required to load the image, but that will make it more
+difficult to set up and to recover from errors.
 
-Richard
-  
+Greetings,
+Rafael
 
 
-
-
-
-
+-- 
+"Premature optimization is the root of all evil." - Donald Knuth
