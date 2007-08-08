@@ -1,145 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933034AbXHHOBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933807AbXHHOC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933034AbXHHOBq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754217AbXHHOBi
+	id S933807AbXHHOC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXHHOCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:01:38 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:29007 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbXHHOBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:01:37 -0400
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-Date: Wed, 8 Aug 2007 16:13:39 +0200
-User-Agent: KMail/1.8.2
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, stefan.roscher@de.ibm.com,
-       paulus@samba.org, general@lists.openfabrics.org
-References: <200708021139.31695.hnguyen@linux.vnet.ibm.com> <adawswd3ayo.fsf@cisco.com> <200708031036.20859.hnguyen@linux.vnet.ibm.com>
-In-Reply-To: <200708031036.20859.hnguyen@linux.vnet.ibm.com>
+	Wed, 8 Aug 2007 10:02:17 -0400
+Received: from styx.suse.cz ([82.119.242.94]:41898 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754217AbXHHOCP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:02:15 -0400
+Date: Wed, 8 Aug 2007 16:03:07 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
+       Jakub Jelinek <jakub@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ulrich Kunitz <kune@deine-taler.de>, Bret Towe <magnade@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] [RESEND] PIE executable randomization
+Message-ID: <Pine.LNX.4.64.0708081552010.11054@jikos.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708081613.39837.hnguyen@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Roland!
-Haven't got any ack for this updated patch yet. Anyway, since it contains
-another bug as shown below, please ignore this patch. We'll send a patch 
-set that includes the proper version of this patch later.
+Hi Andrew,
 
-> @@ -109,7 +109,7 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
->  	u64 vsize, physical;
->  
->  	vsize = vma->vm_end - vma->vm_start;
-> -	if (vsize != EHCA_PAGESIZE) {
-> +	if (vsize >= EHCA_PAGESIZE) {
-should be
-> +	if (vsize < EHCA_PAGESIZE) {
-which is sort of invalid arg.
+below is a respin of the patch for executable code address randomization 
+of PIE binaries, which already went through -mm into 2.6.22, but then got 
+reverted because of bugreports stating that klibc binaries segfault due to 
+this patch. However it turned out that this was bug in klibc 1.4 which has 
+already been fixed in klibc 1.5 [1].
 
-Thanks
-Nam
+I have rebased the patch against 2.6.23-rc1-mm2 and fixed a BAD_ADDR 
+macro, which was wrong in the original patch and fix for which was 
+probably missed [2].
 
+[1] http://lkml.org/lkml/2007/8/2/359
+[2] http://lkml.org/lkml/2007/7/7/50
 
+=======
 
-On Friday 03 August 2007 10:36, Hoang-Nam Nguyen wrote:
-> From: Hoang-Nam Nguyen <hnguyen at de.ibm.com>
-> Date: Fri, 3 Aug 2007 09:44:56 +0200
-> Subject: [PATCH] ehca: map 4k firmware context of cq, qp to user space
-> This patch utilizes remap_4k_pfn() as introduced by Paul M.,
-> for details see http://patchwork.ozlabs.org/linuxppc/patch?id=10281,
-> to map ehca cq, qp firmware context (4k) to user space if kernel page
-> size is 64k. For reason, why this is required, see also Paul's patch.
-> In addition to that the kernel page offset of firmware context needs
-> to be set in cq and qp response block so that user space can assemble
-> the proper virtual address to use.
-> An appropriate patch for libehca will follow for ofed-1.3.
-> 
-> Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-> ---
->  drivers/infiniband/hw/ehca/ehca_classes.h |    4 +++-
->  drivers/infiniband/hw/ehca/ehca_cq.c      |    2 ++
->  drivers/infiniband/hw/ehca/ehca_qp.c      |    2 ++
->  drivers/infiniband/hw/ehca/ehca_uverbs.c  |    6 +++---
->  4 files changed, 10 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-> index b5e9603..206d4eb 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_classes.h
-> +++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-> @@ -337,6 +337,8 @@ struct ehca_create_cq_resp {
->  	u32 cq_number;
->  	u32 token;
->  	struct ipzu_queue_resp ipz_queue;
-> +	u32 fw_handle_ofs;
-> +	u32 dummy;
->  };
->  
->  struct ehca_create_qp_resp {
-> @@ -347,7 +349,7 @@ struct ehca_create_qp_resp {
->  	u32 qkey;
->  	/* qp_num assigned by ehca: sqp0/1 may have got different numbers */
->  	u32 real_qp_num;
-> -	u32 dummy; /* padding for 8 byte alignment */
-> +	u32 fw_handle_ofs;
->  	struct ipzu_queue_resp ipz_squeue;
->  	struct ipzu_queue_resp ipz_rqueue;
->  };
-> diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-> index 81aff36..ed5d67f 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_cq.c
-> +++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-> @@ -276,6 +276,8 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
->  		resp.ipz_queue.queue_length = ipz_queue->queue_length;
->  		resp.ipz_queue.pagesize = ipz_queue->pagesize;
->  		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
-> +		resp.fw_handle_ofs = (u32)
-> +			(my_cq->galpas.user.fw_handle & (PAGE_SIZE - 1));
->  		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
->  			ehca_err(device, "Copy to udata failed.");
->  			goto create_cq_exit4;
-> diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-> index b178cba..66f632c 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_qp.c
-> +++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-> @@ -745,6 +745,8 @@ static struct ehca_qp *internal_create_qp(
->  			queue2resp(&resp.ipz_squeue, &my_qp->ipz_squeue);
->  		if (HAS_RQ(my_qp))
->  			queue2resp(&resp.ipz_rqueue, &my_qp->ipz_rqueue);
-> +		resp.fw_handle_ofs = (u32)
-> +			(my_qp->galpas.user.fw_handle & (PAGE_SIZE - 1));
->  
->  		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
->  			ehca_err(pd->device, "Copy to udata failed");
-> diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-> index 4bc687f..be062f1 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
-> +++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-> @@ -109,7 +109,7 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
->  	u64 vsize, physical;
->  
->  	vsize = vma->vm_end - vma->vm_start;
-> -	if (vsize != EHCA_PAGESIZE) {
-> +	if (vsize >= EHCA_PAGESIZE) {
->  		ehca_gen_err("invalid vsize=%lx", vma->vm_end - vma->vm_start);
->  		return -EINVAL;
->  	}
-> @@ -118,8 +118,8 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
->  	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
->  	ehca_gen_dbg("vsize=%lx physical=%lx", vsize, physical);
->  	/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
-> -	ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
-> -			      vsize, vma->vm_page_prot);
-> +	ret = remap_4k_pfn(vma, vma->vm_start, physical >> EHCA_PAGESHIFT,
-> +			   vma->vm_page_prot);
->  	if (unlikely(ret)) {
->  		ehca_gen_err("remap_pfn_range() failed ret=%x", ret);
->  		return -ENOMEM;
+This patch is using mmap()'s randomization functionality in such a way 
+that it maps the main executable of (specially compiled/linked -pie/-fpie) 
+ET_DYN binaries onto a random address (in cases in which mmap() is allowed 
+to perform a randomization).
 
+The code has been extraced from Ingo's exec-shield patch 
+http://people.redhat.com/mingo/exec-shield/
+
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Jakub Jelinek <jakub@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ulrich Kunitz <kune@deine-taler.de>
+Cc: Bret Towe <magnade@gmail.com>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+ arch/ia64/ia32/binfmt_elf32.c |    2 +-
+ fs/binfmt_elf.c               |  107 ++++++++++++++++++++++++++++++++--------
+ 2 files changed, 86 insertions(+), 23 deletions(-)
+
+diff --git a/arch/ia64/ia32/binfmt_elf32.c b/arch/ia64/ia32/binfmt_elf32.c
+index f6ae3ec..3db699b 100644
+--- a/arch/ia64/ia32/binfmt_elf32.c
++++ b/arch/ia64/ia32/binfmt_elf32.c
+@@ -226,7 +226,7 @@ elf32_set_personality (void)
+ }
+ 
+ static unsigned long
+-elf32_map (struct file *filep, unsigned long addr, struct elf_phdr *eppnt, int prot, int type)
++elf32_map (struct file *filep, unsigned long addr, struct elf_phdr *eppnt, int prot, int type, unsigned long unused)
+ {
+ 	unsigned long pgoff = (eppnt->p_vaddr) & ~IA32_PAGE_MASK;
+ 
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index e45c60b..8c4b7fa 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -45,7 +45,7 @@
+ 
+ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs);
+ static int load_elf_library(struct file *);
+-static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int);
++static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int, unsigned long);
+ 
+ /*
+  * If we don't support core dumping, then supply a NULL so we
+@@ -295,33 +295,70 @@ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ #ifndef elf_map
+ 
+ static unsigned long elf_map(struct file *filep, unsigned long addr,
+-		struct elf_phdr *eppnt, int prot, int type)
++		struct elf_phdr *eppnt, int prot, int type,
++		unsigned long total_size)
+ {
+ 	unsigned long map_addr;
+-	unsigned long pageoffset = ELF_PAGEOFFSET(eppnt->p_vaddr);
++	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
++	unsigned long off = eppnt->p_offset - ELF_PAGEOFFSET(eppnt->p_vaddr);
++	addr = ELF_PAGESTART(addr);
++	size = ELF_PAGEALIGN(size);
+ 
+-	down_write(&current->mm->mmap_sem);
+ 	/* mmap() will return -EINVAL if given a zero size, but a
+ 	 * segment with zero filesize is perfectly valid */
+-	if (eppnt->p_filesz + pageoffset)
+-		map_addr = do_mmap(filep, ELF_PAGESTART(addr),
+-				   eppnt->p_filesz + pageoffset, prot, type,
+-				   eppnt->p_offset - pageoffset);
+-	else
+-		map_addr = ELF_PAGESTART(addr);
++	if (!size)
++		return addr;
++
++	down_write(&current->mm->mmap_sem);
++	/*
++	* total_size is the size of the ELF (interpreter) image.
++	* The _first_ mmap needs to know the full size, otherwise
++	* randomization might put this image into an overlapping
++	* position with the ELF binary image. (since size < total_size)
++	* So we first map the 'big' image - and unmap the remainder at
++	* the end. (which unmap is needed for ELF images with holes.)
++	*/
++	if (total_size) {
++		total_size = ELF_PAGEALIGN(total_size);
++		map_addr = do_mmap(filep, addr, total_size, prot, type, off);
++		if (!BAD_ADDR(map_addr))
++			do_munmap(current->mm, map_addr+size, total_size-size);
++	} else
++		map_addr = do_mmap(filep, addr, size, prot, type, off);
++
+ 	up_write(&current->mm->mmap_sem);
+ 	return(map_addr);
+ }
+ 
+ #endif /* !elf_map */
+ 
++static unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
++{
++	int i, first_idx = -1, last_idx = -1;
++
++	for (i = 0; i < nr; i++) {
++		if (cmds[i].p_type == PT_LOAD) {
++			last_idx = i;
++			if (first_idx == -1)
++				first_idx = i;
++		}
++	}
++	if (first_idx == -1)
++		return 0;
++
++	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
++				ELF_PAGESTART(cmds[first_idx].p_vaddr);
++}
++
++
+ /* This is much more generalized than the library routine read function,
+    so we keep this separate.  Technically the library read function
+    is only provided so that we can read a.out libraries that have
+    an ELF header */
+ 
+ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+-		struct file *interpreter, unsigned long *interp_load_addr)
++		struct file *interpreter, unsigned long *interp_map_addr,
++		unsigned long no_base)
+ {
+ 	struct elf_phdr *elf_phdata;
+ 	struct elf_phdr *eppnt;
+@@ -329,6 +366,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 	int load_addr_set = 0;
+ 	unsigned long last_bss = 0, elf_bss = 0;
+ 	unsigned long error = ~0UL;
++	unsigned long total_size;
+ 	int retval, i, size;
+ 
+ 	/* First of all, some simple consistency checks */
+@@ -367,6 +405,12 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 		goto out_close;
+ 	}
+ 
++	total_size = total_mapping_size(elf_phdata, interp_elf_ex->e_phnum);
++	if (!total_size) {
++		error = -EINVAL;
++		goto out_close;
++	}
++
+ 	eppnt = elf_phdata;
+ 	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
+ 		if (eppnt->p_type == PT_LOAD) {
+@@ -384,9 +428,14 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 			vaddr = eppnt->p_vaddr;
+ 			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
+ 				elf_type |= MAP_FIXED;
++			else if (no_base && interp_elf_ex->e_type == ET_DYN)
++				load_addr = -vaddr;
+ 
+ 			map_addr = elf_map(interpreter, load_addr + vaddr,
+-					   eppnt, elf_prot, elf_type);
++					   eppnt, elf_prot, elf_type, total_size);
++			total_size = 0;
++			if (!*interp_map_addr)
++				*interp_map_addr = map_addr;
+ 			error = map_addr;
+ 			if (BAD_ADDR(map_addr))
+ 				goto out_close;
+@@ -452,8 +501,7 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 			goto out_close;
+ 	}
+ 
+-	*interp_load_addr = load_addr;
+-	error = ((unsigned long)interp_elf_ex->e_entry) + load_addr;
++	error = load_addr;
+ 
+ out_close:
+ 	kfree(elf_phdata);
+@@ -550,7 +598,8 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	int elf_exec_fileno;
+ 	int retval, i;
+ 	unsigned int size;
+-	unsigned long elf_entry, interp_load_addr = 0;
++	unsigned long elf_entry;
++	unsigned long interp_load_addr = 0;
+ 	unsigned long start_code, end_code, start_data, end_data;
+ 	unsigned long reloc_func_desc = 0;
+ 	char passed_fileno[6];
+@@ -814,9 +863,7 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	current->mm->start_stack = bprm->p;
+ 
+ 	/* Now we do a little grungy work by mmaping the ELF image into
+-	   the correct location in memory.  At this point, we assume that
+-	   the image should be loaded at fixed address, not at a variable
+-	   address. */
++	   the correct location in memory. */
+ 	for(i = 0, elf_ppnt = elf_phdata;
+ 	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
+ 		int elf_prot = 0, elf_flags;
+@@ -870,11 +917,15 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 			 * default mmap base, as well as whatever program they
+ 			 * might try to exec.  This is because the brk will
+ 			 * follow the loader, and is not movable.  */
++#ifdef CONFIG_X86
++			load_bias = 0;
++#else
+ 			load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
++#endif
+ 		}
+ 
+ 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
+-				elf_prot, elf_flags);
++				elf_prot, elf_flags,0);
+ 		if (BAD_ADDR(error)) {
+ 			send_sig(SIGKILL, current, 0);
+ 			retval = IS_ERR((void *)error) ?
+@@ -950,13 +1001,25 @@ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ 	}
+ 
+ 	if (elf_interpreter) {
+-		if (interpreter_type == INTERPRETER_AOUT)
++		if (interpreter_type == INTERPRETER_AOUT) {
+ 			elf_entry = load_aout_interp(&loc->interp_ex,
+ 						     interpreter);
+-		else
++		} else {
++			unsigned long interp_map_addr;	/* unused */
++
+ 			elf_entry = load_elf_interp(&loc->interp_elf_ex,
+ 						    interpreter,
+-						    &interp_load_addr);
++						    &interp_map_addr,
++						    load_bias);
++			if (!IS_ERR((void *)elf_entry)) {
++				/*
++				 * load_elf_interp() returns relocation
++				 * adjustment
++				 */
++				interp_load_addr = elf_entry;
++				elf_entry += loc->interp_elf_ex.e_entry;
++			}
++		}
+ 		if (BAD_ADDR(elf_entry)) {
+ 			force_sig(SIGSEGV, current);
+ 			retval = IS_ERR((void *)elf_entry) ?
