@@ -1,46 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXHHKOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbXHHKRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbXHHKOu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 06:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbXHHKOo
+	id S1753574AbXHHKRQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 06:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbXHHKRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 06:14:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55119 "EHLO
+	Wed, 8 Aug 2007 06:17:01 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:35976 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753835AbXHHKOn (ORCPT
+	with ESMTP id S1751045AbXHHKRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 06:14:43 -0400
-Date: Wed, 8 Aug 2007 12:14:41 +0200
+	Wed, 8 Aug 2007 06:17:01 -0400
+Date: Wed, 8 Aug 2007 12:17:00 +0200
 From: Andi Kleen <andi@firstfloor.org>
-To: Loic Prylli <loic@myri.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       =?iso-8859-1?Q?C=E9dric?= Augonnet <cedric.augonnet@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, brice@myri.com,
-       cedric.augonnet@ens-lyon.org
-Subject: Re: PAT support for i386 and x86_64
-Message-ID: <20070808101441.GA12861@one.firstfloor.org>
-References: <f56c1ba00708061903r29baea3dj6b57032be5820983@mail.gmail.com> <20070807083004.GB30085@one.firstfloor.org> <46B97E39.3020905@myri.com>
+To: Lee Revell <rlrevell@joe-job.com>
+Cc: Andi Kleen <andi@firstfloor.org>, dragoran <drago01@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+Message-ID: <20070808101659.GB12861@one.firstfloor.org>
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <75b66ecd0708071926s519ebcf5t680c2ed8ab7ead8e@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46B97E39.3020905@myri.com>
+In-Reply-To: <75b66ecd0708071926s519ebcf5t680c2ed8ab7ead8e@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I don't see why we have to worry about cache corruption in the case at
-> hand. Write-combining is needed to map io (typically pci-mem regions)
-> which are never mapped cachable anywhere, including in the linear map.
+> I don't think it's a problem for high priority (RT) tasks - it's well
+> known in the real time Linux community that you never, ever do IO from
+> a thread that has to satisfy RT constraints.  
 
-If we WC them using PAT then there would be a UC<->WC conflict with
-the direct mapping and possibly others. That's already undefined
-and not allowed.
+The point here is to protect the system from a potentially malicious user
 
-After some very bad experiences in the past I'm not going to take
-chances on this.
+> which I would
+> expect to take fewer locks.  
 
-We really need to keep all possible mappings synchronized.
+Even a single lock is one too much. My example lock -- the page lock bit --
+certainly applies to both reads and writes.
 
 -Andi
-
