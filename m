@@ -1,106 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935415AbXHHAZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934275AbXHHAaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935415AbXHHAZB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 20:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759134AbXHHAYv
+	id S934275AbXHHAaT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 20:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbXHHAaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 20:24:51 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:48587 "EHLO
-	pd4mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755978AbXHHAYt (ORCPT
+	Tue, 7 Aug 2007 20:30:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:52751 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751908AbXHHAaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 20:24:49 -0400
-Date: Tue, 07 Aug 2007 18:23:29 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-In-reply-to: <fa.A9df+SR4FMdI7qZmsXY0xFyurbU@ifi.uio.no>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Tejun Heo <htejun@gmail.com>, Michael Sedkowski <sedmich@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-acpi@vger.kernel.org
-Message-id: <46B90D01.6010703@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no>
- <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no>
- <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no>
- <fa.Nj/igOoDE6GHsgyWFEo/9WCtE9c@ifi.uio.no>
- <fa.usmOl3OVQVx3VExwvKiQI5iAX5Q@ifi.uio.no>
- <fa.A9df+SR4FMdI7qZmsXY0xFyurbU@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 7 Aug 2007 20:30:00 -0400
+Date: Tue, 7 Aug 2007 17:29:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
+       kexec@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+Message-Id: <20070807172911.cc626719.akpm@linux-foundation.org>
+In-Reply-To: <46B73955.2080007@fujitsu-siemens.com>
+References: <46B73955.2080007@fujitsu-siemens.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Tue, 07 Aug 2007, Tejun Heo wrote:
->> Henrique de Moraes Holschuh wrote:
->>> On Tue, 07 Aug 2007, Tejun Heo wrote:
->>>> Michael Sedkowski wrote:
->>>>>> Hmmm... If the problem only shows up on nx6325, it might be that ACPI is
->>>>>> pulling unnecessary stunt.  Please apply the attached patch and report
->>>>>> when the disk spins down and up.
->>>>> Disk spins down on "Pre-shutdown prepare" and then goes up and down on
->>>>> "Power down".
->>>> Oh... crap, so acpi wants to sync cache on shutdown.  I wonder whether
->>>> it spins down the disk correctly.  Does emergency unload count increase
->>>> after each power down?  Also, please post the result of 'dmidecode'.
->>> You know, this actually make a lot of sense, and one can't even complain
->>> about firmware that pulls that off.
->> Well, I'm complaining.  I think the problem here is that it isn't clear
->> which one is who's responsibility.  There's a Korean saying which
-> 
-> The BIOS *has* to do it when in DOS mode, the HD manuals are very very clear
-> about it.  Doing it through ACPI ATA objects is at least non-broken as far
-> as these things go, as one knows when to do it directly ("non-ACPI mode"),
-> and one doesn't talk to the disk directly.
-> 
->> approximately translates into "if you have too many boatmen on a ship,
->> it goes to mountain".  We also have a bunch of Toshiba laptops which
-> 
-> Yeah, that's a problem.  But we can avoid it if we start snooping what ACPI
-> is asking us to deliver to the disks, which IMO is an extremely good idea
-> anyway.
+On Mon, 06 Aug 2007 17:08:05 +0200
+Martin Wilck <martin.wilck@fujitsu-siemens.com> wrote:
 
-Problem is I don't think we can do this. As far as I can tell, on my 
-Compaq at least, it's not being done through ACPI AML in the DSDT, like 
-in the _PTS function (which the kernel executes and can snoop), but when 
-we actually do the power-off we write a value to a magic ACPI register. 
-That likely triggers the BIOS to take control in SMM mode and access the 
-controller directly before triggering the power off, which we have no 
-control or knowledge of.
+> PATCH/RFC: [kdump] fix APIC shutdown sequence
+> 
+> This patch fixes a problem that we have encountered
+> with kdump under high I/O load on some machines.
+> The machines showing the errors have an Intel ICH7
+> chip set with a 6702PXH  PCI Express-to-PCI Bridge
+> (8086:032c) containing an IO-APIC.
+> 
+> The bug symptom is that certain controllers connected
+> to the 6702PXH bridge wouldn't receive any IRQs in the
+> kdump kernel. In the error case (which is about 20% of
+> all cases) the IRR bit of the IO-APIC pin for that
+> controller is always set after the start of the kdump
+> kernel, indicating an IRQ in progress. We haven't found
+> a way to recover from this situation when it has once
+> occured, except for a system reset.
+> 
+> The error is caused by IRQs arriving while the APIC
+> subsystem is deactivated in machine_crash_shutdown().
+> 
+> Apparently, the IO-APIC gets stuck if it sends an IRQ
+> message to a Local APIC and never receives an EOI for that
+> message. This can have several possible reasons:
+> 
+> 1. If, under SMP, the IO-APIC logical destination field is
+>    set by the IRQ balancing code to one of the "other"
+>    CPUs (i.e. not the crashing_cpu), and an IRQ arrives
+>    on the respective pin after that CPU has shut down
+>    its local APIC (but before the IO-APIC pin is masked)
+>    the IRQ message can't be delivered.
+> 
+> 2. The crashing CPU itself disables its local APIC
+>    before the IO-APIC, leaving a short time window
+>    where the IOAPIC can receive IRQs, but not
+>    deliver them.
+> 
+> 3. An IRQ is received and delivered to a local APIC, but
+>    no CPU ever executes the IRQ handler and therefore no
+>    EOI is sent.
+> 
+> After a lot of failed attempts, i have come up with the
+> following patch, which fixes the problem.
+> 
+> The patch first masks all IO-Apic pins to avoid a sitation
+> where the IO-Apic can receive, but not deliver, the IRQs.
+> Moreover, it enables interrupts for a short period before
+> eventually starting the kdump kernel, so that EOIs can be
+> sent to the APICs as necessary.
+> 
+> Notes:
+> a) Simply calling disable_IO_APIC() early doesn't
+> work, probably because that also clears the IRQ vector
+> information, so that arriving EOI messages can't be
+> associated with pins by the IO-APIC.
+> b) We have tried patches that avoid re-enabling interrupts,
+> but so far without success. Re-enabling IRQs is of course
+> dangerous while dumping, and I'd rather find a way to avoid it.
+> c) There are indications that besides the EOI, it's also
+> necessary that the PCI IRQ pin is deasserted at least for
+> a short time. That usually requires that the driver IRQ
+> handler is called and tells the FW that the IRQ was received.
+> Whether or not this is a requirement hasn't been finally
+> clarified yet.
+> d) The problem is only seen with the IO-APIC in the 6702PXH
+> PCI bridge, which is the system's secondary IO-APIC. On the
+> system's main IO-APIC, we see other IRQs (timer etc) arrive
+> and never get an EOI, but we see no errors.
+> 
+> The patch below is against 2.6.23-rc1. The problem was
+> originally analyzed and the patch developed against the
+> Red Hat EL5 kernel (2.6.18-8.el5). I verified that the
+> problem still occurs with 2.6.23-rc1, and that the patch
+> below fixes the problem.
+> 
 
-> 
->> want the ATA controller to be in enabled state when ACPI suspend is
->> invoked because the suspend method apparently wants to execute some
->> commands before going to sleep.
-> 
-> That's just broken, since it is not even using a OS-backed SATA/ATA ACPI
-> method to do it.
-> 
->> I wish ACPI spec carries a big fat sign saying "stay f*** away from
->> anything which isn't essential to the requested operation".
-> 
-> Shutting down disks *is* essential to the power off operation.  ACPI would
-> have to mandate who is to do it, instead (ACPI table or OSI by itself).
-> 
->>> Any chances of changing things
->>> so that we inspect/snoop all tasks sent to the device, and filter them
->>> out, or react to them accordingly?
->> No, we can't unless we snoop ACPI method execution and detect accesses
->> to IO ports or iomem regions.  It's not going through any driver.  This
->> is a gross mess.
-> 
-> I don't mean fixing the stuff clowns like Toshiba did.  The correct fix for
-> that is to blacklist the hell out of that crap and patch their DSDT into
-> something remotely sane.
-> 
-> I do mean snooping the ACPI methods that *return* a taskset to send to the
-> driver, and we send that taskset ourselves in libata and libpata(?).
-> 
+Some little things..
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Please feed the diff through scripts/checkpatch.pl.  It finds a lot of issues.
+
+For some reason you added a lot of lines which start with space-tab rather
+than tab.  checkpatch does detect this.
+
+
+> diff -puN arch/x86_64/kernel/crash.c~kdump-fix-apic-shutdown-sequence arch/x86_64/kernel/crash.c
+> --- a/arch/x86_64/kernel/crash.c~kdump-fix-apic-shutdown-sequence
+> +++ a/arch/x86_64/kernel/crash.c
+> @@ -18,6 +18,7 @@
+>  #include <linux/elf.h>
+>  #include <linux/elfcore.h>
+>  #include <linux/kdebug.h>
+> +#include <linux/interrupt.h>
+>  
+>  #include <asm/processor.h>
+>  #include <asm/hardirq.h>
+> @@ -30,6 +31,11 @@ static int crashing_cpu;
+>  
+>  #ifdef CONFIG_SMP
+>  static atomic_t waiting_for_crash_ipi;
+> +static atomic_t crash_ipi_stage2 = ATOMIC_INIT(0);
+> +
+> +extern void remove_siblinginfo(int);
+> +extern void remove_cpu_from_maps(void);
+> +extern void crash_mask_IO_APIC(int);
+
+please neverevereverever put extern declarations in C files.  Find a
+suitable header for it, ensure that the header is included by the
+definition site and by all callers.
+
+>  static int crash_nmi_callback(struct notifier_block *self,
+>  				unsigned long val, void *data)
+> @@ -53,13 +59,30 @@ static int crash_nmi_callback(struct not
+>  	local_irq_disable();
+>  
+>  	crash_save_cpu(regs, cpu);
+> -	disable_local_APIC();
+> -	atomic_dec(&waiting_for_crash_ipi);
+> +	disable_APIC_timer();
+> +        atomic_dec(&waiting_for_crash_ipi);
+> +
+> +	while(atomic_read(&crash_ipi_stage2) == 0)
+
+Need a space here.  Everything I've mentioned thus far should have been
+picked up by checkpatch, so I'll shut up now.
+
+> +
+> +static void nmi_shootdown_cpus_stage2(void)
+> +{
+> +
+> +	unsigned long msecs;
+> +	atomic_set(&crash_ipi_stage2, num_online_cpus());
+> +
+>  	msecs = 1000; /* Wait at most a second for the other cpus to stop */
+> -	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
+> +	while ((atomic_read(&crash_ipi_stage2) > 1) && msecs) {
+>  		mdelay(1);
+>  		msecs--;
+>  	}
+> -	/* Leave the nmi callback set */
+> -	disable_local_APIC();
+>  }
+
+This is tricky code which you're adding.  Empirically-based stuff derived
+from observation and experimentation.  It is quite impossible for readers
+of this code to work out what the code is doing and why it is doing it
+purely by reading the C statements.
+
+Hence for any form of maintainability you really do need to spell
+*everything* out in code comments.  All those little discoveries and
+observations.  Otherwise it'll be lost, unless the fraught reader decides
+to go hunting in the git repository.
+
+>  #else
+>  static void nmi_shootdown_cpus(void)
+>  {
+>  	/* There are no cpus to shootdown */
+>  }
+> +static void nmi_shootdown_cpus_stage2(void)
+> +{
+> +}
+>  #endif
+
+Although the compiler will inline this function for you, we'd
+conventionally declare it static inline.  We might as well do this here as
+well, and fix up nmi_shootdown_cpus() too.
+
+> diff -puN arch/x86_64/kernel/io_apic.c~kdump-fix-apic-shutdown-sequence arch/x86_64/kernel/io_apic.c
+> --- a/arch/x86_64/kernel/io_apic.c~kdump-fix-apic-shutdown-sequence
+> +++ a/arch/x86_64/kernel/io_apic.c
+> @@ -371,6 +371,50 @@ static void unmask_IO_APIC_irq (unsigned
+>  	spin_unlock_irqrestore(&ioapic_lock, flags);
+>  }
+>  
+> +static void crash_mask_IO_APIC_pin(unsigned int apic, unsigned int pin, int reg1)
+> +{
+> +	struct IO_APIC_route_entry entry;
+> +	unsigned long flags;
+> +
+> +	/* Check delivery_mode to be sure we're not clearing an SMI pin
+> +	 * Don't bother disabling masked pins
+> +	 */
+> +	spin_lock_irqsave(&ioapic_lock, flags);
+> +	*(((int*)&entry) + 0) = io_apic_read(apic, 0x10 + 2 * pin);
+> +	spin_unlock_irqrestore(&ioapic_lock, flags);
+> +	if (entry.delivery_mode == dest_SMI || entry.mask)
+> +		return;
+> +
+> +	entry.mask = 1;
+> +	*(((int*)&entry) + 1) = reg1;
+> +
+> +	spin_lock_irqsave(&ioapic_lock, flags);
+> +	io_apic_write(apic, 0x10 + 2 * pin, *(((int *)&entry) + 0));
+> +	io_apic_write(apic, 0x11 + 2 * pin, *(((int *)&entry) + 1));
+> +	io_apic_sync(apic);
+> +	spin_unlock_irqrestore(&ioapic_lock, flags);
+> +}
+> +
+> +/*
+> + * This function is used for kdump to mask all IO-APIC IRQs, and reset
+> + * the destination apic ID.
+> + */
+> +void crash_mask_IO_APIC(int cpu)
+> +{
+> +	int apic, pin;
+> +	int reg1;
+> +	cpumask_t mask;
+> +
+> +	cpus_clear(mask);
+> +	cpu_set(cpu, mask);
+> +	reg1 = SET_APIC_LOGICAL_ID(cpu_mask_to_apicid(mask));
+> +
+> +	for (apic = 0; apic < nr_ioapics; apic++) {
+> +		for (pin = 0; pin < nr_ioapic_registers[apic]; pin++)
+> +			crash_mask_IO_APIC_pin(apic, pin, reg1);
+> +	}
+> +}
+
+The above two functions are unneeded if CONFIG_CRASH_DUMP=n, hence they
+should have the appropriate ifdef wrapping.
+
 
