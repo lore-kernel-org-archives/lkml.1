@@ -1,41 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937027AbXHHX3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935832AbXHHXcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937027AbXHHX3P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbXHHX27
+	id S935832AbXHHXcU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761471AbXHHXcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 19:28:59 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53253 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762578AbXHHX26 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 19:28:58 -0400
-Date: Wed, 8 Aug 2007 16:28:57 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.ie>
-cc: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/3] Use one zonelist that is filtered instead of multiple
- zonelists
-In-Reply-To: <20070808211032.GB2441@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0708081627520.17224@schroedinger.engr.sgi.com>
-References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie>
- <20070808161545.32320.41940.sendpatchset@skynet.skynet.ie>
- <Pine.LNX.4.64.0708081041240.12652@schroedinger.engr.sgi.com>
- <20070808211032.GB2441@skynet.ie>
+	Wed, 8 Aug 2007 19:32:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54994 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755644AbXHHXcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 19:32:03 -0400
+Message-ID: <46BA524F.2070803@redhat.com>
+Date: Wed, 08 Aug 2007 19:31:27 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jesper Juhl <jesper.juhl@gmail.com>
+CC: akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+References: <20070808230733.GA17270@shell.boston.redhat.com> <9a8748490708081618p43cdcdfdn5de6f292247def5b@mail.gmail.com>
+In-Reply-To: <9a8748490708081618p43cdcdfdn5de6f292247def5b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007, Mel Gorman wrote:
+Jesper Juhl wrote:
+> On 09/08/2007, Chris Snook <csnook@redhat.com> wrote:
+>> From: Chris Snook <csnook@redhat.com>
+>>
+>> Some architectures currently do not declare the contents of an atomic_t to be
+>> volatile.  This causes confusion since atomic_read() might not actually read
+>> anything if an optimizing compiler re-uses a value stored in a register, which
+>> can break code that loops until something external changes the value of an
+>> atomic_t.  Avoiding such bugs requires using barrier(), which causes re-loads
+>> of all registers used in the loop, thus hurting performance instead of helping
+>> it, particularly on architectures where it's unnecessary.  Since we generally
+>> want to re-read the contents of an atomic variable on every access anyway,
+>> let's standardize the behavior across all architectures and avoid the
+>> performance and correctness problems of requiring the use of barrier() in
+>> loops that expect atomic_t variables to change externally.  This is relevant
+>> even on non-smp architectures, since drivers may use atomic operations in
+>> interrupt handlers.
+>>
+>> Signed-off-by: Chris Snook <csnook@redhat.com>
+>>
+> 
+> Hmm, I thought we were trying to move away from volatile since it is
+> very weakly defined and towards explicit barriers and locks...
+> Points to --> Documentation/volatile-considered-harmful.txt
 
-> The zone_id is the one I'm really interested in. It looks like the most
-> promising optimisation for avoiding zone_idx in the hotpath.
+This is a special case.  Usually, the use of volatile is just lazy.  In 
+this case, it's probably necessary on at least some architectures, so we 
+can't remove it everywhere unless we want to rewrite atomic.h completely 
+in inline assembler for several architectures, and painstakingly verify 
+all that work.  I would hope it's obvious that having consistent 
+behavior on all architectures, or even at all compiler optimization 
+levels within an architecture, can be agreed to be good.  Additionally, 
+atomic_t variables are a rare exception, in that we pretty much always 
+want to work with the latest value in RAM on every access.  Making this 
+atomic will allow us to remove a bunch of barriers which do nothing but 
+slow things down on most architectures.
 
-Certainly the highest priority. However, if the nodeid could be coded in 
-then we may be able to also avoid the GFP_THISNODE zonelists and improve 
-the speed of matching a zonelist to a node mask.
+I agree that the use of atomic_t in .c files is generally bad, but in 
+certain special cases, hiding it inside defined data types may be worth 
+the slight impurity, just as we sometimes tolerate lines longer than 80 
+columns when "fixing" it makes things unreadable.
 
+	-- Chris
