@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936848AbXHHQnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937070AbXHHQng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936848AbXHHQnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763874AbXHHQnA
+	id S937070AbXHHQng (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935078AbXHHQnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:43:00 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50971 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764234AbXHHQm7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:42:59 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <teheo@suse.de>
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>
-	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
-	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>
-	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>
-	<20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>
-	<20070808161631.1ccf27fd@gondolin.boeblingen.de.ibm.com>
-	<46B9D4B8.4050201@gmail.com>
-	<20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>
-	<46B9D961.4000902@gmail.com>
-	<m1r6medpxl.fsf@ebiederm.dsl.xmission.com>
-	<46B9DDA1.1080704@gmail.com> <46B9DE5E.7050406@suse.de>
-	<m11weednul.fsf@ebiederm.dsl.xmission.com> <46B9E948.8080605@suse.de>
-Date: Wed, 08 Aug 2007 10:37:10 -0600
-In-Reply-To: <46B9E948.8080605@suse.de> (Tejun Heo's message of "Thu, 09 Aug
-	2007 01:03:20 +0900")
-Message-ID: <m1hcnac79l.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 12:43:07 -0400
+Received: from [61.156.42.123] ([61.156.42.123]:2904 "HELO 61.156.42.123"
+	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
+	id S932890AbXHHQnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 12:43:06 -0400
+X-Greylist: delayed 18747 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 12:43:05 EDT
+Message-Id: <SON93B98.RGKSO02@gmail.com>
+From: "Gordon Cox" <prolaser.groups@gmail.com>
+Subject: RE: Samsung toner cartridge
+To: "Administrator" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain;
+	charset="ISO-8859-1"
+Reply-To: "Gordon Cox" <prolaser.groups@gmail.com>
+Date: Wed, 8 Aug 2007 14:49:18 -0200
+X-Priority: 3
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <teheo@suse.de> writes:
+Dear All Customers,
 
-> Hello,
->
-> Eric W. Biederman wrote:
->>> More specifically, d_off field.  It's a bit twisted.  For the last
->>> entry, filp->f_pos gets written into the field and gets wrapped while
->>> being copied out to userland or in glibc.
->> 
->> That could do it, and glibc is crunching it.  Oh well, it is
->> easy enough to avoid as long as our inode numbers are small which
->> the idr allocator seems to ensure.
->
-> Yeah, now I think about it.  glibc throws out entries which don't fit in
-> the data structure specified by the called API, so it probably threw out
-> the last entry which has UINT_MAX in d_off which doesn't fit in the
-> readdir() return structure.  Using INT_MAX should be just fine as IDA
-> always allocates the first empty slot.  We can add paranoia check in ino
-> allocation path.
+===============================================
+OEM COMPATIBLE TONER CARTRIDGES PROMOTION
+===============================================
 
-Sounds reasonable.  Annoying but reasonable.
 
-Eric
+HP toner:
+1) Q2612A = RM 1?5;
+2) Q5949A = RM 1?0;
+
+Samsung toner:
+1) ML-1610  = RM 1?0;
+2) ML-1710 = RM 1?0;
+3) ML-2010 = RM 1?0;
+4) ML-2150 = RM 2?5;
+5) SCX-4216 = RM 1?5;
+
+Xerox toner:
+1) 203A = RM 1?0;
+
+
+**************************************************************
+ADVANTAGES : Printer repairs & services available
+**************************************************************
+
+Our new compatible cartridges are sold as new cartridges and are produced by a manufacturer other than your printer manufacturer and like the OEM, are manufactured with new and recycled parts. Our new premium compatibles are produced under stringent quality controls and are built to meet or exceed your OEM's specifications. This means simply that our new compatibles deliver the highest quality print as well as the longest possible life and at a fraction of the cost of an OEM.
+
+To REDUCE or SAVE more cost, please do not hesitate to contact us for more information.
+
+regards,
+
+Mr Ken
+Tel: 012-366 2818
+
+IT CITY COMPUTER
+46M, Jalan Wangsa 2/5, Taman Wangsa Permai,
+Kepong 52100. Kuala Lumpur.
+Tel: 03-6276 3561
+Fax: 03-6272 9718
+Email: prolaser_toner@yahoo.com
+
+-----------------------------------------------------------------------------------------
