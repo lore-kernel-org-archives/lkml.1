@@ -1,251 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937686AbXHHSPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937837AbXHHSSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937686AbXHHSPr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765398AbXHHSPi
+	id S937837AbXHHSSb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763748AbXHHSSY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:15:38 -0400
-Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:46630 "EHLO
-	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764281AbXHHSPh (ORCPT
+	Wed, 8 Aug 2007 14:18:24 -0400
+Received: from server.klug.on.ca ([205.189.48.131]:1962 "EHLO
+	server.klug.on.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760872AbXHHSSX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:15:37 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=rakfo/eRmFi1+GbI90ZP/7AFKSNCw6vLJNIOqPWvQ2pm4q77cW7UugWztfoyZdBgpBFjR3KrHYDGS0XucT42at6R/11EDp3CmOI5Oqz+oNhapAFl+ujAXGCTjeBOWME7;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.19,236,1183327200"; 
-   d="diff'?scan'208";a="88115950"
-Message-ID: <46BA0844.9080703@fujitsu-siemens.com>
-Date: Wed, 08 Aug 2007 20:15:32 +0200
-From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Organization: Fujitsu Siemens Computers
-User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
-MIME-Version: 1.0
-To: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>
-Cc: Chip Coldwell <coldwell@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
-References: <46B73955.2080007@fujitsu-siemens.com> <20070807142928.GA18839@in.ibm.com> <46B8AECA.7050908@fujitsu-siemens.com> <20070808103603.GC13808@in.ibm.com> <Pine.LNX.4.64.0708081003000.29193@bogart.boston.redhat.com> <20070808144239.GA1499@in.ibm.com>
-In-Reply-To: <20070808144239.GA1499@in.ibm.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/mixed;
- boundary="------------040004090407040601060603"
+	Wed, 8 Aug 2007 14:18:23 -0400
+Subject: Re: [SOLVED] problems while mounting /boot partition
+From: "Brian J. Murrell" <brian@interlinx.bc.ca>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+In-Reply-To: <46B9EF1D.4010907@googlemail.com>
+References: <1186504459.6949.40.camel@pc.ilinx>
+	 <46B9EF1D.4010907@googlemail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-N3wVdtNzK3vUEvd7wAZ6"
+Date: Wed, 08 Aug 2007 14:18:16 -0400
+Message-Id: <1186597096.6259.22.camel@pc.ilinx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040004090407040601060603
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
-Vivek Goyal wrote:
+--=-N3wVdtNzK3vUEvd7wAZ6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> But the issue here seems to be that LAPIC state got clear but IRR bit
-> at IOAPIC bit is not cleared because IOAPIC vector information was deleted
-> in first kernel and now upon receiving EOI, it does not know this EOI belongs
-> to which vector.
+On Wed, 2007-08-08 at 18:28 +0200, Michal Piotrowski wrote:
+> Hi Brian,
 
-I am making another experiment right now. I check the LAPIC ISR flags in
-machine_crash_shutdown() before disabling the LAPIC, trying to send EOI if
-I find one ISR bit set. So far, I haven't seen a single case where an ISR bit
-was set, but several (9) where the IO-APIC IRR bit was set. OTOH, I know that if
-I'd re-enable IRQs, IRQ 225 would be raised. The whole thing is done before
-disable_IO_APIC().
+Hi Michal,
 
-Don't ask me for an explanation why I don't see the ISR bits.
+> Brian J. Murrell pisze:
+> > I am using Ubuntu Gutsy, which is the in-development branch heading for
+> > their next stable release.
+>=20
+> You forgot about message subject, so no one has read this report.
 
-The arch/x86_64/kernel/crash.c portion of the patch I am using is attached for
-your reference. The rest is the same as for the original patch.
+Indeed.  Very unfortunate.  I did re-post with a subject but I have not
+seen it show up yet, which I have been waiting for to post the solution.
 
-Martin
+Maybe I will just do that here and again if it shows up with the subject
+posted.
 
--- 
-Martin Wilck
-PRIMERGY System Software Engineer
-FSC IP ESP DE6
+The crux of the problem is that the real partitions are being
+mapped/managed by device mapper, which is being used by LVM:
 
-Fujitsu Siemens Computers GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn
-Germany
+$ ls -l /dev/mapper/
+total 0
+crw-rw---- 1 root root 10, 63 2007-08-08 04:56 control
+lrwxrwxrwx 1 root root      7 2007-08-08 04:56 hda1 -> ../dm-0
+lrwxrwxrwx 1 root root      7 2007-08-08 04:56 hda2 -> ../dm-1
+lrwxrwxrwx 1 root root      7 2007-08-08 04:56 hda3 -> ../dm-2
 
-Tel:			++49 5251 8 15113
-Fax:			++49 5251 8 20409
-Email:			mailto:martin.wilck@fujitsu-siemens.com
-Internet:		http://www.fujitsu-siemens.com
-Company Details:	http://www.fujitsu-siemens.com/imprint.html
+This is of course causing those partitions to be opened exclusively,
+preventing any further uses (i.e. sys_mount()) from being able to use
+them.  Only hda3 of those above is actually an LVM PV.  hda1 is an ext3
+filesystem (/boot) and hda2 is a FAT32 (could even be FAT16) filesystem.
 
---------------040004090407040601060603
-Content-Type: text/x-patch;
- name="kdump_23.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="kdump_23.diff"
+Of course, mounting /dev/dm-0 instead of /dev/hda1 solves the problem.
 
---- 2.6.23-rc1/arch/x86_64/kernel/crash.c.orig	2007-06-05 11:19:07.000000000 +0200
-+++ 2.6.23-rc1/arch/x86_64/kernel/crash.c	2007-08-08 18:19:15.000000000 +0200
-@@ -18,18 +18,51 @@
- #include <linux/elf.h>
- #include <linux/elfcore.h>
- #include <linux/kdebug.h>
-+#include <linux/interrupt.h>
- 
- #include <asm/processor.h>
- #include <asm/hardirq.h>
- #include <asm/nmi.h>
- #include <asm/hw_irq.h>
- #include <asm/mach_apic.h>
-+#include <asm/apic.h>
- 
- /* This keeps a track of which one is crashing cpu. */
- static int crashing_cpu;
- 
- #ifdef CONFIG_SMP
- static atomic_t waiting_for_crash_ipi;
-+static atomic_t crash_ipi_stage2 = ATOMIC_INIT(0);
-+
-+extern void remove_siblinginfo(int);
-+extern void remove_cpu_from_maps(void);
-+extern void crash_mask_IO_APIC(int);
-+
-+static void ack_pending_irqs(int cpu)
-+{
-+	int i, j, k;
-+	unsigned int value;
-+	printk("APIC ISR %d:", cpu);
-+	for (i = APIC_ISR_NR - 1; i >= 0; i--) {
-+		for (k = 0; k < 100; k++) {
-+			value = apic_read(APIC_ISR + i*0x10);
-+			if (value == 0)
-+				break;
-+			for (j = 31; j >= 0; j--) {
-+				if (value & (1<<j)) {
-+					printk (" %x", (i<<5) + j);
-+					ack_APIC_irq();
-+					goto next_k;
-+				}
-+			}
-+		next_k:
-+			continue;
-+		}
-+		if (k >= 100)
-+			printk("!!!!\n");
-+	}
-+	printk("\n");
-+}
- 
- static int crash_nmi_callback(struct notifier_block *self,
- 				unsigned long val, void *data)
-@@ -53,13 +86,27 @@ static int crash_nmi_callback(struct not
- 	local_irq_disable();
- 
- 	crash_save_cpu(regs, cpu);
--	disable_local_APIC();
--	atomic_dec(&waiting_for_crash_ipi);
-+	disable_APIC_timer();
-+        atomic_dec(&waiting_for_crash_ipi);
-+
-+	while(atomic_read(&crash_ipi_stage2) == 0)
-+		cpu_relax();
-+ 
-+ 	remove_siblinginfo(cpu);
-+ 	cpu_clear(cpu, cpu_online_map);
-+ 	remove_cpu_from_maps();
-+ 
-+	ack_pending_irqs(cpu);
-+ 
-+ 	disable_local_APIC();
-+ 	atomic_dec(&crash_ipi_stage2);
-+ 
-+
- 	/* Assume hlt works */
- 	for(;;)
- 		halt();
- 
--	return 1;
-+	return NOTIFY_OK;
- }
- 
- static void smp_send_nmi_allbutself(void)
-@@ -79,7 +126,7 @@ static struct notifier_block crash_nmi_n
- 
- static void nmi_shootdown_cpus(void)
- {
--	unsigned long msecs;
-+	unsigned long usecs;
- 
- 	atomic_set(&waiting_for_crash_ipi, num_online_cpus() - 1);
- 	if (register_die_notifier(&crash_nmi_nb))
-@@ -93,19 +140,33 @@ static void nmi_shootdown_cpus(void)
- 
- 	smp_send_nmi_allbutself();
- 
-+	usecs = 1000000; /* Wait at most a second for the other cpus to stop */
-+	while ((atomic_read(&waiting_for_crash_ipi) > 0) && usecs) {
-+		udelay(1);
-+		usecs--;
-+	}
-+}
-+
-+static void nmi_shootdown_cpus_stage2(void)
-+{
-+	
-+	unsigned long msecs;
-+	atomic_set(&crash_ipi_stage2, num_online_cpus());
-+
- 	msecs = 1000; /* Wait at most a second for the other cpus to stop */
--	while ((atomic_read(&waiting_for_crash_ipi) > 0) && msecs) {
-+	while ((atomic_read(&crash_ipi_stage2) > 1) && msecs) {
- 		mdelay(1);
- 		msecs--;
- 	}
--	/* Leave the nmi callback set */
--	disable_local_APIC();
- }
- #else
- static void nmi_shootdown_cpus(void)
- {
- 	/* There are no cpus to shootdown */
- }
-+static void nmi_shootdown_cpus_stage2(void)
-+{
-+}
- #endif
- 
- void machine_crash_shutdown(struct pt_regs *regs)
-@@ -121,15 +182,29 @@ void machine_crash_shutdown(struct pt_re
- 	 */
- 	/* The kernel is broken so disable interrupts */
- 	local_irq_disable();
--
- 	/* Make a note of crashing cpu. Will be used in NMI callback.*/
- 	crashing_cpu = smp_processor_id();
-+	crash_save_cpu(regs, crashing_cpu);
-+
-+ 	/* disable timer interrupts */
-+ 	disable_irq_nosync(0);
-+ 	disable_APIC_timer();	
-+ 
- 	nmi_shootdown_cpus();
- 
-+ 	/* Mask all IRQs, and make sure they are delivered to this CPU */
-+ 	crash_mask_IO_APIC(crashing_cpu);
-+ 	nmi_shootdown_cpus_stage2();
-+ 
-+	ack_pending_irqs(crashing_cpu);
-+
- 	if(cpu_has_apic)
- 		 disable_local_APIC();
- 
-+ 	/* Send EOI for pending IRQs */
-+ 	/* local_irq_enable();
-+	   udelay(10000);
-+	   local_irq_disable(); */
-+ 
- 	disable_IO_APIC();
--
--	crash_save_cpu(regs, smp_processor_id());
- }
+Why this started with Ubuntu's 2.6.22 kernel in Gutsy, I'm not sure.
+Whether it's a new DM feature or some change in the way Ubuntu handles
+devices, I don't know.  Whatever the case, they need to fix
+their /dev/disk/by-uuid mappings anyway:
 
---------------040004090407040601060603--
+$ ls -l /dev/disk/by-uuid/ | grep hda
+lrwxrwxrwx 1 root root 10 2007-08-08 08:56 12b8250a-d031-4ee1-b486-5e67478d=
+06b4 -> ../../hda1
+
+Cheers,
+b.
+
+--=20
+A day in the yard with my son is just like a day at work.  He goes
+hunting around for stuff and brings it back to me and says: "Hey Dad,
+look what I found.  The money is for me and the screw is for you."
+
+--=-N3wVdtNzK3vUEvd7wAZ6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGugjol3EQlGLyuXARAkg2AKC9mhfJlDKqmdbxT3DPuZwd7DRsswCg5nrL
++0fg0jasartopv6a936FsXM=
+=7E4D
+-----END PGP SIGNATURE-----
+
+--=-N3wVdtNzK3vUEvd7wAZ6--
+
