@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937414AbXHHUBV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936143AbXHHUFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937414AbXHHUBV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 16:01:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755883AbXHHUBH
+	id S936143AbXHHUFb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 16:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763420AbXHHUFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 16:01:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40517 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763078AbXHHUBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 16:01:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
-Date: Wed, 8 Aug 2007 22:10:24 +0200
-User-Agent: KMail/1.9.5
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-pm@lists.linux-foundation.org, Pavel Machek <pavel@ucw.cz>,
-       Meelis Roos <mroos@linux.ee>
-References: <46B9F664.9060600@googlemail.com> <46B9F983.9020700@googlemail.com>
-In-Reply-To: <46B9F983.9020700@googlemail.com>
+	Wed, 8 Aug 2007 16:05:18 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:50183 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761981AbXHHUFQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 16:05:16 -0400
+Date: Wed, 8 Aug 2007 22:05:13 +0200 (CEST)
+From: Jan Engelhardt <jengelh@computergmbh.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jeff Layton <jlayton@redhat.com>, codalist@TELEMANN.coda.cs.cmu.edu,
+       cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
+       mikulas@artax.karlin.mff.cuni.cz, reiserfs-devel@vger.kernel.org,
+       zippel@linux-m68k.org, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
+       wli@holomorphy.com, joel.becker@oracle.com, dhowells@redhat.com,
+       fuse-devel@lists.sourceforge.net, jffs-dev@axis.com,
+       user-mode-linux-user@lists.sourceforge.net,
+       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
+       linux-ext4@vger.kernel.org, linux-cifs-client@lists.samba.org,
+       ocfs2-devel@oss.oracle.com, bfennema@falcon.csc.calpoly.edu
+Subject: Re: [fuse-devel] [PATCH 00/25] move handling of setuid/gid bits from
+ VFS into individual setattr functions (RESEND)
+In-Reply-To: <20070808094853.8c27450c.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0708082204210.10387@fbirervta.pbzchgretzou.qr>
+References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
+ <20070807171501.e31c4a97.akpm@linux-foundation.org> <20070808085435.722f2b10.jlayton@redhat.com>
+ <20070808094853.8c27450c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708082210.25836.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 8 August 2007 19:12, Michal Piotrowski wrote:
-> Hi all,
-> 
-> Here is a list of some known regressions in 2.6.23-rc2.
-> 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
-> 
-> List of Aces
-> 
-> Name                    Regressions fixed since 21-Jun-2007
-> Adrian Bunk                            6
-> Andi Kleen                             4
-> Andrew Morton                          4
-> Linus Torvalds                         4
-> Al Viro                                3
-> Cornelia Huck                          3
-> Jens Axboe                             3
-> Tejun Heo                              3
-> David Woodhouse                        2
-> Hugh Dickins                           2
-> Peter Zijlstra                         2
-> Trent Piepho                           2
-> 
-> 
-> 
-> Power management
-> 
-> Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
-> References      : http://lkml.org/lkml/2007/8/4/39
-> Last known good : ?
-> Submitter       : Meelis Roos <mroos@linux.ee>
-> Caused-By       : ?
-> Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
-> Status          : unknown
 
-I can't reproduce this with my cross compilation toolchain for PPC.
+On Aug 8 2007 09:48, Andrew Morton wrote:
+>> > On Mon, 6 Aug 2007 09:54:03 -0400
+>> > Jeff Layton <jlayton@redhat.com> wrote:
+>> > 
+>> > Is there any way in which we can prevent these problems?  Say
+>> > 
+>> > - rename something so that unconverted filesystems will reliably fail to
+>> >   compile?
+>> > 
+>> 
+>> I suppose we could rename the .setattr inode operation to something
+>> else, but then we'll be stuck with it for at least a while. That seems
+>> sort of kludgey too...
+>
+>Sure.  We're changing the required behaviour of .setattr.  Changing its
+>name is a fine and reasonably reliable way to communicate that fact.
 
-Greetings,
-Rafael
+Maybe ->chattr/->chgattr?
+
+
+	Jan
+-- 
