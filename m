@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933312AbXHHN3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXHHNaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933312AbXHHN3i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 09:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757432AbXHHN3a
+	id S1764138AbXHHNaQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 09:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765452AbXHHN3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 09:29:30 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:59043 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761113AbXHHN33 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 09:29:29 -0400
-Date: Wed, 8 Aug 2007 15:29:26 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
-Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in entry.S
-Message-ID: <20070808132926.GC14419@one.firstfloor.org>
-References: <11865467522495-git-send-email-gcosta@redhat.com> <200708081138.23018.ak@suse.de> <Pine.LNX.4.58.0708080740490.5921@gandalf.stny.rr.com> <200708081424.49896.ak@suse.de> <Pine.LNX.4.58.0708080835350.6751@gandalf.stny.rr.com> <p738x8mrv4m.fsf@bingen.suse.de> <Pine.LNX.4.58.0708080919330.7236@gandalf.stny.rr.com>
+	Wed, 8 Aug 2007 09:29:53 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:44767 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757432AbXHHN3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 09:29:51 -0400
+Date: Wed, 8 Aug 2007 17:28:53 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Daniel Phillips <phillips@phunq.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [1/1] Block device throttling [Re: Distributed storage.]
+Message-ID: <20070808132853.GA19488@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk> <200708071124.56859.phillips@phunq.net> <20070807205538.GB5245@kernel.dk> <20070808095448.GA3440@2ka.mipt.ru> <20070808101708.GA23815@2ka.mipt.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.58.0708080919330.7236@gandalf.stny.rr.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070808101708.GA23815@2ka.mipt.ru>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> When I said "this part of the code I don't fully understand" I was not
-> talking about entry.S.  I understand entry.S very well, but the comment
-> was originally on the paranoid_restore code. Which I thought had to deal
-> with NMIs and such that I didn't worry about that I simply did the
-> default.
-
-The paranoid path is used for more than just NMIs; it's also used for MCEs,
-stack faults, double faults or debug exceptions. Anything that might
-happen with a invalid stack or unknown GS state or system in other unknown
-state.
-
-If you can guarantee your hypervisor never injects any of those it could be ignored; 
-but at least losing debug exceptions would be probably not nice.
-
+On Wed, Aug 08, 2007 at 02:17:09PM +0400, Evgeniy Polyakov (johnpol@2ka.mipt.ru) wrote:
+> This throttling mechanism allows to limit maximum amount of queued bios 
+> per physical device. By default it is turned off and old block layer 
+> behaviour with unlimited number of bios is used. When turned on (queue
+> limit is set to something different than -1U via blk_set_queue_limit()),
+> generic_make_request() will sleep until there is room in the queue.
+> number of bios is increased in generic_make_request() and reduced either
+> in bio_endio(), when bio is completely processed (bi_size is zero), and
+> recharged from original queue when new device is assigned to bio via
+> blk_set_bdev(). All oerations are not atomic, since we do not care about
+> precise number of bios, but a fact, that we are close or close enough to
+> the limit.
 > 
-> >>  paranoid_restore\trace:
-> >>       RESTORE_ALL 8
-> >> -     iretq
-> >> +     INTERRUPT_RETURN
-> >
-> >I suspect Xen will need much more changes anyways because of its
-> >ring 3 guest. Are these changes sufficient for lguest?
+> Tested on distributed storage device - with limit of 2 bios it works
+> slow :)
 
-This was really a general comment not especially applying to the 
-paranoid path.
+As addon I can cook up a patch to configure this via sysfs if needed.
+Thoughts?
 
--Andi
-
+-- 
+	Evgeniy Polyakov
