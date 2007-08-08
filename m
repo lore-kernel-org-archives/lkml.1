@@ -1,189 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965093AbXHHUae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964828AbXHHUau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965093AbXHHUae (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 16:30:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764376AbXHHUa0
+	id S964828AbXHHUau (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 16:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764376AbXHHUak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 16:30:26 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49471 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763392AbXHHUaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 16:30:25 -0400
-Date: Wed, 8 Aug 2007 22:30:08 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [git pull request] scheduler updates
-Message-ID: <20070808203008.GA3249@elte.hu>
+	Wed, 8 Aug 2007 16:30:40 -0400
+Received: from mail.gmx.net ([213.165.64.20]:53383 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S965137AbXHHUai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 16:30:38 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18vSFYfu7Ev3P9aczrHQR0j7VgnoMbToekFMN0zGT
+	hBMAVsQ3k+ltjG
+Date: Wed, 8 Aug 2007 22:30:37 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Oncaphillis <oncaphillis@snafu.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: UART misbehaves under Linkstation/KuroBoxHG 
+In-Reply-To: <46B9CE82.1050000@snafu.de>
+Message-ID: <Pine.LNX.4.60.0708082219520.6767@poirot.grange>
+References: <46B9CE82.1050000@snafu.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7-deb
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Aug 2007, Oncaphillis wrote:
 
-Linus, please pull the latest scheduler git tree from:
+> Greetings,
+> 
+> I'm trying to compile a 2.6.2x kernel on a Linkstation/KuroBox HG/ppc
+> following instructions given under
+> http://www.kurobox.com/mwiki/index.php/Kurobox_support_in_stock_2.6_kernels
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-sched.git
+Wow, congratulations! Not too many endevour into this land, and even fewer 
+succeed:-) You'd probably be better off asking this on linuxppc-dev, but 
+anyway...
 
-the high commit count is scary, but it's all low-risk items: the main 
-reason is the safe and gradual elimination of a widely used 64-bit 
-function argument: the 64-bit "now" timestamp. About 40 of those commits 
-are identity transformations that prepare the real change in a safe way, 
-and the rest is obvious and safe as well. Besides the obvious and nice 
-cleanup factor, these changes are necessary for 3 reasons: firstly they 
-address the "there's too much 64-bit stuff in the scheduler" 
-observation. Secondly, it's not directly visible but these changes also 
-act as a correctness fix for an obscure (and minor) but 
-not-too-pretty-to-fix accounting bug: idle_balance() had its own 
-internal notion of 'now', separate from that of schedule(). Thirdly, 
-this debloats sched.o quite significantly:
+> and get weired settings and errors from the serial device (UART 16550A).
+> 
+> Under the 2.4.17 kernel provided by the Kurobox manufacturer it gets IRQS in
+> the range of 137/138 under 2.6.22 for the linkstation it gets IRQS 17/18 and
+> the serial device behaves fishy
 
-on 32-bit (smp, nondebug), it's almost 1k less code:
+That interrupt numbers are different as under 2.4 is correct, however, I 
+get 16 and 17 for ttyS0 and ttyS1 on a kuroboxHG, are you sure you're 
+getting 17 and 18?
 
-   text    data     bss     dec     hex filename
-  34869    3066      20   37955    9443 sched.o.before
-  33972    3066      24   37062    90c6 sched.o.after
+> communication errors
+> 
+> "to much work in IRQ 16"
 
-but even on 64-bit platforms it's noticeable:
+And here you get IRQ 16, which indeed should be ttyS0. And ttyS0 is 
+connected to the power-management microcontroller (AVR). Wait, what 
+userspace are you running? Have you swapped ttyS0 and ttyS1 everywhere? in 
+/etc/inittab for example? Besides, if you are running any vendor provided 
+(or community) tools to handle the AVR - they use ttyS1 by default, as it 
+was under 2.4 ans under "traditional" 2.6, whereas the 2.6 mainline kernel 
+for kurobox/linkstation uses the traditional for these CPUs port 
+numbering. I think this is your problem. Some user-space programme(s) are 
+accessing wrong tty.
 
-   text    data     bss     dec     hex filename
-  28652    4162      24   32838    8046 sched.o.before
-  28064    4162      24   32250    7dfa sched.o.after
-
-and that's a speedup as well, because these parameters were passed all 
-around the fastpath.
-
-It was the safest to do it this way (considering that we are post -rc2 
-already), together in one commit these changes would have been much less 
-obvious to validate and apply. (It's of course all fully bisectable and 
-every step builds and boots fine.)
-
-besides this elimination of the 64-bit timestamp parameter passing 
-between (almost all) scheduler functions, there are 8 other fixes that 
-are not identity transformations:
-
- - Peter Williams reviewed the smpnice load-balancer and noticed a few 
-   leftover items that are unnecessary now (i have re-tested 
-   load-balancing behavior and it's all still fine)
-
- - binary sysctl cleanup from Alexey Dobriyan
-
- - two small accounting fixes
-
- - reniced tasks fixes: a key calculation fix (i re-checked key nice
-   workloads and this has no real impact [other than improving them 
-   slightly] - the other side of the branch fixed up the effects of this 
-   - otherwise we'd have noticed this sooner), and two rounding 
-   precision improvements that act against error accumulation.
-
- - sleeper_bonus should be batched by sched_granularity and not by 
-   stat_granularity. (this has almost no effect in practice, but a 
-   speedup that pushes the only 64-bit division in CFS into a slowpath.)
-
-then are are also two non-code documentation updates and minor cleanups 
-and uninlining.
-
-Nevertheless, to be safe i have also done over 200 'make randconfig; 
-make -j bzImage' build tests:
-
-   #define UTS_VERSION "#231 SMP Wed Aug 8 21:34:24 CEST 2007"
-
-all of which passed fine. Booted (and extensively tested) on x86-32 and 
-x64-32 as well, both UP and SMP - UP, 2-way to 8-way systems.
-
-	Ingo
-
------------------->
-
-Alexey Dobriyan (1):
-      sched: remove binary sysctls from kernel.sched_domain
-
-Josh Triplett (1):
-      sched: mark print_cfs_stats static
-
-Peter Williams (2):
-      sched: simplify move_tasks()
-      sched: fix bug in balance_tasks()
-
-Thomas Voegtle (1):
-      sched: mention CONFIG_SCHED_DEBUG in documentation
-
-Ulrich Drepper (1):
-      sched: clean up sched_getaffinity()
-
-Ingo Molnar (55):
-      sched: batch sleeper bonus
-      sched: reorder update_cpu_load(rq) with the ->task_tick() call
-      sched: uninline rq_clock()
-      sched: schedule() speedup
-      sched: clean up delta_mine
-      sched: delta_exec accounting fix
-      sched: document nice levels
-      sched: add [__]update_rq_clock(rq)
-      sched: eliminate rq_clock() use
-      sched: remove rq_clock()
-      sched: eliminate __rq_clock() use
-      sched: remove __rq_clock()
-      sched: remove 'now' use from assignments
-      sched: remove the 'u64 now' parameter from print_cfs_rq()
-      sched: remove the 'u64 now' parameter from update_curr()
-      sched: remove the 'u64 now' parameter from update_stats_wait_start()
-      sched: remove the 'u64 now' parameter from update_stats_enqueue()
-      sched: remove the 'u64 now' parameter from __update_stats_wait_end()
-      sched: remove the 'u64 now' parameter from update_stats_wait_end()
-      sched: remove the 'u64 now' parameter from update_stats_curr_start()
-      sched: remove the 'u64 now' parameter from update_stats_dequeue()
-      sched: remove the 'u64 now' parameter from update_stats_curr_end()
-      sched: remove the 'u64 now' parameter from __enqueue_sleeper()
-      sched: remove the 'u64 now' parameter from enqueue_sleeper()
-      sched: remove the 'u64 now' parameter from enqueue_entity()
-      sched: remove the 'u64 now' parameter from dequeue_entity()
-      sched: remove the 'u64 now' parameter from set_next_entity()
-      sched: remove the 'u64 now' parameter from pick_next_entity()
-      sched: remove the 'u64 now' parameter from put_prev_entity()
-      sched: remove the 'u64 now' parameter from update_curr_rt()
-      sched: remove the 'u64 now' parameter from ->enqueue_task()
-      sched: remove the 'u64 now' parameter from ->dequeue_task()
-      sched: remove the 'u64 now' parameter from ->pick_next_task()
-      sched: remove the 'u64 now' parameter from pick_next_task()
-      sched: remove the 'u64 now' parameter from ->put_prev_task()
-      sched: remove the 'u64 now' parameter from ->task_new()
-      sched: remove the 'u64 now' parameter from update_curr_load()
-      sched: remove the 'u64 now' parameter from inc_load()
-      sched: remove the 'u64 now' parameter from dec_load()
-      sched: remove the 'u64 now' parameter from inc_nr_running()
-      sched: remove the 'u64 now' parameter from dec_nr_running()
-      sched: remove the 'u64 now' parameter from enqueue_task()
-      sched: remove the 'u64 now' parameter from dequeue_task()
-      sched: remove the 'u64 now' parameter from deactivate_task()
-      sched: remove the 'u64 now' local variables
-      sched debug: remove the 'u64 now' parameter from print_task()/_rq()
-      sched: move the __update_rq_clock() call to scheduler_tick()
-      sched: remove __update_rq_clock() call from entity_tick()
-      sched: clean up set_curr_task_fair()
-      sched: optimize activate_task()
-      sched: optimize update_rq_clock() calls in the load-balancer
-      sched: make the multiplication table more accurate
-      sched: round a bit better
-      sched: fix update_stats_enqueue() reniced codepath
-      sched: refine negative nice level granularity
-
- Documentation/sched-design-CFS.txt  |    2 
- Documentation/sched-nice-design.txt |  108 +++++++++++
- include/linux/sched.h               |   20 --
- kernel/sched.c                      |  339 ++++++++++++++++++------------------
- kernel/sched_debug.c                |   16 -
- kernel/sched_fair.c                 |  212 ++++++++++------------
- kernel/sched_idletask.c             |   10 -
- kernel/sched_rt.c                   |   48 +----
- 8 files changed, 421 insertions(+), 334 deletions(-)
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
