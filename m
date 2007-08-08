@@ -1,61 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764138AbXHHL7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764587AbXHHMA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764138AbXHHL7j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 07:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbXHHL71
+	id S1764587AbXHHMA1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758034AbXHHMAH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 07:59:27 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:24584 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754263AbXHHL7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 07:59:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Xzt7WQTsYpuu4iGMe7vdb77eyQGbv6CF2/AK168Kwb1+04mRFjDzL4Zcal95eSj42ccGGf/89xKuaORx5RjNdDTlGQMXQjlEltQwG3WZlp0LvmotCiwE086SXBHN9X928/aChwC6KBS/sGRmPRgMIEz56By+e/CYRdAW83d7WwE=
-Message-ID: <1a297b360708080459g1343eb55x8aa923a56c170277@mail.gmail.com>
-Date: Wed, 8 Aug 2007 15:59:25 +0400
-From: "Manu Abraham" <abraham.manu@gmail.com>
-To: "Andi Kleen" <andi@firstfloor.org>
-Subject: Re: [PATCH] msleep() with hrtimers
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Jonathan Corbet" <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <20070808115219.GA13878@one.firstfloor.org>
+	Wed, 8 Aug 2007 08:00:07 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38302 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753490AbXHHMAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 08:00:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines
+Date: Wed, 8 Aug 2007 14:09:41 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@mcmartin.ca>
+References: <200708052114.01790.rjw@sisk.pl> <20070807160357.d6ea9731.akpm@linux-foundation.org> <200708081405.00778.rjw@sisk.pl>
+In-Reply-To: <200708081405.00778.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <15327.1186166232@lwn.net>
-	 <20070807124009.9f6c2247.akpm@linux-foundation.org>
-	 <p73ps1ys0jz.fsf@bingen.suse.de>
-	 <1a297b360708080409tfc9dee5mb92c216919bffc1e@mail.gmail.com>
-	 <20070808115219.GA13878@one.firstfloor.org>
+Message-Id: <200708081409.42384.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Andi Kleen <andi@firstfloor.org> wrote:
-> On Wed, Aug 08, 2007 at 03:09:14PM +0400, Manu Abraham wrote:
-> > On 08 Aug 2007 13:55:28 +0200, Andi Kleen <andi@firstfloor.org> wrote:
-> > > Andrew Morton <akpm@linux-foundation.org> writes:
-> > > >
-> > > > I'd be surprised if there was significant overhead - the maximum frequency
-> > > > at which msleep() can be called is 1000Hz.  We'd need an awful lot of
-> > > > overhead for that to cause problems, surely?
-> > >
-> > > The bigger risk is probably to break drivers that rely on msleep(1)
-> > > really being msleep( very long depending on HZ )
-> > >
-> > > But the only way to find out is to try it.
-> >
-> > Well, i am quite sure a lot of drivers will be broken. But well .. if
->
-> If you know of specific examples you should list them so that
-> they can be fixed proactively.
+On Wednesday, 8 August 2007 14:05, Rafael J. Wysocki wrote:
+> On Wednesday, 8 August 2007 01:03, Andrew Morton wrote:
+> > On Sun, 5 Aug 2007 21:14:01 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > +#ifdef CONFIG_PM_SLEEP
+> > > +
+> > > +/*
+> > > + *	Suspend the interface.
+> > > + */
+> > > +
+> > > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> > 
+> > Since when did suspend and resume methods become dependent upon CONFIG_PM_SLEEP?
+> > 
+> > We have eight thousand implementations of this, all of which presently
+> > use CONFIG_PM.
+> 
+> Yes, they do, but if CONFIG_PM_SLEEP is not set, they won't be used.
 
-A bit hard to state, which all since quite some are RE'd. Well you can
-hear the cries when it is broken. :)
+Well, not all of them.  There are some in USB used for runtime power
+management and there may be some others like that, but the majority of them
+are really only useful for suspend/hibernation.  Like the ones in this patch.
 
-Manu
+Greetings,
+Rafael
