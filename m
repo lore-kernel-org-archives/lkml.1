@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbXHHIkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763485AbXHHImm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764797AbXHHIkl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:40:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbXHHIkb
+	id S1763485AbXHHImm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 04:42:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758098AbXHHImc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:40:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55896 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751436AbXHHIk3 (ORCPT
+	Wed, 8 Aug 2007 04:42:32 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:62312 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbXHHImb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:40:29 -0400
-Date: Wed, 8 Aug 2007 09:47:48 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Harvey Chapman <hchapman-linux-kernel@3gfp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial inter-character timeout usage with async io
-Message-ID: <20070808094748.72c4ff22@the-village.bc.nu>
-In-Reply-To: <46B92869.4000400@3gfp.com>
-References: <46B8F7FE.3090904@3gfp.com>
-	<20070808021147.10d0e752@the-village.bc.nu>
-	<46B92869.4000400@3gfp.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Wed, 8 Aug 2007 04:42:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=uXdVHa3Ndag6pn9oF+mZWgXBldOZ0USMTLMeBWk3+kNaaQ4zZ9HjYgdT64TijLwR2iDmmp7b93TclzmYLDyBuo6NaNwuLW2euXpGM+/TDB5B1m1cdP4/th8tWGeezUdA2g2FnRjUibHNvi7a16BgZlSoJ0dGdjBk+9QOU4lGhrQ=
+Date: Wed, 8 Aug 2007 16:43:34 +0000
+From: Dave Young <hidave.darkstar@gmail.com>
+To: hmh@hmh.eng.br
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] thinkpad acpi module_exit fix
+Message-ID: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> A Linux program is connected via serial port to some other serial device
-> using asynchronous I/O and the other serial device sends a 150 byte
-> sequence to the Linux program. The Linux program will receive 18
-> intermediate SIGIOs (one for each 8-byte threshold interrupt generated
-> by the UART) followed by 1 final inter-character timeout (when the UART
-> FIFO contains the last 6 bytes). The program upon each SIGIO would
-> read() 8 bytes and do some parsing of the data buffer and realize that
-> the whole sequence had not yet been received. Repeat 17 more times in
-> this example.
+Hi,
 
-That seems a particularly odd way to implement block I/O. Just use a
-thread for this and the VMIN/VTIME functionality in the n_tty layer -
-that is why it is there.
+[This fix is not very good for the global variable, any comments are
+welcome.]
 
-> I agree. However, the inter-character timeout is present (to the best of
-> my knowledge and google's) in all serial UARTs from the 16550A onward
-> (starting around 1994 and Windows 3.1). Before that, the IIR timeout
+The thinkpad_acpi module_init fail out entrace is not very properly. if
+failing before register driver or before create sysfs file, the
+module_exit will try to remove nonexist sysfs files, the kernel will
+oops.
 
-Almost all our drivers are not 16550A. A large part of the serial world
-is now USB and current PCs (especially laptops) often don't include any
-16550A devices at all.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-Your changes seem to be - hardware specific, not supportable by many
-devices, and designed to improve a particularly crazy way of handling the
-I/O in the first place. That doesn't make a good candidate for the
-upstream kernel.
+---
+drivers/misc/thinkpad_acpi.c |   19 +++++++++++++------
+1 file changed, 13 insertions(+), 6 deletions(-)
 
-Alan
+diff -upr linux/drivers/misc/thinkpad_acpi.c linux.new/drivers/misc/thinkpad_acpi.c
+--- linux/drivers/misc/thinkpad_acpi.c	2007-08-08 16:28:19.000000000 +0000
++++ linux.new/drivers/misc/thinkpad_acpi.c	2007-08-08 16:35:11.000000000 +0000
+@@ -91,6 +91,8 @@ MODULE_LICENSE("GPL");
+ 
+ /* Please remove this in year 2009 */
+ MODULE_ALIAS("ibm_acpi");
++static int sysfs_ret = 1;
++static int driver_ret = 1;
+ 
+ /*
+  * DMI matching for module autoloading
+@@ -4662,14 +4664,14 @@ static int __init thinkpad_acpi_module_i
+ 	}
+ 	proc_dir->owner = THIS_MODULE;
+ 
+-	ret = platform_driver_register(&tpacpi_pdriver);
+-	if (ret) {
++	driver_ret = platform_driver_register(&tpacpi_pdriver);
++	if (driver_ret) {
+ 		printk(IBM_ERR "unable to register platform driver\n");
+ 		thinkpad_acpi_module_exit();
+ 		return ret;
+ 	}
+-	ret = tpacpi_create_driver_attributes(&tpacpi_pdriver.driver);
+-	if (ret) {
++	sysfs_ret = tpacpi_create_driver_attributes(&tpacpi_pdriver.driver);
++	if (sysfs_ret) {
+ 		printk(IBM_ERR "unable to create sysfs driver attributes\n");
+ 		thinkpad_acpi_module_exit();
+ 		return ret;
+@@ -4756,8 +4758,13 @@ static void thinkpad_acpi_module_exit(vo
+ 	if (tpacpi_pdev)
+ 		platform_device_unregister(tpacpi_pdev);
+ 
+-	tpacpi_remove_driver_attributes(&tpacpi_pdriver.driver);
+-	platform_driver_unregister(&tpacpi_pdriver);
++	if(!sysfs_ret){
++		tpacpi_remove_driver_attributes(&tpacpi_pdriver.driver);
++	}
++
++	if(!driver_ret){
++		platform_driver_unregister(&tpacpi_pdriver);
++	}
+ 
+ 	if (proc_dir)
+ 		remove_proc_entry(IBM_PROC_DIR, acpi_root_dir);
