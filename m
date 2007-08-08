@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759698AbXHHKiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbXHHKoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759698AbXHHKiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 06:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbXHHKiF
+	id S1755821AbXHHKoT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 06:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbXHHKoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 06:38:05 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:39505 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751045AbXHHKiC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 06:38:02 -0400
-Date: Wed, 8 Aug 2007 12:37:59 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: David Vrabel <david.vrabel@csr.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4] sdio: extend sdio_readsb() and friends to handle
- any length of buffer
-Message-ID: <20070808123759.26a74b2a@poseidon.drzeus.cx>
-In-Reply-To: <46B998B5.9040203@csr.com>
-References: <11858961933491-git-send-email-david.vrabel@csr.com>
-	<20070804152304.65ed8f1b@poseidon.drzeus.cx>
-	<46B6F877.7060504@csr.com>
-	<20070806171207.59fafa18@poseidon.drzeus.cx>
-	<46B73F18.5030109@csr.com>
-	<20070806220145.66b97559@poseidon.drzeus.cx>
-	<46B86ADB.90000@csr.com>
-	<46B86BB0.4000100@csr.com>
-	<20070807221719.7c89e5b6@poseidon.drzeus.cx>
-	<46B998B5.9040203@csr.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+	Wed, 8 Aug 2007 06:44:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54223 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbXHHKoH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 06:44:07 -0400
+Date: Wed, 8 Aug 2007 12:43:09 +0200
+From: Karel Zak <kzak@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Diego Calleja <diegocg@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, miklos@szeredi.hu,
+       akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+Message-ID: <20070808104309.GA3173@petra.dvoda.cz>
+References: <20070803123712.987126000@chello.nl> <alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org> <20070804063217.GA25069@elte.hu> <20070804070737.GA940@elte.hu> <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <20070804190210.8b1530dd.diegocg@gmail.com> <20070804171724.GA4740@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070804171724.GA4740@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007 11:19:33 +0100
-David Vrabel <david.vrabel@csr.com> wrote:
-
+On Sat, Aug 04, 2007 at 07:17:24PM +0200, Ingo Molnar wrote:
 > 
-> We need to know the block size in use /before/ the start of the
-> transfer as we would like drivers to be able to perform transfers
-> with single commands as this can result in significantly better
-> performance[1].  The drivers for our (CSR's) WiFi chips should do
-> this.  This isn't some (as you suggested in a previous post) 'rare'
-> requirement.
+> * Diego Calleja <diegocg@gmail.com> wrote:
 > 
-
-Well, there are more ways that can be achieved.
-
-First, the driver could lock down the block size using
-sdio_force_block_size(). Then it knows what it gets.
-
-Second, we could try to make it possible for the driver to indicate
-"feel free to pad this transfer". Then we could also remove the need
-for drivers to mess with buffers and keep such stuff in the core. We
-could even magically remove a memcpy() by setting up two sg entries,
-one for the data and one for the padding.
-
+> > El Sat, 4 Aug 2007 18:37:33 +0200, Ingo Molnar <mingo@elte.hu> escribió:
+> > 
+> > > thousands of applications. So for most file workloads we give 
+> > > Windows a 20%-30% performance edge, for almost nothing. (for 
+> > > RAM-starved kernel builds the performance difference between atime 
+> > > and noatime+nodiratime setups is more on the order of 40%)
+> > 
+> > Just curious - do you have numbers with relatime?
 > 
-> [1] Consider a chip with a block size of 64 that regularly does short
-> transfers of between 64 - 128 bytes.  Without padding, this would
-> require two commands per transfer instead of just one, cutting
-> performance by 50%!  This scenario could be a WiFi chip doing VoIP.
+> nope. Stupid question, i just tried it and got this:
+> 
+>  EXT3-fs: Unrecognized mount option "relatime" or missing value
+> 
+> i've got util-linux-2.13-0.46.fc6 and 2.6.22 on that box, shouldnt that 
 
-Provided block size < 128. Otherwise it'll jump straight to the byte
-transfer.
+ The relatime patch has been applied to util-lilnux-ng-2.13 (now -rc3),
+ you will see it in Fedora 8 (and probably in the others distros).
+
+    Karel
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+ Karel Zak  <kzak@redhat.com>
