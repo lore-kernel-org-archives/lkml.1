@@ -1,50 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934603AbXHHOKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934740AbXHHOKx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934603AbXHHOKf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760283AbXHHOKY
+	id S934740AbXHHOKx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:10:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934474AbXHHOKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:10:24 -0400
-Received: from namei.org ([69.55.235.186]:41438 "EHLO us.intercode.com.au"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753574AbXHHOKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:10:21 -0400
-Date: Wed, 8 Aug 2007 07:08:25 -0700 (PDT)
-From: James Morris <jmorris@namei.org>
-X-X-Sender: jmorris@us.intercode.com.au
-To: "Serge E. Hallyn" <serge@hallyn.com>
-cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: file capabilities: clear fcaps on inode change (v3)
-In-Reply-To: <20070808133034.GA2046@vino.hallyn.com>
-Message-ID: <Pine.LNX.4.64.0708080707590.18117@us.intercode.com.au>
-References: <20070807221727.GA12211@sergelap.austin.ibm.com>
- <1186526285.6625.41.camel@heimdal.trondhjem.org> <20070807231452.GA27198@vino.hallyn.com>
- <Pine.LNX.4.64.0708071814520.32311@us.intercode.com.au>
- <20070808133034.GA2046@vino.hallyn.com>
+	Wed, 8 Aug 2007 10:10:32 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:50473 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934393AbXHHOKa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:10:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lLs6xsocaLll/BCYx8efmW6Kae+sbJ3CkOGJzo3lcMyXyfn8zIQeWL4swQ6xUVb6J9wGA37yVGxFU64y8X/5lW/ecaAR2DXwOjqOxtP23FMvvPP+es51fcKf1hxaEQlMNkZEZXYL1u+MhqcPInHWYEecuBIbqrSH9vdxyHEETxI=
+Message-ID: <5d6222a80708080710n296f6da8i1dc08d914baeb27a@mail.gmail.com>
+Date: Wed, 8 Aug 2007 11:10:28 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 3/25] [PATCH] irq_flags / halt routines
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <200708081114.21260.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <1186546763582-git-send-email-gcosta@redhat.com>
+	 <11865467662182-git-send-email-gcosta@redhat.com>
+	 <200708081114.21260.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007, Serge E. Hallyn wrote:
+On 8/8/07, Andi Kleen <ak@suse.de> wrote:
+>
+> > +#ifdef CONFIG_PARAVIRT
+> > +#include <asm/paravirt.h>
+> > +#  ifdef CONFIG_X86_VSMP
+> > +static inline int raw_irqs_disabled_flags(unsigned long flags)
+> > +{
+> > +     return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
+> > +}
+> > +#  else
+> > +static inline int raw_irqs_disabled_flags(unsigned long flags)
+> > +{
+> > +     return !(flags & X86_EFLAGS_IF);
+> > +}
+> > +#  endif
+>
+> You should really turn the vsmp special case into a paravirt client first
+> instead of complicating all this even more.
 
-> Here is the next version.  This one involved a bit more actual
-> switching of logic so was a bit more nerve-wracking, but it
-> seems to be working correctly now.
+By "client" you mean a user of the paravirt interface?
 
-Looks good to me.
-
-Acked-by: James Morris <jmorris@namei.org>
-
-
+> > +#ifndef CONFIG_PARAVIRT
+> > +#define raw_safe_halt        native_raw_safe_halt
+> > +#define halt         native_halt
+> > +#endif /* ! CONFIG_PARAVIRT */
+>
+> This seems inconsistent
+Sorry andi. Can't see why. Could you elaborate?
 
 
 -- 
-James Morris
-<jmorris@namei.org>
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
