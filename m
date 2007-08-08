@@ -1,47 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751819AbXHHK7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbXHHLA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751819AbXHHK7g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 06:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750741AbXHHK73
+	id S1759101AbXHHLA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 07:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbXHHLAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 06:59:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:46327 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750721AbXHHK72 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 06:59:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=cYgzpzMXptn+KAZY0QvV/emhRT51PWzTPkVKTvO7eYUuZ3rCqUtsu/usFgMyQG7IIToTvYmTdqx43HvCNS2o8OH0Lxd/g7APrrvn4u+F+QfQ3M/ne3mjRAooC9jFu922fMeeX5JpRaJW/lQ0S7DMNHLIKxgnwfNwVIDAQLGJMic=
-Message-ID: <c70ff3ad0708080359m1dae4fbes6955d38b1da51323@mail.gmail.com>
-Date: Wed, 8 Aug 2007 13:59:26 +0300
-From: "saeed bishara" <saeed.bishara@gmail.com>
-To: trivial@kernel.org, linux-kernel@vger.kernel.org,
-       "Jens Axboe" <jens.axboe@oracle.com>
-Subject: [PATCH] use sg helper function in DMA mapping documentation
-Cc: "saeed bishara" <saeed.bishara@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 07:00:10 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:60977 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750986AbXHHLAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 07:00:06 -0400
+Date: Wed, 8 Aug 2007 13:00:37 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, marcin.slusarz@gmail.com
+Subject: [patch] genirq: temporary fix for level-triggered IRQ resend
+Message-ID: <20070808110037.GB2426@ff.dom.local>
+References: <1185322771.4175.102.camel@chaos> <4bacf17f0707260016x14fc1c92s628ae64353663833@mail.gmail.com> <20070726081326.GA3197@ff.dom.local> <1185437431.3227.21.camel@chaos> <20070726083120.GA26910@elte.hu> <20070726085523.GA3423@ff.dom.local> <20070726091254.GA8063@elte.hu> <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731155843.GA7033@elte.hu> <20070731160008.GA7776@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070731160008.GA7776@elte.hu>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Saeed Bishara <saeed.bishara@gmail.com>
+Hi,
+
+I see there is a bit of complaining on this original resend temporary
+patch. But, since it seems to do a good job for some people, here is
+my proposal to limit the 'range of fire' a little bit.
+
+Marcin and Jean-Baptiste: try to test this with 2.6.23-rc2, please.
+(Unless Ingo or Thomas have other plans with this problem?)
+
+Thanks,
+Jarek P.
+
+-------->
+
+Subject: [patch] genirq: temporary fix for level-triggered IRQ resend
+
+
+Marcin Slusarz reported a ne2k-pci "hung network interface" regression.
+
+delayed disable relies on the ability to re-trigger the interrupt in the
+case that a real interrupt happens after the software disable was set.
+In this case we actually disable the interrupt on the hardware level
+_after_ it occurred.
+
+On enable_irq, we need to re-trigger the interrupt. On i386 this relies
+on a hardware resend mechanism (send_IPI_self()).
+
+Actually we only need the resend for edge type interrupts. Level type
+interrupts come back once enable_irq() re-enables the interrupt line.
+
+Marcin found that when he disables the irq line on the hardware level
+(removing the delayed disable) the card is kept alive.
+
+Thomas Gleixner prepared a testing patch which proved to fix hung ups
+after limiting irqs resending to edge type only. Then Ingo Molnar's
+version of this patch was applied to 2.6.23-rc2 kernel as a temporary
+solution. Since, the problem is still diagnosed, but seems to affect
+mainly X86_64 arch, here is a modified, but still temporary, version of
+this solution, which should limit the range of warnings and changes in
+interrupt handling to minimum.
+
+
+Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+
 ---
- DMA-mapping.txt |    2 +-
- 1 files changed, 1 insertion(+), 1 deletion(-)
 
-
---- a/Documentation/DMA-mapping.txt     2007-08-08 12:51:07.000000000 +0300
-+++ b/Documentation/DMA-mapping.txt     2007-08-08 12:50:02.000000000 +0300
-@@ -514,7 +514,7 @@
-        int i, count = pci_map_sg(dev, sglist, nents, direction);
-        struct scatterlist *sg;
-
--       for (i = 0, sg = sglist; i < count; i++, sg++) {
-+       for_each_sg(sglist, sg, count, i) {
-                hw_address[i] = sg_dma_address(sg);
-                hw_len[i] = sg_dma_len(sg);
-        }
+diff -Nurp 2.6.23-rc2-/kernel/irq/resend.c 2.6.23-rc2/kernel/irq/resend.c
+--- 2.6.23-rc2-/kernel/irq/resend.c	2007-08-08 11:48:15.000000000 +0200
++++ 2.6.23-rc2/kernel/irq/resend.c	2007-08-08 11:58:42.000000000 +0200
+@@ -62,18 +62,19 @@ void check_irq_resend(struct irq_desc *d
+ 	 */
+ 	desc->chip->enable(irq);
+ 
++	if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
++		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
++
++#ifdef CONFIG_X86_64
+ 	/*
+ 	 * Temporary hack to figure out more about the problem, which
+ 	 * is causing the ancient network cards to die.
+ 	 */
+-	if (desc->handle_irq != handle_edge_irq) {
+-		WARN_ON_ONCE(1);
+-		return;
+-	}
+-
+-	if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+-		desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
+-
++		if (desc->handle_irq == handle_fasteoi_irq) {
++			WARN_ON_ONCE(1);
++			return;
++		}
++#endif
+ 		if (!desc->chip || !desc->chip->retrigger ||
+ 					!desc->chip->retrigger(irq)) {
+ #ifdef CONFIG_HARDIRQS_SW_RESEND
