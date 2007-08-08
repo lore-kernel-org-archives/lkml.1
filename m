@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765563AbXHHHrC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765381AbXHHHuM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765563AbXHHHrC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:47:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXHHHqq
+	id S1765381AbXHHHuM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:50:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756666AbXHHHt7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:46:46 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:17194 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933060AbXHHHqo (ORCPT
+	Wed, 8 Aug 2007 03:49:59 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59612 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753577AbXHHHt5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:46:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=S3WW1Vu89fZOEkM70UZz4iz19dZa58789eopV38fQByFfY9DQtG4vKo6MqOKUjNjssI/jofQPArbfSCMkALuUWDdqMzaHDW6B5J9EH7PuuKbIfLcDzsAb1hmfoy46WjDphIdsLIISchatDka6a1qFuNa9itDcfiJDjL4GyDChqw=
-Date: Wed, 8 Aug 2007 16:46:37 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 11/25] sysfs: Remove s_dentry
-Message-ID: <20070808074637.GE13674@htj.dyndns.org>
-References: <m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com> <m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com> <m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com> <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com> <m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com> <m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com> <m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com> <m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com> <m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com> <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 8 Aug 2007 03:49:57 -0400
+Date: Wed, 8 Aug 2007 16:51:31 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       YAMAMOTO Takashi <yamamoto@valinux.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux MM Mailing List <linux-mm@kvack.org>,
+       Eric W Biederman <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>,
+       Paul Menage <menage@google.com>, Pavel Emelianov <xemul@openvz.org>
+Subject: Re: [-mm PATCH 0/9] Memory controller introduction (v4)
+Message-Id: <20070808165131.b4ab4e92.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070808125139.7cfe702c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070727200937.31565.78623.sendpatchset@balbir-laptop>
+	<20070808125139.7cfe702c.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:19:31PM -0600, Eric W. Biederman wrote:
-> 
-> The only uses of s_dentry left are the code that maintains
-> s_dentry and trivial users that don't actually need it.
-> So this patch removes the s_dentry maintenance code and
-> restructures the trivial uses to use something else.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+On Wed, 8 Aug 2007 12:51:39 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+> On Sat, 28 Jul 2007 01:39:37 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > At OLS, the resource management BOF, it was discussed that we need to manage
+> > RSS and unmapped page cache together. This patchset is a step towards that
+> > 
+> Can I make a question ? Why limiting RSS instead of # of used pages per
+> container ? Maybe bacause of shared pages between container.... 
+Sorry....Ignore above question.
+I didn't understand what mem_container_charge() accounts and limits.
+It controls # of meta_pages.
 
-Nice clean up.  Thanks.
+Sorry,
+-Kame
 
--- 
-tejun
