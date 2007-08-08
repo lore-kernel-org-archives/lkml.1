@@ -1,202 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbXHHXIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936559AbXHHXI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765544AbXHHXIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762846AbXHHXIN
+	id S936559AbXHHXI4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763029AbXHHXIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 19:08:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49148 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760490AbXHHXIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 19:08:11 -0400
-Date: Wed, 8 Aug 2007 19:07:33 -0400
-From: Chris Snook <csnook@redhat.com>
-To: akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
-Subject: [PATCH] make atomic_t volatile on all architectures
-Message-ID: <20070808230733.GA17270@shell.boston.redhat.com>
-Mime-Version: 1.0
+	Wed, 8 Aug 2007 19:08:43 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:58366 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763388AbXHHXIm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 19:08:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:user-agent;
+	b=Dy++aLrjvsrgtCwh4QgfzwCPhYqOKPYjPnF2I7USlxHZ1bSmJfSwDgLSvfu7AfKi2
+	zgIOip7p29gSuaqFUQVpw==
+Date: Wed, 8 Aug 2007 16:08:02 -0700
+From: Aaron Durbin <adurbin@google.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@osdl.org, ak@suse.de
+Subject: [PATCH] x86_64: Avoid NMI Watchdog and/or long wait in setup_APIC_timer
+Message-ID: <20070808230802.GA6290@google.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+In setup_APIC_timer with the HPET in use, a condition can arise while
+waiting for the next irq slice to expire on the HPET which will either
+cause an NMI watchdog to fire or a 3 minute busy loop if the NMI
+watchdog is disabled.
 
-Some architectures currently do not declare the contents of an atomic_t to be
-volatile.  This causes confusion since atomic_read() might not actually read
-anything if an optimizing compiler re-uses a value stored in a register, which
-can break code that loops until something external changes the value of an
-atomic_t.  Avoiding such bugs requires using barrier(), which causes re-loads
-of all registers used in the loop, thus hurting performance instead of helping
-it, particularly on architectures where it's unnecessary.  Since we generally
-want to re-read the contents of an atomic variable on every access anyway,
-let's standardize the behavior across all architectures and avoid the
-performance and correctness problems of requiring the use of barrier() in
-loops that expect atomic_t variables to change externally.  This is relevant
-even on non-smp architectures, since drivers may use atomic operations in
-interrupt handlers.
+The HPET comparator and the counter keep incrementing during its normal
+operation. When a comparison event fires the comparator will increment
+by the designated period. If the HPET trigger occurs right after
+the 'int trigger = hpet_readl(HPET_T0_CMP);' line, we will will spin
+for up to 3 minutes (with a clock of 25MHz) waiting for the HPET
+counter to wrap around. However, when the NMI watchdog is enabled the
+NMI watchdog will detect a lockup and reboot the machine. This
+scenario can be exasperated by the presence of an SMI which will
+increase the window of opportunity for the condition to occur.
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+The fix is to wait for the compartor to change which signals the
+end of the tick slice.
 
+---
 
-diff -urp linux-2.6.23-rc2-orig/include/asm-blackfin/atomic.h linux-2.6.23-rc2/include/asm-blackfin/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-blackfin/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-blackfin/atomic.h	2007-08-08 18:18:43.000000000 -0400
-@@ -13,8 +13,13 @@
-  * Tony Kou (tonyko@lineo.ca)   Lineo Inc.   2001
-  */
+diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
+index 900ff38..06797e2 100644
+--- a/arch/x86_64/kernel/apic.c
++++ b/arch/x86_64/kernel/apic.c
+@@ -791,10 +791,12 @@ static void setup_APIC_timer(unsigned in
  
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
- typedef struct {
--	int counter;
-+	volatile int counter;
- } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
-diff -urp linux-2.6.23-rc2-orig/include/asm-frv/atomic.h linux-2.6.23-rc2/include/asm-frv/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-frv/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-frv/atomic.h	2007-08-08 18:21:55.000000000 -0400
-@@ -35,8 +35,13 @@
- #define smp_mb__before_atomic_inc()	barrier()
- #define smp_mb__after_atomic_inc()	barrier()
- 
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
- typedef struct {
--	int counter;
-+	volatile int counter;
- } atomic_t;
- 
- #define ATOMIC_INIT(i)		{ (i) }
-diff -urp linux-2.6.23-rc2-orig/include/asm-h8300/atomic.h linux-2.6.23-rc2/include/asm-h8300/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-h8300/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-h8300/atomic.h	2007-08-08 18:24:02.000000000 -0400
-@@ -6,7 +6,12 @@
-  * resource counting etc..
-  */
- 
--typedef struct { int counter; } atomic_t;
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
-+typedef struct { volatile int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff -urp linux-2.6.23-rc2-orig/include/asm-i386/atomic.h linux-2.6.23-rc2/include/asm-i386/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-i386/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-i386/atomic.h	2007-08-08 18:26:09.000000000 -0400
-@@ -14,8 +14,12 @@
-  * Make sure gcc doesn't try to be clever and move things around
-  * on us. We need to use _exactly_ the address the user gave us,
-  * not some alias that contains the same information.
-+ *
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-  */
--typedef struct { int counter; } atomic_t;
-+typedef struct { volatile int counter; } atomic_t;
- 
- #define ATOMIC_INIT(i)	{ (i) }
- 
-diff -urp linux-2.6.23-rc2-orig/include/asm-m68k/atomic.h linux-2.6.23-rc2/include/asm-m68k/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-m68k/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-m68k/atomic.h	2007-08-08 18:28:58.000000000 -0400
-@@ -13,7 +13,12 @@
-  * We do not have SMP m68k systems, so we don't have to deal with that.
-  */
- 
--typedef struct { int counter; } atomic_t;
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
-+typedef struct { volatile int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff -urp linux-2.6.23-rc2-orig/include/asm-m68knommu/atomic.h linux-2.6.23-rc2/include/asm-m68knommu/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-m68knommu/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-m68knommu/atomic.h	2007-08-08 18:30:32.000000000 -0400
-@@ -12,7 +12,12 @@
-  * We do not have SMP m68k systems, so we don't have to deal with that.
-  */
- 
--typedef struct { int counter; } atomic_t;
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
-+typedef struct { volatile int counter; } atomic_t;
- #define ATOMIC_INIT(i)	{ (i) }
- 
- #define atomic_read(v)		((v)->counter)
-diff -urp linux-2.6.23-rc2-orig/include/asm-s390/atomic.h linux-2.6.23-rc2/include/asm-s390/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-s390/atomic.h	2007-08-08 17:48:53.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-s390/atomic.h	2007-08-08 18:40:17.000000000 -0400
-@@ -23,8 +23,13 @@
-  * S390 uses 'Compare And Swap' for atomicity in SMP enviroment
-  */
- 
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
- typedef struct {
--	int counter;
-+	volatile int counter;
- } __attribute__ ((aligned (4))) atomic_t;
- #define ATOMIC_INIT(i)  { (i) }
- 
-diff -urp linux-2.6.23-rc2-orig/include/asm-v850/atomic.h linux-2.6.23-rc2/include/asm-v850/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-v850/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-v850/atomic.h	2007-08-08 18:42:37.000000000 -0400
-@@ -21,7 +21,12 @@
- #error SMP not supported
- #endif
- 
--typedef struct { int counter; } atomic_t;
-+/*
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-+ */
-+typedef struct { volatile int counter; } atomic_t;
- 
- #define ATOMIC_INIT(i)	{ (i) }
- 
-diff -urp linux-2.6.23-rc2-orig/include/asm-x86_64/atomic.h linux-2.6.23-rc2/include/asm-x86_64/atomic.h
---- linux-2.6.23-rc2-orig/include/asm-x86_64/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-x86_64/atomic.h	2007-08-08 18:44:18.000000000 -0400
-@@ -21,8 +21,12 @@
-  * Make sure gcc doesn't try to be clever and move things around
-  * on us. We need to use _exactly_ the address the user gave us,
-  * not some alias that contains the same information.
-+ *
-+ * Make atomic_t volatile to remove the need for barriers in loops that
-+ * wait for an outside event.  We generally want to re-load the atomic_t
-+ * variable each time anyway, but don't need to re-load everything else.
-  */
--typedef struct { int counter; } atomic_t;
-+typedef struct { volatile int counter; } atomic_t;
- 
- #define ATOMIC_INIT(i)	{ (i) }
- 
+ 	/* wait for irq slice */
+ 	if (hpet_address && hpet_use_timer) {
++		/*
++		 * Wait for the comparator value to change which signals that
++		 * the tick slice has expired.
++		 */
+ 		int trigger = hpet_readl(HPET_T0_CMP);
+-		while (hpet_readl(HPET_COUNTER) >= trigger)
+-			/* do nothing */ ;
+-		while (hpet_readl(HPET_COUNTER) <  trigger)
++		while (trigger != hpet_readl(HPET_T0_CMP))
+ 			/* do nothing */ ;
+ 	} else {
+ 		int c1, c2;
