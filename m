@@ -1,157 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760387AbXHHLxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbXHHLxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760387AbXHHLxO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 07:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750736AbXHHLw6
+	id S1753964AbXHHLxr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 07:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXHHLxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 07:52:58 -0400
-Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:62766 "EHLO
-	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbXHHLw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 07:52:57 -0400
-Date: Wed, 8 Aug 2007 07:52:10 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Andi Kleen <ak@suse.de>
-cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
-Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in
- entry.S
-In-Reply-To: <200708081138.23018.ak@suse.de>
-Message-ID: <Pine.LNX.4.58.0708080740490.5921@gandalf.stny.rr.com>
-References: <11865467522495-git-send-email-gcosta@redhat.com>
- <1186546820708-git-send-email-gcosta@redhat.com> <11865468243612-git-send-email-gcosta@redhat.com>
- <200708081138.23018.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 8 Aug 2007 07:53:30 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:46663 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750736AbXHHLx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 07:53:28 -0400
+Date: Wed, 8 Aug 2007 13:53:59 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070808115359.GD2426@ff.dom.local>
+References: <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com> <20070807082321.GB2120@ff.dom.local> <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com> <20070807095246.GB3223@ff.dom.local> <20070807121339.GA3946@ff.dom.local> <4bacf17f0708080409t116b5c84ye60dff7da51d0fdf@mail.gmail.com> <20070808114243.GC2426@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070808114243.GC2426@ff.dom.local>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 08, 2007 at 01:42:43PM +0200, Jarek Poplawski wrote:
+...
+> So, it looks like x86_64 io_apic's IPI code was unused too long...
 
-Hi Andi,
+To be fair it's x86_64 lapic's IPI code.
 
-Thanks for all the comments, it's greatly appreciated.
-
-On Wed, 8 Aug 2007, Andi Kleen wrote:
-
->
-> > +#define SYSRETQ						\
-> > +			movq	%gs:pda_oldrsp,%rsp;	\
-> > +			swapgs;				\
-> > +			sysretq;
->
-> When the macro does more than sysret it should have a different
-> name
-
-Noted. Do you have a better idea? Something like SETSTACK_SWAPGS_SYSRETQ?
-
->
->
-> >   */
-> >  	.globl int_ret_from_sys_call
-> >  int_ret_from_sys_call:
-> > -	cli
-> > +	DISABLE_INTERRUPTS(CLBR_ANY)
->
-> ANY? There are certainly some registers alive at this point like rax
-
-Glauber will need to address this, this is his code ;-)
-
->
-> >  retint_restore_args:
-> > -	cli
-> > +	DISABLE_INTERRUPTS(CLBR_ANY)
->
-> Similar.
->
->
-> >  	/*
-> >  	 * The iretq could re-enable interrupts:
-> >  	 */
-> > @@ -566,10 +587,14 @@ retint_restore_args:
-> >  restore_args:
-> >  	RESTORE_ARGS 0,8,0
-> >  iret_label:
-> > -	iretq
-> > +#ifdef CONFIG_PARAVIRT
-> > +	INTERRUPT_RETURN
-> > +ENTRY(native_iret)
->
-> ENTRY adds alignment. Why do you need that export anyways?
-
-The paravirt ops struct points to it.
-
->
-> > +#endif
-> > +1:	iretq
-> >
-> >  	.section __ex_table,"a"
-> > -	.quad iret_label,bad_iret
-> > +	.quad 1b, bad_iret
->
-> iret_label seems more expressive to me than 1
-
-The reason for this change is because of the added:
-#ifdef CONFIG_PARAVIRT
-	INTERRUPT_RETURN
-ENTRY(native_iret)
-#endif
-
-If we are paravirt ops, we need the iretq in the exception table, not the
-paravit ops function call.  Since that function call may simply call the
-native_iretq, and if we take a fault at the iretq, it wont be in the
-exception table.
-
->
-> > +	ENABLE_INTERRUPTS(CLBR_NONE)
->
-> In many of the CLBR_NONEs there are actually some registers free;
-> but it might be safer to keep it this way. But if some client can get
-> significantly better code with one or two free registers it might
-> be worthwhile to investigate.
-
-Glauber, that comment is for you.
-
->
-> > -	swapgs
-> > +	SWAPGS_NOSTACK
->
-> There's still stack here
-
-OK, bad name then. How about SWAPGS_UNTRUSTED_STACK?
-
->From earlier in the file where SWAPGS_NOSTACK is declared we have:
-
-
-/* Currently paravirt can't handle swapgs nicely when we
- * don't have a stack.  So we either find a way around these
- * or just fault and emulate if a guest tries to call swapgs
- * directly.
- *
- * Either way, this is a good way to document that we don't
- * have a reliable stack.
- */
-#define SWAPGS_NOSTACK		swapgs
-
->
-> >  paranoid_restore\trace:
-> >  	RESTORE_ALL 8
-> > -	iretq
-> > +	INTERRUPT_RETURN
->
-> I suspect Xen will need much more changes anyways because of its
-> ring 3 guest. Are these changes sufficient for lguest?
-
-Probably not, but this part of the code I don't fully understand. But just
-doing this doesn't break lguest.  But perhaps it only did not break it yet
-;-)
-
-
-Thanks,
-
--- Steve
-
+Jarek P.
