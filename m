@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760234AbXHHIbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762954AbXHHIdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760234AbXHHIbe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbXHHIbZ
+	id S1762954AbXHHIdI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 04:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753541AbXHHIc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:31:25 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36129 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752159AbXHHIbY (ORCPT
+	Wed, 8 Aug 2007 04:32:56 -0400
+Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:16093 "EHLO
+	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750993AbXHHIcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:31:24 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 12/25] sysfs: Introduce sysfs_rename_mutex
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<46B97C94.8090209@gmail.com>
-Date: Wed, 08 Aug 2007 02:28:52 -0600
-In-Reply-To: <46B97C94.8090209@gmail.com> (Tejun Heo's message of "Wed, 08 Aug
-	2007 17:19:32 +0900")
-Message-ID: <m13ayufn0b.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 8 Aug 2007 04:32:55 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=NWRTkWw9FCnsIg3eZ/g6qHLOImAU0UkzmlTZ14lYYm46MpHZCb9AN1H3ML+qJN1WoZnkEVPcOyytZLvUA2tzKKkDhCqBmkkV9/FS4+uCMeA7j9wsTmg06WwvXtupYwd2;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.19,234,1183327200"; 
+   d="scan'208";a="88011776"
+Message-ID: <46B97FB2.1030502@fujitsu-siemens.com>
+Date: Wed, 08 Aug 2007 10:32:50 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+References: <46B73955.2080007@fujitsu-siemens.com> <20070807172911.cc626719.akpm@linux-foundation.org>
+In-Reply-To: <20070807172911.cc626719.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
+Hello Andrew,
 
-> Hello, Eric.
->
-> Eric W. Biederman wrote:
->> Looking carefully at the rename code we have a subtle dependency
->> that the structure of sysfs not change while we are performing
->> a rename.  If the parent directory of the object we are renaming
->> changes while the rename is being performed nasty things could
->> happen when we go to release our locks.
->> 
->> So introduce a sysfs_rename_mutex to prevent this highly
->> unlikely theoretical issue.
->
-> Yeah, it's a theoretical issue.  Rename/move implementation has always
-> depended on the parent structure not changing beneath it, but it's nice
-> to tighten up loose ends.
->
->> +DEFINE_MUTEX(sysfs_rename_mutex);
->
-> Probably doesn't really matter but wouldn't a rwsem fit better?
+thanks a lot for looking at this patch.
 
-Maybe.  I didn't feel any loss in when I was writing the code.
-Very few code paths actually seem to care.
+> Please feed the diff through scripts/checkpatch.pl.  It finds a lot of issues.
 
->> @@ -774,7 +775,7 @@ static struct dentry *__sysfs_get_dentry(struct
-> super_block *sb, struct sysfs_di
->>   *	down from there looking up dentry for each step.
->>   *
->>   *	LOCKING:
->> - *	Kernel thread context (may sleep)
->> + *	mutex_lock(sysfs_rename_mutex)
+I should have read the latest version of SubmittingPatches :-(
+I didn't expect you to pick up this patch so quickly, if I did
+I'd have cleaned it more thoroughly. I apologize.
 
-Well this is weird in that it should be on sysfs_get_dentry
-more then __sysfs_get_dentry but otherwise it's ok.
+I expect this patch to go through a few more iterations in discussions
+with Vivek and other people on this list.
 
-> LOCKING describes what locks should be held when entering the function,
-> so proper description would be something like...
->
-> 	Kernel thread context, grabs sysfs_rename_mutex
+> This is tricky code which you're adding.  Empirically-based stuff derived
+> from observation and experimentation.  It is quite impossible for readers
+> of this code to work out what the code is doing and why it is doing it
+> purely by reading the C statements.
 
-For rename_dir and move_dir yes.  I was updating the rules
-for sysfs_get_dentry.  Which really wants it's parents to
-hold that lock.
+OK. I thought this might make the patch itself too long, that's why I put
+it into the header.
 
-Eric
+Thanks, Martin
+
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DE6
+
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20409
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
