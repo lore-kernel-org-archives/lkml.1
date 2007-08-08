@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759126AbXHHJR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760764AbXHHJXQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759126AbXHHJR2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXHHJRV
+	id S1760764AbXHHJXQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:23:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbXHHJXE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:17:21 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:33147 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754799AbXHHJRU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:17:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=h3IhETAbIGFADoinSV24gEv0K9SuI6nQVKJXNHfU4uEHPiGv1TDgoq6mZLI/1gv7gpwP3tHyp+ZhPELtOHnGH7m0xiwwd9brfMyXPnLYNqLdhOaTnBMvN6wn4FpQhc9beXvINXJRtk73fmn7ffm2JnQZ2Y7n0QBazr2sgJRdgYI=
-Date: Wed, 8 Aug 2007 17:17:53 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Al Viro <viro@ftp.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] take sched_debug.c out of nasal demon territory
-Message-ID: <20070808091752.GA5548@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-References: <20070806032659.GX21089@ftp.linux.org.uk> <Pine.LNX.4.64.0708061750270.13469@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708061750270.13469@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 8 Aug 2007 05:23:04 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59300 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755410AbXHHJXC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 05:23:02 -0400
+X-Authenticated: #5108953
+X-Provags-ID: V01U2FsdGVkX19ACl1T4/BAAvb/Aw/2MFIYHF52vKeiVla2fNd8Ja
+	pKmyUWfUpaUHtx
+From: Toralf =?iso-8859-15?q?F=F6rster?= <toralf.foerster@gmx.de>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
+Date: Wed, 8 Aug 2007 11:22:52 +0200
+User-Agent: KMail/1.9.5
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <200708051902.18801.toralf.foerster@gmx.de> <200708071521.33679.toralf.foerster@gmx.de> <200708071738.24502.rjw@sisk.pl>
+In-Reply-To: <200708071738.24502.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1380805.pGmvZEDqbS";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708081122.55036.toralf.foerster@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 05:51:29PM +0200, Jan Engelhardt wrote:
->
->On Aug 6 2007 04:26, Al Viro wrote:
->>
->>	C99 6.10.3[11]: preprocessing directive within the argument list
->>of macro invocation => undefined behaviour.  Don't do that...
->
->String concatenation ("a" "b") is not a preprocessing directive.
->
->$ gcc -E test.c
-># 1 "test.c"
-># 1 "<built-in>"
-># 1 "<command line>"
-># 1 "test.c"
->printf("a" "b");
->
->(If it was, the "a" "b" would have already been joined.)
->
+--nextPart1380805.pGmvZEDqbS
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yes. According to C99 5.1.1.2, string concatenation is done in Phase 6,
-that's after preprocessing.
+Am Dienstag, 7. August 2007 17:38 schrieb Rafael J. Wysocki:
 
-Regards.
+> Actually, you don't need the patch above, just do
+> "echo shutdown > /sys/power/disk" before the hibernation (or use
+> BTW, can you please try this patch before you do that:
+> http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc2/patches/19-A=
+CPI-Enable-GPEs-before-_WAK-is-called.patch
 
--- 
-_   /|
-\'o.O'
-=(___)=
-   U    ack!
+This patch applied at commit cfee47f doesn't solve the regression.
+
+>=20
+> So place "echo shutdown > /sys/power/disk" before that into your script.
+yep, that works for me.
+
+=2D-=20
+MfG/Sincerely
+
+Toralf F=F6rster
+
+--nextPart1380805.pGmvZEDqbS
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBGuYtshyrlCH22naMRAhf2AKCjSdjK+hpd4RPmLRvJ+/AwipbqkwCfWdPC
+echoUufqB8VnGas965/SKjI=
+=WNrF
+-----END PGP SIGNATURE-----
+
+--nextPart1380805.pGmvZEDqbS--
