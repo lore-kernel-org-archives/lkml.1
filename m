@@ -1,59 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935111AbXHHOtN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935556AbXHHOti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935111AbXHHOtN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:49:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbXHHOs6
+	id S935556AbXHHOti (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbXHHOt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:48:58 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33765 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758279AbXHHOs5 (ORCPT
+	Wed, 8 Aug 2007 10:49:27 -0400
+Received: from fk-out-0910.google.com ([209.85.128.190]:13851 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754316AbXHHOtZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:48:57 -0400
-X-Sasl-enc: 9V+x4kHJ3nV4C8DA1nnhGAsmGrFQ6WTkLQPoiO2uqW/W 1186584536
-Date: Wed, 8 Aug 2007 11:48:54 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
-       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19
-	and 2.6.20 w/ Thinkpad T41
-Message-ID: <20070808144854.GB9587@khazad-dum.debian.net>
-References: <200708051902.18801.toralf.foerster@gmx.de> <200708081122.55036.toralf.foerster@gmx.de> <20070808120416.GA554@khazad-dum.debian.net> <200708081442.12641.rjw@sisk.pl>
+	Wed, 8 Aug 2007 10:49:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NyyN2BhcVphnO0b88AFWdIXSJHoF7pBO2y5A2y83fZ0bZxMxBpFUQc/yGGK/wX0Yf/yLj3p8HFY/tderiwfbke+kGiGfl5MRn39EObW4iMG3tMrQ+15oaT9zIwdoMb4RrqGRoxdM3R9+Sqlob6RGfccigHkFjGuI5/fo62QksaE=
+Message-ID: <5d6222a80708080749t35c5c0ceo8b3b8f0cce50c666@mail.gmail.com>
+Date: Wed, 8 Aug 2007 11:49:22 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <200708081200.13669.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200708081442.12641.rjw@sisk.pl>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <1186546847263-git-send-email-gcosta@redhat.com>
+	 <11865468513077-git-send-email-gcosta@redhat.com>
+	 <200708081200.13669.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007, Rafael J. Wysocki wrote:
-> > I wish we loaded the kernel just once, maybe from the boot loader.
-> 
-> Well, that's not so easy.  That will work for the bare image, but if we want it
-> to be compressed and/or encrypted, then the boot loader will need to
-> contain all of the necessary code.
+On 8/8/07, Andi Kleen <ak@suse.de> wrote:
+>
+> Is this really synced with the latest version of the i386 code?
+Roasted already commented on this. I will check out and change it here.
 
-Doing things right always have an associated cost, or we'd be doing it right
-since day one...
+>
+> > +#ifdef CONFIG_PARAVIRT
+> > +#include <asm/paravirt.h>
+> > +#endif
+>
+>
+> > +#include <linux/errno.h>
+> > +#include <linux/module.h>
+> > +#include <linux/efi.h>
+> > +#include <linux/bcd.h>
+> > +#include <linux/start_kernel.h>
+> > +
+> > +#include <asm/bug.h>
+> > +#include <asm/paravirt.h>
+> > +#include <asm/desc.h>
+> > +#include <asm/setup.h>
+> > +#include <asm/irq.h>
+> > +#include <asm/delay.h>
+> > +#include <asm/fixmap.h>
+> > +#include <asm/apic.h>
+> > +#include <asm/tlbflush.h>
+> > +#include <asm/msr.h>
+> > +#include <asm/page.h>
+> > +#include <asm/pgtable.h>
+> > +#include <asm/proto.h>
+> > +#include <asm/e820.h>
+> > +#include <asm/time.h>
+> > +#include <asm/asm-offsets.h>
+> > +#include <asm/smp.h>
+> > +#include <asm/irqflags.h>
+>
+>
+> Are the includes really all needed?
+delay.h is not needed anymore. Most of them, could be maybe moved to
+paravirt.c , which is the one that really needs all the native_
+things. Yeah, it will be better code this way, will change.
 
-> I may be doable by using a special boot kernel with ACPI disabled and only
-> as many drivers as required to load the image, but that will make it more
-> difficult to set up and to recover from errors.
+>
+> > +     if (opfunc == NULL)
+> > +             /* If there's no function, patch it with a ud2a (BUG) */
+> > +             ret = paravirt_patch_insns(site, len, start_ud2a, end_ud2a);
+>
+> This will actually give corrupted BUGs because you don't supply
+> the full inline BUG header. Perhaps another trap would be better.
 
-Better than the walking bomb we have now.  When waking from suspend-to-disk,
-we should not overwrite ANY non-kernel data which has ties to external
-systems (the hardware, the firmware).  Instead, we should re-init everything
-(re-init hardware to make sure we know in which state it is, re-init
-ourselves, to make sure we match the firmware and hardware state), as if we
-were booting a cold system in the first place.
+You mean this:
+> > +#include <asm/bug.h>
+?
+
+>
+> > +EXPORT_SYMBOL(paravirt_ops);
+>
+> Definitely _GPL at least.
+Sure.
+
+>
+> Should be native_paravirt_ops I guess
+
+makes sense.
+
+> > +
+> > + * This generates an indirect call based on the operation type number.
+>
+> The macros here don't
+>
+
+> > +static inline unsigned long read_msr(unsigned int msr)
+> > +{
+> > +     int __err;
+>
+> No need for __ in inlines
+Right. Thanks.
+
+
+> > +/* The paravirtualized I/O functions */
+> > +static inline void slow_down_io(void) {
+>
+> I doubt this needs to be inline and it's large
+In a second look, i386 have such a function in io.h because they need
+slow_down_io in a bunch of I/O instructions. It seems that we do not.
+Could we just get rid of it, then?
+
+> > +     __asm__ __volatile__(paravirt_alt(PARAVIRT_CALL)
+>
+> No __*__ in new code please
+
+Yup, will fix.
+
+> > +                          : "=a"(f)
+> > +                          : paravirt_type(save_fl),
+> > +                            paravirt_clobber(CLBR_RAX)
+> > +                          : "memory", "cc");
+> > +     return f;
+> > +}
+> > +
+> > +static inline void raw_local_irq_restore(unsigned long f)
+> > +{
+> > +     __asm__ __volatile__(paravirt_alt(PARAVIRT_CALL)
+> > +                          :
+> > +                          : "D" (f),
+>
+> Have you investigated if a different input register generates better/smaller
+> code? I would assume rdi to be usually used already for the caller's
+> arguments so it will produce spilling
+>
+> Similar for the rax return in the other functions.
+I don't think we can do different. These functions can be patched, and
+if it happens, they will put their return value in rax. So we'd better
+expect it there.
+Same goes for rdi, as they will expect the value to be there as an input.
+
+I don't think it will spill in the normal case, as rdi is already the
+parameter. So the compiler will just leave it there, untouched.
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
