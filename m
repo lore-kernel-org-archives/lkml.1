@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934114AbXHHUyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXHHVB5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934114AbXHHUyt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 16:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760831AbXHHUyk
+	id S964868AbXHHVB5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:01:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761305AbXHHVBo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 16:54:40 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59548 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759814AbXHHUyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 16:54:39 -0400
-Message-ID: <46BA2D72.9060202@redhat.com>
-Date: Wed, 08 Aug 2007 16:54:10 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+	Wed, 8 Aug 2007 17:01:44 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44550 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760752AbXHHVBn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 17:01:43 -0400
+Date: Wed, 8 Aug 2007 14:01:43 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: ak@suse.de
+cc: linux-kernel@vger.kernel.org, travis@sgi.com
+Subject: [PATCH] Remove x86_cpu_to_log_apicid
+Message-ID: <Pine.LNX.4.64.0708081400430.15668@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Jerry Jiang <wjiang@resilience.com>
-CC: Chris Friesen <cfriesen@nortel.com>, Zan Lynx <zlynx@acm.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>	<20070806123551.a6c3c154.wjiang@resilience.com>	<46B72C58.5030502@redhat.com>	<46B894E4.4010501@nortel.com>	<46B8D6D7.2020206@redhat.com>	<46B8DDF3.7050008@nortel.com>	<46B8E1D3.8050501@redhat.com>	<46B8E64E.7010708@nortel.com>	<1186525977.232321.43.camel@localhost>	<46B91D0C.5050704@redhat.com>	<46B94B94.6000600@nortel.com>	<46B96719.3050006@redhat.com> <20070808162755.61f50fbf.wjiang@resilience.com>
-In-Reply-To: <20070808162755.61f50fbf.wjiang@resilience.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jerry Jiang wrote:
-> On Wed, 08 Aug 2007 02:47:53 -0400
-> Chris Snook <csnook@redhat.com> wrote:
-> 
->> Chris Friesen wrote:
->>> Chris Snook wrote:
->>>
->>>> This is not a problem, since indirect references will cause the CPU to 
->>>> fetch the data from memory/cache anyway.
->>> Isn't Zan's sample code (that shows the problem) already using indirect 
->>> references?
->> Yeah, I misinterpreted his conclusion.  I thought about this for a 
->> while, and realized that it's perfectly legal for the compiler to re-use 
->> a value obtained from atomic_read.  All that matters is that the read 
->> itself was atomic.  The use (or non-use) of the volatile keyword is 
->> really more relevant to the other atomic operations.  If you want to 
->> guarantee a re-read from memory, use barrier().  This, incidentally, 
->> uses volatile under the hood.
->>
-> 
-> 
-> So for example, without volatile
-> 
-> int a = read_atomic(v);
-> int b = read_atomic(v);
-> 
-> the compiler will optimize it as b = a, 
-> But with volatile, it will be forced to fetch v's value from memory
-> again.
-> 
-> So, come back our initial question, 
-> 
-> include/asm-v850/atomic.h:typedef struct { int counter; } atomic_t;
-> 
-> Why is it right without volatile?
+From: Mike Travis <travis@sgi.com>
 
-Because atomic_t doesn't promise a memory fetch every time.  It merely 
-promises that any atomic_* operations will, in fact, be atomic.  For 
-example, posted today:
+Remove the x86_cpu_to_log_apicid array.  It is set in 
+arch/x86_64/kernel/genapic_flat.c:flat_init_apic_ldr() and
+arch/x86_64/kernel/smpboot.c:do_boot_cpu() but it is never
+referenced.
 
-http://lkml.org/lkml/2007/8/8/122
+Signed-off-by: Mike Travis <travis@sgi.com>
+---
+ arch/x86_64/kernel/genapic.c      |    2 --
+ arch/x86_64/kernel/genapic_flat.c |    1 -
+ arch/x86_64/kernel/smpboot.c      |    1 -
+ include/asm-x86_64/smp.h          |    1 -
+ 4 files changed, 5 deletions(-)
 
-	-- Chris
+--- a/arch/x86_64/kernel/genapic.c
++++ b/arch/x86_64/kernel/genapic.c
+@@ -29,8 +29,6 @@
+ 					= { [0 ... NR_CPUS-1] = BAD_APICID };
+ EXPORT_SYMBOL(x86_cpu_to_apicid);
+ 
+-u8 x86_cpu_to_log_apicid[NR_CPUS]	= { [0 ... NR_CPUS-1] = BAD_APICID };
+-
+ struct genapic __read_mostly *genapic = &apic_flat;
+ 
+ /*
+--- a/arch/x86_64/kernel/genapic_flat.c
++++ b/arch/x86_64/kernel/genapic_flat.c
+@@ -52,7 +52,6 @@
+ 
+ 	num = smp_processor_id();
+ 	id = 1UL << num;
+-	x86_cpu_to_log_apicid[num] = id;
+ 	apic_write(APIC_DFR, APIC_DFR_FLAT);
+ 	val = apic_read(APIC_LDR) & ~APIC_LDR_MASK;
+ 	val |= SET_APIC_LOGICAL_ID(id);
+--- a/arch/x86_64/kernel/smpboot.c
++++ b/arch/x86_64/kernel/smpboot.c
+@@ -702,7 +702,6 @@
+ 		cpu_clear(cpu, cpu_present_map);
+ 		cpu_clear(cpu, cpu_possible_map);
+ 		x86_cpu_to_apicid[cpu] = BAD_APICID;
+-		x86_cpu_to_log_apicid[cpu] = BAD_APICID;
+ 		return -EIO;
+ 	}
+ 
+--- a/include/asm-x86_64/smp.h
++++ b/include/asm-x86_64/smp.h
+@@ -84,7 +84,6 @@
+  * the real APIC ID <-> CPU # mapping.
+  */
+ extern u8 x86_cpu_to_apicid[NR_CPUS];	/* physical ID */
+-extern u8 x86_cpu_to_log_apicid[NR_CPUS];
+ extern u8 bios_cpu_apicid[];
+ 
+ static inline int cpu_present_to_apicid(int mps_cpu)
