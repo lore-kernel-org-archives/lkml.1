@@ -1,85 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbXHHHZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763150AbXHHH3R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbXHHHZS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756754AbXHHHYi
+	id S1763150AbXHHH3R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:29:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbXHHH3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:24:38 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:21335 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755815AbXHHHYg (ORCPT
+	Wed, 8 Aug 2007 03:29:06 -0400
+Received: from rwcrmhc15.comcast.net ([204.127.192.85]:57274 "EHLO
+	rwcrmhc15.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756013AbXHHH3F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:24:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=YNrrmlKlHO8MsFcc7ABJItKr6lj5wP1d3JmV/BsRum6NWb7J9qQJZUfyRr50KGlpwS/rNBUzXjHhjXwExHQ/BNJBLeMasblITlxGjyZ8ToQHFfOBTTCv3yPZzmItH/0h9kispBfFDQ1xn14x6O89iSmdj625guqLw4rD5Y9fs5U=
-Message-ID: <ed7dcf450708080024s719a4e92x782cafbe5811c012@mail.gmail.com>
-Date: Wed, 8 Aug 2007 09:24:35 +0200
-From: "=?ISO-8859-1?Q?S=F8ren_Hauberg?=" <hauberg@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Support for the Evolution Scorpion Robot
+	Wed, 8 Aug 2007 03:29:05 -0400
+Message-ID: <46B982D9.2070707@wolfmountaingroup.com>
+Date: Wed, 08 Aug 2007 02:46:17 -0600
+From: "Jeffrey V. Merkey" <jmerkey@wolfmountaingroup.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.8) Gecko/20050513 Fedora/1.7.8-2
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_35507_14365855.1186557875178"
+To: paul.pinault@disk91.com
+CC: Chris Snook <csnook@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: Data corruption
+References: <200708072007.27343.paul.pinault@disk91.com> <46B906DD.5000501@redhat.com> <200708080831.10141.paul.pinault@disk91.com>
+In-Reply-To: <200708080831.10141.paul.pinault@disk91.com>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_35507_14365855.1186557875178
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+paul wrote:
 
-Hi,
-  I'm currently running a patched version of 2.6.20 in order to use
-the Evolution Scorpion robot. For this robot to work I need to patch
-the kernel with a fairly simple patch that I'm attaching in case you
-want to apply it.
+If you remove memory and it goes away it probably is related to ECC 
+issues.  Replace the upper 2GB of memory -- it appears to
+have a defect.  If it persists after replacing the memory, then it may 
+be software related.   Doesn't sound like it though.  Sounds like the
+same problem I have seen.    
 
-Cheers,
-S=F8ren
+Jeff
 
-P.S. On not subscribed to this list, so please CC me if you have any
-replies. Thanks.
+>Hi, thank you for your answer, actually I removed 2Gb of physical memory and 
+>the problem gone away .. but my system needs 4Gb.
+>
+>I reproduce it under Xen and without xen (on a standard kernel) I can't tell 
+>you how mutch difference I have betwwen files, regarding a 4 month system 
+>running on these condition, I think the number of errors are rare but 
+>existing, during my tests with 100M files I did not get a lot of error, so we 
+>can assume 2 or 3 bytes in error in 300M files... (expectation)
+>
+>I try to avaoid it by disabeling memory relocation on my MB ... in that case 
+>the system only detect 2.8G (and Linux too), The probem still there.
+>
+>It seems to be based on an Asus P5B-VM problem as this one have a lot of with 
+>4Gb... But it should be certified on Windows up to 8Gb... (but I did not have 
+>that strange OS to check). So a workaround should exists.
+>
+>
+>Le mercredi 8 août 2007 01:57, vous avez écrit :
+>  
+>
+>>paul wrote:
+>>    
+>>
+>>>Since 2-3 month I have some random data corruption on my Linux server,
+>>>after checking disks independently (i'm using raid1on 2 sata disk, the
+>>>problem is the same w/o raid) and memory, hardware simce to be out of
+>>>cause...
+>>>
+>>>Here is my problem:
+>>>=> head --bytes=300m  /dev/urandom > test
+>>>=> for i in `seq 0 9` ; do cp test test$i ; done
+>>>=> md5sum test*
+>>>I got :
+>>>014666c728c9e3b8299579fae499864a  test
+>>>014666c728c9e3b8299579fae499864a  test0
+>>>333fd93d093ac612cd8d5f65628f734e  test1
+>>>1ab6ee68c6a7d9ff5a05f9d63f0f6df6  test2
+>>>96e96483e3175a59c9c05b6720514e1e  test3
+>>>014666c728c9e3b8299579fae499864a  test4
+>>>b24dbccc9f4831f8825ab4a55a3be4aa  test5
+>>>8493efc9c14e4b5c162ac23696fbc16a  test6
+>>>6a5f4301f66d0379049d79d0e14e2a87  test7
+>>>2c81cfa1c3a03aba134574922ee5d75c  test8
+>>>2ea15c8392bfd0123472a80125bb3abe  test9
+>>>
+>>>^^^ that sounds really bad for my data :(
+>>>      
+>>>
+>>It does indeed.  Can you try comparing the data to see precisely how much
+>>differs between the versions?  md5sums don't distinguish between a
+>>single-bit error and a block or page-sized error, but the distinction is
+>>critical in determining what broke.
+>>
+>>Can you reproduce this on a recent upstream baremetal (non-Xen) kernel?  If
+>>so, does it go away when you boot with mem=3000M?
+>>
+>>	-- Chris
+>>    
+>>
+>
+>-
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+>
+>  
+>
 
-------=_Part_35507_14365855.1186557875178
-Content-Type: application/octet-stream; name="ftdi_sio.c.patch-2.6.20"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="ftdi_sio.c.patch-2.6.20"
-X-Attachment-Id: f_f53hwxhd
-
-LS0tIGZ0ZGlfc2lvLmMuYmFrCTIwMDctMDgtMDcgMjE6Mzc6MzcuMDAwMDAwMDAwICswMjAwCisr
-KyBmdGRpX3Npby5jCTIwMDctMDgtMDcgMjE6NTM6MzYuMDAwMDAwMDAwICswMjAwCkBAIC00ODgs
-NiArNDg4LDggQEAKIAl7IFVTQl9ERVZJQ0UoRlRESV9WSUQsIEZURElfVEVSQVRST05JS19WQ1Bf
-UElEKSB9LAogCXsgVVNCX0RFVklDRShGVERJX1ZJRCwgRlRESV9URVJBVFJPTklLX0QyWFhfUElE
-KSB9LAogCXsgVVNCX0RFVklDRShFVk9MVVRJT05fVklELCBFVk9MVVRJT05fRVIxX1BJRCkgfSwK
-KyAgICAgICAgeyBVU0JfREVWSUNFKEVWT0xVVElPTl9WSUQsIEVWT19IWUJSSURfUElEKSB9LAor
-ICAgICAgICB7IFVTQl9ERVZJQ0UoRVZPTFVUSU9OX1ZJRCwgRVZPX1JDTTRfUElEKSB9LAogCXsg
-VVNCX0RFVklDRShGVERJX1ZJRCwgRlRESV9BUlRFTUlTX1BJRCkgfSwKIAl7IFVTQl9ERVZJQ0Uo
-RlRESV9WSUQsIEZURElfQVRJS19BVEsxNl9QSUQpIH0sCiAJeyBVU0JfREVWSUNFKEZURElfVklE
-LCBGVERJX0FUSUtfQVRLMTZDX1BJRCkgfSwKQEAgLTgxOSw2ICs4MjEsMTIgQEAKIAogCWJhdWQg
-PSB0dHlfZ2V0X2JhdWRfcmF0ZShwb3J0LT50dHkpOwogCWRiZygiJXMgLSB0dHlfZ2V0X2JhdWRf
-cmF0ZSByZXBvcnRzIHNwZWVkICVkIiwgX19GVU5DVElPTl9fLCBiYXVkKTsKKyAJLyogY29udmVy
-dCBiYXVkIHJhdGUgZnJvbSAyMzBLIHRvIDI1MEsgZm9yIFJDTSBkZXZpY2UgKi8KKyAgICAJaWYg
-KCBiYXVkID09IDIzMDQwMCAmJiBwb3J0LT5zZXJpYWwtPmRldi0+ZGVzY3JpcHRvci5pZFZlbmRv
-ciA9PSBFVk9MVVRJT05fVklEICkKKyAgICAJICB7CisJICAgIGJhdWQgPSAyNTAwMDA7CisgICAg
-ICAgICAgICBkYmcoIiVzOiBidW1wZWQgbWFnaWNhbCAyMzA0MDAgYmF1ZCB0byAyLjVrYiIsIF9f
-RlVOQ1RJT05fXyk7CisgICAgCSAgfQogCiAJLyogMi4gT2JzZXJ2ZSBhc3luYy1jb21wYXRpYmxl
-IGN1c3RvbV9kaXZpc29yIGhhY2ssIHVwZGF0ZSBiYXVkcmF0ZSBpZiBuZWVkZWQgKi8KIAo=
-------=_Part_35507_14365855.1186557875178
-Content-Type: application/octet-stream; name="ftdi_sio.h.patch-2.6.20"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="ftdi_sio.h.patch-2.6.20"
-X-Attachment-Id: f_f53hx1u6
-
-LS0tIGZ0ZGlfc2lvLmguYmFrCTIwMDctMDgtMDcgMjE6Mzc6NDMuMDAwMDAwMDAwICswMjAwCisr
-KyBmdGRpX3Npby5oCTIwMDctMDgtMDcgMjE6Mzk6NDguMDAwMDAwMDAwICswMjAwCkBAIC00MTks
-NiArNDE5LDkgQEAKICAqLwogI2RlZmluZSBFVk9MVVRJT05fVklECQkweERFRUUJLyogVmVuZG9y
-IElEICovCiAjZGVmaW5lIEVWT0xVVElPTl9FUjFfUElECTB4MDMwMAkvKiBFUjEgQ29udHJvbCBN
-b2R1bGUgKi8KKyNkZWZpbmUgRVZPXzhVMjMyQU1fUElEIDB4MDJGRiAvKiBFdm9sdXRpb24gcm9i
-b3RpY3MgUkNNMiAoRlQyMzJBTSkqLworI2RlZmluZSBFVk9fSFlCUklEX1BJRCAgMHgwMzAyIC8q
-IEV2b2x1dGlvbiByb2JvdGljcyBSQ000IFBJRCAoRlQyMzJCTSkqLworI2RlZmluZSBFVk9fUkNN
-NF9QSUQgICAgMHgwMzAzIC8qIEV2b2x1dGlvbiByb2JvdGljcyBSQ000IFBJRCAqLwogCiAvKiBQ
-eXJhbWlkIENvbXB1dGVyIEdtYkggKi8KICNkZWZpbmUgRlRESV9QWVJBTUlEX1BJRAkweEU2QzgJ
-LyogUHlyYW1pZCBBcHBsaWFuY2UgRGlzcGxheSAqLwo=
-------=_Part_35507_14365855.1186557875178--
