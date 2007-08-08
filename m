@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934670AbXHHXAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935372AbXHHXBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934670AbXHHXAE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:00:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbXHHW7w
+	id S935372AbXHHXBm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbXHHXBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:59:52 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44864 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757296AbXHHW7w (ORCPT
+	Wed, 8 Aug 2007 19:01:31 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:61844 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757572AbXHHXBa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:59:52 -0400
-Date: Wed, 8 Aug 2007 15:59:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Avi Kivity <avi@qumranet.com>
-Cc: Ingo Molnar <mingo@elte.hu>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: kvm warning
-Message-Id: <20070808155901.bcb249d9.akpm@linux-foundation.org>
-In-Reply-To: <46BA4827.3080907@qumranet.com>
-References: <20070808151446.9a4eebda.akpm@linux-foundation.org>
-	<20070808221956.GA16238@elte.hu>
-	<46BA4827.3080907@qumranet.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 19:01:30 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: =?utf-8?q?J=C3=B6rn_Engel?= <joern@logfs.org>
+Subject: Re: [Patch 16/18] fs/Kconfig
+Date: Thu, 9 Aug 2007 01:01:26 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       David Woodhouse <dwmw2@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <20070808161234.GB15319@lazybastard.org> <20070808162339.GR15319@lazybastard.org>
+In-Reply-To: <20070808162339.GR15319@lazybastard.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200708090101.27226.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/ZDQBwwzsCfDOg8Q9S2UWRx6phUIOzU46Dmue
+ ETrBMNCXKTDIBUh3kIzvNAt64xkiUe6EFNHQzlKC0hADgkFPN7
+ H2+NqON1f7sb8KvwZ6t4A==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Aug 2007 01:48:07 +0300
-Avi Kivity <avi@qumranet.com> wrote:
+On Wednesday 08 August 2007, Jörn Engel wrote:
+> +config LOGFS
+> +       bool "Log Filesystem (EXPERIMENTAL)"
+> +       depends on MTD && BLOCK && EXPERIMENTAL
 
-> Ingo Molnar wrote:
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> >   
-> >> ia64 allmodconfig says
-> >>
-> >> drivers/kvm/Kconfig:14:warning: 'select' used by config symbol 'KVM' 
-> >> refers to undefined symbol 'PREEMPT_NOTIFIERS'
-> >>     
-> >
-> > hm, why doesnt ia64 pick up kernel/Kconfig.preempt, like all the other 
-> > arches? Due to that ia64 also misses out on voluntary preempt and on 
-> > preempt-bkl.
-> >
-> >   
-> 
-> Even more hm, how does ia64 manage to enable kvm?  It 'depends on X86' 
-> at this moment.
-> 
+The dependency on MTD _and_ BLOCK looks correct for your code, but
+not necessary. How about making it 
 
-beats me.  CONFIG_KVM doesn't get set.  But it seems that kconfig wants
-to do error-checking on that item anyway.
+	depends on (MTD || BLOCK) && EXPERIMENTAL
 
+and allowing to build without the mtd/bdev specific code?
 
-
-btw, testing of Kconfig can be done for any architecture without
-installation of a toolchain for that architecture.  Set $ARCH and run
-mrproper then use menuconfig/oldconfig/allmodconfig/allconfig as usual.
-
-Judging by the number of Kconfig problem I see, this is a big secret ;)
+	Arnd <><
