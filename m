@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936386AbXHHSXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbXHHS02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936386AbXHHSXR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXHHSW7
+	id S934634AbXHHS02 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbXHHS0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:22:59 -0400
-Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:65482 "EHLO
-	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751135AbXHHSW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:22:59 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=gU53NPZ18h3KzD5i2pk4Xp2BEOTKcK/5ZIsXaE+bq6sHE5ZkwPyQPO5ulZ5e7aVWK0pK/p4HzQW9JCyitJPgCqGLQSMBaIx6B7z4OpsE2sh7tqgqc4jfId6sXSiQxKIE;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.19,236,1183327200"; 
-   d="scan'208";a="88116930"
-Message-ID: <46BA09FE.2070909@fujitsu-siemens.com>
-Date: Wed, 08 Aug 2007 20:22:54 +0200
-From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Organization: Fujitsu Siemens Computers
-User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
+	Wed, 8 Aug 2007 14:26:20 -0400
+Received: from mail.tpi.com ([198.107.51.143]:2806 "EHLO mail.tpi.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754964AbXHHS0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:26:20 -0400
+Message-ID: <46BA0A9D.1040405@canonical.com>
+Date: Wed, 08 Aug 2007 12:25:33 -0600
+From: Tim Gardner <tim.gardner@canonical.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
-References: <46B73955.2080007@fujitsu-siemens.com>	<20070807142928.GA18839@in.ibm.com>	<46B8AECA.7050908@fujitsu-siemens.com>	<m1ir7qg7kd.fsf@ebiederm.dsl.xmission.com>	<46B986D5.2010407@fujitsu-siemens.com>	<m1myx2dpcc.fsf@ebiederm.dsl.xmission.com>	<46B9FEC8.20004@fujitsu-siemens.com> <m1myx1c3lj.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1myx1c3lj.fsf@ebiederm.dsl.xmission.com>
+To: Cal Peake <cp@absolutedigital.net>
+CC: Andi Kleen <ak@suse.de>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] drop unneeded variable in amd_apic_timer_broken
+References: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net> <20070808000631.GB7353@one.firstfloor.org> <Pine.LNX.4.64.0708072030440.28681@lancer.cnet.absolutedigital.net> <200708081636.20223.ak@suse.de> <Pine.LNX.4.64.0708081146120.25865@lancer.cnet.absolutedigital.net>
+In-Reply-To: <Pine.LNX.4.64.0708081146120.25865@lancer.cnet.absolutedigital.net>
 X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-
->> I think a lot would be gained if disable_IO_APIC() would just mask the IRQs
->> (like the function in my patch does), and perhaps fix the dest ID, instead of
->> totally clearing the registers.
+Cal Peake wrote:
+> On Wed, 8 Aug 2007, Andi Kleen wrote:
 > 
-> Even masked we still won't see the EOI, because then we are in i8259
-> mode.  So masked versus totally cleared really should make no
-> difference.
-
-You are talking about EOI sent in the kdump kernel, correct? With my patch
-the EOI (sent in the "old" kernel) is seen.
-
-> I guess right now I can see work put into cleaning things up a little
-> or not having to call disable_IO_APIC() at all.  that was supposed
-> to be a short term hack, until we fixed things properly.
+>> Can you please test if this patch works?
 > 
-> So far no one has been brave enough to mess with the kernel apic
-> initialization order so we can remove disable_IO_APIC.  If our
-> goal isn't to fix things properly by removing the need for
-> disable_IO_APIC I don't feel like putting much effort into this
-> code path.
+> Yep, seems to do the trick. Thanks!
+> 
+>> BTW I checked with AMD and they seem to think it's just a buggy BIOS.
+> 
+> Nod. Atleast we can work around it.
+> 
+>> Use global flag to disable broken local apic timer on AMD CPUs.
+>>
+>> The Averatec 2370 laptop BIOS seems to program the ENABLE_C1E
+> 
+> s~2370~2370/2371~ to be completely accurate ;)
+> 
+>> MSR inconsistently between cores. This confuses the lapic
+>> use heuristics wants to know if C1E is enabled anywhere.
+>>
+>> Use a global flag instead of a per cpu flag to handle this.
+>> If any CPU has C1E enabled disabled lapic use.
+>>
+>> Thanks to Cal Peake for debugging.
+>> Signed-off-by: Andi Kleen <ak@suse.de>
+> 
+> Acked-by: Cal Peake <cp@absolutedigital.net>
+> 
 
-Who is working on this? Can you give a reference to a list of things that
-would need to be done to do this right?
+This patch also solves the boot problem on a Dell E1501. I started the
+thread "ACPI Regression on Dell E1501" regarding this issue on June 21,
+2007.
 
-Martin
+Acked-by: Tim Gardner <tim.gardner@ubuntu.com>
 
 -- 
-Martin Wilck
-PRIMERGY System Software Engineer
-FSC IP ESP DE6
-
-Fujitsu Siemens Computers GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn
-Germany
-
-Tel:			++49 5251 8 15113
-Fax:			++49 5251 8 20409
-Email:			mailto:martin.wilck@fujitsu-siemens.com
-Internet:		http://www.fujitsu-siemens.com
-Company Details:	http://www.fujitsu-siemens.com/imprint.html
+Tim Gardner tim.gardner@ubuntu.com
