@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937967AbXHHTKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965020AbXHHTL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937967AbXHHTKo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 15:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933094AbXHHTKc
+	id S965020AbXHHTL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 15:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764174AbXHHTLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 15:10:32 -0400
-Received: from mga01.intel.com ([192.55.52.88]:38426 "EHLO mga01.intel.com"
+	Wed, 8 Aug 2007 15:11:05 -0400
+Received: from mga02.intel.com ([134.134.136.20]:43355 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764111AbXHHTKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 15:10:31 -0400
+	id S933094AbXHHTLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 15:11:02 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,237,1183359600"; 
-   d="scan'208";a="278433214"
-Date: Wed, 8 Aug 2007 12:07:39 -0700
+   d="scan'208";a="276322125"
+Date: Wed, 8 Aug 2007 12:08:10 -0700
 From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 To: jeff@garzik.org
 Cc: James.Bottomley@steeleye.com, linux-ide@vger.kernel.org,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [patch 0/4] Updated AN patches, now without gendisk
-Message-Id: <20070808120739.c3097d19.kristen.c.accardi@intel.com>
+       akpm@linux-foundation.org,
+       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: [patch 1/4] libata: check for AN support
+Message-Id: <20070808120810.5f8ed457.kristen.c.accardi@intel.com>
+In-Reply-To: <20070808190613.616085010@localhost.localdomain>
+References: <20070808190613.616085010@localhost.localdomain>
 X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,13 +30,159 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-Here is an updated set of patches that implement Asynchronous Notification
-support for ATAPI devices.  In this version I no longer export the AN
-capability through genhd, and the uevent is sent by the scsi_device 
-instead of gendisk.  I added a generic SCSI device event mechanism so
-that it can be expanded in the future with other types of events.  Please
-let me know what you think.
+Check to see if an ATAPI device supports Asynchronous Notification.
+If so, enable it.
 
-Kristen
+Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+
+Index: 2.6-git/drivers/ata/libata-core.c
+===================================================================
+--- 2.6-git.orig/drivers/ata/libata-core.c
++++ 2.6-git/drivers/ata/libata-core.c
+@@ -70,6 +70,7 @@ const unsigned long sata_deb_timing_long
+ static unsigned int ata_dev_init_params(struct ata_device *dev,
+ 					u16 heads, u16 sectors);
+ static unsigned int ata_dev_set_xfermode(struct ata_device *dev);
++static unsigned int ata_dev_set_AN(struct ata_device *dev, u8 enable);
+ static void ata_dev_xfermask(struct ata_device *dev);
+ static unsigned long ata_dev_blacklisted(const struct ata_device *dev);
+ 
+@@ -1974,6 +1975,22 @@ int ata_dev_configure(struct ata_device 
+ 		}
+ 		dev->cdb_len = (unsigned int) rc;
+ 
++		/*
++		 * check to see if this ATAPI device supports
++		 * Asynchronous Notification
++		 */
++		if ((ap->flags & ATA_FLAG_AN) && ata_id_has_AN(id)) {
++			int err;
++			/* issue SET feature command to turn this on */
++			err = ata_dev_set_AN(dev, SETFEATURES_SATA_ENABLE);
++			if (err)
++				ata_dev_printk(dev, KERN_ERR,
++						"unable to set AN, err %x\n",
++						err);
++			else
++				dev->flags |= ATA_DFLAG_AN;
++		}
++
+ 		if (ata_id_cdb_intr(dev->id)) {
+ 			dev->flags |= ATA_DFLAG_CDB_INTR;
+ 			cdb_intr_string = ", CDB intr";
+@@ -3948,6 +3965,42 @@ static unsigned int ata_dev_set_xfermode
+ }
+ 
+ /**
++ *	ata_dev_set_AN - Issue SET FEATURES - SATA FEATURES
++ *	@dev: Device to which command will be sent
++ *	@enable: Whether to enable or disable the feature
++ *
++ *	Issue SET FEATURES - SATA FEATURES command to device @dev
++ *	on port @ap with sector count set to indicate Asynchronous
++ *	Notification feature
++ *
++ *	LOCKING:
++ *	PCI/etc. bus probe sem.
++ *
++ *	RETURNS:
++ *	0 on success, AC_ERR_* mask otherwise.
++ */
++static unsigned int ata_dev_set_AN(struct ata_device *dev, u8 enable)
++{
++	struct ata_taskfile tf;
++	unsigned int err_mask;
++
++	/* set up set-features taskfile */
++	DPRINTK("set features - SATA features\n");
++
++	ata_tf_init(dev, &tf);
++	tf.command = ATA_CMD_SET_FEATURES;
++	tf.feature = enable;
++	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
++	tf.protocol = ATA_PROT_NODATA;
++	tf.nsect = SATA_AN;
++
++	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
++
++	DPRINTK("EXIT, err_mask=%x\n", err_mask);
++	return err_mask;
++}
++
++/**
+  *	ata_dev_init_params - Issue INIT DEV PARAMS command
+  *	@dev: Device to which command will be sent
+  *	@heads: Number of heads (taskfile parameter)
+Index: 2.6-git/include/linux/ata.h
+===================================================================
+--- 2.6-git.orig/include/linux/ata.h
++++ 2.6-git/include/linux/ata.h
+@@ -217,6 +217,12 @@ enum {
+ 
+ 	SETFEATURES_SPINUP	= 0x07, /* Spin-up drive */
+ 
++	SETFEATURES_SATA_ENABLE = 0x10, /* Enable use of SATA feature */
++	SETFEATURES_SATA_DISABLE = 0x90, /* Disable use of SATA feature */
++
++	/* SETFEATURE Sector counts for SATA features */
++	SATA_AN			= 0x05,  /* Asynchronous Notification */
++
+ 	/* ATAPI stuff */
+ 	ATAPI_PKT_DMA		= (1 << 0),
+ 	ATAPI_DMADIR		= (1 << 2),	/* ATAPI data dir:
+@@ -344,6 +350,9 @@ struct ata_taskfile {
+ #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
+ #define ata_id_removeable(id)	((id)[0] & (1 << 7))
+ #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
++#define ata_id_has_AN(id)	\
++	( (((id)[76] != 0x0000) && ((id)[76] != 0xffff)) && \
++	  ((id)[78] & (1 << 5)) )
+ #define ata_id_iordy_disable(id) ((id)[49] & (1 << 10))
+ #define ata_id_has_iordy(id) ((id)[49] & (1 << 9))
+ #define ata_id_u32(id,n)	\
+Index: 2.6-git/include/linux/libata.h
+===================================================================
+--- 2.6-git.orig/include/linux/libata.h
++++ 2.6-git/include/linux/libata.h
+@@ -139,7 +139,8 @@ enum {
+ 	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
+ 	ATA_DFLAG_ACPI_PENDING	= (1 << 5), /* ACPI resume action pending */
+ 	ATA_DFLAG_ACPI_FAILED	= (1 << 6), /* ACPI on devcfg has failed */
+-	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
++	ATA_DFLAG_AN		= (1 << 7), /* device supports AN */
++	ATA_DFLAG_CFG_MASK	= (1 << 12) - 1,
+ 
+ 	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
+ 	ATA_DFLAG_NCQ_OFF	= (1 << 9), /* device limited to non-NCQ mode */
+@@ -177,6 +178,7 @@ enum {
+ 	ATA_FLAG_IGN_SIMPLEX	= (1 << 15), /* ignore SIMPLEX */
+ 	ATA_FLAG_NO_IORDY	= (1 << 16), /* controller lacks iordy */
+ 	ATA_FLAG_ACPI_SATA	= (1 << 17), /* need native SATA ACPI layout */
++	ATA_FLAG_AN		= (1 << 18), /* controller supports AN */
+ 
+ 	/* The following flag belongs to ap->pflags but is kept in
+ 	 * ap->flags because it's referenced in many LLDs and will be
+Index: 2.6-git/drivers/ata/ahci.c
+===================================================================
+--- 2.6-git.orig/drivers/ata/ahci.c
++++ 2.6-git/drivers/ata/ahci.c
+@@ -332,14 +332,15 @@ static const struct ata_port_operations 
+ static const struct ata_port_info ahci_port_info[] = {
+ 	/* board_ahci */
+ 	{
+-		.flags		= AHCI_FLAG_COMMON,
++		.flags		= AHCI_FLAG_COMMON | ATA_FLAG_AN,
+ 		.pio_mask	= 0x1f, /* pio0-4 */
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_ops,
+ 	},
+ 	/* board_ahci_pi */
+ 	{
+-		.flags		= AHCI_FLAG_COMMON | AHCI_FLAG_HONOR_PI,
++		.flags		= AHCI_FLAG_COMMON | AHCI_FLAG_HONOR_PI |
++				  ATA_FLAG_AN,
+ 		.pio_mask	= 0x1f, /* pio0-4 */
+ 		.udma_mask	= ATA_UDMA6,
+ 		.port_ops	= &ahci_ops,
+
 -- 
