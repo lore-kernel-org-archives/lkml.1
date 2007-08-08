@@ -1,106 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934616AbXHHWky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934776AbXHHWlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934616AbXHHWky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760618AbXHHWkX
+	id S934776AbXHHWlv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759905AbXHHWlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:40:23 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:33669 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760075AbXHHWkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:40:22 -0400
-Subject: Re: [PATCH 0/3] Use one zonelist per node instead of multiple
-	zonelists v2
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@skynet.ie>
-Cc: Christoph Lameter <clameter@sgi.com>, pj@sgi.com, ak@suse.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <20070808214420.GD2441@skynet.ie>
-References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie>
-	 <Pine.LNX.4.64.0708081025330.12652@schroedinger.engr.sgi.com>
-	 <1186597819.5055.37.camel@localhost>  <20070808214420.GD2441@skynet.ie>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 08 Aug 2007 18:40:07 -0400
-Message-Id: <1186612807.5055.106.camel@localhost>
+	Wed, 8 Aug 2007 18:41:40 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46431 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759496AbXHHWli (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:41:38 -0400
+Date: Wed, 8 Aug 2007 15:41:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial: turn serial console suspend a boot rather than
+ compile time option
+Message-Id: <20070808154130.9cc3a30e.akpm@linux-foundation.org>
+In-Reply-To: <20070808183535.2a2c6edf.dilinger@queued.net>
+References: <20070808183535.2a2c6edf.dilinger@queued.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 22:44 +0100, Mel Gorman wrote:
-> On (08/08/07 14:30), Lee Schermerhorn didst pronounce:
-> > On Wed, 2007-08-08 at 10:36 -0700, Christoph Lameter wrote:
-> > > On Wed, 8 Aug 2007, Mel Gorman wrote:
-> > > 
-<snip>
-> > > > o Remove bind_zonelist() (Patch in progress, very messy right now)
-> > > 
-> > > Will this also allow us to avoid always hitting the first node of an 
-> > > MPOL_BIND first?
-> > 
-> > An idea:
-> > 
-> > Apologies if someone already suggested this and I missed it.  Too much
-> > traffic...
-> > 
-> > instead of passing a zonelist for BIND policy, how about passing [to
-> > __alloc_pages(), I think] a starting node, a nodemask, and gfp flags for
-> > zone and modifiers. 
+On Wed, 8 Aug 2007 18:35:35 -0400
+Andres Salomon <dilinger@queued.net> wrote:
+
+> Currently, there's a CONFIG_DISABLE_CONSOLE_SUSPEND that allows one to stop
+> the serial console from being suspended when the rest of the machine goes
+> to sleep.  This is incredibly useful for debugging power management-related
+> things; however, having it as a compile-time option has proved to be
+> incredibly inconvenient for us (OLPC).  There are plenty of times that we
+> want serial console to not suspend, but for the most part we'd like serial
+> console to be suspended.
 > 
-> Yes, this has come up before although it wasn't my initial suggestion. I
-> thought maybe it was yours but I'm not sure anymore. I'm working through
-> it at the moment. 
-
-I've heard/seen Christoph mention passing a nodemask to alloc_pages a
-few times, but hadn't seen any of the details.  Got me thinking..
-
-> With the patch currently, a a nodemask is passed in for
-> filtering which should be enough as the zonelist being used should be enough
-> information to indicate the starting node.
-
-It'll take me a while to absorb the patch, so I'll just ask:  Where does
-the zonelist for the argument come from?  If the the bind policy
-zonelist is removed, then does it come from a node?  There'll be only
-one per node with your other patches, right?  So you had to have a node
-id, to look up the zonelist?  Do you need the zonelist elsewhere,
-outside of alloc_pages()?  If not, why not just let alloc_pages look it
-up from a starting node [which I think can be determined from the
-policy]?  
-
-OK, that's a lot of questions.  no need to answer.  That's just what I'm
-thinking re: all this.  I'll wait and see how the patch develops.
-  
+> This drops CONFIG_DISABLE_CONSOLE_SUSPEND, and replaces it with a kernel
+> boot parameter (no_console_suspend).  By default, the serial console will
+> be suspended along with the rest of the system; by passing
+> 'no_console_suspend' to the kernel during boot, serial console will remain
+> alive during suspend.
 > 
-> The signature of __alloc_pages() becomes
+> I have another version of this patch which keeps #ifdefs around; however,
+> it's uglier.  I prefer this version of the patch, and don't feel that it
+> increases bloat.  If people strongly disagree, let me know and I'll submit
+> the other patch.
 > 
-> static page * fastcall
-> __alloc_pages_nodemask(gfp_t gfp_mask, nodemask_t *nodemask,
->                unsigned int order, struct zonelist *zonelist)
-> 
-> >  For various policies, the arguments would look like this:
-> > Policy		start node	nodemask
-> > 
-> > default		local node	cpuset_current_mems_allowed
-> > 
-> > preferred	preferred_node	cpuset_current_mems_allowed
-> > 
-> > interleave	computed node	cpuset_current_mems_allowed
-> > 
-> > bind		local node	policy nodemask [replaces bind
-> > 				zonelist in mempolicy]
-> > 
-> 
-> The last one is the most interesting. Much of the patch in development
-> involves deleting the custom node stuff. I've included the patch below if
-> you're curious. I wanted to get one-zonelist out first to see if we could
-> agree on that before going further with it.
 
-Again, it'll be a while. 
+yep, compile-time options suck.
 
-Thanks,
-Lee
+> --- a/include/linux/kernel.h
+> +++ b/include/linux/kernel.h
+> @@ -172,6 +172,8 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
+>  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+>  				unsigned int interval_msec);
+>  
+> +extern int console_suspend;
+> +
 
+That's a somewhat vague-sounding identifier.  Could we call it
+console_suspend_enabled or something?
 
