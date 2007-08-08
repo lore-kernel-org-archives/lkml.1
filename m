@@ -1,74 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932673AbXHHWgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932960AbXHHWi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932673AbXHHWgj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbXHHWgb
+	id S932960AbXHHWi5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXHHWiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:36:31 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:54425 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbXHHWga (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:36:30 -0400
-Subject: Re: 2.6.22: pcspkr driver no longer loads automatically
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Bill Nottingham <notting@redhat.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dtor@insightbb.com>, Greg KH <greg@kroah.com>
-In-Reply-To: <20070808222206.GA12375@nostromo.devel.redhat.com>
-References: <46B8C8FA.9020100@redhat.com> <46B8D984.7040602@garzik.org>
-	 <46B8E773.5020406@redhat.com>
-	 <3ae72650708071523s24d80ae4v2590c50aea04c850@mail.gmail.com>
-	 <20070808193220.GB5001@nostromo.devel.redhat.com>
-	 <1186603327.3584.12.camel@lov.localdomain>
-	 <20070808222206.GA12375@nostromo.devel.redhat.com>
-Content-Type: text/plain
-Date: Thu, 09 Aug 2007 00:39:35 +0200
-Message-Id: <1186612775.4591.13.camel@lov.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.6.1 
+	Wed, 8 Aug 2007 18:38:46 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:41625 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754595AbXHHWip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:38:45 -0400
+Message-ID: <46BA45E1.5030501@redhat.com>
+Date: Wed, 08 Aug 2007 18:38:25 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 1.5.0.12 (Macintosh/20070509)
+MIME-Version: 1.0
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       andi@firstfloor.org, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au
+Subject: Re: [patch] ipvs: force read of atomic_t in while loop
+References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com> <20070808.032131.35507346.davem@davemloft.net> <20070808102835.GC14530@osiris.boeblingen.de.ibm.com> <46BA30DC.20207@redhat.com> <20070808143115.de539511.akpm@linux-foundation.org> <20070808222703.GA11359@osiris.ibm.com>
+In-Reply-To: <20070808222703.GA11359@osiris.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18cNQq6h4V8/UPwaxS/zL69B/0VU66/hbOZRh5
- LiXKDtCHvShJxN3NPagRwMuLBOJ4+kVu1PqODFsCkPsqqHwYgX
- XqTUvJysjofJnmNZEA+BrPYNIrK2DGD
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 18:22 -0400, Bill Nottingham wrote:
-> Kay Sievers (kay.sievers@vrfy.org) said: 
-> > Ah, ok, makes sense. Yeah, that weird "platform devices loads itself by
-> > the name" thing got disabled in the platform subsystem. It caused
-> > modprobe loops for other devices.
-> > 
-> > The whole idea of issuing MODALIAS with plain module names instead of
-> > aliases can't really work, but the platform maintainer didn't like to
-> > use the usual aliases and the matches in the modules, for a reason I
-> > didn't understand while we talked about the problem last time.
+Heiko Carstens wrote:
+> On Wed, Aug 08, 2007 at 02:31:15PM -0700, Andrew Morton wrote:
+>> On Wed, 08 Aug 2007 17:08:44 -0400
+>> Chris Snook <csnook@redhat.com> wrote:
+>>
+>>> Heiko Carstens wrote:
+>>>> On Wed, Aug 08, 2007 at 03:21:31AM -0700, David Miller wrote:
+>>>>> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+>>>>> Date: Wed, 8 Aug 2007 11:33:00 +0200
+>>>>>
+>>>>>> Just saw this while grepping for atomic_reads in a while loops.
+>>>>>> Maybe we should re-add the volatile to atomic_t. Not sure.
+>>>>> I think whatever the choice, it should be done consistently
+>>>>> on every architecture.
+>>>>>
+>>>>> It's just asking for trouble if your arch does it differently from
+>>>>> every other.
+>>>> Well..currently it's i386/x86_64 and s390 which have no volatile
+>>>> in atomic_t. And yes, of course I agree it should be consistent
+>>>> across all architectures. But it isn't.
+>>> Based on recent discussion, it's pretty clear that there's a lot of 
+>>> confusion about this.  A lot of people (myself included, until I thought 
+>>> about it long and hard) will reasonably assume that calling 
+>>> atomic_read() will actually read the value from memory.  Leaving out the 
+>>> volatile declaration seems like a pessimization to me.  If you force 
+>>> people to use barrier() everywhere they're working with atomic_t, it 
+>>> will force re-reads of all the non-atomic data in use as well, which 
+>>> will cause more memory fetches of things that generally don't need 
+>>> barrier().  That and it's a bug waiting to happen.
+>>>
+>>> Andi -- your thoughts on the matter?
+>> I'm not Andi, but this not-Andi thinks that permitting the compiler to cache
+>> the results of atomic_read() is dumb.
 > 
-> So, the solution is for the platform device to issue a random modalias
-> that pcskpr exports?
+> Ok, how about this:
+> 
+> Subject: [PATCH] Add 'volatile' to atomic_t again.
+> 
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> This basically reverts f9e9dcb38f5106fa8cdac04a9e967d5487f1cd20 which
+> removed 'volatile' from atomic_t for i386/x86_64. Reason for this
+> is to make sure that code like
+> while (atomic_read(&whatever));
+> continues to work.
+> Otherwise the compiler might generate code that will loop forever.
+> Also this makes sure atomic_t is the same across all architectures.
+> 
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+> 
+> s390 patch will go in via Martin if this is accepted.
+> 
+>  include/asm-i386/atomic.h   |    2 +-
+>  include/asm-x86_64/atomic.h |    2 +-
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/include/asm-i386/atomic.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-i386/atomic.h
+> +++ linux-2.6/include/asm-i386/atomic.h
+> @@ -15,7 +15,7 @@
+>   * on us. We need to use _exactly_ the address the user gave us,
+>   * not some alias that contains the same information.
+>   */
+> -typedef struct { int counter; } atomic_t;
+> +typedef struct { volatile int counter; } atomic_t;
+>  
+>  #define ATOMIC_INIT(i)	{ (i) }
+>  
+> Index: linux-2.6/include/asm-x86_64/atomic.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-x86_64/atomic.h
+> +++ linux-2.6/include/asm-x86_64/atomic.h
+> @@ -22,7 +22,7 @@
+>   * on us. We need to use _exactly_ the address the user gave us,
+>   * not some alias that contains the same information.
+>   */
+> -typedef struct { int counter; } atomic_t;
+> +typedef struct { volatile int counter; } atomic_t;
+>  
+>  #define ATOMIC_INIT(i)	{ (i) }
+>  
 
-I would still like to see "MODALIAS=platform:<string>" exported by the
-bus, and matching aliases the modules, just like every other subsystem
-does.
+Good so far, but we need to fix it on non-SMP architectures too, since 
+drivers may use atomic_t in interrupt code.  Ideally I'd like to be able 
+to remove a whole bunch of barriers, since they cause a lot of needless 
+re-fetches for everything else in the loop.  We should also document the 
+semantics of atomic_t to ensure consistency in the future.
 
-Like SCSI, with the "artificial" aliases for the modules it wants to
-autoload:
-  $ /sbin/modinfo sd_mod
-  ...
-  alias:          scsi:t-0x0e*
-  alias:          scsi:t-0x07*
-  alias:          scsi:t-0x00*
-  ...
-
-  $ cat /sys/devices/pci0000:00/0000:00:1f.2/host0/target0:0:0/0:0:0:0/modalias
-  scsi:t-0x00
-
-That way you would get full control over the loading or blacklisting
-with module-init-tools config files, which doesn't work with direct
-module name requests, and no magic in the bus code or the drivers would
-be needed.
-
-Kay
-
+	-- Chris
