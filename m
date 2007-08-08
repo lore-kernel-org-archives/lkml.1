@@ -1,66 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936915AbXHHXJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932123AbXHHXOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936915AbXHHXJV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763029AbXHHXJF
+	id S932123AbXHHXOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757296AbXHHXNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 19:09:05 -0400
-Received: from il.qumranet.com ([82.166.9.18]:35315 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764281AbXHHXJE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 19:09:04 -0400
-Message-ID: <46BA4D12.8090301@qumranet.com>
-Date: Thu, 09 Aug 2007 02:09:06 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, kvm-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: kvm warning
-References: <20070808151446.9a4eebda.akpm@linux-foundation.org>	<20070808221956.GA16238@elte.hu>	<46BA4827.3080907@qumranet.com> <20070808155901.bcb249d9.akpm@linux-foundation.org>
-In-Reply-To: <20070808155901.bcb249d9.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 8 Aug 2007 19:13:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:33816 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756466AbXHHXNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 19:13:54 -0400
+Date: Wed, 8 Aug 2007 16:13:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andres Salomon <dilinger@queued.net>
+Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial: turn serial console suspend a boot rather than
+ compile time option
+Message-Id: <20070808161345.4733b656.akpm@linux-foundation.org>
+In-Reply-To: <20070808190713.b59c9b00.dilinger@queued.net>
+References: <20070808183535.2a2c6edf.dilinger@queued.net>
+	<20070808154130.9cc3a30e.akpm@linux-foundation.org>
+	<20070808190713.b59c9b00.dilinger@queued.net>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 09 Aug 2007 01:48:07 +0300
-> Avi Kivity <avi@qumranet.com> wrote:
->
->   
->> Ingo Molnar wrote:
->>     
->>> * Andrew Morton <akpm@linux-foundation.org> wrote:
->>>
->>>   
->>>       
->>>> ia64 allmodconfig says
->>>>
->>>> drivers/kvm/Kconfig:14:warning: 'select' used by config symbol 'KVM' 
->>>> refers to undefined symbol 'PREEMPT_NOTIFIERS'
->>>>     
->>>>         
->>> hm, why doesnt ia64 pick up kernel/Kconfig.preempt, like all the other 
->>> arches? Due to that ia64 also misses out on voluntary preempt and on 
->>> preempt-bkl.
->>>
->>>   
->>>       
->> Even more hm, how does ia64 manage to enable kvm?  It 'depends on X86' 
->> at this moment.
->>
->>     
->
-> beats me.  CONFIG_KVM doesn't get set.  But it seems that kconfig wants
-> to do error-checking on that item anyway.
->
->
->   
+On Wed, 8 Aug 2007 19:07:13 -0400
+Andres Salomon <dilinger@queued.net> wrote:
 
-I could do a 'select PREEMPT_NOTIFIERS if X86' but it seems silly.  I'd 
-call it a Kconfig bug.
+> On Wed, 8 Aug 2007 15:41:30 -0700
+> Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Wed, 8 Aug 2007 18:35:35 -0400
+> > Andres Salomon <dilinger@queued.net> wrote:
+> > 
+> [...]
+> > > --- a/include/linux/kernel.h
+> > > +++ b/include/linux/kernel.h
+> > > @@ -172,6 +172,8 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
+> > >  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+> > >  				unsigned int interval_msec);
+> > >  
+> > > +extern int console_suspend;
+> > > +
+> > 
+> > That's a somewhat vague-sounding identifier.  Could we call it
+> > console_suspend_enabled or something?
+> > 
+> 
+> Hm, how about serial_console_suspend_enabled or enable_serial_console_suspend?  I can send an updated patch later.
+> 
 
-
-
+I prefer the big-endian version (serial_console_suspend_enabled)
