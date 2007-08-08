@@ -1,56 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760884AbXHHFP4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbXHHFc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760884AbXHHFP4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 01:15:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbXHHFPp
+	id S1753720AbXHHFc0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 01:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762213AbXHHFcG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 01:15:45 -0400
-Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:51457 "EHLO
-	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753020AbXHHFPn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 01:15:43 -0400
-To: akpm@linux-foundation.org
-CC: jlayton@redhat.com, codalist@telemann.coda.cs.cmu.edu,
-       cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
-       mikulas@artax.karlin.mff.cuni.cz, reiserfs-devel@vger.kernel.org,
-       zippel@linux-m68k.org, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com, joel.becker@oracle.com, dhowells@redhat.com,
-       fuse-devel@lists.sourceforge.net, jffs-dev@axis.com,
-       user-mode-linux-user@lists.sourceforge.net,
-       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
-       linux-ext4@vger.kernel.org, linux-cifs-client@lists.samba.org,
-       ocfs2-devel@oss.oracle.com, bfennema@falcon.csc.calpoly.edu
-In-reply-to: <20070807171501.e31c4a97.akpm@linux-foundation.org> (message from
-	Andrew Morton on Tue, 7 Aug 2007 17:15:01 -0700)
-Subject: Re: [fuse-devel] [PATCH 00/25] move handling of setuid/gid bits
- from VFS into individual setattr functions (RESEND)
-References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com> <20070807171501.e31c4a97.akpm@linux-foundation.org>
-Message-Id: <E1IIdsT-0001dn-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Wed, 08 Aug 2007 07:14:37 +0200
+	Wed, 8 Aug 2007 01:32:06 -0400
+Received: from ns2.suse.de ([195.135.220.15]:58610 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754854AbXHHFbp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 01:31:45 -0400
+Message-Id: <20070808053013.880837000@suse.de>
+References: <20070808052842.451400000@suse.de>
+User-Agent: quilt/0.46-14
+Date: Tue, 07 Aug 2007 22:28:43 -0700
+From: tonyj@suse.de
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, Kay Sievers <kay.sievers@vrfy.org>
+Subject: [patch 1/6] Convert from class_device to device in drivers/char/drm
+Content-Disposition: inline; filename=drm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >From a purely practical standpoint: it's a concern that all filesytems need
-> patching to continue to correctly function after this change.  There might
-> be filesystems which you missed, and there are out-of-tree filesystems
-> which won't be updated.
-> 
-> And I think the impact upon the out-of-tree filesystems would be fairly
-> severe: they quietly and subtly get their secutiry guarantees broken (I
-> think?)
-> 
-> Is there any way in which we can prevent these problems?  Say
-> 
-> - rename something so that unconverted filesystems will reliably fail to
->   compile?
+Convert from class_device to device in drivers/char/drm.
 
-Maybe renaming ATTR_MODE to ATTR_MODE_SET (changing it's value as
-well, so that binary stuff breaks visibly as well)?
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 
-This would make sense, because we are changing what this attribute
-acually means.  In the new code attr->ia_mode only contains the
-originally set mode, not the ones we've added to change the suid bits.
+---
+ drivers/char/drm/drmP.h      |    8 ++---
+ drivers/char/drm/drm_stub.c  |    9 +++---
+ drivers/char/drm/drm_sysfs.c |   58 ++++++++++++++++++++++---------------------
+ 3 files changed, 39 insertions(+), 36 deletions(-)
 
-Miklos
+Index: b/drivers/char/drm/drm_sysfs.c
+===================================================================
+--- a/drivers/char/drm/drm_sysfs.c
++++ b/drivers/char/drm/drm_sysfs.c
+@@ -78,79 +78,81 @@ void drm_sysfs_destroy(struct class *cla
+ 	class_destroy(class);
+ }
+ 
+-static ssize_t show_dri(struct class_device *class_device, char *buf)
++static ssize_t show_dri(struct device *drm_sysfs_dev,
++			struct device_attribute *attr, char *buf)
+ {
+-	struct drm_device * dev = ((struct drm_head *)class_get_devdata(class_device))->dev;
++	struct drm_device *dev =
++		((struct drm_head *)dev_get_drvdata(drm_sysfs_dev))->dev;
++
+ 	if (dev->driver->dri_library_name)
+ 		return dev->driver->dri_library_name(dev, buf);
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", dev->driver->pci_driver.name);
+ }
+ 
+-static struct class_device_attribute class_device_attrs[] = {
++static struct device_attribute drm_sysfs_device_attrs[] = {
+ 	__ATTR(dri_library_name, S_IRUGO, show_dri, NULL),
+ };
+ 
+ /**
+- * drm_sysfs_device_add - adds a class device to sysfs for a character driver
++ * drm_sysfs_device_add - adds a device to sysfs for a character driver
+  * @cs: pointer to the struct class that this device should be registered to.
+  * @dev: the dev_t for the device to be added.
+  * @device: a pointer to a struct device that is assiociated with this class device.
+  * @fmt: string for the class device's name
+  *
+- * A struct class_device will be created in sysfs, registered to the specified
++ * A struct device will be created in sysfs, registered to the specified
+  * class.  A "dev" file will be created, showing the dev_t for the device.  The
+- * pointer to the struct class_device will be returned from the call.  Any further
++ * pointer to the struct device will be returned from the call.  Any further
+  * sysfs files that might be required can be created using this pointer.
+  * Note: the struct class passed to this function must have previously been
+  * created with a call to drm_sysfs_create().
+  */
+-struct class_device *drm_sysfs_device_add(struct class *cs, struct drm_head *head)
++struct device *drm_sysfs_device_add(struct class *cs, struct drm_head *head)
+ {
+-	struct class_device *class_dev;
++	struct device *drm_sysfs_dev;
+ 	int i, j, err;
+ 
+-	class_dev = class_device_create(cs, NULL,
+-					MKDEV(DRM_MAJOR, head->minor),
+-					&(head->dev->pdev)->dev,
+-					"card%d", head->minor);
+-	if (IS_ERR(class_dev)) {
+-		err = PTR_ERR(class_dev);
++	drm_sysfs_dev = device_create(cs, &(head->dev->pdev)->dev,
++				MKDEV(DRM_MAJOR, head->minor),
++				"card%d", head->minor);
++	if (IS_ERR(drm_sysfs_dev)) {
++		err = PTR_ERR(drm_sysfs_dev);
+ 		goto err_out;
+ 	}
+ 
+-	class_set_devdata(class_dev, head);
++	dev_set_drvdata(drm_sysfs_dev, head);
+ 
+-	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++) {
+-		err = class_device_create_file(class_dev,
+-					       &class_device_attrs[i]);
++	for (i = 0; i < ARRAY_SIZE(drm_sysfs_device_attrs); i++) {
++		err = device_create_file(drm_sysfs_dev,
++					 &drm_sysfs_device_attrs[i]);
+ 		if (err)
+ 			goto err_out_files;
+ 	}
+ 
+-	return class_dev;
++	return drm_sysfs_dev;
+ 
+ err_out_files:
+ 	if (i > 0)
+ 		for (j = 0; j < i; j++)
+-			class_device_remove_file(class_dev,
+-						 &class_device_attrs[i]);
+-	class_device_unregister(class_dev);
++			device_remove_file(drm_sysfs_dev,
++					   &drm_sysfs_device_attrs[i]);
++	device_unregister(drm_sysfs_dev);
+ err_out:
+ 	return ERR_PTR(err);
+ }
+ 
+ /**
+- * drm_sysfs_device_remove - removes a class device that was created with drm_sysfs_device_add()
+- * @dev: the dev_t of the device that was previously registered.
++ * drm_sysfs_device_remove - removes a device that was created with drm_sysfs_device_add()
++ * @drm_sysfs_dev: the device that was previously registered
+  *
+  * This call unregisters and cleans up a class device that was created with a
+  * call to drm_sysfs_device_add()
+  */
+-void drm_sysfs_device_remove(struct class_device *class_dev)
++void drm_sysfs_device_remove(struct device *drm_sysfs_dev)
+ {
+ 	int i;
+ 
+-	for (i = 0; i < ARRAY_SIZE(class_device_attrs); i++)
+-		class_device_remove_file(class_dev, &class_device_attrs[i]);
+-	class_device_unregister(class_dev);
++	for (i = 0; i < ARRAY_SIZE(drm_sysfs_device_attrs); i++)
++		device_remove_file(drm_sysfs_dev, &drm_sysfs_device_attrs[i]);
++	device_unregister(drm_sysfs_dev);
+ }
+Index: b/drivers/char/drm/drmP.h
+===================================================================
+--- a/drivers/char/drm/drmP.h
++++ b/drivers/char/drm/drmP.h
+@@ -622,7 +622,7 @@ struct drm_head {
+ 	struct drm_device *dev;
+ 	struct proc_dir_entry *dev_root;  /**< proc directory entry */
+ 	dev_t device;			/**< Device number for mknod */
+-	struct class_device *dev_class;
++	struct device *drm_sysfs_class;
+ };
+ 
+ /**
+@@ -1052,9 +1052,9 @@ extern void drm_pci_free(struct drm_devi
+ 			       /* sysfs support (drm_sysfs.c) */
+ extern struct class *drm_sysfs_create(struct module *owner, char *name);
+ extern void drm_sysfs_destroy(struct class *cs);
+-extern struct class_device *drm_sysfs_device_add(struct class *cs,
+-						 struct drm_head *head);
+-extern void drm_sysfs_device_remove(struct class_device *class_dev);
++extern struct device *drm_sysfs_device_add(struct class *cs,
++					   struct drm_head *head);
++extern void drm_sysfs_device_remove(struct device *drm_sysfs_dev);
+ 
+ /*
+  * Basic memory manager support (drm_mm.c)
+Index: b/drivers/char/drm/drm_stub.c
+===================================================================
+--- a/drivers/char/drm/drm_stub.c
++++ b/drivers/char/drm/drm_stub.c
+@@ -168,11 +168,12 @@ static int drm_get_head(struct drm_devic
+ 				goto err_g1;
+ 			}
+ 
+-			head->dev_class = drm_sysfs_device_add(drm_class, head);
+-			if (IS_ERR(head->dev_class)) {
++			head->drm_sysfs_class =
++				drm_sysfs_device_add(drm_class, head);
++			if (IS_ERR(head->drm_sysfs_class)) {
+ 				printk(KERN_ERR
+ 				       "DRM: Error sysfs_device_add.\n");
+-				ret = PTR_ERR(head->dev_class);
++				ret = PTR_ERR(head->drm_sysfs_class);
+ 				goto err_g2;
+ 			}
+ 			*heads = head;
+@@ -283,7 +284,7 @@ int drm_put_head(struct drm_head * head)
+ 	DRM_DEBUG("release secondary minor %d\n", minor);
+ 
+ 	drm_proc_cleanup(minor, drm_proc_root, head->dev_root);
+-	drm_sysfs_device_remove(head->dev_class);
++	drm_sysfs_device_remove(head->drm_sysfs_class);
+ 
+ 	*head = (struct drm_head) {.dev = NULL};
+ 
+
+-- 
