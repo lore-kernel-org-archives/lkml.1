@@ -1,131 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764870AbXHHP2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935519AbXHHPcc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764870AbXHHP2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbXHHP1y
+	id S935519AbXHHPcc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:32:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763463AbXHHPcX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:27:54 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51403 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759693AbXHHP1x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:27:53 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 14/25] sysfs: Don't use lookup_one_len_kern
-References: <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
-	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070808083815.GG13674@htj.dyndns.org>
-Date: Wed, 08 Aug 2007 09:26:48 -0600
-In-Reply-To: <20070808083815.GG13674@htj.dyndns.org> (Tejun Heo's message of
-	"Wed, 8 Aug 2007 17:38:15 +0900")
-Message-ID: <m1ir7qdp3b.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 8 Aug 2007 11:32:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36705 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763428AbXHHPcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 11:32:22 -0400
+Message-ID: <46B9E1F9.6000103@redhat.com>
+Date: Wed, 08 Aug 2007 11:32:09 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: lkml@contacts.eelis.net
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Inconsistent execve SIGTRAP-ing after ptraced child's      PTRACE_TRACEME.
+References: <50598.213.84.80.149.1186526621.squirrel@webmail.nxs.nl>
+In-Reply-To: <50598.213.84.80.149.1186526621.squirrel@webmail.nxs.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
+On 08/07/2007 06:43 PM, Eelis van der Weegen wrote:
+> How can a parent process intercepting a ptraced child's system calls using
+> PTRACE_SYSCALL know which SIGTRAP's are system call entries and which are system
+> call exits?
+> 
+> Since there does not seem to be a way for the parent to get this information
+> from the system, ptrace examples floating around on the web generally use a
+> boolean in_syscall flag that they toggle at each SIGTRAP. This mechanism seems
+> perfectly adequate, but for it to work correctly the flag must obviously be
+> appropriately initialized, and that is where things get vague.
+> 
+> Let's assume that the child's ptrace-ing begins after it first does
+> PTRACE_TRACEME and then calls execve. According to the ptrace man page, after
+> doing PTRACE_TRACEME "all subsequent calls to exec() by this process will cause
+> a SIGTRAP to be sent to it, giving the parent a chance to gain control before
+> the new program begins execution". The problem is that this does not specify
+> whether the parent will see SIGTRAP's for both entry to and exit from execve, or
+> only for exit from it. To my great surprise, I observed both behaviors on actual
+> machines (in particular, I observed the former on an x86_64 dual core machine).
+> 
+> This inconsistency foils the in_syscall flag approach, as there is no way to
+> know whether the parent should initialize that flag to true or false (since
+> apparently both can occur). Hence, my question is: is this behavior intentional?
+> Should there not be a guarantee that /either/ only the execve exit, /or/ both
+> entry and exit, are SIGTRAPed?
+> 
 
-> On Tue, Aug 07, 2007 at 03:23:57PM -0600, Eric W. Biederman wrote:
->> 
->> Upon inspection it appears that there is no looking of the
->> inode mutex in lookup_one_len_kern and we aren't calling
->> it with the inode mutex and that is wrong.
->> 
->> So this patch rolls our own dcache insertion function that
->> does exactly what we need it to do.  As it turns out this
->> is pretty trivial to do and it makes the code easier to
->> audit.
->> 
->> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->> ---
->>  fs/sysfs/dir.c |   41 +++++++++++++++++++++++++++++++++++++++--
->>  1 files changed, 39 insertions(+), 2 deletions(-)
->> 
->> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
->> index a9bdb12..1d53c2a 100644
->> --- a/fs/sysfs/dir.c
->> +++ b/fs/sysfs/dir.c
->> @@ -765,6 +765,44 @@ static struct dentry *__sysfs_get_dentry(struct
-> super_block *sb, struct sysfs_di
->>  	return dentry;
->>  }
->>  
->> +static struct dentry *sysfs_add_dentry(struct dentry *parent, struct
-> sysfs_dirent *sd)
->> +{
->> +	struct qstr name;
->> +	struct dentry *dentry;
->> +	struct inode *inode;
->> +
->> +	mutex_lock(&parent->d_inode->i_mutex);
->> +	mutex_lock(&sysfs_mutex);
->> +	dentry = ERR_PTR(-EINVAL);
->> +	if (parent->d_fsdata != sd->s_parent)
->> +		goto out;
->> +
->> +	name.name = sd->s_name;
->> +	name.len = strlen(sd->s_name);
->> +	dentry = d_hash_and_lookup(parent, &name);
->> +	if (dentry)
->> +		goto out;
->> +
->> +	dentry = d_alloc(parent, &name);
->> +	if (!dentry) {
->> +		dentry = ERR_PTR(-ENOMEM);
->> +		goto out;
->> +	}
->> +
->> +	inode = sysfs_get_inode(sd);
->> +	if (!inode) {
->> +		dput(dentry);
->> +		dentry = ERR_PTR(-ENOMEM);
->> +		goto out;
->> +	}
->> +	d_instantiate(dentry, inode);
->> +	sysfs_attach_dentry(sd, dentry);
->> +out:
->> +	mutex_unlock(&sysfs_mutex);
->> +	mutex_unlock(&parent->d_inode->i_mutex);
->> +	return dentry;
->> +}
->
-> This is virtually identical to
->
-> 	mutex_lock(&parent_dentry->d_inode->i_mutex);
-> 	dentry = lookup_one_len_kern(cur->s_name, parent_dentry,
-> 				     strlen(cur->s_name));
-> 	mutex_unlock(&parent_dentry->d_inode->i_mutex);
->
-> right?  I don't think we need to duplicate the code here.  Or is it
-> needed for later multi-sb thing?
-
-Right.  We can do that as well. In practice in working code
-there is no real difference.
-
-There is a little extra uniformity in rolling it ourselves, but
-not enough to worry about either way.
-
-In the review/debug etc cycle it just wound up being a lot easier
-to roll the code myself.
-
-By the time we get to lookup_one_len_kern it is almost impenetrable
-code in namei.c where sysfs_add_dentry tends is easier to comprehend,
-and to modify for debugging.
-
-Eric
-
+Did you try PTRACE_SETOPTIONS and set PTRACE_O_TRACEEXEC?
