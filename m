@@ -1,33 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935194AbXHHCcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933830AbXHHCcm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935194AbXHHCcH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 22:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758490AbXHHCbz
+	id S933830AbXHHCcm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 22:32:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759409AbXHHCcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 22:31:55 -0400
-Received: from perm68-235.ij.net ([209.216.68.235]:4478 "EHLO smirk.3gfp.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758403AbXHHCbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 22:31:53 -0400
-Message-ID: <46B92B10.7@3gfp.com>
-Date: Tue, 07 Aug 2007 22:31:44 -0400
-From: Harvey Chapman <hchapman-linux-kernel@3gfp.com>
-User-Agent: Thunderbird 2.0.0.6 (Macintosh/20070728)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial inter-character timeout usage with async io
-References: <46B8F7FE.3090904@3gfp.com> <20070808021147.10d0e752@the-village.bc.nu> <46B92869.4000400@3gfp.com>
-In-Reply-To: <46B92869.4000400@3gfp.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 7 Aug 2007 22:32:33 -0400
+Received: from 207.47.19.6.static.nextweb.net ([207.47.19.6]:15177 "EHLO
+	ex1.resilience.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758495AbXHHCcc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 22:32:32 -0400
+Date: Wed, 8 Aug 2007 10:27:05 +0800
+From: Jerry Jiang <wjiang@resilience.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Chris Friesen <cfriesen@nortel.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+Message-Id: <20070808102705.9d91a14c.wjiang@resilience.com>
+In-Reply-To: <46B8D6D7.2020206@redhat.com>
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
+	<20070806123551.a6c3c154.wjiang@resilience.com>
+	<46B72C58.5030502@redhat.com>
+	<46B894E4.4010501@nortel.com>
+	<46B8D6D7.2020206@redhat.com>
+Organization: Resilience
+X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Aug 2007 02:32:21.0921 (UTC) FILETIME=[5929B110:01C7D964]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Harvey Chapman wrote:
-> just don't identify it specifically. In the ISRs, they simply check to
-> see if any of bits 1, 2, or 3 are set. In the example above, on the last
+On Tue, 07 Aug 2007 16:32:23 -0400
+Chris Snook <csnook@redhat.com> wrote:
 
-Well, not entirely true, it actually checks bit 0 which indicates that
-there was an interrupt, period. Bits 1, 2, and 3 indicate why the
-interrupt occurred, but 8250.c and pxa.c ignore those bits.
+> > It seems like this would fall more into the case of the arch providing 
+> > guarantees when using locked/atomic access rather than anything 
+> > SMP-related, no?.
+> 
+> But if you're not using SMP, the only way you get a race condition is if your 
+> compiler is reordering instructions that have side effects which are invisible 
+> to the compiler.  This can happen with MMIO registers, but it's not an issue 
+> with an atomic_t we're declaring in real memory.
+> 
 
+Under non-SMP, some compilers would reordering instructions as they think
+and C standard informally guarantees all operations on volatile data
+are executed in the sequence in which they appear in the source code,
+right?
+
+So no reordering happens with volatile, right?
+
+-- Jerry
+
+> 	-- Chris
