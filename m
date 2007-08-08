@@ -1,59 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935404AbXHGX5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935521AbXHHAEq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935404AbXHGX5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 19:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755884AbXHGX5V
+	id S935521AbXHHAEq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 20:04:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756708AbXHHAEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 19:57:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36566 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754513AbXHGX5U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 19:57:20 -0400
-Message-ID: <46B906DD.5000501@redhat.com>
-Date: Tue, 07 Aug 2007 19:57:17 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: paul.pinault@disk91.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Data corruption
-References: <200708072007.27343.paul.pinault@disk91.com>
-In-Reply-To: <200708072007.27343.paul.pinault@disk91.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 20:04:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50451 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755884AbXHHAEg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 20:04:36 -0400
+Date: Wed, 8 Aug 2007 02:04:34 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: dragoran <drago01@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+Message-ID: <20070808000434.GA7353@one.firstfloor.org>
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <46B6F75D.1070808@gmail.com> <20070806103553.GA16133@one.firstfloor.org> <20070807204449.GA5245@kernel.dk> <f6ca9fed0708071435h31531279gb6ea0fc760be98df@mail.gmail.com> <f6ca9fed0708071518m159e0ef8vc2d8482913afbea6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f6ca9fed0708071518m159e0ef8vc2d8482913afbea6@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-paul wrote:
-> Since 2-3 month I have some random data corruption on my Linux server, after 
-> checking disks independently (i'm using raid1on 2 sata disk, the problem is 
-> the same w/o raid) and memory, hardware simce to be out of cause...
-> 
-> Here is my problem:
-> => head --bytes=300m  /dev/urandom > test
-> => for i in `seq 0 9` ; do cp test test$i ; done
-> => md5sum test*
-> I got : 
-> 014666c728c9e3b8299579fae499864a  test
-> 014666c728c9e3b8299579fae499864a  test0
-> 333fd93d093ac612cd8d5f65628f734e  test1
-> 1ab6ee68c6a7d9ff5a05f9d63f0f6df6  test2
-> 96e96483e3175a59c9c05b6720514e1e  test3
-> 014666c728c9e3b8299579fae499864a  test4
-> b24dbccc9f4831f8825ab4a55a3be4aa  test5
-> 8493efc9c14e4b5c162ac23696fbc16a  test6
-> 6a5f4301f66d0379049d79d0e14e2a87  test7
-> 2c81cfa1c3a03aba134574922ee5d75c  test8
-> 2ea15c8392bfd0123472a80125bb3abe  test9
-> 
-> ^^^ that sounds really bad for my data :(
+On Wed, Aug 08, 2007 at 12:18:12AM +0200, dragoran wrote:
+> so there is no real reason not to allow it for non root users?
+> removing the check is easy (3 lines) ....
+> or are there any other issues/problems?
 
-It does indeed.  Can you try comparing the data to see precisely how much 
-differs between the versions?  md5sums don't distinguish between a single-bit 
-error and a block or page-sized error, but the distinction is critical in 
-determining what broke.
+Jens was only talking about the seek issue I mentioned I believe;
+not about the PI problem.
 
-Can you reproduce this on a recent upstream baremetal (non-Xen) kernel?  If so, 
-does it go away when you boot with mem=3000M?
-
-	-- Chris
+-Andi
