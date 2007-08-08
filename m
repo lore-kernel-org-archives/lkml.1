@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761896AbXHHQDl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762662AbXHHQIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761896AbXHHQDl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:03:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbXHHQDe
+	id S1762662AbXHHQIZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbXHHQIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:03:34 -0400
-Received: from jericho.provo.novell.com ([137.65.248.124]:48403 "EHLO
-	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756245AbXHHQDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:03:33 -0400
-Message-ID: <46B9E948.8080605@suse.de>
-Date: Thu, 09 Aug 2007 01:03:20 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 8 Aug 2007 12:08:17 -0400
+Received: from www.osadl.org ([213.239.205.134]:40239 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755675AbXHHQIQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 12:08:16 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Make UIO available for arm architecture
+Date: Wed, 8 Aug 2007 18:08:13 +0200
+User-Agent: KMail/1.9.5
+Organization: Linutronix
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-arm-kernel@lists.arm.linux.org.uk
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-References: <11860582832964-git-send-email-htejun@gmail.com>	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>	<20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>	<20070808161631.1ccf27fd@gondolin.boeblingen.de.ibm.com>	<46B9D4B8.4050201@gmail.com>	<20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>	<46B9D961.4000902@gmail.com>	<m1r6medpxl.fsf@ebiederm.dsl.xmission.com>	<46B9DDA1.1080704@gmail.com> <46B9DE5E.7050406@suse.de> <m11weednul.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m11weednul.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708081808.13889.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+The config system doesn't show the UIO menu if arch=arm, this patch fixes it.
 
-Eric W. Biederman wrote:
->> More specifically, d_off field.  It's a bit twisted.  For the last
->> entry, filp->f_pos gets written into the field and gets wrapped while
->> being copied out to userland or in glibc.
-> 
-> That could do it, and glibc is crunching it.  Oh well, it is
-> easy enough to avoid as long as our inode numbers are small which
-> the idr allocator seems to ensure.
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 
-Yeah, now I think about it.  glibc throws out entries which don't fit in
-the data structure specified by the called API, so it probably threw out
-the last entry which has UINT_MAX in d_off which doesn't fit in the
-readdir() return structure.  Using INT_MAX should be just fine as IDA
-always allocates the first empty slot.  We can add paranoia check in ino
-allocation path.
-
--- 
-tejun
+---
+Index: linux-2.6.23-rc/arch/arm/Kconfig
+===================================================================
+--- linux-2.6.23-rc.orig/arch/arm/Kconfig	2007-08-08 17:52:02.000000000 +0200
++++ linux-2.6.23-rc/arch/arm/Kconfig	2007-08-08 17:53:29.000000000 +0200
+@@ -1052,6 +1052,8 @@
+ 
+ source "drivers/dma/Kconfig"
+ 
++source "drivers/uio/Kconfig"
++
+ endmenu
+ 
+ source "fs/Kconfig"
