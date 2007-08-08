@@ -1,42 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758614AbXHHGiD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763106AbXHHGox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758614AbXHHGiD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 02:38:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755275AbXHHGhv
+	id S1763106AbXHHGox (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 02:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbXHHGom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 02:37:51 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:27796 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbXHHGht (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 02:37:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=W0sK2E1UavJLTDMYrSjgKGQdh/Dpg1dCs+jM3dN3rnTXuaPpPGHulgidb7sx+Ieo5PsObvIMdNI83wtx5OVb/g/SvbfRNgSAEV0NSfHreRWK66kcAT9uJI2FIUQjK6npsDvZ2nTYPQc9Fu9XI5HZOo4Mz6VumF+wyVdKb7XPdNQ=
-Date: Wed, 8 Aug 2007 15:37:42 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 02/25] sysfs: Remove sysfs_instantiate
-Message-ID: <20070808063742.GV13674@htj.dyndns.org>
-References: <11860582832964-git-send-email-htejun@gmail.com> <m1643rkqb6.fsf@ebiederm.dsl.xmission.com> <m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com> <m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
+	Wed, 8 Aug 2007 02:44:42 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:48242 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753390AbXHHGol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 02:44:41 -0400
+Date: Wed, 8 Aug 2007 02:44:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: netdev@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] 8139cp, 8139too: use generic DMA
+Message-ID: <20070808064440.GA16595@havoc.gtf.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:08:50PM -0600, Eric W. Biederman wrote:
-> 
-> Now that sysfs_get_inode is dropping the inode lock
-> we no longer have a need from sysfs_instantiate.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+commit f09934422b162e0eb7a8fd3b4b25ffc92e31541a
+Author: Jeff Garzik <jeff@garzik.org>
+Date:   Wed Aug 8 02:16:04 2007 -0400
+
+    [netdrvr] 8139cp, 8139too: convert to generic DMA
+    
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+ drivers/net/8139cp.c  |   31 +++++++++++++++++--------------
+ drivers/net/8139too.c |   20 ++++++++++----------
+ 2 files changed, 27 insertions(+), 24 deletions(-)
+
+f09934422b162e0eb7a8fd3b4b25ffc92e31541a
+diff --git a/drivers/net/8139cp.c b/drivers/net/8139cp.c
+index a79f28c..0664701 100644
+--- a/drivers/net/8139cp.c
++++ b/drivers/net/8139cp.c
+@@ -560,7 +560,7 @@ rx_status_loop:
+ 
+ 		skb_reserve(new_skb, RX_OFFSET);
+ 
+-		pci_unmap_single(cp->pdev, mapping,
++		dma_unmap_single(&cp->pdev->dev, mapping,
+ 				 buflen, PCI_DMA_FROMDEVICE);
+ 
+ 		/* Handle checksum offloading for incoming packets. */
+@@ -571,7 +571,7 @@ rx_status_loop:
+ 
+ 		skb_put(skb, len);
+ 
+-		mapping = pci_map_single(cp->pdev, new_skb->data, buflen,
++		mapping = dma_map_single(&cp->pdev->dev, new_skb->data, buflen,
+ 					 PCI_DMA_FROMDEVICE);
+ 		cp->rx_skb[rx_tail] = new_skb;
+ 
+@@ -704,7 +704,7 @@ static void cp_tx (struct cp_private *cp)
+ 		skb = cp->tx_skb[tx_tail];
+ 		BUG_ON(!skb);
+ 
+-		pci_unmap_single(cp->pdev, le64_to_cpu(txd->addr),
++		dma_unmap_single(&cp->pdev->dev, le64_to_cpu(txd->addr),
+ 				 le32_to_cpu(txd->opts1) & 0xffff,
+ 				 PCI_DMA_TODEVICE);
+ 
+@@ -782,7 +782,7 @@ static int cp_start_xmit (struct sk_buff *skb, struct net_device *dev)
+ 		dma_addr_t mapping;
+ 
+ 		len = skb->len;
+-		mapping = pci_map_single(cp->pdev, skb->data, len, PCI_DMA_TODEVICE);
++		mapping = dma_map_single(&cp->pdev->dev, skb->data, len, PCI_DMA_TODEVICE);
+ 		CP_VLAN_TX_TAG(txd, vlan_tag);
+ 		txd->addr = cpu_to_le64(mapping);
+ 		wmb();
+@@ -818,7 +818,7 @@ static int cp_start_xmit (struct sk_buff *skb, struct net_device *dev)
+ 		 */
+ 		first_eor = eor;
+ 		first_len = skb_headlen(skb);
+-		first_mapping = pci_map_single(cp->pdev, skb->data,
++		first_mapping = dma_map_single(&cp->pdev->dev, skb->data,
+ 					       first_len, PCI_DMA_TODEVICE);
+ 		cp->tx_skb[entry] = skb;
+ 		entry = NEXT_TX(entry);
+@@ -830,7 +830,7 @@ static int cp_start_xmit (struct sk_buff *skb, struct net_device *dev)
+ 			dma_addr_t mapping;
+ 
+ 			len = this_frag->size;
+-			mapping = pci_map_single(cp->pdev,
++			mapping = dma_map_single(&cp->pdev->dev,
+ 						 ((void *) page_address(this_frag->page) +
+ 						  this_frag->page_offset),
+ 						 len, PCI_DMA_TODEVICE);
+@@ -1069,8 +1069,8 @@ static int cp_refill_rx (struct cp_private *cp)
+ 
+ 		skb_reserve(skb, RX_OFFSET);
+ 
+-		mapping = pci_map_single(cp->pdev, skb->data, cp->rx_buf_sz,
+-					 PCI_DMA_FROMDEVICE);
++		mapping = dma_map_single(&cp->pdev->dev, skb->data,
++					 cp->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 		cp->rx_skb[i] = skb;
+ 
+ 		cp->rx_ring[i].opts2 = 0;
+@@ -1110,7 +1110,8 @@ static int cp_alloc_rings (struct cp_private *cp)
+ {
+ 	void *mem;
+ 
+-	mem = pci_alloc_consistent(cp->pdev, CP_RING_BYTES, &cp->ring_dma);
++	mem = dma_alloc_coherent(&cp->pdev->dev, CP_RING_BYTES,
++				 &cp->ring_dma, GFP_KERNEL);
+ 	if (!mem)
+ 		return -ENOMEM;
+ 
+@@ -1128,7 +1129,7 @@ static void cp_clean_rings (struct cp_private *cp)
+ 	for (i = 0; i < CP_RX_RING_SIZE; i++) {
+ 		if (cp->rx_skb[i]) {
+ 			desc = cp->rx_ring + i;
+-			pci_unmap_single(cp->pdev, le64_to_cpu(desc->addr),
++			dma_unmap_single(&cp->pdev->dev,le64_to_cpu(desc->addr),
+ 					 cp->rx_buf_sz, PCI_DMA_FROMDEVICE);
+ 			dev_kfree_skb(cp->rx_skb[i]);
+ 		}
+@@ -1139,7 +1140,7 @@ static void cp_clean_rings (struct cp_private *cp)
+ 			struct sk_buff *skb = cp->tx_skb[i];
+ 
+ 			desc = cp->tx_ring + i;
+-			pci_unmap_single(cp->pdev, le64_to_cpu(desc->addr),
++			dma_unmap_single(&cp->pdev->dev,le64_to_cpu(desc->addr),
+ 					 le32_to_cpu(desc->opts1) & 0xffff,
+ 					 PCI_DMA_TODEVICE);
+ 			if (le32_to_cpu(desc->opts1) & LastFrag)
+@@ -1158,7 +1159,8 @@ static void cp_clean_rings (struct cp_private *cp)
+ static void cp_free_rings (struct cp_private *cp)
+ {
+ 	cp_clean_rings(cp);
+-	pci_free_consistent(cp->pdev, CP_RING_BYTES, cp->rx_ring, cp->ring_dma);
++	dma_free_coherent(&cp->pdev->dev, CP_RING_BYTES, cp->rx_ring,
++			  cp->ring_dma);
+ 	cp->rx_ring = NULL;
+ 	cp->tx_ring = NULL;
+ }
+@@ -1517,7 +1519,8 @@ static void cp_get_ethtool_stats (struct net_device *dev,
+ 	dma_addr_t dma;
+ 	int i;
+ 
+-	nic_stats = pci_alloc_consistent(cp->pdev, sizeof(*nic_stats), &dma);
++	nic_stats = dma_alloc_coherent(&cp->pdev->dev, sizeof(*nic_stats),
++				       &dma, GFP_KERNEL);
+ 	if (!nic_stats)
+ 		return;
+ 
+@@ -1552,7 +1555,7 @@ static void cp_get_ethtool_stats (struct net_device *dev,
+ 	tmp_stats[i++] = cp->cp_stats.rx_frags;
+ 	BUG_ON(i != CP_NUM_STATS);
+ 
+-	pci_free_consistent(cp->pdev, sizeof(*nic_stats), nic_stats, dma);
++	dma_free_coherent(&cp->pdev->dev, sizeof(*nic_stats), nic_stats, dma);
+ }
+ 
+ static const struct ethtool_ops cp_ethtool_ops = {
+diff --git a/drivers/net/8139too.c b/drivers/net/8139too.c
+index f4e4298..0198f74 100644
+--- a/drivers/net/8139too.c
++++ b/drivers/net/8139too.c
+@@ -1314,18 +1314,18 @@ static int rtl8139_open (struct net_device *dev)
+ 	if (retval)
+ 		return retval;
+ 
+-	tp->tx_bufs = pci_alloc_consistent(tp->pci_dev, TX_BUF_TOT_LEN,
+-					   &tp->tx_bufs_dma);
+-	tp->rx_ring = pci_alloc_consistent(tp->pci_dev, RX_BUF_TOT_LEN,
+-					   &tp->rx_ring_dma);
++	tp->tx_bufs = dma_alloc_coherent(&tp->pci_dev->dev, TX_BUF_TOT_LEN,
++					   &tp->tx_bufs_dma, GFP_KERNEL);
++	tp->rx_ring = dma_alloc_coherent(&tp->pci_dev->dev, RX_BUF_TOT_LEN,
++					   &tp->rx_ring_dma, GFP_KERNEL);
+ 	if (tp->tx_bufs == NULL || tp->rx_ring == NULL) {
+ 		free_irq(dev->irq, dev);
+ 
+ 		if (tp->tx_bufs)
+-			pci_free_consistent(tp->pci_dev, TX_BUF_TOT_LEN,
++			dma_free_coherent(&tp->pci_dev->dev, TX_BUF_TOT_LEN,
+ 					    tp->tx_bufs, tp->tx_bufs_dma);
+ 		if (tp->rx_ring)
+-			pci_free_consistent(tp->pci_dev, RX_BUF_TOT_LEN,
++			dma_free_coherent(&tp->pci_dev->dev, RX_BUF_TOT_LEN,
+ 					    tp->rx_ring, tp->rx_ring_dma);
+ 
+ 		return -ENOMEM;
+@@ -2248,10 +2248,10 @@ static int rtl8139_close (struct net_device *dev)
+ 
+ 	rtl8139_tx_clear (tp);
+ 
+-	pci_free_consistent(tp->pci_dev, RX_BUF_TOT_LEN,
+-			    tp->rx_ring, tp->rx_ring_dma);
+-	pci_free_consistent(tp->pci_dev, TX_BUF_TOT_LEN,
+-			    tp->tx_bufs, tp->tx_bufs_dma);
++	dma_free_coherent(&tp->pci_dev->dev, RX_BUF_TOT_LEN,
++			  tp->rx_ring, tp->rx_ring_dma);
++	dma_free_coherent(&tp->pci_dev->dev, TX_BUF_TOT_LEN,
++			  tp->tx_bufs, tp->tx_bufs_dma);
+ 	tp->rx_ring = NULL;
+ 	tp->tx_bufs = NULL;
+ 
