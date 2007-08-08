@@ -1,321 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932129AbXHHW3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764281AbXHHWe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932129AbXHHW3p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758576AbXHHW3h
+	id S1764281AbXHHWe4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbXHHWes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:29:37 -0400
-Received: from el-out-1112.google.com ([209.85.162.180]:62638 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751844AbXHHW3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:29:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MUZw3iPUrKTDEkAj8yTRSm/uLB5Ds4esMnUjnNtJXqB+3E+lWr4piMjib1oPYfuGUAL3kAWefv9d73/gj8eVjvCw3cPlHE6ap4lZLZ3z2rYy/ZYKLrnoOMrqT0PP4mNzbEyNkRMbGz//R5UEfLwFB2RpeX7RlEKFpf4EgjMWRB8=
-Message-ID: <a52a95e30708081529i7cee02ddq61471378c2a12ffa@mail.gmail.com>
-Date: Wed, 8 Aug 2007 15:29:34 -0700
-From: "Tom Mortensen" <tmmlkml@gmail.com>
-To: "Jeff Mahoney" <jeffm@suse.com>
-Subject: Re: reiserfs fs/reiserfs/bitmap.c:1287
-Cc: tony@tvortex.net, linux-kernel@vger.kernel.org
-In-Reply-To: <46967D7D.5090204@suse.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 8 Aug 2007 18:34:48 -0400
+Received: from mail.queued.net ([207.210.101.209]:1333 "EHLO mail.queued.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755873AbXHHWer (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:34:47 -0400
+Date: Wed, 8 Aug 2007 18:35:35 -0400
+From: Andres Salomon <dilinger@queued.net>
+To: linux-serial@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: [PATCH] serial: turn serial console suspend a boot rather than
+ compile time option
+Message-Id: <20070808183535.2a2c6edf.dilinger@queued.net>
+X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <15366.199.125.14.2.1184261266.squirrel@localmail-dr.mcsimons.com>
-	 <46967D7D.5090204@suse.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm wondering if any resolution to this particular bug?  I see this
-exact kernel bug in copying large data sets (40GB+), and can reproduce
-fairly well.  Running reiserfsck produces this message:
+Currently, there's a CONFIG_DISABLE_CONSOLE_SUSPEND that allows one to stop
+the serial console from being suspended when the rest of the machine goes
+to sleep.  This is incredibly useful for debugging power management-related
+things; however, having it as a compile-time option has proved to be
+incredibly inconvenient for us (OLPC).  There are plenty of times that we
+want serial console to not suspend, but for the most part we'd like serial
+console to be suspended.
 
-"Zero bit found in on-disk bitmap after the last valid bit."
+This drops CONFIG_DISABLE_CONSOLE_SUSPEND, and replaces it with a kernel
+boot parameter (no_console_suspend).  By default, the serial console will
+be suspended along with the rest of the system; by passing
+'no_console_suspend' to the kernel during boot, serial console will remain
+alive during suspend.
 
-Running reiserfsck with --fix-fixable does fix the file system, but
-with some file data corruptions (I guess due to cached blocks not
-getting written?).
+I have another version of this patch which keeps #ifdefs around; however,
+it's uglier.  I prefer this version of the patch, and don't feel that it
+increases bloat.  If people strongly disagree, let me know and I'll submit
+the other patch.
 
-I'm running 2.6.22.1
+Signed-off-by: Andres Salomon <dilinger@debian.org>
+---
 
-Below are details:
+ Documentation/kernel-parameters.txt        |    8 ++++++++
+ Documentation/power/basic-pm-debugging.txt |    4 ++--
+ arch/powerpc/configs/pmac32_defconfig      |    1 -
+ drivers/serial/serial_core.c               |   10 ++++------
+ include/linux/console.h                    |    5 -----
+ include/linux/kernel.h                     |    2 ++
+ kernel/power/Kconfig                       |   11 -----------
+ kernel/printk.c                            |   15 +++++++++++++--
+ 8 files changed, 29 insertions(+), 27 deletions(-)
 
-Aug  8 14:05:43 develop kernel: [1121369.437041] ------------[ cut
-here ]------------
-Aug  8 14:05:43 develop kernel: [1121369.437123] kernel BUG at
-fs/reiserfs/bitmap.c:1287!
-Aug  8 14:05:43 develop kernel: [1121369.437199] invalid opcode: 0000 [#1]
-Aug  8 14:05:43 develop kernel: [1121369.437271] Modules linked in:
-md_mod fuse jmicron sata_promise ahci ide_
-core libata e1000
-Aug  8 14:05:43 develop kernel: [1121369.437426] CPU:    0
-Aug  8 14:05:43 develop kernel: [1121369.437427] EIP:
-0060:[<c017bb7f>]    Not tainted VLI
-Aug  8 14:05:43 develop kernel: [1121369.437428] EFLAGS: 00210246
-(2.6.22.1 #6)
-Aug  8 14:05:43 develop kernel: [1121369.438624] EIP is at
-reiserfs_cache_bitmap_metadata+0x74/0x7c
-Aug  8 14:05:43 develop kernel: [1121369.438703] eax: d566c000   ebx:
-f8a90014   ecx: ffffffff   edx: d566bffc
-Aug  8 14:05:43 develop kernel: [1121369.438786] esi: f1ac13c8   edi:
-00000000   ebp: f8a90014   esp: ee95fc1c
-Aug  8 14:05:43 develop kernel: [1121369.438869] ds: 007b   es: 007b
-fs: 0000  gs: 0033  ss: 0068
-Aug  8 14:05:43 develop kernel: [1121369.438949] Process shfs (pid:
-7950, ti=ee95e000 task=f7f9b070 task.ti=ee
-95e000)
-Aug  8 14:05:43 develop kernel: [1121369.439033] Stack: f1ac13c8
-00028000 f4569e00 c017bc37 00001000 00000110
-f4569e00 c019262d
-Aug  8 14:05:43 develop kernel: [1121369.439185]        00000005
-ee95fcac 00000254 f4569e00 c017a57f 00000000
-00000001 00000000
-Aug  8 14:05:43 develop kernel: [1121369.439336]        00000000
-f8a90014 00000005 ee95fec4 00000000 f0727b80
-00000005 f4569e00
-Aug  8 14:05:43 develop kernel: [1121369.439487] Call Trace:
-Aug  8 14:05:43 develop kernel: [1121369.439606]  [<c017bc37>]
-reiserfs_read_bitmap_block+0xb0/0xba
-Aug  8 14:05:43 develop kernel: [1121369.439687]  [<c019262d>]
-search_by_key+0x6e1/0xada
-Aug  8 14:05:43 develop kernel: [1121369.439765]  [<c017a57f>]
-scan_bitmap_block+0x63/0x22c
-Aug  8 14:05:43 develop kernel: [1121369.439844]  [<c017a9b0>]
-scan_bitmap+0x1a2/0x1fb
-Aug  8 14:05:43 develop kernel: [1121369.439921]  [<c017b9c5>]
-reiserfs_allocate_blocknrs+0x2cc/0x3d2
-Aug  8 14:05:43 develop kernel: [1121369.440003]  [<c0185a22>]
-reiserfs_allocate_blocks_for_region+0x1f0/0x114
-1
-Aug  8 14:05:43 develop kernel: [1121369.440089]  [<c0192bb4>]
-search_for_position_by_key+0x18e/0x306
-Aug  8 14:05:43 develop kernel: [1121369.440171]  [<c0181020>]
-make_cpu_key+0x43/0x4a
-Aug  8 14:05:43 develop kernel: [1121369.440247]  [<c0191c39>]
-pathrelse+0x1b/0x26
-Aug  8 14:05:43 develop kernel: [1121369.440322]  [<c0187424>]
-reiserfs_prepare_file_region_for_write+0x4ad/0x
-77d
-Aug  8 14:05:43 develop kernel: [1121369.440464]  [<c015a14e>]
-file_update_time+0x26/0x8b
-Aug  8 14:05:43 develop kernel: [1121369.440542]  [<c0187a4d>]
-reiserfs_file_write+0x359/0x4bc
-Aug  8 14:05:43 develop kernel: [1121369.440623]  [<c0124e9e>]
-autoremove_wake_function+0x0/0x33
-Aug  8 14:05:43 develop kernel: [1121369.440706]  [<c011adb4>]
-__do_softirq+0x35/0x73
-Aug  8 14:05:43 develop kernel: [1121369.440782]  [<c014b08d>]
-vfs_write+0x8b/0x106
-Aug  8 14:05:43 develop kernel: [1121369.440858]  [<c014b27d>]
-sys_pwrite64+0x48/0x5f
-Aug  8 14:05:43 develop kernel: [1121369.440930]  [<c0103a62>]
-syscall_call+0x7/0xb
-Aug  8 14:05:43 develop kernel: [1121369.441002]  =======================
-Aug  8 14:05:43 develop kernel: [1121369.441067] Code: 40 74 d2 b9 1f
-00 00 00 0f a3 0a 19 c0 85 c0 75 0f 8d 0
-4 0f 66 89 03 0f b7 43 02 40 66 89 43 02 49 79 e5 eb b0 66 83 3b 00 75
-04 <0f> 0b eb fe 5b 5e 5f c3 55 89 d1 5
-7 89 c7 56 53 83 ec 10 8b 58
-Aug  8 14:05:43 develop kernel: [1121369.441363] EIP: [<c017bb7f>]
-reiserfs_cache_bitmap_metadata+0x74/0x7c SS
-:ESP 0068:ee95fc1c
-Aug  8 14:05:43 develop kernel: [1121369.441793] WARNING: at
-kernel/exit.c:869 do_exit()
-Aug  8 14:05:43 develop kernel: [1121369.441886]  [<c0119210>]
-do_exit+0x41/0x300
-Aug  8 14:05:43 develop kernel: [1121369.442002]  [<c0104c12>] die+0x188/0x190
-Aug  8 14:05:43 develop kernel: [1121369.442115]  [<c0104e8c>]
-do_invalid_op+0x0/0x8a
-Aug  8 14:05:43 develop kernel: [1121369.442230]  [<c0104f0d>]
-do_invalid_op+0x81/0x8a
-Aug  8 14:05:43 develop kernel: [1121369.442345]  [<c017bb7f>]
-reiserfs_cache_bitmap_metadata+0x74/0x7c
-Aug  8 14:05:43 develop kernel: [1121369.442467]  [<c02bcfce>]
-io_schedule+0xe/0x16
-Aug  8 14:05:43 develop kernel: [1121369.442583]  [<c02bd0f2>]
-__wait_on_bit+0x4a/0x51
-Aug  8 14:05:43 develop kernel: [1121369.442698]  [<c02bd167>]
-out_of_line_wait_on_bit+0x6e/0x76
-Aug  8 14:05:43 develop kernel: [1121369.442816]  [<c0162fd3>]
-sync_buffer+0x0/0x2e
-Aug  8 14:05:43 develop kernel: [1121369.442932]  [<c0124ed1>]
-wake_bit_function+0x0/0x3c
-Aug  8 14:05:43 develop kernel: [1121369.443050]  [<c02bd8ea>]
-error_code+0x6a/0x70
-Aug  8 14:05:43 develop kernel: [1121369.443166]  [<c017bb7f>]
-reiserfs_cache_bitmap_metadata+0x74/0x7c
-Aug  8 14:05:43 develop kernel: [1121369.443287]  [<c017bc37>]
-reiserfs_read_bitmap_block+0xb0/0xba
-Aug  8 14:05:43 develop kernel: [1121369.443413]  [<c019262d>]
-search_by_key+0x6e1/0xada
-Aug  8 14:05:43 develop kernel: [1121369.443531]  [<c017a57f>]
-scan_bitmap_block+0x63/0x22c
-Aug  8 14:05:43 develop kernel: [1121369.443648]  [<c017a9b0>]
-scan_bitmap+0x1a2/0x1fb
-Aug  8 14:05:43 develop kernel: [1121369.443764]  [<c017b9c5>]
-reiserfs_allocate_blocknrs+0x2cc/0x3d2
-Aug  8 14:05:43 develop kernel: [1121369.443886]  [<c0185a22>]
-reiserfs_allocate_blocks_for_region+0x1f0/0x114
-1
-Aug  8 14:05:43 develop kernel: [1121369.444011]  [<c0192bb4>]
-search_for_position_by_key+0x18e/0x306
-Aug  8 14:05:43 develop kernel: [1121369.444133]  [<c0181020>]
-make_cpu_key+0x43/0x4a
-Aug  8 14:05:43 develop kernel: [1121369.444249]  [<c0191c39>]
-pathrelse+0x1b/0x26
-Aug  8 14:05:43 develop kernel: [1121369.444362]  [<c0187424>]
-reiserfs_prepare_file_region_for_write+0x4ad/0x
-77d
-Aug  8 14:05:43 develop kernel: [1121369.444540]  [<c015a14e>]
-file_update_time+0x26/0x8b
-Aug  8 14:05:43 develop kernel: [1121369.444657]  [<c0187a4d>]
-reiserfs_file_write+0x359/0x4bc
-Aug  8 14:05:43 develop kernel: [1121369.444778]  [<c0124e9e>]
-autoremove_wake_function+0x0/0x33
-Aug  8 14:05:43 develop kernel: [1121369.444897]  [<c011adb4>]
-__do_softirq+0x35/0x73
-Aug  8 14:05:43 develop kernel: [1121369.445012]  [<c014b08d>]
-vfs_write+0x8b/0x106
-Aug  8 14:05:43 develop kernel: [1121369.445127]  [<c014b27d>]
-sys_pwrite64+0x48/0x5f
-Aug  8 14:05:43 develop kernel: [1121369.445243]  [<c0103a62>]
-syscall_call+0x7/0xb
-Aug  8 14:05:43 develop kernel: [1121369.445358]  =======================
-
-
-On 7/12/07, Jeff Mahoney <jeffm@suse.com> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Anthony Simons wrote:
-> > Was decompressing a newly compiled kernel to my usb drive and received the
-> > below error almost immediatly after I began.
-> >
-> > [tonys@squishy ~]$ uname -a
-> > Linux squishy 2.6.21-1.3228.fc7 #1 SMP Tue Jun 12 15:37:31 EDT 2007 i686
-> > i686 i386 GNU/Linux
-> >
-> > After I recive the error, a simple ls just won't work.
->
-> That's expected. Locks that you'll need to acquire for the ls to
-> complete were held by process that BUG()'d.
->
-> This error corresponds to this check in reiserfs_cache_bitmap_metadata():
->
->         /* The first bit must ALWAYS be 1 */
->         BUG_ON(info->first_zero_hint == 0);
->
-> Bit 0 corresponds to the bitmap block itself, so it must *always* be set.
->
-> Can you run reiserfsck on the file system? I have a patch set in
-> development that handles errors like these a bit more gracefully.
->
-> - -Jeff
->
-> >
-> > ------------[ cut here ]------------
-> > kernel BUG at fs/reiserfs/bitmap.c:1287!
-> > invalid opcode: 0000 [#1]
-> > SMP
-> > last sysfs file: /block/sdb/size
-> > Modules linked in: ext2 usb_storage nvidia(P)(U) autofs4 hidp rfcomm l2cap
-> > bluetooth sunrpc cpufreq_ondemand acpi_cpufreq ext3 jbd mbcache dm_mirror
-> > dm_multipath dm_mod video sbs i2c_ec button dock battery ac ipv6 lp loop
-> > parport_pc parport arc4 ecb blkcipher rc80211_simple irda snd_intel8x0m
-> > crc_ccitt bcm43xx_mac80211 ssb iTCO_wdt mac80211 snd_intel8x0
-> > iTCO_vendor_support snd_ac97_codec serio_raw cfg80211 tg3 ac97_bus
-> > snd_seq_dummy i2c_core snd_seq_oss fw_ohci fw_core sr_mod cdrom
-> > snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss joydev
-> > snd_pcm snd_timer snd soundcore snd_page_alloc sg ata_generic ata_piix
-> > libata sd_mod scsi_mod reiserfs ehci_hcd ohci_hcd uhci_hcd
-> > CPU:    0
-> > EIP:    0060:[<f88a306c>]    Tainted: P       VLI
-> > EFLAGS: 00210246   (2.6.21-1.3228.fc7 #1)
-> > EIP is at reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
-> > eax: e6461000   ebx: f8896314   ecx: 00000000   edx: e6460ffc
-> > esi: f5a54668   edi: 00000000   ebp: 000000c5   esp: e4a2dd78
-> > ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
-> > Process tar (pid: 6860, ti=e4a2d000 task=e528e710 task.ti=e4a2d000)
-> > Stack: f5a54668 0018a000 e4bede00 f88a313d 00000400 04040404 e4bede00
-> > e4bede00
-> >        f8896000 f8896314 e4bede00 d71cbe00 d71cbe60 f88a36d4 fffffff4
-> > 000041ed
-> >        00000000 f88adbde eab6be0c e6394950 00000001 e3af31d0 e4bede00
-> > d71cbe60
-> > Call Trace:
-> >  [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
-> >  [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
-> >  [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
-> >  [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
-> >  [<c04850e3>] d_splice_alias+0xdd/0xe3
-> >  [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
-> >  [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
-> >  [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
-> >  [<c047bd7c>] vfs_mkdir+0xbd/0x125
-> >  [<c047e226>] sys_mkdirat+0x88/0xba
-> >  [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
-> >  [<c0450d0f>] audit_syscall_entry+0x10d/0x137
-> >  [<c047e277>] sys_mkdir+0x1f/0x23
-> >  [<c0404f70>] syscall_call+0x7/0xb
-> >  =======================
-> > Code: 00 00 0f a3 0a 19 c0 85 c0 75 0a 66 ff 43 02 8d 04 39 66 89 03 49 83
-> > f9 ff 75 e7 8b 46 18 83 ea 04 39 c2 73 ba 66 83 3b 00 75 04 <0f> 0b eb fe
-> > 5b 5e 5f c3 55 89 d5 57 89 c7 56 53 83 ec 14 8b 90
-> > EIP: [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
-> > SS:ESP 0068:e4a2dd78
-> > BUG: warning at kernel/exit.c:798/do_exit() (Tainted: P      )
-> >  [<c04294f3>] do_exit+0x54/0x6d3
-> >  [<c040655c>] die+0x21b/0x240
-> >  [<c0406967>] do_invalid_op+0x0/0xab
-> >  [<c0406a09>] do_invalid_op+0xa2/0xab
-> >  [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
-> >  [<f88e378d>] scsi_request_fn+0x2d3/0x31d [scsi_mod]
-> >  [<c04d9a27>] blk_remove_plug+0x58/0x64
-> >  [<c042d6e7>] getnstimeofday+0x30/0xb6
-> >  [<c04394c4>] ktime_get_ts+0x16/0x44
-> >  [<c0454c38>] delayacct_end+0x70/0x77
-> >  [<c0454d26>] __delayacct_blkio_end+0x5b/0x5e
-> >  [<c0600b39>] __wait_on_bit+0x50/0x58
-> >  [<c0601a84>] error_code+0x7c/0x84
-> >  [<f88a306c>] reiserfs_cache_bitmap_metadata+0x6c/0x74 [reiserfs]
-> >  [<f88a313d>] reiserfs_read_bitmap_block+0xc9/0xd3 [reiserfs]
-> >  [<f88a36d4>] reiserfs_choose_packing+0x4a/0x78 [reiserfs]
-> >  [<f88adbde>] reiserfs_new_inode+0xb8/0x826 [reiserfs]
-> >  [<f88c35e7>] do_journal_begin_r+0x73/0x28d [reiserfs]
-> >  [<c04850e3>] d_splice_alias+0xdd/0xe3
-> >  [<f88c389a>] journal_begin+0x99/0xd0 [reiserfs]
-> >  [<f88a9a79>] reiserfs_mkdir+0x183/0x2c2 [reiserfs]
-> >  [<f88c6e0b>] reiserfs_permission+0x0/0x1e [reiserfs]
-> >  [<c047bd7c>] vfs_mkdir+0xbd/0x125
-> >  [<c047e226>] sys_mkdirat+0x88/0xba
-> >  [<c0450fcd>] audit_syscall_exit+0x294/0x2b0
-> >  [<c0450d0f>] audit_syscall_entry+0x10d/0x137
-> >  [<c047e277>] sys_mkdir+0x1f/0x23
-> >  [<c0404f70>] syscall_call+0x7/0xb
-> >  =======================
-> >
-> >
-> >
->
->
-> - --
-> Jeff Mahoney
-> SUSE Labs
-> -----BEGIN PGP SIGNATURE-----
-> Version: GnuPG v1.4.5 (GNU/Linux)
-> Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
->
-> iD8DBQFGln18LPWxlyuTD7IRAmDRAJ48kzuX8OX7vGvPY29O9G7EdEB6NACfbfme
-> VwqSa01lXDDeJYl7j0FMZYI=
-> =yWNQ
-> -----END PGP SIGNATURE-----
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index efdb42f..572b529 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -462,6 +462,14 @@ and is between 256 and 4096 characters. It is defined in the file
+ 			UART at the specified I/O port or MMIO address.
+ 			The options are the same as for ttyS, above.
+ 
++	no_console_suspend
++			[HW] Never suspend the serial console
++			Disable suspending the serial console during
++			suspend/resume operations.  If disabled, debugging
++			messages can reach the console while the rest of
++			the system is being put to sleep (ie, while
++			debugging driver suspend/resume hooks).
++
+ 	cpcihp_generic=	[HW,PCI] Generic port I/O CompactPCI driver
+ 			Format:
+ 			<first_slot>,<last_slot>,<port>,<enum_bit>[,<debug>]
+diff --git a/Documentation/power/basic-pm-debugging.txt b/Documentation/power/basic-pm-debugging.txt
+index 1a85e2b..86f3431 100644
+--- a/Documentation/power/basic-pm-debugging.txt
++++ b/Documentation/power/basic-pm-debugging.txt
+@@ -78,8 +78,8 @@ c) Advanced debugging
+ In case the STD does not work on your system even in the minimal configuration
+ and compiling more drivers as modules is not practical or some modules cannot
+ be unloaded, you can use one of the more advanced debugging techniques to find
+-the problem.  First, if there is a serial port in your box, you can set the
+-CONFIG_DISABLE_CONSOLE_SUSPEND kernel configuration option and try to log kernel
++the problem.  First, if there is a serial port in your box, you boot the
++kernel with the 'no_console_suspend' parameter and try to log kernel
+ messages using the serial console.  This may provide you with some information
+ about the reasons of the suspend (resume) failure.  Alternatively, it may be
+ possible to use a FireWire port for debugging with firescope
+diff --git a/arch/powerpc/configs/pmac32_defconfig b/arch/powerpc/configs/pmac32_defconfig
+index 08525d6..0e236c6 100644
+--- a/arch/powerpc/configs/pmac32_defconfig
++++ b/arch/powerpc/configs/pmac32_defconfig
+@@ -216,7 +216,6 @@ CONFIG_PROC_DEVICETREE=y
+ CONFIG_PM=y
+ # CONFIG_PM_LEGACY is not set
+ CONFIG_PM_DEBUG=y
+-# CONFIG_DISABLE_CONSOLE_SUSPEND is not set
+ CONFIG_PM_SYSFS_DEPRECATED=y
+ CONFIG_HIBERNATION=y
+ CONFIG_PM_STD_PARTITION=""
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index 030a606..0bf4725 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -1941,12 +1941,11 @@ int uart_suspend_port(struct uart_driver *drv, struct uart_port *port)
+ 
+ 	mutex_lock(&state->mutex);
+ 
+-#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
+-	if (uart_console(port)) {
++	if (!console_suspend && uart_console(port)) {
++		/* we're going to avoid suspending serial console */
+ 		mutex_unlock(&state->mutex);
+ 		return 0;
+ 	}
+-#endif
+ 
+ 	if (state->info && state->info->flags & UIF_INITIALIZED) {
+ 		const struct uart_ops *ops = port->ops;
+@@ -1989,12 +1988,11 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
+ 
+ 	mutex_lock(&state->mutex);
+ 
+-#ifdef CONFIG_DISABLE_CONSOLE_SUSPEND
+-	if (uart_console(port)) {
++	if (!console_suspend && uart_console(port)) {
++		/* no need to resume serial console, it wasn't suspended */
+ 		mutex_unlock(&state->mutex);
+ 		return 0;
+ 	}
+-#endif
+ 
+ 	uart_change_pm(state, 0);
+ 
+diff --git a/include/linux/console.h b/include/linux/console.h
+index 56a7bcd..74b053f 100644
+--- a/include/linux/console.h
++++ b/include/linux/console.h
+@@ -121,14 +121,9 @@ extern void console_stop(struct console *);
+ extern void console_start(struct console *);
+ extern int is_console_locked(void);
+ 
+-#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
+ /* Suspend and resume console messages over PM events */
+ extern void suspend_console(void);
+ extern void resume_console(void);
+-#else
+-static inline void suspend_console(void) {}
+-static inline void resume_console(void) {}
+-#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
+ 
+ int mda_console_init(void);
+ void prom_con_init(void);
+diff --git a/include/linux/kernel.h b/include/linux/kernel.h
+index 4300bb4..aeb3d60 100644
+--- a/include/linux/kernel.h
++++ b/include/linux/kernel.h
+@@ -172,6 +172,8 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
+ extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ 				unsigned int interval_msec);
+ 
++extern int console_suspend;
++
+ static inline void console_silent(void)
+ {
+ 	console_loglevel = 0;
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index 412859f..b8677bb 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -44,17 +44,6 @@ config PM_VERBOSE
+ 	---help---
+ 	This option enables verbose messages from the Power Management code.
+ 
+-config DISABLE_CONSOLE_SUSPEND
+-	bool "Keep console(s) enabled during suspend/resume (DANGEROUS)"
+-	depends on PM_DEBUG && PM_SLEEP
+-	default n
+-	---help---
+-	This option turns off the console suspend mechanism that prevents
+-	debug messages from reaching the console during the suspend/resume
+-	operations.  This may be helpful when debugging device drivers'
+-	suspend/resume routines, but may itself lead to problems, for example
+-	if netconsole is used.
+-
+ config PM_TRACE
+ 	bool "Suspend/resume event tracing"
+ 	depends on PM_DEBUG && X86 && PM_SLEEP && EXPERIMENTAL
+diff --git a/kernel/printk.c b/kernel/printk.c
+index bd2cd06..1b31afb 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -751,7 +751,15 @@ int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, cha
+ 	return -1;
+ }
+ 
+-#ifndef CONFIG_DISABLE_CONSOLE_SUSPEND
++int console_suspend = 1;
++
++static int __init console_suspend_disable(char *str)
++{
++	console_suspend = 0;
++	return 1;
++}
++__setup("no_console_suspend", console_suspend_disable);
++
+ /**
+  * suspend_console - suspend the console subsystem
+  *
+@@ -759,6 +767,8 @@ int update_console_cmdline(char *name, int idx, char *name_new, int idx_new, cha
+  */
+ void suspend_console(void)
+ {
++	if (!console_suspend)
++		return;
+ 	printk("Suspending console(s)\n");
+ 	acquire_console_sem();
+ 	console_suspended = 1;
+@@ -766,10 +776,11 @@ void suspend_console(void)
+ 
+ void resume_console(void)
+ {
++	if (!console_suspend)
++		return;
+ 	console_suspended = 0;
+ 	release_console_sem();
+ }
+-#endif /* CONFIG_DISABLE_CONSOLE_SUSPEND */
+ 
+ /**
+  * acquire_console_sem - lock the console system for exclusive use.
