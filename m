@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935772AbXHHAGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936000AbXHHAHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935772AbXHHAGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 20:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759623AbXHHAGe
+	id S936000AbXHHAHZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 20:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760867AbXHHAHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 20:06:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48851 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756708AbXHHAGc (ORCPT
+	Tue, 7 Aug 2007 20:07:06 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:45366 "EHLO
+	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759623AbXHHAHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 20:06:32 -0400
-Date: Wed, 8 Aug 2007 02:06:31 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Cal Peake <cp@absolutedigital.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Gabriel C <nix.or.die@googlemail.com>, Frank Hale <frankhale@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel ACPI Mailing List <linux-acpi@vger.kernel.org>,
-       len.brown@intel.com, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: ACPI on Averatec 2370
-Message-ID: <20070808000631.GB7353@one.firstfloor.org>
-References: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net> <Pine.LNX.4.64.0708021335060.28012@lancer.cnet.absolutedigital.net> <46B22BDA.8090604@redhat.com> <Pine.LNX.4.64.0708021512530.28012@lancer.cnet.absolutedigital.net> <46B23E08.4070106@redhat.com> <Pine.LNX.4.64.0708021627590.28012@lancer.cnet.absolutedigital.net> <alpine.LFD.0.999.0708021353320.8184@woody.linux-foundation.org> <Pine.LNX.4.64.0708021723160.28012@lancer.cnet.absolutedigital.net> <alpine.LFD.0.999.0708031447420.8184@woody.linux-foundation.org> <Pine.LNX.4.64.0708071803570.28199@lancer.cnet.absolutedigital.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708071803570.28199@lancer.cnet.absolutedigital.net>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 7 Aug 2007 20:07:03 -0400
+Date: Tue, 07 Aug 2007 18:05:50 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: i386: kernel boot fail at check_irq_resend:69
+In-reply-to: <fa.Jxf3sOqjIQoBfp5keWQZ/p/XSd0@ifi.uio.no>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: Li Yang-r58472 <LeoLi@freescale.com>, hpa@zytor.com,
+       LKML <linux-kernel@vger.kernel.org>
+Message-id: <46B908DE.7030602@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.s/gpFOoJ8PMyPpXRJ4FrnAalSPA@ifi.uio.no>
+ <fa.wDaJQAUs/L/XQkqGZHHUpRgZzvg@ifi.uio.no>
+ <fa.Jxf3sOqjIQoBfp5keWQZ/p/XSd0@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 06:15:37PM -0400, Cal Peake wrote:
-> On Fri, 3 Aug 2007, Linus Torvalds wrote:
+Dave Young wrote:
+>> On 8/7/07, Li Yang-r58472 <LeoLi@freescale.com> wrote:
+>>   -----Original Message-----
+>>> From: linux-kernel-owner@vger.kernel.org
+>>> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Dave Young
+>>> Sent: Tuesday, August 07, 2007 2:32 PM
+>>> To: hpa@zytor.com
+>>> Cc: LKML
+>>> Subject: i386: kernel boot fail at check_irq_resend:69
+>>>
+>>> Hi,
+>>> The kernerl 2.6.23-rc1-mm2 boot fail at check_irq_resend:69
+>>>        > if (WARN_ON_ONCE(desc->handle_irq != handle_edge_irq))
+>>>        >        return;
+>> Failed?  It's just a kernel Badness for me, and the boot can be finished.
 > 
-> > > MSR_K8_ENABLE_C1E lo == 0x04c14015
-> > > MSR_K8_ENABLE_C1E hi == 0x00000000
-> > > lo & ENABLE_C1E_MASK == 0
-> > 
-> > And yeah, that claims that C1E is not on, but:
-> > 
-> > > amd_apic_timer_broken: forcing return value of 1
-> 
-> So it seems my initial debugging report was, err, incomplete. I failed to 
-> notice that the amd_apic_timer_broken function was getting called twice, 
-> once for each core.
-> 
-> The second call shows this:
-> 
->   MSR_K8_ENABLE_C1E == 0x14c14015
+> No, my kernel panic after this. noapic does not help too.
+> Regards
+> dave
 
-Ah interesting. Ok finally that all starts making sense.
+That warning should not cause a panic. Is there another message after it?
 
-Not sure why the MSR varies between cores though.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-> which causes our ENABLE_C1E_MASK check to be true and thus properly 
-> return 1 from the function. So when we call the above function from 
-> init_amd we prolly need to do a
-> 
->   set_bit(X86_FEATURE_LAPIC_TIMER_BROKEN, c->x86_capability);
-> 
-> for each core if any of them happen to return true upon checking for a 
-> broken timer.
-
-It's better to just make it a global instead.
-
--Andi
