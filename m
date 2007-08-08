@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936800AbXHHQgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964826AbXHHQjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936800AbXHHQgE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935337AbXHHQfM
+	id S964826AbXHHQjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbXHHQjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:35:12 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:32203 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S936708AbXHHQfJ (ORCPT
+	Wed, 8 Aug 2007 12:39:42 -0400
+Received: from lazybastard.de ([212.112.238.170]:50701 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762982AbXHHQjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:35:09 -0400
-Date: Wed, 8 Aug 2007 18:35:43 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Tejun Heo <htejun@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-Message-ID: <20070808183543.3b271c31@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>
-	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
-	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>
-	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>
-	<20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>
-	<20070808161631.1ccf27fd@gondolin.boeblingen.de.ibm.com>
-	<46B9D4B8.4050201@gmail.com>
-	<20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Wed, 8 Aug 2007 12:39:40 -0400
+Date: Wed, 8 Aug 2007 18:35:45 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Artem Bityutskiy <dedekind@infradead.org>
+Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: LogFS take five
+Message-ID: <20070808163545.GU15319@lazybastard.org>
+References: <20070808161234.GB15319@lazybastard.org> <1186590437.19606.38.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1186590437.19606.38.camel@sauron>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 16:50:27 +0200,
-Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-
-> On Wed, 08 Aug 2007 23:35:36 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
+On Wed, 8 August 2007 19:27:17 +0300, Artem Bityutskiy wrote:
+> On Wed, 2007-08-08 at 18:12 +0200, Jörn Engel wrote:
+> > It has been a while, mainly because I found a bunch of races and didn't
+> > want to publish anything before those were fixed.  Patch is still
+> > against 2.6.21 and just for review.
 > 
-> > Does the attached patch happen to fix the problem?
-> 
-> Indeed it does; thanks!
+> I'm very interested how do you account free/dirty space in LogFS:
 
-And the whole patchset seems to work as well. I did my usual
-attach/detach/move stuff, and didn't see any problems.
+Independently of the position where data goes.  There is a known amount
+of space.  Each write decreases that, each delete increases that.
+-ENOSPC when it gets too low.
+
+> * When you need to write new data, how do you select the place where to
+> write?
+
+Next position in the appropriate segment (you remember the level
+concept, I'm sure).
+
+> * When you run out of space, how do select find the segment to
+> garbage-collect?
+
+Most amount of free space usually.  If space gets really tight, lower
+levels are ignored.
+
+> For any given segment (or eraseblock), how do you find amount of free
+> and dirty space in it?
+
+Scanning.  I don't have seperate accounting yet.
+
+Jörn
+
+-- 
+When in doubt, use brute force.
+-- Ken Thompson
