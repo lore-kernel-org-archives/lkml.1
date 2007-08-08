@@ -1,56 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764316AbXHHWXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764351AbXHHW1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764316AbXHHWXo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbXHHWXg
+	id S1764351AbXHHW1W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757296AbXHHW1I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:23:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48674 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758012AbXHHWXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:23:35 -0400
-Date: Thu, 9 Aug 2007 00:23:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org
-Cc: gdavis@mvista.com, linux-kernel@vger.kernel.org
-Subject: Re: -
-	fix-local_irq_-macro-definition-thinkos-for-the-trace_irqflags_support-case.patch
-	removed from -mm tree
-Message-ID: <20070808222322.GB16238@elte.hu>
-References: <200708082117.l78LHgL9030537@imap1.linux-foundation.org>
+	Wed, 8 Aug 2007 18:27:08 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:48577 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753667AbXHHW1G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:27:06 -0400
+Date: Thu, 9 Aug 2007 00:27:03 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>
+Cc: Chris Snook <csnook@redhat.com>, andi@firstfloor.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au
+Subject: Re: [patch] ipvs: force read of atomic_t in while loop
+Message-ID: <20070808222703.GA11359@osiris.ibm.com>
+References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com> <20070808.032131.35507346.davem@davemloft.net> <20070808102835.GC14530@osiris.boeblingen.de.ibm.com> <46BA30DC.20207@redhat.com> <20070808143115.de539511.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200708082117.l78LHgL9030537@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070808143115.de539511.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 08, 2007 at 02:31:15PM -0700, Andrew Morton wrote:
+> On Wed, 08 Aug 2007 17:08:44 -0400
+> Chris Snook <csnook@redhat.com> wrote:
+> 
+> > Heiko Carstens wrote:
+> > > On Wed, Aug 08, 2007 at 03:21:31AM -0700, David Miller wrote:
+> > >> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > >> Date: Wed, 8 Aug 2007 11:33:00 +0200
+> > >>
+> > >>> Just saw this while grepping for atomic_reads in a while loops.
+> > >>> Maybe we should re-add the volatile to atomic_t. Not sure.
+> > >> I think whatever the choice, it should be done consistently
+> > >> on every architecture.
+> > >>
+> > >> It's just asking for trouble if your arch does it differently from
+> > >> every other.
+> > > 
+> > > Well..currently it's i386/x86_64 and s390 which have no volatile
+> > > in atomic_t. And yes, of course I agree it should be consistent
+> > > across all architectures. But it isn't.
+> > 
+> > Based on recent discussion, it's pretty clear that there's a lot of 
+> > confusion about this.  A lot of people (myself included, until I thought 
+> > about it long and hard) will reasonably assume that calling 
+> > atomic_read() will actually read the value from memory.  Leaving out the 
+> > volatile declaration seems like a pessimization to me.  If you force 
+> > people to use barrier() everywhere they're working with atomic_t, it 
+> > will force re-reads of all the non-atomic data in use as well, which 
+> > will cause more memory fetches of things that generally don't need 
+> > barrier().  That and it's a bug waiting to happen.
+> > 
+> > Andi -- your thoughts on the matter?
+> 
+> I'm not Andi, but this not-Andi thinks that permitting the compiler to cache
+> the results of atomic_read() is dumb.
 
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+Ok, how about this:
 
-> This patch was dropped because it had testing failures
+Subject: [PATCH] Add 'volatile' to atomic_t again.
 
-> -# define raw_local_irq_disable()	local_irq_disable()
-> -# define raw_local_irq_enable()		local_irq_enable()
-> -# define raw_local_irq_save(flags)	local_irq_save(flags)
-> -# define raw_local_irq_restore(flags)	local_irq_restore(flags)
-> +# define local_irq_disable()		raw_local_irq_disable()
-> +# define local_irq_enable()		raw_local_irq_enable()
-> +# define local_irq_save(flags)		raw_local_irq_save(flags)
-> +# define local_irq_restore(flags)	raw_local_irq_restore(flags)
->  #endif /* CONFIG_TRACE_IRQFLAGS_SUPPORT */
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
 
-hm, indeed: an #ifdef LOCKDEP_SUPPORT has to be added around these 4 
-macros. That will make this build fine on non-lockdep architectures too. 
-Sorry, i should have noticed this!
+This basically reverts f9e9dcb38f5106fa8cdac04a9e967d5487f1cd20 which
+removed 'volatile' from atomic_t for i386/x86_64. Reason for this
+is to make sure that code like
+while (atomic_read(&whatever));
+continues to work.
+Otherwise the compiler might generate code that will loop forever.
+Also this makes sure atomic_t is the same across all architectures.
 
-	Ingo
+Cc: Andi Kleen <ak@suse.de>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+
+s390 patch will go in via Martin if this is accepted.
+
+ include/asm-i386/atomic.h   |    2 +-
+ include/asm-x86_64/atomic.h |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
+
+Index: linux-2.6/include/asm-i386/atomic.h
+===================================================================
+--- linux-2.6.orig/include/asm-i386/atomic.h
++++ linux-2.6/include/asm-i386/atomic.h
+@@ -15,7 +15,7 @@
+  * on us. We need to use _exactly_ the address the user gave us,
+  * not some alias that contains the same information.
+  */
+-typedef struct { int counter; } atomic_t;
++typedef struct { volatile int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+Index: linux-2.6/include/asm-x86_64/atomic.h
+===================================================================
+--- linux-2.6.orig/include/asm-x86_64/atomic.h
++++ linux-2.6/include/asm-x86_64/atomic.h
+@@ -22,7 +22,7 @@
+  * on us. We need to use _exactly_ the address the user gave us,
+  * not some alias that contains the same information.
+  */
+-typedef struct { int counter; } atomic_t;
++typedef struct { volatile int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
