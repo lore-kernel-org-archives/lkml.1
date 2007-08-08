@@ -1,199 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935086AbXHHOTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935207AbXHHOUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935086AbXHHOTu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757120AbXHHOTj
+	id S935207AbXHHOUP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932942AbXHHOTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:19:39 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:34354 "EHLO relay.sw.ru"
+	Wed, 8 Aug 2007 10:19:42 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:11831 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754217AbXHHOTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:19:37 -0400
-Message-ID: <46B9D047.9090000@openvz.org>
-Date: Wed, 08 Aug 2007 18:16:39 +0400
+	id S1763613AbXHHOTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:19:40 -0400
+Message-ID: <46B9D056.9040406@openvz.org>
+Date: Wed, 08 Aug 2007 18:16:54 +0400
 From: Pavel Emelyanov <xemul@openvz.org>
 User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>, linux-arch@vger.kernel.org
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org
-Subject: [PATCH] Consolidate show_regs and show_registers for i386
+To: Andrew Morton <akpm@osdl.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
+       linux-arch@vger.kernel.org
+Subject: [PATCH] Cleanup oops/bug reports on i386
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both functions printk the same information, except for CRx and
-debug registers in the show_registers() one and a bit different
-manner. So move the common code into one place. This is already
-done for x86_64, so I think it's worth having the same on i386.
+Typically the oops first lines look like this:
 
-This saves 100 bytes of .rodata section :) ...
-   but only 8 from .text :(
+BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+ printing eip:
+c049dfbd
+*pde = 00000000
+Oops: 0002 [#1]
+PREEMPT SMP 
+...
+
+Such output is gained with some ugly if (!nl) printk("\n"); code and
+besides being a waste of lines, this is also annoying to read. The
+following output looks better (and it is how it looks on x86_64):
+
+BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
+printing eip: c049dfbd *pde = 00000000
+Oops: 0002 [#1] PREEMPT SMP 
+...
 
 Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
 ---
 
- arch/i386/kernel/process.c |   56 ++++++++++++++++++++++++++++++++-------------
- arch/i386/kernel/traps.c   |   32 +++----------------------
- include/asm-i386/system.h  |    1 
- 3 files changed, 45 insertions(+), 44 deletions(-)
+ arch/i386/kernel/traps.c |   16 ++++------------
+ arch/i386/mm/fault.c     |   13 +++++++------
+ 2 files changed, 11 insertions(+), 18 deletions(-)
 
-diff --git a/arch/i386/kernel/process.c b/arch/i386/kernel/process.c
-index 238ac1b..ee40c19 100644
---- a/arch/i386/kernel/process.c
-+++ b/arch/i386/kernel/process.c
-@@ -299,34 +299,52 @@ static int __init idle_setup(char *str)
- }
- early_param("idle", idle_setup);
- 
--void show_regs(struct pt_regs * regs)
-+void __show_registers(struct pt_regs *regs, int all)
- {
- 	unsigned long cr0 = 0L, cr2 = 0L, cr3 = 0L, cr4 = 0L;
- 	unsigned long d0, d1, d2, d3, d6, d7;
-+	unsigned long esp;
-+	unsigned short ss, gs;
-+
-+	if (user_mode_vm(regs)) {
-+		esp = regs->esp;
-+		ss = regs->xss & 0xffff;
-+		savesegment(gs, gs);
-+	} else {
-+		esp = (unsigned long) (&regs->esp);
-+		savesegment(ss, ss);
-+		savesegment(gs, gs);
-+	}
- 
- 	printk("\n");
--	printk("Pid: %d, comm: %20s\n", current->pid, current->comm);
--	printk("EIP: %04x:[<%08lx>] CPU: %d\n",0xffff & regs->xcs,regs->eip, smp_processor_id());
-+	printk("Pid: %d, comm: %.*s %s (%s %.*s)\n",
-+			current->pid, TASK_COMM_LEN, current->comm,
-+			print_tainted(), init_utsname()->release,
-+			(int)strcspn(init_utsname()->version, " "),
-+			init_utsname()->version);
-+
-+	printk("EIP: %04x:[<%08lx>] EFLAGS: %08lx CPU: %d\n",
-+			0xffff & regs->xcs, regs->eip, regs->eflags,
-+			smp_processor_id());
- 	print_symbol("EIP is at %s\n", regs->eip);
- 
--	if (user_mode_vm(regs))
--		printk(" ESP: %04x:%08lx",0xffff & regs->xss,regs->esp);
--	printk(" EFLAGS: %08lx    %s  (%s %.*s)\n",
--	       regs->eflags, print_tainted(), init_utsname()->release,
--	       (int)strcspn(init_utsname()->version, " "),
--	       init_utsname()->version);
- 	printk("EAX: %08lx EBX: %08lx ECX: %08lx EDX: %08lx\n",
--		regs->eax,regs->ebx,regs->ecx,regs->edx);
--	printk("ESI: %08lx EDI: %08lx EBP: %08lx",
--		regs->esi, regs->edi, regs->ebp);
--	printk(" DS: %04x ES: %04x FS: %04x\n",
--	       0xffff & regs->xds,0xffff & regs->xes, 0xffff & regs->xfs);
-+		regs->eax, regs->ebx, regs->ecx, regs->edx);
-+	printk("ESI: %08lx EDI: %08lx EBP: %08lx ESP: %08lx\n",
-+		regs->esi, regs->edi, regs->ebp, esp);
-+	printk(" DS: %04x ES: %04x FS: %04x GS: %04x SS: %04x\n",
-+	       regs->xds & 0xffff, regs->xes & 0xffff,
-+	       regs->xfs & 0xffff, gs, ss);
-+
-+	if (!all)
-+		return;
- 
- 	cr0 = read_cr0();
- 	cr2 = read_cr2();
- 	cr3 = read_cr3();
- 	cr4 = read_cr4_safe();
--	printk("CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n", cr0, cr2, cr3, cr4);
-+	printk("CR0: %08lx CR2: %08lx CR3: %08lx CR4: %08lx\n",
-+			cr0, cr2, cr3, cr4);
- 
- 	get_debugreg(d0, 0);
- 	get_debugreg(d1, 1);
-@@ -334,10 +352,16 @@ void show_regs(struct pt_regs * regs)
- 	get_debugreg(d3, 3);
- 	printk("DR0: %08lx DR1: %08lx DR2: %08lx DR3: %08lx\n",
- 			d0, d1, d2, d3);
-+
- 	get_debugreg(d6, 6);
- 	get_debugreg(d7, 7);
--	printk("DR6: %08lx DR7: %08lx\n", d6, d7);
-+	printk("DR6: %08lx DR7: %08lx\n",
-+			d6, d7);
-+}
- 
-+void show_regs(struct pt_regs * regs)
-+{
-+	__show_registers(regs, 1);
- 	show_trace(NULL, regs, &regs->esp);
- }
- 
 diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
-index 65eac87..a20c7ad 100644
+index a20c7ad..f469d20 100644
 --- a/arch/i386/kernel/traps.c
 +++ b/arch/i386/kernel/traps.c
-@@ -282,33 +282,9 @@ EXPORT_SYMBOL(dump_stack);
- void show_registers(struct pt_regs *regs)
- {
- 	int i;
--	int in_kernel = 1;
--	unsigned long esp;
--	unsigned short ss, gs;
--
--	esp = (unsigned long) (&regs->esp);
--	savesegment(ss, ss);
--	savesegment(gs, gs);
--	if (user_mode_vm(regs)) {
--		in_kernel = 0;
--		esp = regs->esp;
--		ss = regs->xss & 0xffff;
--	}
-+
- 	print_modules();
--	printk(KERN_EMERG "CPU:    %d\n"
--		KERN_EMERG "EIP:    %04x:[<%08lx>]    %s VLI\n"
--		KERN_EMERG "EFLAGS: %08lx   (%s %.*s)\n",
--		smp_processor_id(), 0xffff & regs->xcs, regs->eip,
--		print_tainted(), regs->eflags, init_utsname()->release,
--		(int)strcspn(init_utsname()->version, " "),
--		init_utsname()->version);
--	print_symbol(KERN_EMERG "EIP is at %s\n", regs->eip);
--	printk(KERN_EMERG "eax: %08lx   ebx: %08lx   ecx: %08lx   edx: %08lx\n",
--		regs->eax, regs->ebx, regs->ecx, regs->edx);
--	printk(KERN_EMERG "esi: %08lx   edi: %08lx   ebp: %08lx   esp: %08lx\n",
--		regs->esi, regs->edi, regs->ebp, esp);
--	printk(KERN_EMERG "ds: %04x   es: %04x   fs: %04x  gs: %04x  ss: %04x\n",
--	       regs->xds & 0xffff, regs->xes & 0xffff, regs->xfs & 0xffff, gs, ss);
-+	__show_registers(regs, 0);
- 	printk(KERN_EMERG "Process %.*s (pid: %d, ti=%p task=%p task.ti=%p)",
- 		TASK_COMM_LEN, current->comm, current->pid,
- 		current_thread_info(), current, task_thread_info(current));
-@@ -316,14 +292,14 @@ void show_registers(struct pt_regs *regs
- 	 * When in-kernel, we also print out the stack and code at the
- 	 * time of the fault..
- 	 */
--	if (in_kernel) {
-+	if (!user_mode_vm(regs)) {
- 		u8 *eip;
- 		unsigned int code_prologue = code_bytes * 43 / 64;
- 		unsigned int code_len = code_bytes;
- 		unsigned char c;
+@@ -368,31 +368,23 @@ void die(const char * str, struct pt_reg
+ 		local_save_flags(flags);
  
- 		printk("\n" KERN_EMERG "Stack: ");
--		show_stack_log_lvl(NULL, regs, (unsigned long *)esp, KERN_EMERG);
-+		show_stack_log_lvl(NULL, regs, &regs->esp, KERN_EMERG);
+ 	if (++die.lock_owner_depth < 3) {
+-		int nl = 0;
+ 		unsigned long esp;
+ 		unsigned short ss;
  
- 		printk(KERN_EMERG "Code: ");
+ 		report_bug(regs->eip, regs);
  
-diff --git a/include/asm-i386/system.h b/include/asm-i386/system.h
-index 609756c..c339b30 100644
---- a/include/asm-i386/system.h
-+++ b/include/asm-i386/system.h
-@@ -314,5 +314,6 @@ extern unsigned long arch_align_stack(un
- extern void free_init_pages(char *what, unsigned long begin, unsigned long end);
- 
- void default_idle(void);
-+void __show_registers(struct pt_regs *, int all);
- 
+-		printk(KERN_EMERG "%s: %04lx [#%d]\n", str, err & 0xffff, ++die_counter);
++		printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff, ++die_counter);
+ #ifdef CONFIG_PREEMPT
+-		printk(KERN_EMERG "PREEMPT ");
+-		nl = 1;
++		printk("PREEMPT ");
  #endif
+ #ifdef CONFIG_SMP
+-		if (!nl)
+-			printk(KERN_EMERG);
+ 		printk("SMP ");
+-		nl = 1;
+ #endif
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+-		if (!nl)
+-			printk(KERN_EMERG);
+ 		printk("DEBUG_PAGEALLOC");
+-		nl = 1;
+ #endif
+-		if (nl)
+-			printk("\n");
++		printk("\n");
++
+ 		if (notify_die(DIE_OOPS, str, regs, err,
+ 					current->thread.trap_no, SIGSEGV) !=
+ 				NOTIFY_STOP) {
+diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
+index fece684..93263aa 100644
+--- a/arch/i386/mm/fault.c
++++ b/arch/i386/mm/fault.c
+@@ -537,23 +537,22 @@ no_context:
+ 			printk(KERN_ALERT "BUG: unable to handle kernel paging"
+ 					" request");
+ 		printk(" at virtual address %08lx\n",address);
+-		printk(KERN_ALERT " printing eip:\n");
+-		printk("%08lx\n", regs->eip);
++		printk(KERN_ALERT "printing eip: %08lx ", regs->eip);
+ 
+ 		page = read_cr3();
+ 		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
+ #ifdef CONFIG_X86_PAE
+-		printk(KERN_ALERT "*pdpt = %016Lx\n", page);
++		printk("*pdpt = %016Lx ", page);
+ 		if ((page >> PAGE_SHIFT) < max_low_pfn
+ 		    && page & _PAGE_PRESENT) {
+ 			page &= PAGE_MASK;
+ 			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
+ 			                                         & (PTRS_PER_PMD - 1)];
+-			printk(KERN_ALERT "*pde = %016Lx\n", page);
++			printk(KERN_ALERT "*pde = %016Lx ", page);
+ 			page &= ~_PAGE_NX;
+ 		}
+ #else
+-		printk(KERN_ALERT "*pde = %08lx\n", page);
++		printk("*pde = %08lx ", page);
+ #endif
+ 
+ 		/*
+@@ -567,8 +566,10 @@ no_context:
+ 			page &= PAGE_MASK;
+ 			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
+ 			                                         & (PTRS_PER_PTE - 1)];
+-			printk(KERN_ALERT "*pte = %0*Lx\n", sizeof(page)*2, (u64)page);
++			printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
+ 		}
++
++		printk("\n");
+ 	}
+ 
+ 	tsk->thread.cr2 = address;
