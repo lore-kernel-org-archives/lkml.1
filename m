@@ -1,112 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbXHHLif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXHHLm0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753964AbXHHLif (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 07:38:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbXHHLi2
+	id S1756037AbXHHLm0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 07:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXHHLmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 07:38:28 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:35503 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750736AbXHHLi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 07:38:26 -0400
-Date: Wed, 8 Aug 2007 17:08:34 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Haren Myneni <hbabu@us.ibm.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
-Message-ID: <20070808113834.GA26145@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <46B73955.2080007@fujitsu-siemens.com>
+	Wed, 8 Aug 2007 07:42:13 -0400
+Received: from mx12.go2.pl ([193.17.41.142]:43656 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750964AbXHHLmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 07:42:11 -0400
+Date: Wed, 8 Aug 2007 13:42:43 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070808114243.GC2426@ff.dom.local>
+References: <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com> <20070807082321.GB2120@ff.dom.local> <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com> <20070807095246.GB3223@ff.dom.local> <20070807121339.GA3946@ff.dom.local> <4bacf17f0708080409t116b5c84ye60dff7da51d0fdf@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <46B73955.2080007@fujitsu-siemens.com>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4bacf17f0708080409t116b5c84ye60dff7da51d0fdf@mail.gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 06, 2007 at 05:08:05PM +0200, Martin Wilck wrote:
-> PATCH/RFC: [kdump] fix APIC shutdown sequence
+Read below please:
+
+On Wed, Aug 08, 2007 at 01:09:36PM +0200, Marcin ¦lusarz wrote:
+> 2007/8/7, Jarek Poplawski <jarkao2@o2.pl>:
+> > So, the let's try this idea yet: modified Ingo's "x86: activate
+> > HARDIRQS_SW_RESEND" patch.
+> > (Don't forget about make oldconfig before make.)
+> > For testing only.
+> >
+> > Cheers,
+> > Jarek P.
+> >
+> > PS: alas there was not even time for "compile checking"...
+> >
+> > ---
+> >
+> > diff -Nurp 2.6.22.1-/arch/i386/Kconfig 2.6.22.1/arch/i386/Kconfig
+> > --- 2.6.22.1-/arch/i386/Kconfig 2007-07-09 01:32:17.000000000 +0200
+> > +++ 2.6.22.1/arch/i386/Kconfig  2007-08-07 13:13:03.000000000 +0200
+> > @@ -1252,6 +1252,10 @@ config GENERIC_PENDING_IRQ
+> >         depends on GENERIC_HARDIRQS && SMP
+> >         default y
+> >
+> > +config HARDIRQS_SW_RESEND
+> > +       bool
+> > +       default y
+> > +
+> >  config X86_SMP
+> >         bool
+> >         depends on SMP && !X86_VOYAGER
+> > diff -Nurp 2.6.22.1-/arch/x86_64/Kconfig 2.6.22.1/arch/x86_64/Kconfig
+> > --- 2.6.22.1-/arch/x86_64/Kconfig       2007-07-09 01:32:17.000000000 +0200
+> > +++ 2.6.22.1/arch/x86_64/Kconfig        2007-08-07 13:13:03.000000000 +0200
+> > @@ -690,6 +690,10 @@ config GENERIC_PENDING_IRQ
+> >         depends on GENERIC_HARDIRQS && SMP
+> >         default y
+> >
+> > +config HARDIRQS_SW_RESEND
+> > +       bool
+> > +       default y
+> > +
+> >  menu "Power management options"
+> >
+> >  source kernel/power/Kconfig
+> > diff -Nurp 2.6.22.1-/kernel/irq/manage.c 2.6.22.1/kernel/irq/manage.c
+> > --- 2.6.22.1-/kernel/irq/manage.c       2007-07-09 01:32:17.000000000 +0200
+> > +++ 2.6.22.1/kernel/irq/manage.c        2007-08-07 13:13:03.000000000 +0200
+> > @@ -169,6 +169,14 @@ void enable_irq(unsigned int irq)
+> >                 desc->depth--;
+> >         }
+> >         spin_unlock_irqrestore(&desc->lock, flags);
+> > +#ifdef CONFIG_HARDIRQS_SW_RESEND
+> > +       /*
+> > +        * Do a bh disable/enable pair to trigger any pending
+> > +        * irq resend logic:
+> > +        */
+> > +       local_bh_disable();
+> > +       local_bh_enable();
+> > +#endif
+> >  }
+> >  EXPORT_SYMBOL(enable_irq);
+> >
+> > diff -Nurp 2.6.22.1-/kernel/irq/resend.c 2.6.22.1/kernel/irq/resend.c
+> > --- 2.6.22.1-/kernel/irq/resend.c       2007-07-09 01:32:17.000000000 +0200
+> > +++ 2.6.22.1/kernel/irq/resend.c        2007-08-07 13:57:54.000000000 +0200
+> > @@ -62,16 +62,24 @@ void check_irq_resend(struct irq_desc *d
+> >          */
+> >         desc->chip->enable(irq);
+> >
+> > +       /*
+> > +        * Temporary hack to figure out more about the problem, which
+> > +        * is causing the ancient network cards to die.
+> > +        */
+> > +
+> >         if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
+> >                 desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
+> >
+> > -               if (!desc->chip || !desc->chip->retrigger ||
+> > -                                       !desc->chip->retrigger(irq)) {
+> > +               if (desc->handle_irq == handle_edge_irq) {
+> > +                       if (desc->chip->retrigger)
+> > +                               desc->chip->retrigger(irq);
+> > +                       return;
+> > +               }
+> >  #ifdef CONFIG_HARDIRQS_SW_RESEND
+> > -                       /* Set it pending and activate the softirq: */
+> > -                       set_bit(irq, irqs_resend);
+> > -                       tasklet_schedule(&resend_tasklet);
+> > +               WARN_ON_ONCE(1);
+> > +               /* Set it pending and activate the softirq: */
+> > +               set_bit(irq, irqs_resend);
+> > +               tasklet_schedule(&resend_tasklet);
+> >  #endif
+> > -               }
+> >         }
+> >  }
+> >
+> Works fine with:
+
+Very nice! It would be about time this kernel should start behave...
+
+> WARNING: at kernel/irq/resend.c:79 check_irq_resend()
 > 
-> This patch fixes a problem that we have encountered
-> with kdump under high I/O load on some machines.
-> The machines showing the errors have an Intel ICH7
-> chip set with a 6702PXH  PCI Express-to-PCI Bridge
-> (8086:032c) containing an IO-APIC.
-> 
-> The bug symptom is that certain controllers connected
-> to the 6702PXH bridge wouldn't receive any IRQs in the
-> kdump kernel. In the error case (which is about 20% of
-> all cases) the IRR bit of the IO-APIC pin for that
-> controller is always set after the start of the kdump
-> kernel, indicating an IRQ in progress. We haven't found
-> a way to recover from this situation when it has once
-> occured, except for a system reset.
-> 
-> The error is caused by IRQs arriving while the APIC
-> subsystem is deactivated in machine_crash_shutdown().
-> 
-> Apparently, the IO-APIC gets stuck if it sends an IRQ
-> message to a Local APIC and never receives an EOI for that
-> message. This can have several possible reasons:
+> Call Trace:
+>  [<ffffffff8025e660>] check_irq_resend+0xc0/0xd0
+>  [<ffffffff8025e1cd>] enable_irq+0xed/0xf0
+>  [<ffffffff8807f21d>] :8390:ei_start_xmit+0x14d/0x30c
+>  [<ffffffff8024d055>] lock_release_non_nested+0xe5/0x190
+>  [<ffffffff80539b78>] __qdisc_run+0x98/0x1f0
+>  [<ffffffff80539b8e>] __qdisc_run+0xae/0x1f0
+>  [<ffffffff8052b65e>] dev_hard_start_xmit+0x26e/0x2d0
+>  [<ffffffff80539ba0>] __qdisc_run+0xc0/0x1f0
+>  [<ffffffff8052dc2f>] dev_queue_xmit+0x24f/0x310
+>  [<ffffffff805337a7>] neigh_resolve_output+0xe7/0x290
+>  [<ffffffff8054f5c0>] dst_output+0x0/0x10
+>  [<ffffffff80552aff>] ip_output+0x19f/0x340
+>  [<ffffffff80551f77>] ip_queue_xmit+0x217/0x430
+>  [<ffffffff80563b2a>] tcp_transmit_skb+0x40a/0x7c0
+>  [<ffffffff805657bb>] __tcp_push_pending_frames+0x11b/0x940
+>  [<ffffffff8055972a>] tcp_sendmsg+0x87a/0xc80
+>  [<ffffffff80577735>] inet_sendmsg+0x45/0x80
+>  [<ffffffff8051e2d4>] sock_aio_write+0x104/0x120
+>  [<ffffffff80285fc1>] do_sync_write+0xf1/0x130
+>  [<ffffffff80243290>] autoremove_wake_function+0x0/0x40
+>  [<ffffffff802868e9>] vfs_write+0x159/0x170
+>  [<ffffffff80286ef0>] sys_write+0x50/0x90
+>  [<ffffffff802097fe>] system_call+0x7e/0x83
 > 
 
-Got this oops while testing your patch when I did
-"echo c > /proc/sysrq-trigger"
+So, it looks like x86_64 io_apic's IPI code was unused too long...
+I hope it's a piece of cake for Ingo now...
 
-[root@llm37 ~]# SysRq : Trigger a crashdump
-Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
- [<0000000000000000>]
-PGD 22229b067 PUD 0
-Oops: 0000 [1] SMP
-CPU 0
-Modules linked in:
-Pid: 2947, comm: klogd Not tainted 2.6.23-rc1-apic-issue #2
-RIP: 0010:[<0000000000000000>]  [<0000000000000000>]
-RSP: 0018:ffffffff807daf50  EFLAGS: 00010046
-RAX: 0000000000000000 RBX: ffffffff8073f480 RCX: ffffffff807ddea0
-RDX: ffffffff807717c0 RSI: ffffffff8073f480 RDI: 0000000000000000
-RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
-R10: ffffffff807ddd28 R11: 0000000000000150 R12: 0000000000000000
-R13: ffffffff8073f4d0 R14: 000000000000000c R15: 0000000000000000
-FS:  00002b204ea686f0(0000) GS:ffffffff8073c000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000223e9e000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process klogd (pid: 2947, threadinfo ffff81021b7b8000, task ffff8102251a27b0)
-Stack:  ffffffff8025afd0 0000000000000046 ffffffff807dddf8 0000000000000000
- 0000000000000030 0000000000000000 ffffffff8020e1ae ffffffff807d15c8
- 0000000000000000 ffffffff807dde20 0000000000000000 ffffffff807ddee8
-Call Trace:
- <IRQ>  [<ffffffff8025afd0>] handle_edge_irq+0x5c/0x127
- [<ffffffff8020e1ae>] do_IRQ+0xf1/0x15f
- [<ffffffff8020c191>] ret_from_intr+0x0/0xa
- <EOI>  <NMI>  [<ffffffff80351ae3>] __delay+0x6/0x10
- [<ffffffff8021e328>] crash_nmi_callback+0x4b/0x77
- [<ffffffff80557075>] notifier_call_chain+0x29/0x4c
- [<ffffffff80249a11>] notify_die+0x2d/0x34
- [<ffffffff805555a3>] default_do_nmi+0x55/0x197
- [<ffffffff80555f0e>] do_nmi+0x2e/0x44
- [<ffffffff805553af>] nmi+0x7f/0x90
- [<ffffffff8022e00a>] find_busiest_group+0x20e/0x6b3
- <<EOE>>  [<ffffffff80552d13>] __sched_text_start+0x1cb/0x5ba
- [<ffffffff80282294>] do_sync_write+0xc9/0x10c
- [<ffffffff80235c32>] do_syslog+0x11d/0x3a9
- [<ffffffff80246a03>] autoremove_wake_function+0x0/0x2e
- [<ffffffff802731c6>] free_pages_and_swap_cache+0x73/0x8f
- [<ffffffff802bbeac>] kmsg_read+0x3a/0x44
- [<ffffffff802b5245>] proc_reg_read+0x7e/0x99
- [<ffffffff80282b08>] vfs_read+0xaa/0x132
- [<ffffffff80282ea4>] sys_read+0x45/0x6e
- [<ffffffff8020bc7e>] system_call+0x7e/0x83
+Thanks very much Marcin!
 
+If it's possible for you and Jean-Baptiste, try this today patch
+with -rc2, and maybe once more this one patch (-rc1 or older).
 
-Code:  Bad RIP value.
-RIP  [<0000000000000000>]
- RSP <ffffffff807daf50>
-CR2: 0000000000000000
+Regards,
+Jarek P. 
 
-Thanks
-Vivek
