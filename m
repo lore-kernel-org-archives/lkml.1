@@ -1,49 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765138AbXHHJs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbXHHJ4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765138AbXHHJs5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbXHHJsp
+	id S1762941AbXHHJ4E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbXHHJzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:48:45 -0400
-Received: from mx2.suse.de ([195.135.220.15]:47529 "EHLO mx2.suse.de"
+	Wed, 8 Aug 2007 05:55:50 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:34353 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759355AbXHHJso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:48:44 -0400
-Subject: Re: [PATCH] thinkpad acpi module_exit fix
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: hmh@hmh.eng.br, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
-References: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Wed, 08 Aug 2007 11:48:40 +0200
-Message-Id: <1186566520.8780.140.camel@queen.suse.de>
+	id S1753300AbXHHJzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 05:55:49 -0400
+Date: Wed, 8 Aug 2007 13:54:49 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Daniel Phillips <phillips@phunq.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Block device throttling [Re: Distributed storage.]
+Message-ID: <20070808095448.GA3440@2ka.mipt.ru>
+References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk> <200708071124.56859.phillips@phunq.net> <20070807205538.GB5245@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070807205538.GB5245@kernel.dk>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 16:43 +0000, Dave Young wrote:
-> Hi,
-> 
-> [This fix is not very good for the global variable, any comments are
-> welcome.]
-> 
-> The thinkpad_acpi module_init fail out entrace is not very properly. if
-> failing before register driver or before create sysfs file, the
-> module_exit will try to remove nonexist sysfs files, the kernel will
-> oops.
-This one is already fixed in Len's git tree in the test branch and will
-get merged to Linus soon (commit id:
-ac36393de6034be7266264a435360e7628849005).
+On Tue, Aug 07, 2007 at 10:55:38PM +0200, Jens Axboe (jens.axboe@oracle.com) wrote:
+> I don't like structure bloat, but I do like nice design. Overloading is
 
-The (similar) patch got posted on linux-acpi with subject:
-[PATCH 05/12] ACPI: thinkpad-acpi: fix the module init failure path
-(Fri,  3 Aug 2007 18:33:38)
+So, what did we decide? To bloat bio a bit (add a queue pointer) or to
+use physical device limits? The latter requires to replace all occurence
+of bio->bi_bdev = something_new with blk_set_bdev(bio, somthing_new),
+where queue limits will be appropriately charged. So far I'm testing
+second case, but I only changed DST for testing, can change all other
+users if needed though.
 
-    Thomas
-
+-- 
+	Evgeniy Polyakov
