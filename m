@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937576AbXHHVZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937675AbXHHV2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937576AbXHHVZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933849AbXHHVZU
+	id S937675AbXHHV2l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763702AbXHHV2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:25:20 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:58577 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932093AbXHHVZS (ORCPT
+	Wed, 8 Aug 2007 17:28:32 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41710 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761652AbXHHV2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:25:18 -0400
-Date: Wed, 8 Aug 2007 14:21:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Martin J. Bligh" <mbligh@mbligh.org>
-Cc: Christoph Hellwig <hch@infradead.org>, J??rn Engel <joern@logfs.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-Message-Id: <20070808142146.c85ab8d7.akpm@linux-foundation.org>
-In-Reply-To: <46BA3137.3020701@mbligh.org>
-References: <20070804070737.GA940@elte.hu>
-	<20070804103347.GA1956@elte.hu>
-	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>
-	<20070804163733.GA31001@elte.hu>
-	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>
-	<46B4C0A8.1000902@garzik.org>
-	<20070804191205.GA24723@lazybastard.org>
-	<20070804192130.GA25346@elte.hu>
-	<20070804192615.GA25600@lazybastard.org>
-	<20070804194259.GA25753@lazybastard.org>
-	<20070805203602.GB25107@infradead.org>
-	<46BA3137.3020701@mbligh.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 17:28:31 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+References: <46B73955.2080007@fujitsu-siemens.com>
+	<20070808113834.GA26145@in.ibm.com>
+	<46BA0651.5010708@fujitsu-siemens.com>
+Date: Wed, 08 Aug 2007 15:25:53 -0600
+In-Reply-To: <46BA0651.5010708@fujitsu-siemens.com> (Martin Wilck's message of
+	"Wed, 08 Aug 2007 20:07:13 +0200")
+Message-ID: <m1d4xxbtwe.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007 14:10:15 -0700
-"Martin J. Bligh" <mbligh@mbligh.org> wrote:
+Martin Wilck <martin.wilck@fujitsu-siemens.com> writes:
 
-> Why isn't this easily fixable by just adding an additional dirty
-> flag that says atime has changed? Then we only cause a write
-> when we remove the inode from the inode cache, if only atime
-> is updated.
+> Vivek Goyal wrote:
+>
+>> Got this oops while testing your patch when I did
+>> "echo c > /proc/sysrq-trigger"
+>
+> That's bad :-(
+>
+> ...
+>> Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
+>  [<0000000000000000>]
+>>  <IRQ>  [<ffffffff8025afd0>] handle_edge_irq+0x5c/0x127
+>>  [<ffffffff8020e1ae>] do_IRQ+0xf1/0x15f
+>>  [<ffffffff8020c191>] ret_from_intr+0x0/0xa
+>>  <EOI>  <NMI>  [<ffffffff80351ae3>] __delay+0x6/0x10
+>>  [<ffffffff8021e328>] crash_nmi_callback+0x4b/0x77
+>
+> Obviously, it the oops occurs after the IRQs are re-enabled in
+> crash_nmi_callback().
+> It appears that desc->chip->mask (in mask_ack_irq(), kernel/irq/chip.c:462) was
+> NULL.
+> I have no idea how my patch could cause that.
+>
+> This proves that re-enabling IRQs in this situation is too dangerous :-(.
+> I really did hundreds of dumps in different ways (echo c>/proc/sysrq-trigger,
+> forcing Oops and panic(), actually hititng Alt-Sysrq) and this never happened to
+> me.
 
-I think that could be made to work, and it would fix the performance
-issue.
+This reminds me. 
 
-It is a behaviour change.  At present ext3 (for example) commits everything
-every five seconds.  After a change like this, a crash+recovery could cause
-a file's atime to go backwards by an arbitrarily large time interval - it
-could easily be months.
+There is currently an issue that no has finished converting
+the lapic to the new generic irq way.  Which can have this effect.
 
-
+Eric
