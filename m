@@ -1,54 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936159AbXHHPfv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933304AbXHHPgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936159AbXHHPfv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:35:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932553AbXHHPfg
+	id S933304AbXHHPgR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936150AbXHHPfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:35:36 -0400
-Received: from rtr.ca ([64.26.128.89]:1378 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934768AbXHHPfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:35:34 -0400
-Message-ID: <46B9E2C4.7070307@rtr.ca>
-Date: Wed, 08 Aug 2007 11:35:32 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 8 Aug 2007 11:35:48 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:9435 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936141AbXHHPfr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 11:35:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=LIL9ZNphZQy8Es56fIhtiRnpeOJtYK70N5wR0A1QOPz4aoCAuvKI7209QJTbl3YO++Snu6Ea86aGWO5ajX2yo8/GJ8PK7p91O/+t2EFSI33lD4DOg/LXDvxyLUIaAXrOK8t/0B/S65WDawCwPWJtpUHVJLKUovrhfg2DyaR9B9w=
+Message-ID: <46B9E2CB.1020208@gmail.com>
+Date: Thu, 09 Aug 2007 00:35:39 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Cc: Tejun Heo <htejun@gmail.com>, Michael Sedkowski <sedmich@gmail.com>,
-       trenn@suse.de, Robert Hancock <hancockr@shaw.ca>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no>	 <fa.mg6p0itaOQUo/t8deCaYpyqj6Nk@ifi.uio.no>	 <fa.RxWYL8z8KktgL8LGZ/cTB2nI1Yc@ifi.uio.no>	 <fa.AyyCtZ2yLjC5noHPHtmzn4ffhhE@ifi.uio.no>	 <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no>	 <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no> <46B7AF53.1040307@shaw.ca>	 <46B8140E.3000509@gmail.com>  <1186497925.8780.78.camel@queen.suse.de> <1186514618.5622.9.camel@nx6310> <46B9307D.3000105@gmail.com> <46B9CE79.5030307@rtr.ca> <46B9CFB3.6020402@gmail.com> <46B9D219.6030509@rtr.ca> <46B9DF91.7050709@rtr.ca>
-In-Reply-To: <46B9DF91.7050709@rtr.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
+       gregkh@suse.de
+Subject: Re: [PATCH 14/25] sysfs: Don't use lookup_one_len_kern
+References: <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>	<20070808083815.GG13674@htj.dyndns.org> <m1ir7qdp3b.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ir7qdp3b.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
->
-> My suspend script now has this little chunk of code at the point
-> where it actually does the suspend-to-RAM:
+Eric W. Biederman wrote:
+>> right?  I don't think we need to duplicate the code here.  Or is it
+>> needed for later multi-sb thing?
 > 
->    sync; sync
->    hdparm -F /dev/sda   ## flush drive write cache
->    sleep 1              ## allow time for the flush to complete
->    echo mem > /sys/power/state  ## suspend-to-RAM
+> Right.  We can do that as well. In practice in working code
+> there is no real difference.
 > 
-> Without the "sleep 1", it doesn't always eliminate the extra Retract,
-> so I hypothesize that the FLUSH_CACHE_EXT command is implemented in
-> an asynchronous fashion by the drive:  it returns immediately before
-> it has actually completed writing cached data to disk.  The "sleep 1"
-> seems to give it enough time to finish up, at least for me.
+> There is a little extra uniformity in rolling it ourselves, but
+> not enough to worry about either way.
+> 
+> In the review/debug etc cycle it just wound up being a lot easier
+> to roll the code myself.
+> 
+> By the time we get to lookup_one_len_kern it is almost impenetrable
+> code in namei.c where sysfs_add_dentry tends is easier to comprehend,
+> and to modify for debugging.
 
-Further to this, if I have an active-writer running at the time of suspend,
-then even my scripted "sleep 1" is not good enough, as additional writes
-are still happening before/after the flush.
+Yeap, agreed.  I agreed with this one too in the comment for the next
+patch.  I guess I should have wrote here too.  Sorry about the trouble.
 
-Now I'll reboot and try it with the "sleep 1" hardcoded inside sd_suspend().
+Thanks.
 
-Cheers
+-- 
+tejun
