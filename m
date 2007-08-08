@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936978AbXHHR6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937517AbXHHSBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936978AbXHHR6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbXHHR6R
+	id S937517AbXHHSBd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759704AbXHHSBZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:58:17 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50554 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752719AbXHHR6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:58:16 -0400
-Date: Wed, 8 Aug 2007 13:58:07 -0400
-From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: linux-kernel@vger.kernel.org, John Johansen <jjohansen@suse.de>,
-       Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: Re: [RFC 04/10] Temporary struct vfs_lookup in file_permission
-Message-ID: <20070808175807.GA31221@filer.fsl.cs.sunysb.edu>
-References: <20070808171622.632749741@suse.de> <20070808171643.922193525@suse.de>
+	Wed, 8 Aug 2007 14:01:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48259 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753005AbXHHSBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:01:24 -0400
+Date: Wed, 8 Aug 2007 14:00:56 -0400
+From: Dave Jones <davej@redhat.com>
+To: jschopp <jschopp@austin.ibm.com>
+Cc: apw@shadowen.org, rdunlap@xenotime.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Make checkpatch warn about pointless casting of kalloc returns.
+Message-ID: <20070808180056.GF26440@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	jschopp <jschopp@austin.ibm.com>, apw@shadowen.org,
+	rdunlap@xenotime.net, Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070808024321.GA6316@redhat.com> <46B9F7C9.9060406@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070808171643.922193525@suse.de>
-User-Agent: Mutt/1.5.16 (2007-07-16)
+In-Reply-To: <46B9F7C9.9060406@austin.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 08, 2007 at 07:16:26PM +0200, Andreas Gruenbacher wrote:
-> Create a temporary struct vfs_lookup in file_permission() instead of
-> passing a NULL value.
-> 
-> Signed-off-by: Andreas Gruenbacher <ag@bestbits.at>
-> 
-> ---
->  fs/namei.c |   11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -292,14 +292,15 @@ int vfs_permission(struct vfs_lookup *lo
->   *
->   * Used to check for read/write/execute permissions on an already opened
->   * file.
-> - *
-> - * Note:
-> - *	Do not use this function in new code.  All access checks should
-> - *	be done using vfs_permission().
+On Wed, Aug 08, 2007 at 12:05:13PM -0500, jschopp wrote:
+ > > +# check for pointless casting of kmalloc return
+ > > +		if ($rawline =~ /\*\)[ ]k[czm]alloc/) {
+ > 
+ > It looks to me like this will catch
+ > 
+ > foo = (char *) kmalloc(512);
+ > 
+ > but not
+ > 
+ > for = (char* )kmalloc(512);
+ > 
+ > I haven't tried it but how about something like:
+ > 
+ > if($rawline =~/\(.*\)\s*k[czm]alloc/){
 
-Should this comment be removed?
+Hmm,  could even just drop the check for the '*'
+)[ ]k.. should be good enough.
 
->   */
->  int file_permission(struct file *file, int mask)
->  {
-> -	return permission(file->f_path.dentry->d_inode, mask, NULL);
-> +	struct vfs_lookup lookup;
-> +
-> +	lookup.path = file->f_path;
-> +	lookup.flags = 0;
+ > which if I got it right should match the typecast with any combination of spacing.
+ > 
+ > > +			WARN("No need to cast return value.\n");
+ > 
+ > Could the warning be more descriptive?  This describes what, but it should also describe 
+ > why; after all if somebody made this error they may not know they why.
 
-I tend to find this little bit cleaner:
+I'm open to suggestions..
 
-struct vfs_lookup lookup = {
-	.path	= file->f_path,
-	.flags	= 0,
-};
-
-> +
-> +	return permission(file->f_path.dentry->d_inode, mask, &lookup);
->  }
->  
->  /*
+	Dave
 
 -- 
-Humans were created by water to transport it upward.
+http://www.codemonkey.org.uk
