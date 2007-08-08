@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763953AbXHHQPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764358AbXHHQP4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763953AbXHHQPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763118AbXHHQPX
+	id S1764358AbXHHQP4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:15:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXHHQP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:15:23 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:49090 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762740AbXHHQPW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:15:22 -0400
-Date: Wed, 8 Aug 2007 18:15:21 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: [rfc] Re: [PATCH] Make UIO available for arm architecture
-In-Reply-To: <200708081808.13889.hjk@linutronix.de>
-Message-ID: <Pine.LNX.4.64.0708081812250.3715@fbirervta.pbzchgretzou.qr>
-References: <200708081808.13889.hjk@linutronix.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-699020219-261557662-1186589721=:3715"
+	Wed, 8 Aug 2007 12:15:28 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53567 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763311AbXHHQP1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 12:15:27 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Message-Id: <20070808161524.32320.87008.sendpatchset@skynet.skynet.ie>
+In-Reply-To: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie>
+References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 1/3] Use zonelists instead of zones when direct reclaiming pages
+Date: Wed,  8 Aug 2007 17:15:24 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
----699020219-261557662-1186589721=:3715
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+The allocator deals with zonelists which indicate the order in which zones
+should be targeted for an allocation. Similarly, direct reclaim of pages
+iterates over an array of zones. For consistency, this patch converts direct
+reclaim to use a zonelist. No functionality is changed by this patch. This
+simplifies zonelist iterators in the next patch.
 
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+---
 
-On Aug 8 2007 18:08, Hans-Jürgen Koch wrote:
->---
->Index: linux-2.6.23-rc/arch/arm/Kconfig
->===================================================================
->--- linux-2.6.23-rc.orig/arch/arm/Kconfig	2007-08-08 17:52:02.000000000 +0200
->+++ linux-2.6.23-rc/arch/arm/Kconfig	2007-08-08 17:53:29.000000000 +0200
->@@ -1052,6 +1052,8 @@
-> 
-> source "drivers/dma/Kconfig"
-> 
->+source "drivers/uio/Kconfig"
->+
-> endmenu
-> 
-> source "fs/Kconfig"
+ include/linux/swap.h |    2 +-
+ mm/page_alloc.c      |    2 +-
+ mm/vmscan.c          |    4 +++-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-I am raising a general question here.
-Should not such cross-platform things be made available in a general
-Kconfig rather than having to patch each arch's Kconfig?
-
-I am thinking of drivers/Kconfig for this one (of course I am aware that this
-requires an extra "depends on X86 || SPARC || others" in drivers/pci/Kconfig),
-and perhaps even a top-level Kconfig for things like truly arch-independent
-fs/Kconfig.
-
-
-	Jan
--- 
----699020219-261557662-1186589721=:3715--
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc1-mm2-clean/include/linux/swap.h linux-2.6.23-rc1-mm2-005_freepages_zonelist/include/linux/swap.h
+--- linux-2.6.23-rc1-mm2-clean/include/linux/swap.h	2007-08-07 14:45:11.000000000 +0100
++++ linux-2.6.23-rc1-mm2-005_freepages_zonelist/include/linux/swap.h	2007-08-08 11:35:00.000000000 +0100
+@@ -189,7 +189,7 @@ extern int rotate_reclaimable_page(struc
+ extern void swap_setup(void);
+ 
+ /* linux/mm/vmscan.c */
+-extern unsigned long try_to_free_pages(struct zone **zones, int order,
++extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+ 					gfp_t gfp_mask);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc1-mm2-clean/mm/page_alloc.c linux-2.6.23-rc1-mm2-005_freepages_zonelist/mm/page_alloc.c
+--- linux-2.6.23-rc1-mm2-clean/mm/page_alloc.c	2007-08-07 14:45:11.000000000 +0100
++++ linux-2.6.23-rc1-mm2-005_freepages_zonelist/mm/page_alloc.c	2007-08-08 11:35:00.000000000 +0100
+@@ -1644,7 +1644,7 @@ nofail_alloc:
+ 	reclaim_state.reclaimed_slab = 0;
+ 	p->reclaim_state = &reclaim_state;
+ 
+-	did_some_progress = try_to_free_pages(zonelist->zones, order, gfp_mask);
++	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
+ 
+ 	p->reclaim_state = NULL;
+ 	p->flags &= ~PF_MEMALLOC;
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc1-mm2-clean/mm/vmscan.c linux-2.6.23-rc1-mm2-005_freepages_zonelist/mm/vmscan.c
+--- linux-2.6.23-rc1-mm2-clean/mm/vmscan.c	2007-08-07 14:45:11.000000000 +0100
++++ linux-2.6.23-rc1-mm2-005_freepages_zonelist/mm/vmscan.c	2007-08-08 11:35:00.000000000 +0100
+@@ -1127,7 +1127,8 @@ static unsigned long shrink_zones(int pr
+  * holds filesystem locks which prevent writeout this might not work, and the
+  * allocation attempt will fail.
+  */
+-unsigned long try_to_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
++unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
++								gfp_t gfp_mask)
+ {
+ 	int priority;
+ 	int ret = 0;
+@@ -1135,6 +1136,7 @@ unsigned long try_to_free_pages(struct z
+ 	unsigned long nr_reclaimed = 0;
+ 	struct reclaim_state *reclaim_state = current->reclaim_state;
+ 	unsigned long lru_pages = 0;
++	struct zone **zones = zonelist->zones;
+ 	int i;
+ 	struct scan_control sc = {
+ 		.gfp_mask = gfp_mask,
