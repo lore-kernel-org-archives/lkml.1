@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762336AbXHHIWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761292AbXHHIXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762336AbXHHIWU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbXHHIWJ
+	id S1761292AbXHHIXl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 04:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752973AbXHHIX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:22:09 -0400
-Received: from 207.47.19.6.static.nextweb.net ([207.47.19.6]:19328 "EHLO
-	ex1.resilience.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751004AbXHHIWG (ORCPT
+	Wed, 8 Aug 2007 04:23:26 -0400
+Received: from jericho.provo.novell.com ([137.65.248.124]:32627 "EHLO
+	jericho.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbXHHIXY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:22:06 -0400
-Date: Wed, 8 Aug 2007 16:16:34 +0800
-From: Jerry Jiang <wjiang@resilience.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Zan Lynx <zlynx@acm.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-Message-Id: <20070808161634.3a49377a.wjiang@resilience.com>
-In-Reply-To: <46B96719.3050006@redhat.com>
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
-	<20070806123551.a6c3c154.wjiang@resilience.com>
-	<46B72C58.5030502@redhat.com>
-	<46B894E4.4010501@nortel.com>
-	<46B8D6D7.2020206@redhat.com>
-	<46B8DDF3.7050008@nortel.com>
-	<46B8E1D3.8050501@redhat.com>
-	<46B8E64E.7010708@nortel.com>
-	<1186525977.232321.43.camel@localhost>
-	<46B91D0C.5050704@redhat.com>
-	<46B94B94.6000600@nortel.com>
-	<46B96719.3050006@redhat.com>
-Organization: Resilience
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Aug 2007 04:23:24 -0400
+Message-ID: <46B97D6F.8040504@suse.de>
+Date: Wed, 08 Aug 2007 17:23:11 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, satyam@infradead.org,
+       cornelia.huck@de.ibm.com, stern@rowland.harvard.edu,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: Re: [PATCH 12/25] sysfs: Introduce sysfs_rename_mutex
+References: <11860582832964-git-send-email-htejun@gmail.com>	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>	<m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com>	<m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com>	<m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com>	<m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com>	<m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com> <m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com> <46B97C94.8090209@gmail.com>
+In-Reply-To: <46B97C94.8090209@gmail.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Aug 2007 08:21:54.0437 (UTC) FILETIME=[2DC1AB50:01C7D995]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007 02:47:53 -0400
-Chris Snook <csnook@redhat.com> wrote:
-
-> Chris Friesen wrote:
-> > Chris Snook wrote:
-> > 
-> >> This is not a problem, since indirect references will cause the CPU to 
-> >> fetch the data from memory/cache anyway.
-> > 
-> > Isn't Zan's sample code (that shows the problem) already using indirect 
-> > references?
+Tejun Heo wrote:
+> Hello, Eric.
 > 
-> Yeah, I misinterpreted his conclusion.  I thought about this for a 
-> while, and realized that it's perfectly legal for the compiler to re-use 
-> a value obtained from atomic_read.  All that matters is that the read 
-> itself was atomic.  The use (or non-use) of the volatile keyword is 
-
-Sorry, I can't understand it a bit .., Could you do in detail?
-
--- Jerry
-
-
-> really more relevant to the other atomic operations.  If you want to 
-> guarantee a re-read from memory, use barrier().  This, incidentally, 
-> uses volatile under the hood.
+> Eric W. Biederman wrote:
+>> Looking carefully at the rename code we have a subtle dependency
+>> that the structure of sysfs not change while we are performing
+>> a rename.  If the parent directory of the object we are renaming
+>> changes while the rename is being performed nasty things could
+>> happen when we go to release our locks.
+>>
+>> So introduce a sysfs_rename_mutex to prevent this highly
+>> unlikely theoretical issue.
 > 
-> 	-- Chris
+> Yeah, it's a theoretical issue.  Rename/move implementation has always
+> depended on the parent structure not changing beneath it, but it's nice
+> to tighten up loose ends.
+> 
+>> +DEFINE_MUTEX(sysfs_rename_mutex);
+> 
+> Probably doesn't really matter but wouldn't a rwsem fit better?
+> 
+>> @@ -774,7 +775,7 @@ static struct dentry *__sysfs_get_dentry(struct super_block *sb, struct sysfs_di
+>>   *	down from there looking up dentry for each step.
+>>   *
+>>   *	LOCKING:
+>> - *	Kernel thread context (may sleep)
+>> + *	mutex_lock(sysfs_rename_mutex)
+> 
+> LOCKING describes what locks should be held when entering the function,
+> so proper description would be something like...
+> 
+> 	Kernel thread context, grabs sysfs_rename_mutex
+
+Oops, forget about the above.  Thought the comment was added to
+sysfs_rename_dir().
+
+-- 
+tejun
