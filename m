@@ -1,56 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936659AbXHHX0x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937247AbXHHX1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936659AbXHHX0x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:26:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbXHHX0q
+	id S937247AbXHHX1X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936978AbXHHX1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 19:26:46 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:33085 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761094AbXHHX0p (ORCPT
+	Wed, 8 Aug 2007 19:27:05 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53158 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936979AbXHHX1D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 19:26:45 -0400
-Date: Thu, 9 Aug 2007 01:26:29 +0200
-From: Adrian Bunk <bunk@kernel.org>
-To: Jens Axboe <jens.axboe@oracle.com>, starvik@axis.com
-Cc: linux-kernel@vger.kernel.org,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, dev-etrax@axis.com
-Subject: [2.6.23 regression fix] cris: drivers/cdrom/Kconfig no longer
-	exists
-Message-ID: <20070808232629.GL6997@stusta.de>
+	Wed, 8 Aug 2007 19:27:03 -0400
+Date: Wed, 8 Aug 2007 16:26:59 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Mel Gorman <mel@skynet.ie>
+cc: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
+       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/3] Use one zonelist per node instead of multiple
+ zonelists v2
+In-Reply-To: <20070808210429.GA32462@skynet.ie>
+Message-ID: <Pine.LNX.4.64.0708081626420.17224@schroedinger.engr.sgi.com>
+References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie>
+ <Pine.LNX.4.64.0708081025330.12652@schroedinger.engr.sgi.com>
+ <20070808210429.GA32462@skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following 2.6.23 regression:
+On Wed, 8 Aug 2007, Mel Gorman wrote:
 
-<--  snip  -->
+> I'll revisit it again just in case but for now I'd rather not get
+> sidetracked from the patchset at hand.
 
-...
-scripts/kconfig/conf -d arch/cris/Kconfig
-arch/cris/Kconfig:183: can't open file "drivers/cdrom/Kconfig"
-make[2]: *** [defconfig] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-
----
-25f8889abda9596429f0840dc1d9330cfad8ac48 
-diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
-index 4b41248..6b4d026 100644
---- a/arch/cris/Kconfig
-+++ b/arch/cris/Kconfig
-@@ -180,8 +180,6 @@ source "drivers/isdn/Kconfig"
- 
- source "drivers/telephony/Kconfig"
- 
--source "drivers/cdrom/Kconfig"
--
- #
- # input before char - char/joystick depends on it. As does USB.
- #
+Sure. This is more long term.
 
