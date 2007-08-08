@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937853AbXHHSV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936386AbXHHSXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937853AbXHHSV5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbXHHSVt
+	id S936386AbXHHSXR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXHHSW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:21:49 -0400
-Received: from mail.tmr.com ([64.65.253.246]:58811 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756322AbXHHSVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:21:48 -0400
-Message-ID: <46BA09CC.7070007@tmr.com>
-Date: Wed, 08 Aug 2007 14:22:04 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Wed, 8 Aug 2007 14:22:59 -0400
+Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:65482 "EHLO
+	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751135AbXHHSW7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:22:59 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=gU53NPZ18h3KzD5i2pk4Xp2BEOTKcK/5ZIsXaE+bq6sHE5ZkwPyQPO5ulZ5e7aVWK0pK/p4HzQW9JCyitJPgCqGLQSMBaIx6B7z4OpsE2sh7tqgqc4jfId6sXSiQxKIE;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.19,236,1183327200"; 
+   d="scan'208";a="88116930"
+Message-ID: <46BA09FE.2070909@fujitsu-siemens.com>
+Date: Wed, 08 Aug 2007 20:22:54 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805073709.GA6325@elte.hu> <20070805134328.1a4474dd@the-village.bc.nu> <20070805125433.GA22060@elte.hu> <20070805143708.279f51f8@the-village.bc.nu> <20070805180826.GD3244@elte.hu>
-In-Reply-To: <20070805180826.GD3244@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+References: <46B73955.2080007@fujitsu-siemens.com>	<20070807142928.GA18839@in.ibm.com>	<46B8AECA.7050908@fujitsu-siemens.com>	<m1ir7qg7kd.fsf@ebiederm.dsl.xmission.com>	<46B986D5.2010407@fujitsu-siemens.com>	<m1myx2dpcc.fsf@ebiederm.dsl.xmission.com>	<46B9FEC8.20004@fujitsu-siemens.com> <m1myx1c3lj.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1myx1c3lj.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+Eric W. Biederman wrote:
 
-> || ...For me, I would say 50% is not enough to describe the _visible_ 
-> || benefits... Not talking any specific number but past 10sec-1min+ 
-> || lagging in X is history, it's gone and I really don't miss it that 
-> || much... :-) Cannot reproduce even a second long delay anymore in 
-> || window focusing under considerable load as it's basically 
-> || instantaneous (I can see that it's loaded but doesn't affect the 
-> || feeling of responsiveness I'm now getting), even on some loads that I 
-> || couldn't previously even dream of... [...]
+>> I think a lot would be gained if disable_IO_APIC() would just mask the IRQs
+>> (like the function in my patch does), and perhaps fix the dest ID, instead of
+>> totally clearing the registers.
 > 
-> we really have to ask ourselves whether the "process" is correct if 
-> advantages to the user of this order of magnitude can be brushed aside 
-> with simple "this breaks binary-only HSM" and "it's not standards 
-> compliant" arguments.
-> 
-Being standards compliant is not an argument it's a design goal, a 
-requirement. Standards compliance is like pregant, you are or you're 
-not. And to deliberately ignore standards for speed is saying "it's too 
-hard to do it right, I'll do it wrong and it will be faster." The answer 
-is to do it smarter, with solutions like relatime (which can be enhanced 
-as Linus noted) which provide performance benefits without ignoring 
-standards, or use of a filesystem which does a better job. But when it 
-goes in the kernel the choice of having per-filesystem behavior either 
-vanishes or becomes an exercise in complex and as-yet unwritten mount 
-options.
+> Even masked we still won't see the EOI, because then we are in i8259
+> mode.  So masked versus totally cleared really should make no
+> difference.
 
-There are certainly ways to improve ext3, not journaling atime updates 
-would certainly be one, less frequent updates of dirty inodes, whatever. 
-But if a user wants to give up standards compliance it should be a 
-deliberate choice, not something which the average user will not 
-understand or learn to do.
+You are talking about EOI sent in the kdump kernel, correct? With my patch
+the EOI (sent in the "old" kernel) is seen.
+
+> I guess right now I can see work put into cleaning things up a little
+> or not having to call disable_IO_APIC() at all.  that was supposed
+> to be a short term hack, until we fixed things properly.
+> 
+> So far no one has been brave enough to mess with the kernel apic
+> initialization order so we can remove disable_IO_APIC.  If our
+> goal isn't to fix things properly by removing the need for
+> disable_IO_APIC I don't feel like putting much effort into this
+> code path.
+
+Who is working on this? Can you give a reference to a list of things that
+would need to be done to do this right?
+
+Martin
 
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DE6
+
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20409
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
