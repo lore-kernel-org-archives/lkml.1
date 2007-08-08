@@ -1,174 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbXHHLm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXHHLuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756037AbXHHLm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 07:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751196AbXHHLmN
+	id S1756198AbXHHLuI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 07:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXHHLtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 07:42:13 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:43656 "EHLO poczta.o2.pl"
+	Wed, 8 Aug 2007 07:49:55 -0400
+Received: from thb8.jinr.ru ([159.93.129.8]:42200 "EHLO theor.jinr.ru"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750964AbXHHLmL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 07:42:11 -0400
-Date: Wed, 8 Aug 2007 13:42:43 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Marcin =?iso-8859-2?Q?=A6lusarz?= <marcin.slusarz@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Jean-Baptiste Vignaud <vignaud@xandmail.fr>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070808114243.GC2426@ff.dom.local>
-References: <4bacf17f0707300029g5116e70bq4808059dc8b069f1@mail.gmail.com> <20070731132037.GC1046@ff.dom.local> <4bacf17f0708060000n5a00bb77i74adc3b4b28ac42b@mail.gmail.com> <20070806070300.GA4509@elte.hu> <4bacf17f0708070046o14403089v8376a4544f72fec3@mail.gmail.com> <20070807082321.GB2120@ff.dom.local> <4bacf17f0708070237w19d184b3p7f74b53612edb9a6@mail.gmail.com> <20070807095246.GB3223@ff.dom.local> <20070807121339.GA3946@ff.dom.local> <4bacf17f0708080409t116b5c84ye60dff7da51d0fdf@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+	id S1751573AbXHHLtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 07:49:55 -0400
+Date: Wed, 8 Aug 2007 15:49:49 +0400
+To: Andi Kleen <andi@firstfloor.org>
+Cc: dragoran <drago01@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+Message-ID: <20070808114949.GA8465@theor.jinr.ru>
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <20070808095132.GA31020@theor.jinr.ru> <20070808102056.GC12861@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4bacf17f0708080409t116b5c84ye60dff7da51d0fdf@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070808102056.GC12861@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: varg@theor.jinr.ru (Sheplyakov Alexei)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Read below please:
 
-On Wed, Aug 08, 2007 at 01:09:36PM +0200, Marcin ¦lusarz wrote:
-> 2007/8/7, Jarek Poplawski <jarkao2@o2.pl>:
-> > So, the let's try this idea yet: modified Ingo's "x86: activate
-> > HARDIRQS_SW_RESEND" patch.
-> > (Don't forget about make oldconfig before make.)
-> > For testing only.
-> >
-> > Cheers,
-> > Jarek P.
-> >
-> > PS: alas there was not even time for "compile checking"...
-> >
-> > ---
-> >
-> > diff -Nurp 2.6.22.1-/arch/i386/Kconfig 2.6.22.1/arch/i386/Kconfig
-> > --- 2.6.22.1-/arch/i386/Kconfig 2007-07-09 01:32:17.000000000 +0200
-> > +++ 2.6.22.1/arch/i386/Kconfig  2007-08-07 13:13:03.000000000 +0200
-> > @@ -1252,6 +1252,10 @@ config GENERIC_PENDING_IRQ
-> >         depends on GENERIC_HARDIRQS && SMP
-> >         default y
-> >
-> > +config HARDIRQS_SW_RESEND
-> > +       bool
-> > +       default y
-> > +
-> >  config X86_SMP
-> >         bool
-> >         depends on SMP && !X86_VOYAGER
-> > diff -Nurp 2.6.22.1-/arch/x86_64/Kconfig 2.6.22.1/arch/x86_64/Kconfig
-> > --- 2.6.22.1-/arch/x86_64/Kconfig       2007-07-09 01:32:17.000000000 +0200
-> > +++ 2.6.22.1/arch/x86_64/Kconfig        2007-08-07 13:13:03.000000000 +0200
-> > @@ -690,6 +690,10 @@ config GENERIC_PENDING_IRQ
-> >         depends on GENERIC_HARDIRQS && SMP
-> >         default y
-> >
-> > +config HARDIRQS_SW_RESEND
-> > +       bool
-> > +       default y
-> > +
-> >  menu "Power management options"
-> >
-> >  source kernel/power/Kconfig
-> > diff -Nurp 2.6.22.1-/kernel/irq/manage.c 2.6.22.1/kernel/irq/manage.c
-> > --- 2.6.22.1-/kernel/irq/manage.c       2007-07-09 01:32:17.000000000 +0200
-> > +++ 2.6.22.1/kernel/irq/manage.c        2007-08-07 13:13:03.000000000 +0200
-> > @@ -169,6 +169,14 @@ void enable_irq(unsigned int irq)
-> >                 desc->depth--;
-> >         }
-> >         spin_unlock_irqrestore(&desc->lock, flags);
-> > +#ifdef CONFIG_HARDIRQS_SW_RESEND
-> > +       /*
-> > +        * Do a bh disable/enable pair to trigger any pending
-> > +        * irq resend logic:
-> > +        */
-> > +       local_bh_disable();
-> > +       local_bh_enable();
-> > +#endif
-> >  }
-> >  EXPORT_SYMBOL(enable_irq);
-> >
-> > diff -Nurp 2.6.22.1-/kernel/irq/resend.c 2.6.22.1/kernel/irq/resend.c
-> > --- 2.6.22.1-/kernel/irq/resend.c       2007-07-09 01:32:17.000000000 +0200
-> > +++ 2.6.22.1/kernel/irq/resend.c        2007-08-07 13:57:54.000000000 +0200
-> > @@ -62,16 +62,24 @@ void check_irq_resend(struct irq_desc *d
-> >          */
-> >         desc->chip->enable(irq);
-> >
-> > +       /*
-> > +        * Temporary hack to figure out more about the problem, which
-> > +        * is causing the ancient network cards to die.
-> > +        */
-> > +
-> >         if ((status & (IRQ_PENDING | IRQ_REPLAY)) == IRQ_PENDING) {
-> >                 desc->status = (status & ~IRQ_PENDING) | IRQ_REPLAY;
-> >
-> > -               if (!desc->chip || !desc->chip->retrigger ||
-> > -                                       !desc->chip->retrigger(irq)) {
-> > +               if (desc->handle_irq == handle_edge_irq) {
-> > +                       if (desc->chip->retrigger)
-> > +                               desc->chip->retrigger(irq);
-> > +                       return;
-> > +               }
-> >  #ifdef CONFIG_HARDIRQS_SW_RESEND
-> > -                       /* Set it pending and activate the softirq: */
-> > -                       set_bit(irq, irqs_resend);
-> > -                       tasklet_schedule(&resend_tasklet);
-> > +               WARN_ON_ONCE(1);
-> > +               /* Set it pending and activate the softirq: */
-> > +               set_bit(irq, irqs_resend);
-> > +               tasklet_schedule(&resend_tasklet);
-> >  #endif
-> > -               }
-> >         }
-> >  }
-> >
-> Works fine with:
+--M9NhX3UHpAaciwkO
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Very nice! It would be about time this kernel should start behave...
+On Wed, Aug 08, 2007 at 12:20:56PM +0200, Andi Kleen wrote:
 
-> WARNING: at kernel/irq/resend.c:79 check_irq_resend()
-> 
-> Call Trace:
->  [<ffffffff8025e660>] check_irq_resend+0xc0/0xd0
->  [<ffffffff8025e1cd>] enable_irq+0xed/0xf0
->  [<ffffffff8807f21d>] :8390:ei_start_xmit+0x14d/0x30c
->  [<ffffffff8024d055>] lock_release_non_nested+0xe5/0x190
->  [<ffffffff80539b78>] __qdisc_run+0x98/0x1f0
->  [<ffffffff80539b8e>] __qdisc_run+0xae/0x1f0
->  [<ffffffff8052b65e>] dev_hard_start_xmit+0x26e/0x2d0
->  [<ffffffff80539ba0>] __qdisc_run+0xc0/0x1f0
->  [<ffffffff8052dc2f>] dev_queue_xmit+0x24f/0x310
->  [<ffffffff805337a7>] neigh_resolve_output+0xe7/0x290
->  [<ffffffff8054f5c0>] dst_output+0x0/0x10
->  [<ffffffff80552aff>] ip_output+0x19f/0x340
->  [<ffffffff80551f77>] ip_queue_xmit+0x217/0x430
->  [<ffffffff80563b2a>] tcp_transmit_skb+0x40a/0x7c0
->  [<ffffffff805657bb>] __tcp_push_pending_frames+0x11b/0x940
->  [<ffffffff8055972a>] tcp_sendmsg+0x87a/0xc80
->  [<ffffffff80577735>] inet_sendmsg+0x45/0x80
->  [<ffffffff8051e2d4>] sock_aio_write+0x104/0x120
->  [<ffffffff80285fc1>] do_sync_write+0xf1/0x130
->  [<ffffffff80243290>] autoremove_wake_function+0x0/0x40
->  [<ffffffff802868e9>] vfs_write+0x159/0x170
->  [<ffffffff80286ef0>] sys_write+0x50/0x90
->  [<ffffffff802097fe>] system_call+0x7e/0x83
-> 
+> > I don't quite understand. There are a lot of other ways to starve such
+> > high-priority process:=20
+> > 1. renice the low-priority process
+>=20
+> That requires user action.
 
-So, it looks like x86_64 io_apic's IPI code was unused too long...
-I hope it's a piece of cake for Ingo now...
+As well as lowering IO priority.=20
 
-Thanks very much Marcin!
+> > 2. send it a signal
+> > 3. ptrace it
+>=20
+> Only root can do these.
 
-If it's possible for you and Jean-Baptiste, try this today patch
-with -rc2, and maybe once more this one patch (-rc1 or older).
+The original question (unless I'm missing something) was "why _the owner_
+of a process is not enabled to lower its IO priority?" The owner of the
+process certainly can send signal and ptrace it.
 
-Regards,
-Jarek P. 
+> Low priority as allowed by renice is ok -- the resource holder will=20
+> run eventually and the system make progress.
 
+System (whatever that means) should not depend on random users' processes.
+
+> e.g. if you google a bit you can find a famous story where the NASA
+> had to do that remotely to solve a PI problem on one of the Mars rovers.
+
+Certainly there are a scenarios when lowering priority (CPU or IO) have=20
+negative effect. "If it hurts -- then don't do it". However, it is not
+kernels job to decide if the user is right. If the user asks to do
+something "stupid" (run his process with idle IO priority, whipe out his
+home directory, you name it) -- just do that (as long as the action is=20
+permitted by the security policy).
+
+P.S.=20
+Please CC me, I'm not subscribed.
+
+Best regards,
+ Alexei
+
+--=20
+All science is either physics or stamp collecting.
+
+
+--M9NhX3UHpAaciwkO
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iQIVAwUBRrmt3SXMWnuYxRVqAQJt1xAAmxhNZLMNoGeQRWSdeePJOujD+PvCLlx2
+KlH8QuBAKloTSae0NLIlCDLd39rTwajTM6dJDfaVU2yN8LQPPodiVeGfE0H7di8V
+CLt2LT8UlxZ7XddXx85O25zxzFj/IV02Rvj5GIn9gdNeohiZPf/2esc/rn4rnSmZ
+/z9CrGp15i2dKOC8DTS6TWKlpDI/80k/Q+fgkjEaW+5V9r4D9iNQitPJylXgLs8c
+dogDyoS22XLYjtPaIQVQmljKuJqMYQ0RRGexg4rAXITMzqgmikFESxdnqMOFKYC4
+/22X9VTnR8rRmbAgh6jPoCsrv3i/l4w/tQFDIn4YFiQFQ/1SLrsgUIPUC4eHtSAA
+q6JPySzSMnfPRqNBwzpPKU5dnKhVMey1RJCevPdkbLjHD5XIyt5Oi3p7ruSrxfmg
+fVRdDB65YPaobtj3Ig9/+qrPbOOIMthFYn0OIU1gBOtWKrmIa9r9I1CitMWMzxAd
+pmF6efAP4Jmy0CjKmf0uOds8K+VRXGf+AQXeFobSG5Ew8OPfZVGaUTzvcg4r47q1
+GVFxIh9XOm/geD/QSSaQAslFNuJTS31x27ECHxguRut4XnvViHLmngdP6DOhKbk4
+uQV53/LuY68m5dd6/BP1jZH8GsRMipmCS+REKfWSuVfoX9On1TsZB7pEtuGFwXVS
+T7aSk8iuCek=
+=uFME
+-----END PGP SIGNATURE-----
+
+--M9NhX3UHpAaciwkO--
