@@ -1,111 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937009AbXHHQoE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936335AbXHHQqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937009AbXHHQoE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:44:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935276AbXHHQno
+	id S936335AbXHHQqz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758844AbXHHQqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:43:44 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39903 "EHLO
+	Wed, 8 Aug 2007 12:46:45 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39913 "EHLO
 	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935078AbXHHQnn (ORCPT
+	with ESMTP id S1759457AbXHHQqo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:43:43 -0400
+	Wed, 8 Aug 2007 12:46:44 -0400
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 20/25] sysfs: Rename Support multiple superblocks
-References: <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070808093505.GL13674@htj.dyndns.org>
-	<m1643qdo7e.fsf@ebiederm.dsl.xmission.com>
-	<46B9E660.6030702@gmail.com>
-Date: Wed, 08 Aug 2007 10:35:38 -0600
-In-Reply-To: <46B9E660.6030702@gmail.com> (Tejun Heo's message of "Thu, 09 Aug
-	2007 00:50:56 +0900")
-Message-ID: <m1lkcmc7c5.fsf@ebiederm.dsl.xmission.com>
+To: "Huang, Ying" <ying.huang@intel.com>
+Cc: ak@suse.de, akpm@linux-foundation.org, Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org, "Mao, Bibo" <bibo.mao@intel.com>
+Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
+References: <1185851569.23149.25.camel@caritas-dev.intel.com>
+	<m1myxdtc19.fsf@ebiederm.dsl.xmission.com>
+	<1186378838.3769.27.camel@caritas-dev.intel.com>
+Date: Wed, 08 Aug 2007 10:45:53 -0600
+In-Reply-To: <1186378838.3769.27.camel@caritas-dev.intel.com> (Ying Huang's
+	message of "Mon, 06 Aug 2007 13:40:38 +0800")
+Message-ID: <m1d4xyc6v2.fsf@ebiederm.dsl.xmission.com>
 User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
+"Huang, Ying" <ying.huang@intel.com> writes:
 
-> Yeah, I think using -ENOENT is better; otherwise, my little head feels
-> like exploding.  :-)  
+> On Tue, 2007-07-31 at 12:47 +0800, Eric W. Biederman wrote:
+>> Using efi_set_virtual means kdump doesn't work which means that no
+>> one is going to use this in a prebuilt kernel.
+>
+> It is possible to make kexec/kdump work with EFI virtual mode, in
+> following ways:
 
-Ok.  I think I know the feeling.
+Yes we can make it work if we absolutely have to.  There doesn't
+seem to be much point to jump through hoops for a feature
+we don't need.  A fixed virtual address and a fixed physical
+address have essentially the same implications for the kernel.
+A fixed address we are stuck with and if the kernel diverge
+by very much we have problems.
 
-> More importantly, sysfs_get_dentry() seems like it
-> would deference ERR_PTR() value.  No?
+Since there are people actively investigating things like booting
+OpenBSD via kexec things get even worse. Nothing hardly runs
+on ia64 so that issue doesn't come up.
 
-I'm confused where you are referring to but I will try answer
-this.
+As for not using EFI at all.  If we can avoid it/not use it in the
+dump kernel there is very little point in having it in the primary
+kernel.
 
-__sysfs_get_dentry always returns a dentry or NULL if it can't
-find the dentry.
+Especially since it appears EFI is only 64 bit or only 32 bit I
+think we need to forget about efi_set_virtual_address and only
+call into EFI via a trampoline that set things up properly
+whatever mode EFI is running in on that particular box.
 
+So far there don't seem to be any compelling advantages to running
+EFI in virtual address mode and several compelling disadvantages
+included having to change the permissions on the kernels memory
+map to running EFI in virtual mode.
 
-I have quoted my final version of sysfs_get_dentry below for discussion.
-
-> struct dentry *sysfs_get_dentry(struct super_block *sb, struct sysfs_dirent *sd)
-> {
-> 	struct sysfs_dirent *cur;
-> 	struct dentry *parent_dentry, *dentry;
-> 
-> 	/* Bail if this sd won't show up in this superblock */
-> 	if (sd->s_parent && sd->s_parent->s_flags & SYSFS_FLAG_TAGGED) {
-> 		const void *tag;
-> 		tag = sysfs_lookup_tag(sd->s_parent, sb);
-> 		if (sd->s_tag.tag != tag)
-> 			return NULL;
-> 	}
-
-This is the only location where could return NULL the early check
-if this operation is possible.
-
-> 	/* Find the first parent which has valid dentry.
-> 	 */
-> 	dentry = NULL;
-> 	cur = sd;
-> 	while (!(dentry = __sysfs_get_dentry(sb, cur))) {
-> 		if (cur->s_flags & SYSFS_FLAG_REMOVED) {
-> 			dentry = ERR_PTR(-ENOENT);
-> 			break;
-> 		}
-> 		cur = cur->s_parent;
-> 	}
-
-Here we depend on the fact that sysfs_root is pointed to
-by sb->s_root so we know it will always have a dentry.
-
-> 	/* from the found dentry, look up depth times */
-> 	while (dentry->d_fsdata != sd) {
-> 		/* Find the first ancestor I have not looked up */
-> 		cur = sd;
-> 		while (cur->s_parent != dentry->d_fsdata)
-> 			cur = cur->s_parent;
-> 
-> 		/* look it up */
-> 		parent_dentry = dentry;
-> 		dentry = sysfs_add_dentry(parent_dentry, cur);
-> 		dput(parent_dentry);
-> 
-> 		if (IS_ERR(dentry))
-> 			break;
-> 	}
-> 	return dentry;
-> }
+Please let's stick to a physical mode trampoline and only revisit
+the topic when users start having problems because of the performance
+hit of going through our trampoline to the EFI runtime services.
 
 Eric
