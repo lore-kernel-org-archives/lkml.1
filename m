@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934227AbXHHCBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934783AbXHHCCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934227AbXHHCBR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 22:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755930AbXHHCBD
+	id S934783AbXHHCCR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 22:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbXHHCCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 22:01:03 -0400
-Received: from waste.org ([66.93.16.53]:35912 "EHLO waste.org"
+	Tue, 7 Aug 2007 22:02:07 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36634 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755884AbXHHCBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 22:01:01 -0400
-Date: Tue, 7 Aug 2007 21:01:42 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Dave Hansen <haveblue@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, serue@us.ibm.com
-Subject: Re: [RFC][PATCH 3/5] pagemap: remove open-coded sizeof(unsigned long)
-Message-ID: <20070808020142.GJ30556@waste.org>
-References: <20070807223300.9228E0E0@kernel> <20070807223302.B275F4FC@kernel> <20070807234027.GE30556@waste.org> <1186530902.22283.77.camel@localhost>
+	id S1755930AbXHHCCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 22:02:04 -0400
+Message-ID: <46B92414.3030303@garzik.org>
+Date: Tue, 07 Aug 2007 22:01:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1186530902.22283.77.camel@localhost>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: James.Smart@Emulex.Com
+CC: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
+       Greg KH <gregkh@suse.de>, Tony Luck <tony.luck@intel.com>,
+       Jiri Slaby <jirislaby@gmail.com>, Roland Dreier <rolandd@cisco.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Hansjoerg Lipp <hjlipp@web.de>, Jean Delvare <khali@linux-fr.org>,
+       "Mark M. Hoffman" <mhoffman@lightlink.com>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Add missing newlines to some uses of dev_<level> messages
+References: <1186535381.11897.29.camel@localhost> <46B91D88.4000704@emulex.com>
+In-Reply-To: <46B91D88.4000704@emulex.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 04:55:02PM -0700, Dave Hansen wrote:
-> On Tue, 2007-08-07 at 18:40 -0500, Matt Mackall wrote:
-> > On Tue, Aug 07, 2007 at 03:33:02PM -0700, Dave Hansen wrote:
-> > > +#define PAGEMAP_ENTRY_SIZE_BYTES sizeof(unsigned long)
-> > > +
-> > >  static int add_to_pagemap(unsigned long addr, unsigned long pfn,
-> > >  			  struct pagemapread *pm)
-> > >  {
-> > >  	__put_user(pfn, pm->out);
-> > >  	pm->out++;
-> > > -	pm->pos += sizeof(unsigned long);
-> > > -	pm->count -= sizeof(unsigned long);
-> > > -	pm->next = addr + PAGE_SIZE;
-> > > +	pm->pos += PAGEMAP_ENTRY_SIZE_BYTES;
-> > > +	pm->count -= PAGEMAP_ENTRY_SIZE_BYTES;
-> > 
-> > I think deleting ->next is a little premature here?
+James Smart wrote:
+> ACK
 > 
-> It is.  I'll fix that up.
+> -- james s
+> 
+> Joe Perches wrote:
+[...]
 
-While we're at it, it seems a shame to replace the unwieldy typedef
-with an even longer define. My poor shift key finger aches just
-thinking about typing that. PM_ENTRY_SIZE, perhaps?
+Standard email etiquette:  please don't quote the entirety of a 1200+ 
+line patch, just for a one-line response.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+(also, top posting should be avoided as well)
+
+
