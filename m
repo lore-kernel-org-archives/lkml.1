@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760620AbXHHJPP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759126AbXHHJR2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760620AbXHHJPP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:15:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbXHHJO7
+	id S1759126AbXHHJR2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:17:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755705AbXHHJRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:14:59 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:2511 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753817AbXHHJO6 (ORCPT
+	Wed, 8 Aug 2007 05:17:21 -0400
+Received: from rv-out-0910.google.com ([209.85.198.189]:33147 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754799AbXHHJRU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:14:58 -0400
-Date: Wed, 8 Aug 2007 11:16:00 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-Message-ID: <20070808111600.047edd33@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <46B984D4.9020600@gmail.com>
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>
-	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
-	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>
-	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>
-	<20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>
-	<46B984D4.9020600@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Wed, 8 Aug 2007 05:17:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:reply-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=h3IhETAbIGFADoinSV24gEv0K9SuI6nQVKJXNHfU4uEHPiGv1TDgoq6mZLI/1gv7gpwP3tHyp+ZhPELtOHnGH7m0xiwwd9brfMyXPnLYNqLdhOaTnBMvN6wn4FpQhc9beXvINXJRtk73fmn7ffm2JnQZ2Y7n0QBazr2sgJRdgYI=
+Date: Wed, 8 Aug 2007 17:17:53 +0800
+From: WANG Cong <xiyou.wangcong@gmail.com>
+To: Jan Engelhardt <jengelh@computergmbh.de>
+Cc: Al Viro <viro@ftp.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] take sched_debug.c out of nasal demon territory
+Message-ID: <20070808091752.GA5548@localhost.localdomain>
+Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
+References: <20070806032659.GX21089@ftp.linux.org.uk> <Pine.LNX.4.64.0708061750270.13469@fbirervta.pbzchgretzou.qr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708061750270.13469@fbirervta.pbzchgretzou.qr>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007 17:54:44 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On Mon, Aug 06, 2007 at 05:51:29PM +0200, Jan Engelhardt wrote:
+>
+>On Aug 6 2007 04:26, Al Viro wrote:
+>>
+>>	C99 6.10.3[11]: preprocessing directive within the argument list
+>>of macro invocation => undefined behaviour.  Don't do that...
+>
+>String concatenation ("a" "b") is not a preprocessing directive.
+>
+>$ gcc -E test.c
+># 1 "test.c"
+># 1 "<built-in>"
+># 1 "<command line>"
+># 1 "test.c"
+>printf("a" "b");
+>
+>(If it was, the "a" "b" would have already been joined.)
+>
 
-> Are you sure it's patch 6?  Patch 17 adds a deadlock in rename path.
+Yes. According to C99 5.1.1.2, string concatenation is done in Phase 6,
+that's after preprocessing.
 
-Yes. If I apply the series up to patch 5, everything's fine. If I apply
-patch 6, /dev/dasda* is missing.
+Regards.
+
+-- 
+_   /|
+\'o.O'
+=(___)=
+   U    ack!
