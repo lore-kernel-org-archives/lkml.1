@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935215AbXHHQWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935839AbXHHQXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935215AbXHHQWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934053AbXHHQWk
+	id S935839AbXHHQXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763685AbXHHQXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:22:40 -0400
-Received: from lazybastard.de ([212.112.238.170]:42370 "EHLO
+	Wed, 8 Aug 2007 12:23:11 -0400
+Received: from lazybastard.de ([212.112.238.170]:42377 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932960AbXHHQWh (ORCPT
+	with ESMTP id S933940AbXHHQXI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:22:37 -0400
-Date: Wed, 8 Aug 2007 18:18:41 +0200
+	Wed, 8 Aug 2007 12:23:08 -0400
+Date: Wed, 8 Aug 2007 18:19:11 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org, akpm@osdl.org,
        David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [Patch 08/18] fs/logfs/inode.c
-Message-ID: <20070808161841.GJ15319@lazybastard.org>
+Subject: [Patch 08/18] fs/logfs/journal.c
+Message-ID: <20070808161910.GK15319@lazybastard.org>
 References: <20070808161234.GB15319@lazybastard.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,519 +29,742 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 --- /dev/null	2007-08-05 21:14:35.622844160 +0200
-+++ linux-2.6.21logfs/fs/logfs/inode.c	2007-08-08 02:57:37.000000000 +0200
-@@ -0,0 +1,514 @@
++++ linux-2.6.21logfs/fs/logfs/journal.c	2007-08-08 02:57:37.000000000 +0200
+@@ -0,0 +1,737 @@
 +/*
-+ * fs/logfs/inode.c	- inode handling code
++ * fs/logfs/journal.c	- journal handling code
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2007 Joern Engel <joern@logfs.org>
 + */
 +#include "logfs.h"
-+#include <linux/writeback.h>
++
++static void clear_retired(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	int i;
++
++	for (i=0; i<JE_LAST; i++)
++		super->s_retired[i].used = 0;
++	super->s_first.used = 0;
++}
++
++static void clear_speculatives(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	int i;
++
++	for (i=0; i<JE_LAST; i++)
++		super->s_speculative[i].used = 0;
++}
++
++static void retire_speculatives(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_journal_entry *spec, *retired;
++	int i;
++
++	for (i=0; i<JE_LAST; i++) {
++		spec = super->s_speculative + i;
++		retired = super->s_retired + i;
++		if (! spec->used)
++			continue;
++		if (retired->used && (spec->version <= retired->version))
++			continue;
++		retired->used = 1;
++		retired->version = spec->version;
++		retired->offset = spec->offset;
++		retired->len = spec->len;
++	}
++	clear_speculatives(sb);
++}
 +
 +/*
-+ * We need to include <linux/writeback.h> - a header we normally shouldn't
-+ * be mucking with.  If life only were that easy!
++ * Journal entries are versioned and highest version always wins.  To save
++ * some bytes, the version is only be16 instead of be64.  This means versions
++ * can and regularly will wrap.  However, all versions should be in a strict
++ * sequence and the total number of entries significantly lower than 2^16.
 + *
-+ * As it is, LogFS' requirement to read inodes for garbage collection keeps
-+ * breaking Linux assumptions.  In particular, an inode can get be in
-+ * I_DELETING state when being written out.  Logfs then notices that it
-+ * needs some space, does a little GC and tries to read just the inode in
-+ * I_DELETING state.  So the code is waiting for itself to finish, lovely.
-+ *
-+ * Our strategy to solve this problem is to overload the generic drop_inode()
-+ * and destroy_inode() methods.  Writeback happens between those two calls,
-+ * so add the inode to a list in drop_inode() and remove it again in
-+ * destroy_inode().  Any iget() in the GC path is replaced with logfs_iget(),
-+ * which will check the list and only call the blocking iget() if the inode
-+ * in question cannot deadlock.
-+ *
-+ * And of course this would be racy if we didn't take inode_lock in a few
-+ * key moments.
++ * So we read the first entry, store its version and substract that from
++ * any version read to normalize them.  Normalized versions should all be
++ * fairly close to zero and we can again easily judge which is the highest
++ * number.
 + */
-+static struct kmem_cache *logfs_inode_cache;
-+
-+static int __logfs_read_inode(struct inode *inode);
-+
-+static struct inode *__logfs_iget(struct super_block *sb, unsigned long ino)
++static int scan_segment(struct super_block *sb, u32 segno)
 +{
-+	struct inode *inode = iget_locked(sb, ino);
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_area *area = super->s_journal_area;
++	struct logfs_journal_header *h = super->s_compressed_je;
++	struct logfs_journal_entry *spec, *retired;
++	u64 ofs, seg_ofs = logfs_block_ofs(sb, segno, 0);
++	u32 h_ofs;
++	s16 len, type, version;
 +	int err;
 +
-+	if (inode && (inode->i_state & I_NEW)) {
-+		err = __logfs_read_inode(inode);
-+		unlock_new_inode(inode);
-+		if (err) {
-+			/* set i_nlink to 0 to prevent caching */
-+			inode->i_nlink = 0;
-+			logfs_inode(inode)->li_flags |= LOGFS_IF_ZOMBIE;
-+			iput(inode);
-+			return NULL;
++	for (h_ofs = 0; h_ofs < super->s_segsize; h_ofs += sizeof(*h)) {
++		ofs = seg_ofs + h_ofs;
++		err = super->s_devops->read(sb, ofs, sizeof(*h), h);
++		if (err)
++			return err;
++		/* stop scanning if all 0xff */
++		if (0 && !memchr_inv(h, 0xff, sizeof(*h))) /* FIXME */
++			break;
++
++		len = be16_to_cpu(h->h_len);
++		type = be16_to_cpu(h->h_type);
++		version = be16_to_cpu(h->h_version);
++
++		if ((len < 16) || (len > sb->s_blocksize))
++			continue;
++		if ((type < JE_FIRST) || (type > JE_LAST))
++			continue;
++
++		err = super->s_devops->read(sb, ofs, len + sizeof(*h), h);
++		if (err)
++			return err;
++
++		if (h->h_crc != logfs_crc32(h, len, 4))
++			continue;
++
++		if (!super->s_first.used) {
++			super->s_first.used = 1;
++			super->s_first.version = version;
++		}
++		version -= super->s_first.version;
++
++		if (abs(version) > 1<<14)
++			return -EIO;
++
++		h_ofs += len - sizeof(*h);
++		spec = &super->s_speculative[type];
++		retired = &super->s_retired[type];
++		switch (type) {
++		default:
++			if (spec->used && (version <= spec->version))
++				break;
++			/* store speculative entry */
++			spec->used = 1;
++			spec->version = version;
++			spec->offset = ofs;
++			spec->len = len;
++			break;
++		case JE_COMMIT:
++			if (retired->used && (version <= retired->version))
++				break;
++			/* retire speculative entries */
++			retired->used = 1;
++			retired->version = version;
++			retired->offset = ofs;
++			retired->len = len;
++			retire_speculatives(sb);
++			/* and set up journal area */
++			area->a_segno = segno;
++			/*
++			 * On every mount we switch to a new segment instead
++			 * of writing further in the current one.  While safe
++			 * this method is quite wasteful and may get changed
++			 * sooner or later.
++			 */
++			area->a_is_open = 0;
++			break;
 +		}
 +	}
-+
-+	return inode;
++	return 0;
 +}
 +
-+/*
-+ * is_cached is set to 1 if we hand out a cached inode, 0 otherwise.
-+ * this allows logfs_iput to do the right thing later
-+ */
-+struct inode *logfs_iget(struct super_block *sb, ino_t ino, int *is_cached)
++static int logfs_scan_journal(struct super_block *sb)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_inode *li;
++	u32 segno;
++	int i, err;
 +
-+	if (ino == LOGFS_INO_MASTER)
-+		return super->s_master_inode;
-+
-+	spin_lock(&inode_lock);
-+	list_for_each_entry(li, &super->s_freeing_list, li_freeing_list)
-+		if (li->vfs_inode.i_ino == ino) {
-+			spin_unlock(&inode_lock);
-+			*is_cached = 1;
-+			return &li->vfs_inode;
-+		}
-+	spin_unlock(&inode_lock);
-+
-+	*is_cached = 0;
-+	return __logfs_iget(sb, ino);
++	clear_speculatives(sb);
++	clear_retired(sb);
++	journal_for_each(i) {
++		segno = super->s_journal_seg[i];
++		if (!segno)
++			continue;
++		err = scan_segment(sb, segno);
++		if (err)
++			return err;
++	}
++	return 0;
 +}
 +
-+void logfs_iput(struct inode *inode, int is_cached)
++static void logfs_read_commit(struct logfs_super *super,
++		struct logfs_journal_header *h)
 +{
-+	if (inode->i_ino == LOGFS_INO_MASTER)
-+		return;
-+
-+	if (is_cached)
-+		return;
-+
-+	iput(inode);
++	super->s_last_version = be16_to_cpu(h->h_version);
 +}
 +
-+static void logfs_init_inode(struct inode *inode)
++static void logfs_calc_free(struct super_block *sb)
 +{
++	struct logfs_super *super = logfs_super(sb);
++	u64 no_segs = super->s_no_segs;
++	u64 free;
++	int i;
++
++	/* superblock segment */
++	no_segs -= 1;
++	/* bad blocks */
++	no_segs -= super->s_bad_segments;
++	/* journal */
++	journal_for_each(i)
++		if (super->s_journal_seg[i])
++			no_segs--;
++
++	free = no_segs * (super->s_segsize - LOGFS_SEGMENT_RESERVE);
++	free -= super->s_used_bytes;
++	super->s_free_bytes = free;
++}
++
++static void reserve_sb_and_journal(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct btree_head *head = &super->s_reserved_segments;
++	int i, err;
++
++	err = btree_insert(head, 0, (void*)1);
++	BUG_ON(err);
++
++	journal_for_each(i) {
++		if (! super->s_journal_seg[i])
++			continue;
++		err = btree_insert(head, super->s_journal_seg[i], (void*)1);
++		BUG_ON(err);
++	}
++}
++
++static void logfs_read_dynsb(struct super_block *sb,
++		struct logfs_je_dynsb *dynsb)
++{
++	struct logfs_super *super = logfs_super(sb);
++
++	super->s_gec		= be64_to_cpu(dynsb->ds_gec);
++	super->s_sweeper	= be64_to_cpu(dynsb->ds_sweeper);
++	super->s_victim_ino	= be64_to_cpu(dynsb->ds_victim_ino);
++	super->s_rename_dir	= be64_to_cpu(dynsb->ds_rename_dir);
++	super->s_rename_pos	= be64_to_cpu(dynsb->ds_rename_pos);
++	super->s_used_bytes	= be64_to_cpu(dynsb->ds_used_bytes);
++}
++
++static void logfs_read_anchor(struct super_block *sb,
++		struct logfs_je_anchor *da)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct inode *inode = super->s_master_inode;
 +	struct logfs_inode *li = logfs_inode(inode);
 +	int i;
 +
++	super->s_last_ino = be64_to_cpu(da->da_last_ino);
 +	li->li_flags	= LOGFS_IF_VALID;
-+	li->li_used_bytes = 0;
-+	li->li_transaction = NULL;
-+	inode->i_uid	= 0;
-+	inode->i_gid	= 0;
-+	inode->i_size	= 0;
-+	inode->i_blocks	= 0;
-+	inode->i_ctime	= CURRENT_TIME;
-+	inode->i_mtime	= CURRENT_TIME;
-+	inode->i_nlink	= 1;
-+	INIT_LIST_HEAD(&li->li_freeing_list);
++	i_size_write(inode, be64_to_cpu(da->da_size));
++	li->li_used_bytes = be64_to_cpu(da->da_used_bytes);
 +
 +	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-+		li->li_data[i] = 0;
-+
-+	return;
++		li->li_data[i] = be64_to_cpu(da->da_data[i]);
 +}
 +
-+static struct inode *logfs_alloc_inode(struct super_block *sb)
-+{
-+	struct logfs_inode *li;
-+
-+	li = kmem_cache_alloc(logfs_inode_cache, GFP_KERNEL);
-+	if (!li)
-+		return NULL;
-+	logfs_init_inode(&li->vfs_inode);
-+	return &li->vfs_inode;
-+}
-+
-+/*
-+ * In logfs inodes are written to an inode file.  The inode file, like any
-+ * other file, is managed with a inode.  The inode file's inode, aka master
-+ * inode, requires special handling in several respects.  First, it cannot be
-+ * written to the inode file, so it is stored in the journal instead.
-+ *
-+ * Secondly, this inode cannot be written back and destroyed before all other
-+ * inodes have been written.  The ordering is important.  Linux' VFS is happily
-+ * unaware of the ordering constraint and would ordinarily destroy the master
-+ * inode at umount time while other inodes are still in use and dirty.  Not
-+ * good.
-+ *
-+ * So logfs makes sure the master inode is not written until all other inodes
-+ * have been destroyed.  Sadly, this method has another side-effect.  The VFS
-+ * will notice one remaining inode and print a frightening warning message.
-+ * Worse, it is impossible to judge whether such a warning was caused by the
-+ * master inode or any other inodes have leaked as well.
-+ *
-+ * Our attempt of solving this is with logfs_new_meta_inode() below.  Its
-+ * purpose is to create a new inode that will not trigger the warning if such
-+ * an inode is still in use.  An ugly hack, no doubt.  Suggections for
-+ * improvement are welcome.
-+ */
-+struct inode *logfs_new_meta_inode(struct super_block *sb, u64 ino)
-+{
-+	struct inode *inode;
-+
-+	inode = logfs_alloc_inode(sb);
-+	if (!inode)
-+		return ERR_PTR(-ENOMEM);
-+
-+	inode->i_mode = 0;
-+	inode->i_ino = ino;
-+	inode->i_sb = sb;
-+
-+	/* This is a blatant copy of alloc_inode code.  We'd need alloc_inode
-+	 * to be nonstatic, alas. */
-+	{
-+		static const struct address_space_operations empty_aops;
-+		struct address_space * const mapping = &inode->i_data;
-+
-+		mapping->a_ops = &empty_aops;
-+		mapping->host = inode;
-+		mapping->flags = 0;
-+		mapping_set_gfp_mask(mapping, GFP_HIGHUSER);
-+		mapping->assoc_mapping = NULL;
-+		mapping->backing_dev_info = &default_backing_dev_info;
-+		inode->i_mapping = mapping;
-+	}
-+
-+	return inode;
-+}
-+
-+/*
-+ * Time is stored as nanoseconds since the epoch.
-+ */
-+static struct timespec be64_to_timespec(__be64 betime)
-+{
-+	return ns_to_timespec(be64_to_cpu(betime));
-+}
-+
-+static __be64 timespec_to_be64(struct timespec tsp)
-+{
-+	return cpu_to_be64((u64)tsp.tv_sec * NSEC_PER_SEC + tsp.tv_nsec);
-+}
-+
-+static void logfs_disk_to_inode(struct logfs_disk_inode *di, struct inode*inode)
-+{
-+	struct logfs_inode *li = logfs_inode(inode);
-+	int i;
-+
-+	inode->i_mode	= be16_to_cpu(di->di_mode);
-+	li->li_height	= di->di_height;
-+	li->li_flags	= be32_to_cpu(di->di_flags);
-+	inode->i_uid	= be32_to_cpu(di->di_uid);
-+	inode->i_gid	= be32_to_cpu(di->di_gid);
-+	inode->i_size	= be64_to_cpu(di->di_size);
-+	logfs_set_blocks(inode, be64_to_cpu(di->di_used_bytes));
-+	inode->i_ctime	= be64_to_timespec(di->di_ctime);
-+	inode->i_mtime	= be64_to_timespec(di->di_mtime);
-+	inode->i_nlink	= be32_to_cpu(di->di_refcount);
-+	inode->i_generation = be32_to_cpu(di->di_generation);
-+
-+	switch (inode->i_mode & S_IFMT) {
-+	case S_IFCHR: /* fall through */
-+	case S_IFBLK: /* fall through */
-+	case S_IFIFO:
-+		inode->i_rdev = be64_to_cpu(di->di_data[0]);
-+		break;
-+	default:
-+		for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-+			li->li_data[i] = be64_to_cpu(di->di_data[i]);
-+		break;
-+	}
-+}
-+
-+static void logfs_inode_to_disk(struct inode *inode, struct logfs_disk_inode*di)
-+{
-+	struct logfs_inode *li = logfs_inode(inode);
-+	int i;
-+
-+	di->di_mode	= cpu_to_be16(inode->i_mode);
-+	di->di_height	= li->li_height;
-+	di->di_pad	= 0;
-+	di->di_flags	= cpu_to_be32(li->li_flags);
-+	di->di_uid	= cpu_to_be32(inode->i_uid);
-+	di->di_gid	= cpu_to_be32(inode->i_gid);
-+	di->di_size	= cpu_to_be64(i_size_read(inode));
-+	di->di_used_bytes = cpu_to_be64(li->li_used_bytes);
-+	di->di_ctime	= timespec_to_be64(inode->i_ctime);
-+	di->di_mtime	= timespec_to_be64(inode->i_mtime);
-+	di->di_refcount	= cpu_to_be32(inode->i_nlink);
-+	di->di_generation = cpu_to_be32(inode->i_generation);
-+
-+	switch (inode->i_mode & S_IFMT) {
-+	case S_IFCHR: /* fall through */
-+	case S_IFBLK: /* fall through */
-+	case S_IFIFO:
-+		di->di_data[0] = cpu_to_be64(inode->i_rdev);
-+		break;
-+	default:
-+		for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-+			di->di_data[i] = cpu_to_be64(li->li_data[i]);
-+		break;
-+	}
-+}
-+
-+#define VALID_MASK (LOGFS_IF_VALID | LOGFS_IF_INVALID)
-+static int logfs_read_disk_inode(struct logfs_disk_inode *di,
-+		struct inode *inode)
-+{
-+	struct logfs_super *super = logfs_super(inode->i_sb);
-+	ino_t ino = inode->i_ino;
-+	int ret;
-+
-+	BUG_ON(!super->s_master_inode);
-+	ret = logfs_inode_read(super->s_master_inode, di, sizeof(*di), ino);
-+	if (ret)
-+		return ret;
-+
-+	if ((be32_to_cpu(di->di_flags) & VALID_MASK) != LOGFS_IF_VALID) {
-+		/*
-+		 * We read wrong data, someone scribbled over it or we
-+		 * have a bug.  Worth mentioning in the logs.
-+		 */
-+		printk(KERN_WARNING"LOGFS: read corrupt inode #%lx\n", ino);
-+		WARN_ON(1);
-+		return -EIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __logfs_read_inode(struct inode *inode)
-+{
-+	struct logfs_disk_inode di;
-+	int ret;
-+
-+	ret = logfs_read_disk_inode(&di, inode);
-+	if (ret)
-+		return ret;
-+	logfs_disk_to_inode(&di, inode);
-+
-+	switch (inode->i_mode & S_IFMT) {
-+	case S_IFDIR:
-+		inode->i_op = &logfs_dir_iops;
-+		inode->i_fop = &logfs_dir_fops;
-+		break;
-+	case S_IFREG:
-+		inode->i_op = &logfs_reg_iops;
-+		inode->i_fop = &logfs_reg_fops;
-+		inode->i_mapping->a_ops = &logfs_reg_aops;
-+		break;
-+	default:
-+		;
-+	}
-+
-+	return 0;
-+}
-+
-+static void logfs_read_inode(struct inode *inode)
-+{
-+	int ret;
-+
-+	BUG_ON(inode->i_ino == LOGFS_INO_MASTER);
-+
-+	ret = __logfs_read_inode(inode);
-+
-+	if (ret)
-+		make_bad_inode(inode);
-+}
-+
-+/* This function should move to fs/fs-writeback.c or similar. */
-+static void clear_inode_dirty_sync(struct inode *inode)
-+{
-+	spin_lock(&inode_lock);
-+	inode->i_state &= ~I_DIRTY_SYNC;
-+	spin_unlock(&inode_lock);
-+}
-+
-+static int logfs_write_disk_inode(struct logfs_disk_inode *di,
-+		struct inode *inode, int lock)
-+{
-+	struct logfs_super *super = logfs_super(inode->i_sb);
-+	struct logfs_transaction *ta;
-+	int ret;
-+
-+	/* FIXME: should we take inode->i_mutex? */
-+	ta = logfs_inode(inode)->li_transaction;
-+	logfs_inode(inode)->li_transaction = NULL;
-+
-+	logfs_inode_to_disk(inode, di);
-+	ret = logfs_inode_write(super->s_master_inode, di, sizeof(*di),
-+			inode->i_ino, lock, ta);
-+	clear_inode_dirty_sync(inode);
-+	return ret;
-+}
-+
-+int __logfs_write_inode(struct inode *inode, int lock)
-+{
-+	struct logfs_disk_inode di;
-+
-+	BUG_ON(inode->i_ino == LOGFS_INO_MASTER);
-+	return logfs_write_disk_inode(&di, inode, lock);
-+}
-+
-+static int logfs_write_inode(struct inode *inode, int do_sync)
-+{
-+	int ret;
-+
-+	/* Can only happen if creat() failed.  Safe to skip. */
-+	if (logfs_inode(inode)->li_flags & LOGFS_IF_STILLBORN)
-+		return 0;
-+
-+	ret = __logfs_write_inode(inode, 1);
-+	LOGFS_BUG_ON(ret, inode->i_sb);
-+	return ret;
-+}
-+
-+static void logfs_truncate_inode(struct inode *inode)
-+{
-+	i_size_write(inode, 0);
-+	logfs_truncate(inode);
-+	truncate_inode_pages(&inode->i_data, 0);
-+}
-+
-+/*
-+ * ZOMBIE inodes have already been deleted before and should remain dead,
-+ * if it weren't for valid checking.  No need to kill them again here.
-+ */
-+static void logfs_delete_inode(struct inode *inode)
-+{
-+	struct logfs_super *super = logfs_super(inode->i_sb);
-+
-+	if (! (logfs_inode(inode)->li_flags & LOGFS_IF_ZOMBIE)) {
-+		if (i_size_read(inode) > 0)
-+			logfs_truncate_inode(inode);
-+		logfs_delete(super->s_master_inode, inode->i_ino, NULL);
-+	}
-+	clear_inode(inode);
-+}
-+
-+void __logfs_destroy_inode(struct inode *inode)
-+{
-+	if (likely(inode))
-+		kmem_cache_free(logfs_inode_cache, logfs_inode(inode));
-+}
-+
-+/*
-+ * We need to remember which inodes are currently being dropped.  They
-+ * would deadlock the cleaner, if it were to iget() them.  So
-+ * logfs_drop_inode() adds them to super->s_freeing_list,
-+ * logfs_destroy_inode() removes them again and logfs_iget() checks the
-+ * list.
-+ */
-+static void logfs_destroy_inode(struct inode *inode)
-+{
-+	struct logfs_inode *li = logfs_inode(inode);
-+
-+	BUG_ON(list_empty(&li->li_freeing_list));
-+	spin_lock(&inode_lock);
-+	list_del(&li->li_freeing_list);
-+	spin_unlock(&inode_lock);
-+	kmem_cache_free(logfs_inode_cache, li);
-+}
-+
-+/* called with inode_lock held */
-+static void logfs_drop_inode(struct inode *inode)
-+{
-+	struct logfs_super *super = logfs_super(inode->i_sb);
-+	struct logfs_inode *li = logfs_inode(inode);
-+
-+	list_move(&li->li_freeing_list, &super->s_freeing_list);
-+	generic_drop_inode(inode);
-+}
-+
-+static u64 logfs_get_ino(struct super_block *sb)
++static void logfs_read_erasecount(struct super_block *sb,
++		struct logfs_je_journal_ec *ec)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	u64 ino;
-+
-+	/*
-+	 * FIXME: ino allocation should work in two modes:
-+	 * o nonsparse - ifile is mostly occupied, just append
-+	 * o sparse - ifile has lots of holes, fill them up
-+	 *
-+	 * SEEK_HOLE would obviously help a lot here.
-+	 */
-+	spin_lock(&super->s_ino_lock);
-+	ino = super->s_last_ino;
-+	super->s_last_ino++;
-+	spin_unlock(&super->s_ino_lock);
-+	return ino;
-+}
-+
-+struct inode *logfs_new_inode(struct inode *dir, int mode)
-+{
-+	struct super_block *sb = dir->i_sb;
-+	struct inode *inode;
-+
-+	inode = new_inode(sb);
-+	if (!inode)
-+		return ERR_PTR(-ENOMEM);
-+
-+	logfs_init_inode(inode);
-+
-+	/* inherit parent flags */
-+	logfs_inode(inode)->li_flags |=
-+		logfs_inode(dir)->li_flags & LOGFS_FL_INHERITED;
-+
-+	inode->i_mode = mode;
-+	inode->i_ino = logfs_get_ino(sb);
-+
-+	inode->i_uid = current->fsuid;
-+	inode->i_gid = current->fsgid;
-+	if (dir->i_mode & S_ISGID) {
-+		inode->i_gid = dir->i_gid;
-+		if (S_ISDIR(mode))
-+			inode->i_mode |= S_ISGID;
-+	}
-+
-+	insert_inode_hash(inode);
-+
-+	return inode;
-+}
-+
-+static void logfs_init_once(void *_li, struct kmem_cache *cachep,
-+		unsigned long flags)
-+{
-+	struct logfs_inode *li = _li;
 +	int i;
 +
-+	li->li_flags = 0;
-+	li->li_used_bytes = 0;
-+	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-+		li->li_data[i] = 0;
-+	inode_init_once(&li->vfs_inode);
++	journal_for_each(i)
++		super->s_journal_ec[i] = be32_to_cpu(ec->ec[i]);
 +}
 +
-+static int logfs_sync_fs(struct super_block *sb, int wait)
++static void logfs_read_badsegments(struct super_block *sb)
 +{
-+	logfs_super(sb)->s_devops->sync(sb);
++	struct logfs_super *super = logfs_super(sb);
++	struct btree_head *head = &super->s_reserved_segments;
++	__be32 *seg, *bad = super->s_bb_array;
++	int err;
++
++	super->s_bad_segments = 0;
++	for (seg = bad; seg - bad < sb->s_blocksize >> 2; seg++) {
++		if (*seg == 0)
++			continue;
++		err = btree_insert(head, be32_to_cpu(*seg), (void*)1);
++		BUG_ON(err);
++		super->s_bad_segments++;
++	}
++}
++
++static void logfs_read_areas(struct super_block *sb, struct logfs_je_areas *a)
++{
++	struct logfs_area *area;
++	int i;
++
++	for (i=0; i<LOGFS_NO_AREAS; i++) {
++		area = logfs_super(sb)->s_area[i];
++		area->a_used_bytes = be32_to_cpu(a->used_bytes[i]);
++		area->a_segno = be32_to_cpu(a->segno[i]);
++		if (area->a_segno)
++			area->a_is_open = 1;
++	}
++}
++
++static void *unpack(void *from, void *to)
++{
++	struct logfs_journal_header *h = from;
++	void *data = from + sizeof(struct logfs_journal_header);
++	int err;
++	size_t inlen, outlen;
++
++	if (h->h_compr == COMPR_NONE)
++		return data;
++
++	inlen = be16_to_cpu(h->h_len) - sizeof(*h);
++	outlen = be16_to_cpu(h->h_datalen);
++	err = logfs_uncompress(data, to, inlen, outlen);
++	BUG_ON(err);
++	return to;
++}
++
++/*
++ * Journal entries come in groups of 16.  The first group contains unique
++ * entries, the second group contains the write buffers for all levels.
++ * As of now, there are only two groups.
++ * The outer switch statement deals with groups (high nibble), the inner
++ * one with unique entries
++ */
++/* FIXME: make sure there are enough per-area objects in journal */
++static int logfs_read_journal(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	void *block = super->s_compressed_je;
++	void *scratch = super->s_je;
++	int i, err, level;
++	struct logfs_area *area;
++
++	for (i=0; i<JE_LAST; i++) {
++		struct logfs_journal_entry *je = super->s_retired + i;
++		if (!super->s_retired[i].used) {
++			switch (i) {
++			case JE_COMMIT:
++			case JE_DYNSB:
++			case JE_ANCHOR:
++				printk(KERN_WARNING "LogFS: Missing journal "
++						"entry %x?\n", i);
++				return -EIO;
++			default:
++				continue;
++			}
++		}
++		err = super->s_devops->read(sb, je->offset, sb->s_blocksize, block);
++		if (err)
++			return err;
++
++		level = i & 0xf;
++		area = super->s_area[level];
++		switch (i & ~0xf) {
++		case JEG_BASE:
++			switch (i) {
++			case JE_COMMIT:
++				/* just reads the latest version number */
++				logfs_read_commit(super, block);
++				break;
++			case JE_DYNSB:
++				logfs_read_dynsb(sb, unpack(block, scratch));
++				break;
++			case JE_ANCHOR:
++				logfs_read_anchor(sb, unpack(block, scratch));
++				break;
++			case JE_ERASECOUNT:
++				logfs_read_erasecount(sb,unpack(block,scratch));
++				break;
++			case JE_BADSEGMENTS:
++				unpack(block, super->s_bb_array);
++				logfs_read_badsegments(sb);
++				break;
++			case JE_AREAS:
++				logfs_read_areas(sb, unpack(block, scratch));
++				break;
++			default:
++				/*
++				 * Any unknown entries in this group are
++				 * considered optional.
++				 */
++				break;
++			}
++			break;
++		case JEG_WBUF:
++			unpack(block, area->a_wbuf);
++			break;
++		default:
++			LOGFS_BUG(sb);
++			return -EIO;
++		}
++
++	}
 +	return 0;
 +}
 +
-+const struct super_operations logfs_super_operations = {
-+	.alloc_inode	= logfs_alloc_inode,
-+	.delete_inode	= logfs_delete_inode,
-+	.destroy_inode	= logfs_destroy_inode,
-+	.drop_inode	= logfs_drop_inode,
-+	.read_inode	= logfs_read_inode,
-+	.write_inode	= logfs_write_inode,
-+	.statfs		= logfs_statfs,
-+	.sync_fs	= logfs_sync_fs,
++/*
++ * First search the current segment (outer loop), then pick the next segment
++ * in the array, skipping any zero entries (inner loop).
++ */
++static void journal_get_free_segment(struct logfs_area *area)
++{
++	struct logfs_super *super = logfs_super(area->a_sb);
++	int i;
++
++	journal_for_each(i) {
++		if (area->a_segno != super->s_journal_seg[i])
++			continue;
++
++		do {
++			i++;
++			if (i == LOGFS_JOURNAL_SEGS)
++				i = 0;
++		} while (!super->s_journal_seg[i]);
++
++		area->a_segno = super->s_journal_seg[i];
++		++(super->s_journal_ec[i]);
++		return;
++	}
++	BUG();
++}
++
++static void journal_get_erase_count(struct logfs_area *area)
++{
++	/* erase count is stored globally and incremented in
++	 * journal_get_free_segment() - nothing to do here */
++}
++
++static int journal_erase_segment(struct logfs_area *area)
++{
++	return logfs_erase_segment(area->a_sb, area->a_segno);
++}
++
++static void journal_finish_area(struct logfs_area *area)
++{
++	area->a_is_open = 0;
++	area->a_used_bytes = 0;
++}
++
++static size_t __logfs_write_header(struct logfs_super *super,
++		struct logfs_journal_header *h, size_t len, size_t datalen,
++		u16 type, u8 compr)
++{
++	h->h_len	= cpu_to_be16(len);
++	h->h_type	= cpu_to_be16(type);
++	h->h_version	= cpu_to_be16(++super->s_last_version);
++	h->h_datalen	= cpu_to_be16(datalen);
++	h->h_compr	= compr;
++	h->h_pad[0]	= 'H';
++	h->h_pad[1]	= 'A';
++	h->h_pad[2]	= 'T';
++	h->h_crc	= logfs_crc32(h, len, 4);
++	return len;
++}
++
++static size_t logfs_write_header(struct logfs_super *super,
++		struct logfs_journal_header *h, size_t datalen, u16 type)
++{
++	size_t len = datalen + sizeof(*h);
++
++	return __logfs_write_header(super, h, len, datalen, type, COMPR_NONE);
++}
++
++static void *logfs_write_bb(struct super_block *sb, void *h,
++		u16 *type, size_t *len)
++{
++	*type = JE_BADSEGMENTS;
++	*len = sb->s_blocksize;
++	return logfs_super(sb)->s_bb_array;
++}
++
++static inline size_t logfs_journal_erasecount_size(struct logfs_super *super)
++{
++	return LOGFS_JOURNAL_SEGS * sizeof(__be32);
++}
++
++static void *logfs_write_erasecount(struct super_block *sb, void *_ec,
++		u16 *type, size_t *len)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_je_journal_ec *ec = _ec;
++	int i;
++
++	journal_for_each(i)
++		ec->ec[i] = cpu_to_be32(super->s_journal_ec[i]);
++	*type = JE_ERASECOUNT;
++	*len = logfs_journal_erasecount_size(super);
++	return ec;
++}
++
++static void *logfs_write_wbuf(struct super_block *sb, void *h,
++		u16 *type, size_t *len)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_area *area = super->s_area[super->s_sum_index];
++
++	*type = JEG_WBUF + super->s_sum_index;
++	*len = super->s_writesize;
++	return area->a_wbuf;
++}
++
++static void *__logfs_write_anchor(struct super_block *sb, void *_da,
++		u16 *type, size_t *len)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_je_anchor *da = _da;
++	struct inode *inode = super->s_master_inode;
++	struct logfs_inode *li = logfs_inode(inode);
++	int i;
++
++	da->da_last_ino = cpu_to_be64(super->s_last_ino);
++	da->da_size	= cpu_to_be64(i_size_read(inode));
++	da->da_used_bytes = cpu_to_be64(li->li_used_bytes);
++	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
++		da->da_data[i] = cpu_to_be64(li->li_data[i]);
++	*type = JE_ANCHOR;
++	*len = sizeof(*da);
++	return da;
++}
++
++static void *logfs_write_dynsb(struct super_block *sb, void *_dynsb,
++		u16 *type, size_t *len)
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_je_dynsb *dynsb = _dynsb;
++
++	dynsb->ds_gec		= cpu_to_be64(super->s_gec);
++	dynsb->ds_sweeper	= cpu_to_be64(super->s_sweeper);
++	dynsb->ds_victim_ino	= cpu_to_be64(super->s_victim_ino);
++	dynsb->ds_rename_dir	= cpu_to_be64(super->s_rename_dir);
++	dynsb->ds_rename_pos	= cpu_to_be64(super->s_rename_pos);
++	dynsb->ds_used_bytes	= cpu_to_be64(super->s_used_bytes);
++	*type = JE_DYNSB;
++	*len = sizeof(*dynsb);
++	return dynsb;
++}
++
++static void *logfs_write_areas(struct super_block *sb, void *_a,
++		u16 *type, size_t *len)
++{
++	struct logfs_area *area;
++	struct logfs_je_areas *a = _a;
++	int i;
++
++	for (i=0; i<16; i++) {
++		/* FIXME: have all 16 areas */
++		a->used_bytes[i] = 0;
++		a->segno[i] = 0;
++	}
++	for (i=0; i<LOGFS_NO_AREAS; i++) {
++		area = logfs_super(sb)->s_area[i];
++		a->used_bytes[i] = cpu_to_be32(area->a_used_bytes);
++		a->segno[i] = cpu_to_be32(area->a_segno);
++	}
++	*type = JE_AREAS;
++	*len = sizeof(*a);
++	return a;
++}
++
++static void *logfs_write_commit(struct super_block *sb, void *h,
++		u16 *type, size_t *len)
++{
++	*type = JE_COMMIT;
++	*len = 0;
++	return NULL;
++}
++
++static size_t __logfs_write_je(struct super_block *sb, size_t jpos,
++		void* (*write)(struct super_block *sb, void *scratch,
++			u16 *type, size_t *len))
++{
++	struct logfs_super *super = logfs_super(sb);
++	void *scratch = super->s_je;
++	void *header = super->s_compressed_je + jpos;
++	void *data = header + sizeof(struct logfs_journal_header);
++	ssize_t max, compr_len, pad_len, full_len;
++	size_t len;
++	u16 type;
++	u8 compr = COMPR_ZLIB;
++
++	scratch = write(sb, scratch, &type, &len);
++	if (len == 0)
++		return logfs_write_header(super, header, 0, type);
++
++	max = sb->s_blocksize - jpos;
++	compr_len = logfs_compress(scratch, data, len, max);
++	if (compr_len < 0 || type == JE_ANCHOR) {
++		BUG_ON(len > max);
++		memcpy(data, scratch, len);
++		compr_len = len;
++		compr = COMPR_NONE;
++	}
++
++	pad_len = ALIGN(compr_len, 16);
++	memset(data + compr_len, 0, pad_len - compr_len);
++	full_len = pad_len + sizeof(struct logfs_journal_header);
++
++	return __logfs_write_header(super, header, full_len, len, type, compr);
++}
++
++static s64 logfs_get_free_bytes(struct logfs_area *area, size_t *bytes,
++		int must_pad)
++{
++	u32 writesize = logfs_super(area->a_sb)->s_writesize;
++	s32 ofs;
++	int ret;
++
++	ret = logfs_open_area(area);
++	BUG_ON(ret);
++
++	ofs = area->a_used_bytes;
++	area->a_used_bytes += *bytes;
++
++	if (area->a_used_bytes >= logfs_super(area->a_sb)->s_segsize) {
++		logfs_close_area(area);
++		return -EAGAIN;
++	}
++	if (must_pad) {
++		area->a_used_bytes = ALIGN(area->a_used_bytes, writesize);
++		*bytes = area->a_used_bytes - ofs;
++	}
++
++	return dev_ofs(area->a_sb, area->a_segno, ofs);
++}
++
++static int logfs_write_je(struct super_block *sb,
++		void* (*write)(struct super_block *sb, void *scratch,
++			u16 *type, size_t *len))
++{
++	struct logfs_super *super = logfs_super(sb);
++	struct logfs_area *area = super->s_journal_area;
++	struct logfs_journal_header *h = super->s_compressed_je;
++	size_t len;
++	int must_pad = 0;
++	s64 ofs;
++
++	len = __logfs_write_je(sb, 0, write);
++	if (h->h_type == cpu_to_be16(JE_COMMIT))
++		must_pad = 1;
++
++	ofs = logfs_get_free_bytes(area, &len, must_pad);
++	if (ofs < 0)
++		return ofs;
++	logfs_buf_write(area, ofs, super->s_compressed_je, len);
++	return 0;
++}
++
++/*
++ * Write all journal entries.  The goto logic ensures that all journal entries
++ * are written whenever a new segment is used.  It is ugly and potentially a
++ * bit wasteful, but robustness is more important.  With this we can *always*
++ * erase all journal segments except the one containing the most recent commit.
++ */
++int logfs_write_anchor(struct inode *inode)
++{
++	struct super_block *sb = inode->i_sb;
++	struct logfs_super *super = logfs_super(sb);
++	int i, err;
++
++	mutex_lock(&super->s_journal_mutex);
++
++again:
++	for (i=0; i<LOGFS_NO_AREAS; i++) {
++		super->s_sum_index = i;
++		err = logfs_write_je(sb, logfs_write_wbuf);
++		if (err)
++			goto again;
++	}
++	err = logfs_write_je(sb, logfs_write_bb);
++	if (err)
++		goto again;
++	err = logfs_write_je(sb, logfs_write_erasecount);
++	if (err)
++		goto again;
++	err = logfs_write_je(sb, __logfs_write_anchor);
++	if (err)
++		goto again;
++	err = logfs_write_je(sb, logfs_write_dynsb);
++	if (err)
++		goto again;
++	err = logfs_write_je(sb, logfs_write_areas);
++	if (err)
++		goto again;
++	super->s_devops->sync(sb);
++	err = logfs_write_je(sb, logfs_write_commit);
++	if (err)
++		goto again;
++
++	mutex_unlock(&super->s_journal_mutex);
++	return 0;
++}
++
++static const struct logfs_area_ops journal_area_ops = {
++	.get_free_segment	= journal_get_free_segment,
++	.get_erase_count	= journal_get_erase_count,
++	.erase_segment		= journal_erase_segment,
++	.finish_area		= journal_finish_area,
 +};
 +
-+int logfs_init_inode_cache(void)
++int logfs_init_journal(struct super_block *sb)
 +{
-+	logfs_inode_cache = kmem_cache_create("logfs_inode_cache",
-+			sizeof(struct logfs_inode), 0, SLAB_RECLAIM_ACCOUNT,
-+			logfs_init_once, NULL);
-+	if (!logfs_inode_cache)
-+		return -ENOMEM;
++	struct logfs_super *super = logfs_super(sb);
++	int ret = -ENOMEM;
++
++	mutex_init(&super->s_journal_mutex);
++
++	super->s_je = kzalloc(sb->s_blocksize, GFP_KERNEL);
++	if (!super->s_je)
++		goto err0;
++
++	super->s_compressed_je = kzalloc(sb->s_blocksize, GFP_KERNEL);
++	if (!super->s_compressed_je)
++		goto err1;
++
++	super->s_bb_array = kzalloc(sb->s_blocksize, GFP_KERNEL);
++	if (!super->s_bb_array)
++		goto err2;
++
++	super->s_master_inode = logfs_new_meta_inode(sb, LOGFS_INO_MASTER);
++	if (!super->s_master_inode)
++		goto err3;
++
++	/* make sure noone tries to evict this inode */
++	super->s_master_inode->i_nlink = 1;
++
++	/* logfs_scan_journal() is looking for the latest journal entries, but
++	 * doesn't copy them into data structures yet.  logfs_read_journal()
++	 * then re-reads those entries and copies their contents over. */
++	ret = logfs_scan_journal(sb);
++	if (ret)
++		goto err3;
++	ret = logfs_read_journal(sb);
++	if (ret)
++		goto err3;
++
++	reserve_sb_and_journal(sb);
++	logfs_calc_free(sb);
++
++	super->s_journal_area->a_ops = &journal_area_ops;
 +	return 0;
++err3:
++	kfree(super->s_bb_array);
++err2:
++	kfree(super->s_compressed_je);
++err1:
++	kfree(super->s_je);
++err0:
++	return ret;
 +}
 +
-+void logfs_destroy_inode_cache(void)
++void logfs_cleanup_journal(struct super_block *sb)
 +{
-+	kmem_cache_destroy(logfs_inode_cache);
++	struct logfs_super *super = logfs_super(sb);
++
++	__logfs_destroy_inode(super->s_master_inode);
++	super->s_master_inode = NULL;
++
++	kfree(super->s_bb_array);
++	kfree(super->s_compressed_je);
++	kfree(super->s_je);
 +}
