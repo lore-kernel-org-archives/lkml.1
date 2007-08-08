@@ -1,49 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936082AbXHHP0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764870AbXHHP2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936082AbXHHP0W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXHHP0A
+	id S1764870AbXHHP2F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759098AbXHHP1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:26:00 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:32885 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764240AbXHHPZ7 (ORCPT
+	Wed, 8 Aug 2007 11:27:54 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51403 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759693AbXHHP1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:25:59 -0400
-Subject: Re: nmi_watchdog=2 regression in 2.6.21
-From: Daniel Walker <dwalker@mvista.com>
-To: =?ISO-8859-1?Q?Bj=F6rn?= Steinbrink <B.Steinbrink@gmx.de>
-Cc: eranian@hpl.hp.com, ak@suse.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20070808142059.GF30805@atjola.homenet>
-References: <1186531609.22044.50.camel@imap.mvista.com>
-	 <20070808142059.GF30805@atjola.homenet>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 08 Aug 2007 08:20:45 -0700
-Message-Id: <1186586445.22044.52.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 8bit
+	Wed, 8 Aug 2007 11:27:53 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
+       gregkh@suse.de
+Subject: Re: [PATCH 14/25] sysfs: Don't use lookup_one_len_kern
+References: <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
+	<m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070808083815.GG13674@htj.dyndns.org>
+Date: Wed, 08 Aug 2007 09:26:48 -0600
+In-Reply-To: <20070808083815.GG13674@htj.dyndns.org> (Tejun Heo's message of
+	"Wed, 8 Aug 2007 17:38:15 +0900")
+Message-ID: <m1ir7qdp3b.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 16:20 +0200, Björn Steinbrink wrote:
-> On 2007.08.07 17:06:49 -0700, Daniel Walker wrote:
-> > 
-> > This patch below hangs my system on boot if I set nmi_watchdog=2 . It
-> > shows the NMI as stuck then the system hangs .. nmi_watchdog=1 works
-> > fine, and the system boots without any watchdog options ..
-> > 
-> > The machine is an Intel allagash development board, and it has two dual
-> > core Pentium-M cpus. I attached the .config I used.
-> 
-> Should be fixed in commit e82f64e5bb0648a13630d752c35be1e7bd8bab96
-> (2.6.23-rc1 IIRC).
-> 
-> Unfornately it didn't make it into 2.6.22, but the patch should work
-> even with 2.6.21 IIRC.
+Tejun Heo <htejun@gmail.com> writes:
 
-I originally found the problem in 2.6.23-rc2 (actually latest git) so
-whatever the problem is still exists ..
+> On Tue, Aug 07, 2007 at 03:23:57PM -0600, Eric W. Biederman wrote:
+>> 
+>> Upon inspection it appears that there is no looking of the
+>> inode mutex in lookup_one_len_kern and we aren't calling
+>> it with the inode mutex and that is wrong.
+>> 
+>> So this patch rolls our own dcache insertion function that
+>> does exactly what we need it to do.  As it turns out this
+>> is pretty trivial to do and it makes the code easier to
+>> audit.
+>> 
+>> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+>> ---
+>>  fs/sysfs/dir.c |   41 +++++++++++++++++++++++++++++++++++++++--
+>>  1 files changed, 39 insertions(+), 2 deletions(-)
+>> 
+>> diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+>> index a9bdb12..1d53c2a 100644
+>> --- a/fs/sysfs/dir.c
+>> +++ b/fs/sysfs/dir.c
+>> @@ -765,6 +765,44 @@ static struct dentry *__sysfs_get_dentry(struct
+> super_block *sb, struct sysfs_di
+>>  	return dentry;
+>>  }
+>>  
+>> +static struct dentry *sysfs_add_dentry(struct dentry *parent, struct
+> sysfs_dirent *sd)
+>> +{
+>> +	struct qstr name;
+>> +	struct dentry *dentry;
+>> +	struct inode *inode;
+>> +
+>> +	mutex_lock(&parent->d_inode->i_mutex);
+>> +	mutex_lock(&sysfs_mutex);
+>> +	dentry = ERR_PTR(-EINVAL);
+>> +	if (parent->d_fsdata != sd->s_parent)
+>> +		goto out;
+>> +
+>> +	name.name = sd->s_name;
+>> +	name.len = strlen(sd->s_name);
+>> +	dentry = d_hash_and_lookup(parent, &name);
+>> +	if (dentry)
+>> +		goto out;
+>> +
+>> +	dentry = d_alloc(parent, &name);
+>> +	if (!dentry) {
+>> +		dentry = ERR_PTR(-ENOMEM);
+>> +		goto out;
+>> +	}
+>> +
+>> +	inode = sysfs_get_inode(sd);
+>> +	if (!inode) {
+>> +		dput(dentry);
+>> +		dentry = ERR_PTR(-ENOMEM);
+>> +		goto out;
+>> +	}
+>> +	d_instantiate(dentry, inode);
+>> +	sysfs_attach_dentry(sd, dentry);
+>> +out:
+>> +	mutex_unlock(&sysfs_mutex);
+>> +	mutex_unlock(&parent->d_inode->i_mutex);
+>> +	return dentry;
+>> +}
+>
+> This is virtually identical to
+>
+> 	mutex_lock(&parent_dentry->d_inode->i_mutex);
+> 	dentry = lookup_one_len_kern(cur->s_name, parent_dentry,
+> 				     strlen(cur->s_name));
+> 	mutex_unlock(&parent_dentry->d_inode->i_mutex);
+>
+> right?  I don't think we need to duplicate the code here.  Or is it
+> needed for later multi-sb thing?
 
-Daniel
+Right.  We can do that as well. In practice in working code
+there is no real difference.
+
+There is a little extra uniformity in rolling it ourselves, but
+not enough to worry about either way.
+
+In the review/debug etc cycle it just wound up being a lot easier
+to roll the code myself.
+
+By the time we get to lookup_one_len_kern it is almost impenetrable
+code in namei.c where sysfs_add_dentry tends is easier to comprehend,
+and to modify for debugging.
+
+Eric
 
