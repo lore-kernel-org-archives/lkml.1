@@ -1,52 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHHOxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935684AbXHHOxz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935412AbXHHOxP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbXHHOxA
+	id S935684AbXHHOxz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:53:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765676AbXHHOxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:53:00 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:56921
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754316AbXHHOxA (ORCPT
+	Wed, 8 Aug 2007 10:53:46 -0400
+Received: from mga09.intel.com ([134.134.136.24]:30612 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761067AbXHHOxp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:53:00 -0400
-Subject: Re: Serial buffer memory leak
-From: Paul Fulghum <paulkf@microgate.com>
-To: Laurent Pinchart <laurentp@cse-semaphore.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
-In-Reply-To: <200708081628.36897.laurentp@cse-semaphore.com>
-References: <200708081158.06843.laurentp@cse-semaphore.com>
-	 <20070808144532.5e3a1998@the-village.bc.nu>
-	 <1186582307.3394.3.camel@x2.microgate.com>
-	 <200708081628.36897.laurentp@cse-semaphore.com>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 09:52:55 -0500
-Message-Id: <1186584775.3508.13.camel@x2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 10:53:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,236,1183359600"; 
+   d="scan'208";a="115070465"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Introducing paravirt_ops for x86_64
+Date: Wed, 8 Aug 2007 07:53:43 -0700
+Message-ID: <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
+In-Reply-To: <11865467522495-git-send-email-gcosta@redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Introducing paravirt_ops for x86_64
+thread-index: AcfZiui69WjRuAQ5RC6WyxK38acLtAAPrVaQ
+From: "Nakajima, Jun" <jun.nakajima@intel.com>
+To: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       <linux-kernel@vger.kernel.org>
+Cc: <lguest@ozlabs.org>, <virtualization@lists.linux-foundation.org>,
+       <chrisw@sous-sol.org>, <anthony@codemonkey.ws>,
+       <akpm@linux-foundation.org>, <mingo@elte.hu>
+X-OriginalArrivalTime: 08 Aug 2007 14:53:44.0403 (UTC) FILETIME=[EAC9CA30:01C7D9CB]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 16:28 +0200, Laurent Pinchart wrote:
+Glauber de Oliveira Costa wrote:
+> Hi folks,
+> 
+> After some time away from it, and a big rebase as a consequence, here
+is
+> the updated version of paravirt_ops for x86_64, heading to inclusion.
+> 
+> Your criticism is of course, very welcome.
+> 
+> Have fun
 
-> The patch fixes the problem (at least under the test conditions that lead me 
-> to discover it in the first place). Thanks Alan.
+Do you assume that the kernel ougtht to use 2MB pages for its mappings
+(e.g. initilal text/data,  direct mapping of physical memory) under your
+paravirt_ops?  As far as I look at the patches, I don't find one. 
 
-It works here also, but I see a problem.
-
-By deferring the flush, ioctl(TCFLSH) returns immediately
-even though there is possibly still receive data being fed
-to the ldisc.
-
-If this is followed immediately by a read() then the
-application gets unexpected (stale) data defeating the
-purpose of the TCFLSH.
-
-tty_buffer_flush() needs to wait for buf.flushpending to clear.
-
- 
---
-Paul Fulghum
-Microgate Systems, Ltd
-
+Jun
+---
+Intel Open Source Technology Center
