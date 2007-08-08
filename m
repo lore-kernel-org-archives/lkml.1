@@ -1,98 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbXHHHV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbXHHHYV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933414AbXHHHV2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbXHHHUq
+	id S1762171AbXHHHYV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:24:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbXHHHYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:20:46 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:56648 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932361AbXHHHUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:20:43 -0400
-Date: Wed, 8 Aug 2007 09:21:14 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
-Cc: cebbert <cebbert@redhat.com>, mingo <mingo@elte.hu>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
-       torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070808072114.GA1731@ff.dom.local>
-References: <JMEYNL$38C71F6F1D25A7CE82B12729A59CF244@xandmail.com>
+	Wed, 8 Aug 2007 03:24:10 -0400
+Received: from mtagate2.uk.ibm.com ([195.212.29.135]:17434 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752859AbXHHHYI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 03:24:08 -0400
+Date: Wed, 8 Aug 2007 10:23:51 +0300
+From: Muli Ben-Yehuda <muli@il.ibm.com>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Cc: akpm@linux-foundation.org, ak@suse.de, apw@shadowen.org, clameter@sgi.com,
+       greg@kroah.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/5] x86_64: get mp_bus_to_node as early v3
+Message-ID: <20070808072351.GK3383@rhun.haifa.ibm.com>
+References: <200708072245.l77MjVxU008742@imap1.linux-foundation.org> <200708071820.33720.yinghai.lu@sun.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <JMEYNL$38C71F6F1D25A7CE82B12729A59CF244@xandmail.com>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <200708071820.33720.yinghai.lu@sun.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 07:16:33PM +0200, Jean-Baptiste Vignaud wrote:
-...
-> So this afternoon i compiled 2.6.23-rc2 with same options as 2.6.23-rc1
-> and edited grub.conf to add nosmp but after reboot the box did not
-> responded. Back home, i saw that the kernel failed because it was unable
-> to find the partitions (mdadm failed, then LVM). After a few tests,
-> removing nosmp let the kernel boot correctly. It seems that even the
-> fedora provided kernels have the same behavior
-> (well at least 2.6.22.1-41.fc7).
+On Tue, Aug 07, 2007 at 06:20:33PM -0700, Yinghai Lu wrote:
 
-Sorry: it seems there is some implementation error or some modules
-don't check CONFIG_SMP enough...
+> please check this one against pci_scan_bus_with_sysdata
+> 
+> [PATCH 1/5] x86_64: get mp_bus_to_node as early v3
+> 
+> current on amd k8 system with multi ht chain, the numa_node of pci
+> devices under r/sys/devices/pci0000:80/* always 0, even that chain is
+> on node 1 or 2 or 3.
+> 
+> workaround: pcibus_to_node(bus) is used when we want to get node
+> that pci_device is on.
+> 
+> In struct device, we already have numa_node member. and we could use
+> dev_to_node() /set_dev_node() to get and set numa_node in the
+> device.  set_dev_node is called in pci_device_add() with
+> pcibus_to_node(bus). and pcibus_to_node use bus->sysdata for nodeid.
+> 
+> the problem is when pci_add_device is called, bus->sysdata is not
+> assigned correct nodeid yet. the result will be numa_node always is
+> 0.
+> 
+> pcibios_scan_root and pci_scan_root could take sysdata. So we need
+> to get mp_bus_to_node mapping before these two are called. and
+> get_mp_bus_to_node could get correct node for sysdata in root bus.
+> 
+> in scanning of root bus, all child bus will take parent bus sysdata. So all
+> pci_device->dev.numa_node will be assigned correctly automatically.
+> 
+> later we could use dev_to_node(&pci_dev->dev) to get numa_node, and
+> we could also could make other bus specific device get the correct
+> numa_node too.
+> 
+> this is one update version to pci_sysdata ...  also reverse
+> pci_acpi_scan_root to use pcibios_scan_root again.
 
-Of course testing this with smp should be precious too.
-Only, after finding some problems, you should consider smp is quite
-a new and complicated technology, at least regarding such old designs
-as 3c905.
+Can you explain why this patch (and your other patches in this area)
+are needed? is this a performance issue? the patches seem complex, is
+there a good argument for that complexity?
 
-BTW: I didn't notice this yesterday, but your forcedeth uses new type
-of irq handling (MSI), so it should explain why it's not affected.
+Cheers,
+Muli
 
-Jean-Baptiste: I'm not sure how much of this testing you can afford?
-If you can spare some time for this and your box isn't for
-'production' it could be very precious to diagnose such reproducible
-bug.
-
-Then, I'd have a few suggestions (you could choose any of them) like:
-- trying these last test patches prepared for Marcin, too (but only
-with kernels 2.6.21 - 2.6.23-rc1),
-- trying to find the last kernel version, which works for you:
-Marcin has done this with successfully using the most professional
-way: git bisect (which btw. I did learn yet), but, IMHO, it could be
-very usable to try a "poor man's" bisect too older kernels like this:
-2.6.18, so to try again this version of previos Fedora, but
-preferably in "vanilla" version (there could be some problems if
-something in your configs or hardware has changed); then if OK:
-2.6.20; if OK 2.6.21-rc1 or -rc2 (there are usually heavy changes
-in the beginning of a cycle); ithen try to jump forward or backward
-around the middle of the range eg. -rc4. You should use each time the
-same, current config and remember to 'make oldconfig' before make.
-
-In my opinion it would be very precious even after some long time,
-so there is no need to hurry and do this now. The most important:
-if nothing has changed with your hardware in the meantime, you
-should find 'the culprit' for sure.
-
-But, if there are any problems about such testing, don't bother!
-It could be really a lot of hard and maybe boring work.
-
-If you would like to read something more about testing (then of
-course my suggestions could occur invalid - I'm a very bad tester
-myself...) you can try this:
-http://www.stardust.webpages.pl/files/handbook/
-
-If you would need some additional advice you can mail me privately
-too (but my response could take a few days). Of course, if your find
-something interresting I'd be glad to know about this, but let's be
-honest - I'm not any authority about these drivers, so cc-ing a
-maintainer should always be more usable.
-
-Thanks,
-Jarek P.
-
-PS: it would be nice if you could fix your mail program on line
-breaking (or try to do this manually).
 
