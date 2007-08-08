@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937675AbXHHV2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937903AbXHHVbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937675AbXHHV2l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763702AbXHHV2c
+	id S937903AbXHHVbj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764774AbXHHVbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:28:32 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41710 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761652AbXHHV2b (ORCPT
+	Wed, 8 Aug 2007 17:31:31 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:59934 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755713AbXHHVba (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:28:31 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
-References: <46B73955.2080007@fujitsu-siemens.com>
-	<20070808113834.GA26145@in.ibm.com>
-	<46BA0651.5010708@fujitsu-siemens.com>
-Date: Wed, 08 Aug 2007 15:25:53 -0600
-In-Reply-To: <46BA0651.5010708@fujitsu-siemens.com> (Martin Wilck's message of
-	"Wed, 08 Aug 2007 20:07:13 +0200")
-Message-ID: <m1d4xxbtwe.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 8 Aug 2007 17:31:30 -0400
+Date: Wed, 8 Aug 2007 23:31:14 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>, drzeus-mmc@drzeus.cx
+Cc: linux-kernel@vger.kernel.org
+Subject: 2.6.23-rc1-mm2: MMC_ARMMMCI compile error
+Message-ID: <20070808213114.GK6997@stusta.de>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070731230932.a9459617.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Wilck <martin.wilck@fujitsu-siemens.com> writes:
+On Tue, Jul 31, 2007 at 11:09:32PM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.23-rc1-mm1:
+>...
+>  git-mmc.patch
+>...
+>  git trees
+>...
 
-> Vivek Goyal wrote:
->
->> Got this oops while testing your patch when I did
->> "echo c > /proc/sysrq-trigger"
->
-> That's bad :-(
->
-> ...
->> Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
->  [<0000000000000000>]
->>  <IRQ>  [<ffffffff8025afd0>] handle_edge_irq+0x5c/0x127
->>  [<ffffffff8020e1ae>] do_IRQ+0xf1/0x15f
->>  [<ffffffff8020c191>] ret_from_intr+0x0/0xa
->>  <EOI>  <NMI>  [<ffffffff80351ae3>] __delay+0x6/0x10
->>  [<ffffffff8021e328>] crash_nmi_callback+0x4b/0x77
->
-> Obviously, it the oops occurs after the IRQs are re-enabled in
-> crash_nmi_callback().
-> It appears that desc->chip->mask (in mask_ack_irq(), kernel/irq/chip.c:462) was
-> NULL.
-> I have no idea how my patch could cause that.
->
-> This proves that re-enabling IRQs in this situation is too dangerous :-(.
-> I really did hundreds of dumps in different ways (echo c>/proc/sysrq-trigger,
-> forcing Oops and panic(), actually hititng Alt-Sysrq) and this never happened to
-> me.
+CONFIG_MMC_ARMMMCI=m/y results in the following compile error:
 
-This reminds me. 
+<--  snip  -->
 
-There is currently an issue that no has finished converting
-the lapic to the new generic irq way.  Which can have this effect.
+...
+  CC [M]  drivers/mmc/host/mmci.o
+/home/bunk/linux/kernel-2.6/linux-2.6.23-rc1-mm2/drivers/mmc/host/mmci.c: In function 'mmci_request':
+/home/bunk/linux/kernel-2.6/linux-2.6.23-rc1-mm2/drivers/mmc/host/mmci.c:398: error: implicit declaration of function 'mmc_end_request'
+make[4]: *** [drivers/mmc/host/mmci.o] Error 1
 
-Eric
+<--  snip  -->
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
