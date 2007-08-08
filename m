@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934168AbXHHRFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936333AbXHHRGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934168AbXHHRFq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936467AbXHHRFT
+	id S936333AbXHHRGJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936570AbXHHRFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:05:19 -0400
-Received: from [211.144.105.5] ([211.144.105.5]:3665 "HELO 211.144.105.5"
-	rhost-flags-FAIL-FAIL-FAIL-FAIL) by vger.kernel.org with SMTP
-	id S936399AbXHHRFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:05:17 -0400
-Message-Id: <NKJFLHS8.5D0DCLH@gmail.com>
-From: "David L Collick" <prolaser.groups@gmail.com>
-Subject: RE: Samsung & HP Toner cartridge
-To: "Administrator" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-Reply-To: "David L Collick" <prolaser.groups@gmail.com>
-Date: Wed, 8 Aug 2007 09:50:17 +0200
-X-Priority: 3
-X-Mailer: Microsoft Office Outlook, Build 11.0.5510
+	Wed, 8 Aug 2007 13:05:21 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60866 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S936477AbXHHRFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 13:05:20 -0400
+Message-ID: <46B9F7C9.9060406@austin.ibm.com>
+Date: Wed, 08 Aug 2007 12:05:13 -0500
+From: jschopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Dave Jones <davej@redhat.com>, apw@shadowen.org, rdunlap@xenotime.net,
+       jschopp@austin.ibm.com, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Make checkpatch warn about pointless casting of kalloc returns.
+References: <20070808024321.GA6316@redhat.com>
+In-Reply-To: <20070808024321.GA6316@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear All Customers,
+> +# check for pointless casting of kmalloc return
+> +		if ($rawline =~ /\*\)[ ]k[czm]alloc/) {
 
-===============================================
-OEM COMPATIBLE TONER CARTRIDGES PROMOTION
-===============================================
+It looks to me like this will catch
 
+foo = (char *) kmalloc(512);
 
-HP toner:
-1) Q2612A = RM 1?5;
-2) Q5949A = RM 1?0;
+but not
 
-Samsung toner:
-1) ML-1610  = RM 1?0;
-2) ML-1710 = RM 1?0;
-3) ML-2010 = RM 1?0;
-4) ML-2150 = RM 2?5;
-5) SCX-4216 = RM 1?5;
+for = (char* )kmalloc(512);
 
-Xerox toner:
-1) 203A = RM 1?0;
+I haven't tried it but how about something like:
 
+if($rawline =~/\(.*\)\s*k[czm]alloc/){
 
-**************************************************************
-ADVANTAGES : Printer repairs & services available
-**************************************************************
+which if I got it right should match the typecast with any combination of spacing.
 
-Our new compatible cartridges are sold as new cartridges and are produced by a manufacturer other than your printer manufacturer and like the OEM, are manufactured with new and recycled parts. Our new premium compatibles are produced under stringent quality controls and are built to meet or exceed your OEM's specifications. This means simply that our new compatibles deliver the highest quality print as well as the longest possible life and at a fraction of the cost of an OEM.
+> +			WARN("No need to cast return value.\n");
 
-To REDUCE or SAVE more cost, please do not hesitate to contact us for more information.
-
-regards,
-
-Mr Ken
-Tel: 012-366 2818
-
-IT CITY COMPUTER
-46M, Jalan Wangsa 2/5, Taman Wangsa Permai,
-Kepong 52100. Kuala Lumpur.
-Tel: 03-6276 3561
-Fax: 03-6272 9718
-Email: prolaser_toner@yahoo.com
-
------------------------------------------------------------------------------------------
+Could the warning be more descriptive?  This describes what, but it should also describe 
+why; after all if somebody made this error they may not know they why.
