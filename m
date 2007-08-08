@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762506AbXHHMdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbXHHMej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762506AbXHHMdD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:33:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXHHMcx
+	id S1763626AbXHHMej (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXHHMec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:32:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38537 "EHLO ogre.sisk.pl"
+	Wed, 8 Aug 2007 08:34:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57775 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752998AbXHHMcw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:32:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19 and 2.6.20 w/ Thinkpad T41
-Date: Wed, 8 Aug 2007 14:42:12 +0200
-User-Agent: KMail/1.9.5
-Cc: Toralf =?iso-8859-1?q?F=F6rster?= <toralf.foerster@gmx.de>,
-       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-References: <200708051902.18801.toralf.foerster@gmx.de> <200708081122.55036.toralf.foerster@gmx.de> <20070808120416.GA554@khazad-dum.debian.net>
-In-Reply-To: <20070808120416.GA554@khazad-dum.debian.net>
+	id S1751077AbXHHMeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 08:34:31 -0400
+Date: Wed, 8 Aug 2007 14:34:18 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Mitchell Erblich <erblichs@earthlink.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Question: RT schedular : task_tick_rt(struct rq *rq, struct
+	task_struct *p) : decreases overhead when  rq->nr_running == 1
+Message-ID: <20070808123418.GA30248@elte.hu>
+References: <000501c7d945$f30af1a0$6501a8c0@earthlink.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708081442.12641.rjw@sisk.pl>
+In-Reply-To: <000501c7d945$f30af1a0$6501a8c0@earthlink.net>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 8 August 2007 14:04, Henrique de Moraes Holschuh wrote:
-> On Wed, 08 Aug 2007, Toralf Förster wrote:
-> > Am Dienstag, 7. August 2007 17:38 schrieb Rafael J. Wysocki:
-> > > Actually, you don't need the patch above, just do
-> > > "echo shutdown > /sys/power/disk" before the hibernation (or use
-> > > BTW, can you please try this patch before you do that:
-> > > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc2/patches/19-ACPI-Enable-GPEs-before-_WAK-is-called.patch
-> > 
-> > This patch applied at commit cfee47f doesn't solve the regression.
-> > 
-> > > 
-> > > So place "echo shutdown > /sys/power/disk" before that into your script.
-> > yep, that works for me.
+
+* Mitchell Erblich <erblichs@earthlink.net> wrote:
+
+> After
+>     p->time_slice = static_prio_timeslice(p->static_prio);
 > 
-> FYI, some other thinkpad models break badly if you use shutdown instead of
-> platform.  Sound goes away on wake, etc.
+> Why isn't their a check like
+>     if  (rq->nr_running == 1)
+>          return;
 > 
-> I am still very suspicious that the way we do wake-from-suspend-to-disk is
-> to blame... 
+> Which world remove the need for any recheduling or requeue'ing...
 
-Yes, that's one possible reason.
+your change is a possible optimization, but this is a pretty rare 
+codepath because the overwhelming majority of RT apps uses SCHED_FIFO. 
+Plus, the time_slice going down to 0 is a relatively rare event even for 
+SCHED_RR tasks. And if we have only a single SCHED_RR task, why is it 
+SCHED_RR to begin with? So this is on several levels an uncommon 
+workload and by adding a check like that we'd increase the codesize. But 
+... no strong feelings against this optimization - if you send a proper 
+patch we can apply it, it certainly makes sense from a logic POV.
 
-We also don't enter S4 in the right way, AFAICS, but the infrastructure
-allowing us to change that is only in -mm.  Anyway, here's the patch to fix
-that (it's on top of some other patches, but the link to them is given in the
-message): http://lkml.org/lkml/2007/8/7/316
-
-> I wish we loaded the kernel just once, maybe from the boot loader.
-
-Well, that's not so easy.  That will work for the bare image, but if we want it
-to be compressed and/or encrypted, then the boot loader will need to
-contain all of the necessary code.
-
-I may be doable by using a special boot kernel with ACPI disabled and only
-as many drivers as required to load the image, but that will make it more
-difficult to set up and to recover from errors.
-
-Greetings,
-Rafael
-
-
--- 
-"Premature optimization is the root of all evil." - Donald Knuth
+	Ingo
