@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936889AbXHHQeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936934AbXHHQe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936889AbXHHQeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934333AbXHHQdy
+	id S936934AbXHHQe6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933695AbXHHQeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:33:54 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:33008 "EHLO mail.dvmed.net"
+	Wed, 8 Aug 2007 12:34:44 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50791 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759775AbXHHQdv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:33:51 -0400
-Message-ID: <46B9F06A.4000800@pobox.com>
-Date: Wed, 08 Aug 2007 12:33:46 -0400
-From: Jeff Garzik <jgarzik@pobox.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
-MIME-Version: 1.0
-To: Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>
-CC: Mariusz Kozlowski <m.kozlowski@tuxland.pl>, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org
-Subject: Re: [PATCH 68] drivers/net/s2io.c: kmalloc + memset conversion to
- k[cz]alloc
-References: <78C9135A3D2ECE4B8162EBDCE82CAD77020354C0@nekter>
-In-Reply-To: <78C9135A3D2ECE4B8162EBDCE82CAD77020354C0@nekter>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1765061AbXHHQem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 12:34:42 -0400
+Subject: Re: [RFC][PATCH 1/5] pagemap: remove file header
+From: Dave Hansen <haveblue@us.ibm.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       serue@us.ibm.com
+In-Reply-To: <20070808023100.222c4d15@the-village.bc.nu>
+References: <20070807223300.9228E0E0@kernel>
+	 <20070808011620.GF30556@waste.org>
+	 <20070808023100.222c4d15@the-village.bc.nu>
+Content-Type: text/plain
+Date: Wed, 08 Aug 2007 09:34:39 -0700
+Message-Id: <1186590879.22283.99.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ramkrishna Vepa wrote:
-> We have a few patches queued and can send this patch in along with ours.
+On Wed, 2007-08-08 at 02:31 +0100, Alan Cox wrote:
+> The information needed to parse /proc/pid/pagemap can be stuck
+> in /proc/pid/somewherelese. If we ever get page size variations and the
+> like then /proc/pid/ is going to end up with that information anyway for
+> ps and friends to use.
 
-That would be great, thanks.
+We do at least have some of this with hugetlbfs.  In fact, the current
+pagemap code bugs out when it hits a huge page area:
 
-	Jeff
+/home/dave/work/linux/2.6/22/lxc/mm/memory.c:117: bad pgd 1d0000e7.
 
+I'll look at fixing that.
 
+-- Dave
 
