@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965020AbXHHTL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936693AbXHHTLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965020AbXHHTL2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 15:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764174AbXHHTLF
+	id S936693AbXHHTLu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 15:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938166AbXHHTLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 15:11:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43355 "EHLO mga02.intel.com"
+	Wed, 8 Aug 2007 15:11:19 -0400
+Received: from mga03.intel.com ([143.182.124.21]:24673 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933094AbXHHTLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 15:11:02 -0400
+	id S964824AbXHHTLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 15:11:15 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.19,237,1183359600"; 
-   d="scan'208";a="276322125"
-Date: Wed, 8 Aug 2007 12:08:10 -0700
+   d="scan'208";a="260608867"
+Date: Wed, 8 Aug 2007 12:08:22 -0700
 From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 To: jeff@garzik.org
 Cc: James.Bottomley@steeleye.com, linux-ide@vger.kernel.org,
        linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org,
        Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: [patch 1/4] libata: check for AN support
-Message-Id: <20070808120810.5f8ed457.kristen.c.accardi@intel.com>
+Subject: [patch 2/4] scsi: expose AN support to user space
+Message-Id: <20070808120822.9cf187bb.kristen.c.accardi@intel.com>
 In-Reply-To: <20070808190613.616085010@localhost.localdomain>
 References: <20070808190613.616085010@localhost.localdomain>
 X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
@@ -30,159 +30,204 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check to see if an ATAPI device supports Asynchronous Notification.
-If so, enable it.
+If a scsi_device supports async notification for media change, then
+let user space know this capability exists by creating a new sysfs
+entry "media_change_notify", which will be 1 if it is supported, and
+0 if not supported.  Create a routine which allows scsi devices to
+send a uevent when media change events occur.
 
 Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-Index: 2.6-git/drivers/ata/libata-core.c
+Index: 2.6-git/include/scsi/scsi_device.h
 ===================================================================
---- 2.6-git.orig/drivers/ata/libata-core.c
-+++ 2.6-git/drivers/ata/libata-core.c
-@@ -70,6 +70,7 @@ const unsigned long sata_deb_timing_long
- static unsigned int ata_dev_init_params(struct ata_device *dev,
- 					u16 heads, u16 sectors);
- static unsigned int ata_dev_set_xfermode(struct ata_device *dev);
-+static unsigned int ata_dev_set_AN(struct ata_device *dev, u8 enable);
- static void ata_dev_xfermask(struct ata_device *dev);
- static unsigned long ata_dev_blacklisted(const struct ata_device *dev);
+--- 2.6-git.orig/include/scsi/scsi_device.h
++++ 2.6-git/include/scsi/scsi_device.h
+@@ -46,6 +46,16 @@ enum scsi_device_state {
+ 				 * to the scsi lld. */
+ };
  
-@@ -1974,6 +1975,22 @@ int ata_dev_configure(struct ata_device 
- 		}
- 		dev->cdb_len = (unsigned int) rc;
- 
-+		/*
-+		 * check to see if this ATAPI device supports
-+		 * Asynchronous Notification
-+		 */
-+		if ((ap->flags & ATA_FLAG_AN) && ata_id_has_AN(id)) {
-+			int err;
-+			/* issue SET feature command to turn this on */
-+			err = ata_dev_set_AN(dev, SETFEATURES_SATA_ENABLE);
-+			if (err)
-+				ata_dev_printk(dev, KERN_ERR,
-+						"unable to set AN, err %x\n",
-+						err);
-+			else
-+				dev->flags |= ATA_DFLAG_AN;
-+		}
++/* must match scsi_device_event_strings in scsi_lib.c */
++enum scsi_device_event {
++	SDEV_MEDIA_CHANGE = 1,	/* media has changed */
++};
 +
- 		if (ata_id_cdb_intr(dev->id)) {
- 			dev->flags |= ATA_DFLAG_CDB_INTR;
- 			cdb_intr_string = ", CDB intr";
-@@ -3948,6 +3965,42 @@ static unsigned int ata_dev_set_xfermode
- }
++struct scsi_device_event_info {
++	enum scsi_device_event event;
++	struct list_head link;
++};
++
+ struct scsi_device {
+ 	struct Scsi_Host *host;
+ 	struct request_queue *request_queue;
+@@ -126,7 +136,7 @@ struct scsi_device {
+ 	unsigned fix_capacity:1;	/* READ_CAPACITY is too high by 1 */
+ 	unsigned guess_capacity:1;	/* READ_CAPACITY might be too high by 1 */
+ 	unsigned retry_hwerror:1;	/* Retry HARDWARE_ERROR */
+-
++	unsigned media_change_notify:1; /* dev supports async media notify */
+ 	unsigned int device_blocked;	/* Device returned QUEUE_FULL. */
+ 
+ 	unsigned int max_device_blocked; /* what device_blocked counts down from  */
+@@ -144,6 +154,7 @@ struct scsi_device {
+ 	struct execute_work	ew; /* used to get process context on put */
+ 
+ 	enum scsi_device_state sdev_state;
++	struct list_head	sdev_event_list;
+ 	unsigned long		sdev_data[0];
+ } __attribute__((aligned(sizeof(unsigned long))));
+ #define	to_scsi_device(d)	\
+@@ -275,6 +286,8 @@ extern int scsi_test_unit_ready(struct s
+ 				int retries);
+ extern int scsi_device_set_state(struct scsi_device *sdev,
+ 				 enum scsi_device_state state);
++extern int scsi_device_event_notify(struct scsi_device *sdev,
++				enum scsi_device_event event);
+ extern int scsi_device_quiesce(struct scsi_device *sdev);
+ extern void scsi_device_resume(struct scsi_device *sdev);
+ extern void scsi_target_quiesce(struct scsi_target *);
+Index: 2.6-git/drivers/scsi/scsi_lib.c
+===================================================================
+--- 2.6-git.orig/drivers/scsi/scsi_lib.c
++++ 2.6-git/drivers/scsi/scsi_lib.c
+@@ -64,6 +64,11 @@ static struct scsi_host_sg_pool scsi_sg_
+ }; 	
+ #undef SP
+ 
++/* must match scsi_device_event enum in scsi_device.h */
++static char * scsi_device_event_strings[] = {
++	"MEDIA_CHANGE=1",
++};
++
+ static void scsi_run_queue(struct request_queue *q);
+ 
+ /*
+@@ -2007,6 +2012,84 @@ scsi_device_set_state(struct scsi_device
+ EXPORT_SYMBOL(scsi_device_set_state);
  
  /**
-+ *	ata_dev_set_AN - Issue SET FEATURES - SATA FEATURES
-+ *	@dev: Device to which command will be sent
-+ *	@enable: Whether to enable or disable the feature
++ * 	scsi_device_set_event - Add a new Async event to the event list
++ *	@sdev: scsi_device event occurred on
++ *	@event: the scsi device event
 + *
-+ *	Issue SET FEATURES - SATA FEATURES command to device @dev
-+ *	on port @ap with sector count set to indicate Asynchronous
-+ *	Notification feature
++ * 	Add a new scsi_device_event_info struct to the scsi_device_event_list
++ * 	queue.  This may be called from interrupt context.
 + *
-+ *	LOCKING:
-+ *	PCI/etc. bus probe sem.
-+ *
-+ *	RETURNS:
-+ *	0 on success, AC_ERR_* mask otherwise.
++ * 	Returns 0 if successful, -ENOMEM otherwise.
 + */
-+static unsigned int ata_dev_set_AN(struct ata_device *dev, u8 enable)
++static int
++scsi_device_set_event(struct scsi_device *sdev, enum scsi_device_event event)
 +{
-+	struct ata_taskfile tf;
-+	unsigned int err_mask;
++	struct scsi_device_event_info *scsi_event;
++	unsigned long flags;
 +
-+	/* set up set-features taskfile */
-+	DPRINTK("set features - SATA features\n");
-+
-+	ata_tf_init(dev, &tf);
-+	tf.command = ATA_CMD_SET_FEATURES;
-+	tf.feature = enable;
-+	tf.flags |= ATA_TFLAG_ISADDR | ATA_TFLAG_DEVICE;
-+	tf.protocol = ATA_PROT_NODATA;
-+	tf.nsect = SATA_AN;
-+
-+	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_NONE, NULL, 0);
-+
-+	DPRINTK("EXIT, err_mask=%x\n", err_mask);
-+	return err_mask;
++	scsi_event = kzalloc(sizeof(*scsi_event), GFP_ATOMIC);
++	if (!scsi_event)
++		return -ENOMEM;
++	INIT_LIST_HEAD(&scsi_event->link);
++	scsi_event->event = event;
++	spin_lock_irqsave(&sdev->list_lock, flags);
++	list_add_tail(&scsi_event->link, &sdev->sdev_event_list);
++	spin_unlock_irqrestore(&sdev->list_lock, flags);
++	return 0;
 +}
 +
 +/**
-  *	ata_dev_init_params - Issue INIT DEV PARAMS command
-  *	@dev: Device to which command will be sent
-  *	@heads: Number of heads (taskfile parameter)
-Index: 2.6-git/include/linux/ata.h
-===================================================================
---- 2.6-git.orig/include/linux/ata.h
-+++ 2.6-git/include/linux/ata.h
-@@ -217,6 +217,12 @@ enum {
- 
- 	SETFEATURES_SPINUP	= 0x07, /* Spin-up drive */
- 
-+	SETFEATURES_SATA_ENABLE = 0x10, /* Enable use of SATA feature */
-+	SETFEATURES_SATA_DISABLE = 0x90, /* Disable use of SATA feature */
++ * 	scsi_device_event_notify_thread - send a uevent for each scsi event
++ *	@work: work struct for scsi_device
++ *
++ * 	Traverse the queue of scsi device events, dequeue each event and
++ * 	send a uevent.  Frees event.  May not be called from interrupt.
++ */
++static void scsi_event_notify_thread(struct work_struct *work)
++{
++	struct scsi_device *sdev;
++	char *envp[] = { NULL, NULL };
++	struct list_head *tmp;
++	struct list_head *next;
++	struct scsi_device_event_info *sdev_event;
++	unsigned long flags;
 +
-+	/* SETFEATURE Sector counts for SATA features */
-+	SATA_AN			= 0x05,  /* Asynchronous Notification */
++	sdev = container_of(work, struct scsi_device, ew.work);
++	list_for_each_safe(tmp, next, &sdev->sdev_event_list) {
++		sdev_event = list_entry(tmp, struct scsi_device_event_info,
++					link);
++		spin_lock_irqsave(&sdev->list_lock, flags);
++		list_del(&sdev_event->link);
++		spin_unlock_irqrestore(&sdev->list_lock, flags);
++		envp[0] = scsi_device_event_strings[sdev_event->event-1];
++		kobject_uevent_env(&sdev->sdev_gendev.kobj, KOBJ_CHANGE, envp);
++		kfree(sdev_event);
++	}
++}
 +
- 	/* ATAPI stuff */
- 	ATAPI_PKT_DMA		= (1 << 0),
- 	ATAPI_DMADIR		= (1 << 2),	/* ATAPI data dir:
-@@ -344,6 +350,9 @@ struct ata_taskfile {
- #define ata_id_queue_depth(id)	(((id)[75] & 0x1f) + 1)
- #define ata_id_removeable(id)	((id)[0] & (1 << 7))
- #define ata_id_has_dword_io(id)	((id)[50] & (1 << 0))
-+#define ata_id_has_AN(id)	\
-+	( (((id)[76] != 0x0000) && ((id)[76] != 0xffff)) && \
-+	  ((id)[78] & (1 << 5)) )
- #define ata_id_iordy_disable(id) ((id)[49] & (1 << 10))
- #define ata_id_has_iordy(id) ((id)[49] & (1 << 9))
- #define ata_id_u32(id,n)	\
-Index: 2.6-git/include/linux/libata.h
++/**
++ * 	scsi_device_event_notify - store event info and send an event
++ *	@sdev: scsi_device event occurred on
++ *	@event: the scsi device event
++ *
++ * 	Store the event information and then switch process context
++ * 	so that the event may be sent to user space.
++ * 	This may be called from interrupt context.
++ *
++ * 	Returns 0 if successful, -ENOMEM otherwise.
++ */
++int scsi_device_event_notify(struct scsi_device *sdev, enum scsi_device_event event)
++{
++	int rc;
++
++	rc = scsi_device_set_event(sdev, event);
++	if (!rc)
++		execute_in_process_context(scsi_event_notify_thread, &sdev->ew);
++	return rc;
++}
++EXPORT_SYMBOL_GPL(scsi_device_event_notify);
++
++/**
+  *	scsi_device_quiesce - Block user issued commands.
+  *	@sdev:	scsi device to quiesce.
+  *
+Index: 2.6-git/drivers/scsi/scsi_scan.c
 ===================================================================
---- 2.6-git.orig/include/linux/libata.h
-+++ 2.6-git/include/linux/libata.h
-@@ -139,7 +139,8 @@ enum {
- 	ATA_DFLAG_FLUSH_EXT	= (1 << 4), /* do FLUSH_EXT instead of FLUSH */
- 	ATA_DFLAG_ACPI_PENDING	= (1 << 5), /* ACPI resume action pending */
- 	ATA_DFLAG_ACPI_FAILED	= (1 << 6), /* ACPI on devcfg has failed */
--	ATA_DFLAG_CFG_MASK	= (1 << 8) - 1,
-+	ATA_DFLAG_AN		= (1 << 7), /* device supports AN */
-+	ATA_DFLAG_CFG_MASK	= (1 << 12) - 1,
+--- 2.6-git.orig/drivers/scsi/scsi_scan.c
++++ 2.6-git/drivers/scsi/scsi_scan.c
+@@ -253,6 +253,7 @@ static struct scsi_device *scsi_alloc_sd
+ 	INIT_LIST_HEAD(&sdev->same_target_siblings);
+ 	INIT_LIST_HEAD(&sdev->cmd_list);
+ 	INIT_LIST_HEAD(&sdev->starved_entry);
++	INIT_LIST_HEAD(&sdev->sdev_event_list);
+ 	spin_lock_init(&sdev->list_lock);
  
- 	ATA_DFLAG_PIO		= (1 << 8), /* device limited to PIO mode */
- 	ATA_DFLAG_NCQ_OFF	= (1 << 9), /* device limited to non-NCQ mode */
-@@ -177,6 +178,7 @@ enum {
- 	ATA_FLAG_IGN_SIMPLEX	= (1 << 15), /* ignore SIMPLEX */
- 	ATA_FLAG_NO_IORDY	= (1 << 16), /* controller lacks iordy */
- 	ATA_FLAG_ACPI_SATA	= (1 << 17), /* need native SATA ACPI layout */
-+	ATA_FLAG_AN		= (1 << 18), /* controller supports AN */
- 
- 	/* The following flag belongs to ap->pflags but is kept in
- 	 * ap->flags because it's referenced in many LLDs and will be
-Index: 2.6-git/drivers/ata/ahci.c
+ 	sdev->sdev_gendev.parent = get_device(&starget->dev);
+Index: 2.6-git/drivers/scsi/scsi_sysfs.c
 ===================================================================
---- 2.6-git.orig/drivers/ata/ahci.c
-+++ 2.6-git/drivers/ata/ahci.c
-@@ -332,14 +332,15 @@ static const struct ata_port_operations 
- static const struct ata_port_info ahci_port_info[] = {
- 	/* board_ahci */
- 	{
--		.flags		= AHCI_FLAG_COMMON,
-+		.flags		= AHCI_FLAG_COMMON | ATA_FLAG_AN,
- 		.pio_mask	= 0x1f, /* pio0-4 */
- 		.udma_mask	= ATA_UDMA6,
- 		.port_ops	= &ahci_ops,
- 	},
- 	/* board_ahci_pi */
- 	{
--		.flags		= AHCI_FLAG_COMMON | AHCI_FLAG_HONOR_PI,
-+		.flags		= AHCI_FLAG_COMMON | AHCI_FLAG_HONOR_PI |
-+				  ATA_FLAG_AN,
- 		.pio_mask	= 0x1f, /* pio0-4 */
- 		.udma_mask	= ATA_UDMA6,
- 		.port_ops	= &ahci_ops,
+--- 2.6-git.orig/drivers/scsi/scsi_sysfs.c
++++ 2.6-git/drivers/scsi/scsi_sysfs.c
+@@ -575,6 +575,18 @@ sdev_show_modalias(struct device *dev, s
+ }
+ static DEVICE_ATTR(modalias, S_IRUGO, sdev_show_modalias, NULL);
+ 
++static ssize_t
++sdev_show_media_change_notify(struct device *dev, struct device_attribute *attr,
++				char *buf)
++{
++	struct scsi_device *sdev = to_scsi_device(dev);
++	if (sdev->media_change_notify)
++		return snprintf(buf, 20, "%d\n", 1);
++	else
++		return snprintf(buf, 20, "%d\n", 0);
++}
++static DEVICE_ATTR(media_change_notify, S_IRUGO, sdev_show_media_change_notify, NULL);
++
+ /* Default template for device attributes.  May NOT be modified */
+ static struct device_attribute *scsi_sysfs_sdev_attrs[] = {
+ 	&dev_attr_device_blocked,
+@@ -594,6 +606,7 @@ static struct device_attribute *scsi_sys
+ 	&dev_attr_iodone_cnt,
+ 	&dev_attr_ioerr_cnt,
+ 	&dev_attr_modalias,
++	&dev_attr_media_change_notify,
+ 	NULL
+ };
+ 
 
 -- 
