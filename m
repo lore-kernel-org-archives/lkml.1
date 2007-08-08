@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936579AbXHHSTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937853AbXHHSV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936579AbXHHSTl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757415AbXHHSTc
+	id S937853AbXHHSV5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757829AbXHHSVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:19:32 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:54891 "EHLO e3.ny.us.ibm.com"
+	Wed, 8 Aug 2007 14:21:49 -0400
+Received: from mail.tmr.com ([64.65.253.246]:58811 "EHLO gaimboi.tmr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755532AbXHHSTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:19:31 -0400
-Subject: Re: [RFC][PATCH 4/5] introduce TASK_SIZE_OF() for all arches
-From: Dave Hansen <haveblue@us.ibm.com>
-To: Matt Mackall <mpm@selenic.com>
-Cc: linux-kernel@vger.kernel.org, serue@us.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070808020354.GK30556@waste.org>
-References: <20070807223300.9228E0E0@kernel>
-	 <20070807223303.F720DA3E@kernel>  <20070808020354.GK30556@waste.org>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 11:19:28 -0700
-Message-Id: <1186597168.22283.130.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1756322AbXHHSVs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:21:48 -0400
+Message-ID: <46BA09CC.7070007@tmr.com>
+Date: Wed, 08 Aug 2007 14:22:04 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, J??rn Engel <joern@logfs.org>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
+       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
+       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
+       richard@rsk.demon.co.uk, david@lang.hm
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805073709.GA6325@elte.hu> <20070805134328.1a4474dd@the-village.bc.nu> <20070805125433.GA22060@elte.hu> <20070805143708.279f51f8@the-village.bc.nu> <20070805180826.GD3244@elte.hu>
+In-Reply-To: <20070805180826.GD3244@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-07 at 21:03 -0500, Matt Mackall wrote:
-> On Tue, Aug 07, 2007 at 03:33:03PM -0700, Dave Hansen wrote:
-> > 
-> > For the /proc/<pid>/pagemap code[1], we need to able to query how
-> > much virtual address space a particular task has.  The trick is
-> > that we do it through /proc and can't use TASK_SIZE since it
-> > references "current" on some arches.  The process opening the
-> > /proc file might be a 32-bit process opening a 64-bit process's
-> > pagemap file.
+Ingo Molnar wrote:
+
+> || ...For me, I would say 50% is not enough to describe the _visible_ 
+> || benefits... Not talking any specific number but past 10sec-1min+ 
+> || lagging in X is history, it's gone and I really don't miss it that 
+> || much... :-) Cannot reproduce even a second long delay anymore in 
+> || window focusing under considerable load as it's basically 
+> || instantaneous (I can see that it's loaded but doesn't affect the 
+> || feeling of responsiveness I'm now getting), even on some loads that I 
+> || couldn't previously even dream of... [...]
 > 
-> That seems perfectly sensible to me, but I think you'll need to bounce
-> it off Andrew at least. (cc:ed)
+> we really have to ask ourselves whether the "process" is correct if 
+> advantages to the user of this order of magnitude can be brushed aside 
+> with simple "this breaks binary-only HSM" and "it's not standards 
+> compliant" arguments.
+> 
+Being standards compliant is not an argument it's a design goal, a 
+requirement. Standards compliance is like pregant, you are or you're 
+not. And to deliberately ignore standards for speed is saying "it's too 
+hard to do it right, I'll do it wrong and it will be faster." The answer 
+is to do it smarter, with solutions like relatime (which can be enhanced 
+as Linus noted) which provide performance benefits without ignoring 
+standards, or use of a filesystem which does a better job. But when it 
+goes in the kernel the choice of having per-filesystem behavior either 
+vanishes or becomes an exercise in complex and as-yet unwritten mount 
+options.
 
-It definitely needs a trip to linux-arch.  
+There are certainly ways to improve ext3, not journaling atime updates 
+would certainly be one, less frequent updates of dirty inodes, whatever. 
+But if a user wants to give up standards compliance it should be a 
+deliberate choice, not something which the average user will not 
+understand or learn to do.
 
--- Dave
-
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
