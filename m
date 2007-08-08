@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937762AbXHHRZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937978AbXHHR0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937762AbXHHRZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964927AbXHHRUY
+	id S937978AbXHHR0K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936699AbXHHRWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:20:24 -0400
-Received: from lazybastard.de ([212.112.238.170]:43856 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964887AbXHHRUV (ORCPT
+	Wed, 8 Aug 2007 13:22:32 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:58906 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S937463AbXHHRW0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:20:21 -0400
-Date: Wed, 8 Aug 2007 19:15:54 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, akpm@osdl.org,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, linux-fsdevel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [Patch 05/18] fs/logfs/dir.c
-Message-ID: <20070808171554.GV15319@lazybastard.org>
-References: <20070808161234.GB15319@lazybastard.org> <20070808161626.GG15319@lazybastard.org> <1186592854.19606.49.camel@sauron>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Wed, 8 Aug 2007 13:22:26 -0400
+Date: Wed, 8 Aug 2007 10:22:23 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Seokmann Ju <seokmann.ju@qlogic.com>, yanmin_zhang@linux.intel.com
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+Message-ID: <20070808172223.GA897@plap.qlogic.org>
+References: <46B9F664.9060600@googlemail.com> <46B9F983.9020700@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1186592854.19606.49.camel@sauron>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <46B9F983.9020700@googlemail.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 08 Aug 2007 17:21:25.0075 (UTC) FILETIME=[8C290A30:01C7D9E0]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 August 2007 20:07:34 +0300, Artem Bityutskiy wrote:
-> On Wed, 2007-08-08 at 18:16 +0200, Jörn Engel wrote:
-> > +static inline void logfs_inc_count(struct inode *inode)
-> > +{
-> > +	inode->i_nlink++;
-> > +	mark_inode_dirty_sync(inode);
-> > +}
-> > +
-> > +static inline void logfs_dec_count(struct inode *inode)
-> > +{
-> > +	inode->i_nlink--;
-> > +	mark_inode_dirty_sync(inode);
-> > +}
-> include/linux/fs.h: inode_inc_link_count() inode_dec_link_count() do
-> this. Although not sure they exist in the old kernel your patches are
-> against.
+On Wed, 08 Aug 2007, Michal Piotrowski wrote:
 
-Almost, they call mark_inode_dirty() instead of mark_inode_dirty_sync().
-I wonder if that's necessary.
+> Here is a list of some known regressions in 2.6.23-rc2.
+> 
+> Feel free to add new regressions/remove fixed etc.
+> http://kernelnewbies.org/known_regressions
+...
+> SCSI
+> 
+> Subject         : unable to handle kernel NULL pointer dereference in qla2x00_read_nvram_data
+> References      : http://lkml.org/lkml/2007/8/6/506
+> Last known good : ?
+> Submitter       : Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+> Caused-By       : ?
+> Handled-By      : ?
+> Status          : unknown
 
-Jörn
+Already addressed in Linus' latest GIT tree:
 
--- 
-Measure. Don't tune for speed until you've measured, and even then
-don't unless one part of the code overwhelms the rest.
--- Rob Pike
+http://article.gmane.org/gmane.linux.scsi/33472/
