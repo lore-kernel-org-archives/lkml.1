@@ -1,60 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936143AbXHHUFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937043AbXHHUIQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936143AbXHHUFb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 16:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763420AbXHHUFS
+	id S937043AbXHHUIQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 16:08:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762963AbXHHUIE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 16:05:18 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:50183 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761981AbXHHUFQ (ORCPT
+	Wed, 8 Aug 2007 16:08:04 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:32815 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1761981AbXHHUIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 16:05:16 -0400
-Date: Wed, 8 Aug 2007 22:05:13 +0200 (CEST)
-From: Jan Engelhardt <jengelh@computergmbh.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jeff Layton <jlayton@redhat.com>, codalist@TELEMANN.coda.cs.cmu.edu,
-       cluster-devel@redhat.com, jfs-discussion@lists.sourceforge.net,
-       mikulas@artax.karlin.mff.cuni.cz, reiserfs-devel@vger.kernel.org,
-       zippel@linux-m68k.org, xfs@oss.sgi.com, linux-kernel@vger.kernel.org,
-       wli@holomorphy.com, joel.becker@oracle.com, dhowells@redhat.com,
-       fuse-devel@lists.sourceforge.net, jffs-dev@axis.com,
-       user-mode-linux-user@lists.sourceforge.net,
-       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
-       linux-ext4@vger.kernel.org, linux-cifs-client@lists.samba.org,
-       ocfs2-devel@oss.oracle.com, bfennema@falcon.csc.calpoly.edu
-Subject: Re: [fuse-devel] [PATCH 00/25] move handling of setuid/gid bits from
- VFS into individual setattr functions (RESEND)
-In-Reply-To: <20070808094853.8c27450c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708082204210.10387@fbirervta.pbzchgretzou.qr>
-References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
- <20070807171501.e31c4a97.akpm@linux-foundation.org> <20070808085435.722f2b10.jlayton@redhat.com>
- <20070808094853.8c27450c.akpm@linux-foundation.org>
+	Wed, 8 Aug 2007 16:08:01 -0400
+Date: Wed, 8 Aug 2007 16:07:59 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       USB development list <linux-usb-devel@lists.sourceforge.net>,
+       Greg KH <gregkh@suse.de>, Mark Hindley <mark@hindley.org.uk>,
+       Eric Biederman <ebiederm@xmission.com>, <kexec@lists.infradead.org>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
+In-Reply-To: <46B9F983.9020700@googlemail.com>
+Message-ID: <Pine.LNX.4.44L0.0708081557450.3925-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Aug 2007, Michal Piotrowski wrote:
 
-On Aug 8 2007 09:48, Andrew Morton wrote:
->> > On Mon, 6 Aug 2007 09:54:03 -0400
->> > Jeff Layton <jlayton@redhat.com> wrote:
->> > 
->> > Is there any way in which we can prevent these problems?  Say
->> > 
->> > - rename something so that unconverted filesystems will reliably fail to
->> >   compile?
->> > 
->> 
->> I suppose we could rename the .setattr inode operation to something
->> else, but then we'll be stuck with it for at least a while. That seems
->> sort of kludgey too...
->
->Sure.  We're changing the required behaviour of .setattr.  Changing its
->name is a fine and reasonably reliable way to communicate that fact.
+> USB
+> 
+> Subject         : 2.6.23-rc1: uhci_hcd. irq 4: nobody cared
+> References      : http://lkml.org/lkml/2007/7/29/75
+> Last known good : ?
+> Submitter       : Mark Hindley <mark@hindley.org.uk>
+> Caused-By       : ?
+> Handled-By      : Alan Stern <stern@rowland.harvard.edu>
+> Status          : unknown
 
-Maybe ->chattr/->chgattr?
+Mark has determined that this is not a regression but rather an 
+already-existing problem, caused by invoking kexec from within an xterm 
+window.  See
 
+	http://marc.info/?l=linux-usb-users&m=118648557203179&w=2
 
-	Jan
--- 
+Of course, this means there's liable to be something wrong with the way
+kexec interacts with uhci-hcd or the other drivers sharing the same 
+IRQ.  Failure to call the shutdown() method could cause the problem.  
+But I don't see why using an xterm should make any difference (unless 
+the only device being used was a mouse, and it was not in use while X 
+wasn't running).
+
+Alan Stern
+
