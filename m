@@ -1,50 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936522AbXHHRlq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935711AbXHHRmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936522AbXHHRlq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762531AbXHHRli
+	id S935711AbXHHRmz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbXHHRmq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:41:38 -0400
-Received: from mail.tmr.com ([64.65.253.246]:58766 "EHLO gaimboi.tmr.com"
+	Wed, 8 Aug 2007 13:42:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59501 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760781AbXHHRlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:41:37 -0400
-Message-ID: <46BA0114.7040801@tmr.com>
-Date: Wed, 08 Aug 2007 13:44:52 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1762076AbXHHRmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 13:42:45 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: pvp@tk.ru.acad.bg
+Subject: Re: 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
+Date: Wed, 8 Aug 2007 13:42:33 -0400
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <46B18029.2060509@tk.ru.acad.bg>
+In-Reply-To: <46B18029.2060509@tk.ru.acad.bg>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070803123712.987126000@chello.nl>	<alpine.LFD.0.999.0708031518440.8184@woody.linux-foundation.org>	<20070804063217.GA25069@elte.hu>	<20070804070737.GA940@elte.hu>	<20070804103347.GA1956@elte.hu>	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>	<20070804163733.GA31001@elte.hu>	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>	<46B4C0A8.1000902@garzik.org>	<20070804191205.GA24723@lazybastard.org>	<20070804192130.GA25346@elte.hu>	<20070804211156.5f600d80@the-village.bc.nu>	<46B4E161.9080100@garzik.org>	<46B8C016.6090806@tmr.com> <20070807203502.66b9ebda@the-village.bc.nu>
-In-Reply-To: <20070807203502.66b9ebda@the-village.bc.nu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708081342.34049.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->> However, relatime has the POSIX behavior without the overhead. Therefore 
-> 
-> No. relatime has approximately SuS behaviour. Its not the same as
-> "correct" behaviour.
-> 
-Actually correct, but in terms of what can or does break, relatime seems 
-a lot closer than noatime, I can't (personally) come up with any 
-scenario where real applications would see something which would change 
-behavior adversely.
+On Thursday 02 August 2007 02:56, Plamen Petrov wrote:
 
-Making noatime a default in the kernel requiring a boot option to 
-restore current behavior seems to be a turn toward the "it doesn't 
-really work right but it's *fast*" model. If vendors wanted noatime they 
-are smart enough to enable it. Now with relatime giving most of the 
-benefits and few (of any) of the side effects, I would expect a change.
+> After reading some mail lists posts, I tried passing "acpi=off" to 
+> git10, and it worked - no hang during boot.
 
-By all means relatime by default in FC8, but not noatime, and let those 
-who find some measurable benefit from noatime use it.
+please instead try "nolapic" and also "idle=poll"
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+thanks,
+-len
