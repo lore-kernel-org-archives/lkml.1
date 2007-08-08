@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763039AbXHHI5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760403AbXHHJA4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763039AbXHHI5U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751715AbXHHI5M
+	id S1760403AbXHHJA4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:00:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXHHJAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:57:12 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:2356 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751436AbXHHI5L (ORCPT
+	Wed, 8 Aug 2007 05:00:43 -0400
+Received: from mail.xandmail.com ([212.155.184.97]:55019 "EHLO
+	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752867AbXHHJAm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:57:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=qTJeB6Wh7JaotnlaUn7SCKNAxUeDqBzvUasRX6pWnEmtXzdzJpXKpLtZ2IWz0vZazvTTxYHoq3UVq7WpV/VSEpuB9DnUclhrJnNbwTIq84XJgyXeGXfasSSNY94QV42qdsD1noT6dcjLETZjk86bJwKuWmTBGgXDt/ZwlEnMcuw=
-Date: Wed, 8 Aug 2007 17:57:03 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 19/25] sysfs: sysfs_get_dentry add a sb parameter
-Message-ID: <20070808085703.GK13674@htj.dyndns.org>
-References: <m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com> <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com> <m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com> <m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com> <m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com> <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com> <m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com> <m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com> <m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com> <m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
+	Wed, 8 Aug 2007 05:00:42 -0400
+Date: Wed,  8 Aug 2007 10:59:22 +0200
+Message-Id: <JMG6AY$2339D4FEA804188F4C6D4F66006A6BB6@xandmail.com>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Sensitivity: 3
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
+To: "jarkao2" <jarkao2@o2.pl>
+Cc: "cebbert" <cebbert@redhat.com>, "mingo" <mingo@elte.hu>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
+       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "shemminger" <shemminger@linux-foundation.org>,
+       "linux-net" <linux-net@vger.kernel.org>,
+       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
+       "alan" <alan@lxorguk.ukuu.org.uk>
+X-XaM3-API-Version: 4.2(R3) (B21)
+X-type: 0
+X-SenderIP: 212.155.184.109
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:29:23PM -0600, Eric W. Biederman wrote:
-> 
-> In preparation for multiple mounts of sysfs add a superblock parameter to
-> sysfs_get_dentry.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-> @@ -827,7 +829,7 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
->  	 */
->  	dentry = NULL;
->  	cur = sd;
-> -	while (!(dentry = __sysfs_get_dentry(sysfs_sb, cur))) {
-> +	while (!(dentry = __sysfs_get_dentry(sb, cur))) {
+> Jean-Baptiste: I'm not sure how much of this testing you can afford?
+> If you can spare some time for this and your box isn't for
+> 'production' it could be very precious to diagnose such reproducible
+> bug.
 
-It's probably better to add @sb to __sysfs_get_dentry() here too.
-That will make things look clearer.
+Well i can continue testing patches for sure.
 
-Thanks.
+> Then, I'd have a few suggestions (you could choose any of them) like:
+> - trying these last test patches prepared for Marcin, too (but only
+> with kernels 2.6.21 - 2.6.23-rc1),
 
--- 
-tejun
+I'v patched 2.6.23-rc2 with those patches yesterday evening, and
+launched samba copy. 
+Is rc2 ok ?
+
+This morning the network is still up :
+RX bytes:279853499958 (260.6 GiB)  TX bytes:7416695531 (6.9 GiB)
+
+Still testing.
+
+> If you would like to read something more about testing (then of
+> course my suggestions could occur invalid - I'm a very bad tester
+> myself...) you can try this:
+> http://www.stardust.webpages.pl/files/handbook/
+
+I'll have a look at the document. 
+
+Jb
+
+
