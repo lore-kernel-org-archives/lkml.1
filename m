@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936998AbXHHBYP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937095AbXHHBYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936998AbXHHBYP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 21:24:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936666AbXHHBV7
+	id S937095AbXHHBYp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 21:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936295AbXHHBWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 21:21:59 -0400
-Received: from namei.org ([69.55.235.186]:47549 "EHLO us.intercode.com.au"
+	Tue, 7 Aug 2007 21:22:40 -0400
+Received: from namei.org ([69.55.235.186]:47582 "EHLO us.intercode.com.au"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S936643AbXHHBV5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 21:21:57 -0400
-Date: Tue, 7 Aug 2007 18:21:07 -0700 (PDT)
+	id S936572AbXHHBWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 21:22:38 -0400
+Date: Tue, 7 Aug 2007 18:22:15 -0700 (PDT)
 From: James Morris <jmorris@namei.org>
 X-X-Sender: jmorris@us.intercode.com.au
-To: "Serge E. Hallyn" <serge@hallyn.com>
-cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       "Serge E. Hallyn" <sergeh@us.ibm.com>,
-       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
-       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: file capabilities: clear fcaps on inode change (v3)
-In-Reply-To: <20070807231452.GA27198@vino.hallyn.com>
-Message-ID: <Pine.LNX.4.64.0708071814520.32311@us.intercode.com.au>
-References: <20070807221727.GA12211@sergelap.austin.ibm.com>
- <1186526285.6625.41.camel@heimdal.trondhjem.org> <20070807231452.GA27198@vino.hallyn.com>
+To: Al Viro <viro@ftp.linux.org.uk>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH] fix oops in __audit_signal_info()
+In-Reply-To: <20070807230146.GZ21089@ftp.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0708071821550.32311@us.intercode.com.au>
+References: <20070807230146.GZ21089@ftp.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 7 Aug 2007, Serge E. Hallyn wrote:
+On Wed, 8 Aug 2007, Al Viro wrote:
 
-> Yeah, I did that in v1, but didn't want to add two new security_ hooks.
-> But I'll send a v4 doing that.
+> 	Check for audit_signals is misplaced and check for
+> audit_dummy_context() is missing; as the result, if we send
+> signal to auditd from task with NULL ->audit_context while
+> we have audit_signals != 0 we end up with an oops.
+> 
+> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Yep, add what's actually needed.
-
-Continually having to jump through all of these hoops for LSM has gone 
-beyond ridiculous.
+Acked-by: James Morris <jmorris@namei.org>
 
 
 
-- James 
 -- 
 James Morris
 <jmorris@namei.org>
