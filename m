@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933705AbXHHHjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761099AbXHHHpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933705AbXHHHjq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbXHHHjg
+	id S1761099AbXHHHpS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755435AbXHHHpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:39:36 -0400
-Received: from rv-out-0910.google.com ([209.85.198.184]:38049 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbXHHHje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:39:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=FpkFIR0yvl0xpPoeAh7oxzcwtO5jCFyFz2G2mkvuIMxGQBb93s5IDSwalIa8sN302vbcBhZKu/MuGpQElO8hqgRsUNd4zENg8YcrRtdWprTsdkYYZ7u/ZqUCbypvqgr2LCfWyWXZMEI86gbcGaaCCStwnlRROlsf3Ej6azte5so=
-Message-ID: <a8e1da0708080039w1deed062hf5920e1257eb1cbb@mail.gmail.com>
-Date: Wed, 8 Aug 2007 07:39:33 +0000
-From: "Dave Young" <hidave.darkstar@gmail.com>
-To: rdunlap@xenotime.net
-Subject: two questions about the boot_delay
-Cc: "Dave Jones" <davej@codemonkey.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Wed, 8 Aug 2007 03:45:06 -0400
+Received: from gg.genua.de ([151.136.100.2]:48741 "EHLO gg.genua.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755273AbXHHHpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 03:45:05 -0400
+X-Greylist: delayed 354 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 03:45:04 EDT
+From: Christian Ehrhardt <Christian_Ehrhardt@genua.de>
+Message-Id: <200708080738.l787c6gP007376@felsenbeisser.genua.de>
+To: Dave Hansen <haveblue@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, serue@us.ibm.com,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [RFC][PATCH 2/5] pagemap: use PAGE_MASK/PAGE_ALIGN()
+In-Reply-To: <8PFSA-6mt-1@gated-at.bofh.it>
+References: <8PFSA-6mt-3@gated-at.bofh.it> <8PFSA-6mt-1@gated-at.bofh.it>
+Date: Wed, 8 Aug 2007 09:38:06 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-I have tried the "slow down printk" , and I have two questions.
+In linux.kernel, you wrote:
+>
+> Use existing macros (PAGE_MASK/PAGE_ALIGN()) instead of
+> open-coding them.
+>
+> Signed-off-by: Dave Hansen <haveblue@us.ibm.com>
+> ---
+>
+>  lxc-dave/fs/proc/task_mmu.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff -puN fs/proc/task_mmu.c~pagemap-use-PAGE_MASK fs/proc/task_mmu.c
+> --- lxc/fs/proc/task_mmu.c~pagemap-use-PAGE_MASK	2007-08-07 15:30:52.000000000 -0700
+> +++ lxc-dave/fs/proc/task_mmu.c	2007-08-07 15:30:52.000000000 -0700
+> @@ -669,9 +669,9 @@ static ssize_t pagemap_read(struct file 
+>  		goto out;
+>  
+>  	ret = -ENOMEM;
+> -	uaddr = (unsigned long)buf & ~(PAGE_SIZE-1);
+> +	uaddr = (unsigned long)buf & PAGE_MASK;
+>  	uend = (unsigned long)(buf + count);
+> -	pagecount = (uend - uaddr + PAGE_SIZE-1) / PAGE_SIZE;
+> +	pagecount = (uend - PAGE_ALIGN(uaddr)) / PAGE_SIZE;
 
-1. why it depends the DEBUG_KERNEL? Sometimes we only need boot_delay
-to see the printk infomations.  How about set it as a standalone
-config option?
+Unless I'm missing something the PAGE_ALIGN as ist stands is now a NOP
+because uaddr is already page aligned. You probably wanted to
+PAGE_ALIGN(uend). However, this will likely add an additional instruction
+to the generated code.
 
-2. In My system if I boot with boot_delay=200 the early part of
-booting will be very slow, eapecially at the very beginning (after the
-compressing  and start kernel, it nearly stop here many minutes).
+    regards  Christian
 
-And I wonder if we can simply use mdelay in the boot_delay_msec(). I
-tested the mdelay , and the result is more accurate.
 
-Regards
-dave
