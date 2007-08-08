@@ -1,76 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932115AbXHHNqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933867AbXHHNqw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932115AbXHHNqe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 09:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXHHNqZ
+	id S933867AbXHHNqw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 09:46:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755056AbXHHNqn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 09:46:25 -0400
-Received: from mga03.intel.com ([143.182.124.21]:5418 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751825AbXHHNqY convert rfc822-to-8bit (ORCPT
+	Wed, 8 Aug 2007 09:46:43 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:61582 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753413AbXHHNql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 09:46:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,236,1183359600"; 
-   d="scan'208";a="260470359"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 8 Aug 2007 09:46:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=BBY6dkJIaVZgHgi9AWTcU5k8SDl/kbNu9AJJovF05iVZNfhEcD5qFFDLdb5IQeZH7BJmp0J9dLFayMfswISAso1SZXeyVLG5qSAenoUG9NcojAxcwkDPwM03SaEsN3dkYY1IBgbLYvggz75eUB0wGdn45wd+HvVTu8drByn+TlY=
+Message-ID: <3ae72650708080646k4279e48boc3a77d6454c8d72d@mail.gmail.com>
+Date: Wed, 8 Aug 2007 15:46:40 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Larry Finger" <larry.finger@lwfinger.net>
+Subject: Re: Error message from device_rename in drivers/base/core.c
+Cc: "Cornelia Huck" <cornelia.huck@de.ibm.com>,
+       "David Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org
+In-Reply-To: <46B9B5C6.2070100@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-Date: Wed, 8 Aug 2007 21:46:15 +0800
-Message-ID: <9D7649D18729DE4BB2BD7B494F7FEDC246DC2B@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <200708081208.01080.ak@suse.de>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-Thread-Index: AcfZpEOubAzrT1rySEufv4w2F4alhgAGkKIg
-From: "Huang, Ying" <ying.huang@intel.com>
-To: "Andi Kleen" <ak@suse.de>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, <akpm@linux-foundation.org>,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Chandramouli Narayanan" <mouli@linux.intel.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 Aug 2007 13:46:16.0871 (UTC) FILETIME=[7E456B70:01C7D9C2]
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <46B943D3.9020207@lwfinger.net>
+	 <20070807.213724.27783161.davem@davemloft.net>
+	 <20070808113359.71e77f49@gondolin.boeblingen.de.ibm.com>
+	 <46B9B5C6.2070100@lwfinger.net>
+X-Google-Sender-Auth: 41bc31d879353017
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Andi Kleen [mailto:ak@suse.de]
->Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
->> The needed code changing is minimal. In fact, I can boot 32bit Linux
->> kernel on my x86_64 EFI machine. With setup as follow:
->>
->> 1. Apply the efi-fb.patch
->Just for the frame buffer, right?
-
-Yes.
-
->> 2. make efi fb driver not depend on EFI
->> 3. configure kernel as follow:
->>    a. CONFIG_EFI is turned off
->>    b. CONFIG_FB_EFI is turned on
+On 8/8/07, Larry Finger <larry.finger@lwfinger.net> wrote:
+> Cornelia Huck wrote:
+> > On Tue, 07 Aug 2007 21:37:24 -0700 (PDT),
+> > David Miller <davem@davemloft.net> wrote:
+> >
+> >> I think this check belongs in udev not in the kernel.  Thankfully
+> >> this message at least tells us it is happening, please don't
+> >> remove it.
+> >
+> > Hm, device_rename() could alternatively just return success if
+> > dev->bus_id and new_name are the same.
 >
->Hmm, how does the 32bit kernel know where the e820 map is passed then?
->With CONFIG_EFI turned off it will just ask the real mode BIOS I think
->and I doubt elilo simulates that.
+> That is what my proposed patch did. One could argue that the test should come before the failure,
+> not after, but the effect is the same.
+>
+> >> I'm pretty sure it's UDEV doing this, and it should not try to rename
+> >> a netdevice to what it already is named.
+> >
+> > But it shouldn't cause an error either :)
+>
+> I agree with you, but you and David can fight it out. While finding out where to ask/complain about
+> udev, I had a private communication with GregKH. He thinks that a patch to fix this has already been
+> pushed through Linus. As Linville's wireless-dev tree is a little behind, I'm waiting to see if it
+> gets fixed here by 2.6.23-rc3. If not, I'll talk to the udev/hotplug folks.
 
-I have not tested elilo. I use another x86_64 EFI boot loader (it will
-be released soon), but elilo works in the same way, and I will test
-elilo later. The 16bit entry of kernel (arch/(i386|x86_64)/boot/setup.S)
-is not used by elilo. Instead, elilo collects the needed information
-defined in include/asm-x86_64/bootsetup.h itself, and passes it to
-kernel 32bit entry (arch/(i386|x86_64)/boot/compressed/head.S). For E820
-map, the elilo converts the EFI memory map to E820 map in "boot
-parameters memory" which is copied to "boot_params" or "x86_boot_params"
-by Linux kernel later.
+Hmm, I can not immediately see how udev could request the renaming to
+the same name:
 
->Or did you apply more patches?
+  /* look if we want to change the name of the netif */
+  if (strcmp(udev->name, udev->dev->kernel) != 0) {
+    ...
+    retval = rename_netif(udev);
+    ...
+  }
 
-No, just the frame buffer patch.
+What udev version is it and which distro and version?
 
-Best Regards,
-Huang Ying
+Kay
