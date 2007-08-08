@@ -1,137 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937292AbXHHROA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937365AbXHHROa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937292AbXHHROA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:14:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936373AbXHHRNN
+	id S937365AbXHHROa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936679AbXHHRNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:13:13 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:5643 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763590AbXHHRNJ (ORCPT
+	Wed, 8 Aug 2007 13:13:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32773 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S936446AbXHHRNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:13:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=tSfUYkqRQ+ebjIGWiWdZY1jdJn3+XKLg9uQgwRX3a5jM6vCAfjGKlCY0mVhIQzO3q/m79V6RPzyR62qHWBE36UPKi9OCv1/GMV/rEXO9ZI91DNwUnl+xVMaX5ugFy0XdAoIUtrja+rSRvJkWiht1XU68FzoSzPLdn8J1c8Fnaig=
-Message-ID: <46B9F98E.9020406@googlemail.com>
-Date: Wed, 08 Aug 2007 19:12:46 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Wed, 8 Aug 2007 13:13:13 -0400
+Date: Wed, 8 Aug 2007 10:13:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Vitaly Bordug <vitb@kernel.crashing.org>, Jan Dittmer <jdi@l4x.org>,
-       Netdev <netdev@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Thomas Renninger <trenn@suse.de>,
-       Stephen Hemminger <shemminger@osdl.org>,
-       Florian Lohoff <flo@rfc822.org>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Jeff Garzik <jeff@garzik.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [1/2] 2.6.23-rc2: known regressions with patches v2
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
+In-Reply-To: <20070808014435.GG30556@waste.org>
+Message-ID: <Pine.LNX.4.64.0708081004290.12652@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl> <20070806103658.603735000@chello.nl>
+ <Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com>
+ <20070808014435.GG30556@waste.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Tue, 7 Aug 2007, Matt Mackall wrote:
 
-Here is a list of some known regressions in 2.6.23-rc2
-with patches available.
+>  > If you are in an atomic context and bound to a cpu then a per cpu slab is 
+> > assigned to you and no one else can take object aways from that process 
+> > since nothing else can run on the cpu.
+> 
+> Servicing I/O over the network requires an allocation to send a buffer
+> and an allocation to later receive the acknowledgement. We can't free
+> our send buffer (or the memory it's supposed to clean) until the
+> relevant ack is received. We have to hold our reserves privately
+> throughout, even if an interrupt that wants to do GFP_ATOMIC
+> allocation shows up in-between.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+If you can take an interrupt then you can move to a different allocation 
+context. This means reclaim could free up more pages if we tell reclaim 
+not to allocate any memory.
+ 
+> > If you are not in an atomic context and are preemptable or can switch 
+> > allocation context then you can create another context in which reclaim 
+> > could be run to remove some clean pages and get you more memory. Again no 
+> > need for the patch.
+> 
+> By the point that this patch is relevant, there are already no clean
+> pages. The only way to free up more memory is via I/O.
 
-List of Aces
+That is never true. The dirty ratio limit limits the number of dirty pages 
+in memory. There is always a large percentage of memory that is kept 
+clean. Pages that are file backed and clean can be freed without any 
+additional memory allocation. This is true for the executable code that 
+you must have to execute any instructions. We could guarantee that the 
+number of pages reclaimable without memory allocs stays above certain 
+limits by checking VM counters.
 
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            6
-Andi Kleen                             4
-Andrew Morton                          4
-Linus Torvalds                         4
-Al Viro                                3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
-David Woodhouse                        2
-Hugh Dickins                           2
-Peter Zijlstra                         2
-Trent Piepho                           2
+I think there are two ways to address this in a simpler way:
 
+1. Allow recursive calls into reclaim. If we are in a PF_MEMALLOC context 
+then we can still scan lru lists and free up memory of clean pages. Idea 
+patch follows.
 
-
-Unclassified
-
-Subject         : Kconfig prompts without help text
-References      : http://lkml.org/lkml/2007/7/16/326
-Last known good : ?
-Submitter       : Stefan Richter <stefanr@s5r6.in-berlin.de>
-Caused-By       : ?
-Handled-By      : Jan Engelhardt <jengelh@linux01.gwdg.de>
-Patch           : http://lkml.org/lkml/2007/7/18/236
-Status          : patch available
-
-Subject         : Oops while modprobing phy fixed module
-References      : http://lkml.org/lkml/2007/7/14/63
-Last known good : ?
-Submitter       : Gabriel C <nix.or.die@googlemail.com>
-Caused-By       : ?
-Handled-By      : Satyam Sharma <satyam.sharma@gmail.com>
-                  Vitaly Bordug <vitb@kernel.crashing.org>
-Patch1          : http://lkml.org/lkml/2007/7/18/506
-Status          : patch available
-
-
-
-FS
-
-Subject         : NFSv4 poops itself
-References      : http://lkml.org/lkml/2007/7/27/144
-Last known good : ?
-Submitter       : Jeff Garzik <jeff@garzik.org> 
-Caused-By       : ?
-Handled-By      : Trond Myklebust <Trond.Myklebust@netapp.com>
-Patch           : http://lkml.org/lkml/2007/7/27/183
-Status          : patch available
-
-
-Modpost
-
-Subject         : modpost bug breaks ia64 cross compilation
-References      : http://lkml.org/lkml/2007/7/27/30
-                  http://lkml.org/lkml/2007/7/27/418
-Last known good : ?
-Submitter       : Jan Dittmer <jdi@l4x.org>
-Caused-By       : Thomas Renninger <trenn@suse.de>
-                  commit 29b71a1ca74491fab9fed09e9d835d840d042690
-Handled-By      : ?
-Patch           : http://lkml.org/lkml/2007/8/2/211
-Status          : patch was suggested
+2. Make pageout figure out if the write action requires actual I/O 
+submission. If so then the submission will *not* immediately free memory 
+and we have to wait for I/O to complete. In that case do not immediately
+initiate I/O (which would not free up memory and its bad to initiate 
+I/O when we have not enough free memory) but put all those pages on a 
+pageout list. When reclaim has reclaimed enough memory then go through the 
+pageout list and trigger I/O. That can be done without PF_MEMALLOC so that 
+additional reclaim could be triggered as needed. Maybe we can just get rid 
+of PF_MEMALLOC and some of the contorted code around it?
 
 
 
-Networking
 
-Subject         : sky2 boot crash in sky2_mac_intr
-References      : http://lkml.org/lkml/2007/7/24/91
-Last known good : ?
-Submitter       : Florian Lohoff <flo@rfc822.org>
-Caused-By       : 
-Handled-By      : Stephen Hemminger <shemminger@osdl.org>
-Patch           : http://marc.info/?l=linux-netdev&m=118651402523966&w=2
-Status          : patch available
+Recursive reclaim concept patch:
+
+---
+ include/linux/swap.h |    2 ++
+ mm/page_alloc.c      |   11 +++++++++++
+ mm/vmscan.c          |   27 +++++++++++++++++++++++++++
+ 3 files changed, 40 insertions(+)
+
+Index: linux-2.6/include/linux/swap.h
+===================================================================
+--- linux-2.6.orig/include/linux/swap.h	2007-08-08 04:31:06.000000000 -0700
++++ linux-2.6/include/linux/swap.h	2007-08-08 04:31:28.000000000 -0700
+@@ -190,6 +190,8 @@ extern void swap_setup(void);
+ /* linux/mm/vmscan.c */
+ extern unsigned long try_to_free_pages(struct zone **zones, int order,
+ 					gfp_t gfp_mask);
++extern unsigned long emergency_free_pages(struct zone **zones, int order,
++					gfp_t gfp_mask);
+ extern unsigned long shrink_all_memory(unsigned long nr_pages);
+ extern int vm_swappiness;
+ extern int remove_mapping(struct address_space *mapping, struct page *page);
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c	2007-08-08 04:17:33.000000000 -0700
++++ linux-2.6/mm/page_alloc.c	2007-08-08 04:39:26.000000000 -0700
+@@ -1306,6 +1306,17 @@ nofail_alloc:
+ 				zonelist, ALLOC_NO_WATERMARKS);
+ 			if (page)
+ 				goto got_pg;
++
++			/*
++			 * We cannot go into full synchrononous reclaim
++			 * but we can still scan for easily reclaimable
++			 * pages.
++			 */
++			if (p->flags & PF_MEMALLOC &&
++				emergency_free_pages(zonelist->zones, order,
++								gfp_mask))
++				goto nofail_alloc;
++
+ 			if (gfp_mask & __GFP_NOFAIL) {
+ 				congestion_wait(WRITE, HZ/50);
+ 				goto nofail_alloc;
+Index: linux-2.6/mm/vmscan.c
+===================================================================
+--- linux-2.6.orig/mm/vmscan.c	2007-08-08 04:21:14.000000000 -0700
++++ linux-2.6/mm/vmscan.c	2007-08-08 04:42:24.000000000 -0700
+@@ -1204,6 +1204,33 @@ out:
+ }
+ 
+ /*
++ * Emergency reclaim. We are alreedy in the vm write out path
++ * and we have exhausted all memory. We have to free memory without
++ * any additional allocations. So no writes and no swap. Get
++ * as bare bones as we can.
++ */
++unsigned long emergency_free_pages(struct zone **zones, int order, gfp_t gfp_mask)
++{
++	int priority;
++	unsigned long nr_reclaimed = 0;
++	struct scan_control sc = {
++		.gfp_mask = gfp_mask,
++		.swap_cluster_max = SWAP_CLUSTER_MAX,
++		.order = order,
++	};
++
++	for (priority = DEF_PRIORITY; priority >= 0; priority--) {
++		sc.nr_scanned = 0;
++		nr_reclaimed += shrink_zones(priority, zones, &sc);
++		if (nr_reclaimed >= sc.swap_cluster_max)
++			return 1;
++	}
++
++	/* top priority shrink_caches still had more to do? don't OOM, then */
++	return sc.all_unreclaimable;
++}
++
++/*
+  * For kswapd, balance_pgdat() will work across all this node's zones until
+  * they are all at pages_high.
+  *
 
 
 
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
