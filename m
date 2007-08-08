@@ -1,104 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936221AbXHHAR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936351AbXHHATI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936221AbXHHAR1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 20:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761801AbXHHARQ
+	id S936351AbXHHATI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 20:19:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763161AbXHHASz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 20:17:16 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:55823 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760830AbXHHARO (ORCPT
+	Tue, 7 Aug 2007 20:18:55 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37202 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761801AbXHHASy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 20:17:14 -0400
-Date: Tue, 7 Aug 2007 17:15:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       v9fs-developer@lists.sourceforge.net, zippel@linux-m68k.org,
-       dhowells@redhat.com, linux-cifs-client@lists.samba.org,
-       codalist@TELEMANN.coda.cs.cmu.edu, joel.becker@oracle.com,
-       linux-ext4@vger.kernel.org, fuse-devel@lists.sourceforge.net,
-       cluster-devel@redhat.com, user-mode-linux-user@lists.sourceforge.net,
-       mikulas@artax.karlin.mff.cuni.cz, wli@holomorphy.com, jffs-dev@axis.com,
-       jfs-discussion@lists.sourceforge.net, ocfs2-devel@oss.oracle.com,
-       reiserfs-devel@vger.kernel.org, bfennema@falcon.csc.calpoly.edu,
-       xfs@oss.sgi.com
-Subject: Re: [PATCH 00/25] move handling of setuid/gid bits from VFS into
- individual setattr functions (RESEND)
-Message-Id: <20070807171501.e31c4a97.akpm@linux-foundation.org>
-In-Reply-To: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
-References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 7 Aug 2007 20:18:54 -0400
+Date: Tue, 7 Aug 2007 17:13:52 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
+In-Reply-To: <20070806103658.603735000@chello.nl>
+Message-ID: <Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl> <20070806103658.603735000@chello.nl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 6 Aug 2007 09:54:03 -0400
-Jeff Layton <jlayton@redhat.com> wrote:
+On Mon, 6 Aug 2007, Peter Zijlstra wrote:
 
-> Apologies for the resend, but the original sending had the date in the
-> email header and it caused some of these to bounce...
-> 
-> ( Please consider trimming the Cc list if discussing some aspect of this
-> that doesn't concern everyone.)
-> 
-> When an unprivileged process attempts to modify a file that has the
-> setuid or setgid bits set, the VFS will attempt to clear these bits. The
-> VFS will set the ATTR_KILL_SUID or ATTR_KILL_SGID bits in the ia_valid
-> mask, and then call notify_change to clear these bits and set the mode
-> accordingly.
-> 
-> With a networked filesystem (NFS in particular but most likely others),
-> the client machine may not have credentials that allow for the clearing
-> of these bits. In some situations, this can lead to file corruption, or
-> to an operation failing outright because the setattr fails.
-> 
-> In this situation, we'd like to just leave the handling of this to
-> the server and ignore these bits. The problem is that by the time
-> nfs_setattr is called, the VFS has already reinterpreted the ATTR_KILL_*
-> bits into a mode change. We can't fix this in the filesystems where
-> this is a problem, as doing so would leave us having to second-guess
-> what the VFS wants us to do. So we need to change it so that filesystems
-> have more flexibility in how to interpret the ATTR_KILL_* bits.
-> 
-> The first patch in the following patchset moves this logic into a helper
-> function, and then only calls this helper function for inodes that do
-> not have a setattr operation defined. The subsequent patches fix up
-> individual filesystem setattr functions to call this helper function.
-> 
-> The upshot of this is that with this change, filesystems that define
-> a setattr inode operation are now responsible for handling the ATTR_KILL
-> bits as well. They can trivially do so by calling the helper, but they
-> must do so.
-> 
-> Some of the follow-on patches may not be strictly necessary, but I
-> decided that it was better to take the conservative approach and call
-> the helper when I wasn't sure. I've tried to CC the maintainers
-> for the individual filesystems as well where I could find them,
-> please let me know if there are others who should be informed.
-> 
-> Comments and suggestions appreciated...
-> 
+> Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+> contexts that are entitled to it.
 
->From a purely practical standpoint: it's a concern that all filesytems need
-patching to continue to correctly function after this change.  There might
-be filesystems which you missed, and there are out-of-tree filesystems
-which won't be updated.
+Is this patch actually necessary?
 
-And I think the impact upon the out-of-tree filesystems would be fairly
-severe: they quietly and subtly get their secutiry guarantees broken (I
-think?)
+If you are in an atomic context and bound to a cpu then a per cpu slab is 
+assigned to you and no one else can take object aways from that process 
+since nothing else can run on the cpu. The point of the patch is to avoid 
+other processes draining objects right? So you do not need the 
+modifications in that case.
 
-Is there any way in which we can prevent these problems?  Say
+If you are not in an atomic context and are preemptable or can switch 
+allocation context then you can create another context in which reclaim 
+could be run to remove some clean pages and get you more memory. Again no 
+need for the patch.
 
-- rename something so that unconverted filesystems will reliably fail to
-  compile?
+I guess you may be limited in not being able to call into reclaim again 
+because it is already running. Maybe that can be fixed? F.e. zone reclaim 
+does that for the NUMA case. It simply scans for easily reclaimable pages.
 
-- leave existing filesystems alone, but add a new
-  inode_operations.setattr_jeff, which the networked filesytems can
-  implement, and teach core vfs to call setattr_jeff in preference to
-  setattr?
+We could guarantee easily reclaimable pages to exist in much larger 
+numbers than the reserves of min_free_kbytes. So in a tight spot one could 
+reclaim from those.
 
-Something else?
