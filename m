@@ -1,67 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHHO6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934643AbXHHPBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935412AbXHHO6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbXHHO6R
+	id S934643AbXHHPBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbXHHPBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:58:17 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:20968 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754363AbXHHO6Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:58:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=sCMT79ZdBEWyySyh43R9SZp8y2Ua2yFaAfAup4UWotIvgTI8t8qOwF6lv8LUXqrQP0aGmiyijryft7wlOUURG7rJdVXiMvcYWZL4E9aJNATGEes6i1RouN7ehnzZhCTHH2TC2vrwRPCzmhzD7bUdfDBJW615ZmnqliJENCBzsLc=
-Message-ID: <5d6222a80708080758t1b937d0ej14c5e60ac23a20c5@mail.gmail.com>
-Date: Wed, 8 Aug 2007 11:58:14 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Nakajima, Jun" <jun.nakajima@intel.com>
-Subject: Re: Introducing paravirt_ops for x86_64
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, lguest@ozlabs.org,
-       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
-       anthony@codemonkey.ws, akpm@linux-foundation.org, mingo@elte.hu
-In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
+	Wed, 8 Aug 2007 11:01:16 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:60459 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754355AbXHHPBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 11:01:15 -0400
+Date: Wed, 8 Aug 2007 17:01:08 +0200
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
+Cc: "??" <wux@landicorp.com>, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] mmc: at91_mci: add multiwrite cap
+Message-ID: <20070808170108.4db814d1@poseidon.drzeus.cx>
+In-Reply-To: <46B9D6EE.4040705@rfo.atmel.com>
+References: <46B9926B.3090707@rfo.atmel.com>
+	<20070808121147.1433d055@poseidon.drzeus.cx>
+	<46B9D6EE.4040705@rfo.atmel.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-25436-1186585270-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Nakajima, Jun <jun.nakajima@intel.com> wrote:
-> Glauber de Oliveira Costa wrote:
-> > Hi folks,
-> >
-> > After some time away from it, and a big rebase as a consequence, here
-> is
-> > the updated version of paravirt_ops for x86_64, heading to inclusion.
-> >
-> > Your criticism is of course, very welcome.
-> >
-> > Have fun
->
-> Do you assume that the kernel ougtht to use 2MB pages for its mappings
-> (e.g. initilal text/data,  direct mapping of physical memory) under your
-> paravirt_ops?  As far as I look at the patches, I don't find one.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-I don't think how it could be relevant here. lguest kernel does use
-2MB pages, and it goes smootly. For 2MB pages, we will update the page
-tables in the very same way, and in the very places we did before.
-Just that the operations can now be overwritten.
+--=_hera.drzeus.cx-25436-1186585270-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-So, unless I'm very wrong,  it only makes sense to talk about not
-supporting large pages in the guest level. But it is not a
-paravirt_ops problem.
+On Wed, 08 Aug 2007 16:45:02 +0200
+Nicolas Ferre <nicolas.ferre@rfo.atmel.com> wrote:
 
+>=20
+> Pierre,
+>=20
+> I am a little confused : the probe function does not seem to get=20
+> called... (I tried both module an in-kernel form / inserting sd or
+> mmc cards).
+>=20
+> The modules is correctly inserted : mmc_register_driver() returns 0.
+>=20
+> Did I miss something ?
+>=20
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+You might need to make sure that mmc_block isn't attaching to the card.
 
-"The less confident you are, the more serious you have to act."
+Rgds
+Pierre
+
+--=_hera.drzeus.cx-25436-1186585270-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQFGudq07b8eESbyJLgRAn7EAKD2tu72eL4AI2AKvzral3gus0yyKQCfSLHX
+sDqRpNYbTYDgMWe8cgM78WM=
+=kInH
+-----END PGP SIGNATURE-----
+
+--=_hera.drzeus.cx-25436-1186585270-0001-2--
