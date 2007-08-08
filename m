@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935622AbXHHPf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936159AbXHHPfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935622AbXHHPf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757228AbXHHPfN
+	id S936159AbXHHPfv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932553AbXHHPfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:35:13 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47712 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755034AbXHHPfL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:35:11 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 19/25] sysfs: sysfs_get_dentry add a sb parameter
-References: <m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
-	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com>
-	<m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com>
-	<20070808085703.GK13674@htj.dyndns.org>
-Date: Wed, 08 Aug 2007 09:34:27 -0600
-In-Reply-To: <20070808085703.GK13674@htj.dyndns.org> (Tejun Heo's message of
-	"Wed, 8 Aug 2007 17:57:03 +0900")
-Message-ID: <m1abt2doqk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Wed, 8 Aug 2007 11:35:36 -0400
+Received: from rtr.ca ([64.26.128.89]:1378 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934768AbXHHPfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 11:35:34 -0400
+Message-ID: <46B9E2C4.7070307@rtr.ca>
+Date: Wed, 08 Aug 2007 11:35:32 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Cc: Tejun Heo <htejun@gmail.com>, Michael Sedkowski <sedmich@gmail.com>,
+       trenn@suse.de, Robert Hancock <hancockr@shaw.ca>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no>	 <fa.mg6p0itaOQUo/t8deCaYpyqj6Nk@ifi.uio.no>	 <fa.RxWYL8z8KktgL8LGZ/cTB2nI1Yc@ifi.uio.no>	 <fa.AyyCtZ2yLjC5noHPHtmzn4ffhhE@ifi.uio.no>	 <fa.SuAjism+m0z0haqCRVjkc2S978o@ifi.uio.no>	 <fa.QgWcLG2hfRb92g4blN61qYfRjlQ@ifi.uio.no> <46B7AF53.1040307@shaw.ca>	 <46B8140E.3000509@gmail.com>  <1186497925.8780.78.camel@queen.suse.de> <1186514618.5622.9.camel@nx6310> <46B9307D.3000105@gmail.com> <46B9CE79.5030307@rtr.ca> <46B9CFB3.6020402@gmail.com> <46B9D219.6030509@rtr.ca> <46B9DF91.7050709@rtr.ca>
+In-Reply-To: <46B9DF91.7050709@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <htejun@gmail.com> writes:
-
-> On Tue, Aug 07, 2007 at 03:29:23PM -0600, Eric W. Biederman wrote:
->> 
->> In preparation for multiple mounts of sysfs add a superblock parameter to
->> sysfs_get_dentry.
->> 
->> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
->> @@ -827,7 +829,7 @@ struct dentry *sysfs_get_dentry(struct sysfs_dirent *sd)
->>  	 */
->>  	dentry = NULL;
->>  	cur = sd;
->> -	while (!(dentry = __sysfs_get_dentry(sysfs_sb, cur))) {
->> +	while (!(dentry = __sysfs_get_dentry(sb, cur))) {
+Mark Lord wrote:
 >
-> It's probably better to add @sb to __sysfs_get_dentry() here too.
-> That will make things look clearer.
+> My suspend script now has this little chunk of code at the point
+> where it actually does the suspend-to-RAM:
+> 
+>    sync; sync
+>    hdparm -F /dev/sda   ## flush drive write cache
+>    sleep 1              ## allow time for the flush to complete
+>    echo mem > /sys/power/state  ## suspend-to-RAM
+> 
+> Without the "sleep 1", it doesn't always eliminate the extra Retract,
+> so I hypothesize that the FLUSH_CACHE_EXT command is implemented in
+> an asynchronous fashion by the drive:  it returns immediately before
+> it has actually completed writing cached data to disk.  The "sleep 1"
+> seems to give it enough time to finish up, at least for me.
 
-A little.
+Further to this, if I have an active-writer running at the time of suspend,
+then even my scripted "sleep 1" is not good enough, as additional writes
+are still happening before/after the flush.
 
-I just wanted to be certain I was testing the final __sysfs_get_dentry
-logic as soon as I could.
+Now I'll reboot and try it with the "sleep 1" hardcoded inside sd_suspend().
 
-
-Eric
-
+Cheers
