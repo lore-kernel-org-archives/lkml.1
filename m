@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762941AbXHHJ4E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764031AbXHHJ6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762941AbXHHJ4E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:56:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753632AbXHHJzu
+	id S1764031AbXHHJ6X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbXHHJ6P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:55:50 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:34353 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753300AbXHHJzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:55:49 -0400
-Date: Wed, 8 Aug 2007 13:54:49 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Daniel Phillips <phillips@phunq.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Block device throttling [Re: Distributed storage.]
-Message-ID: <20070808095448.GA3440@2ka.mipt.ru>
-References: <20070731171347.GA14267@2ka.mipt.ru> <200708051423.45484.phillips@phunq.net> <20070807120523.GX5245@kernel.dk> <200708071124.56859.phillips@phunq.net> <20070807205538.GB5245@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 05:58:15 -0400
+Received: from mailrelay005.isp.belgacom.be ([195.238.6.171]:25295 "EHLO
+	mailrelay005.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757874AbXHHJ6O convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 05:58:14 -0400
+From: Laurent Pinchart <laurentp@cse-semaphore.com>
+Organization: CSE Semaphore
+To: linux-kernel@vger.kernel.org
+Subject: Serial buffer memory leak
+Date: Wed, 8 Aug 2007 11:58:06 +0200
+User-Agent: KMail/1.9.5
+Cc: paulkf@microgate.com
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20070807205538.GB5245@kernel.dk>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200708081158.06843.laurentp@cse-semaphore.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 10:55:38PM +0200, Jens Axboe (jens.axboe@oracle.com) wrote:
-> I don't like structure bloat, but I do like nice design. Overloading is
+Hi everybody.
 
-So, what did we decide? To bloat bio a bit (add a queue pointer) or to
-use physical device limits? The latter requires to replace all occurence
-of bio->bi_bdev = something_new with blk_set_bdev(bio, somthing_new),
-where queue limits will be appropriately charged. So far I'm testing
-second case, but I only changed DST for testing, can change all other
-users if needed though.
+Patch c5c34d4862e18ef07c1276d233507f540fb5a532 (tty: flush flip buffer on 
+ldisc input queue flush) introduces a race condition which can lead to memory 
+leaks.
+
+The problem can be triggered when tcflush() is called when data are being 
+pushed to the line discipline driver by flush_to_ldisc().
+
+flush_to_ldisc() releases tty->buf.lock when calling the line discipline 
+receive_buf function. At that poing tty_buffer_flush() kicks in and sets both 
+tty->buf.head and tty->buf.tail to NULL. When flush_to_ldisc() finishes, it 
+restores tty->buf.head but doesn't touch tty->buf.tail. This corrups the 
+buffer queue, and the next call to tty_buffer_request_room() will allocate a 
+new buffer and overwrite tty->buf.head. The previous buffer is then lost 
+forever without being released.
+
+I'm not familiar enough with the tty code to decide what the proper fix should 
+be. I'll try to write a patch if someone could point me in the right 
+direction.
+
+Please CC me when answering, as I'm not subscribed to the list.
+
+Regards,
 
 -- 
-	Evgeniy Polyakov
+Laurent Pinchart
+CSE Semaphore Belgium
+
+Chaussée de Bruxelles, 732A
+B-1410 Waterloo
+Belgium
+
+T +32 (2) 387 42 59
+F +32 (2) 387 42 75
