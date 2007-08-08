@@ -1,93 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933730AbXHHKEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765190AbXHHKG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933730AbXHHKEx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 06:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932518AbXHHKDO
+	id S1765190AbXHHKG0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 06:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbXHHKGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 06:03:14 -0400
-Received: from thb8.jinr.ru ([159.93.129.8]:50979 "EHLO theor.jinr.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932487AbXHHKDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 06:03:12 -0400
-X-Greylist: delayed 695 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 06:03:12 EDT
-Date: Wed, 8 Aug 2007 13:51:32 +0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: dragoran <drago01@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: allow non root users to set io priority "idle" ?
-Message-ID: <20070808095132.GA31020@theor.jinr.ru>
-References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="sdtB3X0nJg68CQEu"
-Content-Disposition: inline
-In-Reply-To: <p73zm14lxyy.fsf@bingen.suse.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: varg@theor.jinr.ru (Sheplyakov Alexei)
+	Wed, 8 Aug 2007 06:06:18 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:55749 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754598AbXHHKGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 06:06:17 -0400
+Date: Wed, 8 Aug 2007 12:06:13 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: David Vrabel <david.vrabel@csr.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/4] sdio: set the functions' block size
+Message-ID: <20070808120613.6b88a0d4@poseidon.drzeus.cx>
+In-Reply-To: <46B990F0.2020001@csr.com>
+References: <11858961933491-git-send-email-david.vrabel@csr.com>
+	<20070804152304.65ed8f1b@poseidon.drzeus.cx>
+	<46B6F877.7060504@csr.com>
+	<20070806171207.59fafa18@poseidon.drzeus.cx>
+	<46B73F18.5030109@csr.com>
+	<20070806220145.66b97559@poseidon.drzeus.cx>
+	<46B86ADB.90000@csr.com>
+	<46B86B88.5050009@csr.com>
+	<20070807153800.734a6cbf@poseidon.drzeus.cx>
+	<46B8A9DA.9030804@csr.com>
+	<20070807195445.62d107e2@poseidon.drzeus.cx>
+	<46B990F0.2020001@csr.com>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 08 Aug 2007 10:46:24 +0100
+David Vrabel <david.vrabel@csr.com> wrote:
 
---sdtB3X0nJg68CQEu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> Pierre Ossman wrote:
+> > 
+> >> A driver might enable/disable a function multiple
+> >> times but there's no need to set the block size every time.
+> > 
+> > Why would it want to do that?
+> 
+> A function enable/disable cycle should act as a per-function reset.
+> 
 
-On Mon, Aug 06, 2007 at 01:11:01PM +0200, Andi Kleen wrote:
+It could be argued that it would reset the other per-function
+information as well. :)
 
-> Very low priority can starve others when it holds some kernel resource
-> needed by another task. =20
+-- 
+     -- Pierre Ossman
 
-Nevertheless ordinary users are permitted to lower priority ([re]nice)
-and resource limits (setrlimit).
-
-> For IO I suppose the same could happen too. e.g. low priority
-> task wants to write out a page and keeps it locked until the IO=20
-> is finished. High priority task wants to access the page and has
-> to wait until it is unlocked. Middle task generates an endless
-> stream of IO that makes the idle priority writeout never finish.
-
-I don't quite understand. There are a lot of other ways to starve such
-high-priority process:=20
-1. renice the low-priority process
-2. send it a signal
-3. ptrace it
-4. use something like cpulimit (http://cpulimit.sourceforge.net/) to stall =
-it
-=2E...
-
-So I think current behaviour of ionice is inconsistent (and pointless).
-
-P.S.=20
-Please CC me, I'm not subscribed.
-
-Best regards,
- Alexei
-
---=20
-All science is either physics or stamp collecting.
-
-
---sdtB3X0nJg68CQEu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iQIVAwUBRrmSIyXMWnuYxRVqAQKZaA//cCN26rGNiu0y4u+gCe/y/5zUzrn8AiIl
-zjkriUMLFVnjqJkKlkB1XAR1SpLMd1bzyJpTDlNmfadcBbyXBgq+R5Iek/ZU/4So
-Kh0VKNUbYWCc2QBjQI+YT0Jnykbh++w4XqamV076QXoC02bt3hBqY5wTQpzocxp+
-CL/yjtBSg77IEDCEuWpc3pSMlS3HLkpJZU23GrkPPGnxeVa5I1Q+O5LkYemsDII8
-RBHHMCUP+aFjTyG81y6scOapDuJrbof4eH/qeOMKfcdf+qFzWyGkJTaD869eUUbf
-ojsZUdjJ3ZVEIaupAW3Tr3/+xwy286qQwgMvdr8TPjKH/zyqQ02X4w4sMVzvl5aA
-E6tntEGh3+hRAbK5Qs++r9rq+De4unqhfltAzg7rCTS8pXkuDASEL7h0jGeqwHlK
-FZs9GSk80ptowN2At77Me3S5JJ8rCSrF4kjnxj9eSYbqhlqJvgEnZDRFTdQwmeoJ
-VMqkWZGcEZNuEI6k0ldCSCtg/grIyohH3utH6Uvnz1H3LCm5TCOc3MvhVYpHuuZI
-PkF6QV6eRoRDqpf86GL10K3jyJvl/MTsbNN6qd66cXn/jTiV9sd/J4vIEuWIH/Pz
-oirUvveYL5GKsYucLME3TIxOIzB2saO+VD3c0THR2QWJ2Wb08gnFODdlDxo4xPbh
-ozPW3lToJK8=
-=+fiB
------END PGP SIGNATURE-----
-
---sdtB3X0nJg68CQEu--
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
