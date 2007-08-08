@@ -1,65 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760403AbXHHJA4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbXHHJDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760403AbXHHJA4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:00:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbXHHJAn
+	id S1760584AbXHHJDg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755410AbXHHJD3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:00:43 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:55019 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbXHHJAm convert rfc822-to-8bit (ORCPT
+	Wed, 8 Aug 2007 05:03:29 -0400
+Received: from dgate1.fujitsu-siemens.com ([217.115.66.35]:27607 "EHLO
+	dgate1.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755359AbXHHJD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:00:42 -0400
-Date: Wed,  8 Aug 2007 10:59:22 +0200
-Message-Id: <JMG6AY$2339D4FEA804188F4C6D4F66006A6BB6@xandmail.com>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+	Wed, 8 Aug 2007 05:03:28 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=jcp9UGTHDwfz9Df8Nd6rlTTpZMPqnNJ0O/9kRVSwbPhOJmRuqdKatPDKVCwN8rjV6PQrrocy06Ul+jypiEfelBk/d9tW0uU2pq3dx3n/RUlISwRGGfEPs+T//gs1TsYI;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.19,234,1183327200"; 
+   d="scan'208";a="88017620"
+Message-ID: <46B986D5.2010407@fujitsu-siemens.com>
+Date: Wed, 08 Aug 2007 11:03:17 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "jarkao2" <jarkao2@o2.pl>
-Cc: "cebbert" <cebbert@redhat.com>, "mingo" <mingo@elte.hu>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>,
-       "tglx" <tglx@linutronix.de>, "torvalds" <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
-       "alan" <alan@lxorguk.ukuu.org.uk>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 212.155.184.109
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+References: <46B73955.2080007@fujitsu-siemens.com>	<20070807142928.GA18839@in.ibm.com>	<46B8AECA.7050908@fujitsu-siemens.com> <m1ir7qg7kd.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ir7qg7kd.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jean-Baptiste: I'm not sure how much of this testing you can afford?
-> If you can spare some time for this and your box isn't for
-> 'production' it could be very precious to diagnose such reproducible
-> bug.
+Hello Eric,
 
-Well i can continue testing patches for sure.
+> How bad is it if you just run with irqpoll in the kdump kernel?
+> If running with irqpoll is usable that is probably preferable
+> to putting in a hardware work around we can survive without.
 
-> Then, I'd have a few suggestions (you could choose any of them) like:
-> - trying these last test patches prepared for Marcin, too (but only
-> with kernels 2.6.21 - 2.6.23-rc1),
+Yes, I tried that. No effect.
 
-I'v patched 2.6.23-rc2 with those patches yesterday evening, and
-launched samba copy. 
-Is rc2 ok ?
+> Have you done any looking at moving where the kernel initalizes
+> io_apics?  One of the todo items on the path is to leave
+> io_apic mode enabled and just startup the kernel in io_apic
+> mode.
 
-This morning the network is still up :
-RX bytes:279853499958 (260.6 GiB)  TX bytes:7416695531 (6.9 GiB)
+I have tried to recover from the "IRR set" situation in several ways by
+changing setup_IO_APIC_irq(). But I haven't found a way to recover from
+this situation once disable_IO_APIC() had been called.
+I concluded thatthe sequence of events
+"send INT message - never receive EOI - disable IO-APIC pin"
+messes up the IO-APIC (at least this specific one in the
+PCIEx-PCI bridge of the ICH7).
 
-Still testing.
+The current state of affairs is that the only thing that "worked" was to
+re-enable irqs.
 
-> If you would like to read something more about testing (then of
-> course my suggestions could occur invalid - I'm a very bad tester
-> myself...) you can try this:
-> http://www.stardust.webpages.pl/files/handbook/
+> When doing that a version of your work around (if needed)
+> would certainly be reasonable.
 
-I'll have a look at the document. 
+> My general concern is that the trickier we get in the code
+> running in the crashed kernel the less reliable the entire
+> process will be.
 
-Jb
+That's certainly correct. I am grateful for all hints that simplify my patch.
 
+Thanks,
+Martin
 
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DE6
+
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20409
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
