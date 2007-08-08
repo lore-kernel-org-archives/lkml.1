@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760886AbXHHLzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763039AbXHHL4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760886AbXHHLzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 07:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXHHLzh
+	id S1763039AbXHHL4A (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 07:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761510AbXHHLzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 07:55:37 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42354 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751521AbXHHLzg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 07:55:36 -0400
-Date: Wed, 8 Aug 2007 13:55:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Sheplyakov Alexei <varg@theor.jinr.ru>
-Cc: Andi Kleen <andi@firstfloor.org>, dragoran <drago01@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: allow non root users to set io priority "idle" ?
-Message-ID: <20070808115535.GB13878@one.firstfloor.org>
-References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <20070808095132.GA31020@theor.jinr.ru> <20070808102056.GC12861@one.firstfloor.org> <20070808114949.GA8465@theor.jinr.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 07:55:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38253 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751837AbXHHLzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 07:55:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines
+Date: Wed, 8 Aug 2007 14:05:00 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Grant Grundler <grundler@parisc-linux.org>,
+       Kyle McMartin <kyle@mcmartin.ca>
+References: <200708052114.01790.rjw@sisk.pl> <20070807160357.d6ea9731.akpm@linux-foundation.org>
+In-Reply-To: <20070807160357.d6ea9731.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070808114949.GA8465@theor.jinr.ru>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200708081405.00778.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The original question (unless I'm missing something) was "why _the owner_
-> of a process is not enabled to lower its IO priority?" The owner of the
-> process certainly can send signal and ptrace it.
+On Wednesday, 8 August 2007 01:03, Andrew Morton wrote:
+> On Sun, 5 Aug 2007 21:14:01 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> > +#ifdef CONFIG_PM_SLEEP
+> > +
+> > +/*
+> > + *	Suspend the interface.
+> > + */
+> > +
+> > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
+> 
+> Since when did suspend and resume methods become dependent upon CONFIG_PM_SLEEP?
+> 
+> We have eight thousand implementations of this, all of which presently
+> use CONFIG_PM.
 
-Ah I misparsed you.
+Yes, they do, but if CONFIG_PM_SLEEP is not set, they won't be used.
 
-Sending signals and ptraces is atomic regarding system operations. This means
-the kernel will finish doing whatever it is doing (or bail out releasing
-all resources) before processing them. So stopping a process this
-way can never starve its IO.  Ok there are special cases like user space
-FUSE or NFS servers that can block operations, but these are expected to run 
-as root.
-
--Andi
+Greetings,
+Rafael
