@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXHHHx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbXHHH6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbXHHHx6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757680AbXHHHxc
+	id S1757404AbXHHH6x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756168AbXHHH6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:53:32 -0400
-Received: from rv-out-0910.google.com ([209.85.198.189]:53104 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757028AbXHHHxb (ORCPT
+	Wed, 8 Aug 2007 03:58:46 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:35872 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755086AbXHHH6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:53:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=CXLkSDKJeLXUpezV/HMIoUMqtTkSt4+dRKQeWmmJ/eLiOFlQawHCOTuAiNanUDiHm84kDY2IpDSZoa7FZvPgWFw23/hIs1X/wxG4gZPaq97iXkSY1eK7UcjFgDRTsGvIo034tI7OvRDOu4wOrnaUGEUGcwUczvXogteWcsSfQJs=
-Message-ID: <46B97673.4060009@gmail.com>
-Date: Wed, 08 Aug 2007 16:53:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Wed, 8 Aug 2007 03:58:46 -0400
+Date: Wed, 8 Aug 2007 01:01:31 -0700
+From: Greg KH <greg@kroah.com>
+To: S?ren Hauberg <hauberg@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Support for the Evolution Scorpion Robot
+Message-ID: <20070808080131.GA7002@kroah.com>
+References: <ed7dcf450708080024s719a4e92x782cafbe5811c012@mail.gmail.com>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Cornelia Huck <cornelia.huck@de.ibm.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-References: <11860582832964-git-send-email-htejun@gmail.com>	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com> <m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ed7dcf450708080024s719a4e92x782cafbe5811c012@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Cornelia Huck <cornelia.huck@de.ibm.com> writes:
+On Wed, Aug 08, 2007 at 09:24:35AM +0200, S?ren Hauberg wrote:
+> Hi,
+>   I'm currently running a patched version of 2.6.20 in order to use
+> the Evolution Scorpion robot. For this robot to work I need to patch
+> the kernel with a fairly simple patch that I'm attaching in case you
+> want to apply it.
 > 
->> My udev failed to create /dev/dasd* so it cannot mount root :( I'm
->> currently trying to find out what causes this, may take some time...
+> Cheers,
+> S?ren
 > 
-> Oh weird.
-> 
-> No great surprise that something goofed up given how many
-> patches were involved.  Still there shouldn't have been
-> any user visible differences in the patchset.
-> 
-> If you can narrow down which patch caused the problem that would be
-> great.
-> 
-> Otherwise I guess I will have to start looking at the code and
-> trying to guess what might have triggered this.
+> P.S. On not subscribed to this list, so please CC me if you have any
+> replies. Thanks.
 
-JFYI, your patchset works fine on my x86-64 test machine.  Corenelia
-tests on a s390 system which does rename/move stuff with its devices and
-usually gets hit first if something is wrong.  I'll scream if I find
-anything suspicious while reviewing.
+Care to redo the patch as per the Documentation/SubmittingPatches file
+and send a copy to me and the linux-usb-devel mailing list so that we
+can add this to the main kernel tree?
 
-Thanks.
+thanks,
 
--- 
-tejun
+greg k-h
+
