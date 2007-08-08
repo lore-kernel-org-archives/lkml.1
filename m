@@ -1,136 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935207AbXHHOUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935288AbXHHOUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935207AbXHHOUP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932942AbXHHOTm
+	id S935288AbXHHOUm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934432AbXHHOTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:19:42 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:11831 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763613AbXHHOTk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:19:40 -0400
-Message-ID: <46B9D056.9040406@openvz.org>
-Date: Wed, 08 Aug 2007 18:16:54 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 8 Aug 2007 10:19:54 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:57931 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935103AbXHHOTw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:19:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BKl2Hf4C0cys30rnHwJay60DZ45nW7MEL3CZojkMH5LvGDFIWkhCNDdo1TxczoI8TFyTpoF/z6QqO00exgwhgRRtIfxJX7hzNvH5UYcNncLtbcp2/L662q5L5+RvFkTF9/k7iVHBy9ry73gR/+sjIIncq/1tfYq10xvgfwctz54=
+Message-ID: <5d6222a80708080719k2e2723mdf82572624856246@mail.gmail.com>
+Date: Wed, 8 Aug 2007 11:19:50 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 13/25] [PATCH] turn msr.h functions into native versions
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <200708081125.38481.ak@suse.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       linux-arch@vger.kernel.org
-Subject: [PATCH] Cleanup oops/bug reports on i386
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <11865468003673-git-send-email-gcosta@redhat.com>
+	 <11865468043920-git-send-email-gcosta@redhat.com>
+	 <200708081125.38481.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Typically the oops first lines look like this:
+On 8/8/07, Andi Kleen <ak@suse.de> wrote:
+> On Wednesday 08 August 2007 06:19, Glauber de Oliveira Costa wrote:
+>
+> > +static __always_inline long long vget_cycles_sync(void)
+>
+> Why is there a copy of this function now? That seems wrong
 
-BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
- printing eip:
-c049dfbd
-*pde = 00000000
-Oops: 0002 [#1]
-PREEMPT SMP 
-...
+Yeah, the other one is in i386 headers, so We probably wan't to leave
+it there. One option is to move get_cycles_sync to x86_64 headers, and
+then #ifdef just the offending part.
 
-Such output is gained with some ugly if (!nl) printk("\n"); code and
-besides being a waste of lines, this is also annoying to read. The
-following output looks better (and it is how it looks on x86_64):
+> > +             native_read_tscp(&p);
+>
+> The instruction is called rdtscp not read_tscp. Please follow that
 
-BUG: unable to handle kernel NULL pointer dereference at virtual address 00000000
-printing eip: c049dfbd *pde = 00000000
-Oops: 0002 [#1] PREEMPT SMP 
-...
+Although the operation consists in reading tscp. I choose this to be
+consistent with i386, but I have no special feelings about it. I'm
+okay with changing it if you prefer.
 
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> > +#define rdtsc(low, high)                     \
+>
+> This macro can be probably eliminated, no callers in kernel
+>
+>
+Fine.
 
----
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
- arch/i386/kernel/traps.c |   16 ++++------------
- arch/i386/mm/fault.c     |   13 +++++++------
- 2 files changed, 11 insertions(+), 18 deletions(-)
-
-diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
-index a20c7ad..f469d20 100644
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -368,31 +368,23 @@ void die(const char * str, struct pt_reg
- 		local_save_flags(flags);
- 
- 	if (++die.lock_owner_depth < 3) {
--		int nl = 0;
- 		unsigned long esp;
- 		unsigned short ss;
- 
- 		report_bug(regs->eip, regs);
- 
--		printk(KERN_EMERG "%s: %04lx [#%d]\n", str, err & 0xffff, ++die_counter);
-+		printk(KERN_EMERG "%s: %04lx [#%d] ", str, err & 0xffff, ++die_counter);
- #ifdef CONFIG_PREEMPT
--		printk(KERN_EMERG "PREEMPT ");
--		nl = 1;
-+		printk("PREEMPT ");
- #endif
- #ifdef CONFIG_SMP
--		if (!nl)
--			printk(KERN_EMERG);
- 		printk("SMP ");
--		nl = 1;
- #endif
- #ifdef CONFIG_DEBUG_PAGEALLOC
--		if (!nl)
--			printk(KERN_EMERG);
- 		printk("DEBUG_PAGEALLOC");
--		nl = 1;
- #endif
--		if (nl)
--			printk("\n");
-+		printk("\n");
-+
- 		if (notify_die(DIE_OOPS, str, regs, err,
- 					current->thread.trap_no, SIGSEGV) !=
- 				NOTIFY_STOP) {
-diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
-index fece684..93263aa 100644
---- a/arch/i386/mm/fault.c
-+++ b/arch/i386/mm/fault.c
-@@ -537,23 +537,22 @@ no_context:
- 			printk(KERN_ALERT "BUG: unable to handle kernel paging"
- 					" request");
- 		printk(" at virtual address %08lx\n",address);
--		printk(KERN_ALERT " printing eip:\n");
--		printk("%08lx\n", regs->eip);
-+		printk(KERN_ALERT "printing eip: %08lx ", regs->eip);
- 
- 		page = read_cr3();
- 		page = ((__typeof__(page) *) __va(page))[address >> PGDIR_SHIFT];
- #ifdef CONFIG_X86_PAE
--		printk(KERN_ALERT "*pdpt = %016Lx\n", page);
-+		printk("*pdpt = %016Lx ", page);
- 		if ((page >> PAGE_SHIFT) < max_low_pfn
- 		    && page & _PAGE_PRESENT) {
- 			page &= PAGE_MASK;
- 			page = ((__typeof__(page) *) __va(page))[(address >> PMD_SHIFT)
- 			                                         & (PTRS_PER_PMD - 1)];
--			printk(KERN_ALERT "*pde = %016Lx\n", page);
-+			printk(KERN_ALERT "*pde = %016Lx ", page);
- 			page &= ~_PAGE_NX;
- 		}
- #else
--		printk(KERN_ALERT "*pde = %08lx\n", page);
-+		printk("*pde = %08lx ", page);
- #endif
- 
- 		/*
-@@ -567,8 +566,10 @@ no_context:
- 			page &= PAGE_MASK;
- 			page = ((__typeof__(page) *) __va(page))[(address >> PAGE_SHIFT)
- 			                                         & (PTRS_PER_PTE - 1)];
--			printk(KERN_ALERT "*pte = %0*Lx\n", sizeof(page)*2, (u64)page);
-+			printk("*pte = %0*Lx ", sizeof(page)*2, (u64)page);
- 		}
-+
-+		printk("\n");
- 	}
- 
- 	tsk->thread.cr2 = address;
+"The less confident you are, the more serious you have to act."
