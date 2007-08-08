@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937711AbXHHS5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935896AbXHHS6b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937711AbXHHS5S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764744AbXHHS5H
+	id S935896AbXHHS6b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:58:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXHHS6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:57:07 -0400
-Received: from ns.suse.de ([195.135.220.2]:49796 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764112AbXHHS5G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:57:06 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
-Subject: Re: [RFC 04/10] Temporary struct vfs_lookup in file_permission
-Date: Wed, 8 Aug 2007 20:56:20 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, John Johansen <jjohansen@suse.de>,
-       Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-References: <20070808171622.632749741@suse.de> <20070808171643.922193525@suse.de> <20070808175807.GA31221@filer.fsl.cs.sunysb.edu>
-In-Reply-To: <20070808175807.GA31221@filer.fsl.cs.sunysb.edu>
+	Wed, 8 Aug 2007 14:58:19 -0400
+Received: from [212.12.190.253] ([212.12.190.253]:32987 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751135AbXHHS6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:58:18 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: linux-ide@vger.kernel.org
+Subject: Re: Disk spin down issue on shut down/suspend to disk
+Date: Wed, 8 Aug 2007 21:58:32 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708082056.20442.agruen@suse.de>
+Message-Id: <200708082158.32806.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 August 2007 19:58, Josef Sipek wrote:
-> On Wed, Aug 08, 2007 at 07:16:26PM +0200, Andreas Gruenbacher wrote:
-> > Create a temporary struct vfs_lookup in file_permission() instead of
-> > passing a NULL value.
-> > 
-> > Signed-off-by: Andreas Gruenbacher <ag@bestbits.at>
-> > 
-> > ---
-> >  fs/namei.c |   11 ++++++-----
-> >  1 file changed, 6 insertions(+), 5 deletions(-)
-> > 
-> > --- a/fs/namei.c
-> > +++ b/fs/namei.c
-> > @@ -292,14 +292,15 @@ int vfs_permission(struct vfs_lookup *lo
-> >   *
-> >   * Used to check for read/write/execute permissions on an already opened
-> >   * file.
-> > - *
-> > - * Note:
-> > - *	Do not use this function in new code.  All access checks should
-> > - *	be done using vfs_permission().
-> 
-> Should this comment be removed?
+Tejun Heo  wrote:
+> Mark Lord wrote:
+> > Heh.. I haven't instrumented it yet, but I did discover a bit more about
+> > it:
+> >
+> > The Power-Off_Retract_Count incrmenents *only* when there's data in the
+> > on-drive write-cache.  So if I haven't written anything significantly
+> > large before suspending, then it often does NOT increment the retract
+> > counter.
+> >
+> > But if I copy a couple of multi-MB files around and then suspend (to
+> > RAM), the retract count gets incremented.
+> >
+> > So I've now just stuck "hdparm -F /dev/sda" into my suspend script,
+> > and that cures the problem completely for me.  "-F" does a FLUSH_CACHE,
+> > and requires a recent copy of hdparm.
+> >
+> > Perhaps libata should also do a FLUSH_CACHE before any STANDBYNOW
+> > command, prior to entering STR, which is what my script is currently now
+> > doing..
+> >
+> > I'll instrument libata and see what the current sequence is.
+>
+> Hmmmm.. libata should issue FLUSH CACHE on STR too.  sd_suspend() and
+> sd_shutdown() are pretty similar after all.
 
-IMO yes. If vfs_permission() works for a piece of code it's the obvious 
-preference. If on the other hand you really need to check permissions on a 
-file, then why not use this function?
+IMHO, this is a mess because we are essentially trying to work around 
+firmware bugs, which may only be solved by having the kernel load a 
+user-supplied shutdown sequence, instead of hardcoding it into the kernel.
 
-> >   */
-> >  int file_permission(struct file *file, int mask)
-> >  {
-> > -	return permission(file->f_path.dentry->d_inode, mask, NULL);
-> > +	struct vfs_lookup lookup;
-> > +
-> > +	lookup.path = file->f_path;
-> > +	lookup.flags = 0;
-> 
-> I tend to find this little bit cleaner:
-> 
-> struct vfs_lookup lookup = {
-> 	.path	= file->f_path,
-> 	.flags	= 0,
-> };
 
-I didn't use initializers because they initialize the entire data structure. 
-In case of struct vfs_lookup, unless the LOOKUP_OPEN flag is set, then the 
-open_intent doesn't need initialization. We could use a DEFINE_... macro; not 
-sure this would improve anything though.
+Thanks!
 
-> > +
-> > +	return permission(file->f_path.dentry->d_inode, mask, &lookup);
-> >  }
-> >  
-> >  /*
+--
+Al
 
-Thanks,
-Andreas
