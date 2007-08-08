@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936566AbXHHTre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935562AbXHHT72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936566AbXHHTre (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 15:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbXHHTrZ
+	id S935562AbXHHT72 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 15:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760831AbXHHT7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 15:47:25 -0400
-Received: from ns.suse.de ([195.135.220.2]:56210 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756674AbXHHTrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 15:47:24 -0400
-To: ebiederm@xmission.com (Eric W. Biederman)
-Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org, "Mao, Bibo" <bibo.mao@intel.com>
-Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
-References: <1185851569.23149.25.camel@caritas-dev.intel.com>
-	<m1myxdtc19.fsf@ebiederm.dsl.xmission.com>
-	<1186378838.3769.27.camel@caritas-dev.intel.com>
-	<m1d4xyc6v2.fsf@ebiederm.dsl.xmission.com>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 08 Aug 2007 22:41:43 +0200
-In-Reply-To: <m1d4xyc6v2.fsf@ebiederm.dsl.xmission.com>
-Message-ID: <p73y7glg3nc.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 15:59:20 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:63789 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760272AbXHHT7T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 15:59:19 -0400
+Subject: Re: 2.6.22: pcspkr driver no longer loads automatically
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Bill Nottingham <notting@redhat.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dtor@insightbb.com>, Greg KH <greg@kroah.com>
+In-Reply-To: <20070808193220.GB5001@nostromo.devel.redhat.com>
+References: <46B8C8FA.9020100@redhat.com> <46B8D984.7040602@garzik.org>
+	 <46B8E773.5020406@redhat.com>
+	 <3ae72650708071523s24d80ae4v2590c50aea04c850@mail.gmail.com>
+	 <20070808193220.GB5001@nostromo.devel.redhat.com>
+Content-Type: text/plain
+Date: Wed, 08 Aug 2007 22:02:07 +0200
+Message-Id: <1186603327.3584.12.camel@lov.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.11.6.1 
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+spDDvxLoZOYNebW7u4b/EUN9+lghiytdkqWJ
+ GgxUsyPEKZiHBABw203trEFzDaTwi6kAwlqBqCHx9UGSzaViOS
+ aD+qyugKvvtRtuPbDI7xS5pPf3vVR2T
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+On Wed, 2007-08-08 at 15:32 -0400, Bill Nottingham wrote:
+> Kay Sievers (kay.sievers@vrfy.org) said: 
+> > It doesn't have any aliases, so seems it was never autoloaded.
 > 
-> Since there are people actively investigating things like booting
-> OpenBSD via kexec things get even worse. Nothing hardly runs
-> on ia64 so that issue doesn't come up.
+> It was - prior kernels loaded it via the uevent generated from 
+> /devices/platform/pcspkr. Newer kernels seem to never actually
+> trigger a uevent from that (tested with a combination of
+> udevmonitor and 'udevtrigger --subsystem-match=platform'.)
 
-If you want to do a popularity contest I expect there are far more ia64 
-linux users than kexec-of-openbsd users.
+Ah, ok, makes sense. Yeah, that weird "platform devices loads itself by
+the name" thing got disabled in the platform subsystem. It caused
+modprobe loops for other devices.
 
-> As for not using EFI at all.  If we can avoid it/not use it in the
-> dump kernel there is very little point in having it in the primary
-> kernel.
+The whole idea of issuing MODALIAS with plain module names instead of
+aliases can't really work, but the platform maintainer didn't like to
+use the usual aliases and the matches in the modules, for a reason I
+didn't understand while we talked about the problem last time.
 
-One interesting area is to use it for saving oops data. But
-that has to be simple. I'm not sure complicated context switches
-are a good idea here. 
+Kay
 
-However I agree it probably doesn't make sense to do virtual
-mode just for the clock services -- so far we seem to be fine
-just talking to the hardware directly.
-
-> So far there don't seem to be any compelling advantages to running
-> EFI in virtual address mode and several compelling disadvantages
-> included having to change the permissions on the kernels memory
-> map to running EFI in virtual mode.
-
-I don't think it's a big issue to have a few less NX bits. Just
-the original patch for it was ugly.
- 
-> Please let's stick to a physical mode trampoline and only revisit
-> the topic when users start having problems because of the performance
-> hit of going through our trampoline to the EFI runtime services.
-
-So you want to switch to new page tables when calling EFI services
-after boot? 
-
-Potential problems:
-- Interrupts have to be disabled. Is that ok? 
-- When EFI BIOS start crashing how do we set up exception handlers
-for this? 
-
-I guess it would get complex long term. Also doesn't really sound 
-attractive.
-
--Andi
