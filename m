@@ -1,81 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763027AbXHHPZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936010AbXHHPZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763027AbXHHPZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935657AbXHHPZE
+	id S936010AbXHHPZv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935724AbXHHPZG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:25:04 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51395 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759384AbXHHPZC (ORCPT
+	Wed, 8 Aug 2007 11:25:06 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50808 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S935615AbXHHPZD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:25:02 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>, Haren Myneni <hbabu@us.ibm.com>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
-References: <46B73955.2080007@fujitsu-siemens.com>
-	<20070807142928.GA18839@in.ibm.com>
-	<46B8AECA.7050908@fujitsu-siemens.com>
-	<m1ir7qg7kd.fsf@ebiederm.dsl.xmission.com>
-	<46B986D5.2010407@fujitsu-siemens.com>
-Date: Wed, 08 Aug 2007 09:21:23 -0600
-In-Reply-To: <46B986D5.2010407@fujitsu-siemens.com> (Martin Wilck's message of
-	"Wed, 08 Aug 2007 11:03:17 +0200")
-Message-ID: <m1myx2dpcc.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 11:25:03 -0400
+Date: Wed, 8 Aug 2007 16:32:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Paul Fulghum <paulkf@microgate.com>,
+       Laurent Pinchart <laurentp@cse-semaphore.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Serial buffer memory leak
+Message-ID: <20070808163217.2f59fe84@the-village.bc.nu>
+In-Reply-To: <20070808161606.32a40793@the-village.bc.nu>
+References: <200708081158.06843.laurentp@cse-semaphore.com>
+	<20070808144532.5e3a1998@the-village.bc.nu>
+	<1186582307.3394.3.camel@x2.microgate.com>
+	<200708081628.36897.laurentp@cse-semaphore.com>
+	<1186584775.3508.13.camel@x2.microgate.com>
+	<20070808161606.32a40793@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Wilck <martin.wilck@fujitsu-siemens.com> writes:
+On Wed, 8 Aug 2007 16:16:06 +0100
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> Hello Eric,
->
->> How bad is it if you just run with irqpoll in the kdump kernel?
->> If running with irqpoll is usable that is probably preferable
->> to putting in a hardware work around we can survive without.
->
-> Yes, I tried that. No effect.
+> > tty_buffer_flush() needs to wait for buf.flushpending to clear.
 
-Ok.  Later in the thread it sounds like you have retried this and
-irqpoll is working now.  
+> Should probably make the flushpending an atomic bit op to avoid taking
+> and retaking the lock.
 
->> Have you done any looking at moving where the kernel initalizes
->> io_apics?  One of the todo items on the path is to leave
->> io_apic mode enabled and just startup the kernel in io_apic
->> mode.
->
-> I have tried to recover from the "IRR set" situation in several ways by
-> changing setup_IO_APIC_irq(). But I haven't found a way to recover from
-> this situation once disable_IO_APIC() had been called.
+Ok try this for size folks. Use tty->flags bits for the flush status.
+Wait for the flag to clear again before returning
+Fix the doc error noted
+Fix flush of empty queue leaving stale flushpending
 
-Yes.  The long term goal is to remove the need for calling
-disable_IO_APIC(). Because that makes the code simpler etc.
 
-Once we get the kernel to the point where it can start in
-ioapic mode (and not in i8259 mode) we can remove the
-disabled code from the kexec on panic path.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-> I concluded thatthe sequence of events
-> "send INT message - never receive EOI - disable IO-APIC pin"
-> messes up the IO-APIC (at least this specific one in the
-> PCIEx-PCI bridge of the ICH7).
-
-It is quite possible.  I have observed a lot of obscure bugs in the
-corner cases of the state machines, although it is possible
-this is correct behavior and it is just specific to level
-triggered interrupts which are almost exclusively not on
-the first ioapic in a system like you describe.
-
-I suspect the issue is that we never send the EOI message from
-the local apic, and so it waits forever.  Or that we have
-reprogrammed the vectors by the time we send the EOI message
-so that the EOI and the ioapic don't agree on the vector
-number when the  EOI message is sent.  Grumble silly level
-triggered interrupts grumble.
-
-Eric
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1-mm1/drivers/char/tty_io.c linux-2.6.23rc1-mm1/drivers/char/tty_io.c
+--- linux.vanilla-2.6.23rc1-mm1/drivers/char/tty_io.c	2007-07-26 15:02:57.000000000 +0100
++++ linux-2.6.23rc1-mm1/drivers/char/tty_io.c	2007-08-08 16:01:36.843558336 +0100
+@@ -369,25 +369,54 @@
+ }
+ 
+ /**
+- *	tty_buffer_flush		-	flush full tty buffers
++ *	__tty_buffer_flush		-	flush full tty buffers
+  *	@tty: tty to flush
+  *
+- *	flush all the buffers containing receive data
++ *	flush all the buffers containing receive data. Caller must
++ *	hold the buffer lock and must have ensured no parallel flush to
++ *	ldisc is running.
+  *
+- *	Locking: none
++ *	Locking: Caller must hold tty->buf.lock
+  */
+ 
+-static void tty_buffer_flush(struct tty_struct *tty)
++static void __tty_buffer_flush(struct tty_struct *tty)
+ {
+ 	struct tty_buffer *thead;
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&tty->buf.lock, flags);
+ 	while((thead = tty->buf.head) != NULL) {
+ 		tty->buf.head = thead->next;
+ 		tty_buffer_free(tty, thead);
+ 	}
+ 	tty->buf.tail = NULL;
++}
++
++/**
++ *	tty_buffer_flush		-	flush full tty buffers
++ *	@tty: tty to flush
++ *
++ *	flush all the buffers containing receive data. If the buffer is
++ *	being processed by flush_to_ldisc then we defer the processing
++ *	to that function
++ *
++ *	Locking: none
++ */
++ 
++static void tty_buffer_flush(struct tty_struct *tty)
++{
++	unsigned long flags;
++	spin_lock_irqsave(&tty->buf.lock, flags);
++	
++	/* If the data is being pushed to the tty layer then we can't
++	   process it here. Instead set a flag and the flush_to_ldisc
++	   path will process the flush request before it exits */
++	if (test_bit(TTY_FLUSHING, &tty->flags)) {
++		set_bit(TTY_FLUSHPENDING, &tty->flags);
++		spin_unlock_irqrestore(&tty->buf.lock, flags);
++		wait_event(tty->read_wait, test_bit(TTY_FLUSHPENDING, &tty->flags) == 0);
++ 		return;
++	}
++	else
++		__tty_buffer_flush(tty);
+ 	spin_unlock_irqrestore(&tty->buf.lock, flags);
+ }
+ 
+@@ -3594,6 +3622,7 @@
+ 		return;
+ 
+ 	spin_lock_irqsave(&tty->buf.lock, flags);
++	set_bit(TTY_FLUSHING, &tty->flags);	/* So we know a flush is running */
+ 	head = tty->buf.head;
+ 	if (head != NULL) {
+ 		tty->buf.head = NULL;
+@@ -3607,6 +3636,11 @@
+ 				tty_buffer_free(tty, tbuf);
+ 				continue;
+ 			}
++			/* Ldisc or user is trying to flush the buffers
++			   we are feeding to the ldisc, stop feeding the 
++			   line discipline as we want to empty the queue */
++			if (test_bit(TTY_FLUSHPENDING, &tty->flags))
++				break;
+ 			if (!tty->receive_room) {
+ 				schedule_delayed_work(&tty->buf.work, 1);
+ 				break;
+@@ -3620,8 +3654,16 @@
+ 			disc->receive_buf(tty, char_buf, flag_buf, count);
+ 			spin_lock_irqsave(&tty->buf.lock, flags);
+ 		}
++		/* Restore the queue head */
+ 		tty->buf.head = head;
+ 	}
++	/* We may have a deferred request to flush the input buffer,
++	   if so pull the chain under the lock and empty the queue */
++	if (test_bit(TTY_FLUSHPENDING, &tty->flags)) {
++		__tty_buffer_flush(tty);
++		clear_bit(TTY_FLUSHPENDING, &tty->flags);
++	}
++	clear_bit(TTY_FLUSHING, &tty->flags);
+ 	spin_unlock_irqrestore(&tty->buf.lock, flags);
+ 
+ 	tty_ldisc_deref(disc);
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1-mm1/include/linux/tty.h linux-2.6.23rc1-mm1/include/linux/tty.h
+--- linux.vanilla-2.6.23rc1-mm1/include/linux/tty.h	2007-07-26 15:02:04.000000000 +0100
++++ linux-2.6.23rc1-mm1/include/linux/tty.h	2007-08-08 16:00:28.089010616 +0100
+@@ -274,6 +262,8 @@
+ #define TTY_PTY_LOCK 		16	/* pty private */
+ #define TTY_NO_WRITE_SPLIT 	17	/* Preserve write boundaries to driver */
+ #define TTY_HUPPED 		18	/* Post driver->hangup() */
++#define TTY_FLUSHING		19	/* Flushing to ldisc in progress */
++#define TTY_FLUSHPENDING	20	/* Queued buffer flush pending */
+ 
+ #define TTY_WRITE_FLUSH(tty) tty_write_flush((tty))
+ 
