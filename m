@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935969AbXHHR51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936978AbXHHR6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935969AbXHHR51 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762760AbXHHR5Q
+	id S936978AbXHHR6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbXHHR6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:57:16 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38089 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762506AbXHHR5Q (ORCPT
+	Wed, 8 Aug 2007 13:58:17 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:50554 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752719AbXHHR6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:57:16 -0400
-Date: Wed, 8 Aug 2007 10:57:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Matt Mackall <mpm@selenic.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
-In-Reply-To: <20070808103946.4cece16c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0708081050590.12652@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl> <20070806103658.603735000@chello.nl>
- <Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com>
- <20070808014435.GG30556@waste.org> <Pine.LNX.4.64.0708081004290.12652@schroedinger.engr.sgi.com>
- <20070808103946.4cece16c.akpm@linux-foundation.org>
+	Wed, 8 Aug 2007 13:58:16 -0400
+Date: Wed, 8 Aug 2007 13:58:07 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Andreas Gruenbacher <agruen@suse.de>
+Cc: linux-kernel@vger.kernel.org, John Johansen <jjohansen@suse.de>,
+       Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: Re: [RFC 04/10] Temporary struct vfs_lookup in file_permission
+Message-ID: <20070808175807.GA31221@filer.fsl.cs.sunysb.edu>
+References: <20070808171622.632749741@suse.de> <20070808171643.922193525@suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070808171643.922193525@suse.de>
+User-Agent: Mutt/1.5.16 (2007-07-16)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007, Andrew Morton wrote:
+On Wed, Aug 08, 2007 at 07:16:26PM +0200, Andreas Gruenbacher wrote:
+> Create a temporary struct vfs_lookup in file_permission() instead of
+> passing a NULL value.
+> 
+> Signed-off-by: Andreas Gruenbacher <ag@bestbits.at>
+> 
+> ---
+>  fs/namei.c |   11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+> 
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -292,14 +292,15 @@ int vfs_permission(struct vfs_lookup *lo
+>   *
+>   * Used to check for read/write/execute permissions on an already opened
+>   * file.
+> - *
+> - * Note:
+> - *	Do not use this function in new code.  All access checks should
+> - *	be done using vfs_permission().
 
-> 3.  Perform page reclaim from hard IRQ context.  Pretty simple to
-> implement, most of the work would be needed in the rmap code.  It might be
-> better to make it opt-in via a new __GFP_flag.
+Should this comment be removed?
 
-In a hardirq context one is bound to a processor and through the slab 
-allocator to a slab from which one allocates objects. The slab is per cpu 
-and so the slab is reserved for the current context. Nothing can take 
-objects away from it. The modifications here would not be needed for that 
-context.
+>   */
+>  int file_permission(struct file *file, int mask)
+>  {
+> -	return permission(file->f_path.dentry->d_inode, mask, NULL);
+> +	struct vfs_lookup lookup;
+> +
+> +	lookup.path = file->f_path;
+> +	lookup.flags = 0;
 
-I think in general irq context reclaim is doable. Cannot see obvious 
-issues on a first superficial pass through rmap.c. The irq holdoff would 
-be pretty long though which may make it unacceptable.
+I tend to find this little bit cleaner:
 
+struct vfs_lookup lookup = {
+	.path	= file->f_path,
+	.flags	= 0,
+};
+
+> +
+> +	return permission(file->f_path.dentry->d_inode, mask, &lookup);
+>  }
+>  
+>  /*
+
+-- 
+Humans were created by water to transport it upward.
