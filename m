@@ -1,93 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763485AbXHHImm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbXHHIv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763485AbXHHImm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:42:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758098AbXHHImc
+	id S1760246AbXHHIv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 04:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbXHHIvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:42:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:62312 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbXHHImb (ORCPT
+	Wed, 8 Aug 2007 04:51:48 -0400
+Received: from rv-out-0910.google.com ([209.85.198.184]:61598 "EHLO
+	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbXHHIvr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:42:31 -0400
+	Wed, 8 Aug 2007 04:51:47 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
-        b=uXdVHa3Ndag6pn9oF+mZWgXBldOZ0USMTLMeBWk3+kNaaQ4zZ9HjYgdT64TijLwR2iDmmp7b93TclzmYLDyBuo6NaNwuLW2euXpGM+/TDB5B1m1cdP4/th8tWGeezUdA2g2FnRjUibHNvi7a16BgZlSoJ0dGdjBk+9QOU4lGhrQ=
-Date: Wed, 8 Aug 2007 16:43:34 +0000
-From: Dave Young <hidave.darkstar@gmail.com>
-To: hmh@hmh.eng.br
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] thinkpad acpi module_exit fix
-Message-ID: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
-Mime-Version: 1.0
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=ugl2cSFnKfJ0o8CMSd7+BJI0ZNbcNFhN5BKqUFmAQ9+PAuxKjWagED8+DlX5rjwqF7mB1M/R+jdhLB3Z62TnPKq11XbbMj4JxD+7zcjAOwioD6oQ+10fZJ/nfQI2zk1yiESVA6WVafeBGKS08Y/ORQc8GUv5Ph3p8LJM1vOGSeI=
+Date: Wed, 8 Aug 2007 17:51:33 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
+       gregkh@suse.de
+Subject: Re: [PATCH 17/25] sysfs: Rewrite rename in terms of sysfs dirents
+Message-ID: <20070808085133.GI13674@htj.dyndns.org>
+References: <m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com> <m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com> <m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com> <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com> <m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com> <m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com> <m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com> <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com> <m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com> <m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>  int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+>  {
+> -	struct sysfs_dirent *sd;
+> +	struct sysfs_dirent *sd = kobj->sd;
+>  	struct dentry *parent = NULL;
+>  	struct dentry *old_dentry = NULL, *new_dentry = NULL;
+>  	const char *dup_name = NULL;
+> @@ -863,42 +863,41 @@ int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+>  
+>  	mutex_lock(&sysfs_rename_mutex);
+>  
+> +	error = 0;
+> +	if (strcmp(sd->s_name, new_name) == 0)
+> +		goto out;	/* nothing to rename */
+> +
+>  	/* get the original dentry */
+>  	old_dentry = sysfs_get_dentry(sd);
+>  	if (IS_ERR(old_dentry)) {
+>  		error = PTR_ERR(old_dentry);
+> +		goto out;
+>  	}
+>  
+>  	parent = old_dentry->d_parent;
+>  
+>  	/* lock parent and get dentry for new name */
+>  	mutex_lock(&parent->d_inode->i_mutex);
+> +	mutex_lock(&sysfs_mutex);
+>  
+> +	error = -EEXIST;
+> +	if (sysfs_find_dirent(sd->s_parent, new_name))
+>  		goto out_unlock;
+>  
+> +	error = -ENOMEM;
+> +	new_dentry = d_alloc_name(parent, new_name);
+> +	if (!new_dentry)
+>  		goto out_unlock;
+>  
+>  	/* rename kobject and sysfs_dirent */
+>  	error = -ENOMEM;
+>  	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
+>  	if (!new_name)
+> +		goto out_unlock;
+>  
+>  	error = kobject_set_name(kobj, "%s", new_name);
+>  	if (error)
+> +		goto out_unlock;
+>  
+>  	mutex_lock(&sysfs_mutex);
 
-[This fix is not very good for the global variable, any comments are
-welcome.]
+sysfs_mutex is being grabbed twice and unlocked twice later.
 
-The thinkpad_acpi module_init fail out entrace is not very properly. if
-failing before register driver or before create sysfs file, the
-module_exit will try to remove nonexist sysfs files, the kernel will
-oops.
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
-
----
-drivers/misc/thinkpad_acpi.c |   19 +++++++++++++------
-1 file changed, 13 insertions(+), 6 deletions(-)
-
-diff -upr linux/drivers/misc/thinkpad_acpi.c linux.new/drivers/misc/thinkpad_acpi.c
---- linux/drivers/misc/thinkpad_acpi.c	2007-08-08 16:28:19.000000000 +0000
-+++ linux.new/drivers/misc/thinkpad_acpi.c	2007-08-08 16:35:11.000000000 +0000
-@@ -91,6 +91,8 @@ MODULE_LICENSE("GPL");
- 
- /* Please remove this in year 2009 */
- MODULE_ALIAS("ibm_acpi");
-+static int sysfs_ret = 1;
-+static int driver_ret = 1;
- 
- /*
-  * DMI matching for module autoloading
-@@ -4662,14 +4664,14 @@ static int __init thinkpad_acpi_module_i
- 	}
- 	proc_dir->owner = THIS_MODULE;
- 
--	ret = platform_driver_register(&tpacpi_pdriver);
--	if (ret) {
-+	driver_ret = platform_driver_register(&tpacpi_pdriver);
-+	if (driver_ret) {
- 		printk(IBM_ERR "unable to register platform driver\n");
- 		thinkpad_acpi_module_exit();
- 		return ret;
- 	}
--	ret = tpacpi_create_driver_attributes(&tpacpi_pdriver.driver);
--	if (ret) {
-+	sysfs_ret = tpacpi_create_driver_attributes(&tpacpi_pdriver.driver);
-+	if (sysfs_ret) {
- 		printk(IBM_ERR "unable to create sysfs driver attributes\n");
- 		thinkpad_acpi_module_exit();
- 		return ret;
-@@ -4756,8 +4758,13 @@ static void thinkpad_acpi_module_exit(vo
- 	if (tpacpi_pdev)
- 		platform_device_unregister(tpacpi_pdev);
- 
--	tpacpi_remove_driver_attributes(&tpacpi_pdriver.driver);
--	platform_driver_unregister(&tpacpi_pdriver);
-+	if(!sysfs_ret){
-+		tpacpi_remove_driver_attributes(&tpacpi_pdriver.driver);
-+	}
-+
-+	if(!driver_ret){
-+		platform_driver_unregister(&tpacpi_pdriver);
-+	}
- 
- 	if (proc_dir)
- 		remove_proc_entry(IBM_PROC_DIR, acpi_root_dir);
+-- 
+tejun
