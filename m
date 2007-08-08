@@ -1,45 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934722AbXHHGvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757763AbXHHHHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934722AbXHHGvq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 02:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbXHHGvd
+	id S1757763AbXHHHHo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbXHHHHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 02:51:33 -0400
-Received: from rv-out-0910.google.com ([209.85.198.186]:39477 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758928AbXHHGvb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 02:51:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=FIL61xWJDB78eTLe8eI/RmYHhCC/XdN4PEAK1WHt/y9ulnUyOd6cx7pxLv6x2FQzzCPdYMcPXA09TXpHOVuG5yreSmet7Y7mXxxLgxftYXn8Sso2/cStAoeDCNz3lXRp0LyxJ7f97YWu4QnBFO0irCvJLQhxFgHZfBvGUFX87b8=
-Date: Wed, 8 Aug 2007 15:51:23 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 05/25] sysfs: In sysfs_lookup don't open code sysfs_find_dirent
-Message-ID: <20070808065123.GY13674@htj.dyndns.org>
-References: <11860582832964-git-send-email-htejun@gmail.com> <m1643rkqb6.fsf@ebiederm.dsl.xmission.com> <m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com> <m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com> <m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com> <m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com> <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 8 Aug 2007 03:07:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43463 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754102AbXHHHHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 03:07:25 -0400
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
+       mingo@elte.hu, chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
+       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
+       lguest@ozlabs.org, Glauber de Oliveira Costa <gcosta@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH 3/25] [PATCH] irq_flags / halt routines
+Date: Wed,  8 Aug 2007 01:18:50 -0300
+Message-Id: <11865467662182-git-send-email-gcosta@redhat.com>
+X-Mailer: git-send-email 1.4.4.2
+In-Reply-To: <1186546763582-git-send-email-gcosta@redhat.com>
+References: <11865467522495-git-send-email-gcosta@redhat.com> <11865467592921-git-send-email-gcosta@redhat.com> <1186546763582-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:12:02PM -0600, Eric W. Biederman wrote:
-> 
-> This is a small cleanup patch that makes the code just
-> a little bit cleaner.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+This patch turns the irq_flags and halt routines into the
+native versions.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ include/asm-x86_64/irqflags.h |   32 +++++++++++++++++++++++++++-----
+ 1 files changed, 27 insertions(+), 5 deletions(-)
 
+diff --git a/include/asm-x86_64/irqflags.h b/include/asm-x86_64/irqflags.h
+index 86e70fe..4ba5241 100644
+--- a/include/asm-x86_64/irqflags.h
++++ b/include/asm-x86_64/irqflags.h
+@@ -16,6 +16,22 @@
+  * Interrupt control:
+  */
+ 
++#ifdef CONFIG_PARAVIRT
++#include <asm/paravirt.h>
++#  ifdef CONFIG_X86_VSMP
++static inline int raw_irqs_disabled_flags(unsigned long flags)
++{
++	return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
++}
++#  else
++static inline int raw_irqs_disabled_flags(unsigned long flags)
++{
++	return !(flags & X86_EFLAGS_IF);
++}
++#  endif
++
++#else /* PARAVIRT */
++
+ static inline unsigned long __raw_local_save_flags(void)
+ {
+ 	unsigned long flags;
+@@ -31,9 +47,6 @@ static inline unsigned long __raw_local_save_flags(void)
+ 	return flags;
+ }
+ 
+-#define raw_local_save_flags(flags) \
+-		do { (flags) = __raw_local_save_flags(); } while (0)
+-
+ static inline void raw_local_irq_restore(unsigned long flags)
+ {
+ 	__asm__ __volatile__(
+@@ -88,6 +101,10 @@ static inline int raw_irqs_disabled_flags(unsigned long flags)
+ 
+ #endif
+ 
++#endif /* CONFIG_PARAVIRT */
++
++#define raw_local_save_flags(flags) \
++		do { (flags) = __raw_local_save_flags(); } while (0)
+ /*
+  * For spinlocks, etc.:
+  */
+@@ -115,7 +132,7 @@ static inline int raw_irqs_disabled(void)
+  * Used in the idle loop; sti takes one instruction cycle
+  * to complete:
+  */
+-static inline void raw_safe_halt(void)
++static inline void native_raw_safe_halt(void)
+ {
+ 	__asm__ __volatile__("sti; hlt" : : : "memory");
+ }
+@@ -124,11 +141,16 @@ static inline void raw_safe_halt(void)
+  * Used when interrupts are already enabled or to
+  * shutdown the processor:
+  */
+-static inline void halt(void)
++static inline void native_halt(void)
+ {
+ 	__asm__ __volatile__("hlt": : :"memory");
+ }
+ 
++#ifndef CONFIG_PARAVIRT
++#define raw_safe_halt	native_raw_safe_halt
++#define halt		native_halt
++#endif /* ! CONFIG_PARAVIRT */
++
+ #else /* __ASSEMBLY__: */
+ # ifdef CONFIG_TRACE_IRQFLAGS
+ #  define TRACE_IRQS_ON		call trace_hardirqs_on_thunk
 -- 
-tejun
+1.4.4.2
+
