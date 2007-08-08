@@ -1,82 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760839AbXHHQLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762133AbXHHQPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760839AbXHHQLd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXHHQL0
+	id S1762133AbXHHQPU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753425AbXHHQPJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:11:26 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39033 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751509AbXHHQLZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:11:25 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-References: <1185851583.23149.30.camel@caritas-dev.intel.com>
-	<200708071154.23150.ak@suse.de>
-	<1186561082.4430.63.camel@caritas-dev.intel.com>
-	<200708081208.01080.ak@suse.de>
-Date: Wed, 08 Aug 2007 10:10:32 -0600
-In-Reply-To: <200708081208.01080.ak@suse.de> (Andi Kleen's message of "Wed, 8
-	Aug 2007 12:08:00 +0200")
-Message-ID: <m1tzrac8hz.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 12:15:09 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:53541 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751089AbXHHQPH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 12:15:07 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
+       kamezawa.hiroyu@jp.fujitsu.com, clameter@sgi.com
+Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Message-Id: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie>
+Subject: [PATCH 0/3] Use one zonelist per node instead of multiple zonelists v2
+Date: Wed,  8 Aug 2007 17:15:04 +0100 (IST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+Changelog since V1
+  o Break up the patch into 3 patches
+  o Introduce iterators for zonelists
+  o Performance regression test
 
->> The needed code changing is minimal. In fact, I can boot 32bit Linux
->> kernel on my x86_64 EFI machine. With setup as follow:
->>
->> 1. Apply the efi-fb.patch
-> Just for the frame buffer, right?
->
->> 2. make efi fb driver not depend on EFI
->> 3. configure kernel as follow:
->>    a. CONFIG_EFI is turned off
->>    b. CONFIG_FB_EFI is turned on
->
-> Hmm, how does the 32bit kernel know where the e820 map is passed then?
-> With CONFIG_EFI turned off it will just ask the real mode BIOS I think
-> and I doubt elilo simulates that.
+The following patches replace multiple zonelists per node with one zonelist
+that is filtered based on the GFP flags. The patches as a set fix a bug
+with regard to the use of MPOL_BIND and ZONE_MOVABLE. With this patchset,
+the MPOL_BIND will apply to the two highest zones when the highest zone
+is ZONE_MOVABLE. This should be considered as an alternative fix for the
+MPOL_BIND+ZONE_MOVABLE in 2.6.23 to the previously discussed hack that
+filters only custom zonelists. As a bonus, the patchset reduces the cache
+footprint of the kernel and should improve performance in a number of cases.
 
-This is the classic skip the 16bit code and enter the kernel
-in 32bit mode filling in the fields that the 16bit mode code would
-have filled in the same way approach.
+The first patch cleans up an inconsitency where direct reclaim uses
+zonelist->zones where other places use zonelist.
 
-It isn't clearly documented as a public interface but is the way
-everything without a classic x86 BIOS has been booting for quite a
-while.  We can even reasonably handle Xen & lguest this way.  Dotting
-the last couple of i's and crossing the last couple of t's is a pain
-to make it a really solid and documented interface but I haven't
-seen any real opposition to it.
+The second patch replaces multiple zonelists with one zonelist that is
+filtered.
 
+The final patch is a fix that depends on the previous two patches. The
+patch changes policy zone so that the MPOL_BIND policy gets applied
+to the two highest populated zones when the highest populated zone is
+ZONE_MOVABLE. Otherwise, MPOL_BIND only applies to the highest populated zone.
 
+The tests passed regression tests with numactltest. Performance results
+varied depending on the machine configuration but were usually small
+performance gains. The new algorithm relies heavily on the implementation
+of zone_idx which is currently pretty expensive. Experiments to optimise
+this have shown significant improvements for this algorithm, but is beyond
+the scope of this patchset. Due to the nature of the change, the results
+for other people are likely to vary - it'll usually win but occasionally lose.
 
-On the other side since EFI doesn't not seem to have dual mode
-interfaces I think this thread makes a very good case for not using
-efi_enter_virtual_mode.  Always using a trampoline and keeping EFI
-at it's original physical addresses. 
+In real workloads the gain/loss will depend on how much the userspace
+portion of the benchmark benefits from having more cache available due
+to reduced referencing of zonelists. I expect it'll be more noticable on
+x86_64 with many zones than on IA64 which typically would only have one
+active zonelist-per-node.
 
-A trampoline switching to physical mode and maybe doing a 32->64
-or 64->32 bit mode switch isn't that hard and should not be noticeably
-slower then anything else.  Plus it makes EFI much more useful.
+These are the range of performance losses/gains I found when running against
+2.6.23-rc1-mm2. The set and these machines are a mix of i386, x86_64 and
+ppc64 both NUMA and non-NUMA.
 
+Total CPU time on Kernbench: -0.20% to  3.70%
+Elapsed   time on Kernbench: -0.32% to  3.62%
+page_test from aim9:         -2.17% to 12.42%
+brk_test  from aim9:         -6.03% to 11.49%
+fork_test from aim9:         -2.30% to  5.42%
+exec_test from aim9:         -0.68% to  3.39%
+Size reduction of pg_dat_t:   0     to  7808 bytes (depends on alignment)
 
-I agree with Andi that the variable services are more interesting
-then reboots or setting the CMOS both of which we can talk to the
-hardware directly to handle.
+The TBench figures were too variable between runs to draw conclusions from but
+there didn't appear to be any regressions there. The hackbench results for both
+sockets and pipes was within noise. I haven't gone though lmbench.
 
-Eric
+These three patches are a standalone set which address the MPOL_BIND problem
+with ZONE_MOVABLE as well as reducing memory usage and in many cases the
+cache footprint of the kernel.  They should be considered as a bug fix due to
+the MPOL_BIND fixup.
 
-p.s.  On future patches that update the x86 boot protocol please
-also copy HPA.  Thanks.
+If these patches are accepted, the follow-on work would entail;
+
+o Encode zone_id in the zonelist pointers to avoid zone_idx() (Christoph's idea)
+o If zone_id works out, eliminate z_to_n from the zonelist cache as unnecessary
+o Remove bind_zonelist() (Patch in progress, very messy right now)
+o Eliminate policy_zone (Trickier)
+
+Comments?
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
