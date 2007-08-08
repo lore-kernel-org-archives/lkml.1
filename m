@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934156AbXHHKWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759963AbXHHK1P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934156AbXHHKWH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 06:22:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbXHHKVd
+	id S1759963AbXHHK1P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 06:27:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbXHHK1A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 06:21:33 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41642
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754598AbXHHKVb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 06:21:31 -0400
-Date: Wed, 08 Aug 2007 03:21:31 -0700 (PDT)
-Message-Id: <20070808.032131.35507346.davem@davemloft.net>
-To: heiko.carstens@de.ibm.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au
-Subject: Re: [patch] ipvs: force read of atomic_t in while loop
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com>
-References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 8 Aug 2007 06:27:00 -0400
+Received: from ns2.suse.de ([195.135.220.15]:50210 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751077AbXHHK06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 06:26:58 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Nick Piggin <npiggin@suse.de>
+Subject: Re: [patch 2/2] x86_64: ticket lock spinlock
+Date: Wed, 8 Aug 2007 12:26:55 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, linux-arch@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20070808042234.GE11018@wotan.suse.de> <20070808042444.GF11018@wotan.suse.de>
+In-Reply-To: <20070808042444.GF11018@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708081226.55651.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date: Wed, 8 Aug 2007 11:33:00 +0200
 
-> Just saw this while grepping for atomic_reads in a while loops.
-> Maybe we should re-add the volatile to atomic_t. Not sure.
+>   *
+>   * (the type definitions are in asm/spinlock_types.h)
+>   */
+>  
+> +#if (NR_CPUS > 256)
+> +#error spinlock supports a maximum of 256 CPUs
+> +#endif
+> +
+>  static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
+>  {
+> -	return *(volatile signed int *)(&(lock)->slock) <= 0;
+> +	int tmp = *(volatile signed int *)(&(lock)->slock);
 
-I think whatever the choice, it should be done consistently
-on every architecture.
+Why is slock not volatile signed int in the first place? 
 
-It's just asking for trouble if your arch does it differently from
-every other.
+> -	int oldval;
+> +	short tmp;
+> +        short oldval;
+
+Broken white space?
+
+
+-Andi
