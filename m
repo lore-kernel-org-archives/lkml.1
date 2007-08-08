@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760337AbXHHIkV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764797AbXHHIkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760337AbXHHIkV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:40:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751436AbXHHIkE
+	id S1764797AbXHHIkl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 04:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbXHHIkb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:40:04 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:46213 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbXHHIkC (ORCPT
+	Wed, 8 Aug 2007 04:40:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:55896 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751436AbXHHIk3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:40:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=ro96WF0frmguEOLUKmhnw0HcjDky6ax6TYAkolTtks26n3ft0c6mLBaPUJIfrpE6qNwfg0wfnq2+xoDDTQagYi6vNZSUV4OCqb9H4tAB3tmSwcmakAQH+vL2HKf1fJR6ETD78lJOm57FxcMGzbSkgG8GPcS6CEg901uyW++bLtQ=
-Date: Wed, 8 Aug 2007 17:39:53 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 15/25] vfs: Remove lookup_one_len_kern
-Message-ID: <20070808083953.GH13674@htj.dyndns.org>
-References: <m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com> <m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com> <m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com> <m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com> <m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com> <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com> <m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com> <m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com> <m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com> <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 8 Aug 2007 04:40:29 -0400
+Date: Wed, 8 Aug 2007 09:47:48 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Harvey Chapman <hchapman-linux-kernel@3gfp.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] serial inter-character timeout usage with async io
+Message-ID: <20070808094748.72c4ff22@the-village.bc.nu>
+In-Reply-To: <46B92869.4000400@3gfp.com>
+References: <46B8F7FE.3090904@3gfp.com>
+	<20070808021147.10d0e752@the-village.bc.nu>
+	<46B92869.4000400@3gfp.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:25:05PM -0600, Eric W. Biederman wrote:
-> 
-> Now that sysfs no longer uses lookup_one_len_kern the function has
-> no users so remove it from the kernel.  Making namei.c just a little
-> easier to read.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+> A Linux program is connected via serial port to some other serial device
+> using asynchronous I/O and the other serial device sends a 150 byte
+> sequence to the Linux program. The Linux program will receive 18
+> intermediate SIGIOs (one for each 8-byte threshold interrupt generated
+> by the UART) followed by 1 final inter-character timeout (when the UART
+> FIFO contains the last 6 bytes). The program upon each SIGIO would
+> read() 8 bytes and do some parsing of the data buffer and realize that
+> the whole sequence had not yet been received. Repeat 17 more times in
+> this example.
 
-Oh.. you're killing lookup_one_len_kern().  In that case, I think the
-previous one is okay too.
+That seems a particularly odd way to implement block I/O. Just use a
+thread for this and the VMIN/VTIME functionality in the n_tty layer -
+that is why it is there.
 
-Acked-by: Tejun Heo <htejun@gmail.com>
+> I agree. However, the inter-character timeout is present (to the best of
+> my knowledge and google's) in all serial UARTs from the 16550A onward
+> (starting around 1994 and Windows 3.1). Before that, the IIR timeout
 
--- 
-tejun
+Almost all our drivers are not 16550A. A large part of the serial world
+is now USB and current PCs (especially laptops) often don't include any
+16550A devices at all.
+
+Your changes seem to be - hardware specific, not supportable by many
+devices, and designed to improve a particularly crazy way of handling the
+I/O in the first place. That doesn't make a good candidate for the
+upstream kernel.
+
+Alan
