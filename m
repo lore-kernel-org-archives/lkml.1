@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbXHHEPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762998AbXHHERi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754493AbXHHEPp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 00:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750768AbXHHEPf
+	id S1762998AbXHHERi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 00:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbXHHER1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 00:15:35 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:56431 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750734AbXHHEPd (ORCPT
+	Wed, 8 Aug 2007 00:17:27 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:60735 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750830AbXHHER0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 00:15:33 -0400
-Date: Tue, 7 Aug 2007 21:14:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] msleep() with hrtimers
-Message-Id: <20070807211401.7078c12d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0708080535140.1817@scrub.home>
-References: <15327.1186166232@lwn.net>
-	<20070807124009.9f6c2247.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0708080115020.1817@scrub.home>
-	<20070807162940.74f536f8.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0708080535140.1817@scrub.home>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 8 Aug 2007 00:17:26 -0400
+Message-ID: <46B943D3.9020207@lwfinger.net>
+Date: Tue, 07 Aug 2007 23:17:23 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Error message from device_rename in drivers/base/core.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 05:47:02 +0200 (CEST) Roman Zippel <zippel@linux-m68k.org> wrote:
+I am getting the following error message from drivers/base/core.c:
 
-> 
-> 
-> On Tue, 7 Aug 2007, Andrew Morton wrote:
-> 
-> > On Wed, 8 Aug 2007 01:16:49 +0200 (CEST)
-> > Roman Zippel <zippel@linux-m68k.org> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > On Tue, 7 Aug 2007, Andrew Morton wrote:
-> > > 
-> > > > I'd be surprised if there was significant overhead - the maximum frequency
-> > > > at which msleep() can be called is 1000Hz.  We'd need an awful lot of
-> > > > overhead for that to cause problems, surely?
-> > > > 
-> > > > <thinks he's missing something again>
-> > > 
-> > > _Anybody_ has yet to answer what's wrong with adding a nanosleep() and 
-> > > using that instead.
-> > > 
-> > 
-> > You mean that the implementation could be simplified if msleep() were to
-> > simply call do_nanosleep()?
-> 
-> The current msleep is fine and doesn't need any "fixing".
-> Not all the world is i386, _please_ keep hrtimer usage where it's 
-> required. Simple timer should be given preference unless the higher 
-> resolution is really needed, which is not the case here.
+net eth1: device_rename: sysfs_create_symlink failed (-17)
 
-Hang on.  Having msleep(1) sleep for 20 milliseconds is really awful
-behaviour.  Possibly worse is the fact that with other configs, it will
-delay for eight milliseconds.  Or two.  That's an order of magnitude of
-unpredictability which can actually cause driver breakage.
+Upon investigation, the call generating the error is renaming 'eth1' to 'eth1'. The following patch 
+suppresses the error.
 
-Fixing that *bug* is a good thing.  I see no reason why we should "keep
-hrtimer usage where it is required"?  The implementation details are hidden
-from the caller.
 
-It seems to be a sensible change to me and I fail to understand the
-objection.
+Index: wireless-dev/drivers/base/core.c
+===================================================================
+--- wireless-dev.orig/drivers/base/core.c
++++ wireless-dev/drivers/base/core.c
+@@ -1256,7 +1256,7 @@ int device_rename(struct device *dev, ch
+  		sysfs_remove_link(&dev->class->subsys.kobj, old_device_name);
+  		error = sysfs_create_link(&dev->class->subsys.kobj, &dev->kobj,
+  					  dev->bus_id);
+-		if (error) {
++		if (error && memcmp(dev->bus_id, new_name, sizeof(new_name))) {
+  			/* Uh... how to unravel this if restoring can fail? */
+  			dev_err(dev, "%s: sysfs_create_symlink failed (%d)\n",
+  				__FUNCTION__, error);
 
-> so below is a nanosleep implementation based 
-> on Jonathan's patch. This will user give a choice, so there is no need to 
-> force all users to use hrtimer for a simple sleep.
 
-But apart from needlessly fattening the kernel API, that leaves us in the
-current situation where an unknown number of the msleep() callers actually
-care that they are calling a function which by a huge margin fails to do
-what they are asking it to do.  It will take a long time to hunt down all
-the problematic callsites and migrate them to nanosleep().
-
+Larry
