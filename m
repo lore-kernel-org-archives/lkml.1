@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934554AbXHHOJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934603AbXHHOKf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934554AbXHHOJw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763113AbXHHOJk
+	id S934603AbXHHOKf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:10:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760283AbXHHOKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:09:40 -0400
-Received: from ns2.suse.de ([195.135.220.15]:42543 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759864AbXHHOJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:09:39 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: "Huang, Ying" <ying.huang@intel.com>
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-Date: Wed, 8 Aug 2007 16:09:32 +0200
-User-Agent: KMail/1.9.6
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, akpm@linux-foundation.org,
-       "Yinghai Lu" <yhlu.kernel@gmail.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Chandramouli Narayanan" <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-References: <9D7649D18729DE4BB2BD7B494F7FEDC246DC2B@pdsmsx415.ccr.corp.intel.com>
-In-Reply-To: <9D7649D18729DE4BB2BD7B494F7FEDC246DC2B@pdsmsx415.ccr.corp.intel.com>
+	Wed, 8 Aug 2007 10:10:24 -0400
+Received: from namei.org ([69.55.235.186]:41438 "EHLO us.intercode.com.au"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753574AbXHHOKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:10:21 -0400
+Date: Wed, 8 Aug 2007 07:08:25 -0700 (PDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@us.intercode.com.au
+To: "Serge E. Hallyn" <serge@hallyn.com>
+cc: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Andrew Morgan <morgan@kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Andrew Morgan <agm@google.com>, casey@schaufler-ca.com,
+       Andrew Morton <akpm@google.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: file capabilities: clear fcaps on inode change (v3)
+In-Reply-To: <20070808133034.GA2046@vino.hallyn.com>
+Message-ID: <Pine.LNX.4.64.0708080707590.18117@us.intercode.com.au>
+References: <20070807221727.GA12211@sergelap.austin.ibm.com>
+ <1186526285.6625.41.camel@heimdal.trondhjem.org> <20070807231452.GA27198@vino.hallyn.com>
+ <Pine.LNX.4.64.0708071814520.32311@us.intercode.com.au>
+ <20070808133034.GA2046@vino.hallyn.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200708081609.33098.ak@suse.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Instead, elilo collects the needed information
-> defined in include/asm-x86_64/bootsetup.h itself, 
+On Wed, 8 Aug 2007, Serge E. Hallyn wrote:
 
-That's nasty. I must have missed when we declared this a public ABI.
-It's not really designed to be one. Was there public discussion on this?
+> Here is the next version.  This one involved a bit more actual
+> switching of logic so was a bit more nerve-wracking, but it
+> seems to be working correctly now.
 
-I expect we'll have some grief from this in the future.
+Looks good to me.
 
-If it's really done this way we should at least add a version
-number and a boot loader ID like the standard boot protocol
-so that bugs later can be worked around. Also some Documentation
-would be good. And comments. But discussion first.
+Acked-by: James Morris <jmorris@namei.org>
 
--Andi
 
+
+
+-- 
+James Morris
+<jmorris@namei.org>
