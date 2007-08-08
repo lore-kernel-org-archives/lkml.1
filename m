@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1771806AbXHHOuG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHHOxP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1771806AbXHHOuG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:50:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765676AbXHHOt3
+	id S935412AbXHHOxP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:53:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763348AbXHHOxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:49:29 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:40144 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755104AbXHHOt1 (ORCPT
+	Wed, 8 Aug 2007 10:53:00 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:56921
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754316AbXHHOxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:49:27 -0400
-Date: Wed, 8 Aug 2007 16:50:27 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-Message-ID: <20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <46B9D4B8.4050201@gmail.com>
-References: <11860582832964-git-send-email-htejun@gmail.com>
-	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
-	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>
-	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
-	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>
-	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>
-	<20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>
-	<20070808161631.1ccf27fd@gondolin.boeblingen.de.ibm.com>
-	<46B9D4B8.4050201@gmail.com>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	Wed, 8 Aug 2007 10:53:00 -0400
+Subject: Re: Serial buffer memory leak
+From: Paul Fulghum <paulkf@microgate.com>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org
+In-Reply-To: <200708081628.36897.laurentp@cse-semaphore.com>
+References: <200708081158.06843.laurentp@cse-semaphore.com>
+	 <20070808144532.5e3a1998@the-village.bc.nu>
+	 <1186582307.3394.3.camel@x2.microgate.com>
+	 <200708081628.36897.laurentp@cse-semaphore.com>
+Content-Type: text/plain
+Date: Wed, 08 Aug 2007 09:52:55 -0500
+Message-Id: <1186584775.3508.13.camel@x2.microgate.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007 23:35:36 +0900,
-Tejun Heo <htejun@gmail.com> wrote:
+On Wed, 2007-08-08 at 16:28 +0200, Laurent Pinchart wrote:
 
-> Does the attached patch happen to fix the problem?
+> The patch fixes the problem (at least under the test conditions that lead me 
+> to discover it in the first place). Thanks Alan.
 
-Indeed it does; thanks!
+It works here also, but I see a problem.
+
+By deferring the flush, ioctl(TCFLSH) returns immediately
+even though there is possibly still receive data being fed
+to the ldisc.
+
+If this is followed immediately by a read() then the
+application gets unexpected (stale) data defeating the
+purpose of the TCFLSH.
+
+tty_buffer_flush() needs to wait for buf.flushpending to clear.
+
+ 
+--
+Paul Fulghum
+Microgate Systems, Ltd
+
