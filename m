@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933233AbXHHHVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933414AbXHHHV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933233AbXHHHVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760763AbXHHHUP
+	id S933414AbXHHHV2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbXHHHUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:20:15 -0400
-Received: from ns1.suse.de ([195.135.220.2]:57125 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932766AbXHHHUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:20:11 -0400
-Subject: Re: [PATCH] sonypi: Fix initialization warning
-From: Thomas Renninger <trenn@suse.de>
-Reply-To: trenn@suse.de
-To: Len Brown <lenb@kernel.org>
-Cc: Richard Knutsson <ricknu-0@student.ltu.se>,
-       Ben Collins <bcollins@ubuntu.com>, linux-acpi@vger.kernel.org,
-       Stelian Pop <stelian@popies.net>, linux-kernel@vger.kernel.org
-In-Reply-To: <200708071507.33141.lenb@kernel.org>
-References: <46B61F70.90005@student.ltu.se>
-	 <1186343443.3858.46.camel@fanta4.site> <46B62CFE.2010404@student.ltu.se>
-	 <200708071507.33141.lenb@kernel.org>
-Content-Type: text/plain
-Organization: Novell/SUSE
-Date: Wed, 08 Aug 2007 09:20:07 +0200
-Message-Id: <1186557607.8780.85.camel@queen.suse.de>
+	Wed, 8 Aug 2007 03:20:46 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:56648 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932361AbXHHHUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 03:20:43 -0400
+Date: Wed, 8 Aug 2007 09:21:14 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
+Cc: cebbert <cebbert@redhat.com>, mingo <mingo@elte.hu>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
+       torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070808072114.GA1731@ff.dom.local>
+References: <JMEYNL$38C71F6F1D25A7CE82B12729A59CF244@xandmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <JMEYNL$38C71F6F1D25A7CE82B12729A59CF244@xandmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-08-07 at 15:07 -0400, Len Brown wrote:
-> On Sunday 05 August 2007 16:03, Richard Knutsson wrote:
-> > Thomas Renninger wrote:
-> > > On Sun, 2007-08-05 at 21:05 +0200, Richard Knutsson wrote:
-> > >   
-> > >> Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
-> > >> ---
-> > >> Got this from the compiler (gcc (GCC) 4.1.2 20070626 (Red Hat 4.1.2-13)):
-> > >> drivers/char/sonypi.c:1153: warning: initialization from incompatible pointer type
-> > >>
-> > >>
-> > >> diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
-> > >> index 73037a4..2dcd519 100644
-> > >> --- a/drivers/char/sonypi.c
-> > >> +++ b/drivers/char/sonypi.c
-> > >> @@ -1147,10 +1147,15 @@ static int sonypi_acpi_remove(struct acpi_device *device, int type)
-> > >>  	return 0;
-> > >>  }
-> > >>  
-> > >> +static const struct acpi_device_id sonypi_acpi_driver_ids[] = {
-> > >> +        {ACPI_PROCESSOR_HID, 0},
-> > >>     
-> > > This is wrong. You need to take the HID the driver should match for, in
-> > > this case: {"SNY6001", 0 },
-> > >   
-> 
-> like this?
-> 
-> http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commitdiff;h=f7b88ccb63188e775fe02e746c39ed177741cfc7;hp=11604ecf6fb9c2ab0152fbddb7ea2724438ef76e
-> 
-> http://marc.info/?l=linux-acpi&m=118618043526395&w=2
+On Tue, Aug 07, 2007 at 07:16:33PM +0200, Jean-Baptiste Vignaud wrote:
+...
+> So this afternoon i compiled 2.6.23-rc2 with same options as 2.6.23-rc1
+> and edited grub.conf to add nosmp but after reboot the box did not
+> responded. Back home, i saw that the kernel failed because it was unable
+> to find the partitions (mdadm failed, then LVM). After a few tests,
+> removing nosmp let the kernel boot correctly. It seems that even the
+> fedora provided kernels have the same behavior
+> (well at least 2.6.22.1-41.fc7).
 
-Yes.
+Sorry: it seems there is some implementation error or some modules
+don't check CONFIG_SMP enough...
+
+Of course testing this with smp should be precious too.
+Only, after finding some problems, you should consider smp is quite
+a new and complicated technology, at least regarding such old designs
+as 3c905.
+
+BTW: I didn't notice this yesterday, but your forcedeth uses new type
+of irq handling (MSI), so it should explain why it's not affected.
+
+Jean-Baptiste: I'm not sure how much of this testing you can afford?
+If you can spare some time for this and your box isn't for
+'production' it could be very precious to diagnose such reproducible
+bug.
+
+Then, I'd have a few suggestions (you could choose any of them) like:
+- trying these last test patches prepared for Marcin, too (but only
+with kernels 2.6.21 - 2.6.23-rc1),
+- trying to find the last kernel version, which works for you:
+Marcin has done this with successfully using the most professional
+way: git bisect (which btw. I did learn yet), but, IMHO, it could be
+very usable to try a "poor man's" bisect too older kernels like this:
+2.6.18, so to try again this version of previos Fedora, but
+preferably in "vanilla" version (there could be some problems if
+something in your configs or hardware has changed); then if OK:
+2.6.20; if OK 2.6.21-rc1 or -rc2 (there are usually heavy changes
+in the beginning of a cycle); ithen try to jump forward or backward
+around the middle of the range eg. -rc4. You should use each time the
+same, current config and remember to 'make oldconfig' before make.
+
+In my opinion it would be very precious even after some long time,
+so there is no need to hurry and do this now. The most important:
+if nothing has changed with your hardware in the meantime, you
+should find 'the culprit' for sure.
+
+But, if there are any problems about such testing, don't bother!
+It could be really a lot of hard and maybe boring work.
+
+If you would like to read something more about testing (then of
+course my suggestions could occur invalid - I'm a very bad tester
+myself...) you can try this:
+http://www.stardust.webpages.pl/files/handbook/
+
+If you would need some additional advice you can mail me privately
+too (but my response could take a few days). Of course, if your find
+something interresting I'd be glad to know about this, but let's be
+honest - I'm not any authority about these drivers, so cc-ing a
+maintainer should always be more usable.
 
 Thanks,
+Jarek P.
 
-    Thomas
+PS: it would be nice if you could fix your mail program on line
+breaking (or try to do this manually).
 
