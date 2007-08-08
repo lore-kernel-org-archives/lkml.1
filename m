@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935180AbXHHPTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935615AbXHHPU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935180AbXHHPTd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbXHHPTZ
+	id S935615AbXHHPU3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761961AbXHHPUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:19:25 -0400
-Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:45157 "EHLO
-	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754670AbXHHPTY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:19:24 -0400
-Message-ID: <46B9DEFA.1070300@lwfinger.net>
-Date: Wed, 08 Aug 2007 10:19:22 -0500
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Wed, 8 Aug 2007 11:20:15 -0400
+Received: from ns2.suse.de ([195.135.220.15]:51184 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757438AbXHHPUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 11:20:13 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [PATCH] Add ability to print calltraces tighter on i386
+Date: Wed, 8 Aug 2007 17:20:08 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@osdl.org>, linux-arch@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+References: <46B9D08F.8080402@openvz.org> <p73zm12qc8a.fsf@bingen.suse.de> <46B9DCAE.4010009@openvz.org>
+In-Reply-To: <46B9DCAE.4010009@openvz.org>
 MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
-Subject: Re: Error message from device_rename in drivers/base/core.c
-References: <46B943D3.9020207@lwfinger.net>	 <20070807.213724.27783161.davem@davemloft.net>	 <20070808113359.71e77f49@gondolin.boeblingen.de.ibm.com>	 <46B9B5C6.2070100@lwfinger.net>	 <3ae72650708080646k4279e48boc3a77d6454c8d72d@mail.gmail.com>	 <46B9CC44.8000207@lwfinger.net> <1186582491.2573.17.camel@lov.localdomain>
-In-Reply-To: <1186582491.2573.17.camel@lov.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708081720.09034.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Wed, 2007-08-08 at 08:59 -0500, Larry Finger wrote:
->> Kay Sievers wrote:
->>> On 8/8/07, Larry Finger <larry.finger@lwfinger.net> wrote:
->>>> I agree with you, but you and David can fight it out. While finding out where to ask/complain about
->>>> udev, I had a private communication with GregKH. He thinks that a patch to fix this has already been
->>>> pushed through Linus. As Linville's wireless-dev tree is a little behind, I'm waiting to see if it
->>>> gets fixed here by 2.6.23-rc3. If not, I'll talk to the udev/hotplug folks.
->>> Hmm, I can not immediately see how udev could request the renaming to
->>> the same name:
->>>
->>>   /* look if we want to change the name of the netif */
->>>   if (strcmp(udev->name, udev->dev->kernel) != 0) {
->>>     ...
->>>     retval = rename_netif(udev);
->>>     ...
->>>   }
->>>
->>> What udev version is it and which distro and version?
->> My distro is openSUSE 10.2, which is fully patched/updated. According to YaST, I'm using version 
->> 103-12 x86_64. My kernel is 2.6.23-rc2 from John Linville's git tree - I run bcm43xx-mac80211.
+
+> Not everyone likes frame buffer
+
+You don't need the frame buffer; cards typically have text mode
+fonts upto 80x50. The node numbers vary, but you can find out yours
+with vga=ask
+
+> but even with it any OOPs in  
+> network code which happens in softirq, io scheduler and nearby 
+> code that is called after passing through all the VFS hooks 
+> and many other examples produce long oopses.
 > 
-> Oh, that's likely a bug in the SUSE versions of the persistent net
-> interface rules. It is calling ifrename when it needs to swap interface
-> names (temp rename to free the target name), that logic which may have
-> that bug.
-> For the next SUSE release, it is replaced by the (now available)
-> upstream stuff from the udev tree, which most distros use now, and which
-> should not have that problem.
+> Oops-es with only the calltrace of ~50 lines do happen :)
 
-Thanks for the explanation. I'll ignore the message - it doesn't cause any problems anyway, and I'll 
-expect it to go away when openSUSE 10.3 comes out in October. I think I'll post a bug report with 
-SUSE just to make sure it gets fixed.
+Normally most of it bogus. I had hoped to address this with the dwarf2
+unwinder, which tends to filter them out nicely,
+but Linus unfortunately has developed an quite irrational aversion against it and 
+it's not in.
 
-Larry
+But the problem is with bogus entries in there you have no guarantee
+that the first of your call trace is any useful -- it might be all bogus.
+So i don't really think your option makes much sense.
+
+Another way would be to not dump addresses and use multiple entries
+per line again. I guess that would make more sense as an option.
+
+-Andi
