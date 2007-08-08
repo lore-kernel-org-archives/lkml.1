@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbXHHLuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbXHHLw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756198AbXHHLuI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 07:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbXHHLtz
+	id S1752547AbXHHLw3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 07:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbXHHLwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 07:49:55 -0400
-Received: from thb8.jinr.ru ([159.93.129.8]:42200 "EHLO theor.jinr.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751573AbXHHLtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 07:49:55 -0400
-Date: Wed, 8 Aug 2007 15:49:49 +0400
-To: Andi Kleen <andi@firstfloor.org>
-Cc: dragoran <drago01@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: allow non root users to set io priority "idle" ?
-Message-ID: <20070808114949.GA8465@theor.jinr.ru>
-References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <20070808095132.GA31020@theor.jinr.ru> <20070808102056.GC12861@one.firstfloor.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="M9NhX3UHpAaciwkO"
+	Wed, 8 Aug 2007 07:52:22 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:59087 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751935AbXHHLwV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 07:52:21 -0400
+Date: Wed, 8 Aug 2007 13:52:19 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Manu Abraham <abraham.manu@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Roman Zippel <zippel@linux-m68k.org>
+Subject: Re: [PATCH] msleep() with hrtimers
+Message-ID: <20070808115219.GA13878@one.firstfloor.org>
+References: <15327.1186166232@lwn.net> <20070807124009.9f6c2247.akpm@linux-foundation.org> <p73ps1ys0jz.fsf@bingen.suse.de> <1a297b360708080409tfc9dee5mb92c216919bffc1e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070808102056.GC12861@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: varg@theor.jinr.ru (Sheplyakov Alexei)
+In-Reply-To: <1a297b360708080409tfc9dee5mb92c216919bffc1e@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 08, 2007 at 03:09:14PM +0400, Manu Abraham wrote:
+> On 08 Aug 2007 13:55:28 +0200, Andi Kleen <andi@firstfloor.org> wrote:
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > >
+> > > I'd be surprised if there was significant overhead - the maximum frequency
+> > > at which msleep() can be called is 1000Hz.  We'd need an awful lot of
+> > > overhead for that to cause problems, surely?
+> >
+> > The bigger risk is probably to break drivers that rely on msleep(1)
+> > really being msleep( very long depending on HZ )
+> >
+> > But the only way to find out is to try it.
+> 
+> Well, i am quite sure a lot of drivers will be broken. But well .. if
 
---M9NhX3UHpAaciwkO
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+If you know of specific examples you should list them so that
+they can be fixed proactively.
 
-On Wed, Aug 08, 2007 at 12:20:56PM +0200, Andi Kleen wrote:
-
-> > I don't quite understand. There are a lot of other ways to starve such
-> > high-priority process:=20
-> > 1. renice the low-priority process
->=20
-> That requires user action.
-
-As well as lowering IO priority.=20
-
-> > 2. send it a signal
-> > 3. ptrace it
->=20
-> Only root can do these.
-
-The original question (unless I'm missing something) was "why _the owner_
-of a process is not enabled to lower its IO priority?" The owner of the
-process certainly can send signal and ptrace it.
-
-> Low priority as allowed by renice is ok -- the resource holder will=20
-> run eventually and the system make progress.
-
-System (whatever that means) should not depend on random users' processes.
-
-> e.g. if you google a bit you can find a famous story where the NASA
-> had to do that remotely to solve a PI problem on one of the Mars rovers.
-
-Certainly there are a scenarios when lowering priority (CPU or IO) have=20
-negative effect. "If it hurts -- then don't do it". However, it is not
-kernels job to decide if the user is right. If the user asks to do
-something "stupid" (run his process with idle IO priority, whipe out his
-home directory, you name it) -- just do that (as long as the action is=20
-permitted by the security policy).
-
-P.S.=20
-Please CC me, I'm not subscribed.
-
-Best regards,
- Alexei
-
---=20
-All science is either physics or stamp collecting.
-
-
---M9NhX3UHpAaciwkO
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iQIVAwUBRrmt3SXMWnuYxRVqAQJt1xAAmxhNZLMNoGeQRWSdeePJOujD+PvCLlx2
-KlH8QuBAKloTSae0NLIlCDLd39rTwajTM6dJDfaVU2yN8LQPPodiVeGfE0H7di8V
-CLt2LT8UlxZ7XddXx85O25zxzFj/IV02Rvj5GIn9gdNeohiZPf/2esc/rn4rnSmZ
-/z9CrGp15i2dKOC8DTS6TWKlpDI/80k/Q+fgkjEaW+5V9r4D9iNQitPJylXgLs8c
-dogDyoS22XLYjtPaIQVQmljKuJqMYQ0RRGexg4rAXITMzqgmikFESxdnqMOFKYC4
-/22X9VTnR8rRmbAgh6jPoCsrv3i/l4w/tQFDIn4YFiQFQ/1SLrsgUIPUC4eHtSAA
-q6JPySzSMnfPRqNBwzpPKU5dnKhVMey1RJCevPdkbLjHD5XIyt5Oi3p7ruSrxfmg
-fVRdDB65YPaobtj3Ig9/+qrPbOOIMthFYn0OIU1gBOtWKrmIa9r9I1CitMWMzxAd
-pmF6efAP4Jmy0CjKmf0uOds8K+VRXGf+AQXeFobSG5Ew8OPfZVGaUTzvcg4r47q1
-GVFxIh9XOm/geD/QSSaQAslFNuJTS31x27ECHxguRut4XnvViHLmngdP6DOhKbk4
-uQV53/LuY68m5dd6/BP1jZH8GsRMipmCS+REKfWSuVfoX9On1TsZB7pEtuGFwXVS
-T7aSk8iuCek=
-=uFME
------END PGP SIGNATURE-----
-
---M9NhX3UHpAaciwkO--
+-Andi
