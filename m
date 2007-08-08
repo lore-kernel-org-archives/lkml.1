@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933888AbXHHWr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935114AbXHHWsS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933888AbXHHWr1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbXHHWrS
+	id S935114AbXHHWsS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:48:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760032AbXHHWsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:47:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:51911 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756245AbXHHWrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:47:17 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1+001cfYze0l41boVcWITAAtHqMnKfYMASvX/Mgc6
-	Ha65rduHQxi0jv
-Date: Thu, 9 Aug 2007 00:47:18 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Oncaphillis <oncaphillis@snafu.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: UART misbehaves under Linkstation/KuroBoxHG
-In-Reply-To: <46BA3DF5.4050201@snafu.de>
-Message-ID: <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
-References: <46B9CE82.1050000@snafu.de> <Pine.LNX.4.60.0708082219520.6767@poirot.grange>
- <46BA320E.1030608@snafu.de> <Pine.LNX.4.60.0708082323420.6767@poirot.grange>
- <46BA3DF5.4050201@snafu.de>
+	Wed, 8 Aug 2007 18:48:07 -0400
+Received: from il.qumranet.com ([82.166.9.18]:50144 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755873AbXHHWsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:48:06 -0400
+Message-ID: <46BA4827.3080907@qumranet.com>
+Date: Thu, 09 Aug 2007 01:48:07 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, kvm-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: kvm warning
+References: <20070808151446.9a4eebda.akpm@linux-foundation.org> <20070808221956.GA16238@elte.hu>
+In-Reply-To: <20070808221956.GA16238@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Oncaphillis wrote:
-> 
->   I hope I found the the misconfigured part. I didn't look
->   at /etc/inittab. It opens a getty on /dev/ttyS0. That
->   might do the trick. Have to recompile my kernel right now with
->   standard config to check this out.
+Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+>
+>   
+>> ia64 allmodconfig says
+>>
+>> drivers/kvm/Kconfig:14:warning: 'select' used by config symbol 'KVM' 
+>> refers to undefined symbol 'PREEMPT_NOTIFIERS'
+>>     
+>
+> hm, why doesnt ia64 pick up kernel/Kconfig.preempt, like all the other 
+> arches? Due to that ia64 also misses out on voluntary preempt and on 
+> preempt-bkl.
+>
+>   
 
-Hm, for that you don't have to recompile the kernel... unless you modified 
-it before, of course. Just change your inittab and reboot.
+Even more hm, how does ia64 manage to enable kvm?  It 'depends on X86' 
+at this moment.
 
->   Well ... it doesn't seem to need the daemons but at least
->   the kuro_boot  script or something similar has to be executed
->   once sending the right init strings to the AVR or your system
->   reboots after a few minutes at least on my box.
 
-No, shouldn't be needed either. You should get a string in dmesg like 
-"linkstation: disarming the AVR watchdog:", and the watchdog should be 
-off. Just take the original .dts, unmodified kernel sources and close 
-enough to original (arch/powerpc/configs/linkstation_defconfig) .config 
-and it should work.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
