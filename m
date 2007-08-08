@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762194AbXHHMPv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764882AbXHHMQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762194AbXHHMPv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:15:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752998AbXHHMPh
+	id S1764882AbXHHMQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbXHHMQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:15:37 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38435 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752491AbXHHMPf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:15:35 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Tejun Heo <htejun@gmail.com>
-Subject: Re: Disk spin down issue on shut down/suspend to disk
-Date: Wed, 8 Aug 2007 14:24:47 +0200
-User-Agent: KMail/1.9.5
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Michael Sedkowski <sedmich@gmail.com>, trenn@suse.de,
-       Robert Hancock <hancockr@shaw.ca>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-acpi@vger.kernel.org
-References: <fa.bsWpbo79BZgHoaIGhEMfTEBxs54@ifi.uio.no> <200708072233.52500.rjw@sisk.pl> <46B930ED.6040607@gmail.com>
-In-Reply-To: <46B930ED.6040607@gmail.com>
+	Wed, 8 Aug 2007 08:16:09 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33078 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753062AbXHHMQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 08:16:07 -0400
+X-Sasl-enc: /5NI0UDuBJKXFQCLBfJB2QjWhpw5g6z+Z/InTbAt2ORo 1186575366
+Date: Wed, 8 Aug 2007 09:16:03 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] thinkpad acpi module_exit fix
+Message-ID: <20070808121603.GC554@khazad-dum.debian.net>
+References: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708081424.48382.rjw@sisk.pl>
+In-Reply-To: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 8 August 2007 04:56, Tejun Heo wrote:
-> Rafael J. Wysocki wrote:
-> > Well, on my box (nx6325) with the appended (experimental) patch applied
-> > on top of 2.6.23-rc1 with the patchset from
-> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc2/patches/ , the
-> > double spin down doesn't occur during hibernation and the system is shut down
-> > notceably faster.
+On Wed, 08 Aug 2007, Dave Young wrote:
+> [This fix is not very good for the global variable, any comments are
+> welcome.]
 > 
-> Can you please explain what the patch does?
+> The thinkpad_acpi module_init fail out entrace is not very properly. if
+> failing before register driver or before create sysfs file, the
+> module_exit will try to remove nonexist sysfs files, the kernel will
+> oops.
+> 
+> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 
-It replaces the shutting down of devices done by kernel_shutdown_prepare()
-with the suspending of the (just like before entering S3, but the target state
-is now S4) and the shutting down of sysdevs with suspending them.
-
-It also disables the nonboot CPUs before entering the sleep state (S4), which
-generally always is a good idea.
-
-In short, it makes hibernation_platform_enter() execute the enter-a-sleep-state
-sequence instead of the mixed shutdown-with-entering-S4 thing.
-
-> So, I take it that entering S4 also spins down the disk.
-
-Yes.
-
-> Does the patch remove the ACPI spin down or libata one?
-
-I _think_ that it removes the ACPI one, although I'll need to do some more
-testing to confirm that.
-
-Greetings,
-Rafael
-
+NAK, this is already fixed in Len's tree.
 
 -- 
-"Premature optimization is the root of all evil." - Donald Knuth
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
