@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbXHHME3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765090AbXHHMEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762846AbXHHME3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbXHHMEV
+	id S1765090AbXHHMEz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:04:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757404AbXHHMEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:04:21 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:60544 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751573AbXHHMEU (ORCPT
+	Wed, 8 Aug 2007 08:04:46 -0400
+Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:50668 "EHLO
+	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756948AbXHHMEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:04:20 -0400
-X-Sasl-enc: 8rv7X2L/+/gx/QNIti4HLtNZ0oRXeisqsLLfa99aszdc 1186574659
-Date: Wed, 8 Aug 2007 09:04:16 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19
-	and 2.6.20 w/ Thinkpad T41
-Message-ID: <20070808120416.GA554@khazad-dum.debian.net>
-References: <200708051902.18801.toralf.foerster@gmx.de> <200708071521.33679.toralf.foerster@gmx.de> <200708071738.24502.rjw@sisk.pl> <200708081122.55036.toralf.foerster@gmx.de>
+	Wed, 8 Aug 2007 08:04:45 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=cX/4gD47gMrzSWPZTt7ga6223aBi2BeRZJdPMlwtajT3sWNmN0uEDwR+I6b9LJGV79x/e1n/fu/i0+WEDgJlVOd7IvzMSIs6Oun5ey3mXuLyX2aOs94nIuvPHeBOlOJC;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.19,235,1183327200"; 
+   d="scan'208";a="79515793"
+Message-ID: <46B9B156.20802@fujitsu-siemens.com>
+Date: Wed, 08 Aug 2007 14:04:38 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200708081122.55036.toralf.foerster@gmx.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+To: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+References: <46B73955.2080007@fujitsu-siemens.com> <20070807142928.GA18839@in.ibm.com> <46B8AECA.7050908@fujitsu-siemens.com> <m1ir7qg7kd.fsf@ebiederm.dsl.xmission.com> <46B986D5.2010407@fujitsu-siemens.com> <20070808093336.GB13808@in.ibm.com>
+In-Reply-To: <20070808093336.GB13808@in.ibm.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007, Toralf Förster wrote:
-> Am Dienstag, 7. August 2007 17:38 schrieb Rafael J. Wysocki:
-> > Actually, you don't need the patch above, just do
-> > "echo shutdown > /sys/power/disk" before the hibernation (or use
-> > BTW, can you please try this patch before you do that:
-> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc2/patches/19-ACPI-Enable-GPEs-before-_WAK-is-called.patch
-> 
-> This patch applied at commit cfee47f doesn't solve the regression.
-> 
-> > 
-> > So place "echo shutdown > /sys/power/disk" before that into your script.
-> yep, that works for me.
+Hi Vivek,
 
-FYI, some other thinkpad models break badly if you use shutdown instead of
-platform.  Sound goes away on wake, etc.
+>>> How bad is it if you just run with irqpoll in the kdump kernel?
+>>> If running with irqpoll is usable that is probably preferable
+>>> to putting in a hardware work around we can survive without.
+>> Yes, I tried that. No effect.
+>>
+> 
+> Martin, at least irpoll should have worked. I am assuming your timer
+> interrupts are coming in second kernel. In that case we are not
+> dependent at all on actually receiving device interrupt. Polling should
+> take care of it.
 
-I am still very suspicious that the way we do wake-from-suspend-to-disk is
-to blame... I wish we loaded the kernel just once, maybe from the boot
-loader.
+You are right. I just tested irqpoll again , and it does works even if the error
+(detected by the IRR bit set in the IO-APIC) occurs.
+
+I have no idea what went wrong when I tried "irqpoll" last time. But I was
+using a different kernel, controller firmware, driver, and HW configuration,
+so it can probably be explained somehow. Unfortunately, the unsuccessful early
+attempts caused me to conclude prematurely that "irqpoll" didn't help. I admit
+I didn't understand "irqpoll" fully until just now.
+
+> What is that device which is not working? What is the success criterion?
+
+It's a LSI megaraid_sas "zero channel RAID" (ZCR) controller. The system has an
+on-board LSI 1068 (mptsas). If you put the ZCR in a certain PCI slot, the
+1068 is hidden from the system, which sees the megaraid_sas controller
+(1000:0413) instead of the 1068. The ZCR internally uses the 1068 as low-level
+controller.
+
+The success criterion was that the disks on the ZCR were successfully detected
+and the dump was written.
+
+Martin
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DE6
+
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20409
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
