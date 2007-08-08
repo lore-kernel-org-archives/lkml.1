@@ -1,100 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936782AbXHHB3D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936925AbXHHBcq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936782AbXHHB3D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 21:29:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934562AbXHHB2w
+	id S936925AbXHHBcq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 21:32:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935322AbXHHBcf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 21:28:52 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:39410 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932449AbXHHB2v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 21:28:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=d7xli+U63zAHRAcRxl7ERbaLGkehRiJfesbl/L1/2f3SFiCWKs+RVtsAxEv7E6S2OV/yFXyztdDGVS3zNZFgx6fmqaelwd9i7nm09X7uuFo7eus5T+Gn8ZoCfBSO6zi1gII61zsdg50s4A6OgOmiQx1aEQIkv4Wle5JxPnkF6Mk=
-Message-ID: <86802c440708071828n40b6faedlb950cdc987cdff0e@mail.gmail.com>
-Date: Tue, 7 Aug 2007 18:28:50 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Jeff Garzik" <jeff@garzik.org>
-Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
-Cc: "Muli Ben-Yehuda" <muli@il.ibm.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>, "Andi Kleen" <ak@suse.de>,
-       riku.seppala@kymp.net, "Andy Whitcroft" <apw@shadowen.org>,
-       "Chuck Ebbert" <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <46B91A94.7000509@garzik.org>
+	Tue, 7 Aug 2007 21:32:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:47558 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933596AbXHHBce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 21:32:34 -0400
+Message-ID: <46B91D0C.5050704@redhat.com>
+Date: Tue, 07 Aug 2007 21:31:56 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Zan Lynx <zlynx@acm.org>
+CC: Chris Friesen <cfriesen@nortel.com>, Jerry Jiang <wjiang@resilience.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>	 <20070806123551.a6c3c154.wjiang@resilience.com>	 <46B72C58.5030502@redhat.com> <46B894E4.4010501@nortel.com>	 <46B8D6D7.2020206@redhat.com> <46B8DDF3.7050008@nortel.com>	 <46B8E1D3.8050501@redhat.com>  <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost>
+In-Reply-To: <1186525977.232321.43.camel@localhost>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46B3A7BB.9000102@redhat.com> <200708050140.49590.ak@suse.de>
-	 <20070805050410.GB4960@rhun.haifa.ibm.com>
-	 <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com>
-	 <20070805075307.GA25890@rhun.haifa.ibm.com>
-	 <20070807154911.5fe93b40.akpm@linux-foundation.org>
-	 <20070807225635.GJ4278@rhun.haifa.ibm.com>
-	 <46B911C4.8010909@garzik.org>
-	 <86802c440708071809g7a204200lde6f027a1bf496e9@mail.gmail.com>
-	 <46B91A94.7000509@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/7/07, Jeff Garzik <jeff@garzik.org> wrote:
-> Yinghai Lu wrote:
-> > the sysdata stuff try to fix:
-> > when calgary iommu code was introduced, it is trying to share sysdata
-> > that orginally is initialized k8_bus.c and used by pcibus_to_node. but
-> > that only happen with AMD K8 platform. and have nothing to do with
-> > calgary.
->
-> incorrect:  sysdata is initialized when the structure is created, which
-> clearly not only in k8_bus.c
+Zan Lynx wrote:
+> On Tue, 2007-08-07 at 15:38 -0600, Chris Friesen wrote:
+>> Chris Snook wrote:
+>>
+>>> That's why we define atomic_read like so:
+>>>
+>>> #define atomic_read(v)          ((v)->counter)
+>>>
+>>> This avoids the aliasing problem, because the compiler must de-reference 
+>>> the pointer every time, which requires a memory fetch.
+>> Can you guarantee that the pointer dereference cannot be optimised away 
+>> on any architecture?  Without other restrictions, a suficiently 
+>> intelligent optimiser could notice that the address of v doesn't change 
+>> in the loop and the destination is never written within the loop, so the 
+>> read could be hoisted out of the loop.
+>>
+>> Even now, powerpc (as an example) defines atomic_t as:
+>>
+>> typedef struct { volatile int counter; } atomic_t
+>>
+>>
+>> That volatile is there precisely to force the compiler to dereference it 
+>> every single time.
+> 
+> I just tried this with GCC 4.2 on x86_64 because I was curious.
+> 
+> struct counter_t { volatile int counter; } test;
+> struct counter_t *tptr = &test;
+> 
+> int main() {
+>         int i;
+> 
+>         tptr->counter = 0;
+>         i = 0;
+>         while(tptr->counter < 100) {
+>                 i++;
+>         }
+>         return 0;
+> }
+> 
+> $ gcc -O3 -S t.c
+> 
+> a snippet of t.s:
+> main:
+> .LFB2:
+>         movq    tptr(%rip), %rdx
+>         movl    $0, (%rdx)
+>         .p2align 4,,7
+> .L2:
+>         movl    (%rdx), %eax
+>         cmpl    $99, %eax
+>         jle     .L2
+> 
+> 
+> Now with the volatile removed:
+> main:
+> .LFB2:
+>         movq    tptr(%rip), %rax
+>         movl    $0, (%rax)
+> .L2:
+>         jmp     .L2
+> 
+> If the compiler can see it clearly, it will optimize out the load
+> without the volatile.
 
-before his first patch, numa juse use sysdata pointer for node.
+This is not a problem, since indirect references will cause the CPU to fetch the 
+data from memory/cache anyway.
 
->
->
-> > Then my patch get_mp_bus_to_node_as_early will use that sysdata as
-> > node as early as possible before the pci_scan bus is called.
->
-> that's incorrect, since it assumes NUMA owns ->sysdata
-
-At that time, only it use that.
-
->
->
-> > then Mul came out his patch ...to split the sharing that will never happen.
->
-> that's incorrect, ->sysdata will be shared among Calgary, NUMA, and
-> PCI-domain support.
-
-but not the same time on run time system with Calgary, NUMA.
-
->
->
-> > Also i don't think anyone test muli sysdata patch with amd64 platform
-> > with acpi=off. even muli himself.
->
-> I did.  I did all PCI domain support development on AMD64 platform.
-
-really, but his first patch is broken with acpi=off.
-I guess you tested his patch plus your patch. instead of test his
-patch barely.  I tested his patch + my patch, and it works well, and
-even test his patch only.
-
->
->
-> > calgary support bus numa at this time? i mean mult peer root bus on
-> > different node..
->
-> My PCI domains patch add support for multiple peer root buses.  That's
-> the definition of PCI domain support.
->
-> Branch 'pciseg' of
-> git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
-
-good, i will look at it.
-
-YH
+	-- Chris
