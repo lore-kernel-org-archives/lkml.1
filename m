@@ -1,52 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbXHHShs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937354AbXHHSiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764280AbXHHShs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761334AbXHHShl
+	id S937354AbXHHSiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbXHHSiF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:37:41 -0400
-Received: from mail.trixing.net ([87.230.125.58]:51684 "EHLO mail.trixing.net"
+	Wed, 8 Aug 2007 14:38:05 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:48711 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755049AbXHHShk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:37:40 -0400
-Message-ID: <46BA0D77.6070007@l4x.org>
-Date: Wed, 08 Aug 2007 20:37:43 +0200
-From: Jan Dittmer <jdi@l4x.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070329 Thunderbird/1.5.0.10 Mnenhy/0.7.4.666
+	id S936503AbXHHSiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:38:03 -0400
+From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, openib-general@openib.org
+Subject: [PATCH 1/7] IB/ehca: Small QP userspace support and fixes
+Date: Wed, 8 Aug 2007 20:37:59 +0200
+User-Agent: KMail/1.8.2
+Cc: "Hoang-Nam Nguyen" <Hoang-Nam.Nguyen@dyn-9-152-249-53>, raisch@de.ibm.com,
+       fenkes@de.ibm.com
 MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-References: <46B9F948.3090205@googlemail.com>
-In-Reply-To: <46B9F948.3090205@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-SA-Exim-Connect-IP: 192.168.1.195
-X-SA-Exim-Mail-From: jdi@l4x.org
-Subject: Re: [1/3] 2.6.23-rc2: known regressions v2
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:51:29 +0000)
-X-SA-Exim-Scanned: Yes (on mail.trixing.net)
+Content-Disposition: inline
+Message-Id: <200708082038.00127.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Unclassified
-> 
-> Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
-> References      : http://lkml.org/lkml/2007/8/6/43
-> Last known good : ?
+Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
+---
+ drivers/infiniband/hw/ehca/ehca_qp.c   |    7 +++----
+ drivers/infiniband/hw/ehca/ipz_pt_fn.c |    3 ++-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
 
-alpha: 2.6.22-git8
-xtensa: 2.6.22-git6
+diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
+index b178cba..cfa83fa 100644
+--- a/drivers/infiniband/hw/ehca/ehca_qp.c
++++ b/drivers/infiniband/hw/ehca/ehca_qp.c
+@@ -273,6 +273,7 @@ static inline void queue2resp(struct ipzu_queue_resp *resp,
+ 	resp->queue_length = queue->queue_length;
+ 	resp->pagesize = queue->pagesize;
+ 	resp->toggle_state = queue->toggle_state;
++	resp->offset = queue->offset;
+ }
+ 
+ /*
+@@ -598,8 +599,7 @@ static struct ehca_qp *internal_create_qp(
+ 	parms.squeue.max_sge = max_send_sge;
+ 	parms.rqueue.max_sge = max_recv_sge;
+ 
+-	if (EHCA_BMASK_GET(HCA_CAP_MINI_QP, shca->hca_cap)
+-	    && !(context && udata)) { /* no small QP support in userspace ATM */
++	if (EHCA_BMASK_GET(HCA_CAP_MINI_QP, shca->hca_cap)) {
+ 		ehca_determine_small_queue(
+ 			&parms.squeue, max_send_sge, is_llqp);
+ 		ehca_determine_small_queue(
+@@ -739,8 +739,7 @@ static struct ehca_qp *internal_create_qp(
+ 		resp.ext_type = my_qp->ext_type;
+ 		resp.qkey = my_qp->qkey;
+ 		resp.real_qp_num = my_qp->real_qp_num;
+-		resp.ipz_rqueue.offset = my_qp->ipz_rqueue.offset;
+-		resp.ipz_squeue.offset = my_qp->ipz_squeue.offset;
++
+ 		if (HAS_SQ(my_qp))
+ 			queue2resp(&resp.ipz_squeue, &my_qp->ipz_squeue);
+ 		if (HAS_RQ(my_qp))
+diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.c b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+index a090c67..661f8db 100644
+--- a/drivers/infiniband/hw/ehca/ipz_pt_fn.c
++++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.c
+@@ -158,6 +158,7 @@ static int alloc_small_queue_page(struct ipz_queue *queue, struct ehca_pd *pd)
+ 
+ 	queue->queue_pages[0] = (void *)(page->page | (bit << (order + 9)));
+ 	queue->small_page = page;
++	queue->offset = bit << (order + 9);
+ 	return 1;
+ 
+ out:
+@@ -172,7 +173,7 @@ static void free_small_queue_page(struct ipz_queue *queue, struct ehca_pd *pd)
+ 	unsigned long bit;
+ 	int free_page = 0;
+ 
+-	bit = ((unsigned long)queue->queue_pages[0] & PAGE_MASK)
++	bit = ((unsigned long)queue->queue_pages[0] & ~PAGE_MASK)
+ 		>> (order + 9);
+ 
+ 	mutex_lock(&pd->lock);
+-- 
+1.5.2
 
-> Submitter       : Jan Dittmer <jdi@l4x.org>
-> Caused-By       : ?
-> Handled-By      : ?
-
-xtensa: Christian Zankel, has patches
-alpha: unhandled, I'd blame the (slub,slab,reclaim,...)-mm changes
-which went in on 2007-07-17.
-
-> Status          : unknown
 
 
-Jan
