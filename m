@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937937AbXHHRqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938057AbXHHRqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937937AbXHHRqN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932464AbXHHRpz
+	id S938057AbXHHRqe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936932AbXHHRqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:45:55 -0400
-Received: from lazybastard.de ([212.112.238.170]:41290 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758771AbXHHRpx (ORCPT
+	Wed, 8 Aug 2007 13:46:04 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:58000 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935869AbXHHRqB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:45:53 -0400
-Date: Wed, 8 Aug 2007 19:41:39 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Artem Bityutskiy <dedekind@infradead.org>
-Cc: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>, akpm@osdl.org,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, linux-fsdevel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [Patch 05/18] fs/logfs/dir.c
-Message-ID: <20070808174137.GW15319@lazybastard.org>
-References: <20070808161234.GB15319@lazybastard.org> <20070808161626.GG15319@lazybastard.org> <1186592854.19606.49.camel@sauron> <20070808171554.GV15319@lazybastard.org> <1186594474.19606.52.camel@sauron>
+	Wed, 8 Aug 2007 13:46:01 -0400
+Date: Wed, 8 Aug 2007 10:39:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
+Message-Id: <20070808103946.4cece16c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0708081004290.12652@schroedinger.engr.sgi.com>
+References: <20070806102922.907530000@chello.nl>
+	<20070806103658.603735000@chello.nl>
+	<Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com>
+	<20070808014435.GG30556@waste.org>
+	<Pine.LNX.4.64.0708081004290.12652@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1186594474.19606.52.camel@sauron>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 August 2007 20:34:34 +0300, Artem Bityutskiy wrote:
-> On Wed, 2007-08-08 at 19:15 +0200, Jörn Engel wrote:
-> > On Wed, 8 August 2007 20:07:34 +0300, Artem Bityutskiy wrote:
-> > > On Wed, 2007-08-08 at 18:16 +0200, Jörn Engel wrote:
-> > > > +static inline void logfs_inc_count(struct inode *inode)
-> > > > +{
-> > > > +	inode->i_nlink++;
-> > > > +	mark_inode_dirty_sync(inode);
-> > > > +}
-> > > > +
-> > > > +static inline void logfs_dec_count(struct inode *inode)
-> > > > +{
-> > > > +	inode->i_nlink--;
-> > > > +	mark_inode_dirty_sync(inode);
-> > > > +}
-> > > include/linux/fs.h: inode_inc_link_count() inode_dec_link_count() do
-> > > this. Although not sure they exist in the old kernel your patches are
-> > > against.
-> > 
-> > Almost, they call mark_inode_dirty() instead of mark_inode_dirty_sync().
-> > I wonder if that's necessary.
-> > 
-> Ah, right, it is necessary as long as you do not have write-back
-> implemented, sure. Pardon :-)
+On Wed, 8 Aug 2007 10:13:05 -0700 (PDT)
+Christoph Lameter <clameter@sgi.com> wrote:
 
-Write-back has nothing to do with this.  When calling logfs_inc_count()
-the only thing that needs writeback is the inode itself.  Marking pages
-and buffers dirty as well is pure paranoia or laziness, your pick.
+> I think there are two ways to address this in a simpler way:
+> 
+> 1. Allow recursive calls into reclaim. If we are in a PF_MEMALLOC context 
+> then we can still scan lru lists and free up memory of clean pages. Idea 
+> patch follows.
+> 
+> 2. Make pageout figure out if the write action requires actual I/O 
+> submission. If so then the submission will *not* immediately free memory 
+> and we have to wait for I/O to complete. In that case do not immediately
+> initiate I/O (which would not free up memory and its bad to initiate 
+> I/O when we have not enough free memory) but put all those pages on a 
+> pageout list. When reclaim has reclaimed enough memory then go through the 
+> pageout list and trigger I/O. That can be done without PF_MEMALLOC so that 
+> additional reclaim could be triggered as needed. Maybe we can just get rid 
+> of PF_MEMALLOC and some of the contorted code around it?
 
-Jörn
+3.  Perform page reclaim from hard IRQ context.  Pretty simple to
+implement, most of the work would be needed in the rmap code.  It might be
+better to make it opt-in via a new __GFP_flag.
 
--- 
-When I am working on a problem I never think about beauty.  I think
-only how to solve the problem.  But when I have finished, if the
-solution is not beautiful, I know it is wrong.
--- R. Buckminster Fuller
