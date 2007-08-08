@@ -1,47 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765827AbXHHHgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765893AbXHHHh4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765827AbXHHHgl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:36:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbXHHHg1
+	id S1765893AbXHHHh4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:37:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759482AbXHHHhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:36:27 -0400
-Received: from rv-out-0910.google.com ([209.85.198.190]:32174 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758436AbXHHHgD (ORCPT
+	Wed, 8 Aug 2007 03:37:35 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:37928 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758416AbXHHHhc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:36:03 -0400
+	Wed, 8 Aug 2007 03:37:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=P0xoSKJcstVwX1W3RmIlr9rj5yQ8GpFTWdCFWR1l8/UEx3YMK4xPkG2n3MJQwRZgO3wCjDfYj67v5lcbsC0uiU51KISxBq4EDxwoU0nMsl/Bp5UeveeXzue4KvCM94uhs0SImzXLstGPPJv90ihYhASC03uP5Nlccp3RhenPhkM=
-Date: Wed, 8 Aug 2007 16:35:55 +0900
-From: Tejun Heo <htejun@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       satyam@infradead.org, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 07/25] sysfs: Rewrite sysfs_drop_dentry.
-Message-ID: <20070808073555.GA13674@htj.dyndns.org>
-References: <11860582832964-git-send-email-htejun@gmail.com> <m1643rkqb6.fsf@ebiederm.dsl.xmission.com> <m11wefkq88.fsf_-_@ebiederm.dsl.xmission.com> <m1wsw7jbml.fsf_-_@ebiederm.dsl.xmission.com> <m1sl6vjbjw.fsf_-_@ebiederm.dsl.xmission.com> <m1odhjjbij.fsf_-_@ebiederm.dsl.xmission.com> <m1k5s7jbh9.fsf_-_@ebiederm.dsl.xmission.com> <m1fy2vjbf9.fsf_-_@ebiederm.dsl.xmission.com> <m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jRa72J+N0stxQ8bkrSrc4RpxcoKDREQq0dinowzQl/oKOVv9MeqReq6UVqnxs1Ya/Ss/Bh4iQXyxQuY6KAiVyFlhZPJ5qKFP2DneLeJRFxqdlL0Kg2sUgHCmZCqTDXDVYOg4IJ/UbFZv9QzLWfeqFKJrp+OhypI4t888uS4GXzw=
+Message-ID: <4a5909270708080037n32be2a73k5c28d33bb02f770b@mail.gmail.com>
+Date: Wed, 8 Aug 2007 03:37:31 -0400
+From: "Daniel Phillips" <daniel.raymond.phillips@gmail.com>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
+Cc: "Daniel Phillips" <phillips@phunq.net>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Matt Mackall" <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "David Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Daniel Phillips" <phillips@google.com>
+In-Reply-To: <Pine.LNX.4.64.0708071513290.3683@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m1bqdjjbcf.fsf_-_@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070806102922.907530000@chello.nl>
+	 <200708061559.41680.phillips@phunq.net>
+	 <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com>
+	 <200708061649.56487.phillips@phunq.net>
+	 <Pine.LNX.4.64.0708071513290.3683@schroedinger.engr.sgi.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 07, 2007 at 03:14:56PM -0600, Eric W. Biederman wrote:
-> 
-> Currently we find the dentry to drop by looking at sd->s_dentry.
-> We can just as easily accomplish the same task by looking up the
-> sysfs inode and finding all of the dentries from there, with the
-> added bonus that we don't need to play with the sysfs_assoc_lock.
-> 
-> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+On 8/7/07, Christoph Lameter <clameter@sgi.com> wrote:
+> > > AFAICT: This patchset is not throttling processes but failing
+> > > allocations.
+> >
+> > Failing allocations?  Where do you see that?  As far as I can see,
+> > Peter's patch set allows allocations to fail exactly where the user has
+> > always specified they may fail, and in no new places.  If there is a
+> > flaw in that logic, please let us know.
+>
+> See the code added to slub: Allocations are satisfied from the reserve
+> patch or they are failing.
 
-Great, Acked-by: Tejun Heo <htejun@gmail.com>
+First off, what I know about this patch set is, it works.  Without it,
+ddsnap deadlocks on network IO, and with it, no deadlock.  We are
+niggling over how it works, not whether it works, or whether it is
+needed.
 
--- 
-tejun
+Next a confession: I have not yet applied this particular patch and
+read the resulting file.  However, the algorithm it is supposed to
+implement with respect to slab is:
+
+  1. If the allocation can be satisified in the usual way, do that.
+  2. Otherwise, if the GFP flags do not include __GFP_MEMALLOC or
+PF_MEMALLOC is not set, fail the allocation
+  3. Otherwise, if the memcache's reserve quota is not reached,
+satisfy the request, allocating a new page from the MEMALLOC reserve,
+but the memcache's reserve counter and succeed
+  4. Die.  We are the walking dead.  Do whatever we feel like, for
+example fail allocation.  This is a kernel bug, if we are lucky enough
+of the kernel will remain running to get some diagnostics.
+
+If it does not implement that algorithm, please shout.
+
+> > > The patchset does not reconfigure the memory reserves as
+> > > expected.
+> >
+> > What do you mean by that?  Expected by who?
+>
+> What would be expected it some recalculation of min_freekbytes?
+
+I still do not know exactly what you are talking about.  The patch set
+provides a means of adjusting the global memalloc reserve when a
+memalloc pool user starts or stops.  We could leave that part entirely
+out of the patch set and just rely on the reserve being "big enough"
+as we have done since the dawn of time.  That would leave less to
+niggle about and the reserve adjustment mechanism could  be submitted
+later.  Would that be better?
+
+> > > And I suspect that we
+> > > have the same issues as in earlier releases with various corner cases
+> > > not being covered.
+> >
+> > Do you have an example?
+>
+> Try NUMA constraints and zone limitations.
+
+Are you worried about a correctness issue that would prevent the
+machine from operating, or are you just worried about allocating
+reserve pages to the local node for performance reasons?
+
+> > > Code is added that is supposedly not used.
+> >
+> > What makes you think that?
+>
+> Because the argument is that performance does not matter since the code
+> patchs are not used.
+
+Used, yes.   Maybe heavily, maybe not.  The point is, with current
+kernels you would never get to these new code paths because your
+machine would have slowed to a crawl or deadlocked.  So not having the
+perfect NUMA implementation of the new memory reserves is perhaps a
+new performance issue for NUMA, but it is no show stopper, and
+according to design, existing code paths are not degraded by any
+measurable extent.  Deadlock in current kernels is a showstopper, that
+is what this patch set fixes.
+
+Since there is no regression for NUMA here (there is not supposed to
+be anyway) I do not think that adding more complexity to the patch set
+to optimize NUMA in this corner case that you could never even get to
+before is warranted.  That is properly a follow-on NUMA-specific
+patch, analogous to a per-arch optimization.
+
+> > > If it  ever is on a large config then we are in very deep trouble by
+> > > the new code paths themselves that serialize things in order to give
+> > > some allocations precendence over the other allocations that are made
+> > > to fail ....
+> >
+> > You mean by allocating the reserve memory on the wrong node in NUMA?
+>
+> No I mean all 1024 processors of our system running into this fail/succeed
+> thingy that was added.
+
+If an allocation now fails that would have succeeded in the past, the
+patch set is buggy.  I can't say for sure one way or another at this
+time of night.  If you see something, could you please mention a
+file/line number?
+
+> > That is on a code path that avoids destroying your machine performance
+> > or killing the machine entirely as with current kernels, for which a
+>
+> As far as I know from our systems: The current kernels do not kill the
+> machine if the reserves are configured the right way.
+
+Current kernels deadlock on a regular basis doing fancy block IO.  I
+am not sure what you mean.
+
+> > few cachelines pulled to another node is a small price to pay.  And you
+> > are free to use your special expertise in NUMA to make those fallback
+> > paths even more efficient, but first you need to understand what they
+> > are doing and why.
+>
+> There is your problem. The justification is not clear at all and the
+> solution likely causes unrelated problems.
+
+Well I hope the justification is clear now.  Not deadlocking is a very
+good thing, and we have a before and after test case.  Getting late
+here, Peter's email shift starts now ;-)
+
+Regards,
+
+Daniel
