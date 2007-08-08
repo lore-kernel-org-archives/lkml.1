@@ -1,105 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936901AbXHHBXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937045AbXHHBXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936901AbXHHBXR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 21:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934460AbXHHBVE
+	id S937045AbXHHBXh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 21:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936061AbXHHBVe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 21:21:04 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:59258 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758570AbXHHBVB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 21:21:01 -0400
-Date: Tue, 07 Aug 2007 18:23:25 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH 3/5] try parent numa_node at first before using default v2
-In-reply-to: <200708072246.l77Mk2Qw008754@imap1.linux-foundation.org>
-To: akpm@linux-foundation.org, ak@suse.de
-Cc: apw@shadowen.org, clameter@sgi.com, greg@kroah.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200708071823.26120.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <200708072246.l77Mk2Qw008754@imap1.linux-foundation.org>
-User-Agent: KMail/1.8.2
+	Tue, 7 Aug 2007 21:21:34 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33506 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935992AbXHHBVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 21:21:32 -0400
+Message-ID: <46B91A94.7000509@garzik.org>
+Date: Tue, 07 Aug 2007 21:21:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+MIME-Version: 1.0
+To: Yinghai Lu <yhlu.kernel@gmail.com>
+CC: Muli Ben-Yehuda <muli@il.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       riku.seppala@kymp.net, Andy Whitcroft <apw@shadowen.org>,
+       Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH/RFT] finish i386 and x86-64 sysdata conversion
+References: <46B3A7BB.9000102@redhat.com> <200708041130.42038.ak@suse.de>	 <20070804093222.f0d7f3c7.akpm@linux-foundation.org>	 <200708050140.49590.ak@suse.de>	 <20070805050410.GB4960@rhun.haifa.ibm.com>	 <86802c440708042238h39fa1b4ude2836fd9732213b@mail.gmail.com>	 <20070805075307.GA25890@rhun.haifa.ibm.com>	 <20070807154911.5fe93b40.akpm@linux-foundation.org>	 <20070807225635.GJ4278@rhun.haifa.ibm.com>	 <46B911C4.8010909@garzik.org> <86802c440708071809g7a204200lde6f027a1bf496e9@mail.gmail.com>
+In-Reply-To: <86802c440708071809g7a204200lde6f027a1bf496e9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[PATCH 3/5] try parent numa_node at first before using default v2
+Yinghai Lu wrote:
+> the sysdata stuff try to fix:
+> when calgary iommu code was introduced, it is trying to share sysdata
+> that orginally is initialized k8_bus.c and used by pcibus_to_node. but
+> that only happen with AMD K8 platform. and have nothing to do with
+> calgary.
 
-in the device_add, we try to use use parent numa_node.
-need to make sure pci root bus's bridge device numa_node is set.
-then we could use device->numa_node direclty for all device.
-and don't need to call pcibus_to_node().
+incorrect:  sysdata is initialized when the structure is created, which 
+clearly not only in k8_bus.c
 
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index e48fcf0..c029ffc 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -935,7 +938,6 @@ void pci_device_add(struct pci_dev *dev, struct pci_bus *bus)
- 	dev->dev.release = pci_release_dev;
- 	pci_dev_get(dev);
- 
--	set_dev_node(&dev->dev, pcibus_to_node(bus));
- 	dev->dev.dma_mask = &dev->dma_mask;
- 	dev->dev.coherent_dma_mask = 0xffffffffull;
- 
-@@ -1096,6 +1098,9 @@ struct pci_bus * pci_create_bus(struct device *parent,
- 		goto dev_reg_err;
- 	b->bridge = get_device(dev);
- 
-+	if (!parent)
-+		set_dev_node(b->bridge, pcibus_to_node(b));
-+
- 	b->class_dev.class = &pcibus_class;
- 	sprintf(b->class_dev.class_id, "%04x:%02x", pci_domain_nr(b), bus);
- 	error = class_device_register(&b->class_dev);
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 0455aa7..d8b063b 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -672,6 +672,11 @@ int device_add(struct device *dev)
- 	if (error)
- 		goto Error;
- 
-+	/* use parent numa_node */
-+	if (parent) {
-+		set_dev_node(dev, dev_to_node(parent));
-+	}
-+
- 	/* first, register with generic layer. */
- 	kobject_set_name(&dev->kobj, "%s", dev->bus_id);
- 	error = kobject_add(&dev->kobj);
-@@ -1269,8 +1274,11 @@ int device_move(struct device *dev, struct device *new_parent)
- 	dev->parent = new_parent;
- 	if (old_parent)
- 		klist_remove(&dev->knode_parent);
--	if (new_parent)
-+	if (new_parent) {
- 		klist_add_tail(&dev->knode_parent, &new_parent->klist_children);
-+		set_dev_node(dev, dev_to_node(new_parent));
-+	}
-+
- 	if (!dev->class)
- 		goto out_put;
- 	error = device_move_class_links(dev, old_parent, new_parent);
-@@ -1280,9 +1288,12 @@ int device_move(struct device *dev, struct device *new_parent)
- 		if (!kobject_move(&dev->kobj, &old_parent->kobj)) {
- 			if (new_parent)
- 				klist_remove(&dev->knode_parent);
--			if (old_parent)
-+			dev->parent = old_parent;
-+			if (old_parent) {
- 				klist_add_tail(&dev->knode_parent,
- 					       &old_parent->klist_children);
-+				set_dev_node(dev, dev_to_node(old_parent));
-+			}
- 		}
- 		put_device(new_parent);
- 		goto out;
--
+> Then my patch get_mp_bus_to_node_as_early will use that sysdata as
+> node as early as possible before the pci_scan bus is called.
+
+that's incorrect, since it assumes NUMA owns ->sysdata
+
+
+> then Mul came out his patch ...to split the sharing that will never happen.
+
+that's incorrect, ->sysdata will be shared among Calgary, NUMA, and 
+PCI-domain support.
+
+
+> Also i don't think anyone test muli sysdata patch with amd64 platform
+> with acpi=off. even muli himself.
+
+I did.  I did all PCI domain support development on AMD64 platform.
+
+
+> calgary support bus numa at this time? i mean mult peer root bus on
+> different node..
+
+My PCI domains patch add support for multiple peer root buses.  That's 
+the definition of PCI domain support.
+
+Branch 'pciseg' of
+git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/misc-2.6.git
+
+	Jeff
+
+
