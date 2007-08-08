@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935708AbXHHO4G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHHO6Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935708AbXHHO4G (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:56:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761472AbXHHOzz
+	id S935412AbXHHO6Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:58:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbXHHO6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:55:55 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:59430 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754670AbXHHOzy (ORCPT
+	Wed, 8 Aug 2007 10:58:17 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:20968 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754363AbXHHO6Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:55:54 -0400
+	Wed, 8 Aug 2007 10:58:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=otLKNkZMhypMh1v6+7vLcmv3naJcHmIRHWdouc0pNOC/0xP0BcRCS/XpERPtbtwr1b+2hMHXBERh4ROTtF6doWC2Rdp69aVXPwPmqNfqcKFe3tjjWrzkqLUCBYKbnjdWVY7n4QF2MqE4lb/D2C8M6UJqW1J+/eGADKUhuynRjZM=
-Message-ID: <46B9D961.4000902@gmail.com>
-Date: Wed, 08 Aug 2007 23:55:29 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=sCMT79ZdBEWyySyh43R9SZp8y2Ua2yFaAfAup4UWotIvgTI8t8qOwF6lv8LUXqrQP0aGmiyijryft7wlOUURG7rJdVXiMvcYWZL4E9aJNATGEes6i1RouN7ehnzZhCTHH2TC2vrwRPCzmhzD7bUdfDBJW615ZmnqliJENCBzsLc=
+Message-ID: <5d6222a80708080758t1b937d0ej14c5e60ac23a20c5@mail.gmail.com>
+Date: Wed, 8 Aug 2007 11:58:14 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Nakajima, Jun" <jun.nakajima@intel.com>
+Subject: Re: Introducing paravirt_ops for x86_64
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, lguest@ozlabs.org,
+       virtualization@lists.linux-foundation.org, chrisw@sous-sol.org,
+       anthony@codemonkey.ws, akpm@linux-foundation.org, mingo@elte.hu
+In-Reply-To: <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, satyam@infradead.org,
-       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
-       gregkh@suse.de
-Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
-References: <11860582832964-git-send-email-htejun@gmail.com>	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>	<20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>	<20070808161631.1ccf27fd@gondolin.boeblingen.de.ibm.com>	<46B9D4B8.4050201@gmail.com> <20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070808165027.29af40b5@gondolin.boeblingen.de.ibm.com>
-X-Enigmail-Version: 0.94.2.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cornelia Huck wrote:
-> On Wed, 08 Aug 2007 23:35:36 +0900,
-> Tejun Heo <htejun@gmail.com> wrote:
-> 
->> Does the attached patch happen to fix the problem?
-> 
-> Indeed it does; thanks!
+On 8/8/07, Nakajima, Jun <jun.nakajima@intel.com> wrote:
+> Glauber de Oliveira Costa wrote:
+> > Hi folks,
+> >
+> > After some time away from it, and a big rebase as a consequence, here
+> is
+> > the updated version of paravirt_ops for x86_64, heading to inclusion.
+> >
+> > Your criticism is of course, very welcome.
+> >
+> > Have fun
+>
+> Do you assume that the kernel ougtht to use 2MB pages for its mappings
+> (e.g. initilal text/data,  direct mapping of physical memory) under your
+> paravirt_ops?  As far as I look at the patches, I don't find one.
 
-Yeah, you seem to have 32bit off_t.  UINT_MAX overflows, so...
+I don't think how it could be relevant here. lguest kernel does use
+2MB pages, and it goes smootly. For 2MB pages, we will update the page
+tables in the very same way, and in the very places we did before.
+Just that the operations can now be overwritten.
+
+So, unless I'm very wrong,  it only makes sense to talk about not
+supporting large pages in the guest level. But it is not a
+paravirt_ops problem.
+
 
 -- 
-tejun
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
