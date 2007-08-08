@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965145AbXHHVKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937581AbXHHVLo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965145AbXHHVKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763071AbXHHVKh
+	id S937581AbXHHVLo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:11:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763806AbXHHVLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:10:37 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56473 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763799AbXHHVKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:10:36 -0400
-Date: Wed, 8 Aug 2007 22:10:32 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 2/3] Use one zonelist that is filtered instead of multiple zonelists
-Message-ID: <20070808211032.GB2441@skynet.ie>
-References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie> <20070808161545.32320.41940.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708081041240.12652@schroedinger.engr.sgi.com>
+	Wed, 8 Aug 2007 17:11:35 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:51760 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763241AbXHHVLe convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 17:11:34 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: ljhc@br.ibm.com
+Subject: Re: SLUB doesn't work with kdump kernel on Cell
+Date: Wed, 8 Aug 2007 23:10:59 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
+       Arnd Bergmann <arndb@arndb.de>
+References: <1186604151.3608.46.camel@localhost.localdomain>
+In-Reply-To: <1186604151.3608.46.camel@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708081041240.12652@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Message-Id: <200708082310.59997.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/W8comqJNYvyTpRbAoJMcXPgVi3/75aK+xET3
+ BANSCV0Hib9xJ2WAtdKvhLuYRF4spDGp9XwHJoPeaw0L+VHXH7
+ I+d0iFWtIClhnOEArxHnA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/08/07 10:46), Christoph Lameter didst pronounce:
-> On Wed, 8 Aug 2007, Mel Gorman wrote:
-> 
-> >  		for (i = 0; i < npmem_ranges; i++) {
-> > +			zl = &NODE_DATA(i)->node_zonelist;
-> 
-> The above shows up again and again. Maybe add a new inline function?
-> 
-> struct zonelist *zonelist_node(int node)
-> 
+On Wednesday 08 August 2007, Lucio Correia wrote:
+>   DMA             0 ->    12288
+>   Normal      12288 ->    12288
+> early_node_map[2] active PFN ranges
+>     0:        0 ->     2560
+>     1:    12287 ->    12288
 
-Not a bad plan. There are least 5 instances of calls like this in mm/
-alone so might as well.
+As Christoph found, this memory map is really strange. Other machines
+have something like
 
-> 
-> >  {
-> > -	return NODE_DATA(0)->node_zonelists + gfp_zone(gfp_flags);
-> > +	return &NODE_DATA(0)->node_zonelist;
-> 
-> How many callers of gfp_zone are left? Do we still need the function?
-> 
+Zone PFN ranges:
+  DMA             0 ->    16384
+  Normal      16384 ->    16384
+early_node_map[2] active PFN ranges
+    0:        0 ->     8192
+    1:     8192 ->    16384
 
-Well, the iterator needs it because it expects a high_zoneidx parameter
-which is == gfp_zone(gfp_flags). It also appears quite a bit the code
-according to grep. I don't think it can be got rid of now anyway.
+Lucio,
+What code builds the memory map that gets passed to the kdump kernel?
+Does the original kernel see the same map on your machine?
 
-> Note that the memoryless_node patchset modifies gfp_zone and adds some 
-> more zonelists (sigh).
-> 
-> > diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.23-rc1-mm2-005_freepages_zonelist/mm/oom_kill.c linux-2.6.23-rc1-mm2-010_use_zonelist/mm/oom_kill.c
-> > --- linux-2.6.23-rc1-mm2-005_freepages_zonelist/mm/oom_kill.c	2007-08-07 14:45:11.000000000 +0100
-> > +++ linux-2.6.23-rc1-mm2-010_use_zonelist/mm/oom_kill.c	2007-08-08 11:35:09.000000000 +0100
-> > @@ -177,8 +177,10 @@ static inline int constrained_alloc(stru
-> >  {
-> >  #ifdef CONFIG_NUMA
-> >  	struct zone **z;
-> > +	struct zone *zone;
-> >  	nodemask_t nodes;
-> >  	int node;
-> > +	enum zone_type high_zoneidx = gfp_zone(gfp_mask);
-> >  
-> >  	nodes_clear(nodes);
-> >  	/* node has memory ? */
-> > @@ -186,9 +188,9 @@ static inline int constrained_alloc(stru
-> >  		if (NODE_DATA(node)->node_present_pages)
-> >  			node_set(node, nodes);
-> >  
-> > -	for (z = zonelist->zones; *z; z++)
-> > -		if (cpuset_zone_allowed_softwall(*z, gfp_mask))
-> > -			node_clear(zone_to_nid(*z), nodes);
-> > +	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx)
-> > +		if (cpuset_zone_allowed_softwall(zone, gfp_mask))
-> > +			node_clear(zone_to_nid(zone), nodes);
-> >  		else
-> >  			return CONSTRAINT_CPUSET;
-> >  
-> 
-> The above portion has already been changed to no longer use a zonelist by 
-> the memoryless_node patchset in mm.
-> 
-
-Oh, well that's good. One less thing to worry about even though we'll be
-colliding a bit. I'll split the patch in two to have the second part that
-collides with memoryless_node as a standalone patch.
-
-> > +	zonelist = &NODE_DATA(slab_node(current->mempolicy))->node_zonelist;
-> > +	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
-> >  		struct kmem_cache_node *n;
-> >  
-> > -		n = get_node(s, zone_to_nid(*z));
-> > +		n = get_node(s, zone_to_nid(zone));
-> 
-> Encoding the node in the zonelist pointer would help these loops but they 
-> are fallback lists and not on the critical path.
-> 
-
-The zone_id is the one I'm really interested in. It looks like the most
-promising optimisation for avoiding zone_idx in the hotpath.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Arnd <><
