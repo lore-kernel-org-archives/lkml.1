@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934963AbXHHOsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935111AbXHHOtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934963AbXHHOsG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934712AbXHHOru
+	id S935111AbXHHOtN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:49:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758390AbXHHOs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:47:50 -0400
-Received: from nz-out-0506.google.com ([64.233.162.225]:44169 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934628AbXHHOrs (ORCPT
+	Wed, 8 Aug 2007 10:48:58 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33765 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758279AbXHHOs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:47:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=F/upbgM94kS5YONsFvqkYxNry4LxdcaaGcCyPcjwBF7UA2jrqhGq9C34+8UA1Q5wnd8HZX3DrY41p4jLMX3OqzndQwutHaGkyTEnRWZQaeu5GExp2Y27omUPZ4CPHmQ+YxXI5H4YWyJy4sU9BAJsd1ZGJtQYo1bQorCgdvnTFiw=
-Message-ID: <5699f8f00708080747u17b7a0e1lb919d61ca6e3ea9c@mail.gmail.com>
-Date: Wed, 8 Aug 2007 16:47:46 +0200
-From: "Wander Winkelhorst" <w.winkelhorst@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Data corruption
-In-Reply-To: <5699f8f00708080744m42eebdeaqdc42daffec1b7d8d@mail.gmail.com>
+	Wed, 8 Aug 2007 10:48:57 -0400
+X-Sasl-enc: 9V+x4kHJ3nV4C8DA1nnhGAsmGrFQ6WTkLQPoiO2uqW/W 1186584536
+Date: Wed, 8 Aug 2007 11:48:54 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>,
+       ibm-acpi-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19
+	and 2.6.20 w/ Thinkpad T41
+Message-ID: <20070808144854.GB9587@khazad-dum.debian.net>
+References: <200708051902.18801.toralf.foerster@gmx.de> <200708081122.55036.toralf.foerster@gmx.de> <20070808120416.GA554@khazad-dum.debian.net> <200708081442.12641.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200708072007.27343.paul.pinault@disk91.com>
-	 <46B906DD.5000501@redhat.com>
-	 <200708080831.10141.paul.pinault@disk91.com>
-	 <5699f8f00708080744m42eebdeaqdc42daffec1b7d8d@mail.gmail.com>
+In-Reply-To: <200708081442.12641.rjw@sisk.pl>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, paul <paul.pinault@disk91.com> wrote:
->  Hi, thank you for your answer, actually I removed 2Gb of physical memory and
-> the problem gone away .. but my system needs 4Gb.
->
-> I reproduce it under Xen and without xen (on a standard kernel) I can't tell
->  you how mutch difference I have betwwen files, regarding a 4 month system
-> running on these condition, I think the number of errors are rare but
-> existing, during my tests with 100M files I did not get a lot of error, so we
-> can assume 2 or 3 bytes in error in 300M files... (expectation)
->
-> I try to avaoid it by disabeling memory relocation on my MB ... in that case
-> the system only detect 2.8G (and Linux too), The probem still there.
+On Wed, 08 Aug 2007, Rafael J. Wysocki wrote:
+> > I wish we loaded the kernel just once, maybe from the boot loader.
+> 
+> Well, that's not so easy.  That will work for the bare image, but if we want it
+> to be compressed and/or encrypted, then the boot loader will need to
+> contain all of the necessary code.
 
-Do you have the latest BIOS of your motherboard?
-The latest version is 0901 and that version fixes:
+Doing things right always have an associated cost, or we'd be doing it right
+since day one...
 
-"Fix memory remapping function is not working properly issue."
+> I may be doable by using a special boot kernel with ACPI disabled and only
+> as many drivers as required to load the image, but that will make it more
+> difficult to set up and to recover from errors.
 
-Download from:
-http://support.asus.com/download/download_item.aspx?product=1&model=P5B-VM&SLanguage=en-us
+Better than the walking bomb we have now.  When waking from suspend-to-disk,
+we should not overwrite ANY non-kernel data which has ties to external
+systems (the hardware, the firmware).  Instead, we should re-init everything
+(re-init hardware to make sure we know in which state it is, re-init
+ourselves, to make sure we match the firmware and hardware state), as if we
+were booting a cold system in the first place.
 
-Hope that helps,
-
-Wander.
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
