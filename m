@@ -1,54 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935078AbXHHXGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765544AbXHHXIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935078AbXHHXGe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756718AbXHHXG0
+	id S1765544AbXHHXIZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:08:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762846AbXHHXIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 19:06:26 -0400
-Received: from mail.queued.net ([207.210.101.209]:1666 "EHLO mail.queued.net"
+	Wed, 8 Aug 2007 19:08:13 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49148 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756867AbXHHXGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 19:06:25 -0400
-X-Greylist: delayed 1898 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 19:06:25 EDT
-Date: Wed, 8 Aug 2007 19:07:13 -0400
-From: Andres Salomon <dilinger@queued.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: turn serial console suspend a boot rather than
- compile time option
-Message-Id: <20070808190713.b59c9b00.dilinger@queued.net>
-In-Reply-To: <20070808154130.9cc3a30e.akpm@linux-foundation.org>
-References: <20070808183535.2a2c6edf.dilinger@queued.net>
-	<20070808154130.9cc3a30e.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.4 (GTK+ 2.10.13; i486-pc-linux-gnu)
+	id S1760490AbXHHXIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 19:08:11 -0400
+Date: Wed, 8 Aug 2007 19:07:33 -0400
+From: Chris Snook <csnook@redhat.com>
+To: akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
+Subject: [PATCH] make atomic_t volatile on all architectures
+Message-ID: <20070808230733.GA17270@shell.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 15:41:30 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+From: Chris Snook <csnook@redhat.com>
 
-> On Wed, 8 Aug 2007 18:35:35 -0400
-> Andres Salomon <dilinger@queued.net> wrote:
-> 
-[...]
-> > --- a/include/linux/kernel.h
-> > +++ b/include/linux/kernel.h
-> > @@ -172,6 +172,8 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
-> >  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
-> >  				unsigned int interval_msec);
-> >  
-> > +extern int console_suspend;
-> > +
-> 
-> That's a somewhat vague-sounding identifier.  Could we call it
-> console_suspend_enabled or something?
-> 
+Some architectures currently do not declare the contents of an atomic_t to be
+volatile.  This causes confusion since atomic_read() might not actually read
+anything if an optimizing compiler re-uses a value stored in a register, which
+can break code that loops until something external changes the value of an
+atomic_t.  Avoiding such bugs requires using barrier(), which causes re-loads
+of all registers used in the loop, thus hurting performance instead of helping
+it, particularly on architectures where it's unnecessary.  Since we generally
+want to re-read the contents of an atomic variable on every access anyway,
+let's standardize the behavior across all architectures and avoid the
+performance and correctness problems of requiring the use of barrier() in
+loops that expect atomic_t variables to change externally.  This is relevant
+even on non-smp architectures, since drivers may use atomic operations in
+interrupt handlers.
 
-Hm, how about serial_console_suspend_enabled or enable_serial_console_suspend?  I can send an updated patch later.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
 
--- 
-Andres Salomon <dilinger@queued.net>
+diff -urp linux-2.6.23-rc2-orig/include/asm-blackfin/atomic.h linux-2.6.23-rc2/include/asm-blackfin/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-blackfin/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-blackfin/atomic.h	2007-08-08 18:18:43.000000000 -0400
+@@ -13,8 +13,13 @@
+  * Tony Kou (tonyko@lineo.ca)   Lineo Inc.   2001
+  */
+ 
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
+ typedef struct {
+-	int counter;
++	volatile int counter;
+ } atomic_t;
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+diff -urp linux-2.6.23-rc2-orig/include/asm-frv/atomic.h linux-2.6.23-rc2/include/asm-frv/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-frv/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-frv/atomic.h	2007-08-08 18:21:55.000000000 -0400
+@@ -35,8 +35,13 @@
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
+ typedef struct {
+-	int counter;
++	volatile int counter;
+ } atomic_t;
+ 
+ #define ATOMIC_INIT(i)		{ (i) }
+diff -urp linux-2.6.23-rc2-orig/include/asm-h8300/atomic.h linux-2.6.23-rc2/include/asm-h8300/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-h8300/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-h8300/atomic.h	2007-08-08 18:24:02.000000000 -0400
+@@ -6,7 +6,12 @@
+  * resource counting etc..
+  */
+ 
+-typedef struct { int counter; } atomic_t;
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
++typedef struct { volatile int counter; } atomic_t;
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+ #define atomic_read(v)		((v)->counter)
+diff -urp linux-2.6.23-rc2-orig/include/asm-i386/atomic.h linux-2.6.23-rc2/include/asm-i386/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-i386/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-i386/atomic.h	2007-08-08 18:26:09.000000000 -0400
+@@ -14,8 +14,12 @@
+  * Make sure gcc doesn't try to be clever and move things around
+  * on us. We need to use _exactly_ the address the user gave us,
+  * not some alias that contains the same information.
++ *
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
+  */
+-typedef struct { int counter; } atomic_t;
++typedef struct { volatile int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+diff -urp linux-2.6.23-rc2-orig/include/asm-m68k/atomic.h linux-2.6.23-rc2/include/asm-m68k/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-m68k/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-m68k/atomic.h	2007-08-08 18:28:58.000000000 -0400
+@@ -13,7 +13,12 @@
+  * We do not have SMP m68k systems, so we don't have to deal with that.
+  */
+ 
+-typedef struct { int counter; } atomic_t;
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
++typedef struct { volatile int counter; } atomic_t;
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+ #define atomic_read(v)		((v)->counter)
+diff -urp linux-2.6.23-rc2-orig/include/asm-m68knommu/atomic.h linux-2.6.23-rc2/include/asm-m68knommu/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-m68knommu/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-m68knommu/atomic.h	2007-08-08 18:30:32.000000000 -0400
+@@ -12,7 +12,12 @@
+  * We do not have SMP m68k systems, so we don't have to deal with that.
+  */
+ 
+-typedef struct { int counter; } atomic_t;
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
++typedef struct { volatile int counter; } atomic_t;
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+ #define atomic_read(v)		((v)->counter)
+diff -urp linux-2.6.23-rc2-orig/include/asm-s390/atomic.h linux-2.6.23-rc2/include/asm-s390/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-s390/atomic.h	2007-08-08 17:48:53.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-s390/atomic.h	2007-08-08 18:40:17.000000000 -0400
+@@ -23,8 +23,13 @@
+  * S390 uses 'Compare And Swap' for atomicity in SMP enviroment
+  */
+ 
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
+ typedef struct {
+-	int counter;
++	volatile int counter;
+ } __attribute__ ((aligned (4))) atomic_t;
+ #define ATOMIC_INIT(i)  { (i) }
+ 
+diff -urp linux-2.6.23-rc2-orig/include/asm-v850/atomic.h linux-2.6.23-rc2/include/asm-v850/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-v850/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-v850/atomic.h	2007-08-08 18:42:37.000000000 -0400
+@@ -21,7 +21,12 @@
+ #error SMP not supported
+ #endif
+ 
+-typedef struct { int counter; } atomic_t;
++/*
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
++ */
++typedef struct { volatile int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+diff -urp linux-2.6.23-rc2-orig/include/asm-x86_64/atomic.h linux-2.6.23-rc2/include/asm-x86_64/atomic.h
+--- linux-2.6.23-rc2-orig/include/asm-x86_64/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-x86_64/atomic.h	2007-08-08 18:44:18.000000000 -0400
+@@ -21,8 +21,12 @@
+  * Make sure gcc doesn't try to be clever and move things around
+  * on us. We need to use _exactly_ the address the user gave us,
+  * not some alias that contains the same information.
++ *
++ * Make atomic_t volatile to remove the need for barriers in loops that
++ * wait for an outside event.  We generally want to re-load the atomic_t
++ * variable each time anyway, but don't need to re-load everything else.
+  */
+-typedef struct { int counter; } atomic_t;
++typedef struct { volatile int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
