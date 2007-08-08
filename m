@@ -1,83 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764266AbXHHIdj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbXHHIhI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764266AbXHHIdj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 04:33:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbXHHId3
+	id S1762289AbXHHIhI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 04:37:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755280AbXHHIg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 04:33:29 -0400
-Received: from 207.47.19.6.static.nextweb.net ([207.47.19.6]:19451 "EHLO
-	ex1.resilience.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757406AbXHHId2 (ORCPT
+	Wed, 8 Aug 2007 04:36:58 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:28994 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbXHHIg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 04:33:28 -0400
-Date: Wed, 8 Aug 2007 16:27:55 +0800
-From: Jerry Jiang <wjiang@resilience.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Zan Lynx <zlynx@acm.org>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-Message-Id: <20070808162755.61f50fbf.wjiang@resilience.com>
-In-Reply-To: <46B96719.3050006@redhat.com>
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
-	<20070806123551.a6c3c154.wjiang@resilience.com>
-	<46B72C58.5030502@redhat.com>
-	<46B894E4.4010501@nortel.com>
-	<46B8D6D7.2020206@redhat.com>
-	<46B8DDF3.7050008@nortel.com>
-	<46B8E1D3.8050501@redhat.com>
-	<46B8E64E.7010708@nortel.com>
-	<1186525977.232321.43.camel@localhost>
-	<46B91D0C.5050704@redhat.com>
-	<46B94B94.6000600@nortel.com>
-	<46B96719.3050006@redhat.com>
-Organization: Resilience
-X-Mailer: Sylpheed version 2.3.0beta5 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 8 Aug 2007 04:36:57 -0400
+Date: Wed, 8 Aug 2007 10:37:59 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, stern@rowland.harvard.edu,
+       Tejun Heo <htejun@gmail.com>,
+       Linux Containers <containers@lists.osdl.org>, gregkh@suse.de
+Subject: Re: [PATCH 0/25] Sysfs cleanups & tagged directory support
+Message-ID: <20070808103759.0850383c@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <m17io6foh8.fsf@ebiederm.dsl.xmission.com>
+References: <11860582832964-git-send-email-htejun@gmail.com>
+	<m1643rkqb6.fsf@ebiederm.dsl.xmission.com>
+	<20070808093815.0935a18e@gondolin.boeblingen.de.ibm.com>
+	<m1bqdifowo.fsf@ebiederm.dsl.xmission.com>
+	<20070808095432.4a520735@gondolin.boeblingen.de.ibm.com>
+	<m17io6foh8.fsf@ebiederm.dsl.xmission.com>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Aug 2007 08:33:15.0796 (UTC) FILETIME=[C3E0CD40:01C7D996]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007 02:47:53 -0400
-Chris Snook <csnook@redhat.com> wrote:
+On Wed, 08 Aug 2007 01:57:07 -0600,
+ebiederm@xmission.com (Eric W. Biederman) wrote:
 
-> Chris Friesen wrote:
-> > Chris Snook wrote:
-> > 
-> >> This is not a problem, since indirect references will cause the CPU to 
-> >> fetch the data from memory/cache anyway.
-> > 
-> > Isn't Zan's sample code (that shows the problem) already using indirect 
-> > references?
+> > Got it: It's patch 6, the readdir simplification.
+> >
+> > (The udev on that guest is ancient (063)...)
 > 
-> Yeah, I misinterpreted his conclusion.  I thought about this for a 
-> while, and realized that it's perfectly legal for the compiler to re-use 
-> a value obtained from atomic_read.  All that matters is that the read 
-> itself was atomic.  The use (or non-use) of the volatile keyword is 
-> really more relevant to the other atomic operations.  If you want to 
-> guarantee a re-read from memory, use barrier().  This, incidentally, 
-> uses volatile under the hood.
-> 
+> Ok.  That is weird.
 
+More weirdness. If I activate another dasd from the repair file
+system, /dev/dasdb is created...
 
-So for example, without volatile
+Same if I set the card reader online: /dev/vmrdr-0.0.000c is created as
+expected.
 
-int a = read_atomic(v);
-int b = read_atomic(v);
+> Does it depend on the order in which the dentries are returned from
+> readdir?
 
-the compiler will optimize it as b = a, 
-But with volatile, it will be forced to fetch v's value from memory
-again.
+I'd think not.
 
-So, come back our initial question, 
+> Unless I made a really stupid error otherwise the two versions
+> of readdir should have the same semantics.
 
-include/asm-v850/atomic.h:typedef struct { int counter; } atomic_t;
-
-Why is it right without volatile?
-
--- Jerry
-
-
-> 	-- Chris
+Yes, your patch looks sane. I have no idea why it breaks stuff...
