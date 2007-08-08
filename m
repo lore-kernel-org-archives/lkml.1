@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936379AbXHHXZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936659AbXHHX0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936379AbXHHXZh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 19:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757095AbXHHXZ0
+	id S936659AbXHHX0x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 19:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762179AbXHHX0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 19:25:26 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:47049 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759431AbXHHXZZ (ORCPT
+	Wed, 8 Aug 2007 19:26:46 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:33085 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761094AbXHHX0p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 19:25:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=dUxqWP7jU/a4TKTQBNq7fXd8QtWP08ETJeEzXSjpUb8g9l8h27Qv7pRK9cnph
-	tUWZonsL4x2YJZOvlQdUYNb5w==
-Date: Thu, 9 Aug 2007 01:25:21 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Chris Snook <csnook@redhat.com>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-Message-ID: <20070808232521.GC8460@xi.wantstofly.org>
-References: <20070808230733.GA17270@shell.boston.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 19:26:45 -0400
+Date: Thu, 9 Aug 2007 01:26:29 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jens Axboe <jens.axboe@oracle.com>, starvik@axis.com
+Cc: linux-kernel@vger.kernel.org,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>, dev-etrax@axis.com
+Subject: [2.6.23 regression fix] cris: drivers/cdrom/Kconfig no longer
+	exists
+Message-ID: <20070808232629.GL6997@stusta.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20070808230733.GA17270@shell.boston.redhat.com>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 08, 2007 at 07:07:33PM -0400, Chris Snook wrote:
+This patch fixes the following 2.6.23 regression:
 
-> From: Chris Snook <csnook@redhat.com>
-> 
-> Some architectures currently do not declare the contents of an atomic_t to be
-> volatile.  This causes confusion since atomic_read() might not actually read
-> anything if an optimizing compiler re-uses a value stored in a register, which
-> can break code that loops until something external changes the value of an
-> atomic_t.  Avoiding such bugs requires using barrier(), which causes re-loads
-> of all registers used in the loop, thus hurting performance instead of helping
-> it, particularly on architectures where it's unnecessary.  Since we generally
-> want to re-read the contents of an atomic variable on every access anyway,
-> let's standardize the behavior across all architectures and avoid the
-> performance and correctness problems of requiring the use of barrier() in
-> loops that expect atomic_t variables to change externally.  This is relevant
-> even on non-smp architectures, since drivers may use atomic operations in
-> interrupt handlers.
-> 
-> Signed-off-by: Chris Snook <csnook@redhat.com>
+<--  snip  -->
 
-Documentation/atomic_ops.txt would need updating:
+...
+scripts/kconfig/conf -d arch/cris/Kconfig
+arch/cris/Kconfig:183: can't open file "drivers/cdrom/Kconfig"
+make[2]: *** [defconfig] Error 1
 
-	[...]
+<--  snip  -->
 
-	One very important aspect of these two routines is that they DO NOT
-	require any explicit memory barriers.  They need only perform the
-	atomic_t counter update in an SMP safe manner.
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+
+---
+25f8889abda9596429f0840dc1d9330cfad8ac48 
+diff --git a/arch/cris/Kconfig b/arch/cris/Kconfig
+index 4b41248..6b4d026 100644
+--- a/arch/cris/Kconfig
++++ b/arch/cris/Kconfig
+@@ -180,8 +180,6 @@ source "drivers/isdn/Kconfig"
+ 
+ source "drivers/telephony/Kconfig"
+ 
+-source "drivers/cdrom/Kconfig"
+-
+ #
+ # input before char - char/joystick depends on it. As does USB.
+ #
+
