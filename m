@@ -1,43 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935405AbXHHFCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935516AbXHHFG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935405AbXHHFCy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 01:02:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753031AbXHHFCr
+	id S935516AbXHHFG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 01:06:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbXHHFGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 01:02:47 -0400
-Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:49498 "EHLO
-	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752289AbXHHFCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 01:02:46 -0400
-Message-ID: <46B94E75.9030509@lwfinger.net>
-Date: Wed, 08 Aug 2007 00:02:45 -0500
-From: Larry Finger <larry.finger@lwfinger.net>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+	Wed, 8 Aug 2007 01:06:20 -0400
+Received: from brick.kernel.dk ([87.55.233.238]:4141 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752096AbXHHFGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 01:06:19 -0400
+Date: Wed, 8 Aug 2007 07:06:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: dragoran <drago01@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: allow non root users to set io priority "idle" ?
+Message-ID: <20070808050617.GE5245@kernel.dk>
+References: <46B6EDCB.6030806@gmail.com> <p73zm14lxyy.fsf@bingen.suse.de> <46B6F75D.1070808@gmail.com> <20070806103553.GA16133@one.firstfloor.org> <20070807204449.GA5245@kernel.dk> <f6ca9fed0708071435h31531279gb6ea0fc760be98df@mail.gmail.com> <f6ca9fed0708071518m159e0ef8vc2d8482913afbea6@mail.gmail.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Error message from device_rename in drivers/base/core.c
-References: <46B943D3.9020207@lwfinger.net>	<20070807.213724.27783161.davem@davemloft.net>	<46B94C12.2000301@lwfinger.net> <20070807.215507.26532842.davem@davemloft.net>
-In-Reply-To: <20070807.215507.26532842.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f6ca9fed0708071518m159e0ef8vc2d8482913afbea6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Larry Finger <larry.finger@lwfinger.net>
-> Date: Tue, 07 Aug 2007 23:52:34 -0500
-> 
->> Yes, it is most likely coming from udev. Do you know who maintains
->> udev? Google didn't give an answer in the first two pages.
-> 
-> I may be mis-remembering but I thought Greg KH was at the
-> helm at least at one point.
-> 
+On Wed, Aug 08 2007, dragoran wrote:
+> so there is no real reason not to allow it for non root users?
+> removing the check is easy (3 lines) ....
+> or are there any other issues/problems?
 
-Between the previous message and this one, I found a link that lists him as one of the authors. I'll 
-ping him about the "problem". Thanks for your help.
+Andi already explained to you why it can't be enabled for non-root
+users. I merely talked about why idle priority works.
 
-Larry
+-- 
+Jens Axboe
 
