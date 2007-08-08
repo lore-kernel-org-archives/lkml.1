@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935684AbXHHOxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935779AbXHHOyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935684AbXHHOxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765676AbXHHOxq
+	id S935779AbXHHOyY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935713AbXHHOx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:53:46 -0400
-Received: from mga09.intel.com ([134.134.136.24]:30612 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761067AbXHHOxp convert rfc822-to-8bit (ORCPT
+	Wed, 8 Aug 2007 10:53:56 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:17779 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S935652AbXHHOxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:53:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.19,236,1183359600"; 
-   d="scan'208";a="115070465"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 8 Aug 2007 10:53:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s/mq0HPZpOneXuiflcZWUR57CvOWbGS0zz01QbtPdkOHLbEpOg4noDoYf0KddKEjYZHy4rFtV5Fxm5MnKqFa/CV/gGGmMLLEt/wriSGLaxyzwIGCd5RBIEbPEl9xeAVnhAcnz/iuuJHVnkIMuQn9prhthPFZ/6/WlBPzOWh8fJc=
+Message-ID: <5d6222a80708080753l30348fbarb214eba1f94a63d0@mail.gmail.com>
+Date: Wed, 8 Aug 2007 11:53:53 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in entry.S
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>, lguest@ozlabs.org,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       chrisw@sous-sol.org, anthony@codemonkey.ws, akpm@linux-foundation.org,
+       mingo@elte.hu
+In-Reply-To: <200708081611.25152.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: Introducing paravirt_ops for x86_64
-Date: Wed, 8 Aug 2007 07:53:43 -0700
-Message-ID: <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
-In-Reply-To: <11865467522495-git-send-email-gcosta@redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Introducing paravirt_ops for x86_64
-thread-index: AcfZiui69WjRuAQ5RC6WyxK38acLtAAPrVaQ
-From: "Nakajima, Jun" <jun.nakajima@intel.com>
-To: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       <linux-kernel@vger.kernel.org>
-Cc: <lguest@ozlabs.org>, <virtualization@lists.linux-foundation.org>,
-       <chrisw@sous-sol.org>, <anthony@codemonkey.ws>,
-       <akpm@linux-foundation.org>, <mingo@elte.hu>
-X-OriginalArrivalTime: 08 Aug 2007 14:53:44.0403 (UTC) FILETIME=[EAC9CA30:01C7D9CB]
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <200708081138.23018.ak@suse.de>
+	 <5d6222a80708080658j780667c4o52e924f8690f2a85@mail.gmail.com>
+	 <200708081611.25152.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber de Oliveira Costa wrote:
-> Hi folks,
-> 
-> After some time away from it, and a big rebase as a consequence, here
-is
-> the updated version of paravirt_ops for x86_64, heading to inclusion.
-> 
-> Your criticism is of course, very welcome.
-> 
-> Have fun
+On 8/8/07, Andi Kleen <ak@suse.de> wrote:
+> > > Similar.
+> > I don't think so. They are live here, but restore_args follows, so we
+> > can safely clobber anything here. Right?
+>
+> The non argument registers cannot be clobbered.
+But they are not. Yeah, I ommited it in the changelog, (it is in a
+comment at paravirt.h), should probably include. the CLBR_ defines
+only accounts for the caller-saved registers.
 
-Do you assume that the kernel ougtht to use 2MB pages for its mappings
-(e.g. initilal text/data,  direct mapping of physical memory) under your
-paravirt_ops?  As far as I look at the patches, I don't find one. 
 
-Jun
----
-Intel Open Source Technology Center
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
+
+"The less confident you are, the more serious you have to act."
