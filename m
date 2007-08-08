@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938175AbXHHSnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938262AbXHHSn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938175AbXHHSnK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762269AbXHHSm5
+	id S938262AbXHHSn7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761235AbXHHSnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:42:57 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:43780 "EHLO e5.ny.us.ibm.com"
+	Wed, 8 Aug 2007 14:43:50 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:44199 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759661AbXHHSm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:42:56 -0400
+	id S1760709AbXHHSnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:43:49 -0400
 From: Stefan Roscher <ossrosch@linux.vnet.ibm.com>
 To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
        linuxppc-dev@ozlabs.org, openib-general@openib.org
-Subject: [PATCH 5/7] IB/ehca: map 4k firmware context of cq, qp to user space
-Date: Wed, 8 Aug 2007 20:42:52 +0200
+Subject: [PATCH 6/7] IB/ehca: Generate last WQE reached, when base QP for SRQ has entered error state
+Date: Wed, 8 Aug 2007 20:43:46 +0200
 User-Agent: KMail/1.8.2
 Cc: raisch@de.ibm.com, fenkes@de.ibm.com,
        "\"Hoang-Nam Nguyen\" @dyn-9-152-249-53" 
@@ -23,103 +23,97 @@ Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200708082042.52977.ossrosch@linux.vnet.ibm.com>
+Message-Id: <200708082043.47353.ossrosch@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
-Date: Wed, 8 Aug 2007 19:33:23 +0200
-
-This patch utilizes remap_4k_pfn() as introduced by Paul M.,
-for details see http://patchwork.ozlabs.org/linuxppc/patch?id=10281,
-to map ehca cq, qp firmware context (4k) to user space if kernel page
-size is 64k. For reason, why this is required, see also Paul's patch.
-In addition to that the kernel page offset of firmware context needs
-to be set in cq and qp response block so that user space can assemble
-the proper virtual address to use.
-An appropriate patch for libehca will follow for ofed-1.3.
+From: Joachim Fenkes <fenkes@de.ibm.com>
+Date: Wed, 8 Aug 2007 19:51:30 +0200
 
 Signed-off-by: Stefan Roscher <stefan.roscher@de.ibm.com>
 ---
- drivers/infiniband/hw/ehca/ehca_classes.h |    4 +++-
- drivers/infiniband/hw/ehca/ehca_cq.c      |    2 ++
- drivers/infiniband/hw/ehca/ehca_qp.c      |    2 ++
- drivers/infiniband/hw/ehca/ehca_uverbs.c  |    6 +++---
- 4 files changed, 10 insertions(+), 4 deletions(-)
+ drivers/infiniband/hw/ehca/ehca_irq.c |   48 +++++++++++++++++++++-----------
+ 1 files changed, 31 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
-index b5e9603..206d4eb 100644
---- a/drivers/infiniband/hw/ehca/ehca_classes.h
-+++ b/drivers/infiniband/hw/ehca/ehca_classes.h
-@@ -337,6 +337,8 @@ struct ehca_create_cq_resp {
- 	u32 cq_number;
- 	u32 token;
- 	struct ipzu_queue_resp ipz_queue;
-+	u32 fw_handle_ofs;
-+	u32 dummy;
- };
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index ee06d8b..941816a 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -175,41 +175,55 @@ error_data1:
  
- struct ehca_create_qp_resp {
-@@ -347,7 +349,7 @@ struct ehca_create_qp_resp {
- 	u32 qkey;
- 	/* qp_num assigned by ehca: sqp0/1 may have got different numbers */
- 	u32 real_qp_num;
--	u32 dummy; /* padding for 8 byte alignment */
-+	u32 fw_handle_ofs;
- 	struct ipzu_queue_resp ipz_squeue;
- 	struct ipzu_queue_resp ipz_rqueue;
- };
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index c661939..0ac5a97 100644
---- a/drivers/infiniband/hw/ehca/ehca_cq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -281,6 +281,8 @@ struct ib_cq *ehca_create_cq(struct ib_device *device, int cqe, int comp_vector,
- 		resp.ipz_queue.queue_length = ipz_queue->queue_length;
- 		resp.ipz_queue.pagesize = ipz_queue->pagesize;
- 		resp.ipz_queue.toggle_state = ipz_queue->toggle_state;
-+		resp.fw_handle_ofs = (u32)
-+			(my_cq->galpas.user.fw_handle & (PAGE_SIZE - 1));
- 		if (ib_copy_to_udata(udata, &resp, sizeof(resp))) {
- 			ehca_err(device, "Copy to udata failed.");
- 			goto create_cq_exit4;
-diff --git a/drivers/infiniband/hw/ehca/ehca_qp.c b/drivers/infiniband/hw/ehca/ehca_qp.c
-index f26801b..d8c1c22 100644
---- a/drivers/infiniband/hw/ehca/ehca_qp.c
-+++ b/drivers/infiniband/hw/ehca/ehca_qp.c
-@@ -752,6 +752,8 @@ static struct ehca_qp *internal_create_qp(
- 			queue2resp(&resp.ipz_squeue, &my_qp->ipz_squeue);
- 		if (HAS_RQ(my_qp))
- 			queue2resp(&resp.ipz_rqueue, &my_qp->ipz_rqueue);
-+		resp.fw_handle_ofs = (u32)
-+			(my_qp->galpas.user.fw_handle & (PAGE_SIZE - 1));
+ }
  
- 		if (ib_copy_to_udata(udata, &resp, sizeof resp)) {
- 			ehca_err(pd->device, "Copy to udata failed");
-diff --git a/drivers/infiniband/hw/ehca/ehca_uverbs.c b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-index 3340f49..84a16bc 100644
---- a/drivers/infiniband/hw/ehca/ehca_uverbs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_uverbs.c
-@@ -109,7 +109,7 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
- 	u64 vsize, physical;
+-static void qp_event_callback(struct ehca_shca *shca, u64 eqe,
+-			      enum ib_event_type event_type, int fatal)
++static void dispatch_qp_event(struct ehca_shca *shca, struct ehca_qp *qp,
++			      enum ib_event_type event_type)
+ {
+ 	struct ib_event event;
+-	struct ehca_qp *qp;
+-	u32 token = EHCA_BMASK_GET(EQE_QP_TOKEN, eqe);
+-
+-	read_lock(&ehca_qp_idr_lock);
+-	qp = idr_find(&ehca_qp_idr, token);
+-	read_unlock(&ehca_qp_idr_lock);
+-
+-
+-	if (!qp)
+-		return;
+-
+-	if (fatal)
+-		ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
  
- 	vsize = vma->vm_end - vma->vm_start;
--	if (vsize != EHCA_PAGESIZE) {
-+	if (vsize < EHCA_PAGESIZE) {
- 		ehca_gen_err("invalid vsize=%lx", vma->vm_end - vma->vm_start);
- 		return -EINVAL;
+ 	event.device = &shca->ib_device;
++	event.event = event_type;
+ 
+ 	if (qp->ext_type == EQPT_SRQ) {
+ 		if (!qp->ib_srq.event_handler)
+ 			return;
+ 
+-		event.event = fatal ? IB_EVENT_SRQ_ERR : event_type;
+ 		event.element.srq = &qp->ib_srq;
+ 		qp->ib_srq.event_handler(&event, qp->ib_srq.srq_context);
+ 	} else {
+ 		if (!qp->ib_qp.event_handler)
+ 			return;
+ 
+-		event.event = event_type;
+ 		event.element.qp = &qp->ib_qp;
+ 		qp->ib_qp.event_handler(&event, qp->ib_qp.qp_context);
  	}
-@@ -118,8 +118,8 @@ static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
- 	ehca_gen_dbg("vsize=%lx physical=%lx", vsize, physical);
- 	/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
--	ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
--			      vsize, vma->vm_page_prot);
-+	ret = remap_4k_pfn(vma, vma->vm_start, physical >> EHCA_PAGESHIFT,
-+			   vma->vm_page_prot);
- 	if (unlikely(ret)) {
- 		ehca_gen_err("remap_pfn_range() failed ret=%x", ret);
- 		return -ENOMEM;
++}
++
++static void qp_event_callback(struct ehca_shca *shca, u64 eqe,
++			      enum ib_event_type event_type, int fatal)
++{
++	struct ehca_qp *qp;
++	u32 token = EHCA_BMASK_GET(EQE_QP_TOKEN, eqe);
++
++	read_lock(&ehca_qp_idr_lock);
++	qp = idr_find(&ehca_qp_idr, token);
++	read_unlock(&ehca_qp_idr_lock);
++
++	if (!qp)
++		return;
++
++	if (fatal)
++		ehca_error_data(shca, qp, qp->ipz_qp_handle.handle);
++
++	dispatch_qp_event(shca, qp, fatal && qp->ext_type == EQPT_SRQ ?
++			  IB_EVENT_SRQ_ERR : event_type);
++
++	/*
++	 * eHCA only processes one WQE at a time for SRQ base QPs,
++	 * so the last WQE has been processed as soon as the QP enters
++	 * error state.
++	 */
++	if (fatal && qp->ext_type == EQPT_SRQBASE)
++		dispatch_qp_event(shca, qp, IB_EVENT_QP_LAST_WQE_REACHED);
+ 
+ 	return;
+ }
 -- 
 1.5.2
+
 
 
