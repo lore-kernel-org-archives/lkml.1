@@ -1,65 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934634AbXHHS02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935959AbXHHS2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934634AbXHHS02 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758704AbXHHS0U
+	id S935959AbXHHS2H (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758012AbXHHS14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:26:20 -0400
-Received: from mail.tpi.com ([198.107.51.143]:2806 "EHLO mail.tpi.com"
+	Wed, 8 Aug 2007 14:27:56 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:34047 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754964AbXHHS0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:26:20 -0400
-Message-ID: <46BA0A9D.1040405@canonical.com>
-Date: Wed, 08 Aug 2007 12:25:33 -0600
-From: Tim Gardner <tim.gardner@canonical.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	id S1751135AbXHHS1z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 14:27:55 -0400
+Message-ID: <46BA0B28.4090404@austin.ibm.com>
+Date: Wed, 08 Aug 2007 13:27:52 -0500
+From: jschopp <jschopp@austin.ibm.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-To: Cal Peake <cp@absolutedigital.net>
-CC: Andi Kleen <ak@suse.de>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] drop unneeded variable in amd_apic_timer_broken
-References: <Pine.LNX.4.64.0707301048460.5693@lancer.cnet.absolutedigital.net> <20070808000631.GB7353@one.firstfloor.org> <Pine.LNX.4.64.0708072030440.28681@lancer.cnet.absolutedigital.net> <200708081636.20223.ak@suse.de> <Pine.LNX.4.64.0708081146120.25865@lancer.cnet.absolutedigital.net>
-In-Reply-To: <Pine.LNX.4.64.0708081146120.25865@lancer.cnet.absolutedigital.net>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=US-ASCII
+To: Dave Jones <davej@redhat.com>, jschopp <jschopp@austin.ibm.com>,
+       apw@shadowen.org, rdunlap@xenotime.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Make checkpatch warn about pointless casting of kalloc returns.
+References: <20070808024321.GA6316@redhat.com> <46B9F7C9.9060406@austin.ibm.com> <20070808180056.GF26440@redhat.com>
+In-Reply-To: <20070808180056.GF26440@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cal Peake wrote:
-> On Wed, 8 Aug 2007, Andi Kleen wrote:
+>  > > +			WARN("No need to cast return value.\n");
+>  > 
+>  > Could the warning be more descriptive?  This describes what, but it should also describe 
+>  > why; after all if somebody made this error they may not know they why.
 > 
->> Can you please test if this patch works?
-> 
-> Yep, seems to do the trick. Thanks!
-> 
->> BTW I checked with AMD and they seem to think it's just a buggy BIOS.
-> 
-> Nod. Atleast we can work around it.
-> 
->> Use global flag to disable broken local apic timer on AMD CPUs.
->>
->> The Averatec 2370 laptop BIOS seems to program the ENABLE_C1E
-> 
-> s~2370~2370/2371~ to be completely accurate ;)
-> 
->> MSR inconsistently between cores. This confuses the lapic
->> use heuristics wants to know if C1E is enabled anywhere.
->>
->> Use a global flag instead of a per cpu flag to handle this.
->> If any CPU has C1E enabled disabled lapic use.
->>
->> Thanks to Cal Peake for debugging.
->> Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> Acked-by: Cal Peake <cp@absolutedigital.net>
-> 
+> I'm open to suggestions..
 
-This patch also solves the boot problem on a Dell E1501. I started the
-thread "ACPI Regression on Dell E1501" regarding this issue on June 21,
-2007.
+How about
 
-Acked-by: Tim Gardner <tim.gardner@ubuntu.com>
-
--- 
-Tim Gardner tim.gardner@ubuntu.com
+WARN("No need to cast return value, it is unnecessary and can hide real bugs.  See 
+http://c-faq.com/malloc/mallocnocast.html for more details\n");
