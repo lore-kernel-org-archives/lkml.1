@@ -1,34 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964864AbXHHRMW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937132AbXHHRMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964864AbXHHRMW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:12:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764348AbXHHRMB
+	id S937132AbXHHRMl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935008AbXHHRMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:12:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:5455 "EHLO
+	Wed, 8 Aug 2007 13:12:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:8981 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764168AbXHHRL7 (ORCPT
+	with ESMTP id S1764937AbXHHRME (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:11:59 -0400
+	Wed, 8 Aug 2007 13:12:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=j1UVxGCcVsisGqN/lPvJd9rHB89sYBPcjgggetSxQP8r99BKTKb+L5APAjVoa6vPBrmVDw651Ug7uqw0TE+nEFhpe0edyZIyWy1bX5avKaaH27y75fJXejeCJ36VvxS+i1vSg/jKWozp7vSLrCxu4P0xijemgJnLjS0/jNUgCgs=
-Message-ID: <46B9F948.3090205@googlemail.com>
-Date: Wed, 08 Aug 2007 19:11:36 +0200
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=ofJVJ/jgjbvAJXkyHA48K0h22yY/oBMqNrA9tSVy9inE+uKiTFcYZiCEonNu1zzclZ/OmxcvaaAkV382pyTIcKczHqb5rlEmqF6Q1OcnFykOQevYLffEjpYEyBP9b4yVmoZ28EL4AlukqNrOdt31GqdXxjfggqWV9qA6ayBdro8=
+Message-ID: <46B9F950.2030209@googlemail.com>
+Date: Wed, 08 Aug 2007 19:11:44 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Markus <lists4me@web.de>, Jeff Chua <jeff.chua.linux@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, Jan Dittmer <jdi@l4x.org>,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Christian Zankel <chris@zankel.net>, Len Brown <len.brown@intel.com>,
-       linux-acpi@vger.kernel.org, Plamen Petrov <plamen.petrov@tk.ru.acad.bg>,
-       Michael Sedkowski <sedmich@gmail.com>
-Subject: [1/3] 2.6.23-rc2: known regressions v2
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       dth <dth@dth.net>, linux-fsdevel@vger.kernel.org,
+       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Andrew Clayton <andrew@digital-domain.net>,
+       linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>, Netdev <netdev@vger.kernel.org>,
+       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
+       Florian Lohoff <flo@rfc822.org>, Uwe Bugla <uwe.bugla@gmx.de>
+Subject: Re: [2/3] 2.6.23-rc2: known regressions v2
+References: <46B9F664.9060600@googlemail.com>
+In-Reply-To: <46B9F664.9060600@googlemail.com>
 X-Enigmail-Version: 0.95.3
 Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
@@ -61,51 +63,61 @@ Trent Piepho                           2
 
 
 
-Unclassified
+CPUFREQ
 
-Subject         : 2.6.23-rc2 cross compile regressions (alpha,xtensa)
-References      : http://lkml.org/lkml/2007/8/6/43
+Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
+References      : http://lkml.org/lkml/2007/7/27/298
+                  http://lkml.org/lkml/2007/7/29/371
 Last known good : ?
-Submitter       : Jan Dittmer <jdi@l4x.org>
+Submitter       : dth <dth@dth.net>
+Caused-By       : Len Brown <lenb@kernel.org>
+                  commit f79e3185dd0f8650022518d7624c876d8929061b
+Handled-By      : Len Brown <lenb@kernel.org>
+Status          : problem is being debugged
+
+
+
+FS
+
+Subject         : [NFSD OOPS] 2.6.23-rc1-git10
+References      : http://lkml.org/lkml/2007/8/2/462
+Last known good : ?
+Submitter       : Andrew Clayton <andrew@digital-domain.net>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : console is messed up after resume from s2ram or switching to console from X
-References      : http://lkml.org/lkml/2007/8/4/6
+
+
+MTD
+
+Subject         : error: implicit declaration of function 'cfi_interleave'
+References      : http://lkml.org/lkml/2007/8/6/272
 Last known good : ?
-Submitter       : Jeff Chua <jeff.chua.linux@gmail.com>
-Caused-By       : ?
-Handled-By      : H. Peter Anvin <hpa@zytor.com>
-                  Antonino A. Daplas <adaplas@gmail.com>
-Workaround      : "s2ram --force --acpi_sleep 1 --vbe_mode"
-Status          : problem is being debugged
-
-Subject         : konqueror suddenly vanishing, "konqueror: Fatal IO error: client killed"
-References      : http://lkml.org/lkml/2007/7/22/86
-Last known good : ?
-Submitter       : Markus <lists4me@web.de>
-Caused-By       : ?
-Handled-By      : Ingo Molnar <mingo@elte.hu>
-Status          : problem is being debugged
-
-
-ACPI
-
-Subject         : MCFG bug on hp nx6310
-References      : http://lkml.org/lkml/2007/8/8/252
-Last known good : ?
-Submitter       : Michael Sedkowski <sedmich@gmail.com>
+Submitter       : Ingo Molnar <mingo@elte.hu>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
-Subject         : 2.6.23-rc1-git10 hangs on boot - needs "acpi=off"
-References      : http://lkml.org/lkml/2007/8/2/24
-Last known good : ?
-Submitter       : Plamen Petrov <plamen.petrov@tk.ru.acad.bg>
+
+
+Networking
+
+Subject         : IP v4 routing is broken
+References      : http://www.stardust.webpages.pl/files/tbf/bugs/bug_report01.txt
+Last known good : 2.6.22-git2
+Submitter       : Uwe Bugla <uwe.bugla@gmx.de>
 Caused-By       : ?
 Handled-By      : ?
+Status          : unknown
+
+Subject         : New wake ups from sky2
+References      : http://lkml.org/lkml/2007/7/20/386
+Last known good : ?
+Submitter       : Thomas Meyer <thomas@m3y3r.de>
+Caused-By       : Stephen Hemminger <shemminger@osdl.org>
+                  commit eb35cf60e462491249166182e3e755d3d5d91a28
+Handled-By      : Stephen Hemminger <shemminger@osdl.org>
 Status          : unknown
 
 
