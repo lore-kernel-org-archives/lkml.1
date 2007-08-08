@@ -1,34 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937132AbXHHRMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935897AbXHHRNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937132AbXHHRMl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935008AbXHHRMI
+	id S935897AbXHHRNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765810AbXHHRNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:12:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:8981 "EHLO
+	Wed, 8 Aug 2007 13:13:08 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:5643 "EHLO
 	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764937AbXHHRME (ORCPT
+	with ESMTP id S1763590AbXHHRNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:12:04 -0400
+	Wed, 8 Aug 2007 13:13:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=ofJVJ/jgjbvAJXkyHA48K0h22yY/oBMqNrA9tSVy9inE+uKiTFcYZiCEonNu1zzclZ/OmxcvaaAkV382pyTIcKczHqb5rlEmqF6Q1OcnFykOQevYLffEjpYEyBP9b4yVmoZ28EL4AlukqNrOdt31GqdXxjfggqWV9qA6ayBdro8=
-Message-ID: <46B9F950.2030209@googlemail.com>
-Date: Wed, 08 Aug 2007 19:11:44 +0200
+        b=T6Ao8dmH1cY1ZmoBvHB41nPLyiAfFJ/L/uMu6ZcmbQVmq6K9FQKvShk0SB/yHCcJ0eEQBcSa6HMJ5K9Dj7oneA2NvxYfOhvpQCXU4RrP36WGDe1bX4onbKiPfPPP1hIBNRIDCgTp92U9HnmEfs4uERCfmtKgboygrdE1igaE/6w=
+Message-ID: <46B9F983.9020700@googlemail.com>
+Date: Wed, 08 Aug 2007 19:12:35 +0200
 User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
 CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       dth <dth@dth.net>, linux-fsdevel@vger.kernel.org,
-       nfs@lists.sourceforge.net, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Andrew Clayton <andrew@digital-domain.net>,
-       linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>,
-       Ingo Molnar <mingo@elte.hu>, Netdev <netdev@vger.kernel.org>,
-       Stephen Hemminger <shemminger@osdl.org>, Thomas Meyer <thomas@m3y3r.de>,
-       Florian Lohoff <flo@rfc822.org>, Uwe Bugla <uwe.bugla@gmx.de>
-Subject: Re: [2/3] 2.6.23-rc2: known regressions v2
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, Meelis Roos <mroos@linux.ee>,
+       linux-scsi@vger.kernel.org, Andrew Vasquez <linux-driver@qlogic.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
+       Mark Hindley <mark@hindley.org.uk>, Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Oliver Falk <oliver@linux-kernel.at>
+Subject: Re: [3/3] 2.6.23-rc2: known regressions v2
 References: <46B9F664.9060600@googlemail.com>
 In-Reply-To: <46B9F664.9060600@googlemail.com>
 X-Enigmail-Version: 0.95.3
@@ -63,61 +66,58 @@ Trent Piepho                           2
 
 
 
-CPUFREQ
+Power management
 
-Subject         : ide problems: 2.6.22-git17 working, 2.6.23-rc1* is not
-References      : http://lkml.org/lkml/2007/7/27/298
-                  http://lkml.org/lkml/2007/7/29/371
+Subject         : Kconfig: 'SUSPEND_SMP' refers to undefined symbol 'HOTPLUG_CPU'
+References      : http://lkml.org/lkml/2007/8/4/39
 Last known good : ?
-Submitter       : dth <dth@dth.net>
-Caused-By       : Len Brown <lenb@kernel.org>
-                  commit f79e3185dd0f8650022518d7624c876d8929061b
-Handled-By      : Len Brown <lenb@kernel.org>
-Status          : problem is being debugged
+Submitter       : Meelis Roos <mroos@linux.ee>
+Caused-By       : ?
+Handled-By      : Rafael J. Wysocki <rjw@sisk.pl>
+Status          : unknown
 
 
 
-FS
+SCSI
 
-Subject         : [NFSD OOPS] 2.6.23-rc1-git10
-References      : http://lkml.org/lkml/2007/8/2/462
+Subject         : unable to handle kernel NULL pointer dereference in qla2x00_read_nvram_data
+References      : http://lkml.org/lkml/2007/8/6/506
 Last known good : ?
-Submitter       : Andrew Clayton <andrew@digital-domain.net>
+Submitter       : Zhang, Yanmin <yanmin_zhang@linux.intel.com>
 Caused-By       : ?
 Handled-By      : ?
 Status          : unknown
 
 
 
-MTD
+USB
 
-Subject         : error: implicit declaration of function 'cfi_interleave'
-References      : http://lkml.org/lkml/2007/8/6/272
+Subject         : 2.6.23-rc1: uhci_hcd. irq 4: nobody cared
+References      : http://lkml.org/lkml/2007/7/29/75
 Last known good : ?
-Submitter       : Ingo Molnar <mingo@elte.hu>
+Submitter       : Mark Hindley <mark@hindley.org.uk>
 Caused-By       : ?
-Handled-By      : ?
+Handled-By      : Alan Stern <stern@rowland.harvard.edu>
+Status          : unknown
+
+Subject         : 2.6.23-rc1: USB hard disk broken
+References      : http://lkml.org/lkml/2007/7/25/62
+Last known good : ?
+Submitter       : Tino Keitel <tino.keitel@gmx.de>
+Caused-By       : ?
+Handled-By      : Oliver Neukum <oliver@neukum.org>
 Status          : unknown
 
 
 
-Networking
+Alpha
 
-Subject         : IP v4 routing is broken
-References      : http://www.stardust.webpages.pl/files/tbf/bugs/bug_report01.txt
-Last known good : 2.6.22-git2
-Submitter       : Uwe Bugla <uwe.bugla@gmx.de>
+Subject         : -Werror compilation problem - make[1]: *** [arch/alpha/kernel/sys_titan.o] Error 1
+References      : http://lkml.org/lkml/2007/8/6/137
+Last known good : ?
+Submitter       : Oliver Falk <oliver@linux-kernel.at>
 Caused-By       : ?
 Handled-By      : ?
-Status          : unknown
-
-Subject         : New wake ups from sky2
-References      : http://lkml.org/lkml/2007/7/20/386
-Last known good : ?
-Submitter       : Thomas Meyer <thomas@m3y3r.de>
-Caused-By       : Stephen Hemminger <shemminger@osdl.org>
-                  commit eb35cf60e462491249166182e3e755d3d5d91a28
-Handled-By      : Stephen Hemminger <shemminger@osdl.org>
 Status          : unknown
 
 
