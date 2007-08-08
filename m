@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763988AbXHHJs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765138AbXHHJs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763988AbXHHJs0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757212AbXHHJsT
+	id S1765138AbXHHJs5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757998AbXHHJsp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:48:19 -0400
-Received: from cluster-d.mailcontrol.com ([217.69.20.190]:55321 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755949AbXHHJsS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:48:18 -0400
-Message-ID: <46B990F0.2020001@csr.com>
-Date: Wed, 08 Aug 2007 10:46:24 +0100
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/4] sdio: set the functions' block size
-References: <11858961933491-git-send-email-david.vrabel@csr.com>	<20070804152304.65ed8f1b@poseidon.drzeus.cx>	<46B6F877.7060504@csr.com>	<20070806171207.59fafa18@poseidon.drzeus.cx>	<46B73F18.5030109@csr.com>	<20070806220145.66b97559@poseidon.drzeus.cx>	<46B86ADB.90000@csr.com>	<46B86B88.5050009@csr.com>	<20070807153800.734a6cbf@poseidon.drzeus.cx>	<46B8A9DA.9030804@csr.com> <20070807195445.62d107e2@poseidon.drzeus.cx>
-In-Reply-To: <20070807195445.62d107e2@poseidon.drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 8 Aug 2007 05:48:45 -0400
+Received: from mx2.suse.de ([195.135.220.15]:47529 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759355AbXHHJso (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 05:48:44 -0400
+Subject: Re: [PATCH] thinkpad acpi module_exit fix
+From: Thomas Renninger <trenn@suse.de>
+Reply-To: trenn@suse.de
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: hmh@hmh.eng.br, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
+References: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
+Content-Type: text/plain
+Organization: Novell/SUSE
+Date: Wed, 08 Aug 2007 11:48:40 +0200
+Message-Id: <1186566520.8780.140.camel@queen.suse.de>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Aug 2007 09:46:34.0863 (UTC) FILETIME=[01ED27F0:01C7D9A1]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
+On Wed, 2007-08-08 at 16:43 +0000, Dave Young wrote:
+> Hi,
 > 
->> A driver might enable/disable a function multiple
->> times but there's no need to set the block size every time.
+> [This fix is not very good for the global variable, any comments are
+> welcome.]
 > 
-> Why would it want to do that?
+> The thinkpad_acpi module_init fail out entrace is not very properly. if
+> failing before register driver or before create sysfs file, the
+> module_exit will try to remove nonexist sysfs files, the kernel will
+> oops.
+This one is already fixed in Len's git tree in the test branch and will
+get merged to Linus soon (commit id:
+ac36393de6034be7266264a435360e7628849005).
 
-A function enable/disable cycle should act as a per-function reset.
+The (similar) patch got posted on linux-acpi with subject:
+[PATCH 05/12] ACPI: thinkpad-acpi: fix the module init failure path
+(Fri,  3 Aug 2007 18:33:38)
 
-David
--- 
-David Vrabel, Software Engineer, Drivers group  Tel: +44 (0)1223 692562
-CSR plc, Churchill House, Cambridge Business Park, Cowley Road, CB4 0WZ
+    Thomas
 
-
-.
