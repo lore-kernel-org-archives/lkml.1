@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764882AbXHHMQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765828AbXHHMQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764882AbXHHMQW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755191AbXHHMQJ
+	id S1765828AbXHHMQn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759698AbXHHMQ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:16:09 -0400
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:33078 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753062AbXHHMQH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:16:07 -0400
-X-Sasl-enc: /5NI0UDuBJKXFQCLBfJB2QjWhpw5g6z+Z/InTbAt2ORo 1186575366
-Date: Wed, 8 Aug 2007 09:16:03 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] thinkpad acpi module_exit fix
-Message-ID: <20070808121603.GC554@khazad-dum.debian.net>
-References: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
-MIME-Version: 1.0
+	Wed, 8 Aug 2007 08:16:28 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:48440 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1765381AbXHHMQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 08:16:26 -0400
+Date: Wed, 8 Aug 2007 14:16:58 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
+Cc: cebbert <cebbert@redhat.com>, mingo <mingo@elte.hu>,
+       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
+       torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       shemminger <shemminger@linux-foundation.org>,
+       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
+       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
+Subject: Re: 2.6.20->2.6.21 - networking dies after random time
+Message-ID: <20070808121658.GA4110@ff.dom.local>
+References: <JMG6AY$2339D4FEA804188F4C6D4F66006A6BB6@xandmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070808164334.GA2732@darkstar.te-china.tietoenator.com>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.16 (2007-06-11)
+In-Reply-To: <JMG6AY$2339D4FEA804188F4C6D4F66006A6BB6@xandmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 08 Aug 2007, Dave Young wrote:
-> [This fix is not very good for the global variable, any comments are
-> welcome.]
+On Wed, Aug 08, 2007 at 10:59:22AM +0200, Jean-Baptiste Vignaud wrote:
+...
+> > If you would like to read something more about testing (then of
+> > course my suggestions could occur invalid - I'm a very bad tester
+> > myself...) you can try this:
+> > http://www.stardust.webpages.pl/files/handbook/
 > 
-> The thinkpad_acpi module_init fail out entrace is not very properly. if
-> failing before register driver or before create sysfs file, the
-> module_exit will try to remove nonexist sysfs files, the kernel will
-> oops.
-> 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> I'll have a look at the document.
 
-NAK, this is already fixed in Len's tree.
+BTW: this document describes some methods for a kind of 'professional'
+testing (so you could save time if you do it very often). But, you
+shouldn't think all this knowledge or tools are necessary. So, you can
+skip many such things and still do very valuable testing with simpler
+methods. And there are a lot of simple & good advices as well.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+BTW #2: this all testing of older versions, which I've described, has
+of course any reason only if after present patches you'll still think
+the older kernel had worked better for you.
+
+Jarek P. 
