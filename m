@@ -1,20 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934323AbXHHNbg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933055AbXHHNih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934323AbXHHNbg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 09:31:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763728AbXHHNbV
+	id S933055AbXHHNih (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 09:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbXHHNi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 09:31:21 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46657 "EHLO
+	Wed, 8 Aug 2007 09:38:26 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:46878 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764934AbXHHNbT (ORCPT
+	with ESMTP id S1751612AbXHHNiZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 09:31:19 -0400
-Date: Wed, 8 Aug 2007 14:38:49 +0100
+	Wed, 8 Aug 2007 09:38:25 -0400
+Date: Wed, 8 Aug 2007 14:45:32 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Scott_Kilau@digi.com, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] jsm: Remove further unneeded crud
-Message-ID: <20070808143849.7b970df1@the-village.bc.nu>
+To: Laurent Pinchart <laurentp@cse-semaphore.com>, paulkf@microgate.com
+Cc: linux-kernel@vger.kernel.org, paulkf@microgate.com
+Subject: Re: Serial buffer memory leak
+Message-ID: <20070808144532.5e3a1998@the-village.bc.nu>
+In-Reply-To: <200708081158.06843.laurentp@cse-semaphore.com>
+References: <200708081158.06843.laurentp@cse-semaphore.com>
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -25,87 +28,124 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove some remaining vestiges of the old hacks jsm had to work around
-the old tty buffering. With the new tty buffering it simply doesn't
-matter any more.
+> I'm not familiar enough with the tty code to decide what the proper fix should 
+> be. I'll try to write a patch if someone could point me in the right 
+> direction.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+Something like this perhaps ?
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1-mm1/drivers/serial/jsm/jsm_tty.c linux-2.6.23rc1-mm1/drivers/serial/jsm/jsm_tty.c
---- linux.vanilla-2.6.23rc1-mm1/drivers/serial/jsm/jsm_tty.c	2007-07-26 15:01:46.000000000 +0100
-+++ linux-2.6.23rc1-mm1/drivers/serial/jsm/jsm_tty.c	2007-08-08 11:49:49.000000000 +0100
-@@ -500,7 +500,6 @@
- {
- 	struct jsm_board *bd;
- 	struct tty_struct *tp;
--	struct tty_ldisc *ld;
- 	u32 rmask;
- 	u16 head;
- 	u16 tail;
-@@ -574,45 +573,13 @@
- 
- 	jsm_printk(READ, INFO, &ch->ch_bd->pci_dev, "start 2\n");
- 
--	/*
--	 * If the rxbuf is empty and we are not throttled, put as much
--	 * as we can directly into the linux TTY buffer.
--	 *
--	 */
--	flip_len = TTY_FLIPBUF_SIZE;
--
--	len = min(data_len, flip_len);
--	len = min(len, (N_TTY_BUF_SIZE - 1) - tp->read_cnt);
--	ld = tty_ldisc_ref(tp);
--
--	/*
--	 * If we were unable to get a reference to the ld,
--	 * don't flush our buffer, and act like the ld doesn't
--	 * have any space to put the data right now.
--	 */
--	if (!ld) {
--		len = 0;
--	} else {
--		/*
--		 * If ld doesn't have a pointer to a receive_buf function,
--		 * flush the data, then act like the ld doesn't have any
--		 * space to put the data right now.
--		 */
--		if (!ld->receive_buf) {
--				ch->ch_r_head = ch->ch_r_tail;
--				len = 0;
--		}
--	}
--
--	if (len <= 0) {
-+	if (data_len <= 0) {
- 		spin_unlock_irqrestore(&ch->ch_lock, lock_flags);
- 		jsm_printk(READ, INFO, &ch->ch_bd->pci_dev, "jsm_input 1\n");
--		if (ld)
--			tty_ldisc_deref(ld);
- 		return;
- 	}
- 
--	len = tty_buffer_request_room(tp, len);
-+	len = tty_buffer_request_room(tp, data_len);
- 	n = len;
- 
- 	/*
-@@ -647,7 +614,7 @@
- 				else if (*(ch->ch_equeue +tail +i) & UART_LSR_FE)
- 					tty_insert_flip_char(tp, *(ch->ch_rqueue +tail +i), TTY_FRAME);
- 				else
--				tty_insert_flip_char(tp, *(ch->ch_rqueue +tail +i), TTY_NORMAL);
-+					tty_insert_flip_char(tp, *(ch->ch_rqueue +tail +i), TTY_NORMAL);
- 			}
- 		} else {
- 			tty_insert_flip_string(tp, ch->ch_rqueue + tail, s) ;
-@@ -666,9 +633,6 @@
- 	/* Tell the tty layer its okay to "eat" the data now */
- 	tty_flip_buffer_push(tp);
- 
--	if (ld)
--		tty_ldisc_deref(ld);
--
- 	jsm_printk(IOCTL, INFO, &ch->ch_bd->pci_dev, "finish\n");
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1-mm1/drivers/char/tty_io.c linux-2.6.23rc1-mm1/drivers/char/tty_io.c
+--- linux.vanilla-2.6.23rc1-mm1/drivers/char/tty_io.c	2007-07-26 15:02:57.000000000 +0100
++++ linux-2.6.23rc1-mm1/drivers/char/tty_io.c	2007-08-08 11:39:29.791433672 +0100
+@@ -369,25 +369,50 @@
  }
  
+ /**
+- *	tty_buffer_flush		-	flush full tty buffers
++ *	__tty_buffer_flush		-	flush full tty buffers
+  *	@tty: tty to flush
+  *
+- *	flush all the buffers containing receive data
++ *	flush all the buffers containing receive data. Caller must
++ *	hold the buffer lock and must have ensured no parallel flush to
++ *	ldisc is running.
+  *
+  *	Locking: none
+  */
+ 
+-static void tty_buffer_flush(struct tty_struct *tty)
++static void __tty_buffer_flush(struct tty_struct *tty)
+ {
+ 	struct tty_buffer *thead;
+-	unsigned long flags;
+ 
+-	spin_lock_irqsave(&tty->buf.lock, flags);
+ 	while((thead = tty->buf.head) != NULL) {
+ 		tty->buf.head = thead->next;
+ 		tty_buffer_free(tty, thead);
+ 	}
+ 	tty->buf.tail = NULL;
++}
++
++/**
++ *	tty_buffer_flush		-	flush full tty buffers
++ *	@tty: tty to flush
++ *
++ *	flush all the buffers containing receive data. If the buffer is
++ *	being processed by flush_to_ldisc then we defer the processing
++ *	to that function
++ *
++ *	Locking: none
++ */
++ 
++static void tty_buffer_flush(struct tty_struct *tty)
++{
++	unsigned long flags;
++	spin_lock_irqsave(&tty->buf.lock, flags);
++	
++	/* If the data is being pushed to the tty layer then we can't
++	   process it here. Instead set a flag and the flush_to_ldisc
++	   path will process the flush request before it exits */
++	if (tty->buf.flushing)
++		tty->buf.flushpending = 1;
++	else
++		__tty_buffer_flush(tty);
+ 	spin_unlock_irqrestore(&tty->buf.lock, flags);
+ }
+ 
+@@ -3594,6 +3619,7 @@
+ 		return;
+ 
+ 	spin_lock_irqsave(&tty->buf.lock, flags);
++	tty->buf.flushing = 1;	/* So we know for tty_flush_buffers */
+ 	head = tty->buf.head;
+ 	if (head != NULL) {
+ 		tty->buf.head = NULL;
+@@ -3607,6 +3633,11 @@
+ 				tty_buffer_free(tty, tbuf);
+ 				continue;
+ 			}
++			/* Ldisc or user is trying to flush the buffers
++			   we are feeding to the ldisc, stop feeding the 
++			   line discipline as we want to empty the queue */
++			if (tty->buf.flushpending)
++				break;
+ 			if (!tty->receive_room) {
+ 				schedule_delayed_work(&tty->buf.work, 1);
+ 				break;
+@@ -3620,8 +3651,16 @@
+ 			disc->receive_buf(tty, char_buf, flag_buf, count);
+ 			spin_lock_irqsave(&tty->buf.lock, flags);
+ 		}
++		/* Restore the queue head */
+ 		tty->buf.head = head;
++		/* We may have a deferred request to flush the input buffer,
++		   if so do it now under the lock and empty the queue */
++		if (tty->buf.flushpending) {
++			__tty_buffer_flush(tty);
++			tty->buf.flushpending = 0;
++		}
+ 	}
++	tty->buf.flushing = 0;
+ 	spin_unlock_irqrestore(&tty->buf.lock, flags);
+ 
+ 	tty_ldisc_deref(disc);
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.23rc1-mm1/include/linux/tty.h linux-2.6.23rc1-mm1/include/linux/tty.h
+--- linux.vanilla-2.6.23rc1-mm1/include/linux/tty.h	2007-07-26 15:02:04.000000000 +0100
++++ linux-2.6.23rc1-mm1/include/linux/tty.h	2007-08-08 11:44:32.000000000 +0100
+@@ -80,13 +73,10 @@
+ 	struct tty_buffer *tail;	/* Active buffer */
+ 	struct tty_buffer *free;	/* Free queue head */
+ 	int memory_used;		/* Buffer space used excluding free queue */
++	unsigned int flushing:1;	/* flush_to_ldisc active */
++	unsigned int flushpending:1;	/* A request to clear the queue is pending */
+ };
+ /*
+- * The pty uses char_buf and flag_buf as a contiguous buffer
+- */
+-#define PTY_BUF_SIZE	4*TTY_FLIPBUF_SIZE
+-
+-/*
+  * When a break, frame error, or parity error happens, these codes are
+  * stuffed into the flags buffer.
+  */
