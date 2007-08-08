@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936377AbXHHVGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936785AbXHHVIh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936377AbXHHVGr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763806AbXHHVGk
+	id S936785AbXHHVIh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:08:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763049AbXHHVI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:06:40 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:38204 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763049AbXHHVGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:06:39 -0400
-Date: Wed, 8 Aug 2007 22:06:37 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
-       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/3] Use zonelists instead of zones when direct reclaiming pages
-Message-ID: <20070808210637.GA2441@skynet.ie>
-References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie> <20070808161524.32320.87008.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708081037450.12652@schroedinger.engr.sgi.com>
+	Wed, 8 Aug 2007 17:08:29 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:46978 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755713AbXHHVI3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 17:08:29 -0400
+Date: Wed, 8 Aug 2007 17:08:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] hex_dump: add missing "const" qualifiers
+Message-ID: <Pine.LNX.4.44L0.0708081650370.2737-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0708081037450.12652@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (08/08/07 10:38), Christoph Lameter didst pronounce:
-> Good idea. Maybe it could be taken further by passing the zonelist also 
-> into shrink_zones()?
-> 
+This patch (as956) adds a couple of missing "const" qualifiers to the
+print_hex_dump library routines.
 
-Yeah, it could. It's a cleanup even though it doesn't simplify the
-iterator. When the patch was done first, it was because multiple
-iterators were needed to go through the zones in the zonelist. With this
-cleanup, only one iterator was needed but it could be carried through
-for consistency.
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 
-Thanks
+---
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Is this suitable for merging right away?  It should be safe enough.
+
+Alan Stern
+
+
+
+Index: usb-2.6/include/linux/kernel.h
+===================================================================
+--- usb-2.6.orig/include/linux/kernel.h
++++ usb-2.6/include/linux/kernel.h
+@@ -224,9 +224,9 @@ extern void hex_dump_to_buffer(const voi
+ 				char *linebuf, size_t linebuflen, bool ascii);
+ extern void print_hex_dump(const char *level, const char *prefix_str,
+ 				int prefix_type, int rowsize, int groupsize,
+-				void *buf, size_t len, bool ascii);
++				const void *buf, size_t len, bool ascii);
+ extern void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+-			void *buf, size_t len);
++			const void *buf, size_t len);
+ #define hex_asc(x)	"0123456789abcdef"[x]
+ 
+ #ifdef DEBUG
+Index: usb-2.6/lib/hexdump.c
+===================================================================
+--- usb-2.6.orig/lib/hexdump.c
++++ usb-2.6/lib/hexdump.c
+@@ -145,9 +145,9 @@ EXPORT_SYMBOL(hex_dump_to_buffer);
+  */
+ void print_hex_dump(const char *level, const char *prefix_str, int prefix_type,
+ 			int rowsize, int groupsize,
+-			void *buf, size_t len, bool ascii)
++			const void *buf, size_t len, bool ascii)
+ {
+-	u8 *ptr = buf;
++	const u8 *ptr = buf;
+ 	int i, linelen, remaining = len;
+ 	unsigned char linebuf[200];
+ 
+@@ -189,7 +189,7 @@ EXPORT_SYMBOL(print_hex_dump);
+  * rowsize of 16, groupsize of 1, and ASCII output included.
+  */
+ void print_hex_dump_bytes(const char *prefix_str, int prefix_type,
+-			void *buf, size_t len)
++			const void *buf, size_t len)
+ {
+ 	print_hex_dump(KERN_DEBUG, prefix_str, prefix_type, 16, 1,
+ 			buf, len, 1);
+
