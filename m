@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762633AbXHHMW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764773AbXHHMXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762633AbXHHMW7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbXHHMWx
+	id S1764773AbXHHMXp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753180AbXHHMXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:22:53 -0400
-Received: from ipsec.mad.optenet.com ([213.27.232.70]:50469 "EHLO
-	mta-mad.optenet.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751573AbXHHMWw (ORCPT
+	Wed, 8 Aug 2007 08:23:37 -0400
+Received: from mtiwmhc13.worldnet.att.net ([204.127.131.117]:33898 "EHLO
+	mtiwmhc13.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751837AbXHHMXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:22:52 -0400
-X-Greylist: delayed 1939 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 08:22:51 EDT
-Subject: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed sockets
-From: Unai Uribarri <unai.uribarri@optenet.com>
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Optenet
-Date: Wed, 08 Aug 2007 13:50:29 +0200
-Message-Id: <1186573829.24669.52.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 8 Aug 2007 08:23:36 -0400
+Message-ID: <46B9B5C6.2070100@lwfinger.net>
+Date: Wed, 08 Aug 2007 07:23:34 -0500
+From: Larry Finger <larry.finger@lwfinger.net>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: Error message from device_rename in drivers/base/core.c
+References: <46B943D3.9020207@lwfinger.net>	<20070807.213724.27783161.davem@davemloft.net> <20070808113359.71e77f49@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070808113359.71e77f49@gondolin.boeblingen.de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello folks,
+Cornelia Huck wrote:
+> On Tue, 07 Aug 2007 21:37:24 -0700 (PDT),
+> David Miller <davem@davemloft.net> wrote:
+> 
+>> I think this check belongs in udev not in the kernel.  Thankfully
+>> this message at least tells us it is happening, please don't
+>> remove it.
+> 
+> Hm, device_rename() could alternatively just return success if
+> dev->bus_id and new_name are the same.
 
-I've discovered two strange behaviours (bugs?) about timestamp
-generation:
+That is what my proposed patch did. One could argue that the test should come before the failure, 
+not after, but the effect is the same.
 
-1. If a program opens an AF_PACKET socket and setup a reception ring
-with setsockopt(sock, SOL_PACKET, PACKET_RX_RING), timestamps are
-automatically (re)enabled at the reception of every packet.
+>> I'm pretty sure it's UDEV doing this, and it should not try to rename
+>> a netdevice to what it already is named.
+> 
+> But it shouldn't cause an error either :)
 
-2. Setting SOL_SOCKET/SO_TIMESTAMP to 0 doesn't disables timestamp
-generation. Every skb continues begin timestamped until you close the
-socket that activated it.
-
-
-Timestamp generation is a heavy task that is consuming more than 50% of
-the CPU (using ACPI PM clock) and is currently the bottleneck in my
-packet capturing application.
-
-The attached patch removes the automatic timestamp activation, that
-only mmap'ed AF_PACKET sockets perform. I known it can break user
-applications, but I believe that it's the correct solution.
-
-I will be very pleased to receive any feedback.
-
-Signed-off-by: Unai Uribarri <unai.uribarri@optenet.com>
-
----
-
-diff --git a/net/packet/af_packet.c b/net/packet/af_packet.c
-index 1322d62..a4f2da3 100644
---- a/net/packet/af_packet.c
-+++ b/net/packet/af_packet.c
-@@ -640,10 +640,6 @@ static int tpacket_rcv(struct sk_buff *skb, struct net_device *dev, struct packe
-        h->tp_snaplen = snaplen;
-        h->tp_mac = macoff;
-        h->tp_net = netoff;
--       if (skb->tstamp.tv64 == 0) {
--               __net_timestamp(skb);
--               sock_enable_timestamp(sk);
--       }
-        tv = ktime_to_timeval(skb->tstamp);
-        h->tp_sec = tv.tv_sec;
-        h->tp_usec = tv.tv_usec;
-
-
-
+I agree with you, but you and David can fight it out. While finding out where to ask/complain about 
+udev, I had a private communication with GregKH. He thinks that a patch to fix this has already been 
+pushed through Linus. As Linville's wireless-dev tree is a little behind, I'm waiting to see if it 
+gets fixed here by 2.6.23-rc3. If not, I'll talk to the udev/hotplug folks.
