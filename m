@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764706AbXHHHOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764902AbXHHHPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764706AbXHHHOk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760412AbXHHHIg
+	id S1764902AbXHHHPB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760477AbXHHHIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:08:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:43895 "EHLO mx1.redhat.com"
+	Wed, 8 Aug 2007 03:08:38 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43897 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760240AbXHHHIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760246AbXHHHIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 8 Aug 2007 03:08:35 -0400
 From: Glauber de Oliveira Costa <gcosta@redhat.com>
 To: linux-kernel@vger.kernel.org
@@ -16,50 +16,49 @@ Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
        anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
        lguest@ozlabs.org, Glauber de Oliveira Costa <gcosta@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 11/25] [PATCH] introduce paravirt_release_pgd()
-Date: Wed,  8 Aug 2007 01:18:58 -0300
-Message-Id: <11865467973510-git-send-email-gcosta@redhat.com>
+Subject: [PATCH 24/25] [PATCH] provide paravirt patching function
+Date: Wed,  8 Aug 2007 01:19:11 -0300
+Message-Id: <1186546847263-git-send-email-gcosta@redhat.com>
 X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11865467931543-git-send-email-gcosta@redhat.com>
-References: <11865467522495-git-send-email-gcosta@redhat.com> <11865467592921-git-send-email-gcosta@redhat.com> <1186546763582-git-send-email-gcosta@redhat.com> <11865467662182-git-send-email-gcosta@redhat.com> <11865467702103-git-send-email-gcosta@redhat.com> <11865467741753-git-send-email-gcosta@redhat.com> <11865467773012-git-send-email-gcosta@redhat.com> <11865467812610-git-send-email-gcosta@redhat.com> <1186546785346-git-send-email-gcosta@redhat.com> <1186546789356-git-send-email-gcosta@redhat.com> <11865467931543-git-send-email-gcosta@redhat.com>
+In-Reply-To: <11865468431616-git-send-email-gcosta@redhat.com>
+References: <11865467522495-git-send-email-gcosta@redhat.com> <11865467592921-git-send-email-gcosta@redhat.com> <1186546763582-git-send-email-gcosta@redhat.com> <11865467662182-git-send-email-gcosta@redhat.com> <11865467702103-git-send-email-gcosta@redhat.com> <11865467741753-git-send-email-gcosta@redhat.com> <11865467773012-git-send-email-gcosta@redhat.com> <11865467812610-git-send-email-gcosta@redhat.com> <1186546785346-git-send-email-gcosta@redhat.com> <1186546789356-git-send-email-gcosta@redhat.com> <11865467931543-git-send-email-gcosta@redhat.com> <11865467973510-git-send-email-gcosta@redhat.com> <11865468003673-git-send-email-gcosta@redhat.com> <11865468043920-git-send-email-gcosta@redhat.com> <118654680831-git-send-email-gcosta@redhat.com> <11865468122642-git-send-email-gcosta@redhat.com> <11865468162812-git-send-email-gcosta@redhat.com> <1186546820708-git-send-email-gcosta@redhat.com> <11865468243612-git-send-email-gcosta@redhat.com> <11865468281860-git-send-email-gc!
+ osta@redhat.com> <11865468321629-git-send-email-gcosta@redhat.com> <11865468362401-git-send-email-gcosta@redhat.com> <11865468394005-git-send-email-gcosta@redhat.com> <11865468431616-git-send-email-gcosta@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a new macro/function that informs a paravirt
-guest when its page table is not more in use, and can be released.
-In case we're not paravirt, just do nothing.
+This patch introduces apply_paravirt(), a function that shall
+be called by i386/alternative.c to apply replacements to
+paravirt_functions. It is defined to an do-nothing function
+if paravirt is not enabled.
 
 Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/asm-x86_64/pgalloc.h |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ include/asm-x86_64/alternative.h |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/include/asm-x86_64/pgalloc.h b/include/asm-x86_64/pgalloc.h
-index b467be6..dbe1267 100644
---- a/include/asm-x86_64/pgalloc.h
-+++ b/include/asm-x86_64/pgalloc.h
-@@ -9,6 +9,12 @@
- #define QUICK_PGD 0	/* We preserve special mappings over free */
- #define QUICK_PT 1	/* Other page table pages that are zero on free */
+diff --git a/include/asm-x86_64/alternative.h b/include/asm-x86_64/alternative.h
+index ab161e8..e69a141 100644
+--- a/include/asm-x86_64/alternative.h
++++ b/include/asm-x86_64/alternative.h
+@@ -143,12 +143,14 @@ static inline void alternatives_smp_switch(int smp) {}
+  */
+ #define ASM_OUTPUT2(a, b) a, b
  
-+#ifdef CONFIG_PARAVIRT
-+#include <asm/paravirt.h>
-+#else
-+#define paravirt_release_pgd(pgd) do { } while (0)
-+#endif
-+
- #define pmd_populate_kernel(mm, pmd, pte) \
- 		set_pmd(pmd, __pmd(_PAGE_TABLE | __pa(pte)))
- #define pud_populate(mm, pud, pmd) \
-@@ -100,6 +106,7 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
- static inline void pgd_free(pgd_t *pgd)
- {
- 	BUG_ON((unsigned long)pgd & (PAGE_SIZE-1));
-+	paravirt_release_pgd(pgd);
- 	quicklist_free(QUICK_PGD, pgd_dtor, pgd);
- }
- 
+-struct paravirt_patch;
++struct paravirt_patch_site;
+ #ifdef CONFIG_PARAVIRT
+-void apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end);
++void apply_paravirt(struct paravirt_patch_site *start,
++				struct paravirt_patch_site *end);
+ #else
+ static inline void
+-apply_paravirt(struct paravirt_patch *start, struct paravirt_patch *end)
++apply_paravirt(struct paravirt_patch_site *start,
++				struct paravirt_patch_site *end)
+ {}
+ #define __parainstructions NULL
+ #define __parainstructions_end NULL
 -- 
 1.4.4.2
 
