@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935524AbXHHQWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935215AbXHHQWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935524AbXHHQWV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765240AbXHHQVz
+	id S935215AbXHHQWy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934053AbXHHQWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:21:55 -0400
-Received: from lazybastard.de ([212.112.238.170]:42363 "EHLO
+	Wed, 8 Aug 2007 12:22:40 -0400
+Received: from lazybastard.de ([212.112.238.170]:42370 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932438AbXHHQVx (ORCPT
+	with ESMTP id S932960AbXHHQWh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:21:53 -0400
-Date: Wed, 8 Aug 2007 18:17:57 +0200
+	Wed, 8 Aug 2007 12:22:37 -0400
+Date: Wed, 8 Aug 2007 18:18:41 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 To: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org, akpm@osdl.org,
        David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [Patch 07/18] fs/logfs/gc.c
-Message-ID: <20070808161757.GI15319@lazybastard.org>
+Subject: [Patch 08/18] fs/logfs/inode.c
+Message-ID: <20070808161841.GJ15319@lazybastard.org>
 References: <20070808161234.GB15319@lazybastard.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
@@ -29,409 +29,519 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 --- /dev/null	2007-08-05 21:14:35.622844160 +0200
-+++ linux-2.6.21logfs/fs/logfs/gc.c	2007-08-08 02:57:37.000000000 +0200
-@@ -0,0 +1,404 @@
++++ linux-2.6.21logfs/fs/logfs/inode.c	2007-08-08 02:57:37.000000000 +0200
+@@ -0,0 +1,514 @@
 +/*
-+ * fs/logfs/gc.c	- garbage collection code
++ * fs/logfs/inode.c	- inode handling code
 + *
 + * As should be obvious for Linux kernel code, license is GPLv2
 + *
 + * Copyright (c) 2005-2007 Joern Engel <joern@logfs.org>
 + */
 +#include "logfs.h"
-+
-+#if 0
-+/*
-+ * When deciding which segment to use next, calculate the resistance
-+ * of each segment and pick the lowest.  Segments try to resist usage
-+ * if
-+ * o they are full,
-+ * o they have a high erase count or
-+ * o they have recently been written.
-+ *
-+ * Full segments should not get reused, as there is little space to
-+ * gain from them.  Segments with high erase count should be left
-+ * aside as they can wear out sooner than others.  Freshly-written
-+ * segments contain many blocks that will get obsoleted fairly soon,
-+ * so it helps to wait a little before reusing them.
-+ *
-+ * Total resistance is expressed in erase counts.  Formula is:
-+ *
-+ * R = EC + K1*F + K2*e^(-t/theta)
-+ *
-+ * R:	Resistance
-+ * EC:	Erase count
-+ * K1:	Constant, 10,000 might be a good value
-+ * K2:	Constant,  1,000 might be a good value
-+ * F:	Segment fill level
-+ * t:	Time since segment was written to (in number of segments written)
-+ * theta: Time constant.  Total number of segments might be a good value
-+ *
-+ * Since the kernel is not allowed to use floating point, the function
-+ * decay() is used to approximate exponential decay in fixed point.
-+ */
-+static long decay(long t0, long t, long theta)
-+{
-+	long shift, fac;
-+
-+	if (t >= 32*theta)
-+		return 0;
-+
-+	shift = t/theta;
-+	fac = theta - (t%theta)/2;
-+	return (t0 >> shift) * fac / theta;
-+}
-+#endif
-+
-+static int segment_is_reserved(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_area *area;
-+	struct gc_candidate *cand;
-+	void *reserved;
-+	int i;
-+
-+	/* Some segments are reserved.  Just pretend they were all valid */
-+	reserved = btree_lookup(&super->s_reserved_segments, segno);
-+	if (reserved)
-+		return 1;
-+
-+	/* Currently open segments */
-+	for (i=0; i<LOGFS_NO_AREAS; i++) {
-+		area = super->s_area[i];
-+		if (area->a_is_open && area->a_segno == segno)
-+			return 1;
-+	}
-+
-+	/* On the free list */
-+	list_for_each_entry(cand, &super->s_free_list, list)
-+		if (cand->segno == segno)
-+			return 1;
-+
-+	return 0;
-+}
++#include <linux/writeback.h>
 +
 +/*
-+ * Count the bytes consumed by valid objects in this segment.  Object headers
-+ * are counted, the segment header is not.
++ * We need to include <linux/writeback.h> - a header we normally shouldn't
++ * be mucking with.  If life only were that easy!
++ *
++ * As it is, LogFS' requirement to read inodes for garbage collection keeps
++ * breaking Linux assumptions.  In particular, an inode can get be in
++ * I_DELETING state when being written out.  Logfs then notices that it
++ * needs some space, does a little GC and tries to read just the inode in
++ * I_DELETING state.  So the code is waiting for itself to finish, lovely.
++ *
++ * Our strategy to solve this problem is to overload the generic drop_inode()
++ * and destroy_inode() methods.  Writeback happens between those two calls,
++ * so add the inode to a list in drop_inode() and remove it again in
++ * destroy_inode().  Any iget() in the GC path is replaced with logfs_iget(),
++ * which will check the list and only call the blocking iget() if the inode
++ * in question cannot deadlock.
++ *
++ * And of course this would be racy if we didn't take inode_lock in a few
++ * key moments.
 + */
-+static u32 logfs_valid_bytes(struct super_block *sb, u32 segno, u8 *level)
++static struct kmem_cache *logfs_inode_cache;
++
++static int __logfs_read_inode(struct inode *inode);
++
++static struct inode *__logfs_iget(struct super_block *sb, unsigned long ino)
 +{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_segment_header sh;
-+	struct logfs_object_header oh;
-+	u64 ofs, ino, pos;
-+	u32 seg_ofs, valid, size;
++	struct inode *inode = iget_locked(sb, ino);
 +	int err;
 +
-+	if (segment_is_reserved(sb, segno))
-+		return super->s_segsize;
-+
-+	err = device_read(sb, segno, 0, sizeof(sh), &sh);
-+	BUG_ON(err);
-+	if (!memchr_inv(&sh, 0xff, sizeof(sh)))
-+		return 0;
-+
-+	*level = sh.level;
-+
-+	valid = 0;
-+	for (seg_ofs = LOGFS_SEGMENT_HEADERSIZE;
-+			seg_ofs + sizeof(oh) < super->s_segsize;) {
-+		err = device_read(sb, segno, seg_ofs, sizeof(oh), &oh);
-+		BUG_ON(err);
-+		if (!memchr_inv(&oh, 0xff, sizeof(oh)))
-+			break;
-+
-+		ofs = dev_ofs(sb, segno, seg_ofs);
-+		ino = be64_to_cpu(oh.ino);
-+		pos = be64_to_cpu(oh.pos);
-+		size = (u32)be16_to_cpu(oh.len) + sizeof(oh);
-+		if (logfs_is_valid_block(sb, ofs, ino, pos))
-+			valid += size;
-+		seg_ofs += size;
-+	}
-+	pr_debug(KERN_INFO "LOGFS valid(%x) = %x\n", segno, valid);
-+	return valid;
-+}
-+
-+static void logfs_cleanse_block(struct super_block *sb, u64 ofs, u64 ino,
-+		u64 pos, int level)
-+{
-+	struct inode *inode;
-+	int err, cookie;
-+
-+	inode = logfs_iget(sb, ino, &cookie);
-+	BUG_ON(!inode);
-+	err = logfs_rewrite_block(inode, pos, ofs, level);
-+	BUG_ON(err);
-+	logfs_iput(inode, cookie);
-+}
-+
-+static void __logfs_gc_segment(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct logfs_segment_header sh;
-+	struct logfs_object_header oh;
-+	u64 ofs, ino, pos;
-+	u32 seg_ofs;
-+	int level, err;
-+
-+	err = device_read(sb, segno, 0, sizeof(sh), &sh);
-+	BUG_ON(err);
-+	level = sh.level;
-+
-+	for (seg_ofs = LOGFS_SEGMENT_HEADERSIZE;
-+			seg_ofs + sizeof(oh) < super->s_segsize; ) {
-+		ofs = dev_ofs(sb, segno, seg_ofs);
-+		err = device_read(sb, segno, seg_ofs, sizeof(oh), &oh);
-+		BUG_ON(err);
-+		ino = be64_to_cpu(oh.ino);
-+		pos = be64_to_cpu(oh.pos);
-+		if (logfs_is_valid_block(sb, ofs, ino, pos))
-+			logfs_cleanse_block(sb, ofs, ino, pos, level);
-+		seg_ofs += sizeof(oh);
-+		seg_ofs += be16_to_cpu(oh.len);
-+	}
-+}
-+
-+static void logfs_gc_segment(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i;
-+	void *reserved;
-+
-+	/* Some segments are reserved.  Just pretend they were all valid */
-+	reserved = btree_lookup(&super->s_reserved_segments, segno);
-+	LOGFS_BUG_ON(reserved, sb);
-+
-+	/* Currently open segments */
-+	for (i=0; i<LOGFS_NO_AREAS; i++) {
-+		struct logfs_area *area = super->s_area[i];
-+		BUG_ON(area->a_is_open && (area->a_segno == segno));
-+	}
-+	__logfs_gc_segment(sb, segno);
-+}
-+
-+static void __add_segment(struct list_head *list, int *count, u32 segno,
-+		u8 level, int valid)
-+{
-+	struct gc_candidate *cand;
-+
-+	cand = kzalloc(sizeof(*cand), GFP_KERNEL);
-+	if (!cand)
-+		return;
-+
-+	cand->segno = segno;
-+	cand->valid = valid;
-+	cand->level = level;
-+	list_add(&cand->list, list);
-+	*count += 1;
-+}
-+
-+static void add_segment(struct list_head *list, int *count, u32 segno, u8 level,
-+		int valid)
-+{
-+	struct gc_candidate *cand;
-+
-+	list_for_each_entry(cand, list, list)
-+		if (cand->segno == segno)
-+			return;
-+	__add_segment(list, count, segno, level, valid);
-+}
-+
-+static void del_segment(struct list_head *list, int *count, u32 segno)
-+{
-+	struct gc_candidate *cand;
-+
-+	list_for_each_entry(cand, list, list)
-+		if (cand->segno == segno) {
-+			list_del(&cand->list);
-+			*count -= 1;
-+			kfree(cand);
-+			return;
-+		}
-+}
-+
-+static void add_free_segment(struct super_block *sb, u32 segno, u8 level)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	add_segment(&super->s_free_list, &super->s_free_count, segno, level, 0);
-+}
-+
-+static void add_low_segment(struct super_block *sb, u32 segno, u8 level,
-+		int valid)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	add_segment(&super->s_low_list, &super->s_low_count, segno, level,
-+			valid);
-+}
-+
-+static void del_low_segment(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	del_segment(&super->s_low_list, &super->s_low_count, segno);
-+}
-+
-+static void scan_segment(struct super_block *sb, u32 segno)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	u32 full = super->s_segsize - LOGFS_SEGMENT_RESERVE;
-+	int valid;
-+	u8 level = 0; /* shut up, gcc! */
-+
-+	del_low_segment(sb, segno);
-+	valid = logfs_valid_bytes(sb, segno, &level);
-+	if (valid == 0)
-+		add_free_segment(sb, segno, level);
-+	else if (valid < full)
-+		add_low_segment(sb, segno, level, valid);
-+}
-+
-+static void logfs_scan_pass(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int i;
-+
-+	for (i = super->s_sweeper+1; i != super->s_sweeper; i++) {
-+		if (i >= super->s_no_segs)
-+			i = 0;
-+
-+		scan_segment(sb, i);
-+
-+		if (super->s_free_count >= super->s_total_levels) {
-+			super->s_sweeper = i;
-+			return;
++	if (inode && (inode->i_state & I_NEW)) {
++		err = __logfs_read_inode(inode);
++		unlock_new_inode(inode);
++		if (err) {
++			/* set i_nlink to 0 to prevent caching */
++			inode->i_nlink = 0;
++			logfs_inode(inode)->li_flags |= LOGFS_IF_ZOMBIE;
++			iput(inode);
++			return NULL;
 +		}
 +	}
-+	scan_segment(sb, super->s_sweeper);
-+}
 +
-+static u8 root_distance(struct super_block *sb, u8 level)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+
-+	switch (level) {
-+	case 0:
-+	case 1:
-+	case 2:
-+	case 3:
-+		return super->s_ifile_levels + super->s_data_levels - level;
-+	case 6:
-+	case 7:
-+	case 8:
-+		return super->s_ifile_levels - (level-6);
-+	default:
-+		BUG();
-+	}
-+}
-+
-+static void logfs_gc_once(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	struct gc_candidate *cand, *next;
-+	u32 min_valid = super->s_segsize;
-+	u32 segno;
-+	u8 level;
-+
-+	LOGFS_BUG_ON(list_empty(&super->s_low_list), sb);
-+	list_for_each_entry_safe(cand, next, &super->s_low_list, list) {
-+		if (cand->valid >= min_valid)
-+			continue;
-+		if (root_distance(sb, cand->level) > super->s_free_count)
-+			continue;
-+		min_valid = cand->valid;
-+		list_del(&cand->list);
-+		list_add(&cand->list, &super->s_low_list);
-+	}
-+
-+	cand = list_entry(super->s_low_list.next, struct gc_candidate, list);
-+	list_del(&cand->list);
-+	super->s_low_count -= 1;
-+
-+	min_valid = cand->valid;
-+	segno = cand->segno;
-+	level = cand->level;
-+	kfree(cand);
-+	pr_debug("GC segment #%02x, level %x, %x required, %x free, %x valid\n",
-+			segno, level, root_distance(sb, level),
-+			super->s_free_count, min_valid);
-+	logfs_gc_segment(sb, segno);
-+	add_free_segment(sb, segno, level);
-+}
-+
-+/* GC all the low-count segments.  If necessary, rescan the medium.
-+ * If we made enough room, return */
-+static void logfs_gc_several(struct super_block *sb)
-+{
-+	struct logfs_super *super = logfs_super(sb);
-+	int rounds;
-+
-+	rounds = super->s_low_count;
-+
-+	for (; rounds; rounds--) {
-+		if (super->s_free_count < 5 || !super->s_low_count)
-+			logfs_scan_pass(sb);
-+		if (super->s_free_count >= super->s_total_levels)
-+			return;
-+		logfs_gc_once(sb);
-+	}
++	return inode;
 +}
 +
 +/*
-+ * In principle, this function should loop forever, looking for GC candidates
-+ * and moving data.  LogFS is designed in such a way that this loop is
-+ * guaranteed to terminate.
-+ *
-+ * Limiting the loop to four iterations serves purely to catch cases when
-+ * these guarantees have failed.  An actual endless loop is an obvious bug
-+ * and should be reported as such.
-+ *
-+ * But there is another nasty twist to this.  As I have described in my LCA
-+ * presentation, Garbage collection would have to limit itself to higher
-+ * levels if the number of available free segments goes down.  This code
-+ * doesn't and should fail spectacularly.  Yet - hard as I tried I haven't
-+ * been able to make it fail (short of a bug elsewhere).
-+ *
-+ * So in a way this code is intentionally wrong as a desperate cry for a
-+ * better testcase.  And I do expect to get blamed for it one day. :(
++ * is_cached is set to 1 if we hand out a cached inode, 0 otherwise.
++ * this allows logfs_iput to do the right thing later
 + */
-+void logfs_gc_pass(struct super_block *sb)
++struct inode *logfs_iget(struct super_block *sb, ino_t ino, int *is_cached)
 +{
 +	struct logfs_super *super = logfs_super(sb);
-+	int i;
++	struct logfs_inode *li;
 +
-+	for (i=4; i; i--) {
-+		if (super->s_free_count >= super->s_total_levels)
-+			return;
-+		logfs_scan_pass(sb);
++	if (ino == LOGFS_INO_MASTER)
++		return super->s_master_inode;
 +
-+		if (super->s_free_count >= super->s_total_levels)
-+			return;
-+		logfs_gc_several(sb);
-+		cond_resched();
-+	}
-+	logfs_fsck(sb);
-+	LOGFS_BUG(sb);
++	spin_lock(&inode_lock);
++	list_for_each_entry(li, &super->s_freeing_list, li_freeing_list)
++		if (li->vfs_inode.i_ino == ino) {
++			spin_unlock(&inode_lock);
++			*is_cached = 1;
++			return &li->vfs_inode;
++		}
++	spin_unlock(&inode_lock);
++
++	*is_cached = 0;
++	return __logfs_iget(sb, ino);
 +}
 +
-+int logfs_init_gc(struct logfs_super *super)
++void logfs_iput(struct inode *inode, int is_cached)
 +{
-+	super->s_free_count = 0;
-+	super->s_low_count = 0;
++	if (inode->i_ino == LOGFS_INO_MASTER)
++		return;
++
++	if (is_cached)
++		return;
++
++	iput(inode);
++}
++
++static void logfs_init_inode(struct inode *inode)
++{
++	struct logfs_inode *li = logfs_inode(inode);
++	int i;
++
++	li->li_flags	= LOGFS_IF_VALID;
++	li->li_used_bytes = 0;
++	li->li_transaction = NULL;
++	inode->i_uid	= 0;
++	inode->i_gid	= 0;
++	inode->i_size	= 0;
++	inode->i_blocks	= 0;
++	inode->i_ctime	= CURRENT_TIME;
++	inode->i_mtime	= CURRENT_TIME;
++	inode->i_nlink	= 1;
++	INIT_LIST_HEAD(&li->li_freeing_list);
++
++	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
++		li->li_data[i] = 0;
++
++	return;
++}
++
++static struct inode *logfs_alloc_inode(struct super_block *sb)
++{
++	struct logfs_inode *li;
++
++	li = kmem_cache_alloc(logfs_inode_cache, GFP_KERNEL);
++	if (!li)
++		return NULL;
++	logfs_init_inode(&li->vfs_inode);
++	return &li->vfs_inode;
++}
++
++/*
++ * In logfs inodes are written to an inode file.  The inode file, like any
++ * other file, is managed with a inode.  The inode file's inode, aka master
++ * inode, requires special handling in several respects.  First, it cannot be
++ * written to the inode file, so it is stored in the journal instead.
++ *
++ * Secondly, this inode cannot be written back and destroyed before all other
++ * inodes have been written.  The ordering is important.  Linux' VFS is happily
++ * unaware of the ordering constraint and would ordinarily destroy the master
++ * inode at umount time while other inodes are still in use and dirty.  Not
++ * good.
++ *
++ * So logfs makes sure the master inode is not written until all other inodes
++ * have been destroyed.  Sadly, this method has another side-effect.  The VFS
++ * will notice one remaining inode and print a frightening warning message.
++ * Worse, it is impossible to judge whether such a warning was caused by the
++ * master inode or any other inodes have leaked as well.
++ *
++ * Our attempt of solving this is with logfs_new_meta_inode() below.  Its
++ * purpose is to create a new inode that will not trigger the warning if such
++ * an inode is still in use.  An ugly hack, no doubt.  Suggections for
++ * improvement are welcome.
++ */
++struct inode *logfs_new_meta_inode(struct super_block *sb, u64 ino)
++{
++	struct inode *inode;
++
++	inode = logfs_alloc_inode(sb);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++
++	inode->i_mode = 0;
++	inode->i_ino = ino;
++	inode->i_sb = sb;
++
++	/* This is a blatant copy of alloc_inode code.  We'd need alloc_inode
++	 * to be nonstatic, alas. */
++	{
++		static const struct address_space_operations empty_aops;
++		struct address_space * const mapping = &inode->i_data;
++
++		mapping->a_ops = &empty_aops;
++		mapping->host = inode;
++		mapping->flags = 0;
++		mapping_set_gfp_mask(mapping, GFP_HIGHUSER);
++		mapping->assoc_mapping = NULL;
++		mapping->backing_dev_info = &default_backing_dev_info;
++		inode->i_mapping = mapping;
++	}
++
++	return inode;
++}
++
++/*
++ * Time is stored as nanoseconds since the epoch.
++ */
++static struct timespec be64_to_timespec(__be64 betime)
++{
++	return ns_to_timespec(be64_to_cpu(betime));
++}
++
++static __be64 timespec_to_be64(struct timespec tsp)
++{
++	return cpu_to_be64((u64)tsp.tv_sec * NSEC_PER_SEC + tsp.tv_nsec);
++}
++
++static void logfs_disk_to_inode(struct logfs_disk_inode *di, struct inode*inode)
++{
++	struct logfs_inode *li = logfs_inode(inode);
++	int i;
++
++	inode->i_mode	= be16_to_cpu(di->di_mode);
++	li->li_height	= di->di_height;
++	li->li_flags	= be32_to_cpu(di->di_flags);
++	inode->i_uid	= be32_to_cpu(di->di_uid);
++	inode->i_gid	= be32_to_cpu(di->di_gid);
++	inode->i_size	= be64_to_cpu(di->di_size);
++	logfs_set_blocks(inode, be64_to_cpu(di->di_used_bytes));
++	inode->i_ctime	= be64_to_timespec(di->di_ctime);
++	inode->i_mtime	= be64_to_timespec(di->di_mtime);
++	inode->i_nlink	= be32_to_cpu(di->di_refcount);
++	inode->i_generation = be32_to_cpu(di->di_generation);
++
++	switch (inode->i_mode & S_IFMT) {
++	case S_IFCHR: /* fall through */
++	case S_IFBLK: /* fall through */
++	case S_IFIFO:
++		inode->i_rdev = be64_to_cpu(di->di_data[0]);
++		break;
++	default:
++		for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
++			li->li_data[i] = be64_to_cpu(di->di_data[i]);
++		break;
++	}
++}
++
++static void logfs_inode_to_disk(struct inode *inode, struct logfs_disk_inode*di)
++{
++	struct logfs_inode *li = logfs_inode(inode);
++	int i;
++
++	di->di_mode	= cpu_to_be16(inode->i_mode);
++	di->di_height	= li->li_height;
++	di->di_pad	= 0;
++	di->di_flags	= cpu_to_be32(li->li_flags);
++	di->di_uid	= cpu_to_be32(inode->i_uid);
++	di->di_gid	= cpu_to_be32(inode->i_gid);
++	di->di_size	= cpu_to_be64(i_size_read(inode));
++	di->di_used_bytes = cpu_to_be64(li->li_used_bytes);
++	di->di_ctime	= timespec_to_be64(inode->i_ctime);
++	di->di_mtime	= timespec_to_be64(inode->i_mtime);
++	di->di_refcount	= cpu_to_be32(inode->i_nlink);
++	di->di_generation = cpu_to_be32(inode->i_generation);
++
++	switch (inode->i_mode & S_IFMT) {
++	case S_IFCHR: /* fall through */
++	case S_IFBLK: /* fall through */
++	case S_IFIFO:
++		di->di_data[0] = cpu_to_be64(inode->i_rdev);
++		break;
++	default:
++		for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
++			di->di_data[i] = cpu_to_be64(li->li_data[i]);
++		break;
++	}
++}
++
++#define VALID_MASK (LOGFS_IF_VALID | LOGFS_IF_INVALID)
++static int logfs_read_disk_inode(struct logfs_disk_inode *di,
++		struct inode *inode)
++{
++	struct logfs_super *super = logfs_super(inode->i_sb);
++	ino_t ino = inode->i_ino;
++	int ret;
++
++	BUG_ON(!super->s_master_inode);
++	ret = logfs_inode_read(super->s_master_inode, di, sizeof(*di), ino);
++	if (ret)
++		return ret;
++
++	if ((be32_to_cpu(di->di_flags) & VALID_MASK) != LOGFS_IF_VALID) {
++		/*
++		 * We read wrong data, someone scribbled over it or we
++		 * have a bug.  Worth mentioning in the logs.
++		 */
++		printk(KERN_WARNING"LOGFS: read corrupt inode #%lx\n", ino);
++		WARN_ON(1);
++		return -EIO;
++	}
 +
 +	return 0;
 +}
 +
-+void logfs_cleanup_gc(struct logfs_super *super)
++static int __logfs_read_inode(struct inode *inode)
 +{
-+	struct gc_candidate *cand, *next;
++	struct logfs_disk_inode di;
++	int ret;
 +
-+	list_for_each_entry_safe(cand, next, &super->s_free_list, list) {
-+		list_del(&cand->list);
-+		kfree(cand);
++	ret = logfs_read_disk_inode(&di, inode);
++	if (ret)
++		return ret;
++	logfs_disk_to_inode(&di, inode);
++
++	switch (inode->i_mode & S_IFMT) {
++	case S_IFDIR:
++		inode->i_op = &logfs_dir_iops;
++		inode->i_fop = &logfs_dir_fops;
++		break;
++	case S_IFREG:
++		inode->i_op = &logfs_reg_iops;
++		inode->i_fop = &logfs_reg_fops;
++		inode->i_mapping->a_ops = &logfs_reg_aops;
++		break;
++	default:
++		;
 +	}
-+	list_for_each_entry_safe(cand, next, &super->s_low_list, list) {
-+		list_del(&cand->list);
-+		kfree(cand);
++
++	return 0;
++}
++
++static void logfs_read_inode(struct inode *inode)
++{
++	int ret;
++
++	BUG_ON(inode->i_ino == LOGFS_INO_MASTER);
++
++	ret = __logfs_read_inode(inode);
++
++	if (ret)
++		make_bad_inode(inode);
++}
++
++/* This function should move to fs/fs-writeback.c or similar. */
++static void clear_inode_dirty_sync(struct inode *inode)
++{
++	spin_lock(&inode_lock);
++	inode->i_state &= ~I_DIRTY_SYNC;
++	spin_unlock(&inode_lock);
++}
++
++static int logfs_write_disk_inode(struct logfs_disk_inode *di,
++		struct inode *inode, int lock)
++{
++	struct logfs_super *super = logfs_super(inode->i_sb);
++	struct logfs_transaction *ta;
++	int ret;
++
++	/* FIXME: should we take inode->i_mutex? */
++	ta = logfs_inode(inode)->li_transaction;
++	logfs_inode(inode)->li_transaction = NULL;
++
++	logfs_inode_to_disk(inode, di);
++	ret = logfs_inode_write(super->s_master_inode, di, sizeof(*di),
++			inode->i_ino, lock, ta);
++	clear_inode_dirty_sync(inode);
++	return ret;
++}
++
++int __logfs_write_inode(struct inode *inode, int lock)
++{
++	struct logfs_disk_inode di;
++
++	BUG_ON(inode->i_ino == LOGFS_INO_MASTER);
++	return logfs_write_disk_inode(&di, inode, lock);
++}
++
++static int logfs_write_inode(struct inode *inode, int do_sync)
++{
++	int ret;
++
++	/* Can only happen if creat() failed.  Safe to skip. */
++	if (logfs_inode(inode)->li_flags & LOGFS_IF_STILLBORN)
++		return 0;
++
++	ret = __logfs_write_inode(inode, 1);
++	LOGFS_BUG_ON(ret, inode->i_sb);
++	return ret;
++}
++
++static void logfs_truncate_inode(struct inode *inode)
++{
++	i_size_write(inode, 0);
++	logfs_truncate(inode);
++	truncate_inode_pages(&inode->i_data, 0);
++}
++
++/*
++ * ZOMBIE inodes have already been deleted before and should remain dead,
++ * if it weren't for valid checking.  No need to kill them again here.
++ */
++static void logfs_delete_inode(struct inode *inode)
++{
++	struct logfs_super *super = logfs_super(inode->i_sb);
++
++	if (! (logfs_inode(inode)->li_flags & LOGFS_IF_ZOMBIE)) {
++		if (i_size_read(inode) > 0)
++			logfs_truncate_inode(inode);
++		logfs_delete(super->s_master_inode, inode->i_ino, NULL);
 +	}
++	clear_inode(inode);
++}
++
++void __logfs_destroy_inode(struct inode *inode)
++{
++	if (likely(inode))
++		kmem_cache_free(logfs_inode_cache, logfs_inode(inode));
++}
++
++/*
++ * We need to remember which inodes are currently being dropped.  They
++ * would deadlock the cleaner, if it were to iget() them.  So
++ * logfs_drop_inode() adds them to super->s_freeing_list,
++ * logfs_destroy_inode() removes them again and logfs_iget() checks the
++ * list.
++ */
++static void logfs_destroy_inode(struct inode *inode)
++{
++	struct logfs_inode *li = logfs_inode(inode);
++
++	BUG_ON(list_empty(&li->li_freeing_list));
++	spin_lock(&inode_lock);
++	list_del(&li->li_freeing_list);
++	spin_unlock(&inode_lock);
++	kmem_cache_free(logfs_inode_cache, li);
++}
++
++/* called with inode_lock held */
++static void logfs_drop_inode(struct inode *inode)
++{
++	struct logfs_super *super = logfs_super(inode->i_sb);
++	struct logfs_inode *li = logfs_inode(inode);
++
++	list_move(&li->li_freeing_list, &super->s_freeing_list);
++	generic_drop_inode(inode);
++}
++
++static u64 logfs_get_ino(struct super_block *sb)
++{
++	struct logfs_super *super = logfs_super(sb);
++	u64 ino;
++
++	/*
++	 * FIXME: ino allocation should work in two modes:
++	 * o nonsparse - ifile is mostly occupied, just append
++	 * o sparse - ifile has lots of holes, fill them up
++	 *
++	 * SEEK_HOLE would obviously help a lot here.
++	 */
++	spin_lock(&super->s_ino_lock);
++	ino = super->s_last_ino;
++	super->s_last_ino++;
++	spin_unlock(&super->s_ino_lock);
++	return ino;
++}
++
++struct inode *logfs_new_inode(struct inode *dir, int mode)
++{
++	struct super_block *sb = dir->i_sb;
++	struct inode *inode;
++
++	inode = new_inode(sb);
++	if (!inode)
++		return ERR_PTR(-ENOMEM);
++
++	logfs_init_inode(inode);
++
++	/* inherit parent flags */
++	logfs_inode(inode)->li_flags |=
++		logfs_inode(dir)->li_flags & LOGFS_FL_INHERITED;
++
++	inode->i_mode = mode;
++	inode->i_ino = logfs_get_ino(sb);
++
++	inode->i_uid = current->fsuid;
++	inode->i_gid = current->fsgid;
++	if (dir->i_mode & S_ISGID) {
++		inode->i_gid = dir->i_gid;
++		if (S_ISDIR(mode))
++			inode->i_mode |= S_ISGID;
++	}
++
++	insert_inode_hash(inode);
++
++	return inode;
++}
++
++static void logfs_init_once(void *_li, struct kmem_cache *cachep,
++		unsigned long flags)
++{
++	struct logfs_inode *li = _li;
++	int i;
++
++	li->li_flags = 0;
++	li->li_used_bytes = 0;
++	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
++		li->li_data[i] = 0;
++	inode_init_once(&li->vfs_inode);
++}
++
++static int logfs_sync_fs(struct super_block *sb, int wait)
++{
++	logfs_super(sb)->s_devops->sync(sb);
++	return 0;
++}
++
++const struct super_operations logfs_super_operations = {
++	.alloc_inode	= logfs_alloc_inode,
++	.delete_inode	= logfs_delete_inode,
++	.destroy_inode	= logfs_destroy_inode,
++	.drop_inode	= logfs_drop_inode,
++	.read_inode	= logfs_read_inode,
++	.write_inode	= logfs_write_inode,
++	.statfs		= logfs_statfs,
++	.sync_fs	= logfs_sync_fs,
++};
++
++int logfs_init_inode_cache(void)
++{
++	logfs_inode_cache = kmem_cache_create("logfs_inode_cache",
++			sizeof(struct logfs_inode), 0, SLAB_RECLAIM_ACCOUNT,
++			logfs_init_once, NULL);
++	if (!logfs_inode_cache)
++		return -ENOMEM;
++	return 0;
++}
++
++void logfs_destroy_inode_cache(void)
++{
++	kmem_cache_destroy(logfs_inode_cache);
 +}
