@@ -1,80 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964868AbXHHVB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935774AbXHHVEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964868AbXHHVB5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761305AbXHHVBo
+	id S935774AbXHHVEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763008AbXHHVEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:01:44 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:44550 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760752AbXHHVBn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:01:43 -0400
-Date: Wed, 8 Aug 2007 14:01:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: ak@suse.de
-cc: linux-kernel@vger.kernel.org, travis@sgi.com
-Subject: [PATCH] Remove x86_cpu_to_log_apicid
-Message-ID: <Pine.LNX.4.64.0708081400430.15668@schroedinger.engr.sgi.com>
+	Wed, 8 Aug 2007 17:04:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:38120 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762842AbXHHVEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 17:04:32 -0400
+Date: Wed, 8 Aug 2007 22:04:29 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Lee.Schermerhorn@hp.com, pj@sgi.com, ak@suse.de,
+       kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/3] Use one zonelist per node instead of multiple zonelists v2
+Message-ID: <20070808210429.GA32462@skynet.ie>
+References: <20070808161504.32320.79576.sendpatchset@skynet.skynet.ie> <Pine.LNX.4.64.0708081025330.12652@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708081025330.12652@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Travis <travis@sgi.com>
+On (08/08/07 10:36), Christoph Lameter didst pronounce:
+> On Wed, 8 Aug 2007, Mel Gorman wrote:
+> 
+> > These are the range of performance losses/gains I found when running against
+> > 2.6.23-rc1-mm2. The set and these machines are a mix of i386, x86_64 and
+> > ppc64 both NUMA and non-NUMA.
+> > 
+> > Total CPU time on Kernbench: -0.20% to  3.70%
+> > Elapsed   time on Kernbench: -0.32% to  3.62%
+> > page_test from aim9:         -2.17% to 12.42%
+> > brk_test  from aim9:         -6.03% to 11.49%
+> > fork_test from aim9:         -2.30% to  5.42%
+> > exec_test from aim9:         -0.68% to  3.39%
+> > Size reduction of pg_dat_t:   0     to  7808 bytes (depends on alignment)
+> 
+> Looks good.
+> 
 
-Remove the x86_cpu_to_log_apicid array.  It is set in 
-arch/x86_64/kernel/genapic_flat.c:flat_init_apic_ldr() and
-arch/x86_64/kernel/smpboot.c:do_boot_cpu() but it is never
-referenced.
+Indeed.
 
-Signed-off-by: Mike Travis <travis@sgi.com>
----
- arch/x86_64/kernel/genapic.c      |    2 --
- arch/x86_64/kernel/genapic_flat.c |    1 -
- arch/x86_64/kernel/smpboot.c      |    1 -
- include/asm-x86_64/smp.h          |    1 -
- 4 files changed, 5 deletions(-)
+> > o Remove bind_zonelist() (Patch in progress, very messy right now)
+> 
+> Will this also allow us to avoid always hitting the first node of an 
+> MPOL_BIND first?
+> 
 
---- a/arch/x86_64/kernel/genapic.c
-+++ b/arch/x86_64/kernel/genapic.c
-@@ -29,8 +29,6 @@
- 					= { [0 ... NR_CPUS-1] = BAD_APICID };
- EXPORT_SYMBOL(x86_cpu_to_apicid);
- 
--u8 x86_cpu_to_log_apicid[NR_CPUS]	= { [0 ... NR_CPUS-1] = BAD_APICID };
--
- struct genapic __read_mostly *genapic = &apic_flat;
- 
- /*
---- a/arch/x86_64/kernel/genapic_flat.c
-+++ b/arch/x86_64/kernel/genapic_flat.c
-@@ -52,7 +52,6 @@
- 
- 	num = smp_processor_id();
- 	id = 1UL << num;
--	x86_cpu_to_log_apicid[num] = id;
- 	apic_write(APIC_DFR, APIC_DFR_FLAT);
- 	val = apic_read(APIC_LDR) & ~APIC_LDR_MASK;
- 	val |= SET_APIC_LOGICAL_ID(id);
---- a/arch/x86_64/kernel/smpboot.c
-+++ b/arch/x86_64/kernel/smpboot.c
-@@ -702,7 +702,6 @@
- 		cpu_clear(cpu, cpu_present_map);
- 		cpu_clear(cpu, cpu_possible_map);
- 		x86_cpu_to_apicid[cpu] = BAD_APICID;
--		x86_cpu_to_log_apicid[cpu] = BAD_APICID;
- 		return -EIO;
- 	}
- 
---- a/include/asm-x86_64/smp.h
-+++ b/include/asm-x86_64/smp.h
-@@ -84,7 +84,6 @@
-  * the real APIC ID <-> CPU # mapping.
-  */
- extern u8 x86_cpu_to_apicid[NR_CPUS];	/* physical ID */
--extern u8 x86_cpu_to_log_apicid[NR_CPUS];
- extern u8 bios_cpu_apicid[];
- 
- static inline int cpu_present_to_apicid(int mps_cpu)
+If by first node you mean avoid hitting nodes in numerical order, then
+yes. The patch changes __alloc_pages to be __alloc_pages_nodemask() with
+a wrapper __alloc_pages that passes in NULL for nodemask. The nodemask
+is then filtered similar to how zones are filtered in this patch. The
+patch is ugly right now and untested but it deletes policy-specific code
+and prehaps some of the cpuset code could be expressed in those terms as
+well.
+
+> > o Eliminate policy_zone (Trickier)
+> 
+> I doubt that this is possible given
+> 
+> 1. We need lower zones (DMA) in various context
+> 
+> 2. Those DMA zones are only available on particular nodes.
+> 
+
+Right.
+
+> Policy_zone could be made to only control allows of the highest (and with 
+> ZONE_MOVABLE) second highest zone on a node?
+> 
+> Think about the 8GB x86_64 configuration I mentioned earlier
+> 
+> node 0  up to 2 GB 		ZONE_DMA and ZONE_DMA32
+> node 1  up to 4 GB		ZONE_DMA32
+> node 2  up to 6 GB		ZONE_NORMAL
+> node 3  up to 8 GB		ZONE_NORMAL
+> 
+> If one wants the node restrictions to work on all nodes then we need to 
+> apply policy depending on the highest zone of the node.
+> 
+> Current MPOL_BIND would only apply policy to allocations on node 2 and 3.
+> 
+> With ZONE_MOVABLE splitting the highest zone (We will likely need that):
+> 
+> node 0  up to 2 GB              ZONE_DMA and ZONE_DMA32, ZONE_MOVABLE
+> node 1  up to 4 GB              ZONE_DMA32, ZONE_MOVABLE
+> node 2  up to 6 GB              ZONE_NORMAL, ZONE_MOVABLE
+> node 3  up to 8 GB              ZONE_NORMAL, ZONE_MOVABLE
+> 
+> So then the two highest zones on each node would need to be subject to 
+> policy control.
+> 
+
+One option would be to force that a node with ZONE_DMA is bound so that
+policies will get applied as much as possible but that would lead to an
+unfair use of one node for ZONE_DMA allocations for example.
+
+An alternative may be to work out at policy creation time what the lowest
+zone common to all nodes in the list is and apply the MPOL_BIND policy if
+the current allocation can use that zone. It's an improvement on the global
+policy_zone at least but depends on this one-zonelist-per-node patchset
+which we need to agree/disagree on first.
+
+> Another thing is that we may want to think about is maybe to evolve 
+> ZONE_MOVABLE to be more like the antifrag sections. That way we may be 
+> able to avoid the multiple types of pages on the pcp lists. That would 
+> work if we would only work with two page types: Movable and unmovable 
+> (fold reclaimable into movable after slab defrag)
+> 
+
+I'll keep it in mind. It's been suggested before so I revisit it every
+so often. The details were messy each time though and inferior to
+grouping pages by mobility in a number of respects.
+
+> Then would make blocks of memory movable between ZONE_MOVABLE and others. 
+> At that point we are almost at the functionality that antifrag offers and 
+> we may have simplified things a bit.
+> 
+
+It gets hard when the zone for unmovable pages is full, the zone with movable
+pages doesn't have a fully free block and the allocator cannot reclaim. Even
+though the blocks in the movable potion may contain free pages, there is
+no easy way to access them. At that point, we are in a similar situation
+grouping pages by mobility deals with except it's harder to work out.
+
+I'll revisit it again just in case but for now I'd rather not get
+sidetracked from the patchset at hand.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
