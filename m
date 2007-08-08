@@ -1,43 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936162AbXHHSGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936963AbXHHSH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936162AbXHHSGV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 14:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763689AbXHHSGM
+	id S936963AbXHHSH2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 14:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761235AbXHHSHT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 14:06:12 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:38462 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763044AbXHHSGL (ORCPT
+	Wed, 8 Aug 2007 14:07:19 -0400
+Received: from dgate2.fujitsu-siemens.com ([217.115.66.36]:44559 "EHLO
+	dgate2.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759320AbXHHSHR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 14:06:11 -0400
-Date: Wed, 8 Aug 2007 11:06:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Daniel Phillips <phillips@phunq.net>, Matt Mackall <mpm@selenic.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Steve Dickson <SteveD@redhat.com>
-Subject: Re: [PATCH 02/10] mm: system wide ALLOC_NO_WATERMARK
-In-Reply-To: <1186557865.7182.86.camel@twins>
-Message-ID: <Pine.LNX.4.64.0708081104570.12652@schroedinger.engr.sgi.com>
-References: <20070806102922.907530000@chello.nl>  <200708061559.41680.phillips@phunq.net>
-  <Pine.LNX.4.64.0708061605400.5090@schroedinger.engr.sgi.com> 
- <200708061649.56487.phillips@phunq.net>  <Pine.LNX.4.64.0708071513290.3683@schroedinger.engr.sgi.com>
- <1186557865.7182.86.camel@twins>
+	Wed, 8 Aug 2007 14:07:17 -0400
+DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns; b=NL/sSNRdLX8hnkyfKbNSwKBtQIcft7dP8GT02WDUgyOuOtuOxBRbGT+L3kV3vkl4ITy5HiSFIV3LPCeHJnpw1VG0UeuEIIh0ny20EyOgXX0tEPZ45EJbgsUZVc5h+5XA;
+X-SBRSScore: None
+X-IronPort-AV: E=Sophos;i="4.19,236,1183327200"; 
+   d="scan'208";a="79567603"
+Message-ID: <46BA0651.5010708@fujitsu-siemens.com>
+Date: Wed, 08 Aug 2007 20:07:13 +0200
+From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Organization: Fujitsu Siemens Computers
+User-Agent: Thunderbird 1.5.0.8 (X11/20061025)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "vgoyal@in.ibm.com" <vgoyal@in.ibm.com>
+Cc: Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+References: <46B73955.2080007@fujitsu-siemens.com> <20070808113834.GA26145@in.ibm.com>
+In-Reply-To: <20070808113834.GA26145@in.ibm.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007, Peter Zijlstra wrote:
+Vivek Goyal wrote:
 
-> Christoph, does this all explain the situation?
+> Got this oops while testing your patch when I did
+> "echo c > /proc/sysrq-trigger"
 
-Sort of. I am still very sceptical that this will work reliably. I'd 
-rather look at alternate solution like fixing reclaim. Could you have a 
-look at Andrew's and my comments on the slub patch?
+That's bad :-(
+
+...
+> Unable to handle kernel NULL pointer dereference at 0000000000000000 RIP:
+ [<0000000000000000>]
+>  <IRQ>  [<ffffffff8025afd0>] handle_edge_irq+0x5c/0x127
+>  [<ffffffff8020e1ae>] do_IRQ+0xf1/0x15f
+>  [<ffffffff8020c191>] ret_from_intr+0x0/0xa
+>  <EOI>  <NMI>  [<ffffffff80351ae3>] __delay+0x6/0x10
+>  [<ffffffff8021e328>] crash_nmi_callback+0x4b/0x77
+
+Obviously, it the oops occurs after the IRQs are re-enabled in crash_nmi_callback().
+It appears that desc->chip->mask (in mask_ack_irq(), kernel/irq/chip.c:462) was NULL.
+I have no idea how my patch could cause that.
+
+This proves that re-enabling IRQs in this situation is too dangerous :-(.
+I really did hundreds of dumps in different ways (echo c>/proc/sysrq-trigger,
+forcing Oops and panic(), actually hititng Alt-Sysrq) and this never happened to
+me.
+
+Martin
+
+-- 
+Martin Wilck
+PRIMERGY System Software Engineer
+FSC IP ESP DE6
+
+Fujitsu Siemens Computers GmbH
+Heinz-Nixdorf-Ring 1
+33106 Paderborn
+Germany
+
+Tel:			++49 5251 8 15113
+Fax:			++49 5251 8 20409
+Email:			mailto:martin.wilck@fujitsu-siemens.com
+Internet:		http://www.fujitsu-siemens.com
+Company Details:	http://www.fujitsu-siemens.com/imprint.html
