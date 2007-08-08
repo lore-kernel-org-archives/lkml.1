@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763626AbXHHMej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764901AbXHHMiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763626AbXHHMej (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753930AbXHHMec
+	id S1764901AbXHHMiY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbXHHMiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:34:32 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57775 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751077AbXHHMeb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:34:31 -0400
-Date: Wed, 8 Aug 2007 14:34:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Mitchell Erblich <erblichs@earthlink.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Question: RT schedular : task_tick_rt(struct rq *rq, struct
-	task_struct *p) : decreases overhead when  rq->nr_running == 1
-Message-ID: <20070808123418.GA30248@elte.hu>
-References: <000501c7d945$f30af1a0$6501a8c0@earthlink.net>
+	Wed, 8 Aug 2007 08:38:17 -0400
+Received: from ms-smtp-04.nyroc.rr.com ([24.24.2.58]:43514 "EHLO
+	ms-smtp-04.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751573AbXHHMiQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 08:38:16 -0400
+Date: Wed, 8 Aug 2007 08:37:29 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andi Kleen <ak@suse.de>
+cc: Glauber de Oliveira Costa <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org
+Subject: Re: [PATCH 18/25] [PATCH] turn priviled operations into macros in
+ entry.S
+In-Reply-To: <200708081424.49896.ak@suse.de>
+Message-ID: <Pine.LNX.4.58.0708080835350.6751@gandalf.stny.rr.com>
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+ <200708081138.23018.ak@suse.de> <Pine.LNX.4.58.0708080740490.5921@gandalf.stny.rr.com>
+ <200708081424.49896.ak@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <000501c7d945$f30af1a0$6501a8c0@earthlink.net>
-User-Agent: Mutt/1.5.14 (2007-02-12)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-1.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mitchell Erblich <erblichs@earthlink.net> wrote:
+On Wed, 8 Aug 2007, Andi Kleen wrote:
 
-> After
->     p->time_slice = static_prio_timeslice(p->static_prio);
-> 
-> Why isn't their a check like
->     if  (rq->nr_running == 1)
->          return;
-> 
-> Which world remove the need for any recheduling or requeue'ing...
+>
+> > Probably not, but this part of the code I don't fully understand.
+>
+> I would suggest to defer all this until at least one example to test it
+> (except vsmp which is too simple) is around.
 
-your change is a possible optimization, but this is a pretty rare 
-codepath because the overwhelming majority of RT apps uses SCHED_FIFO. 
-Plus, the time_slice going down to 0 is a relatively rare event even for 
-SCHED_RR tasks. And if we have only a single SCHED_RR task, why is it 
-SCHED_RR to begin with? So this is on several levels an uncommon 
-workload and by adding a check like that we'd increase the codesize. But 
-... no strong feelings against this optimization - if you send a proper 
-patch we can apply it, it certainly makes sense from a logic POV.
+Who uses that code? NMIs and debug regs?  Lguest only has the host handle
+the NMIs (doesn't pass to guest). And we haven't gotten to debug regs. Who
+else uses that part of the code?
 
-	Ingo
+We can leave the "paranoid check" change out for this series.
+
+-- Steve
+
