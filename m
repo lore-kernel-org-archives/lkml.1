@@ -1,97 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936925AbXHHBcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935764AbXHHBpD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936925AbXHHBcq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 7 Aug 2007 21:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935322AbXHHBcf
+	id S935764AbXHHBpD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 7 Aug 2007 21:45:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbXHHBow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 7 Aug 2007 21:32:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47558 "EHLO mx1.redhat.com"
+	Tue, 7 Aug 2007 21:44:52 -0400
+Received: from waste.org ([66.93.16.53]:57636 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933596AbXHHBce (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 7 Aug 2007 21:32:34 -0400
-Message-ID: <46B91D0C.5050704@redhat.com>
-Date: Tue, 07 Aug 2007 21:31:56 -0400
-From: Chris Snook <csnook@redhat.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	id S1755542AbXHHBov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 7 Aug 2007 21:44:51 -0400
+Date: Tue, 7 Aug 2007 20:44:36 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Steve Dickson <SteveD@redhat.com>
+Subject: Re: [PATCH 04/10] mm: slub: add knowledge of reserve pages
+Message-ID: <20070808014435.GG30556@waste.org>
+References: <20070806102922.907530000@chello.nl> <20070806103658.603735000@chello.nl> <Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-To: Zan Lynx <zlynx@acm.org>
-CC: Chris Friesen <cfriesen@nortel.com>, Jerry Jiang <wjiang@resilience.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>	 <20070806123551.a6c3c154.wjiang@resilience.com>	 <46B72C58.5030502@redhat.com> <46B894E4.4010501@nortel.com>	 <46B8D6D7.2020206@redhat.com> <46B8DDF3.7050008@nortel.com>	 <46B8E1D3.8050501@redhat.com>  <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost>
-In-Reply-To: <1186525977.232321.43.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0708071702560.4941@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zan Lynx wrote:
-> On Tue, 2007-08-07 at 15:38 -0600, Chris Friesen wrote:
->> Chris Snook wrote:
->>
->>> That's why we define atomic_read like so:
->>>
->>> #define atomic_read(v)          ((v)->counter)
->>>
->>> This avoids the aliasing problem, because the compiler must de-reference 
->>> the pointer every time, which requires a memory fetch.
->> Can you guarantee that the pointer dereference cannot be optimised away 
->> on any architecture?  Without other restrictions, a suficiently 
->> intelligent optimiser could notice that the address of v doesn't change 
->> in the loop and the destination is never written within the loop, so the 
->> read could be hoisted out of the loop.
->>
->> Even now, powerpc (as an example) defines atomic_t as:
->>
->> typedef struct { volatile int counter; } atomic_t
->>
->>
->> That volatile is there precisely to force the compiler to dereference it 
->> every single time.
+On Tue, Aug 07, 2007 at 05:13:52PM -0700, Christoph Lameter wrote:
+> On Mon, 6 Aug 2007, Peter Zijlstra wrote:
 > 
-> I just tried this with GCC 4.2 on x86_64 because I was curious.
+> > Restrict objects from reserve slabs (ALLOC_NO_WATERMARKS) to allocation
+> > contexts that are entitled to it.
 > 
-> struct counter_t { volatile int counter; } test;
-> struct counter_t *tptr = &test;
-> 
-> int main() {
->         int i;
-> 
->         tptr->counter = 0;
->         i = 0;
->         while(tptr->counter < 100) {
->                 i++;
->         }
->         return 0;
-> }
-> 
-> $ gcc -O3 -S t.c
-> 
-> a snippet of t.s:
-> main:
-> .LFB2:
->         movq    tptr(%rip), %rdx
->         movl    $0, (%rdx)
->         .p2align 4,,7
-> .L2:
->         movl    (%rdx), %eax
->         cmpl    $99, %eax
->         jle     .L2
-> 
-> 
-> Now with the volatile removed:
-> main:
-> .LFB2:
->         movq    tptr(%rip), %rax
->         movl    $0, (%rax)
-> .L2:
->         jmp     .L2
-> 
-> If the compiler can see it clearly, it will optimize out the load
-> without the volatile.
+> Is this patch actually necessary?
+>
+ > If you are in an atomic context and bound to a cpu then a per cpu slab is 
+> assigned to you and no one else can take object aways from that process 
+> since nothing else can run on the cpu.
 
-This is not a problem, since indirect references will cause the CPU to fetch the 
-data from memory/cache anyway.
+Servicing I/O over the network requires an allocation to send a buffer
+and an allocation to later receive the acknowledgement. We can't free
+our send buffer (or the memory it's supposed to clean) until the
+relevant ack is received. We have to hold our reserves privately
+throughout, even if an interrupt that wants to do GFP_ATOMIC
+allocation shows up in-between.
 
-	-- Chris
+> If you are not in an atomic context and are preemptable or can switch 
+> allocation context then you can create another context in which reclaim 
+> could be run to remove some clean pages and get you more memory. Again no 
+> need for the patch.
+
+By the point that this patch is relevant, there are already no clean
+pages. The only way to free up more memory is via I/O.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
