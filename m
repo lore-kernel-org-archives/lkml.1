@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935502AbXHHTqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936566AbXHHTre@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935502AbXHHTqQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 15:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758802AbXHHTqA
+	id S936566AbXHHTre (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 15:47:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758997AbXHHTrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 15:46:00 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:24454 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755883AbXHHTp7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 15:45:59 -0400
-Subject: Re: [PATCH -rt 9/9] seqlocks: use PICK_FUNCTION
-From: Daniel Walker <dwalker@mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-In-Reply-To: <20070806072153.GH5359@elte.hu>
-References: <20070730024534.369897977@mvista.com>
-	 <20070730024721.274774887@mvista.com>  <20070806072153.GH5359@elte.hu>
-Content-Type: text/plain
-Date: Wed, 08 Aug 2007 12:40:33 -0700
-Message-Id: <1186602033.22044.67.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 (2.10.3-1.fc7) 
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 15:47:25 -0400
+Received: from ns.suse.de ([195.135.220.2]:56210 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756674AbXHHTrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 15:47:24 -0400
+To: ebiederm@xmission.com (Eric W. Biederman)
+Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org, "Mao, Bibo" <bibo.mao@intel.com>
+Subject: Re: [PATCH 0/5] x86_64 EFI support -v3
+References: <1185851569.23149.25.camel@caritas-dev.intel.com>
+	<m1myxdtc19.fsf@ebiederm.dsl.xmission.com>
+	<1186378838.3769.27.camel@caritas-dev.intel.com>
+	<m1d4xyc6v2.fsf@ebiederm.dsl.xmission.com>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 08 Aug 2007 22:41:43 +0200
+In-Reply-To: <m1d4xyc6v2.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <p73y7glg3nc.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-08-06 at 09:21 +0200, Ingo Molnar wrote:
-> * Daniel Walker <dwalker@mvista.com> wrote:
+ebiederm@xmission.com (Eric W. Biederman) writes:
 > 
-> > Replace the old PICK_OP style macros with PICK_FUNCTION. Although, 
-> > seqlocks has some alien code, which I also replaced as can be seen 
-> > from the line count below.
-> 
-> ok, i very much like the cleanup effects here, could you resend your 
-> latest version of this (with Peter's suggested cleanup) against -rc2-rt2 
-> so that i can apply it?
+> Since there are people actively investigating things like booting
+> OpenBSD via kexec things get even worse. Nothing hardly runs
+> on ia64 so that issue doesn't come up.
 
-Ok, sent them privately. Updated to 2.6.23-rc2-rt2 w/ Peter's
-suggestion. You'll get two sets the first had some unrefreshed hunks in
-the 3/3 patch .
+If you want to do a popularity contest I expect there are far more ia64 
+linux users than kexec-of-openbsd users.
 
-There is one thing I was wondering about in seqlock.h . There was a
-class of these macro's like below,
+> As for not using EFI at all.  If we can avoid it/not use it in the
+> dump kernel there is very little point in having it in the primary
+> kernel.
 
-#define PICK_SEQOP_CONST_RET(op, lock)                          \
-({                                                              \
-        unsigned long __ret;                                    \
-                                                                \
-        if (TYPE_EQUAL((lock), raw_seqlock_t))                  \
-                __ret = op##_raw((const raw_seqlock_t *)(lock));\
-        else if (TYPE_EQUAL((lock), seqlock_t))                 \
-                __ret = op((seqlock_t *)(lock));                \
-        else __ret = __bad_seqlock_type();                      \
-                                                                \
-        __ret;                                                  \
-})
+One interesting area is to use it for saving oops data. But
+that has to be simple. I'm not sure complicated context switches
+are a good idea here. 
 
-Where the variable is specifically casted to "const raw_seqlock_t *".. I
-ended up dropping these all together, and I'm wonder what the adverse
-effects of that are .. The casting seems superfluous to me since you
-know already that the type are compatible at that point. Any thoughts?
+However I agree it probably doesn't make sense to do virtual
+mode just for the clock services -- so far we seem to be fine
+just talking to the hardware directly.
 
-Daniel
+> So far there don't seem to be any compelling advantages to running
+> EFI in virtual address mode and several compelling disadvantages
+> included having to change the permissions on the kernels memory
+> map to running EFI in virtual mode.
 
+I don't think it's a big issue to have a few less NX bits. Just
+the original patch for it was ugly.
+ 
+> Please let's stick to a physical mode trampoline and only revisit
+> the topic when users start having problems because of the performance
+> hit of going through our trampoline to the EFI runtime services.
+
+So you want to switch to new page tables when calling EFI services
+after boot? 
+
+Potential problems:
+- Interrupts have to be disabled. Is that ok? 
+- When EFI BIOS start crashing how do we set up exception handlers
+for this? 
+
+I guess it would get complex long term. Also doesn't really sound 
+attractive.
+
+-Andi
