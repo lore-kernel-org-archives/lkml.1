@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762822AbXHHJaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932191AbXHHJdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762822AbXHHJaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760612AbXHHJaO
+	id S932191AbXHHJdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbXHHJdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:30:14 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:50686 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753817AbXHHJaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:30:11 -0400
-Date: Wed, 8 Aug 2007 11:30:42 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Jean-Baptiste Vignaud <vignaud@xandmail.fr>
-Cc: cebbert <cebbert@redhat.com>, mingo <mingo@elte.hu>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>, tglx <tglx@linutronix.de>,
-       torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       shemminger <shemminger@linux-foundation.org>,
-       linux-net <linux-net@vger.kernel.org>, netdev <netdev@vger.kernel.org>,
-       akpm <akpm@linux-foundation.org>, alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: 2.6.20->2.6.21 - networking dies after random time
-Message-ID: <20070808093042.GA2426@ff.dom.local>
-References: <JMG6AY$2339D4FEA804188F4C6D4F66006A6BB6@xandmail.com>
+	Wed, 8 Aug 2007 05:33:05 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:45529 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757998AbXHHJdD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 05:33:03 -0400
+Date: Wed, 8 Aug 2007 11:33:59 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: Larry.Finger@lwfinger.net, linux-kernel@vger.kernel.org
+Subject: Re: Error message from device_rename in drivers/base/core.c
+Message-ID: <20070808113359.71e77f49@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070807.213724.27783161.davem@davemloft.net>
+References: <46B943D3.9020207@lwfinger.net>
+	<20070807.213724.27783161.davem@davemloft.net>
+Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
+ Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
+ Registergericht: Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <JMG6AY$2339D4FEA804188F4C6D4F66006A6BB6@xandmail.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 08, 2007 at 10:59:22AM +0200, Jean-Baptiste Vignaud wrote:
-> > Jean-Baptiste: I'm not sure how much of this testing you can afford?
-> > If you can spare some time for this and your box isn't for
-> > 'production' it could be very precious to diagnose such reproducible
-> > bug.
+On Tue, 07 Aug 2007 21:37:24 -0700 (PDT),
+David Miller <davem@davemloft.net> wrote:
+
+> From: Larry Finger <Larry.Finger@lwfinger.net>
+> Date: Tue, 07 Aug 2007 23:17:23 -0500
 > 
-> Well i can continue testing patches for sure.
+> > I am getting the following error message from drivers/base/core.c:
+> > 
+> > net eth1: device_rename: sysfs_create_symlink failed (-17)
+> > 
+> > Upon investigation, the call generating the error is renaming 'eth1' to 'eth1'. The following patch 
+> > suppresses the error.
+> 
+> I think this check belongs in udev not in the kernel.  Thankfully
+> this message at least tells us it is happening, please don't
+> remove it.
 
-Great!
+Hm, device_rename() could alternatively just return success if
+dev->bus_id and new_name are the same.
 
 > 
-> > Then, I'd have a few suggestions (you could choose any of them) like:
-> > - trying these last test patches prepared for Marcin, too (but only
-> > with kernels 2.6.21 - 2.6.23-rc1),
-> 
-> I'v patched 2.6.23-rc2 with those patches yesterday evening, and
-> launched samba copy.
-> Is rc2 ok ?
+> I'm pretty sure it's UDEV doing this, and it should not try to rename
+> a netdevice to what it already is named.
 
-Yes! Mostly... 2.6.23-rc2 has a "temporary" patch applied, which should
-work by itself (at last it works for Marcin). So, it's very good news
-it works for you too. But, as a matter of fact the other patches
-(I hope you mean these yesterday's two) probably are not used very
-much (the last one could do some work but with other irqs).
-
-So, it would be interesting to try them with e.g. 2.6.23-rc1. But not
-together (I'd remind that after applying such a patch, make oldconfig,
-make and so on plus testing, you can revert it with the same command
-you used to patch plus -R option (e.g.: patch -p1 -R < ../patch1.diff),
-to save some time on restoring a 'vanilla' kernel version.
-The aim of these newer patches is to find why exactly this patch in
--rc2 works...
-
-Cheers,
-Jarek P.
+But it shouldn't cause an error either :)
