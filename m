@@ -1,64 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932207AbXHHJeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbXHHJf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932207AbXHHJeQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 05:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759699AbXHHJdz
+	id S932855AbXHHJf2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 05:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758279AbXHHJfP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 05:33:55 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:16787 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758289AbXHHJdw (ORCPT
+	Wed, 8 Aug 2007 05:35:15 -0400
+Received: from wa-out-1112.google.com ([209.85.146.176]:10890 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758236AbXHHJfN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 05:33:52 -0400
-Date: Wed, 8 Aug 2007 11:33:00 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Wensong Zhang <wensong@linux-vs.org>, Simon Horman <horms@verge.net.au>
-Subject: [patch] ipvs: force read of atomic_t in while loop
-Message-ID: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com>
+	Wed, 8 Aug 2007 05:35:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QF1sYm0QV7uyqttar0xFWGS1wgRVtG1bNUscTStybtftwDkhMJ7iVgeRkq63QoVDTK8orMmbCq8bvrp7c3qbq9lMeiaT5qVhwqVLf95Ly8NHTZcyQwoZY229akVaXfnpO7BtZuZiyttGAx4F5QLT28KbOCfk/gI4yBiUbaIeJtE=
+Date: Wed, 8 Aug 2007 18:35:05 +0900
+From: Tejun Heo <htejun@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
+       gregkh@suse.de
+Subject: Re: [PATCH 20/25] sysfs: Rename Support multiple superblocks
+Message-ID: <20070808093505.GL13674@htj.dyndns.org>
+References: <m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com> <m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com> <m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com> <m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com> <m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com> <m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com> <m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com> <m1zm13ghlh.fsf_-_@ebiederm.dsl.xmission.com> <m1vebrghjg.fsf_-_@ebiederm.dsl.xmission.com> <m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <m1r6mfghg9.fsf_-_@ebiederm.dsl.xmission.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Hello,
 
-For architectures that don't have a volatile atomic_ts constructs like
-while (atomic_read(&something)); might result in endless loops since a
-barrier() is missing which forces the compiler to generate code that
-actually reads memory contents.
-Fix this in ipvs by using the IP_VS_WAIT_WHILE macro which resolves to
-while (expr) { cpu_relax(); }
-(why isn't this open coded btw?)
+On Tue, Aug 07, 2007 at 03:31:18PM -0600, Eric W. Biederman wrote:
+> This patch modifies the sysfs_rename_dir and sysfs_move_dir
+> to support multiple sysfs dentry trees rooted in different
+> sysfs superblocks.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-Cc: Wensong Zhang <wensong@linux-vs.org>
-Cc: Simon Horman <horms@verge.net.au>
-Cc: David Miller <davem@davemloft.net>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
----
+> +struct sysfs_rename_struct {
+> +	struct list_head list;
+> +	struct dentry *old_dentry;
+> +	struct dentry *new_dentry;
+> +	struct dentry *old_parent;
+> +	struct dentry *new_parent;
+> +};
 
-Just saw this while grepping for atomic_reads in a while loops.
-Maybe we should re-add the volatile to atomic_t. Not sure.
+Please rename to sysfs_rename_cxt to it consistent with
+sysfs_addrm_cxt.
 
- net/ipv4/ipvs/ip_vs_ctl.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> +static void post_rename(struct list_head *head)
 
-Index: linux-2.6/net/ipv4/ipvs/ip_vs_ctl.c
-===================================================================
---- linux-2.6.orig/net/ipv4/ipvs/ip_vs_ctl.c
-+++ linux-2.6/net/ipv4/ipvs/ip_vs_ctl.c
-@@ -909,7 +909,7 @@ ip_vs_edit_dest(struct ip_vs_service *sv
- 	write_lock_bh(&__ip_vs_svc_lock);
- 
- 	/* Wait until all other svc users go away */
--	while (atomic_read(&svc->usecnt) > 1) {};
-+	IP_VS_WAIT_WHILE(atomic_read(&svc->usecnt) > 1);
- 
- 	/* call the update_service, because server weight may be changed */
- 	svc->scheduler->update_service(svc);
+Please rename to sysfs_post_rename() and add comment.
+
+> +{
+> +	struct sysfs_rename_struct *srs;
+> +	while (!list_empty(head)) {
+> +		srs = list_entry(head->next, struct sysfs_rename_struct, list);
+> +		dput(srs->old_dentry);
+> +		dput(srs->new_dentry);
+> +		dput(srs->old_parent);
+> +		dput(srs->new_parent);
+> +		list_del(&srs->list);
+> +		kfree(srs);
+> +	}
+> +}
+> +
+> +static int prep_rename(struct list_head *head,
+> +	struct sysfs_dirent *sd, struct sysfs_dirent *new_parent_sd,
+> +	const char *name)
+
+Ditto.
+
+> +{
+> +	struct sysfs_rename_struct *srs;
+> +	struct super_block *sb;
+> +	struct dentry *dentry;
+> +	int error;
+> +
+> +	list_for_each_entry(sb, &sysfs_fs_type.fs_supers, s_instances) {
+> +		dentry = sysfs_get_dentry(sb, sd);
+> +		if (!dentry)
+> +			continue;
+
+sysfs_get_dentry() return ERR_PTR() value.  Oops, sysfs_get_dentry()
+implementation is wrong too.  Also, please move
+sysfs_grab/release_supers() near this patch and add (a lot of)
+comments there.
+
+Other than that, I think this is as clean as this can be.  Great.
+
+-- 
+tejun
