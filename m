@@ -1,116 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935028AbXHHOVD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934600AbXHHOXs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935028AbXHHOVD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 10:21:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935303AbXHHOUo
+	id S934600AbXHHOXs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 10:23:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755748AbXHHOXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 10:20:44 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:20966 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S935286AbXHHOUm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 10:20:42 -0400
-Message-ID: <46B9D08F.8080402@openvz.org>
-Date: Wed, 08 Aug 2007 18:17:51 +0400
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+	Wed, 8 Aug 2007 10:23:41 -0400
+Received: from fk-out-0910.google.com ([209.85.128.184]:60110 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752197AbXHHOXj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 10:23:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=McsfK29zfwkvJRf5B9yeV2feoKFfZWgCtJGdhIS+dwVHT4f/n5l3ZLseu6gYnTcbgYJKzJF8YQKBt4XH0CMrtbryUF9tZcMnqUmJ3QXg+0F/JeLOfkhGll67H6J6n8GmXHejnBeO15WcI3bPxmhVSbbMhCZAQArSiOHw+AA5DDc=
+Message-ID: <5d6222a80708080723h6efbf857yd707e85ccb713b6@mail.gmail.com>
+Date: Wed, 8 Aug 2007 11:23:37 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Andi Kleen" <ak@suse.de>
+Subject: Re: [PATCH 3/25] [PATCH] irq_flags / halt routines
+Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
+       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
+       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
+       "Steven Rostedt" <rostedt@goodmis.org>
+In-Reply-To: <200708081614.52391.ak@suse.de>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@osdl.org>
-CC: linux-arch@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [PATCH] Add ability to print calltraces tighter on i386
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+	 <200708081114.21260.ak@suse.de>
+	 <5d6222a80708080710n296f6da8i1dc08d914baeb27a@mail.gmail.com>
+	 <200708081614.52391.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When printing a BUG or OOPS report the longest part of it is
-the calltrace, which sometimes (quite often) doesn't fit the
-standard 25-lines display. This may become a bad news when the
-system doesn't have a serial/net console and is completely 
-frozen so that the terminal scrolling doesn't work.
+On 8/8/07, Andi Kleen <ak@suse.de> wrote:
+> On Wednesday 08 August 2007 16:10:28 Glauber de Oliveira Costa wrote:
+> > On 8/8/07, Andi Kleen <ak@suse.de> wrote:
+> > >
+> > > > +#ifdef CONFIG_PARAVIRT
+> > > > +#include <asm/paravirt.h>
+> > > > +#  ifdef CONFIG_X86_VSMP
+> > > > +static inline int raw_irqs_disabled_flags(unsigned long flags)
+> > > > +{
+> > > > +     return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
+> > > > +}
+> > > > +#  else
+> > > > +static inline int raw_irqs_disabled_flags(unsigned long flags)
+> > > > +{
+> > > > +     return !(flags & X86_EFLAGS_IF);
+> > > > +}
+> > > > +#  endif
+> > >
+> > > You should really turn the vsmp special case into a paravirt client first
+> > > instead of complicating all this even more.
+> >
+> > By "client" you mean a user of the paravirt interface?
+>
+> Yes
 
-The information that hides from the developer is registers, the
-top of the calltrace and information about the kernel and the
-crashed process (uname). As our experience shows, seeing this 
-info is sometimes critical and having a short calltrace would 
-help a lot.
+Ohhh, I see. You're talking about just the first piece of code inside
+the #ifdef CONFIG_PARAVIRT. In this case yes, I agree with you. It can
+be done.
 
-The proposal is to make a boot-option called "tight_trace", that
-makes the calltrace show only the addresses in one line instead
-of the symbol names one per line.
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
-E.g. OOPSes of 50 lines occupy ~20 with this patch.
-
-This is an example of how it will look for i386, but if this
-will be found useful, I will make the patch for other arched
-I can test it on (at least x86_64, ia64).
-
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
----
-
- arch/i386/kernel/traps.c |   29 +++++++++++++++++++++++++----
- 1 files changed, 25 insertions(+), 4 deletions(-)
-
-diff --git a/arch/i386/kernel/traps.c b/arch/i386/kernel/traps.c
-index f469d20..8aa2b3b 100644
---- a/arch/i386/kernel/traps.c
-+++ b/arch/i386/kernel/traps.c
-@@ -186,6 +186,19 @@ void dump_trace(struct task_struct *task
- }
- EXPORT_SYMBOL(dump_trace);
- 
-+static int decode_oops = 1;
-+
-+static int __init setup_decode_oops(char *str)
-+{
-+	if (*str)
-+		return 0;
-+
-+	decode_oops = 0;
-+	return 1;
-+}
-+
-+__setup("tight_trace", setup_decode_oops);
-+
- static void
- print_trace_warning_symbol(void *data, char *msg, unsigned long symbol)
- {
-@@ -209,8 +222,11 @@ static int print_trace_stack(void *data,
-  */
- static void print_trace_address(void *data, unsigned long addr)
- {
--	printk("%s [<%08lx>] ", (char *)data, addr);
--	print_symbol("%s\n", addr);
-+	if (decode_oops) {
-+		printk("%s [<%08lx>] ", (char *)data, addr);
-+		print_symbol("%s\n", addr);
-+	} else
-+		printk("[<%08lx>] ", addr);
- 	touch_nmi_watchdog();
- }
- 
-@@ -226,7 +242,9 @@ show_trace_log_lvl(struct task_struct *t
- 		   unsigned long * stack, char *log_lvl)
- {
- 	dump_trace(task, regs, stack, &print_trace_ops, log_lvl);
--	printk("%s =======================\n", log_lvl);
-+	if (decode_oops)
-+		printk("%s =======================", log_lvl);
-+	printk("\n");
- }
- 
- void show_trace(struct task_struct *task, struct pt_regs *regs,
-@@ -256,7 +274,10 @@ static void show_stack_log_lvl(struct ta
- 			printk("\n%s       ", log_lvl);
- 		printk("%08lx ", *stack++);
- 	}
--	printk("\n%sCall Trace:\n", log_lvl);
-+	printk("\n%sCall Trace: ", log_lvl);
-+	if (decode_oops)
-+		printk("\n");
-+
- 	show_trace_log_lvl(task, regs, esp, log_lvl);
- 	debug_show_held_locks(task);
- }
+"The less confident you are, the more serious you have to act."
