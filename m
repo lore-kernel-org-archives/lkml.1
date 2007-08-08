@@ -1,55 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935519AbXHHPcc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932553AbXHHPdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935519AbXHHPcc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 11:32:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763463AbXHHPcX
+	id S932553AbXHHPdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 11:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763938AbXHHPdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 11:32:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36705 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763428AbXHHPcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 11:32:22 -0400
-Message-ID: <46B9E1F9.6000103@redhat.com>
-Date: Wed, 08 Aug 2007 11:32:09 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
+	Wed, 8 Aug 2007 11:33:08 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:47704 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763904AbXHHPdF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 11:33:05 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Tejun Heo <htejun@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       satyam@infradead.org, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, Linux Containers <containers@lists.osdl.org>,
+       gregkh@suse.de
+Subject: Re: [PATCH 17/25] sysfs: Rewrite rename in terms of sysfs dirents
+References: <m17io7jba4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m13ayvjb82.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1y7gnhwm4.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1tzrbhwkc.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1ps1zhwhp.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1lkcnhwfu.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1hcnbhwcy.fsf_-_@ebiederm.dsl.xmission.com>
+	<m1d4xzhwb2.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18x8nhw8r.fsf_-_@ebiederm.dsl.xmission.com>
+	<m14pjbhw6y.fsf_-_@ebiederm.dsl.xmission.com>
+	<20070808085133.GI13674@htj.dyndns.org>
+Date: Wed, 08 Aug 2007 09:32:20 -0600
+In-Reply-To: <20070808085133.GI13674@htj.dyndns.org> (Tejun Heo's message of
+	"Wed, 8 Aug 2007 17:51:33 +0900")
+Message-ID: <m1ejiedou3.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: lkml@contacts.eelis.net
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Inconsistent execve SIGTRAP-ing after ptraced child's      PTRACE_TRACEME.
-References: <50598.213.84.80.149.1186526621.squirrel@webmail.nxs.nl>
-In-Reply-To: <50598.213.84.80.149.1186526621.squirrel@webmail.nxs.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/07/2007 06:43 PM, Eelis van der Weegen wrote:
-> How can a parent process intercepting a ptraced child's system calls using
-> PTRACE_SYSCALL know which SIGTRAP's are system call entries and which are system
-> call exits?
-> 
-> Since there does not seem to be a way for the parent to get this information
-> from the system, ptrace examples floating around on the web generally use a
-> boolean in_syscall flag that they toggle at each SIGTRAP. This mechanism seems
-> perfectly adequate, but for it to work correctly the flag must obviously be
-> appropriately initialized, and that is where things get vague.
-> 
-> Let's assume that the child's ptrace-ing begins after it first does
-> PTRACE_TRACEME and then calls execve. According to the ptrace man page, after
-> doing PTRACE_TRACEME "all subsequent calls to exec() by this process will cause
-> a SIGTRAP to be sent to it, giving the parent a chance to gain control before
-> the new program begins execution". The problem is that this does not specify
-> whether the parent will see SIGTRAP's for both entry to and exit from execve, or
-> only for exit from it. To my great surprise, I observed both behaviors on actual
-> machines (in particular, I observed the former on an x86_64 dual core machine).
-> 
-> This inconsistency foils the in_syscall flag approach, as there is no way to
-> know whether the parent should initialize that flag to true or false (since
-> apparently both can occur). Hence, my question is: is this behavior intentional?
-> Should there not be a guarantee that /either/ only the execve exit, /or/ both
-> entry and exit, are SIGTRAPed?
-> 
+Tejun Heo <htejun@gmail.com> writes:
 
-Did you try PTRACE_SETOPTIONS and set PTRACE_O_TRACEEXEC?
+>>  int sysfs_rename_dir(struct kobject * kobj, const char *new_name)
+>>  {
+>> -	struct sysfs_dirent *sd;
+>> +	struct sysfs_dirent *sd = kobj->sd;
+>>  	struct dentry *parent = NULL;
+>>  	struct dentry *old_dentry = NULL, *new_dentry = NULL;
+>>  	const char *dup_name = NULL;
+>> @@ -863,42 +863,41 @@ int sysfs_rename_dir(struct kobject * kobj, const char
+> *new_name)
+>>  
+>>  	mutex_lock(&sysfs_rename_mutex);
+>>  
+>> +	error = 0;
+>> +	if (strcmp(sd->s_name, new_name) == 0)
+>> +		goto out;	/* nothing to rename */
+>> +
+>>  	/* get the original dentry */
+>>  	old_dentry = sysfs_get_dentry(sd);
+>>  	if (IS_ERR(old_dentry)) {
+>>  		error = PTR_ERR(old_dentry);
+>> +		goto out;
+>>  	}
+>>  
+>>  	parent = old_dentry->d_parent;
+>>  
+>>  	/* lock parent and get dentry for new name */
+>>  	mutex_lock(&parent->d_inode->i_mutex);
+>> +	mutex_lock(&sysfs_mutex);
+>>  
+>> +	error = -EEXIST;
+>> +	if (sysfs_find_dirent(sd->s_parent, new_name))
+>>  		goto out_unlock;
+>>  
+>> +	error = -ENOMEM;
+>> +	new_dentry = d_alloc_name(parent, new_name);
+>> +	if (!new_dentry)
+>>  		goto out_unlock;
+>>  
+>>  	/* rename kobject and sysfs_dirent */
+>>  	error = -ENOMEM;
+>>  	new_name = dup_name = kstrdup(new_name, GFP_KERNEL);
+>>  	if (!new_name)
+>> +		goto out_unlock;
+>>  
+>>  	error = kobject_set_name(kobj, "%s", new_name);
+>>  	if (error)
+>> +		goto out_unlock;
+>>  
+>>  	mutex_lock(&sysfs_mutex);
+>
+> sysfs_mutex is being grabbed twice and unlocked twice later.
+
+Ugh.  That patch was supposed to remove the inner grab and release of
+sysfs_mutex.  I guess I somehow failed to move that change all of the
+way down to this patch.  #18 gets it right for sysfs_move_dir.  And
+#20 fixes it but yes this patch is broken, and will mess up any
+git-bisect badly.
+
+So this patch needs to be respun.
+
+Eric
+
