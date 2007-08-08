@@ -1,59 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937581AbXHHVLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937404AbXHHVOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937581AbXHHVLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 17:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763806AbXHHVLf
+	id S937404AbXHHVOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 17:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763241AbXHHVNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 17:11:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:51760 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763241AbXHHVLe convert rfc822-to-8bit (ORCPT
+	Wed, 8 Aug 2007 17:13:55 -0400
+Received: from waikiki.ops.eusc.inter.net ([84.23.254.155]:54299 "EHLO
+	waikiki.ops.eusc.inter.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764774AbXHHVNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 17:11:34 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: ljhc@br.ibm.com
-Subject: Re: SLUB doesn't work with kdump kernel on Cell
-Date: Wed, 8 Aug 2007 23:10:59 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Christoph Lameter <clameter@sgi.com>,
-       Arnd Bergmann <arndb@arndb.de>
-References: <1186604151.3608.46.camel@localhost.localdomain>
-In-Reply-To: <1186604151.3608.46.camel@localhost.localdomain>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+	Wed, 8 Aug 2007 17:13:54 -0400
+X-Trace: 4d7c73656261737469616e2e6b6c6f736b6140736e6166752e64657c38352e3137
+	382e39372e36347c31494973716d2d30303031707a2d4c487c3131383636303736
+	3332
+Message-ID: <46BA320E.1030608@snafu.de>
+Date: Wed, 08 Aug 2007 23:13:50 +0200
+From: Oncaphillis <oncaphillis@snafu.de>
+Reply-To: oncaphillis@snafu.de
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200708082310.59997.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/W8comqJNYvyTpRbAoJMcXPgVi3/75aK+xET3
- BANSCV0Hib9xJ2WAtdKvhLuYRF4spDGp9XwHJoPeaw0L+VHXH7
- I+d0iFWtIClhnOEArxHnA==
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: UART misbehaves under Linkstation/KuroBoxHG
+References: <46B9CE82.1050000@snafu.de> <Pine.LNX.4.60.0708082219520.6767@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0708082219520.6767@poirot.grange>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 08 August 2007, Lucio Correia wrote:
->   DMA             0 ->    12288
->   Normal      12288 ->    12288
-> early_node_map[2] active PFN ranges
->     0:        0 ->     2560
->     1:    12287 ->    12288
+Guennadi Liakhovetski wrote:
+> On Wed, 8 Aug 2007, Oncaphillis wrote:
+> 
+>> Greetings,
+>>
+>> I'm trying to compile a 2.6.2x kernel on a Linkstation/KuroBox HG/ppc
+>> following instructions given under
+>> http://www.kurobox.com/mwiki/index.php/Kurobox_support_in_stock_2.6_kernels
+> 
+> Wow, congratulations! Not too many endevour into this land, and even fewer 
+> succeed:-) You'd probably be better off asking this on linuxppc-dev, but 
+> anyway...
+> 
 
-As Christoph found, this memory map is really strange. Other machines
-have something like
+  Thank you very much indeed. I'm kind of proud too that I dared to enter
+  this dark realm without bricking the system (at least up until now).
+  And thanks for the tip. I'll give it a try.
 
-Zone PFN ranges:
-  DMA             0 ->    16384
-  Normal      16384 ->    16384
-early_node_map[2] active PFN ranges
-    0:        0 ->     8192
-    1:     8192 ->    16384
+>> and get weired settings and errors from the serial device (UART 16550A).
+>>
+>> Under the 2.4.17 kernel provided by the Kurobox manufacturer it gets IRQS in
+>> the range of 137/138 under 2.6.22 for the linkstation it gets IRQS 17/18 and
+>> the serial device behaves fishy
+> 
+> That interrupt numbers are different as under 2.4 is correct, however, I 
+> get 16 and 17 for ttyS0 and ttyS1 on a kuroboxHG, are you sure you're 
+> getting 17 and 18?
+> 
 
-Lucio,
-What code builds the memory map that gets passed to the kdump kernel?
-Does the original kernel see the same map on your machine?
+  Absolutely right (bad bad typo, have to control my trembling fingers)
+  It's 16/17.
 
-	Arnd <><
+  So that's ok ? No misconfiguration ? And that setserial tells
+  me the port is 0x000 ? I thought the dts file which
+  comes with the linkstation kernel describes the ports and IRQs
+  but poking there didn't change anything. It seems like the kernel
+  is ignoring the serial settings in the dts-file (which I do not
+  realy understand) all together.
+
+
+>> communication errors
+>>
+>> "to much work in IRQ 16"
+> 
+> And here you get IRQ 16, which indeed should be ttyS0. And ttyS0 is 
+> connected to the power-management microcontroller (AVR). Wait, what 
+> userspace are you running? Have you swapped ttyS0 and ttyS1 everywhere? in 
+> /etc/inittab for example? Besides, if you are running any vendor provided 
+> (or community) tools to handle the AVR - they use ttyS1 by default, as it 
+> was under 2.4 ans under "traditional" 2.6, whereas the 2.6 mainline kernel 
+> for kurobox/linkstation uses the traditional for these CPUs port 
+> numbering. I think this is your problem. Some user-space programme(s) are 
+> accessing wrong tty.
+
+   I started with a debian distro
+   http://www.kurobox.com/mwiki/index.php/Debian_sylver
+
+   Hmm I tried my very best to eliminate this everywhere. Actually I
+   resurrected the ARV00 device by creating a soft link to a ttySx
+   with during bootup within the udev filesystem.
+
+   <snip>
+         if [ ! -e /dev/AVR00 ];then
+          cat /proc/tty/driver/serial | grep 80004500 | grep -q 0:
+            && AVR=/dev/ttyS0 || AVR=/dev/ttyS1
+          echo "Making AVR00 link to "$AVR;
+          ln -s $AVR /dev/AVR00
+         fi;
+   </snip>
+
+Stole the trick from the avr_evtd startup script...
+
+Thanks a 10^6 for the tips...
+
+Oncaphillis
+
+
+> 
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
