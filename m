@@ -1,54 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934472AbXHHQdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936604AbXHHQdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934472AbXHHQdU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 12:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758040AbXHHQc5
+	id S936604AbXHHQdk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 12:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934434AbXHHQdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 12:32:57 -0400
-Received: from smtp.nokia.com ([131.228.20.172]:28891 "EHLO
-	mgw-ext13.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759780AbXHHQc4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 12:32:56 -0400
-Subject: Re: LogFS take five
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-mtd@lists.infradead.org, akpm@osdl.org,
-       David Woodhouse <dwmw2@infradead.org>, Arnd Bergmann <arnd@arndb.de>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070808161234.GB15319@lazybastard.org>
-References: <20070808161234.GB15319@lazybastard.org>
-Content-Type: text/plain; charset=utf-8
-Date: Wed, 08 Aug 2007 19:27:17 +0300
-Message-Id: <1186590437.19606.38.camel@sauron>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.2 (2.10.2-2.fc7) 
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 08 Aug 2007 16:27:17.0790 (UTC) FILETIME=[FCA0ABE0:01C7D9D8]
-X-Nokia-AV: Clean
+	Wed, 8 Aug 2007 12:33:18 -0400
+Received: from www.osadl.org ([213.239.205.134]:39058 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S936345AbXHHQdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 12:33:16 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+Organization: Linutronix
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [rfc] Re: [PATCH] Make UIO available for arm architecture
+Date: Wed, 8 Aug 2007 18:33:12 +0200
+User-Agent: KMail/1.9.5
+Cc: Jan Engelhardt <jengelh@computergmbh.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       linux-arm-kernel@lists.arm.linux.org.uk
+References: <200708081808.13889.hjk@linutronix.de> <Pine.LNX.4.64.0708081812250.3715@fbirervta.pbzchgretzou.qr> <20070808161002.GA11153@suse.de>
+In-Reply-To: <20070808161002.GA11153@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708081833.12459.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jörn,
+Am Mittwoch 08 August 2007 18:10 schrieb Greg KH:
+> On Wed, Aug 08, 2007 at 06:15:21PM +0200, Jan Engelhardt wrote:
+> > 
+> > On Aug 8 2007 18:08, Hans-J??rgen Koch wrote:
+> > >---
+> > >Index: linux-2.6.23-rc/arch/arm/Kconfig
+> > >===================================================================
+> > >--- linux-2.6.23-rc.orig/arch/arm/Kconfig	2007-08-08 17:52:02.000000000 +0200
+> > >+++ linux-2.6.23-rc/arch/arm/Kconfig	2007-08-08 17:53:29.000000000 +0200
+> > >@@ -1052,6 +1052,8 @@
+> > > 
+> > > source "drivers/dma/Kconfig"
+> > > 
+> > >+source "drivers/uio/Kconfig"
+> > >+
+> > > endmenu
+> > > 
+> > > source "fs/Kconfig"
+> > 
+> > I am raising a general question here.
+> > Should not such cross-platform things be made available in a general
+> > Kconfig rather than having to patch each arch's Kconfig?
+> > 
+> > I am thinking of drivers/Kconfig for this one (of course I am aware that this
+> > requires an extra "depends on X86 || SPARC || others" in drivers/pci/Kconfig),
+> > and perhaps even a top-level Kconfig for things like truly arch-independent
+> > fs/Kconfig.
+> 
+> Um, uio _is_ in drivers/Kconfig already :)
 
-On Wed, 2007-08-08 at 18:12 +0200, Jörn Engel wrote:
-> It has been a while, mainly because I found a bunch of races and didn't
-> want to publish anything before those were fixed.  Patch is still
-> against 2.6.21 and just for review.
+Of course :-)
 
-I'm very interested how do you account free/dirty space in LogFS:
+> 
+> But I'm guessing that ARM doesn't use that file yet?  
 
-* When you need to write new data, how do you select the place where to
-write?
-* When you run out of space, how do select find the segment to
-garbage-collect?
+No, they don't. They source Kconfigs from each drivers subdirectory.
 
-For any given segment (or eraseblock), how do you find amount of free
-and dirty space in it?
+> If so, I have no 
+> objection to the above patch, but it should go through the ARM
+> developers, not me.
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+OK, as I've CCed linux-arm-kernel, I hope Russell will do that.
 
+Thanks,
+Hans
