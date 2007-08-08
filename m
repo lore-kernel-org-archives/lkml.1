@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764587AbXHHMA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762846AbXHHME3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764587AbXHHMA1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 08:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758034AbXHHMAH
+	id S1762846AbXHHME3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 08:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbXHHMEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 08:00:07 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38302 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753490AbXHHMAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 08:00:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH] uli526x: Add suspend and resume routines
-Date: Wed, 8 Aug 2007 14:09:41 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Grant Grundler <grundler@parisc-linux.org>,
-       Kyle McMartin <kyle@mcmartin.ca>
-References: <200708052114.01790.rjw@sisk.pl> <20070807160357.d6ea9731.akpm@linux-foundation.org> <200708081405.00778.rjw@sisk.pl>
-In-Reply-To: <200708081405.00778.rjw@sisk.pl>
+	Wed, 8 Aug 2007 08:04:21 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:60544 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751573AbXHHMEU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 08:04:20 -0400
+X-Sasl-enc: 8rv7X2L/+/gx/QNIti4HLtNZ0oRXeisqsLLfa99aszdc 1186574659
+Date: Wed, 8 Aug 2007 09:04:16 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Toralf =?iso-8859-1?Q?F=F6rster?= <toralf.foerster@gmx.de>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, ibm-acpi-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [ibm-acpi-devel] suspend/hibernation regression between 2.6.19
+	and 2.6.20 w/ Thinkpad T41
+Message-ID: <20070808120416.GA554@khazad-dum.debian.net>
+References: <200708051902.18801.toralf.foerster@gmx.de> <200708071521.33679.toralf.foerster@gmx.de> <200708071738.24502.rjw@sisk.pl> <200708081122.55036.toralf.foerster@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200708081409.42384.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200708081122.55036.toralf.foerster@gmx.de>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 8 August 2007 14:05, Rafael J. Wysocki wrote:
-> On Wednesday, 8 August 2007 01:03, Andrew Morton wrote:
-> > On Sun, 5 Aug 2007 21:14:01 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > +#ifdef CONFIG_PM_SLEEP
-> > > +
-> > > +/*
-> > > + *	Suspend the interface.
-> > > + */
-> > > +
-> > > +static int uli526x_suspend(struct pci_dev *pdev, pm_message_t state)
-> > 
-> > Since when did suspend and resume methods become dependent upon CONFIG_PM_SLEEP?
-> > 
-> > We have eight thousand implementations of this, all of which presently
-> > use CONFIG_PM.
+On Wed, 08 Aug 2007, Toralf Förster wrote:
+> Am Dienstag, 7. August 2007 17:38 schrieb Rafael J. Wysocki:
+> > Actually, you don't need the patch above, just do
+> > "echo shutdown > /sys/power/disk" before the hibernation (or use
+> > BTW, can you please try this patch before you do that:
+> > http://www.sisk.pl/kernel/hibernation_and_suspend/2.6.23-rc2/patches/19-ACPI-Enable-GPEs-before-_WAK-is-called.patch
 > 
-> Yes, they do, but if CONFIG_PM_SLEEP is not set, they won't be used.
+> This patch applied at commit cfee47f doesn't solve the regression.
+> 
+> > 
+> > So place "echo shutdown > /sys/power/disk" before that into your script.
+> yep, that works for me.
 
-Well, not all of them.  There are some in USB used for runtime power
-management and there may be some others like that, but the majority of them
-are really only useful for suspend/hibernation.  Like the ones in this patch.
+FYI, some other thinkpad models break badly if you use shutdown instead of
+platform.  Sound goes away on wake, etc.
 
-Greetings,
-Rafael
+I am still very suspicious that the way we do wake-from-suspend-to-disk is
+to blame... I wish we loaded the kernel just once, maybe from the boot
+loader.
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
