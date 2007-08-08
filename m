@@ -1,159 +1,676 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760075AbXHHHTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932636AbXHHHU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760075AbXHHHTn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 03:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764184AbXHHHNu
+	id S932636AbXHHHU1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 03:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932361AbXHHHSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 03:13:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46079 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764448AbXHHHNs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 03:13:48 -0400
-From: Glauber de Oliveira Costa <gcosta@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
-       mingo@elte.hu, chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, Glauber de Oliveira Costa <gcosta@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: [PATCH 23/25] [PATCH] paravirt hooks for arch initialization
-Date: Wed,  8 Aug 2007 01:19:10 -0300
-Message-Id: <11865468431616-git-send-email-gcosta@redhat.com>
-X-Mailer: git-send-email 1.4.4.2
-In-Reply-To: <11865468394005-git-send-email-gcosta@redhat.com>
-References: <11865467522495-git-send-email-gcosta@redhat.com> <11865467592921-git-send-email-gcosta@redhat.com> <1186546763582-git-send-email-gcosta@redhat.com> <11865467662182-git-send-email-gcosta@redhat.com> <11865467702103-git-send-email-gcosta@redhat.com> <11865467741753-git-send-email-gcosta@redhat.com> <11865467773012-git-send-email-gcosta@redhat.com> <11865467812610-git-send-email-gcosta@redhat.com> <1186546785346-git-send-email-gcosta@redhat.com> <1186546789356-git-send-email-gcosta@redhat.com> <11865467931543-git-send-email-gcosta@redhat.com> <11865467973510-git-send-email-gcosta@redhat.com> <11865468003673-git-send-email-gcosta@redhat.com> <11865468043920-git-send-email-gcosta@redhat.com> <118654680831-git-send-email-gcosta@redhat.com> <11865468122642-git-send-email-gcosta@redhat.com> <11865468162812-git-send-email-gcosta@redhat.com> <1186546820708-git-send-email-gcosta@redhat.com> <11865468243612-git-send-email-gcosta@redhat.com> <11865468281860-git-send-email-gc!
- osta@redhat.com> <11865468321629-git-send-email-gcosta@redhat.com> <11865468362401-git-send-email-gcosta@redhat.com> <11865468394005-git-send-email-gcosta@redhat.com>
+	Wed, 8 Aug 2007 03:18:35 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:44317 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765802AbXHHHS2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 03:18:28 -0400
+X-IronPort-AV: i="4.19,233,1183348800"; 
+   d="scan'208"; a="47755600:sNHT39667292"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 01/12] Blackfin arch: add peripheral resource allocation support
+Date: Wed, 8 Aug 2007 08:18:22 +0100
+Message-ID: <600D5CB4DFD93545BF61FF01473D11AC0D404B49@limkexm2.ad.analog.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 01/12] Blackfin arch: add peripheral resource allocation support
+Thread-Index: AcfZbTWGfEnpsO+KTkaKYkFkUryi2AAHp7HQ
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Bryan Wu" <bryan.wu@analog.com>, <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>
+Cc: <dbrownell@users.sourceforge.net>,
+       "Michael Hennerich" <michael.hennerich@analog.com>
+X-OriginalArrivalTime: 08 Aug 2007 07:18:25.0044 (UTC) FILETIME=[4F2E6D40:01C7D98C]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch add paravirtualization hooks in the arch initialization
-process. paravirt_arch_setup() lets the guest issue any specific
-initialization routine, and skip all the rest if it see fits, which
-it signals by a proper return value.
+Bryan,
 
-In case the initialization continues, we hook at least memory_setup(),
-so it can handle it in its own way.
+This patch doesn't seem to be up to date.
+It doesn't include the changes made based on feedback from Joe Perches.
 
-The hypervisor can make its own  ebda mapping visible by providing
-its custom ebda_info function.
+Please see our SVN:
+Modified: trunk/arch/blackfin/kernel/bfin_gpio.c (3489 => 3490)
 
-Signed-off-by: Glauber de Oliveira Costa <gcosta@redhat.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- arch/x86_64/kernel/setup.c |   41 ++++++++++++++++++++++++++++++++++++-----
- include/asm-x86_64/e820.h  |    6 ++++++
- 2 files changed, 42 insertions(+), 5 deletions(-)
+-Michael
 
-diff --git a/arch/x86_64/kernel/setup.c b/arch/x86_64/kernel/setup.c
-index af838f6..8e58a5d 100644
---- a/arch/x86_64/kernel/setup.c
-+++ b/arch/x86_64/kernel/setup.c
-@@ -65,6 +65,12 @@
- #include <asm/sections.h>
- #include <asm/dmi.h>
- 
-+#ifdef CONFIG_PARAVIRT
-+#include <asm/paravirt.h>
-+#else
-+#define paravirt_arch_setup() 0
-+#endif
-+
- /*
-  * Machine setup..
-  */
-@@ -201,17 +207,28 @@ static inline void copy_edd(void)
- unsigned __initdata ebda_addr;
- unsigned __initdata ebda_size;
- 
--static void discover_ebda(void)
-+void native_ebda_info(unsigned *addr, unsigned *size)
- {
- 	/*
- 	 * there is a real-mode segmented pointer pointing to the 
- 	 * 4K EBDA area at 0x40E
- 	 */
--	ebda_addr = *(unsigned short *)__va(EBDA_ADDR_POINTER);
--	ebda_addr <<= 4;
-+	*addr = *(unsigned short *)__va(EBDA_ADDR_POINTER);
-+	*addr <<= 4;
-+
-+	*size = *(unsigned short *)__va(*addr);
-+}
- 
--	ebda_size = *(unsigned short *)__va(ebda_addr);
-+/* Overriden in paravirt.c if CONFIG_PARAVIRT */
-+void __attribute__((weak)) ebda_info(unsigned *addr, unsigned *size)
-+{
-+	native_ebda_info(addr, size);
-+}
- 
-+static void discover_ebda(void)
-+{
-+
-+	ebda_info(&ebda_addr, &ebda_size);
- 	/* Round EBDA up to pages */
- 	if (ebda_size == 0)
- 		ebda_size = 1;
-@@ -221,6 +238,13 @@ static void discover_ebda(void)
- 		ebda_size = 64*1024;
- }
- 
-+/* Overridden in paravirt.c if CONFIG_PARAVIRT */
-+void __attribute__((weak)) memory_setup(void)
-+{
-+       return setup_memory_region();
-+}
-+
-+
- void __init setup_arch(char **cmdline_p)
- {
- 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
-@@ -231,12 +255,19 @@ void __init setup_arch(char **cmdline_p)
- 	saved_video_mode = SAVED_VIDEO_MODE;
- 	bootloader_type = LOADER_TYPE;
- 
-+	/*
-+	 * By returning non-zero here, a paravirt impl can choose to
-+	 * skip the rest of the setup process
-+	 */
-+	if (paravirt_arch_setup())
-+		return;
-+
- #ifdef CONFIG_BLK_DEV_RAM
- 	rd_image_start = RAMDISK_FLAGS & RAMDISK_IMAGE_START_MASK;
- 	rd_prompt = ((RAMDISK_FLAGS & RAMDISK_PROMPT_FLAG) != 0);
- 	rd_doload = ((RAMDISK_FLAGS & RAMDISK_LOAD_FLAG) != 0);
- #endif
--	setup_memory_region();
-+	memory_setup();
- 	copy_edd();
- 
- 	if (!MOUNT_ROOT_RDONLY)
-diff --git a/include/asm-x86_64/e820.h b/include/asm-x86_64/e820.h
-index 3486e70..2ced3ba 100644
---- a/include/asm-x86_64/e820.h
-+++ b/include/asm-x86_64/e820.h
-@@ -20,7 +20,12 @@
- #define E820_ACPI	3
- #define E820_NVS	4
- 
-+#define MAP_TYPE_STR	"BIOS-e820"
-+
- #ifndef __ASSEMBLY__
-+
-+void native_ebda_info(unsigned *addr, unsigned *size);
-+
- struct e820entry {
- 	u64 addr;	/* start of memory segment */
- 	u64 size;	/* size of memory segment */
-@@ -56,6 +61,7 @@ extern struct e820map e820;
- 
- extern unsigned ebda_addr, ebda_size;
- extern unsigned long nodemap_addr, nodemap_size;
-+
- #endif/*!__ASSEMBLY__*/
- 
- #endif/*__E820_HEADER*/
--- 
-1.4.4.2
-
+>-----Original Message-----
+>From: Bryan Wu [mailto:bryan.wu@analog.com]
+>Sent: Mittwoch, 8. August 2007 05:35
+>To: torvalds@linux-foundation.org; linux-kernel@vger.kernel.org;
+>akpm@linux-foundation.org
+>Cc: dbrownell@users.sourceforge.net; Michael Hennerich; Bryan Wu
+>Subject: [PATCH 01/12] Blackfin arch: add peripheral resource
+allocation
+>support
+>
+>From: Michael Hennerich <michael.hennerich@analog.com>
+>
+>Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+>Signed-off-by: Bryan Wu <bryan.wu@analog.com>
+>---
+> arch/blackfin/kernel/bfin_gpio.c                  |  272
+>++++++++++++++++++---
+> include/asm-blackfin/mach-bf533/bfin_serial_5xx.h |   11 +-
+> include/asm-blackfin/mach-bf537/bfin_serial_5xx.h |   23 +-
+> include/asm-blackfin/mach-bf537/portmux.h         |    2 +-
+> include/asm-blackfin/mach-bf561/bfin_serial_5xx.h |   11 +-
+> 5 files changed, 274 insertions(+), 45 deletions(-)
+>
+>diff --git a/arch/blackfin/kernel/bfin_gpio.c
+>b/arch/blackfin/kernel/bfin_gpio.c
+>index bafcfa5..9f30948 100644
+>--- a/arch/blackfin/kernel/bfin_gpio.c
+>+++ b/arch/blackfin/kernel/bfin_gpio.c
+>@@ -84,6 +84,7 @@
+> #include <linux/err.h>
+> #include <asm/blackfin.h>
+> #include <asm/gpio.h>
+>+#include <asm/portmux.h>
+> #include <linux/irq.h>
+>
+> #ifdef BF533_FAMILY
+>@@ -115,7 +116,11 @@ static struct gpio_port_t
+>*gpio_bankb[gpio_bank(MAX_BLACKFIN_GPIOS)] = {
+> };
+> #endif
+>
+>-static unsigned short reserved_map[gpio_bank(MAX_BLACKFIN_GPIOS)];
+>+static unsigned short
+reserved_gpio_map[gpio_bank(MAX_BLACKFIN_GPIOS)];
+>+static unsigned short reserved_peri_map[gpio_bank(MAX_BLACKFIN_GPIOS +
+>16)];
+>+char *str_ident = NULL;
+>+
+>+#define RESOURCE_LABEL_SIZE 16
+>
+> #ifdef CONFIG_PM
+> static unsigned short wakeup_map[gpio_bank(MAX_BLACKFIN_GPIOS)];
+>@@ -143,13 +148,39 @@ inline int check_gpio(unsigned short gpio)
+> 	return 0;
+> }
+>
+>+static void set_label(unsigned short ident, const char *label)
+>+{
+>+
+>+	if (label && str_ident) {
+>+		strncpy(str_ident + ident * RESOURCE_LABEL_SIZE, label,
+>+			 RESOURCE_LABEL_SIZE);
+>+		str_ident[ident * RESOURCE_LABEL_SIZE +
+>+			 RESOURCE_LABEL_SIZE - 1] = 0;
+>+	}
+>+}
+>+
+>+static char *get_label(unsigned short ident)
+>+{
+>+	if (!str_ident)
+>+		return "UNKNOWN";
+>+
+>+	return (str_ident[ident * RESOURCE_LABEL_SIZE] ?
+>+		(str_ident + ident * RESOURCE_LABEL_SIZE) : "UNKNOWN");
+>+}
+>+
+>+static int cmp_label(unsigned short ident, const char *label)
+>+{
+>+	if (label && str_ident)
+>+		return strncmp(str_ident + ident * RESOURCE_LABEL_SIZE,
+>+				 label, strlen(label));
+>+	else
+>+		return -EINVAL;
+>+}
+>+
+> #ifdef BF537_FAMILY
+> static void port_setup(unsigned short gpio, unsigned short usage)
+> {
+> 	if (usage == GPIO_USAGE) {
+>-		if (*port_fer[gpio_bank(gpio)] & gpio_bit(gpio))
+>-			printk(KERN_WARNING "bfin-gpio: Possible
+Conflict with
+>Peripheral "
+>-			       "usage and GPIO %d detected!\n", gpio);
+> 		*port_fer[gpio_bank(gpio)] &= ~gpio_bit(gpio);
+> 	} else
+> 		*port_fer[gpio_bank(gpio)] |= gpio_bit(gpio);
+>@@ -159,6 +190,56 @@ static void port_setup(unsigned short gpio,
+unsigned
+>short usage)
+> # define port_setup(...)  do { } while (0)
+> #endif
+>
+>+#ifdef BF537_FAMILY
+>+
+>+#define PMUX_LUT_RES		0
+>+#define PMUX_LUT_OFFSET		1
+>+#define PMUX_LUT_ENTRIES	41
+>+#define PMUX_LUT_SIZE		2
+>+
+>+static unsigned short port_mux_lut[PMUX_LUT_ENTRIES][PMUX_LUT_SIZE] =
+{
+>+	{P_PPI0_D13, 11}, {P_PPI0_D14, 11}, {P_PPI0_D15, 11},
+>+	{P_SPORT1_TFS, 11}, {P_SPORT1_TSCLK, 11}, {P_SPORT1_DTPRI, 11},
+>+	{P_PPI0_D10, 10}, {P_PPI0_D11, 10}, {P_PPI0_D12, 10},
+>+	{P_SPORT1_RSCLK, 10}, {P_SPORT1_RFS, 10}, {P_SPORT1_DRPRI, 10},
+>+	{P_PPI0_D8, 9}, {P_PPI0_D9, 9}, {P_SPORT1_DRSEC, 9},
+>+	{P_SPORT1_DTSEC, 9}, {P_TMR2, 8}, {P_PPI0_FS3, 8}, {P_TMR3, 7},
+>+	{P_SPI0_SSEL4, 7}, {P_TMR4, 6}, {P_SPI0_SSEL5, 6}, {P_TMR5, 5},
+>+	{P_SPI0_SSEL6, 5}, {P_UART1_RX, 4}, {P_UART1_TX, 4}, {P_TMR6,
+4},
+>+	{P_TMR7, 4}, {P_UART0_RX, 3}, {P_UART0_TX, 3}, {P_DMAR0, 3},
+>+	{P_DMAR1, 3}, {P_SPORT0_DTSEC, 1}, {P_SPORT0_DRSEC, 1},
+>+	{P_CAN0_RX, 1}, {P_CAN0_TX, 1}, {P_SPI0_SSEL7, 1},
+>+	{P_SPORT0_TFS, 0}, {P_SPORT0_DTPRI, 0}, {P_SPI0_SSEL2, 0},
+>+	{P_SPI0_SSEL3, 0}
+>+};
+>+
+>+static void portmux_setup(unsigned short per, unsigned short function)
+>+{
+>+	u16 y, muxreg, offset;
+>+
+>+	for (y = 0; y < PMUX_LUT_ENTRIES; y++) {
+>+		if (port_mux_lut[y][PMUX_LUT_RES] == per) {
+>+
+>+			/* SET PORTMUX REG */
+>+
+>+			offset = port_mux_lut[y][PMUX_LUT_OFFSET];
+>+			muxreg = bfin_read_PORT_MUX();
+>+
+>+			if (offset != 1) {
+>+				muxreg &= ~(1 << offset);
+>+			} else {
+>+				muxreg &= ~(3 << 1);
+>+			}
+>+
+>+			muxreg |= (function << offset);
+>+			bfin_write_PORT_MUX(muxreg);
+>+		}
+>+	}
+>+}
+>+
+>+#else
+>+# define portmux_setup(...)  do { } while (0)
+>+#endif
+>
+> static void default_gpio(unsigned short gpio)
+> {
+>@@ -179,22 +260,15 @@ static void default_gpio(unsigned short gpio)
+>
+> static int __init bfin_gpio_init(void)
+> {
+>-	int i;
+>-
+>-	printk(KERN_INFO "Blackfin GPIO Controller\n");
+>
+>-	for (i = 0; i < MAX_BLACKFIN_GPIOS; i += GPIO_BANKSIZE)
+>-		reserved_map[gpio_bank(i)] = 0;
+>+	str_ident = kzalloc(RESOURCE_LABEL_SIZE * 256, GFP_KERNEL);
+>+	if (!str_ident)
+>+		return -ENOMEM;
+>
+>-#if defined(BF537_FAMILY) && (defined(CONFIG_BFIN_MAC) ||
+>defined(CONFIG_BFIN_MAC_MODULE))
+>-# if defined(CONFIG_BFIN_MAC_RMII)
+>-	reserved_map[gpio_bank(PORT_H)] = 0xC373;
+>-# else
+>-	reserved_map[gpio_bank(PORT_H)] = 0xFFFF;
+>-# endif
+>-#endif
+>+	printk(KERN_INFO "Blackfin GPIO Controller\n");
+>
+> 	return 0;
+>+
+> }
+>
+> arch_initcall(bfin_gpio_init);
+>@@ -223,7 +297,7 @@ arch_initcall(bfin_gpio_init);
+> void set_gpio_ ## name(unsigned short gpio, unsigned short arg) \
+> { \
+> 	unsigned long flags; \
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio))); \
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+\
+> 	local_irq_save(flags); \
+> 	if (arg) \
+> 		gpio_bankb[gpio_bank(gpio)]->name |= gpio_bit(gpio); \
+>@@ -243,7 +317,7 @@ SET_GPIO(both)
+> #define SET_GPIO_SC(name) \
+> void set_gpio_ ## name(unsigned short gpio, unsigned short arg) \
+> { \
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio))); \
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+\
+> 	if (arg) \
+> 		gpio_bankb[gpio_bank(gpio)]->name ## _set =
+gpio_bit(gpio); \
+> 	else \
+>@@ -258,7 +332,7 @@ SET_GPIO_SC(maskb)
+> void set_gpio_data(unsigned short gpio, unsigned short arg)
+> {
+> 	unsigned long flags;
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+> 	local_irq_save(flags);
+> 	if (arg)
+> 		gpio_bankb[gpio_bank(gpio)]->data_set = gpio_bit(gpio);
+>@@ -277,7 +351,7 @@ SET_GPIO_SC(data)
+> void set_gpio_toggle(unsigned short gpio)
+> {
+> 	unsigned long flags;
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+> 	local_irq_save(flags);
+> 	gpio_bankb[gpio_bank(gpio)]->toggle = gpio_bit(gpio);
+> 	bfin_read_CHIPID();
+>@@ -286,7 +360,7 @@ void set_gpio_toggle(unsigned short gpio)
+> #else
+> void set_gpio_toggle(unsigned short gpio)
+> {
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+> 	gpio_bankb[gpio_bank(gpio)]->toggle = gpio_bit(gpio);
+> }
+> #endif
+>@@ -350,7 +424,7 @@ unsigned short get_gpio_data(unsigned short gpio)
+> {
+> 	unsigned long flags;
+> 	unsigned short ret;
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+> 	local_irq_save(flags);
+> 	ret = 0x01 & (gpio_bankb[gpio_bank(gpio)]->data >>
+gpio_sub_n(gpio));
+> 	bfin_read_CHIPID();
+>@@ -494,13 +568,14 @@ u32 gpio_pm_setup(void)
+> 			gpio_bank_saved[bank].dir   =
+gpio_bankb[bank]->dir;
+> 			gpio_bank_saved[bank].edge  =
+gpio_bankb[bank]->edge;
+> 			gpio_bank_saved[bank].both  =
+gpio_bankb[bank]->both;
+>-			gpio_bank_saved[bank].reserved =
+reserved_map[bank];
+>+			gpio_bank_saved[bank].reserved =
+>+						reserved_gpio_map[bank];
+>
+> 			gpio = i;
+>
+> 			while (mask) {
+> 				if (mask & 1) {
+>-					reserved_map[gpio_bank(gpio)] |=
+>+
+reserved_gpio_map[gpio_bank(gpio)] |=
+> 							gpio_bit(gpio);
+> 					bfin_gpio_wakeup_type(gpio,
+> 						wakeup_flags_map[gpio]);
+>@@ -540,7 +615,8 @@ void gpio_pm_restore(void)
+> 			gpio_bankb[bank]->edge  =
+gpio_bank_saved[bank].edge;
+> 			gpio_bankb[bank]->both  =
+gpio_bank_saved[bank].both;
+>
+>-			reserved_map[bank] =
+gpio_bank_saved[bank].reserved;
+>+			reserved_gpio_map[bank] =
+>+					gpio_bank_saved[bank].reserved;
+>
+> 		}
+>
+>@@ -550,6 +626,140 @@ void gpio_pm_restore(void)
+>
+> #endif
+>
+>+
+>+
+>+
+>+int peripheral_request(unsigned short per, const char *label)
+>+{
+>+	unsigned long flags;
+>+	unsigned short ident = P_IDENT(per);
+>+
+>+	/*
+>+	 * Don't cares are pins with only one dedicated function
+>+	 */
+>+
+>+	if (per & P_DONTCARE)
+>+		return 0;
+>+
+>+	if (!(per & P_DEFINED))
+>+		return -ENODEV;
+>+
+>+	if (check_gpio(ident) < 0)
+>+		return -EINVAL;
+>+
+>+	local_irq_save(flags);
+>+
+>+	if (unlikely(reserved_gpio_map[gpio_bank(ident)] &
+gpio_bit(ident)))
+>{
+>+		printk(KERN_ERR
+>+		       "%s: Peripheral %d is already reserved as GPIO by
+%s
+>!\n",
+>+		       __FUNCTION__, ident, get_label(ident));
+>+		dump_stack();
+>+		local_irq_restore(flags);
+>+		return -EBUSY;
+>+	}
+>+
+>+	if (unlikely(reserved_peri_map[gpio_bank(ident)] &
+gpio_bit(ident)))
+>{
+>+
+>+	/*
+>+	 * Pin functions like AMC address strobes my
+>+	 * be requested and used by several drivers
+>+	 */
+>+
+>+	if (!(per & P_MAYSHARE)) {
+>+
+>+	/*
+>+	 * Allow that the identical pin function can
+>+	 * be requested from the same driver twice
+>+	 */
+>+
+>+		if (cmp_label(ident, label) == 0)
+>+			goto anyway;
+>+
+>+			printk(KERN_ERR
+>+			       "%s: Peripheral %d function %d is
+already"
+>+			       "reserved by %s !\n",
+>+			       __FUNCTION__, ident, P_FUNCT2MUX(per),
+>+				get_label(ident));
+>+			dump_stack();
+>+			local_irq_restore(flags);
+>+			return -EBUSY;
+>+		}
+>+
+>+	}
+>+
+>+anyway:
+>+
+>+
+>+	portmux_setup(per, P_FUNCT2MUX(per));
+>+
+>+	port_setup(ident, PERIPHERAL_USAGE);
+>+
+>+	reserved_peri_map[gpio_bank(ident)] |= gpio_bit(ident);
+>+	local_irq_restore(flags);
+>+	set_label(ident, label);
+>+
+>+	return 0;
+>+}
+>+EXPORT_SYMBOL(peripheral_request);
+>+
+>+int peripheral_request_list(unsigned short per[], const char *label)
+>+{
+>+	u16 cnt;
+>+	int ret;
+>+
+>+	for (cnt = 0; per[cnt] != 0; cnt++) {
+>+		ret = peripheral_request(per[cnt], label);
+>+		if (ret < 0)
+>+			return ret;
+>+	}
+>+
+>+	return 0;
+>+}
+>+EXPORT_SYMBOL(peripheral_request_list);
+>+
+>+void peripheral_free(unsigned short per)
+>+{
+>+	unsigned long flags;
+>+	unsigned short ident = P_IDENT(per);
+>+
+>+	if (per & P_DONTCARE)
+>+		return;
+>+
+>+	if (!(per & P_DEFINED))
+>+		return;
+>+
+>+	if (check_gpio(ident) < 0)
+>+		return;
+>+
+>+	local_irq_save(flags);
+>+
+>+	if (unlikely(!(reserved_peri_map[gpio_bank(ident)]
+>+			 & gpio_bit(ident)))) {
+>+		local_irq_restore(flags);
+>+		return;
+>+	}
+>+
+>+	if (!(per & P_MAYSHARE)) {
+>+		port_setup(ident, GPIO_USAGE);
+>+	}
+>+
+>+	reserved_peri_map[gpio_bank(ident)] &= ~gpio_bit(ident);
+>+
+>+	local_irq_restore(flags);
+>+}
+>+EXPORT_SYMBOL(peripheral_free);
+>+
+>+void peripheral_free_list(unsigned short per[])
+>+{
+>+	u16 cnt;
+>+
+>+	for (cnt = 0; per[cnt] != 0; cnt++) {
+>+		peripheral_free(per[cnt]);
+>+	}
+>+
+>+}
+>+EXPORT_SYMBOL(peripheral_free_list);
+>+
+> /***********************************************************
+> *
+> * FUNCTIONS: Blackfin GPIO Driver
+>@@ -574,13 +784,13 @@ int gpio_request(unsigned short gpio, const char
+>*label)
+>
+> 	local_irq_save(flags);
+>
+>-	if (unlikely(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio))) {
+>+	if (unlikely(reserved_gpio_map[gpio_bank(gpio)] &
+gpio_bit(gpio))) {
+> 		printk(KERN_ERR "bfin-gpio: GPIO %d is already
+reserved!\n",
+>gpio);
+> 		dump_stack();
+> 		local_irq_restore(flags);
+> 		return -EBUSY;
+> 	}
+>-	reserved_map[gpio_bank(gpio)] |= gpio_bit(gpio);
+>+	reserved_gpio_map[gpio_bank(gpio)] |= gpio_bit(gpio);
+>
+> 	local_irq_restore(flags);
+>
+>@@ -599,7 +809,7 @@ void gpio_free(unsigned short gpio)
+>
+> 	local_irq_save(flags);
+>
+>-	if (unlikely(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio))))
+{
+>+	if (unlikely(!(reserved_gpio_map[gpio_bank(gpio)] &
+gpio_bit(gpio))))
+>{
+> 		printk(KERN_ERR "bfin-gpio: GPIO %d wasn't reserved!\n",
+gpio);
+> 		dump_stack();
+> 		local_irq_restore(flags);
+>@@ -608,7 +818,7 @@ void gpio_free(unsigned short gpio)
+>
+> 	default_gpio(gpio);
+>
+>-	reserved_map[gpio_bank(gpio)] &= ~gpio_bit(gpio);
+>+	reserved_gpio_map[gpio_bank(gpio)] &= ~gpio_bit(gpio);
+>
+> 	local_irq_restore(flags);
+> }
+>@@ -618,7 +828,7 @@ void gpio_direction_input(unsigned short gpio)
+> {
+> 	unsigned long flags;
+>
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>
+> 	local_irq_save(flags);
+> 	gpio_bankb[gpio_bank(gpio)]->dir &= ~gpio_bit(gpio);
+>@@ -631,7 +841,7 @@ void gpio_direction_output(unsigned short gpio)
+> {
+> 	unsigned long flags;
+>
+>-	BUG_ON(!(reserved_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>+	BUG_ON(!(reserved_gpio_map[gpio_bank(gpio)] & gpio_bit(gpio)));
+>
+> 	local_irq_save(flags);
+> 	gpio_bankb[gpio_bank(gpio)]->inen &= ~gpio_bit(gpio);
+>diff --git a/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+>b/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+>index e043caf..69b9f8e 100644
+>--- a/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+>+++ b/include/asm-blackfin/mach-bf533/bfin_serial_5xx.h
+>@@ -1,5 +1,6 @@
+> #include <linux/serial.h>
+> #include <asm/dma.h>
+>+#include <asm/portmux.h>
+>
+> #define NR_PORTS                1
+>
+>@@ -92,18 +93,24 @@ struct bfin_serial_res bfin_serial_resource[] = {
+> 	}
+> };
+>
+>+#define DRIVER_NAME "bfin-uart"
+>
+> int nr_ports = NR_PORTS;
+> static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+> {
+>
+>+#ifdef CONFIG_SERIAL_BFIN_UART0
+>+	peripheral_request(P_UART0_TX, DRIVER_NAME);
+>+	peripheral_request(P_UART0_RX, DRIVER_NAME);
+>+#endif
+>+
+> #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+> 	if (uart->cts_pin >= 0) {
+>-		gpio_request(uart->cts_pin, NULL);
+>+		gpio_request(uart->cts_pin, DRIVER_NAME);
+> 		gpio_direction_input(uart->cts_pin);
+> 	}
+> 	if (uart->rts_pin >= 0) {
+>-		gpio_request(uart->rts_pin, NULL);
+>+		gpio_request(uart->rts_pin, DRIVER_NAME);
+> 		gpio_direction_input(uart->rts_pin);
+> 	}
+> #endif
+>diff --git a/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+>b/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+>index 8f5d9c4..6fb328f 100644
+>--- a/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+>+++ b/include/asm-blackfin/mach-bf537/bfin_serial_5xx.h
+>@@ -1,5 +1,6 @@
+> #include <linux/serial.h>
+> #include <asm/dma.h>
+>+#include <asm/portmux.h>
+>
+> #define NR_PORTS		2
+>
+>@@ -122,25 +123,29 @@ struct bfin_serial_res bfin_serial_resource[] = {
+>
+> int nr_ports = ARRAY_SIZE(bfin_serial_resource);
+>
+>+#define DRIVER_NAME "bfin-uart"
+>+
+> static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+> {
+>-	unsigned short val;
+>-	val = bfin_read16(BFIN_PORT_MUX);
+>-	val &= ~(PFDE | PFTE);
+>-	bfin_write16(BFIN_PORT_MUX, val);
+>
+>-	val = bfin_read16(PORTF_FER);
+>-	val |= 0xF;
+>-	bfin_write16(PORTF_FER, val);
+>+#ifdef CONFIG_SERIAL_BFIN_UART0
+>+	peripheral_request(P_UART0_TX, DRIVER_NAME);
+>+	peripheral_request(P_UART0_RX, DRIVER_NAME);
+>+#endif
+>+
+>+#ifdef CONFIG_SERIAL_BFIN_UART1
+>+	peripheral_request(P_UART1_TX, DRIVER_NAME);
+>+	peripheral_request(P_UART1_RX, DRIVER_NAME);
+>+#endif
+>
+> #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+> 	if (uart->cts_pin >= 0) {
+>-		gpio_request(uart->cts_pin, NULL);
+>+		gpio_request(uart->cts_pin, DRIVER_NAME);
+> 		gpio_direction_input(uart->cts_pin);
+> 	}
+>
+> 	if (uart->rts_pin >= 0) {
+>-		gpio_request(uart->rts_pin, NULL);
+>+		gpio_request(uart->rts_pin, DRIVER_NAME);
+> 		gpio_direction_output(uart->rts_pin);
+> 	}
+> #endif
+>diff --git a/include/asm-blackfin/mach-bf537/portmux.h b/include/asm-
+>blackfin/mach-bf537/portmux.h
+>index 23e13c5..7daa247 100644
+>--- a/include/asm-blackfin/mach-bf537/portmux.h
+>+++ b/include/asm-blackfin/mach-bf537/portmux.h
+>@@ -106,4 +106,4 @@
+> #define P_SPI0_SSEL2	(P_DEFINED | P_IDENT(PORT_PJ11) | P_FUNCT(1))
+> #define P_SPI0_SSEL7	(P_DEFINED | P_IDENT(PORT_PJ5) | P_FUNCT(2))
+>
+>-#endif /* _MACH_PORTMUX_H_ */
+>+#endif				/* _MACH_PORTMUX_H_ */
+>diff --git a/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+>b/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+>index e043caf..69b9f8e 100644
+>--- a/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+>+++ b/include/asm-blackfin/mach-bf561/bfin_serial_5xx.h
+>@@ -1,5 +1,6 @@
+> #include <linux/serial.h>
+> #include <asm/dma.h>
+>+#include <asm/portmux.h>
+>
+> #define NR_PORTS                1
+>
+>@@ -92,18 +93,24 @@ struct bfin_serial_res bfin_serial_resource[] = {
+> 	}
+> };
+>
+>+#define DRIVER_NAME "bfin-uart"
+>
+> int nr_ports = NR_PORTS;
+> static void bfin_serial_hw_init(struct bfin_serial_port *uart)
+> {
+>
+>+#ifdef CONFIG_SERIAL_BFIN_UART0
+>+	peripheral_request(P_UART0_TX, DRIVER_NAME);
+>+	peripheral_request(P_UART0_RX, DRIVER_NAME);
+>+#endif
+>+
+> #ifdef CONFIG_SERIAL_BFIN_CTSRTS
+> 	if (uart->cts_pin >= 0) {
+>-		gpio_request(uart->cts_pin, NULL);
+>+		gpio_request(uart->cts_pin, DRIVER_NAME);
+> 		gpio_direction_input(uart->cts_pin);
+> 	}
+> 	if (uart->rts_pin >= 0) {
+>-		gpio_request(uart->rts_pin, NULL);
+>+		gpio_request(uart->rts_pin, DRIVER_NAME);
+> 		gpio_direction_input(uart->rts_pin);
+> 	}
+> #endif
+>--
+>1.5.2
