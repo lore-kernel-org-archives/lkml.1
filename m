@@ -1,117 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937224AbXHHROs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937238AbXHHRS3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937224AbXHHROs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936939AbXHHRNX
+	id S937238AbXHHRS3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:18:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763318AbXHHRSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:13:23 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:6567 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750734AbXHHRNS (ORCPT
+	Wed, 8 Aug 2007 13:18:20 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54172 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763792AbXHHRST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:13:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=stOmz7lzDEvEMcBKrGtc8iVZKmVpLL/2esNVxjtu9PJ5TP6iC/O82Q8iQJXAPyXuZU6v+IcBTJohQ+FIpTow7daJoXB5kBPHUO4+YU+5rhO0nkbO6sdoEZRYFPZDKhcFQ2vYFktl4H8g1vUGbjs5KQucN3UNSNaDfB289GArthg=
-Message-ID: <46B9F99A.7050601@googlemail.com>
-Date: Wed, 08 Aug 2007 19:12:58 +0200
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+	Wed, 8 Aug 2007 13:18:19 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andi Kleen <ak@suse.de>
+Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Chandramouli Narayanan <mouli@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+References: <1185851583.23149.30.camel@caritas-dev.intel.com>
+	<200708081208.01080.ak@suse.de>
+	<m1tzrac8hz.fsf@ebiederm.dsl.xmission.com>
+	<200708081822.07758.ak@suse.de>
+Date: Wed, 08 Aug 2007 11:17:18 -0600
+In-Reply-To: <200708081822.07758.ak@suse.de> (Andi Kleen's message of "Wed, 8
+	Aug 2007 18:22:07 +0200")
+Message-ID: <m1wsw6aqu9.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>,
-       Alexey Starikovskiy <astarikovskiy@suse.de>,
-       Len Brown <len.brown@intel.com>, linux-acpi@vger.kernel.org,
-       Eric Sesterhenn <snakebyte@gmx.de>,
-       "Michael S. Tsirkin" <mst@dev.mellanox.co.il>,
-       Hugh Dickins <hugh@veritas.com>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Subject: Re: [2/2] 2.6.23-rc2: known regressions with patches v2
-References: <46B9F8D4.9090605@googlemail.com>
-In-Reply-To: <46B9F8D4.9090605@googlemail.com>
-X-Enigmail-Version: 0.95.3
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Andi Kleen <ak@suse.de> writes:
 
-Here is a list of some known regressions in 2.6.23-rc2
-with patches available.
+>> 
+>> This is the classic skip the 16bit code and enter the kernel
+>> in 32bit mode filling in the fields that the 16bit mode code would
+>> have filled in the same way approach.
+>
+> kexec can use it because it's in tree.
 
-Feel free to add new regressions/remove fixed etc.
-http://kernelnewbies.org/known_regressions
+Not the part that actually uses it.
 
-List of Aces
+> But I don't think using it by out of tree stuff is a good idea.
+>
+> e.g. assuming we need a new field. How would we extend this?
+> There is no version number or anything to detect this.
+>
+> For in tree code it can be just updated. But weirdo-EFI-boot loader
+> cannot.
 
-Name                    Regressions fixed since 21-Jun-2007
-Adrian Bunk                            6
-Andi Kleen                             4
-Andrew Morton                          4
-Linus Torvalds                         4
-Al Viro                                3
-Cornelia Huck                          3
-Jens Axboe                             3
-Tejun Heo                              3
-David Woodhouse                        2
-Hugh Dickins                           2
-Peter Zijlstra                         2
-Trent Piepho                           2
+So far the logic has been.
 
+Inspect bzImage.  And get boot protocol version.
+If field we need for returning data is not supported do not give
+data.  Or something like that.  Usually the fields always exist
+and you can just fill them in and we only append to the boot
+protocol structure.
 
+In practice this has been working for the last 7 years or so,
+for EFI, and LinuxBIOS, and kexec, and Gujin and I don't remember what
+else.
 
-ACPI
+It isn't the prettiest thing in the world but it works and everybody
+who needs it uses it.  Which tend to be the important parts for a
+standard.
 
-Subject         : [2.6.23 regression fix] fix thinkpad_acpi without hardware
-References      : http://lkml.org/lkml/2007/8/5/184
-Last known good : ?
-Submitter       : Adrian Bunk <bunk@stusta.de>
-Caused-By       : Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-                  commit d5a2f2f1d68e2da538ac28540cddd9ccc733b001
-Handled-By      : Adrian Bunk <bunk@stusta.de>
-Patch           : http://thread.gmane.org/gmane.linux.acpi.devel/24413
-Status          : patch available
-
-Subject         : T60 ACPI issues/THINKPAD_ACPI_INPUT_ENABLED seems regressive
-References      : http://lkml.org/lkml/2007/8/1/198
-                  http://lkml.org/lkml/2007/8/1/176
-Last known good : ?
-Submitter       : Michael S. Tsirkin <mst@dev.mellanox.co.il>
-                  Hugh Dickins <hugh@veritas.com>
-Caused-By       : Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-                  commit 1a343760b516ca5466d201bec32b1794858b18a5
-Handled-By      : Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Patch           : http://thread.gmane.org/gmane.linux.acpi.devel/24646
-Status          : patch available
-
-Subject         : acpi_ec_remove() use-after-free
-References      : http://lkml.org/lkml/2007/7/29/138
-Last known good : 2.6.22
-Submitter       : Adrian Bunk <bunk@stusta.de>
-Caused-By       : Alexey Starikovskiy <astarikovskiy@suse.de>
-                  commit 837012ede14a8fc088be3682c964da7fc6af026b
-Handled-By      : Adrian Bunk <bunk@stusta.de>
-Patch           : http://lkml.org/lkml/2007/7/29/138
-Status          : patch available
-
-Subject         : Time Problems with 2.6.23-rc1-gf695baf2
-References      : http://lkml.org/lkml/2007/7/23/486
-Last known good : ?
-Submitter       : Eric Sesterhenn <snakebyte@gmx.de>
-Caused-By       : Venki Pallipadi <venkatesh.pallipadi@intel.com>
-                  commit 18eab8550397f1f3d4b8b2c5257c88dae25d58ed
-Handled-By      : ?
-Patch           : http://marc.info/?l=linux-kernel&m=118590919604954&w=2
-Status          : patch available
-
-
-
-Regards,
-Michal
-
---
-LOG
-http://www.stardust.webpages.pl/log/
+Eric
