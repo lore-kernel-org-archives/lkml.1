@@ -1,147 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935873AbXHHFeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761648AbXHHFeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935873AbXHHFeL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 01:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932107AbXHHFcN
+	id S1761648AbXHHFeo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 01:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932474AbXHHFcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 01:32:13 -0400
-Received: from ns.suse.de ([195.135.220.2]:48570 "EHLO mx1.suse.de"
+	Wed, 8 Aug 2007 01:32:14 -0400
+Received: from mx1.suse.de ([195.135.220.2]:48591 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762097AbXHHFcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 01:32:04 -0400
-Message-Id: <20070808053032.754073000@suse.de>
+	id S1762298AbXHHFcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 01:32:08 -0400
+Message-Id: <20070808053036.985965000@suse.de>
 References: <20070808052842.451400000@suse.de>
 User-Agent: quilt/0.46-14
-Date: Tue, 07 Aug 2007 22:28:47 -0700
+Date: Tue, 07 Aug 2007 22:28:48 -0700
 From: tonyj@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: gregkh@suse.de, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [patch 5/6] Convert from class_device to device for drivers/video
-Content-Disposition: inline; filename=output.patch
+Subject: [patch 6/6] Misc cleanup
+Content-Disposition: inline; filename=adm1025-fixup.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert from class_device to device for drivers/video.
+Misc cleanup post removal of class_device.   adm1025_group_opt is unused.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 
 ---
- drivers/acpi/video.c         |    4 ++--
- drivers/video/output.c       |   29 ++++++++++++++++-------------
- include/linux/video_output.h |    4 ++--
- 3 files changed, 20 insertions(+), 17 deletions(-)
+ drivers/hwmon/adm1025.c |   13 -------------
+ 1 file changed, 13 deletions(-)
 
---- a/drivers/video/output.c
-+++ b/drivers/video/output.c
-@@ -31,7 +31,8 @@ MODULE_DESCRIPTION("Display Output Switc
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Luming Yu <luming.yu@intel.com>");
- 
--static ssize_t video_output_show_state(struct class_device *dev,char *buf)
-+static ssize_t video_output_show_state(struct device *dev,
-+				       struct device_attribute *attr, char *buf)
- {
- 	ssize_t ret_size = 0;
- 	struct output_device *od = to_output_device(dev);
-@@ -40,8 +41,9 @@ static ssize_t video_output_show_state(s
- 	return ret_size;
- }
- 
--static ssize_t video_output_store_state(struct class_device *dev,
--	const char *buf,size_t count)
-+static ssize_t video_output_store_state(struct device *dev,
-+					struct device_attribute *attr,
-+					const char *buf,size_t count)
- {
- 	char *endp;
- 	struct output_device *od = to_output_device(dev);
-@@ -60,21 +62,22 @@ static ssize_t video_output_store_state(
- 	return count;
- }
- 
--static void video_output_class_release(struct class_device *dev)
-+static void video_output_release(struct device *dev)
- {
- 	struct output_device *od = to_output_device(dev);
- 	kfree(od);
- }
- 
--static struct class_device_attribute video_output_attributes[] = {
-+static struct device_attribute video_output_attributes[] = {
- 	__ATTR(state, 0644, video_output_show_state, video_output_store_state),
- 	__ATTR_NULL,
+--- a/drivers/hwmon/adm1025.c
++++ b/drivers/hwmon/adm1025.c
+@@ -347,17 +347,6 @@ static const struct attribute_group adm1
+ 	.attrs = adm1025_attributes,
  };
  
-+
- static struct class video_output_class = {
- 	.name = "video_output",
--	.release = video_output_class_release,
--	.class_dev_attrs = video_output_attributes,
-+	.dev_release = video_output_release,
-+	.dev_attrs = video_output_attributes,
- };
+-static struct attribute *adm1025_attributes_opt[] = {
+-	&dev_attr_in4_input.attr,
+-	&dev_attr_in4_min.attr,
+-	&dev_attr_in4_max.attr,
+-	NULL
+-};
+-
+-static const struct attribute_group adm1025_group_opt = {
+-	.attrs = adm1025_attributes_opt,
+-};
+-
+ /*
+  * The following function does more than just detection. If detection
+  * succeeds, it also registers the new chip.
+@@ -482,7 +471,6 @@ static int adm1025_detect(struct i2c_ada
  
- struct output_device *video_output_register(const char *name,
-@@ -91,11 +94,11 @@ struct output_device *video_output_regis
- 		goto error_return;
- 	}
- 	new_dev->props = op;
--	new_dev->class_dev.class = &video_output_class;
--	new_dev->class_dev.dev = dev;
--	strlcpy(new_dev->class_dev.class_id,name,KOBJ_NAME_LEN);
--	class_set_devdata(&new_dev->class_dev,devdata);
--	ret_code = class_device_register(&new_dev->class_dev);
-+	new_dev->dev.class = &video_output_class;
-+	new_dev->dev.parent = dev;
-+	strlcpy(new_dev->dev.bus_id,name, BUS_ID_SIZE);
-+	dev_set_drvdata(&new_dev->dev, devdata);
-+	ret_code = device_register(&new_dev->dev);
- 	if (ret_code) {
- 		kfree(new_dev);
- 		goto error_return;
-@@ -111,7 +114,7 @@ void video_output_unregister(struct outp
- {
- 	if (!dev)
- 		return;
--	class_device_unregister(&dev->class_dev);
-+	device_unregister(&dev->dev);
- }
- EXPORT_SYMBOL(video_output_unregister);
+ exit_remove:
+ 	sysfs_remove_group(&new_client->dev.kobj, &adm1025_group);
+-	sysfs_remove_group(&new_client->dev.kobj, &adm1025_group_opt);
+ exit_detach:
+ 	i2c_detach_client(new_client);
+ exit_free:
+@@ -540,7 +528,6 @@ static int adm1025_detach_client(struct 
  
---- a/include/linux/video_output.h
-+++ b/include/linux/video_output.h
-@@ -31,9 +31,9 @@ struct output_properties {
- struct output_device {
- 	int request_state;
- 	struct output_properties *props;
--	struct class_device class_dev;
-+	struct device dev;
- };
--#define to_output_device(obj) container_of(obj, struct output_device, class_dev)
-+#define to_output_device(obj) container_of(obj, struct output_device, dev)
- struct output_device *video_output_register(const char *name,
- 	struct device *dev,
- 	void *devdata,
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -314,7 +314,7 @@ static int acpi_video_output_get(struct 
- {
- 	unsigned long state;
- 	struct acpi_video_device *vd =
--		(struct acpi_video_device *)class_get_devdata(&od->class_dev);
-+		(struct acpi_video_device *)dev_get_drvdata(&od->dev);
- 	acpi_video_device_get_state(vd, &state);
- 	return (int)state;
- }
-@@ -323,7 +323,7 @@ static int acpi_video_output_set(struct 
- {
- 	unsigned long state = od->request_state;
- 	struct acpi_video_device *vd=
--		(struct acpi_video_device *)class_get_devdata(&od->class_dev);
-+		(struct acpi_video_device *)dev_get_drvdata(&od->dev);
- 	return acpi_video_device_set_state(vd, state);
- }
+ 	hwmon_device_unregister(data->hwmon_dev);
+ 	sysfs_remove_group(&client->dev.kobj, &adm1025_group);
+-	sysfs_remove_group(&client->dev.kobj, &adm1025_group_opt);
  
+ 	if ((err = i2c_detach_client(client)))
+ 		return err;
 
 -- 
