@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965179AbXHHUbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938225AbXHHUcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965179AbXHHUbQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 16:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965242AbXHHUau
+	id S938225AbXHHUcV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 16:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932289AbXHHUcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 16:30:50 -0400
-Received: from mail.tmr.com ([64.65.253.246]:59250 "EHLO gaimboi.tmr.com"
+	Wed, 8 Aug 2007 16:32:05 -0400
+Received: from DSL022.labridge.com ([206.117.136.22]:2259 "EHLO Perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965231AbXHHUat (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 16:30:49 -0400
-Message-ID: <46BA2834.3080507@tmr.com>
-Date: Wed, 08 Aug 2007 16:31:48 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       J??rn Engel <joern@logfs.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de,
-       dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804210351.GA9784@elte.hu> <20070804225121.5c7b66e0@the-village.bc.nu> <20070805073709.GA6325@elte.hu> <20070805134328.1a4474dd@the-village.bc.nu> <20070805125433.GA22060@elte.hu> <20070805143708.279f51f8@the-village.bc.nu> <20070805180826.GD3244@elte.hu> <46BA09CC.7070007@tmr.com> <46BA1C08.4050904@garzik.org>
-In-Reply-To: <46BA1C08.4050904@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1761345AbXHHUcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 16:32:04 -0400
+Subject: Re: + remove-current-defines-and-uses-of-pr_err-add-pr_emerg.patch
+	added to -mm tree
+From: Joe Perches <joe@perches.com>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       mm-commits@vger.kernel.org, adaplas@pol.net, greg@kroah.com,
+       jeff@garzik.org
+In-Reply-To: <20070808220226.1dc03a67@hyperion.delvare>
+References: <tI4NY5SL.1186153543.0764100.khali@localhost>
+	 <1186179369.13852.36.camel@localhost>
+	 <20070807131949.fa060048.akpm@linux-foundation.org>
+	 <20070808220226.1dc03a67@hyperion.delvare>
+Content-Type: text/plain
+Date: Wed, 08 Aug 2007 13:31:26 -0700
+Message-Id: <1186605086.11897.67.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.2-2.1mdv2007.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Bill Davidsen wrote:
->> Being standards compliant is not an argument it's a design goal, a 
->> requirement. Standards compliance is like pregant, you are or you're 
->
-> Linux history says different.  There was always the "final 1%" of 
-> compliance that required silliness we really did not want to bother with. 
+On Wed, 2007-08-08 at 22:02 +0200, Jean Delvare wrote:
+> On Tue, 7 Aug 2007 13:19:49 -0700, Andrew Morton wrote:
+> > On Fri, 03 Aug 2007 15:16:09 -0700
+> > Joe Perches <joe@perches.com> wrote:
+> > > Add new pr_<level> printk(KERN_<level> fmt "\n", ##arg) to kernel.h
+> > > pr_info and pr_debug are unchanged
+> > > Remove local pr_err #defines
+> > > Convert current uses of pr_err
+> > OK, I've lost the plot here.  If we have now converged on an
+> > agreeable patch, please resend it?
+> I don't think we have, no.
+> It's not even clear what Joe is trying to achieve.
 
-This is not 1%, this is a user-visible change in behavior, relative to 
-all previous Linux versions. There has been a way for ages to trade 
-performance for standards for users or distributions, and standards have 
-been chosen. Given that there is now a way to get virtually all of the 
-performance without giving up atime completely, why the sudden attempt 
-to change to a less satisfactory default?
+Goals in desired implementation sequence:
 
-I could understand a push to quickly get relatime with a few 
-enhancements (the functionality if not the exact code) into 
-distributions, even as a default, but forcing user or distribution 
-changes just to retain the same dehavior doesn't seem reasonable. It 
-assumes that vendors and users are so stupid they can't understand why 
-benchmark results and more important than standards. People who run 
-servers are smart enough to decide if their application will run as 
-expected without atime.
+1 Standardization of pr_<level>
+2 Correctness of single line uses of pr_<level>
+3 Correctness of multiple line uses of printk(<level>)
+4 Removal of local near equivalents of pr_<level>
+5 Standardization of pr_<level> as single line only
+6 Conversion of single line printk(KERN_<level> to pr_level
+7 Standardize local #defines to enable/print pr_<level>
+  __file__/__func__/__line__
+8 Minimization/elimination of interleaved log messages
 
-People have lived with this compromise for a very long time, and it 
-seems that a far more balanced solution will be in the kernel soon.
-
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+cheers, Joe
 
