@@ -1,70 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937238AbXHHRS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937397AbXHHRTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937238AbXHHRS3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 13:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763318AbXHHRSU
+	id S937397AbXHHRTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 13:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934718AbXHHRTD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 13:18:20 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:54172 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763792AbXHHRST (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 13:18:19 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andi Kleen <ak@suse.de>
-Cc: "Huang, Ying" <ying.huang@intel.com>, akpm@linux-foundation.org,
-       Yinghai Lu <yhlu.kernel@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Chandramouli Narayanan <mouli@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
-References: <1185851583.23149.30.camel@caritas-dev.intel.com>
-	<200708081208.01080.ak@suse.de>
-	<m1tzrac8hz.fsf@ebiederm.dsl.xmission.com>
-	<200708081822.07758.ak@suse.de>
-Date: Wed, 08 Aug 2007 11:17:18 -0600
-In-Reply-To: <200708081822.07758.ak@suse.de> (Andi Kleen's message of "Wed, 8
-	Aug 2007 18:22:07 +0200")
-Message-ID: <m1wsw6aqu9.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 8 Aug 2007 13:19:03 -0400
+Received: from mx2.suse.de ([195.135.220.15]:37154 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763778AbXHHRTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 13:19:00 -0400
+Message-Id: <20070808171643.542685765@suse.de>
+References: <20070808171622.632749741@suse.de>
+User-Agent: quilt/0.46-1
+Date: Wed, 08 Aug 2007 19:16:23 +0200
+From: Andreas Gruenbacher <agruen@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: John Johansen <jjohansen@suse.de>, Jan Blunck <jblunck@suse.de>,
+       Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [RFC 01/10] Split up struct nameidata
+Content-Disposition: inline; filename=nameidata-split.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen <ak@suse.de> writes:
+Split up struct nameidata into struct vfs_lookup with the lookup result
+and intent and the remaining fields for performing an actual lookup.
 
->> 
->> This is the classic skip the 16bit code and enter the kernel
->> in 32bit mode filling in the fields that the 16bit mode code would
->> have filled in the same way approach.
->
-> kexec can use it because it's in tree.
+Signed-off-by: Andreas Gruenbacher <ag@bestbits.at>
 
-Not the part that actually uses it.
+---
+ include/linux/namei.h |   21 ++++++++++++---------
+ 1 file changed, 12 insertions(+), 9 deletions(-)
 
-> But I don't think using it by out of tree stuff is a good idea.
->
-> e.g. assuming we need a new field. How would we extend this?
-> There is no version number or anything to detect this.
->
-> For in tree code it can be just updated. But weirdo-EFI-boot loader
-> cannot.
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -14,14 +14,14 @@ struct open_intent {
+ 
+ enum { MAX_NESTED_LINKS = 8 };
+ 
+-struct nameidata {
+-	struct dentry	*dentry;
++struct path {
+ 	struct vfsmount *mnt;
+-	struct qstr	last;
++	struct dentry *dentry;
++};
++
++struct vfs_lookup {
++	struct path	 path;
+ 	unsigned int	flags;
+-	int		last_type;
+-	unsigned	depth;
+-	char *saved_names[MAX_NESTED_LINKS + 1];
+ 
+ 	/* Intent data */
+ 	union {
+@@ -29,9 +29,12 @@ struct nameidata {
+ 	} intent;
+ };
+ 
+-struct path {
+-	struct vfsmount *mnt;
+-	struct dentry *dentry;
++struct nameidata {
++	struct vfs_lookup lookup;
++	struct qstr	last;
++	int		last_type;
++	unsigned	depth;
++	char *saved_names[MAX_NESTED_LINKS + 1];
+ };
+ 
+ /*
 
-So far the logic has been.
-
-Inspect bzImage.  And get boot protocol version.
-If field we need for returning data is not supported do not give
-data.  Or something like that.  Usually the fields always exist
-and you can just fill them in and we only append to the boot
-protocol structure.
-
-In practice this has been working for the last 7 years or so,
-for EFI, and LinuxBIOS, and kexec, and Gujin and I don't remember what
-else.
-
-It isn't the prettiest thing in the world but it works and everybody
-who needs it uses it.  Which tend to be the important parts for a
-standard.
-
-Eric
