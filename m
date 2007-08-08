@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934776AbXHHWlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933888AbXHHWr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934776AbXHHWlv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 18:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759905AbXHHWlk
+	id S933888AbXHHWr1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 18:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756551AbXHHWrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 18:41:40 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46431 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759496AbXHHWli (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 18:41:38 -0400
-Date: Wed, 8 Aug 2007 15:41:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andres Salomon <dilinger@queued.net>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] serial: turn serial console suspend a boot rather than
- compile time option
-Message-Id: <20070808154130.9cc3a30e.akpm@linux-foundation.org>
-In-Reply-To: <20070808183535.2a2c6edf.dilinger@queued.net>
-References: <20070808183535.2a2c6edf.dilinger@queued.net>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 18:47:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51911 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1756245AbXHHWrR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 18:47:17 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+001cfYze0l41boVcWITAAtHqMnKfYMASvX/Mgc6
+	Ha65rduHQxi0jv
+Date: Thu, 9 Aug 2007 00:47:18 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Oncaphillis <oncaphillis@snafu.de>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: UART misbehaves under Linkstation/KuroBoxHG
+In-Reply-To: <46BA3DF5.4050201@snafu.de>
+Message-ID: <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
+References: <46B9CE82.1050000@snafu.de> <Pine.LNX.4.60.0708082219520.6767@poirot.grange>
+ <46BA320E.1030608@snafu.de> <Pine.LNX.4.60.0708082323420.6767@poirot.grange>
+ <46BA3DF5.4050201@snafu.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 18:35:35 -0400
-Andres Salomon <dilinger@queued.net> wrote:
-
-> Currently, there's a CONFIG_DISABLE_CONSOLE_SUSPEND that allows one to stop
-> the serial console from being suspended when the rest of the machine goes
-> to sleep.  This is incredibly useful for debugging power management-related
-> things; however, having it as a compile-time option has proved to be
-> incredibly inconvenient for us (OLPC).  There are plenty of times that we
-> want serial console to not suspend, but for the most part we'd like serial
-> console to be suspended.
+On Thu, 9 Aug 2007, Oncaphillis wrote:
 > 
-> This drops CONFIG_DISABLE_CONSOLE_SUSPEND, and replaces it with a kernel
-> boot parameter (no_console_suspend).  By default, the serial console will
-> be suspended along with the rest of the system; by passing
-> 'no_console_suspend' to the kernel during boot, serial console will remain
-> alive during suspend.
-> 
-> I have another version of this patch which keeps #ifdefs around; however,
-> it's uglier.  I prefer this version of the patch, and don't feel that it
-> increases bloat.  If people strongly disagree, let me know and I'll submit
-> the other patch.
-> 
+>   I hope I found the the misconfigured part. I didn't look
+>   at /etc/inittab. It opens a getty on /dev/ttyS0. That
+>   might do the trick. Have to recompile my kernel right now with
+>   standard config to check this out.
 
-yep, compile-time options suck.
+Hm, for that you don't have to recompile the kernel... unless you modified 
+it before, of course. Just change your inittab and reboot.
 
-> --- a/include/linux/kernel.h
-> +++ b/include/linux/kernel.h
-> @@ -172,6 +172,8 @@ extern int __printk_ratelimit(int ratelimit_jiffies, int ratelimit_burst);
->  extern bool printk_timed_ratelimit(unsigned long *caller_jiffies,
->  				unsigned int interval_msec);
->  
-> +extern int console_suspend;
-> +
+>   Well ... it doesn't seem to need the daemons but at least
+>   the kuro_boot  script or something similar has to be executed
+>   once sending the right init strings to the AVR or your system
+>   reboots after a few minutes at least on my box.
 
-That's a somewhat vague-sounding identifier.  Could we call it
-console_suspend_enabled or something?
+No, shouldn't be needed either. You should get a string in dmesg like 
+"linkstation: disarming the AVR watchdog:", and the watchdog should be 
+off. Just take the original .dts, unmodified kernel sources and close 
+enough to original (arch/powerpc/configs/linkstation_defconfig) .config 
+and it should work.
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
