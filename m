@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966837AbXHIRFq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966859AbXHIRGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966837AbXHIRFq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:05:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934432AbXHIRFA
+	id S966859AbXHIRGr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934322AbXHIRGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:05:00 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:53021 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1765953AbXHIRE7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:04:59 -0400
-Date: Thu, 9 Aug 2007 10:04:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@googlemail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org
-Subject: Re: 2.6.23-rc2-mm1
-Message-Id: <20070809100438.386010ac.akpm@linux-foundation.org>
-In-Reply-To: <46BB3E92.5040007@googlemail.com>
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-	<46BB3499.5090803@googlemail.com>
-	<46BB3E92.5040007@googlemail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Aug 2007 13:06:33 -0400
+Received: from mga09.intel.com ([134.134.136.24]:52829 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1765953AbXHIRGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 13:06:32 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,241,1183359600"; 
+   d="scan'208";a="115572169"
+Message-ID: <46BB4992.2020504@intel.com>
+Date: Thu, 09 Aug 2007 10:06:26 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.4 (X11/20070623)
+MIME-Version: 1.0
+To: Adrian Bunk <bunk@kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       e1000-devel@lists.sourceforge.net, jgarzik@pobox.com,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [E1000-devel] 2.6.23-rc2-mm1: e1000e global symbols must be renamed
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org> <20070809135131.GN6997@stusta.de>
+In-Reply-To: <20070809135131.GN6997@stusta.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Aug 2007 17:06:30.0866 (UTC) FILETIME=[A1955320:01C7DAA7]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Aug 2007 18:19:30 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+Adrian Bunk wrote:
+> On Thu, Aug 09, 2007 at 01:51:06AM -0700, Andrew Morton wrote:
+>> ...
+>> - There is a new e1000 driver in git-netdev-all, called e1000e.  I'm sure
+>>   the developers would like it tested.  Please cc netdev@vger.kernel.org on
+>>   any reports.
+>> ...
+>> Changes since 2.6.23-rc2-mm1:
+>> ...
+>>  git-netdev-all.patch
+>> ...
+>>  git trees
+>> ...
+> 
+> <--  snip  -->
+> 
+> ...
+>   LD      drivers/net/built-in.o
+> drivers/net/e1000e/built-in.o: In function `e1000_read_mac_addr':
+> (.text+0x3470): multiple definition of `e1000_read_mac_addr'
+> drivers/net/e1000/built-in.o:(.text+0xb6cc): first defined here
+> drivers/net/e1000e/built-in.o: In function `e1000_set_ethtool_ops':
+> (.text+0x594d): multiple definition of `e1000_set_ethtool_ops'
+> drivers/net/e1000/built-in.o:(.text+0xc97a): first defined here
+> ...
+> make[3]: *** [drivers/net/built-in.o] Error 1
 
-> This might be related. The kernel is tainted because I hit
-> kernel BUG at /home/devel/linux-mm/mm/swap_state.c:78!
+ack, I'll step on that and make it go away :)
 
-umm, possibly.  If we went BUG while holding a spinlock then sure, 
-a future lockup is pretty much inevitable.  But the lockdep
-uninitialised-lock complaint is a bit of a surprise.
-
-Can you please retest with Hugh's fix applied?
+Auke
