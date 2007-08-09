@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764318AbXHIUbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763960AbXHIUd5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764318AbXHIUbX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755658AbXHIUbG
+	id S1763960AbXHIUd5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:33:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXHIUdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:31:06 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:35490 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755605AbXHIUbE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:31:04 -0400
-Date: Thu, 9 Aug 2007 13:30:11 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Aaron Durbin <adurbin@google.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de, Robin Holt <holt@sgi.com>
-Subject: Re: [PATCH] x86_64: Avoid NMI Watchdog and/or long wait in
- setup_APIC_timer
-Message-Id: <20070809133011.2d03c04a.akpm@linux-foundation.org>
-In-Reply-To: <20070808231719.GA7101@google.com>
-References: <20070808231719.GA7101@google.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 9 Aug 2007 16:33:47 -0400
+Received: from rtr.ca ([64.26.128.89]:3377 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755530AbXHIUdr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 16:33:47 -0400
+Message-ID: <46BB7A29.4080409@rtr.ca>
+Date: Thu, 09 Aug 2007 16:33:45 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
+MIME-Version: 1.0
+To: "Brian J. Murrell" <brian@interlinx.bc.ca>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 
+References: <1186504459.6949.40.camel@pc.ilinx>
+In-Reply-To: <1186504459.6949.40.camel@pc.ilinx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 16:17:19 -0700
-Aaron Durbin <adurbin@google.com> wrote:
+Brian J. Murrell wrote:
+> I am using Ubuntu Gutsy, which is the in-development branch heading for
+> their next stable release.
+> 
+> I have noticed that since some kernel release post-2.6.20 I have been
+> unable to mount my /boot partition:
+> 
+> $ sudo strace -f mount /dev/hda1 /mnt/foo
+> execve("/bin/mount", ["mount", "/dev/hda1", "/mnt/foo"], [/* 41 vars*/])= 0
+...                             = 0
+> mount("/dev/hda1", "/mnt/foo", "ext3", MS_MGC_VAL, NULL) = -1 EBUSY (Device or resource busy)
+> rt_sigprocmask(SIG_UNBLOCK, ~[TRAP SEGV RTMIN RT_1], NULL, 8) = 0
+> write(2, "mount: /dev/hda1 already mounted"..., 50mount: /dev/hda1 already mounted or /mnt/foo busy) = 50
+...
+> All other block devices (all LVM LVs) seem to mount with no problems.
 
-> In setup_APIC_timer with the HPET in use, a condition can arise while
-> waiting for the next irq slice to expire on the HPET which will either
-> cause an NMI watchdog to fire or a 3 minute busy loop if the NMI
-> watchdog is disabled.
-> 
-> The HPET comparator and the counter keep incrementing during its normal
-> operation. When a comparison event fires the comparator will increment
-> by the designated period. If the HPET trigger occurs right after
-> the 'int trigger = hpet_readl(HPET_T0_CMP);' line, we will will spin
-> for up to 3 minutes (with a clock of 25MHz) waiting for the HPET
-> counter to wrap around. However, when the NMI watchdog is enabled the
-> NMI watchdog will detect a lockup and reboot the machine. This
-> scenario can be exasperated by the presence of an SMI which will
-> increase the window of opportunity for the condition to occur.
-> 
-> The fix is to wait for the compartor to change which signals the
-> end of the tick slice.
-> 
-> ---
-> 
-> The last patch had a typo in the diff which really would cause the
-> problem state above. Sorry.
-> 
-> diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
-> index 900ff38..06797e2 100644
-> --- a/arch/x86_64/kernel/apic.c
-> +++ b/arch/x86_64/kernel/apic.c
-> @@ -791,10 +791,12 @@ static void setup_APIC_timer(unsigned in
->  
->  	/* wait for irq slice */
->  	if (hpet_address && hpet_use_timer) {
-> +		/*
-> +		 * Wait for the comparator value to change which signals that
-> +		 * the tick slice has expired.
-> +		 */
->  		int trigger = hpet_readl(HPET_T0_CMP);
-> -		while (hpet_readl(HPET_COUNTER) >= trigger)
-> -			/* do nothing */ ;
-> -		while (hpet_readl(HPET_COUNTER) <  trigger)
-> +		while (trigger == hpet_readl(HPET_T0_CMP))
->  			/* do nothing */ ;
->  	} else {
->  		int c1, c2;
+Probably something to do with either LVM or the Device Mapper having
+the raw partition already "open" for some remapping purpose.
+There was a note about that around here somewhere quite recently..
 
-but, but.  Didn't this get fixed by
-ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm1/broken-out/fix-hpet-init-race.patch
-?
+??
+
