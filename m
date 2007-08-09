@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936835AbXHIA4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937258AbXHIBFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936835AbXHIA4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765581AbXHIA4k
+	id S937258AbXHIBFc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 21:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932942AbXHIBFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:56:40 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:59403 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763828AbXHIA4j (ORCPT
+	Wed, 8 Aug 2007 21:05:21 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:2072 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932591AbXHIBFU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:56:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kL8FEwpA1g1FwYNESFyLexLCNfaTq8ZGcPZRttlhgszI3RfgUeXLzbyvpAr+aPlxaBjOnTWjWXljytzg7KZNbHvztHxbQ0tM8P2sBRE/p2zy+MtNIcans9zWh8lrUsvWYdiZT6QxlpTz8a9BgUp5mB3QgsiXtt+v6FG41gOhUJ8=
-Message-ID: <5d6222a80708081756r21bbc7e3ifd357c9c548ac57f@mail.gmail.com>
-Date: Wed, 8 Aug 2007 21:56:37 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/7] Added generic lg.h in lguest directory.
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       "Jes Sorensen" <jes@sgi.com>, "Carsten Otte" <cotte@de.ibm.com>
-In-Reply-To: <20070809003343.310187242@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070809003211.373543702@goodmis.org>
-	 <20070809003343.310187242@goodmis.org>
+	Wed, 8 Aug 2007 21:05:20 -0400
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: csnook@redhat.com (Chris Snook)
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
+Organization: Core
+In-Reply-To: <20070808230733.GA17270@shell.boston.redhat.com>
+X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
+User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
+Message-Id: <E1IIwQx-000468-00@gondolin.me.apana.org.au>
+Date: Thu, 09 Aug 2007 09:03:27 +0800
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
-> Add a generic lg.h file to call the architecture specific one.
->
-> diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
-> new file mode 100644
-> index 0000000..4c4356e
-> --- /dev/null
-> +++ b/drivers/lguest/lg.h
-> @@ -0,0 +1,3 @@
-> +#ifdef CONFIG_X86_32
-> +#include "i386/lg.h"
-> +#endif
+Chris Snook <csnook@redhat.com> wrote:
+> 
+> Some architectures currently do not declare the contents of an atomic_t to be
+> volatile.  This causes confusion since atomic_read() might not actually read
+> anything if an optimizing compiler re-uses a value stored in a register, which
+> can break code that loops until something external changes the value of an
+> atomic_t.  Avoiding such bugs requires using barrier(), which causes re-loads
 
-Wouldn't it be cleaner to do something like the asm/ includes?
-I understand that lguest now lives in drivers/ and so we don't put
-headers directly in asm-i386 , but we could come up with a similar
-thing here.
+Such loops should always use something like cpu_relax() which comes
+with a barrier.
 
+> of all registers used in the loop, thus hurting performance instead of helping
+> it, particularly on architectures where it's unnecessary.  Since we generally
+
+Do you have an example of such a loop where performance is hurt by this?
+
+The IPVS code that led to this patch was simply broken and has been
+fixed to use cpu_relax().
+
+Cheers,
 -- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
