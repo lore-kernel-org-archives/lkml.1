@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764768AbXHIXkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764973AbXHIXoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764768AbXHIXkb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 19:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755595AbXHIXkF
+	id S1764973AbXHIXoU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 19:44:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbXHIXoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 19:40:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45511 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753954AbXHIXkD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 19:40:03 -0400
-Date: Thu, 9 Aug 2007 19:40:00 -0400
-From: Dave Jones <davej@redhat.com>
-To: shacky <shacky83@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Unable to handle kernel paging request at virtual address
-Message-ID: <20070809234000.GA19549@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	shacky <shacky83@gmail.com>, linux-kernel@vger.kernel.org
-References: <7fedbc910708091617o7ae25fd8i36e7ec32c2b9ba86@mail.gmail.com>
+	Thu, 9 Aug 2007 19:44:13 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:53706 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755595AbXHIXoM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 19:44:12 -0400
+Message-ID: <46BBA310.6060706@vmware.com>
+Date: Thu, 09 Aug 2007 16:28:16 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7fedbc910708091617o7ae25fd8i36e7ec32c2b9ba86@mail.gmail.com>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+To: Avi Kivity <avi@qumranet.com>
+CC: Gabriel Barazer <gabriel@oxeva.fr>, Andi Kleen <ak@suse.de>,
+       Jim Mattson <jmattson@vmware.com>, linux-kernel@vger.kernel.org,
+       Virtualization Mailing List <virtualization@lists.osdl.org>,
+       kvm-devel <kvm-devel@lists.sourceforge.net>
+Subject: Re: 2.6.22 x86_64 : kernel initial decompression hangs on vmware
+References: <46A7E606.4030001@oxeva.fr> <46B4A7E4.4030907@vmware.com> <46BB7FCC.4040509@qumranet.com>
+In-Reply-To: <46BB7FCC.4040509@qumranet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Aug 10, 2007 at 01:17:14AM +0200, shacky wrote:
+Avi Kivity wrote:
+>
+> We haven't seen any issue with the 2.6.22 boot decompressor.  Which of 
+> the four (fs, gs, ldt, or tr) were proving problematic and why?
 
- > [87.935473] BUG: unable to handle kernel paging request at virtual
- > address 6d207972
- > [...........] printing eip:
- > [...........] 6d207972
- > [...........] *pde = 00000000
- > [...........] Oops: 000 [#2]
- > [...........] SMP
- > [...........] Modules linked in: bluetooth capability lirc_dev
- > speedstep_lib cpufreq_powersave cpufreq_stats cpufreq_userspace
- > cpufreq_ondemand cpufreq_conservative freq_table video container sbs
- > button dock ac battery ipv6 sbp2 lp fuse snd_emu10k1_synth
- > snd_emux_synth snd_seq_virmidi snd_seq_midi_emul  [....] etc.
- > 
- > I'm using the kernel 2.6.22.
- > 
- > I'm omitting the rest of the error because it is very very long and I
- > have to rewrite it because I can't copy&paste it. If you need some
- > other information please ask. :-)
+It was tr that was affecting Workstation, since we boot through normal 
+BIOS path, and only a 16-bit task was loaded at this point.
 
-You snipped the most important part.  Even a digital photo of the
-crash would be more useful than what we have above.
-So far, there's not really much to go on.
+Just to make the state comprehensive, I opted to reload everything.
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+Zach
