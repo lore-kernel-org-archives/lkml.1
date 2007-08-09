@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938278AbXHIAhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938265AbXHIAi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938278AbXHIAhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934739AbXHIAes
+	id S938265AbXHIAi0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938137AbXHIAet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:34:48 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:53347 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933440AbXHIAee (ORCPT
+	Wed, 8 Aug 2007 20:34:49 -0400
+Received: from ms-smtp-03.nyroc.rr.com ([24.24.2.57]:39576 "EHLO
+	ms-smtp-03.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933273AbXHIAed (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:34:34 -0400
-Message-Id: <20070809003343.991452371@goodmis.org>
+	Wed, 8 Aug 2007 20:34:33 -0400
+Message-Id: <20070809003343.664528532@goodmis.org>
 References: <20070809003211.373543702@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 08 Aug 2007 20:32:17 -0400
+Date: Wed, 08 Aug 2007 20:32:15 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: Rusty Russell <rusty@rustcorp.com.au>
 Cc: lguest <lguest@ozlabs.org>,
@@ -22,45 +22,75 @@ Cc: lguest <lguest@ozlabs.org>,
        virtualization <virtualization@lists.linux-foundation.org>,
        Glauber de Oliveira Costa <glommer@gmail.com>,
        Jes Sorensen <jes@sgi.com>, Carsten Otte <cotte@de.ibm.com>
-Subject: [PATCH 6/7] Remove __pa() use in hvc_lguest
-Content-Disposition: inline; filename=0006-Remove-__pa-use-in-hvc_lguest-in-const-initialization.txt
+Subject: [PATCH 4/7] Moved the io struct up to the generic lg.h
+Content-Disposition: inline; filename=0004-Moved-the-io-struct-up-to-the-generic-lg.h-file.-Also-added-a-proper-ifdef.txt
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The hvc_lguest uses __pa in the const initialization.
-In some architectures, __pa() is not constant so this fails in compiles.
+Move the io struct into the lg.h file since the io.c is generic to other
+architectures.
+
+Also added a proper ifdef for the generic lg.h.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- drivers/char/hvc_lguest.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ drivers/lguest/i386/lg.h |   11 ++---------
+ drivers/lguest/lg.h      |   16 ++++++++++++++++
+ 2 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/char/hvc_lguest.c b/drivers/char/hvc_lguest.c
-index feeccba..c7d7d4c 100644
---- a/drivers/char/hvc_lguest.c
-+++ b/drivers/char/hvc_lguest.c
-@@ -42,7 +42,6 @@
-  * use of physical address for the buffer itself. */
- static char inbuf[256];
- static struct lguest_dma cons_input = { .used_len = 0,
--					.addr[0] = __pa(inbuf),
- 					.len[0] = sizeof(inbuf),
- 					.len[1] = 0 };
+diff --git a/drivers/lguest/i386/lg.h b/drivers/lguest/i386/lg.h
+index 64f0abe..c5ea14c 100644
+--- a/drivers/lguest/i386/lg.h
++++ b/drivers/lguest/i386/lg.h
+@@ -20,6 +20,8 @@
+ #include <linux/err.h>
+ #include <asm/semaphore.h>
+ #include "irq_vectors.h"
++/* some files include this, some include the parent */
++#include "../lg.h"
  
-@@ -114,6 +113,13 @@ static struct hv_ops lguest_cons = {
-  * (0), and the struct hv_ops containing the put_chars() function. */
- static int __init cons_init(void)
- {
-+	/*
-+	 * We can't initialize using __pa in const declarations,
-+	 * since __pa(inbuf) does not evaluate into a constant on
-+	 * all architectures (namely x86_64).
-+	 */
-+	cons_input.addr[0] = __pa(inbuf);
+ #define GUEST_PL 1
+ 
+@@ -245,15 +247,6 @@ void pin_page(struct lguest *lg, unsigned long vaddr);
+ int lguest_device_init(void);
+ void lguest_device_remove(void);
+ 
+-/* io.c: */
+-void lguest_io_init(void);
+-int bind_dma(struct lguest *lg,
+-	     unsigned long key, unsigned long udma, u16 numdmas, u8 interrupt);
+-void send_dma(struct lguest *info, unsigned long key, unsigned long udma);
+-void release_all_dma(struct lguest *lg);
+-unsigned long get_dma_buffer(struct lguest *lg, unsigned long key,
+-			     unsigned long *interrupt);
+-
+ /* hypercalls.c: */
+ void do_hypercalls(struct lguest *lg);
+ void write_timestamp(struct lguest *lg);
+diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
+index 4c4356e..3147bf6 100644
+--- a/drivers/lguest/lg.h
++++ b/drivers/lguest/lg.h
+@@ -1,3 +1,19 @@
++#ifndef _LGUEST_LG_GENERIC
++#define _LGUEST_LG_GENERIC
 +
- 	if (strcmp(paravirt_ops.name, "lguest") != 0)
- 		return 0;
- 
++struct lguest;
++
++/* io.c: */
++void lguest_io_init(void);
++int bind_dma(struct lguest *lg,
++	     unsigned long key, unsigned long udma, u16 numdmas, u8 interrupt);
++void send_dma(struct lguest *info, unsigned long key, unsigned long udma);
++void release_all_dma(struct lguest *lg);
++unsigned long get_dma_buffer(struct lguest *lg, unsigned long key,
++			     unsigned long *interrupt);
++
+ #ifdef CONFIG_X86_32
+ #include "i386/lg.h"
+ #endif
++
++#endif /* _LGUEST_LG_GENERIC */
 -- 
 1.4.4.4
 
