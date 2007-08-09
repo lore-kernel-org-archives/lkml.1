@@ -1,87 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764265AbXHIUBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764553AbXHIUCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764265AbXHIUBi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbXHIUB3
+	id S1764553AbXHIUCB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757735AbXHIUBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:01:29 -0400
-Received: from rwcrmhc14.comcast.net ([216.148.227.154]:57324 "EHLO
-	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbXHIUB2 (ORCPT
+	Thu, 9 Aug 2007 16:01:49 -0400
+Received: from nf-out-0910.google.com ([64.233.182.187]:38439 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757912AbXHIUBr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:01:28 -0400
-Subject: Re: Kernel / Fliesystem Error
-From: Chris Holvenstot <cholvenstot@comcast.net>
-To: Benoit Boissinot <bboissin@gmail.com>
-Cc: Chris Holvenstot <saltydog@houston.rr.com>,
-       kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <40f323d00708090531p34f1fffcub5186d358f9beafb@mail.gmail.com>
-References: <1186623555.6613.17.camel@localhost>
-	 <1186658730.7018.8.camel@localhost>
-	 <40f323d00708090531p34f1fffcub5186d358f9beafb@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 09 Aug 2007 15:02:56 -0500
-Message-Id: <1186689776.6976.12.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 9 Aug 2007 16:01:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jdx8EIB4cwZOyKgYkuCSN4q0tSUnAS6b7s9epOXn2S+u5YBmDZVbeOodCg6FyBxDWLC15iRzCB1uVlgz4/Qhrz7FFXRr00/ME5Y3D8c3WdYRby0L1Fhg0SkMUS0QjRshgyuTmW1YfcyB8zBWqQ5GAzvtrXHmCl2hQAW174kyWiQ=
+Message-ID: <1158166a0708091301q1eca67ct2ef3fa81e3878510@mail.gmail.com>
+Date: Thu, 9 Aug 2007 21:01:45 +0100
+From: "Denis Vlasenko" <vda.linux@googlemail.com>
+To: "Arjan van de Ven" <arjan@infradead.org>
+Subject: Re: [PATCH] msleep() with hrtimers
+Cc: "Roman Zippel" <zippel@linux-m68k.org>, "Jonathan Corbet" <corbet@lwn.net>,
+       linux-kernel@vger.kernel.org, "Thomas Gleixner" <tglx@linutronix.de>,
+       akpm@linux-foundation.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <1158166a0708091231r21903840mc927b6baa47e4598@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <15327.1186166232@lwn.net>
+	 <Pine.LNX.4.64.0708060150270.1817@scrub.home>
+	 <1186360983.2697.8.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708060257010.1817@scrub.home>
+	 <1186378798.2697.10.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708061159370.1817@scrub.home>
+	 <1186415621.2706.4.camel@laptopd505.fenrus.org>
+	 <Pine.LNX.4.64.0708071417200.1817@scrub.home>
+	 <1186546512.2862.3.camel@laptopd505.fenrus.org>
+	 <1158166a0708091231r21903840mc927b6baa47e4598@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benoit - 
-
-I am a little unsure of the protocol involved here but I will respond to
-this, the last message I received on the topic.
-
-As I feared, I was giving an incomplete picture with my original report
-and did not even realize it.  
-
-On the systems I was getting  the error on I used the mkinitramfs
-command to build the initrd.img file.  This was basically the 2.6.23
-systems.  I did this because the documentation seemed to indicate that
-this would clear up the "devfs unknown file system" messages I was
-getting at boot.
-
-Which it did.
-
-However, when I rebuilt the 2.6.22.1 kernel's initrd.img file with
-mkinitramfs instead of mkinitrd the 2.6.22.1 kernel started getting the
-"superblock time stamp" errors too.
-
-So the problem is NOT with the kernel code - it appears to be either
-with mkinitramfs or my process.  With the way my luck has been running
-of late it is likely that the fault is with my process.
-
-So I once again thank you for your response, and apologize for what now
-appears to be a false alarm.  Since the initramfs tool set was provided
-with the Ubuntu release I am using as a base I will try to locate
-someone there to assist with this issue.
-
-Chris
+On 8/9/07, Denis Vlasenko <vda.linux@googlemail.com> wrote:
+> On 8/8/07, Arjan van de Ven <arjan@infradead.org> wrote:
+> > You keep claiming that hrtimers are so incredibly expensive; but for
+> > msleep()... which is mostly called during driver init ... I really don't
+> > buy that it's really expensive. We're not doing this a gazilion times
+> > per second obviously...
+>
+> Yes. Optimizing delay or sleep functions for speed is a contradiction
+> of terms. IIRC we still optimize udelay for speed, not code size...
+> Read it again folks:
+>
+>         We optimize udelay for speed
+>
+> How fast your udelay do you want to be today?
 
 
+Just checked. i386 and x86-64 seems to be sane - udelay() and ndelay()
+are not inlined.
 
-On Thu, 2007-08-09 at 14:31 +0200, Benoit Boissinot wrote:
-> On 8/9/07, Chris Holvenstot <cholvenstot@comcast.net> wrote:
-> > > Chris Snook wrote:
-> > >
-> > >The problem here is that your clock is wrong either at mount (boot)
-> > >time or unmount (shutdown) time. There's nothing wrong with ext3,
-> > >except that it happens to be noticing this condition.
-> >
-> > 1.  This happens even when the system is rebooted via the shutdown -r
-> > command - not much time for my fat fingers to get in there and dork up
-> > the system clock.
-> >
-> > 2.  As I stated in the original note, this does NOT happen with kernel
-> > 2.6.22.1 - so far I have only seen it with the 2.6.23-rc1, rc2, and
-> > rc2-git1 kernels.
-> >
-> 
-> But very likely time keeping was broken between .22 and .23-rc.
-> Probably not ext3.
-> 
-> regards,
-> 
-> Benoit
+Several arches are still frantically try to make udelay faster. Many have
+the same comment:
 
+/*
+ * Use only for very small delays ( < 1 msec).  Should probably use a
+ * lookup table, really, as the multiplications take much too long with
+ * short delays.  This is a "reasonable" implementation, though (and the
+ * first constant multiplications gets optimized away if the delay is
+ * a constant)
+ */
+
+and thus seem to be a cut-n-paste code.
+
+BTW, almost all arched have __const_udelay(N) which obviously
+does not delay for N usecs:
+
+#define udelay(n) (__builtin_constant_p(n) ? \
+        ((n) > 20000 ? __bad_udelay() : __const_udelay((n) * 0x10c7ul)) : \
+        __udelay(n))
+
+Bad name.
+
+Are patches which de-inline udelay and do s/__const_udelay/__const_delay/g
+be accepted?
+
+Arches with udelay's still inlined are below. mips is especially big.
+frv has totally bogus ndelay().
+
+include/asm-ppc/delay.h
+extern __inline__ void __udelay(unsigned int x)
+{
+        unsigned int loops;
+        __asm__("mulhwu %0,%1,%2" : "=r" (loops) :
+                "r" (x), "r" (loops_per_jiffy * 226));
+        __delay(loops);
+}
+
+
+include/asm-parisc/delay.h
+static __inline__ void __udelay(unsigned long usecs) {
+        __cr16_delay(usecs * ((unsigned long)boot_cpu_data.cpu_hz / 1000000UL));
+}
+
+
+include/asm-mips/delay.h
+static inline void __udelay(unsigned long usecs, unsigned long lpj)
+{
+        unsigned long lo;
+
+        /*
+         * The rates of 128 is rounded wrongly by the catchall case
+         * for 64-bit.  Excessive precission?  Probably ...
+         */
+#if defined(CONFIG_64BIT) && (HZ == 128)
+        usecs *= 0x0008637bd05af6c7UL;          /* 2**64 / (1000000 / HZ) */
+#elif defined(CONFIG_64BIT)
+        usecs *= (0x8000000000000000UL / (500000 / HZ));
+#else /* 32-bit junk follows here */
+        usecs *= (unsigned long) (((0x8000000000000000ULL / (500000 / HZ)) +
+                                   0x80000000ULL) >> 32);
+#endif
+
+        if (sizeof(long) == 4)
+                __asm__("multu\t%2, %3"
+                : "=h" (usecs), "=l" (lo)
+                : "r" (usecs), "r" (lpj)
+                : GCC_REG_ACCUM);
+        else if (sizeof(long) == 8)
+                __asm__("dmultu\t%2, %3"
+                : "=h" (usecs), "=l" (lo)
+                : "r" (usecs), "r" (lpj)
+                : GCC_REG_ACCUM);
+
+        __delay(usecs);
+}
+
+
+include/asm-m68k/delay.h
+static inline void __udelay(unsigned long usecs)
+{
+        __const_udelay(usecs * 4295);   /* 2**32 / 1000000 */
+}
+
+
+include/asm-h8300/delay.h
+static inline void udelay(unsigned long usecs)
+{
+        usecs *= 4295;          /* 2**32 / 1000000 */
+        usecs /= (loops_per_jiffy*HZ);
+        if (usecs)
+                __delay(usecs);
+}
+
+
+include/asm-frv/delay.h
+static inline void udelay(unsigned long usecs)
+{
+        __delay(usecs * __delay_loops_MHz);
+}
+#define ndelay(n)       udelay((n) * 5)
+
+
+include/asm-xtensa/delay.h
+static __inline__ void udelay (unsigned long usecs)
+{
+        unsigned long start = xtensa_get_ccount();
+        unsigned long cycles = usecs * (loops_per_jiffy / (1000000UL / HZ));
+
+        /* Note: all variables are unsigned (can wrap around)! */
+        while (((unsigned long)xtensa_get_ccount()) - start < cycles)
+                ;
+}
+
+
+include/asm-v850/delay.h
+static inline void udelay(unsigned long usecs)
+{
+        register unsigned long full_loops, part_loops;
+        full_loops = ((usecs * HZ) / 1000000) * loops_per_jiffy;
+        usecs %= (1000000 / HZ);
+        part_loops = (usecs * HZ * loops_per_jiffy) / 1000000;
+        __delay(full_loops + part_loops);
+}
+
+
+include/asm-cris/delay.h
+static inline void udelay(unsigned long usecs)
+{
+        __delay(usecs * loops_per_usec);
+}
+
+
+include/asm-blackfin/delay.h
+static inline void udelay(unsigned long usecs)
+{
+        extern unsigned long loops_per_jiffy;
+        __delay(usecs * loops_per_jiffy / (1000000 / HZ));
+}
+--
+vda
