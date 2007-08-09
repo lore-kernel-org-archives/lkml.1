@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939679AbXHIQc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940427AbXHIQd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939679AbXHIQc4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932285AbXHIQcm
+	id S940427AbXHIQd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933032AbXHIQco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Thu, 9 Aug 2007 12:32:44 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:44800 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932643AbXHIQcm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 9 Aug 2007 12:32:42 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34578 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932172AbXHIQcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:32:39 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 08/14] CacheFiles: Export things for CacheFiles [try #2]
-To: torvalds@osdl.org, akpm@osdl.org, steved@redhat.com,
-       trond.myklebust@fys.uio.no
-Cc: linux-fsdevel@vger.kernel.org, linux-cachefs@redhat.com,
-       nfsv4@linux-nfs.org, linux-kernel@vger.kernel.org
-Date: Thu, 09 Aug 2007 17:05:20 +0100
-Message-ID: <20070809160520.17906.51993.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
-References: <20070809160438.17906.76348.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.13
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Date: Thu, 9 Aug 2007 09:31:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: 2.6.23-rc2-mm1
+Message-Id: <20070809093136.fea96534.akpm@linux-foundation.org>
+In-Reply-To: <46BB3499.5090803@googlemail.com>
+References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
+	<46BB3499.5090803@googlemail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export a number of functions for CacheFiles's use.
+On Thu, 09 Aug 2007 17:36:57 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-Signed-Off-By: David Howells <dhowells@redhat.com>
----
+> Andrew Morton pisze:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.23-rc2/2.6.23-rc2-mm1/
+> > 
+> 
+> bash_shared_mapping triggered this
+> 
+> [  874.714700] INFO: trying to register non-static key.
+> [  874.719659] the code is fine but needs lockdep annotation.
+> [  874.725133] turning off the locking correctness validator.
+> [  874.730606]  [<c040536b>] show_trace_log_lvl+0x1a/0x30
+> [  874.735759]  [<c0405ff3>] show_trace+0x12/0x14
+> [  874.740218]  [<c0406128>] dump_stack+0x16/0x18
+> [  874.744679]  [<c044b936>] __lock_acquire+0x598/0x125c
+> [  874.749745]  [<c044c6a1>] lock_acquire+0xa7/0xc1
+> [  874.754378]  [<c069f753>] _spin_lock_irqsave+0x41/0x6e
+> [  874.759529]  [<c05259db>] prop_norm_single+0x34/0x8a
+> [  874.764508]  [<c0473576>] set_page_dirty+0xa1/0x13b
+> [  874.769402]  [<c0482bd1>] try_to_unmap_one+0xb8/0x1e7
+> [  874.774467]  [<c0482d8f>] try_to_unmap+0x8f/0x40d
+> [  874.779187]  [<c04776fd>] shrink_page_list+0x278/0x750
+> [  874.784339]  [<c0477ccb>] shrink_inactive_list+0xf6/0x328
+> [  874.789749]  [<c0477faa>] shrink_zone+0xad/0x10b
+> [  874.794383]  [<c047866e>] try_to_free_pages+0x178/0x274
+> [  874.799620]  [<c0472a36>] __alloc_pages+0x169/0x431
+> [  874.804514]  [<c047501d>] __do_page_cache_readahead+0x141/0x207
+> [  874.810443]  [<c047545c>] do_page_cache_readahead+0x48/0x5c
+> [  874.816027]  [<c046f3a3>] filemap_fault+0x2dd/0x4cf
+> [  874.820921]  [<c047b5c9>] __do_fault+0xb6/0x42d
+> [  874.825466]  [<c047d0d5>] handle_mm_fault+0x1b6/0x750
+> [  874.830533]  [<c041cd7b>] do_page_fault+0x334/0x5f9
+> [  874.835425]  [<c069fe72>] error_code+0x72/0x78
+> [  874.839886]  =======================
 
- fs/super.c       |    2 ++
- kernel/auditsc.c |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+I'd assume that the lib/proportions code went and passed a garbage pointer into
+spin_lock_irqsave().  Or maybe it has a correct pointer but didn't initialise the
+spinlock.
 
-diff --git a/fs/super.c b/fs/super.c
-index fc8ebed..c0d99dd 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -270,6 +270,8 @@ int fsync_super(struct super_block *sb)
- 	return sync_blockdev(sb->s_bdev);
- }
- 
-+EXPORT_SYMBOL_GPL(fsync_super);
-+
- /**
-  *	generic_shutdown_super	-	common helper for ->kill_sb()
-  *	@sb: superblock to kill
-diff --git a/kernel/auditsc.c b/kernel/auditsc.c
-index a777d37..1c068ec 100644
---- a/kernel/auditsc.c
-+++ b/kernel/auditsc.c
-@@ -1526,6 +1526,8 @@ add_names:
- 	}
- }
- 
-+EXPORT_SYMBOL_GPL(__audit_inode_child);
-+
- /**
-  * auditsc_get_stamp - get local copies of audit_context values
-  * @ctx: audit_context for the task
+> [  880.621883] BUG: NMI Watchdog detected LOCKUP on CPU1, eip c0529022, registers:
+> [  880.629200] Modules linked in: ext2 loop autofs4 af_packet nf_conntrack_netbios_ns nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink ipt_REJECT iptable_filter ip_tables xt_tcpudp ip6t_REJECT ip6table_filter ip6_tables x_tables firmware_class binfmt_misc fan ipv6 nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm snd_timer evdev snd soundcore i2c_i801 snd_page_alloc intel_agp agpgart rtc
+> [  880.672397] CPU:    1
 
+This will be a consequence of that.
