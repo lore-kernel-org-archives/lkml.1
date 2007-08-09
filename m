@@ -1,65 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940192AbXHIMr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940226AbXHIMs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940192AbXHIMr6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939649AbXHIMmV
+	id S940226AbXHIMs2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936551AbXHIMnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:42:21 -0400
-Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:53616 "EHLO
-	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939621AbXHIMmT (ORCPT
+	Thu, 9 Aug 2007 08:43:06 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:47743 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939367AbXHIMnD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:42:19 -0400
-Date: Thu, 9 Aug 2007 08:40:49 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jes Sorensen <jes@sgi.com>
-cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Rusty Russell <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Glauber de Oliveira Costa <glommer@gmail.com>,
-       Carsten Otte <cotte@de.ibm.com>
-Subject: Re: [PATCH 4/7] Moved the io struct up to the generic lg.h
-In-Reply-To: <46BB080F.4040905@sgi.com>
-Message-ID: <Pine.LNX.4.58.0708090839460.29847@gandalf.stny.rr.com>
-References: <20070809003211.373543702@goodmis.org> <20070809003343.664528532@goodmis.org>
- <20070809115156.ef5fdc6c.sfr@canb.auug.org.au> <46BB080F.4040905@sgi.com>
+	Thu, 9 Aug 2007 08:43:03 -0400
+X-Originating-Ip: 72.143.66.27
+Date: Thu, 9 Aug 2007 08:37:27 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Chris Snook <csnook@redhat.com>
+cc: Jerry Jiang <wjiang@resilience.com>, Chris Friesen <cfriesen@nortel.com>,
+       Zan Lynx <zlynx@acm.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: why are some atomic_t's not volatile, while most are?
+In-Reply-To: <46BA2D72.9060202@redhat.com>
+Message-ID: <Pine.LNX.4.64.0708090836070.10666@localhost.localdomain>
+References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
+ <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com>
+ <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com>
+ <46B8DDF3.7050008@nortel.com> <46B8E1D3.8050501@redhat.com>
+ <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost>
+ <46B91D0C.5050704@redhat.com> <46B94B94.6000600@nortel.com>
+ <46B96719.3050006@redhat.com> <20070808162755.61f50fbf.wjiang@resilience.com>
+ <46BA2D72.9060202@redhat.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 8 Aug 2007, Chris Snook wrote:
 
---
-On Thu, 9 Aug 2007, Jes Sorensen wrote:
-
-> Stephen Rothwell wrote:
-> > On Wed, 08 Aug 2007 20:32:15 -0400 Steven Rostedt <rostedt@goodmis.org>
-> > wrote:
-> >> diff --git a/drivers/lguest/i386/lg.h b/drivers/lguest/i386/lg.h
-> >> index 64f0abe..c5ea14c 100644
-> >> --- a/drivers/lguest/i386/lg.h
-> >> +++ b/drivers/lguest/i386/lg.h
-> >> @@ -20,6 +20,8 @@
-> >>  #include <linux/err.h>
-> >>  #include <asm/semaphore.h>
-> >>  #include "irq_vectors.h"
-> >> +/* some files include this, some include the parent */
-> >> +#include "../lg.h"
+> Jerry Jiang wrote:
+> > On Wed, 08 Aug 2007 02:47:53 -0400
+> > Chris Snook <csnook@redhat.com> wrote:
 > >
-> > Surely everything should just include the parent which allows for easier
-> > consolidation over time. (as you are doing here)
+> > > Chris Friesen wrote:
+> > > > Chris Snook wrote:
+> > > >
+> > > > > This is not a problem, since indirect references will cause the CPU to
+> > > > > fetch the data from memory/cache anyway.
+> > > > Isn't Zan's sample code (that shows the problem) already using indirect
+> > > > references?
+> > > Yeah, I misinterpreted his conclusion.  I thought about this for a while,
+> > > and realized that it's perfectly legal for the compiler to re-use a value
+> > > obtained from atomic_read.  All that matters is that the read itself was
+> > > atomic.  The use (or non-use) of the volatile keyword is really more
+> > > relevant to the other atomic operations.  If you want to guarantee a
+> > > re-read from memory, use barrier().  This, incidentally, uses volatile
+> > > under the hood.
+> > >
+> >
+> >
+> > So for example, without volatile
+> >
+> > int a = read_atomic(v);
+> > int b = read_atomic(v);
+> >
+> > the compiler will optimize it as b = a, But with volatile, it will be forced
+> > to fetch v's value from memory
+> > again.
+> >
+> > So, come back our initial question,
+> > include/asm-v850/atomic.h:typedef struct { int counter; } atomic_t;
+> >
+> > Why is it right without volatile?
 >
-> Whats wrong with introducing an include/asm-<arch>/lg.h and have the
-> parent do #include <asm/lg.h> ? Seems much cleaner to me.
+> Because atomic_t doesn't promise a memory fetch every time.  It merely
+> promises that any atomic_* operations will, in fact, be atomic.  For example,
+> posted today:
+>
+> http://lkml.org/lkml/2007/8/8/122
 
-Seems cleaner to me to!  I think I'll do that.
+i'm sure that, when this is all done, i'll finally have an answer to
+my original question, "why are some atomic_t's not volatile, while
+most are?"
 
-Oh, wait! I did.  ;-)
+i'm almost scared to ask any more questions.  :-)
 
--- Steve
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-P.S. Sorry, couldn't resist.
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
