@@ -1,74 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966520AbXHIQ5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965738AbXHIQ7a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966520AbXHIQ5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763581AbXHIQ5I
+	id S965738AbXHIQ7a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:59:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933718AbXHIQ66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:57:08 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:52510 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934268AbXHIQ5F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:57:05 -0400
-Date: Thu, 9 Aug 2007 09:55:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Matthias Hensler <matthias@wspse.de>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Processes spinning forever, apparently in lock_timer_base()?
-Message-Id: <20070809095534.25ae1c42.akpm@linux-foundation.org>
-In-Reply-To: <20070809095943.GA7763@kobayashi-maru.wspse.de>
-References: <46B10BB7.60900@redhat.com>
-	<20070803113407.0b04d44e.akpm@linux-foundation.org>
-	<20070804084426.GA20464@kobayashi-maru.wspse.de>
-	<20070809095943.GA7763@kobayashi-maru.wspse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 12:58:58 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:35629 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763581AbXHIQ64 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:58:56 -0400
+Date: Thu, 9 Aug 2007 09:58:53 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org, netdev@vger.kernel.org,
+       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
+Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
+Message-ID: <20070809165853.GD8424@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <20070809161024.GC8424@linux.vnet.ibm.com> <46BB4281.7010803@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BB4281.7010803@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 11:59:43 +0200 Matthias Hensler <matthias@wspse.de> wrote:
-
-> On Sat, Aug 04, 2007 at 10:44:26AM +0200, Matthias Hensler wrote:
-> > On Fri, Aug 03, 2007 at 11:34:07AM -0700, Andrew Morton wrote:
-> > [...]
-> > I am also willing to try the patch posted by Richard.
+On Thu, Aug 09, 2007 at 12:36:17PM -0400, Chris Snook wrote:
+> Paul E. McKenney wrote:
+> >The compiler is within its rights to read a 32-bit quantity 16 bits at
+> >at time, even on a 32-bit machine.  I would be glad to help pummel any
+> >compiler writer that pulls such a dirty trick, but the C standard really
+> >does permit this.
 > 
-> I want to give some update here:
+> Yes, but we don't write code for these compilers.  There are countless 
+> pieces of kernel code which would break in this condition, and there 
+> doesn't seem to be any interest in fixing this.
 > 
-> 1. We finally hit the problem on a third system, with a total different
->    setup and hardware. However, again high I/O load caused the problem
->    and the affected filesystems were mounted with noatime.
+> >Use of volatile does in fact save you from the compiler pushing stores out
+> >of loops regardless of whether you are also doing reads.  The C standard
+> >has the notion of sequence points, which occur at various places including
+> >the ends of statements and the control expressions for "if" and "while"
+> >statements.  The compiler is not permitted to move volatile references
+> >across a sequence point.  Therefore, the compiler is not allowed to
+> >push a volatile store out of a loop.  Now the CPU might well do such a
+> >reordering, but that is a separate issue to be dealt with via memory
+> >barriers.  Note that it is the CPU and I/O system, not the compiler,
+> >that is forcing you to use reads to flush writes to MMIO registers.
 > 
-> 2. I installed a recompiled kernel with just the two line patch from
->    Richard Kennedy (http://lkml.org/lkml/2007/8/2/89). That system has 5
->    days uptime now and counting. I believe the patch fixed the problem.
->    However, I will continue running "vmstat 1" and the endless loop of
->    "cat /proc/meminfo", just in case I am wrong.
+> Sequence points enforce read-after-write ordering, not write-after-write.  
+> We flush writes with reads for MMIO because of this effect as well as the 
+> CPU/bus effects.
+
+Neither volatile reads nor volatile writes may be moved across sequence
+points.
+
+> >And you would be amazed at what compiler writers will do in order to
+> >get an additional fraction of a percent out of SpecCPU...
 > 
+> Probably not :)
+> 
+> >In short, please retain atomic_set()'s volatility, especially on those
+> >architectures that declared the atomic_t's counter to be volatile.
+> 
+> Like i386 and x86_64?  These used to have volatile in the atomic_t 
+> declaration. We removed it, and the sky did not fall.
 
-Did we ever see the /proc/meminfo and /proc/vmstat output during the stall?
+Interesting.  You tested all possible configs on all possible hardware?
 
-If Richard's patch has indeed fixed it then this confirms that we're seeing
-contention over the dirty-memory limits.  Richard's patch isn't really the
-right one because it allows unlimited dirty-memory windup in some situations
-(large number of disks with small writes, or when we perform queue congestion
-avoidance).
-
-As you're seeing this happening when multiple disks are being written to it is
-possible that the per-device-dirty-threshold patches which recently went into
--mm (and which appear to have a bug) will fix it.
-
-But I worry that the stall appears to persist *forever*.  That would indicate
-that we have a dirty-memory accounting leak, or that for some reason the
-system has decided to stop doing writeback to one or more queues (might be
-caused by an error in a lower-level driver's queue congestion state management).
-
-If it is the latter, then it could be that running "sync" will clear the
-problem.  Temporarily, at least.  Because sync will ignore the queue congestion
-state.
+						Thanx, Paul
