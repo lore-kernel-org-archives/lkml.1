@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938842AbXHIGKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938892AbXHIGME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938842AbXHIGKN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 02:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXHIGKB
+	id S938892AbXHIGME (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 02:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761438AbXHIGLv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 02:10:01 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34178 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754688AbXHIGKA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 02:10:00 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX1/qNaU8jQvqjevP5qKRXFUaJ5+vXrugE6hoR4LCan
-	TBHPTzRg23RkC1
-Date: Thu, 9 Aug 2007 08:09:56 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Oncaphillis <oncaphillis@snafu.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: UART misbehaves under Linkstation/KuroBoxHG
-In-Reply-To: <46BA59FA.7080706@snafu.de>
-Message-ID: <Pine.LNX.4.60.0708090805220.3812@poirot.grange>
-References: <46B9CE82.1050000@snafu.de> <Pine.LNX.4.60.0708082219520.6767@poirot.grange>
- <46BA320E.1030608@snafu.de> <Pine.LNX.4.60.0708082323420.6767@poirot.grange>
- <46BA3DF5.4050201@snafu.de> <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
- <46BA59FA.7080706@snafu.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
+	Thu, 9 Aug 2007 02:11:51 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55834
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1754917AbXHIGLu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 02:11:50 -0400
+Date: Wed, 08 Aug 2007 23:11:44 -0700 (PDT)
+Message-Id: <20070808.231144.22645124.davem@davemloft.net>
+To: ossthema@de.ibm.com
+Cc: raisch@de.ibm.com, themann@de.ibm.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, meder@de.ibm.com, tklein@de.ibm.com,
+       gallatin@myri.com, jeff@garzik.org, stefan.roscher@de.ibm.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 0/1] lro: Generic Large Receive Offload for TCP traffic
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <200708031441.14780.ossthema@de.ibm.com>
+References: <200708031441.14780.ossthema@de.ibm.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Oncaphillis wrote:
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+Date: Fri, 3 Aug 2007 14:41:14 +0200
 
->  Removing the getty from initd did the trick.
-> 
->  And you're right AVR is disabled by the kernel
->  found the code in ./arch/powerpc/platforms/embedded6xx/ls_uart.c
+> I think this patch could be the final version for now. It has been tested
+> on two platforms (power and x86_64) and works very well.
 
-Good. For the future, with any (kernel / userspace / software / hardware / 
-weather / ...) linkstation/kurobox related questions you are welcome to 
-use LinkStation_General@yahoogroups.com or the #linkstationwiki channel on 
-irc.freenode.net, or the forums on the http://linkstationwiki.net/.
-
-Good luck
-Guennadi
----
-Guennadi Liakhovetski
+I checked in the LRO patch and the two sample driver ports
+to net-2.6.24, thanks!
