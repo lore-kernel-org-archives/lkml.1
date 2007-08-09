@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938798AbXHIFt6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938878AbXHIFwn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938798AbXHIFt6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 01:49:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763528AbXHIFtt
+	id S938878AbXHIFwn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 01:52:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbXHIFwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 01:49:49 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:8592 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754917AbXHIFtr (ORCPT
+	Thu, 9 Aug 2007 01:52:35 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39871 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755678AbXHIFwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 01:49:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pAaqbCL3CQ2OCzedjBSWqwadAdyeIfDcAiyAyjiS4DmMeQv5tbgChI4b4UIcKzCMz+mttCHGKSQZdlCPdMbJ4RzmRu7CM2bfT3D5EP+038kjuI98uAjszcuA3vRhWyR5WIms24M1nPuhhkWVkjOEdKjlnKYizA3mYmJH3TW6x3s=
-Message-ID: <5d6222a80708082249yb51fc6p16718a6b55e8ef4b@mail.gmail.com>
-Date: Thu, 9 Aug 2007 02:49:46 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 4/25] [PATCH] Add debugreg/load_rsp native hooks
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <200708081116.43237.ak@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 9 Aug 2007 01:52:33 -0400
+Date: Thu, 9 Aug 2007 14:53:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       tony.luck@intel.com, Zoltan.Menyhart@bull.net, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] flush icache before set_pte() on ia64 take9 [2/2] flush
+ icache at set_pte
+Message-Id: <20070809145343.d23fb55c.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070808.220838.88002572.davem@davemloft.net>
+References: <20070809135311.0676a947.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070809135721.08841cd7.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070808.220838.88002572.davem@davemloft.net>
+Organization: Fujitsu
+X-Mailer: Sylpheed 2.4.2 (GTK+ 2.10.11; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <11865467662182-git-send-email-gcosta@redhat.com>
-	 <11865467702103-git-send-email-gcosta@redhat.com>
-	 <200708081116.43237.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Andi Kleen <ak@suse.de> wrote:
->
-> >
-> > @@ -264,13 +270,64 @@ struct thread_struct {
-> >       set_fs(USER_DS);                                                         \
-> >  } while(0)
-> >
-> > -#define get_debugreg(var, register)                          \
-> > -             __asm__("movq %%db" #register ", %0"            \
-> > -                     :"=r" (var))
-> > -#define set_debugreg(value, register)                        \
-> > -             __asm__("movq %0,%%db" #register                \
-> > -                     : /* no output */                       \
-> > -                     :"r" (value))
-> > +static inline unsigned long native_get_debugreg(int regno)
-> > +{
-> > +     unsigned long val;
->
-> It would be better to have own functions for each debug register I think
->
-Andi, you mean:
-a) split the debugreg paravirt_ops in various
-paravirt_ops.set/get_debugreg{X,Y,Z...}, and then join them together
-in a set/get_debugreg(a,b) to keep the current interface. OR
-b) keep one paravirt_ops for each set/get_debugreg, then split then in
-various set/get_debugregX(a, b), changing the current interface, OR
-c) plit the debugreg paravirt_ops in various
-paravirt_ops.set/get_debugreg{X,Y,Z...}, and give each its own
-function set/get_debugregX(a, b), again, changing the current
-interface, OR
-d) None of the above?
+On Wed, 08 Aug 2007 22:08:38 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+> If this patch works I am very happy with it, since lazy_mmu_prot_update()
+> is now completely gone as a result.
+> 
+> Acked-by: David S. Miller <davem@davemloft.net>
+> 
 
-"The less confident you are, the more serious you have to act."
+Of course, this patch fixes SIGILL/nfs on Montecito.
+At least, passed my test.
+
+
+Thanks,
+-Kame
+
