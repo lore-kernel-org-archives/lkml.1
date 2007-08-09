@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938992AbXHIHaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S937882AbXHIHia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938992AbXHIHaM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 03:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932240AbXHIH3m
+	id S937882AbXHIHia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 03:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764955AbXHIHiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 03:29:42 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:15637 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764889AbXHIH3k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 03:29:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gmbF09AY4QM5l/qK496BBmUy4KRavv4RQetFF7PFr/Iydpop+EOFBdxEJ/TDgWZiqsMv53GVdHAz0ockhMCF7uZCN6psVSIRhNhXMafMqVhe0JDYiaHLleGlq8eGAb0ITPYIAQ24IREGVZj8D/GaLuVc4bXWLwY6AgpPtDO66q4=
-Message-ID: <5d6222a80708090029o13577af4j4c99b46612b31ef7@mail.gmail.com>
-Date: Thu, 9 Aug 2007 04:29:38 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Andi Kleen" <ak@suse.de>
-Subject: Re: [PATCH 3/25] [PATCH] irq_flags / halt routines
-Cc: "Glauber de Oliveira Costa" <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, mingo@elte.hu, chrisw@sous-sol.org,
-       jeremy@goop.org, avi@qumranet.com, anthony@codemonkey.ws,
-       virtualization@lists.linux-foundation.org, lguest@ozlabs.org,
-       "Steven Rostedt" <rostedt@goodmis.org>
-In-Reply-To: <200708081114.21260.ak@suse.de>
+	Thu, 9 Aug 2007 03:38:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:35706 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764889AbXHIHiQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 03:38:16 -0400
+Message-ID: <46BAC2BE.1090106@redhat.com>
+Date: Thu, 09 Aug 2007 03:31:10 -0400
+From: Chris Snook <csnook@redhat.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <1186546763582-git-send-email-gcosta@redhat.com>
-	 <11865467662182-git-send-email-gcosta@redhat.com>
-	 <200708081114.21260.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8/8/07, Andi Kleen <ak@suse.de> wrote:
->
-> > +#ifdef CONFIG_PARAVIRT
-> > +#include <asm/paravirt.h>
-> > +#  ifdef CONFIG_X86_VSMP
-> > +static inline int raw_irqs_disabled_flags(unsigned long flags)
-> > +{
-> > +     return !(flags & X86_EFLAGS_IF) || (flags & X86_EFLAGS_AC);
-> > +}
-> > +#  else
-> > +static inline int raw_irqs_disabled_flags(unsigned long flags)
-> > +{
-> > +     return !(flags & X86_EFLAGS_IF);
-> > +}
-> > +#  endif
->
-> You should really turn the vsmp special case into a paravirt client first
-> instead of complicating all this even more.
-Looking at it more carefully, it turns out that those functions are
-not eligible for being paravirt clients. They do no privileged
-operation at all. In fact, all they do is bit manipulation.
-That said, the code got a little bit cleaner by moving them down, and so I did.
+Linus Torvalds wrote:
+> 
+> On Wed, 8 Aug 2007, Chris Snook wrote:
+>> Some architectures currently do not declare the contents of an atomic_t to be
+>> volatile.  This causes confusion since atomic_read() might not actually read
+>> anything if an optimizing compiler re-uses a value stored in a register, which
+>> can break code that loops until something external changes the value of an
+>> atomic_t.
+> 
+> I'd be *much* happier with "atomic_read()" doing the "volatile" instead.
+> 
+> The fact is, volatile on data structures is a bug. It's a wart in the C 
+> language. It shouldn't be used. 
+> 
+> Volatile accesses in *code* can be ok, and if we have "atomic_read()" 
+> expand to a "*(volatile int *)&(x)->value", then I'd be ok with that.
+> 
+> But marking data structures volatile just makes the compiler screw up 
+> totally, and makes code for initialization sequences etc much worse.
+> 
+> 		Linus
 
-But later on, you voiced concern about making CONFIG_PARAVIRT depend
-on !VSMP. (and said it would be okay, because these functions would be
-paravirt clients: but they won't) Given this updated picture, what's
-your position about this?
+Fair enough.  Casting to (volatile int *) will give us the behavior people 
+expect when using atomic_t without needing to use inefficient barriers.
 
-Again, as they don't do anything besides bit manipulation, I don't
-think they will stop VSMP from working with PARAVIRT.
+While we have the hood up, should we convert all the atomic_t's to non-volatile 
+and put volatile casts in all the atomic_reads?  I don't know enough about the 
+various arches to say with confidence that those changes alone will preserve 
+existing behavior.  We might need some arch-specific tweaking of the atomic 
+operations.
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
-
-"The less confident you are, the more serious you have to act."
+	-- Chris
