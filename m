@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939552AbXHIMfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939567AbXHIMgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939552AbXHIMfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936551AbXHIMeu
+	id S939567AbXHIMgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S936551AbXHIMf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:34:50 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:53769 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762849AbXHIMet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:34:49 -0400
-Date: Thu, 9 Aug 2007 14:34:44 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Gabriel C <nix.or.die@googlemail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] Fix section mismatch warnings for drivers/mmc/host
-Message-ID: <20070809143444.484e7dfb@poseidon.drzeus.cx>
-In-Reply-To: <46B2207C.9060406@googlemail.com>
-References: <46B2207C.9060406@googlemail.com>
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_hera.drzeus.cx-12303-1186662885-0001-2"
+	Thu, 9 Aug 2007 08:35:59 -0400
+Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:38254
+	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933912AbXHIMf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:35:58 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Andi Kleen <andi@firstfloor.org>
+Subject: Re: [patch] ipvs: force read of atomic_t in while loop
+Date: Thu, 9 Aug 2007 14:35:18 +0200
+User-Agent: KMail/1.9.6
+Cc: Chris Snook <csnook@redhat.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       torvalds@osdl.org
+References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com> <46BA30DC.20207@redhat.com> <20070809001533.GA17798@one.firstfloor.org>
+In-Reply-To: <20070809001533.GA17798@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200708091435.18595.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Thursday 09 August 2007 02:15:33 Andi Kleen wrote:
+> On Wed, Aug 08, 2007 at 05:08:44PM -0400, Chris Snook wrote:
+> > Heiko Carstens wrote:
+> > >On Wed, Aug 08, 2007 at 03:21:31AM -0700, David Miller wrote:
+> > >>From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > >>Date: Wed, 8 Aug 2007 11:33:00 +0200
+> > >>
+> > >>>Just saw this while grepping for atomic_reads in a while loops.
+> > >>>Maybe we should re-add the volatile to atomic_t. Not sure.
+> > >>I think whatever the choice, it should be done consistently
+> > >>on every architecture.
+> > >>
+> > >>It's just asking for trouble if your arch does it differently from
+> > >>every other.
+> > >
+> > >Well..currently it's i386/x86_64 and s390 which have no volatile
+> > >in atomic_t. And yes, of course I agree it should be consistent
+> > >across all architectures. But it isn't.
+> > 
+> > Based on recent discussion, it's pretty clear that there's a lot of 
+> > confusion about this.  A lot of people (myself included, until I thought 
+> > about it long and hard) will reasonably assume that calling 
+> > atomic_read() will actually read the value from memory.  Leaving out the 
+> > volatile declaration seems like a pessimization to me.  If you force 
+> > people to use barrier() everywhere they're working with atomic_t, it 
+> > will force re-reads of all the non-atomic data in use as well, which 
+> > will cause more memory fetches of things that generally don't need 
+> > barrier().  That and it's a bug waiting to happen.
+> > 
+> > Andi -- your thoughts on the matter?
+> 
+> I also think readding volatile makes sense. An alternative would be
+> to stick an rmb() into atomic_read() -- that would also stop speculative reads.
+> Disadvantage is that it clobbers all memory, not just the specific value.
+> 
+> But you really have to complain to Linus (cc'ed). He came up
+> with the volatile removale change iirc.
 
---=_hera.drzeus.cx-12303-1186662885-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Isn't it possible through some inline assembly trick
+that only a certain variable has to be reloaded?
+So we could define something like that:
 
-On Thu, 02 Aug 2007 20:20:44 +0200
-Gabriel C <nix.or.die@googlemail.com> wrote:
+#define reload_var(x) __asm__ __volatile__ (whatever, x)
 
-> This patch fixes the following section mismatch warnings
->=20
-> ...
->=20
-> WARNING: vmlinux.o(.init.text+0x29d40): Section mismatch: reference
-> to .exit.text:wbsd_release_resources (between 'wbsd_init' and
-> 'wbsd_probe') WARNING: vmlinux.o(.init.text+0x29d49): Section
-> mismatch: reference to .exit.text:wbsd_free_mmc (between 'wbsd_init'
-> and 'wbsd_probe') WARNING: vmlinux.o(.init.text+0x29f28): Section
-> mismatch: reference to .exit.text:wbsd_free_mmc (between 'wbsd_init'
-> and 'wbsd_probe')
->=20
-> ...
->=20
-> Signed-off-by: Gabriel Craciunescu <nix.or.die@googlemail.com>
-> Cc: Pierre Ossman <drzeus@drzeus.cx>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
->=20
+I don't know inline assembly that much, but isn't it possible
+with that to kind of "fake-touch" the variable, so the compiler
+must reload it (and only it) to make sure it's up to date?
 
-Thanks, applied.
-
-Rgds
-Pierre
-
---=_hera.drzeus.cx-12303-1186662885-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFGuwnk7b8eESbyJLgRAioMAKDCV3KFvki6ivkS7r4CPCSD/3WTIwCfTqwP
-nA0Ge91pJPPes+21tijLIYU=
-=4RsM
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-12303-1186662885-0001-2--
+-- 
+Greetings Michael.
