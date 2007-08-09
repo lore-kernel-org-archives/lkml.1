@@ -1,72 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932366AbXHIJ1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765571AbXHIJ2X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932366AbXHIJ1q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 05:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765290AbXHIJ0O
+	id S1765571AbXHIJ2X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 05:28:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937981AbXHIJ0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 05:26:14 -0400
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:45939 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764772AbXHIJ0M (ORCPT
+	Thu, 9 Aug 2007 05:26:16 -0400
+Received: from mail-gw2.sa.eol.hu ([212.108.200.109]:45681 "EHLO
+	mail-gw2.sa.eol.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764986AbXHIJ0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 05:26:12 -0400
-Date: Thu, 9 Aug 2007 11:26:47 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Javier Pello <javier.pello@urjc.es>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org,
-       Greg KH <greg@kroah.com>
-Subject: Re: [PATCH] request_firmware: skip timeout if userspace was not
- notified
-Message-ID: <20070809112647.4006c044@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <46BADAA8.70404@urjc.es>
-References: <46B37CF7.2020803@urjc.es>
-	<20070806142451.5d28d41c@gondolin.boeb
- lingen.de.ibm.com>
-	<46B7832B.6010808@urjc.es>
-	<20070807125844.4d756b04@gondo
- 	l	in.boeblingen.de.ibm.com>
-	<3ae72650708070446y6452d13jb7cd802119dab3ce@mail .gmail.com>
-	<20070807141030.1bb0f76a@gondolin.boeblingen.de.ibm.com>
-	<46B869C6.3090708@urjc.es>
-	<1186491472.3611.33.camel@lov.localdomain>
-	<46B87ACA.7010501@urjc.es>
-	<1186495705.3611.39.camel@lov.localdomain>
-	<46BADAA8.70404@urjc.es>
-Organization: IBM Deutschland Entwicklung GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?=
- Herbert Kircher Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?=
- Registergericht: Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 2.10.0 (GTK+ 2.10.13; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 05:26:14 -0400
+Message-Id: <20070809092512.500760417@szeredi.hu>
+References: <20070809092046.656183199@szeredi.hu>
+User-Agent: quilt/0.45-1
+Date: Thu, 09 Aug 2007 11:20:52 +0200
+From: miklos@szeredi.hu
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 6/9] fuse: clean up execute permission checking
+Content-Disposition: inline; filename=fuse_exec_permission_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 09 Aug 2007 11:13:12 +0200,
-Javier Pello <javier.pello@urjc.es> wrote:
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-> On Tue, 07 Aug 2007, Kay Sievers wrote:
-> > Nope, you would just fulfill in a completely generic way all outstanding
-> > requests when you are ready. All requests are all nicely grouped and
-> > visible in sysfs. There would be no need of coding your own device
-> > specific rebind. No timeout is needed or wanted, all requests would stay
-> > until userspace has handled them successfully or canceled them.
-> 
-> If I'm not mistaken, as it is now, requests are not grouped in any way.
-> The only hint that a firmware loading request is in progress are a couple
-> of files in the device directory in sysfs. Should I run, at boot, through
-> all the device directories to check which firmware requests are pending?
+Define a new function fuse_refresh_attributes() that conditionally
+refreshes the attributes based on the validity timeout.
 
-I think that is what Kay meant.
+In fuse_permission() only refresh the attributes for checking the
+execute bits if necessary.
 
-> Also, this could pose problems if two drivers can handle a device but
-> the first that gets to bind to it needs firmware and userspace doesn't
-> provide it or cancel the loading. The device will remain bound without
-> giving the other driver a chance to handle it.
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+---
 
-Yes, this relies on someone canceling the load. If the driver has a
-two-stage probe for which the first stage kicks the async firmware
-loading and the second stage triggers an unbind if the loading fails,
-this will work. Otherwise you'll have to manually unbind on load
-cancellation. You'll also have to bind to the other driver manually.
+Index: linux/fs/fuse/dir.c
+===================================================================
+--- linux.orig/fs/fuse/dir.c	2007-08-09 11:01:55.000000000 +0200
++++ linux/fs/fuse/dir.c	2007-08-09 11:04:30.000000000 +0200
+@@ -695,6 +695,20 @@ static int fuse_do_getattr(struct inode 
+ }
+ 
+ /*
++ * Check if attributes are still valid, and if not send a GETATTR
++ * request to refresh them.
++ */
++static int fuse_refresh_attributes(struct inode *inode)
++{
++	struct fuse_inode *fi = get_fuse_inode(inode);
++
++	if (fi->i_time < get_jiffies_64())
++		return fuse_do_getattr(inode);
++	else
++		return 0;
++}
++
++/*
+  * Calling into a user-controlled filesystem gives the filesystem
+  * daemon ptrace-like capabilities over the requester process.  This
+  * means, that the filesystem daemon is able to record the exact
+@@ -770,7 +784,6 @@ static int fuse_access(struct inode *ino
+ static int fuse_permission(struct inode *inode, int mask, struct nameidata *nd)
+ {
+ 	struct fuse_conn *fc = get_fuse_conn(inode);
+-	struct fuse_inode *fi = get_fuse_inode(inode);
+ 	bool refreshed = false;
+ 	int err = 0;
+ 
+@@ -778,12 +791,11 @@ static int fuse_permission(struct inode 
+ 		return -EACCES;
+ 
+ 	/*
+-	 * If attributes are needed, but are stale, refresh them
+-	 * before proceeding
++	 * If attributes are needed, refresh them before proceeding
+ 	 */
+-	if (((fc->flags & FUSE_DEFAULT_PERMISSIONS) || (mask & MAY_EXEC)) &&
+-	    fi->i_time < get_jiffies_64()) {
+-		err = fuse_do_getattr(inode);
++	if ((fc->flags & FUSE_DEFAULT_PERMISSIONS) ||
++	    ((mask & MAY_EXEC) && S_ISREG(inode->i_mode))) {
++		err = fuse_refresh_attributes(inode);
+ 		if (err)
+ 			return err;
+ 
+@@ -806,14 +818,17 @@ static int fuse_permission(struct inode 
+ 		   exist.  So if permissions are revoked this won't be
+ 		   noticed immediately, only after the attribute
+ 		   timeout has expired */
+-
+-	} else {
+-		int mode = inode->i_mode;
+-		if ((mask & MAY_EXEC) && !S_ISDIR(mode) && !(mode & S_IXUGO))
+-			return -EACCES;
+-
+-		if (nd && (nd->flags & (LOOKUP_ACCESS | LOOKUP_CHDIR)))
+-			return fuse_access(inode, mask);
++	} else if (nd && (nd->flags & (LOOKUP_ACCESS | LOOKUP_CHDIR))) {
++		err = fuse_access(inode, mask);
++	} else if ((mask & MAY_EXEC) && S_ISREG(inode->i_mode)) {
++		if (!(inode->i_mode & S_IXUGO)) {
++			if (refreshed)
++				return -EACCES;
++
++			err = fuse_do_getattr(inode);
++			if (!err && !(inode->i_mode & S_IXUGO))
++				return -EACCES;
++		}
+ 	}
+ 	return err;
+ }
+@@ -1046,14 +1061,12 @@ static int fuse_getattr(struct vfsmount 
+ 	struct inode *inode = entry->d_inode;
+ 	struct fuse_inode *fi = get_fuse_inode(inode);
+ 	struct fuse_conn *fc = get_fuse_conn(inode);
+-	int err = 0;
++	int err;
+ 
+ 	if (!fuse_allow_task(fc, current))
+ 		return -EACCES;
+ 
+-	if (fi->i_time < get_jiffies_64())
+-		err = fuse_do_getattr(inode);
+-
++	err = fuse_refresh_attributes(inode);
+ 	if (!err) {
+ 		generic_fillattr(inode, stat);
+ 		stat->mode = fi->orig_i_mode;
+
+--
