@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940054AbXHIN3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940100AbXHINbW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940054AbXHIN3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939231AbXHIN32
+	id S940100AbXHINbW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:31:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938908AbXHINbH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:29:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.174]:59217 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939203AbXHIN31 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:29:27 -0400
-Date: Thu, 9 Aug 2007 15:29:18 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-cc: Bodo Eggert <7eggert@gmx.de>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Documentation files in html format?
-In-Reply-To: <Pine.LNX.4.64.0708091439270.10387@fbirervta.pbzchgretzou.qr>
-Message-ID: <Pine.LNX.4.58.0708091508330.3273@be1.lrz>
-References: <8QdB3-87O-7@gated-at.bofh.it> <8QdUr-5j-11@gated-at.bofh.it>
- <E1IJ7DO-0000pI-JN@be1.lrz> <Pine.LNX.4.64.0708091439270.10387@fbirervta.pbzchgretzou.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+54SsQ7j9uPApOlqXXT2ryycixcKu4KjAHB0e
- iRKfh7gCRbfjKjspeMlZ3bWbcYmk21TuxKJVxQVZ0FomdPJqzk
- y1SvK9OKzzlTfWbXMtogg==
+	Thu, 9 Aug 2007 09:31:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38745 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S935578AbXHINbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:31:03 -0400
+Date: Thu, 9 Aug 2007 09:30:28 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: [PATCH 2/24] make atomic_read() behave consistently on arm
+Message-ID: <20070809133028.GA13241@shell.boston.redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Jan Engelhardt wrote:
-> On Aug 9 2007 14:34, Bodo Eggert wrote:
+From: Chris Snook <csnook@redhat.com>
 
-> >I don't think <b> and <i> should be used, instead you should use styles
-> >(<span class="code"> etc).
-> 
-> <b> does the same as <span style="font-weight: bold;">, and the latter is much
-> more verbose for the same thing.
+Purify volatile use for atomic_t on arm.
 
-You shoud use neither. It's OK on homepages, but for documents, you should
-be able to change the formating using stylesheet.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-> >Things like <em> and <strong> should be OK, if used consistently.
-> >
-> >> Perhaps maybe <p class="block"> with .block{text-align:justify;}
-> >> because that looks nice in general.
-> >
-> >If you like that, you can say "p {text-align:justify;}" in the default
-> >stylesheet. (And if people would override the alignment, class="block"
-> >would be the wrong name).
-> 
-> Oh that comes because MS Office calls it "Blocksatz" in German ;-)
-
-I missed that point. What I wanted to say was: If the user overrides 
-":justify", it would still be called "justified", which would be not 
-justified.-)
--- 
-"A slipping gear could let your M203 grenade launcher fire when you
-least expect it. That would make you quite unpopular in what's left of
-your unit."
--Army's magazine of preventive maintenance.
+--- linux-2.6.23-rc2-orig/include/asm-arm/atomic.h	2007-07-08 19:32:17.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-arm/atomic.h	2007-08-09 06:30:40.000000000 -0400
+@@ -14,13 +14,17 @@
+ #include <linux/compiler.h>
+ #include <asm/system.h>
+ 
+-typedef struct { volatile int counter; } atomic_t;
++typedef struct { int counter; } atomic_t;
+ 
+ #define ATOMIC_INIT(i)	{ (i) }
+ 
+ #ifdef __KERNEL__
+ 
+-#define atomic_read(v)	((v)->counter)
++/*
++ * Casting to volatile here minimizes the need for barriers,
++ * without having to declare the type itself as volatile.
++ */
++#define atomic_read(v)	(*(volatile int *)&(v)->counter)
+ 
+ #if __LINUX_ARM_ARCH__ >= 6
+ 
