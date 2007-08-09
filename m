@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938309AbXHIBGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935895AbXHIBOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938309AbXHIBGS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 21:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755859AbXHIBF5
+	id S935895AbXHIBOB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 21:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbXHIBNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 21:05:57 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:1571 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763132AbXHIBFz (ORCPT
+	Wed, 8 Aug 2007 21:13:50 -0400
+Received: from mailhub2.otago.ac.nz ([139.80.64.247]:59245 "EHLO
+	mailhub2.otago.ac.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751610AbXHIBNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 21:05:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QSX2hDZZbOdJme2O8UJJ/bGT+Z1hGFCWZ00Q4n0pAv3GR/1aAcuoHH9hlenGepIUgXngqYunMj5REK+nC4wMDVcbPLQhRfRdXgiu2d0DRmkhGseVboF3VMI3U+zMw4vFfF4KvB5cDxttX0PAcV/o0/A3yFTUMY8hgCTRfXZ6/Fo=
-Message-ID: <5d6222a80708081805t633455cr381f9b4d687c73fb@mail.gmail.com>
-Date: Wed, 8 Aug 2007 22:05:53 -0300
-From: "Glauber de Oliveira Costa" <glommer@gmail.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Subject: Re: [PATCH 5/7] Change lguest launcher to use asm generic include
-Cc: "Rusty Russell" <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
-       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       "Jes Sorensen" <jes@sgi.com>, "Carsten Otte" <cotte@de.ibm.com>
-In-Reply-To: <20070809003343.829371800@goodmis.org>
+	Wed, 8 Aug 2007 21:13:49 -0400
+X-Greylist: delayed 922 seconds by postgrey-1.27 at vger.kernel.org; Wed, 08 Aug 2007 21:13:49 EDT
+Message-ID: <46BA6667.1070205@maths.otago.ac.nz>
+Date: Thu, 09 Aug 2007 12:57:11 +1200
+From: Greg Trounson <gregt@maths.otago.ac.nz>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 00/23] per device dirty throttling -v8
+References: <20070804103347.GA1956@elte.hu> <alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org> <20070804163733.GA31001@elte.hu> <alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org> <46B4C0A8.1000902@garzik.org> <20070804191205.GA24723@lazybastard.org> <20070804192130.GA25346@elte.hu> <20070804211156.5f600d80@the-village.bc.nu> <20070804202830.GA4538@elte.hu> <20070804224834.5187f9b7@the-village.bc.nu> <20070805071320.GC515@elte.hu>
+In-Reply-To: <20070805071320.GC515@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070809003211.373543702@goodmis.org>
-	 <20070809003343.829371800@goodmis.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> --- a/Documentation/lguest/lguest.c
-> +++ b/Documentation/lguest/lguest.c
-> @@ -46,7 +46,7 @@ typedef uint32_t u32;
->  typedef uint16_t u16;
->  typedef uint8_t u8;
->  #include "../../include/linux/lguest_launcher.h"
-> -#include "../../include/asm-i386/e820.h"
-> +#include "../../include/asm/e820.h"
+Ingo Molnar wrote:
+> * Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> 
+>>>> People just need to know about the performance differences - very 
+>>>> few realise its more than a fraction of a percent. I'm sure Gentoo 
+>>>> will use relatime the moment anyone knows its > 5% 8)
+>>> noatime,nodiratime gave 50% of wall-clock kernel rpm build 
+>>> performance improvement for Dave Jones, on a beefy box. Unless i 
+>>> misunderstood what you meant under 'fraction of a percent' your 
+>>> numbers are _WAY_ off.
+>> What numbers - I didn't quote any performance numbers ?
+> 
+> ok, i misunderstood your "very few realise its more than a fraction of a 
+> percent" sentence, i thought you were saying it's a fraction of a 
+> percent.
+> 
+> Measurements show that noatime helps 20-30% on regular desktop 
+> workloads, easily 50% for kernel builds and much more than that (in 
+> excess of 100%) for file-read-intense workloads. We cannot just walk 
+> past such a _huge_ performance impact so easily without even reacting to 
+> the performance arguments, and i'm happy Ubuntu picked up 
+> noatime,nodiratime and is whipping up the floor with Fedora on the 
+> desktop.
+> 
 
-Couldn't we add the ../../../../../../../etc to the Makefile and avoid it here?
+Sorry I'm just not seeing those gains here.  With my filesystems mounted with atime 
+defaults the Quake sources build in 1m28.856s.  A test with ls -ltu verifies that atime is 
+working as expected.  When I remount my filesystems with:
+mount [fs] -o remount,noatime,nodiratime
+I get a compile time of 1m23.368s, a mere 6% improvement.
 
--- 
-Glauber de Oliveira Costa.
-"Free as in Freedom"
-http://glommer.net
+This is on a dual-core Athlon 4200+ box running 2.6.21, so I would have thought this to be 
+close to a best-case file I/O test.
 
-"The less confident you are, the more serious you have to act."
+Greg
