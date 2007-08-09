@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764129AbXHIUAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764265AbXHIUBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764129AbXHIUAd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 16:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbXHIUAT
+	id S1764265AbXHIUBi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 16:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753583AbXHIUB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 16:00:19 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:50718 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754288AbXHIUAR (ORCPT
+	Thu, 9 Aug 2007 16:01:29 -0400
+Received: from rwcrmhc14.comcast.net ([216.148.227.154]:57324 "EHLO
+	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599AbXHIUB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 16:00:17 -0400
-Date: Thu, 9 Aug 2007 16:00:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dan Zwell <dzwell@gmail.com>
-cc: Oliver Neukum <oliver@neukum.org>, Tino Keitel <tino.keitel@gmx.de>,
-       David Brownell <david-b@pacbell.net>, <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.23-rc1: USB hard disk broken
-In-Reply-To: <46BB47C9.3030609@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0708091558260.4244-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 9 Aug 2007 16:01:28 -0400
+Subject: Re: Kernel / Fliesystem Error
+From: Chris Holvenstot <cholvenstot@comcast.net>
+To: Benoit Boissinot <bboissin@gmail.com>
+Cc: Chris Holvenstot <saltydog@houston.rr.com>,
+       kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <40f323d00708090531p34f1fffcub5186d358f9beafb@mail.gmail.com>
+References: <1186623555.6613.17.camel@localhost>
+	 <1186658730.7018.8.camel@localhost>
+	 <40f323d00708090531p34f1fffcub5186d358f9beafb@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 09 Aug 2007 15:02:56 -0500
+Message-Id: <1186689776.6976.12.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Dan Zwell wrote:
+Benoit - 
 
-> Oliver Neukum wrote:
-> > Am Sonntag 05 August 2007 schrieb Tino Keitel:
-> >> On Thu, Jul 26, 2007 at 10:06:40 +0200, Oliver Neukum wrote:
-> >>> Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
-> >>>> On Wed, Jul 25, 2007 at 10:24:36 +0200, Oliver Neukum wrote:
-> >>>>> Am Mittwoch 25 Juli 2007 schrieb Tino Keitel:
-> >>>>>> Hi,
-> >>>>>>
-> >>>>>> I just tried 2.6.23-rc1 and shortly after the boot my external USB hard
-> >>>>>> disk went mad.
-> >>>> [...]
-> >>>>
-> >>>>> Please recompile with CONFIG_USB_DEBUG set.
-> >>>>>
-> >> I tried again -rc1 without USB_DEBUG, and was able to reproduce the
-> >> bug 2 times. At the second time, the kernel log shows this:
-> >>
-> >> 2007-08-05_10:30:27.75572 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterli
-> >> st error 0/-121
-> >> 2007-08-05_10:30:27.86576 kern.info: usb 1-6: reset high speed USB device using ehci_hcd and address 5
-> >> 2007-08-05_10:30:55.95293 kern.info: usb 1-6: USB disconnect, address 5
-> >> 2007-08-05_10:30:55.95300 kern.err: ehci_hcd 0000:00:1d.7: dev 6 ep1in scatterlist error -108/-108
-> > 
-> > David, does this error say anything to you?
-> > 
-> > 	Regards
-> > 		Oliver
+I am a little unsure of the protocol involved here but I will respond to
+this, the last message I received on the topic.
+
+As I feared, I was giving an incomplete picture with my original report
+and did not even realize it.  
+
+On the systems I was getting  the error on I used the mkinitramfs
+command to build the initrd.img file.  This was basically the 2.6.23
+systems.  I did this because the documentation seemed to indicate that
+this would clear up the "devfs unknown file system" messages I was
+getting at boot.
+
+Which it did.
+
+However, when I rebuilt the 2.6.22.1 kernel's initrd.img file with
+mkinitramfs instead of mkinitrd the 2.6.22.1 kernel started getting the
+"superblock time stamp" errors too.
+
+So the problem is NOT with the kernel code - it appears to be either
+with mkinitramfs or my process.  With the way my luck has been running
+of late it is likely that the fault is with my process.
+
+So I once again thank you for your response, and apologize for what now
+appears to be a false alarm.  Since the initramfs tool set was provided
+with the Ubuntu release I am using as a base I will try to locate
+someone there to assist with this issue.
+
+Chris
+
+
+
+On Thu, 2007-08-09 at 14:31 +0200, Benoit Boissinot wrote:
+> On 8/9/07, Chris Holvenstot <cholvenstot@comcast.net> wrote:
+> > > Chris Snook wrote:
+> > >
+> > >The problem here is that your clock is wrong either at mount (boot)
+> > >time or unmount (shutdown) time. There's nothing wrong with ext3,
+> > >except that it happens to be noticing this condition.
+> >
+> > 1.  This happens even when the system is rebooted via the shutdown -r
+> > command - not much time for my fat fingers to get in there and dork up
+> > the system clock.
+> >
+> > 2.  As I stated in the original note, this does NOT happen with kernel
+> > 2.6.22.1 - so far I have only seen it with the 2.6.23-rc1, rc2, and
+> > rc2-git1 kernels.
+> >
 > 
-> Hi,
+> But very likely time keeping was broken between .22 and .23-rc.
+> Probably not ext3.
 > 
-> I just completed a git bisect, and commit 
-> 8dfe4b14869fd185ca25ee88b02ada58a3005eaf was the commit that introduced 
-> this problem. This is "usb-storage: implement autosuspend". I don't 
-> think there have been many changes in drivers/usb since I last verified 
-> this problem, so I'm pretty sure this is still happening in the latest 
-> kernel.
+> regards,
 > 
-> The first thing I am going to do is pull the latest sources, attempt to 
-> revert this patch, and see whether the kernel compiles and works 
-> properly with my USB hard drive. Please let me know of anything I can do 
-> to help.
-
-What makes you think the problem you see is the same as the one 
-described by Tino?  Do you get the "scatterlist error 0/-121" line in 
-your log?
-
-Please provide a dmesg log showing your problem with CONFIG_USB_DEBUG 
-enabled.
-
-Alan Stern
+> Benoit
 
