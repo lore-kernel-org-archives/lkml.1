@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939216AbXHIP76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939574AbXHIQBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939216AbXHIP76 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 11:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935614AbXHIP7o
+	id S939574AbXHIQBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758718AbXHIQBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 11:59:44 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42095 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752110AbXHIP7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 11:59:43 -0400
-In-Reply-To: <46BB31A6.4080507@redhat.com>
-References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org>
+	Thu, 9 Aug 2007 12:01:15 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:36027 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S935188AbXHIQBO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:01:14 -0400
+Message-ID: <46BB3692.5010003@vmware.com>
+Date: Thu, 09 Aug 2007 08:45:22 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070509)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Linus Torvalds <torvalds@linux-foundation.org>, lguest <lguest@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Lguest] [PATCH] lguest: Fix Malicious Guest GDT Host Crash
+References: <1186657033.17752.58.camel@localhost.localdomain>
+In-Reply-To: <1186657033.17752.58.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Cc: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
-       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, cfriesen@nortel.com,
-       zlynx@acm.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Date: Thu, 9 Aug 2007 17:50:32 +0200
-To: Chris Snook <csnook@redhat.com>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We can't have split stores because we don't use atomic64_t on 32-bit 
-> architectures.
+Rusty Russell wrote:
+> If a Guest makes hypercall which sets a GDT entry to not present, we
+> currently set any segment registers using that GDT entry to 0.
+> Unfortunately, this is not sufficient: there are other ways of
+> altering GDT entries which will cause a fault.
+>
+> The correct solution to do what Linux does: let them set any GDT value
+> they want and handle the #GP when popping causes a fault.  This has
+> the added benefit of making our Switcher slightly more robust in the
+> case of any other bugs which cause it to fault.
+>
+> We kill the Guest if it causes a fault in the Switcher: it's the
+> Guest's responsibility to make sure it's not using segments when it
+> changes them.
+>   
 
-That's not true; the compiler is free to split all stores
-(and reads) from memory however it wants.  It is debatable
-whether "volatile" would prevent this as well, certainly
-it is unsafe if you want to be portable.  GCC will do its
-best to not split volatile memory accesses, but bugs in
-this area do happen a lot (because the compiler code for
-volatile isn't as well exercised as most other compiler
-code, and because it is simply a hard subject; and there
-is no real formalised model for what GCC should do).
+Linux doesn't obey that rule.  It changes descriptors behind FS/GS all 
+over the place.  Well, not all over the place, only when updating LDT 
+entries, TLS entries, and during context switch.  This means lguest 
+handling interrupts in one of those regions can result in the guest dying.
 
-The only safe way to get atomic accesses is to write
-assembler code.  Are there any downsides to that?  I don't
-see any.
-
-
-Segher
-
+Zach
