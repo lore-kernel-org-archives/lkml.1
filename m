@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937501AbXHIINk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938397AbXHIIPO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937501AbXHIINk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 04:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932149AbXHIINU
+	id S938397AbXHIIPO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 04:15:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763064AbXHIIO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 04:13:20 -0400
-Received: from mail.xandmail.com ([212.155.184.97]:44423 "EHLO
-	mail.xandmail.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763164AbXHIINR convert rfc822-to-8bit (ORCPT
+	Thu, 9 Aug 2007 04:14:57 -0400
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:54677 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758869AbXHIIO4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 04:13:17 -0400
-Date: Thu,  9 Aug 2007 10:12:27 +0200
-Message-Id: <JMHYSR$115A35C556FF1DC799C39F5A854755BC@xandmail.com>
-Subject: Re:[patch] genirq: temporary fix for level-triggered IRQ resend
+	Thu, 9 Aug 2007 04:14:56 -0400
+Date: Thu, 9 Aug 2007 10:14:19 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Chris Snook <csnook@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, akpm@linux-foundation.org,
+       ak@suse.de, davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, schwidefsky@de.ibm.com, wensong@linux-vs.org,
+       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
+       zlynx@acm.org
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+Message-ID: <20070809081419.GA9580@osiris.boeblingen.de.ibm.com>
+References: <20070808230733.GA17270@shell.boston.redhat.com> <alpine.LFD.0.999.0708082116060.25146@woody.linux-foundation.org> <46BAC2BE.1090106@redhat.com>
 MIME-Version: 1.0
-X-Sensitivity: 3
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-From: "Jean-Baptiste Vignaud" <vignaud@xandmail.fr>
-To: "jarkao2" <jarkao2@o2.pl>
-Cc: "mingo" <mingo@elte.hu>, "torvalds" <torvalds@linux-foundation.org>,
-       "tglx" <tglx@linutronix.de>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "shemminger" <shemminger@linux-foundation.org>,
-       "linux-net" <linux-net@vger.kernel.org>,
-       "netdev" <netdev@vger.kernel.org>, "akpm" <akpm@linux-foundation.org>,
-       "alan" <alan@lxorguk.ukuu.org.uk>,
-       "marcin\.slusarz" <marcin.slusarz@gmail.com>
-X-XaM3-API-Version: 4.2(R3) (B21)
-X-type: 0
-X-SenderIP: 212.155.184.109
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BAC2BE.1090106@redhat.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
+On Thu, Aug 09, 2007 at 03:31:10AM -0400, Chris Snook wrote:
+>  Linus Torvalds wrote:
+> > I'd be *much* happier with "atomic_read()" doing the "volatile" instead.
+> > The fact is, volatile on data structures is a bug. It's a wart in the C 
+> > language. It shouldn't be used. Volatile accesses in *code* can be ok, and 
+> > if we have "atomic_read()" expand to a "*(volatile int *)&(x)->value", then 
+> > I'd be ok with that.
+> > But marking data structures volatile just makes the compiler screw up 
+> > totally, and makes code for initialization sequences etc much worse.
+> > 		Linus
 > 
-> I see there is a bit of complaining on this original resend temporary
-> patch. But, since it seems to do a good job for some people, here is
-> my proposal to limit the 'range of fire' a little bit.
+>  Fair enough.  Casting to (volatile int *) will give us the behavior people 
+>  expect when using atomic_t without needing to use inefficient barriers.
 > 
-> Marcin and Jean-Baptiste: try to test this with 2.6.23-rc2, please.
-> (Unless Ingo or Thomas have other plans with this problem?)
+>  While we have the hood up, should we convert all the atomic_t's to 
+>  non-volatile and put volatile casts in all the atomic_reads?  I don't know 
+>  enough about the various arches to say with confidence that those changes 
+>  alone will preserve existing behavior.  We might need some arch-specific 
+>  tweaking of the atomic operations.
 
-2.6.23-rc2 + this patch, and the box's cards are still networking after 20 hours.
-
-RX bytes:452423991847 (421.3 GiB)  TX bytes:13464471620 (12.5 GiB)
-
-still testing.
-
-Jb
-
-
+If you write that patch could you include the atomic64 variants as well,
+please? Besides that just post the patch to linux-arch and maintainers
+should speak up.
