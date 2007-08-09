@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbXHISKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755541AbXHISOR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756095AbXHISKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750836AbXHISKV
+	id S1755541AbXHISOR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 14:14:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbXHISN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:10:21 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:57822 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750823AbXHISKS (ORCPT
+	Thu, 9 Aug 2007 14:13:59 -0400
+Received: from mta-mad.optenet.com ([213.27.232.70]:39573 "EHLO
+	mta-mad.optenet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752377AbXHISN6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:10:18 -0400
-X-Originating-Ip: 72.143.66.27
-Date: Thu, 9 Aug 2007 14:04:45 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Chris Snook <csnook@redhat.com>
-cc: Jerry Jiang <wjiang@resilience.com>, Chris Friesen <cfriesen@nortel.com>,
-       Zan Lynx <zlynx@acm.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why are some atomic_t's not volatile, while most are?
-In-Reply-To: <Pine.LNX.4.64.0708091359180.25299@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0708091404250.25868@localhost.localdomain>
-References: <Pine.LNX.4.64.0707010847370.22564@localhost.localdomain>
- <20070806123551.a6c3c154.wjiang@resilience.com> <46B72C58.5030502@redhat.com>
- <46B894E4.4010501@nortel.com> <46B8D6D7.2020206@redhat.com>
- <46B8DDF3.7050008@nortel.com> <46B8E1D3.8050501@redhat.com>
- <46B8E64E.7010708@nortel.com> <1186525977.232321.43.camel@localhost>
- <46B91D0C.5050704@redhat.com> <46B94B94.6000600@nortel.com>
- <46B96719.3050006@redhat.com> <20070808162755.61f50fbf.wjiang@resilience.com>
- <46BA2D72.9060202@redhat.com> <Pine.LNX.4.64.0708090836070.10666@localhost.localdomain>
- <46BB0E1F.2030003@redhat.com> <Pine.LNX.4.64.0708091359180.25299@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 9 Aug 2007 14:13:58 -0400
+Subject: Re: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed
+	sockets
+From: Unai Uribarri <unai.uribarri@optenet.com>
+To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070809143322.GA5345@2ka.mipt.ru>
+References: <1186669314.24669.56.camel@localhost.localdomain>
+	 <20070809143322.GA5345@2ka.mipt.ru>
+Content-Type: text/plain
+Organization: Optenet
+Date: Thu, 09 Aug 2007 20:13:54 +0200
+Message-Id: <1186683234.24669.65.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007, Robert P. J. Day wrote:
+On jue, 2007-08-09 at 18:33 +0400, Evgeniy Polyakov wrote:
+> On Thu, Aug 09, 2007 at 04:21:54PM +0200, Unai Uribarri (unai.uribarri@optenet.com) wrote:
+> > The attached patch removes the automatic timestamp activation, that
+> > only mmap'ed AF_PACKET sockets perform. I known it can break user
+> > applications, but I believe that it's the correct solution.
+> 
+> How tcpdump with mmap libpcap will work with it?
 
-> On Thu, 9 Aug 2007, Chris Snook wrote:
->
-> > Robert P. J. Day wrote:
->
-> > > i'm almost scared to ask any more questions.  :-)
-> > >
-> > > rday
-> >
-> > Momentarily I'll be posting a patchset that makes all atomic_t and
-> > atomic64_t declarations non-volatile, and casts them to volatile
-> > inside of atomic[64]_read.  This will ensure consistent behavior
-> > across all architectures, and is in keeping with the philosophy that
-> > memory reads should be enforced in running code, not declarations.
-> >
-> > I hope you don't mind that we're mooting the question by making the
-> > code more sensible.
->
-> not at all, but it does bring up the obvious next question -- once all
-> these definitions are made consistent, is there any reason some of
-> that content can't be centralized in a single atomic.h header file,
-> rather than duplicating it across a couple dozen architectures?
->
-> surely, after this process, there's going to be some content that's
-> identical across all arches, no?
->
-> rday
+In Linux, you can enable timestamps on any socket executing:
 
-whoops, never mind, i just saw that earlier posting on this very
-subject.
+int val = 1;
+setsockopt(sock, SOL_SOCKET, SO_TIMESTAMP, &val, sizeof(val));
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+PD: Current release of tcpdump doesn't mmap the reception ring and
+timestamps packets at user space with gettimeofday. It isn't the best
+performing alternative, but it's portable.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+
+
