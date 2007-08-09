@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761097AbXHIXRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762762AbXHIXXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761097AbXHIXRg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 19:17:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756465AbXHIXRR
+	id S1762762AbXHIXXD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 19:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753954AbXHIXWu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 19:17:17 -0400
-Received: from rv-out-0910.google.com ([209.85.198.188]:8181 "EHLO
-	rv-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756179AbXHIXRP (ORCPT
+	Thu, 9 Aug 2007 19:22:50 -0400
+Received: from mga06.intel.com ([134.134.136.21]:27744 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752799AbXHIXWt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 19:17:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=A4J8Dv+q3ZQvUO8B+g6c1t0AAZXjkpSEh1+J9YnykQp+GTOLh6Bv1WrhMMZ0eokq6Bc1kzTjM3eGtEWvZIwFFootl0LR7jV0scJjx+9bx8T69BtfjSdAJTVIgLdn5Gr5AoOFas8Tywb3vLZw1mLqFcoJXufCuX4bosMIdWqcjIE=
-Message-ID: <7fedbc910708091617o7ae25fd8i36e7ec32c2b9ba86@mail.gmail.com>
-Date: Fri, 10 Aug 2007 01:17:14 +0200
-From: shacky <shacky83@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Unable to handle kernel paging request at virtual address
+	Thu, 9 Aug 2007 19:22:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,243,1183359600"; 
+   d="scan'208";a="276884806"
+Message-ID: <46BBA1C6.9010702@ichips.intel.com>
+Date: Thu, 09 Aug 2007 16:22:46 -0700
+From: Sean Hefty <mshefty@ichips.intel.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: David Miller <davem@davemloft.net>
+CC: swise@opengridcomputing.com, rdreier@cisco.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: [ofa-general] Re: [PATCH RFC] RDMA/CMA: Allocate PS_TCP ports
+ from the host TCP port space.
+References: <46B883B5.8040702@opengridcomputing.com>	<46BB61D0.4090101@opengridcomputing.com>	<46BB89C0.4040303@ichips.intel.com> <20070809.145534.102938208.davem@davemloft.net>
+In-Reply-To: <20070809.145534.102938208.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-I installed Ubuntu 7.04 and then upgraded to the future 7.10 on my
-system based on an Asus Pundit barebone with 512 mb RAM and 120 Gb IDE
-hard disk.
-The system works without any problem, but when I try to shutdown or
-restart the system, after a while during the shutdown process, the
-system hangs and I see this error:
+> How about we just remove the RDMA stack altogether?  I am not at all
+> kidding.  If you guys can't stay in your sand box and need to cause
+> problems for the normal network stack, it's unacceptable.  We were
+> told all along the if RDMA went into the tree none of this kind of
+> stuff would be an issue.
 
-[87.935473] BUG: unable to handle kernel paging request at virtual
-address 6d207972
-[...........] printing eip:
-[...........] 6d207972
-[...........] *pde = 00000000
-[...........] Oops: 000 [#2]
-[...........] SMP
-[...........] Modules linked in: bluetooth capability lirc_dev
-speedstep_lib cpufreq_powersave cpufreq_stats cpufreq_userspace
-cpufreq_ondemand cpufreq_conservative freq_table video container sbs
-button dock ac battery ipv6 sbp2 lp fuse snd_emu10k1_synth
-snd_emux_synth snd_seq_virmidi snd_seq_midi_emul  [....] etc.
+There are currently two RDMA solutions available.  Each solution has 
+different requirements and uses the normal network stack differently. 
+Infiniband uses its own transport.  iWarp runs over TCP.
 
-I'm using the kernel 2.6.22.
+We have tried to leverage the existing infrastructure where it makes sense.
 
-I'm omitting the rest of the error because it is very very long and I
-have to rewrite it because I can't copy&paste it. If you need some
-other information please ask. :-)
+> After TCP port reservation, what's next?  It seems an at least
+> bi-monthly event that the RDMA folks need to put their fingers
+> into something else in the normal networking stack.  No more.
 
-Could you help me, please? What could be the problem?
+Currently, the RDMA stack uses its own port space.  This causes a 
+problem for iWarp, and is what Steve is looking for a solution for.  I'm 
+not an iWarp guru, so I don't know what options exist.  Can iWarp use 
+its own address family?  Identify specific IP addresses for iWarp use? 
+Restrict iWarp to specific port numbers?  Let the app control the 
+correct operation?  I don't know.
 
-Thank you very much!
-Bye.
+Steve merely defined a problem and suggested a possible solution.  He's 
+looking for constructive help trying to solve the problem.
+
+- Sean
