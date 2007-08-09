@@ -1,123 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765536AbXHIVAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765536AbXHIVDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765536AbXHIVAo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 17:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757594AbXHIVAg
+	id S1765536AbXHIVDt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 17:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbXHIVDi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 17:00:36 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:59341 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756513AbXHIVAe (ORCPT
+	Thu, 9 Aug 2007 17:03:38 -0400
+Received: from mga02.intel.com ([134.134.136.20]:62035 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752246AbXHIVDg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 17:00:34 -0400
-Date: Thu, 9 Aug 2007 13:58:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "ACPI Devel Maling List" <linux-acpi@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.23-rc2-mm1 -- INFO: possible circular locking dependency
- detected
-Message-Id: <20070809135834.b18ac717.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0708091324w4f990d3fo364e01207d52200a@mail.gmail.com>
-References: <a44ae5cd0708091324w4f990d3fo364e01207d52200a@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
+	Thu, 9 Aug 2007 17:03:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,242,1183359600"; 
+   d="scan'208";a="276838506"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH 9/24] make atomic_read() behave consistently on ia64
+Date: Thu, 9 Aug 2007 14:03:33 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A02213B3C@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070809135107.GA15985@shell.boston.redhat.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 9/24] make atomic_read() behave consistently on ia64
+Thread-Index: AcfaqaDD/d+FqphiT4Wq09/UAs5EGAAG013Q
+References: <20070809135107.GA15985@shell.boston.redhat.com>
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Chris Snook" <csnook@redhat.com>, <linux-kernel@vger.kernel.org>,
+       <linux-arch@vger.kernel.org>, <torvalds@linux-foundation.org>
+Cc: <netdev@vger.kernel.org>, <akpm@linux-foundation.org>, <ak@suse.de>,
+       <heiko.carstens@de.ibm.com>, <davem@davemloft.net>,
+       <schwidefsky@de.ibm.com>, <wensong@linux-vs.org>, <horms@verge.net.au>,
+       <wjiang@resilience.com>, <cfriesen@nortel.com>, <zlynx@acm.org>,
+       <rpjday@mindspring.com>, <jesper.juhl@gmail.com>
+X-OriginalArrivalTime: 09 Aug 2007 21:03:35.0520 (UTC) FILETIME=[C0234600:01C7DAC8]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 9 Aug 2007 16:24:48 -0400
-"Miles Lane" <miles.lane@gmail.com> wrote:
-
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.23-rc2-mm1 #7
-> -------------------------------------------------------
-> kacpid/53 is trying to acquire lock:
->  (&ec->lock){--..}, at: [<c03031a7>] mutex_lock+0x1c/0x1f
+> +#define atomic_read(v)		(*(volatile __s32 *)&(v)->counter)
+> +#define atomic64_read(v)	(*(volatile __s64 *)&(v)->counter)
 > 
-> but task is already holding lock:
->  (&dpc->work){--..}, at: [<c012689d>] run_workqueue+0xa0/0x182
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #2 (&dpc->work){--..}:
->        [<c0133d24>] __lock_acquire+0x9a6/0xb6f
->        [<c0133f4e>] lock_acquire+0x61/0x7d
->        [<c01268b2>] run_workqueue+0xb5/0x182
->        [<c01271a9>] worker_thread+0xb7/0xc2
->        [<c01296c4>] kthread+0x39/0x61
->        [<c0104913>] kernel_thread_helper+0x7/0x10
->        [<ffffffff>] 0xffffffff
-> 
-> -> #1 (kacpid){--..}:
->        [<c0133d24>] __lock_acquire+0x9a6/0xb6f
->        [<c0133f4e>] lock_acquire+0x61/0x7d
->        [<c0126f62>] flush_workqueue+0x2d/0x4f
->        [<c01e85e0>] acpi_os_wait_events_complete+0xd/0xf
->        [<c01ef605>] acpi_remove_gpe_handler+0x7b/0xdd
->        [<c0205981>] ec_remove_handlers+0x26/0x29
->        [<c02062b4>] acpi_ec_add+0x8f/0x13e
->        [<c0205477>] acpi_device_probe+0x3e/0xdb
->        [<c023c4c8>] driver_probe_device+0xd7/0x14d
->        [<c023c652>] __driver_attach+0x6a/0xa1
->        [<c023baaa>] bus_for_each_dev+0x36/0x5b
->        [<c023c32e>] driver_attach+0x14/0x16
->        [<c023bd7e>] bus_add_driver+0x70/0x16c
->        [<c023c82d>] driver_register+0x60/0x65
->        [<c020577b>] acpi_bus_register_driver+0x3a/0x3c
->        [<c04292e4>] acpi_ec_init+0x36/0x55
->        [<c0416650>] kernel_init+0xc5/0x20f
->        [<c0104913>] kernel_thread_helper+0x7/0x10
->        [<ffffffff>] 0xffffffff
-> 
-> -> #0 (&ec->lock){--..}:
->        [<c0133c44>] __lock_acquire+0x8c6/0xb6f
->        [<c0133f4e>] lock_acquire+0x61/0x7d
->        [<c0303006>] __mutex_lock_slowpath+0xbc/0x241
->        [<c03031a7>] mutex_lock+0x1c/0x1f
->        [<c0205bbd>] acpi_ec_transaction+0x65/0x1c1
->        [<c0205d44>] acpi_ec_gpe_query+0x2b/0xab
->        [<c01e8602>] acpi_os_execute_deferred+0x20/0x31
->        [<c01268b7>] run_workqueue+0xba/0x182
->        [<c01271a9>] worker_thread+0xb7/0xc2
->        [<c01296c4>] kthread+0x39/0x61
->        [<c0104913>] kernel_thread_helper+0x7/0x10
->        [<ffffffff>] 0xffffffff
-> 
-> other info that might help us debug this:
-> 
-> 2 locks held by kacpid/53:
->  #0:  (kacpid){--..}, at: [<c0126882>] run_workqueue+0x85/0x182
->  #1:  (&dpc->work){--..}, at: [<c012689d>] run_workqueue+0xa0/0x182
-> 
-> stack backtrace:
->  [<c0104c6a>] show_trace_log_lvl+0x12/0x25
->  [<c0105552>] show_trace+0xd/0x10
->  [<c0105656>] dump_stack+0x15/0x17
->  [<c0132580>] print_circular_bug_tail+0x5a/0x65
->  [<c0133c44>] __lock_acquire+0x8c6/0xb6f
->  [<c0133f4e>] lock_acquire+0x61/0x7d
->  [<c0303006>] __mutex_lock_slowpath+0xbc/0x241
->  [<c03031a7>] mutex_lock+0x1c/0x1f
->  [<c0205bbd>] acpi_ec_transaction+0x65/0x1c1
->  [<c0205d44>] acpi_ec_gpe_query+0x2b/0xab
->  [<c01e8602>] acpi_os_execute_deferred+0x20/0x31
->  [<c01268b7>] run_workqueue+0xba/0x182
->  [<c01271a9>] worker_thread+0xb7/0xc2
->  [<c01296c4>] kthread+0x39/0x61
->  [<c0104913>] kernel_thread_helper+0x7/0x10
->  =======================
-
-Presumably the new debugging patches in -mm
-(workqueue-debug-flushing-deadlocks-with-lockdep.patch and
-workqueue-debug-work-related-deadlocks-with-lockdep.patch) think they have
-found a potential deadlock in ACPI.  I don't have time to pick through the
-code to confirm that, but boy I'm good at adding cc's ;)
+>  #define atomic_set(v,i)		(((v)->counter) = (i))
+>  #define atomic64_set(v,i)	(((v)->counter) = (i))
 
 
+Losing the volatile from the "set" variants definitely changes
+the code generated.  Before the patch gcc would give us:
+
+	st4.rel [r37]=r9
+
+after
+	st4 [r37]=r9
+
+It is unclear whether anyone relies on (or even whether they should
+rely on) the release semantics that are provided by the current
+version of atomic.h.  But making this change would require an
+audit of all the uses of atomic_set() to find an answer.
+
+There is a more worrying difference in the generated code (this
+from the ancient and venerable gcc 3.4.6 that is on my build
+machine).   In rwsem_down_failed_common I see this change (after
+disassembling vmlinux, I used sed to zap the low 32-bits of addresses
+to make the diff manageable ... that's why the addresses all end
+in xxxxxxxx):
+
+712868,712873c712913,712921
+< a0000001xxxxxxxx:                 adds r16=-1,r30
+< a0000001xxxxxxxx:     [MII]       ld8.acq r33=[r32]
+< a0000001xxxxxxxx:                 nop.i 0x0;;
+< a0000001xxxxxxxx:                 add r42=r33,r16
+< a0000001xxxxxxxx:     [MMI]       mov.m ar.ccv=r33;;
+< a0000001xxxxxxxx:                 cmpxchg8.acq r34=[r32],r42,ar.ccv
+---
+> a0000001xxxxxxxx:                 adds r16=-1,r31
+> a0000001xxxxxxxx:     [MMI]       ld4.acq r14=[r32];;
+> a0000001xxxxxxxx:                 nop.m 0x0
+> a0000001xxxxxxxx:                 sxt4 r34=r14
+> a0000001xxxxxxxx:     [MMI]       nop.m 0x0;;
+> a0000001xxxxxxxx:                 nop.m 0x0
+> a0000001xxxxxxxx:                 add r15=r34,r16
+> a0000001xxxxxxxx:     [MMI]       mov.m ar.ccv=r34;;
+> a0000001xxxxxxxx:                 cmpxchg8.acq r42=[r32],r15,ar.ccv
+
+This code is probably from the rwsem_atomic_update(adjustment, sem) macro
+which is cpp'd to atomic64_add_return().  It looks really bad that the new
+code reads a 32-bit value and sign extends it rather than reading a 64-bit
+value (but I'm perplexed as to why this patch provoked this change in the
+generated code).
+
+-Tony
