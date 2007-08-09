@@ -1,51 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940214AbXHIOFk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940132AbXHIOHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940214AbXHIOFk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:05:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940081AbXHIOFS
+	id S940132AbXHIOHl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938387AbXHIOH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:05:18 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:53111 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S940052AbXHIOFP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:05:15 -0400
-Date: Thu, 9 Aug 2007 15:12:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?UTF-8?B?SGFucy1Kw7xyZ2Vu?= Koch <hjk@linutronix.de>
-Cc: Valdis.Kletnieks@vt.edu, Jesper Juhl <jesper.juhl@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] UIO: Documentation
-Message-ID: <20070809151220.3f389efc@the-village.bc.nu>
-In-Reply-To: <200708091502.45417.hjk@linutronix.de>
-References: <20070718232332.GA4620@kroah.com>
-	<9a8748490708081436g23c8f01cga585d6612b380f16@mail.gmail.com>
-	<14166.1186611154@turing-police.cc.vt.edu>
-	<200708091502.45417.hjk@linutronix.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 9 Aug 2007 10:07:27 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52284 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S938318AbXHIOHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:07:25 -0400
+Date: Thu, 9 Aug 2007 10:06:55 -0400
+From: Chris Snook <csnook@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       torvalds@linux-foundation.org
+Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
+       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
+       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
+       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
+       jesper.juhl@gmail.com
+Subject: [PATCH 16/24] make atomic_read() behave consistently on s390
+Message-ID: <20070809140655.GA17731@shell.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's no UIO invention. Userspace software that uses kernel interfaces like
-> syscall, device files, sysfs, and so on, is by definition _not_ a derived work
-> of the kernel and can be distributed under any license.
+From: Chris Snook <csnook@redhat.com>
 
-This I believe incorrect. Please cite caselaw if you know better.
+Make atomic[64]_read() volatile on s390, to ensure memory is actually read
+each time.
 
-> With UIO, you have a kernel module that is so small, that even somebody who
-> hasn't got the hardware can easily review it and tell if the code is OK or not.
-> It is easy to maintain and doesn't reveal any secrets about the hardware.
+Signed-off-by: Chris Snook <csnook@redhat.com>
 
-False
-
-Because you have no idea if the interface is correct or the userspace is
-doing stuff like triggering DMA to arbitary addresses via the interface
-or mmap functions. If it does so then even if its root only you've blown
-your security model.
-
+--- linux-2.6.23-rc2-orig/include/asm-s390/atomic.h	2007-08-08 17:48:53.000000000 -0400
++++ linux-2.6.23-rc2/include/asm-s390/atomic.h	2007-08-09 07:18:56.000000000 -0400
+@@ -67,7 +67,11 @@ typedef struct {
+ 
+ #endif /* __GNUC__ */
+ 
+-#define atomic_read(v)          ((v)->counter)
++/*
++ * Casting to volatile here minimizes the need for barriers,
++ * without having to declare the type itself as volatile.
++ */
++#define atomic_read(v)          (*(volatile int *)&(v)->counter)
+ #define atomic_set(v,i)         (((v)->counter) = (i))
+ 
+ static __inline__ int atomic_add_return(int i, atomic_t * v)
+@@ -182,7 +186,7 @@ typedef struct {
+ 
+ #endif /* __GNUC__ */
+ 
+-#define atomic64_read(v)          ((v)->counter)
++#define atomic64_read(v)          (*(volatile long long *)&(v)->counter)
+ #define atomic64_set(v,i)         (((v)->counter) = (i))
+ 
+ static __inline__ long long atomic64_add_return(long long i, atomic64_t * v)
