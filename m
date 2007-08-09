@@ -1,50 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935771AbXHIACd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbXHIACw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935771AbXHIACd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763312AbXHIACY
+	id S932071AbXHIACw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:02:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765542AbXHIAC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:02:24 -0400
-Received: from ozlabs.org ([203.10.76.45]:48407 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760857AbXHIACX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:02:23 -0400
-Subject: Re: [PATCH 25/25] [PATCH] add paravirtualization support for x86_64
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Glauber de Oliveira Costa <glommer@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, Glauber de Oliveira Costa <gcosta@redhat.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       chrisw@sous-sol.org, jeremy@goop.org, avi@qumranet.com,
-       anthony@codemonkey.ws, virtualization@lists.linux-foundation.org,
-       lguest@ozlabs.org, Steven Rostedt <rostedt@goodmis.org>
-In-Reply-To: <5d6222a80708080749t35c5c0ceo8b3b8f0cce50c666@mail.gmail.com>
-References: <11865467522495-git-send-email-gcosta@redhat.com>
-	 <1186546847263-git-send-email-gcosta@redhat.com>
-	 <11865468513077-git-send-email-gcosta@redhat.com>
-	 <200708081200.13669.ak@suse.de>
-	 <5d6222a80708080749t35c5c0ceo8b3b8f0cce50c666@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 09 Aug 2007 09:18:57 +1000
-Message-Id: <1186615137.17470.100.camel@localhost.localdomain>
+	Wed, 8 Aug 2007 20:02:26 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:51070 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764251AbXHIACZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 20:02:25 -0400
+Date: Wed, 8 Aug 2007 17:02:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mikko Rapeli <mikko.rapeli@iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: early boot lockup with 2.6.23-rc1
+Message-Id: <20070808170211.4401c019.akpm@linux-foundation.org>
+In-Reply-To: <20070808223120.GA2286@nalle>
+References: <20070808223120.GA2286@nalle>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-08-08 at 11:49 -0300, Glauber de Oliveira Costa wrote:
-> On 8/8/07, Andi Kleen <ak@suse.de> wrote:
-> > > +EXPORT_SYMBOL(paravirt_ops);
-> >
-> > Definitely _GPL at least.
-> Sure.
+On Thu, 9 Aug 2007 01:31:20 +0300
+Mikko Rapeli <mikko.rapeli@iki.fi> wrote:
 
-We ended up making it EXPORT_SYMBOL in i386 because every driver wants
-to save and restore interrupt state.
+> Since 2.6.23-rc1 I can't boot an old k6 (with a funky IDE drive worth testing
+> with libata). The boot hangs without a sound or letter prints on the
+> screen right after grub, while 2.6.22.1 works fine.
 
-But questionably-licensed drivers might be less of a concern on x86-64.
-
-Cheers,
-Rusty.
-
-
+Try adding the `earlyprintk=vga' parameter to the kernel command line?
