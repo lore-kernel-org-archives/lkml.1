@@ -1,67 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965254AbXHINDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939302AbXHINFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965254AbXHINDE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S938727AbXHINCx
+	id S939302AbXHINFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932443AbXHINFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:02:53 -0400
-Received: from www.osadl.org ([213.239.205.134]:38795 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S938678AbXHINCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:02:52 -0400
-From: =?iso-8859-15?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-Organization: Linutronix
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH 2/3] UIO: Documentation
-Date: Thu, 9 Aug 2007 15:02:45 +0200
-User-Agent: KMail/1.9.5
-Cc: Jesper Juhl <jesper.juhl@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-References: <20070718232332.GA4620@kroah.com> <9a8748490708081436g23c8f01cga585d6612b380f16@mail.gmail.com> <14166.1186611154@turing-police.cc.vt.edu>
-In-Reply-To: <14166.1186611154@turing-police.cc.vt.edu>
+	Thu, 9 Aug 2007 09:05:36 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3698 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1765571AbXHINFf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:05:35 -0400
+Date: Thu, 9 Aug 2007 14:04:49 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: linux-kernel@vger.kernel.org, drfickle@us.ibm.com, mel@csn.ul.ie,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: 2.6.23-rc2-mm1 -- PPC G5 kernel compile failure
+Message-ID: <20070809130449.GB3091@shadowen.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708091502.45417.hjk@linutronix.de>
+In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SPF-Guess: neutral
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Donnerstag 09 August 2007 00:12 schrieb Valdis.Kletnieks@vt.edu:
+Seeing the following compile error on a G5 mac:
 
-> 
-> If you have UIO in the kernel talking to stuff in userspace, you're going to
-> have to deal with closed-source stuff at the userspace end of the pipe.
+  drivers/video/tdfxfb.c: In function 'tdfxfb_setup':
+  drivers/video/tdfxfb.c:1341: error: 'opt' undeclared (first use in this
+                                                                 function)
+  drivers/video/tdfxfb.c:1341: error: (Each undeclared identifier is
+                                                        reported only once
+  drivers/video/tdfxfb.c:1341: error: for each function it appears in.)
 
-That's no UIO invention. Userspace software that uses kernel interfaces like
-syscall, device files, sysfs, and so on, is by definition _not_ a derived work
-of the kernel and can be distributed under any license.
+This seems to be the following fragment from tdfxfb-hardware-cursor:
 
-If you ask a manufacturer of an industrial IO card for a Linux driver today, 
-you either get nothing at all, or you get an unmaintainable and buggy piece
-of crap for an ancient kernel. The alternative is a binary kernel module that 
-really violates the GPL.
++               } else if (!strcmp(this_opt, "hwcursor")) {
++                       hwcursor = simple_strtoul(opt + 9, NULL, 0);
 
-With UIO, you have a kernel module that is so small, that even somebody who
-hasn't got the hardware can easily review it and tell if the code is OK or not.
-It is easy to maintain and doesn't reveal any secrets about the hardware.
-The kernel remains clean, which further improves maintenance and debugging.
-People frequently use /dev/mem to access hardware from userspace, that's
-nothing new. UIO really improves this, making it safer and more user friendly.
-And it prevents people from inventing dirty tricks to do some sort of 
-interrupt handling in user space (which is simply not possible).
+I guess the nieve fix would be s/opt/this_opt, but I am also
+suspicious of the +9 here as hwcursor is only 8 long?  Now this
+seems to take a numeric value and I assume that is via hwcursor=N,
+if so then the +9 would make sense _if_ the strcmp was against
+"hwcursor=".
 
-Furthermore, drivers for this kind of hardware are written by programmers in
-industry, who often don't have kernel experience, reviews, time for tests,
-and so on. I really prefer it if they do their stuff in userspace. And they
-prefer it, too, because they can use all the nice tools and libraries they're
-used to.
+Krzysztof?
 
-There might be a small possibility that a manufacturer now writes a closed
-source UIO driver, and would have written an open source kernel driver if
-UIO didn't exist. But, honestly, I doubt that we'll find many such cases.
-
-Thanks,
-Hans
-
+-apw
