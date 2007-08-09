@@ -1,67 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S939778AbXHIN0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939873AbXHIN1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S939778AbXHIN0L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 09:26:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S939002AbXHINZv
+	id S939873AbXHIN1k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 09:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S937323AbXHIN1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 09:25:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36931 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S936159AbXHINZu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 09:25:50 -0400
-Date: Thu, 9 Aug 2007 09:24:42 -0400
-From: Chris Snook <csnook@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org
-Cc: netdev@vger.kernel.org, akpm@linux-foundation.org, ak@suse.de,
-       heiko.carstens@de.ibm.com, davem@davemloft.net, schwidefsky@de.ibm.com,
-       wensong@linux-vs.org, horms@verge.net.au, wjiang@resilience.com,
-       cfriesen@nortel.com, zlynx@acm.org, rpjday@mindspring.com,
-       jesper.juhl@gmail.com
-Subject: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Message-ID: <20070809132442.GA13042@shell.boston.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.1i
+	Thu, 9 Aug 2007 09:27:32 -0400
+Received: from alnrmhc11.comcast.net ([206.18.177.51]:55532 "EHLO
+	alnrmhc11.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S936261AbXHIN1c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 09:27:32 -0400
+From: cholvenstot@comcast.net
+To: "Benoit Boissinot" <bboissin@gmail.com>
+Cc: "Chris Holvenstot" <saltydog@houston.rr.com>,
+       "kernel list" <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel / Fliesystem Error
+Date: Thu, 09 Aug 2007 13:27:31 +0000
+Message-Id: <080920071327.29425.46BB1642000EB0AD000072F122165258569B019B9C020A900401080C@comcast.net>
+X-Mailer: AT&T Message Center Version 1 (Oct  4 2006)
+X-Authenticated-Sender: Y2hvbHZlbnN0b3RAY29tY2FzdC5uZXQ=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Chris Snook <csnook@redhat.com>
+Benoit - 
 
-Purify volatile use for atomic[64]_t on alpha.
+Thank you for the response - I think that you are correct in your analysis that the probem has something to do with timing and not with EXT3 itself.  
 
-Signed-off-by: Chris Snook <csnook@redhat.com>
+However, I have been thinking this through and this cold little shadow is now hanging over my head - there was a difference in the process used to build the system between 2.6.22.1 and 2.6.23-rcx and I would like to account for it before anyone burns their valuable time chasing ghosts I may have created.,
 
---- linux-2.6.23-rc2-orig/include/asm-alpha/atomic.h	2007-07-08 19:32:17.000000000 -0400
-+++ linux-2.6.23-rc2/include/asm-alpha/atomic.h	2007-08-09 09:19:00.000000000 -0400
-@@ -14,18 +14,22 @@
- 
- 
- /*
-- * Counter is volatile to make sure gcc doesn't try to be clever
-- * and move things around on us. We need to use _exactly_ the address
-- * the user gave us, not some alias that contains the same information.
-+ * Make sure gcc doesn't try to be clever and move things around
-+ * on us. We need to use _exactly_ the address the user gave us,
-+ * not some alias that contains the same information.
-  */
--typedef struct { volatile int counter; } atomic_t;
--typedef struct { volatile long counter; } atomic64_t;
-+typedef struct { int counter; } atomic_t;
-+typedef struct { long counter; } atomic64_t;
- 
- #define ATOMIC_INIT(i)		( (atomic_t) { (i) } )
- #define ATOMIC64_INIT(i)	( (atomic64_t) { (i) } )
- 
--#define atomic_read(v)		((v)->counter + 0)
--#define atomic64_read(v)	((v)->counter + 0)
-+/*
-+ * Casting to volatile here minimizes the need for barriers,
-+ * without having to declare the type itself as volatile.
-+ */
-+#define atomic_read(v)		(*(volatile int *)&(v)->counter + 0)
-+#define atomic64_read(v)	(*(volatile long *)&(v)->counter + 0)
- 
- #define atomic_set(v,i)		((v)->counter = (i))
- #define atomic64_set(v,i)	((v)->counter = (i))
+Specifically I am refering to the process I used ot build the initrd image.
+
+Traditionally, I used the old standby mkinitrd whcih still builds a useable image.  However, when tracking down a series of messages about a failure to mount devfs devices I discovered that the approved method is now to use mkinitramfs.
+
+And mkinitramfs did eliminate the messages about devfs just as the documentation said it would.
+
+However, the initrd image for my 2.6.22.1 was built using the older mkinitrd command and it DOES NOT seem to have the timestamp issue buring boot.  With the 2.23.6-rcx series of kernels I used the mkinitramfs process - and my 2.6.23-rcx kernels is where I am seeing the problem.
+
+I am at work now and don't have a way of seeing the early boot messages on my system at home.  When I get home this afternoon I will build the initrd image for the 2.6.22.1 system using the mkinitramfs command and I will post an updated status at that time.
+
+Chris
+ -------------- Original message ----------------------
+From: "Benoit Boissinot" <bboissin@gmail.com>
+> On 8/9/07, Chris Holvenstot <cholvenstot@comcast.net> wrote:
+> > > Chris Snook wrote:
+> > >
+> > >The problem here is that your clock is wrong either at mount (boot)
+> > >time or unmount (shutdown) time. There's nothing wrong with ext3,
+> > >except that it happens to be noticing this condition.
+> >
+> > 1.  This happens even when the system is rebooted via the shutdown -r
+> > command - not much time for my fat fingers to get in there and dork up
+> > the system clock.
+> >
+> > 2.  As I stated in the original note, this does NOT happen with kernel
+> > 2.6.22.1 - so far I have only seen it with the 2.6.23-rc1, rc2, and
+> > rc2-git1 kernels.
+> >
+> 
+> But very likely time keeping was broken between .22 and .23-rc.
+> Probably not ext3.
+> 
+> regards,
+> 
+> Benoit
+
