@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764930AbXHIKKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939090AbXHIKLb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764930AbXHIKKc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 06:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbXHIKK0
+	id S939090AbXHIKLb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 06:11:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764105AbXHIKLX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 06:10:26 -0400
-Received: from xdsl-664.zgora.dialog.net.pl ([81.168.226.152]:1514 "EHLO
-	tuxland.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756629AbXHIKKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 06:10:25 -0400
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de
-Subject: [usb-storage] schedule_timeout: wrong timeout value c1a95554
-Date: Thu, 9 Aug 2007 12:10:20 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-References: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-In-Reply-To: <20070809015106.cd0bfc53.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 06:11:23 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42314 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762935AbXHIKLV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 06:11:21 -0400
+Date: Thu, 9 Aug 2007 15:41:28 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
+Cc: Chip Coldwell <coldwell@redhat.com>, Haren Myneni <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: PATCH/RFC: [kdump] fix APIC shutdown sequence
+Message-ID: <20070809101128.GA14738@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <46B73955.2080007@fujitsu-siemens.com> <20070807142928.GA18839@in.ibm.com> <46B8AECA.7050908@fujitsu-siemens.com> <20070808103603.GC13808@in.ibm.com> <Pine.LNX.4.64.0708081003000.29193@bogart.boston.redhat.com> <20070808144239.GA1499@in.ibm.com> <46BA0844.9080703@fujitsu-siemens.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200708091210.21383.m.kozlowski@tuxland.pl>
+In-Reply-To: <46BA0844.9080703@fujitsu-siemens.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, Aug 08, 2007 at 08:15:32PM +0200, Martin Wilck wrote:
+> Vivek Goyal wrote:
+> 
+> > But the issue here seems to be that LAPIC state got clear but IRR bit
+> > at IOAPIC bit is not cleared because IOAPIC vector information was deleted
+> > in first kernel and now upon receiving EOI, it does not know this EOI belongs
+> > to which vector.
+> 
+> I am making another experiment right now. I check the LAPIC ISR flags in
+> machine_crash_shutdown() before disabling the LAPIC, trying to send EOI if
+> I find one ISR bit set. So far, I haven't seen a single case where an ISR bit
+> was set, but several (9) where the IO-APIC IRR bit was set. OTOH, I know that if
+> I'd re-enable IRQs, IRQ 225 would be raised. The whole thing is done before
+> disable_IO_APIC().
+> 
+> Don't ask me for an explanation why I don't see the ISR bits.
+> 
 
-	Happens every time I reattach usb pen drive.
+Did you also check IRR bits on LAPIC. May be some interrupt is already
+being served and your new interrupts has been queued on LAPIC and IRR bit
+on LAPIC is set?
 
-usb 1-2: new high speed USB device using ehci_hcd and address 10
-usb 1-2: configuration #1 chosen from 1 choice
-scsi6 : SCSI emulation for USB Mass Storage devices
-usb 1-2: new device found, idVendor=13fe, idProduct=1a00
-usb 1-2: new device strings: Mfr=1, Product=2, SerialNumber=0
-usb 1-2: Product: GEIL USB DISK   
-usb 1-2: Manufacturer:         
-usb-storage: device found at 10
-usb-storage: waiting for device to settle before scanning
-schedule_timeout: wrong timeout value c1a95554
- [<c010456a>] show_trace_log_lvl+0x1a/0x30
- [<c010508d>] show_trace+0x12/0x14
- [<c01051e0>] dump_stack+0x15/0x17
- [<c04174d1>] schedule_timeout+0x8c/0xa2
- [<c032aeec>] usb_stor_scan_thread+0x100/0x160
- [<c0127f2e>] kthread+0x36/0x58
- [<c0104233>] kernel_thread_helper+0x7/0x14
- =======================
-scsi 6:0:0:0: Direct-Access              GEIL USB DISK    >2.0 PQ: 0 ANSI: 0 CCS
-sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
-sd 6:0:0:0: [sda] Write Protect is off
-sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
-sd 6:0:0:0: [sda] Assuming drive cache: write through
-sd 6:0:0:0: [sda] 1007616 512-byte hardware sectors (516 MB)
-sd 6:0:0:0: [sda] Write Protect is off
-sd 6:0:0:0: [sda] Mode Sense: 23 00 00 00
-sd 6:0:0:0: [sda] Assuming drive cache: write through
- sda: sda1
-sd 6:0:0:0: [sda] Attached SCSI removable disk
-sd 6:0:0:0: Attached scsi generic sg0 type 0
-usb-storage: device scan complete
+Following is the text from intel system programming manual.
 
-Regards,
+The IRR contains the active interrupt requests that have been accepted, but
+not yet dispatched to the processor for servicing. When the local APIC accepts
+an interrupt, it sets the bit in the IRR that corresponds the vector of the
+accepted interrupt. When the processor core is ready to handle the next
+interrupt, the local APIC clears the highest priority IRR bit that is set and
+sets the corresponding ISR bit. The vector for the highest priority bit set in
+the ISR is then dispatched to the processor core for servicing.
 
-	Mariusz
+In this case, I suspect that your interrupt gets queued at LAPIC (IRR is set)
+but it does not make into ISR (may be because interrupts are disabled and
+some other vector is already being served. Can you please paste your LAPIC
+and IOAPIC state here.
 
+Thanks
+Vivek
