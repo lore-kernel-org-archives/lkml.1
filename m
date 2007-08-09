@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935235AbXHIGar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935753AbXHIGb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935235AbXHIGar (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 02:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759068AbXHIGai
+	id S935753AbXHIGb3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 02:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761258AbXHIGbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 02:30:38 -0400
-Received: from smtp112.sbc.mail.re2.yahoo.com ([68.142.229.93]:26710 "HELO
-	smtp112.sbc.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1758828AbXHIGah (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 02:30:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=qs9BtFqQsdDvzf87ABw0F6aLnZhqsTpUskj4Xvz+ICyRkW/gyqQxktQbVGjJxoD5txL8r/PyPdA9pj7lwtY7CjuE9OIBN/dthqFN1DjvkC/T58gfI2pvockZ95d2RnjDmVSusAJUnNsRvvRSRAoo2gJytD0fXs4TvY35IO/hY7g=  ;
-X-YMail-OSG: 3soIMdsVM1mBk501cWLZekZhBQFxP.Moh6jB8LnLL5SmK59r2kMfjQr4acs5mC052FdtbnMlYA--
-From: David Brownell <david-b@pacbell.net>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] Add missing newlines to some uses of dev_<level> messages
-Date: Wed, 8 Aug 2007 23:30:09 -0700
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Tony Luck <tony.luck@intel.com>,
-       Jiri Slaby <jirislaby@gmail.com>, Roland Dreier <rolandd@cisco.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       James Smart <james.smart@emulex.com>, Hansjoerg Lipp <hjlipp@web.de>,
-       Jean Delvare <khali@linux-fr.org>,
-       "Mark M. Hoffman" <mhoffman@lightlink.com>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>
-References: <1186535381.11897.29.camel@localhost>
-In-Reply-To: <1186535381.11897.29.camel@localhost>
+	Thu, 9 Aug 2007 02:31:19 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:55914 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759068AbXHIGbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 02:31:18 -0400
+Message-ID: <46BAB4AF.7010001@garzik.org>
+Date: Thu, 09 Aug 2007 02:31:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070719)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200708082330.10604.david-b@pacbell.net>
+To: David Miller <davem@davemloft.net>
+CC: ossthema@de.ibm.com, raisch@de.ibm.com, themann@de.ibm.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, meder@de.ibm.com,
+       tklein@de.ibm.com, gallatin@myri.com, stefan.roscher@de.ibm.com,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH 0/1] lro: Generic Large Receive Offload for TCP traffic
+References: <200708031441.14780.ossthema@de.ibm.com> <20070808.231144.22645124.davem@davemloft.net>
+In-Reply-To: <20070808.231144.22645124.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.9 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Splitting by subsystem *would* have been better ...
+David Miller wrote:
+> From: Jan-Bernd Themann <ossthema@de.ibm.com>
+> Date: Fri, 3 Aug 2007 14:41:14 +0200
+> 
+>> I think this patch could be the final version for now. It has been tested
+>> on two platforms (power and x86_64) and works very well.
+> 
+> I checked in the LRO patch and the two sample driver ports
+> to net-2.6.24, thanks!
 
-On Tuesday 07 August 2007, Joe Perches wrote:
->  drivers/i2c/chips/menelaus.c           |    2 +-
+Good to hear, thanks all.
 
-ok ...
+I'll ponder whether I want to rebase netdev-2.6.git#upstream (2.6.24 
+queue) on top of net-2.6.24.  I might put it off until the pain 
+threshold rises, or I might go ahead and do it.  Undecided.
 
->  drivers/net/usb/mcs7830.c              |   16 +++++++-------
+Either way, I'll want you to push to Linus before I do, when the next 
+merge window opens.
 
-... ok ...
+	Jeff
 
->  drivers/rtc/rtc-sysfs.c                |    5 +--
 
-... ok ...
 
->  drivers/spi/atmel_spi.c                |    2 +-
->  drivers/spi/spi_bfin5xx.c              |    2 +-
->  drivers/spi/spi_imx.c                  |    4 +-
-
-... ok ... 
-
->  drivers/usb/class/cdc-acm.c            |   34 ++++++++++++++++----------------
->  drivers/usb/core/endpoint.c            |    2 +-
->  drivers/usb/core/message.c             |    4 +-
->  drivers/usb/host/ohci-s3c2410.c        |    2 +-
->  drivers/usb/misc/adutux.c              |    4 +-
->  drivers/usb/misc/iowarrior.c           |    8 +++---
->  drivers/usb/misc/phidgetmotorcontrol.c |    2 +-
->  drivers/usb/serial/ftdi_sio.c          |    4 +-
->  drivers/usb/serial/io_edgeport.c       |    2 +-
->  drivers/usb/serial/ipw.c               |   18 ++++++++--------
->  drivers/usb/serial/mos7720.c           |    4 +-
->  drivers/usb/serial/oti6858.c           |    2 +-
->  drivers/usb/serial/sierra.c            |   10 ++++----
-
-... ok ...
-
-ACK.
