@@ -1,51 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940763AbXHIOd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965663AbXHIOe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940763AbXHIOd6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 10:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965357AbXHIOdP
+	id S965663AbXHIOe1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 10:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965597AbXHIOda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 10:33:15 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:62993 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S940661AbXHIOdL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 10:33:11 -0400
-Subject: Re: [PATCH 16/24] make atomic_read() behave consistently on s390
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org,
-       rpjday@mindspring.com, jesper.juhl@gmail.com
-In-Reply-To: <20070809140655.GA17731@shell.boston.redhat.com>
-References: <20070809140655.GA17731@shell.boston.redhat.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 09 Aug 2007 16:36:48 +0200
-Message-Id: <1186670208.9669.9.camel@localhost>
+	Thu, 9 Aug 2007 10:33:30 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:53538 "EHLO 2ka.mipt.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965587AbXHIOd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 10:33:29 -0400
+Date: Thu, 9 Aug 2007 18:33:22 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Unai Uribarri <unai.uribarri@optenet.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] af_packet: don't enable timestamps in mmap'ed sockets
+Message-ID: <20070809143322.GA5345@2ka.mipt.ru>
+References: <1186669314.24669.56.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1186669314.24669.56.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 10:06 -0400, Chris Snook wrote:
-> From: Chris Snook <csnook@redhat.com>
-> 
-> Make atomic[64]_read() volatile on s390, to ensure memory is actually read
-> each time.
-> 
-> Signed-off-by: Chris Snook <csnook@redhat.com>
+On Thu, Aug 09, 2007 at 04:21:54PM +0200, Unai Uribarri (unai.uribarri@optenet.com) wrote:
+> The attached patch removes the automatic timestamp activation, that
+> only mmap'ed AF_PACKET sockets perform. I known it can break user
+> applications, but I believe that it's the correct solution.
 
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+How tcpdump with mmap libpcap will work with it?
 
 -- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+	Evgeniy Polyakov
