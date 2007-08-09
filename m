@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935412AbXHIDpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936806AbXHIDrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935412AbXHIDpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 23:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXHIDpf
+	id S936806AbXHIDrf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 23:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXHIDrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 23:45:35 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:11730 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751342AbXHIDpe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 23:45:34 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent;
-	b=IVzg0bSqug6BaRIAQ3AYYvjKbF5UNqg5HY94Rlt+4GZQInBCVXdPyuqXsi1FSjxd2
-	HwC1kL6iLCNyZst/DM1Ew==
-Date: Wed, 8 Aug 2007 20:45:19 -0700
-From: Aaron Durbin <adurbin@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, akpm@osdl.org
-Subject: [PATCH] x86_64: Avoid NMI Watchdog and/or long wait in setup_APIC_timer
-Message-ID: <20070809034519.GA22644@google.com>
+	Wed, 8 Aug 2007 23:47:25 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:35746 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754477AbXHIDrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 23:47:24 -0400
+Date: Wed, 8 Aug 2007 20:47:20 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, csnook@redhat.com, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
+Subject: Re: [PATCH] make atomic_t volatile on all architectures
+Message-ID: <20070809034720.GA12996@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070808230733.GA17270@shell.boston.redhat.com> <E1IIwQx-000468-00@gondolin.me.apana.org.au> <20070808.184824.133910636.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070808.184824.133910636.davem@davemloft.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Aug 08, 2007 at 06:48:24PM -0700, David Miller wrote:
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Date: Thu, 09 Aug 2007 09:03:27 +0800
+> 
+> > Such loops should always use something like cpu_relax() which comes
+> > with a barrier.
+> 
+> This is an excellent point.
+> 
+> And it needs to be weighed with the error prone'ness Andrew mentioned.
+> There probably is a middle ground somewhere.
 
-In setup_APIC_timer with the HPET in use, a condition can arise while
-waiting for the next irq slice to expire on the HPET which will either
-cause an NMI watchdog to fire or a 3 minute busy loop if the NMI
-watchdog is disabled.
+OK...  I'll bite.  ACCESS_ONCE(), see http://lkml.org/lkml/2007/7/11/664.
 
-The HPET comparator and the counter keep incrementing during its normal
-operation. When a comparison event fires the comparator will increment
-by the designated period. If the HPET trigger occurs right after
-the 'int trigger = hpet_readl(HPET_T0_CMP);' line, we will will spin
-for up to 3 minutes (with a clock of 25MHz) waiting for the HPET
-counter to wrap around. However, when the NMI watchdog is enabled the
-NMI watchdog will detect a lockup and reboot the machine. This
-scenario can be exasperated by the presence of an SMI which will
-increase the window of opportunity for the condition to occur.
+This would allow ACCESS_ONCE(atomic_read(&x)) to be used where refetching
+would be problematic, but allow the compiler free rein in cases where
+refetching is OK.
 
-The fix is to wait for the compartor to change which signals the
-end of the tick slice.
+The ACCESS_ONCE() primitive of course has its limitations as well, but
+you did ask for a middle ground.  ;-)
 
-Signed-off-by: Aaron Durbin <adurbin@google.com>
-
----
-
-This time w/ the 'Signed-off-by' line. I swear I am not trying to spam.
-
-diff --git a/arch/x86_64/kernel/apic.c b/arch/x86_64/kernel/apic.c
-index 900ff38..06797e2 100644
---- a/arch/x86_64/kernel/apic.c
-+++ b/arch/x86_64/kernel/apic.c
-@@ -791,10 +791,12 @@ static void setup_APIC_timer(unsigned in
- 
- 	/* wait for irq slice */
- 	if (hpet_address && hpet_use_timer) {
-+		/*
-+		 * Wait for the comparator value to change which signals that
-+		 * the tick slice has expired.
-+		 */
- 		int trigger = hpet_readl(HPET_T0_CMP);
--		while (hpet_readl(HPET_COUNTER) >= trigger)
--			/* do nothing */ ;
--		while (hpet_readl(HPET_COUNTER) <  trigger)
-+		while (trigger == hpet_readl(HPET_T0_CMP))
- 			/* do nothing */ ;
- 	} else {
- 		int c1, c2;
-
-
+							Thanx, Paul
