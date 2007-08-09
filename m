@@ -1,43 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938972AbXHII06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939073AbXHII10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938972AbXHII06 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 04:26:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbXHII0p
+	id S939073AbXHII10 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 04:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbXHII1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 04:26:45 -0400
-Received: from mail-gw3.sa.ew.hu ([212.108.200.82]:45730 "EHLO
-	mail-gw3.sa.ew.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758869AbXHII0o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 04:26:44 -0400
-To: hch@infradead.org
-CC: agruen@suse.de, linux-kernel@vger.kernel.org, jjohansen@suse.de,
-       jblunck@suse.de, ezk@cs.sunysb.edu, jsipek@cs.sunysb.edu
-In-reply-to: <20070808193209.GA31354@infradead.org> (message from Christoph
-	Hellwig on Wed, 8 Aug 2007 20:32:09 +0100)
-Subject: atomic open (was Re: [RFC 01/10] Split up struct nameidata)
-References: <20070808171622.632749741@suse.de> <20070808171643.542685765@suse.de> <20070808193209.GA31354@infradead.org>
-Message-Id: <E1IJ3LG-0005HX-00@dorka.pomaz.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Thu, 09 Aug 2007 10:26:02 +0200
+	Thu, 9 Aug 2007 04:27:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36776 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S939015AbXHII1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 04:27:03 -0400
+Date: Thu, 9 Aug 2007 10:26:56 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+Cc: Mitchell Erblich <erblichs@earthlink.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Question: RT schedular : task_tick_rt(struct rq *rq, struct
+	task_struct *p) : decreases overhead when rq->nr_running == 1
+Message-ID: <20070809082656.GA21973@elte.hu>
+References: <000501c7d945$f30af1a0$6501a8c0@earthlink.net> <20070808123418.GA30248@elte.hu> <b647ffbd0708090111r50d29dbp779e014db1a63296@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0708090111r50d29dbp779e014db1a63296@mail.gmail.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 1.0
+X-ELTE-SpamLevel: s
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=1.0 required=5.9 tests=BAYES_50 autolearn=no SpamAssassin version=3.0.3
+	1.0 BAYES_50               BODY: Bayesian spam probability is 40 to 60%
+	[score: 0.5000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Aug 08, 2007 at 07:16:23PM +0200, Andreas Gruenbacher wrote:
-> > Split up struct nameidata into struct vfs_lookup with the lookup result
-> > and intent and the remaining fields for performing an actual lookup.
+
+* Dmitry Adamushko <dmitry.adamushko@gmail.com> wrote:
+
+> I guess, the following thing would do a better job:
 > 
-> Looks good as a start, but please don't put a struct path in there,
-> as the vfsmount will go away from the lookup intent as soon as we have
-> a new inode operation for atomic create + open, and not having it in the
-> struct path will make that removal a lot less painfull.
+> - we do need reschedule() _only_ if there are other task on the _same_ 
+> queue (for this prio level) :
 
-Btw, is the atomic open/create/truncate operation any further than
-conceptual phase?  Have we worked out what to do with the ugly "create
-follows symlink" case?
+ah, indeed.
 
-I'm just about to add another hack to the VFS to enable atomic
-open+truncate for fuse, and have a feeling that it will provoke some
-not so positive reactions ;)
+> --- kernel/sched_rt-prev.c      2007-08-09 09:55:10.000000000 +0200
+> +++ kernel/sched_rt.c   2007-08-09 09:58:53.000000000 +0200
+> @@ -207,6 +207,11 @@ static void task_tick_rt(struct rq *rq,
+>                 return;
+> 
+>         p->time_slice = static_prio_timeslice(p->static_prio);
+> +
+> +       /* We are the only element on the queue. */
+> +       if (p->run_list.prev == p->run_list.next)
+> +               return;
+> +
 
-Miklos
+i've applied your patch - could you please send a SOB line?
+
+	Ingo
