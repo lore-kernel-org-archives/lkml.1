@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940318AbXHIQ1L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938351AbXHIQ3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940318AbXHIQ1L (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:27:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932305AbXHIQ0y
+	id S938351AbXHIQ3Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbXHIQ3R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:26:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60488 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765477AbXHIQ0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:26:52 -0400
-Message-ID: <46BB3ECF.2070100@redhat.com>
-Date: Thu, 09 Aug 2007 12:20:31 -0400
-From: Chris Snook <csnook@redhat.com>
+	Thu, 9 Aug 2007 12:29:17 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:44237 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753703AbXHIQ3Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:29:16 -0400
+Message-ID: <46BB40D1.1050109@zytor.com>
+Date: Thu, 09 Aug 2007 09:29:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-CC: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
-       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, cfriesen@nortel.com,
-       zlynx@acm.org
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org>
-In-Reply-To: <3bfabd7472d6f019aa1880b14013f7a1@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: huang ying <huang.ying.caritas@gmail.com>
+CC: Andi Kleen <ak@suse.de>, linux-kernel@vger.kernel.org,
+       ebiederm@xmission.com
+Subject: Re: [PATCH 5/5] x86_64 EFI support -v3: EFI document
+References: <183884.85434.qm@web26915.mail.ukl.yahoo.com>	 <200708091251.21726.ak@suse.de> <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com>
+In-Reply-To: <851fc09e0708090709s4f4fbbf9r91a7300a773f985a@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Segher Boessenkool wrote:
->> We can't have split stores because we don't use atomic64_t on 32-bit 
->> architectures.
+huang ying wrote:
 > 
-> That's not true; the compiler is free to split all stores
-> (and reads) from memory however it wants.  It is debatable
-> whether "volatile" would prevent this as well, certainly
-> it is unsafe if you want to be portable.  GCC will do its
-> best to not split volatile memory accesses, but bugs in
-> this area do happen a lot (because the compiler code for
-> volatile isn't as well exercised as most other compiler
-> code, and because it is simply a hard subject; and there
-> is no real formalised model for what GCC should do).
+> I think at least the following should be done to make it a external
+> boot protocol.
 > 
-> The only safe way to get atomic accesses is to write
-> assembler code.  Are there any downsides to that?  I don't
-> see any.
+> 1. A version number field should be added.
+> 2. The pointers (especially these come from firmware) should be 64bit
+> to make the entry point can be used for both 32bit and 64bit platform.
+> 3. More complete and formal document.
+> 
+> Can you kindly tell me what's more should be done?
+> 
 
-The assumption that aligned word reads and writes are atomic, and that words are 
-aligned unless explicitly packed otherwise, is endemic in the kernel.  No sane 
-compiler violates this assumption.  It's true that we're not portable to insane 
-compilers after this patch, but we never were in the first place.
+I have been looking at this recently, and also found that we already
+have to make unacceptable compromises in order to fit into 4K, which is
+set completely arbitrary (once upon a time, it was recycled as the
+zeropage, but that is ancient history.)
 
-	-- Chris
+Part of a formalizing the 32-bit/64-bit entrypoint involves a clean way
+to extend this data set.
+
+I mentioned in private email to a few people that I think a linked list
+of tagged data items (similar to the way PCI capabilities work) would
+probably make sense; we want a piece of code to know the structure
+without needing to know the contents, in order to rescue data.
+
+It's worth realizing that this is inherently never going to be as stable
+as the real-mode entrypoint, and there is always going to be more
+catch-up, simply because it's a broader interface.  What is blatantly
+clear, however, is that the current structure is utterly ad hoc and has
+been totally prematurely adopted as some sort of standard interface.
+Since I've spent time formalizing the structure over the last few months
+I've been rather horrified; it is truly as bad as you could get.
+
+So, anyway, this has popped up on my radar already; it needs to happen
+anyway so let's get the discussion started.
+
+	-hpa
