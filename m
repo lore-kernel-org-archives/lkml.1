@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938783AbXHIL40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S939002AbXHIMES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938783AbXHIL40 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 07:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762413AbXHIL4H
+	id S939002AbXHIMES (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760191AbXHIMEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 07:56:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37824 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S937323AbXHIL4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 07:56:04 -0400
-Date: Thu, 9 Aug 2007 07:55:02 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Jan Engelhardt <jengelh@computergmbh.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       codalist@TELEMANN.coda.cs.cmu.edu, cluster-devel@redhat.com,
-       jfs-discussion@lists.sourceforge.net, mikulas@artax.karlin.mff.cuni.cz,
-       reiserfs-devel@vger.kernel.org, zippel@linux-m68k.org, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org, wli@holomorphy.com,
-       joel.becker@oracle.com, dhowells@redhat.com,
-       fuse-devel@lists.sourceforge.net, jffs-dev@axis.com,
-       user-mode-linux-user@lists.sourceforge.net,
-       linux-fsdevel@vger.kernel.org, v9fs-developer@lists.sourceforge.net,
-       linux-ext4@vger.kernel.org, linux-cifs-client@lists.samba.org,
-       ocfs2-devel@oss.oracle.com, bfennema@falcon.csc.calpoly.edu
-Subject: Re: [fuse-devel] [PATCH 00/25] move handling of setuid/gid bits
- from VFS into individual setattr functions (RESEND)
-Message-Id: <20070809075502.b3426ce9.jlayton@redhat.com>
-In-Reply-To: <Pine.LNX.4.64.0708082204210.10387@fbirervta.pbzchgretzou.qr>
-References: <200708061354.l76Ds3mU002255@dantu.rdu.redhat.com>
-	<20070807171501.e31c4a97.akpm@linux-foundation.org>
-	<20070808085435.722f2b10.jlayton@redhat.com>
-	<20070808094853.8c27450c.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0708082204210.10387@fbirervta.pbzchgretzou.qr>
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.14; i386-redhat-linux-gnu)
+	Thu, 9 Aug 2007 08:04:07 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:51104 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756682AbXHIMEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 08:04:06 -0400
+Date: Thu, 9 Aug 2007 14:03:59 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.23-rc1-mm2: MMC_ARMMMCI compile error
+Message-ID: <20070809140359.4bd1778a@poseidon.drzeus.cx>
+In-Reply-To: <20070808213114.GK6997@stusta.de>
+References: <20070731230932.a9459617.akpm@linux-foundation.org>
+	<20070808213114.GK6997@stusta.de>
+X-Mailer: Claws Mail 2.10.0 (GTK+ 2.11.6; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 8 Aug 2007 22:05:13 +0200 (CEST)
-Jan Engelhardt <jengelh@computergmbh.de> wrote:
+On Wed, 8 Aug 2007 23:31:14 +0200
+Adrian Bunk <bunk@kernel.org> wrote:
 
 > 
-> On Aug 8 2007 09:48, Andrew Morton wrote:
-> >> > On Mon, 6 Aug 2007 09:54:03 -0400
-> >> > Jeff Layton <jlayton@redhat.com> wrote:
-> >> > 
-> >> > Is there any way in which we can prevent these problems?  Say
-> >> > 
-> >> > - rename something so that unconverted filesystems will reliably fail to
-> >> >   compile?
-> >> > 
-> >> 
-> >> I suppose we could rename the .setattr inode operation to something
-> >> else, but then we'll be stuck with it for at least a while. That seems
-> >> sort of kludgey too...
-> >
-> >Sure.  We're changing the required behaviour of .setattr.  Changing its
-> >name is a fine and reasonably reliable way to communicate that fact.
+> CONFIG_MMC_ARMMMCI=m/y results in the following compile error:
 > 
-> Maybe ->chattr/->chgattr?
+> <--  snip  -->
 > 
+> ...
+>   CC [M]  drivers/mmc/host/mmci.o
+> /home/bunk/linux/kernel-2.6/linux-2.6.23-rc1-mm2/drivers/mmc/host/mmci.c:
+> In function
+> 'mmci_request': /home/bunk/linux/kernel-2.6/linux-2.6.23-rc1-mm2/drivers/mmc/host/mmci.c:398:
+> error: implicit declaration of function 'mmc_end_request' make[4]:
+> *** [drivers/mmc/host/mmci.o] Error 1
 > 
 
-That seems like a good replacement name. :-)
+Thanks. That wasn't the only bug in there. Hopefully fixed now.
 
-Now that I think on this further though, maybe Trond's suggestion to
-change how the return code works is the best one. That would
-(hopefully) catch this problem at runtime, so if someone is using a
-precompiled but unconverted module then that would be detected too.
+Rgds
+-- 
+     -- Pierre Ossman
 
---
-Jeff Layton <jlayton@redhat.com>
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
