@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937232AbXHIAzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S936835AbXHIA4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937232AbXHIAzO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763424AbXHIAzA
+	id S936835AbXHIA4u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765581AbXHIA4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:55:00 -0400
-Received: from dvhart.com ([64.146.134.43]:48001 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763806AbXHIAy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:54:59 -0400
-Message-ID: <46BA65E1.8010704@mbligh.org>
-Date: Wed, 08 Aug 2007 17:54:57 -0700
-From: Martin Bligh <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.12 (X11/20070604)
+	Wed, 8 Aug 2007 20:56:40 -0400
+Received: from fk-out-0910.google.com ([209.85.128.186]:59403 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763828AbXHIA4j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 8 Aug 2007 20:56:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=kL8FEwpA1g1FwYNESFyLexLCNfaTq8ZGcPZRttlhgszI3RfgUeXLzbyvpAr+aPlxaBjOnTWjWXljytzg7KZNbHvztHxbQ0tM8P2sBRE/p2zy+MtNIcans9zWh8lrUsvWYdiZT6QxlpTz8a9BgUp5mB3QgsiXtt+v6FG41gOhUJ8=
+Message-ID: <5d6222a80708081756r21bbc7e3ifd357c9c548ac57f@mail.gmail.com>
+Date: Wed, 8 Aug 2007 21:56:37 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Steven Rostedt" <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/7] Added generic lg.h in lguest directory.
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>, lguest <lguest@ozlabs.org>,
+       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Jes Sorensen" <jes@sgi.com>, "Carsten Otte" <cotte@de.ibm.com>
+In-Reply-To: <20070809003343.310187242@goodmis.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Christoph Hellwig <hch@infradead.org>, J??rn Engel <joern@logfs.org>,
-       Ingo Molnar <mingo@elte.hu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       miklos@szeredi.hu, neilb@suse.de, dgc@sgi.com,
-       tomoki.sekiyama.qu@hitachi.com, nikita@clusterfs.com,
-       trond.myklebust@fys.uio.no, yingchao.zhou@gmail.com,
-       richard@rsk.demon.co.uk, david@lang.hm
-Subject: Re: [PATCH 00/23] per device dirty throttling -v8
-References: <20070804070737.GA940@elte.hu>	<20070804103347.GA1956@elte.hu>	<alpine.LFD.0.999.0708040915360.5037@woody.linux-foundation.org>	<20070804163733.GA31001@elte.hu>	<alpine.LFD.0.999.0708041030040.5037@woody.linux-foundation.org>	<46B4C0A8.1000902@garzik.org>	<20070804191205.GA24723@lazybastard.org>	<20070804192130.GA25346@elte.hu>	<20070804192615.GA25600@lazybastard.org>	<20070804194259.GA25753@lazybastard.org>	<20070805203602.GB25107@infradead.org>	<46BA3137.3020701@mbligh.org> <20070808142146.c85ab8d7.akpm@linux-foundation.org>
-In-Reply-To: <20070808142146.c85ab8d7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070809003211.373543702@goodmis.org>
+	 <20070809003343.310187242@goodmis.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 08 Aug 2007 14:10:15 -0700
-> "Martin J. Bligh" <mbligh@mbligh.org> wrote:
-> 
->> Why isn't this easily fixable by just adding an additional dirty
->> flag that says atime has changed? Then we only cause a write
->> when we remove the inode from the inode cache, if only atime
->> is updated.
-> 
-> I think that could be made to work, and it would fix the performance
-> issue.
-> 
-> It is a behaviour change.  At present ext3 (for example) commits everything
-> every five seconds.  After a change like this, a crash+recovery could cause
-> a file's atime to go backwards by an arbitrarily large time interval - it
-> could easily be months.
+On 8/8/07, Steven Rostedt <rostedt@goodmis.org> wrote:
+> Add a generic lg.h file to call the architecture specific one.
+>
+> diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
+> new file mode 100644
+> index 0000000..4c4356e
+> --- /dev/null
+> +++ b/drivers/lguest/lg.h
+> @@ -0,0 +1,3 @@
+> +#ifdef CONFIG_X86_32
+> +#include "i386/lg.h"
+> +#endif
 
-A second pdflush / workqueue at a slower rate would alleviate that.
+Wouldn't it be cleaner to do something like the asm/ includes?
+I understand that lguest now lives in drivers/ and so we don't put
+headers directly in asm-i386 , but we could come up with a similar
+thing here.
 
-Yes, it's a semantic change ... but only in an incredibly small
-corner-case ?
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
+http://glommer.net
 
+"The less confident you are, the more serious you have to act."
