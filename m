@@ -1,72 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760264AbXHIS6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757773AbXHITCR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760264AbXHIS6A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 14:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753339AbXHIS5r
+	id S1757773AbXHITCR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 15:02:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751833AbXHITCC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 14:57:47 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58184 "EHLO gate.crashing.org"
+	Thu, 9 Aug 2007 15:02:02 -0400
+Received: from gw.goop.org ([64.81.55.164]:43047 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753203AbXHIS5p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 14:57:45 -0400
-In-Reply-To: <46BB4281.7010803@redhat.com>
-References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com> <20070809161024.GC8424@linux.vnet.ibm.com> <46BB4281.7010803@redhat.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <06d22e947a5357cd53adb070225bc7c1@kernel.crashing.org>
+	id S1751263AbXHITCA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 15:02:00 -0400
+Message-ID: <46BB6435.4070702@goop.org>
+Date: Thu, 09 Aug 2007 12:00:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: i386 doublefault handler is broken with CONFIG_DEBUG_SPINLOCK
+References: <46BB4599.2020900@redhat.com> <p73zm10egym.fsf@bingen.suse.de> <46BB5F9B.6050808@redhat.com>
+In-Reply-To: <46BB5F9B.6050808@redhat.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Cc: wjiang@resilience.com, rpjday@mindspring.com, wensong@linux-vs.org,
-       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, ak@suse.de,
-       netdev@vger.kernel.org, paulmck@linux.vnet.ibm.com, horms@verge.net.au,
-       akpm@linux-foundation.org, linux-arch@vger.kernel.org,
-       jesper.juhl@gmail.com, torvalds@linux-foundation.org,
-       schwidefsky@de.ibm.com, davem@davemloft.net, cfriesen@nortel.com,
-       zlynx@acm.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Date: Thu, 9 Aug 2007 20:51:31 +0200
-To: Chris Snook <csnook@redhat.com>
-X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> The compiler is within its rights to read a 32-bit quantity 16 bits at
->> at time, even on a 32-bit machine.  I would be glad to help pummel any
->> compiler writer that pulls such a dirty trick, but the C standard 
->> really
->> does permit this.
+Chuck Ebbert wrote:
+> On 08/09/2007 01:49 PM, Andi Kleen wrote:
+>   
+>> Chuck Ebbert <cebbert@redhat.com> writes:
+>>     
+>>> Initializing FS in the doublefault_tss should fix it.
+>>>
+>>> Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+>>>
+>>> ---
+>>>
+>>>  NOTE: not even compile tested.
+>>>       
+>> Can you please test it?
+>>
+>>     
 >
-> Yes, but we don't write code for these compilers.  There are countless 
-> pieces of kernel code which would break in this condition, and there 
-> doesn't seem to be any interest in fixing this.
+> It compiles but I can't really test it further right now.
+>   
 
-"Other things are broken too".  Great argument :-)
+Looks correct in principle.
 
-> Sequence points enforce read-after-write ordering, not 
-> write-after-write.
-
-Sequence points order *all* side effects; sequence points exist in the
-domain of the abstract sequential model of the C language only.  The
-compiler translates that to machine code that is equivalent to that C
-code under the "as-if" rule; but this is still in that abstract model,
-which doesn't include things such as SMP, visibility by I/O devices,
-store queues, etc. etc.
-
-> We flush writes with reads for MMIO because of this effect as well as 
-> the CPU/bus effects.
-
-You cannot flush all MMIO writes with reads; this is a PCI-specific
-thing.  And even then, you need more than just the read itself: you
-have to make sure the read completed and returned data.
-
->> In short, please retain atomic_set()'s volatility, especially on those
->> architectures that declared the atomic_t's counter to be volatile.
->
-> Like i386 and x86_64?  These used to have volatile in the atomic_t 
-> declaration.  We removed it, and the sky did not fall.
-
-And this proves what?  Lots of stuff "works" by accident.
-
-
-Segher
-
+    J
