@@ -1,70 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S937502AbXHIAEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934365AbXHIAPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S937502AbXHIAEW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 20:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763318AbXHIAEP
+	id S934365AbXHIAPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 20:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763132AbXHIAPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 20:04:15 -0400
-Received: from sour.ops.eusc.inter.net ([84.23.254.154]:54104 "EHLO
-	sour.ops.eusc.inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757569AbXHIAEO (ORCPT
+	Wed, 8 Aug 2007 20:15:36 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:37531 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762438AbXHIAPf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 20:04:14 -0400
-X-Trace: 4d7c73656261737469616e2e6b6c6f736b6140736e6166752e64657c38352e3137
-	382e39372e36347c3149497656622d3030304d6e712d564b7c3131383636313738
-	3532
-Message-ID: <46BA59FA.7080706@snafu.de>
-Date: Thu, 09 Aug 2007 02:04:10 +0200
-From: Oncaphillis <oncaphillis@snafu.de>
-Reply-To: oncaphillis@snafu.de
-User-Agent: Thunderbird 2.0.0.5 (X11/20070719)
-MIME-Version: 1.0
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: UART misbehaves under Linkstation/KuroBoxHG
-References: <46B9CE82.1050000@snafu.de> <Pine.LNX.4.60.0708082219520.6767@poirot.grange> <46BA320E.1030608@snafu.de> <Pine.LNX.4.60.0708082323420.6767@poirot.grange> <46BA3DF5.4050201@snafu.de> <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0708090041160.6767@poirot.grange>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 8 Aug 2007 20:15:35 -0400
+Date: Thu, 9 Aug 2007 02:15:33 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Chris Snook <csnook@redhat.com>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, andi@firstfloor.org,
+       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
+       torvalds@osdl.org
+Subject: Re: [patch] ipvs: force read of atomic_t in while loop
+Message-ID: <20070809001533.GA17798@one.firstfloor.org>
+References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com> <20070808.032131.35507346.davem@davemloft.net> <20070808102835.GC14530@osiris.boeblingen.de.ibm.com> <46BA30DC.20207@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46BA30DC.20207@redhat.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Removing the getty from initd did the trick.
-
-  And you're right AVR is disabled by the kernel
-  found the code in ./arch/powerpc/platforms/embedded6xx/ls_uart.c
-
-  Tkank you
-
-
-Guennadi Liakhovetski wrote:
-> On Thu, 9 Aug 2007, Oncaphillis wrote:
->>   I hope I found the the misconfigured part. I didn't look
->>   at /etc/inittab. It opens a getty on /dev/ttyS0. That
->>   might do the trick. Have to recompile my kernel right now with
->>   standard config to check this out.
+On Wed, Aug 08, 2007 at 05:08:44PM -0400, Chris Snook wrote:
+> Heiko Carstens wrote:
+> >On Wed, Aug 08, 2007 at 03:21:31AM -0700, David Miller wrote:
+> >>From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> >>Date: Wed, 8 Aug 2007 11:33:00 +0200
+> >>
+> >>>Just saw this while grepping for atomic_reads in a while loops.
+> >>>Maybe we should re-add the volatile to atomic_t. Not sure.
+> >>I think whatever the choice, it should be done consistently
+> >>on every architecture.
+> >>
+> >>It's just asking for trouble if your arch does it differently from
+> >>every other.
+> >
+> >Well..currently it's i386/x86_64 and s390 which have no volatile
+> >in atomic_t. And yes, of course I agree it should be consistent
+> >across all architectures. But it isn't.
 > 
-> Hm, for that you don't have to recompile the kernel... unless you modified 
-> it before, of course. Just change your inittab and reboot.
+> Based on recent discussion, it's pretty clear that there's a lot of 
+> confusion about this.  A lot of people (myself included, until I thought 
+> about it long and hard) will reasonably assume that calling 
+> atomic_read() will actually read the value from memory.  Leaving out the 
+> volatile declaration seems like a pessimization to me.  If you force 
+> people to use barrier() everywhere they're working with atomic_t, it 
+> will force re-reads of all the non-atomic data in use as well, which 
+> will cause more memory fetches of things that generally don't need 
+> barrier().  That and it's a bug waiting to happen.
 > 
->>   Well ... it doesn't seem to need the daemons but at least
->>   the kuro_boot  script or something similar has to be executed
->>   once sending the right init strings to the AVR or your system
->>   reboots after a few minutes at least on my box.
-> 
-> No, shouldn't be needed either. You should get a string in dmesg like 
-> "linkstation: disarming the AVR watchdog:", and the watchdog should be 
-> off. Just take the original .dts, unmodified kernel sources and close 
-> enough to original (arch/powerpc/configs/linkstation_defconfig) .config 
-> and it should work.
-> 
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Andi -- your thoughts on the matter?
+
+I also think readding volatile makes sense. An alternative would be
+to stick an rmb() into atomic_read() -- that would also stop speculative reads.
+Disadvantage is that it clobbers all memory, not just the specific value.
+
+But you really have to complain to Linus (cc'ed). He came up
+with the volatile removale change iirc.
+
+-Andi
 
