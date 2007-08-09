@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S936806AbXHIDrf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755591AbXHIEBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S936806AbXHIDrf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 23:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXHIDrZ
+	id S1755591AbXHIEBU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 00:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbXHIEBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 23:47:25 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35746 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754477AbXHIDrY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 23:47:24 -0400
-Date: Wed, 8 Aug 2007 20:47:20 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, csnook@redhat.com, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       schwidefsky@de.ibm.com, wensong@linux-vs.org, horms@verge.net.au,
-       wjiang@resilience.com, cfriesen@nortel.com, zlynx@acm.org
-Subject: Re: [PATCH] make atomic_t volatile on all architectures
-Message-ID: <20070809034720.GA12996@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070808230733.GA17270@shell.boston.redhat.com> <E1IIwQx-000468-00@gondolin.me.apana.org.au> <20070808.184824.133910636.davem@davemloft.net>
-MIME-Version: 1.0
+	Thu, 9 Aug 2007 00:01:07 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:12935 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750707AbXHIEBG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 00:01:06 -0400
+Date: Wed, 8 Aug 2007 23:56:42 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Joerg Sommrey <jo@sommrey.de>, LKML <linux-kernel@vger.kernel.org>,
+       lm-sensors <lm-sensors@lm-sensors.org>
+Subject: Re: [lm-sensors] bad temperature values from w83781d in 2.6.22
+Message-ID: <20070809035642.GE3584@jupiter.solarsys.private>
+References: <20070805183219.0d54802b.akpm@linux-foundation.org> <20070808010316.GB3584@jupiter.solarsys.private> <20070808151716.GA6053@sommrey.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070808.184824.133910636.davem@davemloft.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070808151716.GA6053@sommrey.de>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 08, 2007 at 06:48:24PM -0700, David Miller wrote:
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Thu, 09 Aug 2007 09:03:27 +0800
+Hi Joerg:
+
+* Joerg Sommrey <jo@sommrey.de> [2007-08-08 17:17:16 +0200]:
+> Hi Mark,
 > 
-> > Such loops should always use something like cpu_relax() which comes
-> > with a barrier.
+> just to eliminate as many impacts as possible, I did:
+> - reinstall the unmodified sensors.conf from Tyan's support page
+> - power off before rebooting
 > 
-> This is an excellent point.
+> A call to "sensors -s" is done without errors in all cases.
+> The module parameters I use currently with both kernels:
 > 
-> And it needs to be weighed with the error prone'ness Andrew mentioned.
-> There probably is a middle ground somewhere.
+> options w83781d force_w83782d=0,0x2d force_subclients=0,0x2d,0x48,0x49
+> options w83627hf force_addr=0x0c00
+> 
+> When I first realized the problem, I didn't use w83627hf yet.  Results
+> are the same when w83781d is used as driver for w83627hf.
+> Parameters in that case just from Tyan:
+> 
+> options w83781d force_w83782d=0,0x2d force_subclients=0,0x2d,0x48,0x49 force_w83627hf=0,0x2c force_subclients=0,0x2c,0x4a,0x4b init=0
+> 
+> "My" i2cdump doesn't accept an -y option, maybe a Debianism.  Results
+> see below.
 
-OK...  I'll bite.  ACCESS_ONCE(), see http://lkml.org/lkml/2007/7/11/664.
+Newer i2cdump skips the 5-second warning when given -y, that's all.
 
-This would allow ACCESS_ONCE(atomic_read(&x)) to be used where refetching
-would be problematic, but allow the compiler free rein in cases where
-refetching is OK.
+> ### 2.6.21 ###############################
+> Script started on Wed Aug  8 16:53:10 2007
+> bear:~/hwmon# i2cdump 0 0x2d b 0 0x4e
 
-The ACCESS_ONCE() primitive of course has its limitations as well, but
-you did ask for a middle ground.  ;-)
+(snip tons of results)
 
-							Thanx, Paul
+Thanks for sending all that.  I see one bug clearly, and I'm pretty close to
+seeing the other one.  But for tonight, I need sleep.
+
+In the meantime, please try this command as root, against the newer kernel,
+*after* you've done 'sensors -s':
+
+	# i2cset -f 0 0x2d 0x5d 0x0e b
+
+Wait > 2 seconds for the hardware to update itself, then run 'sensors' again.
+I'm pretty sure you'll see the correct temps.
+
+Regards,
+
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
+
