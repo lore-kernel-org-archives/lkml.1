@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940626AbXHIRXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbXHIRYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940626AbXHIRXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 13:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934322AbXHIRXb
+	id S1754104AbXHIRYy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 13:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765488AbXHIRYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 13:23:31 -0400
-Received: from phoenix.bawue.net ([193.7.176.60]:56188 "EHLO mail.bawue.net"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1765642AbXHIRXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 13:23:30 -0400
-Date: Thu, 9 Aug 2007 18:41:52 +0200
-From: Joerg Sommrey <jo@sommrey.de>
-To: "Mark M. Hoffman" <mhoffman@lightlink.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH] bad temperature values from w83781d in 2.6.22
-Message-ID: <20070809164152.GA28404@sommrey.de>
-Mail-Followup-To: Joerg Sommrey <jo@sommrey.de>,
-	"Mark M. Hoffman" <mhoffman@lightlink.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	lm-sensors <lm-sensors@lm-sensors.org>
-References: <20070805183219.0d54802b.akpm@linux-foundation.org> <20070808010316.GB3584@jupiter.solarsys.private> <20070808151716.GA6053@sommrey.de> <20070809035642.GE3584@jupiter.solarsys.private> <20070809070915.GA24252@sommrey.de> <20070809122619.GF3584@jupiter.solarsys.private>
+	Thu, 9 Aug 2007 13:24:45 -0400
+Received: from ns.suse.de ([195.135.220.2]:55843 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751583AbXHIRYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 13:24:44 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [RFC 04/10] Temporary struct vfs_lookup in file_permission
+Date: Thu, 9 Aug 2007 19:23:56 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, John Johansen <jjohansen@suse.de>,
+       Jan Blunck <jblunck@suse.de>, Erez Zadok <ezk@cs.sunysb.edu>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+References: <20070808171622.632749741@suse.de> <200708082341.06329.agruen@suse.de> <20070808232409.GA7876@infradead.org>
+In-Reply-To: <20070808232409.GA7876@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070809122619.GF3584@jupiter.solarsys.private>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Length: 4048
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200708091923.56997.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mark,
+On Thursday 09 August 2007 01:24, Christoph Hellwig wrote:
+> On Wed, Aug 08, 2007 at 11:41:06PM +0200, Andreas Gruenbacher wrote:
+> > Lookup or not doesn't actually matter. Think of fchdir(2): it does a 
+> > permission check, and it should also pass down the LOOKUP_CHDIR flag.
+> 
+> fchdir per defintion doesn't do any lookup, and it should not pretend to be
+> doing one.
 
-On Thu, Aug 09, 2007 at 08:26:19AM -0400, Mark M. Hoffman wrote:
-> Hi Joerg:
-> 
-> > On Wed, Aug 08, 2007 at 11:56:42PM -0400, Mark M. Hoffman wrote:
-> > > Thanks for sending all that.  I see one bug clearly, and I'm pretty close to
-> > > seeing the other one.  But for tonight, I need sleep.
-> 
-> There's just one bug after all.  The second was a figment of my sleep-deprived
-> imagination.
-> 
-[...]
-> 
-> My bad, there's a second i2cset command that would have done it.  Please try
-> this patch against v2.6.22.
-> 
+fchdir doesn't pretend to do a lookup by passing the LOOKUP_CHDIR flag, it 
+indicates that a chdir is being done. The lookup happened earlier at a time 
+at which the kernel didn't know that a chdir would follow. If fchdir doesn't 
+pass down the LOOKUP_CHDIR flag, then that flag is pretty pointless: it could 
+be bypassed any time by an open followed by fchdir.
 
-Great, problem fixed.  Thanks a lot for your prompt solution!
+> > The vfsmnt that this patch passes down in file_permission() is not some
+> > crap as you chose to call it, it's the appropriate vfsmnt.
+> 
+> No, it's wrong.  There is no path except for informal purposes attached to
+> a struct file.
 
--jo
+I'm sorry, but the dentry and vfsmnt in struct file is *not* only used for 
+informational purposes: openat does a lookup relative to a file's dentry and 
+vfsmnt, and there are other examples as well.
 
--- 
--rw-r--r-- 1 jo users 62 2007-08-09 08:46 /home/jo/.signature
+The dentry and vfsmnt identify a particular object in the filesystem 
+hierarchy. As long as the file hasn't been deleted, they can be used to 
+compute a pathname that leads to the file (if the file is reachable at all). 
+You can used that pathname for more than informational purposes. It is real, 
+and canonical too.
+
+> I created file_permission to document that clearly and people don't try
+> things like this. There's lots of chances where fs passing has happened,
+
+						  ^ you must mean fd passing
+
+> were into a lazily detached tree, after a pviot_root, etc where trying to do
+> anything that remotely looks like pathname based operation just doesn't make
+> any sense in this case.
+
+What you are saying doesn't make sense. It makes perfect sense to compute the 
+pathname of an open file in some situations. Obviously it does not make sense 
+when the file has been deleted, and you really do want to detect when a file 
+has become unreachable (lazily unmounted, other namespace, whatever). You 
+will always find that out when trying to compute its pathname, so that's not 
+an issue. (Caveat: this requires the d_path fixes I have posted earlier.)
+
+Thanks,
+Andreas
