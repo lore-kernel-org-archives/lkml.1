@@ -1,44 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S938629AbXHICpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S938460AbXHICzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S938629AbXHICpg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 8 Aug 2007 22:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763105AbXHICp1
+	id S938460AbXHICzq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 8 Aug 2007 22:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764744AbXHICzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 8 Aug 2007 22:45:27 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49742 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760974AbXHICp1 (ORCPT
+	Wed, 8 Aug 2007 22:55:36 -0400
+Received: from emerald.lightlink.com ([205.232.34.14]:9390 "EHLO
+	emerald.lightlink.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763792AbXHICzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 8 Aug 2007 22:45:27 -0400
-Date: Thu, 9 Aug 2007 03:45:24 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: J??rn Engel <joern@logfs.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-       akpm@osdl.org, David Woodhouse <dwmw2@infradead.org>,
-       Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Patch 18/18] include/linux/Kbuild
-Message-ID: <20070809024524.GB18792@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	J??rn Engel <joern@logfs.org>, linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
-	akpm@osdl.org, David Woodhouse <dwmw2@infradead.org>,
-	Arnd Bergmann <arnd@arndb.de>, Thomas Gleixner <tglx@linutronix.de>
-References: <20070808161234.GB15319@lazybastard.org> <20070808162447.GT15319@lazybastard.org> <20070809001913.GA10044@infradead.org> <20070809023217.GA3321@lazybastard.org> <20070809023906.GA18792@infradead.org> <20070809023920.GB3321@lazybastard.org>
+	Wed, 8 Aug 2007 22:55:35 -0400
+Date: Wed, 8 Aug 2007 22:52:23 -0400
+From: "Mark M. Hoffman" <mhoffman@lightlink.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       Jeff Garzik <jeff@garzik.org>, Tony Luck <tony.luck@intel.com>,
+       Jiri Slaby <jirislaby@gmail.com>, Roland Dreier <rolandd@cisco.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       James Smart <james.smart@emulex.com>, Hansjoerg Lipp <hjlipp@web.de>,
+       Jean Delvare <khali@linux-fr.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: Re: [PATCH] Add missing newlines to some uses of dev_<level> messages
+Message-ID: <20070809025223.GD3584@jupiter.solarsys.private>
+References: <1186535381.11897.29.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070809023920.GB3321@lazybastard.org>
+In-Reply-To: <1186535381.11897.29.camel@localhost>
 User-Agent: Mutt/1.4.2.3i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 04:39:20AM +0200, J??rn Engel wrote:
-> Fair enough.  Does the file still make sense in include/linux/ then?
+* Joe Perches <joe@perches.com> [2007-08-07 18:09:39 -0700]:
+> Found these while looking at printk uses.
+> 
+> Add missing newlines to dev_<level> uses
+> Add missing KERN_<level> prefixes to multiline dev_<level>s
+> Fixed a wierd->weird spelling typo
+> Added a newline to a printk
+> 
+> Signed-off-by:  Joe Perches <joe@perches.com>
 
-I don't think so.  Except for the one filesystem that's out there to repeat
-past mistakes all recent ones keep their headers in their impleementation
-directories.
+Looks good.
+
+>  drivers/hwmon/adm1026.c                |    2 +-
+>  drivers/hwmon/lm63.c                   |    2 +-
+>  drivers/hwmon/vt1211.c                 |    2 +-
+>  drivers/hwmon/w83791d.c                |    2 +-
+>  drivers/hwmon/w83792d.c                |    4 +-
+
+Acked-by: Mark M. Hoffman <mhoffman@lightlink.com>
+
+Regards,
+
+-- 
+Mark M. Hoffman
+mhoffman@lightlink.com
 
