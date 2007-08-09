@@ -1,128 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S940854AbXHIQKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940644AbXHIQNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S940854AbXHIQKn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 12:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933379AbXHIQKb
+	id S940644AbXHIQNQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 12:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932126AbXHIQM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 12:10:31 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:39147 "EHLO e2.ny.us.ibm.com"
+	Thu, 9 Aug 2007 12:12:56 -0400
+Received: from mga03.intel.com ([143.182.124.21]:38016 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764602AbXHIQK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 12:10:28 -0400
-Date: Thu, 9 Aug 2007 09:10:24 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Chris Snook <csnook@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       torvalds@linux-foundation.org, netdev@vger.kernel.org,
-       akpm@linux-foundation.org, ak@suse.de, heiko.carstens@de.ibm.com,
-       davem@davemloft.net, schwidefsky@de.ibm.com, wensong@linux-vs.org,
-       horms@verge.net.au, wjiang@resilience.com, cfriesen@nortel.com,
-       zlynx@acm.org, rpjday@mindspring.com, jesper.juhl@gmail.com
-Subject: Re: [PATCH 1/24] make atomic_read() behave consistently on alpha
-Message-ID: <20070809161024.GC8424@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070809132442.GA13042@shell.boston.redhat.com> <20070809143255.GA8424@linux.vnet.ibm.com> <46BB2A5A.5090006@redhat.com> <20070809150445.GB8424@linux.vnet.ibm.com> <46BB31A6.4080507@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46BB31A6.4080507@redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1758718AbXHIQMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 9 Aug 2007 12:12:53 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.19,241,1183359600"; 
+   d="scan'208";a="261012649"
+Date: Thu, 9 Aug 2007 09:10:01 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Jeff Garzik <jeff@garzik.org>,
+       James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, edwintorok@gmail.com, axboe@kernel.dk
+Subject: Re: [patch 2/4] Expose Power Management Policy option to users
+Message-Id: <20070809091001.149fcc45.kristen.c.accardi@intel.com>
+In-Reply-To: <20070801141651.a746763b.kristen.c.accardi@intel.com>
+References: <20070705194909.337398431@intel.com>
+	<20070705130518.135e4e3c.kristen.c.accardi@intel.com>
+	<46AE12B6.6090408@garzik.org>
+	<46AED656.8070407@gmail.com>
+	<1185891382.2750.8.camel@laptopd505.fenrus.org>
+	<46AF4B05.4010700@gmail.com>
+	<1185898532.2766.2.camel@laptopd505.fenrus.org>
+	<46AF7F7E.6060300@gmail.com>
+	<46B05109.4080007@gmail.com>
+	<20070801141651.a746763b.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.13; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 09, 2007 at 11:24:22AM -0400, Chris Snook wrote:
-> Paul E. McKenney wrote:
-> >On Thu, Aug 09, 2007 at 10:53:14AM -0400, Chris Snook wrote:
-> >>Paul E. McKenney wrote:
-> >>>Why not the same access-once semantics for atomic_set() as
-> >>>for atomic_read()?  As this patch stands, it might introduce
-> >>>architecture-specific compiler-induced bugs due to the fact that
-> >>>atomic_set() used to imply volatile behavior but no longer does.
-> >>When we make the volatile cast in atomic_read(), we're casting an rvalue 
-> >>to volatile.  This unambiguously tells the compiler that we want to 
-> >>re-load that register from memory.  What's "volatile behavior" for an 
-> >>lvalue?
-> >
-> >I was absolutely -not- suggesting volatile behavior for lvalues.
-> >
-> >Instead, I am asking for volatile behavior from an -rvalue-.  In the
-> >case of atomic_read(), it is the atomic_t being read from.  In the case
-> >of atomic_set(), it is the atomic_t being written to.  As suggested in
-> >my previous email:
-> >
-> >#define atomic_set(v,i)		((*(volatile int *)&(v)->counter) = 
-> >(i))
-> >#define atomic64_set(v,i)	((*(volatile long *)&(v)->counter) = (i))
+On Wed, 1 Aug 2007 14:16:51 -0700
+Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+
+> I was able to duplicate Tejun's problem on an ATAPI device I had here.
+> this updated patch fixed my problem.  These devices are just setting 
+> PhyReady (N) and CommWake (W) in Serror on power state changes, ignoring
+> them seems to be fine, and fixed the problem for me.
+
+Hi Tejun,
+Were you able to test out this patch and see if it solved your ATAPI
+device/ALPM issues?
+
+Thanks,
+Kristen
+
+
 > 
-> That looks like a volatile lvalue to me.  I confess I didn't exactly ace 
-> compilers.  Care to explain this?
-
-OK, so I am dylexic this morning.  Never could tell left from right...
-
-This is indeed an lvalue, as is any non-function expression that you
-can apply the "&" prefix operator to.  Including the expression in
-your proposed definitions of atomic_set() and atomic_set64().
-
-An lvalue is any expression that -could- appear on the left-hand side
-of an assignment operator, regardless of where it actually appears.
-More precisely, an lvalue is an expression that refers to a variable in
-such a way that the variable might be both loaded from and stored to,
-ignoring things like "const" for the moment.
-
-Because "(v)->counter" could be either loaded from or stored to, it
-is an lvalue, which is why the compiler didn't scream bloody murder
-at you when you took the address of it.
-
-> >Again, the architectures that used to have their "counter" declared
-> >as volatile will lose volatile semantics on atomic_set() with your
-> >patch, which might result in bugs due to overly imaginative compiler
-> >optimizations.  The above would prevent any such bugs from appearing.
-> >
-> >>                                                                      A 
-> >>write to an lvalue already implies an eventual write to memory, so this 
-> >>would be a no-op. Maybe you'll write to the register a few times before 
-> >>flushing it to memory, but it will happen eventually.  With an rvalue, 
-> >>there's no guarantee that it will *ever* load from memory, which is what 
-> >>volatile fixes.
-> >>
-> >>I think what you have in mind is LOCK_PREFIX behavior, which is not the 
-> >>purpose of atomic_set.  We use LOCK_PREFIX in the inline assembly for the 
-> >>atomic_* operations that read, modify, and write a value, only because it 
-> >>is necessary to perform that entire transaction atomically.
-> >
-> >No LOCK_PREFIX, thank you!!!  I just want to make sure that the compiler
-> >doesn't push the store down out of a loop, split the store, allow the
-> >store to happen twice (e.g., to allow different code paths to be merged),
-> >and all the other tricks that the C standard permits compilers to pull.
 > 
-> We can't have split stores because we don't use atomic64_t on 32-bit 
-> architectures.  volatile won't save you from pushing stores out of loops 
-> unless you're also doing reads.  This is why we use reads to flush writes 
-> to mmio registers.  In this case, an atomic_read() with volatile in it will 
-> suffice. Storing twice is perfectly legal here, though it's unlikely that 
-> an optimizing compiler smart enough to create the problem we're addressing 
-> would ever do that.
-
-The compiler is within its rights to read a 32-bit quantity 16 bits at
-at time, even on a 32-bit machine.  I would be glad to help pummel any
-compiler writer that pulls such a dirty trick, but the C standard really
-does permit this.
-
-Use of volatile does in fact save you from the compiler pushing stores out
-of loops regardless of whether you are also doing reads.  The C standard
-has the notion of sequence points, which occur at various places including
-the ends of statements and the control expressions for "if" and "while"
-statements.  The compiler is not permitted to move volatile references
-across a sequence point.  Therefore, the compiler is not allowed to
-push a volatile store out of a loop.  Now the CPU might well do such a
-reordering, but that is a separate issue to be dealt with via memory
-barriers.  Note that it is the CPU and I/O system, not the compiler,
-that is forcing you to use reads to flush writes to MMIO registers.
-
-And you would be amazed at what compiler writers will do in order to
-get an additional fraction of a percent out of SpecCPU...
-
-In short, please retain atomic_set()'s volatility, especially on those
-architectures that declared the atomic_t's counter to be volatile.
-
-						Thanx, Paul
+> Enable Aggressive Link Power management for AHCI controllers.
+> 
+> This patch will set the correct bits to turn on Aggressive
+> Link Power Management (ALPM) for the ahci driver.  This
+> will cause the controller and disk to negotiate a lower
+> power state for the link when there is no activity (see
+> the AHCI 1.x spec for details).  This feature is mutually
+> exclusive with Hot Plug, so when ALPM is enabled, Hot Plug
+> is disabled.  ALPM will be enabled by default, but it is
+> settable via the scsi host syfs interface.  Possible 
+> settings for this feature are:
+> 
+> Setting		Effect
+> ----------------------------------------------------------
+> min_power	ALPM is enabled, and link set to enter 
+> 		lowest power state (SLUMBER) when idle
+> 		Hot plug not allowed.
+> 
+> max_performance	ALPM is disabled, Hot Plug is allowed
+> 
+> medium_power	ALPM is enabled, and link set to enter
+> 		second lowest power state (PARTIAL) when
+> 		idle.  Hot plug not allowed.
+> 
+> Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+> 
+> Index: 2.6-git/drivers/ata/ahci.c
+> ===================================================================
+> --- 2.6-git.orig/drivers/ata/ahci.c
+> +++ 2.6-git/drivers/ata/ahci.c
+> @@ -48,6 +48,9 @@
+>  #define DRV_NAME	"ahci"
+>  #define DRV_VERSION	"2.3"
+>  
+> +static int ahci_enable_alpm(struct ata_port *ap,
+> +		enum link_pm policy);
+> +static int ahci_disable_alpm(struct ata_port *ap);
+>  
+>  enum {
+>  	AHCI_PCI_BAR		= 5,
+> @@ -98,6 +101,7 @@ enum {
+>  	/* HOST_CAP bits */
+>  	HOST_CAP_SSC		= (1 << 14), /* Slumber capable */
+>  	HOST_CAP_CLO		= (1 << 24), /* Command List Override support */
+> +	HOST_CAP_ALPM		= (1 << 26), /* Aggressive Link PM support */
+>  	HOST_CAP_SSS		= (1 << 27), /* Staggered Spin-up */
+>  	HOST_CAP_SNTF		= (1 << 29), /* SNotification register */
+>  	HOST_CAP_NCQ		= (1 << 30), /* Native Command Queueing */
+> @@ -153,6 +157,8 @@ enum {
+>  				  PORT_IRQ_PIOS_FIS | PORT_IRQ_D2H_REG_FIS,
+>  
+>  	/* PORT_CMD bits */
+> +	PORT_CMD_ASP		= (1 << 27), /* Aggressive Slumber/Partial */
+> +	PORT_CMD_ALPE		= (1 << 26), /* Aggressive Link PM enable */
+>  	PORT_CMD_ATAPI		= (1 << 24), /* Device is ATAPI */
+>  	PORT_CMD_LIST_ON	= (1 << 15), /* cmd list DMA engine running */
+>  	PORT_CMD_FIS_ON		= (1 << 14), /* FIS DMA engine running */
+> @@ -244,6 +250,11 @@ static int ahci_pci_device_suspend(struc
+>  static int ahci_pci_device_resume(struct pci_dev *pdev);
+>  #endif
+>  
+> +static struct class_device_attribute *ahci_shost_attrs[] = {
+> +	&class_device_attr_link_power_management_policy,
+> +	NULL
+> +};
+> +
+>  static struct scsi_host_template ahci_sht = {
+>  	.module			= THIS_MODULE,
+>  	.name			= DRV_NAME,
+> @@ -261,6 +272,7 @@ static struct scsi_host_template ahci_sh
+>  	.slave_configure	= ata_scsi_slave_config,
+>  	.slave_destroy		= ata_scsi_slave_destroy,
+>  	.bios_param		= ata_std_bios_param,
+> +	.shost_attrs		= ahci_shost_attrs,
+>  };
+>  
+>  static const struct ata_port_operations ahci_ops = {
+> @@ -292,6 +304,8 @@ static const struct ata_port_operations 
+>  	.port_suspend		= ahci_port_suspend,
+>  	.port_resume		= ahci_port_resume,
+>  #endif
+> +	.enable_pm		= ahci_enable_alpm,
+> +	.disable_pm		= ahci_disable_alpm,
+>  
+>  	.port_start		= ahci_port_start,
+>  	.port_stop		= ahci_port_stop,
+> @@ -778,6 +792,156 @@ static void ahci_power_up(struct ata_por
+>  	writel(cmd | PORT_CMD_ICC_ACTIVE, port_mmio + PORT_CMD);
+>  }
+>  
+> +static int ahci_disable_alpm(struct ata_port *ap)
+> +{
+> +	void __iomem *port_mmio = ahci_port_base(ap);
+> +	u32 cmd, scontrol;
+> +	struct ahci_port_priv *pp = ap->private_data;
+> +
+> +	/*
+> + 	 * disable Interface Power Management State Transitions
+> + 	 * This is accomplished by setting bits 8:11 of the
+> + 	 * SATA Control register
+> + 	 */
+> +	scontrol = readl(port_mmio + PORT_SCR_CTL);
+> +	scontrol |= (0x3 << 8);
+> +	writel(scontrol, port_mmio + PORT_SCR_CTL);
+> +
+> +	/* get the existing command bits */
+> +	cmd = readl(port_mmio + PORT_CMD);
+> +
+> +	/* disable ALPM and ASP */
+> +	cmd &= ~PORT_CMD_ASP;
+> +	cmd &= ~PORT_CMD_ALPE;
+> +
+> +	/* force the interface back to active */
+> +	cmd |= PORT_CMD_ICC_ACTIVE;
+> +
+> +	/* write out new cmd value */
+> +	writel(cmd, port_mmio + PORT_CMD);
+> +	cmd = readl(port_mmio + PORT_CMD);
+> +
+> +	/* wait 10ms to be sure we've come out of any low power state */
+> +	msleep(10);
+> +
+> +	/* clear out any PhyRdy stuff from interrupt status */
+> +	writel(PORT_IRQ_PHYRDY, port_mmio + PORT_IRQ_STAT);
+> +
+> +	/* go ahead and clean out PhyRdy Change from Serror too */
+> +	ahci_scr_write(ap, SCR_ERROR, ((1 << 16) | (1 << 18)));
+> +
+> +	/*
+> + 	 * Clear flag to indicate that we should ignore all PhyRdy
+> + 	 * state changes
+> + 	 */
+> +	ap->flags &= ~AHCI_FLAG_NO_HOTPLUG;
+> +
+> +	/*
+> + 	 * Enable interrupts on Phy Ready.
+> + 	 */
+> +	pp->intr_mask |= PORT_IRQ_PHYRDY;
+> +	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
+> +
+> +	/*
+> + 	 * don't change the link pm policy - we can be called
+> + 	 * just to turn of link pm temporarily
+> + 	 */
+> +	return 0;
+> +}
+> +
+> +static int ahci_enable_alpm(struct ata_port *ap,
+> +	enum link_pm policy)
+> +{
+> +	struct ahci_host_priv *hpriv = ap->host->private_data;
+> +	void __iomem *port_mmio = ahci_port_base(ap);
+> +	u32 cmd, scontrol, sstatus;
+> +	struct ahci_port_priv *pp = ap->private_data;
+> +	u32 asp;
+> +
+> +	/* Make sure the host is capable of link power management */
+> +	if (!(hpriv->cap & HOST_CAP_ALPM)) {
+> +		ap->pm_policy = NOT_AVAILABLE;
+> +		return -EINVAL;
+> +	}
+> +
+> +	/* make sure we have a device attached */
+> +	sstatus = readl(port_mmio + PORT_SCR_STAT);
+> +	if (!(sstatus & 0xf00)) {
+> +		ap->pm_policy = NOT_AVAILABLE;
+> +		return -EINVAL;
+> +	}
+> +
+> +	switch (policy) {
+> +	case MAX_PERFORMANCE:
+> +	case NOT_AVAILABLE:
+> +		/*
+> + 		 * if we came here with NOT_AVAILABLE,
+> + 		 * it just means this is the first time we
+> + 		 * have tried to enable - default to max performance,
+> + 		 * and let the user go to lower power modes on request.
+> + 		 */
+> +		ahci_disable_alpm(ap);
+> +		ap->pm_policy = MAX_PERFORMANCE;
+> +		return 0;
+> +	case MIN_POWER:
+> +		/* configure HBA to enter SLUMBER */
+> +		asp = PORT_CMD_ASP;
+> +		break;
+> +	case MEDIUM_POWER:
+> +		/* configure HBA to enter PARTIAL */
+> +		asp = 0;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +	ap->pm_policy = policy;
+> +
+> +	/*
+> + 	 * Disable interrupts on Phy Ready. This keeps us from
+> + 	 * getting woken up due to spurious phy ready interrupts
+> +	 * TBD - Hot plug should be done via polling now, is
+> +	 * that even supported?
+> + 	 */
+> +	pp->intr_mask &= ~PORT_IRQ_PHYRDY;
+> +	writel(pp->intr_mask, port_mmio + PORT_IRQ_MASK);
+> +
+> +	/*
+> + 	 * Set a flag to indicate that we should ignore all PhyRdy
+> + 	 * state changes since these can happen now whenever we
+> + 	 * change link state
+> + 	 */
+> +	ap->flags |= AHCI_FLAG_NO_HOTPLUG;
+> +
+> +	/* get the existing command bits */
+> +	cmd = readl(port_mmio + PORT_CMD);
+> +
+> +	/*
+> + 	 * enable Interface Power Management State Transitions
+> + 	 * This is accomplished by clearing bits 8:11 of the
+> + 	 * SATA Control register
+> + 	 */
+> +	scontrol = readl(port_mmio + PORT_SCR_CTL);
+> +	scontrol &= ~(0x3 << 8);
+> +	writel(scontrol, port_mmio + PORT_SCR_CTL);
+> +
+> +	/*
+> + 	 * Set ASP based on Policy
+> + 	 */
+> +	cmd |= asp;
+> +
+> +	/*
+> + 	 * Setting this bit will instruct the HBA to aggressively
+> + 	 * enter a lower power link state when it's appropriate and
+> + 	 * based on the value set above for ASP
+> + 	 */
+> +	cmd |= PORT_CMD_ALPE;
+> +
+> +	/* write out new cmd value */
+> +	writel(cmd, port_mmio + PORT_CMD);
+> +	cmd = readl(port_mmio + PORT_CMD);
+> +	return 0;
+> +}
+> +
+>  #ifdef CONFIG_PM
+>  static void ahci_power_down(struct ata_port *ap)
+>  {
+> @@ -1355,6 +1519,17 @@ static void ahci_port_intr(struct ata_po
+>  	status = readl(port_mmio + PORT_IRQ_STAT);
+>  	writel(status, port_mmio + PORT_IRQ_STAT);
+>  
+> +	/* If we are getting PhyRdy, this is
+> + 	 * just a power state change, we should
+> + 	 * clear out this, plus the PhyRdy/Comm
+> + 	 * Wake bits from Serror
+> + 	 */
+> +	if ((ap->flags & AHCI_FLAG_NO_HOTPLUG) &&
+> +		(status & PORT_IRQ_PHYRDY)) {
+> +		status &= ~PORT_IRQ_PHYRDY;
+> +		ahci_scr_write(ap, SCR_ERROR, ((1 << 16) | (1 << 18)));
+> +	}
+> +
+>  	if (unlikely(status & PORT_IRQ_ERROR)) {
+>  		ahci_error_intr(ap, status);
+>  		return;
+> @@ -1861,6 +2036,9 @@ static int ahci_init_one(struct pci_dev 
+>  		struct ata_port *ap = host->ports[i];
+>  		void __iomem *port_mmio = ahci_port_base(ap);
+>  
+> +		/* set initial link pm policy */
+> +		ap->pm_policy = NOT_AVAILABLE;
+> +
+>  		/* standard SATA port setup */
+>  		if (hpriv->port_map & (1 << i))
+>  			ap->ioaddr.cmd_addr = port_mmio;
