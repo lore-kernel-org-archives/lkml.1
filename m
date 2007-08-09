@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965239AbXHIMtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S940261AbXHIMtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965239AbXHIMtJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 9 Aug 2007 08:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940029AbXHIMpv
+	id S940261AbXHIMtn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 9 Aug 2007 08:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S940102AbXHIMrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 9 Aug 2007 08:45:51 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:65479 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S939409AbXHIMpu (ORCPT
+	Thu, 9 Aug 2007 08:47:32 -0400
+Received: from ms-smtp-05.nyroc.rr.com ([24.24.2.59]:59166 "EHLO
+	ms-smtp-05.nyroc.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S939881AbXHIMra (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 9 Aug 2007 08:45:50 -0400
-Subject: Re: [patch] ipvs: force read of atomic_t in while loop
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Chris Snook <csnook@redhat.com>
-Cc: Michael Buesch <mb@bu3sch.de>, Andi Kleen <andi@firstfloor.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       wensong@linux-vs.org, horms@verge.net.au, torvalds@osdl.org
-In-Reply-To: <46BB0B4B.4070300@redhat.com>
-References: <20070808093300.GA14530@osiris.boeblingen.de.ibm.com>
-	 <46BA30DC.20207@redhat.com> <20070809001533.GA17798@one.firstfloor.org>
-	 <200708091435.18595.mb@bu3sch.de>  <46BB0B4B.4070300@redhat.com>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 09 Aug 2007 14:49:25 +0200
-Message-Id: <1186663765.9669.6.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 9 Aug 2007 08:47:30 -0400
+Date: Thu, 9 Aug 2007 08:46:30 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Glauber de Oliveira Costa <glommer@gmail.com>, lguest@ozlabs.org,
+       "Nakajima, Jun" <jun.nakajima@intel.com>, linux-kernel@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, anthony@codemonkey.ws,
+       akpm@linux-foundation.org,
+       Glauber de Oliveira Costa <gcosta@redhat.com>, mingo@elte.hu
+Subject: Re: [Lguest] Introducing paravirt_ops for x86_64
+In-Reply-To: <46BAA799.7080806@goop.org>
+Message-ID: <Pine.LNX.4.58.0708090843160.29847@gandalf.stny.rr.com>
+References: <11865467522495-git-send-email-gcosta@redhat.com>
+ <97D612E30E1F88419025B06CB4CF1BE10326E129@scsmsx412.amr.corp.intel.com>
+ <5d6222a80708080758t1b937d0ej14c5e60ac23a20c5@mail.gmail.com>
+ <46BAA799.7080806@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-08-09 at 08:40 -0400, Chris Snook wrote:
-> > #define reload_var(x) __asm__ __volatile__ (whatever, x)
-> > 
-> > I don't know inline assembly that much, but isn't it possible
-> > with that to kind of "fake-touch" the variable, so the compiler
-> > must reload it (and only it) to make sure it's up to date?
-> 
-> We can do it in C, like this:
-> 
-> -#define atomic_read(v) ((v)->counter)
-> +#define atomic_read(v) (*(volatile int *)&(v)->counter)
-> 
-> By casting it volatile at the precise piece of code where we want to
-> guarantee a read from memory, there's little risk of the compiler
-> getting creative in its interpretation of the code.
 
-To answer the inline assembler question:
+--
+On Wed, 8 Aug 2007, Jeremy Fitzhardinge wrote:
 
-asm volatile ("" : "=m" (counter)) : "m" (counter) )
+>
+> At the moment Xen can't support guests with 2M pages.  In 32-bit this
+> isn't a huge problem, since the kernel doesn't assume it can map itself
+> with 2M pages.  But I think the 64-bit kernel assumes 2M pages are
+> always available for mapping the kernel.  I don't know how pervasive
+> this assumption is, but it would be nice to parameterize it in pv-ops.
+>
 
-will force the compiler to reload the value from memory. But the cast to
-(volatile int *) is even better.
+I got 2M pages working in lguest64, but it was a cause of a lot of pain.
+By removing support for 2M pages in guests, that might clean up a lot of
+lguest64 shadow paging as well.
 
--- 
-blue skies,
-  Martin.
+The only advantage I see for 2M pages or a guest, is that it saves the
+guest from having extra page tables. The host still needs the map the 2M
+to 4K, so it's not an advantage there. It doesn't speed anything up, so
+I'd be all for scrapping 2M pages for guests.
 
-"Reality continues to ruin my life." - Calvin.
-
+-- Steve
 
